@@ -31,7 +31,7 @@ Each reviewer returns **PASS** or **BLOCK**, followed by findings with severity 
 - Any critical or high finding from any reviewer blocks the merge.
 - Medium findings from must-pass reviewers block unless the change records why they are accepted, in the pull request and, when it is a lasting trade-off, in an ADR.
 - Should-pass reviewers never block alone; their findings are fixed in the same change or tracked.
-- A reviewer that could not assess something (missing context, tests that would not run) says so; that counts as BLOCK for must-pass reviewers. In CI, reviewers cannot run commands; running tests is the job of the required test checks, so not running them there is not a gap to report.
+- A reviewer that could not assess something (missing context, tests that would not run) says so; that counts as BLOCK for must-pass reviewers. In CI, reviewers cannot run commands; running tests is the job of the required test checks, so not running them there is not a gap to report. CI reviewers report what they could not assess in a separate field, and the gate fails a must-pass reviewer that reports anything there.
 - Medium findings accepted in a change are listed, with the reason, in [review-acceptances.md](review-acceptances.md); the CI gate reads that file.
 
 ## Changing reviewers
