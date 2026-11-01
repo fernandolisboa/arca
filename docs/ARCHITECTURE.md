@@ -50,7 +50,7 @@ packages/
   platform/     capability ports and their adapters (web, capacitor, tauri)
   db/           Drizzle schema and migrations, role SQL, row-level security guard tests
 tooling/        shared ESLint and TypeScript configs, security header policy, repository scripts
-                (dependency-source, boundary, contract and bundle checks, migration runner)
+                (dependency-source, boundary and bundle checks, CI policy scripts, migration runner)
 ```
 
 Rules that keep every platform possible:

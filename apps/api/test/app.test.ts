@@ -1,9 +1,10 @@
 import { createApiClient, ContractViolationError, routes } from '@arca/api-contract/client';
 import { HealthResponse } from '@arca/api-contract/routes';
+import { createRoute, z } from '@hono/zod-openapi';
 import { describe, expect, it, vi } from 'vitest';
-import { createApp } from '../src/app.js';
+import { createApp, createRouter } from '../src/app.js';
 import type { CheckDatabase } from '../src/database-health.js';
-import type { Logger } from '../src/logger.js';
+import { createLogger, type Logger } from '../src/logger.js';
 
 const silentLogger: Logger = { info: () => undefined, error: () => undefined };
 
@@ -28,12 +29,35 @@ describe('GET /v1/health', () => {
     expect(HealthResponse.safeParse(await response.json()).success).toBe(true);
   });
 
-  it('reports unavailable when the check throws', async () => {
-    const { client } = setup(() => Promise.reject(new Error('connection refused')));
+  it.each<[string, CheckDatabase]>([
+    ['rejects', () => Promise.reject(new Error('connection refused'))],
+    [
+      'throws synchronously',
+      () => {
+        throw new Error('bad configuration');
+      },
+    ],
+  ])('reports unavailable when the check %s', async (_label, check) => {
+    const { client } = setup(check);
     await expect(client.call(routes.health)).resolves.toEqual({
       status: 'degraded',
       checks: { database: 'unavailable' },
     });
+  });
+
+  it('reports unavailable when the check takes longer than 2 seconds', async () => {
+    vi.useFakeTimers();
+    try {
+      const { client } = setup(() => new Promise(() => undefined));
+      const result = client.call(routes.health);
+      await vi.advanceTimersByTimeAsync(2_000);
+      await expect(result).resolves.toEqual({
+        status: 'degraded',
+        checks: { database: 'unavailable' },
+      });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('caches the database result for 10 seconds per instance', async () => {
@@ -75,14 +99,71 @@ describe('client', () => {
 });
 
 describe('errors', () => {
-  it('returns only a generic code, never details', async () => {
-    const { app } = setup(() => Promise.resolve('ok'));
-    app.get('/v1/boom', () => {
-      throw new Error('detail that must not leak');
+  /** Mounts extra routes the way real route modules will, on routers under /v1 and /internal. */
+  function withProbeRoutes(lines: string[] = []) {
+    const logger = createLogger((line) => lines.push(line));
+    const probed = createApp({ checkDatabase: () => Promise.resolve('ok'), logger, now: () => 0 });
+    const v1 = createRouter();
+    v1.openapi(
+      createRoute({
+        method: 'get',
+        path: '/echo',
+        request: { query: z.object({ n: z.coerce.number().int() }) },
+        responses: { 200: { description: 'ok' } },
+      }),
+      (c) => c.json({ n: c.req.valid('query').n }, 200),
+    );
+    v1.get('/boom', () => {
+      throw new TypeError('detail that must not leak');
     });
-    const response = await app.request('/v1/boom');
-    expect(response.status).toBe(500);
-    expect(await response.text()).toBe(JSON.stringify({ error: { code: 'internal_error' } }));
+    v1.get('/odd', () => {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- third-party code can throw anything
+      throw { detail: 'person@example.test' };
+    });
+    const internal = createRouter();
+    internal.get('/ping', (c) => c.text('pong'));
+    probed.route('/v1', v1);
+    probed.route('/internal', internal);
+    return probed;
+  }
+
+  it('answers a validation failure with invalid_request and no validator details', async () => {
+    const response = await withProbeRoutes().request('/v1/echo?n=abc');
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: { code: 'invalid_request' } });
+  });
+
+  it.each(['/v1/boom', '/v1/odd'])(
+    'answers %s with internal_error only, logging the error class but not its detail',
+    async (path) => {
+      const lines: string[] = [];
+      const response = await withProbeRoutes(lines).request(path);
+      expect(response.status).toBe(500);
+      expect(await response.text()).toBe(JSON.stringify({ error: { code: 'internal_error' } }));
+      expect(response.headers.get('cache-control')).toBe('no-store');
+      expect(response.headers.get('x-request-id')).not.toBeNull();
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).not.toMatch(/detail|person/);
+      expect(JSON.parse(lines[0] ?? '')).toMatchObject({
+        level: 'error',
+        status: 500,
+        errorCode: 'internal_error',
+        errorName: path === '/v1/boom' ? 'TypeError' : 'NonErrorThrown',
+      });
+    },
+  );
+
+  it('logs the route pattern, never the request path or query', async () => {
+    const lines: string[] = [];
+    await withProbeRoutes(lines).request('/v1/echo?n=1&email=someone@example.test');
+    expect(JSON.parse(lines[0] ?? '')).toMatchObject({ route: '/v1/echo', status: 200 });
+    expect(lines[0]).not.toContain('example.test');
+  });
+
+  it('marks successful /internal responses no-store', async () => {
+    const response = await withProbeRoutes().request('/internal/ping');
+    expect(response.status).toBe(200);
+    expect(response.headers.get('cache-control')).toBe('no-store');
   });
 
   it.each(['/v1/missing', '/internal/missing'])(

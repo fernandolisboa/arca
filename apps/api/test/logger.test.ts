@@ -20,7 +20,21 @@ describe('logger', () => {
 
   it('cannot be told to change its level through the entry', () => {
     const lines: string[] = [];
-    createLogger((line) => lines.push(line)).error({ level: 'info', errorCode: 'internal_error' });
+    createLogger((line) => lines.push(line)).error({
+      errorCode: 'internal_error',
+      ...({ level: 'info' } as object),
+    });
     expect(JSON.parse(lines[0] ?? '')).toEqual({ level: 'error', errorCode: 'internal_error' });
+  });
+
+  it('drops values that do not fit their field', () => {
+    const lines: string[] = [];
+    createLogger((line) => lines.push(line)).error({
+      errorCode: 'case 123 of someone@example.test',
+      errorName: 'TypeError',
+      status: Number.NaN,
+      route: 'x'.repeat(257),
+    });
+    expect(JSON.parse(lines[0] ?? '')).toEqual({ level: 'error', errorName: 'TypeError' });
   });
 });

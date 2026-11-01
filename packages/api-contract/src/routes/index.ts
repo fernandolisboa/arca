@@ -3,8 +3,9 @@ import { z } from 'zod';
 /** Every route lives under this prefix; clients prepend their origin, if any. */
 export const apiBasePath = '/v1';
 
+/** Error bodies carry a machine code only; details stay in the server log (spec 0001, R3). */
 export const ErrorResponse = z.object({
-  error: z.object({ code: z.string() }),
+  error: z.object({ code: z.string().regex(/^[a-z_]{1,64}$/) }),
 });
 export type ErrorResponse = z.infer<typeof ErrorResponse>;
 
