@@ -64,7 +64,7 @@ Revisited at the start of every epic. New features list the assets they touch an
 **Data**
 - Vault encryption on the client, with its own ADR before implementation: standard primitives, documented key wrapping, recovery and rotation, and the path by which plaintext reaches an authorized processing session.
 - Bank account and document numbers encrypted per field with KMS-wrapped keys ([ADR-0008](adr/0008-database-security-and-environments.md)).
-- Deleting a case destroys its keys (crypto-shredding) and its rows, and deletes related stored objects, traces and error reports; workflow runs hold identifiers only with zero retention and are purged by Vercel within 36 days ([ADR-0009](adr/0009-background-jobs-guarantees.md)); in-app account deletion and data export from Phase 1.
+- Deleting a case destroys its keys (crypto-shredding) and its rows, and deletes related stored objects, traces and error reports; workflow runs hold identifiers only with zero retention and have their payloads purged by Vercel within 36 days, and their metadata (no personal data) within one year ([ADR-0009](adr/0009-background-jobs-guarantees.md)); in-app account deletion and data export from Phase 1.
 - Retention periods defined per data type before real data enters (Phase 1).
 - Backups per ADR-0008: RPO 15 minutes, RTO 4 hours, an off-vendor encrypted copy, quarterly restore drills.
 

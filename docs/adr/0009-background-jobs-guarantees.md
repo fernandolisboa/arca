@@ -36,7 +36,7 @@ The reasons for choosing Vercel Workflows in ADR-0007 still hold: no extra vendo
 
 ### Amendment to ADR-0008
 
-ADR-0008 says deleting a case deletes related data in workflow runs. That cannot be done. Instead: workflow runs hold identifiers only and start with zero retention, so after a case is deleted its runs hold only identifiers that point at nothing, and Vercel deletes them within 36 days. The retention schedule records this window.
+ADR-0008 says deleting a case deletes related data in workflow runs. That cannot be done. Instead: workflow runs hold identifiers only and start with zero retention, so after a case is deleted its runs hold only identifiers that point at nothing. Vercel deletes their payloads within 36 days; their metadata (IDs, names, statuses, timestamps, no personal data) can be kept up to one year. The retention schedule records both windows.
 
 ## Alternatives
 
@@ -51,7 +51,8 @@ ADR-0008 says deleting a case deletes related data in workflow runs. That cannot
 - Run payloads and queue messages stay in São Paulo. Run metadata, with no personal data in it, is processed outside Brazil; the data-flow register says so.
 - Zero retention removes payload inspection after a run ends; debugging relies on our own logs and the database rows steps write.
 - The API depends on a release-candidate build tool. Its version is pinned, its upgrades go through the supply-chain reviewer, and the Hono app does not depend on it.
-- Case deletion leaves identifier-only run data at Vercel for up to 36 days.
+- Case deletion leaves identifier-only run payloads at Vercel for up to 36 days, and run metadata for up to one year.
+- How the SDK's own routes reject requests not sent by the platform's queue is not stated in the documentation checked; the scaffold verifies it and records the source here before production ([spec 0001](../specs/0001-foundations-scaffold.md), R6).
 
 ## Sources
 

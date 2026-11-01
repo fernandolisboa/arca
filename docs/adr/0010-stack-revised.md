@@ -20,9 +20,9 @@
 | Area | ADR-0003 | Now | Why |
 | --- | --- | --- | --- |
 | API build and deploy | Hono on Node | Hono on Node, built and deployed with Nitro (pinned exactly) | The Workflow SDK compiles workflows through Nitro when the app is Hono ([ADR-0009](0009-background-jobs-guarantees.md)) |
-| Hosting topology | Static client and API functions (separate projects implied) | One Vercel project per environment: the API deployment also serves the static web bundle; the API lives under `/v1` on the same origin | Same-origin cookies work in previews; no CORS for the web client; `connect-src 'self'`. `apps/web` still builds to a standalone static bundle for Capacitor and Tauri |
+| Hosting topology | Static client and API functions (separate projects implied) | One Vercel project, one origin per environment (production and each preview): the API deployment also serves the static web bundle; the API lives under `/v1` on the same origin | Same-origin cookies work in previews; no CORS for the web client; `connect-src 'self'`. `apps/web` still builds to a standalone static bundle for Capacitor and Tauri |
 | Background jobs | Runs pinned to São Paulo (ADR-0007) | [ADR-0009](0009-background-jobs-guarantees.md) | ADR-0007's guarantees were not accurate |
-| Database tests in CI | Neon branches from a synthetic seed | A Postgres service container in CI, same major version as Neon, pinned by digest; Neon branches from the synthetic seed only for preview deployments | No Neon credentials in CI on a public repository; faster, deterministic runs |
+| Database tests in CI | Neon branches from a synthetic seed | A Postgres service container in CI, same major version as Neon, pinned by digest; Neon branches from the synthetic seed only for preview deployments | No Neon credentials in test jobs on a public repository; faster, deterministic runs |
 | Preview databases | Not specified | Branches of the non-production Neon project, provisioned by our pipeline with the ADR-0008 roles; the Vercel–Neon integration is not used | The integration injects owner-role connection strings, which ADR-0008 forbids |
 | Dependency updates | Renovate | Dependabot version updates with a cooldown equal to pnpm's minimum release age; Renovate only if Dependabot cannot update pnpm catalog entries (checked while scaffolding) | One fewer third-party app with write access to the repository |
 | Typed client | Generated for every platform | Derived from the Zod contract, no code generation | Every client is TypeScript; the OpenAPI generators available require TypeScript 5; runtime validation catches drift |
@@ -43,7 +43,7 @@ TypeScript end to end, in a pnpm + Turborepo monorepo.
 | Forms and validation | React Hook Form + Zod, sharing schemas with the API contract |
 | i18n | i18next with ICU message format; `pt-BR` first |
 | API | Hono on Node, built and deployed with Nitro; versioned (`/v1`); contract in Zod with `@hono/zod-openapi`, exported as OpenAPI; typed client derived from the same Zod route definitions in `packages/api-contract`, validating responses at runtime, used by every platform |
-| Hosting | Vercel Pro team: one project per environment serving the static client and the API functions on one origin, functions in São Paulo (`gru1`); preview deployment per pull request behind Deployment Protection |
+| Hosting | Vercel Pro team: one project serving the static client and the API functions on one origin per environment, functions in São Paulo (`gru1`); preview deployment per pull request behind Deployment Protection |
 | Background jobs | Vercel Workflows 5.x, runs started in `gru1` with zero retention, identifiers-only payloads ([ADR-0009](0009-background-jobs-guarantees.md)) |
 | Database | Postgres on Neon, São Paulo (`sa-east-1`); separate projects for production and non-production ([ADR-0008](0008-database-security-and-environments.md)) |
 | Data access | Drizzle ORM and migrations; forced row-level security; least-privilege roles created with SQL ([ADR-0008](0008-database-security-and-environments.md)) |
@@ -81,13 +81,18 @@ The vault's encryption scheme gets its own ADR before the vault is built: standa
 - Hono is minimal; validation, auth, rate limiting and error handling are assembled explicitly and reviewed.
 - Nitro is a release candidate as of this date; it is pinned exactly and kept to the build and deploy shell, so it can be replaced without touching routes.
 - A client-only change redeploys the API project too; that is accepted for the same-origin benefits.
+- **Native clients stay cross-origin.** Capacitor serves the bundle from `https://localhost` (Android) or `capacitor://localhost` (iOS), so native apps call the absolute production origin. They use the ADR-0006 path: a CORS allow-list of the exact Capacitor and Tauri origins without credentialed cookies, bearer tokens in the Keychain or Keystore, and a CSP carried inside the bundle with the API origin in `connect-src`. "No CORS" applies to the web client only.
+- One origin is required for previews (the Public Suffix List problem); in production it is a choice, since two subdomains of our own domain would be same-site. Moving the API to its own subdomain later is a configuration change, because the client's base URL is a build setting.
+- Native builds lag behind deploys, so `/v1` stays backward compatible for older app versions.
+- The approved packages and versions for the scaffold are the Versions table in [spec 0001](../specs/0001-foundations-scaffold.md#versions); packages outside it need a supply-chain PASS, and an ADR when they add a new kind of tool or vendor.
 
 ## Sources
 
 - [Workflow SDK: getting started with Hono](https://workflow-sdk.dev/docs/getting-started/hono) — Nitro required (checked 2026-11-01)
 - [GitHub docs: About secret scanning](https://docs.github.com/en/code-security/secret-scanning/introduction/about-secret-scanning) — not available for user-owned private repositories (checked 2026-11-01)
 - [pnpm settings](https://pnpm.io/settings) — minimum release age, trust policy, build allow-list (checked 2026-11-01)
-
+- [Public Suffix List](https://publicsuffix.org/list/public_suffix_list.dat) — lists `vercel.app` (checked 2026-11-01)
+- [Vercel docs: supported Node.js versions](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions) — 26.x is the default (checked 2026-11-01)
 - [Neon changelog: São Paulo region generally available](https://neon.com/docs/changelog/2025-02-28) (checked 2026-11-01)
 - [Neon docs: roles](https://neon.com/docs/manage/roles/) (checked 2026-11-01)
 - [Drizzle ORM: row-level security](https://orm.drizzle.team/docs/rls) (checked 2026-11-01)
