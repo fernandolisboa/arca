@@ -76,6 +76,7 @@ jobs:
       - name: Install the scripts from main
         working-directory: policy
         run: pnpm install --frozen-lockfile --filter @arca/scripts
+      # As in secrets-lint: after every install step, and nothing runs from it.
       - name: Check out the change's lockfile (data only)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -114,6 +115,7 @@ jobs:
             "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}/osv-scanner_linux_amd64"
           echo "${OSV_SCANNER_SHA256}  $RUNNER_TEMP/osv-scanner" | sha256sum --check --strict -
           chmod +x "$RUNNER_TEMP/osv-scanner"
+      # As in secrets-lint: after every install step, and nothing runs from it.
       - name: Check out the change's lockfile (data only)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -169,6 +171,7 @@ jobs:
             "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
           echo "${GITLEAKS_SHA256}  $archive" | sha256sum --check --strict -
           tar -xzf "$archive" -C "$RUNNER_TEMP" gitleaks
+      # As in secrets-lint: after every install step, and nothing runs from it.
       - name: Check out the change with its history (data only)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -177,16 +180,20 @@ jobs:
           path: change
           persist-credentials: false
           fetch-depth: 0
-      # The change's .gitleaksignore and inline gitleaks:allow comments are not honored.
+      # gitleaks always loads <source>/.gitleaksignore, so the change's copy is removed (and the job
+      # fails if it is not a plain file). Inline gitleaks:allow comments are not honored either.
+      - name: Drop the change's .gitleaksignore
+        run: rm -f -- change/.gitleaksignore && test ! -e change/.gitleaksignore
       - name: Scan the pull request's commits with main's configuration
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: >-
-          "$RUNNER_TEMP/gitleaks" git change
-          --log-opts="${BASE_SHA}..${HEAD_SHA}"
-          --config=policy/.github/policy/gitleaks.toml
-          --gitleaks-ignore-path=policy/.github/policy/gitleaks-ignore
-          --ignore-gitleaks-allow
-          --redact
-          --no-banner
+        run: |
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          "$RUNNER_TEMP/gitleaks" git change \
+            --log-opts="${BASE_SHA}..${HEAD_SHA}" \
+            --config=policy/.github/policy/gitleaks.toml \
+            --gitleaks-ignore-path=policy/.github/policy/gitleaks-ignore \
+            --ignore-gitleaks-allow \
+            --redact \
+            --no-banner

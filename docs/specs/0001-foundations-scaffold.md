@@ -168,7 +168,7 @@ A CI lint checks each workflow file against an allow-list of the secrets and env
 | `osv-scanner` | Dependency advisories on the lockfile; fails on any known vulnerability without a recorded exception |
 | `dependency-review` | GitHub's dependency review; fails on new advisories and on licenses outside: MIT, ISC, Apache-2.0, BSD-2-Clause, BSD-3-Clause, 0BSD, BlueOak-1.0.0, CC0-1.0, CC-BY-4.0, Unlicense, Python-2.0. Adding a license needs a supply-chain PASS |
 | `gitleaks` | Secret scan of the pull request's commits, with the binary pinned by version and checksum, its configuration from `main`, the PR's `.gitleaksignore` ignored and inline `gitleaks:allow` comments not honored (`--ignore-gitleaks-allow`) |
-| `codeql` | CodeQL for JavaScript and TypeScript, plus the Actions language (catches script injection in workflows), with build mode none and the `security-extended` queries, in `codeql.yml`; new alerts fail GitHub's code scanning check on the pull request |
+| `codeql` | CodeQL for JavaScript and TypeScript, plus the Actions language (catches script injection in workflows), with build mode none and the `security-extended` queries, in `codeql.yml`; new alerts fail the `CodeQL` check that GitHub code scanning posts on the pull request. The `codeql` job only runs the analysis and passes even when it finds alerts, so the ruleset requires the `CodeQL` check (or a `code_scanning` rule) with the failure threshold at high or higher for security alerts and errors for other alerts |
 | `sbom` | A CycloneDX SBOM of the lockfile from `pnpm sbom`, uploaded as a build artifact |
 | `review-gate` | The reviewer subagents (R10), as a check run created by the review workflow on the reviewed head commit, with the canary result folded in when the PR changes the gate |
 
@@ -237,7 +237,7 @@ The latest stable release of each, checked on the npm registry on 2026-11-01, un
 | `@types/node` | 26.x | Node.js types matching the runtime |
 | `yaml` | 2.x | Parses workflow files and `pnpm-workspace.yaml` in `tooling/scripts` |
 | Turborepo | 2.11+ | Latest |
-| osv-scanner, gitleaks | 2.7, 8.30 | Latest; release binaries pinned by version and SHA-256 in `policy.yml` |
+| osv-scanner, gitleaks | 2.7, 8.30 | Latest GitHub releases (google/osv-scanner, gitleaks/gitleaks, checked 2026-11-01); binaries pinned by version and by the SHA-256 in each release's checksum file, in `policy.yml` |
 | React | 19.3 | Latest |
 | Vite, `@vitejs/plugin-react` | 8.3, 6.x | Latest |
 | TanStack Router, TanStack Query | 1.170+, 5.105+ | Latest |

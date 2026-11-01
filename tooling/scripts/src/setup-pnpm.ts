@@ -4,7 +4,7 @@ import { appendFile, chmod, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
-import { reportViolations, type Violation } from './report.ts';
+import { escapeRegExp, reportViolations, type Violation } from './report.ts';
 
 export interface PinnedPnpm {
   readonly version: string;
@@ -41,7 +41,7 @@ export function sriToSha512Hex(integrity: unknown): string | undefined {
  */
 export function lockedIntegrity(lockfile: string, packageId: string): string | undefined {
   const firstDocument = lockfile.split(/^---$/m).find((part) => part.trim() !== '') ?? '';
-  const key = packageId.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
+  const key = escapeRegExp(packageId);
   const entry = new RegExp(
     `^  '?${key}'?:\\n    resolution: \\{integrity: (sha512-[A-Za-z0-9+/]+=*)\\}$`,
     'm',

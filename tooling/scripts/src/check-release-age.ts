@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { parseAllDocuments } from 'yaml';
-import { isRecord, reportViolations, type Violation } from './report.ts';
+import { escapeRegExp, isRecord, reportViolations, type Violation } from './report.ts';
 import { parseWorkspaceYaml } from './workspace.ts';
 
 export interface LockedPackage {
@@ -41,10 +41,7 @@ export function isExcluded({ name, version }: LockedPackage, exclude: readonly s
   return exclude.some((entry) => {
     if (entry === name || entry === `${name}@${version}`) return true;
     if (!entry.includes('*')) return false;
-    const pattern = entry
-      .split('*')
-      .map((part) => part.replace(/[.+?^${}()|[\]\\/]/g, '\\$&'))
-      .join('.*');
+    const pattern = entry.split('*').map(escapeRegExp).join('.*');
     return new RegExp(`^${pattern}$`).test(name);
   });
 }
@@ -87,7 +84,7 @@ async function publishTimes(packages: readonly LockedPackage[]): Promise<Map<str
   const times = new Map<string, string>();
   const names = [...new Set(packages.map(({ name }) => name))];
   const fetchOne = async (name: string) => {
-    const response = await fetch(`https://registry.npmjs.org/${name.replace('/', '%2f')}`, {
+    const response = await fetch(`https://registry.npmjs.org/${name.replaceAll('/', '%2f')}`, {
       headers: { accept: 'application/json' },
     });
     if (!response.ok) throw new Error(`registry answered ${String(response.status)} for ${name}`);

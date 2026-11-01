@@ -15,6 +15,10 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+export function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
+}
+
 /**
  * Keeps reported text on one line and out of the Actions runner's `::command::` syntax, since it
  * may quote files from a pull request.
