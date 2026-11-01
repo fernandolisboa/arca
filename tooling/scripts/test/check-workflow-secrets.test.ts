@@ -95,6 +95,11 @@ describe('workflow secrets lint', () => {
     ],
     ['a workflow without a trigger', 'no-trigger.yml', 'has no on: trigger this lint can read'],
     [
+      'a local action outside .github/actions/<name>',
+      'nested-local-action.yml',
+      'uses ./.github/actions/a/b; local actions live in .github/actions/<name>',
+    ],
+    [
       'a mixed-case pull_request trigger',
       'mixed-case-trigger.yml',
       'runs on pull_request and uses secret ANTHROPIC_API_KEY',

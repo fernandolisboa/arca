@@ -29,6 +29,13 @@ export function checkWorkflow(file: string, source: string, policy: SecretsPolic
   if (workflowTriggers.length === 0) add('has no on: trigger this lint can read');
   const secrets = secretsUsed(workflow, add);
   if (containsInheritedSecrets(workflow)) add('passes secrets: inherit to a reusable workflow');
+  for (const local of localUses(workflow)) {
+    if (!localTarget.test(local)) {
+      add(
+        `uses ${local}; local actions live in .github/actions/<name>, where this lint reads them`,
+      );
+    }
+  }
 
   const onPullRequest = workflowTriggers.includes('pull_request');
   const allowedSecrets = allowed.secrets.map((secret) => secret.toUpperCase());
@@ -125,6 +132,18 @@ function collectExpressions(
   }
 }
 
+/** A local action under .github/actions (optionally in a checkout directory) or a local workflow. */
+const localTarget =
+  /^\.\/(?:[A-Za-z0-9_-]+\/)?\.github\/actions\/[A-Za-z0-9_-]+$|^\.\/\.github\/workflows\/[A-Za-z0-9_-]+\.ya?ml$/;
+
+function localUses(value: unknown): string[] {
+  if (Array.isArray(value)) return value.flatMap(localUses);
+  if (!isRecord(value)) return [];
+  return Object.entries(value).flatMap(([key, item]) =>
+    key === 'uses' && typeof item === 'string' && item.startsWith('./') ? [item] : localUses(item),
+  );
+}
+
 function containsInheritedSecrets(value: unknown): boolean {
   if (Array.isArray(value)) return value.some(containsInheritedSecrets);
   if (!isRecord(value)) return false;
@@ -195,7 +214,11 @@ async function main(): Promise<void> {
     violations.push(...checkWorkflow(name, source, policy));
   }
   if (actionsDir !== undefined) {
-    const actions = await yamlFiles(actionsDir, true, violations).catch(() => []);
+    // Only a missing directory means "no actions"; any other error fails the lint.
+    const actions = await yamlFiles(actionsDir, true, violations).catch((error: unknown) => {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+      throw error;
+    });
     for (const { name, source } of actions) violations.push(...checkAction(name, source));
   }
   reportViolations(violations);
