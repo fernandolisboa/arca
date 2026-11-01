@@ -71,8 +71,23 @@ describe('release age', () => {
     ['zod@4.6.6', false],
     ['@hono/*', false],
     ['z*', true],
+    ['zod@4.6.6 || 4.6.7', true],
+    ['zod@4.6.5 || 4.6.6', false],
+    ['z*@4.6.7', true],
+    ['z*@4.6.6', false],
   ])('matches exclude entry %s: %s', (exclude, expected) => {
     expect(isExcluded(zod, [exclude])).toBe(expected);
+  });
+
+  it.each([
+    ['@scope/a', true],
+    ['@scope/*', true],
+    ['@scope/*@1.0.0', true],
+    ['@scope/a@1.0.0', true],
+    ['@scope/a@1.0.1', false],
+    ['@other/*', false],
+  ])('matches scoped exclude entry %s: %s', (exclude, expected) => {
+    expect(isExcluded({ name: '@scope/a', version: '1.0.0' }, [exclude])).toBe(expected);
   });
 
   it('accepts a registry release old enough', () => {

@@ -29,7 +29,7 @@ export interface WorkspaceConfig {
   readonly overrides: ReadonlyMap<string, string>;
   /** `minimumReleaseAge`, in minutes; undefined when missing or invalid (invalid is also a problem). */
   readonly minimumReleaseAgeMinutes: number | undefined;
-  /** `minimumReleaseAgeExclude`: package names, `name@version`, or names with `*`. */
+  /** `minimumReleaseAgeExclude`: names or `*` patterns, optionally with `@v1 || v2` exact versions. */
   readonly minimumReleaseAgeExclude: readonly string[];
   /** Entries in the sections above that do not have the expected shape. */
   readonly problems: readonly Violation[];

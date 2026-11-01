@@ -59,13 +59,23 @@ function registryIntegrity(resolution: unknown): string | undefined {
   return keys.length === 1 && typeof integrity === 'string' ? integrity : undefined;
 }
 
-/** Matches pnpm's minimumReleaseAgeExclude entries: a name, `name@version`, or a name with `*`. */
-export function isExcluded({ name, version }: LockedPackage, exclude: readonly string[]): boolean {
+/**
+ * Matches pnpm's minimumReleaseAgeExclude entries: a name or a name pattern with `*`, optionally
+ * followed by `@` and exact versions separated by `||` (`webpack@4.47.0 || 5.102.1`).
+ */
+export function isExcluded(
+  { name, version }: Pick<LockedPackage, 'name' | 'version'>,
+  exclude: readonly string[],
+): boolean {
   return exclude.some((entry) => {
-    if (entry === name || entry === `${name}@${version}`) return true;
-    if (!entry.includes('*')) return false;
-    const pattern = entry.split('*').map(escapeRegExp).join('.*');
-    return new RegExp(`^${pattern}$`).test(name);
+    const at = entry.indexOf('@', 1);
+    const namePattern = at === -1 ? entry : entry.slice(0, at);
+    const versions = at === -1 ? undefined : entry.slice(at + 1).split('||');
+    const pattern = namePattern.split('*').map(escapeRegExp).join('.*');
+    return (
+      new RegExp(`^${pattern}$`).test(name) &&
+      (versions?.some((listed) => listed.trim() === version) ?? true)
+    );
   });
 }
 
