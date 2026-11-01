@@ -19,6 +19,8 @@ pnpm check    # format check, dependency sources, boundaries, lint, typecheck, t
 
 Set `TURBO_TELEMETRY_DISABLED=1` in your shell to turn off Turborepo's anonymous usage telemetry; CI sets it.
 
+CI runs the same `pnpm check` on every pull request ([.github/workflows/ci.yml](.github/workflows/ci.yml)), after verifying the pnpm binary against the hash in `packageManager`. Workflows may use only the secrets and environments listed in [.github/policy/workflow-secrets.json](.github/policy/workflow-secrets.json), checked with the script and list from `main`.
+
 Single steps: `pnpm format`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`. Code layout: [ARCHITECTURE.md](docs/ARCHITECTURE.md#platforms-and-code-layout) and the [spec](docs/specs/0001-foundations-scaffold.md#layout).
 
 Dependencies: every version is exact and lives in the catalogs in [pnpm-workspace.yaml](pnpm-workspace.yaml); packages refer to them as `catalog:`. pnpm installs only releases at least 7 days old and runs no dependency install scripts unless `allowBuilds` lists them. TypeScript 7 typechecks and builds the workspace; only `tooling/eslint-config` uses TypeScript 6.0, through the `lint` catalog, because typescript-eslint needs its compiler API.

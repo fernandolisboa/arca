@@ -8,6 +8,9 @@
     "lint": "eslint .",
     "test": "vitest run"
   },
+  "dependencies": {
+    "yaml": "catalog:"
+  },
   "devDependencies": {
     "@arca/eslint-config": "workspace:*",
     "@arca/tsconfig": "workspace:*",

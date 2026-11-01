@@ -1,0 +1,8 @@
+on: push
+jobs:
+  deploy:
+    environment:
+      name: production
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo deploy
