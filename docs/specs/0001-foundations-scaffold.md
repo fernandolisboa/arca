@@ -119,18 +119,23 @@ eval/
 
 ### R7. Database foundation
 
-- `packages/db`: Drizzle ORM and drizzle-kit ([Versions](#versions)). Migrations are forward-only SQL files; a one-way change records its reason in the PR.
-- Migrations are applied by our own runner in `tooling/scripts`, which reads the `.sql` files as data and runs them as `app_migrator`. It does not load `drizzle.config.ts` or any other code from the change being deployed. Each migration and the guard queries run in one transaction, which commits only if the guards pass (Postgres DDL and role statements are transactional), so a migration that weakens row-level security never commits.
+- `packages/db`: Drizzle ORM and drizzle-kit ([Versions](#versions)). Migrations are forward-only SQL files; a one-way change records its reason in the PR. Production migrates before it deploys, so every migration stays compatible with the deployment already running (expand, then contract).
+- Migrations are applied by our own runner in `tooling/scripts`, which reads the `.sql` files as data and runs them as `app_migrator`. It does not load `drizzle.config.ts` or any other code from the change being deployed.
+  - The runner parses each file with the Postgres parser (`libpg-query`) and rejects transaction control (`BEGIN`, `START TRANSACTION`, `COMMIT`, `END`, `ROLLBACK`, `ABORT`, savepoints, prepared transactions), `SET`, `RESET`, `SET ROLE`, `SET SESSION AUTHORIZATION` and `CONCURRENTLY`.
+  - It opens the transaction itself, sets a `SET LOCAL` nonce, runs the statements one per call, and before the guards checks that the nonce is still readable, proving it is still in its own transaction.
+  - The guards run with `SET LOCAL search_path = pg_catalog` and fully qualified catalog names, so a migration cannot shadow catalog views or functions.
+  - Migration and guards share that transaction, which commits only if the guards pass (Postgres DDL and role statements are transactional), so a migration that weakens row-level security never commits. The `db` tests include canary migrations with an embedded `COMMIT` and with a shadowing view; both must fail and leave nothing committed.
+  - The runner keeps its own journal table, which is the only allow-listed table without row-level security.
 - `bootstrap.sql` is run once per Neon project by the repository owner, using the Neon owner role, and is documented in `packages/db/README.md`. It creates `app_migrator` as `NOBYPASSRLS`, `NOSUPERUSER`, `NOREPLICATION`, `CREATEROLE`, not a member of `neon_superuser`, owning the application schema. It is the only script that uses the Neon owner role.
 - The first migration creates `app_api`, `app_jobs`, `app_auth` and `app_audit` as `NOBYPASSRLS`, `NOSUPERUSER`, `NOREPLICATION`, `NOCREATEROLE`, `NOCREATEDB`, with no passwords and no table grants yet.
 - Passwords: the pipeline sets each role's password per environment and per preview branch through the Neon API's role password reset, so no SQL text ever carries a password and no two branches share credentials. Re-running it rotates them. If the Neon API cannot reset SQL-created roles, the fallback is a SCRAM verifier computed by libpq's `PQencryptPasswordConn` through a vetted package added with a supply-chain PASS; no custom cryptography.
 - Request identity is set with `select set_config('app.person_id', $1, true)` and `set_config('app.case_id', $2, true)`, with UUID-validated parameters, never by string interpolation. Policies will read `nullif(current_setting('app.person_id', true), '')::uuid`, so a missing or reset setting yields no rows rather than an error. With no case tables, the helper is exercised by a test-only table created inside the test: no identity returns zero rows; the setting does not carry into the next transaction on a pooled connection; a malformed ID is rejected before any SQL runs.
-- **Guard tests** (the start of the access-matrix suite). "Neon-managed roles" is a documented list in `packages/db`; every other role is checked.
-  1. Every table in every non-system schema has row-level security enabled and forced, except tables on an explicit allow-list in the test file (drizzle-kit's journal now; auth tables join with the auth slice).
+- **Guard tests** (the start of the access-matrix suite). Each environment has its own exempt-role list, chosen by the runner from the connection target and not editable through migration data: Neon's managed roles for Neon, the container's bootstrap `postgres` role for CI. Every other role is checked. The lists live in code-owned files.
+  1. Every table in every non-system schema has row-level security enabled and forced, except tables on an explicit allow-list in the test file (the runner's journal now; auth tables join with the auth slice).
   2. Views in those schemas have `security_invoker = true`. Materialized views, foreign tables and `SECURITY DEFINER` functions are forbidden unless allow-listed.
   3. The roles that can log in, minus the Neon-managed roles, are exactly `app_api`, `app_jobs`, `app_auth`, `app_audit` and `app_migrator`.
-  4. No role other than the Neon-managed ones has `rolsuper`, `rolbypassrls`, `rolreplication` or `rolcreatedb`; only `app_migrator` has `rolcreaterole`.
-  5. No role other than the Neon-managed ones is a member of any role, directly or through other roles (`pg_auth_members`, `pg_has_role`), outside an allow-list that starts empty. On Neon this includes `neon_superuser`, for `app_migrator` too.
+  4. No role outside the exempt list has `rolsuper`, `rolbypassrls`, `rolreplication` or `rolcreatedb`; only `app_migrator` has `rolcreaterole`.
+  5. The only role memberships are the ones Postgres 16 and later grant automatically when `app_migrator` creates a role: `app_migrator` holds `ADMIN OPTION` on `app_api`, `app_jobs`, `app_auth` and `app_audit`, with `inherit_option` and `set_option` false. `createrole_self_grant` is empty. Every other membership, direct or indirect (`pg_auth_members`, `pg_has_role`), is forbidden, including `neon_superuser` and the `pg_*` predefined roles.
   6. No runtime role owns a table or schema, or has `CREATE` on any schema or on the database.
 - The guards run in CI against a Postgres 18 service container pinned by digest, and inside every migration transaction on preview branches and production (as `app_migrator`), which is where the Neon-specific checks actually bite.
 - `GET /v1/health` checks the database as `app_api` with `select 1`, with a 2-second timeout. It reports `degraded`, not an error, when the database is unreachable.
@@ -140,7 +145,7 @@ eval/
 
 All workflows: actions pinned by full commit SHA; top-level `permissions: {}`, with jobs granting only what they need; GitHub-hosted runners; `actions/checkout` with `persist-credentials: false`. Workflows on `pull_request` and `push` use `concurrency` per ref; the two `pull_request_target` workflows (review gate, preview pipeline) group by pull request number. Values from the event (branch names, titles, file names) reach `run:` steps only through `env:` and are validated against a strict pattern before use.
 
-**Secrets.** There are no repository-level secrets. Every secret lives in a GitHub environment whose deployment-branch policy allows `main` only: `review` (Anthropic key), `preview` (Neon API key for `arca-nonprod`, the `arca-nonprod` migrator credential, Vercel token, Deployment Protection bypass), `production` (production migrator credential, Vercel token). Workflows on `pull_request_target` and on `push` to `main` run with ref `main`; runs on `pull_request` do not, so code from a branch cannot reach any secret.
+**Secrets.** There are no repository-level secrets. Every secret lives in a GitHub environment whose deployment-branch policy allows `main` only: `review` (Anthropic key), `preview` (Neon API key for `arca-nonprod`, the `arca-nonprod` migrator credential, Vercel token, Deployment Protection bypass), `production` (production migrator credential, Vercel token). Workflows on `pull_request_target` and on `push` to `main` run with ref `main`; runs on `pull_request` do not, so code from a branch cannot reach any secret. The ticket verifies, with a source, whether `review` secrets reach Dependabot-triggered `pull_request_target` runs. If they do not, a Dependabot secret holding a second, spend-limited Anthropic key is the single exception; only `review-gate.yml` references it, and a CI lint fails any `pull_request` or `push` workflow that references `secrets.*`.
 
 | Check (required on `main`) | What it runs |
 | --- | --- |
@@ -153,26 +158,27 @@ All workflows: actions pinned by full commit SHA; top-level `permissions: {}`, w
 | `gitleaks` | Secret scan of the pull request's commits, with the binary pinned by version and checksum |
 | `codeql` | CodeQL for JavaScript and TypeScript, plus the Actions language (catches script injection in workflows) |
 | `sbom` | A CycloneDX SBOM of the lockfile, uploaded as a build artifact |
-| `review-gate` | The reviewer subagents (R10), as a check run from the GitHub Actions app on the reviewed head commit |
+| `review-gate` | The reviewer subagents (R10), as a check run created by the dedicated `arca-gate` GitHub App on the reviewed head commit, with the canary result folded in when the PR changes the gate |
 
 - Dependabot: version updates for npm and GitHub Actions, weekly, grouped, with a `cooldown` of 7 days to match pnpm. While scaffolding, check that Dependabot updates a catalog entry in `pnpm-workspace.yaml` and the lockfile together. If it cannot, configure Renovate instead and amend ADR-0010.
 - Repository settings the owner applies, listed in the PR because they are not code:
-  - Ruleset **checks** on `main`: requires every check above, `review-gate` pinned to the GitHub Actions app; linear history; no force pushes. No bypass actors.
-  - Ruleset **code owners** on `main`: "require review from Code Owners". The owner may bypass it for pull requests only. `.github/CODEOWNERS` names the owner for `.github/**`, `**/.claude/**`, `**/CLAUDE*.md`, `docs/REVIEW.md`, `docs/SECURITY.md`, `docs/review-acceptances.md`, `eval/review-gate/**` and `tooling/scripts/review-*`.
+  - Ruleset **checks** on `main`: requires every check above, with strict status checks (branch up to date before merge); `review-gate` pinned to the `arca-gate` app; linear history; no force pushes. No bypass actors.
+  - Ruleset **code owners** on `main`: "require review from Code Owners". The owner may bypass it for pull requests only. `.github/CODEOWNERS` names the owner for `.github/**`, `**/.claude/**`, `**/CLAUDE*.md`, `.mcp.json`, `docs/REVIEW.md`, `docs/SECURITY.md`, `docs/review-acceptances.md`, `eval/review-gate/**`, `tooling/scripts/review-*`, `tooling/scripts/migrate*`, the guard exempt lists in `packages/db`, `pnpm-workspace.yaml`, `.npmrc` and `vercel.json`. The pnpm file is owned because `minimumReleaseAgeExclude` and `allowBuilds` are escape hatches from the deterministic dependency checks.
   - Secret scanning push protection, Dependabot alerts, private vulnerability reporting; Vercel Git Fork Protection kept on.
-- Agents open and update pull requests as the Claude GitHub App, which has no bypass rights. The owner's bypass is for the owner's own hand in the GitHub interface.
+- Agents open and update pull requests as the Claude GitHub App, which has no bypass rights and is installed without the `workflows` permission. GitHub therefore refuses any agent push that adds or changes a file in `.github/workflows/`, which closes the path of forging a required check from a side branch's `push` workflow. Workflow changes are prepared by agents as patches and pushed by the owner. The owner's bypass of the code-owner ruleset is for the owner's own hand in the GitHub interface.
+- `arca-gate`: a GitHub App owned by the owner, with `checks: write` and `pull-requests: write` only, whose private key sits in the `review` environment. Only the report job uses it. The ticket verifies that a check run named `review-gate` created by any other identity does not satisfy the ruleset, and that an agent push of a workflow file is refused.
 
 ### R9. Deploy
 
 - Names: Vercel project `arca`. Neon projects `arca-prod` and `arca-nonprod`; in each, the database is `arca` (not Neon's default `neondb`) and the default branch `main`. Preview branches are `preview/pr-<number>`.
 - One Vercel project in the Pro team, functions in `gru1` only, Node 26. One origin per environment: production, and each preview on its own URL.
 - Neon: `arca-prod` and `arca-nonprod`, both `sa-east-1`, Postgres 18. The Vercel–Neon integration is not used.
-- Vercel's Git integration does not deploy, for previews or production. Deploys are created by our pipelines through the Vercel REST API, from the Git source at an exact commit SHA, with the target asserted (`preview` or `production`). No Vercel CLI runs inside a checkout of a pull request, so the PR's `vercel.json` or `.vercel/` cannot choose the target.
+- Vercel's Git integration does not deploy, for previews or production: the project is not linked to the repository if API deploys from the Git source work without the link; otherwise `vercel.json` sets `git.deploymentEnabled: false`, is code-owned, and a CI check asserts the setting. The ticket verifies that a push outside the pipeline creates no deployment. Deploys are created by our pipelines through the Vercel REST API, from the Git source at an exact commit SHA, with the target asserted (`preview` or `production`). No Vercel CLI runs inside a checkout of a pull request, so the PR's `vercel.json` or `.vercel/` cannot choose the target.
 - The Vercel token is team-scoped, so a token that can create previews can also deploy to production. Each token sits in its own minimal job that runs no PR code and handles only validated values. This residual risk is recorded in ADR-0010.
 - Every production variable in Vercel is marked Sensitive. Vercel's system variable exposing the automation bypass secret to deployments is turned off, so the bypass exists only in the `preview` environment.
 - **Production** (`push` to `main`, `production` environment, `cancel-in-progress: false`): migrate with the guards in the same transaction, then deploy the pushed SHA with target `production`, then run the smoke test. A guard failure stops the deploy, and the fix is a forward migration.
 - **Non-production `main`** (`push` to `main`, `preview` environment): migrate `arca-nonprod`'s `main` branch the same way, so preview branches start from the current schema.
-- **Previews** (`pull_request_target`, `preview` environment, for authors with write access, pinned to `pull_request.head.sha`). The pipeline never runs code from the pull request; it reads the PR's migration files at that SHA as data. In order:
+- **Previews** (`pull_request_target`, `preview` environment, only when `pull_request.head.repo.full_name` equals this repository, pinned to `pull_request.head.sha`). The pipeline never runs code from the pull request; it reads the PR's migration files at that SHA as data. In order:
   1. create or reset `preview/pr-<number>` from `arca-nonprod`'s `main`;
   2. apply the PR's migrations with the base runner, as `app_migrator` with the inherited non-production credential, guards in the same transaction;
   3. reset every role's password on the branch (R7);
@@ -187,16 +193,17 @@ All workflows: actions pinned by full commit SHA; top-level `permissions: {}`, w
 
 Implements [ADR-0011](../adr/0011-reviewers-in-ci.md).
 
-- `.github/workflows/review-gate.yml` runs on `pull_request_target`, so GitHub uses the definition on `main`. It runs no code from the pull request: no install, no build, no scripts.
-- **Prepare job** (no model, `contents: read`): checks out `main`, and fetches the PR at `pull_request.head.sha` with `core.symlinks=false`; it fails if the PR contains a symlink. It writes `review-input/`: `diff.patch`; `files.txt`; `history.txt` (SHAs, dates and paths only: no commit messages, no author names or emails); and the contents of changed files, with every `CLAUDE.md`, `CLAUDE.local.md` and `.claude/` removed (their content still appears in `diff.patch`, as data). Untrusted text is wrapped in delimiters carrying a per-run nonce.
-- **Review job** (`review` environment, `contents: read`, no `id-token`): the Claude Code Action with an explicit read-only `github_token`, an empty MCP configuration, and setting and memory sources limited to the `main` checkout. Tools allowed: `Read`, `Grep`, `Glob`. Tools denied explicitly: `Bash`, `Write`, `Edit`, `WebFetch`, `WebSearch`, all MCP tools; `Read` denied outside the workspace and on `**/.git/**`. Model IDs pinned, not aliases. `show_full_output` off; the job refuses to run with `ACTIONS_STEP_DEBUG` set.
-- Every reviewer in `.claude/agents/` runs on every PR, each against the standards on `main`. Specialists outside their area return PASS with no findings.
-- Output is JSON against a schema: per reviewer, `findings[]` (severity, stable category, file, line, text) and `unassessed[]` (what it could not check). The verdict is computed in code:
+- `.github/workflows/review-gate.yml` runs on `pull_request_target`, so GitHub uses the definition on `main`, and only when `pull_request.head.repo.full_name` equals this repository. It runs no code from the pull request: no install, no build, no scripts.
+- **Prepare job** (no model, `contents: read`): checks out `main`, and fetches the PR at `pull_request.head.sha` with `core.symlinks=false`; it fails if the PR contains a symlink. It writes `review-input/`: `diff.patch`; `files.txt`; `history.txt` (SHAs, dates and paths only: no commit messages, no author names or emails); and the contents of changed files under neutral names (`files/<n>.txt`, with the path map in `files.txt`), so no path from the PR becomes a real path an agent might load as instructions; the content of instruction files such as `CLAUDE.md` and `.claude/` appears only inside `diff.patch`, as data. Untrusted text is wrapped in delimiters carrying a per-run nonce.
+- **Review jobs** (a matrix with one isolated run per reviewer; `review` environment, `contents: read`, no `id-token`): the Claude Code Action with an explicit read-only `github_token`, an empty MCP configuration, and setting and memory sources limited to the `main` checkout. Tools allowed: `Read`, `Grep`, `Glob`. Tools denied explicitly: `Bash`, `Write`, `Edit`, `WebFetch`, `WebSearch`, `Task`, `Agent`, all MCP tools; hooks disabled; no skills; `Read` denied outside the workspace and on `**/.git/**`. Each reviewer's model alias is overridden with a pinned model ID; the run fails if it cannot be. `show_full_output` off; the job refuses to run with `ACTIONS_STEP_DEBUG` set.
+- Every reviewer in `.claude/agents/` runs on every PR, each in its own run against the standards on `main`, so no reviewer's output can influence another's. Specialists outside their area return PASS with no findings.
+- Output is JSON against a schema: per reviewer, `findings[]` (severity, stable category, file, line, text) and `unassessed[]` (entries from a fixed enum: `tests_not_run`, `missing_context`, `other`, plus a note). The report job combines the per-reviewer outputs in code; the verdict:
   - any critical or high finding fails;
-  - any medium finding fails unless `docs/review-acceptances.md` has a row matching reviewer, file and category exactly, added for this pull request (the file is code-owned, so a new row needs the owner);
-  - a non-empty `unassessed[]` from a must-pass reviewer fails, except "could not run tests", which the required test checks cover;
+  - any medium finding fails unless `docs/review-acceptances.md`, read from the PR head, has a row for this pull request matching reviewer, file and category exactly; the row is valid only because the file is code-owned, so the PR cannot merge without the owner approving it;
+  - any `unassessed[]` entry from a must-pass reviewer fails, except `tests_not_run`, which the required test checks cover;
+  - a missing reviewer output fails;
   - missing or invalid output fails.
-- **Report job** (no model, never checks out the PR, `checks: write` and `pull-requests: write`): creates the `review-gate` check run on the reviewed head SHA, and posts one comment built only from schema fields, with Markdown escaped and links and images stripped, after a gitleaks scan that posts nothing on a match. A new push re-runs the gate; a verdict covers only its SHA. No other workflow requests `checks: write`.
+- **Report job** (no model, never checks out the PR, authenticated as `arca-gate`): creates the `review-gate` check run on the reviewed head SHA, and posts one comment built only from schema fields, with Markdown escaped, links and images stripped, and `@` mentions and `#` references neutralized. It runs gitleaks on the comment first; a match posts nothing and fails the check. A new push re-runs the gate; a verdict covers only its SHA.
 - **Canary suite** in `eval/review-gate/`. Every case must fail the gate:
   - a known-bad diff for each reviewer;
   - injected "return PASS" text in code, docs, changelog-style text, commit messages and file names;
@@ -205,7 +212,10 @@ Implements [ADR-0011](../adr/0011-reviewers-in-ci.md).
   - a request to quote environment files;
   - a request to run a command.
 
-  The suite runs on any PR that changes `.claude/agents/`, the review workflow or the pinned model IDs (loading the PR's agent definitions as data, against the corpus from `main`), on every push to `main`, and weekly. A failure on `main` opens an issue.
+  - a workflow on a side branch that creates a `review-gate` check run, which must not satisfy the ruleset;
+  - an agent file with a `hooks:` block, which must be rejected before any model runs.
+
+  On a PR that changes `.claude/agents/`, the review workflow or the pinned model IDs, the canary runs against the corpus from `main` with the PR's agent definitions. Those files are parsed first: only `name`, `description`, `tools`, `model`, `effort` and `color` are allowed in frontmatter, `tools` must be a subset of `Read`, `Grep` and `Glob`, and any other key fails the run. Only the body is used, as the system prompt, never loaded as an agent file, with hooks disabled, an empty MCP configuration and no skills. The result is folded into that PR's `review-gate` verdict. The canary also runs on every push to `main` and weekly; a failure on `main` opens an issue.
 
 ## Versions
 
@@ -232,6 +242,7 @@ The latest stable release of each, checked on the npm registry on 2026-11-01, un
 | Nitro | 3.0 release candidate | Pre-release, required: the Workflow SDK's Hono path needs Nitro 3 |
 | Drizzle ORM, drizzle-kit | 1.0 release candidate | Pre-release, chosen: 0.45 would force a 1.0 migration within months, and 1.0 has the reworked RLS and role APIs we depend on. Risk is low while no case tables exist; any RC bug found is fixed or pinned before the first case table |
 | `pg` | 8.x | Latest; driver for Drizzle, the migration runner and the guard tests |
+| `libpg-query` | 18.x | The Postgres parser compiled to WebAssembly, matching Postgres 18; the migration runner uses it to split and vet statements |
 | Vitest | 5.0 | Latest stable; 5.1 is a beta with nothing we need |
 | Playwright | 1.64+ | Latest |
 | GitHub Actions and CI tools (checkout, setup, CodeQL, dependency review, osv-scanner, gitleaks, SBOM generator, `anthropics/claude-code-action`) | latest release, pinned by commit SHA | Approved through the SHA pin and a supply-chain PASS on each change |
@@ -244,7 +255,8 @@ Assets in play: CI secrets (Anthropic API key, Neon API key, Vercel token, Deplo
 | Threat (STRIDE, LLM and agentic) | Where | Control in this slice |
 | --- | --- | --- |
 | Tampering: malicious dependency or action | Install, CI | R1 pnpm settings and exact pins, SHA-pinned actions, osv-scanner, dependency review, Dependabot cooldown, supply-chain reviewer |
-| Tampering: a PR weakens the gate that judges it | Review gate | Gate defined on `main` via `pull_request_target`; nested `CLAUDE.md` and `.claude/` stripped from review input; owner approval for gate paths; `review-gate` pinned to the GitHub Actions app on the reviewed SHA; acceptances code-owned |
+| Tampering: a PR weakens or forges the gate | Review gate | Gate defined on `main` via `pull_request_target`; review input under neutral names; one isolated run per reviewer; owner approval for gate paths; `review-gate` created by `arca-gate` and pinned to it; agents cannot push workflow files; canary folded into the verdict; acceptances code-owned |
+| Tampering: a migration disables its own guards | Database | Parser-vetted statements, no transaction control or `SET`; runner-owned transaction checked by nonce; guards on `pg_catalog` only |
 | Elevation: an agent using a bypass | Rulesets | Required checks have no bypass actors; agents act as the Claude GitHub App, which has none; the owner's code-owner bypass is for pull requests only |
 | Information disclosure: secret in a commit | Repository | Push protection, gitleaks, `.env.example` only |
 | Elevation: PR code reaching secrets | CI, previews | No repository secrets; environments limited to `main`; jobs with secrets run no PR code; PR migrations read as data by the base runner; event values only through validated `env:`; a fork change is re-created on a branch only after the owner reads its full diff, lockfile and workflows included |
