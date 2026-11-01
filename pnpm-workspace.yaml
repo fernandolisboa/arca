@@ -1,0 +1,32 @@
+packages:
+  - apps/*
+  - packages/*
+  - tooling/*
+
+# Exact versions only; every dependency comes from a catalog.
+savePrefix: ''
+catalogMode: strict
+
+# Supply chain (spec 0001, R1).
+minimumReleaseAge: 10080
+strictDepBuilds: true
+allowBuilds: {}
+trustPolicy: no-downgrade
+blockExoticSubdeps: true
+
+catalog:
+  '@types/node': 26.6.5
+  eslint: 10.13.0
+  prettier: 3.9.10
+  turbo: 2.11.10
+  typescript: 7.0.2
+  vitest: 5.0.5
+
+catalogs:
+  # typescript-eslint needs the compiler API, which TypeScript 7 does not expose as stable yet.
+  # Only tooling/eslint-config may use this catalog (spec 0001, R1).
+  lint:
+    '@eslint/js': 10.0.1
+    globals: 17.13.0
+    typescript: 6.0.3
+    typescript-eslint: 8.72.0

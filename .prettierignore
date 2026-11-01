@@ -1,0 +1,6 @@
+pnpm-lock.yaml
+**/dist/
+**/coverage/
+**/.turbo/
+# Prose is reviewed by people; Prettier would rewrap tables and lists in every doc.
+**/*.md

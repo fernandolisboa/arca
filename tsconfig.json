@@ -1,0 +1,32 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "apps/api"
+    },
+    {
+      "path": "apps/web"
+    },
+    {
+      "path": "packages/api-contract"
+    },
+    {
+      "path": "packages/db"
+    },
+    {
+      "path": "packages/domain"
+    },
+    {
+      "path": "packages/i18n"
+    },
+    {
+      "path": "packages/platform"
+    },
+    {
+      "path": "packages/ui"
+    },
+    {
+      "path": "tooling/security-policy"
+    }
+  ]
+}
