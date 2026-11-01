@@ -76,22 +76,21 @@ jobs:
       - name: Install the scripts from main
         working-directory: policy
         run: pnpm install --frozen-lockfile --filter @arca/scripts
-      # As in secrets-lint: after every install step, and nothing runs from it.
-      - name: Check out the change's lockfile (data only)
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.pull_request.head.sha }}
-          path: change
-          persist-credentials: false
-          sparse-checkout-cone-mode: false
-          sparse-checkout: /pnpm-lock.yaml
+      # After every install step. The change's lockfile is read from git as data; no file of the
+      # change is checked out and nothing runs from it.
+      - name: Read the change's lockfile (data only)
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          git -C policy fetch --no-tags --depth=1 origin "$HEAD_SHA"
+          git -C policy show "$HEAD_SHA:pnpm-lock.yaml" > "$RUNNER_TEMP/change-lock.yaml"
       - name: Check release age against main's settings
         run: >-
           node policy/tooling/scripts/src/check-release-age.ts
           policy/pnpm-workspace.yaml
           policy/pnpm-lock.yaml
-          change/pnpm-lock.yaml
+          "$RUNNER_TEMP/change-lock.yaml"
 
   osv-scanner:
     runs-on: ubuntu-24.04
@@ -115,21 +114,20 @@ jobs:
             "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}/osv-scanner_linux_amd64"
           echo "${OSV_SCANNER_SHA256}  $RUNNER_TEMP/osv-scanner" | sha256sum --check --strict -
           chmod +x "$RUNNER_TEMP/osv-scanner"
-      # As in secrets-lint: after every install step, and nothing runs from it.
-      - name: Check out the change's lockfile (data only)
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          path: change
-          persist-credentials: false
-          sparse-checkout-cone-mode: false
-          sparse-checkout: /pnpm-lock.yaml
+      # The change's lockfile is read from git as data; no file of the change is checked out.
+      - name: Read the change's lockfile (data only)
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          git -C policy fetch --no-tags --depth=1 origin "$HEAD_SHA"
+          mkdir "$RUNNER_TEMP/change"
+          git -C policy show "$HEAD_SHA:pnpm-lock.yaml" > "$RUNNER_TEMP/change/pnpm-lock.yaml"
       - name: Scan the lockfile with main's exceptions
         run: >-
           "$RUNNER_TEMP/osv-scanner" scan source
           --config=policy/.github/policy/osv-scanner.toml
-          --lockfile=change/pnpm-lock.yaml
+          --lockfile="$RUNNER_TEMP/change/pnpm-lock.yaml"
 
   dependency-review:
     if: github.event_name == 'pull_request_target'
