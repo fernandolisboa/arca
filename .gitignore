@@ -1,0 +1,20 @@
+# Dependencies and build output
+node_modules/
+dist/
+build/
+coverage/
+.turbo/
+.vercel/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local and OS files
+.DS_Store
+Thumbs.db
+*.log
+.claude/settings.local.json

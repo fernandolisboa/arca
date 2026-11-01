@@ -1,0 +1,60 @@
+# United States
+
+Checked 2026-10-31 unless noted.
+
+## Immigrant visa processing in 2026
+
+| Date | Event | Source |
+| --- | --- | --- |
+| 2026-01-21 | State Department pauses immigrant visa issuance for nationals of 75 countries, Brazil included; nonimmigrant visas not affected; dual nationals of a non-listed country exempt | [Mintz](https://www.mintz.com/insights-center/viewpoints/2806/2026-01-29-state-department-suspends-immigrant-visa-processing-75), [Dorsey](https://www.dorsey.com/newsresources/publications/client-alerts/2026/1/immigrant-visas-for-75-countries-on-pause) |
+| 2026-08-21 | Federal court (S.D.N.Y., *CLINIC v. Rubio*) vacates the 75-country pause | [Garvish](https://goimmigrationlaw.com/state-department-paused-immigrant-visa/), [Zafiro Law](https://zafirolaw.com/blog/immigrant-visa-processing-pause/) |
+| 2026-08-25 | Immigrant visa interviews paused worldwide for consular training on public-charge screening | [Garvish](https://goimmigrationlaw.com/state-department-paused-immigrant-visa/), [Ogletree](https://ogletree.com/insights-resources/blog-posts/state-department-pauses-immigrant-visa-interviews-for-new-public-charge-guidance-training/) |
+| 2026-09-10 | Cable instructs posts to resume immigrant visa processing and issuance; some interviews still rescheduled | [University of Michigan](https://internationalcenter.umich.edu/about/news/state-department-resumes-immigrant-visa-interviews-and-processing), [Nepyork](https://nepyork.com/2026/09/13/u-s-embassies-resume-processing-immigrant-and-diversity-visas-for-citizens-of-75-countries/) |
+
+Implication: entering on a nonimmigrant visa and adjusting status inside the U.S. was insulated from these pauses.
+
+## EB-5 (investor green card)
+
+| Fact | Source |
+| --- | --- |
+| Minimum investment: USD 800,000 in a targeted employment area (TEA), USD 1,050,000 elsewhere (EB-5 Reform and Integrity Act of 2022) | [Claxton Law Group](https://claxtonlawgroup.com/investor-visas/eb-5-minimum-investment-2026) |
+| Amounts scheduled to adjust for inflation on 2027-01-01; projection USD 937,500 (TEA) and USD 1,250,000 (non-TEA) | [EB5AN](https://eb5visainvestments.com/blog/eb-5-investment-amounts-could-increase-by-over-100000-on-january-1-2027-how-to-secure-your-eb-5-green-card-at-todays-lower-cost/) |
+| Derivatives: spouse and unmarried children under 21 | [NTL](https://ntlinternational.com/residency/usa-eb5-visa/) |
+| November 2026 Visa Bulletin: EB-5 set-aside categories current for all countries | [EB5AN](https://eb5visainvestments.com/?p=206367) |
+| Concurrent filing of the investor petition and adjustment of status is possible when the applicant is in the U.S. in valid status | **Unverified** |
+
+## E-2 (treaty investor)
+
+| Fact | Source |
+| --- | --- |
+| Brazil has no E-2 treaty; Brazilian-only nationals are ineligible regardless of amount | [Beyond Border](https://www.beyondborderglobal.com/resources/e2-visa-guide), [Lehigh Valley Immigration Lawyers](https://www.lehighvalleyimmigrationlawyers.com/blog/e-2-treaty-countries-list-investment-threshold-2026) (official table checked 2026-09-27) |
+| Dual nationals can apply through a treaty nationality, for example Italian | [Alaz Law](https://www.alazlaw.com/blog/e-2-visa-countries-list-2026-treaty-investor/) |
+| Portugal became an E-2 country in 2024; Portuguese citizens living in Brazil may apply in São Paulo | [Pollak](https://www.pollakimmigration.com/e2-visa/e2-visa-portuguese), [Watson](https://watsonimmigrationlaw.com/visas/e-2/for/portugal) |
+| Citizenship obtained by investment requires 3 years of residence in that country before an E visa; descent and residence-based citizenship are not affected | [Stevens & Lee](https://www.stevenslee.com/labor-and-employment-law-center/congress-passes-ndaa-for-fy2023-portuguese-nationals-now-eligible-for-e-1-and-e-2-visas/) |
+| Spouse may be of any nationality | [NNU Immigration](https://www.nnuimmigration.com/e-visa-treaty-countries/) |
+| No statutory minimum; in practice USD 100,000–200,000 for small businesses | [PolicyRisk](https://policyrisk.com/wiki/e2-treaty-investor-visa) |
+
+## Work and talent routes
+
+| Fact | Source |
+| --- | --- |
+| H-1B USD 100,000 payment for new petitions for beneficiaries abroad, extended by proclamation of 2026-09-18 through 2027-09-21; blocked by court orders as of 2026-10-01 | [Mintz](https://www.mintz.com/insights-center/viewpoints/2806/2026-09-23-presidential-proclamation-extends-100k-h-1b-fee), [Columbia ISSO](https://isso.columbia.edu/news/white-house-issues-new-h-1b-proclamation-and-executive-order) |
+| Change of status inside the U.S. (for example F-1 to H-1B) is exempt from that payment | [Alma](https://www.tryalma.com/learn/h1b-supplementary-fee-explained) |
+| EB-2 NIW: 9,238 approvals and 9,585 denials in the first three quarters of FY2026 (49% of decided cases) | [Tukki](https://tukki.ai/blog/eb2-niw-approval-rate) |
+| November 2026 Visa Bulletin: EB-1 current for Rest of World; EB-2 Rest of World final action date 2025-04-01 | [Colombo & Hurd](https://www.colombohurdlaw.com/?p=34952) |
+| O-1 approval rate 91.2% in Q2 FY2026 | [Immi-USA](https://www.immi-usa.com/fy-2026-q2-approval-rates-eb1-o1-eb2niw/) |
+| L-1A requires one year as manager or executive at a related foreign company within the past three years | **Unverified** |
+
+## Gold Card
+
+| Fact | Source |
+| --- | --- |
+| USD 1,000,000 individual gift plus USD 15,000 processing fee; uses the EB-1/EB-2 framework | [WorkVisa Guide](https://workvisa.guide/es/blog/trump-gold-card-visa-2026) |
+| One approval as of April 2026 | [AP via Sharon Herald](https://www.sharonherald.com/ap/trumps-gold-card-visa-starting-at-1-million-granted-to-just-1-person-so-far/article_3f7fdb71-4a6d-5d4a-9cf2-539ce0ba3f0a.html) |
+
+## Family-based
+
+| Fact | Source |
+| --- | --- |
+| An adult U.S. citizen can petition for a parent as an immediate relative, without a queue | **Unverified** |
+| Brazil and the U.S. have no income tax treaty | **Unverified** |

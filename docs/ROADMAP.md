@@ -1,0 +1,86 @@
+# Roadmap
+
+Family first: the product for other families starts only after the founder's family has succeeded using the app. Platforms follow [ADR-0005](adr/0005-platform-strategy.md): web first, then Android, then iOS and iPadOS, then desktop if its gate passes. Every platform is planned now; the foundations they need are built in Phase 1.
+
+| Phase | Platform | Focus | Gate to the next phase |
+| --- | --- | --- | --- |
+| 0. Discovery (now) | — | Understand case 1, seed the knowledge base, confirm stack and domain | Routes chosen for each unit |
+| 1. Family MVP | Web PWA | The consultancy core, plus cross-platform foundations | All six people using it; destination lawyer engaged where needed |
+| 2. Execution | Web PWA | Carry the plan through | It worked for the family |
+| 3. Product | Web PWA | Other families | Paying families active; web stable |
+| 4. Android | Android | Native app on Google Play | Released to production on Play |
+| 5. Apple | iOS and iPadOS | Universal native app on the App Store | Approved and released |
+| 6. Desktop (optional) | Windows, macOS, Linux | Native desktop app, only if the gate passes | — |
+
+## Phase 0 — Discovery
+
+- Case 1 facts gathered; ancestry of all six adults mapped.
+- Route catalog researched for the countries the family selects.
+- ~~Stack confirmed~~ Done: [ADR-0003](adr/0003-stack.md), with auth ([ADR-0006](adr/0006-auth.md)), background jobs ([ADR-0007](adr/0007-background-jobs.md)) and database security and environments ([ADR-0008](adr/0008-database-security-and-environments.md)).
+- Production domain chosen and registered (passkeys depend on it from day one).
+
+Phase 0 does not depend on code: the questions in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) can be answered while the repository is set up.
+
+## Phase 1 — Family MVP (web)
+
+**Epic: cross-platform foundations** (done before feature work, so native phases add adapters instead of rewrites)
+
+- Monorepo with `packages/domain`, `packages/api-contract`, `packages/ui`, `packages/i18n`, `packages/platform`, `apps/api`, `apps/web` ([ARCHITECTURE.md](ARCHITECTURE.md#platforms-and-code-layout)).
+- Empty app deployed end to end (web, API, a sample workflow, database) in São Paulo, with protected preview deployments per pull request.
+- Environments per [ADR-0008](adr/0008-database-security-and-environments.md): separate production database project, synthetic seed for everything else, secrets per environment, OIDC to AWS.
+- Database roles, forced row-level security and the access-matrix suite in CI before the first table with case data.
+- Supply-chain controls in CI from the first commit (pinned actions, advisories, secret scanning, SBOM, pnpm install-script and release-age settings).
+- Observability on from the first deploy: Sentry, traces, structured logs, Langfuse, all with personal data scrubbing.
+- Vault encryption ADR written and reviewed before any document upload is built.
+- Before real family data enters: in-app account deletion and data export, retention periods, incident response runbook, threat model for the epic.
+- Client builds to a static bundle; no server-rendering dependency.
+- Versioned typed API; every feature goes through it.
+- Passkeys on the production domain; auth supports cookie sessions (web) and secure-storage tokens (native).
+- `platform` port with web adapters: camera capture, file picking, notifications, secure key storage, sharing.
+- Notification service with per-device channels (web push first).
+- Vault encryption format documented and platform-neutral; key recovery designed and tested.
+- Responsive, touch-first layouts from phone to tablet to desktop, safe-area aware.
+- CI running unit tests, the synthetic evaluation suite and the multi-reviewer pass.
+
+**Epic: consultancy core**
+
+- AI intake and case model, with playback and correction.
+- Destination comparison weighted by each person.
+- Strategy recommendation with alternatives, pros, cons, risks, cost and time.
+- Personalized document checklist.
+- Step-by-step plan with execution modes and action points.
+- On-call assistant with cited sources.
+- Assets, tax and FX simulator; source-of-funds trail.
+- Permissions per person and unit; audit log.
+
+## Phase 2 — Execution (web)
+
+Document review; form drafts; writing (letters, business plan, source of funds); interview practice by voice; tracking and the rule watcher; arrival and settling checklists; partner network.
+
+## Phase 3 — Product (web)
+
+Multi-family accounts, guided onboarding, billing, expanded catalog, self-help positioning (immigration legal advice is restricted in several destinations), public marketing site as a separate project, public legal pages (privacy policy, terms), external penetration test before opening to other families.
+
+## Phase 4 — Android
+
+- Capacitor Android project wrapping the web client.
+- Android adapters for the `platform` port: ML Kit document scanner, Android Keystore with biometric unlock, FCM push, share-sheet target, App Links on the production domain, passkeys through Credential Manager with Digital Asset Links.
+- Native polish: splash screen, offline screens, back-button behavior, in-app browser for external links.
+- Release pipeline: signed builds in CI, crash reporting with personal data scrubbed.
+- Play listing in pt-BR, Data safety form, content rating.
+- **Long pole:** personal developer accounts created after 2023-11-13 need a closed test with at least 12 testers opted in for 14 consecutive days before production ([Google Play Console Help](https://support.google.com/googleplay/android-developer/answer/14151465?hl=en-GB)). Start closed testing as soon as the first build runs, or publish from an organization account.
+
+## Phase 5 — iOS and iPadOS
+
+- Capacitor iOS project wrapping the same client; one universal app for iPhone and iPad.
+- iOS adapters: VisionKit document scanner, Keychain and Secure Enclave with Face ID or Touch ID, APNs push, share extension, Universal Links, passkeys through Associated Domains.
+- A native layer that clears App Store Review Guideline 4.2 (apps must go "beyond a repackaged website"): native-feeling navigation, push, scanner, biometrics, sharing, offline screens.
+- iPad layouts reviewed (split view, larger canvases) and iPad screenshots for the listing.
+- Builds on macOS with Xcode or a cloud build service; TestFlight beta with the family.
+- App Store listing in pt-BR, privacy labels, in-app account deletion.
+
+## Phase 6 — Desktop (optional)
+
+**Go/no-go gate.** Build only if usage shows a need the installed PWA does not meet, for example: syncing documents with a local folder, an offline vault, OS keychain integration, or organizations that need managed installs. Otherwise, record the decision not to build and close the phase.
+
+If go: Tauri wrapping the same client; Tauri adapters for the `platform` port; signed installers (Windows code signing, macOS notarization), auto-update, and distribution.
