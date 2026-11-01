@@ -1,0 +1,7 @@
+on: push
+jobs:
+  maybe:
+    runs-on: ubuntu-latest
+    if: Secrets.VERCEL_TOKEN != ''
+    steps:
+      - run: echo maybe

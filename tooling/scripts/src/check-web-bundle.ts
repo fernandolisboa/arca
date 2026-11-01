@@ -1,6 +1,6 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import { reportViolations, type Violation } from './workspace.ts';
+import { reportViolations, type Violation } from './report.ts';
 
 /** Server-only modules that must never reach the client bundle (spec 0001, R2). */
 const forbiddenModule = /(?:^|\/)node_modules\/(hono|@hono\/zod-openapi)\//;

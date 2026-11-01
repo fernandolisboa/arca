@@ -1,0 +1,59 @@
+name: policy
+
+# Checks that judge a pull request with this workflow, its scripts and its policy files as they are
+# on main (spec 0001, R8). pull_request_target runs the definition from main, so a pull request
+# cannot change what runs here. Its files are checked out as data and never executed.
+
+on:
+  pull_request_target:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: policy-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request_target' }}
+
+env:
+  TURBO_TELEMETRY_DISABLED: '1'
+  DO_NOT_TRACK: '1'
+
+jobs:
+  secrets-lint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Check out main (workflow, policy and scripts)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: policy
+          persist-credentials: false
+      - uses: ./policy/.github/actions/setup-pnpm
+        with:
+          directory: policy
+      - name: Install the scripts from main
+        working-directory: policy
+        run: pnpm install --frozen-lockfile --filter @arca/scripts
+      # Last, so no earlier step can read the change; nothing runs from it. Keep it after every
+      # install or build step, above all if this job ever gains a secret.
+      - name: Check out the change (data only)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: change
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            .github/workflows/
+            .github/actions/
+      - name: Lint workflow secrets
+        run: >-
+          node policy/tooling/scripts/src/check-workflow-secrets.ts
+          policy/.github/policy/workflow-secrets.json
+          change/.github/workflows
+          change/.github/actions

@@ -36,7 +36,9 @@ tooling/
   security-policy/     CSP and security headers as data, plus route exclusions for the SPA fallback
   scripts/             boundary check, OpenAPI drift check, bundle check, migration runner
 .github/
-  workflows/           CI, review gate, canary and post-deploy smoke test
+  workflows/           CI, policy checks, review gate, canary and post-deploy smoke test
+  actions/             shared setup steps (Node, pnpm and its verification)
+  policy/              policy files read from `main`, such as the workflow secrets allow-list
 eval/
   review-gate/         canary diffs for the reviewer gate
 ```
@@ -149,15 +151,16 @@ eval/
 
 ### R8. CI
 
-All workflows: actions pinned by full commit SHA; top-level `permissions: {}`, with jobs granting only what they need; GitHub-hosted runners; `actions/checkout` with `persist-credentials: false`. Workflows on `pull_request` and `push` use `concurrency` per ref; the review gate, on `pull_request_target`, groups by pull request number. Values from the event (branch names, titles, file names) reach `run:` steps only through `env:` and are validated against a strict pattern before use. The review gate filters on `branches: [main]`, so its definition always comes from `main`, and runs only for pull requests from this repository.
+All workflows: actions pinned by full commit SHA; top-level `permissions: {}`, with jobs granting only what they need; GitHub-hosted runners; `actions/checkout` with `persist-credentials: false`. Workflows on `pull_request` and `push` use `concurrency` per ref; workflows on `pull_request_target` (the review gate and the policy checks) group by pull request number. Values from the event (branch names, titles, file names) reach `run:` steps only through `env:` and are validated against a strict pattern before use. The review gate filters on `branches: [main]`, so its definition always comes from `main`, and runs only for pull requests from this repository.
 
 **Secrets.** No repository-level secrets. One GitHub environment, `review` (Anthropic key), limited to `main`. Workflows on `pull_request_target` and on `push` to `main` run with ref `main`; runs on `pull_request` do not, so branch code never reaches it. The owner connection string and the role passwords live in Vercel (R9). The ticket verifies, with a source, whether `review` secrets reach Dependabot-triggered `pull_request_target` runs; if not, a Dependabot secret holding a second, spend-limited Anthropic key is the exception.
 
-A CI lint checks each workflow file against an allow-list of the secrets and environments it may use; `pull_request` workflows use none.
+A CI lint checks each workflow file against an allow-list of the secrets and environments it may use; `pull_request` workflows use none. The lint reads the allow-list from `main`, so a workflow that needs a new secret is preceded by its own PR to the list.
 
 | Check (required on `main`) | What it runs |
 | --- | --- |
-| `check` | pnpm installed by `pnpm/action-setup` (pinned) at the `packageManager` version, the downloaded binary verified against its recorded hash, `pnpm install --frozen-lockfile`, then `pnpm check` (format, lint, typecheck, unit tests, build), the boundary script, the bundle check and the OpenAPI drift check |
+| `check` | pnpm installed by `tooling/scripts/src/setup-pnpm.ts`, with nothing run before it is verified: the `packageManager` hash must match the lockfile's `pnpm` integrity, and the platform's `@pnpm/exe.*` package must match the integrity the lockfile records for it; its binary then goes first on `PATH`; `pnpm install --frozen-lockfile`, then `pnpm check` (format, lint, typecheck, unit tests, build), the boundary script, the bundle check and the OpenAPI drift check |
+| `secrets-lint` | The secrets lint above, from `policy.yml` on `pull_request_target`: the workflow definition, the script and the allow-list come from `main`, and the PR's workflow files are read as data. Context and secret names are matched case-insensitively, as GitHub does, and `github.token` counts as the secret `GITHUB_TOKEN`. Composite actions in `.github/actions` may reference no secret or token. The lint covers explicit references; a token an action uses by default is bounded by `permissions` |
 | `release-age` | Every lockfile entry added or changed by the PR was published at least 7 days earlier, per the registry, unless listed in `minimumReleaseAgeExclude` as it stands in `pnpm-workspace.yaml` on `main`. A frozen install does not re-check this, so CI does. A missing publish time or an unreachable registry fails the check |
 | `db` | Migrations and guard tests on the Postgres container |
 | `e2e` | Playwright against the built app served locally, at phone (390×844) and desktop (1280×800) sizes: the home page renders in pt-BR and shows the API status, the service worker is active, and no CSP or Trusted Types violation is reported |
@@ -231,6 +234,7 @@ The latest stable release of each, checked on the npm registry on 2026-11-01, un
 | Prettier | 3.x | Latest stable; 4.0 is an alpha with no gain for us |
 | `@eslint/js`, `globals` | 10.x, 17.x | ESLint's recommended rules and the environment globals for the flat config |
 | `@types/node` | 26.x | Node.js types matching the runtime |
+| `yaml` | 2.x | Parses workflow files and `pnpm-workspace.yaml` in `tooling/scripts` |
 | Turborepo | 2.11+ | Latest |
 | React | 19.3 | Latest |
 | Vite, `@vitejs/plugin-react` | 8.3, 6.x | Latest |

@@ -2,11 +2,11 @@ import {
   dependencyFields,
   readManifests,
   readWorkspaceConfig,
-  reportViolations,
   type Manifest,
   type Violation,
   type WorkspaceConfig,
 } from './workspace.ts';
+import { reportViolations } from './report.ts';
 
 const exactVersion = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
 const allowedSpecifier = /^(?:catalog:(?:[a-z0-9-]+)?|workspace:\*)$/;

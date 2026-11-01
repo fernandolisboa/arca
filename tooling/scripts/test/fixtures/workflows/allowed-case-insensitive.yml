@@ -1,0 +1,9 @@
+on: push
+jobs:
+  review:
+    environment: Review
+    runs-on: ubuntu-latest
+    steps:
+      - run: test -n "$KEY"
+        env:
+          KEY: ${{ secrets.anthropic_api_key }}

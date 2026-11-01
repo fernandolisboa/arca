@@ -1,0 +1,18 @@
+name: Set up Node and pnpm
+description: >-
+  Installs Node from .nvmrc, then the pnpm native binary whose hash pnpm-lock.yaml records,
+  verified before anything runs it (spec 0001, R8).
+inputs:
+  directory:
+    description: Checkout that holds .nvmrc, package.json, pnpm-lock.yaml and the scripts.
+    default: .
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: ${{ inputs.directory }}/.nvmrc
+    - name: Install pnpm from the lockfile
+      shell: bash
+      working-directory: ${{ inputs.directory }}
+      run: node tooling/scripts/src/setup-pnpm.ts

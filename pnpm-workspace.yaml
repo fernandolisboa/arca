@@ -26,6 +26,7 @@ catalog:
   turbo: 2.11.10
   typescript: 7.0.2
   vitest: 5.0.5
+  yaml: 2.9.1
 
 catalogs:
   # typescript-eslint needs the compiler API, which TypeScript 7 does not expose as stable yet.
