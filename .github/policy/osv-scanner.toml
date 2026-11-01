@@ -1,0 +1,7 @@
+# Advisory exceptions for the osv-scanner job, read from main (spec 0001, R8). Each needs a reason
+# and an end date; adding one is its own pull request.
+
+[[IgnoredVulns]]
+id = "GHSA-g3hv-75wg-m249"
+ignoreUntil = 2026-11-30T00:00:00Z
+reason = "minimatch 10.2.6, reached only through eslint at lint time. The fix is minimatch 11.0.1 (2026-10-27), still inside the 7-day release age, and eslint 10.13 requires ^10.2.5. Revisit when eslint accepts a fixed release."

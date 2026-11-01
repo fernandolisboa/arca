@@ -168,11 +168,11 @@ A CI lint checks each workflow file against an allow-list of the secrets and env
 | `osv-scanner` | Dependency advisories on the lockfile; fails on any known vulnerability without a recorded exception |
 | `dependency-review` | GitHub's dependency review; fails on new advisories and on licenses outside: MIT, ISC, Apache-2.0, BSD-2-Clause, BSD-3-Clause, 0BSD, BlueOak-1.0.0, CC0-1.0, CC-BY-4.0, Unlicense, Python-2.0. Adding a license needs a supply-chain PASS |
 | `gitleaks` | Secret scan of the pull request's commits, with the binary pinned by version and checksum, its configuration from `main`, the PR's `.gitleaksignore` ignored and inline `gitleaks:allow` comments not honored (`--ignore-gitleaks-allow`) |
-| `codeql` | CodeQL for JavaScript and TypeScript, plus the Actions language (catches script injection in workflows) |
-| `sbom` | A CycloneDX SBOM of the lockfile, uploaded as a build artifact |
+| `codeql` | CodeQL for JavaScript and TypeScript, plus the Actions language (catches script injection in workflows), with build mode none and the `security-extended` queries, in `codeql.yml`; new alerts fail GitHub's code scanning check on the pull request |
+| `sbom` | A CycloneDX SBOM of the lockfile from `pnpm sbom`, uploaded as a build artifact |
 | `review-gate` | The reviewer subagents (R10), as a check run created by the review workflow on the reviewed head commit, with the canary result folded in when the PR changes the gate |
 
-- The jobs behind `release-age`, `osv-scanner`, `dependency-review`, `gitleaks` and the secrets lint take their scripts and policy files (osv-scanner exceptions, the gitleaks configuration and allow-list, the license list, the secrets allow-list) from `main`, checked out separately, and read the PR's lockfile and commits only as data. A PR therefore cannot weaken the deterministic checks that judge it; changing a policy file is its own PR, judged by the policy already on `main`.
+- The jobs behind `release-age`, `osv-scanner`, `dependency-review`, `gitleaks` and the secrets lint live in `policy.yml` on `pull_request_target`, so their definitions, scripts and policy files come from `main`: the license list in the workflow, and in `.github/policy/` the osv-scanner exceptions (`osv-scanner.toml`, each with a reason and an end date), the gitleaks configuration and ignore list, and the secrets allow-list. They read the PR's lockfile and commits only as data, checked out after every install step. A PR therefore cannot weaken the deterministic checks that judge it; changing a policy file is its own PR, judged by the policy already on `main`.
 - Dependabot: version updates for npm and GitHub Actions, weekly, grouped, with a `cooldown` of 7 days to match pnpm. While scaffolding, check that Dependabot updates a catalog entry in `pnpm-workspace.yaml` and the lockfile together. If it cannot, configure Renovate instead and amend ADR-0010.
 - Repository settings, applied by an agent through the GitHub API with the owner's token ([ADR-0012](../adr/0012-automation-first-setup.md)) and listed in the PR that applies them:
   - Ruleset **main**: requires every check above, with strict status checks (branch up to date before merge), each pinned to GitHub Actions; linear history; no force pushes or deletion. No bypass actors.
@@ -237,6 +237,7 @@ The latest stable release of each, checked on the npm registry on 2026-11-01, un
 | `@types/node` | 26.x | Node.js types matching the runtime |
 | `yaml` | 2.x | Parses workflow files and `pnpm-workspace.yaml` in `tooling/scripts` |
 | Turborepo | 2.11+ | Latest |
+| osv-scanner, gitleaks | 2.7, 8.30 | Latest; release binaries pinned by version and SHA-256 in `policy.yml` |
 | React | 19.3 | Latest |
 | Vite, `@vitejs/plugin-react` | 8.3, 6.x | Latest |
 | TanStack Router, TanStack Query | 1.170+, 5.105+ | Latest |
