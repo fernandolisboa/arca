@@ -34,7 +34,7 @@ tooling/
   eslint-config/       shared flat config
   tsconfig/            shared base configs
   security-policy/     CSP and security headers as data, plus route exclusions for the SPA fallback
-  scripts/             dependency-source and boundary checks, workflow secrets lint, pnpm verification, bundle check, migration runner
+  scripts/             dependency-source and boundary checks, workflow secrets lint, pnpm setup, bundle check, migration runner
 .github/
   workflows/           CI, policy checks, review gate, canary and post-deploy smoke test
   actions/             shared setup steps (Node, pnpm and its verification)
