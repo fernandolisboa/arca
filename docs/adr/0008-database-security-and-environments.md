@@ -1,6 +1,6 @@
 # ADR-0008: Database roles, row-level security, field encryption, backups and environments
 
-- Status: Accepted
+- Status: Accepted; workflow run deletion amended by [ADR-0009](0009-background-jobs-guarantees.md)
 - Date: 2026-11-01
 
 ## Context

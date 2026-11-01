@@ -1,6 +1,6 @@
 # Review
 
-Every change is reviewed by specialized AI reviewers before merge. They are defined as Claude Code subagents in [`.claude/agents/`](../.claude/agents/), and the session that wrote the change runs them in parallel on the diff. No change merges with a blocking finding open.
+Every change is reviewed by specialized AI reviewers before merge. They are defined as Claude Code subagents in [`.claude/agents/`](../.claude/agents/). The session that wrote the change runs them in parallel on the diff before opening a pull request, and CI runs them again as the required `review-gate` check ([ADR-0011](adr/0011-reviewers-in-ci.md)). No change merges with a blocking finding open.
 
 ## Gates, in order
 
@@ -31,8 +31,13 @@ Each reviewer returns **PASS** or **BLOCK**, followed by findings with severity 
 - Any critical or high finding from any reviewer blocks the merge.
 - Medium findings from must-pass reviewers block unless the change records why they are accepted, in the pull request and, when it is a lasting trade-off, in an ADR.
 - Should-pass reviewers never block alone; their findings are fixed in the same change or tracked.
-- A reviewer that could not assess something (missing context, tests that would not run) says so; that counts as BLOCK for must-pass reviewers.
+- A reviewer that could not assess something (missing context, tests that would not run) says so; that counts as BLOCK for must-pass reviewers. In CI, reviewers cannot run commands; running tests is the job of the required test checks, so not running them there is not a gap to report. CI reviewers report what they could not assess in a separate field, and the gate fails a must-pass reviewer that reports anything there except `tests_not_run`, which the required test checks cover.
+- Medium findings accepted in a change are listed, with the reason, in [review-acceptances.md](review-acceptances.md); the CI gate reads that file.
 
 ## Changing reviewers
 
-Reviewer definitions are security-critical configuration: changing one requires a PASS from the security reviewer and the architecture reviewer, and an entry in this file.
+Reviewer definitions and the review CI workflow are security-critical configuration. Changing either requires a PASS from the security, architecture and supply-chain reviewers, the owner's approval as code owner ([ADR-0011](adr/0011-reviewers-in-ci.md)), and an entry in this file.
+
+| Date | Change | Why |
+| --- | --- | --- |
+| 2026-11-01 | architecture-reviewer and supply-chain-reviewer point to ADR-0010 instead of ADR-0003 | ADR-0003 was superseded |

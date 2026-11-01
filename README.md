@@ -6,7 +6,7 @@ The name comes from the Portuguese *arca*: both an ark (it carries the whole fam
 
 ## Status
 
-Pre-code. Product, architecture, platform strategy and stack are decided ([docs/adr/](docs/adr/)). Next: scaffold the monorepo.
+Pre-code. Product, architecture, platform strategy and stack are decided ([docs/adr/](docs/adr/)). Next: scaffold the monorepo ([spec](docs/specs/0001-foundations-scaffold.md)).
 
 Platforms, in order: web (installable PWA), Android, iOS and iPadOS, then desktop if its gate passes ([ADR-0005](docs/adr/0005-platform-strategy.md)).
 
@@ -25,7 +25,8 @@ The first case is the founder's own family. The app goes to other families only 
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Phases and the gates between them |
 | [docs/GLOSSARY.md](docs/GLOSSARY.md) | Domain terms and their pt-BR UI equivalents |
 | [docs/OPEN-QUESTIONS.md](docs/OPEN-QUESTIONS.md) | Decisions still pending |
-| [docs/adr/](docs/adr/) | Architecture decision records: language, rules as data, stack, AI ports, platforms, auth, background jobs, database security |
+| [docs/adr/](docs/adr/) | Architecture decision records: language, rules as data, stack, AI ports, platforms, auth, background jobs, database security, reviewers in CI |
+| [docs/specs/](docs/specs/) | Feature specs, written before tickets and code |
 | [docs/research/](docs/research/) | Sourced research notes that seed the knowledge base |
 
 ## Language
