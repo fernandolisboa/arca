@@ -6,6 +6,7 @@
   "tasks": {
     "//#format:check": {},
     "//#check:dependency-sources": {},
+    "//#check:boundaries": {},
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]

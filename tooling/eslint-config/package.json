@@ -11,7 +11,10 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@eslint-react/eslint-plugin": "catalog:lint",
     "@eslint/js": "catalog:lint",
+    "eslint-plugin-i18next": "catalog:lint",
+    "eslint-plugin-react-hooks": "catalog:lint",
     "globals": "catalog:lint",
     "typescript": "catalog:lint",
     "typescript-eslint": "catalog:lint"

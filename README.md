@@ -14,7 +14,7 @@ Requirements: Node.js at the version in [.nvmrc](.nvmrc) and pnpm at the exact v
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm check    # format check, dependency sources, lint, typecheck, tests and build, through Turborepo
+pnpm check    # format check, dependency sources, boundaries, lint, typecheck, tests and build, through Turborepo
 ```
 
 Set `TURBO_TELEMETRY_DISABLED=1` in your shell to turn off Turborepo's anonymous usage telemetry; CI sets it.
