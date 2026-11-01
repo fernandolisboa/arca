@@ -5,7 +5,7 @@
 - [ ] Confirm the name (Arca, or an alternative) and check trademark availability in Brazil (INPI) and the U.S. (USPTO) before Phase 3.
 - [x] Confirm the stack ([ADR-0003](adr/0003-stack.md)), accepted 2026-11-01; revised by [ADR-0010](adr/0010-stack-revised.md) the same day.
 - [x] Repository visibility: public, decided 2026-11-01 ([ADR-0010](adr/0010-stack-revised.md)).
-- [ ] Create the Neon project `arca` (`sa-east-1`, Postgres 18) and a project-scoped API key; agents do the rest through the APIs ([ADR-0012](adr/0012-automation-first-setup.md)); the deploy ticket of the foundations scaffold waits on it.
+- [ ] Create the Neon project `arca` (`sa-east-1`, Postgres 18) and a project-scoped API key, then install the Neon-managed Vercel integration once an agent has prepared the branches and roles ([ADR-0012](adr/0012-automation-first-setup.md)); the deploy ticket of the foundations scaffold waits on it.
 - [ ] Choose and register the production domain before Phase 1: passkeys are bound to it, and changing it later invalidates every passkey.
 - [ ] Google Play account type: personal (needs a 12-tester, 14-day closed test before production) or organization (requires a company).
 - [ ] iOS builds: a Mac with Xcode, or a cloud build service.

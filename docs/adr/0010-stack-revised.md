@@ -1,6 +1,6 @@
 # ADR-0010: Application stack, revised
 
-- Status: Accepted; deploys amended by [ADR-0012](0012-automation-first-setup.md) (linked Vercel project, one Neon project)
+- Status: Accepted; preview databases and deploys amended by [ADR-0012](0012-automation-first-setup.md) (Vercel–Neon integration, linked Vercel project, one Neon project)
 - Date: 2026-11-01
 - Supersedes: [ADR-0003](0003-stack.md)
 
@@ -23,7 +23,7 @@
 | Hosting topology | Static client and API functions (separate projects implied) | One Vercel project, one origin per environment (production and each preview): the API deployment also serves the static web bundle; the API lives under `/v1` on the same origin | Same-origin cookies work in previews; no CORS for the web client; `connect-src 'self'`. `apps/web` still builds to a standalone static bundle for Capacitor and Tauri |
 | Background jobs | Runs pinned to São Paulo (ADR-0007) | [ADR-0009](0009-background-jobs-guarantees.md) | ADR-0007's guarantees were not accurate |
 | Database tests in CI | Neon branches from a synthetic seed | A Postgres service container in CI, same major version as Neon, pinned by digest; Neon branches from the synthetic seed only for preview deployments | No Neon credentials in test jobs on a public repository; faster, deterministic runs |
-| Preview databases | Not specified | Branches of the non-production Neon project, provisioned by our pipeline with the ADR-0008 roles; the Vercel–Neon integration is not used | The integration injects owner-role connection strings, which ADR-0008 forbids |
+| Preview databases | Not specified | Branches of the non-production Neon project, provisioned by our pipeline with the ADR-0008 roles; the Vercel–Neon integration is not used (amended by [ADR-0012](0012-automation-first-setup.md): the integration is used, previews fork from a `development` branch) | The integration injects owner-role connection strings, which ADR-0008 forbids |
 | Dependency updates | Renovate | Dependabot version updates with a cooldown equal to pnpm's minimum release age; Renovate only if Dependabot cannot update pnpm catalog entries (checked while scaffolding) | One fewer third-party app with write access to the repository |
 | Typed client | Generated for every platform | Derived from the Zod contract, no code generation | Every client is TypeScript; the OpenAPI generators available require TypeScript 5; runtime validation catches drift |
 | TypeScript | Strict | TypeScript 7 for builds, 6.0 for lint tooling | Latest compiler; typescript-eslint does not support 7 yet |

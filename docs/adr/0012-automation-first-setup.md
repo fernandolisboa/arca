@@ -1,4 +1,4 @@
-# ADR-0012: Automation-first setup with the owner's tokens
+# ADR-0012: Automation-first setup with the owner's tokens and the Vercel–Neon integration
 
 - Status: Accepted
 - Date: 2026-11-01
@@ -13,15 +13,16 @@ Each of those controls needs manual work from the owner, who is the only person 
 Facts that shape what stays:
 
 - Real family data arrives in Phase 1. A preview branch cut from production would copy it, and an API connected with an owner role would bypass row-level security. Both are cheap to prevent once and expensive to undo later.
-- Vercel exposes every project variable to the build and to running functions alike ([Vercel docs](https://vercel.com/docs/environment-variables)). A Neon API key or an owner connection string in Vercel is therefore reachable by the running API, and from there every family's data.
-- The Neon-managed Vercel integration needs exactly that: either the owner role in the injected connection string, or a Neon key in the build to create and migrate preview branches. With agents allowed to use the tokens, the integration saves no work: the agents do the same steps through the APIs.
+- The Neon-managed Vercel integration forks preview branches from the Neon project's default branch (not configurable), lets the owner choose the production branch and the role in the injected connection string, and supports running migrations in the Vercel build ([Neon docs](https://neon.com/docs/guides/neon-managed-vercel-integration), checked 2026-11-01).
+- Vercel exposes every project variable to the build and to running functions alike ([Vercel docs](https://vercel.com/docs/environment-variables)). A Neon API key in Vercel, needed to migrate in the build, is therefore reachable by the running API.
+- The owner already runs other apps with the integration, and chose it on 2026-11-01 knowing the point above.
 
 ## Decision
 
 ### Agents do the setup
 
 - Agents apply repository settings (ruleset, environment, secrets, security features) and Vercel and Neon configuration through the APIs, using tokens the owner places in the agent environment: a GitHub token, a Vercel token and a project-scoped Neon API key. The owner's GitHub token is fine-grained, limited to this repository, with an expiry.
-- What a token cannot do (creating the Neon project and its key) the owner does in a browser, once. Nothing is run by hand after that.
+- What a token cannot do (creating the Neon project and its key, installing the integration) the owner does in a browser, once. Nothing is run by hand after that.
 - Agents may push workflow files.
 
 ### The review gate
@@ -37,9 +38,15 @@ Facts that shape what stays:
 - **One Neon project, `arca`**, in São Paulo, Postgres 18, database `arca`, replacing ADR-0008's separate projects. Two long-lived branches:
   - `production`, used only by Vercel's Production environment;
   - `development`, the project's default branch, holding the synthetic seed and parent of every preview branch. It is created without production data (schema-only, or while `production` is still empty), and agents never reset it from its parent.
-- **No Vercel–Neon integration.** GitHub Actions jobs, running code from `main` only, create preview branches, run the bootstrap and migrations, set role passwords through the Neon API, and write the runtime connection strings to Vercel through its API. The Neon key lives only in GitHub environments. Vercel holds runtime role connection strings only (`app_api`, and `app_jobs` in production); no Vercel environment, Development included, ever holds an owner or migrator credential or a production credential outside Production.
-- Production migrates in a GitHub Actions job on every push to `main`, and Vercel promotes the production deployment only after that job passes (Vercel Deployment Checks, or a deploy started by the job if those cannot gate it).
-- The Vercel project stays linked to the repository, so Git pushes build previews and `main` builds production.
+- **The Neon-managed Vercel integration** connects the project to the Vercel project:
+  - production uses the `production` branch;
+  - each preview gets its own branch, forked from `development`;
+  - "Create a branch for your development environment" is on, so Vercel's Development environment never receives a production connection string;
+  - the injected `DATABASE_URL` uses the `app_api` role where the integration allows a role created with SQL. If it only offers roles Neon manages (members of `neon_superuser`, which bypass row-level security) the owner role is used and this ADR records it.
+- **Migrations run in the Vercel build**, before the app builds: an idempotent bootstrap creates the roles as the Neon owner role, then the runner applies the `.sql` files as `app_migrator`, guards in the same transaction. Both get their connection strings from the Neon API at build time with a project-scoped key held in Vercel's Production and Preview variables. No owner or migrator password is stored; `app_jobs`'s production connection string is the one database password kept as a variable, marked Sensitive.
+- Every build fails if the default branch is `production`.
+- The Vercel project stays linked to the repository, so Git pushes deploy previews and `main` deploys production.
+- The API reads only its own connection variables; a lint rule forbids reading the Neon key outside the build scripts.
 
 ### What stays from the earlier ADRs
 
@@ -52,18 +59,19 @@ Facts that shape what stays:
 | Option | Why not |
 | --- | --- |
 | Keep ADR-0010 and ADR-0011 as written | Manual work for the owner on every setup step, mostly to defend against the owner's own agents |
-| Vercel–Neon integration (Neon-managed) | Needs the owner role or a Neon key in Vercel, where running functions can read it; with agents using the tokens it saves no work |
+| No integration; GitHub Actions jobs create branches, migrate and write variables, keeping the Neon key out of Vercel | Safer, at no extra work for the owner, but the owner chose the integration already in use in other apps |
 | Two Neon projects | Two keys and projects to manage; one project with a production branch that previews never fork from meets ADR-0008's goal |
 
 ## Consequences
 
-- An agent holding the owner's GitHub token can change the ruleset or merge without checks. The control is the agents' instructions and the reviewers, not GitHub. A prompt injection that reaches an agent can do what the token allows, which is why the token is limited to this repository and expires.
+- An agent holding the owner's GitHub token can change the ruleset, merge without checks, or create a passing check of any required name from a workflow of its own, since every required check is pinned to GitHub Actions. The control is the agents' instructions and the reviewers, not GitHub. A prompt injection that reaches an agent can do what the token allows, which is why the token is limited to this repository and expires.
 - Production and development share one Neon project: one API key covers both, and a mistaken branch operation could touch production. Point-in-time restore covers it.
-- The pipeline jobs that hold the Neon key run code from `main` only and read a branch's migration files as data, so branch code never reaches the key.
-- A preview's first build can start before its database is ready; the pipeline redeploys it once the branch and its variables exist.
+- **Accepted by the owner:** the project-scoped Neon key sits in Vercel's Production and Preview variables, so running functions, and preview builds of any same-repository branch, can read it. Whoever gets code execution in the API, or writes a branch, can reach every branch including `production`, and with it every family's data. Fork pull requests do not get it (Vercel Git Fork Protection stays on).
+- If the integration cannot inject `app_api`, the running API connects with an owner role and row-level security no longer limits it. The deploy ticket checks this first and reports which case applies.
+- The runner and its guards run from the commit being deployed, not from `main`; a change that weakens them is caught by the reviewers, not by the pipeline.
 - Spec 0001 is updated to match: R7, R8, R9, R10 and its threat model.
 
 ## Sources
 
+- [Neon docs: Neon-managed Vercel integration](https://neon.com/docs/guides/neon-managed-vercel-integration) — preview branches from the default branch, production branch and role chosen at connect, development branch option, migrations in the build (checked 2026-11-01)
 - [Vercel docs: environment variables](https://vercel.com/docs/environment-variables) — variables are available during the build and at function runtime (checked 2026-11-01)
-- [Neon docs: Neon-managed Vercel integration](https://neon.com/docs/guides/neon-managed-vercel-integration) — role chosen at connect, migrations in the build (checked 2026-11-01)

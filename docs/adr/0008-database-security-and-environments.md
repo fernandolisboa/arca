@@ -27,7 +27,7 @@
 | `app_jobs` | Workflow steps | `NOBYPASSRLS`; only the tables its jobs need |
 | `app_auth` | Better Auth | Only the auth tables (users, sessions, passkeys), which are not under per-person RLS |
 | `app_audit` | Audit writer | `INSERT` only on the audit log; no `UPDATE` or `DELETE` for anyone but the migrator |
-| `app_migrator` | Schema migrations in the deploy jobs | DDL; never used by running services |
+| `app_migrator` | Schema migrations in the Vercel build ([ADR-0012](0012-automation-first-setup.md)) | DDL; never used by running services |
 
 ### Row-level security
 
