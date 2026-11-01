@@ -2,13 +2,13 @@
   "files": [],
   "references": [
     {
-      "path": "apps/api"
+      "path": "apps/api/tsconfig.build.json"
     },
     {
       "path": "apps/web"
     },
     {
-      "path": "packages/api-contract"
+      "path": "packages/api-contract/tsconfig.build.json"
     },
     {
       "path": "packages/db"
