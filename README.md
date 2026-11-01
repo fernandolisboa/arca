@@ -19,7 +19,7 @@ pnpm check    # format check, dependency sources, boundaries, lint, typecheck, t
 
 Set `TURBO_TELEMETRY_DISABLED=1` in your shell to turn off Turborepo's anonymous usage telemetry; CI sets it.
 
-CI runs the same `pnpm check` on every pull request ([.github/workflows/ci.yml](.github/workflows/ci.yml)), after verifying the pnpm binary against the hash in `packageManager`. Workflows may use only the secrets and environments listed in [.github/policy/workflow-secrets.json](.github/policy/workflow-secrets.json), checked with the script and list from `main`.
+CI runs the same `pnpm check` on every pull request ([.github/workflows/ci.yml](.github/workflows/ci.yml)). Before that, [verify-pnpm.ts](tooling/scripts/src/verify-pnpm.ts) checks that the pnpm on `PATH` is the native binary whose hash `pnpm-lock.yaml` records; it expects the layout `pnpm/action-setup` creates, so it fails on a pnpm installed from npm as JavaScript. Workflows may use only the secrets and environments listed in [.github/policy/workflow-secrets.json](.github/policy/workflow-secrets.json). [policy.yml](.github/workflows/policy.yml) checks this on `pull_request_target`, so the workflow, the script and the list always come from `main`.
 
 Single steps: `pnpm format`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`. Code layout: [ARCHITECTURE.md](docs/ARCHITECTURE.md#platforms-and-code-layout) and the [spec](docs/specs/0001-foundations-scaffold.md#layout).
 

@@ -1,5 +1,9 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { join, sep } from 'node:path';
+import { parse } from 'yaml';
+import { isRecord, type Violation } from './report.ts';
+
+export type { Violation } from './report.ts';
 
 export const dependencyFields = [
   'dependencies',
@@ -17,82 +21,64 @@ export interface Manifest {
   readonly dependencies: Readonly<Record<DependencyField, Readonly<Record<string, string>>>>;
 }
 
-export interface Violation {
-  readonly where: string;
-  readonly problem: string;
-}
-
 export interface WorkspaceConfig {
   /** Directories from `packages:`, each written as `<dir>/*`. */
   readonly packageRoots: readonly string[];
   /** `<catalog>/<package>` → version; the default catalog is named `default`. */
   readonly catalogs: ReadonlyMap<string, string>;
   readonly overrides: ReadonlyMap<string, string>;
-  /** Lines in the sections above that do not have the expected shape. */
+  /** Entries in the sections above that do not have the expected shape. */
   readonly problems: readonly Violation[];
 }
 
-const mapEntry =
-  /^(?:'([^']+)'|"([^"]+)"|([^\s'":#{}[\]]+)):\s*(?:'([^']*)'|"([^"]*)"|([^\s'"#{}[\]]+))$/;
-const listedRoot = /^- (?:'([^'*]+)\/\*'|"([^"*]+)\/\*"|([^\s'"#*]+)\/\*)$/;
-const namedCatalog = /^([a-z0-9-]+):$/;
+const listedRoot = /^([^*]+)\/\*$/;
 
-/**
- * Reads the parts of pnpm-workspace.yaml the scripts depend on. It accepts only the plain block
- * style this repository uses and reports anything else in those sections, so a line written in
- * another YAML style fails the check instead of being skipped.
- */
+/** Reads the parts of pnpm-workspace.yaml the scripts depend on, reporting any entry of another shape. */
 export function parseWorkspaceYaml(text: string): WorkspaceConfig {
-  const packageRoots: string[] = [];
-  const catalogs = new Map<string, string>();
-  const overrides = new Map<string, string>();
   const problems: Violation[] = [];
-  let section: string | undefined;
-  let catalog = 'default';
+  const problem = (where: string, what: string) => {
+    problems.push({ where: `pnpm-workspace.yaml ${where}`, problem: what });
+  };
+  const document: unknown = parse(text);
+  const root = isRecord(document) ? document : {};
 
-  text.split('\n').forEach((line, index) => {
-    const content = line.replace(/\s+#.*$/, '').trimEnd();
-    const text = content.trim();
-    if (text === '' || text.startsWith('#')) return;
-    const indent = content.length - content.trimStart().length;
-    const problem = () =>
-      problems.push({
-        where: `pnpm-workspace.yaml:${String(index + 1)}`,
-        problem: 'unexpected line',
-      });
+  const packageRoots: string[] = [];
+  const packages = root['packages'];
+  if (!Array.isArray(packages)) problem('packages', 'must be a list');
+  else {
+    for (const entry of packages as unknown[]) {
+      const dir = typeof entry === 'string' ? listedRoot.exec(entry)?.[1] : undefined;
+      if (dir === undefined)
+        problem('packages', `${JSON.stringify(entry)} must be written as <dir>/*`);
+      else packageRoots.push(dir);
+    }
+  }
 
-    if (indent === 0) {
-      const key = /^([A-Za-z]+):/.exec(text)?.[1];
-      section = key;
-      catalog = 'default';
-      if (
-        ['packages', 'catalog', 'catalogs', 'overrides'].includes(key ?? '') &&
-        text !== `${key ?? ''}:`
-      ) {
-        problem();
-      }
+  const stringMap = (where: string, value: unknown, into: Map<string, string>, prefix = '') => {
+    if (value === undefined || value === null) return;
+    if (!isRecord(value)) {
+      problem(where, 'must be a map of package names to versions');
       return;
     }
-
-    if (section === 'packages') {
-      const match = listedRoot.exec(text);
-      const root = match?.[1] ?? match?.[2] ?? match?.[3];
-      if (indent !== 2 || root === undefined) problem();
-      else packageRoots.push(root);
-    } else if (section === 'catalogs' && indent === 2) {
-      const name = namedCatalog.exec(text)?.[1];
-      if (name === undefined) problem();
-      else catalog = name;
-    } else if (section === 'catalog' || section === 'catalogs' || section === 'overrides') {
-      const expectedIndent = section === 'catalogs' ? 4 : 2;
-      const match = mapEntry.exec(text);
-      const name = match?.[1] ?? match?.[2] ?? match?.[3];
-      const value = match?.[4] ?? match?.[5] ?? match?.[6];
-      if (indent !== expectedIndent || name === undefined || value === undefined) problem();
-      else if (section === 'overrides') overrides.set(name, value);
-      else catalogs.set(`${catalog}/${name}`, value);
+    for (const [name, version] of Object.entries(value)) {
+      if (typeof version === 'string') into.set(`${prefix}${name}`, version);
+      else problem(`${where}.${name}`, 'must be a version string');
     }
-  });
+  };
+
+  const catalogs = new Map<string, string>();
+  stringMap('catalog', root['catalog'], catalogs, 'default/');
+  const named = root['catalogs'];
+  if (named !== undefined && named !== null) {
+    if (!isRecord(named)) problem('catalogs', 'must be a map of catalogs');
+    else {
+      for (const [name, entries] of Object.entries(named)) {
+        stringMap(`catalogs.${name}`, entries, catalogs, `${name}/`);
+      }
+    }
+  }
+  const overrides = new Map<string, string>();
+  stringMap('overrides', root['overrides'], overrides);
 
   return { packageRoots, catalogs, overrides, problems };
 }
@@ -134,7 +120,7 @@ export function parseManifest(dir: string, raw: string): Manifest {
 }
 
 function stringRecord(value: unknown): Record<string, string> {
-  if (typeof value !== 'object' || value === null) return {};
+  if (!isRecord(value)) return {};
   return Object.fromEntries(
     Object.entries(value).filter(
       (entry): entry is [string, string] => typeof entry[1] === 'string',
@@ -144,9 +130,4 @@ function stringRecord(value: unknown): Record<string, string> {
 
 export function isToolingDir(rootDir: string, dir: string): boolean {
   return dir.startsWith(join(rootDir, 'tooling') + sep);
-}
-
-export function reportViolations(violations: readonly Violation[]): void {
-  for (const { where, problem } of violations) console.error(`${where}: ${problem}`);
-  process.exitCode = violations.length > 0 ? 1 : 0;
 }

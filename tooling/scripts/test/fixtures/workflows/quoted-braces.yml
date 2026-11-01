@@ -1,0 +1,8 @@
+on: pull_request
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "$KEY"
+        env:
+          KEY: ${{ contains('}}', '') && secrets.ANTHROPIC_API_KEY || '' }}

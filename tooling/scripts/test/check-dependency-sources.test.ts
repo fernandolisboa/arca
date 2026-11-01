@@ -74,15 +74,30 @@ describe('pnpm-workspace.yaml', () => {
   });
 
   it.each([
-    ['a range in the catalog', ['catalog:', '  zod: ^4.6.7']],
-    ['a range in a named catalog', ['catalogs:', '  lint:', '    typescript: ~6.0.3']],
-    ['a range in overrides', ['overrides:', '  semver: ">=7"']],
-    ['a flow mapping for the catalog', ['catalog: { zod: ^4.6.7 }']],
-    ['a flow mapping for a named catalog', ['catalogs:', '  lint: { typescript: ^6 }']],
-    ['a flow mapping inside a catalog', ['catalog:', '  zod: { version: 4.6.7 }']],
-    ['a mis-indented entry', ['catalog:', '    zod: 4.6.7']],
-    ['a workspace root that is not dir/*', ['packages:', '  - apps/**']],
-  ])('rejects %s', (_label, lines) => {
-    expect(checkWorkspaceConfig(yaml(...lines)).length).toBeGreaterThan(0);
+    ['a range in the catalog', ['catalog:', '  zod: ^4.6.7'], 'default/zod'],
+    [
+      'a range in a named catalog',
+      ['catalogs:', '  lint:', '    typescript: ~6.0.3'],
+      'lint/typescript',
+    ],
+    ['a range in overrides', ['overrides:', '  semver: ">=7"'], 'semver'],
+    ['a flow mapping with a range', ['catalog: { zod: ^4.6.7 }'], 'default/zod'],
+    [
+      'a map where a version belongs',
+      ['catalog:', '  zod: { version: 4.6.7 }'],
+      'must be a version string',
+    ],
+    ['a list where a catalog belongs', ['catalogs:', '  lint: [typescript]'], 'must be a map'],
+    ['a workspace root that is not dir/*', ['  - apps/**'], 'must be written as <dir>/*'],
+  ])('rejects %s', (_label, lines, expected) => {
+    const violations = checkWorkspaceConfig(yaml('packages:', '  - apps/*', ...lines));
+    const messages = violations.map(({ where, problem }) => `${where}: ${problem}`);
+    expect(messages).toEqual([expect.stringContaining(expected)]);
+  });
+
+  it('requires a packages list', () => {
+    expect(checkWorkspaceConfig(yaml('catalog:', '  zod: 4.6.7'))).toEqual([
+      { where: 'pnpm-workspace.yaml packages', problem: 'must be a list' },
+    ]);
   });
 });

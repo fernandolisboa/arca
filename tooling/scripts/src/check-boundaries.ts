@@ -3,10 +3,10 @@ import {
   isToolingDir,
   readManifests,
   readWorkspaceConfig,
-  reportViolations,
   type Manifest,
   type Violation,
 } from './workspace.ts';
+import { reportViolations } from './report.ts';
 
 /** Which workspace packages each package may depend on (spec 0001, R2). */
 export const allowedDependencies: Readonly<Record<string, readonly string[]>> = {

@@ -1,18 +1,20 @@
 name: policy
 
-# Checks that judge a pull request with scripts and policy files from main, so the pull request
-# cannot weaken them (spec 0001, R8).
+# Checks that judge a pull request with this workflow, its scripts and its policy files as they are
+# on main (spec 0001, R8). pull_request_target runs the definition from main, so a pull request
+# cannot change what runs here. Its files are checked out as data and never executed.
 
 on:
-  pull_request:
+  pull_request_target:
+    branches: [main]
   push:
     branches: [main]
 
 permissions: {}
 
 concurrency:
-  group: policy-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: policy-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request_target' }}
 
 env:
   TURBO_TELEMETRY_DISABLED: '1'
@@ -25,27 +27,22 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Check out main (policy and scripts)
+      - name: Check out main (workflow, policy and scripts)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: main
           path: policy
           persist-credentials: false
       - name: Check out the change (data only)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           path: change
           persist-credentials: false
           sparse-checkout: .github/workflows
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      - uses: ./policy/.github/actions/setup-pnpm
         with:
-          node-version-file: policy/.nvmrc
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-        with:
-          package_json_file: policy/package.json
-      - name: Verify pnpm against packageManager
-        working-directory: policy
-        run: node tooling/scripts/src/verify-pnpm.ts
+          directory: policy
       - name: Install the scripts from main
         working-directory: policy
         run: pnpm install --frozen-lockfile --filter @arca/scripts
