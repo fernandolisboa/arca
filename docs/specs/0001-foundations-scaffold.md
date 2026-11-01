@@ -119,18 +119,22 @@ eval/
 ### R7. Database foundation
 
 - `packages/db`: Drizzle ORM and drizzle-kit ([Versions](#versions)). Migrations are forward-only SQL files; a one-way change records its reason in the PR. Production migrates before it deploys, so every migration stays compatible with the deployment already running (expand, then contract).
-- Migrations are applied by our own runner in `tooling/scripts`, which reads the `.sql` files as data and runs them as `app_migrator`. It runs in the Vercel build, before the app builds (R9).
+- Migrations are applied by our own runner in `tooling/scripts`, which reads the `.sql` files as data and runs them as `app_migrator`. It runs in the GitHub Actions deploy jobs (R9), with its code, parser rules, guard queries and lists from `main`; only the `.sql` files come from the change.
   - The runner parses each file with the Postgres parser (`libpg-query`) and rejects transaction control (`BEGIN`, `START TRANSACTION`, `COMMIT`, `END`, `ROLLBACK`, `ABORT`, savepoints, prepared transactions), `SET`, `RESET`, `SET ROLE`, `SET SESSION AUTHORIZATION` and `CONCURRENTLY`.
   - It also rejects `ALTER ROLE … SET`, `ALTER DATABASE … SET`, any role statement carrying `PASSWORD`, and `CREATE EXTENSION` for extensions outside an allow-list (empty now; no `dblink` or similar ever).
-  - It opens a fresh connection and the transaction itself, records `pg_catalog.pg_current_xact_id()`, and runs the statements one per call. Right after the last statement, before anything else, it runs `SET LOCAL search_path = pg_catalog, pg_temp`; then `RESET ROLE`, checks that `current_user` and `session_user` are both `app_migrator`, and checks that the transaction ID is unchanged. The connection is closed after the run.
+  - It opens a fresh connection and the transaction itself, takes `pg_advisory_xact_lock` on a fixed key so two runs on the same branch cannot interleave, records `pg_catalog.pg_current_xact_id()`, and runs the statements one per call. Right after the last statement, before anything else, it runs `SET LOCAL search_path = pg_catalog, pg_temp`; then `RESET ROLE`, checks that `current_user` and `session_user` are both `app_migrator`, and checks that the transaction ID is unchanged. The connection is closed after the run.
   - Every runner and guard query uses fully qualified names (`pg_catalog.*`, the journal table by schema), so a migration cannot shadow catalog views or functions, temporary ones included, even through a session-level `set_config('search_path', …)`.
   - The parser checks are defence in depth: dynamic SQL in `DO` blocks can get past a parser. The guards and the transaction checks are the authoritative layer.
   - Migration and guards share that transaction, which commits only if the guards pass (Postgres DDL and role statements are transactional), so a migration that weakens row-level security never commits. The `db` tests include canary migrations, each also in a `DO`-block form: an embedded `COMMIT`, a shadowing temporary view, a role default set with `ALTER ROLE … SET`, and a role switch. Each must fail and leave nothing committed.
   - The runner keeps its own journal table, which is the only allow-listed table without row-level security. It stores a checksum per file and refuses to run unless the journal is an exact prefix of the files on disk, so a migration cannot mark later ones as applied. In the guard phase it checks that the journal equals its state before the run plus the new rows, and that the journal table has no triggers, rules or policies and row-level security off.
-- `bootstrap.sql` runs in the Vercel build before the runner, as the Neon owner role, with `createrole_self_grant` empty. It is idempotent: it creates or corrects the roles below and changes nothing else, so it runs on every build at no risk. It is the only code that uses the Neon owner role, and the only place roles are created; adding a role is a reviewed change to it. It creates:
+- `bootstrap.sql` runs in the same deploy job, before the runner, as the Neon owner role, with `createrole_self_grant` empty. It is idempotent: it creates or corrects the roles below and changes nothing else, so it runs on every deploy at no risk. It is the only code that uses the Neon owner role, and the only place roles are created; roles are never created through the Neon console or API, which would make them members of `neon_superuser`. Adding a role is a reviewed change to it. It creates:
   - `app_migrator` as `NOBYPASSRLS`, `NOSUPERUSER`, `NOREPLICATION`, `NOCREATEROLE`, `NOCREATEDB`, not a member of `neon_superuser`, owning the application schema. It grants table privileges as the owner of those tables, so it needs no rights over other roles;
   - `app_api`, `app_jobs`, `app_auth` and `app_audit` with the same attributes, and no table grants yet.
-- Passwords: no database password is stored in GitHub, and none for the owner or `app_migrator` anywhere. The build gets the owner and `app_migrator` connection strings from the Neon API (`connection_uri` for the build's branch) with the project-scoped key. The running API gets `app_api`'s connection string from the Vercel–Neon integration, per branch. `app_jobs` gets its production connection string as a Sensitive production variable, set by an agent through the Neon and Vercel APIs; previews do not run jobs.
+- Passwords: set by the deploy job through the Neon API's role password reset, which returns the new password to the job; no SQL text carries a password.
+  - Owner and `app_migrator`: reset at the start of each run, used in that job only, never stored.
+  - `app_api` (each branch) and `app_jobs` (production): reset when a branch is created and on demand, then written to Vercel as Sensitive variables scoped to that environment or Git branch. They are the only database credentials Vercel holds.
+  - The Neon key and the passwords stay in steps that run no branch code; values pass between steps masked.
+  - The deploy ticket verifies, before anything else, that the Neon API can reset passwords of roles created with SQL. If it cannot, the fallback is `ALTER ROLE … PASSWORD` with a SCRAM verifier computed in the job by a vetted package added with a supply-chain PASS, run by the owner-role step; no custom cryptography.
 - Request identity is set with `select set_config('app.person_id', $1, true)` and `set_config('app.case_id', $2, true)`, with UUID-validated parameters, never by string interpolation. Policies will read `nullif(current_setting('app.person_id', true), '')::uuid`, so a missing or reset setting yields no rows rather than an error. With no case tables, the helper is exercised by a test-only table created inside the test: no identity returns zero rows; the setting does not carry into the next transaction on a pooled connection; a malformed ID is rejected before any SQL runs.
 - **Guard tests** (the start of the access-matrix suite). Each environment has its own exempt-role list, chosen by the runner from the connection target and not editable through migration data: Neon's managed roles (the project owner included) for Neon, the container's bootstrap `postgres` role for CI. Every other role is checked. The exempt lists, the list of tables allowed without row-level security and the extension and role-setting allow-lists live in files in `packages/db`.
   1. Every table in every non-system schema has row-level security enabled and forced, except tables on the allow-list (the runner's journal now; auth tables join with the auth slice).
@@ -141,15 +145,15 @@ eval/
   6. No runtime role owns a table or schema, or has `CREATE` on any schema or on the database.
   7. `pg_catalog.pg_db_role_setting` has no rows at all outside an allow-list that starts empty (Neon's own defaults join it if present). A role default for `app.person_id` would otherwise become the identity of every request that forgot to set one.
   8. `pg_catalog.pg_extension` equals an allow-list in `packages/db`: the extensions Neon or the container pre-install (`plpgsql` included) and nothing else.
-- The guards run in CI against a Postgres 18 service container pinned by digest, and inside every migration transaction in the Vercel build, on preview branches and production (as `app_migrator`), which is where the Neon-specific checks actually bite.
+- The guards run in CI against a Postgres 18 service container pinned by digest, and inside every migration transaction in the deploy jobs, on preview branches, `development` and `production` (as `app_migrator`), which is where the Neon-specific checks actually bite.
 - `GET /v1/health` checks the database as `app_api` with `select 1`, with a 2-second timeout. It reports `degraded`, not an error, when the database is unreachable.
 - The synthetic seed starts empty and is the only source of non-production data.
 
 ### R8. CI
 
-All workflows: actions pinned by full commit SHA; top-level `permissions: {}`, with jobs granting only what they need; GitHub-hosted runners; `actions/checkout` with `persist-credentials: false`. Workflows on `pull_request` and `push` use `concurrency` per ref; the review gate, on `pull_request_target`, groups by pull request number. Values from the event (branch names, titles, file names) reach `run:` steps only through `env:` and are validated against a strict pattern before use. The review gate filters on `branches: [main]`, so its definition always comes from `main`.
+All workflows: actions pinned by full commit SHA; top-level `permissions: {}`, with jobs granting only what they need; GitHub-hosted runners; `actions/checkout` with `persist-credentials: false`. Workflows on `pull_request` and `push` use `concurrency` per ref; the two `pull_request_target` workflows (review gate, preview deploy) group by pull request number. Values from the event (branch names, titles, file names) reach `run:` steps only through `env:` and are validated against a strict pattern before use. Both `pull_request_target` workflows filter on `branches: [main]`, so their definition always comes from `main`, and run only for pull requests from this repository.
 
-**Secrets.** GitHub holds one secret, the Anthropic API key, in a `review` environment limited to `main`; runs on `pull_request` do not reach it. Deploy and database secrets live in Vercel, not GitHub (R9). The ticket verifies, with a source, whether `review` secrets reach Dependabot-triggered `pull_request_target` runs; if not, a Dependabot secret holding a second, spend-limited Anthropic key is the exception.
+**Secrets.** No repository-level secrets. GitHub environments, each limited to `main`: `review` (Anthropic key), `deploy` (the project-scoped Neon API key and a Vercel token). Workflows on `pull_request_target` and on `push` to `main` run with ref `main`; runs on `pull_request` do not, so branch code never reaches a secret. Vercel holds only the runtime connection strings (R7) and `CRON_SECRET`. The ticket verifies, with a source, whether `review` secrets reach Dependabot-triggered `pull_request_target` runs; if not, a Dependabot secret holding a second, spend-limited Anthropic key is the exception.
 
 A CI lint checks each workflow file against an allow-list of the secrets and environments it may use; `pull_request` workflows use none.
 
@@ -175,17 +179,21 @@ A CI lint checks each workflow file against an allow-list of the secrets and env
 
 ### R9. Deploy
 
-- Names: Vercel project `arca`; Neon project `arca` (`sa-east-1`, Postgres 18), database `arca` (not Neon's default `neondb`), branches `production` and `development` (the default branch, holding the synthetic seed). Preview branches are created by the integration as `preview/<git-branch>`, forked from `development`.
-- One Vercel project in the Pro team, linked to the repository: pushes to branches deploy previews, `main` deploys production. Functions in `gru1` only, Node 26. One origin per environment.
-- **Neon-managed Vercel integration** ([ADR-0012](../adr/0012-automation-first-setup.md)): production uses the `production` branch; previews get their own branches; the injected `DATABASE_URL` uses the `app_api` role. The owner installs it once in the browser; an agent prepares the Neon project (branches, database, roles) through the API first, so `app_api` exists to be chosen.
-- **Build command** (set by an agent in the Vercel project): bootstrap, then migrations with the guards in the same transaction (R7), then the app build. A guard failure fails the build, so nothing deploys; the fix is a forward migration. The build reads the project-scoped Neon API key from a Vercel variable scoped to Production and Preview.
-- A setup check, run by the build, fails if the Neon project's default branch is `production`, so previews never fork from production data.
-- Production runtime variables beyond the integration's (`app_jobs`'s connection string, `CRON_SECRET`) are set by an agent through the Vercel API and marked Sensitive.
-- Vercel Deployment Protection on previews; Git Fork Protection on, so fork pull requests get no variables without approval.
-- A post-deploy smoke test, run from GitHub Actions on Vercel's deployment event, calls `/v1/health` (through the automation bypass on previews), checks the security headers, and sends an unsigned request to the Workflow SDK's routes (R6).
-- Preview branches are deleted by the integration when their Git branch is deleted.
+- Names: Vercel project `arca`; Neon project `arca` (`sa-east-1`, Postgres 18), database `arca` (not Neon's default `neondb`), branches `production` and `development` (the default branch, holding the synthetic seed). Preview branches are `preview/pr-<number>`, forked from `development`.
+- One Vercel project in the Pro team, linked to the repository: pushes build previews and `main` builds production. Functions in `gru1` only, Node 26. One origin per environment. No Vercel–Neon integration ([ADR-0012](../adr/0012-automation-first-setup.md)).
+- `development` is created without production data: as a schema-only branch if Neon offers one, otherwise from `production` before production holds any data. Agents never reset it from its parent. Every deploy job fails if the project's default branch is `production` or if a preview branch's parent is not `development`.
+- No Vercel variable in the Development environment points at Neon; local development uses the Postgres container.
+- **Production** (`push` to `main`, `deploy` environment, `cancel-in-progress: false`): bootstrap and migrate `production` with the guards in the same transaction (R7). Vercel promotes the production deployment of that commit only after this job passes, through Vercel Deployment Checks; if those cannot gate on it, Git deploys of `main` are turned off in the Vercel project settings and the job deploys the commit through the Vercel API. A guard failure stops the deploy; the fix is a forward migration. Then the smoke test.
+- **Development** (`push` to `main`): bootstrap and migrate `development` the same way, so preview branches start from the current schema.
+- **Previews** (`pull_request_target`, `deploy` environment, pinned to `pull_request.head.sha`, never running code from the pull request; the PR's migration files are read as data):
+  1. create or reset `preview/pr-<number>` from `development`;
+  2. bootstrap and migrate it with the runner from `main`;
+  3. reset `app_api`'s password on the branch and write its connection string as a Sensitive Preview variable scoped to the PR's Git branch (a standard feature of linked projects);
+  4. redeploy the branch's latest preview through the Vercel API, so the build picks up the variable;
+  5. run the smoke test.
+- Closing the pull request deletes its Neon branch and its Vercel variable.
+- Vercel Deployment Protection on previews; Git Fork Protection on. The smoke test calls `/v1/health` (through the automation bypass on previews), checks the security headers, and sends an unsigned request to the Workflow SDK's routes (R6).
 - Production holds an empty database with roles applied. The heartbeat cron runs in production only.
-- The ticket verifies, before the integration is installed, that the Neon console offers `app_api` as the integration's role. If it does not, the slice stops and the owner decides.
 
 ### R10. Review gate
 
@@ -251,7 +259,7 @@ The latest stable release of each, checked on the npm registry on 2026-11-01, un
 
 ## Threat model for this slice
 
-Assets in play: the Anthropic API key in GitHub; the Neon API key and runtime connection strings in Vercel; the owner's tokens in the agent environment; the integrity of `main` and of the review gate. No personal data exists yet.
+Assets in play: the Anthropic API key, the Neon API key and the Vercel token in GitHub environments; runtime connection strings in Vercel; the owner's tokens in the agent environment; the integrity of `main` and of the review gate. No personal data exists yet.
 
 | Threat (STRIDE, LLM and agentic) | Where | Control in this slice |
 | --- | --- | --- |
@@ -260,13 +268,13 @@ Assets in play: the Anthropic API key in GitHub; the Neon API key and runtime co
 | Tampering: a migration disables its own guards | Database | Parser-vetted statements; runner-owned transaction checked by transaction ID; guards on `pg_catalog` only; roles created only by `bootstrap.sql`; `app_migrator` without `CREATEROLE` |
 | Elevation: an agent misusing the owner's tokens | GitHub, Vercel, Neon | Fine-grained GitHub token limited to this repository, with an expiry; project-scoped Neon key; agents' instructions and the reviewers. Residual, accepted in ADR-0012 |
 | Information disclosure: secret in a commit | Repository | Push protection, gitleaks, `.env.example` only |
-| Elevation: branch code reaching secrets | CI, previews | One GitHub secret, in an environment limited to `main`; event values only through validated `env:`; Vercel Git Fork Protection. Residual: preview builds of same-repository branches read the Neon key (ADR-0012) |
+| Elevation: branch code reaching secrets | CI, previews | Secrets only in environments limited to `main`; jobs holding them run code from `main` and read migrations as data; event values only through validated `env:`; Vercel holds runtime role credentials only; Git Fork Protection |
 | Prompt injection steering the reviewers | Review gate | Diff and files only, as data; base-branch standards; verdict computed in code; canary suite |
 | Information disclosure through the gate's comment | Review gate | No symlinks; `Read` denied outside the workspace and on `.git`; `persist-credentials: false`; model job holds no write token; comment built from schema fields, escaped, gitleaks-scanned |
 | Denial of wallet | API, workflows | No public route starts workflows; cron needs `CRON_SECRET`; SDK routes reject unsigned requests; health check cached |
-| Elevation: service connected with an owner role or bypassing RLS | Database | The integration injects `app_api`; owner and migrator credentials exist only during the build; guard tests 1 to 8 in every migration transaction and in CI |
+| Elevation: service connected with an owner role or bypassing RLS | Database | Vercel holds only `app_api` and `app_jobs` credentials; owner and migrator passwords exist only inside a deploy job; roles never created through the Neon API; guard tests 1 to 8 in every migration transaction and in CI |
 | Injection into the identity statement | Database | `set_config` with bind parameters and UUID validation |
-| Information disclosure: production data in a preview | Database | Previews fork from `development`, the default branch, which holds the synthetic seed; the build fails if the default branch is `production` |
+| Information disclosure: production data in a preview or on a laptop | Database | Previews fork from `development`, created without production data and never reset from its parent; deploy jobs check branch parents; no Neon variable in Vercel's Development environment |
 | Information disclosure: data in workflow metadata | Workflows | Identifier-only arguments by type, generic names, no attributes, zero retention ([ADR-0009](../adr/0009-background-jobs-guarantees.md)) |
 | Cross-site scripting | Web | Strict CSP with Trusted Types, no inline scripts, no third-party scripts |
 | Spoofing: outsiders reaching previews | Vercel | Deployment Protection |

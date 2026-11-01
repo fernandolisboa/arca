@@ -1,6 +1,6 @@
 # ADR-0010: Application stack, revised
 
-- Status: Accepted; preview databases and deploys amended by [ADR-0012](0012-automation-first-setup.md) (Vercel–Neon integration, linked Vercel project)
+- Status: Accepted; deploys amended by [ADR-0012](0012-automation-first-setup.md) (linked Vercel project, one Neon project)
 - Date: 2026-11-01
 - Supersedes: [ADR-0003](0003-stack.md)
 
@@ -45,7 +45,7 @@ TypeScript end to end, in a pnpm + Turborepo monorepo.
 | API | Hono on Node, built and deployed with Nitro; versioned (`/v1`); contract in Zod with `@hono/zod-openapi`, exported as OpenAPI; typed client derived from the same Zod route definitions in `packages/api-contract`, validating responses at runtime, used by every platform |
 | Hosting | Vercel Pro team: one project serving the static client and the API functions on one origin per environment, functions in São Paulo (`gru1`); preview deployment per pull request behind Deployment Protection |
 | Background jobs | Vercel Workflows 5.x, runs started in `gru1` with zero retention, identifiers-only payloads ([ADR-0009](0009-background-jobs-guarantees.md)) |
-| Database | Postgres on Neon, São Paulo (`sa-east-1`); separate projects for production and non-production ([ADR-0008](0008-database-security-and-environments.md)) |
+| Database | Postgres on Neon, São Paulo (`sa-east-1`); separate projects for production and non-production ([ADR-0008](0008-database-security-and-environments.md)), amended to one project with a `production` branch by [ADR-0012](0012-automation-first-setup.md) |
 | Data access | Drizzle ORM and migrations; forced row-level security; least-privilege roles created with SQL ([ADR-0008](0008-database-security-and-environments.md)) |
 | Vector search | pgvector in the same Postgres; embeddings only for the public knowledge base |
 | Auth | Better Auth, self-hosted: passkeys, native passkey APIs on mobile, bearer tokens for native apps ([ADR-0006](0006-auth.md)) |
