@@ -1,6 +1,6 @@
 # ADR-0011: Reviewer subagents run in CI as a required check
 
-- Status: Accepted
+- Status: Accepted; amended by [ADR-0012](0012-automation-first-setup.md): no `arca-gate` App, no code-owner approval, agents may push workflows, recovery procedure replaced
 - Date: 2026-11-01
 
 ## Context

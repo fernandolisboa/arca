@@ -1,6 +1,6 @@
 # ADR-0010: Application stack, revised
 
-- Status: Accepted
+- Status: Accepted; preview databases and deploys amended by [ADR-0012](0012-automation-first-setup.md) (Vercel–Neon integration, linked Vercel project, one Neon project)
 - Date: 2026-11-01
 - Supersedes: [ADR-0003](0003-stack.md)
 
@@ -23,7 +23,7 @@
 | Hosting topology | Static client and API functions (separate projects implied) | One Vercel project, one origin per environment (production and each preview): the API deployment also serves the static web bundle; the API lives under `/v1` on the same origin | Same-origin cookies work in previews; no CORS for the web client; `connect-src 'self'`. `apps/web` still builds to a standalone static bundle for Capacitor and Tauri |
 | Background jobs | Runs pinned to São Paulo (ADR-0007) | [ADR-0009](0009-background-jobs-guarantees.md) | ADR-0007's guarantees were not accurate |
 | Database tests in CI | Neon branches from a synthetic seed | A Postgres service container in CI, same major version as Neon, pinned by digest; Neon branches from the synthetic seed only for preview deployments | No Neon credentials in test jobs on a public repository; faster, deterministic runs |
-| Preview databases | Not specified | Branches of the non-production Neon project, provisioned by our pipeline with the ADR-0008 roles; the Vercel–Neon integration is not used | The integration injects owner-role connection strings, which ADR-0008 forbids |
+| Preview databases | Not specified | Branches of the non-production Neon project, provisioned by our pipeline with the ADR-0008 roles; the Vercel–Neon integration is not used (amended by [ADR-0012](0012-automation-first-setup.md): the integration is used; previews fork from production until a synthetic `development` branch becomes the default, before the first case-data table) | The integration injects owner-role connection strings, which ADR-0008 forbids |
 | Dependency updates | Renovate | Dependabot version updates with a cooldown equal to pnpm's minimum release age; Renovate only if Dependabot cannot update pnpm catalog entries (checked while scaffolding) | One fewer third-party app with write access to the repository |
 | Typed client | Generated for every platform | Derived from the Zod contract, no code generation | Every client is TypeScript; the OpenAPI generators available require TypeScript 5; runtime validation catches drift |
 | TypeScript | Strict | TypeScript 7 for builds, 6.0 for lint tooling | Latest compiler; typescript-eslint does not support 7 yet |
@@ -45,7 +45,7 @@ TypeScript end to end, in a pnpm + Turborepo monorepo.
 | API | Hono on Node, built and deployed with Nitro; versioned (`/v1`); contract in Zod with `@hono/zod-openapi`, exported as OpenAPI; typed client derived from the same Zod route definitions in `packages/api-contract`, validating responses at runtime, used by every platform |
 | Hosting | Vercel Pro team: one project serving the static client and the API functions on one origin per environment, functions in São Paulo (`gru1`); preview deployment per pull request behind Deployment Protection |
 | Background jobs | Vercel Workflows 5.x, runs started in `gru1` with zero retention, identifiers-only payloads ([ADR-0009](0009-background-jobs-guarantees.md)) |
-| Database | Postgres on Neon, São Paulo (`sa-east-1`); separate projects for production and non-production ([ADR-0008](0008-database-security-and-environments.md)) |
+| Database | Postgres on Neon, São Paulo (`sa-east-1`); separate projects for production and non-production ([ADR-0008](0008-database-security-and-environments.md)), amended to one project with a `production` branch by [ADR-0012](0012-automation-first-setup.md) |
 | Data access | Drizzle ORM and migrations; forced row-level security; least-privilege roles created with SQL ([ADR-0008](0008-database-security-and-environments.md)) |
 | Vector search | pgvector in the same Postgres; embeddings only for the public knowledge base |
 | Auth | Better Auth, self-hosted: passkeys, native passkey APIs on mobile, bearer tokens for native apps ([ADR-0006](0006-auth.md)) |
@@ -55,7 +55,7 @@ TypeScript end to end, in a pnpm + Turborepo monorepo.
 | LLM tracing | Langfuse, with a masking function so case content never leaves Brazil; only metadata, scores and redacted text are exported |
 | Errors and traces | Sentry (errors and OpenTelemetry traces), personal data scrubbing on; structured JSON logs |
 | Rate limiting | Vercel Firewall at the edge, plus limits and per-person AI budgets stored in Postgres |
-| Testing | Vitest (unit and integration), a Postgres service container in CI for database tests, Playwright (end to end), the access-matrix suite for row-level security, the synthetic evaluation suite for AI behavior; preview deployments use Neon branches of the non-production project from the synthetic seed |
+| Testing | Vitest (unit and integration), a Postgres service container in CI for database tests, Playwright (end to end), the access-matrix suite for row-level security, the synthetic evaluation suite for AI behavior; preview deployments use Neon branches forked from production until a synthetic `development` branch becomes the default, before the first case-data table ([ADR-0012](0012-automation-first-setup.md)) |
 | Code quality | ESLint with typescript-eslint strict type-checked rules, Prettier |
 | CI and supply chain | GitHub Actions pinned by commit SHA, least-privilege permissions; Dependabot version updates with a cooldown (Renovate only as the fallback above); Dependabot alerts and osv-scanner for dependency advisories; CodeQL for code scanning; secret scanning with push protection; gitleaks; SBOM per build; pnpm configured to block dependency install scripts (allow-list only) and to wait a minimum release age before adopting new versions; Turborepo without remote cache until cache artifacts are signed; the reviewer subagents as a required check ([ADR-0011](0011-reviewers-in-ci.md)) |
 | Mobile | Capacitor (Android in Phase 4, iOS and iPadOS in Phase 5) |

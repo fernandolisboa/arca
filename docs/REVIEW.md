@@ -36,8 +36,9 @@ Each reviewer returns **PASS** or **BLOCK**, followed by findings with severity 
 
 ## Changing reviewers
 
-Reviewer definitions and the review CI workflow are security-critical configuration. Changing either requires a PASS from the security, architecture and supply-chain reviewers, the owner's approval as code owner ([ADR-0011](adr/0011-reviewers-in-ci.md)), and an entry in this file.
+Reviewer definitions and the review CI workflow are security-critical configuration. Changing either requires a PASS from the security, architecture and supply-chain reviewers, and an entry in this file ([ADR-0011](adr/0011-reviewers-in-ci.md), [ADR-0012](adr/0012-automation-first-setup.md)).
 
 | Date | Change | Why |
 | --- | --- | --- |
 | 2026-11-01 | architecture-reviewer and supply-chain-reviewer point to ADR-0010 instead of ADR-0003 | ADR-0003 was superseded |
+| 2026-11-01 | Gate protection simplified: no `arca-gate` App, no code-owner approval, agents may push workflows | Owner decision to automate setup ([ADR-0012](adr/0012-automation-first-setup.md)) |

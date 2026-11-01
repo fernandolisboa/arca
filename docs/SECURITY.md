@@ -74,7 +74,7 @@ Revisited at the start of every epic. New features list the assets they touch an
 - The evaluation suite includes adversarial cases: injected instructions in documents and web pages, attempts to read other cases, attempts to make agents take outbound actions.
 
 **Environments and secrets**
-- Development, preview and production are separate, with production in its own database project. Production data never leaves production: preview and CI databases start from a synthetic seed. Previews sit behind deployment protection.
+- Development, preview and production are separate: production is its own Neon branch; before the first case-data table, previews are switched to fork from a `development` branch that never held production data ([ADR-0012](adr/0012-automation-first-setup.md)). Developer machines are never connected to the hosted database. Production data never leaves production: preview and CI databases start from a synthetic seed. Previews sit behind deployment protection.
 - Secrets live in the platform's environment-variable store, never in the repository; scoped per environment and rotated. Cloud access uses OIDC federation (Vercel and GitHub Actions to AWS), so no long-lived cloud keys exist.
 - Every vendor and store account is owned by the organization, uses phishing-resistant MFA (passkeys or security keys), named accounts and least-privilege roles.
 
