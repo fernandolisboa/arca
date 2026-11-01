@@ -14,9 +14,14 @@
   ],
   "exceptions": [
     {
-      "package": "lightningcss*",
+      "package": "lightningcss@1.33.0",
       "license": "MPL-2.0",
       "reason": "Vite's CSS transformer, used unmodified at build time only. MPL-2.0 is file-level copyleft: it binds changes to its own files, not the code that uses it."
+    },
+    {
+      "package": "lightningcss-*@1.33.0",
+      "license": "MPL-2.0",
+      "reason": "Platform binaries of lightningcss 1.33.0; same reason. Pinned to the version, so an update is judged again."
     }
   ]
 }
