@@ -9,6 +9,10 @@ on:
     branches: [main]
   push:
     branches: [main]
+  # osv-scanner re-reads main's lockfile daily: new advisories surface without a push, and GitHub's
+  # Dependabot alerts cannot read pnpm 12's two-document lockfile.
+  schedule:
+    - cron: '23 6 * * *'
 
 permissions: {}
 
@@ -58,7 +62,7 @@ jobs:
           change/.github/workflows
           change/.github/actions
 
-  release-age:
+  lockfile-policy:
     if: github.event_name == 'pull_request_target'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -89,6 +93,15 @@ jobs:
         run: >-
           node policy/tooling/scripts/src/check-release-age.ts
           policy/pnpm-workspace.yaml
+          policy/pnpm-lock.yaml
+          "$RUNNER_TEMP/change-lock.yaml"
+      # GitHub's dependency graph does not read pnpm 12's two-document lockfile, so dependency
+      # review would pass without judging anything; licenses come from the registry instead.
+      - name: Check licenses against main's policy
+        if: ${{ !cancelled() }}
+        run: >-
+          node policy/tooling/scripts/src/check-licenses.ts
+          policy/.github/policy/licenses.json
           policy/pnpm-lock.yaml
           "$RUNNER_TEMP/change-lock.yaml"
 
@@ -128,22 +141,6 @@ jobs:
           "$RUNNER_TEMP/osv-scanner" scan source
           --config=policy/.github/policy/osv-scanner.toml
           --lockfile="$RUNNER_TEMP/change/pnpm-lock.yaml"
-
-  dependency-review:
-    if: github.event_name == 'pull_request_target'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    permissions:
-      contents: read
-    steps:
-      # Reads the dependency graph diff between the base and head commits; checks out nothing.
-      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
-        with:
-          fail-on-severity: low
-          fail-on-scopes: runtime, development, unknown
-          allow-licenses: >-
-            MIT, ISC, Apache-2.0, BSD-2-Clause, BSD-3-Clause, 0BSD, BlueOak-1.0.0, CC0-1.0,
-            CC-BY-4.0, Unlicense, Python-2.0
 
   gitleaks:
     if: github.event_name == 'pull_request_target'
