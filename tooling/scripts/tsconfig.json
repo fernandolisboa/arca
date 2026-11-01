@@ -1,0 +1,11 @@
+{
+  "extends": "@arca/tsconfig/node.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "composite": false,
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "rootDir": "${configDir}"
+  },
+  "include": ["src", "test"]
+}

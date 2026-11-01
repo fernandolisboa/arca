@@ -229,6 +229,8 @@ The latest stable release of each, checked on the npm registry on 2026-11-01, un
 | ESLint, typescript-eslint | 10.x, 8.72+ | Latest; typescript-eslint supports ESLint 10 |
 | `@eslint-react/eslint-plugin`, `eslint-plugin-react-hooks`, `eslint-plugin-i18next` | latest | React and i18n lint rules; `eslint-plugin-react` 7.37 declares ESLint up to 9.7 only (npm registry) |
 | Prettier | 3.x | Latest stable; 4.0 is an alpha with no gain for us |
+| `@eslint/js`, `globals` | 10.x, 17.x | ESLint's recommended rules and the environment globals for the flat config |
+| `@types/node` | 26.x | Node.js types matching the runtime |
 | Turborepo | 2.11+ | Latest |
 | React | 19.3 | Latest |
 | Vite, `@vitejs/plugin-react` | 8.3, 6.x | Latest |

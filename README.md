@@ -6,7 +6,22 @@ The name comes from the Portuguese *arca*: both an ark (it carries the whole fam
 
 ## Status
 
-Pre-code. Product, architecture, platform strategy and stack are decided ([docs/adr/](docs/adr/)). Next: scaffold the monorepo ([spec](docs/specs/0001-foundations-scaffold.md)).
+Scaffolding the monorepo ([spec 0001](docs/specs/0001-foundations-scaffold.md)). Product, architecture, platform strategy and stack are decided ([docs/adr/](docs/adr/)).
+
+## Development
+
+Requirements: Node.js at the version in [.nvmrc](.nvmrc) and pnpm at the exact version in `packageManager` in [package.json](package.json), for example `npm install --global pnpm@12.15.0` (Node.js 25 and later no longer ship Corepack). CI verifies the pnpm binary against the hash recorded in `packageManager`.
+
+```sh
+pnpm install --frozen-lockfile
+pnpm check    # format check, dependency sources, lint, typecheck, tests and build, through Turborepo
+```
+
+Set `TURBO_TELEMETRY_DISABLED=1` in your shell to turn off Turborepo's anonymous usage telemetry; CI sets it.
+
+Single steps: `pnpm format`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`. Code layout: [ARCHITECTURE.md](docs/ARCHITECTURE.md#platforms-and-code-layout) and the [spec](docs/specs/0001-foundations-scaffold.md#layout).
+
+Dependencies: every version is exact and lives in the catalogs in [pnpm-workspace.yaml](pnpm-workspace.yaml); packages refer to them as `catalog:`. pnpm installs only releases at least 7 days old and runs no dependency install scripts unless `allowBuilds` lists them. TypeScript 7 typechecks and builds the workspace; only `tooling/eslint-config` uses TypeScript 6.0, through the `lint` catalog, because typescript-eslint needs its compiler API.
 
 Platforms, in order: web (installable PWA), Android, iOS and iPadOS, then desktop if its gate passes ([ADR-0005](docs/adr/0005-platform-strategy.md)).
 
