@@ -38,7 +38,7 @@ Security is a product pillar. Before working on any feature, read [docs/SECURITY
 ## How we build
 
 - Workflow per feature: spec → tickets → tests first (TDD) → implementation → multi-reviewer pass → merge.
-- Reviewers are the subagents in `.claude/agents/`, run in parallel on the diff before every commit and pull request. Rules, triggers and verdicts: [docs/REVIEW.md](docs/REVIEW.md).
+- Reviewers are the subagents in `.claude/agents/`, run in parallel on the diff before every commit and pull request, and again in CI as the required `review-gate` check ([ADR-0011](docs/adr/0011-reviewers-in-ci.md)). Rules, triggers and verdicts: [docs/REVIEW.md](docs/REVIEW.md).
   - **Core, every change:** correctness, security and architecture (must pass); standards and context (should pass).
   - **Specialists, must pass when their area is touched:** auth and cryptography; data access (schema, migrations, row-level security, roles, environments); supply chain (dependencies, CI, build, vendors); AI safety (prompts, agents, adapters, model output, evaluation).
   - Any critical or high finding blocks the merge. The owner stays out of the loop; the reviewers are the gate.
@@ -62,15 +62,15 @@ Code layout: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#platforms-and-code-layo
 
 ## Stack
 
-Accepted: [ADR-0003](docs/adr/0003-stack.md). In short: TypeScript strict in a pnpm + Turborepo monorepo; React + Vite PWA with TanStack Router and Query; Hono API with a Zod/OpenAPI contract; Postgres on Neon (São Paulo) with Drizzle and forced row-level security ([ADR-0008](docs/adr/0008-database-security-and-environments.md)); Better Auth with passkeys ([ADR-0006](docs/adr/0006-auth.md)); Vercel Workflows pinned to São Paulo for background jobs ([ADR-0007](docs/adr/0007-background-jobs.md)); S3 and KMS in São Paulo; Vitest, Playwright, the access-matrix suite and the evaluation suite; Capacitor and Tauri later.
+Accepted: [ADR-0010](docs/adr/0010-stack-revised.md), which supersedes ADR-0003. In short: TypeScript strict in a pnpm + Turborepo monorepo; React + Vite PWA with TanStack Router and Query; Hono API with a Zod/OpenAPI contract, built with Nitro; web and API on one origin per environment; Postgres on Neon (São Paulo) with Drizzle and forced row-level security ([ADR-0008](docs/adr/0008-database-security-and-environments.md)); Better Auth with passkeys ([ADR-0006](docs/adr/0006-auth.md)); Vercel Workflows 5.x started in São Paulo with zero retention and identifiers-only payloads ([ADR-0009](docs/adr/0009-background-jobs-guarantees.md)); S3 and KMS in São Paulo; Vitest, a Postgres container for CI database tests, Playwright, the access-matrix suite and the evaluation suite; Capacitor and Tauri later.
 
-- Do not add a dependency, service or vendor outside ADR-0003 without a new ADR.
+- Do not add a dependency, service or vendor outside ADR-0010 without a new ADR.
 - A new service that receives any data updates the data-flow table in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#data-flows).
 - Services never connect to the database with an owner or console-created role; use the roles in ADR-0008, with the request identity set per transaction.
 - Production data never leaves production; non-production databases start from the synthetic seed.
 - Workflow step inputs and outputs carry identifiers only.
 - No home-made cryptography. The vault waits for its own ADR.
-The first engineering task is scaffolding the monorepo as described in ADR-0003 and the code layout in ARCHITECTURE.md, with CI, linting, tests and a deployable empty app before any feature work.
+The first engineering task is scaffolding the monorepo as described in ADR-0010, the spec in [docs/specs/0001-foundations-scaffold.md](docs/specs/0001-foundations-scaffold.md) and the code layout in ARCHITECTURE.md, with CI, linting, tests and a deployable empty app before any feature work.
 
 ## Definition of done
 

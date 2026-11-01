@@ -1,6 +1,6 @@
 # ADR-0007: Background jobs with Vercel Workflows, pinned to São Paulo
 
-- Status: Accepted
+- Status: Superseded by [ADR-0009](0009-background-jobs-guarantees.md)
 - Date: 2026-11-01 (replaces an earlier choice of Trigger.dev, rejected after review)
 
 ## Context

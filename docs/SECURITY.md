@@ -37,7 +37,7 @@ Revisited at the start of every epic. New features list the assets they touch an
 | Cross-case data leakage through AI | Retrieval returns another family's facts | Shared knowledge base holds public rules only; case data is retrieved only within the requesting person's scope; no case data in shared embeddings or prompts of other cases |
 | Insider or admin abuse | An operator browses family data | No standing access to case data; break-glass access is time-limited, justified and audited, and the owner is notified |
 | Vendor compromise | A processor is breached | Ciphertext-only storage; identifiers-only job payloads; data-flow register ([ARCHITECTURE.md](ARCHITECTURE.md#data-flows)); scrubbing before telemetry |
-| Supply-chain attack | A malicious dependency version or CI action steals secrets | Lockfile installs; dependency install scripts blocked except an allow-list; minimum release age before adopting new versions; Actions pinned by commit SHA; Renovate, Dependabot alerts and osv-scanner; SBOM per build; must-pass supply-chain reviewer on every dependency change |
+| Supply-chain attack | A malicious dependency version or CI action steals secrets | Lockfile installs; dependency install scripts blocked except an allow-list; minimum release age before adopting new versions; Actions pinned by commit SHA; Dependabot version updates with a cooldown, Dependabot alerts and osv-scanner; SBOM per build; must-pass supply-chain reviewer on every dependency change |
 | Cross-site scripting | Injected script reads decrypted documents in the browser | Strict CSP and Trusted Types; no third-party scripts in the app; sanitized rendering of untrusted text, including model output |
 | Data exfiltration through model output | Injected instructions make the assistant render an image URL that carries case data | Remote images stripped and links marked in rendered model output |
 | Payment-detail fraud | Bank details swapped before a large transfer | Two-person approval and a cooling-off notice for any change to bank or exchange details |
@@ -64,7 +64,7 @@ Revisited at the start of every epic. New features list the assets they touch an
 **Data**
 - Vault encryption on the client, with its own ADR before implementation: standard primitives, documented key wrapping, recovery and rotation, and the path by which plaintext reaches an authorized processing session.
 - Bank account and document numbers encrypted per field with KMS-wrapped keys ([ADR-0008](adr/0008-database-security-and-environments.md)).
-- Deleting a case destroys its keys (crypto-shredding) and its rows, and deletes related workflow runs, stored objects, traces and error reports; in-app account deletion and data export from Phase 1.
+- Deleting a case destroys its keys (crypto-shredding) and its rows, and deletes related stored objects, traces and error reports; workflow runs hold identifiers only with zero retention and are purged by Vercel within 36 days ([ADR-0009](adr/0009-background-jobs-guarantees.md)); in-app account deletion and data export from Phase 1.
 - Retention periods defined per data type before real data enters (Phase 1).
 - Backups per ADR-0008: RPO 15 minutes, RTO 4 hours, an off-vendor encrypted copy, quarterly restore drills.
 
@@ -80,7 +80,7 @@ Revisited at the start of every epic. New features list the assets they touch an
 
 **Software delivery**
 - Branch protection, required checks and the reviewer gates in [REVIEW.md](REVIEW.md): a must-pass security reviewer on every change, plus must-pass specialists (auth and cryptography, data access, supply chain, AI safety) on changes in their areas, so sensitive changes get at least two independent security reads.
-- CodeQL for code scanning; Dependabot alerts and osv-scanner for dependency advisories; secret scanning with push protection; gitleaks; Renovate; Actions pinned by SHA; SBOM per build.
+- CodeQL for code scanning; Dependabot alerts and osv-scanner for dependency advisories; secret scanning with push protection; gitleaks; Dependabot version updates ([ADR-0010](adr/0010-stack-revised.md)); Actions pinned by SHA; SBOM per build; the reviewer subagents as a required CI check ([ADR-0011](adr/0011-reviewers-in-ci.md)).
 - Dynamic scanning (OWASP ZAP baseline) against preview deployments.
 - External penetration test before Phase 3 (other families) and before each store launch; findings tracked to closure.
 

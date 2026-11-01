@@ -1,6 +1,6 @@
 # ADR-0003: Application stack
 
-- Status: Accepted
+- Status: Superseded by [ADR-0010](0010-stack-revised.md)
 - Date: 2026-11-01 (revised after an independent review the same day)
 
 ## Context

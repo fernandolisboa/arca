@@ -1,6 +1,6 @@
 # Architecture
 
-As of 2026-11-01. Stack: [ADR-0003](adr/0003-stack.md).
+As of 2026-11-01. Stack: [ADR-0010](adr/0010-stack-revised.md).
 
 ## Overview
 
@@ -44,10 +44,12 @@ apps/
   desktop/      Tauri project wrapping apps/web (Phase 6, only if its gate passes)
 packages/
   domain/       case model, evaluation engine, unit computation, ranking; pure TypeScript, no I/O
-  api-contract/ Zod schemas, OpenAPI export and the generated typed client
+  api-contract/ Zod route definitions, OpenAPI export and the typed client derived from them
   ui/           components and design tokens
   i18n/         message catalogs (pt-BR first)
   platform/     capability ports and their adapters (web, capacitor, tauri)
+  db/           Drizzle schema and migrations, role SQL, row-level security guard tests
+tooling/        shared ESLint and TypeScript configs, repository scripts (boundary and contract checks)
 ```
 
 Rules that keep every platform possible:
@@ -140,7 +142,8 @@ Every service that touches Arca's data, and what it may receive. A new processor
 | Service | Role | Receives | Location |
 | --- | --- | --- | --- |
 | Neon (Postgres) | Primary database | All case data, under forced row-level security | São Paulo (`sa-east-1`) |
-| Vercel | Client hosting, API functions, Workflows | All case data in processing; workflow run state holding identifiers only | São Paulo (`gru1`) for functions and pinned workflow runs |
+| Vercel | Client hosting, API functions, Workflows | All case data in processing; workflow run payloads holding identifiers only, with zero retention ([ADR-0009](adr/0009-background-jobs-guarantees.md)) | São Paulo (`gru1`) for functions, run payloads and queues; run metadata (names, statuses, timestamps, no personal data) is processed outside Brazil |
+| Anthropic (CI review) | Reviewer subagents in CI ([ADR-0011](adr/0011-reviewers-in-ci.md)) | Source code, diffs and pull request text; never case data | Vendor cloud, outside Brazil |
 | AWS S3 | Document storage and off-vendor backups | Ciphertext only | São Paulo (`sa-east-1`) |
 | AWS KMS | Field-encryption key wrapping | Data keys, never data | São Paulo (`sa-east-1`) |
 | Anthropic (Claude) | LLM calls | Minimal fields per call; no names, document numbers or account numbers | Vendor cloud, outside Brazil |

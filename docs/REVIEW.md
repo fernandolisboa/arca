@@ -1,6 +1,6 @@
 # Review
 
-Every change is reviewed by specialized AI reviewers before merge. They are defined as Claude Code subagents in [`.claude/agents/`](../.claude/agents/), and the session that wrote the change runs them in parallel on the diff. No change merges with a blocking finding open.
+Every change is reviewed by specialized AI reviewers before merge. They are defined as Claude Code subagents in [`.claude/agents/`](../.claude/agents/), The session that wrote the change runs them in parallel on the diff before opening a pull request, and CI runs them again as the required `review-gate` check ([ADR-0011](adr/0011-reviewers-in-ci.md)). No change merges with a blocking finding open.
 
 ## Gates, in order
 
@@ -36,3 +36,7 @@ Each reviewer returns **PASS** or **BLOCK**, followed by findings with severity 
 ## Changing reviewers
 
 Reviewer definitions are security-critical configuration: changing one requires a PASS from the security reviewer and the architecture reviewer, and an entry in this file.
+
+| Date | Change | Why |
+| --- | --- | --- |
+| 2026-11-01 | architecture-reviewer and supply-chain-reviewer point to ADR-0010 instead of ADR-0003 | ADR-0003 was superseded |

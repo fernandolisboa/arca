@@ -16,7 +16,7 @@ Family first: the product for other families starts only after the founder's fam
 
 - Case 1 facts gathered; ancestry of all six adults mapped.
 - Route catalog researched for the countries the family selects.
-- ~~Stack confirmed~~ Done: [ADR-0003](adr/0003-stack.md), with auth ([ADR-0006](adr/0006-auth.md)), background jobs ([ADR-0007](adr/0007-background-jobs.md)) and database security and environments ([ADR-0008](adr/0008-database-security-and-environments.md)).
+- ~~Stack confirmed~~ Done: [ADR-0010](adr/0010-stack-revised.md) (superseding ADR-0003), with auth ([ADR-0006](adr/0006-auth.md)), background jobs ([ADR-0009](adr/0009-background-jobs-guarantees.md), superseding ADR-0007), reviewers in CI ([ADR-0011](adr/0011-reviewers-in-ci.md)) and database security and environments ([ADR-0008](adr/0008-database-security-and-environments.md)).
 - Production domain chosen and registered (passkeys depend on it from day one).
 
 Phase 0 does not depend on code: the questions in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) can be answered while the repository is set up.
@@ -25,6 +25,7 @@ Phase 0 does not depend on code: the questions in [OPEN-QUESTIONS.md](OPEN-QUEST
 
 **Epic: cross-platform foundations** (done before feature work, so native phases add adapters instead of rewrites)
 
+- First slice specified in [specs/0001-foundations-scaffold.md](specs/0001-foundations-scaffold.md).
 - Monorepo with `packages/domain`, `packages/api-contract`, `packages/ui`, `packages/i18n`, `packages/platform`, `apps/api`, `apps/web` ([ARCHITECTURE.md](ARCHITECTURE.md#platforms-and-code-layout)).
 - Empty app deployed end to end (web, API, a sample workflow, database) in São Paulo, with protected preview deployments per pull request.
 - Environments per [ADR-0008](adr/0008-database-security-and-environments.md): separate production database project, synthetic seed for everything else, secrets per environment, OIDC to AWS.
