@@ -34,7 +34,7 @@ tooling/
   eslint-config/       shared flat config
   tsconfig/            shared base configs
   security-policy/     CSP and security headers as data, plus route exclusions for the SPA fallback
-  scripts/             boundary check, OpenAPI drift check, bundle check, migration runner
+  scripts/             dependency-source and boundary checks, workflow secrets lint, pnpm setup, bundle check, migration runner
 .github/
   workflows/           CI, policy checks, review gate, canary and post-deploy smoke test
   actions/             shared setup steps (Node, pnpm and its verification)
@@ -48,7 +48,7 @@ eval/
 ### R1. Workspace
 
 - Versions per [Versions](#versions). Every dependency is pinned to an exact version (pnpm `savePrefix: ''`), through a pnpm catalog. Node is pinned in `engines` and `.nvmrc`, pnpm in `packageManager` with its integrity hash. Turborepo runs with no remote cache.
-- TypeScript `strict` plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`; project references per package.
+- TypeScript `strict` plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`; project references per package. A package with tests has a `tsconfig.build.json` (emits `src`, referenced from the root `tsconfig.json`) and a `tsconfig.json` that extends it without emitting and adds `test`, for typecheck and lint.
 - Two TypeScript versions, separated by package. TypeScript 7 (`tsc`, the native compiler) typechecks and builds everything. `tooling/eslint-config` alone depends on TypeScript 6.0, because typescript-eslint needs the compiler API that TypeScript 7 does not expose as stable yet. TypeScript 6.0 was released to match 7.0's type-checking behavior, so the two agree. When typescript-eslint supports 7, the 6.0 dependency goes.
 - ESLint flat config with typescript-eslint `strictTypeChecked` and `stylisticTypeChecked`; Prettier; `pnpm check` runs format check, lint, typecheck, test and build through Turborepo.
 - `pnpm-workspace.yaml` supply-chain settings: `minimumReleaseAge: 10080` (7 days, in minutes), `strictDepBuilds: true` with an explicit `allowBuilds` list (empty unless a package needs it, each entry justified in the PR), `trustPolicy: no-downgrade` (a `trustPolicyExclude` entry names one exact version and is justified in the PR with the registry facts: publisher, dates and which earlier version had provenance), `blockExoticSubdeps: true`.
@@ -69,6 +69,7 @@ eval/
   - `packages/domain`: no imports of `node:*`, database clients, HTTP clients or `fetch`; no `Date.now()` or `new Date()` without arguments (time is passed in).
   - `apps/web`, `packages/ui`: no `navigator.userAgent`, `navigator.platform` or `navigator.userAgentData`; no imports of Capacitor or Tauri APIs (native access goes through `packages/platform`); `i18next/no-literal-string` in JSX, so text goes through i18n; React rules from `@eslint-react/eslint-plugin` and `eslint-plugin-react-hooks`.
   - `apps/web`: imports from `@arca/api-contract` only through `@arca/api-contract/client`.
+  - `packages/api-contract/src/routes` and `src/client`: no imports of `hono` or `@hono/*`.
   - `apps/api/src/workflows`: `start` from `workflow/api` may be imported only by the shared start helper (R6).
 - ESLint bans relative imports that cross a package root (`../../packages/…`).
 - A bundle check fails if Hono or `@hono/zod-openapi` modules appear in `apps/web/dist`.
@@ -77,13 +78,13 @@ eval/
 ### R3. API and contract
 
 - `packages/api-contract` has three entry points:
-  - `./routes`: route metadata as plain data (method, path, Zod request and response schemas), with no Hono import. The first route is `GET /v1/health` → `{ status: "ok" | "degraded", checks: { database: "ok" | "unavailable" | "wrong_role" } }`.
+  - `./routes`: route metadata as plain data (method, path, Zod response schema), with no Hono import, enforced by lint. Request schemas join the route definition with the first route that takes input. The first route is `GET /v1/health` → `{ status: "ok" | "degraded", checks: { database: "ok" | "unavailable" | "wrong_role" } }`.
   - `./server`: wraps `./routes` with `@hono/zod-openapi` `createRoute` for the API and the OpenAPI export.
-  - `./client`: the typed client, derived from `./routes`. Request and response types are inferred from the Zod schemas, and responses are validated with them at runtime, so a server that drifts from the contract fails loudly. No code generation step; `openapi-typescript` was considered and requires TypeScript 5. The base URL comes from build configuration: relative `/v1` for the web build, an absolute URL for native builds later.
+  - `./client`: the typed client, derived from `./routes`. Request and response types are inferred from the Zod schemas, and responses are validated with them at runtime, so a server that drifts from the contract fails loudly. No code generation step; `openapi-typescript` was considered and requires TypeScript 5. The client takes the API origin from build configuration and adds `/v1` itself: empty (same origin) for the web build, an absolute origin for native builds later.
 - `apps/api` implements the contract on a plain Hono app that is importable and testable without Nitro.
-- A script writes `packages/api-contract/openapi.json`; CI fails if the committed file differs from the generated one.
-- Errors: one handler returns `{ error: { code } }` with a generic status; details go to the structured log, never to the response.
-- Structured JSON logs through a small logger in `apps/api` that writes only fields on an allow-list (request ID, route, status, duration, error code); anything else is dropped. A test proves an unknown field is dropped.
+- `packages/api-contract/scripts/write-openapi.ts` writes `openapi.json`; a test in that package fails while the committed file differs from the generated one, so `pnpm check` catches drift.
+- Errors: one handler returns `{ error: { code } }` with a generic status; the structured log records the code and the error's class name, never its message, which may carry data. Full error reports wait for the observability slice.
+- Structured JSON logs through a small logger in `apps/api` that writes only fields on an allow-list (request ID, method, route pattern, status, duration, error code, error class name), each checked for the shape it expects; anything else is dropped. A test proves an unknown field is dropped.
 - Every response from `/v1` and `/internal` sets `Cache-Control: no-store`.
 - `/v1/health` caches its database result for 10 seconds per instance, so repeated calls do not each open a connection. Edge rate limiting comes with the auth slice.
 
@@ -159,7 +160,7 @@ A CI lint checks each workflow file against an allow-list of the secrets and env
 
 | Check (required on `main`) | What it runs |
 | --- | --- |
-| `check` | pnpm installed by `tooling/scripts/src/setup-pnpm.ts`, with nothing run before it is verified: the `packageManager` hash must match the lockfile's `pnpm` integrity, and the platform's `@pnpm/exe.*` package must match the integrity the lockfile records for it; its binary then goes first on `PATH`; `pnpm install --frozen-lockfile`, then `pnpm check` (format, lint, typecheck, unit tests, build), the boundary script, the bundle check and the OpenAPI drift check |
+| `check` | pnpm installed by `tooling/scripts/src/setup-pnpm.ts`, with nothing run before it is verified: the `packageManager` hash must match the lockfile's `pnpm` integrity, and the platform's `@pnpm/exe.*` package must match the integrity the lockfile records for it; its binary then goes first on `PATH`; `pnpm install --frozen-lockfile`, then `pnpm check` (format, lint, typecheck, unit tests, build), the boundary script, the bundle check and the OpenAPI drift test in `packages/api-contract` |
 | `secrets-lint` | The secrets lint above, from `policy.yml` on `pull_request_target`: the workflow definition, the script and the allow-list come from `main`, and the PR's workflow files are read as data. Context and secret names are matched case-insensitively, as GitHub does, and `github.token` counts as the secret `GITHUB_TOKEN`. Composite actions in `.github/actions` may reference no secret or token. The lint covers explicit references; a token an action uses by default is bounded by `permissions` |
 | `release-age` | Every lockfile entry added or changed by the PR was published at least 7 days earlier, per the registry, unless listed in `minimumReleaseAgeExclude` as it stands in `pnpm-workspace.yaml` on `main`. A frozen install does not re-check this, so CI does. A missing publish time or an unreachable registry fails the check |
 | `db` | Migrations and guard tests on the Postgres container |

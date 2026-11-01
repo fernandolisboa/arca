@@ -4,15 +4,23 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc -b",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "eslint ."
+    "build": "tsc -b tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@arca/eslint-config": "workspace:*",
     "@arca/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "eslint": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "dependencies": {
+    "@arca/api-contract": "workspace:*",
+    "@hono/zod-openapi": "catalog:",
+    "hono": "catalog:",
+    "zod": "catalog:"
   }
 }

@@ -20,13 +20,16 @@ trustPolicyExclude:
 blockExoticSubdeps: true
 
 catalog:
+  '@hono/zod-openapi': 1.6.3
   '@types/node': 26.6.5
   eslint: 10.13.0
+  hono: 4.13.14
   prettier: 3.9.10
   turbo: 2.11.10
   typescript: 7.0.2
   vitest: 5.0.5
   yaml: 2.9.1
+  zod: 4.6.7
 
 catalogs:
   # typescript-eslint needs the compiler API, which TypeScript 7 does not expose as stable yet.

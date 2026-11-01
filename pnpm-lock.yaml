@@ -164,12 +164,18 @@ settings:
 
 catalogs:
   default:
+    '@hono/zod-openapi':
+      specifier: 1.6.3
+      version: 1.6.3
     '@types/node':
       specifier: 26.6.5
       version: 26.6.5
     eslint:
       specifier: 10.13.0
       version: 10.13.0
+    hono:
+      specifier: 4.13.14
+      version: 4.13.14
     prettier:
       specifier: 3.9.10
       version: 3.9.10
@@ -185,6 +191,9 @@ catalogs:
     yaml:
       specifier: 2.9.1
       version: 2.9.1
+    zod:
+      specifier: 4.6.7
+      version: 4.6.7
   lint:
     '@eslint-react/eslint-plugin':
       specifier: 5.28.8
@@ -223,6 +232,19 @@ importers:
         version: 7.0.2
 
   apps/api:
+    dependencies:
+      '@arca/api-contract':
+        specifier: workspace:*
+        version: link:../../packages/api-contract
+      '@hono/zod-openapi':
+        specifier: 'catalog:'
+        version: 1.6.3(hono@4.13.14)(zod@4.6.7)
+      hono:
+        specifier: 'catalog:'
+        version: 4.13.14
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
     devDependencies:
       '@arca/eslint-config':
         specifier: workspace:*
@@ -239,6 +261,9 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
+      vitest:
+        specifier: 'catalog:'
+        version: 5.0.5(@types/node@26.6.5)(vite@8.3.5(@types/node@26.6.5)(yaml@2.9.1))
 
   apps/web:
     devDependencies:
@@ -256,6 +281,16 @@ importers:
         version: 7.0.2
 
   packages/api-contract:
+    dependencies:
+      '@hono/zod-openapi':
+        specifier: 'catalog:'
+        version: 1.6.3(hono@4.13.14)(zod@4.6.7)
+      hono:
+        specifier: 'catalog:'
+        version: 4.13.14
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
     devDependencies:
       '@arca/eslint-config':
         specifier: workspace:*
@@ -263,12 +298,18 @@ importers:
       '@arca/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
       eslint:
         specifier: 'catalog:'
         version: 10.13.0
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
+      vitest:
+        specifier: 'catalog:'
+        version: 5.0.5(@types/node@26.6.5)(vite@8.3.5(@types/node@26.6.5)(yaml@2.9.1))
 
   packages/db:
     devDependencies:
@@ -438,6 +479,11 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(vite@8.3.5(@types/node@26.6.5)(yaml@2.9.1))
 
 packages:
+
+  '@asteasolutions/zod-to-openapi@9.1.0':
+    resolution: {integrity: sha512-pLMeRgRYS7/vZIgAAkOe2P6+XGTifR1MT9pqDoxZ11EmcJJ+DPmdPqLN8ZZF4U8R9KHCCQCS9c2wtuE8wSrfkw==}
+    peerDependencies:
+      zod: ^4.0.0
 
   '@babel/code-frame@7.29.7':
     resolution: {integrity: sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw==}
@@ -620,6 +666,19 @@ packages:
   '@eslint/plugin-kit@0.7.3':
     resolution: {integrity: sha512-IkO+/KEUvwbVpiURZg+P7zF74z5Jxe0UgJxVni+RtoHQ6IZieXaO02kmadomap/q+l6bc/jdPGGqTjhuZnuz1Q==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
+
+  '@hono/zod-openapi@1.6.3':
+    resolution: {integrity: sha512-VYR82Y60plu8g3pN60OUXMVKpmxh3R04Qs++3DY9vtwZ9/sA/BRY0PcRIR+Z37/3itWtM7pYwT9bKiH9JhqV6Q==}
+    engines: {node: '>=16.0.0'}
+    peerDependencies:
+      hono: '>=4.10.0'
+      zod: ^4.0.0
+
+  '@hono/zod-validator@0.9.1':
+    resolution: {integrity: sha512-iiv6w0qrIc0arfvCtUqBWsvl4fXjzaTcQcCJTTtCnkawF9HHGE+KjEl0ox3gQJ6rKZEgE3mLExlQCF72M+mNuw==}
+    peerDependencies:
+      hono: '>=4.11.2'
+      zod: ^3.25.0 || ^4.0.0
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -1271,6 +1330,10 @@ packages:
   hermes-parser@0.25.1:
     resolution: {integrity: sha512-6pEjquH3rqaI6cYAXYPcz9MS4rY6R4ngRgrgfDshRptUZIc3lw0MCIJIGDj9++mfySOuPTHB4nrSW99BCvOPIA==}
 
+  hono@4.13.14:
+    resolution: {integrity: sha512-yhRLQ21U6qa9Hsu2N7Qcbh8tE+WKEcoErjIo56LeSGiGXGp9sA7UpE86Ui9uexb61KakiGwuHMn2QdV7w6i6kQ==}
+    engines: {node: '>=16.9.0'}
+
   hookified@1.15.1:
     resolution: {integrity: sha512-MvG/clsADq1GPM2KGo2nyfaWVyn9naPiXrqIe4jYjXNZQt238kWyOGrsyc/DmRAQ+Re6yeo6yX/yoNCG5KAEVg==}
 
@@ -1432,6 +1495,9 @@ packages:
   obug@3.0.0:
     resolution: {integrity: sha512-5vvB5+W7ePv+p3uqxi+RcW1XAzLW0/hxt3/4X4Lc4qHudzOhmBiBwOY6DRob4WnanAEGvNcLjF+KNOufrUoEQw==}
     engines: {node: '>=12.20.0'}
+
+  openapi3-ts@4.6.2:
+    resolution: {integrity: sha512-gyyil3DweqhXiEhTqtAs9wwRLfWHmetwhI4kmM5Rn0d6gtmK863Ki7qqbQnp9+Wwlqoe3B1LFWj7kMp5ctE4rQ==}
 
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
@@ -1696,6 +1762,11 @@ packages:
 
 snapshots:
 
+  '@asteasolutions/zod-to-openapi@9.1.0(zod@4.6.7)':
+    dependencies:
+      openapi3-ts: 4.6.2
+      zod: 4.6.7
+
   '@babel/code-frame@7.29.7':
     dependencies:
       '@babel/helper-validator-identifier': 7.29.7
@@ -1932,6 +2003,19 @@ snapshots:
     dependencies:
       '@eslint/core': 1.2.1
       levn: 0.4.1
+
+  '@hono/zod-openapi@1.6.3(hono@4.13.14)(zod@4.6.7)':
+    dependencies:
+      '@asteasolutions/zod-to-openapi': 9.1.0(zod@4.6.7)
+      '@hono/zod-validator': 0.9.1(hono@4.13.14)(zod@4.6.7)
+      hono: 4.13.14
+      openapi3-ts: 4.6.2
+      zod: 4.6.7
+
+  '@hono/zod-validator@0.9.1(hono@4.13.14)(zod@4.6.7)':
+    dependencies:
+      hono: 4.13.14
+      zod: 4.6.7
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -2525,6 +2609,8 @@ snapshots:
     dependencies:
       hermes-estree: 0.25.1
 
+  hono@4.13.14: {}
+
   hookified@1.15.1: {}
 
   hookified@2.2.0: {}
@@ -2636,6 +2722,10 @@ snapshots:
   node-releases@2.0.60: {}
 
   obug@3.0.0: {}
+
+  openapi3-ts@4.6.2:
+    dependencies:
+      yaml: 2.9.1
 
   optionator@0.9.4:
     dependencies:

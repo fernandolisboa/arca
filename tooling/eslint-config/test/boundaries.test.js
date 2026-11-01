@@ -104,6 +104,20 @@ describe('api', () => {
   });
 });
 
+describe('contract', () => {
+  it.each([
+    ['src/routes/hono.ts', 'no-restricted-imports'],
+    ['src/client/hono-openapi.ts', 'no-restricted-imports'],
+    ['src/client/dynamic-hono.ts', 'no-restricted-syntax'],
+  ])('%s fails with %s', async (file, rule) => {
+    expect(await ruleIds('contract', ['contract'], file)).toContain(rule);
+  });
+
+  it('allows Hono in the server entry', async () => {
+    expect(await ruleIds('contract', ['contract'], 'src/server/hono.ts')).toEqual([]);
+  });
+});
+
 describe('package root', () => {
   it('forbids relative imports that leave the package', async () => {
     expect(await ruleIds('cross/pkg', [], 'src/outside.ts')).toContain(

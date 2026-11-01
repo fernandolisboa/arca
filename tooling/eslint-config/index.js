@@ -6,6 +6,8 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 import {
   client,
+  contractSurface,
+  contractSurfaceFiles,
   domain,
   restrictionRules,
   web,
@@ -26,6 +28,8 @@ const restrictionsByKind = {
   web: [web],
   /** apps/api: workflows start only through the shared helper. */
   api: [workflowStart],
+  /** packages/api-contract: ./routes and ./client import no Hono (restricted per file below). */
+  contract: [],
 };
 
 /** @typedef {keyof typeof restrictionsByKind} Kind */
@@ -78,6 +82,12 @@ export function arcaConfig({ rootDir, kinds = [] }) {
             'no-restricted-syntax': 'off',
             ...restrictionRules(restrictions.filter((entry) => entry !== workflowStart)),
           },
+        }
+      : [],
+    kinds.includes('contract')
+      ? {
+          files: contractSurfaceFiles,
+          rules: restrictionRules([...restrictions, contractSurface]),
         }
       : [],
     isClient

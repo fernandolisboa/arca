@@ -1,0 +1,7 @@
+{
+  "extends": "@arca/tsconfig/library.json",
+  "include": ["src"],
+  "compilerOptions": {
+    "lib": ["es2024", "dom"]
+  }
+}

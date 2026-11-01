@@ -120,6 +120,17 @@ export const web = {
   patterns: [{ regex: '^@arca/api-contract/(?!client$)', message: contractEntry }],
 };
 
+const contractWithoutHono =
+  'The contract routes and client stay free of Hono, so it never reaches the web bundle.';
+
+/** The api-contract entries the web client imports (spec 0001, R3). */
+export const contractSurfaceFiles = ['src/routes/**', 'src/client/**'];
+
+/** @type {Restrictions} */
+export const contractSurface = {
+  patterns: [{ group: ['hono', 'hono/*', '@hono/*'], message: contractWithoutHono }],
+};
+
 /** The one file allowed to call start() from workflow/api (spec 0001, R6). */
 export const workflowStartHelper = 'src/workflows/start-workflow.ts';
 
