@@ -1,6 +1,6 @@
 # ADR-0008: Database roles, row-level security, field encryption, backups and environments
 
-- Status: Accepted; workflow run deletion amended by [ADR-0009](0009-background-jobs-guarantees.md); environments (one Neon project, previews forked from a `development` branch without production data) amended by [ADR-0012](0012-automation-first-setup.md)
+- Status: Accepted; workflow run deletion amended by [ADR-0009](0009-background-jobs-guarantees.md); environments (one Neon project created through Vercel; previews fork from a synthetic `development` branch before any family data exists) amended by [ADR-0012](0012-automation-first-setup.md)
 - Date: 2026-11-01
 
 ## Context
@@ -14,7 +14,7 @@
 
 ### Environments
 
-- **Separate Neon projects** for production and non-production (amended by [ADR-0012](0012-automation-first-setup.md): one project, with a `production` branch that previews never fork from). Non-production branches start from a synthetic seed, never from production.
+- **Separate Neon projects** for production and non-production (amended by [ADR-0012](0012-automation-first-setup.md): one project; previews fork from a synthetic `development` branch before any family data exists). Non-production branches start from a synthetic seed, never from production.
 - Production data never leaves production: no copies to preview, CI or local machines.
 - Preview deployments sit behind Vercel Deployment Protection and use non-production secrets only.
 - Each environment has its own secrets, held in the platform's environment-variable store and scoped per environment. Access from Vercel to AWS uses OIDC federation, so no long-lived AWS keys exist.

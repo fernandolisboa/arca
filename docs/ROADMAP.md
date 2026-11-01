@@ -28,7 +28,7 @@ Phase 0 does not depend on code: the questions in [OPEN-QUESTIONS.md](OPEN-QUEST
 - First slice specified in [specs/0001-foundations-scaffold.md](specs/0001-foundations-scaffold.md).
 - Monorepo with `packages/domain`, `packages/api-contract`, `packages/ui`, `packages/i18n`, `packages/platform`, `apps/api`, `apps/web` ([ARCHITECTURE.md](ARCHITECTURE.md#platforms-and-code-layout)).
 - Empty app deployed end to end (web, API, a sample workflow, database) in São Paulo, with protected preview deployments per pull request.
-- Environments per [ADR-0008](adr/0008-database-security-and-environments.md) and [ADR-0012](adr/0012-automation-first-setup.md): a production Neon branch that previews never fork from, synthetic seed for everything else, secrets per environment, OIDC to AWS.
+- Environments per [ADR-0008](adr/0008-database-security-and-environments.md) and [ADR-0012](adr/0012-automation-first-setup.md): a production Neon branch that previews stop forking from before any family data exists, synthetic seed for everything else, secrets per environment, OIDC to AWS.
 - Database roles, forced row-level security and the access-matrix suite in CI before the first table with case data.
 - Supply-chain controls in CI from the first commit (pinned actions, advisories, secret scanning, SBOM, pnpm install-script and release-age settings).
 - Observability on from the first deploy: Sentry, traces, structured logs, Langfuse, all with personal data scrubbing.
