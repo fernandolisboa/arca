@@ -150,7 +150,7 @@ eval/
 
 All workflows: actions pinned by full commit SHA; top-level `permissions: {}`, with jobs granting only what they need; GitHub-hosted runners; `actions/checkout` with `persist-credentials: false`. Workflows on `pull_request` and `push` use `concurrency` per ref; the review gate, on `pull_request_target`, groups by pull request number. Values from the event (branch names, titles, file names) reach `run:` steps only through `env:` and are validated against a strict pattern before use. The review gate filters on `branches: [main]`, so its definition always comes from `main`, and runs only for pull requests from this repository.
 
-**Secrets.** No repository-level secrets. GitHub environments, each limited to `main`: `review` (Anthropic key), `deploy` (a Vercel token for the post-deploy smoke test). Workflows on `pull_request_target` and on `push` to `main` run with ref `main`; runs on `pull_request` do not, so branch code never reaches a GitHub secret. The Neon key and the runtime connection strings live in Vercel (R9). The ticket verifies, with a source, whether `review` secrets reach Dependabot-triggered `pull_request_target` runs; if not, a Dependabot secret holding a second, spend-limited Anthropic key is the exception.
+**Secrets.** No repository-level secrets. One GitHub environment, `review` (Anthropic key), limited to `main`. Workflows on `pull_request_target` and on `push` to `main` run with ref `main`; runs on `pull_request` do not, so branch code never reaches it. The Neon key and the runtime connection strings live in Vercel (R9). The ticket verifies, with a source, whether `review` secrets reach Dependabot-triggered `pull_request_target` runs; if not, a Dependabot secret holding a second, spend-limited Anthropic key is the exception.
 
 A CI lint checks each workflow file against an allow-list of the secrets and environments it may use; `pull_request` workflows use none.
 
@@ -183,11 +183,11 @@ A CI lint checks each workflow file against an allow-list of the secrets and env
   - production branch `production`;
   - role `app_api`, if offered;
   - "Create a branch for your development environment" on, so Vercel's Development environment never gets a production connection string.
-- **Build command**, set by an agent in the Vercel project: bootstrap, then migrations with the guards in the same transaction (R7), then the app build. A guard failure fails the build, so nothing deploys; the fix is a forward migration. The build reads the project-scoped Neon API key from a Vercel variable scoped to Production and Preview.
+- **Build command**, set by an agent in the Vercel project: bootstrap, then migrations with the guards in the same transaction (R7), then the app build. A guard failure fails the build, so nothing deploys; the fix is a forward migration. The build reads the project-scoped Neon API key from a Sensitive Vercel variable scoped to Production and Preview.
 - Every build fails if the Neon project's default branch is `production`, so previews never fork from production data.
 - Production runtime variables beyond the integration's (`app_jobs`'s connection string, `CRON_SECRET`) are set by an agent through the Vercel API and marked Sensitive.
 - Vercel Deployment Protection on previews; Git Fork Protection on, so fork pull requests get no variables without approval.
-- A post-deploy smoke test, run from GitHub Actions on Vercel's deployment event, calls `/v1/health` (through the automation bypass on previews), checks the security headers, and sends an unsigned request to the Workflow SDK's routes (R6).
+- A smoke test runs from GitHub Actions on Vercel's successful production deployment of `main`, with no secrets (the production URL is public): it calls `/v1/health`, checks the security headers, and sends an unsigned request to the Workflow SDK's routes (R6). Previews are covered by the `e2e` check and by the build failing on any migration or guard error.
 - Preview branches are deleted by the integration when their Git branch is deleted.
 - Production holds an empty database with roles applied. The heartbeat cron runs in production only.
 - The ticket verifies first, and reports to the owner, whether the integration offers `app_api` and whether the Neon API returns connection strings for roles created with SQL.
@@ -256,7 +256,7 @@ The latest stable release of each, checked on the npm registry on 2026-11-01, un
 
 ## Threat model for this slice
 
-Assets in play: the Anthropic API key and a Vercel token in GitHub environments; the Neon API key and runtime connection strings in Vercel; the owner's tokens in the agent environment; the integrity of `main` and of the review gate. No personal data exists yet.
+Assets in play: the Anthropic API key in a GitHub environment; the Neon API key and runtime connection strings in Vercel; the owner's tokens in the agent environment; the integrity of `main` and of the review gate. No personal data exists yet.
 
 | Threat (STRIDE, LLM and agentic) | Where | Control in this slice |
 | --- | --- | --- |
