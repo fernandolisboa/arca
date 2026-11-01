@@ -1,6 +1,6 @@
 # ADR-0008: Database roles, row-level security, field encryption, backups and environments
 
-- Status: Accepted; workflow run deletion amended by [ADR-0009](0009-background-jobs-guarantees.md)
+- Status: Accepted; workflow run deletion amended by [ADR-0009](0009-background-jobs-guarantees.md); environments (one Neon project, previews forked from a synthetic default branch) amended by [ADR-0012](0012-automation-first-setup.md)
 - Date: 2026-11-01
 
 ## Context

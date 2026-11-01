@@ -1,6 +1,6 @@
 # ADR-0010: Application stack, revised
 
-- Status: Accepted
+- Status: Accepted; preview databases and deploys amended by [ADR-0012](0012-automation-first-setup.md) (Vercel–Neon integration, linked Vercel project)
 - Date: 2026-11-01
 - Supersedes: [ADR-0003](0003-stack.md)
 
