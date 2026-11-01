@@ -1,10 +1,8 @@
-// Runs before `pnpm install`, so it imports only node builtins and report.ts.
+// Runs before pnpm exists, so it imports only node builtins and report.ts.
 import { createHash } from 'node:crypto';
-import { execFile } from 'node:child_process';
-import { constants } from 'node:fs';
-import { access, readFile, realpath } from 'node:fs/promises';
-import { delimiter, join } from 'node:path';
-import { promisify } from 'node:util';
+import { appendFile, chmod, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
 import { reportViolations, type Violation } from './report.ts';
 
@@ -19,10 +17,7 @@ export interface ObservedPnpm {
   /** Integrity the lockfile records for the platform's `@pnpm/exe.*` package. */
   readonly lockedExeIntegrity: string | undefined;
   readonly exeTarballSha512Hex: string;
-  /** SHA-512 of `package/pnpm` inside that tarball, if the entry exists. */
-  readonly expectedBinarySha512Hex: string | undefined;
-  readonly runningBinarySha512Hex: string;
-  readonly runningVersion: string;
+  readonly hasBinary: boolean;
 }
 
 const packageManagerField = /^pnpm@(\d+\.\d+\.\d+)\+sha512\.([0-9a-f]{128})$/;
@@ -59,11 +54,6 @@ export function exePackageName(platform: string, arch: string, musl: boolean): s
   return `@pnpm/exe.${platform}-${arch}${musl ? '-musl' : ''}`;
 }
 
-/** The file a cmd-shim script runs, from the `# cmd-shim-target=` line pnpm writes into it. */
-export function shimTarget(script: string): string | undefined {
-  return /^# cmd-shim-target=(.+)$/m.exec(script)?.[1]?.trim();
-}
-
 /** Returns one file from an uncompressed ustar archive, which is what an npm tarball holds. */
 export function tarEntry(archive: Buffer, path: string): Buffer | undefined {
   const block = 512;
@@ -95,38 +85,11 @@ export function checkPnpm(pinned: PinnedPnpm, observed: ObservedPnpm): Violation
   else if (observed.exeTarballSha512Hex !== lockedExe) {
     add('downloaded native binary package differs from the lockfile');
   }
-  if (observed.expectedBinarySha512Hex === undefined) {
-    add('native binary package has no package/pnpm');
-  } else if (observed.runningBinarySha512Hex !== observed.expectedBinarySha512Hex) {
-    add('pnpm on PATH is not the native binary recorded in the lockfile');
-  }
-  if (observed.runningVersion !== pinned.version) {
-    add(`pnpm on PATH is ${observed.runningVersion}, not ${pinned.version}`);
-  }
+  if (!observed.hasBinary) add('native binary package has no package/pnpm');
   return violations;
 }
 
 const sha512Hex = (data: Buffer) => createHash('sha512').update(data).digest('hex');
-
-async function onPath(command: string): Promise<string> {
-  for (const dir of (process.env['PATH'] ?? '').split(delimiter)) {
-    const candidate = join(dir, command);
-    try {
-      await access(candidate, constants.X_OK);
-      return candidate;
-    } catch {
-      // Not in this directory.
-    }
-  }
-  throw new Error(`${command} is not on PATH`);
-}
-
-/** Follows the pnpm shim on PATH to the file it executes. */
-async function runningBinary(): Promise<Buffer> {
-  const content = await readFile(await realpath(await onPath('pnpm')));
-  const target = shimTarget(content.subarray(0, 4096).toString('utf8'));
-  return target === undefined ? content : readFile(await realpath(target));
-}
 
 function isMusl(): boolean {
   const report = process.report.getReport() as { header?: { glibcVersionRuntime?: string } };
@@ -134,10 +97,10 @@ function isMusl(): boolean {
 }
 
 /**
- * Ties the pnpm that CI runs to hashes reviewed in this repository. pnpm/action-setup installs
- * pnpm 12 through `pnpm self-update`, which checks downloads against the registry only. This
- * checks packageManager against the lockfile, downloads the platform's native binary package,
- * requires its hash to equal the lockfile's, and compares the binary inside with the one on PATH.
+ * Installs the pnpm recorded in this repository without running anything unverified: the
+ * packageManager hash must equal the lockfile's integrity for pnpm, and the platform's native
+ * binary package must equal the lockfile's integrity for it. Only then is the binary written to
+ * a directory that is put first on PATH for later steps (GITHUB_PATH) and printed.
  */
 async function main(): Promise<void> {
   const root = process.cwd();
@@ -158,18 +121,24 @@ async function main(): Promise<void> {
   if (!response.ok) throw new Error(`${exeName} download failed: ${String(response.status)}`);
   const exeTarball = Buffer.from(await response.arrayBuffer());
   const binary = tarEntry(gunzipSync(exeTarball), 'package/pnpm');
-  const { stdout } = await promisify(execFile)('pnpm', ['--version']);
 
-  reportViolations(
-    checkPnpm(pinned, {
-      lockedPnpmIntegrity: lockedIntegrity(lockfile, `pnpm@${pinned.version}`),
-      lockedExeIntegrity: lockedIntegrity(lockfile, `${exeName}@${pinned.version}`),
-      exeTarballSha512Hex: sha512Hex(exeTarball),
-      expectedBinarySha512Hex: binary === undefined ? undefined : sha512Hex(binary),
-      runningBinarySha512Hex: sha512Hex(await runningBinary()),
-      runningVersion: stdout.trim(),
-    }),
-  );
+  const violations = checkPnpm(pinned, {
+    lockedPnpmIntegrity: lockedIntegrity(lockfile, `pnpm@${pinned.version}`),
+    lockedExeIntegrity: lockedIntegrity(lockfile, `${exeName}@${pinned.version}`),
+    exeTarballSha512Hex: sha512Hex(exeTarball),
+    hasBinary: binary !== undefined,
+  });
+  reportViolations(violations);
+  if (violations.length > 0 || binary === undefined) return;
+
+  const binDir = join(process.env['RUNNER_TEMP'] ?? tmpdir(), `pnpm-${pinned.version}`);
+  await mkdir(binDir, { recursive: true });
+  const target = join(binDir, 'pnpm');
+  await writeFile(target, binary);
+  await chmod(target, 0o755);
+  const githubPath = process.env['GITHUB_PATH'];
+  if (githubPath !== undefined) await appendFile(githubPath, `${binDir}\n`);
+  console.log(`pnpm ${pinned.version} verified and installed at ${target}`);
 }
 
 if (import.meta.main) await main();

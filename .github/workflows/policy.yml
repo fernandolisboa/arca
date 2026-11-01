@@ -32,6 +32,13 @@ jobs:
         with:
           path: policy
           persist-credentials: false
+      - uses: ./policy/.github/actions/setup-pnpm
+        with:
+          directory: policy
+      - name: Install the scripts from main
+        working-directory: policy
+        run: pnpm install --frozen-lockfile --filter @arca/scripts
+      # Last, so no earlier step can read the change; nothing runs from it.
       - name: Check out the change (data only)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -39,15 +46,13 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           path: change
           persist-credentials: false
-          sparse-checkout: .github/workflows
-      - uses: ./policy/.github/actions/setup-pnpm
-        with:
-          directory: policy
-      - name: Install the scripts from main
-        working-directory: policy
-        run: pnpm install --frozen-lockfile --filter @arca/scripts
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            .github/workflows/
+            .github/actions/
       - name: Lint workflow secrets
         run: >-
           node policy/tooling/scripts/src/check-workflow-secrets.ts
           policy/.github/policy/workflow-secrets.json
           change/.github/workflows
+          change/.github/actions

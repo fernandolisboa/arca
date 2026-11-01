@@ -1,6 +1,11 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
-import { checkWorkflow, expressionsIn, type SecretsPolicy } from '../src/check-workflow-secrets.ts';
+import {
+  checkAction,
+  checkWorkflow,
+  expressionsIn,
+  type SecretsPolicy,
+} from '../src/check-workflow-secrets.ts';
 
 const fixtures = new URL('./fixtures/workflows/', import.meta.url);
 const listed = { secrets: ['ANTHROPIC_API_KEY'], environments: ['review'] };
@@ -84,6 +89,12 @@ describe('workflow secrets lint', () => {
       'uses the github context other than as github.NAME',
     ],
     [
+      'a %YAML 1.1 directive that hides the trigger from the parser',
+      'yaml-1-1.yml',
+      'has no on: trigger this lint can read',
+    ],
+    ['a workflow without a trigger', 'no-trigger.yml', 'has no on: trigger this lint can read'],
+    [
       'a mixed-case pull_request trigger',
       'mixed-case-trigger.yml',
       'runs on pull_request and uses secret ANTHROPIC_API_KEY',
@@ -109,5 +120,34 @@ describe('expression scanning', () => {
 
   it('reports an unterminated expression', () => {
     expect(expressionsIn("${{ x('}}') ").unterminated).toBe(true);
+  });
+});
+
+describe('composite actions', () => {
+  const action = (env: string) =>
+    [
+      'runs:',
+      '  using: composite',
+      '  steps:',
+      '    - run: echo',
+      '      shell: bash',
+      '      env:',
+      `        V: ${env}`,
+    ].join('\n');
+
+  it('accepts an action that takes its values as inputs', () => {
+    expect(checkAction('setup/action.yml', action('${{ inputs.token }}'))).toEqual([]);
+  });
+
+  it.each([
+    [
+      '${{ github.token }}',
+      'uses secret GITHUB_TOKEN; pass it from the workflow as an input instead',
+    ],
+    ['${{ SECRETS.KEY }}', 'uses secret KEY; pass it from the workflow as an input instead'],
+  ])('rejects %s', (env, problem) => {
+    expect(checkAction('setup/action.yml', action(env))).toEqual([
+      { where: 'setup/action.yml', problem },
+    ]);
   });
 });

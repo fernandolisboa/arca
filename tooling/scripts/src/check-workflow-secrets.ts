@@ -1,4 +1,4 @@
-import { readFile, readdir } from 'node:fs/promises';
+import { lstat, readFile, readdir } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { parse } from 'yaml';
 import { isRecord, reportViolations, type Violation } from './report.ts';
@@ -23,24 +23,14 @@ export function checkWorkflow(file: string, source: string, policy: SecretsPolic
   }
 
   const workflow = parse(source) as unknown;
-  const expressions: string[] = [];
-  collectExpressions(workflow, expressions, add);
-
-  const secrets = new Set<string>();
-  for (const text of expressions) {
-    for (const match of text.matchAll(secretReference)) {
-      if (match[1] !== undefined) secrets.add(match[1].toUpperCase());
-      else add(`uses the secrets context other than as secrets.NAME: "${text.trim()}"`);
-    }
-    for (const match of text.matchAll(githubReference)) {
-      if (match[1] === undefined)
-        add(`uses the github context other than as github.NAME: "${text.trim()}"`);
-      else if (match[1].toLowerCase() === 'token') secrets.add('GITHUB_TOKEN');
-    }
-  }
+  const workflowTriggers = triggers(workflow);
+  // A parser that reads `on` differently from GitHub (a %YAML 1.1 directive makes it `true`) must
+  // not turn the pull_request rule off silently.
+  if (workflowTriggers.length === 0) add('has no on: trigger this lint can read');
+  const secrets = secretsUsed(workflow, add);
   if (containsInheritedSecrets(workflow)) add('passes secrets: inherit to a reusable workflow');
 
-  const onPullRequest = triggers(workflow).includes('pull_request');
+  const onPullRequest = workflowTriggers.includes('pull_request');
   const allowedSecrets = allowed.secrets.map((secret) => secret.toUpperCase());
   const allowedEnvironments = allowed.environments.map((environment) => environment.toLowerCase());
 
@@ -55,6 +45,38 @@ export function checkWorkflow(file: string, source: string, policy: SecretsPolic
     }
   }
   return violations;
+}
+
+/**
+ * Composite actions get no secrets of their own; a workflow passes what an action needs as an
+ * input, where the workflow's allow-list covers it. So an action may reference none.
+ */
+export function checkAction(file: string, source: string): Violation[] {
+  const violations: Violation[] = [];
+  const add = (problem: string) => violations.push({ where: file, problem });
+  for (const secret of secretsUsed(parse(source) as unknown, add)) {
+    add(`uses secret ${secret}; pass it from the workflow as an input instead`);
+  }
+  return violations;
+}
+
+/** Secret names referenced in expressions, upper-cased; `github.token` counts as GITHUB_TOKEN. */
+function secretsUsed(document: unknown, add: (problem: string) => void): Set<string> {
+  const expressions: string[] = [];
+  collectExpressions(document, expressions, add);
+  const secrets = new Set<string>();
+  for (const text of expressions) {
+    for (const match of text.matchAll(secretReference)) {
+      if (match[1] !== undefined) secrets.add(match[1].toUpperCase());
+      else add(`uses the secrets context other than as secrets.NAME: "${text.trim()}"`);
+    }
+    for (const match of text.matchAll(githubReference)) {
+      if (match[1] === undefined) {
+        add(`uses the github context other than as github.NAME: "${text.trim()}"`);
+      } else if (match[1].toLowerCase() === 'token') secrets.add('GITHUB_TOKEN');
+    }
+  }
+  return secrets;
 }
 
 /**
@@ -139,19 +161,42 @@ function triggers(workflow: unknown): string[] {
   return names.map((trigger) => trigger.toLowerCase());
 }
 
-/** Usage: check-workflow-secrets.ts <policy.json> <workflows dir> */
+/** YAML files directly in a directory, or `<dir>/<name>/action.yml` when `nested`. */
+async function yamlFiles(
+  dir: string,
+  nested: boolean,
+  violations: Violation[],
+): Promise<{ name: string; source: string }[]> {
+  const entries = nested
+    ? (await readdir(dir)).flatMap((name) => [`${name}/action.yml`, `${name}/action.yaml`])
+    : (await readdir(dir)).filter((name) => /\.ya?ml$/.test(name));
+  const files: { name: string; source: string }[] = [];
+  for (const name of entries) {
+    const path = join(dir, name);
+    const stat = await lstat(path).catch(() => undefined);
+    if (stat === undefined) continue;
+    if (!stat.isFile()) violations.push({ where: name, problem: 'is not a regular file' });
+    else files.push({ name, source: await readFile(path, 'utf8') });
+  }
+  return files;
+}
+
+/** Usage: check-workflow-secrets.ts <policy.json> <workflows dir> [<actions dir>] */
 async function main(): Promise<void> {
-  const [policyPath, workflowsDir] = process.argv.slice(2);
+  const [policyPath, workflowsDir, actionsDir] = process.argv.slice(2);
   if (policyPath === undefined || workflowsDir === undefined) {
-    throw new Error('usage: check-workflow-secrets.ts <policy.json> <workflows dir>');
+    throw new Error(
+      'usage: check-workflow-secrets.ts <policy.json> <workflows dir> [<actions dir>]',
+    );
   }
   const policy = JSON.parse(await readFile(policyPath, 'utf8')) as SecretsPolicy;
-  const files = (await readdir(workflowsDir)).filter((file) => /\.ya?ml$/.test(file));
   const violations: Violation[] = [];
-  for (const file of files) {
-    violations.push(
-      ...checkWorkflow(file, await readFile(join(workflowsDir, file), 'utf8'), policy),
-    );
+  for (const { name, source } of await yamlFiles(workflowsDir, false, violations)) {
+    violations.push(...checkWorkflow(name, source, policy));
+  }
+  if (actionsDir !== undefined) {
+    const actions = await yamlFiles(actionsDir, true, violations).catch(() => []);
+    for (const { name, source } of actions) violations.push(...checkAction(name, source));
   }
   reportViolations(violations);
 }

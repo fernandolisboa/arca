@@ -5,11 +5,10 @@ import {
   exePackageName,
   lockedIntegrity,
   parsePackageManager,
-  shimTarget,
   sriToSha512Hex,
   tarEntry,
   type ObservedPnpm,
-} from '../src/verify-pnpm.ts';
+} from '../src/setup-pnpm.ts';
 
 const hex = 'ab'.repeat(64);
 const otherHex = 'cd'.repeat(64);
@@ -49,12 +48,10 @@ const matching: ObservedPnpm = {
   lockedPnpmIntegrity: sri(hex),
   lockedExeIntegrity: sri(otherHex),
   exeTarballSha512Hex: otherHex,
-  expectedBinarySha512Hex: 'ef'.repeat(64),
-  runningBinarySha512Hex: 'ef'.repeat(64),
-  runningVersion: '12.15.0',
+  hasBinary: true,
 };
 
-describe('pnpm verification', () => {
+describe('pnpm setup', () => {
   it('parses an exact packageManager with its hash', () => {
     expect(parsePackageManager(`pnpm@12.15.0+sha512.${hex}`)).toEqual(pinned);
   });
@@ -80,13 +77,6 @@ describe('pnpm verification', () => {
   it('names the native binary package per platform', () => {
     expect(exePackageName('linux', 'x64', false)).toBe('@pnpm/exe.linux-x64');
     expect(exePackageName('linux', 'arm64', true)).toBe('@pnpm/exe.linux-arm64-musl');
-  });
-
-  it('follows a cmd-shim to its target', () => {
-    expect(shimTarget('#!/bin/sh\nexec "$basedir/x"\n# cmd-shim-target=/opt/pnpm/pnpm\n')).toBe(
-      '/opt/pnpm/pnpm',
-    );
-    expect(shimTarget('\u007fELF')).toBeUndefined();
   });
 
   it('extracts one file from a tarball', () => {
@@ -124,15 +114,9 @@ describe('pnpm verification', () => {
     ],
     [
       'tarball without the binary',
-      { expectedBinarySha512Hex: undefined },
+      { hasBinary: false },
       'native binary package has no package/pnpm',
     ],
-    [
-      'binary on PATH',
-      { runningBinarySha512Hex: hex },
-      'pnpm on PATH is not the native binary recorded in the lockfile',
-    ],
-    ['running version', { runningVersion: '12.14.0' }, 'pnpm on PATH is 12.14.0, not 12.15.0'],
   ])('fails on a different %s', (_label, change, problem) => {
     expect(checkPnpm(pinned, { ...matching, ...change })).toEqual([
       { where: 'pnpm@12.15.0', problem },
