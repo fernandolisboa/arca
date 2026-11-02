@@ -23,7 +23,6 @@ Made by agents, tracked here so they are not lost.
 - [ ] Resend's log and body retention for the plan, recorded in [RETENTION.md](RETENTION.md) by the email ticket.
 - [ ] License exception for Sentry's build tooling (`@sentry/vite-plugin`, through `@sentry/bundler-plugin-core` and `@sentry/cli`, FSL-1.1-Apache-2.0), or keeping it out, decided by the server Sentry ticket.
 - [ ] `@noble/post-quantum` audit: the vault's residual ends when one is published ([ADR-0018](adr/0018-vault-encryption.md)).
-- [ ] The `knowledge_*` step-up purposes in ADR-0015 and spec 0003 are conditional on ADR-0014 (pull request #39): confirm them when it is accepted, or remove or adjust them.
 - [ ] Web push library (spec 0005 R7): a maintained WebCrypto-based one with provenance, or `web-push` with an MPL-2.0 license exception, decided by the notifications ticket.
 - [ ] One active passkey controls the account (ADR-0015 residual): decide before the real-data gate whether revoking passkeys, regenerating the kit and cancelling recovery need the designated adult or a 24-hour cancellable delay.
 - [ ] Langfuse retention, set when it is adopted ([ADR-0016](adr/0016-observability-and-scrubbing.md)).

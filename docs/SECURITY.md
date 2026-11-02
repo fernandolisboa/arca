@@ -29,7 +29,7 @@ Revisited at the start of every epic. New features list the assets they touch an
 
 | Threat | Example | Main controls |
 | --- | --- | --- |
-| Account takeover | Phished or stolen session | Passkeys only; step-up for vault and financial actions; session binding and short lifetimes; alerts on new devices |
+| Account takeover | Phished or stolen session | Passkeys only; step-up for vault, financial and account changes; sessions bound to their passkey, with a 3-day idle and 30-day absolute lifetime (ADR-0015 records the trade-off); notices on new passkeys and on sign-ins from an unseen browser or system |
 | Broken access control | User reads another case by changing an ID | API authorization plus row-level security; an access-matrix test suite for every endpoint |
 | Intra-family exposure or coercion | A separated spouse sees the other's finances; one relative controls another's application | Per-person ownership and explicit sharing; each adult signs in separately; audit log visible to the data owner |
 | Indirect prompt injection | Text in an uploaded PDF or a researched web page tells an agent to reveal data or change a rule | Document and web content treated as data, never instructions; agents have no write tools outside their task; schema-validated outputs; knowledge-base changes need human approval; injection cases in the evaluation suite |
