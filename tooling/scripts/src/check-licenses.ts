@@ -11,8 +11,13 @@ import { isRecord, reportViolations, type Violation } from './report.ts';
 export interface LicenseException {
   /** A package selector, as in minimumReleaseAgeExclude. */
   readonly package: string;
-  /** The exact license string the registry gives, so a relicense is judged again. */
-  readonly license: string;
+  /**
+   * The exact license string the registry gives, so a relicense is judged again. `null` matches a
+   * release the registry gives no license string for; its reason must name the license the
+   * published tarball carries, and its selector must name exact versions, since nothing on the
+   * registry would show a later release changing its license file.
+   */
+  readonly license: string | null;
   readonly reason: string;
 }
 
@@ -21,6 +26,9 @@ export interface LicensePolicy {
   readonly allow: readonly string[];
   readonly exceptions: readonly LicenseException[];
 }
+
+/** `name@1.2.3` or `name@1.2.3||1.2.4`, with no wildcard. */
+const exactVersions = /^(?:@[^/@*\s]+\/)?[^/@*\s]+@[^@*\s|]+(?:\|\|[^@*\s|]+)*$/;
 
 export function parseLicensePolicy(json: string): LicensePolicy {
   const value: unknown = JSON.parse(json);
@@ -33,9 +41,15 @@ export function parseLicensePolicy(json: string): LicensePolicy {
   for (const exception of exceptions) {
     if (
       !isRecord(exception) ||
-      !strings([exception['package'], exception['license'], exception['reason']])
+      !strings([exception['package'], exception['reason']]) ||
+      !(exception['license'] === null || strings([exception['license']]))
     ) {
-      throw new Error('each license exception needs "package", "license" and "reason" strings');
+      throw new Error(
+        'each license exception needs "package" and "reason" strings and a "license" string or null',
+      );
+    }
+    if (exception['license'] === null && !exactVersions.test(exception['package'] as string)) {
+      throw new Error('a license exception with a null license must name exact versions');
     }
   }
   return {
@@ -99,17 +113,19 @@ export function checkLicenses(
       violations.push({ where, problem: 'is not a release on the registry' });
       continue;
     }
-    const { license } = release;
-    if (license === undefined) {
-      violations.push({ where, problem: 'has no SPDX license on the registry' });
-      continue;
-    }
-    if (licenseSatisfies(license, policy.allow)) continue;
+    const license = release.license ?? null;
+    if (license !== null && licenseSatisfies(license, policy.allow)) continue;
     const excepted = policy.exceptions.some(
       (exception) => exception.license === license && matchesSelector(entry, exception.package),
     );
-    if (!excepted)
-      violations.push({ where, problem: `has license ${license}, which is not allowed` });
+    if (excepted) continue;
+    violations.push({
+      where,
+      problem:
+        license === null
+          ? 'has no SPDX license on the registry'
+          : `has license ${license}, which is not allowed`,
+    });
   }
   return violations;
 }
