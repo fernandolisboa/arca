@@ -6,7 +6,7 @@
 
 ## Context
 
-Spec 0001 R10 says the canary runs on every push to `main`, and the gate fails closed unless a canary run for the current tip of `main` passed. Each run has about 60 model runs: one known-bad case per reviewer, plus injected cases that carry a payload for every must-pass reviewer. Most pushes to `main` change nothing the reviewers see, so that rule would spend a full canary on every merge to re-test an unchanged gate.
+Spec 0001 R10 says the canary runs on every push to `main`, and the gate fails closed unless a canary run for the current tip of `main` passed. Each run has about 80 model runs: one known-bad case per reviewer, plus injected cases that carry a payload for every must-pass reviewer. Most pushes to `main` change nothing the reviewers see, so that rule would spend a full canary on every merge to re-test an unchanged gate.
 
 ADR-0011 pins each reviewer's model ID in the workflow file. A pin there changes only through a pull request, which the gate under the old pin reviews, and it puts model identifiers into the repository's history.
 
@@ -69,14 +69,14 @@ This ADR decides that model IDs live in repository settings, not in files. A pin
 
 | Option | Why not |
 | --- | --- |
-| Canary on every push to `main`, keyed by commit | About 60 model runs per merge, mostly re-testing an unchanged gate |
+| Canary on every push to `main`, keyed by commit | About 80 model runs per merge, mostly re-testing an unchanged gate |
 | Canary only when a path filter on the workflow matches | The path list would live in two places, the workflow and the fingerprint, and could drift |
 | Model IDs in the workflow file | Model identifiers stay out of the repository |
 | Reusable workflow for the review job | Secrets in a called workflow depend on the caller; a composite action takes the key as an input, which the secrets lint already governs |
 
 ## Consequences
 
-- **Cost.** A change to docs, reviewers or the gate costs one canary run, about 60 model runs. Other merges cost nothing extra, and the weekly run catches drift at a fixed model ID.
+- **Cost.** A change to docs, reviewers or the gate costs one canary run, about 80 model runs. Other merges cost nothing extra, and the weekly run catches drift at a fixed model ID.
 - **Doc changes count.** Any change under `docs/` changes the fingerprint, since reference docs reach the reviewers. Docs-heavy weeks cost more canary runs.
 - **Setup by the owner, once.** [ADR-0012](0012-automation-first-setup.md) has agents apply repository settings, but the GitHub access agents have here cannot write environments, secrets or variables. The owner sets the three variables, the `review` environment with its key, and the Dependabot secret, then dispatches the canary; the step is in [OPEN-QUESTIONS.md](../OPEN-QUESTIONS.md). Until then, the gate and the canary fail closed.
 - **Corpus depth.** Each reviewer has one known-bad payload, so a reviewer narrowed to exactly that payload would still pass its own case. The pull request that weakens it is also reviewed by `main`'s unchanged reviewers, and the injected cases test the same reviewers again. More payloads per reviewer are tracked as a follow-up.

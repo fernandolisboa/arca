@@ -8,6 +8,7 @@ import { isRecord } from '../../src/report.ts';
 import { judgeCanaryRun, loadCases, planCanary } from '../../src/review-gate/canary.ts';
 import { gateFingerprint, pinnedModels } from '../../src/review-gate/fingerprint.ts';
 import {
+  changeAgents,
   instructionFiles,
   PrepareError,
   prepareReviewInput,
@@ -158,6 +159,7 @@ describe('review input', () => {
       out: join(scratch, 'a'),
     });
     expect(prepared.changedAgents?.map((agent) => agent.name)).toEqual(['x-reviewer']);
+    expect(changeAgents(repo, good).agents.map((agent) => agent.name)).toEqual(['x-reviewer']);
 
     await put(
       '.claude/agents/x-reviewer.md',

@@ -146,6 +146,17 @@ function referenceDocs(repo: string, revision: string): TreeEntry[] {
   );
 }
 
+/** A change's own reviewer definitions and docs/REVIEW.md, read from its head commit. */
+export function changeAgents(
+  repo: string,
+  head: string,
+): { agents: AgentDefinition[]; reviewMarkdown: string } {
+  return {
+    agents: agentDefinitions(repo, treeEntries(repo, head)),
+    reviewMarkdown: blobText(repo, `${head}:docs/REVIEW.md`),
+  };
+}
+
 /** Parses every agent definition at the head commit; one that fails stops the run before a model. */
 function agentDefinitions(repo: string, headTree: readonly TreeEntry[]): AgentDefinition[] {
   return headTree

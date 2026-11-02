@@ -52,17 +52,22 @@ jobs:
       - uses: ./.github/actions/setup-pnpm
       - name: Install the scripts from main
         run: pnpm install --frozen-lockfile --filter @arca/scripts
-      - name: Download the change's reviewer definitions
+      # Called from the gate: the change's commit is fetched as objects only, into a bare repository
+      # outside the checkout, and its reviewer definitions are parsed from there.
+      - name: Fetch the change (data only)
         if: inputs.change-agents
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          name: review-input
-          path: ${{ runner.temp }}/gate
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          git init --quiet --bare "$RUNNER_TEMP/change.git"
+          git -C "$RUNNER_TEMP/change.git" fetch --quiet --no-tags --no-recurse-submodules \
+            "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" "$HEAD_SHA"
       - name: Plan the cases
         id: plan
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          CHANGE_AGENTS: ${{ inputs.change-agents && format('--change-agents={0}/gate/change-agents.json', runner.temp) || '' }}
+          CHANGE_HEAD: ${{ inputs.change-agents && github.event.pull_request.head.sha || '' }}
           SKIP_IF_PASSED: ${{ github.event_name == 'push' && '--skip-if-passed' || '' }}
           REVIEW_MODEL_FABLE: ${{ vars.REVIEW_MODEL_FABLE }}
           REVIEW_MODEL_OPUS: ${{ vars.REVIEW_MODEL_OPUS }}
@@ -70,7 +75,8 @@ jobs:
         run: >-
           node tooling/scripts/src/review-gate/cli.ts canary-plan
           --out "$RUNNER_TEMP/canary" --scratch "$RUNNER_TEMP/worktrees"
-          $CHANGE_AGENTS $SKIP_IF_PASSED
+          ${CHANGE_HEAD:+--change-objects "$RUNNER_TEMP/change.git" --change-head "$CHANGE_HEAD"}
+          $SKIP_IF_PASSED
       - name: Upload the plan
         if: steps.plan.outputs.skip != 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

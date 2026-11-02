@@ -6,7 +6,7 @@ import { parseAcceptances } from './acceptances.ts';
 import { judgeCanaryRun, planCanary, type CanaryRun, type CaseResult } from './canary.ts';
 import { inert, renderComment } from './comment.ts';
 import { gateFingerprint, pinnedModels } from './fingerprint.ts';
-import { blobText, objectId } from './git.ts';
+import { objectId } from './git.ts';
 import {
   awaitCanary,
   canaryState,
@@ -15,10 +15,10 @@ import {
   reportCanaryProblem,
   upsertComment,
 } from './github.ts';
-import { PrepareError, prepareReviewInput } from './input.ts';
+import { changeAgents, PrepareError, prepareReviewInput } from './input.ts';
 import { changeReviewers, mainReviewers, matrixEntry } from './load.ts';
 import { writePrompts, writeSchema } from './prompt.ts';
-import type { AgentDefinition, Reviewer } from './reviewers.ts';
+import type { Reviewer } from './reviewers.ts';
 import { judgeGate, judgeReviewer, type CanaryStatus } from './verdict.ts';
 
 const repo = process.cwd();
@@ -95,14 +95,6 @@ async function prepare(args: string[]): Promise<void> {
     await writePrompts(out, reviewers, prepared.nonce);
     await writeSchema(out);
     await writeFile(join(out, 'acceptances.md'), prepared.acceptances);
-    if (prepared.changedAgents !== undefined) {
-      const head = sha(values, 'head');
-      const reviewMarkdown = blobText(objects, `${head}:docs/REVIEW.md`);
-      await writeFile(
-        join(out, 'change-agents.json'),
-        JSON.stringify({ agents: prepared.changedAgents, reviewMarkdown }),
-      );
-    }
     await setOutput('matrix', JSON.stringify({ include: reviewers.map(matrixEntry) }));
     await setOutput('agents-changed', String(prepared.changedAgents !== undefined));
   } catch (error) {
@@ -122,14 +114,15 @@ async function canaryPlan(args: string[]): Promise<void> {
     options: {
       out: { type: 'string' },
       scratch: { type: 'string' },
-      'change-agents': { type: 'string' },
+      'change-objects': { type: 'string' },
+      'change-head': { type: 'string' },
       'skip-if-passed': { type: 'boolean' },
     },
   });
   const out = option(values, 'out');
-  const changeAgentsFile = values['change-agents'];
+  const changeObjects = values['change-objects'];
   let reviewers;
-  if (changeAgentsFile === undefined) {
+  if (changeObjects === undefined) {
     reviewers = await mainReviewers(repo);
     const fingerprint = gateFingerprint(repo, 'HEAD', pinnedModels(process.env));
     await setOutput('fingerprint', fingerprint);
@@ -142,11 +135,8 @@ async function canaryPlan(args: string[]): Promise<void> {
       return;
     }
   } else {
-    const data = JSON.parse(await readFile(changeAgentsFile, 'utf8')) as {
-      agents: AgentDefinition[];
-      reviewMarkdown: string;
-    };
-    reviewers = changeReviewers(data.agents, data.reviewMarkdown);
+    const { agents, reviewMarkdown } = changeAgents(changeObjects, sha(values, 'change-head'));
+    reviewers = changeReviewers(agents, reviewMarkdown);
   }
   await setOutput('skip', 'false');
   const { runs, results } = await planCanary({
