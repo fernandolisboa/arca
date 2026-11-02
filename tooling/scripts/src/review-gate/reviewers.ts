@@ -17,8 +17,8 @@ export const modelVariables = {
 export type ModelAlias = keyof typeof modelVariables;
 
 /**
- * The alias a reviewer runs on when its own model never answers, such as when the subscription's
- * limit for that model is reached (ADR-0013). Each falls back to a model as strong or stronger.
+ * The alias a reviewer runs on in the gate when its own model never answers, such as when the
+ * subscription's limit for that model is reached (ADR-0013). The canary never falls back.
  */
 export const fallbackModels: Readonly<Record<ModelAlias, ModelAlias>> = {
   fable: 'opus',

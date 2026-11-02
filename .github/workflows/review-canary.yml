@@ -145,7 +145,6 @@ jobs:
           prompt-file: ${{ runner.temp }}/canary/cases/${{ matrix.case }}/prompts/${{ matrix.reviewer }}.md
           schema-file: ${{ runner.temp }}/canary/schema.json
           model: ${{ vars[matrix.modelVariable] || matrix.model }}
-          fallback-model: ${{ vars[matrix.fallbackModelVariable] || matrix.fallbackModel }}
           effort: ${{ matrix.effort }}
           output-file: ${{ runner.temp }}/out/${{ matrix.case }}/${{ matrix.reviewer }}.json
           expect-categories: ${{ toJSON(matrix.categories) }}

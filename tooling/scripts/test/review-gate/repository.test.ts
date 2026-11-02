@@ -447,11 +447,12 @@ describe('review workflows', () => {
       for (const model of models) {
         expect(model).toBe('${{ vars[matrix.modelVariable] || matrix.model }}');
       }
-      const fallbacks = valuesOf(workflow, 'fallback-model');
-      expect(fallbacks).toHaveLength(models.length);
-      for (const fallback of fallbacks) {
-        expect(fallback).toBe('${{ vars[matrix.fallbackModelVariable] || matrix.fallbackModel }}');
-      }
+      // The gate falls back when a model never answers; the canary certifies the models themselves.
+      expect(valuesOf(workflow, 'fallback-model')).toEqual(
+        file === 'review-gate.yml'
+          ? ['${{ vars[matrix.fallbackModelVariable] || matrix.fallbackModel }}']
+          : [],
+      );
       for (const env of valuesOf(workflow, 'env').filter(isRecord)) {
         const pinned = Object.keys(env).filter((name) => name.startsWith('REVIEW_MODEL_'));
         if (pinned.length > 0) expect(pinned.sort()).toEqual(Object.values(modelVariables).sort());
@@ -547,19 +548,25 @@ describe('review workflows', () => {
     const runs = isRecord(action) && isRecord(action['runs']) ? action['runs'] : {};
     const steps = (Array.isArray(runs['steps']) ? runs['steps'] : []).filter(isRecord);
     const step = (id: string) => steps.find((candidate) => candidate['id'] === id) ?? {};
-    expect(step('answered')['if']).toBe("steps.review.outputs.structured_output == ''");
+    expect(step('answered')['if']).toBe(
+      "inputs.fallback-model != '' && steps.review.outputs.structured_output == ''",
+    );
     expect(step('fallback')['if']).toBe("steps.answered.outputs.fallback == 'true'");
-    const withInputs = step('fallback')['with'];
-    expect(isRecord(withInputs) && withInputs['claude_args']).toBe(
-      '${{ steps.load.outputs.fallback-claude-args }}',
+    const claudeArgs = (id: string) => {
+      const inputs = step(id)['with'];
+      return isRecord(inputs) ? inputs['claude_args'] : undefined;
+    };
+    expect(claudeArgs('fallback')).toBe('${{ steps.load.outputs.fallback-claude-args }}');
+    expect(claudeArgs('retry')).toBe(
+      "${{ steps.answered.outputs.fallback == 'true' && steps.load.outputs.fallback-claude-args || steps.load.outputs.claude-args }}",
     );
 
     const filter = /jq -e \\\n\s*'([^']*)'/.exec(String(step('answered')['run']))?.[1];
     expect(filter).toBeDefined();
     const dir = await mkdtemp(join(tmpdir(), 'arca-fallback-'));
-    const answered = async (result: Record<string, unknown>) => {
+    const answered = async (...messages: Record<string, unknown>[]) => {
       const file = join(dir, 'execution.json');
-      await writeFile(file, JSON.stringify([{ type: 'system', subtype: 'init' }, result]));
+      await writeFile(file, JSON.stringify([{ type: 'system', subtype: 'init' }, ...messages]));
       try {
         execFileSync('jq', ['-e', filter ?? '', file], { stdio: 'ignore' });
         return 'fallback';
@@ -567,20 +574,39 @@ describe('review workflows', () => {
         return 'keep';
       }
     };
+    const result = (fields: Record<string, unknown>) => ({
+      type: 'result',
+      subtype: 'success',
+      is_error: true,
+      modelUsage: {},
+      ...fields,
+    });
     try {
-      expect(await answered({ type: 'result', is_error: true, modelUsage: {} })).toBe('fallback');
-      expect(await answered({ type: 'result', is_error: true })).toBe('fallback');
+      expect(await answered(result({}))).toBe('fallback');
+      expect(await answered(result({ modelUsage: { fable: { inputTokens: 0 } } }))).toBe(
+        'fallback',
+      );
+      expect(await answered(result({ modelUsage: { fable: { inputTokens: 9 } } }))).toBe('keep');
+      expect(await answered(result({ modelUsage: undefined }))).toBe('keep');
+      expect(await answered(result({ is_error: false }))).toBe('keep');
+      expect(await answered(result({ subtype: 'error_max_turns' }))).toBe('keep');
+      expect(await answered()).toBe('keep');
       expect(
-        await answered({
-          type: 'result',
-          is_error: true,
-          modelUsage: { fable: { inputTokens: 9 } },
-        }),
+        await answered(result({}), result({ modelUsage: { opus: { outputTokens: 3 } } })),
       ).toBe('keep');
-      expect(await answered({ type: 'result', is_error: false, modelUsage: {} })).toBe('keep');
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
+  });
+
+  it('skips draft pull requests in the gate, so no review-gate check exists for a draft head', async () => {
+    const jobs = jobsOf(await readWorkflow('review-gate.yml'));
+    for (const name of ['prepare', 'report']) {
+      const job = jobs[name];
+      expect(isRecord(job) && String(job['if'])).toContain('!github.event.pull_request.draft');
+    }
+    const workflow = await readWorkflow('review-gate.yml');
+    expect(JSON.stringify(isRecord(workflow) ? workflow['on'] : {})).toContain('ready_for_review');
   });
 
   it('gives every model alias a different fallback that has its own pin variable', () => {
