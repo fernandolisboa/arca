@@ -31,13 +31,15 @@ Facts checked on 2026-11-02:
 ### Sentry
 
 - One Sentry organization, created by the owner in the **German** data region, free Developer plan, owner account with a passkey. EU storage is the closest region to Brazil with a strong data-protection regime; the data-flow register records it.
-- Server: the Sentry Node SDK with the Hono integration, errors and OpenTelemetry traces. `sendDefaultPii: false`, local variables off, profiling off. Traces sampled at 10% in production and 100% in previews. Span names use route patterns and generic workflow step names; database spans carry statement text, which is always parameterized, never values.
+- Server: the Sentry Node SDK with the Hono integration, errors and OpenTelemetry traces. `sendDefaultPii: false`, local variables off, profiling off. Traces sampled at 10% in production and 100% in previews. Span names use route patterns and generic workflow step names; database spans carry the operation and table name only; statement text is dropped. The only identifiers telemetry admits are the request ID, trace ID, release and environment: never account, case, document or session IDs, so deletion has nothing to remove at Sentry.
 - Client: the Sentry React SDK, bundled (no CDN script), errors only, **no session replay ever**, console breadcrumbs off, fetch breadcrumbs reduced to route patterns.
 - **Browser events go through our own origin**: the managed tunnel, served by the API, accepts only our DSN, caps the envelope size, is rate-limited, and runs the scrubber again before forwarding. The CSP keeps `connect-src 'self'`. The tunnel path is excluded from the SPA fallback.
 - CSP and Trusted Types violation reports go to the same tunnel (`report-to`), so policy breaks show up in Sentry.
 - The DSN is public by design (it ships in the bundle) and lives in a repository configuration file. The source-map upload token is a Sensitive Vercel variable used only by the build; source maps are uploaded and then deleted from the output, never served.
 - Environments: `production` and `preview`; the release is the commit SHA.
 - Alerts: Sentry emails the owner on a new issue and on a regression.
+- **Residual, accepted:** the tunnel is a public, unauthenticated way to put events into Sentry. Rate limits cap the volume; event text is untrusted data, and agents reading Sentry issues treat it as such, never as instructions. CSP violation reports have their own allow-list case in the scrubber.
+- Sentry also receives source maps from production builds; the data-flow register says so.
 
 ### Logs
 

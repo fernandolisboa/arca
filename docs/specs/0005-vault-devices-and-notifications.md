@@ -45,6 +45,7 @@ The pieces that native phases will only add adapters to: an encrypted document v
 ### R4. Documents
 
 - Table `vault.document` (owner account, type key, size, created, object key, recipient account IDs), under row-level security: the owner and the accounts it lists can read the row; only the owner changes it. Registered, with an `app_backup` policy.
+- Audit events (added to spec 0003 R7's closed list): envelope fetched, download URL issued, document created, shared, share revoked, replaced, deleted, identity rotated, recipient pin changed. Notification channel added and removed are audited too (R7).
 - Routes: create (returns a presigned upload URL), confirm upload, list, get download URL, replace (for sharing, revocation and rotation, which happen on the owner's device), delete. Each in `packages/api-contract`.
 - `eraseAccount` (spec 0004 R9) deletes the account's envelopes, recipient, documents and objects, and detaches the account from other owners' recipient lists through an `app_jobs` `detach` policy; those documents stay encrypted to the deleted recipient until their owner's next re-encryption, whose key no longer exists.
 - Packages: the AWS SDK v3 S3 client and presigner, and the OIDC bridge as in spec 0004 R12, each in the Versions table with a supply-chain PASS.
