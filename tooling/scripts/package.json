@@ -6,15 +6,21 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:db": "vitest run --config vitest.db.config.ts",
+    "db:bootstrap": "node src/db/cli.ts bootstrap",
+    "db:migrate": "node src/db/cli.ts migrate"
   },
   "dependencies": {
+    "libpg-query": "catalog:",
+    "pg": "catalog:",
     "yaml": "catalog:"
   },
   "devDependencies": {
     "@arca/eslint-config": "workspace:*",
     "@arca/tsconfig": "workspace:*",
     "@types/node": "catalog:",
+    "@types/pg": "catalog:",
     "eslint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

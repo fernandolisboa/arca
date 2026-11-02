@@ -1,0 +1,8 @@
+{
+  "tablesWithoutRowLevelSecurity": ["arca_migrations.journal"],
+  "materializedViews": [],
+  "foreignTables": [],
+  "securityDefinerFunctions": [],
+  "migrationExtensions": [],
+  "deferrableConstraints": []
+}

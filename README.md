@@ -23,6 +23,8 @@ CI runs the same `pnpm check` on every pull request ([.github/workflows/ci.yml](
 
 API contract: routes live in [packages/api-contract](packages/api-contract/src/routes/index.ts) as data. After changing one, run `pnpm build && pnpm --filter @arca/api-contract openapi:write` and commit `openapi.json`; a test fails while the committed document differs from the routes.
 
+Database: roles live in [packages/db/bootstrap.sql](packages/db/bootstrap.sql) and migrations in `packages/db/migrations/<timestamp>_<name>/migration.sql`. The runner in [tooling/scripts/src/db](tooling/scripts/src/db) applies them as `app_migrator` in one transaction that commits only if the guards pass (spec R7). To run the database tests, start a throwaway Postgres 18 (for example `docker run -d -p 127.0.0.1:5432:5432 -e POSTGRES_PASSWORD=postgres postgres:18`; the tests create roles across the server, so never point them at a shared one), then `ARCA_TEST_DB_ADMIN_PASSWORD=postgres pnpm --filter @arca/scripts test:db`. CI runs them in the `db` job.
+
 Single steps: `pnpm format`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`. Code layout: [ARCHITECTURE.md](docs/ARCHITECTURE.md#platforms-and-code-layout) and the [spec](docs/specs/0001-foundations-scaffold.md#layout).
 
 Dependencies: every version is exact and lives in the catalogs in [pnpm-workspace.yaml](pnpm-workspace.yaml); packages refer to them as `catalog:`. pnpm installs only releases at least 7 days old and runs no dependency install scripts unless `allowBuilds` lists them. TypeScript 7 typechecks and builds the workspace; only `tooling/eslint-config` uses TypeScript 6.0, through the `lint` catalog, because typescript-eslint needs its compiler API.

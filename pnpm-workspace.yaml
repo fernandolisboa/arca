@@ -22,8 +22,11 @@ blockExoticSubdeps: true
 catalog:
   '@hono/zod-openapi': 1.6.3
   '@types/node': 26.6.5
+  '@types/pg': 8.23.1
   eslint: 10.13.0
   hono: 4.13.14
+  libpg-query: 18.2.1
+  pg: 8.23.1
   prettier: 3.9.10
   turbo: 2.11.10
   typescript: 7.0.2
