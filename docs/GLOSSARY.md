@@ -50,7 +50,9 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Passkey | Chave de acesso | The WebAuthn credential a person signs in and confirms sensitive actions with |
 | Knowledge catalog | Internal, no UI label | The validated, hashed route data that `packages/knowledge` builds and the API bundles; not the pnpm catalog of dependency versions |
 | Approver list | Internal, no UI label | The reviewed, versioned file in the repository that names the approvers and pins their credentials; designed with consultancy core slice 3 |
-| Credential | Chave de acesso | A passkey or security key pinned for an approver: the everyday one (the phone's passkey) or the offline, device-bound one |
+| Credential | Credencial | A passkey or security key pinned for an approver: the everyday credential or the offline credential |
+| Everyday credential | Chave de acesso | An approver's synced passkey, usually the phone's, for rule decisions and vetoes |
+| Offline credential | Chave de segurança | An approver's hardware security key, device-bound and attested, the only credential that may propose an approver-list change |
 | Recovery path | Internal, no UI label | The delayed, notified way to restore an approver who lost every credential; never rests on Git or email alone |
 | Activation screen | Tela de ativação | Where an approver reviews a proposed version as data and activates or rejects it |
 | Research task | Pesquisa pendente | The request opened when the knowledge base cannot answer a question; a research agent works it into a proposal |
