@@ -31,10 +31,17 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Vault | Cofre | Client-side encrypted document storage |
 | Account | Conta | A person's sign-in identity: an email address, passkeys and sessions. A case person may have no account |
 | Invite | Convite | A single-use link, sent by email, that lets someone create an account |
-| Recovery kit | Kit de recuperação | The printable page with the account recovery code and the vault recovery secret, shown once |
+| Recovery kit | Kit de recuperação | The printable page (or, behind a warning, a text file) with the account recovery code and the vault recovery secret, shown once |
 | Step-up | Confirmação com chave de acesso | A fresh passkey verification bound to one sensitive action |
-| Security notice | Aviso de segurança | A message sent to every channel when something security-relevant happens to an account |
+| Security notice | Aviso de segurança | A message sent to every channel the account has (email first; devices once notifications exist) when something security-relevant happens to an account |
 | Passkey | Chave de acesso | A WebAuthn credential that signs a person in; the only way to sign in |
 | Recovery code | Código de recuperação | The secret in the recovery kit that, with the email link, restores account access |
 | Vault recovery secret | Segredo de recuperação do cofre | The secret in the recovery kit that opens the vault when no passkey can |
-| Device | Dispositivo | A browser or app where the person is signed in, shown in the device list with its sessions and passkeys |
+| Device | Dispositivo | A browser or app where the person is signed in, shown in the device list as a passkey with the sessions it signed in |
+| Owner enrollment | Cadastro inicial | The one-time creation of the first account of an empty production database, with a single-use code |
+| Designated adult | Adulto de confiança | An adult in the case whom a person names in advance to approve their account recovery (with the case model) |
+| Vault identity | Chave do cofre | A person's private key that opens the documents encrypted to them; it never leaves a device in plaintext |
+| Recipient | Destinatário | The public half of a vault identity, to which documents are encrypted |
+| Vault envelope | Envelope do cofre | The vault identity encrypted to one unlock method: a passkey (PRF) or the vault recovery secret |
+| Share | Compartilhamento | Giving another adult access to one document by encrypting it to their recipient too |
+| Outbox | Caixa de saída de teste | Where non-production environments keep emails instead of sending them; never in production |

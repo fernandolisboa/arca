@@ -27,12 +27,13 @@
 | `app_jobs` | Workflow steps | `NOBYPASSRLS`; only the tables its jobs need |
 | `app_auth` | Better Auth | Only the auth tables (users, sessions, passkeys), which are not under per-person RLS |
 | `app_audit` | Audit writer | `INSERT` only on the audit log; no `UPDATE` or `DELETE` for anyone but the migrator |
+| `app_backup` | Daily off-vendor backup ([ADR-0017](0017-data-lifecycle-and-backups.md)) | `NOBYPASSRLS`; `SELECT` only, through one guarded read policy per table; Production-only password |
 | `app_migrator` | Schema migrations in the Vercel build ([ADR-0012](0012-automation-first-setup.md)) | DDL; never used by running services |
 
 ### Row-level security
 
 - `ENABLE` and `FORCE ROW LEVEL SECURITY` on every table with case data, so even table owners are subject to policies.
-- The API opens a transaction per request and sets the authenticated identity with `SET LOCAL` (person and case); policies read it from the transaction settings. No identity, no rows.
+- The API opens a transaction per request and sets the authenticated identity with `SET LOCAL` (account and case; the account setting is `app.account_id` since [ADR-0015](0015-identity-enrollment-step-up-and-recovery.md)); policies read it from the transaction settings. No identity, no rows.
 - Policies are declared with Drizzle and reviewed as security-critical code.
 - CI runs an access-matrix suite against a synthetic database: every role and person combination for every table, asserting both allowed and denied access.
 
@@ -46,7 +47,7 @@
 - Initial targets: RPO 15 minutes, RTO 4 hours.
 - Neon point-in-time restore, plus a daily encrypted logical backup to S3 in a separate AWS account.
 - Restore drills every quarter, with results recorded.
-- Deleting a case removes its rows, destroys its vault envelopes (crypto-shredding, ADR-0018), and deletes related data in workflow runs, object storage, LLM traces and error reports. Point-in-time history keeps deleted rows until the restore window expires; the window is documented and kept as short as the RPO allows.
+- Deleting a case removes its rows and related data in workflow runs and object storage; telemetry holds no case data to delete ([ADR-0016](0016-observability-and-scrubbing.md)). Documents belong to their owner's account and are shared per account, so deleting a case removes no one's documents. A person's vault identity and envelopes belong to their account and are destroyed (crypto-shredding, [ADR-0018](0018-vault-encryption.md)) only when the account is erased. Point-in-time history keeps deleted rows until the restore window expires; the window is documented and kept as short as the RPO allows.
 
 ## Consequences
 

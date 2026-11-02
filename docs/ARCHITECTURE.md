@@ -77,8 +77,10 @@ Rules that keep every platform possible:
 | Notifications | Web Push | FCM | APNs | OS notifications |
 | Receive shared files | Web Share Target (where supported) | Share-sheet intent | Share extension | Drag and drop |
 | Deep links | URLs | App Links | Universal Links | Custom protocol |
+| File picking | `<input type=file>` | Storage Access Framework | Document picker | OS file dialog |
+| Sharing | Web Share API | Share sheet | Share sheet | OS share where available |
 | Passkeys | WebAuthn | Credential Manager | Authentication Services | OS passkey APIs where available |
-| Vault envelopes (passkey PRF, user-verified, biometric where the platform offers it) | WebAuthn PRF through `age-encryption` | Credential Manager PRF with BiometricPrompt | Authentication Services PRF with Face ID or Touch ID | OS support where available, else the recovery kit |
+| Vault envelopes (passkey PRF, user-verified, biometric where the platform offers it) | WebAuthn PRF through `age-encryption` | Credential Manager PRF supplied to the same `age-encryption` code in the app's JavaScript runtime, else the recovery kit with the identity wrapped in Android Keystore | Authentication Services PRF supplied the same way, else the recovery kit with the identity wrapped in the Keychain | OS support where available, else the recovery kit |
 
 ## Data model
 
@@ -155,14 +157,14 @@ Every service that touches Arca's data, and what it may receive. A new processor
 | Vercel | Client hosting, API functions, Workflows | All case data in processing; the database owner connection string (used by the build, readable by running functions) and the runtime role passwords ([ADR-0012](adr/0012-automation-first-setup.md)); workflow run payloads holding identifiers only, with zero retention ([ADR-0009](adr/0009-background-jobs-guarantees.md)) | São Paulo (`gru1`) for functions, run payloads and queues; run metadata (names, statuses, timestamps, no personal data) is processed outside Brazil and kept up to one year |
 | Anthropic (CI review) | Reviewer subagents and their canary in CI ([ADR-0011](adr/0011-reviewers-in-ci.md), [ADR-0013](adr/0013-review-gate-canary-and-model-pins.md)) | Source code, diffs, file lists and file history (SHAs, dates, paths), the repository's docs and the synthetic canary cases; never case data, pull request text or contributor emails | Vendor cloud, outside Brazil; under the owner's Claude subscription terms, with the model-improvement setting off (ADR-0013) |
 | AWS S3 (application account) | Document storage | Client-side ciphertext only, under random object keys | São Paulo (`sa-east-1`) |
-| AWS S3 and KMS (backup account) | Off-vendor backups ([ADR-0017](adr/0017-data-lifecycle-and-backups.md)) | A daily copy of every backed-up table and a replica of the document bucket, encrypted at rest with a customer-managed key; written by the production Vercel role (no read, decrypt or delete), read only by the owner's MFA-gated restore role in a CodeBuild job in the same account | São Paulo (`sa-east-1`) |
+| AWS S3 and KMS (backup account) | Off-vendor backups ([ADR-0017](adr/0017-data-lifecycle-and-backups.md)) | A daily copy of every backed-up table and erasure tombstones, written by the production Vercel role (no read, decrypt or delete); a replica of the document bucket, written by S3 replication; all encrypted at rest with a customer-managed key and read only by the owner's MFA-gated restore role in a CodeBuild job in the same account, which holds a per-run, branch-scoped Neon owner password in Secrets Manager and connects out to Neon to load a restore branch | São Paulo (`sa-east-1`) |
 | AWS KMS | Field-encryption key wrapping | Data keys, never data | São Paulo (`sa-east-1`) |
 | Anthropic (Claude) | LLM calls | Minimal fields per call; no names, document numbers or account numbers | Vendor cloud, outside Brazil |
 | Document-reading vendor (`DocumentReader`) | OCR and document review | Full content of a document, only when its owner authorizes that document | Chosen by ADR; vendor cloud |
 | Embedding vendor (`Embedder`) | Knowledge-base retrieval | Public knowledge-base text only | Chosen by ADR |
 | Speech vendor (`SpeechToText`, `TextToSpeech`) | Voice intake and interview practice | Audio of the person speaking, only when they start a voice session | Chosen by ADR |
 | TypeSafe (Jev), if adopted | Classification | Minimal fields per call, same rules as LLM calls | Vendor cloud, outside Brazil |
-| Langfuse | LLM tracing, from the first model call | Metadata, scores and masked text; no case content | EU region ([ADR-0016](adr/0016-observability-and-scrubbing.md)) |
+| Langfuse | LLM tracing, from the first model call | Metadata and scores; no prompt or completion text; no case content | EU region ([ADR-0016](adr/0016-observability-and-scrubbing.md)) |
 | Sentry | Errors and traces | Reports scrubbed by `packages/telemetry`, with no account, case, document or session IDs; browser events relayed and scrubbed again by our API; source maps from production builds | Germany (EU data region), kept 30 days ([ADR-0016](adr/0016-observability-and-scrubbing.md)) |
 | Resend | Transactional email: invites, recovery links, security notices | Recipient address and a generic message with one link | Sent from São Paulo (`sa-east-1`); account data, logs and metadata stored in the United States ([ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)) |
 | Web Push services, FCM, APNs | Notifications | A message code and ID; the text is rendered on the device from our catalog | Browser and platform vendors |

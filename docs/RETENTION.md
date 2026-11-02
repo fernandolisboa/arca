@@ -29,7 +29,8 @@ As of 2026-11-02. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md).
 | Processor | Data | Kept for | Enforced by |
 | --- | --- | --- | --- |
 | Neon | Deleted rows in history | 6 hours (Free plan history window) | Neon project setting |
-| AWS S3 (backup account) | Daily backups | 35 days, Object Lock in compliance mode | Bucket lifecycle and Object Lock |
+| AWS S3 (backup account) | Daily backups and erasure tombstones | 35 days under Object Lock in compliance mode, removed by day 36 | Bucket lifecycle (current and noncurrent versions) and Object Lock |
+| AWS S3 (backup account) | Replica of document ciphertext, including replaced versions | While the document exists; a replaced or deleted version 35 days more | Replication with delete markers; noncurrent-version lifecycle |
 | AWS S3 (application account) | Document ciphertext | While the document exists; noncurrent versions 1 day | Bucket lifecycle rule |
 | Vercel | Runtime logs (allow-listed fields only) | 1 day | Vercel Pro policy |
 | Vercel Workflows | Run payloads (identifiers only) | Unreadable at run end, deleted within 36 days | `experimental_retention: 0` ([ADR-0009](adr/0009-background-jobs-guarantees.md)) |

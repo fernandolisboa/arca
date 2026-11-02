@@ -37,7 +37,7 @@ Phase 0 does not depend on code: the questions in [OPEN-QUESTIONS.md](OPEN-QUEST
 - Client builds to a static bundle; no server-rendering dependency.
 - Versioned typed API; every feature goes through it.
 - Passkeys on the production domain, invite-only enrollment, purpose-bound step-up and recovery ([ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)); cookie sessions on the web. Secure-storage tokens for native apps come with Phase 4; nothing in the design blocks them.
-- `platform` port with web adapters: camera capture, file picking, notifications, secure key storage, sharing.
+- `platform` port with web adapters: passkeys, vault envelopes, camera capture, file picking, notifications, secure key storage, sharing, receiving shared files, deep links.
 - Notification service with per-device channels (web push first).
 - Vault encryption format documented and platform-neutral; key recovery designed and tested.
 - Responsive, touch-first layouts from phone to tablet to desktop, safe-area aware.
