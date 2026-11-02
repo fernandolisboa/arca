@@ -54,7 +54,9 @@ overrides:
   '@workflow/cli>chokidar': 5.0.0
   # The Workflow SDK pins undici 7.30.0 and zod 4.1.11 and 4.5.4, all with advisories fixed in
   # undici 7.30.1 and zod 4.6.6 (OSV, checked 2026-11-02). Patch and minor releases of the same
-  # major; the ranges retire these lines once the SDK ships fixed versions.
+  # major. A range override also rewrites wider specs such as `zod@^4.0.0`, so recheck both lines
+  # on every zod or undici catalog bump, and drop them once the SDK moves past undici 7.30.0 and
+  # zod 4.5.4.
   'undici@<7.30.1': 7.30.1
   'zod@<4.6.6': 4.6.7
 
