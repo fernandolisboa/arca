@@ -65,7 +65,9 @@ export function arcaConfig({ rootDir, kinds = [] }) {
     ...(isScripts ? [] : [databaseDrivers]),
   ];
   return tseslint.config(
-    { ignores: ['dist/**', 'coverage/**'] },
+    {
+      ignores: ['dist/**', 'coverage/**', '.output/**', '.nitro/**', '.vercel/**', 'generated/**'],
+    },
     js.configs.recommended,
     tseslint.configs.strictTypeChecked,
     tseslint.configs.stylisticTypeChecked,

@@ -91,7 +91,7 @@ eval/
 ### R4. One origin and security headers
 
 - The Nitro build of `apps/api` serves `apps/web`'s built bundle as static files and the API under `/v1`.
-- Only paths outside `/v1`, `/internal`, `/.well-known` and the Workflow SDK's routes fall back to `index.html`; unmatched paths under those prefixes return 404.
+- Only paths outside `/v1`, `/internal`, `/.well-known` and the Workflow SDK's routes (which live under `/.well-known/workflow`) fall back to `index.html`; unmatched paths under those prefixes return 404. The excluded prefixes are Nitro routes to the API handler, not a server entry, because Nitro passes a 404 from a server entry on to the `index.html` renderer. On Vercel the header rule comes before the static files in the generated `config.json`, so static files get the same headers.
 - `tooling/security-policy` holds the header policy and the fallback exclusions as data. The Nitro config imports it; native build targets will later inject the same CSP as a `<meta http-equiv>` tag with the API origin in `connect-src`, since a wrapped bundle gets no response headers.
 - Headers on every response:
   - `Content-Security-Policy`: `default-src 'self'; script-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; require-trusted-types-for 'script'; trusted-types arca`.

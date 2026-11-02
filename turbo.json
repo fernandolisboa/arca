@@ -19,6 +19,13 @@
     },
     "test": {
       "dependsOn": ["^build"]
+    },
+    "@arca/api#build": {
+      "dependsOn": ["^build", "@arca/web#build"],
+      "outputs": [".output/**", ".vercel/output/**"]
+    },
+    "@arca/api#test": {
+      "dependsOn": ["^build", "@arca/web#build"]
     }
   }
 }

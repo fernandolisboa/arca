@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { MissingConfigError, readApiSecrets } from '../src/config.js';
+import { databaseTargetFrom, MissingConfigError, readApiSecrets } from '../src/config.js';
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -21,4 +21,28 @@ describe('readApiSecrets', () => {
     vi.stubEnv('PGPASSWORD', 'owner-password');
     expect(() => readApiSecrets()).toThrow('ARCA_DB_API_PASSWORD is not set');
   });
+});
+
+describe('databaseTargetFrom', () => {
+  it('uses TLS for a remote host and the default port', () => {
+    expect(
+      databaseTargetFrom({ host: 'ep-x-pooler.sa-east-1.aws.neon.tech', name: 'arca' }),
+    ).toEqual({
+      host: 'ep-x-pooler.sa-east-1.aws.neon.tech',
+      port: 5432,
+      database: 'arca',
+      ssl: true,
+    });
+  });
+
+  it('turns TLS off only for loopback', () => {
+    expect(databaseTargetFrom({ host: '127.0.0.1', name: 'arca' }).ssl).toBe(false);
+  });
+
+  it.each([undefined, {}, { host: 'h' }, { host: 'h/x', name: 'arca' }, { host: 'h', name: "a'" }])(
+    'fails on %j',
+    (value) => {
+      expect(() => databaseTargetFrom(value)).toThrow(MissingConfigError);
+    },
+  );
 });

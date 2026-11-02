@@ -18,3 +18,9 @@ coverage/
 Thumbs.db
 *.log
 .claude/settings.local.json
+
+# Written at build time by db:runtime-config (spec 0001, R7).
+apps/api/generated/
+# Nitro build output.
+.output/
+.nitro/

@@ -5,10 +5,15 @@ import { buildTarget, requiredVariable } from './connection.ts';
 import { readMigrations } from './migrations.ts';
 import { environmentFor, migratorRole, readDatabasePolicy } from './policy.ts';
 import { migrate } from './runner.ts';
+import { writeRuntimeDatabaseConfig } from './runtime-config.ts';
 
 const dbPackage = join(import.meta.dirname, '../../../../packages/db');
+const apiDatabaseConfig = join(import.meta.dirname, '../../../../apps/api/generated/database.json');
 
-/** The build steps of spec 0001, R9: bootstrap as the owner, then migrations as app_migrator. */
+/**
+ * The build steps of spec 0001, R9: bootstrap as the owner, migrations as app_migrator, and the
+ * API's build-time database settings.
+ */
 async function main(command: string | undefined): Promise<void> {
   const env = process.env;
   if (command === 'bootstrap') {
@@ -44,7 +49,12 @@ async function main(command: string | undefined): Promise<void> {
     );
     return;
   }
-  throw new Error('usage: cli.ts bootstrap | migrate');
+  if (command === 'runtime-config') {
+    await writeRuntimeDatabaseConfig(env, apiDatabaseConfig);
+    console.log('API database settings written');
+    return;
+  }
+  throw new Error('usage: cli.ts bootstrap | migrate | runtime-config');
 }
 
 if (import.meta.main) await main(process.argv[2]);
