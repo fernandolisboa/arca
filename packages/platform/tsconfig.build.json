@@ -1,0 +1,4 @@
+{
+  "extends": "@arca/tsconfig/bundler.json",
+  "include": ["src"]
+}

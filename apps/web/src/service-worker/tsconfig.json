@@ -1,0 +1,11 @@
+{
+  "extends": "@arca/tsconfig/bundler.json",
+  "compilerOptions": {
+    "lib": ["es2024", "webworker"],
+    "noEmit": true,
+    "composite": false,
+    "rootDir": "${configDir}",
+    "tsBuildInfoFile": null
+  },
+  "include": ["."]
+}

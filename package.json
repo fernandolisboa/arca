@@ -8,7 +8,7 @@
     "pnpm": "12.15.0"
   },
   "scripts": {
-    "check": "turbo run format:check check:dependency-sources check:boundaries lint typecheck test build",
+    "check": "turbo run format:check check:dependency-sources check:boundaries check:web-bundle lint typecheck test build",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
@@ -17,7 +17,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check:dependency-sources": "node tooling/scripts/src/check-dependency-sources.ts",
-    "check:boundaries": "node tooling/scripts/src/check-boundaries.ts"
+    "check:boundaries": "node tooling/scripts/src/check-boundaries.ts",
+    "check:web-bundle": "node tooling/scripts/src/check-web-bundle.ts apps/web/dist"
   },
   "devDependencies": {
     "prettier": "catalog:",

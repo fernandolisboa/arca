@@ -32,8 +32,8 @@ export default defineConfig({
   routes,
   errorHandler: './src/error-handler.ts',
   plugins: ['./src/quiet-errors.ts'],
-  // Dotfiles such as a stray .tsbuildinfo are never published.
-  publicAssets: [{ dir: webDist, baseURL: '/', ignore: ['**/.*'] }],
+  // Never published: dotfiles, and the source maps the web build keeps for the bundle check.
+  publicAssets: [{ dir: webDist, baseURL: '/', ignore: ['**/.*', '**/*.map'] }],
   renderer: { template: join(webDist, 'index.html'), static: true },
   routeRules: { '/**': { headers: { ...securityHeaders } } },
   runtimeConfig: { database },

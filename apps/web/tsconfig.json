@@ -1,7 +1,10 @@
 {
   "extends": "@arca/tsconfig/bundler.json",
   "compilerOptions": {
-    "tsBuildInfoFile": "${configDir}/node_modules/.cache/tsconfig.tsbuildinfo"
+    "jsx": "react-jsx",
+    "tsBuildInfoFile": "${configDir}/node_modules/.cache/tsconfig.tsbuildinfo",
+    "types": ["vite/client"]
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/service-worker"]
 }

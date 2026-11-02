@@ -4,14 +4,39 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node -e \"const fs=require('node:fs');fs.rmSync('dist',{recursive:true,force:true});fs.mkdirSync('dist');fs.copyFileSync('index.html','dist/index.html')\"",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "eslint ."
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p src/service-worker/tsconfig.json && tsc -p e2e/tsconfig.json",
+    "lint": "eslint .",
+    "e2e": "playwright test -c e2e"
   },
   "devDependencies": {
     "@arca/eslint-config": "workspace:*",
+    "@arca/security-policy": "workspace:*",
     "@arca/tsconfig": "workspace:*",
+    "@playwright/test": "catalog:",
+    "@tailwindcss/vite": "catalog:",
+    "@tanstack/router-plugin": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
     "eslint": "catalog:",
-    "typescript": "catalog:"
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "workbox-core": "catalog:",
+    "workbox-precaching": "catalog:",
+    "workbox-routing": "catalog:"
+  },
+  "dependencies": {
+    "@arca/api-contract": "workspace:*",
+    "@arca/i18n": "workspace:*",
+    "@arca/ui": "workspace:*",
+    "@tanstack/react-query": "catalog:",
+    "@tanstack/react-router": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-i18next": "catalog:"
   }
 }
