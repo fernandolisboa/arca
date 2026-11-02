@@ -97,13 +97,17 @@ const ownerFallback =
  *
  * @type {Restrictions}
  */
+// A regex, not a group: gitignore-style groups match any path segment, so `pg-*` would also
+// catch `drizzle-orm/pg-core`, which holds no driver.
+const databaseDriverModule =
+  '^(?:pg|pg-[^/]+|postgres|@neondatabase/[^/]+|@vercel/postgres|drizzle-orm/(?:node-postgres|neon-[^/]+|postgres-js|vercel-postgres))(?:/.*)?$';
+
 export const databaseDrivers = {
-  // A regex, not a group: gitignore-style groups match any path segment, so `pg-*` would also
-  // catch `drizzle-orm/pg-core`, which holds no driver.
-  patterns: [
+  patterns: [{ regex: databaseDriverModule, message: ownerFallback }],
+  syntax: [
     {
-      regex:
-        '^(?:pg|pg-[^/]+|postgres|@neondatabase/[^/]+|@vercel/postgres|drizzle-orm/(?:node-postgres|neon-[^/]+|postgres-js|vercel-postgres))(?:/.*)?$',
+      // require('pg') and createRequire(import.meta.url)('pg'), which no-restricted-imports ignores.
+      selector: `CallExpression[arguments.0.value=/${selectorRegex(databaseDriverModule)}/]:matches([callee.name='require'], [callee.type='CallExpression'])`,
       message: ownerFallback,
     },
   ],

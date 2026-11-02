@@ -137,6 +137,7 @@ describe('database drivers', () => {
     ['db', ['db'], 'src/other.ts', 'no-restricted-imports'],
     ['db', ['db'], 'src/drizzle-driver.ts', 'no-restricted-imports'],
     ['db', ['db'], 'src/dynamic.ts', 'no-restricted-syntax'],
+    ['api', ['api'], 'src/require-pg.ts', 'no-restricted-syntax'],
   ])('%s/%s fails with %s', async (dir, kinds, file, rule) => {
     expect(await ruleIds(dir, /** @type {import('../index.js').Kind[]} */ (kinds), file)).toContain(
       rule,
