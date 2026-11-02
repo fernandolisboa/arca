@@ -49,6 +49,16 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Content hash | Internal, no UI label | SHA-256 of the canonical JSON of a version and every file it pins; what a decision is bound to |
 | Passkey | Chave de acesso | The WebAuthn credential a person signs in and confirms sensitive actions with |
 | Knowledge catalog | Internal, no UI label | The validated, hashed route data that `packages/knowledge` builds and the API bundles; not the pnpm catalog of dependency versions |
+| Approver list | Internal, no UI label | The reviewed, versioned file in the repository that names the approvers and pins their credentials; designed with consultancy core slice 3 |
+| Credential | Chave de acesso | A passkey or security key pinned for an approver: the everyday one (the phone's passkey) or the offline, device-bound one |
+| Recovery path | Internal, no UI label | The delayed, notified way to restore an approver who lost every credential; never rests on Git or email alone |
+| Activation screen | Tela de ativação | Where an approver reviews a proposed version as data and activates or rejects it |
+| Research task | Pesquisa pendente | The request opened when the knowledge base cannot answer a question; a research agent works it into a proposal |
+| Possible dependent | Possível dependente | A person a route might cover, pending unknown facts |
+| Candidate | Internal, no UI label | The person a dependent rule is being evaluated for |
+| Expression | Internal, no UI label | The JSON tree of a requirement, cost or condition, evaluated by the engine |
+| Closed route version | Rota encerrada | A route version with status `closed`: the route no longer accepts applications, cited by its `closureSources` |
+| Former country | País extinto | A state that no longer exists, with an ISO 3166-3 code, allowed only in citizenship and ancestry facts |
 | Owner | Responsável | The founder, who owns the repository and is the first approver; "founder" in product docs means the same person |
 | Active version | Versão ativa | A route version whose activation counts and that has no rejection, pending or counted; the only kind the engine evaluates for a case |
 | Decisive missing fact | Dado decisivo pendente | An unknown fact whose answer could change an evaluation's status |
@@ -63,7 +73,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Research agent | Internal, no UI label | The agent that proposes route versions from official sources as pull requests |
 | Rule watcher | Vigia de regras | Scheduled job that detects rule changes and proposes updates |
 | Fixture route | Internal, no UI label | A made-up route on a user-assigned country code (`QM` to `QZ`, except `QO` and `QU`) that proves the schema in tests; never shown to users |
-| Synthetic family | Família fictícia | An invented case snapshot in `eval/families`, shared by rule cases and AI evaluation; never real data |
+| Synthetic family | Internal, no UI label | An invented case snapshot in `eval/families`, shared by rule cases and AI evaluation; never real data |
 | Source-of-funds trail | Trilha da origem dos recursos | Documented chain from an asset to the money used in a route |
 | Apostille | Apostila | Hague Convention certification of a public document |
 | Sworn translation | Tradução juramentada | Official translation required by some destinations |
