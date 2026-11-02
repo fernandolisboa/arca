@@ -136,6 +136,14 @@ describe('agent definitions', () => {
     expect(weights.has('new-reviewer')).toBe(false);
   });
 
+  it('refuses a cell that nearly reads "Every change"', () => {
+    for (const cell of ['Every change.', 'every change', 'Every  change', 'Everychange']) {
+      expect(() =>
+        reviewerWeights(`| [x-reviewer](x.md) | ${cell} | Must pass | \`fable\` |`),
+      ).toThrow('must be exactly "Every change"');
+    }
+  });
+
   it('refuses a reviewer without a weight', () => {
     const agent = parseAgentDefinition(definition('name: new-reviewer\ntools: Read\nmodel: fable'));
     expect(() => withWeights([agent], new Map())).toThrow('no row in the docs/REVIEW.md table');

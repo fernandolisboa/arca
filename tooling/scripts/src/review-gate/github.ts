@@ -107,9 +107,32 @@ export async function canaryState(
 const failedConclusions = ['failure', 'timed_out'] as const;
 
 /** The run number of the newest canary run on main that failed, or 0 when there is none. */
-async function newestFailedCanaryRun(request: GitHubRequest, repository: string): Promise<number> {
+function newestFailedCanaryRun(request: GitHubRequest, repository: string): Promise<number> {
+  return newestCanaryRun(request, repository, failedConclusions);
+}
+
+/**
+ * Whether a canary run on main failed after the newest one that succeeded. A slim run may not end
+ * that state: the next run covers the whole corpus, so a narrower run never clears a failed full
+ * one (ADR-0013).
+ */
+export async function canaryRecovering(
+  request: GitHubRequest,
+  repository: string,
+): Promise<boolean> {
+  return (
+    (await newestFailedCanaryRun(request, repository)) >
+    (await newestCanaryRun(request, repository, ['success']))
+  );
+}
+
+async function newestCanaryRun(
+  request: GitHubRequest,
+  repository: string,
+  conclusions: readonly string[],
+): Promise<number> {
   let newest = 0;
-  for (const conclusion of failedConclusions) {
+  for (const conclusion of conclusions) {
     const runs = records(
       await request('GET', canaryRunsPath(repository, conclusion, 100)),
       'workflow_runs',

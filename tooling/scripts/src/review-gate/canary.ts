@@ -16,6 +16,8 @@ const caseId = /^[a-z0-9][a-z0-9-]*$/;
 
 export interface CanaryCase {
   readonly id: string;
+  /** `payload`: a reviewer's own known-bad case. `case`: a case from `cases/`. */
+  readonly origin: 'payload' | 'case';
   readonly description: string;
   /** `block`: every target reviewer must block for its category. `prepare-rejects`: no model runs. */
   readonly expect: 'block' | 'prepare-rejects';
@@ -67,6 +69,7 @@ export async function loadCases(
 
   const cases: CanaryCase[] = [...payloads.values()].map((payload) => ({
     id: `known-bad-${payload.reviewer}`,
+    origin: 'payload',
     description: `A known-bad change in the ${payload.reviewer}'s area`,
     expect: 'block',
     targets: { [payload.reviewer]: [payload.category] },
@@ -114,6 +117,7 @@ export async function loadCases(
     }
     cases.push({
       id,
+      origin: 'case',
       description: typeof data['description'] === 'string' ? data['description'] : id,
       expect,
       targets,
@@ -231,6 +235,16 @@ async function copyFixtures(from: string, to: string): Promise<void> {
   }
 }
 
+/**
+ * `full` runs the whole corpus. `slim` runs one known-bad case per reviewer, plus the cases that
+ * need no model, so a change to the gate costs one model run per reviewer (ADR-0013).
+ */
+export type CanaryScope = 'full' | 'slim';
+
+export function inScope(testCase: CanaryCase, scope: CanaryScope): boolean {
+  return scope === 'full' || testCase.origin === 'payload' || testCase.expect === 'prepare-rejects';
+}
+
 export interface CanaryRun extends MatrixEntry {
   readonly case: string;
   readonly categories: readonly Category[];
@@ -244,8 +258,8 @@ export interface CaseResult {
 }
 
 /**
- * Prepares every case: `<out>/<case>/review-input/` and a prompt per target reviewer, the model
- * runs to make, and the results of cases that need no model.
+ * Prepares every case in scope: `<out>/<case>/review-input/` and a prompt per target reviewer, the
+ * model runs to make, and the results of cases that need no model.
  */
 export async function planCanary(options: {
   readonly repo: string;
@@ -253,11 +267,13 @@ export async function planCanary(options: {
   readonly reviewers: readonly Reviewer[];
   readonly out: string;
   readonly scratch: string;
+  readonly scope: CanaryScope;
 }): Promise<{ runs: CanaryRun[]; results: CaseResult[] }> {
-  const { repo, corpus, reviewers, out, scratch } = options;
+  const { repo, corpus, reviewers, out, scratch, scope } = options;
   const runs: CanaryRun[] = [];
   const results: CaseResult[] = [];
-  for (const testCase of await loadCases(corpus, reviewers)) {
+  const cases = (await loadCases(corpus, reviewers)).filter((testCase) => inScope(testCase, scope));
+  for (const testCase of cases) {
     const worktree = join(scratch, testCase.id);
     const { base, head } = await materializeCase({ repo, corpus, testCase, worktree });
     const caseOut = join(out, testCase.id);

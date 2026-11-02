@@ -141,8 +141,8 @@ runs:
         if [[ -n "$OUTPUT" ]]; then printf '%s' "$OUTPUT" > "$OUTPUT_FILE"; fi
     # A run whose model never answered (an API error result with no tokens used, such as the
     # subscription's limit for that model) judged nothing, so it runs once on the fallback model.
-    # The prompt holds nothing from the change, and any run in which a model answered keeps its
-    # outcome, so nothing in the change can choose the model it meets.
+    # Any run in which a model answered keeps its outcome, so a change can at most move its review
+    # to the other strong model (ADR-0013).
     - name: Check whether the model answered
       id: answered
       if: inputs.fallback-model != '' && steps.review.outputs.structured_output == ''

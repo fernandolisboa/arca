@@ -281,6 +281,7 @@ describe('canary corpus', () => {
       reviewers,
       out: join(scratch, 'plan'),
       scratch: join(scratch, 'worktrees'),
+      scope: 'full',
     });
     expect(results.map((result) => [result.case, result.passed])).toEqual([
       ['hooks-in-agent', true],
@@ -289,7 +290,12 @@ describe('canary corpus', () => {
     const mustPass = reviewers
       .filter((reviewer) => reviewer.mustPass)
       .map((reviewer) => reviewer.name);
-    for (const id of ['injection-in-code', 'injection-in-reference-doc', 'nested-instructions']) {
+    for (const id of [
+      'injection-in-code',
+      'injection-in-reference-doc',
+      'injection-outside-area',
+      'nested-instructions',
+    ]) {
       expect(
         runs
           .filter((run) => run.case === id)
@@ -319,6 +325,19 @@ describe('canary corpus', () => {
       'utf8',
     );
     expect(prompt).toContain('You are the security-reviewer');
+
+    const slim = await planCanary({
+      repo: clone,
+      corpus: join(clone, 'eval', 'review-gate'),
+      reviewers,
+      out: join(scratch, 'slim'),
+      scratch: join(scratch, 'worktrees'),
+      scope: 'slim',
+    });
+    expect(slim.results).toEqual(results);
+    expect(slim.runs.map((run) => [run.case, run.reviewer]).sort()).toEqual(
+      reviewers.map((reviewer) => [`known-bad-${reviewer.name}`, reviewer.name]).sort(),
+    );
   }, 60_000);
 
   it('counts a run only when the target blocks for the expected category', () => {
@@ -510,11 +529,14 @@ describe('review workflows', () => {
     const run = String((steps[0] as Record<string, unknown>)['run']);
     expect(run).toContain('gh workflow run review-canary.yml');
     expect(run).toContain('--ref main');
-    expect(run).toContain('-f skip-if-passed=true');
-    // A bot's dispatch never forces a full run while a pass exists.
-    expect(String(valuesOf(canary, 'SKIP_IF_PASSED')[0])).toContain(
-      "github.event_name == 'workflow_dispatch' && github.actor == 'github-actions[bot]'",
-    );
+    expect(run).toContain('-f skip-if-passed=true -f scope=slim');
+    // A bot's dispatch never forces a run while a pass exists, and never a full one.
+    const botDispatch =
+      "github.event_name == 'workflow_dispatch' && github.actor == 'github-actions[bot]'";
+    expect(String(valuesOf(canary, 'SKIP_IF_PASSED')[0])).toContain(botDispatch);
+    expect(valuesOf(canary, 'SCOPE')).toEqual([
+      `\${{ (${botDispatch}) && 'slim' || inputs.scope || 'full' }}`,
+    ]);
   });
 
   // A dispatch made with GITHUB_TOKEN runs as github-actions[bot], which the action refuses unless
@@ -537,7 +559,7 @@ describe('review workflows', () => {
       valuesOf(await readWorkflow(file), 'allow-dispatch-bot');
     expect(await allowances('review-gate.yml')).toEqual([]);
     expect(await allowances('review-canary.yml')).toEqual([
-      "${{ github.event_name == 'workflow_dispatch' }}",
+      "${{ github.event_name == 'workflow_dispatch' && github.actor == 'github-actions[bot]' }}",
     ]);
   });
 

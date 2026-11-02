@@ -3,12 +3,19 @@ import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { oneLine, whenMissing } from '../report.ts';
 import { parseAcceptances } from './acceptances.ts';
-import { judgeCanaryRun, planCanary, type CanaryRun, type CaseResult } from './canary.ts';
+import {
+  judgeCanaryRun,
+  planCanary,
+  type CanaryRun,
+  type CanaryScope,
+  type CaseResult,
+} from './canary.ts';
 import { inert, renderComment } from './comment.ts';
 import { gateFingerprint, resolvedModels } from './fingerprint.ts';
 import { objectId } from './git.ts';
 import {
   awaitCanary,
+  canaryRecovering,
   canaryState,
   createCheckRun,
   githubRequest,
@@ -107,6 +114,12 @@ async function prepare(args: string[]): Promise<void> {
   }
 }
 
+function canaryScope(value: string | boolean | undefined): CanaryScope {
+  if (value === undefined || value === 'full') return 'full';
+  if (value === 'slim') return 'slim';
+  throw new Error('--scope must be "full" or "slim"');
+}
+
 /** canary-plan: every case prepared, the model runs as a matrix, and the cases that need none. */
 async function canaryPlan(args: string[]): Promise<void> {
   const { values } = parseArgs({
@@ -114,12 +127,14 @@ async function canaryPlan(args: string[]): Promise<void> {
     options: {
       out: { type: 'string' },
       scratch: { type: 'string' },
+      scope: { type: 'string' },
       'change-objects': { type: 'string' },
       'change-head': { type: 'string' },
       'skip-if-passed': { type: 'boolean' },
     },
   });
   const out = option(values, 'out');
+  let scope = canaryScope(values.scope);
   const changeObjects = values['change-objects'];
   let reviewers;
   if (changeObjects === undefined) {
@@ -134,6 +149,10 @@ async function canaryPlan(args: string[]): Promise<void> {
       await setOutput('skip', 'true');
       return;
     }
+    if (scope === 'slim' && (await canaryRecovering(request(), repository()))) {
+      console.log('A canary run on main failed after the last success, so this run is full.');
+      scope = 'full';
+    }
   } else {
     const { agents, reviewMarkdown } = changeAgents(changeObjects, sha(values, 'change-head'));
     reviewers = changeReviewers(agents, reviewMarkdown);
@@ -145,13 +164,14 @@ async function canaryPlan(args: string[]): Promise<void> {
     reviewers,
     out: join(out, 'cases'),
     scratch: option(values, 'scratch'),
+    scope,
   });
   await writeSchema(out);
-  await writeFile(join(out, 'plan.json'), JSON.stringify({ runs, results, reviewers }));
+  await writeFile(join(out, 'plan.json'), JSON.stringify({ scope, runs, results, reviewers }));
   await setOutput('matrix', JSON.stringify({ include: runs }));
   await setOutput('has-runs', String(runs.length > 0));
   console.log(
-    `Prepared ${String(runs.length)} model runs and ${String(results.length)} cases without a model.`,
+    `Prepared a ${scope} canary: ${String(runs.length)} model runs and ${String(results.length)} cases without a model.`,
   );
 }
 
@@ -167,6 +187,7 @@ async function canaryEvaluate(args: string[]): Promise<void> {
     },
   });
   const plan = JSON.parse(await readFile(option(values, 'plan'), 'utf8')) as {
+    scope: CanaryScope;
     runs: CanaryRun[];
     results: CaseResult[];
     reviewers: Reviewer[];
@@ -181,7 +202,10 @@ async function canaryEvaluate(args: string[]): Promise<void> {
     results.push(judgeCanaryRun(run, reviewer, raw));
   }
   const passed = results.length > 0 && results.every((result) => result.passed);
-  await writeFile(option(values, 'out'), JSON.stringify({ passed, results }, null, 2));
+  await writeFile(
+    option(values, 'out'),
+    JSON.stringify({ scope: plan.scope, passed, results }, null, 2),
+  );
   for (const result of results) {
     console.log(
       `${result.passed ? 'pass' : 'FAIL'}  ${result.case}${result.reviewer === undefined ? '' : ` / ${result.reviewer}`}: ${result.detail}`,

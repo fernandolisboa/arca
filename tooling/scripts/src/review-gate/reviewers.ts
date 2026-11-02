@@ -101,9 +101,16 @@ export function reviewerWeights(reviewMarkdown: string): Map<string, ReviewerWei
   const row =
     /^\|\s*\[([a-z][a-z0-9-]*)\]\([^)]*\)\s*\|([^|]*[^|\s][^|]*)\|\s*(Must pass|Should pass)\s*\|/gm;
   for (const [, name = '', runsOn = '', weight] of reviewMarkdown.matchAll(row)) {
+    const cell = runsOn.trim();
+    // A misspelled core cell would otherwise make a core reviewer a specialist, free to skip.
+    if (cell !== everyChange && /every\s*change/i.test(cell)) {
+      throw new AgentDefinitionError(
+        `${name}'s "Runs on" cell must be exactly "${everyChange}" or name an area`,
+      );
+    }
     weights.set(name, {
       mustPass: weight === 'Must pass',
-      areaScoped: runsOn.trim() !== everyChange,
+      areaScoped: cell !== everyChange,
     });
   }
   return weights;
