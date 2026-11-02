@@ -6,7 +6,7 @@ The name comes from the Portuguese *arca*: both an ark (it carries the whole fam
 
 ## Status
 
-Scaffolding the monorepo ([spec 0001](docs/specs/0001-foundations-scaffold.md)). Product, architecture, platform strategy and stack are decided ([docs/adr/](docs/adr/)).
+Scaffolding the monorepo ([spec 0001](docs/specs/0001-foundations-scaffold.md)); the rules engine and knowledge base are specified next ([spec 0002](docs/specs/0002-rules-engine-and-knowledge-base.md)). Product, architecture, platform strategy and stack are decided ([docs/adr/](docs/adr/)).
 
 ## Development
 
@@ -54,7 +54,7 @@ The first case is the founder's own family. The app goes to other families only 
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Phases and the gates between them |
 | [docs/GLOSSARY.md](docs/GLOSSARY.md) | Domain terms and their pt-BR UI equivalents |
 | [docs/OPEN-QUESTIONS.md](docs/OPEN-QUESTIONS.md) | Decisions still pending |
-| [docs/adr/](docs/adr/) | Architecture decision records: language, rules as data, stack, AI ports, platforms, auth, background jobs, database security, reviewers in CI, automation-first setup, review gate canary and model aliases |
+| [docs/adr/](docs/adr/) | Architecture decision records: language, rules as data, stack, AI ports, platforms, auth, background jobs, database security, reviewers in CI, automation-first setup, review gate canary and model aliases, knowledge base as reviewed data |
 | [docs/specs/](docs/specs/) | Feature specs, written before tickets and code |
 | [docs/research/](docs/research/) | Sourced research notes that seed the knowledge base |
 

@@ -61,8 +61,9 @@ eval/
 | Package | May depend on |
 | --- | --- |
 | `apps/web` | `api-contract`, `ui`, `i18n`, `platform` |
-| `apps/api` | `domain`, `api-contract`, `db` |
+| `apps/api` | `domain`, `api-contract`, `db`, `knowledge` (added by [spec 0002](0002-rules-engine-and-knowledge-base.md)) |
 | `packages/ui` | `i18n` |
+| `packages/knowledge` | `domain` (added by spec 0002) |
 | `packages/domain`, `packages/api-contract`, `packages/platform`, `packages/i18n`, `packages/db` | nothing in the workspace |
 
 - ESLint, scoped by package:

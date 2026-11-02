@@ -11,9 +11,9 @@ The deterministic core that every consultancy service reads: a rule schema that 
 
 ## Scope
 
-**In:** calendar dates and money in `packages/domain`; the case snapshot and the fact catalog; the rule schema; the evaluation engine and unit computation; `packages/knowledge` with the country dataset, country sets, the catalog loader, validation, content hashes and the immutability check; fixture routes and the synthetic families corpus; the staleness report.
+**In:** calendar dates and money in `packages/domain`; the case snapshot and the fact catalog; the rule schema; the evaluation engine, unit computation and the active-version rule; `packages/knowledge` with the country dataset, country sets, official domains, the catalog loader, validation, content hashes and the immutability check; fixture routes and the synthetic families corpus; the staleness report.
 
-**Out:** real route data (slice 2); storing cases, intake and any AI (slice 3); ranking, routes chained to citizenship and the activation screen (slice 4); documents, steps and action points (slice 5); retrieval (slice 6); FX rate feeds and the simulator (slice 7); any API route or UI.
+**Out:** real route data (slice 2); storing cases, intake, any AI, and the activation screen with its passkey verification (slice 3); ranking and routes chained to citizenship (slice 4); documents, steps and action points (slice 5); retrieval (slice 6); FX rate feeds and the simulator (slice 7); any API route or UI.
 
 **No case data.** Every snapshot in this slice is synthetic, and the snapshot schema has no names, document numbers or free text.
 
@@ -24,12 +24,14 @@ Each slice gets its own spec when it starts. Order and dependencies:
 | Slice | Delivers | Depends on |
 | --- | --- | --- |
 | 1. Rules engine and knowledge base (this spec) | Schema, engine, units, catalog | Foundations scaffold (merged) |
-| 2. Knowledge seed | Route versions for the first countries, from official sources, with cases | Slice 1 schema (R4); the owner's choice of countries |
-| 3. Case model and text intake | Case tables under forced row-level security, free-text intake through the `Extractor` port, playback and correction, decisive questions, permissions per person and unit, audit log | Slice 1; the foundations identity and data-protection slice (passkeys, synthetic `development` branch, deletion and export, retention, incident runbook, observability with scrubbing); an Anthropic API budget |
-| 4. Comparison and recommendation | Destination comparison weighted per person, ranking of route combinations, routes chained to citizenship, the activation screen (ADR-0014) | Slices 2 and 3 |
-| 5. Checklist and plan | Documents, steps, action points, execution modes | Slice 4 |
-| 6. On-call assistant | Answers with cited sources over the knowledge base | Slice 2; an `Embedder` vendor ADR |
+| 2. Knowledge seed | Route versions for the first countries, from official sources, with cases; research notes in `docs/research/` are the starting point | Slice 1 schema (R4); the owner's choice of countries |
+| 3. Case model and text intake | Case tables under forced row-level security, free-text intake through the `Extractor` port, playback and correction, decisive questions, permissions per person and unit, audit log, and the activation screen (ADR-0014) | Slice 1; the rest of the foundations epic (passkeys, synthetic `development` branch, deletion and export, retention, incident runbook, observability with scrubbing); an Anthropic API budget |
+| 4. Comparison and recommendation | Destination comparison weighted per person, ranking of route combinations, routes chained to citizenship | Slices 2 and 3 |
+| 5. Checklist and plan | Documents, steps, action points, execution modes; decides whether knowledge items and action points are files like route versions | Slice 4 |
+| 6. On-call assistant | Answers with cited sources over active knowledge | Slices 2 and 3; an `Embedder` vendor ADR |
 | 7. Assets and currency | Tax and FX simulator, source-of-funds trail, official FX rates | Slices 1 and 3 |
+
+**Active versions only.** Every use that reaches a user (evaluations, the questions derived from them, retrieval, checklists) reads active versions only, through one interface that returns nothing else. Only the activation screen sees proposed versions.
 
 Intake is text first. Voice joins later through the `SpeechToText` port, with its own vendor ADR.
 
@@ -38,112 +40,141 @@ Intake is text first. Voice joins later through the `SpeechToText` port, with it
 ```text
 packages/
   domain/
-    src/calendar/     CalendarDate and Duration
+    src/calendar/     CalendarDate, PartialDate, Duration
     src/money/        Money, Decimal, FX conversion
     src/case/         CaseSnapshot schema and the fact catalog
-    src/rules/        rule schema, expression evaluator, engine, unit computation
+    src/rules/        rule schema, expressions, version selection, active versions, engine, units
   knowledge/
-    data/countries.json               ISO 3166-1 alpha-2 codes, generated (R7)
-    data/country-sets/<id>/<n>.json   versioned country sets with sources
-    data/routes/<route-id>/<n>.json   one file per route version
-    data/routes/<route-id>/<n>.cases.json
-    test/fixtures/routes/             fixture routes on user-assigned codes (R8)
-    src/                              loader, validation, hashing, catalog index
-    scripts/                          country dataset generator, staleness report
+    data/countries.json                         current and former country codes, generated (R7)
+    data/official-domains/<country>/<n>.json    official source hosts per country, versioned
+    data/country-sets/<id>/<n>.json             versioned country sets with sources
+    data/routes/<route-id>/<n>.json             one file per route version
+    data/routes/<route-id>/<n>.cases.json       table-driven cases for that version
+    test/fixtures/                              fixture routes on user-assigned codes (R8)
+    src/                                        the runtime entry: the built catalog and its index
+    scripts/                                    build (load, validate, hash), country generator,
+                                                immutability check, staleness report
 eval/
-  families/           synthetic case snapshots shared with later AI evaluation
+  families/           synthetic case snapshots, shared with later AI evaluation
 ```
 
 ## Requirements
 
 ### R1. Packages and boundaries
 
-- New package `@arca/knowledge`. The boundary matrix (spec 0001 R2, `tooling/scripts/src/check-boundaries.ts`) changes to: `@arca/knowledge` may depend on `@arca/domain`; `@arca/api` may also depend on `@arca/knowledge`. Nothing else changes.
+- New package `@arca/knowledge`. This slice updates the boundary matrix in spec 0001 R2 and `tooling/scripts/src/check-boundaries.ts`: `packages/knowledge` may depend on `domain`; `apps/api` may also depend on `knowledge`. Nothing else changes.
 - `@arca/domain` gains `zod` (already in the catalog) as its only runtime dependency. It stays pure: the domain lint rules of spec 0001 R2 apply unchanged, so no clock, no I/O, no hashing.
+- In `packages/knowledge`, `src` is the runtime entry and does no I/O: it exports the catalog the build produced. File reading, validation and hashing live in `scripts`, which run at build and in CI.
 - `fast-check` joins the catalog for property tests in `domain` and `knowledge` (see [Versions](#versions)).
 
 ### R2. Calendar dates and money
 
-- **Dates.** `CalendarDate` is an ISO 8601 calendar date (`YYYY-MM-DD`) with no time or time zone. Operations: parse and validate, compare, add a `Duration` (years, months, days; month ends clamp, so 2024-02-29 plus one year is 2025-02-28), whole years and months between two dates, and age at a date (a person born on 29 February turns a year older on 28 February in common years). `Duration` is ISO 8601 `PnYnMnD`. The engine takes `asOf` as an argument; nothing reads the clock. When `Temporal.PlainDate` is available on the runtime and in TypeScript's library, it can replace the implementation behind the same interface.
+- **Dates.** `CalendarDate` is an ISO 8601 calendar date (`YYYY-MM-DD`) with no time or time zone. Operations: parse and validate, compare, add a `Duration`, whole years and months between two dates, and age at a date.
+  - `Duration` is ISO 8601 `PnYnMnD`. Adding one applies years, then months, clamps to the month's last day, then adds days (as `Temporal.PlainDate.add` does).
+  - Durations are compared only anchored to a date: "at least P2Y since D" means `D + P2Y <= reference date`. A duration range uses a single unit, so its bounds always order.
+  - Age at a date counts whole years. A 29 February birthday turns a year older on 28 February in common years by default; a route version can set `leapDayBirthday: "march-1"` for jurisdictions that use 1 March.
+  - `PartialDate` (a year, or a year and month) exists for ancestors, whose records are often incomplete. A comparison with a partial date is true or false only when every date it could be gives the same answer; otherwise unknown.
+  - When `Temporal.PlainDate` is available on the runtime and in TypeScript's library, it can replace the implementation behind the same interface.
 - **Money.** `{ amount, currency }`: `amount` is an integer in minor units (a safe integer), `currency` an ISO 4217 code with its minor-unit exponent from a table in the package. No floating point anywhere in money or rates.
-- **Decimals.** Multipliers, shares and FX rates are decimal strings (up to 12 fractional digits), computed with `bigint` scaled arithmetic. Rounding to minor units is half-even, once, at the end of each operation.
-- **FX.** Conversion takes an `FxTable` supplied by the caller: rates with their date and source. The engine never fetches a rate. A missing rate makes the comparison unknown, with the missing pair reported.
-- Property tests cover: date arithmetic round trips and month-end clamping, age around birthdays and leap days, money addition and comparison, and conversion rounding.
+- **Decimals.** Multipliers, shares and FX rates are decimal strings (up to 12 fractional digits), computed with `bigint` scaled arithmetic.
+- **Rounding.** Exact until the end: a sum of converted amounts is computed exactly and rounded half-even to minor units once.
+- **FX.** Conversion uses an `FxTable` the caller supplies: rates with their date and source. The rate for a pair is the latest dated on or before `factsAsOf` and at most 7 days older. The engine never fetches a rate. A missing rate makes the comparison unknown and is reported under `missingRates`, never as a question for the family.
+- Property tests cover date arithmetic and month-end clamping, ages around birthdays and leap days, partial-date comparisons, money addition and comparison, and conversion rounding.
 
 ### R3. Case snapshot and fact catalog
 
-- **`CaseSnapshot`** is the engine's only view of a case, a Zod schema in `packages/domain/src/case`. People carry opaque IDs and structured facts only: birth date, citizenships (country, acquired and lost dates, basis), country of residence, education (ISCED 2011 level), languages (BCP 47 language, CEFR level), income (active or passive, monthly amount, source country), assets (kind, owners with shares, value with its valuation date, liquidity), immigration history (country, event kind such as a visa refusal, date), financial dependence on another person, and whether the person is studying. Relationships are typed edges (`spouse`, `partner`, `parent`, with dates and, for parenthood, kind and custody), so separations, common-law unions and custody are expressible. Ancestors are people in the same graph who are not case members.
-- Every field is optional. An absent field is **unknown**, never false.
-- The schema has no free-text fields, names or document numbers. A snapshot is data that cannot carry instructions.
-- **Fact catalog.** Rules read facts by key (for example `person.ageYears`, `person.citizenships`, `unit.liquidAssets`). The catalog in `packages/domain` maps each key to its value type, its scope (`principal`, `candidate`, `unit`, `person` inside a collection) and the pure function that derives it from the snapshot and the evaluation context. Derived facts such as age at `asOf` or the unit's liquid assets are computed here, in code.
+- **`CaseSnapshot`** is the engine's only view of a case, a Zod schema in `packages/domain/src/case`. People carry opaque IDs and structured facts only: birth date, citizenships (country, acquired and lost dates, basis), country of residence, education (ISCED 2011 level), languages (BCP 47 language, CEFR level), income (active or passive, monthly amount, source country), assets (kind, owners with shares, value with its valuation date, liquidity), immigration history (country, event kind such as a visa refusal, date), financial dependence on another person, and whether the person is studying.
+- **Relationships** are typed edges: `spouse` and `partner` (with start and end dates) and `parent` (with kind, such as biological or adoptive, and custody). Other relationships are derived: an ex-spouse is a `spouse` edge with an end date, an in-law is a path such as `spouse.parent`, a sibling shares a parent. Ancestors are people in the same graph who are not case members.
+- **Unknown versus none.** An absent scalar field is unknown, never false. A present list is complete, so `[]` means none. Relationship edges carry a completeness marker per person and kind (for example, "this person's spouses are all recorded"); without it, a missing edge is unknown, not absent. Table cases cover absent, empty and complete for each.
+- The schema has no free-text fields, names or document numbers, so a snapshot cannot carry instructions. Objects are strict: unknown keys fail validation.
+- **Fact catalog.** Rules read facts by key (for example `person.ageYears`, `person.citizenships`, `unit.liquidAssets`). The catalog in `packages/domain` maps each key to its value type, its scope (`principal`, `candidate`, `member` inside a collection, `ancestor` inside a line) and the pure function that derives it from the snapshot and the context.
+  - Derived facts such as age, elapsed time or the unit's liquid assets are computed here, in code. Money facts that aggregate across assets return the route version's currency, converted per R2.
+  - Facts in a line of ancestors can read the next person toward the principal (for example `lineage.childBirthDate`), so "the ancestor was a citizen when the next person in the line was born" is expressible.
+  - A fact can be read at a named reference date from the context (for example the filing date, for age protections) instead of `factsAsOf`. A missing named date makes the fact unknown.
 - A rule that names a key outside the catalog, or compares it with a value of the wrong type, fails validation. Adding a fact is a reviewed code change in `domain`; adding a route never is.
 
 ### R4. Rule schema
 
-Zod schemas in `packages/domain/src/rules`, exported as JSON Schema for editors (`z.toJSONSchema`), with `schemaVersion: 1` on every file. The schema evolves additively; a breaking change adds a schema version that the engine supports alongside the old one, so old versions still evaluate.
+Zod schemas in `packages/domain/src/rules`, exported as JSON Schema for editors (`z.toJSONSchema`), with `schemaVersion: 1` on every file. Objects are strict. The schema evolves additively; a breaking change adds a schema version that the engine supports alongside the old one, so old versions still evaluate.
 
-- **Route.** `id` (`<country code in lowercase>-<slug>`, for example `pt-d7`), country, tags (free strings such as `work`, `investment`, `descent`, `seasonal-work`; never an enumeration in code) and a version list.
-- **Route version.** Route ID, number (contiguous from 1), `effectiveFrom` (a `CalendarDate`), `status` (`open` or `closed`), `sources`, `requirements`, `assessments`, `dependents`, `costs` and `durations`. A version applies from its `effectiveFrom` until the next version's; a `closed` version records that the route stopped (for example, an abolished golden visa).
-- **Sources.** Each has an ID, an `https` URL, a title, a kind (`official` or `secondary`) and `verifiedAt`. Every requirement, assessment, dependent rule, cost and duration cites at least one `official` source by ID. Secondary sources may be added beside it, never instead.
+- **Route.** `id` (`<country code in lowercase>-<slug>`, for example `pt-d7`), country, tags (free strings such as `work`, `investment`, `descent`, `seasonal-work`; never an enumeration in code) and its versions.
+- **Route version.** Route ID; number (contiguous from 1); `effectiveFrom` (a `CalendarDate`); optional `corrects` (R6); `status` (`open` or `closed`); `currency`; optional `leapDayBirthday`; `sources`; `countrySets` (references pinned to an exact ID and number); `requirements`; `assessments`; `dependents`; `costs`; `durations`. A `closed` version (for example, an abolished golden visa) has no requirements, dependents or costs.
+- **Sources.** Each has an ID, an `https` URL, a title, a kind (`official` or `secondary`) and `verifiedAt`. Every requirement, assessment, dependent rule, cost and duration cites at least one `official` source by ID. A source is `official` only if its host is on the country's official-domain list (R6). Secondary sources may be added beside an official one, never instead.
+- **Free text.** Titles, names and tags are plain strings capped at 200 characters, rendered escaped, and never passed to a model as instructions.
 - **Expressions.** A JSON tree with a closed set of operators, evaluated without `eval`, regular expressions or user code:
-  - Values: boolean, integer, decimal, money, date, duration, country code, string enum from the fact catalog, country set reference (`{ "countrySet": "us-e2-treaty" }`).
+  - Values: boolean, integer, decimal, money, date, duration, country code, string enum from the fact catalog, pinned country set.
   - Comparisons: `eq`, `ne`, `lt`, `lte`, `gt`, `gte`, `in`, `intersects`.
   - Logic: `all`, `any`, `not`.
   - Arithmetic: `add`, `sub`, `mul` (by a decimal), `min`, `max`, so a threshold can depend on the unit (Portugal D7 shape: a base amount, plus a share per adult dependent and per child).
-  - Dates: elapsed duration since a date fact, compared with a duration.
-  - Collections: `count`, `sum`, `some` and `every` over people collections (`unit.members`, `unit.dependents`, the principal's ancestors up to a generation), with a condition per person.
+  - Money operands must share a currency; mixing currencies fails validation unless an operand is wrapped in `convert(expression, currency)`.
+  - Dates: `since(date, duration)`, true when the date plus the duration is on or before the reference date.
+  - Collections: `count`, `sum`, `some` and `every` over people (`unit.members`, which includes the principal; `unit.dependents`; `principal.ancestors` up to a generation depth given in the expression, at most 4), each with a condition per person.
   - Limits checked by validation: depth at most 16 and at most 500 nodes per version.
-- **Logic is three-valued** (Kleene): true, false or unknown. Unknown propagates through comparisons and arithmetic; `all` is false if any operand is false, `any` is true if any operand is true.
+- **Logic is three-valued** (Kleene): true, false or unknown. Unknown propagates through comparisons and arithmetic; `all` is false if any operand is false, `any` is true if any operand is true. Collections carry bounds: `count` and `sum` over members whose condition or membership is unknown yield a known minimum and maximum, and a comparison is decided when both bounds give the same answer.
 - **Requirements** are named expressions on the principal and the unit, each with sources. **Assessments** model judgment calls (for example, national importance in an EB-2 NIW petition) as named factors with the evidence facts that support them, never as pass or fail (ADR-0002).
-- **Dependents.** Rules of the form *relationship path from the principal* (`spouse`, `partner`, `child`, `parent`, or a composition of up to three steps such as `spouse.parent`) *plus a condition on the candidate* (for example, unmarried and under 21 at `asOf`; or financially dependent on the principal). This expresses U.S. EB-5's spouse and unmarried children under 21 and Portuguese family reunification's dependent parents of the resident or spouse, without a fixed family partition.
-- **Costs.** Kind (`fee`, `capital`, `proof_of_means`), an amount expression in the route's currency, who it applies to (`principal`, `each_dependent`, `unit`), an optional condition, and sources.
-- **Durations.** Named stages (for example, to a decision, to residence) as a `Duration` range with sources.
-- **Country sets** (for example, E-2 treaty countries, Mercosur members) are versioned like routes, with sources and effective dates, and are referenced by ID.
+- **Dependents.** Rules of the form *relationship path from the principal* (`spouse`, `partner`, `child`, `parent`, or a composition of up to three steps such as `spouse.parent`) *plus a condition on the candidate* (for example, unmarried and under 21; or financially dependent on the principal). Paths never return the principal and remove duplicates. This expresses U.S. EB-5's spouse and unmarried children under 21 and Portuguese family reunification's dependent parents of the resident or spouse, without a fixed family partition.
+- **Costs.** Kind (`fee`, `capital`, `proof_of_means`), an amount expression in the version's currency, who it applies to (`principal`, `each_dependent`, `unit`), an optional condition, and sources.
+- **Durations.** Named stages (for example, to a decision, to residence) as a single-unit `Duration` range with sources.
+- **Country sets** (for example, E-2 treaty countries, Mercosur members) are versioned files with sources and effective dates. A route version pins each set it uses by ID and number, so a new set version reaches a route only through a new route version.
 
 ### R5. Evaluation engine and unit computation
 
-Pure functions in `packages/domain/src/rules`, with no I/O and no model calls:
+Pure functions in `packages/domain/src/rules`, with no I/O and no model calls. The catalog hands the engine `CatalogEntry` values: a validated version with its content hash (R6).
 
-- `selectVersion(versions, asOf)` returns the version in effect at `asOf`, or none. Callers pick `asOf`: today, or a filing date when a route says pending applications keep the old rules.
-- `computeUnit(snapshot, version, principalId, context)` returns the dependents the version covers (included), the ones it might cover pending unknown facts (possible, with those facts), and everyone else with the reason they are out. Units are computed, never stored.
-- `evaluate(snapshot, version, principalId, context)` returns an `Evaluation`: route ID, version number, content hash, `asOf`, principal, unit, a status, each requirement's result with its sources and a trace, each assessment with evidence present and missing, the decisive missing facts, costs per item with totals per currency, durations, and a `stale` flag (R9). The context carries `asOf`, the `FxTable`, the resolved country sets and the engine's commit (for reproducibility, ADR-0014).
-- **Status**, first match wins: `unavailable` (no version in effect, or a `closed` one), `not_eligible` (a requirement is false), `missing_information` (a requirement is unknown), `needs_assessment` (all requirements hold and the route has assessments), `eligible`.
-- **Decisive missing facts** are the unknown facts whose value could change the status, per person. Slice 3 turns them into "only the questions that change the answer".
-- Engine performance: linear in the size of the expressions times the number of people; a test bounds a 12-person snapshot against the full fixture catalog.
+- **Context:** `rulesAsOf` (the date that selects the version: today, or a filing date when a route keeps old rules for pending applications), `factsAsOf` (the date ages and elapsed times are computed at; defaults to `rulesAsOf`), named reference dates, `today` (for staleness only), the `FxTable`, the resolved country sets, the activations, and the engine's commit (for reproducibility, ADR-0014).
+- `selectVersion(route, rulesAsOf)` picks, among **all** versions, the one in effect: the greatest `effectiveFrom` on or before `rulesAsOf`, and on a tie the highest number. Only then is activation checked: if the selected version is not active, the result is `pending_activation`. The engine never falls back to an older active version, so a proposed closure or a proposed correction is never silently ignored.
+- `activeVersions(catalog, activations)` and the `Activation` type live in `domain` too: a version is active when an activation names its route ID, number and content hash. Verifying the passkey assertion behind an activation is the API's job (slice 3); `domain` only matches hashes.
+- `computeUnit(snapshot, entry, principalId, context)` returns the dependents the version covers (included), the ones it might cover pending unknown facts (possible, with those facts), and everyone else with the reason they are out. Units are computed, never stored. Possible dependents count as unknown members, so collection bounds (R4) and `each_dependent` costs reflect them: costs give a known total plus the possible extra.
+- `evaluateRoute(snapshot, route, principalId, context)` selects the version and returns an `Evaluation`: route ID, version number, content hash, the dates of the context, principal, unit, status, each requirement's result with its sources and a trace, each assessment with evidence present and missing, the decisive missing facts, `missingRates`, costs per item with totals per currency, durations, `stale` (R9), and `newerProposedVersion` when a later version exists that is not active.
+- **Status**, first match wins: `unavailable` (no version in effect, or a `closed` one), `pending_activation`, `not_eligible` (a requirement is false), `missing_information` (a requirement is unknown), `needs_assessment` (all requirements hold and the version has assessments), `eligible`.
+- **Decisive missing facts**, defined deterministically: empty when a requirement is false; otherwise, for each unknown requirement, the facts at its unknown leaves that are not cut off by a known operand (a false inside `all`, a true inside `any`). Facts that matter only together are both listed. Slice 3 turns them into "only the questions that change the answer".
+- **Evaluations are personal data.** A snapshot, an evaluation and its trace hold birth dates, assets, income and immigration history of several adults. They are never logged, never sent to error reports or workflow payloads, and slices 3 and 4 show each viewer only what that viewer may see (SECURITY.md principle 3).
+- Performance: linear in the size of the expressions times the number of people; a test bounds a 12-person snapshot against the full fixture catalog.
 
 ### R6. Knowledge catalog
 
-- **Files** as in [Layout](#layout). The loader reads every file, validates it against R4, checks references (sources, country sets, route ID prefix against the country) and builds an index by route.
-- **Content hash:** SHA-256 over the RFC 8785 canonical JSON of each version file, computed by the package build (Node `crypto`), never by `domain`. Integers only in JSON numbers, so canonicalization has no floating-point cases.
-- **Built artifact:** the build writes the validated catalog with hashes into `dist`; `@arca/api` imports it. Nothing reads the data directory at runtime.
-- **Proposed and active** (ADR-0014): the package exposes `activeVersions(catalog, approvals)`, which keeps only versions with an approval for their exact hash. In this slice there are no approvals, so nothing is active outside tests. When a route has a newer proposed version than its active one, evaluations say so.
-- **Immutability check** (`pnpm check:knowledge-immutable`, run in CI on pull requests): fails when a version file or country-set version on the base branch is modified, renamed or deleted, or when an existing entry of a cases file (matched by its `id`) changes or disappears. New files and new case entries pass.
-- **Validation in `pnpm check`:** every version validates; version numbers are contiguous; `effectiveFrom` increases with the version number; every requirement, assessment, dependent rule, cost and duration cites an official source; `verifiedAt` is not after the build date; every version has a cases file that meets R8's coverage.
+- **Build.** `scripts/build.ts` reads every file in `data`, validates it against R4, checks references (sources, pinned country sets, official domains, route ID prefix against the country) and writes the catalog, with hashes, into `dist`; `@arca/api` imports it. Nothing reads the data directory at runtime.
+- **Content hash:** SHA-256 over the RFC 8785 canonical JSON of the route version together with every country-set version it pins, computed by the build with Node `crypto`. An activation therefore covers the sets too. JSON numbers are integers only, so canonicalization has no floating-point cases.
+- **Corrections.** A rule change is a new version with a later `effectiveFrom`. A correction of a data error is a new version with the same `effectiveFrom` as the version it fixes and `corrects: <number>`; it wins on the tie (R5). Old evaluations keep pointing at the version they used.
+- **Official domains.** `data/official-domains/<country>/<n>.json` lists the hosts that count as official for a country (for example `uscis.gov`, `travel.state.gov`), each with a source showing the host belongs to the government. Versioned and immutable like everything in `data`.
+- **Immutability check** (`pnpm check:knowledge-immutable`, run in CI on pull requests): fails when any file under `data` that exists on the base branch is modified, renamed or deleted, or when an existing entry of a cases file (matched by its `id`) changes or disappears. New files and new case entries pass. A case whose expected result must change after an engine fix gets a new entry with `supersedes: <id>`, a reason and the engine commit; the superseded entry stops running.
+- **Validation in `pnpm check`:** every file validates; version numbers are contiguous; `effectiveFrom` never decreases with the version number and is equal only for a `corrects` version; every requirement, assessment, dependent rule, cost and duration cites an official source; `verifiedAt` is not after the build date; every version has a cases file that meets R8's coverage.
+- **Review.** No reviewer changes. The correctness reviewer, which runs on every change, checks route data against its cited sources; this validation is the structural gate.
 
 ### R7. Countries
 
-- `data/countries.json` holds every ISO 3166-1 alpha-2 country code, generated by `scripts/generate-countries.ts` from a pinned Unicode CLDR release (Unicode License v3), with the CLDR version and the source file's SHA-256 recorded in the file. It is regenerated only on purpose, and the generator's test checks the committed file matches the recorded source.
+- `data/countries.json` is generated by `scripts/generate-countries.ts` from a pinned Unicode CLDR release (Unicode License v3), with the CLDR version and the source file's SHA-256 recorded in the file. It holds:
+  - every current ISO 3166-1 alpha-2 code CLDR lists as a region, excluding numeric macro-regions, grouping codes (`EU`, `EZ`, `UN`), `QO` and `ZZ`, plus `XK` (Kosovo), which CLDR lists and which issues passports;
+  - former countries, from CLDR's deprecated region codes (for example `YU` Yugoslavia, `SU` Soviet Union, `DD` East Germany), marked as former and allowed only in citizenship and ancestry facts, since many ancestors were citizens of states that no longer exist.
+- It is regenerated only on purpose, and the generator's test checks the committed file against the recorded source.
 - No country name is written by hand in code or catalogs: names come from `Intl.DisplayNames` in the reader's locale, so pt-BR names are natural Brazilian Portuguese.
-- The real catalog accepts only codes in this dataset. User-assigned codes (`QM` to `QZ`, except `QO` and `QU`) are reserved for fixtures and rejected outside `test/fixtures`.
+- The real catalog accepts only codes in this dataset. User-assigned codes `QM` to `QZ` (except `QO`, which CLDR uses, and `QU`) are reserved for fixtures and rejected outside `test/fixtures`.
 
 ### R8. Table-driven cases, fixtures and families
 
-- **Cases.** Each `<n>.cases.json` lists entries with an `id`, a synthetic snapshot (or a reference to one in `eval/families`), the principal, `asOf`, FX rates when needed, and the expected status, unit and decisive missing facts. CI runs them all.
-- **Coverage:** across a version's cases, every requirement evaluates to true and to false at least once, every dependent rule includes and excludes someone at least once, and every status the version can reach appears. The engine's trace measures it.
-- **Fixture routes** prove the schema before real data exists. They use user-assigned country codes, are labeled as fixtures, and cover these shapes: a threshold computed from the unit's composition (D7-like); dependents limited to a spouse and unmarried children under 21 with an investment threshold in another currency (EB-5-like); dependent parents of the principal or spouse (family-reunification-like); citizenship by descent through a parent or grandparent with conditions on the ancestor's citizenship at the child's birth (Italian-descent-like); eligibility through a country set of the principal's citizenships (E-2-like); a judgment factor with evidence (EB-2 NIW-like); a seasonal work route tied to a job offer (H-2A-like); a closed route; and a version replaced at a date with a pending-applications `asOf`.
-- **Synthetic families** in `eval/families/`: a single person; a couple with young children; divorced parents with shared custody; dependent elderly parents; a previous visa refusal; assets held by an ex-spouse; and the shape of case 1 (six adults: a divorced couple, one holding real-estate assets, and their two adult children with spouses). All values are invented; nothing comes from the real family. Each family has expected units per fixture route.
+- **Cases.** Each `<n>.cases.json` lists entries with an `id`, a snapshot (inline, or a family from `eval/families` named by ID and the SHA-256 of its file, so a changed family fails the case), the principal, the context dates, FX rates when needed, and the expected status, unit and decisive missing facts. CI runs them all. Expected results live only here.
+- **Coverage**, measured from the engine's trace across a version's cases: every requirement evaluates to true, false and unknown at least once; every dependent rule includes and excludes someone at least once; the statuses `eligible` (or `needs_assessment` when the version has assessments), `not_eligible` and `missing_information` each appear. A `closed` version needs one case, `unavailable`.
+- **Fixture routes** prove the schema before real data exists. They use user-assigned country codes, are labeled as fixtures, and cover these shapes:
+  - a threshold computed from the unit's composition (D7-like);
+  - dependents limited to a spouse and unmarried children under 21, with an investment threshold in another currency than the assets (EB-5-like);
+  - dependent parents of the principal or of the spouse (family-reunification-like);
+  - citizenship by descent through a parent or grandparent, conditioned on the ancestor's citizenship when the next person in the line was born, with a partial date and a former country (Italian-descent-like);
+  - eligibility through a pinned country set of the principal's citizenships (E-2-like);
+  - a judgment factor with evidence (EB-2 NIW-like);
+  - a seasonal work route tied to a job offer (H-2A-like);
+  - a closed route; a version replaced at a date, evaluated with a pending-applications `rulesAsOf`; a correction on the same date; and a newer version left proposed.
+- **Synthetic families** in `eval/families/`: a single person; a couple with young children; divorced parents with shared custody; dependent elderly parents; a previous visa refusal; assets held by an ex-spouse; and the shape of case 1 (six adults: a divorced couple, one holding real-estate assets, and their two adult children with spouses). All values are invented; nothing comes from the real family.
 
 ### R9. Staleness
 
-- A source is stale when `verifiedAt` is more than 90 days before `asOf`. An evaluation that cites a stale source sets `stale: true`, so the interface can say the rule needs re-checking.
-- `scripts/staleness-report.ts` lists stale sources by route. A scheduled weekly workflow runs it and keeps one open issue up to date, using only `GITHUB_TOKEN` with `issues: write`. Agents re-verify from that issue and propose new versions.
+- A source is stale when its `verifiedAt` is more than 90 days before the context's `today`. An evaluation that cites a stale source sets `stale: true`, so the interface can say the rule needs re-checking.
+- `scripts/staleness-report.ts` lists stale sources by route. A weekly workflow (schedule and manual dispatch only) runs it and keeps one open issue up to date: `permissions: {}` at the top, `contents: read` and `issues: write` on its one job, actions pinned by SHA, a timeout, no secrets, an entry in the workflow-secrets policy. The issue is locked to collaborators.
+- Agents re-verify by running the report locally and proposing new versions; they never take instructions from the issue's text or comments.
 
 ### R10. Docs
 
-- ARCHITECTURE.md: `packages/knowledge` in the code layout; the rules flow per ADR-0014.
-- GLOSSARY.md: Fact, Requirement, Assessment, Country set, Proposed version, Active version, with pt-BR labels.
-- ROADMAP.md: the consultancy core slices above.
-- A short `packages/knowledge/README.md`: how to add a route version and its cases.
+- A short `packages/knowledge/README.md`: how to add a route version, a correction and their cases.
+- Spec 0001 R2's matrix, ARCHITECTURE.md, GLOSSARY.md and ROADMAP.md are updated with this spec.
 
 ## Versions
 
@@ -158,51 +189,57 @@ No other dependency. RFC 8785 canonicalization and the CLDR generator are small,
 
 ## Threat model for this slice
 
-Assets in play: the integrity of the knowledge base and of the engine. No personal data.
+Assets in play: the integrity of the knowledge base and of the engine. No personal data exists yet, but the engine's output is designed as personal data.
 
-| Threat (STRIDE, LLM and agentic) | Where | Control in this slice |
+| Threat (STRIDE, LLM and agentic) | Where | Control |
 | --- | --- | --- |
-| Tampering: a wrong or poisoned rule reaches families | Catalog | Official source required per item; table-driven cases with coverage; reviewers; versions stay proposed until the owner's passkey activates them (ADR-0014, built in slice 4) |
-| Tampering: an old version rewritten to change past results | Catalog | Immutability check against the base branch; content hash recorded in every evaluation |
-| Indirect prompt injection through researched pages | Slice 2 research | The catalog holds structured data only, no free text that reaches a model as instructions; facts typed by the catalog |
-| Wrong eligibility from arithmetic or dates | Engine | Integer money, decimal strings, half-even rounding, calendar dates without time zones, property tests; no model in the path |
-| Wrong answer presented as known | Engine | Three-valued logic; absent facts are unknown; decisive missing facts reported |
-| Denial of service through a pathological rule | Engine | Closed operator set, depth and node limits, no regular expressions or recursion beyond the three-step relationship path |
+| Tampering: a wrong or poisoned rule reaches families | Catalog | Official source per item; table-driven cases with coverage; reviewers; versions stay proposed until the owner activates them with a passkey (ADR-0014, slice 3) |
+| Tampering: a country set changed under an active route | Catalog | Sets pinned by number; the content hash covers them, so an activation covers them |
+| Tampering: an old version rewritten to change past results | Catalog | Immutability check against the base branch; content hash and engine commit in every evaluation |
+| Tampering: a proposed closure or correction ignored | Engine | Selection over all versions; `pending_activation` instead of falling back |
+| Spoofing: a phishing page labeled as an official source | Catalog | Official kind allowed only on the country's official-domain list; the activation screen shows each source's host |
+| Indirect prompt injection through researched pages | Slice 2 research | Structured data only; free text capped, escaped and never sent to a model as instructions |
+| Indirect prompt injection through the staleness issue | CI, agents | Issue locked to collaborators; agents run the report locally and ignore the issue's text |
+| Wrong eligibility from arithmetic or dates | Engine | Integer money, decimal strings, one half-even rounding, explicit conversion, calendar dates without time zones, anchored durations, property tests; no model in the path |
+| Wrong answer presented as known | Engine | Three-valued logic; unknown versus none made explicit; collection bounds; decisive missing facts; missing FX rates reported apart |
+| Intra-family exposure through evaluations | Slices 3 and 4 | Evaluations classed as personal data; shown per viewer; never logged or sent to telemetry |
+| Denial of service through a pathological rule | Engine | Closed operator set, depth and node limits, no regular expressions, bounded paths and generations |
 | Information disclosure: real data in fixtures | Repository | Snapshot schema without names or free text; synthetic families only; reviewers |
 | Tampering: malicious dependency | Install | One new test dependency, under spec 0001's supply-chain controls |
-| Elevation: the staleness workflow | CI | No secrets; `GITHUB_TOKEN` with `issues: write` only; on the workflow-secrets policy |
+| Elevation: the staleness workflow | CI | No secrets; least-privilege permissions; schedule and dispatch only; SHA-pinned actions |
 
 ## Definition of done
 
 - Every requirement above is met and covered by a test or a CI check.
-- The fixture catalog passes validation and coverage; every synthetic family's expected units match.
+- The fixture catalog passes validation and coverage; every case, including those on synthetic families, passes.
 - `pnpm check` and the immutability check run in CI.
 - No user-facing string added; no personal data anywhere.
 
 ## Decisions from the grill
 
-Taken on 2026-11-02 under the owner's standing instruction that agents decide technical matters. Two owner questions are listed after the table.
+Taken on 2026-11-02 under the owner's standing instruction that agents decide technical matters, then revised after the reviewers' first pass.
 
 | Question | Decision | Why |
 | --- | --- | --- |
 | Which epic is next? | Consultancy core, starting with the rules engine and knowledge base | Every MVP service reads them, and they need no case data, authentication or AI, so they can be built while the foundations finish |
 | Where does the knowledge base live? | JSON files in `packages/knowledge`, bundled into the API (ADR-0014) | Git history, diff review and tests beside the data; public rules in a public repository; no admin editor needed yet |
-| How is human approval recorded? | Proposed on merge, active only after the owner's passkey approval in the app (ADR-0014) | Agents act with the owner's GitHub token, so a merge proves nothing; a passkey assertion does |
-| JSON or YAML? | JSON with a JSON Schema for editors | No parser at runtime, one canonical form for hashing; agents write it, people read the approval summary |
-| How are missing facts handled? | Three-valued logic; absent is unknown | A missing answer must never read as "not eligible", and the unknowns drive the next questions |
+| How is human approval recorded? | Proposed on merge, active only after the owner's passkey activation in the app, built in slice 3 (ADR-0014) | Agents act with the owner's GitHub token, so a merge proves nothing; a passkey assertion does |
+| JSON or YAML? | JSON with a JSON Schema for editors | No parser at runtime, one canonical form for hashing; agents write it, people read the activation screen |
+| How are missing facts handled? | Three-valued logic; unknown versus none explicit; collection bounds | A missing answer must never read as "not eligible", and the unknowns drive the next questions |
 | How are thresholds that depend on the family expressed? | Arithmetic over unit collections in the expression tree | D7-like formulas without code per route |
 | How are dependents expressed? | Relationship paths plus a condition on the candidate | Matches EB-5 and Portuguese reunification without a fixed partition (CLAUDE.md rule 4) |
-| How is money computed? | Integer minor units, decimal strings, `bigint`, half-even rounding, FX passed in | CLAUDE.md rule 3; reproducible |
-| Dates? | Own `CalendarDate`, no time zones | Ages and deadlines are calendar facts; `Temporal` can replace it later behind the same interface |
+| How is money computed? | Integer minor units, decimal strings, `bigint`, explicit conversion, one half-even rounding, FX passed in | CLAUDE.md rule 3; reproducible |
+| Dates? | Own `CalendarDate` and `PartialDate`, no time zones, separate rules, facts and staleness dates | Ages and deadlines are calendar facts; `Temporal` can replace it later behind the same interface |
 | Fact list open or closed? | Closed catalog in `domain`, extended by code review | Rules must be type-checked; a new fact is a schema extension, not a route change |
-| How is reproducibility kept? | Immutable files, content hash, engine commit in every evaluation | CLAUDE.md rule 6 |
+| How are data errors fixed when files are immutable? | A correcting version on the same date, which wins the tie | Rule changes and errata differ; both stay reproducible |
+| How is reproducibility kept? | Immutable files, content hash over the version and its sets, engine commit in every evaluation | CLAUDE.md rule 6 |
 | How fresh must a source be? | Stale after 90 days, flagged and reported weekly | 2026 showed rules changing within weeks (research/us.md) |
 | How are countries listed? | Generated from a pinned CLDR release; names from `Intl.DisplayNames` | ISO 3166 codes without hand-written names or a new dependency |
-| How is the schema proven before real data? | Fixture routes on user-assigned codes covering every hard shape | Real routes need research and approval; fixtures cannot be mistaken for real rules |
-| API endpoints in this slice? | None | Nothing shows evaluations until slice 4 (YAGNI) |
-| Text or voice intake? | Text first; voice later through `SpeechToText` | Voice adds a vendor ADR and builds on the text path |
+| How is the schema proven before real data? | Fixture routes on user-assigned codes covering every hard shape | Real routes need research and activation; fixtures cannot be mistaken for real rules |
+| API endpoints in this slice? | None | Nothing reaches users until slice 3 (YAGNI) |
+| Text or voice intake? | Text first; voice later through `SpeechToText` | Voice adds a vendor ADR and builds on the text path; recorded in OPEN-QUESTIONS.md as provisional |
 
-**For the owner** (asked separately; this spec does not depend on the answers):
+**For the owner** (asked separately and tracked in [OPEN-QUESTIONS.md](../OPEN-QUESTIONS.md); this spec does not depend on the answers):
 
-1. Who approves rules before the app uses them: the owner alone, or the owner plus a destination lawyer for the routes the family chooses.
+1. Who activates rules before the app uses them: the owner alone, or the owner plus a destination lawyer for the routes the family chooses.
 2. Which countries slice 2 researches first.

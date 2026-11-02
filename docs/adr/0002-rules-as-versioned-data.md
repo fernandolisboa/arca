@@ -1,6 +1,6 @@
 # ADR-0002: Immigration rules as versioned data, evaluated deterministically
 
-- Status: Accepted
+- Status: Accepted; where route versions live and how approval is recorded amended by [ADR-0014](0014-knowledge-base-as-reviewed-data.md)
 - Date: 2026-11-01
 
 ## Context
@@ -14,7 +14,7 @@ LLMs are good at explaining and extracting, but unreliable at comparing dates, c
 - Each route (for example, "U.S. EB-5, targeted employment area") has immutable **route versions**. A version holds declarative requirements, costs, who it covers as dependents, effective dates, a source URL and a verification date.
 - The **evaluation engine** is a pure function: `(case snapshot, route version) → evaluation` (status, missing requirements, estimated cost and time). It contains no I/O and no model calls.
 - A rule change creates a new version. Existing evaluations keep pointing at the version they used.
-- New or changed versions enter the base only after human approval, whether they came from a person, a research agent or the rule watcher.
+- New or changed versions enter the base only after human approval, whether they came from a person, a research agent or the rule watcher. (Amended by [ADR-0014](0014-knowledge-base-as-reviewed-data.md): versions enter the catalog as proposed when merged, and the engine evaluates only versions the owner activated with a passkey.)
 - **The catalog is open.** No country, route, visa category or route type is hard-coded. Countries come from a standard dataset (ISO 3166); categories (work, investment, study, family, descent, retirement, digital nomad, humanitarian, seasonal work, and others) are tags on routes, not an enumeration in code. Any legal pathway that can be expressed in the rule schema can be added as data; when one cannot, the schema is extended generically rather than special-cased.
 
 Example of a version (shape, not final schema):

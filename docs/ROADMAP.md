@@ -19,11 +19,11 @@ Family first: the product for other families starts only after the founder's fam
 - ~~Stack confirmed~~ Done: [ADR-0010](adr/0010-stack-revised.md) (superseding ADR-0003), with auth ([ADR-0006](adr/0006-auth.md)), background jobs ([ADR-0009](adr/0009-background-jobs-guarantees.md), superseding ADR-0007), reviewers in CI ([ADR-0011](adr/0011-reviewers-in-ci.md)), automation-first setup ([ADR-0012](adr/0012-automation-first-setup.md)) and database security and environments ([ADR-0008](adr/0008-database-security-and-environments.md)).
 - Production domain chosen and registered (passkeys depend on it from day one).
 
-Phase 0 does not depend on code: the questions in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) can be answered while the repository is set up.
+The research in [research/](research/) feeds the knowledge seed of Phase 1 (consultancy core, slice 2), where each fact is re-verified against an official source. Phase 0 does not depend on code: the questions in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) can be answered while the repository is set up.
 
 ## Phase 1 — Family MVP (web)
 
-**Epic: cross-platform foundations** (done before feature work, so native phases add adapters instead of rewrites)
+**Epic: cross-platform foundations** (done before any feature that touches case data, identity or AI, so native phases add adapters instead of rewrites)
 
 - First slice specified in [specs/0001-foundations-scaffold.md](specs/0001-foundations-scaffold.md).
 - Monorepo with `packages/domain`, `packages/api-contract`, `packages/ui`, `packages/i18n`, `packages/platform`, `apps/api`, `apps/web` ([ARCHITECTURE.md](ARCHITECTURE.md#platforms-and-code-layout)).
