@@ -1,0 +1,14 @@
+{
+  "container": {
+    "exemptRoles": ["postgres"],
+    "ownerAdminRole": null,
+    "extensions": ["plpgsql"],
+    "roleSettings": []
+  },
+  "neon": {
+    "exemptRoles": ["cloud_admin", "neon_service", "neon_superuser", "neondb_owner", "token_roles"],
+    "ownerAdminRole": "neondb_owner",
+    "extensions": ["plpgsql"],
+    "roleSettings": []
+  }
+}

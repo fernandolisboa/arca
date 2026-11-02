@@ -29,6 +29,38 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
 
+  db:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    services:
+      postgres:
+        # Postgres 18, pinned by the digest of its multi-platform index (spec 0001, R7).
+        image: postgres:18@sha256:3a4264520e121176619f54ff867d12774bc81e95e7b84db58d63bccdb6144b81
+        env:
+          # A throwaway server that lives only for this job.
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 30
+    env:
+      ARCA_TEST_DB_HOST: 127.0.0.1
+      ARCA_TEST_DB_PORT: '5432'
+      ARCA_TEST_DB_ADMIN_PASSWORD: postgres
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Migrations, canaries and guards against Postgres 18
+        run: pnpm --filter @arca/scripts test:db
+
   sbom:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
