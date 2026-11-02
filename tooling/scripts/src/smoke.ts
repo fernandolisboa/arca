@@ -8,6 +8,7 @@ export interface SmokeOptions {
   readonly attempts?: number;
   /** Longer than the API's 10-second cache of a failed database check. */
   readonly retryDelayMs?: number;
+  readonly timeoutMs?: number;
 }
 
 /**
@@ -17,9 +18,13 @@ export interface SmokeOptions {
  */
 export async function smokeTest(
   origin: URL,
-  { fetchUrl = fetch, attempts = 6, retryDelayMs = 15_000 }: SmokeOptions = {},
+  { fetchUrl = fetch, attempts = 6, retryDelayMs = 15_000, timeoutMs = 10_000 }: SmokeOptions = {},
 ): Promise<Violation[]> {
-  const get = (path: string) => fetchUrl(new URL(path, origin), { redirect: 'manual' });
+  const get = (path: string) =>
+    fetchUrl(new URL(path, origin), {
+      redirect: 'manual',
+      signal: AbortSignal.timeout(timeoutMs),
+    }).catch((error: unknown) => (error instanceof Error ? error : new Error(String(error))));
 
   let health = await get('/v1/health');
   let problem = await healthProblem(health);
@@ -31,7 +36,12 @@ export async function smokeTest(
   const violations: Violation[] = problem === undefined ? [] : [{ where: '/v1/health', problem }];
 
   const page = await get('/');
-  if (page.status !== 200 || !(page.headers.get('content-type') ?? '').startsWith('text/html')) {
+  if (page instanceof Error) {
+    violations.push({ where: '/', problem: `request failed: ${page.name}` });
+  } else if (
+    page.status !== 200 ||
+    !(page.headers.get('content-type') ?? '').startsWith('text/html')
+  ) {
     violations.push({
       where: '/',
       problem: `answered ${String(page.status)} ${page.headers.get('content-type') ?? ''}`,
@@ -42,6 +52,7 @@ export async function smokeTest(
     ['/', page],
     ['/v1/health', health],
   ] as const) {
+    if (response instanceof Error) continue;
     for (const [name, expected] of Object.entries(securityHeaders)) {
       if (response.headers.get(name) !== expected) {
         violations.push({ where: path, problem: `header ${name} is missing or differs` });
@@ -51,7 +62,8 @@ export async function smokeTest(
   return violations;
 }
 
-async function healthProblem(response: Response): Promise<string | undefined> {
+async function healthProblem(response: Response | Error): Promise<string | undefined> {
+  if (response instanceof Error) return `request failed: ${response.name}`;
   if (response.status !== 200) return `answered ${String(response.status)}`;
   let body: unknown;
   try {

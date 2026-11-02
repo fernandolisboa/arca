@@ -77,6 +77,14 @@ describe('production smoke test (spec 0001, R9)', () => {
     expect(fake.healthCalls()).toBe(3);
   });
 
+  it('fails without throwing when a request fails', async () => {
+    const fetchUrl: typeof fetch = () => Promise.reject(new TypeError('fetch failed'));
+    expect(await smokeTest(origin, { fetchUrl, attempts: 2, retryDelayMs: 0 })).toEqual([
+      { where: '/v1/health', problem: 'request failed: TypeError' },
+      { where: '/', problem: 'request failed: TypeError' },
+    ]);
+  });
+
   it.each<[string, Answer]>([
     ['an error page', { status: 500 }],
     ['a page that is not HTML', { contentType: 'application/json' }],

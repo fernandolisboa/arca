@@ -57,7 +57,9 @@ export async function bootstrap(
   try {
     await client.query('BEGIN');
     try {
-      if (deployment !== undefined) await checkDeploymentTarget(client, deployment, target.host);
+      if (deployment !== undefined) {
+        await checkDeploymentTarget(client, deployment, target.host, { mayMark: true });
+      }
       await client.query("SET LOCAL createrole_self_grant = ''");
       await client.query(renderedSql);
       await client.query('COMMIT');

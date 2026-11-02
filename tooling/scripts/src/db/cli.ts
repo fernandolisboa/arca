@@ -41,12 +41,13 @@ async function main(command: string | undefined): Promise<void> {
       user: migratorRole,
       password: requiredVariable(env, 'ARCA_DB_MIGRATOR_PASSWORD'),
     });
-    deploymentFor(env, target.host);
+    const deployment = deploymentFor(env, target.host);
     const policy = await readDatabasePolicy(join(dbPackage, 'policy'), environmentFor(target.host));
     const { applied } = await migrate(
       target,
       await readMigrations(join(dbPackage, 'migrations')),
       policy,
+      deployment,
     );
     console.log(
       `${String(applied.length)} migrations applied${applied.length > 0 ? `: ${applied.join(', ')}` : ''}`,

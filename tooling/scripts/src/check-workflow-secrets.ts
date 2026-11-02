@@ -13,8 +13,9 @@ const secretReference = /(?<![\w.-])secrets(?![\w-])(?:\s*\.\s*([A-Za-z_][A-Za-z
 const githubReference = /(?<![\w.-])github(?![\w-])(?:\s*\.\s*([A-Za-z_][\w-]*))?/gi;
 
 /**
- * Triggers whose workflow definition comes from code other than main: a pull request's branch, or
- * any commit Vercel deployed (a preview branch, or a fork it was allowed to build).
+ * Triggers whose workflow definition comes from a pull request's branch, or from whatever commit
+ * was deployed (a preview branch, or a fork Vercel was allowed to build). Secrets stay out of
+ * other branches' runs because they live only in environments limited to main.
  */
 const branchControlledTriggers = ['pull_request', 'deployment', 'deployment_status'];
 

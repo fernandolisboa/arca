@@ -9,6 +9,7 @@ import {
   migration,
   migratorTarget,
   realMigrations,
+  setComment,
   withClient,
 } from './support.ts';
 
@@ -72,6 +73,23 @@ describe('migrate', () => {
     await expect(
       migrate(adminTarget(database), await realMigrations(), await containerPolicy()),
     ).rejects.toThrow('the runner connects as app_migrator');
+  });
+
+  it('reads the database mark before a deployment migrates, and never writes it', async () => {
+    const files = await realMigrations();
+    const policy = await containerPolicy();
+    const target = migratorTarget(database);
+    const markFor = (endpoint: string) => `arca production endpoint: ${endpoint}`;
+    await expect(migrate(target, files, policy, 'production')).rejects.toThrow(
+      'the database is not marked; the bootstrap marks it first',
+    );
+    await setComment(database, markFor(target.host.split('.')[0] ?? ''));
+    await expect(migrate(target, files, policy, 'preview')).rejects.toThrow(
+      'a preview build reaches the production database',
+    );
+    expect(await schemaExists('arca_migrations')).toBe(false);
+    await setComment(database, markFor('ep-production'));
+    expect((await migrate(target, files, policy, 'preview')).applied).toHaveLength(files.length);
   });
 
   it('applies a migration once when two runs race', async () => {

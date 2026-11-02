@@ -4,6 +4,8 @@ import { environmentFor } from './policy.ts';
 
 export type Deployment = 'production' | 'preview';
 
+const endpointPattern = /^ep-[a-z0-9-]+$/;
+
 /**
  * The Vercel deployment a build step serves (spec 0001, R9), from the variables Vercel sets in
  * every build. Outside Vercel there is none, and then the target must not be Neon: the hosted
@@ -15,6 +17,9 @@ export function deploymentFor(env: Environment, host: string): Deployment | unde
       throw new Error('only a Vercel build may bootstrap or migrate a Neon database');
     }
     return undefined;
+  }
+  if (environmentFor(host) !== 'neon' || !endpointPattern.test(endpointOf(host))) {
+    throw new Error('a Vercel build must reach a Neon endpoint');
   }
   if (env['VERCEL_ENV'] !== 'production') return 'preview';
   if (env['VERCEL_GIT_COMMIT_REF'] !== 'main') {
@@ -56,11 +61,15 @@ export function markToWrite(
   return undefined;
 }
 
-/** Checks, and on the first production build writes, the mark, inside the caller's transaction. */
+/**
+ * Checks the mark inside the caller's transaction. The bootstrap, as the database owner, writes it
+ * on the first production build; the migrator only reads it, so it refuses an unmarked database.
+ */
 export async function checkDeploymentTarget(
   client: pg.Client,
   deployment: Deployment,
   host: string,
+  { mayMark }: { readonly mayMark: boolean },
 ): Promise<void> {
   const { rows } = await client.query<{ name: string; comment: string | null }>(
     `SELECT d.datname AS name, pg_catalog.shobj_description(d.oid, 'pg_database') AS comment
@@ -70,6 +79,7 @@ export async function checkDeploymentTarget(
   if (database === undefined) throw new Error('the current database is not in pg_database');
   const mark = markToWrite(deployment, endpointOf(host), database.comment);
   if (mark !== undefined) {
+    if (!mayMark) throw new Error('the database is not marked; the bootstrap marks it first');
     await client.query(
       `COMMENT ON DATABASE ${client.escapeIdentifier(database.name)} IS ${client.escapeLiteral(mark)}`,
     );

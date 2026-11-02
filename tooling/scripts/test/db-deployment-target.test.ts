@@ -33,10 +33,21 @@ describe('deploymentFor', () => {
 
   it('allows the CI container outside Vercel and refuses Neon there', () => {
     expect(deploymentFor({}, '127.0.0.1')).toBeUndefined();
-    expect(() => deploymentFor({ VERCEL_ENV: 'production' }, neonHost)).toThrow(
-      'only a Vercel build may bootstrap or migrate a Neon database',
-    );
+    for (const host of [neonHost, `${neonHost}.`, neonHost.toUpperCase()]) {
+      expect(() => deploymentFor({ VERCEL_ENV: 'production' }, host)).toThrow(
+        'only a Vercel build may bootstrap or migrate a Neon database',
+      );
+    }
   });
+
+  it.each(['127.0.0.1', 'db.example.com', 'pooler.sa-east-1.aws.neon.tech'])(
+    'refuses a Vercel build that reaches %s',
+    (host) => {
+      expect(() => deploymentFor({ VERCEL: '1', VERCEL_ENV: 'preview' }, host)).toThrow(
+        'a Vercel build must reach a Neon endpoint',
+      );
+    },
+  );
 });
 
 describe('endpointOf', () => {

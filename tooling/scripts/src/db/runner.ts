@@ -1,5 +1,6 @@
 import pg from 'pg';
 import { clientFor, type ConnectionTarget } from './connection.ts';
+import { checkDeploymentTarget, type Deployment } from './deployment-target.ts';
 import { runGuards, type GuardViolation } from './guards.ts';
 import { pendingMigrations, type JournalRow, type MigrationFile } from './migrations.ts';
 import { migratorRole, type DatabasePolicy } from './policy.ts';
@@ -171,6 +172,7 @@ export async function migrate(
   target: ConnectionTarget,
   files: readonly MigrationFile[],
   policy: DatabasePolicy,
+  deployment?: Deployment,
 ): Promise<MigrationResult> {
   if (target.user !== migratorRole) throw new Error(`the runner connects as ${migratorRole}`);
   const vetting: string[] = [];
@@ -187,6 +189,9 @@ export async function migrate(
   try {
     await client.query('BEGIN');
     try {
+      if (deployment !== undefined) {
+        await checkDeploymentTarget(client, deployment, target.host, { mayMark: false });
+      }
       const applied = await applyInTransaction(client, files, statements, policy);
       await client.query('COMMIT');
       return { applied };
