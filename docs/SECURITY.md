@@ -29,7 +29,8 @@ Revisited at the start of every epic. New features list the assets they touch an
 
 | Threat | Example | Main controls |
 | --- | --- | --- |
-| Account takeover | Phished or stolen session | Passkeys only; step-up for vault and financial actions; session binding and short lifetimes; alerts on new devices |
+| Account takeover | Phished or stolen session | Passkeys only; step-up for vault, financial actions and knowledge-base decisions; session binding and short lifetimes; alerts on new devices |
+| Knowledge-base poisoning | An agent tricked by a researched page, or holding the owner's token, merges a wrong rule or adds an approver key | Merged versions are only proposed; an approver activates or rejects each with a passkey checked against keys pinned in the repository; activations and new keys count 48 hours after a notice and can be vetoed from the app; required immutability check run from `main` ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)) |
 | Broken access control | User reads another case by changing an ID | API authorization plus row-level security; an access-matrix test suite for every endpoint |
 | Intra-family exposure or coercion | A separated spouse sees the other's finances; one relative controls another's application | Per-person ownership and explicit sharing; each adult signs in separately; audit log visible to the data owner |
 | Indirect prompt injection | Text in an uploaded PDF or a researched web page tells an agent to reveal data or change a rule | Document and web content treated as data, never instructions; agents have no write tools outside their task; schema-validated outputs; knowledge-base changes need human approval; injection cases in the evaluation suite |
@@ -48,7 +49,7 @@ Revisited at the start of every epic. New features list the assets they touch an
 ## Required controls
 
 **Identity and access**
-- Better Auth with passkeys only ([ADR-0006](adr/0006-auth.md)); native passkey APIs on mobile; step-up for sensitive actions; device list with remote sign-out; recovery that never rests on email alone.
+- Better Auth with passkeys only ([ADR-0006](adr/0006-auth.md)); native passkey APIs on mobile; step-up for sensitive actions, including knowledge-base activation, rejection and veto ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)); device list with remote sign-out; recovery that never rests on email alone.
 - Forced row-level security on every table with case data, identity set per transaction, plus API-level checks; deny-by-default policies ([ADR-0008](adr/0008-database-security-and-environments.md)).
 - Separate SQL-created roles for API, jobs, auth, audit and migrations, none able to bypass row-level security.
 - Access-matrix tests in CI for every role, person and table.
@@ -85,7 +86,7 @@ Revisited at the start of every epic. New features list the assets they touch an
 - External penetration test before Phase 3 (other families) and before each store launch; findings tracked to closure.
 
 **Operations**
-- Security events (sign-ins, step-ups, vault access, permission and bank-detail changes) go to the audit log and alerting. The audit log is append-only, enforced by database grants.
+- Security events (sign-ins, step-ups, vault access, permission and bank-detail changes, knowledge-base decisions and their notices) go to the audit log and alerting. The audit log is append-only, enforced by database grants.
 - Incident response runbook before real data enters (Phase 1): severity levels, containment steps, owner contacts, and notification steps. Under Brazil's Resolução CD/ANPD 15/2024, a controller notifies the ANPD and affected data subjects within 3 business days of learning that an incident affected personal data ([Cescon Barrieu](https://cesconbarrieu.com.br/anpd-aprova-o-regulamento-de-comunicacao-de-incidente-de-seguranca/)).
 - A component-level threat model (STRIDE plus the LLM and agentic risks above) is written for each epic before its code.
 - Responsible disclosure: [SECURITY.md](../SECURITY.md) in the repository and `security.txt` on the production domain.
