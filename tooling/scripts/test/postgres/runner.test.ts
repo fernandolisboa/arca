@@ -180,7 +180,62 @@ describe('migrate', () => {
     [
       'row-level security on the journal',
       'ALTER TABLE arca_migrations.journal ENABLE ROW LEVEL SECURITY',
-      'the journal table has row-level security on',
+      'the journal is not a plain table without row-level security',
+    ],
+    [
+      'a journal default that unpins the search path for the guards',
+      `CREATE FUNCTION app.always(text, text) RETURNS boolean LANGUAGE sql IMMUTABLE AS 'SELECT true';
+       CREATE OPERATOR app.= (LEFTARG = text, RIGHTARG = text, FUNCTION = app.always);
+       CREATE FUNCTION app.hijack() RETURNS boolean LANGUAGE plpgsql AS $$
+         BEGIN PERFORM pg_catalog.set_config('search_path', 'app, pg_catalog', true); RETURN true; END $$;
+       CREATE FUNCTION app.hijack_at() RETURNS timestamptz LANGUAGE plpgsql AS $$
+         BEGIN PERFORM app.hijack(); RETURN pg_catalog.now(); END $$;
+       CREATE FUNCTION app.hijack_name(text) RETURNS text LANGUAGE plpgsql IMMUTABLE AS $$
+         BEGIN PERFORM app.hijack(); RETURN $1; END $$;
+       CREATE TABLE app.cases (id uuid PRIMARY KEY);
+       ALTER TABLE arca_migrations.journal ALTER COLUMN applied_at SET DEFAULT app.hijack_at()`,
+      'guard 1: table app.cases does not have row-level security enabled and forced',
+    ],
+    [
+      'a journal check constraint that unpins the search path',
+      `CREATE FUNCTION app.always(text, text) RETURNS boolean LANGUAGE sql IMMUTABLE AS 'SELECT true';
+       CREATE OPERATOR app.= (LEFTARG = text, RIGHTARG = text, FUNCTION = app.always);
+       CREATE FUNCTION app.hijack() RETURNS boolean LANGUAGE plpgsql AS $$
+         BEGIN PERFORM pg_catalog.set_config('search_path', 'app, pg_catalog', true); RETURN true; END $$;
+       CREATE FUNCTION app.hijack_at() RETURNS timestamptz LANGUAGE plpgsql AS $$
+         BEGIN PERFORM app.hijack(); RETURN pg_catalog.now(); END $$;
+       CREATE FUNCTION app.hijack_name(text) RETURNS text LANGUAGE plpgsql IMMUTABLE AS $$
+         BEGIN PERFORM app.hijack(); RETURN $1; END $$;
+       CREATE TABLE app.cases (id uuid PRIMARY KEY);
+       ALTER TABLE arca_migrations.journal ADD CONSTRAINT c CHECK (app.hijack())`,
+      'the journal table has an unexpected constraint',
+    ],
+    [
+      'a journal index expression that unpins the search path',
+      `CREATE FUNCTION app.always(text, text) RETURNS boolean LANGUAGE sql IMMUTABLE AS 'SELECT true';
+       CREATE OPERATOR app.= (LEFTARG = text, RIGHTARG = text, FUNCTION = app.always);
+       CREATE FUNCTION app.hijack() RETURNS boolean LANGUAGE plpgsql AS $$
+         BEGIN PERFORM pg_catalog.set_config('search_path', 'app, pg_catalog', true); RETURN true; END $$;
+       CREATE FUNCTION app.hijack_at() RETURNS timestamptz LANGUAGE plpgsql AS $$
+         BEGIN PERFORM app.hijack(); RETURN pg_catalog.now(); END $$;
+       CREATE FUNCTION app.hijack_name(text) RETURNS text LANGUAGE plpgsql IMMUTABLE AS $$
+         BEGIN PERFORM app.hijack(); RETURN $1; END $$;
+       CREATE TABLE app.cases (id uuid PRIMARY KEY);
+       CREATE INDEX i ON arca_migrations.journal (app.hijack_name(name))`,
+      'the journal table has an unexpected index',
+    ],
+    [
+      'a deferred trigger that creates a table at COMMIT, after the guards',
+      `CREATE TABLE app.queue (id int);
+       ALTER TABLE app.queue ENABLE ROW LEVEL SECURITY;
+       ALTER TABLE app.queue FORCE ROW LEVEL SECURITY;
+       CREATE POLICY open ON app.queue USING (true) WITH CHECK (true);
+       CREATE FUNCTION app.late() RETURNS trigger LANGUAGE plpgsql AS $$
+         BEGIN EXECUTE 'CREATE TABLE app.leak (id int)'; RETURN NULL; END $$;
+       CREATE CONSTRAINT TRIGGER late AFTER INSERT ON app.queue
+         DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION app.late();
+       INSERT INTO app.queue VALUES (1)`,
+      'guard 1: table app.leak does not have row-level security enabled and forced',
     ],
     [
       'a table without row-level security',
@@ -207,21 +262,29 @@ describe('migrate', () => {
     expect(await roleState()).toEqual(before);
   });
 
-  it('ignores PGOPTIONS, so the server lexes as the parser does', async () => {
-    const saved = process.env['PGOPTIONS'];
-    process.env['PGOPTIONS'] = '-c standard_conforming_strings=off';
+  it('ignores PGOPTIONS and PGCLIENTENCODING, so the server lexes as the parser does', async () => {
+    const overrides = {
+      PGOPTIONS: '-c standard_conforming_strings=off',
+      PGCLIENTENCODING: 'SJIS',
+    };
+    const saved = Object.fromEntries(
+      Object.keys(overrides).map((name) => [name, process.env[name]]),
+    );
+    Object.assign(process.env, overrides);
     try {
-      const setting = await withClient(migratorTarget(database), async (client) => {
-        const result = await client.query<{ value: string }>(
-          'SELECT pg_catalog.current_setting($1) AS value',
-          ['standard_conforming_strings'],
+      const settings = await withClient(migratorTarget(database), async (client) => {
+        const result = await client.query<{ conforming: string; encoding: string }>(
+          `SELECT pg_catalog.current_setting('standard_conforming_strings') AS conforming,
+                  pg_catalog.current_setting('client_encoding') AS encoding`,
         );
-        return result.rows[0]?.value;
+        return result.rows[0];
       });
-      expect(setting).toBe('on');
+      expect(settings).toEqual({ conforming: 'on', encoding: 'UTF8' });
     } finally {
-      if (saved === undefined) delete process.env['PGOPTIONS'];
-      else process.env['PGOPTIONS'] = saved;
+      for (const [name, value] of Object.entries(saved)) {
+        if (value === undefined) Reflect.deleteProperty(process.env, name);
+        else process.env[name] = value;
+      }
     }
   });
 

@@ -23,6 +23,41 @@ const advisoryLockKey = 4_174_523_011;
 
 const journalTable = 'arca_migrations.journal';
 
+const pinnedSearchPath = 'pg_catalog, pg_temp';
+
+/** The journal exactly as the runner creates it: anything a migration attached could run code. */
+const journalShapeQuery = `
+  WITH journal AS (SELECT '${journalTable}'::pg_catalog.regclass AS oid)
+  SELECT problem FROM (
+    SELECT 'the journal is not a plain table without row-level security' AS problem
+      FROM pg_catalog.pg_class c JOIN journal j ON c.oid = j.oid
+     WHERE c.relkind <> 'r' OR c.relrowsecurity OR c.relforcerowsecurity
+    UNION ALL
+    SELECT 'the journal table has a trigger' FROM pg_catalog.pg_trigger t JOIN journal j ON t.tgrelid = j.oid
+    UNION ALL
+    SELECT 'the journal table has a rule' FROM pg_catalog.pg_rewrite r JOIN journal j ON r.ev_class = j.oid
+    UNION ALL
+    SELECT 'the journal table has a policy' FROM pg_catalog.pg_policy p JOIN journal j ON p.polrelid = j.oid
+    UNION ALL
+    SELECT 'the journal table has unexpected columns'
+     WHERE (SELECT pg_catalog.string_agg(a.attname || ' ' || pg_catalog.format_type(a.atttypid, a.atttypmod), ', ' ORDER BY a.attnum)
+              FROM pg_catalog.pg_attribute a JOIN journal j ON a.attrelid = j.oid
+             WHERE a.attnum > 0 AND NOT a.attisdropped)
+           IS DISTINCT FROM 'name text, checksum text, applied_at timestamp with time zone'
+    UNION ALL
+    SELECT 'the journal table has an unexpected default'
+     WHERE (SELECT pg_catalog.string_agg(pg_catalog.pg_get_expr(d.adbin, d.adrelid), ', ')
+              FROM pg_catalog.pg_attrdef d JOIN journal j ON d.adrelid = j.oid)
+           IS DISTINCT FROM 'now()'
+    UNION ALL
+    SELECT 'the journal table has an unexpected constraint'
+      FROM pg_catalog.pg_constraint k JOIN journal j ON k.conrelid = j.oid
+     WHERE k.contype NOT IN ('p', 'n')
+    UNION ALL
+    SELECT 'the journal table has an unexpected index'
+     WHERE (SELECT pg_catalog.count(*) FROM pg_catalog.pg_index i JOIN journal j ON i.indrelid = j.oid) <> 1
+  ) found`;
+
 async function readJournal(client: pg.Client): Promise<JournalRow[]> {
   const result = await client.query<JournalRow>(
     `SELECT name, checksum FROM ${journalTable} ORDER BY name COLLATE "C"`,
@@ -37,17 +72,38 @@ async function transactionChecks(
   expectedJournal: readonly JournalRow[],
 ): Promise<string[]> {
   const problems: string[] = [];
-  const identity = await client.query<{ current: string; session: string; xid: string }>(
+  const identity = await client.query<{
+    current: string;
+    session: string;
+    xid: string;
+    searchPath: string;
+  }>(
     `SELECT pg_catalog.current_user() AS current, pg_catalog.session_user() AS session,
-            pg_catalog.pg_current_xact_id()::text AS xid`,
+            pg_catalog.pg_current_xact_id()::text AS xid,
+            pg_catalog.current_setting('search_path') AS "searchPath"`,
   );
   const row = identity.rows[0];
+  if (row?.searchPath !== pinnedSearchPath) {
+    problems.push(`search_path is ${String(row?.searchPath)} during the checks`);
+  }
   if (row?.current !== migratorRole || row.session !== migratorRole) {
     problems.push(
       `ran as ${String(row?.current)} (session ${String(row?.session)}), not ${migratorRole}`,
     );
   }
   if (row?.xid !== transactionId) problems.push('the transaction ended inside a migration');
+
+  // The shape is checked before the journal is read, so reading it runs no migration code.
+  const journalShape = await client.query<{ problem: string }>(journalShapeQuery);
+  problems.push(...journalShape.rows.map((found) => found.problem));
+  if (journalShape.rows.length === 0) {
+    const journal = await readJournal(client);
+    if (JSON.stringify(journal) !== JSON.stringify(expectedJournal)) {
+      problems.push(
+        'the journal does not equal its state before the run plus the applied migrations',
+      );
+    }
+  }
 
   const temporary = await client.query<{ name: string }>(
     `SELECT c.relname AS name FROM pg_catalog.pg_class c
@@ -69,29 +125,6 @@ async function transactionChecks(
                            'pg_catalog.pg_db_role_setting'::pg_catalog.regclass)`,
   );
   for (const { name } of roleWrites.rows) problems.push(`changed roles (wrote ${name})`);
-
-  const journal = await readJournal(client);
-  if (JSON.stringify(journal) !== JSON.stringify(expectedJournal)) {
-    problems.push(
-      'the journal does not equal its state before the run plus the applied migrations',
-    );
-  }
-  const journalShape = await client.query<{ problem: string }>(
-    `SELECT problem FROM (
-       SELECT 'the journal table has row-level security on' AS problem
-         FROM pg_catalog.pg_class c WHERE c.oid = '${journalTable}'::pg_catalog.regclass AND c.relrowsecurity
-       UNION ALL
-       SELECT 'the journal table has a trigger' FROM pg_catalog.pg_trigger t
-        WHERE t.tgrelid = '${journalTable}'::pg_catalog.regclass
-       UNION ALL
-       SELECT 'the journal table has a rule' FROM pg_catalog.pg_rewrite r
-        WHERE r.ev_class = '${journalTable}'::pg_catalog.regclass
-       UNION ALL
-       SELECT 'the journal table has a policy' FROM pg_catalog.pg_policy p
-        WHERE p.polrelid = '${journalTable}'::pg_catalog.regclass
-     ) found`,
-  );
-  problems.push(...journalShape.rows.map((found) => found.problem));
   return problems;
 }
 
@@ -171,15 +204,18 @@ async function applyInTransaction(
       await client.query(query);
     }
   }
-  // Right after the last statement, before anything else reads a name.
-  await client.query('SET LOCAL search_path = pg_catalog, pg_temp');
-  await client.query('RESET ROLE');
   for (const file of plan.pending) {
     await client.query(`INSERT INTO ${journalTable} (name, checksum) VALUES ($1, $2)`, [
       file.name,
       file.checksum,
     ]);
   }
+  // Deferred constraint triggers would otherwise run migration code at COMMIT, after the guards.
+  await client.query('SET CONSTRAINTS ALL IMMEDIATE');
+  // From here on no migration code runs, so the pinned search path holds through the checks; the
+  // identity check confirms it.
+  await client.query(`SET LOCAL search_path = ${pinnedSearchPath}`);
+  await client.query('RESET ROLE');
 
   const expected = [...before, ...plan.pending.map(({ name, checksum }) => ({ name, checksum }))];
   const problems = await transactionChecks(client, transactionId, expected);

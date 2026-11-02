@@ -1,8 +1,9 @@
 import pg from 'pg';
 
 /**
- * Every connection field is given explicitly: node-postgres fills missing ones, `options` included,
- * from PG* variables.
+ * Every field that could change who connects or how the server reads SQL is given explicitly,
+ * because node-postgres fills missing ones from PG* variables (PGOPTIONS and PGCLIENTENCODING
+ * included).
  */
 export interface ConnectionTarget {
   readonly host: string;
@@ -23,6 +24,7 @@ export function clientFor(target: ConnectionTarget, applicationName = 'arca-migr
     ssl: target.ssl ? { rejectUnauthorized: true } : false,
     enableChannelBinding: target.ssl,
     application_name: applicationName,
+    client_encoding: 'UTF8',
     // Never empty: node-postgres would fall back to PGOPTIONS, which could set
     // standard_conforming_strings off before the runner's parser and the server disagree on a split.
     options: '-c standard_conforming_strings=on',
