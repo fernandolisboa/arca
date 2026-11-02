@@ -15,7 +15,8 @@
   "dependencies": {
     "libpg-query": "catalog:",
     "pg": "catalog:",
-    "yaml": "catalog:"
+    "yaml": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@arca/eslint-config": "workspace:*",

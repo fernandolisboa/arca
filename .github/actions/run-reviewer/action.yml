@@ -1,0 +1,94 @@
+name: Run one reviewer
+description: >-
+  Runs one reviewer with the Claude Code Action on a prepared review input, read-only, and writes
+  its structured output to a file (spec 0001, R10; ADR-0013). The caller checks out main's
+  instruction files into the workspace and puts the review input at ./review-input.
+inputs:
+  prompt-file:
+    description: The reviewer's prompt, written by the prepare step.
+    required: true
+  schema-file:
+    description: The JSON schema for the reviewer's output.
+    required: true
+  model:
+    description: The pinned model ID, from the repository variable for the reviewer's alias.
+    required: true
+  effort:
+    description: The reviewer's effort level, or empty.
+    default: ''
+  output-file:
+    description: Where to write the structured output; left empty when the run produced none.
+    required: true
+  anthropic-api-key:
+    description: The key from the review environment.
+    required: true
+  github-token:
+    description: The job's read-only token.
+    required: true
+runs:
+  using: composite
+  steps:
+    # The action prints the model's whole transcript when debug logging is on, and logs are public.
+    - name: Refuse to run with debug logging
+      if: runner.debug == '1'
+      shell: bash
+      run: |
+        echo "::error::The review gate does not run with debug logging on."
+        exit 1
+    - name: Load the prompt, schema and pinned model
+      id: load
+      shell: bash
+      env:
+        PROMPT_FILE: ${{ inputs.prompt-file }}
+        SCHEMA_FILE: ${{ inputs.schema-file }}
+        MODEL: ${{ inputs.model }}
+        EFFORT: ${{ inputs.effort }}
+      run: |
+        if [[ ! "$MODEL" =~ ^[a-z0-9][a-z0-9.-]{0,99}$ ]]; then
+          echo "::error::The pinned model ID is missing or malformed."
+          exit 1
+        fi
+        [[ -z "$EFFORT" || "$EFFORT" =~ ^(low|medium|high|xhigh|max)$ ]]
+        test -d review-input
+        delimiter="PROMPT_$(openssl rand -hex 16)"
+        {
+          echo "prompt<<$delimiter"
+          cat "$PROMPT_FILE"
+          echo "$delimiter"
+          echo "schema=$(jq -c . "$SCHEMA_FILE")"
+          echo "model-args=--model $MODEL${EFFORT:+ --effort $EFFORT}"
+        } >> "$GITHUB_OUTPUT"
+    # Read-only: Read, Grep and Glob, within the workspace, with no hooks, MCP servers, skills,
+    # plugins or memory. Only main's CLAUDE.md loads as project settings.
+    - name: Review
+      id: review
+      uses: anthropics/claude-code-action@925afb53776cf1a2b738c6bdbed37b4d4000ef13 # v1.0.262
+      with:
+        anthropic_api_key: ${{ inputs.anthropic-api-key }}
+        github_token: ${{ inputs.github-token }}
+        allowed_bots: claude,dependabot
+        prompt: ${{ steps.load.outputs.prompt }}
+        show_full_output: 'false'
+        display_report: 'false'
+        classify_inline_comments: 'false'
+        claude_args: >-
+          ${{ steps.load.outputs.model-args }}
+          --setting-sources project
+          --strict-mcp-config
+          --mcp-config '{"mcpServers":{}}'
+          --disable-slash-commands
+          --max-turns 80
+          --tools Read,Grep,Glob
+          --allowedTools Read,Grep,Glob
+          --disallowedTools Bash,Write,Edit,NotebookEdit,WebFetch,WebSearch,Task,Agent,mcp__*
+          --settings '{"disableAllHooks":true,"autoMemoryEnabled":false,"includeGitInstructions":false,"disableBundledSkills":true,"disableClaudeAiConnectors":true,"enableAllProjectMcpServers":false,"permissions":{"blockReadsOutsideWorkingDirectories":true,"deny":["Read(./.git/**)","Read(./**/.git/**)"]}}'
+          --json-schema '${{ steps.load.outputs.schema }}'
+    - name: Save the structured output
+      if: ${{ !cancelled() }}
+      shell: bash
+      env:
+        OUTPUT: ${{ steps.review.outputs.structured_output }}
+        OUTPUT_FILE: ${{ inputs.output-file }}
+      run: |
+        mkdir -p "$(dirname "$OUTPUT_FILE")"
+        printf '%s' "$OUTPUT" > "$OUTPUT_FILE"
