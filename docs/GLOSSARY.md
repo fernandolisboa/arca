@@ -44,8 +44,8 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Recipient | Destinatário | Anything a vault document or identity is encrypted to: another vault identity's public key, a passkey (through its PRF output) or the recovery secret |
 | Vault envelope | Envelope do cofre | The vault identity encrypted to one unlock method: a passkey (PRF) or the vault recovery secret |
 | Share | Compartilhamento | Giving another adult access to one document by encrypting it to their recipient too |
-| Account link | Vínculo de conta | The confirmed connection between an inviter and the account they invited, which lets them share documents |
-| Sharing state | (technical only) | The owner's own record of which recipients each document is encrypted to and which fingerprint is pinned for each person, tagged with the share key so the server cannot change it |
+| Account link | Conexão entre contas | The confirmed connection between an inviter and the account they invited, which lets them share documents |
+| Sharing state | Lista de compartilhamento | Shown when the owner confirms a change to it. The owner's own record of which recipients each document is encrypted to and which fingerprint is pinned for each person, tagged with the share key so the server cannot change it |
 | Share key | (technical only) | A secret kept only inside a person's vault envelopes that tags their sharing state; replaced when the vault identity rotates |
 | Personal-data registry | (technical only) | The list of every table with personal data and how each is erased and exported |
 | Erasure tombstone | (technical only) | A record of an erased account kept with the backups so a restore does not bring it back |
@@ -57,7 +57,10 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Identity rotation | Troca da chave do cofre | Replacing a vault identity with a new one and re-encrypting the documents encrypted to it |
 | Restore drill | (technical only) | The quarterly rehearsal that restores a backup into a throwaway branch and checks it |
 | Unconfirmed account | Conta aguardando confirmação | An invited account its inviter has not confirmed yet; it cannot invite, create cases, upload or share documents, or use AI features |
-| Owner | (technical only) | In these docs, either the project owner (the person who runs Arca) or the account that owns a document or row; the text says which |
+| Project owner | (technical only) | The person who runs Arca and approves owner-only steps (setup, restores, knowledge-base changes) |
+| Owner | Dono | The account that owns a document or row; in the docs, "owner" alone means this, and the operator is always the project owner |
+| Fingerprint | Impressão digital da chave | A short code derived from a person's vault recipient, compared in person before trusting it for sharing |
+| Restricted session | Sessão restrita | A session that can only show the pending-recovery warning and cancel the recovery, until the recovery passkey activates |
 | Data export | Exportação dos dados | A file with all of an account's data, built on request |
 | Notification channel | Canal de notificação | A place an account receives notices: email or one device's push subscription |
 | Real-data gate | (technical only) | The checklist that must be complete before production accepts family data |
