@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node -e \"require('node:fs').mkdirSync('dist',{recursive:true});require('node:fs').copyFileSync('index.html','dist/index.html')\"",
+    "build": "node -e \"const fs=require('node:fs');fs.rmSync('dist',{recursive:true,force:true});fs.mkdirSync('dist');fs.copyFileSync('index.html','dist/index.html')\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint ."
   },

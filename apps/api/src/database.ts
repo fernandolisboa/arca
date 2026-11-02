@@ -13,8 +13,8 @@ const role = 'app_api';
 /**
  * The API's database: a pool that logs in as app_api with explicit fields and rejects any
  * connection running as another role or with a preset identity, and logs a dropped idle
- * connection instead of crashing. `ready` fails unless queries run as app_api, so the server
- * refuses to serve; `checkDatabase` backs `GET /v1/health`.
+ * connection instead of crashing. `checkDatabase` backs `GET /v1/health`; `ready` fails unless
+ * queries run as app_api, for a deploy check to call before traffic moves (#14).
  */
 export function apiDatabase(target: DatabaseTarget, password: string, logger: Logger) {
   const pool = createRolePool(

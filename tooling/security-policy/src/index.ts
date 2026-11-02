@@ -37,9 +37,3 @@ export const securityHeaders: Readonly<Record<string, string>> = {
  * 404. `/.well-known` also holds the Workflow SDK's routes (`/.well-known/workflow/…`).
  */
 export const fallbackExclusions = ['/v1', '/internal', '/.well-known'] as const;
-
-export function isFallbackExcluded(pathname: string): boolean {
-  return fallbackExclusions.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
-  );
-}

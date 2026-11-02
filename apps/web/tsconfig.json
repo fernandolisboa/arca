@@ -1,4 +1,7 @@
 {
   "extends": "@arca/tsconfig/bundler.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "${configDir}/node_modules/.cache/tsconfig.tsbuildinfo"
+  },
   "include": ["src"]
 }

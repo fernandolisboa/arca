@@ -4,10 +4,12 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { securityHeaders } from '@arca/security-policy';
 import { build, copyPublicAssets, createNitro, prepare } from 'nitro/builder';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 // Builds the real nitro.config.ts, with apps/web's static build, so the tests see what deploys.
+// The one addition is a test route that throws outside the API's Hono app.
 const rootDir = join(import.meta.dirname, '..');
+const throwingPath = '/internal/test-throw';
 
 async function buildWith(preset: string, outputDir: string) {
   const nitro = await createNitro({
@@ -16,6 +18,7 @@ async function buildWith(preset: string, outputDir: string) {
     preset,
     logLevel: 0,
     output: { dir: outputDir },
+    routes: { [throwingPath]: './test/fixtures/throwing-route.ts' },
     ...(preset === 'standard' ? { serveStatic: 'inline' as const } : {}),
   });
   await prepare(nitro);
@@ -92,6 +95,46 @@ describe('one origin (spec 0001, R4)', () => {
     expect(response.headers.get('content-type')).toMatch(/^application\/json/);
     expect(await response.json()).toEqual({ error: { code: 'not_found' } });
     expectSecurityHeaders(response);
+  });
+});
+
+describe('errors outside the API (spec 0001, R3 and R4)', () => {
+  it.each(['/%', '/v1/%', '/casos/%'])(
+    'answers a malformed path %s with every security header',
+    async (path) => {
+      const response = await get(path);
+      expect(response.status).toBe(400);
+      expect(await response.json()).toEqual({ error: { code: 'request_failed' } });
+      expect(response.headers.get('cache-control')).toBe('no-store');
+      expectSecurityHeaders(response);
+    },
+  );
+
+  it('answers a thrown error with every security header and logs no message', async () => {
+    const written: string[] = [];
+    const capture = (chunk: unknown) => {
+      written.push(String(chunk));
+      return true;
+    };
+    const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(capture);
+    const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(capture);
+    const consoleError = vi.spyOn(console, 'error').mockImplementation((...args: unknown[]) => {
+      written.push(args.map(String).join(' '));
+    });
+    try {
+      const response = await get(throwingPath);
+      expect(response.status).toBe(500);
+      expect(await response.json()).toEqual({ error: { code: 'internal_error' } });
+      expectSecurityHeaders(response);
+    } finally {
+      stdout.mockRestore();
+      stderr.mockRestore();
+      consoleError.mockRestore();
+    }
+    expect(written.join('\n')).not.toContain('synthetic detail');
+    expect(written.map((line) => JSON.parse(line) as unknown)).toEqual([
+      { level: 'error', status: 500, errorCode: 'internal_error', errorName: 'Error' },
+    ]);
   });
 });
 

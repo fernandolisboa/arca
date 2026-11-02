@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { contentSecurityPolicy, isFallbackExcluded, securityHeaders } from '../src/index.js';
+import { contentSecurityPolicy, securityHeaders } from '../src/index.js';
 
 describe('securityHeaders', () => {
   it('matches spec 0001, R4', () => {
@@ -14,25 +14,4 @@ describe('securityHeaders', () => {
       'permissions-policy': 'camera=(), microphone=(), geolocation=()',
     });
   });
-});
-
-describe('isFallbackExcluded', () => {
-  it.each([
-    '/v1',
-    '/v1/',
-    '/v1/health',
-    '/internal',
-    '/internal/cron/heartbeat',
-    '/.well-known',
-    '/.well-known/workflow/v1/flow',
-  ])('excludes %s', (path) => {
-    expect(isFallbackExcluded(path)).toBe(true);
-  });
-
-  it.each(['/', '/casos', '/v10', '/v1x/health', '/internals', '/.well-knownx', '/assets/app.js'])(
-    'falls back for %s',
-    (path) => {
-      expect(isFallbackExcluded(path)).toBe(false);
-    },
-  );
 });

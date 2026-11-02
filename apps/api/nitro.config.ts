@@ -1,9 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { fallbackExclusions, securityHeaders } from '@arca/security-policy';
 import { defineConfig } from 'nitro';
 
 // apps/web's static build, served from the same origin as the API (spec 0001, R4).
-const webDist = new URL('../web/dist/', import.meta.url);
+const webDist = fileURLToPath(new URL('../web/dist/', import.meta.url));
 
 // The pooled host and database name, written at build time by `pnpm --filter @arca/scripts
 // db:runtime-config` from the owner's variables, which runtime code may not read (spec 0001, R7).
@@ -28,8 +30,11 @@ export default defineConfig({
   compatibilityDate: '2026-11-01',
   serverEntry: false,
   routes,
-  publicAssets: [{ dir: webDist.pathname, baseURL: '/' }],
-  renderer: { template: new URL('index.html', webDist).pathname, static: true },
+  errorHandler: './src/error-handler.ts',
+  plugins: ['./src/quiet-errors.ts'],
+  // Dotfiles such as a stray .tsbuildinfo are never published.
+  publicAssets: [{ dir: webDist, baseURL: '/', ignore: ['**/.*'] }],
+  renderer: { template: join(webDist, 'index.html'), static: true },
   routeRules: { '/**': { headers: { ...securityHeaders } } },
   runtimeConfig: { database },
   vercel: { functions: { regions: ['gru1'], runtime: 'nodejs26.x' } },
