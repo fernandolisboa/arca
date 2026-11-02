@@ -152,11 +152,15 @@ runs:
         EXECUTION_FILE: ${{ steps.review.outputs.execution_file }}
       run: |
         if [[ -s "$EXECUTION_FILE" ]] && jq -e \
-          '(first(.[] | select(.type == "system" and .subtype == "init") | .model) // "") as $model
+          'def base: sub("\\[[^]]*\\]$"; "");
+           (first(.[] | select(.type == "system" and .subtype == "init") | .model) // "") as $init
+           | (if ($init | type) == "string" then $init | base else "" end) as $model
            | [.[] | select(.type == "result")] | last
            | .subtype == "success" and .is_error == true and (.modelUsage | type) == "object"
-             and ($model | type) == "string" and $model != ""
-             and ([.modelUsage | to_entries[] | select(.key | startswith($model))
+             and $model != ""
+             and ([.modelUsage | to_entries[]
+                   | select((.key | base) as $key
+                       | $key != "" and (($key | startswith($model)) or ($model | startswith($key))))
                    | (.value.inputTokens // 0) + (.value.outputTokens // 0)] | add // 0) == 0' \
           "$EXECUTION_FILE" > /dev/null 2>&1; then
           echo "::warning::The reviewer's model did not answer; running once on the fallback model."

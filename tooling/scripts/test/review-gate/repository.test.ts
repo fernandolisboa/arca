@@ -619,6 +619,27 @@ describe('review workflows', () => {
         await answered(result({ modelUsage: { haiku: { inputTokens: 500, outputTokens: 20 } } })),
       ).toBe('fallback');
       expect(await answeredAfter({ type: 'system', subtype: 'init' }, result({}))).toBe('keep');
+      expect(await answeredAfter({ ...init, model: null }, result({}))).toBe('keep');
+      // As seen on 2026-11-02: a limit on the reviewer's model, with only a side request used.
+      const fableInit = { ...init, model: 'claude-fable-5-1' };
+      expect(
+        await answeredAfter(
+          fableInit,
+          result({ modelUsage: { 'claude-haiku-5-5': { inputTokens: 300, outputTokens: 9 } } }),
+        ),
+      ).toBe('fallback');
+      expect(
+        await answeredAfter(
+          { ...init, model: 'claude-fable-5-1[1m]' },
+          result({ modelUsage: { 'claude-fable-5-1': { outputTokens: 2 } } }),
+        ),
+      ).toBe('keep');
+      expect(
+        await answeredAfter(
+          fableInit,
+          result({ modelUsage: { 'claude-fable-5-1-20261101': { inputTokens: 5 } } }),
+        ),
+      ).toBe('keep');
       expect(await answered(result({ modelUsage: undefined }))).toBe('keep');
       expect(await answered(result({ is_error: false }))).toBe('keep');
       expect(await answered(result({ subtype: 'error_max_turns' }))).toBe('keep');
