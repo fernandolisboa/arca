@@ -33,12 +33,13 @@ export function parseReviewerOutput(
 /**
  * One reviewer's verdict (spec 0001, R10): critical and high findings block; a medium blocks unless
  * an acceptance row for this pull request matches reviewer, file and category exactly; an
- * unassessed entry blocks, except `tests_not_run`, and `outside_area` from a reviewer that reports
- * no findings at all. A reviewer that reports findings has found something in its area, so its
- * `outside_area` entry contradicts its output and blocks.
+ * unassessed entry blocks, except `tests_not_run`, and `outside_area` from a specialist that reports
+ * no findings at all. A core reviewer has no area to be outside of, and a reviewer that reports
+ * findings has found something in its area, so `outside_area` from either contradicts the output
+ * and blocks.
  */
 export function judgeReviewer(
-  reviewer: { readonly name: string; readonly mustPass: boolean },
+  reviewer: { readonly name: string; readonly mustPass: boolean; readonly areaScoped: boolean },
   raw: string | undefined,
   acceptances: readonly Acceptance[],
   pullRequest: number | undefined,
@@ -72,10 +73,10 @@ export function judgeReviewer(
       finding.severity === 'high' ||
       (finding.severity === 'medium' && !accepted.includes(finding)),
   );
-  const outsideAreaCounts = parsed.findings.length === 0;
+  const outsideAreaAllowed = reviewer.areaScoped && parsed.findings.length === 0;
   const unassessed = parsed.unassessed.filter(
     (entry) =>
-      entry.reason !== 'tests_not_run' && !(entry.reason === 'outside_area' && outsideAreaCounts),
+      entry.reason !== 'tests_not_run' && !(entry.reason === 'outside_area' && outsideAreaAllowed),
   );
   const outcome = blocking.length > 0 || unassessed.length > 0 ? 'block' : 'pass';
   return { ...base, outcome, output: parsed, blocking, accepted, unassessed };

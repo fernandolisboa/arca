@@ -70,32 +70,43 @@ function requireSlug(data: Record<string, unknown>, key: string): string {
   return value;
 }
 
-export interface Reviewer extends AgentDefinition {
+export interface ReviewerWeight {
   readonly mustPass: boolean;
+  /** A specialist covers only the area its row names; a core reviewer runs on every change. */
+  readonly areaScoped: boolean;
 }
 
+export interface Reviewer extends AgentDefinition, ReviewerWeight {}
+
+/** The "Runs on" cell of a core reviewer in the docs/REVIEW.md table. */
+const everyChange = 'Every change';
+
 /**
- * Reads each reviewer's weight from the table in docs/REVIEW.md. Every agent must have a row, so a
- * new reviewer cannot run without its weight being decided.
+ * Reads each reviewer's weight and scope from the table in docs/REVIEW.md. Every agent must have a
+ * row, so a new reviewer cannot run without its weight and scope being decided.
  */
-export function reviewerWeights(reviewMarkdown: string): Map<string, boolean> {
-  const weights = new Map<string, boolean>();
-  const row = /^\|\s*\[([a-z][a-z0-9-]*)\]\([^)]*\)\s*\|[^|]*\|\s*(Must pass|Should pass)\s*\|/gm;
-  for (const [, name = '', weight] of reviewMarkdown.matchAll(row)) {
-    weights.set(name, weight === 'Must pass');
+export function reviewerWeights(reviewMarkdown: string): Map<string, ReviewerWeight> {
+  const weights = new Map<string, ReviewerWeight>();
+  const row =
+    /^\|\s*\[([a-z][a-z0-9-]*)\]\([^)]*\)\s*\|([^|]*[^|\s][^|]*)\|\s*(Must pass|Should pass)\s*\|/gm;
+  for (const [, name = '', runsOn = '', weight] of reviewMarkdown.matchAll(row)) {
+    weights.set(name, {
+      mustPass: weight === 'Must pass',
+      areaScoped: runsOn.trim() !== everyChange,
+    });
   }
   return weights;
 }
 
 export function withWeights(
   agents: readonly AgentDefinition[],
-  weights: ReadonlyMap<string, boolean>,
+  weights: ReadonlyMap<string, ReviewerWeight>,
 ): Reviewer[] {
   return agents.map((agent) => {
-    const mustPass = weights.get(agent.name);
-    if (mustPass === undefined) {
+    const weight = weights.get(agent.name);
+    if (weight === undefined) {
       throw new AgentDefinitionError(`${agent.name} has no row in the docs/REVIEW.md table`);
     }
-    return { ...agent, mustPass };
+    return { ...agent, ...weight };
   });
 }
