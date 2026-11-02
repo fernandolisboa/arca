@@ -42,14 +42,19 @@ function records(value: unknown, key: string): Record<string, unknown>[] {
 
 /**
  * Whether the canary passed for this gate fingerprint: an artifact named for it, uploaded by a
- * successful run of main's canary workflow. An artifact from any other workflow, branch or event
- * does not count, so a side branch cannot fake one.
+ * successful first attempt of main's canary workflow. An artifact from any other workflow, branch
+ * or event does not count, so a side branch cannot fake one. A re-run does not count, since it
+ * reads the model variables again and may test other models than the plan fingerprinted. A pass
+ * older than the newest failed canary run on main does not count either: a model alias can move to
+ * a new model without changing the fingerprint, so an old pass may vouch for a model that has
+ * since failed (ADR-0013).
  */
 export async function canaryState(
   request: GitHubRequest,
   repository: string,
   fingerprint: string,
 ): Promise<'passed' | 'running' | 'missing'> {
+  const failedAfter = await newestFailedCanaryRun(request, repository);
   const artifacts = records(
     await request(
       'GET',
@@ -68,22 +73,55 @@ export async function canaryState(
       canaryEvents.has(String(details['event'])) &&
       details['conclusion'] === 'success' &&
       isRecord(details['repository']) &&
-      details['repository']['full_name'] === repository
+      details['repository']['full_name'] === repository &&
+      details['run_attempt'] === 1 &&
+      typeof details['run_number'] === 'number' &&
+      details['run_number'] > failedAfter
     ) {
       return 'passed';
     }
   }
   for (const status of ['in_progress', 'queued', 'waiting']) {
     const runs = records(
-      await request(
-        'GET',
-        `/repos/${repository}/actions/workflows/review-canary.yml/runs?branch=main&status=${status}&per_page=20`,
-      ),
+      await request('GET', canaryRunsPath(repository, status, 20)),
       'workflow_runs',
     );
     if (runs.some((run) => canaryEvents.has(String(run['event'])))) return 'running';
   }
   return 'missing';
+}
+
+/**
+ * Conclusions of a run that tested a model and did not pass. Cancelled and skipped runs prove
+ * nothing, and neither does a startup failure, which runs no model.
+ */
+const failedConclusions = ['failure', 'timed_out'] as const;
+
+/** The run number of the newest canary run on main that failed, or 0 when there is none. */
+async function newestFailedCanaryRun(request: GitHubRequest, repository: string): Promise<number> {
+  let newest = 0;
+  for (const conclusion of failedConclusions) {
+    const runs = records(
+      await request('GET', canaryRunsPath(repository, conclusion, 100)),
+      'workflow_runs',
+    );
+    for (const run of runs) {
+      const number = run['run_number'];
+      if (
+        run['conclusion'] === conclusion &&
+        canaryEvents.has(String(run['event'])) &&
+        typeof number === 'number'
+      ) {
+        newest = Math.max(newest, number);
+      }
+    }
+  }
+  return newest;
+}
+
+function canaryRunsPath(repository: string, status: string, perPage: number): string {
+  const file = canaryWorkflow.slice(canaryWorkflow.lastIndexOf('/') + 1);
+  return `/repos/${repository}/actions/workflows/${file}/runs?branch=main&status=${status}&per_page=${String(perPage)}`;
 }
 
 /** Waits for a running canary, up to the limit in spec 0001 R10 (30 minutes). */
@@ -103,7 +141,8 @@ export async function awaitCanary(
     if (state === 'missing') {
       return {
         state: 'missing',
-        detail: 'No passing canary run on main for the current gate and models.',
+        detail:
+          'No passing canary run on main for the current gate and models, or a later canary run on main failed.',
       };
     }
     if (Date.now() + options.pollMs > deadline) {

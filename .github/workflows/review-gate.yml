@@ -106,7 +106,7 @@ jobs:
         with:
           prompt-file: ${{ runner.temp }}/gate/prompts/${{ matrix.reviewer }}.md
           schema-file: ${{ runner.temp }}/gate/schema.json
-          model: ${{ vars[matrix.modelVariable] }}
+          model: ${{ vars[matrix.modelVariable] || matrix.model }}
           effort: ${{ matrix.effort }}
           output-file: ${{ runner.temp }}/output/${{ matrix.reviewer }}.json
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}

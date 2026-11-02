@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 import { isRecord } from '../../src/report.ts';
 import { judgeCanaryRun, loadCases, planCanary } from '../../src/review-gate/canary.ts';
-import { gateFingerprint, pinnedModels } from '../../src/review-gate/fingerprint.ts';
+import { gateFingerprint, resolvedModels } from '../../src/review-gate/fingerprint.ts';
 import {
   changeAgents,
   instructionFiles,
@@ -214,20 +214,14 @@ describe('gate fingerprint', () => {
     expect(gateFingerprint(repo, 'HEAD', models)).not.toBe(first);
   });
 
-  it('requires every pinned model variable', () => {
-    expect(
-      pinnedModels({ REVIEW_MODEL_FABLE: 'a', REVIEW_MODEL_OPUS: 'b', REVIEW_MODEL_HAIKU: 'c' }),
-    ).toEqual({
-      fable: 'a',
-      opus: 'b',
-      haiku: 'c',
+  it('runs each alias as is unless its variable pins a model', () => {
+    expect(resolvedModels({})).toEqual({ fable: 'fable', opus: 'opus', haiku: 'haiku' });
+    expect(resolvedModels({ REVIEW_MODEL_OPUS: 'model-b', REVIEW_MODEL_HAIKU: '' })).toEqual({
+      fable: 'fable',
+      opus: 'model-b',
+      haiku: 'haiku',
     });
-    expect(() => pinnedModels({ REVIEW_MODEL_FABLE: 'a', REVIEW_MODEL_OPUS: 'b' })).toThrow(
-      'REVIEW_MODEL_HAIKU',
-    );
-    expect(() =>
-      pinnedModels({ REVIEW_MODEL_FABLE: 'a b', REVIEW_MODEL_OPUS: 'b', REVIEW_MODEL_HAIKU: 'c' }),
-    ).toThrow('REVIEW_MODEL_FABLE');
+    expect(() => resolvedModels({ REVIEW_MODEL_FABLE: 'a b' })).toThrow('REVIEW_MODEL_FABLE');
   });
 });
 
@@ -328,6 +322,7 @@ describe('canary corpus', () => {
       case: 'c',
       reviewer: 'security-reviewer',
       categories: ['injection' as const],
+      model: 'fable',
       modelVariable: 'REVIEW_MODEL_FABLE',
       effort: 'high',
     };
@@ -411,10 +406,34 @@ describe('review workflows', () => {
           ].sort(),
         );
       }
+      const models = valuesOf(workflow, 'model');
+      expect(models.length).toBeGreaterThan(0);
+      // Unset or empty means the alias, as in resolvedModels.
+      for (const model of models) {
+        expect(model).toBe('${{ vars[matrix.modelVariable] || matrix.model }}');
+      }
       for (const env of valuesOf(workflow, 'env').filter(isRecord)) {
         const pinned = Object.keys(env).filter((name) => name.startsWith('REVIEW_MODEL_'));
         if (pinned.length > 0) expect(pinned.sort()).toEqual(Object.values(modelVariables).sort());
       }
     },
   );
+
+  it('fails a re-run of the canary on main in every job that runs or judges a model', async () => {
+    const workflow = parse(
+      await readFile(join(root, '.github', 'workflows', 'review-canary.yml'), 'utf8'),
+    ) as unknown;
+    const jobs = isRecord(workflow) && isRecord(workflow['jobs']) ? workflow['jobs'] : {};
+    for (const name of ['run', 'evaluate']) {
+      const job = jobs[name];
+      const steps = isRecord(job) && Array.isArray(job['steps']) ? job['steps'] : [];
+      expect(steps[0]).toMatchObject({
+        name: 'Refuse a re-run on main',
+        if: "github.event_name != 'pull_request_target'",
+      });
+      expect(String((steps[0] as Record<string, unknown>)['run'])).toContain(
+        '"$GITHUB_RUN_ATTEMPT" != 1',
+      );
+    }
+  });
 });

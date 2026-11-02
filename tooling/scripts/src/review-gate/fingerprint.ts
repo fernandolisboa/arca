@@ -5,7 +5,7 @@ import { modelVariables } from './reviewers.ts';
 /**
  * Everything that shapes how the reviewers behave: their definitions and instructions, the
  * reference docs, the gate's workflows, actions, scripts and canary corpus. A canary result counts
- * only for the fingerprint it ran on, together with the model IDs (ADR-0013).
+ * only for the fingerprint it ran on, together with the models the reviewers run on (ADR-0013).
  */
 export const gatePaths = [
   '.claude/',
@@ -26,15 +26,18 @@ const ignoredPaths = new Set(['docs/review-acceptances.md']);
 
 const modelId = /^[a-z0-9][a-z0-9.-]{0,99}$/;
 
-/** Resolves each alias to its pinned model ID from the environment; a missing or odd one fails. */
-export function pinnedModels(environment: NodeJS.ProcessEnv): Record<string, string> {
+/**
+ * The model each alias runs on: the ID pinned in its repository variable, or the alias itself
+ * when the variable is unset, so the reviewers follow the newest model. A malformed pin fails.
+ */
+export function resolvedModels(environment: NodeJS.ProcessEnv): Record<string, string> {
   return Object.fromEntries(
     Object.entries(modelVariables).map(([alias, variable]) => {
-      const id = environment[variable];
-      if (id === undefined || !modelId.test(id)) {
-        throw new Error(`the repository variable ${variable} is missing or malformed`);
-      }
-      return [alias, id];
+      const pinned = environment[variable];
+      if (pinned === undefined || pinned === '') return [alias, alias];
+      if (!modelId.test(pinned))
+        throw new Error(`the repository variable ${variable} is malformed`);
+      return [alias, pinned];
     }),
   );
 }
@@ -48,9 +51,9 @@ export function gateFingerprint(
     .filter((entry) => !ignoredPaths.has(entry.path))
     .map((entry) => `${entry.mode} ${entry.type} ${entry.object}\t${entry.path}`)
     .join('\n');
-  const pinned = Object.keys(models)
+  const resolved = Object.keys(models)
     .sort()
     .map((alias) => `${alias}=${models[alias] ?? ''}`)
     .join('\n');
-  return createHash('sha256').update(`${tree}\n--\n${pinned}\n`).digest('hex');
+  return createHash('sha256').update(`${tree}\n--\n${resolved}\n`).digest('hex');
 }

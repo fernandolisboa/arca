@@ -44,4 +44,4 @@ Reviewer definitions and the review CI workflow are security-critical configurat
 | --- | --- | --- |
 | 2026-11-01 | architecture-reviewer and supply-chain-reviewer point to ADR-0010 instead of ADR-0003 | ADR-0003 was superseded |
 | 2026-11-01 | Gate protection simplified: no `arca-gate` App, no code-owner approval, agents may push workflows | Owner decision to automate setup ([ADR-0012](adr/0012-automation-first-setup.md)) |
-| 2026-11-02 | Review gate and canary in CI (`review-gate.yml`, `review-canary.yml`, `eval/review-gate/`); canary counted per gate fingerprint; model IDs in repository variables | Spec 0001 R10 ([ADR-0013](adr/0013-review-gate-canary-and-model-pins.md)) |
+| 2026-11-02 | Review gate and canary in CI (`review-gate.yml`, `review-canary.yml`, `eval/review-gate/`); canary counted per gate fingerprint; reviewers on model aliases, with optional pins in repository variables | Spec 0001 R10 ([ADR-0013](adr/0013-review-gate-canary-and-model-pins.md)) |

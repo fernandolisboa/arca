@@ -8,7 +8,7 @@ export const reviewTools = ['Read', 'Grep', 'Glob'] as const;
 const efforts = new Set(['low', 'medium', 'high', 'xhigh', 'max']);
 const slug = /^[a-z][a-z0-9-]{0,63}$/;
 
-/** Model aliases the agents use and the variable that pins each to a model ID. */
+/** Model aliases the agents use, and the optional repository variable that pins each to a model ID. */
 export const modelVariables = {
   fable: 'REVIEW_MODEL_FABLE',
   opus: 'REVIEW_MODEL_OPUS',
@@ -17,7 +17,7 @@ export const modelVariables = {
 
 export interface AgentDefinition {
   readonly name: string;
-  /** A model alias such as `fable`, resolved to a pinned model ID by the workflow. */
+  /** A model alias such as `fable`; the workflow passes it as is unless a variable pins it. */
   readonly model: string;
   readonly effort: string | undefined;
   readonly tools: readonly string[];

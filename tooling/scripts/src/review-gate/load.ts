@@ -39,7 +39,7 @@ function checked(reviewers: Reviewer[]): Reviewer[] {
   for (const reviewer of reviewers) {
     if (!Object.hasOwn(modelVariables, reviewer.model)) {
       throw new AgentDefinitionError(
-        `${reviewer.name} uses model ${reviewer.model}, which has no pinned ID`,
+        `${reviewer.name} uses model ${reviewer.model}, which is not a known model alias`,
       );
     }
   }
@@ -48,14 +48,16 @@ function checked(reviewers: Reviewer[]): Reviewer[] {
 
 export interface MatrixEntry {
   readonly reviewer: string;
+  readonly model: string;
   readonly modelVariable: string;
   readonly effort: string;
 }
 
-/** One matrix entry per reviewer, naming the variable that pins its model; `checked` vouches for the alias. */
+/** One matrix entry per reviewer: its model alias and the variable that may pin it; `checked` vouches for the alias. */
 export function matrixEntry(reviewer: Reviewer): MatrixEntry {
   return {
     reviewer: reviewer.name,
+    model: reviewer.model,
     modelVariable: modelVariables[reviewer.model as keyof typeof modelVariables],
     effort: reviewer.effort ?? '',
   };

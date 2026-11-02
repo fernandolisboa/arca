@@ -12,7 +12,7 @@ inputs:
     description: The JSON schema for the reviewer's output.
     required: true
   model:
-    description: The pinned model ID, from the repository variable for the reviewer's alias.
+    description: The reviewer's model alias, or the model ID its repository variable pins it to.
     required: true
   effort:
     description: The reviewer's effort level, or empty.
@@ -43,7 +43,7 @@ runs:
       run: |
         echo "::error::The review gate does not run with debug logging on."
         exit 1
-    - name: Load the prompt, schema, pinned model and arguments
+    - name: Load the prompt, schema, model and arguments
       id: load
       shell: bash
       env:
@@ -53,7 +53,7 @@ runs:
         EFFORT: ${{ inputs.effort }}
       run: |
         if [[ ! "$MODEL" =~ ^[a-z0-9][a-z0-9.-]{0,99}$ ]]; then
-          echo "::error::The pinned model ID is missing or malformed."
+          echo "::error::The model alias or pinned model ID is missing or malformed."
           exit 1
         fi
         [[ -z "$EFFORT" || "$EFFORT" =~ ^(low|medium|high|xhigh|max)$ ]]
