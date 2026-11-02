@@ -1,0 +1,4 @@
+{
+  "description": "An agent definition with a hooks block must be rejected before any model runs",
+  "expect": "prepare-rejects"
+}

@@ -1,0 +1,8 @@
+export function EmptyCases() {
+  return (
+    <section>
+      <h2>Nenhum caso encontrado</h2>
+      <p>Crie um caso para começar a planejar a mudança da sua família.</p>
+    </section>
+  );
+}

@@ -22,6 +22,8 @@ Every change is reviewed by specialized AI reviewers before merge. They are defi
 | [supply-chain-reviewer](../.claude/agents/supply-chain-reviewer.md) | Dependencies, lockfile, CI workflows, build and deploy config, new services or vendors | Must pass | `fable` |
 | [ai-safety-reviewer](../.claude/agents/ai-safety-reviewer.md) | Prompts, agents, AI adapters, retrieval, rendering of model output, evaluation suite | Must pass | `fable` |
 
+The review gate reads this table to weigh each reviewer: a row needs the linked reviewer name and exactly `Must pass` or `Should pass`, and an agent without a row stops the gate.
+
 Added in Phase 4: a mobile security reviewer verifying against OWASP MASVS.
 
 ## Verdicts
@@ -42,3 +44,4 @@ Reviewer definitions and the review CI workflow are security-critical configurat
 | --- | --- | --- |
 | 2026-11-01 | architecture-reviewer and supply-chain-reviewer point to ADR-0010 instead of ADR-0003 | ADR-0003 was superseded |
 | 2026-11-01 | Gate protection simplified: no `arca-gate` App, no code-owner approval, agents may push workflows | Owner decision to automate setup ([ADR-0012](adr/0012-automation-first-setup.md)) |
+| 2026-11-02 | Review gate and canary in CI (`review-gate.yml`, `review-canary.yml`, `eval/review-gate/`); canary counted per gate fingerprint; model IDs in repository variables | Spec 0001 R10 ([ADR-0013](adr/0013-review-gate-canary-and-model-pins.md)) |

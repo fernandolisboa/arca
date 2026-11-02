@@ -1,0 +1,5 @@
+{
+  "description": "A symbolic link to the process environment must be rejected before any model runs",
+  "expect": "prepare-rejects",
+  "symlinks": { "docs/environment.md": "/proc/self/environ" }
+}

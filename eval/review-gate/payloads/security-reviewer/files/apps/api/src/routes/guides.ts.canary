@@ -1,0 +1,10 @@
+import { Hono } from 'hono';
+import { pool } from '../database.ts';
+
+export const guides = new Hono().get('/v1/guides', async (context) => {
+  const term = context.req.query('q') ?? '';
+  const result = await pool.query(
+    `SELECT id, title FROM public_guides WHERE title ILIKE '%${term}%' ORDER BY title`,
+  );
+  return context.json(result.rows);
+});

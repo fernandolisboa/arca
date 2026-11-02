@@ -1,7 +1,7 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { join, sep } from 'node:path';
 import { parse } from 'yaml';
-import { isRecord, type Violation } from './report.ts';
+import { isRecord, whenMissing, type Violation } from './report.ts';
 
 export type { Violation } from './report.ts';
 
@@ -128,10 +128,7 @@ export async function readManifests(
   }
   const manifests: Manifest[] = [];
   for (const dir of dirs) {
-    const raw = await readFile(join(dir, 'package.json'), 'utf8').catch((error: unknown) => {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
-      throw error;
-    });
+    const raw = await readFile(join(dir, 'package.json'), 'utf8').catch(whenMissing(undefined));
     if (raw !== undefined) manifests.push(parseManifest(dir, raw));
   }
   return manifests;

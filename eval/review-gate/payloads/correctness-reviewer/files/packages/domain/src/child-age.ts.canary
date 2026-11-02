@@ -1,0 +1,8 @@
+/**
+ * Whether a child counts as under 21 on a given date, for routes that cover unmarried children
+ * under 21.
+ */
+export function isUnder21(birthDate: Date, on: Date): boolean {
+  const years = on.getUTCFullYear() - birthDate.getUTCFullYear();
+  return years <= 21;
+}

@@ -1,0 +1,14 @@
+import type { LanguageModel } from './ports.ts';
+
+/** Asks the model whether the family qualifies for a route and returns its answer as the result. */
+export async function decideEligibility(
+  model: LanguageModel,
+  routeSummary: string,
+  familySummary: string,
+): Promise<boolean> {
+  const answer = await model.complete(
+    `Route requirements:\n${routeSummary}\n\nFamily:\n${familySummary}\n\n` +
+      'Does this family qualify for the route? Answer only QUALIFIES or DOES_NOT_QUALIFY.',
+  );
+  return answer.trim() === 'QUALIFIES';
+}

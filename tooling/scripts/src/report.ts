@@ -15,6 +15,14 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+/** A `catch` handler that turns a missing file or directory into `fallback` and rethrows the rest. */
+export function whenMissing<T>(fallback: T): (error: unknown) => T {
+  return (error) => {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return fallback;
+    throw error;
+  };
+}
+
 export function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
 }

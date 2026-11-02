@@ -6,6 +6,7 @@
 - [x] Confirm the stack ([ADR-0003](adr/0003-stack.md)), accepted 2026-11-01; revised by [ADR-0010](adr/0010-stack-revised.md) the same day.
 - [x] Repository visibility: public, decided 2026-11-01 ([ADR-0010](adr/0010-stack-revised.md)).
 - [ ] Create the database from Vercel (project `arca` › Storage › Neon, São Paulo, Production and Preview only) ([ADR-0012](adr/0012-automation-first-setup.md)); before the first case-data table, switch previews to a synthetic `development` branch; the deploy ticket of the foundations scaffold waits on it.
+- [ ] Turn on the review gate ([ADR-0013](adr/0013-review-gate-canary-and-model-pins.md)): create the `review` environment limited to `main` with an `ANTHROPIC_API_KEY` secret, add a Dependabot secret `ANTHROPIC_API_KEY` holding a second, spend-limited key, set the repository variables `REVIEW_MODEL_FABLE`, `REVIEW_MODEL_OPUS` and `REVIEW_MODEL_HAIKU`, then dispatch `review-canary`. Agents cannot write these settings with the access they have.
 - [ ] Choose and register the production domain before Phase 1: passkeys are bound to it, and changing it later invalidates every passkey.
 - [ ] Google Play account type: personal (needs a 12-tester, 14-day closed test before production) or organization (requires a company).
 - [ ] iOS builds: a Mac with Xcode, or a cloud build service.

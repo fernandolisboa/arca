@@ -50,7 +50,10 @@ packages/
   platform/     capability ports and their adapters (web, capacitor, tauri)
   db/           Drizzle schema and migrations, role SQL, the runtime role pool and request identity
 tooling/        shared ESLint and TypeScript configs, security header policy, repository scripts
-                (dependency-source, boundary and bundle checks, CI policy scripts, migration runner)
+                (dependency-source, boundary and bundle checks, CI policy scripts, migration runner,
+                the review gate in scripts/src/review-gate)
+eval/           evaluation corpora: the review gate's canary in review-gate/, later the synthetic
+                AI evaluation suite
 ```
 
 Rules that keep every platform possible:
@@ -144,7 +147,7 @@ Every service that touches Arca's data, and what it may receive. A new processor
 | --- | --- | --- | --- |
 | Neon (Postgres) | Primary database | All case data, under forced row-level security | São Paulo (`sa-east-1`) |
 | Vercel | Client hosting, API functions, Workflows | All case data in processing; the database owner connection string (used by the build, readable by running functions) and the runtime role passwords ([ADR-0012](adr/0012-automation-first-setup.md)); workflow run payloads holding identifiers only, with zero retention ([ADR-0009](adr/0009-background-jobs-guarantees.md)) | São Paulo (`gru1`) for functions, run payloads and queues; run metadata (names, statuses, timestamps, no personal data) is processed outside Brazil and kept up to one year |
-| Anthropic (CI review) | Reviewer subagents in CI ([ADR-0011](adr/0011-reviewers-in-ci.md)) | Source code, diffs, file lists and file history (SHAs, dates, paths); never case data, pull request text or contributor emails | Vendor cloud, outside Brazil |
+| Anthropic (CI review) | Reviewer subagents and their canary in CI ([ADR-0011](adr/0011-reviewers-in-ci.md), [ADR-0013](adr/0013-review-gate-canary-and-model-pins.md)) | Source code, diffs, file lists and file history (SHAs, dates, paths), the repository's docs and the synthetic canary cases; never case data, pull request text or contributor emails | Vendor cloud, outside Brazil |
 | AWS S3 | Document storage and off-vendor backups | Ciphertext only | São Paulo (`sa-east-1`) |
 | AWS KMS | Field-encryption key wrapping | Data keys, never data | São Paulo (`sa-east-1`) |
 | Anthropic (Claude) | LLM calls | Minimal fields per call; no names, document numbers or account numbers | Vendor cloud, outside Brazil |
