@@ -64,21 +64,32 @@ function request() {
   return githubRequest(token, process.env['GITHUB_API_URL']);
 }
 
-/** prepare: the review input, prompts and matrix for one pull request, from main's definitions. */
+/**
+ * prepare: the review input, prompts and matrix for one pull request, from main's definitions. The
+ * change's commits live in a separate repository (`--objects`), which also holds main's commit
+ * (`--reference`) for the reference docs, so nothing of the change enters the checkout.
+ */
 async function prepare(args: string[]): Promise<void> {
   const { values } = parseArgs({
     args,
-    options: { base: { type: 'string' }, head: { type: 'string' }, out: { type: 'string' } },
+    options: {
+      base: { type: 'string' },
+      head: { type: 'string' },
+      reference: { type: 'string' },
+      objects: { type: 'string' },
+      out: { type: 'string' },
+    },
   });
   const out = option(values, 'out');
+  const objects = option(values, 'objects');
   await mkdir(out, { recursive: true });
   const reviewers = await mainReviewers(repo);
   try {
     const prepared = await prepareReviewInput({
-      repo,
+      repo: objects,
       base: sha(values, 'base'),
       head: sha(values, 'head'),
-      referenceRevision: 'HEAD',
+      referenceRevision: sha(values, 'reference'),
       out,
     });
     await writePrompts(out, reviewers, prepared.nonce);
@@ -86,7 +97,7 @@ async function prepare(args: string[]): Promise<void> {
     await writeFile(join(out, 'acceptances.md'), prepared.acceptances);
     if (prepared.changedAgents !== undefined) {
       const head = sha(values, 'head');
-      const reviewMarkdown = blobText(repo, `${head}:docs/REVIEW.md`);
+      const reviewMarkdown = blobText(objects, `${head}:docs/REVIEW.md`);
       await writeFile(
         join(out, 'change-agents.json'),
         JSON.stringify({ agents: prepared.changedAgents, reviewMarkdown }),

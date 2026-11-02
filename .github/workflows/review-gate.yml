@@ -35,25 +35,31 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          fetch-depth: 0
       - uses: ./.github/actions/setup-pnpm
       - name: Install the scripts from main
         run: pnpm install --frozen-lockfile --filter @arca/scripts
-      # After every install step. The change is fetched as objects only; nothing of it is checked
-      # out or run.
+      # After every install step. The change is fetched as objects only, into a bare repository
+      # outside the checkout, together with main's commit for the reference docs; nothing of it is
+      # checked out or run.
       - name: Fetch the change (data only)
         env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          MAIN_SHA: ${{ github.sha }}
         run: |
-          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-          git fetch --no-tags --no-recurse-submodules origin "$HEAD_SHA"
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ && "$MAIN_SHA" =~ ^[0-9a-f]{40}$ ]]
+          git init --quiet --bare "$RUNNER_TEMP/change.git"
+          git -C "$RUNNER_TEMP/change.git" fetch --quiet --no-tags --no-recurse-submodules \
+            "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" "$MAIN_SHA" "$BASE_SHA" "$HEAD_SHA"
       - name: Prepare the review input
         id: prepare
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          MAIN_SHA: ${{ github.sha }}
         run: >-
           node tooling/scripts/src/review-gate/cli.ts prepare
+          --objects "$RUNNER_TEMP/change.git" --reference "$MAIN_SHA"
           --base "$BASE_SHA" --head "$HEAD_SHA" --out "$RUNNER_TEMP/gate"
       - name: Upload the review input
         if: ${{ !cancelled() }}
