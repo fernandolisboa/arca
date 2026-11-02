@@ -11,7 +11,7 @@ export interface ReviewerJudgment {
   readonly blocking: readonly Finding[];
   /** Medium findings an acceptance row covers. */
   readonly accepted: readonly Finding[];
-  /** Unassessed entries that make this reviewer block (anything but `tests_not_run`). */
+  /** Unassessed entries that make this reviewer block (see `judgeReviewer`). */
   readonly unassessed: readonly ReviewerOutput['unassessed'][number][];
 }
 
@@ -33,10 +33,13 @@ export function parseReviewerOutput(
 /**
  * One reviewer's verdict (spec 0001, R10): critical and high findings block; a medium blocks unless
  * an acceptance row for this pull request matches reviewer, file and category exactly; an
- * unassessed entry other than `tests_not_run` blocks.
+ * unassessed entry blocks, except `tests_not_run`, and `outside_area` from a specialist that reports
+ * no findings at all. A core reviewer has no area to be outside of, and a reviewer that reports
+ * findings has found something in its area, so `outside_area` from either contradicts the output
+ * and blocks.
  */
 export function judgeReviewer(
-  reviewer: { readonly name: string; readonly mustPass: boolean },
+  reviewer: { readonly name: string; readonly mustPass: boolean; readonly areaScoped: boolean },
   raw: string | undefined,
   acceptances: readonly Acceptance[],
   pullRequest: number | undefined,
@@ -70,7 +73,11 @@ export function judgeReviewer(
       finding.severity === 'high' ||
       (finding.severity === 'medium' && !accepted.includes(finding)),
   );
-  const unassessed = parsed.unassessed.filter((entry) => entry.reason !== 'tests_not_run');
+  const outsideAreaAllowed = reviewer.areaScoped && parsed.findings.length === 0;
+  const unassessed = parsed.unassessed.filter(
+    (entry) =>
+      entry.reason !== 'tests_not_run' && !(entry.reason === 'outside_area' && outsideAreaAllowed),
+  );
   const outcome = blocking.length > 0 || unassessed.length > 0 ? 'block' : 'pass';
   return { ...base, outcome, output: parsed, blocking, accepted, unassessed };
 }
