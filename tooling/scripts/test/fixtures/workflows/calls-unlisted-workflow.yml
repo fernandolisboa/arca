@@ -1,0 +1,5 @@
+on: push
+permissions: {}
+jobs:
+  canary:
+    uses: ./.github/workflows/not-in-policy.yml
