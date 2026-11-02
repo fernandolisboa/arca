@@ -1,6 +1,6 @@
 # ADR-0008: Database roles, row-level security, field encryption, backups and environments
 
-- Status: Accepted; workflow run deletion amended by [ADR-0009](0009-background-jobs-guarantees.md); environments (one Neon project created through Vercel; previews fork from a synthetic `development` branch before any family data exists) amended by [ADR-0012](0012-automation-first-setup.md)
+- Status: Accepted; workflow run deletion amended by [ADR-0009](0009-background-jobs-guarantees.md); environments (one Neon project created through Vercel; previews fork from a synthetic `development` branch before any family data exists) amended by [ADR-0012](0012-automation-first-setup.md); backups and deletion amended by [ADR-0017](0017-data-lifecycle-and-backups.md) (backup role with explicit read policies, backup account and drills, account deletion)
 - Date: 2026-11-01
 
 ## Context

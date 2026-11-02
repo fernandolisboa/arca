@@ -1,0 +1,72 @@
+# ADR-0016: Observability: Sentry in the EU through our own origin, one scrubber, Langfuse with the first model call
+
+- Status: Accepted
+- Date: 2026-11-02
+- Amends: [ADR-0010](0010-stack-revised.md) (errors and traces, LLM tracing)
+- Spec: [0004 real-data readiness](../specs/0004-real-data-readiness.md)
+
+## Context
+
+ADR-0010 chose Sentry for errors and OpenTelemetry traces, structured JSON logs, and Langfuse for LLM tracing, all with personal data scrubbing, "on from the first deploy" (ROADMAP). Spec 0001 shipped the allow-list logger and left the vendors for this slice. Open points:
+
+- The CSP is `connect-src 'self'` and the app loads no third-party scripts. A browser SDK that posts to `sentry.io` would need the CSP widened, and ad blockers drop those requests.
+- Sentry has no Brazilian region. Its organizations live in the United States or in Germany, chosen at creation and not movable afterwards.
+- Langfuse exists to trace model calls. No model call exists until the consultancy core's intake.
+- Scrubbing written separately for logs, Sentry and Langfuse would drift.
+
+Facts checked on 2026-11-02:
+
+- Sentry's German data storage location is generally available to every organization, the free Developer plan included, at the same price ([Sentry changelog](https://sentry.io/changelog/data-storage-location-in-germany-is-generally-available/)).
+- Sentry's JavaScript SDK 11.10.0 adds a managed tunnel: `tunnel: true` in the browser SDK and a server handler (`serveTunnelIntegration()` for Nitro, or `handleTunnelRequestIfMatched`), with an `allowedDsns` option ([Sentry changelog](https://sentry.io/changelog/javascript-sdk-11100-managed-tunnel-clairic/)). `@sentry/node`, `@sentry/react` and `@sentry/hono` are at 11.10.0 (npm registry).
+- The Developer plan keeps errors, spans and logs for 30 days ([Sentry: data retention periods](https://docs.sentry.io/security-legal-pii/security/data-retention-periods)).
+
+## Decision
+
+### One scrubber
+
+- A small `packages/telemetry` holds the scrubbing rules every exporter uses: the structured logger, the Sentry `beforeSend`, `beforeSendTransaction` and `beforeBreadcrumb` hooks on server and client, the tunnel, and later the Langfuse masking function.
+- The rules are allow-lists, as the logger's already are: an event keeps the fields the scrubber names, each checked for its expected shape, and loses everything else. Exception messages are dropped (the class name and our error code stay); URLs are reduced to route patterns; request bodies, cookies, headers other than an allow-list, query strings, local variables, user objects and IP addresses never leave. Stack frames keep file, function and line.
+- A table-driven test suite feeds synthetic personal data (names, emails, CPF and passport-shaped numbers, addresses, free text) through every exporter path and asserts none of it survives.
+
+### Sentry
+
+- One Sentry organization, created by the owner in the **German** data region, free Developer plan, owner account with a passkey. EU storage is the closest region to Brazil with a strong data-protection regime; the data-flow register records it.
+- Server: the Sentry Node SDK with the Hono integration, errors and OpenTelemetry traces. `sendDefaultPii: false`, local variables off, profiling off. Traces sampled at 10% in production and 100% in previews. Span names use route patterns and generic workflow step names; database spans carry statement text, which is always parameterized, never values.
+- Client: the Sentry React SDK, bundled (no CDN script), errors only, **no session replay ever**, console breadcrumbs off, fetch breadcrumbs reduced to route patterns.
+- **Browser events go through our own origin**: the managed tunnel, served by the API, accepts only our DSN, caps the envelope size, is rate-limited, and runs the scrubber again before forwarding. The CSP keeps `connect-src 'self'`. The tunnel path is excluded from the SPA fallback.
+- CSP and Trusted Types violation reports go to the same tunnel (`report-to`), so policy breaks show up in Sentry.
+- The DSN is public by design (it ships in the bundle) and lives in a repository configuration file. The source-map upload token is a Sensitive Vercel variable used only by the build; source maps are uploaded and then deleted from the output, never served.
+- Environments: `production` and `preview`; the release is the commit SHA.
+- Alerts: Sentry emails the owner on a new issue and on a regression.
+
+### Logs
+
+- The allow-list logger stays the only logger. It gains the trace ID as an allowed field, so a log line can be matched to its Sentry trace. Vercel's runtime logs are the sink; no log drain.
+
+### Langfuse
+
+- Langfuse arrives with the first model call (consultancy core, intake), not before. Requirements fixed now: Langfuse Cloud in its EU region; the masking function from `packages/telemetry`, which exports metadata, scores, token counts and redacted text only, never case content; prompts referenced by version, not copied; the data-flow register updated in the same change.
+
+## Alternatives
+
+| Option | Why not |
+| --- | --- |
+| Sentry in the United States | Same price; the German region keeps telemetry under GDPR, the regime closest to the LGPD, and nothing argues for the United States |
+| Browser SDK posting to Sentry directly | Widens the CSP, loses events to ad blockers, and skips our second scrub |
+| Self-hosted Sentry or GlitchTip in São Paulo | Another system to run, patch and back up for a one-family app |
+| Vercel Observability only | No error grouping or alerting comparable to Sentry, and logs on Pro are kept for a short window |
+| Langfuse from the first deploy | Nothing to trace yet; an unused vendor account is setup work with no value (YAGNI) |
+
+## Consequences
+
+- The owner creates the Sentry organization once, choosing the German region at creation; an agent does the rest.
+- Errors and traces leave Brazil, scrubbed, and are kept 30 days.
+- The tunnel is a public endpoint that relays to a third party; its DSN allow-list, size cap, rate limit and scrub are security-critical.
+- Every new data shape that could reach telemetry needs a scrubber case.
+
+## Sources
+
+- [Sentry changelog: data storage location in Germany is generally available](https://sentry.io/changelog/data-storage-location-in-germany-is-generally-available/) (checked 2026-11-02)
+- [Sentry changelog: JavaScript SDK 11.10.0 managed tunnel](https://sentry.io/changelog/javascript-sdk-11100-managed-tunnel-clairic/) (checked 2026-11-02)
+- [Sentry: data retention periods](https://docs.sentry.io/security-legal-pii/security/data-retention-periods) (checked 2026-11-02)
+- npm registry: `@sentry/node`, `@sentry/react`, `@sentry/hono` 11.10.0 (checked 2026-11-02)

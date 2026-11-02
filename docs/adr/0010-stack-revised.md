@@ -1,6 +1,6 @@
 # ADR-0010: Application stack, revised
 
-- Status: Accepted; preview databases and deploys amended by [ADR-0012](0012-automation-first-setup.md) (Vercel–Neon integration, linked Vercel project, one Neon project)
+- Status: Accepted; preview databases and deploys amended by [ADR-0012](0012-automation-first-setup.md) (Vercel–Neon integration, linked Vercel project, one Neon project); errors, traces and LLM tracing amended by [ADR-0016](0016-observability-and-scrubbing.md); vault inputs answered by [ADR-0018](0018-vault-encryption.md)
 - Date: 2026-11-01
 - Supersedes: [ADR-0003](0003-stack.md)
 

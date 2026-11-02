@@ -1,6 +1,6 @@
 # ADR-0012: Automation-first setup with the owner's tokens and the Vercel–Neon integration
 
-- Status: Accepted; password transport corrected on 2026-11-02 after Neon rejected SCRAM verifiers (spec 0001 R7)
+- Status: Accepted; password transport corrected on 2026-11-02 after Neon rejected SCRAM verifiers (spec 0001 R7); the proof that previews do not fork from production added by [ADR-0017](0017-data-lifecycle-and-backups.md)
 - Date: 2026-11-01
 - Amends: [ADR-0008](0008-database-security-and-environments.md) (environments), [ADR-0010](0010-stack-revised.md) (deploys), [ADR-0011](0011-reviewers-in-ci.md) (how the gate is protected)
 

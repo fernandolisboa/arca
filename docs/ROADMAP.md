@@ -25,18 +25,18 @@ Phase 0 does not depend on code: the questions in [OPEN-QUESTIONS.md](OPEN-QUEST
 
 **Epic: cross-platform foundations** (done before feature work, so native phases add adapters instead of rewrites)
 
-- First slice specified in [specs/0001-foundations-scaffold.md](specs/0001-foundations-scaffold.md).
+- Specified in four slices: [0001 scaffold](specs/0001-foundations-scaffold.md); [0003 identity and access](specs/0003-identity-and-access.md); [0004 real-data readiness](specs/0004-real-data-readiness.md), which ends with the real-data gate production must pass before family data enters; [0005 vault, device capabilities and notifications](specs/0005-vault-devices-and-notifications.md).
 - Monorepo with `packages/domain`, `packages/api-contract`, `packages/ui`, `packages/i18n`, `packages/platform`, `apps/api`, `apps/web` ([ARCHITECTURE.md](ARCHITECTURE.md#platforms-and-code-layout)).
 - Empty app deployed end to end (web, API, a sample workflow, database) in São Paulo, with protected preview deployments per pull request.
 - Environments per [ADR-0008](adr/0008-database-security-and-environments.md) and [ADR-0012](adr/0012-automation-first-setup.md): a production Neon branch that previews stop forking from before any family data exists, synthetic seed for everything else, secrets per environment, OIDC to AWS.
 - Database roles, forced row-level security and the access-matrix suite in CI before the first table with case data.
 - Supply-chain controls in CI from the first commit (pinned actions, advisories, secret scanning, SBOM, pnpm install-script and release-age settings).
-- Observability on from the first deploy: Sentry, traces, structured logs, Langfuse, all with personal data scrubbing.
-- Vault encryption ADR written and reviewed before any document upload is built.
-- Before real family data enters: in-app account deletion and data export, retention periods, incident response runbook, threat model for the epic.
+- Observability with personal data scrubbing: structured logs from the first deploy; Sentry errors and traces before real data; Langfuse with the first model call ([ADR-0016](adr/0016-observability-and-scrubbing.md)).
+- ~~Vault encryption ADR written and reviewed before any document upload is built.~~ Written: [ADR-0018](adr/0018-vault-encryption.md).
+- Before real family data enters: in-app account deletion and data export, retention periods ([RETENTION.md](RETENTION.md)), incident response runbook, off-vendor backups, threat model for the epic ([ADR-0017](adr/0017-data-lifecycle-and-backups.md), spec 0004).
 - Client builds to a static bundle; no server-rendering dependency.
 - Versioned typed API; every feature goes through it.
-- Passkeys on the production domain; auth supports cookie sessions (web) and secure-storage tokens (native).
+- Passkeys on the production domain, invite-only enrollment, purpose-bound step-up and recovery ([ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)); cookie sessions on the web. Secure-storage tokens for native apps come with Phase 4; nothing in the design blocks them.
 - `platform` port with web adapters: camera capture, file picking, notifications, secure key storage, sharing.
 - Notification service with per-device channels (web push first).
 - Vault encryption format documented and platform-neutral; key recovery designed and tested.

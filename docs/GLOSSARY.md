@@ -29,3 +29,8 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Apostille | Apostila | Hague Convention certification of a public document |
 | Sworn translation | Tradução juramentada | Official translation required by some destinations |
 | Vault | Cofre | Client-side encrypted document storage |
+| Account | Conta | A person's sign-in identity: an email address, passkeys and sessions. A case person may have no account |
+| Invite | Convite | A single-use link, sent by email, that lets someone create an account |
+| Recovery kit | Kit de recuperação | The printable page with the account recovery code and the vault recovery secret, shown once |
+| Step-up | Confirmação com passkey | A fresh passkey verification bound to one sensitive action |
+| Security notice | Aviso de segurança | A message sent to every channel when something security-relevant happens to an account |
