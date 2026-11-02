@@ -2,6 +2,10 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { securityHeaders } from '@arca/security-policy';
 import { isRecord, reportViolations, type Violation } from './report.ts';
 
+const workflowRunnerPath = '/.well-known/workflow/v1/flow';
+/** How the platform refuses a request to a private function. */
+const platformRejections: ReadonlySet<number> = new Set([401, 403, 404]);
+
 export interface SmokeOptions {
   readonly fetchUrl?: typeof fetch;
   /** Health checks before giving up: a cold function or a suspended database can fail the first. */
@@ -13,18 +17,21 @@ export interface SmokeOptions {
 
 /**
  * The production smoke test (spec 0001, R9): the health check reports `ok` with the database
- * reached as the API's own role, the web app answers, and both carry the security headers. It
- * needs no secret, since the production domain is public.
+ * reached as the API's own role, the web app answers, both carry the security headers, and the
+ * workflow runner refuses an unsigned request. It needs no secret, since the production domain is
+ * public.
  */
 export async function smokeTest(
   origin: URL,
   { fetchUrl = fetch, attempts = 6, retryDelayMs = 15_000, timeoutMs = 10_000 }: SmokeOptions = {},
 ): Promise<Violation[]> {
-  const get = (path: string) =>
+  const request = (path: string, init: RequestInit = {}) =>
     fetchUrl(new URL(path, origin), {
+      ...init,
       redirect: 'manual',
       signal: AbortSignal.timeout(timeoutMs),
     }).catch((error: unknown) => (error instanceof Error ? error : new Error(String(error))));
+  const get = (path: string) => request(path);
 
   let health = await get('/v1/health');
   let problem = await healthProblem(health);
@@ -45,6 +52,23 @@ export async function smokeTest(
     violations.push({
       where: '/',
       problem: `answered ${String(page.status)} ${page.headers.get('content-type') ?? ''}`,
+    });
+  }
+
+  // The Workflow SDK's runner is a queue consumer that only the platform's queue may invoke
+  // (spec 0001, R6; ADR-0009). An unsigned request from outside must not reach its handler, which
+  // would answer 400 for the missing queue headers.
+  const runner = await request(workflowRunnerPath, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: '{}',
+  });
+  if (runner instanceof Error) {
+    violations.push({ where: workflowRunnerPath, problem: `request failed: ${runner.name}` });
+  } else if (!platformRejections.has(runner.status)) {
+    violations.push({
+      where: workflowRunnerPath,
+      problem: `answered ${String(runner.status)} to an unsigned request`,
     });
   }
 

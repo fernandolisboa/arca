@@ -139,7 +139,7 @@ describe('errors outside the API (spec 0001, R3 and R4)', () => {
 });
 
 describe('Vercel output', () => {
-  it('applies the headers to static files and runs the function in gru1 on Node 26', async () => {
+  it('applies the headers to static files and runs every function in gru1 on Node 26', async () => {
     const outputDir = join(workDir, 'vercel');
     await buildWith('vercel', outputDir);
     const config = JSON.parse(await readFile(join(outputDir, 'config.json'), 'utf8')) as {
@@ -151,10 +151,24 @@ describe('Vercel output', () => {
     expect(headers).toBeLessThan(filesystem);
     expect(config.routes[headers]?.headers).toEqual(securityHeaders);
 
-    const vcConfig = JSON.parse(
-      await readFile(join(outputDir, 'functions', '__server.func', '.vc-config.json'), 'utf8'),
-    ) as { regions: string[]; runtime: string };
-    expect(vcConfig.regions).toEqual(['gru1']);
-    expect(vcConfig.runtime).toBe('nodejs26.x');
+    const functionConfig = async (name: string) =>
+      JSON.parse(await readFile(join(outputDir, 'functions', name, '.vc-config.json'), 'utf8')) as {
+        regions: string[];
+        runtime: string;
+        experimentalTriggers?: { type: string }[];
+      };
+    for (const name of [
+      '__server.func',
+      '.well-known/workflow/v1/flow.func',
+      '.well-known/workflow/v1/webhook/[token].func',
+    ]) {
+      const vcConfig = await functionConfig(name);
+      expect(vcConfig.regions, name).toEqual(['gru1']);
+      expect(vcConfig.runtime, name).toBe('nodejs26.x');
+    }
+    // The Workflow SDK's runner is a queue consumer, which Vercel keeps private: only the queue
+    // invokes it (ADR-0009).
+    const flow = await functionConfig('.well-known/workflow/v1/flow.func');
+    expect(flow.experimentalTriggers?.map((trigger) => trigger.type)).toEqual(['queue/v2beta']);
   }, 120_000);
 });

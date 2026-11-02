@@ -10,20 +10,48 @@ catalogMode: strict
 # Supply chain (spec 0001, R1).
 minimumReleaseAge: 10080
 strictDepBuilds: true
-allowBuilds: {}
+# Install scripts never run. The Workflow SDK's compiler (@swc/core) and bundler (esbuild) ship
+# prebuilt binaries as optional dependencies, so their postinstall fallbacks are not needed;
+# cbor-extract is an optional native speed-up that cbor-x replaces with plain JavaScript.
+allowBuilds:
+  '@swc/core': false
+  cbor-extract: false
+  esbuild: false
 trustPolicy: no-downgrade
 trustPolicyExclude:
   # Backport for the 6.x line, published 2023-07-10 by a maintainer without provenance, after
   # 7.5.1-7.5.4 had been published with provenance by npm-cli-ops (npm registry, checked
   # 2026-11-01). Pulled in by @babel/core through eslint-plugin-react-hooks, lint only.
   - semver@6.3.1
+  # The Workflow SDK's @vercel/* dependencies, published by GitHub Actions from vercel/vercel
+  # without provenance since mid-2026 after earlier versions carried it (npm registry, checked
+  # 2026-11-02). Accepted by the owner on 2026-11-02 for #10; recorded in ADR-0009.
+  - '@vercel/cli-config@0.3.1'
+  - '@vercel/cli-config@0.3.3'
+  - '@vercel/cli-exec@1.0.1'
+  - '@vercel/functions@3.10.3'
+  - '@vercel/oidc@3.8.10'
+  - '@vercel/oidc@4.0.3'
 blockExoticSubdeps: true
+# Peers are declared, never installed implicitly. The Workflow SDK's umbrella package depends on
+# every framework adapter, and the NestJS one would otherwise pull NestJS into an app that does
+# not use it.
+autoInstallPeers: false
 
 overrides:
   # Tailwind pins 1.32.0 while Vite uses 1.33.0. One copy instead of two, and the one whose
   # MPL-2.0 license already has an exception in .github/policy/licenses.json. Recheck on every
   # Tailwind update, and drop it once Tailwind pins the version Vite uses.
   '@tailwindcss/node>lightningcss': 1.33.0
+  # The Workflow SDK pins @swc/core 1.15.3, whose platform binaries were published without the
+  # provenance that versions before and after carry, so the trust policy drops them. 1.15.4, the
+  # next patch, has provenance on every package. Its SWC plugin fails to load on 1.16 ("Failed to
+  # deserialize program"), so stay on 1.15. Drop once the SDK moves past 1.15.3 (npm registry,
+  # checked 2026-11-02).
+  '@swc/core': 1.15.4
+  # The SDK's CLI pins chokidar 4.0.3, published without the provenance 4.0.1 carried. 5.0.0 has
+  # provenance and the same watch API, ESM-only like the CLI. Drop once the CLI moves past 4.x.
+  '@workflow/cli>chokidar': 5.0.0
 
 catalog:
   '@hono/zod-openapi': 1.6.3
@@ -56,6 +84,7 @@ catalog:
   typescript: 7.0.2
   vite: 8.3.5
   vitest: 5.0.5
+  workflow: 5.2.3
   workbox-core: 7.4.1
   workbox-precaching: 7.4.1
   workbox-routing: 7.4.1

@@ -1,3 +1,4 @@
+export { readServerTime } from './clock.js';
 export { createDatabase, type Database, type Transaction } from './database.js';
 export { InvalidIdentityError, withIdentity, type RequestIdentity } from './identity.js';
 export {

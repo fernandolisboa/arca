@@ -13,7 +13,7 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "test:db": "pnpm --recursive --workspace-concurrency=1 run test:db",
+    "test:db": "turbo run test:db --concurrency=1",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check:dependency-sources": "node tooling/scripts/src/check-dependency-sources.ts",

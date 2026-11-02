@@ -3,6 +3,7 @@ import pg from 'pg';
 import { sql } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createDatabase, type Database, type Transaction } from '../../src/database.js';
+import { readServerTime } from '../../src/clock.js';
 import { withIdentity } from '../../src/identity.js';
 import {
   ConnectionCheckError,
@@ -229,5 +230,14 @@ describe('withIdentity', () => {
       withIdentity(db, { personId: `${personA}'; SELECT 1; --` }, () => Promise.resolve()),
     ).rejects.toThrow('personId is not a UUID');
     expect(pool.totalCount).toBe(0);
+  });
+});
+
+describe('readServerTime', () => {
+  it('reads the clock as app_jobs in a read-only transaction', async () => {
+    const db = createDatabase(poolFor('app_jobs'));
+    const before = Date.now();
+    const now = await readServerTime(db);
+    expect(Math.abs(now.getTime() - before)).toBeLessThan(60_000);
   });
 });

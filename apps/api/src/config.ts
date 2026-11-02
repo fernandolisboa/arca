@@ -24,6 +24,19 @@ export function readApiSecrets(): ApiSecrets {
   };
 }
 
+/** The app_jobs password, read only by workflow steps. */
+export function readJobsDatabasePassword(): string {
+  return required('ARCA_DB_JOBS_PASSWORD', process.env['ARCA_DB_JOBS_PASSWORD']);
+}
+
+/** Vercel sends it as a bearer token on cron requests; production only. */
+export function readCronSecret(): string {
+  const secret = required('CRON_SECRET', process.env['CRON_SECRET']);
+  // Guessing is the only attack on it, and the route has no rate limit.
+  if (secret.length < 32) throw new MissingConfigError('CRON_SECRET is shorter than 32 characters');
+  return secret;
+}
+
 const hostPattern = /^[A-Za-z0-9.-]{1,253}$/;
 const databaseNamePattern = /^[A-Za-z0-9_-]{1,63}$/;
 const loopbackHosts: ReadonlySet<string> = new Set(['localhost', '127.0.0.1']);

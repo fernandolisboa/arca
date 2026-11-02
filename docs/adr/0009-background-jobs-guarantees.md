@@ -52,10 +52,18 @@ ADR-0008 says deleting a case deletes related data in workflow runs. That cannot
 - Zero retention removes payload inspection after a run ends; debugging relies on our own logs and the database rows steps write.
 - The API depends on a release-candidate build tool. Its version is pinned, its upgrades go through the supply-chain reviewer, and the Hono app does not depend on it.
 - Case deletion leaves identifier-only run payloads at Vercel for up to 36 days, and run metadata for up to one year.
-- How the SDK's own routes reject requests not sent by the platform's queue is not stated in the documentation checked; the scaffold verifies it and records the source here before production ([spec 0001](../specs/0001-foundations-scaffold.md), R6).
+- **How the SDK's routes reject requests the queue did not send** (spec 0001, R6; checked 2026-11-02 against `workflow` 5.2.3):
+  - The runner, `/.well-known/workflow/v1/flow`, does not verify a signature itself: `@vercel/queue`'s callback handler runs the pushed message. Its protection is the platform's. The Nitro integration deploys the runner as its own function with a `queue/v2beta` trigger, and Vercel keeps queue consumers private: no public URL, invoked only by the queue ([Vercel Queues quickstart](https://vercel.com/docs/queues/quickstart)). A test asserts the trigger in the build output, and the production smoke test sends an unsigned request and requires 401, 403 or 404.
+  - The webhook route, `/.well-known/workflow/v1/webhook/:token`, is public by design: it resumes a hook by its token. Arca creates no hooks, so every token answers 404. A workflow that adds a webhook needs its own review of token entropy and of what the hook accepts.
+- **Supply chain** (#10, npm registry checked 2026-11-02):
+  - The SDK's builder resolves `workflow/internal/builtins`, so the umbrella `workflow` package is the dependency. It depends on every framework adapter and the CLI; `autoInstallPeers: false` keeps the NestJS adapter's required peers from pulling in NestJS. Install scripts stay off (`allowBuilds` false for `@swc/core`, `esbuild` and `cbor-extract`, which ship prebuilt binaries or a JavaScript fallback).
+  - Six `@vercel/*` packages the SDK depends on are published from GitHub Actions without the provenance earlier versions carried. The owner accepted them on 2026-11-02, and they are listed in `trustPolicyExclude` by exact version.
+  - `@swc/core` 1.15.3 (pinned by the SDK) and `chokidar` 4.0.3 (pinned by its CLI) lost provenance the same way; overrides move them to 1.15.4 and 5.0.0, which carry it. The SDK's SWC plugin fails on `@swc/core` 1.16, so the override stays on 1.15 until the SDK moves.
 
 ## Sources
 
 - [Vercel docs: Workflows, multi-region](https://vercel.com/docs/workflow) (checked 2026-11-01)
 - [Vercel docs: Workflow data retention](https://vercel.com/docs/workflows/retention) — storage per region, metadata, deletion, zero retention (checked 2026-11-01)
 - [Workflow SDK: getting started with Hono](https://workflow-sdk.dev/docs/getting-started/hono) — Nitro required (checked 2026-11-01)
+- [Vercel Queues quickstart](https://vercel.com/docs/queues/quickstart) — consumers are private and invoked only by the queue (checked 2026-11-02)
+- [SWC plugin compatibility](https://swc.rs/docs/plugin/ecmascript/compatibility) (checked 2026-11-02)

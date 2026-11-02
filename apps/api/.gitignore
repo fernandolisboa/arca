@@ -1,0 +1,2 @@
+# The Workflow SDK's compiler cache; its builder adds this entry when the file lacks it.
+/.swc

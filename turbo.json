@@ -29,6 +29,26 @@
       "dependsOn": ["^build", "@arca/web#build"],
       "inputs": ["$TURBO_DEFAULT$", "generated/**"]
     },
+    "test:db": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "passThroughEnv": [
+        "ARCA_TEST_DB_HOST",
+        "ARCA_TEST_DB_PORT",
+        "ARCA_TEST_DB_ADMIN_USER",
+        "ARCA_TEST_DB_ADMIN_PASSWORD"
+      ]
+    },
+    "@arca/api#test:db": {
+      "dependsOn": ["^build", "@arca/web#build"],
+      "cache": false,
+      "passThroughEnv": [
+        "ARCA_TEST_DB_HOST",
+        "ARCA_TEST_DB_PORT",
+        "ARCA_TEST_DB_ADMIN_USER",
+        "ARCA_TEST_DB_ADMIN_PASSWORD"
+      ]
+    },
     "@arca/scripts#test": {
       "dependsOn": ["^build"],
       "inputs": [

@@ -7,15 +7,18 @@
     "build": "nitro build",
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:db": "vitest run --config vitest.db.config.ts"
   },
   "devDependencies": {
     "@arca/eslint-config": "workspace:*",
     "@arca/security-policy": "workspace:*",
     "@arca/tsconfig": "workspace:*",
     "@types/node": "catalog:",
+    "@types/pg": "catalog:",
     "eslint": "catalog:",
     "nitro": "catalog:",
+    "pg": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
@@ -24,6 +27,7 @@
     "@arca/db": "workspace:*",
     "@hono/zod-openapi": "catalog:",
     "hono": "catalog:",
+    "workflow": "catalog:",
     "zod": "catalog:"
   }
 }

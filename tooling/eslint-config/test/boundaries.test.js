@@ -138,6 +138,7 @@ describe('database drivers', () => {
     ['db', ['db'], 'src/drizzle-driver.ts', 'no-restricted-imports'],
     ['db', ['db'], 'src/dynamic.ts', 'no-restricted-syntax'],
     ['api', ['api'], 'src/require-pg.ts', 'no-restricted-syntax'],
+    ['api', ['api'], 'test/unit-pg.ts', 'no-restricted-imports'],
   ])('%s/%s fails with %s', async (dir, kinds, file, rule) => {
     expect(await ruleIds(dir, /** @type {import('../index.js').Kind[]} */ (kinds), file)).toContain(
       rule,
@@ -149,6 +150,7 @@ describe('database drivers', () => {
     ['db', ['db'], 'test/support.ts'],
     ['db', ['scripts'], 'src/other.ts'],
     ['api', ['api'], 'src/pg-core.ts'],
+    ['api', ['api'], 'test/postgres/admin.ts'],
   ])('%s/%s allows a driver', async (dir, kinds, file) => {
     const rules = await ruleIds(dir, /** @type {import('../index.js').Kind[]} */ (kinds), file);
     expect(rules).not.toContain('no-restricted-imports');
