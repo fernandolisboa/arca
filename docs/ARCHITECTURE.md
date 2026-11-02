@@ -56,8 +56,7 @@ tooling/        shared ESLint and TypeScript configs, security header policy, re
                 (dependency-source, boundary and bundle checks, CI policy scripts, migration runner,
                 the review gate in scripts/src/review-gate)
 eval/           evaluation corpora: the review gate's canary in review-gate/, the synthetic families in
-                families/, later the synthetic AI evaluation suite (its knowledge injection fixture lives in
-                packages/knowledge/test/fixtures/injection/)
+                families/, later the synthetic AI evaluation suite
 ```
 
 Rules that keep every platform possible:
