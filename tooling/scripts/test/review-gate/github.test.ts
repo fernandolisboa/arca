@@ -14,6 +14,7 @@ interface Fake {
   artifacts?: unknown[];
   runs?: Record<number, unknown>;
   inProgress?: unknown[];
+  completed?: unknown[];
   comments?: unknown[];
 }
 
@@ -28,6 +29,10 @@ function fake(state: Fake) {
     if (path.includes('status=in_progress'))
       return Promise.resolve({ workflow_runs: state.inProgress ?? [] });
     if (path.includes('status=queued')) return Promise.resolve({ workflow_runs: [] });
+    if (path.includes('status=completed'))
+      return Promise.resolve({
+        workflow_runs: state.completed ?? [{ event: 'push', conclusion: 'success' }],
+      });
     if (method === 'GET' && path.includes('/comments'))
       return Promise.resolve(state.comments ?? []);
     return Promise.resolve({});
@@ -60,6 +65,32 @@ describe('canary lookup', () => {
   ])('does not count an artifact from %s', async (_label, change) => {
     const { request } = fake({ artifacts: [artifact], runs: { 1: { ...goodRun, ...change } } });
     expect(await canaryState(request, repository, fingerprint)).toBe('missing');
+  });
+
+  it('revokes a pass when a later canary run on main failed', async () => {
+    const { request } = fake({
+      artifacts: [artifact],
+      runs: { 1: goodRun },
+      completed: [
+        { event: 'workflow_dispatch', conclusion: 'cancelled' },
+        { event: 'schedule', conclusion: 'failure' },
+        { event: 'push', conclusion: 'success' },
+      ],
+    });
+    expect(await canaryState(request, repository, fingerprint)).toBe('missing');
+  });
+
+  it('ignores cancelled and pull request runs when finding the newest canary run', async () => {
+    const { request } = fake({
+      artifacts: [artifact],
+      runs: { 1: goodRun },
+      completed: [
+        { event: 'pull_request_target', conclusion: 'failure' },
+        { event: 'schedule', conclusion: 'cancelled' },
+        { event: 'push', conclusion: 'success' },
+      ],
+    });
+    expect(await canaryState(request, repository, fingerprint)).toBe('passed');
   });
 
   it('does not count an expired artifact', async () => {

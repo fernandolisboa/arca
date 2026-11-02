@@ -43,7 +43,8 @@ function records(value: unknown, key: string): Record<string, unknown>[] {
 /**
  * Whether the canary passed for this gate fingerprint: an artifact named for it, uploaded by a
  * successful run of main's canary workflow. An artifact from any other workflow, branch or event
- * does not count, so a side branch cannot fake one.
+ * does not count, so a side branch cannot fake one. A later failed run on main revokes the pass,
+ * since a model alias can move to a new model without changing the fingerprint (ADR-0013).
  */
 export async function canaryState(
   request: GitHubRequest,
@@ -68,7 +69,8 @@ export async function canaryState(
       canaryEvents.has(String(details['event'])) &&
       details['conclusion'] === 'success' &&
       isRecord(details['repository']) &&
-      details['repository']['full_name'] === repository
+      details['repository']['full_name'] === repository &&
+      (await latestCanarySucceeded(request, repository))
     ) {
       return 'passed';
     }
@@ -84,6 +86,21 @@ export async function canaryState(
     if (runs.some((run) => canaryEvents.has(String(run['event'])))) return 'running';
   }
   return 'missing';
+}
+
+/** Whether the newest finished canary run on main, cancelled ones aside, succeeded. */
+async function latestCanarySucceeded(request: GitHubRequest, repository: string): Promise<boolean> {
+  const runs = records(
+    await request(
+      'GET',
+      `/repos/${repository}/actions/workflows/review-canary.yml/runs?branch=main&status=completed&per_page=20`,
+    ),
+    'workflow_runs',
+  );
+  const latest = runs.find(
+    (run) => canaryEvents.has(String(run['event'])) && run['conclusion'] !== 'cancelled',
+  );
+  return latest?.['conclusion'] === 'success';
 }
 
 /** Waits for a running canary, up to the limit in spec 0001 R10 (30 minutes). */

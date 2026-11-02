@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 import { isRecord } from '../../src/report.ts';
 import { judgeCanaryRun, loadCases, planCanary } from '../../src/review-gate/canary.ts';
-import { gateFingerprint, pinnedModels } from '../../src/review-gate/fingerprint.ts';
+import { gateFingerprint, reviewModels } from '../../src/review-gate/fingerprint.ts';
 import {
   changeAgents,
   instructionFiles,
@@ -214,20 +214,14 @@ describe('gate fingerprint', () => {
     expect(gateFingerprint(repo, 'HEAD', models)).not.toBe(first);
   });
 
-  it('requires every pinned model variable', () => {
-    expect(
-      pinnedModels({ REVIEW_MODEL_FABLE: 'a', REVIEW_MODEL_OPUS: 'b', REVIEW_MODEL_HAIKU: 'c' }),
-    ).toEqual({
-      fable: 'a',
-      opus: 'b',
-      haiku: 'c',
+  it('runs each alias as is unless its variable pins a model', () => {
+    expect(reviewModels({})).toEqual({ fable: 'fable', opus: 'opus', haiku: 'haiku' });
+    expect(reviewModels({ REVIEW_MODEL_OPUS: 'model-b', REVIEW_MODEL_HAIKU: '' })).toEqual({
+      fable: 'fable',
+      opus: 'model-b',
+      haiku: 'haiku',
     });
-    expect(() => pinnedModels({ REVIEW_MODEL_FABLE: 'a', REVIEW_MODEL_OPUS: 'b' })).toThrow(
-      'REVIEW_MODEL_HAIKU',
-    );
-    expect(() =>
-      pinnedModels({ REVIEW_MODEL_FABLE: 'a b', REVIEW_MODEL_OPUS: 'b', REVIEW_MODEL_HAIKU: 'c' }),
-    ).toThrow('REVIEW_MODEL_FABLE');
+    expect(() => reviewModels({ REVIEW_MODEL_FABLE: 'a b' })).toThrow('REVIEW_MODEL_FABLE');
   });
 });
 
@@ -328,6 +322,7 @@ describe('canary corpus', () => {
       case: 'c',
       reviewer: 'security-reviewer',
       categories: ['injection' as const],
+      model: 'fable',
       modelVariable: 'REVIEW_MODEL_FABLE',
       effort: 'high',
     };
