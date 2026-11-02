@@ -60,7 +60,7 @@ Return only the structured output:
   - \`file\`: the real path from \`files.txt\`, or an empty string.
   - \`line\`: the line in the head file, or null.
   - \`text\`: the problem and the fix, in English, at most 2000 characters. Quote no more of the change than the finding needs, and never quote secrets or environment variables.
-- \`unassessed\`: what in your area you could not assess, each with \`reason\` (\`tests_not_run\`, \`missing_context\` or \`other\`) and a short \`note\`. Any reason but \`tests_not_run\` blocks the merge, so never use it to say the change is outside your area. Read \`review-input/reference/\` before reporting a doc as missing.
+- \`unassessed\`: something in your area you could not assess, each with \`reason\` (\`tests_not_run\`, \`missing_context\` or \`other\`) and a short \`note\`. Do not use it to say the change is outside your area. Look in \`review-input/reference/\` before reporting a doc as missing.
 
 The verdict is computed from your findings in code, so do not state one.
 

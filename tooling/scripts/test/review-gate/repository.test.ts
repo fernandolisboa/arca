@@ -487,9 +487,14 @@ describe('review workflows', () => {
       join(root, '.github', 'actions', 'run-reviewer', 'action.yml'),
       'utf8',
     );
-    const allowed =
-      "${{ inputs.allow-dispatch-bot == 'true' && 'claude,dependabot,github-actions' || 'claude,dependabot' }}";
-    expect(valuesOf(parse(action) as unknown, 'allowed_bots')).toEqual([allowed, allowed]);
+    expect(valuesOf(parse(action) as unknown, 'allowed_bots')).toEqual([
+      '${{ steps.load.outputs.allowed-bots }}',
+      '${{ steps.load.outputs.allowed-bots }}',
+    ]);
+    expect(action).toContain(
+      'if [[ "$ALLOW_DISPATCH_BOT" == true ]]; then allowed_bots+=,github-actions; fi',
+    );
+    expect(action).toContain('allowed_bots=claude,dependabot\n');
     const allowances = async (file: string) =>
       valuesOf(
         parse(await readFile(join(root, '.github', 'workflows', file), 'utf8')) as unknown,
