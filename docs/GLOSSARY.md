@@ -34,7 +34,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Not eligible | Não elegível | Evaluation status: a requirement does not hold |
 | Missing information | Faltam informações | Evaluation status: no requirement fails, but some are unknown |
 | Needs assessment | Depende de critério subjetivo | Evaluation status: every requirement holds and the route has judgment factors |
-| Pending activation | Aguardando aprovação | Evaluation status: the version in effect has not been activated yet |
+| Pending activation | Regra aguardando ativação | Evaluation status: the version in effect has not been activated yet |
 | Unavailable | Indisponível | Evaluation status: no version in effect, or the route is closed |
 | Knowledge base | Base de conhecimento | Sourced, versioned rules and information about routes, documents, steps and pitfalls |
 | Knowledge item | Item da base | One sourced entry in the knowledge base |

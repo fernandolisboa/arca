@@ -85,13 +85,14 @@ Entities, not final schema:
 - `aspiration`: priorities, deal-breakers, budget, timeline, risk tolerance and preferred execution mode, per person.
 - `country`, `destination_choice`: catalog countries and the ones each person selected, with priority and the stay-together constraint.
 - `ancestor`: parents and grandparents with country, dates, naturalization and certificates.
-- `route`, `route_version`: routes per country; declarative requirements, costs, dependents covered, `sources` (URL, kind, `verifiedAt`), effective dates, pinned country sets. Files in `packages/knowledge`, not tables ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)); the database holds only the owner's activations.
+- `route`, `route_version`: routes per country; declarative requirements, costs, dependents covered, `sources` (URL, kind, `verifiedAt`), effective dates, pinned country sets and official-domain lists. Files in `packages/knowledge`, not tables ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)); the database holds only the owner's activations.
 - `action_point`: where each step happens (official link, phone, consulate by jurisdiction, partner by region).
 - `evaluation`: person or unit × route version → status, missing requirements, estimated cost and time.
 - `asset`, `sale`, `gift`, `fx_transfer`: the source-of-funds trail.
 - `plan`, `task`, `task_dependency`: the executable plan, with the execution mode of each task.
 - `document`: type, owner, validity, apostille, translation and a pointer to the encrypted file.
-- `contact`, `rule_change`: external contacts; watcher proposals with diff and decision.
+- `activation`: the owner's approval of one route version: route ID, number, content hash, approver, passkey assertion, time ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)).
+- `contact`: external contacts. Watcher proposals are pull requests, and their decision is an `activation` (ADR-0014).
 - `knowledge_item`: requirement, document, step, form, fee, deadline, common pitfall or interview question, each with source and verification date. Whether these and `action_point` are files like route versions is decided in consultancy core slice 5 (ADR-0014).
 
 ## Agents
