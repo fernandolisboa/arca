@@ -21,7 +21,7 @@ As of 2026-11-02. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md).
 | Owner-enrollment and invite registration contexts | 30 minutes, single use | Expiry check plus the daily cleanup job |
 | Notification channels (push subscriptions) | Until revoked, reported gone by the push service, or the account is deleted | Delivery step and registry |
 | Notification messages and their deliveries | 90 days | Daily cleanup job |
-| Vault envelopes, recipients, sharing state and document rows | While the account exists; a rotated identity's envelopes until every sharing owner re-encrypts, or 90 days | Registry; rotation step |
+| Vault envelopes, recipients, sharing state and document rows | While the account exists; a rotated identity's envelopes until every sharing owner re-encrypts, or 90 days | Registry; daily cleanup job for rotated envelopes |
 | Rate-limit counters | Their window (minutes) | Daily cleanup job |
 | Non-production email outbox | 7 days | Daily cleanup job (non-production only) |
 | Audit log | 5 years; records hold identifiers and event codes only | Purge job, specified before the first record turns 5 (2031) |
