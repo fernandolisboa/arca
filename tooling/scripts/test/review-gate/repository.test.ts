@@ -5,7 +5,13 @@ import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 import { isRecord } from '../../src/report.ts';
-import { judgeCanaryRun, loadCases, planCanary } from '../../src/review-gate/canary.ts';
+import {
+  canaryScope,
+  judgeCanaryRun,
+  loadCases,
+  planCanary,
+  refuseSlimWhileFailed,
+} from '../../src/review-gate/canary.ts';
 import { gateFingerprint, resolvedModels } from '../../src/review-gate/fingerprint.ts';
 import {
   changeAgents,
@@ -336,9 +342,28 @@ describe('canary corpus', () => {
     });
     expect(slim.results).toEqual(results);
     expect(slim.runs.map((run) => [run.case, run.reviewer]).sort()).toEqual(
-      reviewers.map((reviewer) => [`known-bad-${reviewer.name}`, reviewer.name]).sort(),
+      [
+        ...reviewers.map((reviewer) => [`known-bad-${reviewer.name}`, reviewer.name]),
+        ...mustPass.map((name) => ['injection-in-code', name]),
+      ].sort(),
     );
   }, 60_000);
+
+  it('reads the scope, full by default, and refuses a slim run while a failure stands', () => {
+    expect(canaryScope(undefined)).toBe('full');
+    expect(canaryScope('full')).toBe('full');
+    expect(canaryScope('slim')).toBe('slim');
+    expect(() => canaryScope('Slim')).toThrow('--scope must be');
+    expect(() => {
+      refuseSlimWhileFailed('slim', true);
+    }).toThrow('Only a full run can clear it');
+    expect(() => {
+      refuseSlimWhileFailed('slim', false);
+    }).not.toThrow();
+    expect(() => {
+      refuseSlimWhileFailed('full', true);
+    }).not.toThrow();
+  });
 
   it('counts a run only when the target blocks for the expected category', () => {
     const reviewer = {
@@ -531,11 +556,14 @@ describe('review workflows', () => {
     expect(run).toContain('--ref main');
     expect(run).toContain('-f skip-if-passed=true -f scope=slim');
     // Only the owner's dispatch may force a run while a pass exists, or a full one.
-    const notOwner =
-      "github.event_name == 'workflow_dispatch' && github.actor != github.repository_owner";
-    expect(String(valuesOf(canary, 'SKIP_IF_PASSED')[0])).toContain(notOwner);
+    expect(valuesOf(canary, 'OTHER_DISPATCH')).toEqual([
+      "${{ github.event_name == 'workflow_dispatch' && github.actor != github.repository_owner }}",
+    ]);
+    expect(valuesOf(canary, 'SKIP_IF_PASSED')).toEqual([
+      "${{ (inputs.skip-if-passed || env.OTHER_DISPATCH == 'true') && '--skip-if-passed' || '' }}",
+    ]);
     expect(valuesOf(canary, 'SCOPE')).toEqual([
-      `\${{ (${notOwner}) && 'slim' || inputs.scope || 'full' }}`,
+      "${{ env.OTHER_DISPATCH == 'true' && 'slim' || inputs.scope || 'full' }}",
     ]);
   });
 

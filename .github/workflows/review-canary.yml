@@ -55,6 +55,11 @@ jobs:
       has-runs: ${{ steps.plan.outputs.has-runs }}
       skip: ${{ steps.plan.outputs.skip }}
       fingerprint: ${{ steps.plan.outputs.fingerprint }}
+    env:
+      # A dispatch by anyone but the owner, such as review-canary-push.yml, never forces a run
+      # while a pass exists, and runs slim (ADR-0013). This assumes a user-owned repository.
+      OTHER_DISPATCH: >-
+        ${{ github.event_name == 'workflow_dispatch' && github.actor != github.repository_owner }}
     steps:
       - name: Check out main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -81,14 +86,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           CHANGE_HEAD: ${{ inputs.change-agents && github.event.pull_request.head.sha || '' }}
-          # A dispatch by anyone but the owner, such as review-canary-push.yml, never forces a run
-          # while a pass exists, and runs slim (ADR-0013).
           SKIP_IF_PASSED: >-
-            ${{ (inputs.skip-if-passed || (github.event_name == 'workflow_dispatch' &&
-            github.actor != github.repository_owner)) && '--skip-if-passed' || '' }}
-          SCOPE: >-
-            ${{ (github.event_name == 'workflow_dispatch' && github.actor != github.repository_owner)
-            && 'slim' || inputs.scope || 'full' }}
+            ${{ (inputs.skip-if-passed || env.OTHER_DISPATCH == 'true') && '--skip-if-passed' || '' }}
+          SCOPE: ${{ env.OTHER_DISPATCH == 'true' && 'slim' || inputs.scope || 'full' }}
           REVIEW_MODEL_FABLE: ${{ vars.REVIEW_MODEL_FABLE }}
           REVIEW_MODEL_OPUS: ${{ vars.REVIEW_MODEL_OPUS }}
           REVIEW_MODEL_HAIKU: ${{ vars.REVIEW_MODEL_HAIKU }}

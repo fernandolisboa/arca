@@ -4,8 +4,10 @@ import { parseArgs } from 'node:util';
 import { oneLine, whenMissing } from '../report.ts';
 import { parseAcceptances } from './acceptances.ts';
 import {
+  canaryScope,
   judgeCanaryRun,
   planCanary,
+  refuseSlimWhileFailed,
   type CanaryRun,
   type CanaryScope,
   type CaseResult,
@@ -114,12 +116,6 @@ async function prepare(args: string[]): Promise<void> {
   }
 }
 
-function canaryScope(value: string | boolean | undefined): CanaryScope {
-  if (value === undefined || value === 'full') return 'full';
-  if (value === 'slim') return 'slim';
-  throw new Error('--scope must be "full" or "slim"');
-}
-
 /** canary-plan: every case prepared, the model runs as a matrix, and the cases that need none. */
 async function canaryPlan(args: string[]): Promise<void> {
   const { values } = parseArgs({
@@ -150,10 +146,8 @@ async function canaryPlan(args: string[]): Promise<void> {
       return;
     }
     // Fails rather than skips: a run that ends in success would count as the newest success.
-    if (scope === 'slim' && (await canaryRecovering(request(), repository()))) {
-      throw new Error(
-        'A canary run on main failed after the last success. Only a full run can clear it: the weekly run, or a dispatch by the owner.',
-      );
+    if (scope === 'slim') {
+      refuseSlimWhileFailed(scope, await canaryRecovering(request(), repository()));
     }
   } else {
     const { agents, reviewMarkdown } = changeAgents(changeObjects, sha(values, 'change-head'));

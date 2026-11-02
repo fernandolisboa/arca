@@ -16,8 +16,8 @@ const caseId = /^[a-z0-9][a-z0-9-]*$/;
 
 export interface CanaryCase {
   readonly id: string;
-  /** `payload`: a reviewer's own known-bad case. `case`: a case from `cases/`. */
-  readonly origin: 'payload' | 'case';
+  /** Part of a slim run: every payload case, every `prepare-rejects` case, and `"slim": true`. */
+  readonly slim: boolean;
   readonly description: string;
   /** `block`: every target reviewer must block for its category. `prepare-rejects`: no model runs. */
   readonly expect: 'block' | 'prepare-rejects';
@@ -69,7 +69,7 @@ export async function loadCases(
 
   const cases: CanaryCase[] = [...payloads.values()].map((payload) => ({
     id: `known-bad-${payload.reviewer}`,
-    origin: 'payload',
+    slim: true,
     description: `A known-bad change in the ${payload.reviewer}'s area`,
     expect: 'block',
     targets: { [payload.reviewer]: [payload.category] },
@@ -91,6 +91,9 @@ export async function loadCases(
     const expect = data['expect'];
     if (expect !== 'block' && expect !== 'prepare-rejects') {
       throw new CorpusError(`case ${id} expects neither "block" nor "prepare-rejects"`);
+    }
+    if (data['slim'] !== undefined && typeof data['slim'] !== 'boolean') {
+      throw new CorpusError(`case ${id} has a "slim" that is not true or false`);
     }
     const included = data['payloads'] === 'must-pass' ? mustPass : stringList(data['payloads'], id);
     const targets: Record<string, Category[]> = {};
@@ -117,7 +120,7 @@ export async function loadCases(
     }
     cases.push({
       id,
-      origin: 'case',
+      slim: data['slim'] === true || expect === 'prepare-rejects',
       description: typeof data['description'] === 'string' ? data['description'] : id,
       expect,
       targets,
@@ -236,13 +239,29 @@ async function copyFixtures(from: string, to: string): Promise<void> {
 }
 
 /**
- * `full` runs the whole corpus. `slim` runs one known-bad case per reviewer, plus the cases that
- * need no model, so a change to the gate costs one model run per reviewer (ADR-0013).
+ * `full` runs the whole corpus. `slim` runs one known-bad case per reviewer, the cases that need
+ * no model and the injected cases marked `"slim": true`, so a change to the gate costs a few model
+ * runs per reviewer instead of the whole corpus (ADR-0013).
  */
 export type CanaryScope = 'full' | 'slim';
 
+export function canaryScope(value: string | undefined): CanaryScope {
+  if (value === undefined || value === 'full') return 'full';
+  if (value === 'slim') return 'slim';
+  throw new Error('--scope must be "full" or "slim"');
+}
+
+/** A slim run never clears a failure: only a full run can (ADR-0013). */
+export function refuseSlimWhileFailed(scope: CanaryScope, failureStands: boolean): void {
+  if (scope === 'slim' && failureStands) {
+    throw new Error(
+      'A canary run on main failed after the last success. Only a full run can clear it: the weekly run, or a dispatch by the owner.',
+    );
+  }
+}
+
 export function inScope(testCase: CanaryCase, scope: CanaryScope): boolean {
-  return scope === 'full' || testCase.origin === 'payload' || testCase.expect === 'prepare-rejects';
+  return scope === 'full' || testCase.slim;
 }
 
 export interface CanaryRun extends MatrixEntry {
