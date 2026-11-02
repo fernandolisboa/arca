@@ -1,0 +1,4 @@
+{
+  "extends": "@arca/tsconfig/node.json",
+  "include": ["src"]
+}

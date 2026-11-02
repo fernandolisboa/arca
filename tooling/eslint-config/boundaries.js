@@ -87,6 +87,35 @@ export const domain = {
   ],
 };
 
+const ownerFallback =
+  'Database drivers fill missing fields from PG* and POSTGRES_* variables, which are the owner role. ' +
+  'Connect through createRolePool in @arca/db.';
+
+/**
+ * Every package except the build scripts: database drivers only in the @arca/db files that
+ * build the role pool, and their tests (spec 0001, R7).
+ *
+ * @type {Restrictions}
+ */
+// A regex, not a group: gitignore-style groups match any path segment, so `pg-*` would also
+// catch `drizzle-orm/pg-core`, which holds no driver.
+const databaseDriverModule =
+  '^(?:pg|pg-[^/]+|postgres|@neondatabase/[^/]+|@vercel/postgres|drizzle-orm/(?:node-postgres|neon-[^/]+|postgres-js|vercel-postgres))(?:/.*)?$';
+
+export const databaseDrivers = {
+  patterns: [{ regex: databaseDriverModule, message: ownerFallback }],
+  syntax: [
+    {
+      // require('pg') and createRequire(import.meta.url)('pg'), which no-restricted-imports ignores.
+      selector: `CallExpression[arguments.0.value=/${selectorRegex(databaseDriverModule)}/]:matches([callee.name='require'], [callee.type='CallExpression'])`,
+      message: ownerFallback,
+    },
+  ],
+};
+
+/** The @arca/db files allowed to import a database driver. */
+export const databaseDriverFiles = ['src/pool.ts', 'src/database.ts', 'test/**'];
+
 const sniffing =
   'Do not detect the operating system or browser. Read capabilities through @arca/platform.';
 const sniffedProperty = '/^(userAgent|userAgentData|platform)$/';
