@@ -91,7 +91,7 @@ eval/
 ### R4. One origin and security headers
 
 - The Nitro build of `apps/api` serves `apps/web`'s built bundle as static files and the API under `/v1`.
-- Only paths outside `/v1`, `/internal`, `/.well-known` and the Workflow SDK's routes fall back to `index.html`; unmatched paths under those prefixes return 404.
+- Only paths outside `/v1`, `/internal`, `/.well-known` and the Workflow SDK's routes (which live under `/.well-known/workflow`) fall back to `index.html`; unmatched paths under those prefixes return 404. The excluded prefixes are Nitro routes to the API handler, not a server entry, because Nitro passes a 404 from a server entry on to the `index.html` renderer. On Vercel the header rule comes before the static files in the generated `config.json`, so static files get the same headers. Errors that never reach the Hono app (a malformed URL, a module that fails to load) go through the API's Nitro error handler, which sets the same headers, answers with an error code only and logs the allow-listed fields (R3); h3's own error printing is off.
 - `tooling/security-policy` holds the header policy and the fallback exclusions as data. The Nitro config imports it; native build targets will later inject the same CSP as a `<meta http-equiv>` tag with the API origin in `connect-src`, since a wrapped bundle gets no response headers.
 - Headers on every response:
   - `Content-Security-Policy`: `default-src 'self'; script-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; require-trusted-types-for 'script'; trusted-types arca`.
@@ -247,7 +247,7 @@ The latest stable release of each, checked on the npm registry on 2026-11-01, un
 | Hono | 4.13 | Latest stable. Hono 5 is at its first release candidate; `@hono/zod-openapi` and Nitro are not proven against it, and it offers this slice nothing. Revisit at 5.0 |
 | Zod, `@hono/zod-openapi` | 4.6, 1.6 | Latest |
 | `workflow` | 5.2+ | Latest; 5.x is required for region pinning ([ADR-0009](../adr/0009-background-jobs-guarantees.md)) |
-| Nitro | 3.0 release candidate | Pre-release, required: the Workflow SDK's Hono path needs Nitro 3 |
+| Nitro | 3.0.260903-beta | Pre-release, required: the Workflow SDK's Hono path needs Nitro 3. The newest release older than 7 days; move to the release candidate (3.0.261029-rc) once it is |
 | Drizzle ORM, drizzle-kit | 1.0 release candidate | Pre-release, chosen: 0.45 would force a 1.0 migration within months, and 1.0 has the reworked RLS and role APIs we depend on. Risk is low while no case tables exist; any RC bug found is fixed or pinned before the first case table |
 | `pg` | 8.x | Latest; driver for Drizzle, the migration runner and the guard tests |
 | `libpg-query` | 18.x | The Postgres parser compiled to WebAssembly, matching Postgres 18; the migration runner uses it to split and vet statements. 18.2.1 ships only JavaScript and a `.wasm` file, with no install script, so `allowBuilds` stays empty (checked 2026-11-02) |

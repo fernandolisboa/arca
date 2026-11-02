@@ -4,16 +4,18 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc -b tsconfig.build.json",
+    "build": "nitro build",
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint .",
     "test": "vitest run"
   },
   "devDependencies": {
     "@arca/eslint-config": "workspace:*",
+    "@arca/security-policy": "workspace:*",
     "@arca/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "eslint": "catalog:",
+    "nitro": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },

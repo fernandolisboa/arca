@@ -26,7 +26,7 @@
       "path": "packages/ui"
     },
     {
-      "path": "tooling/security-policy"
+      "path": "tooling/security-policy/tsconfig.build.json"
     }
   ]
 }

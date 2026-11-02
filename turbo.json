@@ -19,6 +19,15 @@
     },
     "test": {
       "dependsOn": ["^build"]
+    },
+    "@arca/api#build": {
+      "dependsOn": ["^build", "@arca/web#build"],
+      "outputs": [".output/**", ".vercel/output/**"],
+      "inputs": ["$TURBO_DEFAULT$", "generated/**"]
+    },
+    "@arca/api#test": {
+      "dependsOn": ["^build", "@arca/web#build"],
+      "inputs": ["$TURBO_DEFAULT$", "generated/**"]
     }
   }
 }
