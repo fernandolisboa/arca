@@ -140,6 +140,16 @@ describe('workflow secrets lint', () => {
     expect(checkWorkflow('pull-request-calls-workflow.yml', source, policy)).toEqual([]);
   });
 
+  it.each([
+    'fernandolisboa/arca/.github/workflows/review-canary.yml@main',
+    'someone/else/.github/workflows/x.yml@0123456789abcdef0123456789abcdef01234567',
+  ])('rejects a call to the non-local reusable workflow %s', (uses) => {
+    const source = `on: push\npermissions: {}\njobs:\n  canary:\n    uses: ${uses}\n`;
+    expect(checkWorkflow('allowed.yml', source, policy).map(({ problem }) => problem)).toEqual([
+      `calls ${uses}; reusable workflows must be local (./.github/workflows/<file>)`,
+    ]);
+  });
+
   it('rejects a call to a workflow missing from the policy', async () => {
     expect(await problems('calls-unlisted-workflow.yml')).toEqual([
       'calls ./.github/workflows/not-in-policy.yml, which is not in the secrets policy',

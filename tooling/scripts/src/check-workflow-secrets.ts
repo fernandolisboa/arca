@@ -56,6 +56,11 @@ export function checkWorkflow(file: string, source: string, policy: SecretsPolic
   }
   // A called workflow runs with its caller's trigger, so the caller must be allowed whatever the
   // callee may use; otherwise a pull_request workflow could reach a secret through a local call.
+  for (const uses of jobUses(workflow)) {
+    if (!reusableWorkflow.test(uses)) {
+      add(`calls ${uses}; reusable workflows must be local (./.github/workflows/<file>)`);
+    }
+  }
   for (const local of localUses(workflow)) {
     const callee = reusableWorkflow.exec(local)?.[1];
     if (callee === undefined) continue;
@@ -178,6 +183,16 @@ function containsInheritedSecrets(value: unknown): boolean {
         item.toLowerCase() === 'inherit') ||
       containsInheritedSecrets(item),
   );
+}
+
+/** The `uses` of every job that calls a reusable workflow, local or not. */
+function jobUses(workflow: unknown): string[] {
+  const jobs = isRecord(workflow) ? workflow['jobs'] : undefined;
+  if (!isRecord(jobs)) return [];
+  return Object.values(jobs).flatMap((job) => {
+    const uses = isRecord(job) ? job['uses'] : undefined;
+    return uses === undefined ? [] : [typeof uses === 'string' ? uses : JSON.stringify(uses)];
+  });
 }
 
 function jobEnvironments(workflow: unknown): string[] {
