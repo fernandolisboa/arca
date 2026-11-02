@@ -144,6 +144,14 @@ describe('agent definitions', () => {
     }
   });
 
+  it('refuses a "Runs on" cell with look-alike or invisible characters', () => {
+    for (const cell of ['\u0415very change', 'Every\u200bchange', 'Every\u00a0change']) {
+      expect(() =>
+        reviewerWeights(`| [x-reviewer](x.md) | ${cell} | Must pass | \`fable\` |`),
+      ).toThrow('must be printable ASCII');
+    }
+  });
+
   it('refuses a reviewer without a weight', () => {
     const agent = parseAgentDefinition(definition('name: new-reviewer\ntools: Read\nmodel: fable'));
     expect(() => withWeights([agent], new Map())).toThrow('no row in the docs/REVIEW.md table');

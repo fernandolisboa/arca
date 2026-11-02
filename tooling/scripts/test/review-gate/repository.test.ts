@@ -9,8 +9,8 @@ import {
   canaryScope,
   judgeCanaryRun,
   loadCases,
+  mainRunDecision,
   planCanary,
-  refuseSlimWhileFailed,
 } from '../../src/review-gate/canary.ts';
 import { gateFingerprint, resolvedModels } from '../../src/review-gate/fingerprint.ts';
 import {
@@ -341,28 +341,80 @@ describe('canary corpus', () => {
       scope: 'slim',
     });
     expect(slim.results).toEqual(results);
+    // Every injection shape, each against one reviewer, and one case against every must-pass one.
+    const injected = cases.filter(
+      (testCase) =>
+        testCase.expect === 'block' &&
+        testCase.id !== 'injection-in-code' &&
+        !testCase.id.startsWith('known-bad-'),
+    );
+    expect(injected.length).toBeGreaterThan(0);
     expect(slim.runs.map((run) => [run.case, run.reviewer]).sort()).toEqual(
       [
         ...reviewers.map((reviewer) => [`known-bad-${reviewer.name}`, reviewer.name]),
         ...mustPass.map((name) => ['injection-in-code', name]),
+        ...injected.map((testCase) => [
+          testCase.id,
+          testCase.id === 'weakened-agent-body' ? 'security-reviewer' : 'ai-safety-reviewer',
+        ]),
       ].sort(),
+    );
+    expect(slim.runs.find((run) => run.case === 'forged-delimiter')?.categories).toEqual(
+      runs.find((run) => run.case === 'forged-delimiter' && run.reviewer === 'ai-safety-reviewer')
+        ?.categories,
     );
   }, 60_000);
 
-  it('reads the scope, full by default, and refuses a slim run while a failure stands', () => {
+  it('reads the scope, full by default', () => {
     expect(canaryScope(undefined)).toBe('full');
     expect(canaryScope('full')).toBe('full');
     expect(canaryScope('slim')).toBe('slim');
     expect(() => canaryScope('Slim')).toThrow('--scope must be');
-    expect(() => {
-      refuseSlimWhileFailed('slim', true);
-    }).toThrow('Only a full run can clear it');
-    expect(() => {
-      refuseSlimWhileFailed('slim', false);
-    }).not.toThrow();
-    expect(() => {
-      refuseSlimWhileFailed('full', true);
-    }).not.toThrow();
+  });
+
+  it('skips on a pass when asked, and refuses a slim run while a failure stands', async () => {
+    const decide = (
+      scope: 'full' | 'slim',
+      skipIfPassed: boolean,
+      passed: boolean,
+      failureStands: boolean,
+    ) => {
+      const asked: string[] = [];
+      return mainRunDecision({
+        scope,
+        skipIfPassed,
+        passed: () => {
+          asked.push('passed');
+          return Promise.resolve(passed);
+        },
+        failureStands: () => {
+          asked.push('failureStands');
+          return Promise.resolve(failureStands);
+        },
+      }).then(
+        (decision) => ({ decision, asked }),
+        (error: unknown) => ({ decision: String(error), asked }),
+      );
+    };
+    expect(await decide('slim', true, true, false)).toEqual({
+      decision: 'skip',
+      asked: ['passed'],
+    });
+    expect(await decide('slim', true, false, false)).toEqual({
+      decision: 'plan',
+      asked: ['passed', 'failureStands'],
+    });
+    expect((await decide('slim', true, false, true)).decision).toContain(
+      'Only a full run can clear it',
+    );
+    expect((await decide('slim', false, true, true)).decision).toContain(
+      'Only a full run can clear it',
+    );
+    expect(await decide('full', false, true, true)).toEqual({ decision: 'plan', asked: [] });
+    expect(await decide('full', true, false, true)).toEqual({
+      decision: 'plan',
+      asked: ['passed'],
+    });
   });
 
   it('counts a run only when the target blocks for the expected category', () => {
@@ -562,6 +614,12 @@ describe('review workflows', () => {
     expect(valuesOf(canary, 'SKIP_IF_PASSED')).toEqual([
       "${{ (inputs.skip-if-passed || env.OTHER_DISPATCH == 'true') && '--skip-if-passed' || '' }}",
     ]);
+    // Slim runs queue apart, so a push never replaces a pending weekly run.
+    expect(
+      String(
+        isRecord(canary) && isRecord(canary['concurrency']) ? canary['concurrency']['group'] : '',
+      ),
+    ).toContain("github.actor != github.repository_owner) && 'slim' || 'full' }}");
     expect(valuesOf(canary, 'SCOPE')).toEqual([
       "${{ env.OTHER_DISPATCH == 'true' && 'slim' || inputs.scope || 'full' }}",
     ]);
@@ -667,6 +725,13 @@ describe('review workflows', () => {
           fableInit,
           result({ modelUsage: { 'claude-fable-5-1-20261101': { inputTokens: 5 } } }),
         ),
+      ).toBe('keep');
+      // An alias on one side and a full ID on the other name the same family.
+      expect(
+        await answered(result({ modelUsage: { 'claude-fable-5-1': { outputTokens: 1 } } })),
+      ).toBe('keep');
+      expect(
+        await answeredAfter(fableInit, result({ modelUsage: { fable: { outputTokens: 1 } } })),
       ).toBe('keep');
       expect(await answered(result({ modelUsage: undefined }))).toBe('keep');
       expect(await answered(result({ is_error: false }))).toBe('keep');

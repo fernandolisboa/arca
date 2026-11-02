@@ -3,7 +3,7 @@ import { isRecord } from '../../src/report.ts';
 import { commentMarker } from '../../src/review-gate/comment.ts';
 import {
   awaitCanary,
-  canaryRecovering,
+  canaryFailureStands,
   canaryState,
   upsertComment,
   type GitHubRequest,
@@ -146,7 +146,7 @@ describe('canary lookup', () => {
         { event: 'workflow_dispatch', conclusion: 'success', run_number: 11 },
       ],
     });
-    expect(await canaryRecovering(request, repository)).toBe(true);
+    expect(await canaryFailureStands(request, repository)).toBe(true);
   });
 
   it('allows a slim run once a success is newer than every failure', async () => {
@@ -157,8 +157,8 @@ describe('canary lookup', () => {
         { event: 'schedule', conclusion: 'timed_out', run_number: 12 },
       ],
     });
-    expect(await canaryRecovering(request, repository)).toBe(false);
-    expect(await canaryRecovering(fake({}).request, repository)).toBe(false);
+    expect(await canaryFailureStands(request, repository)).toBe(false);
+    expect(await canaryFailureStands(fake({}).request, repository)).toBe(false);
   });
 
   it('does not count an expired artifact', async () => {

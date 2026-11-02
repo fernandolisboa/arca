@@ -71,7 +71,7 @@ Three facts shape the design:
 - `review-gate` is required on `main`, alongside types, lint, tests and the supply-chain checks.
 - The owner approves changes to the gate and the CI configuration; every other change merges on the reviewers' verdict.
 - Anthropic receives source code, diffs, file lists and file history (SHAs, dates, paths) from CI; never case data, which the repository never holds, and no contributor names or emails. The data-flow register lists it.
-- Running every reviewer on every pull request costs more usage than path-matching would. Since [ADR-0013](0013-review-gate-canary-and-model-pins.md) that usage draws on the owner's subscription limits, so the gate skips drafts and the canary runs slim on gate changes.
+- Running every reviewer on every pull request costs more usage than path-matching would. Since [ADR-0013](0013-review-gate-canary-and-model-pins.md) that usage draws on the owner's subscription limits, so the gate skips drafts, and a push to `main` that changes the gate runs a slim canary; the weekly run and a pull request that changes `.claude/agents/` still run the full corpus.
 - Dependency-policy files are gate paths, so the owner approves each Dependabot npm update (weekly, grouped), since those touch `pnpm-workspace.yaml`. Approving out of habit would weaken the check; the deterministic dependency checks still run first.
 - Reviewers in CI cannot run commands. Executing tests is the job of the required test checks; REVIEW.md says a reviewer does not block only because it could not run them in CI.
 

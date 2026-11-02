@@ -115,7 +115,7 @@ function newestFailedCanaryRun(request: GitHubRequest, repository: string): Prom
  * Whether a canary run on main failed after the newest one that succeeded. A slim run refuses to
  * start then, so a narrower run never clears a failed full one (ADR-0013).
  */
-export async function canaryRecovering(
+export async function canaryFailureStands(
   request: GitHubRequest,
   repository: string,
 ): Promise<boolean> {

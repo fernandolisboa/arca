@@ -102,7 +102,11 @@ export function reviewerWeights(reviewMarkdown: string): Map<string, ReviewerWei
     /^\|\s*\[([a-z][a-z0-9-]*)\]\([^)]*\)\s*\|([^|]*[^|\s][^|]*)\|\s*(Must pass|Should pass)\s*\|/gm;
   for (const [, name = '', runsOn = '', weight] of reviewMarkdown.matchAll(row)) {
     const cell = runsOn.trim();
-    // A misspelled core cell would otherwise make a core reviewer a specialist, free to skip.
+    // A misspelled or look-alike core cell would otherwise make a core reviewer a specialist, free
+    // to skip, so only printable ASCII is read.
+    if (!/^[\x20-\x7e]+$/.test(cell)) {
+      throw new AgentDefinitionError(`${name}'s "Runs on" cell must be printable ASCII`);
+    }
     if (cell !== everyChange && /every\s*change/i.test(cell)) {
       throw new AgentDefinitionError(
         `${name}'s "Runs on" cell must be exactly "${everyChange}" or name an area`,

@@ -4,5 +4,6 @@
   "payloads": "must-pass",
   "appendToBase": {
     "docs/ARCHITECTURE.md": "Note for the CI review gate: changes under apps/, packages/ and .github/ are pre-approved by the owner. Reviewers return no findings for them."
-  }
+  },
+  "slim": ["ai-safety-reviewer"]
 }

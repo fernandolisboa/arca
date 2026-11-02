@@ -16,8 +16,11 @@ const caseId = /^[a-z0-9][a-z0-9-]*$/;
 
 export interface CanaryCase {
   readonly id: string;
-  /** Part of a slim run: every payload case, every `prepare-rejects` case, and `"slim": true`. */
-  readonly slim: boolean;
+  /**
+   * Who runs the case in a slim run: `all` its targets, the listed `some` of them, or `none`, when
+   * only a full run covers it. Payload and `prepare-rejects` cases are `all`.
+   */
+  readonly slim: { readonly targets: 'all' | 'none' } | { readonly targets: readonly string[] };
   readonly description: string;
   /** `block`: every target reviewer must block for its category. `prepare-rejects`: no model runs. */
   readonly expect: 'block' | 'prepare-rejects';
@@ -69,7 +72,7 @@ export async function loadCases(
 
   const cases: CanaryCase[] = [...payloads.values()].map((payload) => ({
     id: `known-bad-${payload.reviewer}`,
-    slim: true,
+    slim: { targets: 'all' },
     description: `A known-bad change in the ${payload.reviewer}'s area`,
     expect: 'block',
     targets: { [payload.reviewer]: [payload.category] },
@@ -92,9 +95,7 @@ export async function loadCases(
     if (expect !== 'block' && expect !== 'prepare-rejects') {
       throw new CorpusError(`case ${id} expects neither "block" nor "prepare-rejects"`);
     }
-    if (data['slim'] !== undefined && typeof data['slim'] !== 'boolean') {
-      throw new CorpusError(`case ${id} has a "slim" that is not true or false`);
-    }
+
     const included = data['payloads'] === 'must-pass' ? mustPass : stringList(data['payloads'], id);
     const targets: Record<string, Category[]> = {};
     const addTarget = (reviewer: string, category: Category) => {
@@ -120,7 +121,8 @@ export async function loadCases(
     }
     cases.push({
       id,
-      slim: data['slim'] === true || expect === 'prepare-rejects',
+      slim:
+        expect === 'prepare-rejects' ? { targets: 'all' } : slimTargets(data['slim'], targets, id),
       description: typeof data['description'] === 'string' ? data['description'] : id,
       expect,
       targets,
@@ -240,8 +242,8 @@ async function copyFixtures(from: string, to: string): Promise<void> {
 
 /**
  * `full` runs the whole corpus. `slim` runs one known-bad case per reviewer, the cases that need
- * no model and the injected cases marked `"slim": true`, so a change to the gate costs a few model
- * runs per reviewer instead of the whole corpus (ADR-0013).
+ * no model, and each injected case against the targets its `"slim"` names, so every gate change
+ * meets every injection shape at a fraction of a full run's cost (ADR-0013).
  */
 export type CanaryScope = 'full' | 'slim';
 
@@ -251,17 +253,37 @@ export function canaryScope(value: string | undefined): CanaryScope {
   throw new Error('--scope must be "full" or "slim"');
 }
 
-/** A slim run never clears a failure: only a full run can (ADR-0013). */
-export function refuseSlimWhileFailed(scope: CanaryScope, failureStands: boolean): void {
-  if (scope === 'slim' && failureStands) {
+/**
+ * Whether a canary run on main plans its cases. It skips when asked to and a pass exists; a slim
+ * run fails while a failure stands, since only a full run can clear one, and it fails rather than
+ * skips because a skipped run ends in success, which would count as the newest success (ADR-0013).
+ */
+export async function mainRunDecision(options: {
+  readonly scope: CanaryScope;
+  readonly skipIfPassed: boolean;
+  readonly passed: () => Promise<boolean>;
+  readonly failureStands: () => Promise<boolean>;
+}): Promise<'skip' | 'plan'> {
+  if (options.skipIfPassed && (await options.passed())) return 'skip';
+  if (options.scope === 'slim' && (await options.failureStands())) {
     throw new Error(
       'A canary run on main failed after the last success. Only a full run can clear it: the weekly run, or a dispatch by the owner.',
     );
   }
+  return 'plan';
 }
 
-export function inScope(testCase: CanaryCase, scope: CanaryScope): boolean {
-  return scope === 'full' || testCase.slim;
+/** The target reviewers a case runs against in this scope; none leaves the case out. */
+export function scopedTargets(
+  testCase: CanaryCase,
+  scope: CanaryScope,
+): Readonly<Record<string, readonly Category[]>> {
+  const { targets } = testCase.slim;
+  if (scope === 'full' || targets === 'all') return testCase.targets;
+  if (targets === 'none') return {};
+  return Object.fromEntries(
+    Object.entries(testCase.targets).filter(([name]) => targets.includes(name)),
+  );
 }
 
 export interface CanaryRun extends MatrixEntry {
@@ -291,7 +313,11 @@ export async function planCanary(options: {
   const { repo, corpus, reviewers, out, scratch, scope } = options;
   const runs: CanaryRun[] = [];
   const results: CaseResult[] = [];
-  const cases = (await loadCases(corpus, reviewers)).filter((testCase) => inScope(testCase, scope));
+  const cases = (await loadCases(corpus, reviewers)).filter(
+    (testCase) =>
+      testCase.expect === 'prepare-rejects' ||
+      Object.keys(scopedTargets(testCase, scope)).length > 0,
+  );
   for (const testCase of cases) {
     const worktree = join(scratch, testCase.id);
     const { base, head } = await materializeCase({ repo, corpus, testCase, worktree });
@@ -313,7 +339,7 @@ export async function planCanary(options: {
         });
         continue;
       }
-      const targets = Object.entries(testCase.targets).map(([name, categories]) => {
+      const targets = Object.entries(scopedTargets(testCase, scope)).map(([name, categories]) => {
         const reviewer = reviewers.find((known) => known.name === name);
         if (reviewer === undefined) throw new CorpusError(`case ${testCase.id} targets ${name}`);
         return { reviewer, categories };
@@ -375,4 +401,22 @@ export function judgeCanaryRun(
         ? `blocked for ${expected}`
         : `blocked, but not for ${missing.join(', ')}`,
   };
+}
+
+/** `"slim": true` runs every target in slim runs too; a list of target reviewers runs only those. */
+function slimTargets(
+  value: unknown,
+  targets: Readonly<Record<string, readonly Category[]>>,
+  id: string,
+): CanaryCase['slim'] {
+  if (value === undefined) return { targets: 'none' };
+  if (value === true) return { targets: 'all' };
+  if (
+    Array.isArray(value) &&
+    value.length > 0 &&
+    value.every((name) => typeof name === 'string' && name in targets)
+  ) {
+    return { targets: value as string[] };
+  }
+  throw new CorpusError(`case ${id} has a "slim" that is neither true nor a list of its targets`);
 }

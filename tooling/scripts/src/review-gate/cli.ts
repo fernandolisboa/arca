@@ -6,8 +6,8 @@ import { parseAcceptances } from './acceptances.ts';
 import {
   canaryScope,
   judgeCanaryRun,
+  mainRunDecision,
   planCanary,
-  refuseSlimWhileFailed,
   type CanaryRun,
   type CanaryScope,
   type CaseResult,
@@ -17,7 +17,7 @@ import { gateFingerprint, resolvedModels } from './fingerprint.ts';
 import { objectId } from './git.ts';
 import {
   awaitCanary,
-  canaryRecovering,
+  canaryFailureStands,
   canaryState,
   createCheckRun,
   githubRequest,
@@ -137,17 +137,16 @@ async function canaryPlan(args: string[]): Promise<void> {
     reviewers = await mainReviewers(repo);
     const fingerprint = gateFingerprint(repo, 'HEAD', resolvedModels(process.env));
     await setOutput('fingerprint', fingerprint);
-    if (
-      values['skip-if-passed'] === true &&
-      (await canaryState(request(), repository(), fingerprint)) === 'passed'
-    ) {
+    const decision = await mainRunDecision({
+      scope,
+      skipIfPassed: values['skip-if-passed'] === true,
+      passed: async () => (await canaryState(request(), repository(), fingerprint)) === 'passed',
+      failureStands: () => canaryFailureStands(request(), repository()),
+    });
+    if (decision === 'skip') {
       console.log('The canary already passed for this gate fingerprint.');
       await setOutput('skip', 'true');
       return;
-    }
-    // Fails rather than skips: a run that ends in success would count as the newest success.
-    if (scope === 'slim') {
-      refuseSlimWhileFailed(scope, await canaryRecovering(request(), repository()));
     }
   } else {
     const { agents, reviewMarkdown } = changeAgents(changeObjects, sha(values, 'change-head'));
