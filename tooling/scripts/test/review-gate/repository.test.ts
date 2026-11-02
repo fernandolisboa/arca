@@ -418,4 +418,22 @@ describe('review workflows', () => {
       }
     },
   );
+
+  it('fails a re-run of the canary on main in every job that runs or judges a model', async () => {
+    const workflow = parse(
+      await readFile(join(root, '.github', 'workflows', 'review-canary.yml'), 'utf8'),
+    ) as unknown;
+    const jobs = isRecord(workflow) && isRecord(workflow['jobs']) ? workflow['jobs'] : {};
+    for (const name of ['run', 'evaluate']) {
+      const job = jobs[name];
+      const steps = isRecord(job) && Array.isArray(job['steps']) ? job['steps'] : [];
+      expect(steps[0]).toMatchObject({
+        name: 'Refuse a re-run on main',
+        if: "github.event_name != 'pull_request_target'",
+      });
+      expect(String((steps[0] as Record<string, unknown>)['run'])).toContain(
+        '"$GITHUB_RUN_ATTEMPT" != 1',
+      );
+    }
+  });
 });

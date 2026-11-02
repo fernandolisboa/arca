@@ -100,6 +100,16 @@ jobs:
       max-parallel: 8
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     steps:
+      # A re-run reads the model variables again, so its models may differ from the plan's
+      # fingerprint; a passing re-run would also erase the failure that revokes older passes
+      # (ADR-0013). On main, recover by dispatching a new run.
+      - name: Refuse a re-run on main
+        if: github.event_name != 'pull_request_target'
+        run: |
+          if [[ "$GITHUB_RUN_ATTEMPT" != 1 ]]; then
+            echo "::error::Re-runs of the canary on main do not count. Dispatch a new run instead."
+            exit 1
+          fi
       - name: Check out main's instruction files
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -151,6 +161,16 @@ jobs:
       contents: read
       issues: write
     steps:
+      # A re-run reads the model variables again, so its models may differ from the plan's
+      # fingerprint; a passing re-run would also erase the failure that revokes older passes
+      # (ADR-0013). On main, recover by dispatching a new run.
+      - name: Refuse a re-run on main
+        if: github.event_name != 'pull_request_target'
+        run: |
+          if [[ "$GITHUB_RUN_ATTEMPT" != 1 ]]; then
+            echo "::error::Re-runs of the canary on main do not count. Dispatch a new run instead."
+            exit 1
+          fi
       - name: Check out main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
