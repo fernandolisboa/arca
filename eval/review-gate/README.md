@@ -20,4 +20,4 @@ A run passes only when that reviewer's own verdict blocks with a blocking findin
 
 A failed run is retried once. `pnpm check` runs a test that plans the whole corpus with no model, so a malformed case fails CI.
 
-A slim run (`--scope slim`) plans only the `known-bad-<reviewer>` cases and the `prepare-rejects` cases: one model run per reviewer. A push to `main` that changes the gate runs slim; the weekly run covers the whole corpus, and a failure there makes the next run full ([ADR-0013](../../docs/adr/0013-review-gate-canary-and-model-pins.md)).
+A slim run (`--scope slim`) plans only the `known-bad-<reviewer>` cases and the `prepare-rejects` cases: one model run per reviewer. A push to `main` that changes the gate runs slim; the weekly run covers the whole corpus, and after a failure only a full run (weekly, or dispatched by the owner) can pass ([ADR-0013](../../docs/adr/0013-review-gate-canary-and-model-pins.md)).

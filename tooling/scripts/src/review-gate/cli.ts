@@ -134,7 +134,7 @@ async function canaryPlan(args: string[]): Promise<void> {
     },
   });
   const out = option(values, 'out');
-  let scope = canaryScope(values.scope);
+  const scope = canaryScope(values.scope);
   const changeObjects = values['change-objects'];
   let reviewers;
   if (changeObjects === undefined) {
@@ -149,9 +149,11 @@ async function canaryPlan(args: string[]): Promise<void> {
       await setOutput('skip', 'true');
       return;
     }
+    // Fails rather than skips: a run that ends in success would count as the newest success.
     if (scope === 'slim' && (await canaryRecovering(request(), repository()))) {
-      console.log('A canary run on main failed after the last success, so this run is full.');
-      scope = 'full';
+      throw new Error(
+        'A canary run on main failed after the last success. Only a full run can clear it: the weekly run, or a dispatch by the owner.',
+      );
     }
   } else {
     const { agents, reviewMarkdown } = changeAgents(changeObjects, sha(values, 'change-head'));

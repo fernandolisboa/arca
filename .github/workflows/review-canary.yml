@@ -18,8 +18,8 @@ on:
         default: false
       scope:
         description: >-
-          full runs the whole corpus; slim runs one known-bad case per reviewer, and becomes full
-          when a canary run on main failed after the last success.
+          full runs the whole corpus; slim runs one known-bad case per reviewer, and fails when a
+          canary run on main failed after the last success.
         type: choice
         options: [full, slim]
         default: full
@@ -81,13 +81,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           CHANGE_HEAD: ${{ inputs.change-agents && github.event.pull_request.head.sha || '' }}
-          # A dispatch by another workflow never forces a run while a pass exists, and runs slim
-          # (ADR-0013).
+          # A dispatch by anyone but the owner, such as review-canary-push.yml, never forces a run
+          # while a pass exists, and runs slim (ADR-0013).
           SKIP_IF_PASSED: >-
             ${{ (inputs.skip-if-passed || (github.event_name == 'workflow_dispatch' &&
-            github.actor == 'github-actions[bot]')) && '--skip-if-passed' || '' }}
+            github.actor != github.repository_owner)) && '--skip-if-passed' || '' }}
           SCOPE: >-
-            ${{ (github.event_name == 'workflow_dispatch' && github.actor == 'github-actions[bot]')
+            ${{ (github.event_name == 'workflow_dispatch' && github.actor != github.repository_owner)
             && 'slim' || inputs.scope || 'full' }}
           REVIEW_MODEL_FABLE: ${{ vars.REVIEW_MODEL_FABLE }}
           REVIEW_MODEL_OPUS: ${{ vars.REVIEW_MODEL_OPUS }}

@@ -530,12 +530,12 @@ describe('review workflows', () => {
     expect(run).toContain('gh workflow run review-canary.yml');
     expect(run).toContain('--ref main');
     expect(run).toContain('-f skip-if-passed=true -f scope=slim');
-    // A bot's dispatch never forces a run while a pass exists, and never a full one.
-    const botDispatch =
-      "github.event_name == 'workflow_dispatch' && github.actor == 'github-actions[bot]'";
-    expect(String(valuesOf(canary, 'SKIP_IF_PASSED')[0])).toContain(botDispatch);
+    // Only the owner's dispatch may force a run while a pass exists, or a full one.
+    const notOwner =
+      "github.event_name == 'workflow_dispatch' && github.actor != github.repository_owner";
+    expect(String(valuesOf(canary, 'SKIP_IF_PASSED')[0])).toContain(notOwner);
     expect(valuesOf(canary, 'SCOPE')).toEqual([
-      `\${{ (${botDispatch}) && 'slim' || inputs.scope || 'full' }}`,
+      `\${{ (${notOwner}) && 'slim' || inputs.scope || 'full' }}`,
     ]);
   });
 
