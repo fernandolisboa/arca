@@ -56,7 +56,8 @@ tooling/        shared ESLint and TypeScript configs, security header policy, re
                 (dependency-source, boundary and bundle checks, CI policy scripts, migration runner,
                 the review gate in scripts/src/review-gate)
 eval/           evaluation corpora: the review gate's canary in review-gate/, the synthetic families in
-                families/, later the synthetic AI evaluation suite
+                families/, later the synthetic AI evaluation suite (its knowledge injection fixture lives in
+                packages/knowledge/test/fixtures/injection/)
 ```
 
 Rules that keep every platform possible:
@@ -92,7 +93,7 @@ Entities, not final schema:
 - `plan`, `task`, `task_dependency`: the executable plan, with the execution mode of each task.
 - `document`: type, owner, validity, apostille, translation and a pointer to the encrypted file.
 - `knowledge_decision`, `knowledge_notice`: an approver's activation or rejection of a route version, activation of an allow-list version, or veto of a pending decision (target and content hash, approver and credential IDs from the allow-list, the step-up assertion bytes and nonce, a database-set time), and each notice sent for it. Append-only: `app_api` inserts and reads, no runtime role updates or deletes ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)).
-- `step_up_challenge`: single-use challenges for those decisions, for 2 minutes, scoped to the requesting session (ADR-0014).
+- `auth.step_up_challenge`: single-use step-up challenges, including those for knowledge-base decisions, for 2 minutes, bound to the requesting session and written only by `app_auth` (ADR-0014).
 - `contact`: external contacts. Watcher proposals are pull requests, decided in `knowledge_decision` (ADR-0014).
 - `knowledge_item`: requirement, document, step, form, fee, deadline, common pitfall or interview question, each with source and verification date. Whether these and `action_point` are files like route versions is decided in consultancy core slice 5 (ADR-0014).
 
@@ -110,7 +111,7 @@ Specialized agents work on the knowledge base and the case model:
 | Research agent | Proposes route versions from official sources when the base does not cover a question |
 | Concierge | Arrival and settling in the destination |
 
-Each agent gets only the tools its task needs, set in its definition. The research agent and the watcher read untrusted web pages, so they get one proposal tool that opens a pull request with route versions and country sets and nothing else: no shell, no merge, no official-domain lists, no approver files, no workflows ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md#what-agents-may-do)).
+Each agent gets only the tools its task needs, set in its definition. The research agent and the watcher read untrusted web pages, so they get a constrained fetch tool and one proposal tool that opens a pull request with route versions and country sets, and nothing else: no shell, no case data, no merge, no official-domain lists, no approver files, no workflows ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md#what-agents-may-do)).
 
 **Golden rule:** no agent states a requirement that is not in the knowledge base with a source. When the base does not cover a question, the agent says it does not know and opens a research task, which enters the base only after human approval.
 
@@ -167,4 +168,4 @@ Every service that touches Arca's data, and what it may receive. A new processor
 | Langfuse | LLM tracing | Metadata, scores and masked text; no case content | Vendor cloud, outside Brazil |
 | Sentry | Errors and traces | Reports with personal data scrubbed | Vendor cloud, outside Brazil |
 | Resend | Transactional email, including knowledge-base decision notices (route, version, decision, approver and credential IDs; [ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)) | Recipient address and message; the notice credential is a Production-only variable | Vendor cloud, outside Brazil |
-| Web Push services, FCM, APNs | Notifications | Generic message text ("You have a new task", "A knowledge-base decision needs your review"); no personal data | Browser and platform vendors |
+| Web Push services, FCM, APNs | Notifications | Generic message text ("You have a new task", or a generic knowledge-base decision line), from the i18n catalogs; no personal data | Browser and platform vendors |

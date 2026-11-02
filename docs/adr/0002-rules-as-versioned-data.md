@@ -33,6 +33,8 @@ Example of a version (shape, not final schema):
 }
 ```
 
+This example predates ADR-0014: real versions carry a `sources` list instead of `sourceUrl`, and dependents as relationship paths with conditions ([spec 0002](../specs/0002-rules-engine-and-knowledge-base.md), R4).
+
 ## Consequences
 
 - Every recommendation is reproducible and explainable down to the rule and its source.

@@ -48,7 +48,7 @@ TypeScript end to end, in a pnpm + Turborepo monorepo.
 | Database | Postgres on Neon, São Paulo (`sa-east-1`); separate projects for production and non-production ([ADR-0008](0008-database-security-and-environments.md)), amended to one project with a `production` branch by [ADR-0012](0012-automation-first-setup.md) |
 | Data access | Drizzle ORM and migrations; forced row-level security; least-privilege roles created with SQL ([ADR-0008](0008-database-security-and-environments.md)) |
 | Vector search | pgvector in the same Postgres; embeddings only for the public knowledge base |
-| Auth | Better Auth, self-hosted: passkeys, native passkey APIs on mobile, bearer tokens for native apps ([ADR-0006](0006-auth.md)) |
+| Auth | Better Auth, self-hosted: passkeys, native passkey APIs on mobile, bearer tokens for native apps ([ADR-0006](0006-auth.md)); `@simplewebauthn/server` as a direct API dependency for knowledge-base decisions, pinned to the version the passkey plugin resolves, with a single-copy check ([ADR-0014](0014-knowledge-base-as-reviewed-data.md)) |
 | Object storage and keys | AWS S3 and AWS KMS in São Paulo (`sa-east-1`): S3 holds client-side ciphertext only; KMS wraps field-encryption keys; accessed through OIDC federation, no static keys |
 | Transactional email | Resend |
 | AI | Adapters behind ports ([ADR-0004](0004-ai-providers-behind-ports.md)): Vercel AI SDK for LLM calls and structured output (Anthropic Claude by default); TypeSafe Jev for the `Classifier` port when it wins on evaluation; embedding and speech vendors chosen by ADR when those features are built |

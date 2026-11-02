@@ -1,6 +1,6 @@
 # ADR-0008: Database roles, row-level security, field encryption, backups and environments
 
-- Status: Accepted; workflow run deletion amended by [ADR-0009](0009-background-jobs-guarantees.md); environments (one Neon project created through Vercel; previews fork from a synthetic `development` branch before any family data exists) amended by [ADR-0012](0012-automation-first-setup.md); knowledge-base decision, notice and step-up challenge tables, with role-scoped policies, added by [ADR-0014](0014-knowledge-base-as-reviewed-data.md)
+- Status: Accepted; workflow run deletion amended by [ADR-0009](0009-background-jobs-guarantees.md); environments (one Neon project created through Vercel; previews fork from a synthetic `development` branch before any family data exists) amended by [ADR-0012](0012-automation-first-setup.md); knowledge-base decision and notice tables, with role-scoped policies, added by [ADR-0014](0014-knowledge-base-as-reviewed-data.md)
 - Date: 2026-11-01
 
 ## Context
@@ -23,7 +23,7 @@
 
 | Role | Purpose | Privileges |
 | --- | --- | --- |
-| `app_api` | API requests | `NOBYPASSRLS`; DML on case tables, always under RLS; `INSERT` (without the time columns) and `SELECT` only on `knowledge_decision` and `knowledge_notice`; `INSERT`, `SELECT` and `DELETE` on `step_up_challenge` ([ADR-0014](0014-knowledge-base-as-reviewed-data.md)) |
+| `app_api` | API requests | `NOBYPASSRLS`; DML on case tables, always under RLS; `INSERT` (without the time columns) and `SELECT` only on `knowledge_decision` and `knowledge_notice` ([ADR-0014](0014-knowledge-base-as-reviewed-data.md)) |
 | `app_jobs` | Workflow steps | `NOBYPASSRLS`; only the tables its jobs need |
 | `app_auth` | Better Auth | Only the auth tables (users, sessions, passkeys), which are not under per-person RLS |
 | `app_audit` | Audit writer | `INSERT` only on the audit log; no `UPDATE` or `DELETE` for anyone but the migrator |
@@ -34,7 +34,7 @@
 - `ENABLE` and `FORCE ROW LEVEL SECURITY` on every table with case data, so even table owners are subject to policies.
 - The API opens a transaction per request and sets the authenticated identity with `SET LOCAL` (person and case); policies read it from the transaction settings. No identity, no rows.
 - Policies are declared with Drizzle and reviewed as security-critical code.
-- One exception to identity-scoped policies: tables that hold no case data, namely the knowledge-base decisions and notices of [ADR-0014](0014-knowledge-base-as-reviewed-data.md), use deliberately role-scoped policies (only `app_api` may insert and select, with no person predicate), still enabled and forced, and marked as role-scoped in their Drizzle definitions. `step_up_challenge` is scoped by the account and session of the transaction identity.
+- One exception to identity-scoped policies: tables that hold no case data, namely the knowledge-base decisions and notices of [ADR-0014](0014-knowledge-base-as-reviewed-data.md), use deliberately role-scoped policies (only `app_api` may insert and select, with no person predicate), still enabled and forced, and marked as role-scoped in their Drizzle definitions.
 - CI runs an access-matrix suite against a synthetic database: every role and person combination for every table, asserting both allowed and denied access.
 
 ### Field-level encryption

@@ -1,6 +1,6 @@
 # Glossary
 
-One English term in code and docs, one pt-BR label in the interface. Add a row before using a new domain term.
+One English term in code and docs, one pt-BR label in the interface. Add a row before using a new domain term. A term that no screen shows says "Internal, no UI label" in the label column.
 
 | Term (code and docs) | pt-BR UI label | Meaning |
 | --- | --- | --- |
@@ -14,6 +14,8 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Route | Rota | A legal pathway to live in a country (a visa, residence permit or citizenship path) |
 | Route version | Versão da rota | An immutable snapshot of a route's rules, with its sources, effective date and pinned country sets and official-domain lists |
 | Rule | Regra | The requirements, assessments, dependents, costs and durations of one route version |
+| Ancestor | Ascendente | A parent, grandparent or earlier forebear of the principal, whether or not in the case; read in descent rules |
+| Lineage | Linha de ascendência | The chain of people from an ancestor down to the principal |
 | Rule case | Internal, no UI label | One table-driven test entry for a route version, in its cases file; not a family's case |
 | Official-domain list | Internal, no UI label | A versioned list of hosts that count as official for a country or international body |
 | Evaluation | Avaliação | The result of applying a route version to a person or unit |
@@ -44,14 +46,21 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Decision | Decisão | An approver's activation, rejection or veto, stored with its passkey assertion |
 | Notice | Aviso de segurança | The email and device message sent for every decision and new allow-list version; the 48-hour delay runs from it |
 | Step-up | Confirmação com passkey | A fresh passkey verification for one sensitive action, bound to that action |
-| Approver allow-list | Lista de aprovadores | The reviewed file that names who may activate, reject or veto, with their pinned passkey keys. Internal; the UI says who approves |
+| Approver allow-list | Internal, no UI label | The reviewed, numbered files that name who may activate, reject or veto, with their pinned credentials; each file is an allow-list version |
+| Allow-list version | Internal, no UI label | One numbered file of the approver allow-list; it takes effect only when an active credential activates it |
+| Credential | Chave de acesso | A passkey or security key pinned for an approver, with its state: active, retired or revoked |
+| Content hash | Internal, no UI label | SHA-256 of the canonical JSON of a version and every file it pins; what a decision is bound to |
+| Subject hash | Internal, no UI label | The 32-byte value a step-up challenge is bound to: a content hash, or for a veto the hash of the vetoed decision |
+| Step-up challenge | Internal, no UI label | A single-use, 2-minute value the passkey signs for one step-up |
+| Verification log | Internal, no UI label | A route's append-only record of source re-verifications (`verifications.json`) |
+| Owner | Responsável | The founder, who owns the repository and is the first approver; "founder" in product docs means the same person |
 | Active version | Versão ativa | A route version with an activation; the only kind the engine evaluates for a case |
 | Decisive missing fact | Dado decisivo pendente | An unknown fact whose answer could change an evaluation's status |
 | Eligible | Elegível | Evaluation status: every requirement holds |
 | Not eligible | Não elegível | Evaluation status: a requirement does not hold |
 | Missing information | Faltam informações | Evaluation status: no requirement fails, but some are unknown |
 | Needs assessment | Depende de critério subjetivo | Evaluation status: every requirement holds and the route has judgment factors |
-| Pending activation | Regra aguardando ativação | Evaluation status: the version in effect has not been activated yet |
+| Pending activation | Versão aguardando ativação | Evaluation status: the version in effect has not been activated yet |
 | Unavailable | Indisponível | Evaluation status: no version in effect, or the route is closed |
 | Knowledge base | Base de conhecimento | Sourced, versioned rules and information about routes, documents, steps and pitfalls |
 | Knowledge item | Item da base | One sourced entry in the knowledge base |
