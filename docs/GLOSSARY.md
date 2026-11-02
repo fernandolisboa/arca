@@ -22,6 +22,12 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Delegated | Delegado | The step goes to a professional or partner, with the case summary ready |
 | Family (mode) | Em família | The step is assigned to a relative in the case who offered to help |
 | Action point | Ponto de ação | Where a step actually happens: link, phone, office, partner |
+| Fact | Fato | A typed value about a person or unit that rules read, such as an age at a date; derived from the case in code |
+| Requirement | Requisito | A condition of a route version, evaluated as true, false or unknown, with a source |
+| Assessment | Análise | A judgment factor of a route version, such as national importance; shown with its evidence, never as pass or fail |
+| Country set | Grupo de países | A versioned, sourced list of countries a rule refers to, such as treaty countries |
+| Proposed version | Versão proposta | A route version in the catalog that the owner has not activated yet |
+| Active version | Versão ativa | A route version the owner approved with a passkey; the only kind the engine evaluates for a case |
 | Knowledge base | Base de conhecimento | Sourced, versioned facts about routes, documents, steps and pitfalls |
 | Knowledge item | Item da base | One sourced fact in the knowledge base |
 | Rule watcher | Vigia de regras | Scheduled job that detects rule changes and proposes updates |

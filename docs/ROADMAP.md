@@ -43,9 +43,11 @@ Phase 0 does not depend on code: the questions in [OPEN-QUESTIONS.md](OPEN-QUEST
 - Responsive, touch-first layouts from phone to tablet to desktop, safe-area aware.
 - CI running unit tests, the synthetic evaluation suite and the multi-reviewer pass.
 
-**Epic: consultancy core**
+**Epic: consultancy core** (slices and dependencies in [specs/0002-rules-engine-and-knowledge-base.md](specs/0002-rules-engine-and-knowledge-base.md#the-epic-consultancy-core); the case model and intake wait for the foundations' identity and data-protection work above)
 
-- AI intake and case model, with playback and correction.
+- Rules engine and knowledge base, specified in [specs/0002-rules-engine-and-knowledge-base.md](specs/0002-rules-engine-and-knowledge-base.md), with the knowledge base as reviewed data activated by the owner's passkey ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)).
+- Knowledge seed for the first countries, from official sources.
+- AI intake (text first) and case model, with playback and correction.
 - Destination comparison weighted by each person.
 - Strategy recommendation with alternatives, pros, cons, risks, cost and time.
 - Personalized document checklist.

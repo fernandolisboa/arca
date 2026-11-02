@@ -13,13 +13,14 @@ flowchart LR
     WATCH --> REVIEW[Human review]
     RESEARCH[Research agent<br/>new country or route] --> REVIEW
     REVIEW --> KB[(Knowledge base<br/>route versions, action points)]
+    KB --> ACTIVATE[Owner activates<br/>with a passkey]
   end
   subgraph Case
     INTAKE[Free description<br/>text or voice] --> EXTRACT[Structured extraction]
     EXTRACT --> CONFIRM[Playback and correction]
     CONFIRM --> CASE[(Case model<br/>people, relationships,<br/>assets, ancestry, aspirations)]
   end
-  KB --> ENGINE{{Evaluation engine<br/>pure function}}
+  ACTIVATE --> ENGINE{{Evaluation engine<br/>pure function}}
   CASE --> ENGINE
   ENGINE --> RANK[Multi-criteria ranking]
   RANK --> PLAN[Plan and tasks<br/>with execution mode]
@@ -29,7 +30,7 @@ flowchart LR
   VAULT --> PLAN
 ```
 
-The rule watcher never changes a rule on its own: it proposes, a person approves, and the engine re-evaluates routes in use.
+The rule watcher never changes a rule on its own: it proposes, a person approves, and the engine re-evaluates routes in use. Route versions are JSON files in `packages/knowledge`, reviewed as pull requests and immutable once merged; a merged version stays proposed until the owner activates it in the app with a passkey ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md), [spec 0002](specs/0002-rules-engine-and-knowledge-base.md)).
 
 ## Platforms and code layout
 
@@ -49,11 +50,13 @@ packages/
   i18n/         message catalogs (pt-BR first)
   platform/     capability ports and their adapters (web, capacitor, tauri)
   db/           Drizzle schema and migrations, role SQL, the runtime role pool and request identity
+  knowledge/    the knowledge base as data: route versions and their cases, country sets, the country
+                list; validated, hashed and bundled into the API ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md))
 tooling/        shared ESLint and TypeScript configs, security header policy, repository scripts
                 (dependency-source, boundary and bundle checks, CI policy scripts, migration runner,
                 the review gate in scripts/src/review-gate)
-eval/           evaluation corpora: the review gate's canary in review-gate/, later the synthetic
-                AI evaluation suite
+eval/           evaluation corpora: the review gate's canary in review-gate/, the synthetic families in
+                families/, later the synthetic AI evaluation suite
 ```
 
 Rules that keep every platform possible:
@@ -82,7 +85,7 @@ Entities, not final schema:
 - `aspiration`: priorities, deal-breakers, budget, timeline, risk tolerance and preferred execution mode, per person.
 - `country`, `destination_choice`: catalog countries and the ones each person selected, with priority and the stay-together constraint.
 - `ancestor`: parents and grandparents with country, dates, naturalization and certificates.
-- `route`, `route_version`: routes per country; declarative requirements, costs, dependents covered, `sourceUrl`, `verifiedAt`, effective dates.
+- `route`, `route_version`: routes per country; declarative requirements, costs, dependents covered, `sourceUrl`, `verifiedAt`, effective dates. Files in `packages/knowledge`, not tables ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)); the database holds only the owner's activations.
 - `action_point`: where each step happens (official link, phone, consulate by jurisdiction, partner by region).
 - `evaluation`: person or unit × route version → status, missing requirements, estimated cost and time.
 - `asset`, `sale`, `gift`, `fx_transfer`: the source-of-funds trail.
