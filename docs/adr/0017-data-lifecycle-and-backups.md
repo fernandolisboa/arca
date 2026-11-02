@@ -47,7 +47,7 @@ Facts checked on 2026-11-02:
 
 ### Previews never fork from production
 
-- The production build writes a lineage mark, a comment on the migration runner's schema, separate from the database comment that holds spec 0001 R9's endpoint mark. A preview build fails if its database carries the production lineage mark. `development` was branched from production before the mark existed, so its children carry none; a preview forked from production fails the build before migrations run. Once production holds family data (after the real-data gate), `development` is never re-forked from production; it is rebuilt from an empty branch with migrations and the synthetic seed.
+- The production build's migration runner, as the owner of its schema, writes a lineage mark, a comment on that schema, separate from the database comment that holds spec 0001 R9's endpoint mark. A preview build fails if its database carries the production lineage mark. `development` was branched from production before the mark existed, so its children carry none; a preview forked from production fails the build before migrations run. Once production holds family data (after the real-data gate), `development` is never re-forked from production; it is rebuilt from an empty branch with migrations and the synthetic seed.
 - The order is fixed: the first marked production build (done 2026-11-02), then the owner forks `development` and makes it the default branch, then the change that writes the lineage mark merges. The migration runner re-reads both marks in its own transaction.
 - Seed data is synthetic, written in previews and CI after migrations through the runtime roles with identities set, so row-level security applies to it. Production builds never seed.
 
