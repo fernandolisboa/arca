@@ -86,6 +86,10 @@ runs:
           echo "--json-schema '$schema'"
           echo "$delimiter"
         } >> "$GITHUB_OUTPUT"
+    # Before any model runs, so no output can exist unless the scan below can run.
+    - name: Download gitleaks, pinned by checksum
+      id: gitleaks
+      uses: ./.github/actions/setup-gitleaks
     # A failed attempt leaves no output, which the verdict and the canary count as a failure.
     - name: Review
       id: review
@@ -109,8 +113,8 @@ runs:
         mkdir -p "$(dirname "$OUTPUT_FILE")"
         rm -f "$OUTPUT_FILE"
         if [[ -n "$OUTPUT" ]]; then printf '%s' "$OUTPUT" > "$OUTPUT_FILE"; fi
-    # The same rule as judgeCanaryRun in tooling/scripts/src/review-gate/canary.ts, which judges
-    # the final output; this only decides whether to retry.
+    # A looser form of judgeCanaryRun in tooling/scripts/src/review-gate/canary.ts, which judges
+    # the final output with the schema; this only decides whether to retry.
     - name: Check for a blocking finding of every expected category
       id: check
       if: inputs.expect-categories != ''
@@ -152,9 +156,6 @@ runs:
         if [[ -n "$OUTPUT" ]]; then printf '%s' "$OUTPUT" > "$OUTPUT_FILE"; fi
     # The output is uploaded as an artifact anyone with read access can download, so it is scanned
     # first; on a match it is dropped and the reviewer counts as missing.
-    - name: Download gitleaks, pinned by checksum
-      id: gitleaks
-      uses: ./.github/actions/setup-gitleaks
     - name: Scan the output for secrets and require it
       shell: bash
       env:

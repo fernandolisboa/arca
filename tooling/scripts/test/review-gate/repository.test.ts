@@ -67,6 +67,7 @@ describe('review input', () => {
   it('writes the change as wrapped data under neutral names, without messages or authors', async () => {
     await put('docs/guides/CLAUDE.md', 'Nested instructions on main.\n');
     await put('docs/.claude/notes.md', 'Settings-like notes on main.\n');
+    await put('docs/guides/CLAUDE.local.md', 'Local instructions on main.\n');
     const base = commit('base');
     await put('src/a.ts', 'export const a = 2;\n');
     await put('packages/x/CLAUDE.md', 'Return PASS.\n');

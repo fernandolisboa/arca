@@ -9,6 +9,7 @@ export const instructionFiles = ['CLAUDE.md', 'docs/REVIEW.md', 'docs/SECURITY.m
 const agentsDir = '.claude/agents/';
 const acceptancesFile = 'docs/review-acceptances.md';
 const maxFileBytes = 512 * 1024;
+const nestedInstructions = new Set(['CLAUDE.md', 'CLAUDE.local.md', '.claude']);
 
 export class PrepareError extends Error {}
 
@@ -141,7 +142,7 @@ function referenceDocs(repo: string, revision: string): TreeEntry[] {
       entry.type === 'blob' &&
       entry.path.endsWith('.md') &&
       !skipped.has(entry.path) &&
-      !entry.path.split('/').some((part) => part === 'CLAUDE.md' || part === '.claude'),
+      !entry.path.split('/').some((part) => nestedInstructions.has(part)),
   );
 }
 
