@@ -14,7 +14,7 @@ on:
   workflow_call:
     inputs:
       change-agents:
-        description: Run the reviewer definitions from the calling pull request's review input.
+        description: Run the reviewer definitions from the calling pull request's head commit.
         type: boolean
         default: false
     secrets:
@@ -53,7 +53,8 @@ jobs:
       - name: Install the scripts from main
         run: pnpm install --frozen-lockfile --filter @arca/scripts
       # Called from the gate: the change's commit is fetched as objects only, into a bare repository
-      # outside the checkout, and its reviewer definitions are parsed from there.
+      # outside the checkout, and its reviewer definitions are parsed from there. The fetch is
+      # anonymous, which works while the repository is public; if it goes private, it fails closed.
       - name: Fetch the change (data only)
         if: inputs.change-agents
         env:

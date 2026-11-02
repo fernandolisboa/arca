@@ -135,6 +135,26 @@ describe('review input', () => {
     expect(start).not.toBe(base);
   });
 
+  it('reads everything from a bare repository that holds only the fetched commits', async () => {
+    const base = commit('base');
+    await put('src/a.ts', 'export const a = 3;\n');
+    const head = commit('change');
+    const bare = join(scratch, 'change.git');
+    execFileSync('git', ['init', '--quiet', '--bare', bare]);
+    execFileSync('git', ['-C', bare, 'fetch', '--quiet', '--no-tags', repo, base, head]);
+    const prepared = await prepareReviewInput({
+      repo: bare,
+      base,
+      head,
+      referenceRevision: base,
+      out: join(scratch, 'bare-out'),
+    });
+    expect(prepared.changed).toEqual([{ status: 'M', path: 'src/a.ts' }]);
+    expect(
+      await readFile(join(scratch, 'bare-out', 'review-input', 'reference', 'README.md'), 'utf8'),
+    ).toContain('Readme.');
+  });
+
   it('refuses a symbolic link anywhere in the head tree', async () => {
     const base = commit('base');
     await symlink('/proc/self/environ', join(repo, 'docs', 'environment.md'));

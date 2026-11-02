@@ -40,7 +40,8 @@ jobs:
         run: pnpm install --frozen-lockfile --filter @arca/scripts
       # After every install step. The change is fetched as objects only, into a bare repository
       # outside the checkout, together with main's commit for the reference docs; nothing of it is
-      # checked out or run.
+      # checked out or run. The fetch is anonymous, which works while the repository is public; if
+      # it goes private, it fails closed.
       - name: Fetch the change (data only)
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
