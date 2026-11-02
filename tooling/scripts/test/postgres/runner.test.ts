@@ -316,6 +316,48 @@ describe('migrate', () => {
       'the journal table has extended statistics',
     ],
     [
+      'a foreign key event queued as deferred, then the constraint made not deferrable',
+      `CREATE TABLE app.p (id int PRIMARY KEY);
+       ALTER TABLE app.p ENABLE ROW LEVEL SECURITY;
+       ALTER TABLE app.p FORCE ROW LEVEL SECURITY;
+       CREATE POLICY open ON app.p USING (true) WITH CHECK (true);
+       CREATE TABLE app.f (id int CONSTRAINT f_fk REFERENCES app.p);
+       ALTER TABLE app.f ENABLE ROW LEVEL SECURITY;
+       ALTER TABLE app.f FORCE ROW LEVEL SECURITY;
+       CREATE POLICY open ON app.f USING (true) WITH CHECK (true);
+       INSERT INTO app.p VALUES (1), (2);
+       INSERT INTO app.f VALUES (1);
+       ALTER TABLE app.f ALTER CONSTRAINT f_fk DEFERRABLE INITIALLY DEFERRED;
+       DELETE FROM app.p WHERE id = 2;
+       ALTER TABLE app.f ALTER CONSTRAINT f_fk NOT DEFERRABLE`,
+      'trigger events would run at COMMIT',
+    ],
+    [
+      'a deferred foreign key event on a partition, then the parent constraint made not deferrable',
+      `CREATE TABLE app.p (id int PRIMARY KEY);
+       ALTER TABLE app.p ENABLE ROW LEVEL SECURITY;
+       ALTER TABLE app.p FORCE ROW LEVEL SECURITY;
+       CREATE POLICY open ON app.p USING (true) WITH CHECK (true);
+       CREATE TABLE app.f (id int CONSTRAINT f_fk REFERENCES app.p) PARTITION BY RANGE (id);
+       ALTER TABLE app.f ENABLE ROW LEVEL SECURITY;
+       ALTER TABLE app.f FORCE ROW LEVEL SECURITY;
+       CREATE POLICY open ON app.f USING (true) WITH CHECK (true);
+       CREATE TABLE app.f1 PARTITION OF app.f FOR VALUES FROM (0) TO (100);
+       ALTER TABLE app.f1 ENABLE ROW LEVEL SECURITY;
+       ALTER TABLE app.f1 FORCE ROW LEVEL SECURITY;
+       CREATE POLICY open ON app.f1 USING (true) WITH CHECK (true);
+       INSERT INTO app.p VALUES (1);
+       ALTER TABLE app.f ALTER CONSTRAINT f_fk DEFERRABLE INITIALLY DEFERRED;
+       INSERT INTO app.f VALUES (1);
+       ALTER TABLE app.f ALTER CONSTRAINT f_fk NOT DEFERRABLE`,
+      'trigger events would run at COMMIT',
+    ],
+    [
+      'a temporary domain shadowing a built-in type',
+      'CREATE DOMAIN pg_temp.text AS pg_catalog.text',
+      'created temporary object text',
+    ],
+    [
       'a table without row-level security',
       'CREATE TABLE app.cases (id uuid PRIMARY KEY)',
       'guard 1: table app.cases does not have row-level security enabled and forced',
@@ -340,7 +382,33 @@ describe('migrate', () => {
     expect(await roleState()).toEqual(before);
   });
 
-  it('never runs a deferred event whose trigger the migration dropped', async () => {
+  it('applies ordinary foreign keys, deletes and clustering, and keeps the cluster mark', async () => {
+    const files = await realMigrations();
+    const policy = await containerPolicy();
+    const sql = `CREATE TABLE app.p (id int PRIMARY KEY);
+      ALTER TABLE app.p ENABLE ROW LEVEL SECURITY;
+       ALTER TABLE app.p FORCE ROW LEVEL SECURITY;
+       CREATE POLICY open ON app.p USING (true) WITH CHECK (true);
+      CREATE TABLE app.f (id int REFERENCES app.p ON DELETE CASCADE);
+      ALTER TABLE app.f ENABLE ROW LEVEL SECURITY;
+       ALTER TABLE app.f FORCE ROW LEVEL SECURITY;
+       CREATE POLICY open ON app.f USING (true) WITH CHECK (true);
+      INSERT INTO app.p VALUES (1), (2);
+      INSERT INTO app.f VALUES (1), (2);
+      DELETE FROM app.p WHERE id = 2;
+      CLUSTER app.p USING p_pkey;`;
+    await expect(
+      migrate(migratorTarget(database), [...files, migration('20990101000000_fk', sql)], policy),
+    ).resolves.toEqual({ applied: [...files.map((file) => file.name), '20990101000000_fk'] });
+    await withClient(adminTarget(database), async (client) => {
+      const clustered = await client.query(
+        `SELECT indisclustered FROM pg_catalog.pg_index WHERE indexrelid = 'app.p_pkey'::regclass`,
+      );
+      expect(clustered.rows).toEqual([{ indisclustered: true }]);
+    });
+  });
+
+  it('rejects a deferred event whose trigger the migration dropped, without running it', async () => {
     const files = await realMigrations();
     const policy = await containerPolicy();
     const sql = `CREATE TABLE app.ticks (id int);
@@ -353,15 +421,14 @@ describe('migrate', () => {
         DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION app.late();
       INSERT INTO app.ticks VALUES (1);
       DROP TRIGGER late ON app.ticks;`;
-    await migrate(
-      migratorTarget(database),
-      [...files, migration('20990101000000_drop', sql)],
-      policy,
-    );
+    await expect(
+      migrate(migratorTarget(database), [...files, migration('20990101000000_drop', sql)], policy),
+    ).rejects.toThrow('trigger events would run at COMMIT');
     await withClient(adminTarget(database), async (client) => {
-      const leak = await client.query(`SELECT pg_catalog.to_regclass('app.leak') AS leak`);
-      expect(leak.rows).toEqual([{ leak: null }]);
-      expect(await runGuards(client, policy)).toEqual([]);
+      const leak = await client.query(
+        `SELECT pg_catalog.to_regclass('app.leak') AS leak, pg_catalog.to_regclass('app.ticks') AS ticks`,
+      );
+      expect(leak.rows).toEqual([{ leak: null, ticks: null }]);
     });
   });
 

@@ -146,6 +146,7 @@ function runtimeRolePrivileges(client: Query) {
          FROM pg_catalog.pg_namespace n
         CROSS JOIN pg_catalog.unnest($1::text[]) AS role_name
         WHERE EXISTS (SELECT FROM pg_catalog.pg_roles r WHERE r.rolname = role_name)
+          AND n.nspname !~ '^pg_(toast_)?temp_'
           AND pg_catalog.has_schema_privilege(role_name, n.oid, 'CREATE')
        UNION ALL
        SELECT pg_catalog.format('%I has CREATE on the database', role_name)
@@ -194,8 +195,8 @@ function extensions(client: Query, policy: DatabasePolicy) {
 
 /**
  * Guard 9: nothing deferrable outside the allow-list. A deferred trigger or constraint check runs at
- * COMMIT, after every other guard, so it could undo what they checked. A trigger with pending
- * events cannot be dropped or altered, so any event still queued belongs to a row found here.
+ * COMMIT, after every other guard, so it could undo what they checked. This reads the catalogs; the
+ * runner also proves the queue of pending events is empty before it commits.
  */
 function deferrableConstraints(client: Query, policy: DatabasePolicy) {
   return rows(

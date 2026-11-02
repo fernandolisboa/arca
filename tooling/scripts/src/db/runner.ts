@@ -1,4 +1,4 @@
-import type pg from 'pg';
+import pg from 'pg';
 import { clientFor, type ConnectionTarget } from './connection.ts';
 import { runGuards, type GuardViolation } from './guards.ts';
 import { pendingMigrations, type JournalRow, type MigrationFile } from './migrations.ts';
@@ -101,7 +101,13 @@ async function transactionChecks(
       WHERE c.relnamespace = pg_catalog.pg_my_temp_schema()
      UNION ALL
      SELECT p.proname FROM pg_catalog.pg_proc p
-      WHERE p.pronamespace = pg_catalog.pg_my_temp_schema()`,
+      WHERE p.pronamespace = pg_catalog.pg_my_temp_schema()
+     UNION ALL
+     SELECT t.typname FROM pg_catalog.pg_type t
+      WHERE t.typnamespace = pg_catalog.pg_my_temp_schema()
+     UNION ALL
+     SELECT o.oprname FROM pg_catalog.pg_operator o
+      WHERE o.oprnamespace = pg_catalog.pg_my_temp_schema()`,
   );
   for (const { name } of temporary.rows) problems.push(`created temporary object ${name}`);
 
@@ -252,5 +258,43 @@ async function applyInTransaction(
   problems.push(...violations.map(({ guard, problem }) => `guard ${String(guard)}: ${problem}`));
   problems.push(...(await identityChecks(client, transactionId)));
   if (problems.length > 0) throw new MigrationRejected(problems);
+  // Last, because a table with pending events aborts the transaction.
+  await rejectPendingTriggerEvents(client);
   return plan.pending.map((file) => file.name);
+}
+
+const pendingTriggerEvents = '55006';
+
+/**
+ * Proves the after-trigger queue is empty, so nothing deferred runs at COMMIT. Guard 9 reads the
+ * catalogs, but an event keeps the deferrability it had when it was queued, and ALTER CONSTRAINT
+ * on a foreign key can clear the catalog flag of an event already pending on the other table or a
+ * partition. ALTER TABLE refuses any table with pending events; this subcommand changes nothing
+ * (it re-marks the index already clustered, or none) and takes a ShareUpdateExclusiveLock.
+ * Partitioned parents are skipped: their events are queued on the leaf partitions.
+ */
+async function rejectPendingTriggerEvents(client: pg.Client): Promise<void> {
+  const tables = await client.query<{ statement: string }>(
+    `SELECT pg_catalog.format('ALTER TABLE ONLY %I.%I %s', n.nspname, c.relname,
+              coalesce('CLUSTER ON ' || pg_catalog.quote_ident(clustered.relname), 'SET WITHOUT CLUSTER'))
+              AS statement
+       FROM pg_catalog.pg_class c
+       JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+       LEFT JOIN LATERAL (
+         SELECT ic.relname FROM pg_catalog.pg_index i
+           JOIN pg_catalog.pg_class ic ON ic.oid = i.indexrelid
+          WHERE i.indrelid = c.oid AND i.indisclustered) clustered ON true
+      WHERE c.relkind = 'r' AND n.nspname <> 'information_schema' AND n.nspname !~ '^pg_'
+      ORDER BY 1`,
+  );
+  for (const { statement } of tables.rows) {
+    try {
+      await client.query(statement);
+    } catch (error) {
+      if (error instanceof pg.DatabaseError && error.code === pendingTriggerEvents) {
+        throw new MigrationRejected([`trigger events would run at COMMIT: ${error.message}`]);
+      }
+      throw error;
+    }
+  }
 }
