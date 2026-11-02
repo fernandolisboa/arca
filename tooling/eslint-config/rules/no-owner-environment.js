@@ -61,6 +61,10 @@ export const noOwnerEnvironment = {
         "Read environment variables one by one, by name (process.env['NAME']), in the typed config module.",
       processValue:
         'Use process through a named member such as process.argv; passing it on would expose process.env.',
+      processModule:
+        'Import process statically and by name; other forms of loading it bypass this check.',
+      loadEnv:
+        "loadEnv with this prefix can return every variable, owner credentials included. Keep Vite's VITE_ prefix.",
     },
   },
   create(context) {
@@ -114,7 +118,57 @@ export const noOwnerEnvironment = {
       }
     }
 
+    /** @param {import('estree').Node | null | undefined} node */
+    const isProcessModule = (node) =>
+      node?.type === 'Literal' && typeof node.value === 'string' && processModules.has(node.value);
+
+    /** @param {import('estree').Node | undefined} node */
+    const isVitePrefix = (node) =>
+      (node?.type === 'Literal' &&
+        typeof node.value === 'string' &&
+        node.value.startsWith('VITE_')) ||
+      (node?.type === 'ArrayExpression' &&
+        node.elements.length > 0 &&
+        node.elements.every((element) => element !== null && isVitePrefix(element)));
+
     return {
+      ImportExpression(node) {
+        if (isProcessModule(node.source)) context.report({ node, messageId: 'processModule' });
+      },
+      ExportNamedDeclaration(node) {
+        if (isProcessModule(node.source)) context.report({ node, messageId: 'processModule' });
+      },
+      ExportAllDeclaration(node) {
+        if (isProcessModule(node.source)) context.report({ node, messageId: 'processModule' });
+      },
+      /** @param {{ moduleReference: { type: string, expression?: import('estree').Node } }} node */
+      TSImportEqualsDeclaration(node) {
+        if (
+          node.moduleReference.type === 'TSExternalModuleReference' &&
+          isProcessModule(node.moduleReference.expression)
+        ) {
+          context.report({ node: /** @type {never} */ (node), messageId: 'processModule' });
+        }
+      },
+      CallExpression(node) {
+        const callee = node.callee;
+        if (
+          isProcessModule(node.arguments[0]) &&
+          ((callee.type === 'Identifier' && callee.name === 'require') ||
+            callee.type === 'CallExpression')
+        ) {
+          context.report({ node, messageId: 'processModule' });
+        }
+        // Vite's loadEnv(mode, dir, prefixes): '' or any prefix but VITE_ returns owner variables too.
+        if (
+          callee.type === 'Identifier' &&
+          callee.name === 'loadEnv' &&
+          node.arguments.length >= 3 &&
+          !isVitePrefix(node.arguments[2])
+        ) {
+          context.report({ node, messageId: 'loadEnv' });
+        }
+      },
       ImportDeclaration(node) {
         if (typeof node.source.value !== 'string' || !processModules.has(node.source.value)) return;
         for (const specifier of node.specifiers) {

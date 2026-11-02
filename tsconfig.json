@@ -11,7 +11,7 @@
       "path": "packages/api-contract/tsconfig.build.json"
     },
     {
-      "path": "packages/db"
+      "path": "packages/db/tsconfig.build.json"
     },
     {
       "path": "packages/domain"

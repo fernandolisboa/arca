@@ -8,6 +8,8 @@ import {
   client,
   contractSurface,
   contractSurfaceFiles,
+  databaseDriverFiles,
+  databaseDrivers,
   domain,
   restrictionRules,
   web,
@@ -31,6 +33,8 @@ const restrictionsByKind = {
   api: [workflowStart],
   /** packages/api-contract: ./routes and ./client import no Hono (restricted per file below). */
   contract: [],
+  /** packages/db: the role pool, the one place a database driver is imported (R7). */
+  db: [],
   /** tooling/scripts: the build scripts, the only code allowed to read the owner variables (R7). */
   scripts: [],
 };
@@ -55,7 +59,11 @@ const arcaPlugin = {
 export function arcaConfig({ rootDir, kinds = [] }) {
   const isClient = kinds.includes('client');
   const inBrowser = isClient || kinds.includes('browser');
-  const restrictions = kinds.flatMap((kind) => restrictionsByKind[kind]);
+  const isScripts = kinds.includes('scripts');
+  const restrictions = [
+    ...kinds.flatMap((kind) => restrictionsByKind[kind]),
+    ...(isScripts ? [] : [databaseDrivers]),
+  ];
   return tseslint.config(
     { ignores: ['dist/**', 'coverage/**'] },
     js.configs.recommended,
@@ -77,7 +85,7 @@ export function arcaConfig({ rootDir, kinds = [] }) {
       plugins: { arca: arcaPlugin },
       rules: {
         'arca/no-relative-import-outside-package': ['error', { rootDir }],
-        'arca/no-owner-environment': kinds.includes('scripts') ? 'off' : 'error',
+        'arca/no-owner-environment': isScripts ? 'off' : 'error',
         ...restrictionRules(restrictions),
       },
     },
@@ -88,6 +96,16 @@ export function arcaConfig({ rootDir, kinds = [] }) {
             'no-restricted-imports': 'off',
             'no-restricted-syntax': 'off',
             ...restrictionRules(restrictions.filter((entry) => entry !== workflowStart)),
+          },
+        }
+      : [],
+    kinds.includes('db')
+      ? {
+          files: databaseDriverFiles,
+          rules: {
+            'no-restricted-imports': 'off',
+            'no-restricted-syntax': 'off',
+            ...restrictionRules(restrictions.filter((entry) => entry !== databaseDrivers)),
           },
         }
       : [],

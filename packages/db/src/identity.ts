@@ -38,6 +38,10 @@ export async function withIdentity<T>(
     await tx.execute(
       sql`SELECT pg_catalog.set_config('app.person_id', ${personId}, true), pg_catalog.set_config('app.case_id', ${caseId}, true)`,
     );
-    return work(tx);
+    const result = await work(tx);
+    // If work swallowed a database error, the transaction is aborted and COMMIT would quietly
+    // roll back; this statement fails instead, so the caller sees the error.
+    await tx.execute(sql`SELECT 1`);
+    return result;
   });
 }

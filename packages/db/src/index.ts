@@ -3,11 +3,11 @@ export { InvalidIdentityError, withIdentity, type RequestIdentity } from './iden
 export {
   assertRole,
   createRolePool,
+  ConnectionCheckError,
   DatabaseConfigError,
   roleStatus,
-  WrongRoleError,
   type DatabaseTarget,
-  type PoolLimits,
+  type PoolOptions,
   type RoleCredentials,
   type RuntimeRole,
 } from './pool.js';

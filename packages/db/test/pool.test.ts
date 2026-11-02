@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ConnectionCheckError,
   createRolePool,
   DatabaseConfigError,
   roleStatus,
-  WrongRoleError,
   type DatabaseTarget,
   type RoleCredentials,
 } from '../src/pool.js';
@@ -20,8 +20,16 @@ describe('createRolePool', () => {
     ['no role', target, { password: credentials.password } as RoleCredentials],
     ['an owner role', target, { ...credentials, role: 'neondb_owner' as 'app_api' }],
     ['no password', target, { role: 'app_api' } as RoleCredentials],
+    ['TLS off for a remote host', { ...target, ssl: false }, credentials],
   ])('refuses %s instead of falling back to PG* variables', (_label, badTarget, badCredentials) => {
     expect(() => createRolePool(badTarget, badCredentials)).toThrow(DatabaseConfigError);
+  });
+});
+
+describe('createRolePool on a loopback host', () => {
+  it('allows TLS off', async () => {
+    const pool = createRolePool({ ...target, host: '127.0.0.1', ssl: false }, credentials);
+    await pool.end();
   });
 });
 
@@ -40,8 +48,13 @@ describe('roleStatus', () => {
     );
   });
 
+  it('is wrong_role when the pool refused a connection with a preset identity', async () => {
+    const pool = { query: () => Promise.reject(new ConnectionCheckError('identity', 'app_api')) };
+    expect(await roleStatus(pool as never, 'app_api')).toBe('wrong_role');
+  });
+
   it('is wrong_role when the pool refused the connection for its role', async () => {
-    const pool = { query: () => Promise.reject(new WrongRoleError('app_api')) };
+    const pool = { query: () => Promise.reject(new ConnectionCheckError('role', 'app_api')) };
     expect(await roleStatus(pool as never, 'app_api')).toBe('wrong_role');
   });
 

@@ -1,0 +1,29 @@
+{
+  "type": "base",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "5e6665bc-93d5-4fa4-a996-3eb311d484ec",
+  "prevIds": [
+    "00000000-0000-0000-0000-000000000000"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_schema",
+      "statementTarget": [
+        "schema",
+        "app"
+      ],
+      "writes": [
+        "s|sch|app",
+        "n|sch|app",
+        "e|sch|app"
+      ]
+    }
+  ],
+  "ddl": [
+    {
+      "name": "app",
+      "entityType": "schemas"
+    }
+  ]
+}

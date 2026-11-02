@@ -129,3 +129,28 @@ describe('package root', () => {
     expect(await ruleIds('cross/pkg', [], 'src/inside.ts')).toEqual([]);
   });
 });
+
+describe('database drivers', () => {
+  it.each([
+    ['api', ['api'], 'src/pg-pool.ts', 'no-restricted-imports'],
+    ['api', ['api'], 'src/vercel-postgres.ts', 'no-restricted-imports'],
+    ['db', ['db'], 'src/other.ts', 'no-restricted-imports'],
+    ['db', ['db'], 'src/drizzle-driver.ts', 'no-restricted-imports'],
+    ['db', ['db'], 'src/dynamic.ts', 'no-restricted-syntax'],
+  ])('%s/%s fails with %s', async (dir, kinds, file, rule) => {
+    expect(await ruleIds(dir, /** @type {import('../index.js').Kind[]} */ (kinds), file)).toContain(
+      rule,
+    );
+  });
+
+  it.each([
+    ['db', ['db'], 'src/pool.ts'],
+    ['db', ['db'], 'test/support.ts'],
+    ['db', ['scripts'], 'src/other.ts'],
+    ['api', ['api'], 'src/pg-core.ts'],
+  ])('%s/%s allows a driver', async (dir, kinds, file) => {
+    const rules = await ruleIds(dir, /** @type {import('../index.js').Kind[]} */ (kinds), file);
+    expect(rules).not.toContain('no-restricted-imports');
+    expect(rules).not.toContain('no-restricted-syntax');
+  });
+});

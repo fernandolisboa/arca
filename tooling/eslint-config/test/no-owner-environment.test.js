@@ -33,6 +33,9 @@ tester.run('no-owner-environment', noOwnerEnvironment, {
     "import { argv } from 'node:process'; argv.slice(2);",
     'function local(process) { return process.env.PGUSER; }',
     "const port = globalThis.process.env['PORT'];",
+    "import { loadEnv } from 'vite'; const env = loadEnv(mode, root);",
+    "import { loadEnv } from 'vite'; const env = loadEnv(mode, root, 'VITE_');",
+    "import { loadEnv } from 'vite'; const env = loadEnv(mode, root, ['VITE_', 'VITE_PUBLIC_']);",
   ],
   invalid: [
     invalid("const user = process.env['PGUSER'];", 'owner'),
@@ -63,6 +66,20 @@ tester.run('no-owner-environment', noOwnerEnvironment, {
     invalid('read(process);', 'processValue'),
     invalid('const p = process;', 'processValue'),
     invalid("const value = Reflect.get(process, 'env');", 'processValue'),
+    invalid("const { env } = await import('node:process');", 'processModule'),
+    invalid("export { env } from 'node:process';", 'processModule'),
+    invalid("export * from 'process';", 'processModule'),
+    invalid("import p = require('node:process');", 'processModule'),
+    invalid("const p = require('process');", 'processModule'),
+    invalid(
+      "import { createRequire } from 'node:module'; const u = createRequire(import.meta.url)('node:process').env.PGUSER;",
+      'processModule',
+    ),
+    invalid("import { loadEnv } from 'vite'; const env = loadEnv(mode, root, '');", 'loadEnv'),
+    invalid(
+      "import { loadEnv } from 'vite'; const env = loadEnv(mode, root, ['VITE_', '']);",
+      'loadEnv',
+    ),
   ],
 });
 

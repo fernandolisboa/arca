@@ -48,7 +48,7 @@ packages/
   ui/           components and design tokens
   i18n/         message catalogs (pt-BR first)
   platform/     capability ports and their adapters (web, capacitor, tauri)
-  db/           Drizzle schema and migrations, role SQL, row-level security guard tests
+  db/           Drizzle schema and migrations, role SQL, the runtime role pool and request identity
 tooling/        shared ESLint and TypeScript configs, security header policy, repository scripts
                 (dependency-source, boundary and bundle checks, CI policy scripts, migration runner)
 ```
