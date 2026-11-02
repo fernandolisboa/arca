@@ -1,4 +1,5 @@
 {
-  "extends": "@arca/tsconfig/node.json",
-  "include": ["src"]
+  "extends": "./tsconfig.build.json",
+  "compilerOptions": { "noEmit": true, "composite": false, "rootDir": "${configDir}" },
+  "include": ["src", "test"]
 }

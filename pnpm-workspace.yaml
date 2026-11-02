@@ -23,6 +23,8 @@ catalog:
   '@hono/zod-openapi': 1.6.3
   '@types/node': 26.6.5
   '@types/pg': 8.23.1
+  drizzle-kit: 1.0.0-rc.5
+  drizzle-orm: 1.0.0-rc.5
   eslint: 10.13.0
   hono: 4.13.14
   libpg-query: 18.2.1

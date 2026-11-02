@@ -14,6 +14,7 @@ import {
   workflowStart,
   workflowStartHelper,
 } from './boundaries.js';
+import { noOwnerEnvironment } from './rules/no-owner-environment.js';
 import { noRelativeImportOutsidePackage } from './rules/no-relative-import-outside-package.js';
 
 /** Package kinds (spec 0001, R2) and the restrictions each one adds. */
@@ -30,13 +31,18 @@ const restrictionsByKind = {
   api: [workflowStart],
   /** packages/api-contract: ./routes and ./client import no Hono (restricted per file below). */
   contract: [],
+  /** tooling/scripts: the build scripts, the only code allowed to read the owner variables (R7). */
+  scripts: [],
 };
 
 /** @typedef {keyof typeof restrictionsByKind} Kind */
 
 const arcaPlugin = {
   meta: { name: '@arca/eslint-config' },
-  rules: { 'no-relative-import-outside-package': noRelativeImportOutsidePackage },
+  rules: {
+    'no-owner-environment': noOwnerEnvironment,
+    'no-relative-import-outside-package': noRelativeImportOutsidePackage,
+  },
 };
 
 /**
@@ -71,6 +77,7 @@ export function arcaConfig({ rootDir, kinds = [] }) {
       plugins: { arca: arcaPlugin },
       rules: {
         'arca/no-relative-import-outside-package': ['error', { rootDir }],
+        'arca/no-owner-environment': kinds.includes('scripts') ? 'off' : 'error',
         ...restrictionRules(restrictions),
       },
     },

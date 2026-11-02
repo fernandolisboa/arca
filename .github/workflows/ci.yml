@@ -58,8 +58,8 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup-pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Migrations, canaries and guards against Postgres 18
-        run: pnpm --filter @arca/scripts test:db
+      - name: Migrations, canaries, guards and the runtime client against Postgres 18
+        run: pnpm test:db
 
   sbom:
     runs-on: ubuntu-24.04
