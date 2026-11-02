@@ -37,7 +37,7 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 - Client builds to a static bundle; no server-rendering dependency.
 - Versioned typed API; every feature goes through it.
 - Passkeys on the production domain; auth supports cookie sessions (web) and secure-storage tokens (native).
-- Purpose-bound passkey step-up for sensitive actions, starting from the knowledge-base decision ceremony of [ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md).
+- Purpose-bound passkey step-up for sensitive actions, which knowledge-base decisions use ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)).
 - `platform` port with web adapters: camera capture, file picking, notifications, secure key storage, sharing.
 - Notification service with per-device channels (web push first).
 - Vault encryption format documented and platform-neutral; key recovery designed and tested.

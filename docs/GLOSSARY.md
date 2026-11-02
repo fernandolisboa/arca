@@ -16,7 +16,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Rule | Regra | The requirements, assessments, dependents, costs and durations of one route version |
 | Ancestor | Ascendente | A parent, grandparent or earlier forebear of the principal, whether or not in the case; read in descent rules |
 | Lineage | Linha de ascendência | The chain of people from an ancestor down to the principal |
-| Rule case | Internal, no UI label | One table-driven test entry for a route version, in its cases file; not a family's case |
+| Rule case | Caso de teste da regra | One table-driven test entry for a route version, in its cases file; not a family's case |
 | Official-domain list | Internal, no UI label | A versioned list of hosts that count as official for a country or international body |
 | Evaluation | Avaliação | The result of applying a route version to a person or unit |
 | Evaluation engine | Internal, no UI label | The pure functions in `packages/domain` that select a version, compute the unit and evaluate requirements |
@@ -34,27 +34,23 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Requirement | Requisito | A condition of a route version, evaluated as true, false or unknown, with a source |
 | Assessment | Critério subjetivo | A judgment factor of a route version, such as national importance; shown with its evidence, never as pass or fail |
 | Country set | Grupo de países | A versioned, sourced list of countries a rule refers to, such as treaty countries |
-| Proposed version | Versão proposta | A route version in the catalog that the owner has neither activated nor rejected |
+| Proposed version | Versão proposta | A route version in the knowledge catalog that is neither active nor rejected |
 | Correction | Correção | A route version that fixes a data error in an earlier one, named by its `corrects` field; once in effect, the version it fixes is no longer selected |
 | Official source | Fonte oficial | A source on a host the knowledge base lists as official for a country or an international body |
 | Secondary source | Fonte secundária | A non-official source cited beside an official one, never instead of it |
 | Stale source | Fonte desatualizada | A source not re-verified in the last 90 days; evaluations that cite it say the rule needs re-checking |
-| Activation | Ativação | An approver's passkey approval of one route version or allow-list version, bound to its content hash; counts 48 hours after its notice |
-| Rejection | Recusa | An approver's passkey decision that a version, proposed or active, will never be used; counts 48 hours after its notice, then selection skips it |
-| Veto | Veto | An approver's passkey cancellation of a pending decision within its 48 hours |
-| Approver | Aprovador | A person in the approver allow-list who may activate, reject or veto knowledge-base versions with a pinned passkey |
+| Activation | Ativação | An approver's passkey approval of one route version, bound to its content hash; counts only after its notice and veto window |
+| Rejection | Recusa | An approver's passkey decision that a version, proposed or active, will never be used; once it counts, selection skips it |
+| Veto | Veto | An approver's passkey cancellation of a pending decision before it counts; final |
+| Approver | Aprovador | A person on the reviewed approver list who may activate, reject or veto knowledge-base versions with a pinned passkey |
 | Decision | Decisão | An approver's activation, rejection or veto, stored with its passkey assertion |
-| Notice | Aviso de segurança | The email and device message sent for every decision and new allow-list version; the 48-hour delay runs from it |
-| Step-up | Confirmação com passkey | A fresh passkey verification for one sensitive action, bound to that action |
-| Approver allow-list | Internal, no UI label | The reviewed, numbered files that name who may activate, reject or veto, with their pinned credentials; each file is an allow-list version |
-| Allow-list version | Internal, no UI label | One numbered file of the approver allow-list; it takes effect only when an active credential activates it |
-| Credential | Chave de acesso | A passkey or security key pinned for an approver, with its state: active, retired or revoked |
+| Notice | Aviso de segurança | The message every approver gets for every decision; the veto window runs from it |
+| Step-up | Confirmação com chave de acesso | A fresh passkey verification for one sensitive action, bound to that action |
 | Content hash | Internal, no UI label | SHA-256 of the canonical JSON of a version and every file it pins; what a decision is bound to |
-| Subject hash | Internal, no UI label | The 32-byte value a step-up challenge is bound to: a content hash, or for a veto the hash of the vetoed decision |
-| Step-up challenge | Internal, no UI label | A single-use, 2-minute value the passkey signs for one step-up |
-| Verification log | Internal, no UI label | A route's append-only record of source re-verifications (`verifications.json`) |
+| Passkey | Chave de acesso | The WebAuthn credential a person signs in and confirms sensitive actions with |
+| Knowledge catalog | Internal, no UI label | The validated, hashed route data that `packages/knowledge` builds and the API bundles; not the pnpm catalog of dependency versions |
 | Owner | Responsável | The founder, who owns the repository and is the first approver; "founder" in product docs means the same person |
-| Active version | Versão ativa | A route version with an activation; the only kind the engine evaluates for a case |
+| Active version | Versão ativa | A route version whose activation counts and that has no rejection that counts; the only kind the engine evaluates for a case |
 | Decisive missing fact | Dado decisivo pendente | An unknown fact whose answer could change an evaluation's status |
 | Eligible | Elegível | Evaluation status: every requirement holds |
 | Not eligible | Não elegível | Evaluation status: a requirement does not hold |
@@ -67,7 +63,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Research agent | Internal, no UI label | The agent that proposes route versions from official sources as pull requests |
 | Rule watcher | Vigia de regras | Scheduled job that detects rule changes and proposes updates |
 | Fixture route | Internal, no UI label | A made-up route on a user-assigned country code (`QM` to `QZ`, except `QO` and `QU`) that proves the schema in tests; never shown to users |
-| Synthetic family | Internal, no UI label | An invented case snapshot in `eval/families`, shared by rule cases and AI evaluation; never real data |
+| Synthetic family | Família fictícia | An invented case snapshot in `eval/families`, shared by rule cases and AI evaluation; never real data |
 | Source-of-funds trail | Trilha da origem dos recursos | Documented chain from an asset to the money used in a route |
 | Apostille | Apostila | Hague Convention certification of a public document |
 | Sworn translation | Tradução juramentada | Official translation required by some destinations |

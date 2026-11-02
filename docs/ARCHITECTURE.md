@@ -51,7 +51,7 @@ packages/
   platform/     capability ports and their adapters (web, capacitor, tauri)
   db/           Drizzle schema and migrations, role SQL, the runtime role pool and request identity
   knowledge/    the knowledge base as data: route versions and their cases, country sets, official-domain
-                lists, the countries file and the approver allow-list; validated, hashed and bundled into the API ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md))
+                lists and the countries files; validated, hashed and bundled into the API ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md))
 tooling/        shared ESLint and TypeScript configs, security header policy, repository scripts
                 (dependency-source, boundary and bundle checks, CI policy scripts, migration runner,
                 the review gate in scripts/src/review-gate)
@@ -86,15 +86,13 @@ Entities, not final schema:
 - `aspiration`: priorities, deal-breakers, budget, timeline, risk tolerance and preferred execution mode, per person.
 - `country`, `destination_choice`: catalog countries and the ones each person selected, with priority and the stay-together constraint.
 - `ancestor`: parents and grandparents with country, dates, naturalization and certificates.
-- `route`, `route_version`: routes per country; declarative requirements, costs, dependents covered, `sources` (URL, kind, `verifiedAt`), effective dates, pinned country sets and official-domain lists. Files in `packages/knowledge`, not tables ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)); the database holds only the approvers' decisions and their notices.
+- `route`, `route_version`: routes per country; declarative requirements, costs, dependents covered, `sources` (URL, kind, `verifiedAt`), effective dates, pinned country sets and official-domain lists. Files in `packages/knowledge`, not tables ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)); approvers' decisions on them are stored as the consultancy core's slice 3 specifies.
 - `action_point`: where each step happens (official link, phone, consulate by jurisdiction, partner by region).
 - `evaluation`: person or unit × route version → status, missing requirements, estimated cost and time.
 - `asset`, `sale`, `gift`, `fx_transfer`: the source-of-funds trail.
 - `plan`, `task`, `task_dependency`: the executable plan, with the execution mode of each task.
 - `document`: type, owner, validity, apostille, translation and a pointer to the encrypted file.
-- `knowledge_decision`, `knowledge_notice`: an approver's activation or rejection of a route version, activation of an allow-list version, or veto of a pending decision (target and content hash, approver and credential IDs from the allow-list, the step-up assertion bytes and nonce, a database-set time), and each notice sent for it. Append-only: `app_api` inserts and reads, no runtime role updates or deletes ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)).
-- `auth.step_up_challenge`: single-use step-up challenges, including those for knowledge-base decisions, for 2 minutes, bound to the requesting session and written only by `app_auth` (ADR-0014).
-- `contact`: external contacts. Watcher proposals are pull requests, decided in `knowledge_decision` (ADR-0014).
+- `contact`: external contacts. Watcher proposals are pull requests, activated or rejected by an approver (ADR-0014).
 - `knowledge_item`: requirement, document, step, form, fee, deadline, common pitfall or interview question, each with source and verification date. Whether these and `action_point` are files like route versions is decided in consultancy core slice 5 (ADR-0014).
 
 ## Agents
@@ -111,7 +109,7 @@ Specialized agents work on the knowledge base and the case model:
 | Research agent | Proposes route versions from official sources when the base does not cover a question |
 | Concierge | Arrival and settling in the destination |
 
-Each agent gets only the tools its task needs, set in its definition. The research agent and the watcher read untrusted web pages, so they get a constrained fetch tool and one proposal tool that opens a pull request with route versions and country sets, and nothing else: no shell, no case data, no merge, no official-domain lists, no approver files, no workflows ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md#what-agents-may-do)).
+Each agent gets only the tools its task needs, set in its definition. The research agent and the watcher read untrusted web pages, so they get a constrained fetch tool and one proposal tool that opens a pull request with new route versions and country sets, and nothing else: no shell, no case data, no merge, no official-domain lists, no approver list, no workflows ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md#research-agents-required-properties)).
 
 **Golden rule:** no agent states a requirement that is not in the knowledge base with a source. When the base does not cover a question, the agent says it does not know and opens a research task, which enters the base only after human approval.
 
@@ -154,10 +152,10 @@ Every service that touches Arca's data, and what it may receive. A new processor
 
 | Service | Role | Receives | Location |
 | --- | --- | --- | --- |
-| GitHub (public repository) | Source, docs and knowledge data | Code and public rules; the approver allow-list's approver and account IDs, public keys and salted address commitments (confirmable by guessing, [ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)); no case data | Public |
+| GitHub (public repository) | Source, docs and knowledge data | Code and public rules ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)); no case data | Public |
 | Neon (Postgres) | Primary database | All case data, under forced row-level security | São Paulo (`sa-east-1`) |
 | Vercel | Client hosting, API functions, Workflows | All case data in processing; the database owner connection string (used by the build, readable by running functions) and the runtime role passwords ([ADR-0012](adr/0012-automation-first-setup.md)); workflow run payloads holding identifiers only, with zero retention ([ADR-0009](adr/0009-background-jobs-guarantees.md)) | São Paulo (`gru1`) for functions, run payloads and queues; run metadata (names, statuses, timestamps, no personal data) is processed outside Brazil and kept up to one year |
-| Anthropic (CI review) | Reviewer subagents and their canary in CI ([ADR-0011](adr/0011-reviewers-in-ci.md), [ADR-0013](adr/0013-review-gate-canary-and-model-pins.md)) | Source code, diffs, file lists and file history (SHAs, dates, paths), the repository's docs and the synthetic canary cases; never case data, pull request text or contributor emails; the approver allow-list's account IDs and salted address commitments are in the docs and data they read | Vendor cloud, outside Brazil; under the owner's Claude subscription terms, with the model-improvement setting off (ADR-0013) |
+| Anthropic (CI review) | Reviewer subagents and their canary in CI ([ADR-0011](adr/0011-reviewers-in-ci.md), [ADR-0013](adr/0013-review-gate-canary-and-model-pins.md)) | Source code, diffs, file lists and file history (SHAs, dates, paths), the repository's docs and the synthetic canary cases; never case data, pull request text or contributor emails | Vendor cloud, outside Brazil; under the owner's Claude subscription terms, with the model-improvement setting off (ADR-0013) |
 | AWS S3 | Document storage and off-vendor backups | Ciphertext only | São Paulo (`sa-east-1`) |
 | AWS KMS | Field-encryption key wrapping | Data keys, never data | São Paulo (`sa-east-1`) |
 | Anthropic (Claude) | LLM calls | Minimal fields per call; no names, document numbers or account numbers | Vendor cloud, outside Brazil |
@@ -167,5 +165,5 @@ Every service that touches Arca's data, and what it may receive. A new processor
 | TypeSafe (Jev), if adopted | Classification | Minimal fields per call, same rules as LLM calls | Vendor cloud, outside Brazil |
 | Langfuse | LLM tracing | Metadata, scores and masked text; no case content | Vendor cloud, outside Brazil |
 | Sentry | Errors and traces | Reports with personal data scrubbed | Vendor cloud, outside Brazil |
-| Resend | Transactional email, including knowledge-base decision notices (route, version, decision, approver and credential IDs; [ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)) | Recipient address and message; the notice credential is a Production-only variable | Vendor cloud, outside Brazil |
-| Web Push services, FCM, APNs | Notifications | Generic message text ("You have a new task", or a generic knowledge-base decision line), from the i18n catalogs; no personal data | Browser and platform vendors |
+| Resend | Transactional email | Recipient address and message | Vendor cloud, outside Brazil |
+| Web Push services, FCM, APNs | Notifications | Generic message text ("You have a new task"); no personal data | Browser and platform vendors |

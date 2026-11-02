@@ -30,7 +30,7 @@ Revisited at the start of every epic. New features list the assets they touch an
 | Threat | Example | Main controls |
 | --- | --- | --- |
 | Account takeover | Phished or stolen session | Passkeys only; step-up for vault, financial actions and knowledge-base decisions; session binding and short lifetimes; alerts on new devices |
-| Knowledge-base poisoning | An agent tricked by a researched page, or holding the owner's token, merges a wrong rule or adds an approver key | Merged versions are only proposed; an approver activates or rejects each with a passkey checked against keys pinned in the repository; an allow-list change takes effect only when an active pinned credential activates it; every decision counts 48 hours after a notice and can be vetoed from the app; required immutability check run from `main` ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)) |
+| Knowledge-base poisoning | An agent tricked by a researched page, or holding the owner's token, merges a wrong rule or adds an approver key | Merged versions are only proposed; an approver activates or rejects each with a passkey checked against keys pinned in the repository; every decision is notified and can be vetoed before it counts; required immutability check run from `main` ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)) |
 | Broken access control | User reads another case by changing an ID | API authorization plus row-level security; an access-matrix test suite for every endpoint |
 | Intra-family exposure or coercion | A separated spouse sees the other's finances; one relative controls another's application | Per-person ownership and explicit sharing; each adult signs in separately; audit log visible to the data owner |
 | Indirect prompt injection | Text in an uploaded PDF or a researched web page tells an agent to reveal data or change a rule | Document and web content treated as data, never instructions; agents have no write tools outside their task; schema-validated outputs; knowledge-base changes need human approval; injection cases in the evaluation suite |
@@ -66,7 +66,7 @@ Revisited at the start of every epic. New features list the assets they touch an
 - Vault encryption on the client, with its own ADR before implementation: standard primitives, documented key wrapping, recovery and rotation, and the path by which plaintext reaches an authorized processing session.
 - Bank account and document numbers encrypted per field with KMS-wrapped keys ([ADR-0008](adr/0008-database-security-and-environments.md)).
 - Deleting a case destroys its keys (crypto-shredding) and its rows, and deletes related stored objects, traces and error reports; workflow runs hold identifiers only with zero retention and have their payloads purged by Vercel within 36 days, and their metadata (no personal data) within one year ([ADR-0009](adr/0009-background-jobs-guarantees.md)); in-app account deletion and data export from Phase 1.
-- Retention periods defined per data type before real data enters (Phase 1). One exception is already set: approver and credential IDs in knowledge-base decisions and notices are kept after the approver's account is deleted, as an integrity record ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)).
+- Retention periods defined per data type before real data enters (Phase 1).
 - Backups per ADR-0008: RPO 15 minutes, RTO 4 hours, an off-vendor encrypted copy, quarterly restore drills.
 
 **AI**
@@ -78,7 +78,6 @@ Revisited at the start of every epic. New features list the assets they touch an
 - Development, preview and production are separate: production is its own Neon branch; before the first case-data table, previews are switched to fork from a `development` branch that never held production data ([ADR-0012](adr/0012-automation-first-setup.md)). Developer machines are never connected to the hosted database. Production data never leaves production: preview and CI databases start from a synthetic seed. Previews sit behind deployment protection.
 - Secrets live in the platform's environment-variable store, never in the repository; scoped per environment and rotated. Cloud access uses OIDC federation (Vercel and GitHub Actions to AWS), so no long-lived cloud keys exist.
 - Every vendor and store account is owned by the organization, uses phishing-resistant MFA (passkeys or security keys), named accounts and least-privilege roles.
-- The platform account (Apple or Google) that syncs a knowledge-base approver's passkeys uses phishing-resistant MFA, which the approver attests when the key is pinned; approvers beyond the owner use a device-bound security key ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)).
 
 **Software delivery**
 - Branch protection, required checks and the reviewer gates in [REVIEW.md](REVIEW.md): a must-pass security reviewer on every change, plus must-pass specialists (auth and cryptography, data access, supply chain, AI safety) on changes in their areas, so sensitive changes get at least two independent security reads.
@@ -87,7 +86,7 @@ Revisited at the start of every epic. New features list the assets they touch an
 - External penetration test before Phase 3 (other families) and before each store launch; findings tracked to closure.
 
 **Operations**
-- Security events (sign-ins, step-ups, vault access, permission and bank-detail changes, knowledge-base decisions and their notices) go to the audit log and alerting. The audit log is append-only, enforced by database grants.
+- Security events (sign-ins, step-ups, vault access, permission and bank-detail changes, knowledge-base decisions) go to the audit log and alerting. The audit log is append-only, enforced by database grants.
 - Incident response runbook before real data enters (Phase 1): severity levels, containment steps, owner contacts, and notification steps. Under Brazil's Resolução CD/ANPD 15/2024, a controller notifies the ANPD and affected data subjects within 3 business days of learning that an incident affected personal data ([Cescon Barrieu](https://cesconbarrieu.com.br/anpd-aprova-o-regulamento-de-comunicacao-de-incidente-de-seguranca/)).
 - A component-level threat model (STRIDE plus the LLM and agentic risks above) is written for each epic before its code.
 - Responsible disclosure: [SECURITY.md](../SECURITY.md) in the repository and `security.txt` on the production domain.
