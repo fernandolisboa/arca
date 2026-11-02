@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { isRecord } from '../../src/report.ts';
 import { commentMarker } from '../../src/review-gate/comment.ts';
 import {
   awaitCanary,
@@ -29,9 +30,12 @@ function fake(state: Fake) {
     if (path.includes('status=in_progress'))
       return Promise.resolve({ workflow_runs: state.inProgress ?? [] });
     if (path.includes('status=queued')) return Promise.resolve({ workflow_runs: [] });
-    if (path.includes('status=completed'))
+    const finished = /[?&]branch=main&status=(failure|timed_out|startup_failure)&/.exec(path);
+    if (finished)
       return Promise.resolve({
-        workflow_runs: state.completed ?? [{ event: 'push', conclusion: 'success' }],
+        workflow_runs: (state.completed ?? []).filter(
+          (run) => isRecord(run) && run['conclusion'] === finished[1],
+        ),
       });
     if (method === 'GET' && path.includes('/comments'))
       return Promise.resolve(state.comments ?? []);
@@ -45,6 +49,7 @@ const goodRun = {
   head_branch: 'main',
   event: 'push',
   conclusion: 'success',
+  run_number: 10,
   repository: { full_name: repository },
 };
 const artifact = { expired: false, workflow_run: { id: 1, head_branch: 'main' } };
@@ -67,27 +72,42 @@ describe('canary lookup', () => {
     expect(await canaryState(request, repository, fingerprint)).toBe('missing');
   });
 
-  it('revokes a pass when a later canary run on main failed', async () => {
+  it('does not count a pass older than the newest failed canary run on main', async () => {
     const { request } = fake({
       artifacts: [artifact],
       runs: { 1: goodRun },
       completed: [
-        { event: 'workflow_dispatch', conclusion: 'cancelled' },
-        { event: 'schedule', conclusion: 'failure' },
-        { event: 'push', conclusion: 'success' },
+        { event: 'workflow_dispatch', conclusion: 'cancelled', run_number: 13 },
+        { event: 'schedule', conclusion: 'timed_out', run_number: 12 },
+        { event: 'push', conclusion: 'success', run_number: 10 },
       ],
     });
     expect(await canaryState(request, repository, fingerprint)).toBe('missing');
   });
 
-  it('ignores cancelled and pull request runs when finding the newest canary run', async () => {
+  it('keeps an old pass revoked after a newer pass under another fingerprint', async () => {
     const { request } = fake({
       artifacts: [artifact],
       runs: { 1: goodRun },
       completed: [
-        { event: 'pull_request_target', conclusion: 'failure' },
-        { event: 'schedule', conclusion: 'cancelled' },
-        { event: 'push', conclusion: 'success' },
+        { event: 'workflow_dispatch', conclusion: 'success', run_number: 14 },
+        { event: 'schedule', conclusion: 'failure', run_number: 12 },
+        { event: 'push', conclusion: 'success', run_number: 10 },
+      ],
+    });
+    expect(await canaryState(request, repository, fingerprint)).toBe('missing');
+  });
+
+  it('counts a pass newer than every failure, ignoring cancelled, skipped and pull request runs', async () => {
+    const { request } = fake({
+      artifacts: [artifact],
+      runs: { 1: goodRun },
+      completed: [
+        { event: 'pull_request_target', conclusion: 'failure', run_number: 13 },
+        { event: 'schedule', conclusion: 'cancelled', run_number: 12 },
+        { event: 'push', conclusion: 'skipped', run_number: 11 },
+        { event: 'push', conclusion: 'success', run_number: 10 },
+        { event: 'schedule', conclusion: 'failure', run_number: 9 },
       ],
     });
     expect(await canaryState(request, repository, fingerprint)).toBe('passed');

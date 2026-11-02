@@ -5,7 +5,7 @@ import { oneLine, whenMissing } from '../report.ts';
 import { parseAcceptances } from './acceptances.ts';
 import { judgeCanaryRun, planCanary, type CanaryRun, type CaseResult } from './canary.ts';
 import { inert, renderComment } from './comment.ts';
-import { gateFingerprint, reviewModels } from './fingerprint.ts';
+import { gateFingerprint, resolvedModels } from './fingerprint.ts';
 import { objectId } from './git.ts';
 import {
   awaitCanary,
@@ -124,7 +124,7 @@ async function canaryPlan(args: string[]): Promise<void> {
   let reviewers;
   if (changeObjects === undefined) {
     reviewers = await mainReviewers(repo);
-    const fingerprint = gateFingerprint(repo, 'HEAD', reviewModels(process.env));
+    const fingerprint = gateFingerprint(repo, 'HEAD', resolvedModels(process.env));
     await setOutput('fingerprint', fingerprint);
     if (
       values['skip-if-passed'] === true &&
@@ -234,7 +234,7 @@ async function report(args: string[]): Promise<void> {
           };
   } else {
     const github = request();
-    const fingerprint = gateFingerprint(repo, 'HEAD', reviewModels(process.env));
+    const fingerprint = gateFingerprint(repo, 'HEAD', resolvedModels(process.env));
     canary = await awaitCanary(github, repository(), fingerprint);
     if (canary.state !== 'passed') await reportCanaryProblem(github, repository(), canary.detail);
   }

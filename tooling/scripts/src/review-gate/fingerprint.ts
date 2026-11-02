@@ -30,7 +30,7 @@ const modelId = /^[a-z0-9][a-z0-9.-]{0,99}$/;
  * The model each alias runs on: the ID pinned in its repository variable, or the alias itself
  * when the variable is unset, so the reviewers follow the newest model. A malformed pin fails.
  */
-export function reviewModels(environment: NodeJS.ProcessEnv): Record<string, string> {
+export function resolvedModels(environment: NodeJS.ProcessEnv): Record<string, string> {
   return Object.fromEntries(
     Object.entries(modelVariables).map(([alias, variable]) => {
       const pinned = environment[variable];
@@ -51,9 +51,9 @@ export function gateFingerprint(
     .filter((entry) => !ignoredPaths.has(entry.path))
     .map((entry) => `${entry.mode} ${entry.type} ${entry.object}\t${entry.path}`)
     .join('\n');
-  const pinned = Object.keys(models)
+  const resolved = Object.keys(models)
     .sort()
     .map((alias) => `${alias}=${models[alias] ?? ''}`)
     .join('\n');
-  return createHash('sha256').update(`${tree}\n--\n${pinned}\n`).digest('hex');
+  return createHash('sha256').update(`${tree}\n--\n${resolved}\n`).digest('hex');
 }

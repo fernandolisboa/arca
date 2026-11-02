@@ -1,9 +1,8 @@
 # ADR-0013: Review gate canary keyed by the gate's fingerprint, and reviewers on model aliases
 
-- Status: Accepted
+- Status: Accepted; revised on 2026-11-02 so reviewers run on model aliases, with repository variables as optional pins
 - Date: 2026-11-02
 - Amends: [ADR-0011](0011-reviewers-in-ci.md) (canary trigger, which model each reviewer runs on, Dependabot key)
-- Revised 2026-11-02: reviewers run on model aliases by default; repository variables are optional pins
 
 ## Context
 
@@ -27,7 +26,7 @@ A called workflow sees only the secrets its caller passes, including environment
   - `.claude/`, `CLAUDE.md`, `README.md` and `docs/` (except `docs/review-acceptances.md`);
   - the gate's workflows and `.github/actions/`;
   - the gate's scripts and the corpus in `eval/review-gate/`.
-- **A later failure revokes a pass.** A pass counts only while the newest finished canary run on `main` (events above, cancelled runs aside) succeeded. An alias can move to a new model without changing the fingerprint, so a failed weekly run must stop the gate until a run passes again.
+- **A later failure revokes a pass.** A pass counts only if its run is newer than every failed canary run on `main` (a `push`, `schedule` or `workflow_dispatch` run that failed or timed out; cancelled and skipped runs prove nothing). An alias can move to a new model without changing the fingerprint, so a failed weekly run stops the gate until a newer run passes for the current fingerprint; an older pass for the same fingerprint, for example from before a pin was set and removed again, does not come back. While the run that will fail is still running, the earlier pass still counts.
 - **Where a pass is recorded.** It is recorded as an artifact named `canary-pass-<fingerprint>`, uploaded by a successful run of `review-canary.yml` on `main` on a `push`, `schedule` or `workflow_dispatch` event.
 - **What the gate checks.** It looks the artifact up by name and verifies the run's workflow path, branch, event, conclusion and repository. An artifact from any other workflow, branch or event does not count.
 - **When the canary runs.** On every push to `main` it first computes the fingerprint and skips when a pass for it exists. It always runs in full weekly and on dispatch.
@@ -38,7 +37,7 @@ A called workflow sees only the secrets its caller passes, including environment
 
 ### Reviewers run on model aliases; repository variables are optional pins
 
-- **The default.** Each reviewer runs on the alias its agent definition names (`fable`, `opus`, `haiku`), passed with `--model`. An alias follows the newest model of its family, so a new model needs no change from anyone, and no model identifier enters the repository or its settings.
+- **The default.** Each reviewer runs on the alias its agent definition names (`fable`, `opus`, `haiku`), passed with `--model`. On the Anthropic API an alias resolves to the newest model of its family and updates over time ([Claude Code model configuration](https://code.claude.com/docs/en/model-config), checked 2026-11-02), so a new model needs no change from anyone, and no model identifier enters the repository or its settings.
 - **Optional pins.** A repository variable (`REVIEW_MODEL_FABLE`, `REVIEW_MODEL_OPUS`, `REVIEW_MODEL_HAIKU`) pins its alias to a model ID when one is set, for example to hold a model back while a regression is investigated. An empty or unset variable means the alias. A malformed value fails the job, and an alias the gate does not know fails before any model runs.
 - **What the fingerprint holds.** The resolved value for each alias: the pin when set, otherwise the alias itself. Changing or removing a pin changes the fingerprint, so it has no canary pass until the canary runs with it; dispatch the canary on `main` after changing one. An alias that moves to a new model leaves the fingerprint unchanged: the weekly full run re-tests it, and a failure there revokes the pass (above).
 
@@ -77,11 +76,13 @@ A called workflow sees only the secrets its caller passes, including environment
 
 - **Cost.** A change to docs, reviewers or the gate costs one canary run, about 80 model runs. Other merges cost nothing extra, and the weekly run catches drift, including a new model behind an alias.
 - **Doc changes count.** Any change under `docs/` changes the fingerprint, since reference docs reach the reviewers. Docs-heavy weeks cost more canary runs.
-- **Setup by the owner, once.** [ADR-0012](0012-automation-first-setup.md) has agents apply repository settings, but the GitHub access agents have here cannot write environments, secrets or variables. The owner sets the `review` environment with its key and the Dependabot secret, then dispatches the canary; the model variables are optional; the step is in [OPEN-QUESTIONS.md](../OPEN-QUESTIONS.md). Until then, the gate and the canary fail closed.
+- **Setup by the owner, once.** [ADR-0012](0012-automation-first-setup.md) has agents apply repository settings, but the GitHub access agents have here cannot write environments, secrets or variables. The owner sets the `review` environment with its key and the Dependabot secret, then dispatches the canary. The model variables are optional. The step is in [OPEN-QUESTIONS.md](../OPEN-QUESTIONS.md). Until then, the gate and the canary fail closed.
+- **A new model reviews before it is tested.** ADR-0011 had every model change reviewed, and the first version of this ADR re-tested a new pin before it counted. An alias that moves to a new model gates pull requests at once; the canary tests it at the next weekly or dispatched run, so the gap can be up to a week. A failure then stops the gate. To hold a model back, set its variable to the previous model ID and dispatch the canary.
 - **Corpus depth.** Each reviewer has one known-bad payload, so a reviewer narrowed to exactly that payload would still pass its own case. The pull request that weakens it is also reviewed by `main`'s unchanged reviewers, and the injected cases test the same reviewers again. More payloads per reviewer are tracked as a follow-up.
 
 ## Sources
 
+- [Claude Code model configuration](https://code.claude.com/docs/en/model-config): aliases resolve to the newest model on the Anthropic API and update over time; `--model` takes an alias or a full model name (checked 2026-11-02)
 - [Claude Code CLI reference](https://code.claude.com/docs/en/cli-reference): `--tools`, `--disallowedTools` with `mcp__*`, `--effort` levels, `--json-schema`, `--disable-slash-commands`, `--setting-sources` (checked 2026-11-02)
 - [Claude Code settings](https://code.claude.com/docs/en/settings) and [settings reference](https://code.claude.com/docs/en/settings-reference): `permissions.blockReadsOutsideWorkingDirectories`, `disableAllHooks`, `autoMemoryEnabled`, `disableBundledSkills` (checked 2026-11-02)
 - [anthropics/claude-code-action v1.0.262](https://github.com/anthropics/claude-code-action/tree/925afb53776cf1a2b738c6bdbed37b4d4000ef13): agent mode adds no MCP server unless GitHub tools are allowed, `ACTIONS_STEP_DEBUG` forces full output, `allowed_bots`, structured output (read 2026-11-02)

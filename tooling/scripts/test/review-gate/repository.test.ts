@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 import { isRecord } from '../../src/report.ts';
 import { judgeCanaryRun, loadCases, planCanary } from '../../src/review-gate/canary.ts';
-import { gateFingerprint, reviewModels } from '../../src/review-gate/fingerprint.ts';
+import { gateFingerprint, resolvedModels } from '../../src/review-gate/fingerprint.ts';
 import {
   changeAgents,
   instructionFiles,
@@ -215,13 +215,13 @@ describe('gate fingerprint', () => {
   });
 
   it('runs each alias as is unless its variable pins a model', () => {
-    expect(reviewModels({})).toEqual({ fable: 'fable', opus: 'opus', haiku: 'haiku' });
-    expect(reviewModels({ REVIEW_MODEL_OPUS: 'model-b', REVIEW_MODEL_HAIKU: '' })).toEqual({
+    expect(resolvedModels({})).toEqual({ fable: 'fable', opus: 'opus', haiku: 'haiku' });
+    expect(resolvedModels({ REVIEW_MODEL_OPUS: 'model-b', REVIEW_MODEL_HAIKU: '' })).toEqual({
       fable: 'fable',
       opus: 'model-b',
       haiku: 'haiku',
     });
-    expect(() => reviewModels({ REVIEW_MODEL_FABLE: 'a b' })).toThrow('REVIEW_MODEL_FABLE');
+    expect(() => resolvedModels({ REVIEW_MODEL_FABLE: 'a b' })).toThrow('REVIEW_MODEL_FABLE');
   });
 });
 
@@ -405,6 +405,12 @@ describe('review workflows', () => {
             '/.github/policy/gitleaks.toml',
           ].sort(),
         );
+      }
+      const models = valuesOf(workflow, 'model');
+      expect(models.length).toBeGreaterThan(0);
+      // Unset or empty means the alias, as in resolvedModels.
+      for (const model of models) {
+        expect(model).toBe('${{ vars[matrix.modelVariable] || matrix.model }}');
       }
       for (const env of valuesOf(workflow, 'env').filter(isRecord)) {
         const pinned = Object.keys(env).filter((name) => name.startsWith('REVIEW_MODEL_'));
