@@ -32,5 +32,9 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Account | Conta | A person's sign-in identity: an email address, passkeys and sessions. A case person may have no account |
 | Invite | Convite | A single-use link, sent by email, that lets someone create an account |
 | Recovery kit | Kit de recuperação | The printable page with the account recovery code and the vault recovery secret, shown once |
-| Step-up | Confirmação com passkey | A fresh passkey verification bound to one sensitive action |
+| Step-up | Confirmação com chave de acesso | A fresh passkey verification bound to one sensitive action |
 | Security notice | Aviso de segurança | A message sent to every channel when something security-relevant happens to an account |
+| Passkey | Chave de acesso | A WebAuthn credential that signs a person in; the only way to sign in |
+| Recovery code | Código de recuperação | The secret in the recovery kit that, with the email link, restores account access |
+| Vault recovery secret | Segredo de recuperação do cofre | The secret in the recovery kit that opens the vault when no passkey can |
+| Device | Dispositivo | A browser or app where the person is signed in, shown in the device list with its sessions and passkeys |

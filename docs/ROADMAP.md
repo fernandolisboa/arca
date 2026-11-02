@@ -66,6 +66,7 @@ Multi-family accounts, guided onboarding, billing, expanded catalog, self-help p
 
 - Capacitor Android project wrapping the web client.
 - Android adapters for the `platform` port: ML Kit document scanner, Android Keystore with biometric unlock, FCM push, share-sheet target, App Links on the production domain, passkeys through Credential Manager with Digital Asset Links.
+- Bearer sessions for the native app (Better Auth bearer plugin), with the token in the Keystore and the Capacitor origin on the CORS allow-list ([ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)).
 - Native polish: splash screen, offline screens, back-button behavior, in-app browser for external links.
 - Release pipeline: signed builds in CI, crash reporting with personal data scrubbed.
 - Play listing in pt-BR, Data safety form, content rating.

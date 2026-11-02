@@ -1,6 +1,6 @@
 # ADR-0005: Platform strategy — web first, then Android, Apple and desktop
 
-- Status: Accepted
+- Status: Accepted; native bearer sessions moved to Phase 4 by [ADR-0015](0015-identity-enrollment-step-up-and-recovery.md)
 - Date: 2026-11-01
 
 ## Context

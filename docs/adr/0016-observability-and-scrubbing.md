@@ -10,7 +10,7 @@
 ADR-0010 chose Sentry for errors and OpenTelemetry traces, structured JSON logs, and Langfuse for LLM tracing, all with personal data scrubbing, "on from the first deploy" (ROADMAP). Spec 0001 shipped the allow-list logger and left the vendors for this slice. Open points:
 
 - The CSP is `connect-src 'self'` and the app loads no third-party scripts. A browser SDK that posts to `sentry.io` would need the CSP widened, and ad blockers drop those requests.
-- Sentry has no Brazilian region. Its organizations live in the United States or in Germany, chosen at creation and not movable afterwards.
+- Sentry has no Brazilian region. Its organizations store data in the United States or in Germany ([Sentry changelog](https://sentry.io/changelog/data-storage-location-in-germany-is-generally-available/), checked 2026-11-02); the region is chosen when the organization is created, so it has to be right the first time.
 - Langfuse exists to trace model calls. No model call exists until the consultancy core's intake.
 - Scrubbing written separately for logs, Sentry and Langfuse would drift.
 
@@ -45,7 +45,8 @@ Facts checked on 2026-11-02:
 
 ### Langfuse
 
-- Langfuse arrives with the first model call (consultancy core, intake), not before. Requirements fixed now: Langfuse Cloud in its EU region; the masking function from `packages/telemetry`, which exports metadata, scores, token counts and redacted text only, never case content; prompts referenced by version, not copied; the data-flow register updated in the same change.
+- Langfuse arrives with the first model call (consultancy core, intake), not before. Requirements fixed now: Langfuse Cloud in its EU region; the masking function from `packages/telemetry`, which exports no prompt or completion text at all: prompt version and hash, input and output lengths, token counts, model, latency, scores and error codes, plus only allow-listed, shape-checked fields; traces carry opaque per-request IDs, never account, case or document IDs, so nothing in Langfuse is linked to a person and deletion needs no step there; the data-flow register updated in the same change.
+- The Sentry Node SDK's AI integrations are off (or set to record no inputs and outputs), and span attributes are allow-listed in `beforeSendTransaction`, so the first model call cannot leak prompts through traces before Langfuse exists. The scrubber suite gets a model-call span case.
 
 ## Alternatives
 

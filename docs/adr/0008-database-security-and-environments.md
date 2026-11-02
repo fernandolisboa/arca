@@ -1,6 +1,6 @@
 # ADR-0008: Database roles, row-level security, field encryption, backups and environments
 
-- Status: Accepted; workflow run deletion amended by [ADR-0009](0009-background-jobs-guarantees.md); environments (one Neon project created through Vercel; previews fork from a synthetic `development` branch before any family data exists) amended by [ADR-0012](0012-automation-first-setup.md); backups and deletion amended by [ADR-0017](0017-data-lifecycle-and-backups.md) (backup role with explicit read policies, backup account and drills, account deletion)
+- Status: Accepted; workflow run deletion amended by [ADR-0009](0009-background-jobs-guarantees.md); environments (one Neon project created through Vercel; previews fork from a synthetic `development` branch before any family data exists) amended by [ADR-0012](0012-automation-first-setup.md); backups and deletion amended by [ADR-0017](0017-data-lifecycle-and-backups.md) (backup role with explicit read policies, backup account and drills, account deletion); document encryption and crypto-shredding specified by [ADR-0018](0018-vault-encryption.md)
 - Date: 2026-11-01
 
 ## Context
@@ -39,14 +39,14 @@
 ### Field-level encryption
 
 - Bank account numbers and identity document numbers are encrypted per field with envelope encryption: data keys generated and wrapped by AWS KMS in São Paulo (`sa-east-1`), decrypted only in the API when a feature needs them.
-- Documents themselves are encrypted on the client (vault ADR, pending) and stored as ciphertext in S3 in `sa-east-1`.
+- Documents themselves are encrypted on the client ([ADR-0018](0018-vault-encryption.md)) and stored as ciphertext in S3 in `sa-east-1`.
 
 ### Backups and deletion
 
 - Initial targets: RPO 15 minutes, RTO 4 hours.
 - Neon point-in-time restore, plus a daily encrypted logical backup to S3 in a separate AWS account.
 - Restore drills every quarter, with results recorded.
-- Deleting a case removes its rows, destroys its keys (crypto-shredding the vault), and deletes related data in workflow runs, object storage, LLM traces and error reports. Point-in-time history keeps deleted rows until the restore window expires; the window is documented and kept as short as the RPO allows.
+- Deleting a case removes its rows, destroys its vault envelopes (crypto-shredding, ADR-0018), and deletes related data in workflow runs, object storage, LLM traces and error reports. Point-in-time history keeps deleted rows until the restore window expires; the window is documented and kept as short as the RPO allows.
 
 ## Consequences
 

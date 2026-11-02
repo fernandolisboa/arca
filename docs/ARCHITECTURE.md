@@ -1,6 +1,6 @@
 # Architecture
 
-As of 2026-11-01. Stack: [ADR-0010](adr/0010-stack-revised.md).
+As of 2026-11-02. Stack: [ADR-0010](adr/0010-stack-revised.md).
 
 ## Overview
 
@@ -65,19 +65,20 @@ Rules that keep every platform possible:
 
 - **No business logic in the client.** The client renders, collects input and calls the API. Domain logic lives in `packages/domain` and runs on the server.
 - **No server-rendering dependency.** The client must work as static files inside a native wrapper.
-- **Native features only through `packages/platform`.** Ports for camera and document scanning, secure key storage, biometric unlock, notifications, file picking, sharing and deep links. Each runtime has an adapter; UI code checks capabilities, never the operating system.
+- **Native features only through `packages/platform`.** Ports for passkeys (and sealing or opening vault envelopes with them), camera and document scanning, secure key storage, notifications, file picking, sharing and deep links. Each runtime has an adapter; UI code checks capabilities, never the operating system.
 - **One identity across platforms.** Passkeys use the production domain as relying-party ID from day one. Native apps call the platform passkey APIs through the `platform` port (not WebAuthn in the WebView) and are linked to the domain through `/.well-known/assetlinks.json` (Android) and `/.well-known/apple-app-site-association` with the `webcredentials` entitlement (iOS) ([web.dev](https://web.dev/articles/webauthn-rp-id), [ADR-0006](adr/0006-auth.md)).
 - **Same URLs everywhere.** Deep links (App Links, Universal Links) map to the web app's paths.
-- **Portable encryption.** The vault format is standard and documented; native keystores later wrap the same case keys.
+- **Portable encryption.** The vault format is standard and documented; native keystores later wrap the same per-person vault identities ([ADR-0018](adr/0018-vault-encryption.md)).
 
 | Capability port | Web adapter | Android adapter | iOS adapter | Desktop adapter |
 | --- | --- | --- | --- | --- |
 | Document capture | Camera capture and file input | ML Kit document scanner | VisionKit document scanner | File picker |
 | Key storage | WebCrypto non-extractable keys | Android Keystore | Keychain and Secure Enclave | OS keychain |
-| Biometric unlock | Passkey user verification | BiometricPrompt | Face ID or Touch ID | OS prompt where available |
 | Notifications | Web Push | FCM | APNs | OS notifications |
 | Receive shared files | Web Share Target (where supported) | Share-sheet intent | Share extension | Drag and drop |
 | Deep links | URLs | App Links | Universal Links | Custom protocol |
+| Passkeys | WebAuthn | Credential Manager | Authentication Services | OS passkey APIs where available |
+| Vault envelopes (passkey PRF, user-verified, biometric where the platform offers it) | WebAuthn PRF through `age-encryption` | Credential Manager PRF with BiometricPrompt | Authentication Services PRF with Face ID or Touch ID | OS support where available, else the recovery kit |
 
 ## Data model
 

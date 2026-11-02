@@ -21,9 +21,10 @@ Everything SECURITY.md and ROADMAP.md require before the first real family data 
 
 ### R1. Previews fork from `development`, and the build proves it
 
-- **Owner, once, before the R1 change merges:** in the Neon console (Vercel › Storage › `arca` › Open in Neon), create branch `development` from `production`, then set it as the default branch. The production branch setting stays `production`. The ticket gives the exact clicks and links in one message.
-- The production build writes a lineage mark (`"lineage": "production"`) into the database comment, alongside the endpoint mark of spec 0001 R9, in the bootstrap transaction. A preview build that finds the production lineage mark fails before migrations, with an error code that names the cause.
-- Tests in `tooling/scripts` cover: a preview database with the mark fails; without it passes; production writes it idempotently.
+- **Owner, once, between two bounds:** after the first marked production build (done 2026-11-02, so `development` inherits the endpoint mark of spec 0001 R9) and before the R1 change merges (so it does not inherit the lineage mark), in the Neon console (Vercel › Storage › `arca` › Open in Neon), create branch `development` from `production`, then set it as the default branch. The production branch setting stays `production`. The ticket gives the exact clicks and links in one message.
+- Recovery if `development` must ever be re-forked from production after R1: the owner removes the lineage mark on the new branch in one reviewed step, recorded in the PR, as spec 0001 R9 does for the endpoint mark.
+- The production build writes a lineage mark, the comment `arca lineage: production` on the runner's `arca_migrations` schema, in the bootstrap transaction. It is separate from the database comment that carries spec 0001 R9's endpoint mark, so the existing endpoint parser is untouched; Neon branches inherit both. A preview build that finds the production lineage mark fails before migrations, with an error code that names the cause. The migration runner re-reads both marks inside its own transaction, so the check does not depend on the order of build steps.
+- Tests in `tooling/scripts` cover: a preview database with the lineage mark fails; one with the endpoint mark and without the lineage mark passes; one with no mark at all keeps failing (spec 0001 R9); production writes the lineage mark idempotently.
 - After merge, the first preview of any later pull request is the end-to-end proof; the ticket records it.
 
 ### R2. Synthetic seed
@@ -42,7 +43,8 @@ Everything SECURITY.md and ROADMAP.md require before the first real family data 
 ### R4. Sentry on the server
 
 - `@sentry/node` with the Hono integration (11.x), initialized before the app, with `sendDefaultPii: false`, local variables off, profiling off, `beforeSend`, `beforeSendTransaction` and `beforeBreadcrumb` from `packages/telemetry`. Traces sampled at 10% in production and 100% in previews; spans named by route pattern; workflow steps traced under their generic names.
-- The DSN and the environment names live in a repository configuration file. The source-map upload token is a Sensitive Vercel variable (`SENTRY_AUTH_TOKEN`, Production and Preview) read only by the build; source maps are uploaded and deleted from the output.
+- The DSN and the environment names live in a repository configuration file. The source-map upload token is a Sensitive Vercel variable (`SENTRY_AUTH_TOKEN`, **Production only**, scoped to releases on the one project, scopes recorded in the ticket) read only by the build; previews skip the upload. Source maps are uploaded with `@sentry/vite-plugin` (bundler telemetry off) and deleted from the output.
+- Packages: `@sentry/node`, `@sentry/hono`, `@sentry/react`, `@sentry/vite-plugin`, each in the Versions table with a supply-chain PASS. `@sentry/node` pulls `@sentry/bundler-plugins` and the `sentry` CLI (license FSL-1.1-Apache-2.0); the ticket either records a pinned license exception (used unmodified as build tooling) or keeps them out, and proves the deployed function bundle does not contain them.
 - **Owner, once:** create the Sentry organization in the German data region on the free Developer plan, with a passkey on the account; give the agent an organization token for setup. The agent creates the project, alert rules (new issue, regression, email to the owner) and the upload token through Sentry's API, and the Vercel variable after the owner's OK.
 - A test endpoint that exists only in previews throws a synthetic error carrying synthetic personal data; the ticket shows the resulting Sentry event without it.
 
@@ -57,12 +59,15 @@ Everything SECURITY.md and ROADMAP.md require before the first real family data 
 
 Recorded here so the requirement is not lost; implemented by the consultancy core's first AI adapter.
 
-- Langfuse Cloud, EU region; the masking function from `packages/telemetry` exports metadata, scores, token counts and redacted text only; prompts referenced by version; the data-flow table and RETENTION.md updated in the same change.
+- Langfuse Cloud, EU region; the masking function from `packages/telemetry` exports no prompt or completion text: prompt version and hash, lengths, token counts, model, latency, scores, error codes and allow-listed fields only; opaque per-request IDs, never account, case or document IDs; the data-flow table and RETENTION.md updated in the same change. The R3 suite gains model-call cases, a `DocumentReader` call included.
+- Before then, R4 keeps Sentry's AI integrations from recording inputs and outputs, and allow-lists span attributes.
 
 ### R7. Personal-data registry
 
 - `packages/db/src/registry.ts`: for each table in a user schema, an entry (owner column, erase strategy `delete` or `detach`, export projection, an i18n label key for the export) or a place on the "no personal data" list with a reason.
 - A guard test reads `pg_catalog` after migrations and fails on any table in neither list, and on any registry entry for a table that does not exist. It runs in the `db` CI check.
+- Strategies: `delete`, `detach` (clears this account's references in rows owned by others, such as a document's recipient list), and `retain` (kept after erasure with identifiers only, with a reason and a period; for `audit.event`, 5 years). Purging `retain` rows needs its own ADR before the first period ends, because it changes ADR-0008's insert-only audit log.
+- Foreign keys: none from `audit`; none that cascade into `auth`, so erasure only happens through the registry, after its audit event.
 - Initial entries: the `auth` tables and `audit.event` (spec 0003).
 
 ### R8. Export
@@ -72,22 +77,23 @@ Recorded here so the requirement is not lost; implemented by the consultancy cor
 
 ### R9. Account deletion
 
-- `POST /v1/account/deletion` after an `account_deletion` step-up: revokes every session, marks the account `pending_deletion` with a due time 7 days ahead, and sends notices. While pending, sign-in shows only "cancel deletion" (`DELETE /v1/account/deletion`, which needs a fresh step-up).
+- `POST /v1/account/deletion` after an `account_deletion` step-up: revokes every session, marks the account `pending_deletion` with a due time 7 days ahead, and sends notices. While pending, sign-in shows only "cancel deletion" (`DELETE /v1/account/deletion`, which needs a fresh `account_deletion` step-up).
 - A daily workflow finds due accounts and starts `eraseAccount(accountId)` for each (identifiers only, through the shared start helper). Its steps, each idempotent: erase every registry entry the account owns (as `app_jobs` under the account's identity); erase the auth rows (as `app_auth`); write an `account_erased` audit event. Vault cleanup joins with spec 0005.
-- `app_jobs` gains exactly the privileges the registry needs, through migrations reviewed by the data-access reviewer.
-- Tests: a synthetic account with rows in every registered table is fully erased; the audit trail remains with identifiers only; a cancel inside the window keeps everything; running the workflow twice is harmless.
+- `app_jobs` gains exactly the privileges the registry needs, through migrations reviewed by the data-access reviewer. Every registry entry has a permissive `app_jobs` policy for its erase command (`DELETE`, or `UPDATE` with a `WITH CHECK` that accepts the detached row), checked by the registry guard, because under forced row-level security a missing policy deletes zero rows without an error. Auth rows are erased on the `app_auth` pool.
+- **Rule for every `app_jobs` step:** its arguments carry the account ID next to the entity ID (identifiers only), and the step sets the identity before its first read; with no identity, no rows.
+- Tests: a synthetic account with rows in every registered table is fully erased, checked by counting as `app_backup` (whose read policy is the one honest counter under row-level security); the audit trail remains with identifiers only; a cancel inside the window keeps everything; running the workflow twice is harmless.
 
 ### R10. Retention jobs
 
 - One daily workflow, `enforceRetention(runDate)`, runs every database rule in [RETENTION.md](../RETENTION.md): expired sessions, invites, step-up challenges, rate-limit rows, the non-production outbox, and the inactivity notice and deletion (3 years plus 60 days).
-- A test seeds rows on both sides of each boundary and asserts which remain. A docs test fails if RETENTION.md lists a database rule with no job, or the job enforces one the document does not list.
+- A test seeds rows on both sides of each boundary and asserts which remain. A docs test fails if a RETENTION.md row whose enforcement names the daily cleanup or inactivity job has no rule in the workflow, or the workflow enforces a rule no such row lists. Rows enforced by the registry, an expiry check or a later ADR are out of the test's scope.
 
 ### R11. Incident response
 
 - `docs/runbooks/incident-response.md`: severity levels; who does what (the owner is controller and incident lead; agents assist); a first-hour checklist; containment steps with links and exact actions:
   - block the API at the edge with a Vercel Firewall deny rule on `/v1/*` (instant, no deploy);
   - roll back with Vercel Instant Rollback;
-  - revoke every session by rotating `BETTER_AUTH_SECRET` and redeploying;
+  - revoke every session by rotating `BETTER_AUTH_SECRET`, deleting every `auth.session` row and every open step-up challenge, and redeploying;
   - rotate each secret in the data-flow table and the Vercel and GitHub variables, with where and how;
   - stop crons;
   - restore the database with Neon point-in-time restore, or from the backup (R12).
@@ -97,9 +103,11 @@ Recorded here so the requirement is not lost; implemented by the consultancy cor
 
 ### R12. Off-vendor backups
 
-- `bootstrap.sql` creates `app_backup` (`NOBYPASSRLS`, `SELECT` only), with its password from `ARCA_DB_BACKUP_PASSWORD` (Production). Guard 3 adds it to the login roles; a new guard 10 fails on any row-level-security table without a `FOR SELECT TO app_backup USING (true)` policy, and on any policy naming `app_backup` that is not exactly that.
-- `infra/aws/backup-account.yaml`, a CloudFormation template the owner launches once in a new AWS account dedicated to backups, in `sa-east-1`: the IAM identity provider for Vercel's OIDC issuer; a writer role trusting only `owner:<team>:project:arca:environment:production`, allowed `s3:PutObject` on the bucket and `kms:GenerateDataKey` on the key; a restore role for the owner with MFA; a customer-managed KMS key; the bucket with versioning, Object Lock (compliance, 35 days), default SSE-KMS, public access blocked, TLS required, and a lifecycle rule expiring objects after 35 days. The ticket gives the owner a quick-create link and one message of steps.
-- A daily production cron starts `backupDatabase(runDate)`. Its step: `REPEATABLE READ, READ ONLY` transaction as `app_backup`; for each table in dependency order, `COPY … TO STDOUT` streamed to S3 multipart upload; then a manifest (migration journal head, tables, row counts, SHA-256 per object). AWS credentials come from Vercel OIDC; no static keys.
+- `bootstrap.sql` creates `app_backup` (`NOBYPASSRLS`, `SELECT` only), with its password from `ARCA_DB_BACKUP_PASSWORD` in production; preview builds set a random throwaway password generated in the build and never stored, so a branch never keeps production's verifier and guard 3 holds in every environment. Guard 3 adds it to the login roles; on the tables outside row-level security (`auth`), it gets `SELECT` grants only on the tables worth restoring (users, passkeys, recovery-code hashes, step-up assertions), never on sessions, challenges, link tokens, rate-limit counters or the outbox, which are short-lived and would put live tokens in the backup; a new guard 10 checks the catalog: every table in the user schemas is readable by `app_backup` (`has_table_privilege`) unless it is on an explicit not-backed-up list with a reason; every row-level-security table has a policy that is permissive, `polcmd = 'r'`, `polroles` exactly `{app_backup}`, qualifier literally `true`, no `WITH CHECK`; and no policy whose roles include `PUBLIC` or `app_backup` has any other shape. The access-matrix suite covers `app_backup` (reads everything backed up, writes nothing) and `app_jobs`.
+- `infra/aws/backup-account.yaml`, a CloudFormation template the owner launches once in a new AWS account dedicated to backups, in `sa-east-1`: the IAM identity provider for Vercel's OIDC issuer; a writer role trusting only `owner:<team>:project:arca:environment:production`, allowed `s3:PutObject` on the bucket and `kms:GenerateDataKey` on the key and nothing else; a restore role for the owner with MFA; a customer-managed KMS key; the bucket with versioning, Object Lock (compliance, 35 days), default SSE-KMS, public access blocked, TLS required, and a lifecycle rule expiring objects after 35 days. A quick-create link needs a hosted template, which a new account lacks, so the ticket gives console-upload steps for the repository file at a named commit, with its SHA-256, so the owner can check they launch the reviewed template.
+- The bucket also receives a replica of the application account's document bucket (spec 0005 R3; documents are client-side ciphertext), so losing the application account does not lose documents. Residual, accepted: the field-encryption KMS key cannot leave its account, so losing that account loses the encrypted fields; the account is protected by MFA and few fields use it.
+- Packages: the AWS SDK v3 S3 client and the OIDC bridge. The bridge uses `getVercelOidcToken` with the AWS SDK's web-identity provider at the `@vercel/oidc` and `@vercel/functions` versions already accepted in the trust policy, or the owner accepts a newer one again. Every package goes in the Versions table with a supply-chain PASS, and Dependabot groups `@aws-sdk/*`, `@smithy/*` and `@aws-crypto/*` on a monthly schedule.
+- A daily production cron starts `backupDatabase(runDate)`. Its step: `REPEATABLE READ, READ ONLY` transaction as `app_backup`; for each table in dependency order, `COPY … TO STDOUT` cut into objects of at most 64 MB, each sent with one `PutObject` (multipart would need `kms:Decrypt`, which the writer must not have); then a manifest (migration journal head, tables, row counts, SHA-256 per object). AWS credentials come from Vercel OIDC; no static keys.
 - Failure alerts through Sentry. The ticket proves one run in production and records the first restore drill in `docs/runbooks/drills.md`.
 
 ### R13. Threat model and the real-data gate
