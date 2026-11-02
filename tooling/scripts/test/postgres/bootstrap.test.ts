@@ -113,4 +113,28 @@ describe('bootstrap', () => {
     await expect(bootstrap(adminTarget(database), sql)).rejects.toThrow('division by zero');
     expect(await roleSnapshot()).toEqual(before);
   });
+
+  it('marks the database on the first production build and refuses a preview there', async () => {
+    const target = adminTarget(database);
+    const comment = () =>
+      withClient(target, async (client) => {
+        const result = await client.query<{ comment: string | null }>(
+          `SELECT pg_catalog.shobj_description(oid, 'pg_database') AS comment
+             FROM pg_catalog.pg_database WHERE datname = pg_catalog.current_database()`,
+        );
+        return result.rows[0]?.comment;
+      });
+    await expect(bootstrap(target, await bootstrapSql(), 'preview')).rejects.toThrow(
+      'a preview build needs a branch of the marked production database',
+    );
+    await bootstrap(target, await bootstrapSql(), 'production');
+    expect(await comment()).toBe(`arca production endpoint: ${target.host.split('.')[0] ?? ''}`);
+    await bootstrap(target, await bootstrapSql(), 'production');
+
+    const before = await roleSnapshot();
+    await expect(bootstrap(target, await bootstrapSql(), 'preview')).rejects.toThrow(
+      'a preview build reaches the production database',
+    );
+    expect(await roleSnapshot()).toEqual(before);
+  });
 });

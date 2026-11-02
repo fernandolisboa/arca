@@ -1,8 +1,12 @@
 name: smoke
 
-# Spec 0001, R9: after Vercel reports a successful production deployment of main, check the live
-# app from outside. No secrets: the production origin is public.
-on: deployment_status
+# Spec 0001, R9: after Vercel deploys main to production, check the live app from outside, with no
+# secrets (the production origin is public). Vercel sends repository_dispatch events, which run
+# this file as it is on main, never a branch's copy; workflow_dispatch runs it by hand.
+on:
+  repository_dispatch:
+    types: [vercel.deployment.success]
+  workflow_dispatch:
 
 permissions: {}
 
@@ -15,8 +19,11 @@ env:
 jobs:
   production:
     if: >-
-      github.event.deployment_status.state == 'success' &&
-      github.event.deployment.environment == 'Production'
+      github.event_name == 'workflow_dispatch' || (
+        github.event.client_payload.project.name == 'arca' &&
+        github.event.client_payload.environment == 'production' &&
+        github.event.client_payload.git.ref == 'main'
+      )
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
@@ -28,4 +35,4 @@ jobs:
       - uses: ./.github/actions/setup-pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm turbo run build --filter=@arca/security-policy
-      - run: pnpm --filter @arca/scripts smoke "$PRODUCTION_ORIGIN"
+      - run: pnpm --fail-if-no-match --filter @arca/scripts smoke "$PRODUCTION_ORIGIN"
