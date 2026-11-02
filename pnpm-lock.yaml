@@ -627,6 +627,9 @@ importers:
       '@arca/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
+      '@arca/security-policy':
+        specifier: workspace:*
+        version: link:../security-policy
       '@arca/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig

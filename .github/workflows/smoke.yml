@@ -1,0 +1,31 @@
+name: smoke
+
+# Spec 0001, R9: after Vercel reports a successful production deployment of main, check the live
+# app from outside. No secrets: the production origin is public.
+on: deployment_status
+
+permissions: {}
+
+env:
+  TURBO_TELEMETRY_DISABLED: '1'
+  DO_NOT_TRACK: '1'
+  # Vercel's assigned production alias until the production domain is chosen (docs/OPEN-QUESTIONS.md).
+  PRODUCTION_ORIGIN: https://arca-ruddy-five.vercel.app
+
+jobs:
+  production:
+    if: >-
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment.environment == 'Production'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo run build --filter=@arca/security-policy
+      - run: pnpm --filter @arca/scripts smoke "$PRODUCTION_ORIGIN"
