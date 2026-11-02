@@ -1,1 +1,2 @@
 seeded/*.bin -diff
+seeded/hidden.txt -diff
