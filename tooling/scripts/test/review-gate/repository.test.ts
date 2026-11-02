@@ -586,9 +586,10 @@ describe('review workflows', () => {
     const filter = /jq -e \\\n\s*'([^']*)'/.exec(String(step('answered')['run']))?.[1];
     expect(filter).toBeDefined();
     const dir = await mkdtemp(join(tmpdir(), 'arca-fallback-'));
-    const answered = async (...messages: Record<string, unknown>[]) => {
+    const init = { type: 'system', subtype: 'init', model: 'fable' };
+    const answeredAfter = async (start: unknown, ...messages: Record<string, unknown>[]) => {
       const file = join(dir, 'execution.json');
-      await writeFile(file, JSON.stringify([{ type: 'system', subtype: 'init' }, ...messages]));
+      await writeFile(file, JSON.stringify([start, ...messages]));
       try {
         execFileSync('jq', ['-e', filter ?? '', file], { stdio: 'ignore' });
         return 'fallback';
@@ -596,6 +597,7 @@ describe('review workflows', () => {
         return 'keep';
       }
     };
+    const answered = (...messages: Record<string, unknown>[]) => answeredAfter(init, ...messages);
     const result = (fields: Record<string, unknown>) => ({
       type: 'result',
       subtype: 'success',
@@ -609,12 +611,20 @@ describe('review workflows', () => {
         'fallback',
       );
       expect(await answered(result({ modelUsage: { fable: { inputTokens: 9 } } }))).toBe('keep');
+      expect(await answered(result({ modelUsage: { 'fable[1m]': { outputTokens: 4 } } }))).toBe(
+        'keep',
+      );
+      // Claude Code's own side request on another model is not the reviewer's model answering.
+      expect(
+        await answered(result({ modelUsage: { haiku: { inputTokens: 500, outputTokens: 20 } } })),
+      ).toBe('fallback');
+      expect(await answeredAfter({ type: 'system', subtype: 'init' }, result({}))).toBe('keep');
       expect(await answered(result({ modelUsage: undefined }))).toBe('keep');
       expect(await answered(result({ is_error: false }))).toBe('keep');
       expect(await answered(result({ subtype: 'error_max_turns' }))).toBe('keep');
       expect(await answered()).toBe('keep');
       expect(
-        await answered(result({}), result({ modelUsage: { opus: { outputTokens: 3 } } })),
+        await answered(result({}), result({ modelUsage: { fable: { outputTokens: 3 } } })),
       ).toBe('keep');
     } finally {
       await rm(dir, { recursive: true, force: true });
