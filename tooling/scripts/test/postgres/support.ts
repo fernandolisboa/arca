@@ -61,6 +61,24 @@ export async function freshDatabase(): Promise<string> {
   return name;
 }
 
+export function databaseComment(name: string): Promise<string | null | undefined> {
+  return withClient(adminTarget(name), async (client) => {
+    const result = await client.query<{ comment: string | null }>(
+      `SELECT pg_catalog.shobj_description(oid, 'pg_database') AS comment
+         FROM pg_catalog.pg_database WHERE datname = pg_catalog.current_database()`,
+    );
+    return result.rows[0]?.comment;
+  });
+}
+
+export async function setComment(name: string, comment: string | null): Promise<void> {
+  await withClient(adminTarget(name), (client) =>
+    client.query(
+      `COMMENT ON DATABASE ${client.escapeIdentifier(name)} IS ${comment === null ? 'NULL' : client.escapeLiteral(comment)}`,
+    ),
+  );
+}
+
 export async function dropDatabase(name: string): Promise<void> {
   await withClient(adminTarget('postgres'), (client) =>
     client.query(`DROP DATABASE IF EXISTS ${name} WITH (FORCE)`),

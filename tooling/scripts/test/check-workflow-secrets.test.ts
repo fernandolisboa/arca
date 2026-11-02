@@ -62,6 +62,11 @@ describe('workflow secrets lint', () => {
       'runs on pull_request and uses secret ANTHROPIC_API_KEY',
     ],
     [
+      'a secret on deployment_status, which runs the deployed commit',
+      'deployment-status-secret.yml',
+      'runs on deployment_status and uses secret ANTHROPIC_API_KEY',
+    ],
+    [
       'an environment on pull_request, even when listed',
       'pull-request-environment.yml',
       'runs on pull_request and uses environment review',

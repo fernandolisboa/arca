@@ -1,6 +1,8 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { requiredVariable, type Environment } from './connection.ts';
+import { endpointOf } from './deployment-target.ts';
+import { environmentFor } from './policy.ts';
 
 export interface RuntimeDatabaseConfig {
   readonly host: string;
@@ -19,6 +21,13 @@ export function runtimeDatabaseConfig(env: Environment): RuntimeDatabaseConfig {
   const name = requiredVariable(env, 'PGDATABASE');
   if (!hostPattern.test(host)) throw new Error('PGHOST is not a host name');
   if (!namePattern.test(name)) throw new Error('PGDATABASE is not a plain database name');
+  // The build checked the unpooled endpoint; the API must reach the same one through the pooler.
+  if (
+    environmentFor(host) === 'neon' &&
+    endpointOf(host) !== endpointOf(requiredVariable(env, 'PGHOST_UNPOOLED'))
+  ) {
+    throw new Error('PGHOST and PGHOST_UNPOOLED name different endpoints');
+  }
   return { host, name };
 }
 

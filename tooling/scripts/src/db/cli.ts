@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { bootstrap, renderBootstrap } from './bootstrap.ts';
 import { buildTarget, requiredVariable } from './connection.ts';
+import { deploymentFor } from './deployment-target.ts';
 import { readMigrations } from './migrations.ts';
 import { environmentFor, migratorRole, readDatabasePolicy } from './policy.ts';
 import { migrate } from './runner.ts';
@@ -21,6 +22,7 @@ async function main(command: string | undefined): Promise<void> {
       user: requiredVariable(env, 'PGUSER'),
       password: requiredVariable(env, 'PGPASSWORD'),
     });
+    const deployment = deploymentFor(env, target.host);
     const template = await readFile(join(dbPackage, 'bootstrap.sql'), 'utf8');
     await bootstrap(
       target,
@@ -29,6 +31,7 @@ async function main(command: string | undefined): Promise<void> {
         app_api: requiredVariable(env, 'ARCA_DB_API_PASSWORD'),
         app_jobs: requiredVariable(env, 'ARCA_DB_JOBS_PASSWORD'),
       }),
+      deployment,
     );
     console.log('roles bootstrapped');
     return;
@@ -38,11 +41,13 @@ async function main(command: string | undefined): Promise<void> {
       user: migratorRole,
       password: requiredVariable(env, 'ARCA_DB_MIGRATOR_PASSWORD'),
     });
+    const deployment = deploymentFor(env, target.host);
     const policy = await readDatabasePolicy(join(dbPackage, 'policy'), environmentFor(target.host));
     const { applied } = await migrate(
       target,
       await readMigrations(join(dbPackage, 'migrations')),
       policy,
+      deployment,
     );
     console.log(
       `${String(applied.length)} migrations applied${applied.length > 0 ? `: ${applied.join(', ')}` : ''}`,

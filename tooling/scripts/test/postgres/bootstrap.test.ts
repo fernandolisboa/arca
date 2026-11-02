@@ -3,10 +3,12 @@ import { bootstrap } from '../../src/db/bootstrap.ts';
 import {
   adminTarget,
   bootstrapSql,
+  databaseComment,
   dropDatabase,
   freshDatabase,
   passwords,
   roleTarget,
+  setComment,
   withClient,
 } from './support.ts';
 
@@ -112,5 +114,39 @@ describe('bootstrap', () => {
     const sql = `${await bootstrapSql()}\nALTER ROLE app_api CREATEDB;\nSELECT 1/0;`;
     await expect(bootstrap(adminTarget(database), sql)).rejects.toThrow('division by zero');
     expect(await roleSnapshot()).toEqual(before);
+  });
+
+  it('marks the database on the first production build and refuses a preview there', async () => {
+    const target = adminTarget(database);
+    await expect(bootstrap(target, await bootstrapSql(), 'preview')).rejects.toThrow(
+      'a preview build needs a branch of the marked production database',
+    );
+    await bootstrap(target, await bootstrapSql(), 'production');
+    expect(await databaseComment(database)).toBe(
+      `arca production endpoint: ${target.host.split('.')[0] ?? ''}`,
+    );
+    await bootstrap(target, await bootstrapSql(), 'production');
+
+    const before = await roleSnapshot();
+    await expect(bootstrap(target, await bootstrapSql(), 'preview')).rejects.toThrow(
+      'a preview build reaches the production database',
+    );
+    expect(await roleSnapshot()).toEqual(before);
+  });
+
+  it('refuses production on a database marked for another endpoint', async () => {
+    await setComment(database, 'arca production endpoint: ep-elsewhere');
+    await expect(
+      bootstrap(adminTarget(database), await bootstrapSql(), 'production'),
+    ).rejects.toThrow('this production build reaches a database marked for another endpoint');
+  });
+
+  it('writes no mark when the bootstrap fails', async () => {
+    await setComment(database, null);
+    const sql = `${await bootstrapSql()}\nSELECT 1/0;`;
+    await expect(bootstrap(adminTarget(database), sql, 'production')).rejects.toThrow(
+      'division by zero',
+    );
+    expect(await databaseComment(database)).toBeNull();
   });
 });

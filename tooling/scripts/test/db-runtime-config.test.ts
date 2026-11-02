@@ -3,6 +3,7 @@ import { runtimeDatabaseConfig } from '../src/db/runtime-config.ts';
 
 const env = {
   PGHOST: 'ep-example-pooler.sa-east-1.aws.neon.tech',
+  PGHOST_UNPOOLED: 'ep-example.sa-east-1.aws.neon.tech',
   PGDATABASE: 'arca',
   PGUSER: 'owner-user',
   PGPASSWORD: 'owner-password',
@@ -21,6 +22,11 @@ describe('runtimeDatabaseConfig', () => {
     ['a missing database', { ...env, PGDATABASE: '' }],
     ['a host with a path', { ...env, PGHOST: 'h/x' }],
     ['a database with a quote', { ...env, PGDATABASE: "arca'" }],
+    [
+      'a pooled host on another endpoint',
+      { ...env, PGHOST_UNPOOLED: 'ep-other.sa-east-1.aws.neon.tech' },
+    ],
+    ['a Neon host with no unpooled host', { ...env, PGHOST_UNPOOLED: undefined }],
   ])('fails on %s', (_label, bad) => {
     expect(() => runtimeDatabaseConfig(bad)).toThrow();
   });

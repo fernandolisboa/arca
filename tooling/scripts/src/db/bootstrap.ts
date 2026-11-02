@@ -1,4 +1,5 @@
 import { clientFor, type ConnectionTarget } from './connection.ts';
+import { checkDeploymentTarget, type Deployment } from './deployment-target.ts';
 
 /** The roles whose passwords bootstrap.sql sets, each through a `'{{role}}'` placeholder. */
 export const rolesWithPasswords = ['app_migrator', 'app_api', 'app_jobs'] as const;
@@ -43,14 +44,22 @@ export function renderBootstrap(template: string, passwords: RolePasswords): str
 /**
  * Runs the rendered bootstrap as the database owner, in one transaction with
  * `createrole_self_grant` empty, so the owner gains no inherited or SET membership in the roles it
- * creates. Errors carry no statement text, so a password cannot reach the build log through them.
+ * creates. In a Vercel build it first checks that the database belongs to that deployment. Errors
+ * carry no statement text, so a password cannot reach the build log through them.
  */
-export async function bootstrap(target: ConnectionTarget, renderedSql: string): Promise<void> {
+export async function bootstrap(
+  target: ConnectionTarget,
+  renderedSql: string,
+  deployment?: Deployment,
+): Promise<void> {
   const client = clientFor(target, 'arca-bootstrap');
   await client.connect();
   try {
     await client.query('BEGIN');
     try {
+      if (deployment !== undefined) {
+        await checkDeploymentTarget(client, deployment, target.host, { mayMark: true });
+      }
       await client.query("SET LOCAL createrole_self_grant = ''");
       await client.query(renderedSql);
       await client.query('COMMIT');

@@ -48,7 +48,7 @@ export const runtimeRoles = appRoles.filter((role) => role !== migratorRole);
  * environment variable a build could set.
  */
 export function environmentFor(host: string): EnvironmentName {
-  return /\.neon\.tech$/i.test(host) ? 'neon' : 'container';
+  return /\.neon\.tech\.?$/i.test(host) ? 'neon' : 'container';
 }
 
 function stringList(value: unknown, where: string): string[] {

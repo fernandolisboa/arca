@@ -12,6 +12,13 @@ export type SecretsPolicy = Readonly<
 const secretReference = /(?<![\w.-])secrets(?![\w-])(?:\s*\.\s*([A-Za-z_][A-Za-z0-9_]*))?/gi;
 const githubReference = /(?<![\w.-])github(?![\w-])(?:\s*\.\s*([A-Za-z_][\w-]*))?/gi;
 
+/**
+ * Triggers whose workflow definition comes from a pull request's branch, or from whatever commit
+ * was deployed (a preview branch, or a fork Vercel was allowed to build). Secrets stay out of
+ * other branches' runs because they live only in environments limited to main.
+ */
+const branchControlledTriggers = ['pull_request', 'deployment', 'deployment_status'];
+
 /** A job-level call to a reusable workflow in this repository; group 1 is its file name. */
 const reusableWorkflow = /^\.\/\.github\/workflows\/([A-Za-z0-9_-]+\.ya?ml)$/;
 
@@ -28,7 +35,7 @@ export function checkWorkflow(file: string, source: string, policy: SecretsPolic
   const workflow = parse(source) as unknown;
   const workflowTriggers = triggers(workflow);
   // A parser that reads `on` differently from GitHub (a %YAML 1.1 directive makes it `true`) must
-  // not turn the pull_request rule off silently.
+  // not turn the branch-controlled rule off silently.
   if (workflowTriggers.length === 0) add('has no on: trigger this lint can read');
   const secrets = secretsUsed(workflow, add);
   if (containsInheritedSecrets(workflow)) add('passes secrets: inherit to a reusable workflow');
@@ -40,22 +47,24 @@ export function checkWorkflow(file: string, source: string, policy: SecretsPolic
     }
   }
 
-  const onPullRequest = workflowTriggers.includes('pull_request');
+  const branchTrigger = workflowTriggers.find((trigger) =>
+    branchControlledTriggers.includes(trigger),
+  );
   const allowedSecrets = allowed.secrets.map((secret) => secret.toUpperCase());
   const allowedEnvironments = allowed.environments.map((environment) => environment.toLowerCase());
 
   for (const secret of secrets) {
-    if (onPullRequest) add(`runs on pull_request and uses secret ${secret}`);
+    if (branchTrigger) add(`runs on ${branchTrigger} and uses secret ${secret}`);
     else if (!allowedSecrets.includes(secret)) add(`uses secret ${secret}, which is not allowed`);
   }
   for (const environment of jobEnvironments(workflow)) {
-    if (onPullRequest) add(`runs on pull_request and uses environment ${environment}`);
+    if (branchTrigger) add(`runs on ${branchTrigger} and uses environment ${environment}`);
     else if (!allowedEnvironments.includes(environment.toLowerCase())) {
       add(`uses environment ${environment}, which is not allowed`);
     }
   }
   // A called workflow runs with its caller's trigger, so the caller must be allowed whatever the
-  // callee may use; otherwise a pull_request workflow could reach a secret through a local call.
+  // callee may use; otherwise a branch-controlled workflow could reach a secret through a local call.
   for (const uses of jobUses(workflow)) {
     if (!reusableWorkflow.test(uses)) {
       add(`calls ${uses}; reusable workflows must be local (./.github/workflows/<file>)`);
@@ -70,12 +79,12 @@ export function checkWorkflow(file: string, source: string, policy: SecretsPolic
       continue;
     }
     for (const secret of calleePolicy.secrets) {
-      if (onPullRequest || !allowedSecrets.includes(secret.toUpperCase())) {
+      if (branchTrigger !== undefined || !allowedSecrets.includes(secret.toUpperCase())) {
         add(`calls ${local}, which may use secret ${secret}`);
       }
     }
     for (const environment of calleePolicy.environments) {
-      if (onPullRequest || !allowedEnvironments.includes(environment.toLowerCase())) {
+      if (branchTrigger !== undefined || !allowedEnvironments.includes(environment.toLowerCase())) {
         add(`calls ${local}, which may use environment ${environment}`);
       }
     }

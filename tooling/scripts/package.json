@@ -10,7 +10,8 @@
     "test:db": "vitest run --config vitest.db.config.ts",
     "db:bootstrap": "node src/db/cli.ts bootstrap",
     "db:migrate": "node src/db/cli.ts migrate",
-    "db:runtime-config": "node src/db/cli.ts runtime-config"
+    "db:runtime-config": "node src/db/cli.ts runtime-config",
+    "smoke": "node src/smoke.ts"
   },
   "dependencies": {
     "libpg-query": "catalog:",
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "@arca/eslint-config": "workspace:*",
+    "@arca/security-policy": "workspace:*",
     "@arca/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "@types/pg": "catalog:",
