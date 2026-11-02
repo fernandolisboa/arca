@@ -1,5 +1,24 @@
+import { mkdir, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import type { AgentDefinition } from './reviewers.ts';
-import { categories, severities } from './schema.ts';
+import { categories, reviewerOutputJsonSchema, severities } from './schema.ts';
+
+/** Writes `<dir>/prompts/<reviewer>.md` for each reviewer. */
+export async function writePrompts(
+  dir: string,
+  agents: readonly AgentDefinition[],
+  nonce: string,
+): Promise<void> {
+  await mkdir(join(dir, 'prompts'), { recursive: true });
+  for (const agent of agents) {
+    await writeFile(join(dir, 'prompts', `${agent.name}.md`), reviewerPrompt(agent, nonce));
+  }
+}
+
+/** Writes `<dir>/schema.json`, the JSON schema every reviewer's output must match. */
+export async function writeSchema(dir: string): Promise<void> {
+  await writeFile(join(dir, 'schema.json'), JSON.stringify(reviewerOutputJsonSchema()));
+}
 
 /**
  * The prompt for one reviewer in CI: its instructions from the agent body, then how a CI run

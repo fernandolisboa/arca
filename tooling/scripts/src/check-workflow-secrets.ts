@@ -1,7 +1,7 @@
 import { lstat, readFile, readdir } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { parse } from 'yaml';
-import { isRecord, reportViolations, type Violation } from './report.ts';
+import { isRecord, reportViolations, whenMissing, type Violation } from './report.ts';
 
 /** Per workflow file name, the secrets and environments it may use (spec 0001, R8). */
 export type SecretsPolicy = Readonly<
@@ -254,10 +254,7 @@ async function main(): Promise<void> {
   }
   if (actionsDir !== undefined) {
     // Only a missing directory means "no actions"; any other error fails the lint.
-    const actions = await yamlFiles(actionsDir, true, violations).catch((error: unknown) => {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
-      throw error;
-    });
+    const actions = await yamlFiles(actionsDir, true, violations).catch(whenMissing([]));
     for (const { name, source } of actions) violations.push(...checkAction(name, source));
   }
   reportViolations(violations);

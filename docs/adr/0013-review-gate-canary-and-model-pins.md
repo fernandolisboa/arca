@@ -8,9 +8,15 @@
 
 Spec 0001 R10 says the canary runs on every push to `main`, and the gate fails closed unless a canary run for the current tip of `main` passed. Each run has about 60 model runs: one known-bad case per reviewer, plus injected cases that carry a payload for every must-pass reviewer. Most pushes to `main` change nothing the reviewers see, so that rule would spend a full canary on every merge to re-test an unchanged gate.
 
-ADR-0011 pins each reviewer's model ID in the workflow file. Model identifiers are kept out of the repository for this project, so the pins need another home that still forces a re-test when they change.
+ADR-0011 pins each reviewer's model ID in the workflow file. A pin there changes only through a pull request, which the gate under the old pin reviews, and it puts model identifiers into the repository's history.
 
-Spec 0001 R8 asks whether `review` environment secrets reach Dependabot-triggered `pull_request_target` runs. GitHub documents that Dependabot-triggered workflows get only Dependabot secrets. It also says that when a `pull_request_target` workflow is started by Dependabot and the pull request's base ref was created by Dependabot, there are no secrets at all ([Troubleshooting Dependabot on GitHub Actions](https://docs.github.com/en/code-security/dependabot/troubleshooting-dependabot/troubleshooting-dependabot-on-github-actions); [Automating Dependabot with GitHub Actions, GHES 3.7](https://docs.github.com/en/enterprise-server@3.7/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions); both checked 2026-11-02). Neither page says that environment secrets reach those runs.
+Spec 0001 R8 asks whether `review` environment secrets reach Dependabot-triggered `pull_request_target` runs. GitHub documents these facts ([Troubleshooting Dependabot on GitHub Actions](https://docs.github.com/en/code-security/dependabot/troubleshooting-dependabot/troubleshooting-dependabot-on-github-actions); [Automating Dependabot with GitHub Actions, GHES 3.7](https://docs.github.com/en/enterprise-server@3.7/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions); both checked 2026-11-02):
+
+- Runs that Dependabot triggers on `push`, `pull_request`, `pull_request_review` and `pull_request_review_comment` get only Dependabot secrets and a read-only token. `pull_request_target` is named as the way around those limits.
+- A `pull_request_target` run gets no secrets at all when Dependabot created the pull request's base ref.
+- Neither page says whether environment secrets reach a Dependabot-triggered `pull_request_target` run.
+
+A called workflow sees only the secrets its caller passes, including environment secrets of its own jobs, and a calling job cannot name an environment ([Reuse workflows](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows), checked 2026-11-02).
 
 ## Decision
 
@@ -30,18 +36,22 @@ Spec 0001 R8 asks whether `review` environment secrets reach Dependabot-triggere
 
 ### Model IDs live in repository variables
 
+This ADR decides that model IDs live in repository settings, not in files. A pin then changes without a pull request, the change shows in the audit log, and no model identifier enters the repository's history.
+
 - **Where the pins live.** Each model alias an agent uses (`fable`, `opus`, `haiku`) is pinned in a repository variable: `REVIEW_MODEL_FABLE`, `REVIEW_MODEL_OPUS` and `REVIEW_MODEL_HAIKU`.
   - The review job passes the pinned ID with `--model`.
   - A missing or malformed variable fails the job.
   - An alias without a variable fails before any model runs.
-- **A model change is re-tested.** The IDs are part of the fingerprint, so a changed pin has no canary pass until the canary runs with it. Until then every pull request fails closed, and the change shows in the repository's audit log.
+- **A model change is re-tested.** The IDs are part of the fingerprint, so a changed pin has no canary pass until the canary runs with it. Until then every pull request fails closed. Changing a pin is followed by a dispatched canary run on `main`; a pull request cannot change a pin, so the pull-request canary never covers one.
 
-### Dependabot uses a Dependabot secret of the same name
+### Dependabot uses a Dependabot secret of the same name, as a fallback
 
-- Environment secrets are not documented to reach Dependabot-triggered runs. Dependabot therefore gets a second Anthropic key, with its own spend limit, stored as a Dependabot secret named `ANTHROPIC_API_KEY`.
+- Whether the `review` environment's key reaches a Dependabot-triggered `pull_request_target` run is not documented. As a fallback, Dependabot gets a second Anthropic key, with its own spend limit, stored as a Dependabot secret named `ANTHROPIC_API_KEY`.
 - The review job reads `secrets.ANTHROPIC_API_KEY` either way, so no workflow or allow-list change is needed.
+- The token's access comes from each job's `permissions` key. The read-only limit for Dependabot covers only the events listed above, not `pull_request_target`, so the report job keeps `checks: write` and `pull-requests: write`.
 - The action runs for `dependabot` through `allowed_bots`.
-- The first Dependabot pull request after setup confirms it. If it shows otherwise, this ADR is updated.
+- Dependabot never creates a branch that is a pull request's base here, so the no-secrets case does not arise.
+- The first Dependabot pull request after setup confirms the key and the repository variables reach the run. If it shows otherwise, this ADR is updated.
 
 ### How a reviewer runs
 
@@ -49,7 +59,11 @@ Spec 0001 R8 asks whether `review` environment secrets reach Dependabot-triggere
 - **Tools.** It has `--tools Read,Grep,Glob`, with every other tool, including `mcp__*`, in `--disallowedTools`.
 - **Loaded configuration.** It runs with `--strict-mcp-config` and an empty MCP configuration, `--disable-slash-commands`, and `--setting-sources project` over a sparse checkout of `main` that holds only `CLAUDE.md`, `docs/REVIEW.md`, `docs/SECURITY.md` and `.github/actions/`.
 - **Settings passed with `--settings`.** They turn off hooks, auto memory, bundled skills and connectors, and set `permissions.blockReadsOutsideWorkingDirectories` with `.git` denied.
+- **Reads outside the workspace.** Explicit deny rules for `/proc`, `/sys`, `/tmp`, `~/.claude` and the runner's temp directory back up `blockReadsOutsideWorkingDirectories`, since deny rules apply to every built-in tool that reads files.
 - **The agent body.** It goes into the prompt, so it is never loaded as an agent file.
+- **The output.** It is scanned with gitleaks before it is uploaded as an artifact; on a match it is dropped and the reviewer counts as missing.
+- **The canary's retry.** The action retries a canary run once when it lacks a blocking finding of every expected category, so a failed first attempt does not fail the run on its own.
+- **The pull-request canary's key.** The gate passes `ANTHROPIC_API_KEY` by name to `review-canary.yml`, whose `run` job names the `review` environment. GitHub resolves the name from that environment.
 
 ## Alternatives
 
@@ -64,7 +78,8 @@ Spec 0001 R8 asks whether `review` environment secrets reach Dependabot-triggere
 
 - **Cost.** A change to docs, reviewers or the gate costs one canary run, about 60 model runs. Other merges cost nothing extra, and the weekly run catches drift at a fixed model ID.
 - **Doc changes count.** Any change under `docs/` changes the fingerprint, since reference docs reach the reviewers. Docs-heavy weeks cost more canary runs.
-- **Setup by the owner.** The owner sets the three variables, the `review` environment with its key, and the Dependabot secret. Until they exist, the gate and the canary fail closed.
+- **Setup by the owner, once.** [ADR-0012](0012-automation-first-setup.md) has agents apply repository settings, but the GitHub access agents have here cannot write environments, secrets or variables. The owner sets the three variables, the `review` environment with its key, and the Dependabot secret, then dispatches the canary; the step is in [OPEN-QUESTIONS.md](../OPEN-QUESTIONS.md). Until then, the gate and the canary fail closed.
+- **Corpus depth.** Each reviewer has one known-bad payload, so a reviewer narrowed to exactly that payload would still pass its own case. The pull request that weakens it is also reviewed by `main`'s unchanged reviewers, and the injected cases test the same reviewers again. More payloads per reviewer are tracked as a follow-up.
 
 ## Sources
 

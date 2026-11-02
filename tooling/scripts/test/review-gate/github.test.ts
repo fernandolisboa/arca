@@ -4,7 +4,7 @@ import {
   awaitCanary,
   canaryState,
   upsertComment,
-  type Request,
+  type GitHubRequest,
 } from '../../src/review-gate/github.ts';
 
 const repository = 'owner/repo';
@@ -19,7 +19,7 @@ interface Fake {
 
 function fake(state: Fake) {
   const calls: { method: string; path: string; body?: unknown }[] = [];
-  const request: Request = (method, path, body) => {
+  const request: GitHubRequest = (method, path, body) => {
     calls.push({ method, path, body });
     if (path.includes('/actions/artifacts'))
       return Promise.resolve({ artifacts: state.artifacts ?? [] });

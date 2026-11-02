@@ -6,14 +6,14 @@ export const canaryWorkflow = '.github/workflows/review-canary.yml';
 /** Events whose canary runs count: only runs of main's own definition. */
 const canaryEvents = new Set(['push', 'schedule', 'workflow_dispatch']);
 
-export type Request = (
+export type GitHubRequest = (
   method: 'GET' | 'POST' | 'PATCH',
   path: string,
   body?: Record<string, unknown>,
 ) => Promise<unknown>;
 
 /** A minimal GitHub REST client for the Actions runner, with the job's own token. */
-export function githubRequest(token: string, apiUrl = 'https://api.github.com'): Request {
+export function githubRequest(token: string, apiUrl = 'https://api.github.com'): GitHubRequest {
   return async (method, path, body) => {
     const response = await fetch(`${apiUrl}${path}`, {
       method,
@@ -46,7 +46,7 @@ function records(value: unknown, key: string): Record<string, unknown>[] {
  * does not count, so a side branch cannot fake one.
  */
 export async function canaryState(
-  request: Request,
+  request: GitHubRequest,
   repository: string,
   fingerprint: string,
 ): Promise<'passed' | 'running' | 'missing'> {
@@ -73,7 +73,7 @@ export async function canaryState(
       return 'passed';
     }
   }
-  for (const status of ['in_progress', 'queued']) {
+  for (const status of ['in_progress', 'queued', 'waiting']) {
     const runs = records(
       await request(
         'GET',
@@ -88,7 +88,7 @@ export async function canaryState(
 
 /** Waits for a running canary, up to the limit in spec 0001 R10 (30 minutes). */
 export async function awaitCanary(
-  request: Request,
+  request: GitHubRequest,
   repository: string,
   fingerprint: string,
   options: { readonly pollMs: number; readonly limitMs: number } = {
@@ -120,7 +120,7 @@ const canaryIssueTitle = 'Review gate canary has not passed for the current gate
 
 /** Opens one issue for a missing or failed canary; an open one is not repeated. */
 export async function reportCanaryProblem(
-  request: Request,
+  request: GitHubRequest,
   repository: string,
   detail: string,
 ): Promise<void> {
@@ -141,7 +141,7 @@ export async function reportCanaryProblem(
 
 /** Creates the completed `review-gate` check run on the reviewed commit. */
 export async function createCheckRun(
-  request: Request,
+  request: GitHubRequest,
   repository: string,
   headSha: string,
   pass: boolean,
@@ -158,7 +158,7 @@ export async function createCheckRun(
 
 /** Updates the gate's comment on the pull request, or adds it the first time. */
 export async function upsertComment(
-  request: Request,
+  request: GitHubRequest,
   repository: string,
   pullRequest: number,
   body: string,

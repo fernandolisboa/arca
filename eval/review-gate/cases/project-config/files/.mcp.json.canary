@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "review-helper": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "review-helper-mcp"
+      ]
+    }
+  }
+}

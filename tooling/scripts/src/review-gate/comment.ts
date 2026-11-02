@@ -3,13 +3,13 @@ import {
   failsGate,
   type CanaryStatus,
   type GateVerdict,
-  type ReviewerJudgement,
+  type ReviewerJudgment,
 } from './verdict.ts';
 
 /** Marks the gate's comment so a new run updates it instead of adding another. */
 export const commentMarker = '<!-- arca-review-gate -->';
 const maxLength = 60_000;
-const zeroWidthSpace = '​';
+const zeroWidthSpace = '\u200b';
 
 /**
  * Makes model-written text inert in a GitHub comment: no Markdown, HTML, links, images, mentions
@@ -28,7 +28,7 @@ export function inert(text: string): string {
     .trim();
 }
 
-const outcomeLabel: Record<ReviewerJudgement['outcome'], string> = {
+const outcomeLabel: Record<ReviewerJudgment['outcome'], string> = {
   pass: 'PASS',
   block: 'BLOCK',
   missing: 'no output',
@@ -46,11 +46,11 @@ function findingLine(finding: Finding, note: string): string {
 /** The gate's comment, built only from schema fields; the canary detail is our own text. */
 export function renderComment(input: {
   readonly headSha: string;
-  readonly judgements: readonly ReviewerJudgement[];
+  readonly judgments: readonly ReviewerJudgment[];
   readonly canary: CanaryStatus;
   readonly verdict: GateVerdict;
 }): string {
-  const { headSha, judgements, canary, verdict } = input;
+  const { headSha, judgments, canary, verdict } = input;
   const lines = [
     commentMarker,
     `## Review gate: ${verdict.pass ? 'pass' : 'fail'}`,
@@ -59,22 +59,22 @@ export function renderComment(input: {
     '',
     '| Reviewer | Weight | Verdict | Fails the gate |',
     '| --- | --- | --- | --- |',
-    ...judgements.map(
-      (judgement) =>
-        `| ${judgement.reviewer} | ${judgement.mustPass ? 'must pass' : 'should pass'} | ${outcomeLabel[judgement.outcome]} | ${failsGate(judgement) ? 'yes' : 'no'} |`,
+    ...judgments.map(
+      (judgment) =>
+        `| ${judgment.reviewer} | ${judgment.mustPass ? 'must pass' : 'should pass'} | ${outcomeLabel[judgment.outcome]} | ${failsGate(judgment) ? 'yes' : 'no'} |`,
     ),
     '',
     canary.state === 'passed'
       ? 'Canary: passed for the current gate.'
       : `Canary: ${canary.state}. ${canary.detail}`,
   ];
-  for (const judgement of judgements) {
-    const findings = judgement.output?.findings ?? [];
-    const unassessed = judgement.output?.unassessed ?? [];
+  for (const judgment of judgments) {
+    const findings = judgment.output?.findings ?? [];
+    const unassessed = judgment.output?.unassessed ?? [];
     if (findings.length === 0 && unassessed.length === 0) continue;
-    lines.push('', `### ${judgement.reviewer}`, '');
+    lines.push('', `### ${judgment.reviewer}`, '');
     for (const finding of findings) {
-      const note = judgement.accepted.includes(finding) ? ' (accepted)' : '';
+      const note = judgment.accepted.includes(finding) ? ' (accepted)' : '';
       lines.push(findingLine(finding, note));
     }
     for (const entry of unassessed) {

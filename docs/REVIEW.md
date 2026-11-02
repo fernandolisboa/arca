@@ -22,6 +22,8 @@ Every change is reviewed by specialized AI reviewers before merge. They are defi
 | [supply-chain-reviewer](../.claude/agents/supply-chain-reviewer.md) | Dependencies, lockfile, CI workflows, build and deploy config, new services or vendors | Must pass | `fable` |
 | [ai-safety-reviewer](../.claude/agents/ai-safety-reviewer.md) | Prompts, agents, AI adapters, retrieval, rendering of model output, evaluation suite | Must pass | `fable` |
 
+The review gate reads this table to weigh each reviewer: a row needs the linked reviewer name and exactly `Must pass` or `Should pass`, and an agent without a row stops the gate.
+
 Added in Phase 4: a mobile security reviewer verifying against OWASP MASVS.
 
 ## Verdicts

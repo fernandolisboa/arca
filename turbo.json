@@ -35,7 +35,8 @@
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/.claude/agents/**",
         "$TURBO_ROOT$/docs/**",
-        "$TURBO_ROOT$/eval/review-gate/**"
+        "$TURBO_ROOT$/eval/review-gate/**",
+        "$TURBO_ROOT$/.github/workflows/review-*.yml"
       ]
     },
     "//#check:web-bundle": {

@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { git, gitText, treeEntries, type TreeEntry } from './git.ts';
+import { blobText, git, gitText, treeEntries, type TreeEntry } from './git.ts';
 import { parseAgentDefinition, type AgentDefinition } from './reviewers.ts';
 
 /** Docs that carry instructions to the reviewers; never copied as reference data. */
@@ -99,10 +99,7 @@ export async function prepareReviewInput(options: {
   await write('history.txt', history);
 
   for (const doc of referenceDocs(repo, referenceRevision)) {
-    await write(
-      join('reference', doc.path),
-      git(repo, ['cat-file', 'blob', doc.object]).toString('utf8'),
-    );
+    await write(join('reference', doc.path), blobText(repo, doc.object));
   }
 
   const touchesAgents = changed.some((file) => file.path.startsWith(agentsDir));
@@ -111,10 +108,7 @@ export async function prepareReviewInput(options: {
     nonce,
     changed,
     changedAgents: touchesAgents ? agentDefinitions(repo, headTree) : undefined,
-    acceptances:
-      acceptances === undefined
-        ? ''
-        : git(repo, ['cat-file', 'blob', acceptances.object]).toString('utf8'),
+    acceptances: acceptances === undefined ? '' : blobText(repo, acceptances.object),
   };
 }
 
@@ -136,11 +130,18 @@ function fileText(repo: string, blob: TreeEntry): string {
   return `${content.subarray(0, maxFileBytes).toString('utf8')}\n(cut at ${String(maxFileBytes)} bytes)\n`;
 }
 
-/** README.md and the Markdown under docs/, except the files that carry instructions. */
+/**
+ * README.md and the Markdown under docs/, except the files that carry instructions. Claude Code
+ * loads any CLAUDE.md or `.claude/` it finds beside a file it reads, so none is copied.
+ */
 function referenceDocs(repo: string, revision: string): TreeEntry[] {
   const skipped = new Set<string>([...instructionFiles, acceptancesFile]);
   return treeEntries(repo, revision, ['README.md', 'docs/']).filter(
-    (entry) => entry.type === 'blob' && entry.path.endsWith('.md') && !skipped.has(entry.path),
+    (entry) =>
+      entry.type === 'blob' &&
+      entry.path.endsWith('.md') &&
+      !skipped.has(entry.path) &&
+      !entry.path.split('/').some((part) => part === 'CLAUDE.md' || part === '.claude'),
   );
 }
 
@@ -150,7 +151,7 @@ function agentDefinitions(repo: string, headTree: readonly TreeEntry[]): AgentDe
     .filter((entry) => entry.path.startsWith(agentsDir) && entry.path.endsWith('.md'))
     .map((entry) => {
       try {
-        return parseAgentDefinition(git(repo, ['cat-file', 'blob', entry.object]).toString('utf8'));
+        return parseAgentDefinition(blobText(repo, entry.object));
       } catch (error) {
         throw new PrepareError(
           `the change's agent definition ${entry.path} ${(error as Error).message}`,

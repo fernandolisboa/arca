@@ -75,8 +75,8 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
     steps:
-      # Only the files that carry instructions, and main's actions; every other doc reaches the
-      # reviewers as data.
+      # Only the files that carry instructions, main's actions and the secret-scan rules; every
+      # other doc reaches the reviewers as data.
       - name: Check out main's instruction files
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -87,6 +87,7 @@ jobs:
             /docs/REVIEW.md
             /docs/SECURITY.md
             /.github/actions/
+            /.github/policy/gitleaks.toml
       - name: Download the review input
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -113,7 +114,11 @@ jobs:
           retention-days: 7
 
   # A change to the reviewers runs the canary with its own definitions; a pass there stands in for
-  # main's canary result, so a change that repairs the reviewers can merge.
+  # main's canary result, so a change that repairs the reviewers can merge. A called workflow sees
+  # only the secrets its caller passes, even for a job with an environment, so the key is passed
+  # by name; GitHub resolves it from the review environment of the called job. The called
+  # workflow's jobs may ask for no more than these permissions; issues: write is for its evaluate
+  # job, which opens no issue in this mode.
   canary:
     needs: prepare
     if: needs.prepare.outputs.agents-changed == 'true'
@@ -124,10 +129,13 @@ jobs:
     uses: ./.github/workflows/review-canary.yml
     with:
       change-agents: true
+    secrets:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
   report:
     needs: [prepare, review, canary]
-    if: ${{ always() && github.event.pull_request.head.repo.full_name == github.repository }}
+    # Not on a cancelled run: a newer push superseded it, and its run reports instead.
+    if: ${{ !cancelled() && github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     permissions:
@@ -188,7 +196,7 @@ jobs:
           "$GITLEAKS" dir "$RUNNER_TEMP/report/comment.md"
           --config=.github/policy/gitleaks.toml --redact --no-banner
       - name: Create the check run and post the comment
-        if: ${{ always() }}
+        if: ${{ !cancelled() }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}

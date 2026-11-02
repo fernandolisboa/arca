@@ -1,8 +1,8 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { modelVariables } from './fingerprint.ts';
 import {
   AgentDefinitionError,
+  modelVariables,
   parseAgentDefinition,
   reviewerWeights,
   withWeights,
@@ -46,8 +46,14 @@ function checked(reviewers: Reviewer[]): Reviewer[] {
   return reviewers;
 }
 
-/** One matrix entry per reviewer, naming the variable that pins its model. */
-export function matrixEntry(reviewer: Reviewer): Record<string, string> {
+export interface MatrixEntry {
+  readonly reviewer: string;
+  readonly modelVariable: string;
+  readonly effort: string;
+}
+
+/** One matrix entry per reviewer, naming the variable that pins its model; `checked` vouches for the alias. */
+export function matrixEntry(reviewer: Reviewer): MatrixEntry {
   return {
     reviewer: reviewer.name,
     modelVariable: modelVariables[reviewer.model as keyof typeof modelVariables],

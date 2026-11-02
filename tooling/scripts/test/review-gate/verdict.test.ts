@@ -76,9 +76,9 @@ describe('reviewer verdict and gate (spec 0001, R10)', () => {
 
   it.each(['critical', 'high'] as const)('a %s finding fails, from any reviewer', (severity) => {
     for (const reviewer of [mustPass, shouldPass]) {
-      const judgement = judge(reviewer, output([finding({ severity })]));
-      expect(judgement.outcome).toBe('block');
-      expect(failsGate(judgement)).toBe(true);
+      const judgment = judge(reviewer, output([finding({ severity })]));
+      expect(judgment.outcome).toBe('block');
+      expect(failsGate(judgment)).toBe(true);
     }
   });
 
@@ -87,10 +87,10 @@ describe('reviewer verdict and gate (spec 0001, R10)', () => {
   });
 
   it('a medium finding passes when a row matches pull request, reviewer, file and category', () => {
-    const judgement = judge(mustPass, output([finding()]), [acceptance]);
-    expect(judgement.outcome).toBe('pass');
-    expect(judgement.accepted).toHaveLength(1);
-    expect(failsGate(judgement)).toBe(false);
+    const judgment = judge(mustPass, output([finding()]), [acceptance]);
+    expect(judgment.outcome).toBe('pass');
+    expect(judgment.accepted).toHaveLength(1);
+    expect(failsGate(judgment)).toBe(false);
   });
 
   it.each([
@@ -111,9 +111,9 @@ describe('reviewer verdict and gate (spec 0001, R10)', () => {
   });
 
   it('a medium finding from a should-pass reviewer blocks that reviewer but not the gate', () => {
-    const judgement = judge(shouldPass, output([finding({ category: 'i18n-violation' })]));
-    expect(judgement.outcome).toBe('block');
-    expect(failsGate(judgement)).toBe(false);
+    const judgment = judge(shouldPass, output([finding({ category: 'i18n-violation' })]));
+    expect(judgment.outcome).toBe('block');
+    expect(failsGate(judgment)).toBe(false);
   });
 
   it.each(['missing_context', 'other'])(

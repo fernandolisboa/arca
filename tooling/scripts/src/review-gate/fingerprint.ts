@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
-import { gitText } from './git.ts';
+import { treeEntries } from './git.ts';
+import { modelVariables } from './reviewers.ts';
 
 /**
  * Everything that shapes how the reviewers behave: their definitions and instructions, the
@@ -13,19 +14,16 @@ export const gatePaths = [
   '.github/workflows/review-gate.yml',
   'CLAUDE.md',
   'README.md',
+  '.github/policy/gitleaks.toml',
   'docs/',
   'eval/review-gate/',
+  'tooling/scripts/package.json',
+  'tooling/scripts/src/report.ts',
   'tooling/scripts/src/review-gate/',
 ] as const;
 /** Changes with every pull request that accepts a finding, and never reaches a model. */
 const ignoredPaths = new Set(['docs/review-acceptances.md']);
 
-/** Model aliases the agents use and the variable that pins each to a model ID. */
-export const modelVariables = {
-  fable: 'REVIEW_MODEL_FABLE',
-  opus: 'REVIEW_MODEL_OPUS',
-  haiku: 'REVIEW_MODEL_HAIKU',
-} as const;
 const modelId = /^[a-z0-9][a-z0-9.-]{0,99}$/;
 
 /** Resolves each alias to its pinned model ID from the environment; a missing or odd one fails. */
@@ -46,9 +44,9 @@ export function gateFingerprint(
   revision: string,
   models: Readonly<Record<string, string>>,
 ): string {
-  const tree = gitText(repo, ['ls-tree', '-r', '--full-tree', revision, '--', ...gatePaths])
-    .split('\n')
-    .filter((line) => line !== '' && !ignoredPaths.has(line.slice(line.indexOf('\t') + 1)))
+  const tree = treeEntries(repo, revision, gatePaths)
+    .filter((entry) => !ignoredPaths.has(entry.path))
+    .map((entry) => `${entry.mode} ${entry.type} ${entry.object}\t${entry.path}`)
     .join('\n');
   const pinned = Object.keys(models)
     .sort()

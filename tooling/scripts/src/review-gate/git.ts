@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 
-const objectId = /^[0-9a-f]{40}$/;
+export const objectId = /^[0-9a-f]{40}$/;
 
 /** Runs git in `repo` with no pager, no external diff or text conversion, and quiet output. */
 export function git(repo: string, args: readonly string[]): Buffer {
@@ -13,6 +13,11 @@ export function git(repo: string, args: readonly string[]): Buffer {
 
 export function gitText(repo: string, args: readonly string[]): string {
   return git(repo, args).toString('utf8');
+}
+
+/** A blob's content as UTF-8; `object` is an object ID or a `<revision>:<path>` name. */
+export function blobText(repo: string, object: string): string {
+  return gitText(repo, ['cat-file', 'blob', object]);
 }
 
 /** Resolves a revision to a full commit ID. */

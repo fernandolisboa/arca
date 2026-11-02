@@ -1,12 +1,12 @@
 import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
-import { oneLine } from '../report.ts';
+import { oneLine, whenMissing } from '../report.ts';
 import { parseAcceptances } from './acceptances.ts';
 import { judgeCanaryRun, planCanary, type CanaryRun, type CaseResult } from './canary.ts';
-import { renderComment } from './comment.ts';
+import { inert, renderComment } from './comment.ts';
 import { gateFingerprint, pinnedModels } from './fingerprint.ts';
-import { git } from './git.ts';
+import { blobText, objectId } from './git.ts';
 import {
   awaitCanary,
   canaryState,
@@ -17,12 +17,10 @@ import {
 } from './github.ts';
 import { PrepareError, prepareReviewInput } from './input.ts';
 import { changeReviewers, mainReviewers, matrixEntry } from './load.ts';
-import { reviewerPrompt } from './prompt.ts';
-import type { AgentDefinition } from './reviewers.ts';
-import { reviewerOutputJsonSchema } from './schema.ts';
+import { writePrompts, writeSchema } from './prompt.ts';
+import type { AgentDefinition, Reviewer } from './reviewers.ts';
 import { judgeGate, judgeReviewer, type CanaryStatus } from './verdict.ts';
 
-const objectId = /^[0-9a-f]{40}$/;
 const repo = process.cwd();
 
 function option(values: Record<string, string | boolean | undefined>, name: string): string {
@@ -50,10 +48,7 @@ async function setOutput(name: string, value: string): Promise<void> {
 }
 
 async function readOptional(path: string): Promise<string | undefined> {
-  return readFile(path, 'utf8').catch((error: unknown) => {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
-    throw error;
-  });
+  return readFile(path, 'utf8').catch(whenMissing(undefined));
 }
 
 function repository(): string {
@@ -86,20 +81,12 @@ async function prepare(args: string[]): Promise<void> {
       referenceRevision: 'HEAD',
       out,
     });
-    await mkdir(join(out, 'prompts'), { recursive: true });
-    for (const reviewer of reviewers) {
-      await writeFile(
-        join(out, 'prompts', `${reviewer.name}.md`),
-        reviewerPrompt(reviewer, prepared.nonce),
-      );
-    }
-    await writeFile(join(out, 'schema.json'), JSON.stringify(reviewerOutputJsonSchema()));
+    await writePrompts(out, reviewers, prepared.nonce);
+    await writeSchema(out);
     await writeFile(join(out, 'acceptances.md'), prepared.acceptances);
     if (prepared.changedAgents !== undefined) {
       const head = sha(values, 'head');
-      const reviewMarkdown = git(repo, ['cat-file', 'blob', `${head}:docs/REVIEW.md`]).toString(
-        'utf8',
-      );
+      const reviewMarkdown = blobText(repo, `${head}:docs/REVIEW.md`);
       await writeFile(
         join(out, 'change-agents.json'),
         JSON.stringify({ agents: prepared.changedAgents, reviewMarkdown }),
@@ -158,7 +145,7 @@ async function canaryPlan(args: string[]): Promise<void> {
     out: join(out, 'cases'),
     scratch: option(values, 'scratch'),
   });
-  await writeFile(join(out, 'schema.json'), JSON.stringify(reviewerOutputJsonSchema()));
+  await writeSchema(out);
   await writeFile(join(out, 'plan.json'), JSON.stringify({ runs, results, reviewers }));
   await setOutput('matrix', JSON.stringify({ include: runs }));
   await setOutput('has-runs', String(runs.length > 0));
@@ -181,7 +168,7 @@ async function canaryEvaluate(args: string[]): Promise<void> {
   const plan = JSON.parse(await readFile(option(values, 'plan'), 'utf8')) as {
     runs: CanaryRun[];
     results: CaseResult[];
-    reviewers: Parameters<typeof judgeCanaryRun>[1][];
+    reviewers: Reviewer[];
   };
   const results = [...plan.results];
   for (const run of plan.runs) {
@@ -222,7 +209,7 @@ async function report(args: string[]): Promise<void> {
   const pullRequest = pullRequestNumber(values);
   const reviewers = await mainReviewers(repo);
   const acceptances = parseAcceptances((await readOptional(join(input, 'acceptances.md'))) ?? '');
-  const judgements = await Promise.all(
+  const judgments = await Promise.all(
     reviewers.map(async (reviewer) =>
       judgeReviewer(
         reviewer,
@@ -251,20 +238,23 @@ async function report(args: string[]): Promise<void> {
     if (canary.state !== 'passed') await reportCanaryProblem(github, repository(), canary.detail);
   }
 
-  const verdict = judgeGate(judgements, canary);
-  const prepareError = await readOptional(join(input, 'prepare-error.txt'));
-  const comment = renderComment({ headSha: sha(values, 'head'), judgements, canary, verdict });
+  const verdict = judgeGate(judgments, canary);
+  // The message can quote a path or frontmatter key from the change, so it is made inert too.
+  const prepareErrorText = await readOptional(join(input, 'prepare-error.txt'));
+  const prepareError =
+    prepareErrorText === undefined ? undefined : inert(prepareErrorText.slice(0, 1000));
+  const comment = renderComment({ headSha: sha(values, 'head'), judgments, canary, verdict });
   const out = option(values, 'out');
   await mkdir(out, { recursive: true });
   await writeFile(
     join(out, 'comment.md'),
-    prepareError === undefined ? comment : `${comment}\n${oneLine(prepareError)}\n`,
+    prepareError === undefined ? comment : `${comment}\n${prepareError}\n`,
   );
   const summary = [
     verdict.pass ? 'All reviewers pass and the canary passed.' : 'The gate failed.',
     verdict.failing.length > 0 ? `Failing reviewers: ${verdict.failing.join(', ')}.` : '',
     canary.state === 'passed' ? '' : `Canary: ${canary.detail}`,
-    prepareError === undefined ? '' : oneLine(prepareError),
+    prepareError ?? '',
   ]
     .filter((line) => line !== '')
     .join('\n');

@@ -162,7 +162,7 @@ describe('comment', () => {
       ],
       unassessed: [{ reason: 'tests_not_run', note: 'CI runs them' }],
     });
-    const judgement = judgeReviewer(
+    const judgment = judgeReviewer(
       { name: 'security-reviewer', mustPass: true },
       raw,
       [
@@ -178,7 +178,7 @@ describe('comment', () => {
     );
     const comment = renderComment({
       headSha: 'a'.repeat(40),
-      judgements: [judgement],
+      judgments: [judgment],
       canary: { state: 'passed' },
       verdict: { pass: true, failing: [] },
     });

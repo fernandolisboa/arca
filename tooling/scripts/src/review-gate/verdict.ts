@@ -1,7 +1,7 @@
 import type { Acceptance } from './acceptances.ts';
 import { reviewerOutput, type Finding, type ReviewerOutput } from './schema.ts';
 
-export interface ReviewerJudgement {
+export interface ReviewerJudgment {
   readonly reviewer: string;
   readonly mustPass: boolean;
   /** `missing` and `invalid` mean no usable output; `block` and `pass` are the reviewer's verdict. */
@@ -40,7 +40,7 @@ export function judgeReviewer(
   raw: string | undefined,
   acceptances: readonly Acceptance[],
   pullRequest: number | undefined,
-): ReviewerJudgement {
+): ReviewerJudgment {
   const parsed = parseReviewerOutput(raw);
   const base = { reviewer: reviewer.name, mustPass: reviewer.mustPass };
   if (parsed === 'missing' || parsed === 'invalid') {
@@ -76,14 +76,14 @@ export function judgeReviewer(
 }
 
 /**
- * Whether a reviewer's judgement fails the gate. Missing or invalid output fails for every
+ * Whether a reviewer's judgment fails the gate. Missing or invalid output fails for every
  * reviewer, and so do critical and high findings; a should-pass reviewer never blocks alone on a
  * medium finding or an unassessed entry (docs/REVIEW.md).
  */
-export function failsGate(judgement: ReviewerJudgement): boolean {
-  if (judgement.outcome === 'missing' || judgement.outcome === 'invalid') return true;
-  if (judgement.mustPass) return judgement.outcome === 'block';
-  return judgement.blocking.some(
+export function failsGate(judgment: ReviewerJudgment): boolean {
+  if (judgment.outcome === 'missing' || judgment.outcome === 'invalid') return true;
+  if (judgment.mustPass) return judgment.outcome === 'block';
+  return judgment.blocking.some(
     (finding) => finding.severity === 'critical' || finding.severity === 'high',
   );
 }
@@ -98,9 +98,9 @@ export interface GateVerdict {
 
 /** The gate fails when any reviewer fails it or the canary did not pass. */
 export function judgeGate(
-  judgements: readonly ReviewerJudgement[],
+  judgments: readonly ReviewerJudgment[],
   canary: CanaryStatus,
 ): GateVerdict {
-  const failing = judgements.filter(failsGate).map((judgement) => judgement.reviewer);
+  const failing = judgments.filter(failsGate).map((judgment) => judgment.reviewer);
   return { pass: failing.length === 0 && canary.state === 'passed', failing };
 }

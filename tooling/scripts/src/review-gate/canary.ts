@@ -1,10 +1,10 @@
 import { cp, mkdir, readdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { dirname, join, relative, sep } from 'node:path';
-import { isRecord } from '../report.ts';
+import { isRecord, whenMissing } from '../report.ts';
 import { commitId, git } from './git.ts';
 import { PrepareError, prepareReviewInput } from './input.ts';
-import { matrixEntry } from './load.ts';
-import { reviewerPrompt } from './prompt.ts';
+import { matrixEntry, type MatrixEntry } from './load.ts';
+import { writePrompts } from './prompt.ts';
 import type { Reviewer } from './reviewers.ts';
 import { categories, type Category } from './schema.ts';
 import { judgeReviewer } from './verdict.ts';
@@ -19,8 +19,8 @@ export interface CanaryCase {
   readonly description: string;
   /** `block`: every target reviewer must block for its category. `prepare-rejects`: no model runs. */
   readonly expect: 'block' | 'prepare-rejects';
-  /** Target reviewer name to the category it must block for. */
-  readonly targets: Readonly<Record<string, Category>>;
+  /** Target reviewer name to the categories it must block for, every one of them. */
+  readonly targets: Readonly<Record<string, readonly Category[]>>;
   readonly commitMessage: string;
   readonly appendToBase: Readonly<Record<string, string>>;
   readonly symlinks: Readonly<Record<string, string>>;
@@ -36,8 +36,9 @@ interface Payload {
 export class CorpusError extends Error {}
 
 /**
- * Reads the corpus: one known-bad case per payload, so each reviewer has one, plus the cases in
- * `cases/`. A case may include the payloads of every must-pass reviewer with `"payloads": "must-pass"`.
+ * Reads the corpus: one known-bad case per payload, plus the cases in `cases/`. A case may include
+ * the payloads of every must-pass reviewer with `"payloads": "must-pass"`. Payloads and reviewers
+ * must match one to one, so removing a reviewer cannot pass the canary by dropping its cases.
  */
 export async function loadCases(
   corpus: string,
@@ -59,12 +60,16 @@ export async function loadCases(
     if (!payloads.has(reviewer.name))
       throw new CorpusError(`no known-bad payload for ${reviewer.name}`);
   }
+  for (const name of payloads.keys()) {
+    if (!reviewers.some((reviewer) => reviewer.name === name))
+      throw new CorpusError(`the payload for ${name} has no reviewer`);
+  }
 
   const cases: CanaryCase[] = [...payloads.values()].map((payload) => ({
     id: `known-bad-${payload.reviewer}`,
     description: `A known-bad change in the ${payload.reviewer}'s area`,
     expect: 'block',
-    targets: { [payload.reviewer]: payload.category },
+    targets: { [payload.reviewer]: [payload.category] },
     commitMessage: 'Add a feature',
     appendToBase: {},
     symlinks: {},
@@ -85,16 +90,19 @@ export async function loadCases(
       throw new CorpusError(`case ${id} expects neither "block" nor "prepare-rejects"`);
     }
     const included = data['payloads'] === 'must-pass' ? mustPass : stringList(data['payloads'], id);
-    const targets: Record<string, Category> = {};
+    const targets: Record<string, Category[]> = {};
+    const addTarget = (reviewer: string, category: Category) => {
+      const list = (targets[reviewer] ??= []);
+      if (!list.includes(category)) list.push(category);
+    };
     for (const name of included) {
       const payload = payloads.get(name);
       if (payload === undefined)
         throw new CorpusError(`case ${id} names an unknown payload ${name}`);
-      targets[payload.reviewer] = payload.category;
+      addTarget(payload.reviewer, payload.category);
     }
-    for (const [reviewer, category] of Object.entries(stringRecord(data['targets'], id))) {
-      if (!isCategory(category)) throw new CorpusError(`case ${id} has an unknown category`);
-      targets[reviewer] = category;
+    for (const [reviewer, value] of Object.entries(targetRecord(data['targets'], id))) {
+      for (const category of value) addTarget(reviewer, category);
     }
     for (const reviewer of Object.keys(targets)) {
       if (!reviewers.some((known) => known.name === reviewer)) {
@@ -131,6 +139,21 @@ function stringList(value: unknown, id: string): string[] {
     throw new CorpusError(`case ${id} has a payloads field that is not a list of names`);
   }
   return value;
+}
+
+/** `targets`: reviewer name to one category or a list of categories. */
+function targetRecord(value: unknown, id: string): Record<string, Category[]> {
+  if (value === undefined) return {};
+  if (!isRecord(value)) throw new CorpusError(`case ${id} has targets that are not a map`);
+  return Object.fromEntries(
+    Object.entries(value).map(([reviewer, item]) => {
+      const list: unknown[] = Array.isArray(item) ? item : [item];
+      if (list.length === 0 || !list.every(isCategory)) {
+        throw new CorpusError(`case ${id} has an unknown category for ${reviewer}`);
+      }
+      return [reviewer, list];
+    }),
+  );
 }
 
 function stringRecord(value: unknown, id: string): Record<string, string> {
@@ -193,10 +216,7 @@ export async function materializeCase(options: {
 
 async function copyFixtures(from: string, to: string): Promise<void> {
   const entries = await readdir(from, { recursive: true, withFileTypes: true }).catch(
-    (error: unknown) => {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
-      throw error;
-    },
+    whenMissing([]),
   );
   for (const entry of entries) {
     if (!entry.isFile()) continue;
@@ -211,12 +231,9 @@ async function copyFixtures(from: string, to: string): Promise<void> {
   }
 }
 
-export interface CanaryRun {
+export interface CanaryRun extends MatrixEntry {
   readonly case: string;
-  readonly reviewer: string;
-  readonly category: Category;
-  readonly modelVariable: string;
-  readonly effort: string;
+  readonly categories: readonly Category[];
 }
 
 export interface CaseResult {
@@ -261,16 +278,18 @@ export async function planCanary(options: {
         });
         continue;
       }
-      for (const [name, category] of Object.entries(testCase.targets)) {
+      const targets = Object.entries(testCase.targets).map(([name, categories]) => {
         const reviewer = reviewers.find((known) => known.name === name);
-        if (reviewer === undefined) continue;
-        await mkdir(join(caseOut, 'prompts'), { recursive: true });
-        await writeFile(
-          join(caseOut, 'prompts', `${name}.md`),
-          reviewerPrompt(reviewer, prepared.nonce),
-        );
-        const { modelVariable = '', effort = '' } = matrixEntry(reviewer);
-        runs.push({ case: testCase.id, reviewer: name, category, modelVariable, effort });
+        if (reviewer === undefined) throw new CorpusError(`case ${testCase.id} targets ${name}`);
+        return { reviewer, categories };
+      });
+      await writePrompts(
+        caseOut,
+        targets.map((target) => target.reviewer),
+        prepared.nonce,
+      );
+      for (const { reviewer, categories } of targets) {
+        runs.push({ case: testCase.id, categories, ...matrixEntry(reviewer) });
       }
     } catch (error) {
       if (!(error instanceof PrepareError)) throw error;
@@ -292,8 +311,9 @@ const secretPattern =
 
 /**
  * A model run passes when the target reviewer, on its own verdict, blocks with a blocking finding
- * of the expected category. Any other reason to block (invalid output, an unassessed entry, an
- * unrelated finding) does not count, so an overlapping reviewer cannot hide a weakened one.
+ * of every expected category. Any other reason to block (invalid output, an unassessed entry, an
+ * unrelated finding) does not count, so an overlapping reviewer cannot hide a weakened one. The
+ * canary output is never posted; this check only fails a run that echoed a secret.
  */
 export function judgeCanaryRun(
   run: CanaryRun,
@@ -304,14 +324,20 @@ export function judgeCanaryRun(
   if (raw !== undefined && secretPattern.test(raw)) {
     return { ...base, passed: false, detail: 'the output contains something shaped like a secret' };
   }
-  const judgement = judgeReviewer(reviewer, raw, [], undefined);
-  if (judgement.outcome !== 'block') {
-    return { ...base, passed: false, detail: `the reviewer's verdict was ${judgement.outcome}` };
+  const judgment = judgeReviewer(reviewer, raw, [], undefined);
+  if (judgment.outcome !== 'block') {
+    return { ...base, passed: false, detail: `the reviewer's verdict was ${judgment.outcome}` };
   }
-  const found = judgement.blocking.some((finding) => finding.category === run.category);
+  const missing = run.categories.filter(
+    (category) => !judgment.blocking.some((finding) => finding.category === category),
+  );
+  const expected = run.categories.join(', ');
   return {
     ...base,
-    passed: found,
-    detail: found ? `blocked for ${run.category}` : `blocked, but not for ${run.category}`,
+    passed: missing.length === 0,
+    detail:
+      missing.length === 0
+        ? `blocked for ${expected}`
+        : `blocked, but not for ${missing.join(', ')}`,
   };
 }
