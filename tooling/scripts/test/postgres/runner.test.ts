@@ -353,6 +353,31 @@ describe('migrate', () => {
       'trigger events would run at COMMIT',
     ],
     [
+      'a deferred foreign key event queued on a partitioned parent by a row moving partitions',
+      `CREATE TABLE app.p (id int PRIMARY KEY) PARTITION BY RANGE (id);
+       ALTER TABLE app.p ENABLE ROW LEVEL SECURITY;
+       ALTER TABLE app.p FORCE ROW LEVEL SECURITY;
+       CREATE POLICY open ON app.p USING (true) WITH CHECK (true);
+       CREATE TABLE app.p1 PARTITION OF app.p FOR VALUES FROM (0) TO (10);
+       ALTER TABLE app.p1 ENABLE ROW LEVEL SECURITY;
+       ALTER TABLE app.p1 FORCE ROW LEVEL SECURITY;
+       CREATE POLICY open ON app.p1 USING (true) WITH CHECK (true);
+       CREATE TABLE app.p2 PARTITION OF app.p FOR VALUES FROM (10) TO (20);
+       ALTER TABLE app.p2 ENABLE ROW LEVEL SECURITY;
+       ALTER TABLE app.p2 FORCE ROW LEVEL SECURITY;
+       CREATE POLICY open ON app.p2 USING (true) WITH CHECK (true);
+       CREATE TABLE app.f (id int CONSTRAINT f_fk REFERENCES app.p);
+       ALTER TABLE app.f ENABLE ROW LEVEL SECURITY;
+       ALTER TABLE app.f FORCE ROW LEVEL SECURITY;
+       CREATE POLICY open ON app.f USING (true) WITH CHECK (true);
+       INSERT INTO app.p VALUES (1), (2);
+       INSERT INTO app.f VALUES (1);
+       ALTER TABLE app.f ALTER CONSTRAINT f_fk DEFERRABLE INITIALLY DEFERRED;
+       UPDATE app.p SET id = 12 WHERE id = 2;
+       ALTER TABLE app.f ALTER CONSTRAINT f_fk NOT DEFERRABLE`,
+      'cannot ALTER TABLE "p" because it has pending trigger events',
+    ],
+    [
       'a temporary domain shadowing a built-in type',
       'CREATE DOMAIN pg_temp.text AS pg_catalog.text',
       'created temporary object text',

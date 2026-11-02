@@ -133,8 +133,8 @@ async function transactionChecks(
 }
 
 /**
- * Runs last, after the guards: if any migration code had run after the pin, the search path or the
- * role would show it.
+ * Runs after the guards: if any migration code had run after the pin, the search path or the role
+ * would show it.
  */
 async function identityChecks(client: pg.Client, transactionId: string): Promise<string[]> {
   const problems: string[] = [];
@@ -245,9 +245,9 @@ async function applyInTransaction(
     ]);
   }
   // From here on the runner reads only built-in catalogs and a journal whose shape it checks first,
-  // so no migration code runs. What would run at COMMIT, after the guards, is rejected instead: a
-  // deferred trigger or constraint (guard 9) and a WITH HOLD cursor (the cursor check). The last
-  // check confirms the pin still holds.
+  // so no migration code runs; the identity check confirms the pin still holds. What would run at
+  // COMMIT, after the guards, is rejected instead: a deferrable trigger or constraint (guard 9), a
+  // WITH HOLD cursor (the cursor check) and any pending trigger event (the final probe).
   await client.query(`SET LOCAL search_path = ${pinnedSearchPath}`);
   await client.query("SET LOCAL client_encoding = 'UTF8'");
   await client.query('RESET ROLE');
@@ -263,36 +263,44 @@ async function applyInTransaction(
   return plan.pending.map((file) => file.name);
 }
 
-const pendingTriggerEvents = '55006';
+const objectInUse = '55006';
+const insufficientPrivilege = '42501';
 
 /**
  * Proves the after-trigger queue is empty, so nothing deferred runs at COMMIT. Guard 9 reads the
  * catalogs, but an event keeps the deferrability it had when it was queued, and ALTER CONSTRAINT
- * on a foreign key can clear the catalog flag of an event already pending on the other table or a
- * partition. ALTER TABLE refuses any table with pending events; this subcommand changes nothing
- * (it re-marks the index already clustered, or none) and takes a ShareUpdateExclusiveLock.
- * Partitioned parents are skipped: their events are queued on the leaf partitions.
+ * on a foreign key can clear the catalog flag of an event already pending on another table, a
+ * partition or a partitioned parent (a row moving between partitions queues its event there).
+ * ALTER TABLE refuses any table with pending events before it changes anything. The subcommands
+ * are no-ops that take a ShareUpdateExclusiveLock: a plain table re-marks the index already
+ * clustered (or none), and a partitioned table, which cannot hold storage parameters, resets one.
  */
 async function rejectPendingTriggerEvents(client: pg.Client): Promise<void> {
   const tables = await client.query<{ statement: string }>(
     `SELECT pg_catalog.format('ALTER TABLE ONLY %I.%I %s', n.nspname, c.relname,
-              coalesce('CLUSTER ON ' || pg_catalog.quote_ident(clustered.relname), 'SET WITHOUT CLUSTER'))
-              AS statement
+              CASE WHEN c.relkind = 'p' THEN 'RESET (fillfactor)'
+                   ELSE coalesce('CLUSTER ON ' || pg_catalog.quote_ident(clustered.relname),
+                                 'SET WITHOUT CLUSTER') END) AS statement
        FROM pg_catalog.pg_class c
        JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
        LEFT JOIN LATERAL (
          SELECT ic.relname FROM pg_catalog.pg_index i
            JOIN pg_catalog.pg_class ic ON ic.oid = i.indexrelid
           WHERE i.indrelid = c.oid AND i.indisclustered) clustered ON true
-      WHERE c.relkind = 'r' AND n.nspname <> 'information_schema' AND n.nspname !~ '^pg_'
+      WHERE c.relkind IN ('r', 'p') AND n.nspname <> 'information_schema' AND n.nspname !~ '^pg_'
       ORDER BY 1`,
   );
   for (const { statement } of tables.rows) {
     try {
       await client.query(statement);
     } catch (error) {
-      if (error instanceof pg.DatabaseError && error.code === pendingTriggerEvents) {
+      if (error instanceof pg.DatabaseError && error.code === objectInUse) {
         throw new MigrationRejected([`trigger events would run at COMMIT: ${error.message}`]);
+      }
+      if (error instanceof pg.DatabaseError && error.code === insufficientPrivilege) {
+        throw new MigrationRejected([
+          `cannot check for pending trigger events, because ${migratorRole} does not own every table: ${error.message}`,
+        ]);
       }
       throw error;
     }
