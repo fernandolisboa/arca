@@ -3,14 +3,18 @@ name: review-canary
 # Known-bad and injected changes from eval/review-gate/ that every target reviewer must fail
 # (spec 0001, R10; ADR-0013). A pass on main is recorded as an artifact named for the gate
 # fingerprint, which the review gate requires. Called from the gate, it runs a change's own
-# reviewer definitions instead, and its result goes into that pull request's verdict.
+# reviewer definitions instead, and its result goes into that pull request's verdict. A push to
+# main reaches it through review-canary-push.yml, since the reviewer action rejects push events.
 
 on:
-  push:
-    branches: [main]
   schedule:
     - cron: '17 6 * * 1'
   workflow_dispatch:
+    inputs:
+      skip-if-passed:
+        description: Stop when a pass for the current gate fingerprint exists.
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       change-agents:
@@ -69,7 +73,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           CHANGE_HEAD: ${{ inputs.change-agents && github.event.pull_request.head.sha || '' }}
-          SKIP_IF_PASSED: ${{ github.event_name == 'push' && '--skip-if-passed' || '' }}
+          SKIP_IF_PASSED: ${{ inputs.skip-if-passed && '--skip-if-passed' || '' }}
           REVIEW_MODEL_FABLE: ${{ vars.REVIEW_MODEL_FABLE }}
           REVIEW_MODEL_OPUS: ${{ vars.REVIEW_MODEL_OPUS }}
           REVIEW_MODEL_HAIKU: ${{ vars.REVIEW_MODEL_HAIKU }}
@@ -143,6 +147,7 @@ jobs:
           expect-categories: ${{ toJSON(matrix.categories) }}
           claude-code-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}
+          allow-dispatch-bot: ${{ github.event_name == 'workflow_dispatch' }}
       - name: Upload the output
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

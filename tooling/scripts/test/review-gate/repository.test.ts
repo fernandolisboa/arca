@@ -436,4 +436,68 @@ describe('review workflows', () => {
       );
     }
   });
+
+  // GitHub refuses to start a called workflow whose jobs ask for more than the caller grants.
+  it('keeps every canary job within the permissions the gate grants when it calls the canary', async () => {
+    const read = async (file: string) =>
+      parse(await readFile(join(root, '.github', 'workflows', file), 'utf8')) as unknown;
+    const jobsOf = (workflow: unknown) =>
+      isRecord(workflow) && isRecord(workflow['jobs']) ? workflow['jobs'] : {};
+    const caller = jobsOf(await read('review-gate.yml'))['canary'];
+    const granted =
+      isRecord(caller) && isRecord(caller['permissions']) ? caller['permissions'] : {};
+    const rank = (level: unknown) =>
+      ['none', 'read', 'write'].indexOf(typeof level === 'string' ? level : 'invalid');
+    for (const job of Object.values(jobsOf(await read('review-canary.yml')))) {
+      const asked = isRecord(job) ? job['permissions'] : undefined;
+      // A shorthand such as read-all would ask for every scope; none of these jobs may use one.
+      expect(asked === undefined || isRecord(asked)).toBe(true);
+      for (const [scope, level] of Object.entries(isRecord(asked) ? asked : {})) {
+        expect(rank(level), scope).toBeGreaterThanOrEqual(0);
+        expect(rank(level), scope).toBeLessThanOrEqual(rank(granted[scope] ?? 'none'));
+      }
+    }
+  });
+
+  // anthropics/claude-code-action fails on push events with "Unsupported event type".
+  it('starts the canary on a push only by dispatching it', async () => {
+    const read = async (file: string) =>
+      parse(await readFile(join(root, '.github', 'workflows', file), 'utf8')) as unknown;
+    const canary = await read('review-canary.yml');
+    expect(
+      isRecord(canary) && isRecord(canary['on']) ? Object.keys(canary['on']) : [],
+    ).not.toContain('push');
+    const push = await read('review-canary-push.yml');
+    expect(isRecord(push) ? push['on'] : undefined).toEqual({ push: { branches: ['main'] } });
+    expect(isRecord(push) ? push['permissions'] : undefined).toEqual({});
+    const jobs = isRecord(push) && isRecord(push['jobs']) ? Object.values(push['jobs']) : [];
+    expect(jobs).toHaveLength(1);
+    expect(isRecord(jobs[0]) ? jobs[0]['permissions'] : undefined).toEqual({ actions: 'write' });
+    const steps = isRecord(jobs[0]) && Array.isArray(jobs[0]['steps']) ? jobs[0]['steps'] : [];
+    expect(steps).toHaveLength(1);
+    expect(String((steps[0] as Record<string, unknown>)['run'])).toMatch(
+      /^gh workflow run review-canary\.yml .*--ref main -f skip-if-passed=true$/,
+    );
+  });
+
+  // A dispatch made with GITHUB_TOKEN runs as github-actions[bot], which the action refuses unless
+  // allowed; only the canary's dispatched runs may allow it, never the review gate.
+  it('lets github-actions start a reviewer only in a dispatched canary run', async () => {
+    const action = await readFile(
+      join(root, '.github', 'actions', 'run-reviewer', 'action.yml'),
+      'utf8',
+    );
+    const allowed =
+      "${{ inputs.allow-dispatch-bot == 'true' && 'claude,dependabot,github-actions' || 'claude,dependabot' }}";
+    expect(valuesOf(parse(action) as unknown, 'allowed_bots')).toEqual([allowed, allowed]);
+    const allowances = async (file: string) =>
+      valuesOf(
+        parse(await readFile(join(root, '.github', 'workflows', file), 'utf8')) as unknown,
+        'allow-dispatch-bot',
+      );
+    expect(await allowances('review-gate.yml')).toEqual([]);
+    expect(await allowances('review-canary.yml')).toEqual([
+      "${{ github.event_name == 'workflow_dispatch' }}",
+    ]);
+  });
 });

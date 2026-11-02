@@ -33,6 +33,11 @@ inputs:
   github-token:
     description: The job's read-only token.
     required: true
+  allow-dispatch-bot:
+    description: >-
+      'true' for a canary run on main dispatched by review-canary-push.yml, whose actor is
+      github-actions[bot]; the action otherwise refuses bot actors outside allowed_bots.
+    default: 'false'
 runs:
   using: composite
   steps:
@@ -98,7 +103,7 @@ runs:
       with:
         claude_code_oauth_token: ${{ inputs.claude-code-oauth-token }}
         github_token: ${{ inputs.github-token }}
-        allowed_bots: claude,dependabot
+        allowed_bots: ${{ inputs.allow-dispatch-bot == 'true' && 'claude,dependabot,github-actions' || 'claude,dependabot' }}
         prompt: ${{ steps.load.outputs.prompt }}
         show_full_output: 'false'
         display_report: 'false'
@@ -139,7 +144,7 @@ runs:
       with:
         claude_code_oauth_token: ${{ inputs.claude-code-oauth-token }}
         github_token: ${{ inputs.github-token }}
-        allowed_bots: claude,dependabot
+        allowed_bots: ${{ inputs.allow-dispatch-bot == 'true' && 'claude,dependabot,github-actions' || 'claude,dependabot' }}
         prompt: ${{ steps.load.outputs.prompt }}
         show_full_output: 'false'
         display_report: 'false'

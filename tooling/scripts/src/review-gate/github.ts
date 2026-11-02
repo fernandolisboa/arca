@@ -4,7 +4,7 @@ import type { CanaryStatus } from './verdict.ts';
 
 export const canaryWorkflow = '.github/workflows/review-canary.yml';
 /** Events whose canary runs count: only runs of main's own definition. */
-const canaryEvents = new Set(['push', 'schedule', 'workflow_dispatch']);
+const canaryEvents = new Set(['schedule', 'workflow_dispatch']);
 
 export type GitHubRequest = (
   method: 'GET' | 'POST' | 'PATCH',
@@ -81,7 +81,7 @@ export async function canaryState(
       return 'passed';
     }
   }
-  for (const status of ['in_progress', 'queued', 'waiting']) {
+  for (const status of ['in_progress', 'queued', 'waiting', 'pending', 'requested']) {
     const runs = records(
       await request('GET', canaryRunsPath(repository, status, 20)),
       'workflow_runs',
