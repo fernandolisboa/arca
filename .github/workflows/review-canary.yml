@@ -5,6 +5,7 @@ name: review-canary
 # fingerprint, which the review gate requires. Called from the gate, it runs a change's own
 # reviewer definitions instead, and its result goes into that pull request's verdict. A push to
 # main reaches it through review-canary-push.yml, since the reviewer action rejects push events.
+# A slim run covers one known-bad case per reviewer; the weekly run covers the whole corpus.
 
 on:
   schedule:
@@ -15,6 +16,13 @@ on:
         description: Stop when a pass for the current gate fingerprint exists.
         type: boolean
         default: false
+      scope:
+        description: >-
+          full runs the whole corpus; slim runs one known-bad case per reviewer, and fails when a
+          canary run on main failed after the last success.
+        type: choice
+        options: [full, slim]
+        default: full
   workflow_call:
     inputs:
       change-agents:
@@ -27,6 +35,8 @@ on:
 
 permissions: {}
 
+# One group for every run on main, so a run plans only after the previous one concluded: runs are
+# ordered by run number, and an overlapping slim run could otherwise clear a failure (ADR-0013).
 concurrency:
   group: review-canary-${{ github.event.pull_request.number || 'main' }}
   cancel-in-progress: false
@@ -47,6 +57,11 @@ jobs:
       has-runs: ${{ steps.plan.outputs.has-runs }}
       skip: ${{ steps.plan.outputs.skip }}
       fingerprint: ${{ steps.plan.outputs.fingerprint }}
+    env:
+      # A dispatch by anyone but the owner, such as review-canary-push.yml, never forces a run
+      # while a pass exists, and runs slim (ADR-0013). This assumes a user-owned repository.
+      OTHER_DISPATCH: >-
+        ${{ github.event_name == 'workflow_dispatch' && github.actor != github.repository_owner }}
     steps:
       - name: Check out main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -73,16 +88,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           CHANGE_HEAD: ${{ inputs.change-agents && github.event.pull_request.head.sha || '' }}
-          # A dispatch by another workflow never forces a full run while a pass exists (ADR-0013).
           SKIP_IF_PASSED: >-
-            ${{ (inputs.skip-if-passed || (github.event_name == 'workflow_dispatch' &&
-            github.actor == 'github-actions[bot]')) && '--skip-if-passed' || '' }}
+            ${{ (inputs.skip-if-passed || env.OTHER_DISPATCH == 'true') && '--skip-if-passed' || '' }}
+          SCOPE: ${{ env.OTHER_DISPATCH == 'true' && 'slim' || inputs.scope || 'full' }}
           REVIEW_MODEL_FABLE: ${{ vars.REVIEW_MODEL_FABLE }}
           REVIEW_MODEL_OPUS: ${{ vars.REVIEW_MODEL_OPUS }}
           REVIEW_MODEL_HAIKU: ${{ vars.REVIEW_MODEL_HAIKU }}
         run: >-
           node tooling/scripts/src/review-gate/cli.ts canary-plan
-          --out "$RUNNER_TEMP/canary" --scratch "$RUNNER_TEMP/worktrees"
+          --out "$RUNNER_TEMP/canary" --scratch "$RUNNER_TEMP/worktrees" --scope "$SCOPE"
           ${CHANGE_HEAD:+--change-objects "$RUNNER_TEMP/change.git" --change-head "$CHANGE_HEAD"}
           $SKIP_IF_PASSED
       - name: Upload the plan
@@ -150,7 +164,8 @@ jobs:
           expect-categories: ${{ toJSON(matrix.categories) }}
           claude-code-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}
-          allow-dispatch-bot: ${{ github.event_name == 'workflow_dispatch' }}
+          allow-dispatch-bot: >-
+            ${{ github.event_name == 'workflow_dispatch' && github.actor == 'github-actions[bot]' }}
       - name: Upload the output
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

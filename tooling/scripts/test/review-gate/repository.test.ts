@@ -5,7 +5,13 @@ import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 import { isRecord } from '../../src/report.ts';
-import { judgeCanaryRun, loadCases, planCanary } from '../../src/review-gate/canary.ts';
+import {
+  canaryScope,
+  judgeCanaryRun,
+  loadCases,
+  mainRunDecision,
+  planCanary,
+} from '../../src/review-gate/canary.ts';
 import { gateFingerprint, resolvedModels } from '../../src/review-gate/fingerprint.ts';
 import {
   changeAgents,
@@ -281,6 +287,7 @@ describe('canary corpus', () => {
       reviewers,
       out: join(scratch, 'plan'),
       scratch: join(scratch, 'worktrees'),
+      scope: 'full',
     });
     expect(results.map((result) => [result.case, result.passed])).toEqual([
       ['hooks-in-agent', true],
@@ -289,7 +296,12 @@ describe('canary corpus', () => {
     const mustPass = reviewers
       .filter((reviewer) => reviewer.mustPass)
       .map((reviewer) => reviewer.name);
-    for (const id of ['injection-in-code', 'injection-in-reference-doc', 'nested-instructions']) {
+    for (const id of [
+      'injection-in-code',
+      'injection-in-reference-doc',
+      'injection-outside-area',
+      'nested-instructions',
+    ]) {
       expect(
         runs
           .filter((run) => run.case === id)
@@ -319,7 +331,98 @@ describe('canary corpus', () => {
       'utf8',
     );
     expect(prompt).toContain('You are the security-reviewer');
+
+    const slim = await planCanary({
+      repo: clone,
+      corpus: join(clone, 'eval', 'review-gate'),
+      reviewers,
+      out: join(scratch, 'slim'),
+      scratch: join(scratch, 'worktrees'),
+      scope: 'slim',
+    });
+    expect(slim.results).toEqual(results);
+    // Every injection shape against one reviewer, both core and specialist prompts among them, and
+    // one case against every must-pass reviewer.
+    const injected = cases.filter(
+      (testCase) =>
+        testCase.expect === 'block' &&
+        testCase.id !== 'injection-in-code' &&
+        !testCase.id.startsWith('known-bad-'),
+    );
+    expect(injected.length).toBeGreaterThan(0);
+    const slimReviewer = (slimTargets: (typeof injected)[number]['slim']) => {
+      expect(Array.isArray(slimTargets) ? slimTargets.length : 0).toBe(1);
+      return Array.isArray(slimTargets) ? String(slimTargets[0]) : '';
+    };
+    const shapeReviewers = injected.map((testCase) => slimReviewer(testCase.slim));
+    const areaScoped = (name: string) =>
+      reviewers.find((reviewer) => reviewer.name === name)?.areaScoped;
+    expect(shapeReviewers.some((name) => areaScoped(name) === false)).toBe(true);
+    expect(shapeReviewers.some((name) => areaScoped(name) === true)).toBe(true);
+    expect(slim.runs.map((run) => [run.case, run.reviewer]).sort()).toEqual(
+      [
+        ...reviewers.map((reviewer) => [`known-bad-${reviewer.name}`, reviewer.name]),
+        ...mustPass.map((name) => ['injection-in-code', name]),
+        ...injected.map((testCase, index) => [testCase.id, shapeReviewers[index]]),
+      ].sort(),
+    );
+    expect(slim.runs.find((run) => run.case === 'forged-delimiter')?.categories).toEqual(
+      runs.find((run) => run.case === 'forged-delimiter' && run.reviewer === 'security-reviewer')
+        ?.categories,
+    );
   }, 60_000);
+
+  it('reads the scope, full by default', () => {
+    expect(canaryScope(undefined)).toBe('full');
+    expect(canaryScope('full')).toBe('full');
+    expect(canaryScope('slim')).toBe('slim');
+    expect(() => canaryScope('Slim')).toThrow('--scope must be');
+  });
+
+  it('skips on a pass when asked, and refuses a slim run while a failure stands', async () => {
+    const decide = (
+      scope: 'full' | 'slim',
+      skipIfPassed: boolean,
+      passed: boolean,
+      failureStands: boolean,
+    ) => {
+      const asked: string[] = [];
+      return mainRunDecision({
+        scope,
+        skipIfPassed,
+        passed: () => {
+          asked.push('passed');
+          return Promise.resolve(passed);
+        },
+        failureStands: () => {
+          asked.push('failureStands');
+          return Promise.resolve(failureStands);
+        },
+      }).then(
+        (decision) => ({ decision, asked }),
+        (error: unknown) => ({ decision: String(error), asked }),
+      );
+    };
+    expect(await decide('slim', true, true, false)).toEqual({
+      decision: 'skip',
+      asked: ['passed'],
+    });
+    expect(await decide('slim', true, false, false)).toEqual({
+      decision: 'plan',
+      asked: ['passed', 'failureStands'],
+    });
+    expect((await decide('slim', true, false, true)).decision).toContain(
+      'Only a full run can clear it',
+    );
+    expect((await decide('slim', false, true, true)).decision).toContain(
+      'Only a full run can clear it',
+    );
+    expect(await decide('full', false, true, true)).toEqual({ decision: 'plan', asked: [] });
+    expect(await decide('full', true, false, true)).toEqual({
+      decision: 'plan',
+      asked: ['passed'],
+    });
+  });
 
   it('counts a run only when the target blocks for the expected category', () => {
     const reviewer = {
@@ -510,11 +613,22 @@ describe('review workflows', () => {
     const run = String((steps[0] as Record<string, unknown>)['run']);
     expect(run).toContain('gh workflow run review-canary.yml');
     expect(run).toContain('--ref main');
-    expect(run).toContain('-f skip-if-passed=true');
-    // A bot's dispatch never forces a full run while a pass exists.
-    expect(String(valuesOf(canary, 'SKIP_IF_PASSED')[0])).toContain(
-      "github.event_name == 'workflow_dispatch' && github.actor == 'github-actions[bot]'",
-    );
+    expect(run).toContain('-f skip-if-passed=true -f scope=slim');
+    // Only the owner's dispatch may force a run while a pass exists, or a full one.
+    expect(valuesOf(canary, 'OTHER_DISPATCH')).toEqual([
+      "${{ github.event_name == 'workflow_dispatch' && github.actor != github.repository_owner }}",
+    ]);
+    expect(valuesOf(canary, 'SKIP_IF_PASSED')).toEqual([
+      "${{ (inputs.skip-if-passed || env.OTHER_DISPATCH == 'true') && '--skip-if-passed' || '' }}",
+    ]);
+    // Every run on main shares one group, so no slim run overlaps a full run.
+    expect(isRecord(canary) ? canary['concurrency'] : undefined).toEqual({
+      group: "review-canary-${{ github.event.pull_request.number || 'main' }}",
+      'cancel-in-progress': false,
+    });
+    expect(valuesOf(canary, 'SCOPE')).toEqual([
+      "${{ env.OTHER_DISPATCH == 'true' && 'slim' || inputs.scope || 'full' }}",
+    ]);
   });
 
   // A dispatch made with GITHUB_TOKEN runs as github-actions[bot], which the action refuses unless
@@ -537,7 +651,7 @@ describe('review workflows', () => {
       valuesOf(await readWorkflow(file), 'allow-dispatch-bot');
     expect(await allowances('review-gate.yml')).toEqual([]);
     expect(await allowances('review-canary.yml')).toEqual([
-      "${{ github.event_name == 'workflow_dispatch' }}",
+      "${{ github.event_name == 'workflow_dispatch' && github.actor == 'github-actions[bot]' }}",
     ]);
   });
 
@@ -564,9 +678,10 @@ describe('review workflows', () => {
     const filter = /jq -e \\\n\s*'([^']*)'/.exec(String(step('answered')['run']))?.[1];
     expect(filter).toBeDefined();
     const dir = await mkdtemp(join(tmpdir(), 'arca-fallback-'));
-    const answered = async (...messages: Record<string, unknown>[]) => {
+    const init = { type: 'system', subtype: 'init', model: 'fable' };
+    const answeredAfter = async (start: unknown, ...messages: Record<string, unknown>[]) => {
       const file = join(dir, 'execution.json');
-      await writeFile(file, JSON.stringify([{ type: 'system', subtype: 'init' }, ...messages]));
+      await writeFile(file, JSON.stringify([start, ...messages]));
       try {
         execFileSync('jq', ['-e', filter ?? '', file], { stdio: 'ignore' });
         return 'fallback';
@@ -574,6 +689,7 @@ describe('review workflows', () => {
         return 'keep';
       }
     };
+    const answered = (...messages: Record<string, unknown>[]) => answeredAfter(init, ...messages);
     const result = (fields: Record<string, unknown>) => ({
       type: 'result',
       subtype: 'success',
@@ -587,12 +703,48 @@ describe('review workflows', () => {
         'fallback',
       );
       expect(await answered(result({ modelUsage: { fable: { inputTokens: 9 } } }))).toBe('keep');
+      expect(await answered(result({ modelUsage: { 'fable[1m]': { outputTokens: 4 } } }))).toBe(
+        'keep',
+      );
+      // Claude Code's own side request on another model is not the reviewer's model answering.
+      expect(
+        await answered(result({ modelUsage: { haiku: { inputTokens: 500, outputTokens: 20 } } })),
+      ).toBe('fallback');
+      expect(await answeredAfter({ type: 'system', subtype: 'init' }, result({}))).toBe('keep');
+      expect(await answeredAfter({ ...init, model: null }, result({}))).toBe('keep');
+      // As seen on 2026-11-02: a limit on the reviewer's model, with only a side request used.
+      const fableInit = { ...init, model: 'claude-fable-5-1' };
+      expect(
+        await answeredAfter(
+          fableInit,
+          result({ modelUsage: { 'claude-haiku-5-5': { inputTokens: 300, outputTokens: 9 } } }),
+        ),
+      ).toBe('fallback');
+      expect(
+        await answeredAfter(
+          { ...init, model: 'claude-fable-5-1[1m]' },
+          result({ modelUsage: { 'claude-fable-5-1': { outputTokens: 2 } } }),
+        ),
+      ).toBe('keep');
+      expect(
+        await answeredAfter(
+          fableInit,
+          result({ modelUsage: { 'claude-fable-5-1-20261101': { inputTokens: 5 } } }),
+        ),
+      ).toBe('keep');
+      // An alias on one side and a full ID on the other name the same family.
+      expect(
+        await answered(result({ modelUsage: { 'claude-fable-5-1': { outputTokens: 1 } } })),
+      ).toBe('keep');
+      expect(
+        await answeredAfter(fableInit, result({ modelUsage: { fable: { outputTokens: 1 } } })),
+      ).toBe('keep');
       expect(await answered(result({ modelUsage: undefined }))).toBe('keep');
       expect(await answered(result({ is_error: false }))).toBe('keep');
       expect(await answered(result({ subtype: 'error_max_turns' }))).toBe('keep');
       expect(await answered()).toBe('keep');
       expect(
-        await answered(result({}), result({ modelUsage: { opus: { outputTokens: 3 } } })),
+        await answered(result({}), result({ modelUsage: { fable: { outputTokens: 3 } } })),
       ).toBe('keep');
     } finally {
       await rm(dir, { recursive: true, force: true });

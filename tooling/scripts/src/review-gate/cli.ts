@@ -3,12 +3,21 @@ import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { oneLine, whenMissing } from '../report.ts';
 import { parseAcceptances } from './acceptances.ts';
-import { judgeCanaryRun, planCanary, type CanaryRun, type CaseResult } from './canary.ts';
+import {
+  canaryScope,
+  judgeCanaryRun,
+  mainRunDecision,
+  planCanary,
+  type CanaryRun,
+  type CanaryScope,
+  type CaseResult,
+} from './canary.ts';
 import { inert, renderComment } from './comment.ts';
 import { gateFingerprint, resolvedModels } from './fingerprint.ts';
 import { objectId } from './git.ts';
 import {
   awaitCanary,
+  canaryFailureStands,
   canaryState,
   createCheckRun,
   githubRequest,
@@ -114,27 +123,34 @@ async function canaryPlan(args: string[]): Promise<void> {
     options: {
       out: { type: 'string' },
       scratch: { type: 'string' },
+      scope: { type: 'string' },
       'change-objects': { type: 'string' },
       'change-head': { type: 'string' },
       'skip-if-passed': { type: 'boolean' },
     },
   });
   const out = option(values, 'out');
+  const scope = canaryScope(values.scope);
   const changeObjects = values['change-objects'];
   let reviewers;
   if (changeObjects === undefined) {
     reviewers = await mainReviewers(repo);
     const fingerprint = gateFingerprint(repo, 'HEAD', resolvedModels(process.env));
     await setOutput('fingerprint', fingerprint);
-    if (
-      values['skip-if-passed'] === true &&
-      (await canaryState(request(), repository(), fingerprint)) === 'passed'
-    ) {
+    const decision = await mainRunDecision({
+      scope,
+      skipIfPassed: values['skip-if-passed'] === true,
+      passed: async () => (await canaryState(request(), repository(), fingerprint)) === 'passed',
+      failureStands: () => canaryFailureStands(request(), repository()),
+    });
+    if (decision === 'skip') {
       console.log('The canary already passed for this gate fingerprint.');
       await setOutput('skip', 'true');
       return;
     }
   } else {
+    // A pull request's own reviewer definitions always meet the whole corpus (ADR-0013).
+    if (scope !== 'full') throw new Error("--scope slim cannot run a change's own reviewers");
     const { agents, reviewMarkdown } = changeAgents(changeObjects, sha(values, 'change-head'));
     reviewers = changeReviewers(agents, reviewMarkdown);
   }
@@ -145,13 +161,14 @@ async function canaryPlan(args: string[]): Promise<void> {
     reviewers,
     out: join(out, 'cases'),
     scratch: option(values, 'scratch'),
+    scope,
   });
   await writeSchema(out);
-  await writeFile(join(out, 'plan.json'), JSON.stringify({ runs, results, reviewers }));
+  await writeFile(join(out, 'plan.json'), JSON.stringify({ scope, runs, results, reviewers }));
   await setOutput('matrix', JSON.stringify({ include: runs }));
   await setOutput('has-runs', String(runs.length > 0));
   console.log(
-    `Prepared ${String(runs.length)} model runs and ${String(results.length)} cases without a model.`,
+    `Prepared a ${scope} canary: ${String(runs.length)} model runs and ${String(results.length)} cases without a model.`,
   );
 }
 
@@ -167,6 +184,7 @@ async function canaryEvaluate(args: string[]): Promise<void> {
     },
   });
   const plan = JSON.parse(await readFile(option(values, 'plan'), 'utf8')) as {
+    scope: CanaryScope;
     runs: CanaryRun[];
     results: CaseResult[];
     reviewers: Reviewer[];
@@ -181,7 +199,10 @@ async function canaryEvaluate(args: string[]): Promise<void> {
     results.push(judgeCanaryRun(run, reviewer, raw));
   }
   const passed = results.length > 0 && results.every((result) => result.passed);
-  await writeFile(option(values, 'out'), JSON.stringify({ passed, results }, null, 2));
+  await writeFile(
+    option(values, 'out'),
+    JSON.stringify({ scope: plan.scope, passed, results }, null, 2),
+  );
   for (const result of results) {
     console.log(
       `${result.passed ? 'pass' : 'FAIL'}  ${result.case}${result.reviewer === undefined ? '' : ` / ${result.reviewer}`}: ${result.detail}`,

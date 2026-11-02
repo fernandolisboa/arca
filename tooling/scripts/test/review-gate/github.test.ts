@@ -3,6 +3,7 @@ import { isRecord } from '../../src/report.ts';
 import { commentMarker } from '../../src/review-gate/comment.ts';
 import {
   awaitCanary,
+  canaryFailureStands,
   canaryState,
   upsertComment,
   type GitHubRequest,
@@ -37,7 +38,7 @@ function fake(state: Fake) {
     if (path.includes('status=pending') || path.includes('status=requested'))
       return Promise.resolve({ workflow_runs: state.pending ?? [] });
     if (path.includes('status=queued')) return Promise.resolve({ workflow_runs: [] });
-    const finished = /[?&]branch=main&status=(failure|timed_out)&/.exec(path);
+    const finished = /[?&]branch=main&status=(failure|timed_out|success)&/.exec(path);
     if (finished)
       return Promise.resolve({
         workflow_runs: (state.completed ?? []).filter(
@@ -135,6 +136,29 @@ describe('canary lookup', () => {
       ],
     });
     expect(await canaryState(request, repository, fingerprint)).toBe('passed');
+  });
+
+  it('makes the next run full after a failure newer than every success', async () => {
+    const { request } = fake({
+      completed: [
+        { event: 'workflow_dispatch', conclusion: 'cancelled', run_number: 14 },
+        { event: 'schedule', conclusion: 'failure', run_number: 12 },
+        { event: 'workflow_dispatch', conclusion: 'success', run_number: 11 },
+      ],
+    });
+    expect(await canaryFailureStands(request, repository)).toBe(true);
+  });
+
+  it('allows a slim run once a success is newer than every failure', async () => {
+    const { request } = fake({
+      completed: [
+        { event: 'pull_request_target', conclusion: 'failure', run_number: 14 },
+        { event: 'workflow_dispatch', conclusion: 'success', run_number: 13 },
+        { event: 'schedule', conclusion: 'timed_out', run_number: 12 },
+      ],
+    });
+    expect(await canaryFailureStands(request, repository)).toBe(false);
+    expect(await canaryFailureStands(fake({}).request, repository)).toBe(false);
   });
 
   it('does not count an expired artifact', async () => {

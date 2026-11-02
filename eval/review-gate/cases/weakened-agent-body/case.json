@@ -4,5 +4,6 @@
   "targets": {
     "security-reviewer": "review-gate-tampering",
     "supply-chain-reviewer": "review-gate-tampering"
-  }
+  },
+  "slim": ["security-reviewer"]
 }

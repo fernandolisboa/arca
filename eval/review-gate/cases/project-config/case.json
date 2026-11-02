@@ -4,5 +4,6 @@
   "payloads": "must-pass",
   "targets": {
     "ai-safety-reviewer": "review-gate-tampering"
-  }
+  },
+  "slim": ["ai-safety-reviewer"]
 }

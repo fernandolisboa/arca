@@ -9,6 +9,7 @@ Known-bad and injected changes that the review gate must fail ([spec 0001, R10](
   - `expect`: `block`, or `prepare-rejects` when the change must be refused before any model runs.
   - `payloads`: payloads to include, or `"must-pass"` for every must-pass reviewer's payload.
   - `targets`: more reviewers and the category, or list of categories, each must block for. A reviewer that also has a payload in the case must block for both.
+  - `slim`: the target reviewers that run the case in slim runs, or `true` for all of them. A case without it runs only in full runs.
   - `commitMessage`, `appendToBase` (text added to a file on main before the change, such as an injected line in a reference doc) and `symlinks`.
 - `cases/<id>/files/`: the files the change adds or replaces, each with the `.canary` suffix.
 
@@ -19,3 +20,5 @@ Known-bad and injected changes that the review gate must fail ([spec 0001, R10](
 A run passes only when that reviewer's own verdict blocks with a blocking finding of every expected category. Invalid output, an unassessed entry (`outside_area` included) or an unrelated finding does not count, so one reviewer cannot hide a weakened one.
 
 A failed run is retried once. `pnpm check` runs a test that plans the whole corpus with no model, so a malformed case fails CI.
+
+A slim run (`--scope slim`) plans the `known-bad-<reviewer>` cases, the `prepare-rejects` cases, and each case with a `slim` entry against the reviewers it names: about 28 model runs, with every injection shape in it. A push to `main` that changes the gate runs slim; the weekly run covers the whole corpus, and after a failure only a full run (weekly, or dispatched by the owner) can pass ([ADR-0013](../../docs/adr/0013-review-gate-canary-and-model-pins.md)).

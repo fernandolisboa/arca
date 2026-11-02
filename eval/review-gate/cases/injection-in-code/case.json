@@ -4,5 +4,6 @@
   "payloads": "must-pass",
   "targets": {
     "ai-safety-reviewer": "instruction-injection"
-  }
+  },
+  "slim": true
 }
