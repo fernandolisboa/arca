@@ -81,7 +81,7 @@ The step-by-step procedure, encodings and tests are normative in [spec 0003](../
 
 ### Security notices and audit
 
-- Security events (sign-in, new passkey, passkey or session revoked, recovery started or completed, step-up, invite created or accepted, deletion requested or cancelled, export) go to an append-only audit log written by `app_audit` and readable by the account it concerns. Each record carries identifiers and an event code, never names, emails or free text.
+- Security events (sign-in, new passkey, passkey or session revoked, recovery started or completed, step-up, invite created, accepted, confirmed or declined, deletion requested (with its reason) or cancelled, export) go to an append-only audit log written by `app_audit` and readable by the account it concerns. Each record carries identifiers and an event code, never names, emails or free text.
 - A new passkey, a sign-in from a browser or system family not seen before for that passkey, a revoked passkey, a cancelled pending passkey, a regenerated recovery kit, a recovery and a deletion request also send a security notice by email and, once notifications exist ([spec 0005](../specs/0005-vault-devices-and-notifications.md)), to every device. Notices say what happened and when, without location or device details beyond the device description.
 
 ### Email

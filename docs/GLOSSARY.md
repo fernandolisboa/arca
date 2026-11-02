@@ -58,7 +58,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Restore drill | (technical only) | The quarterly rehearsal that restores a backup into a throwaway branch and checks it |
 | Unconfirmed account | Conta aguardando confirmação | An invited account its inviter has not confirmed yet; it cannot invite, create cases, upload or share documents, or use AI features |
 | Project owner | (technical only) | The person who runs Arca and approves owner-only steps (setup, restores, knowledge-base changes) |
-| Owner | Dono | The account that owns a document or row; in the docs, "owner" alone means this, and the operator is always the project owner |
+| Owner | Dono | The account that owns a document or row; in product and data docs, "owner" alone means this; in operational steps (setup, deploys, backups, restores, incidents) "the owner" means the project owner, and security decisions always say "project owner" |
 | Fingerprint | Impressão digital da chave | A short code derived from a person's vault recipient, compared in person before trusting it for sharing |
 | Restricted session | Sessão restrita | A session that can only show the pending-recovery warning and cancel the recovery, until the recovery passkey activates |
 | Data export | Exportação dos dados | A file with all of an account's data, built on request |
