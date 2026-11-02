@@ -50,7 +50,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Passkey | Chave de acesso | The WebAuthn credential a person signs in and confirms sensitive actions with |
 | Knowledge catalog | Internal, no UI label | The validated, hashed route data that `packages/knowledge` builds and the API bundles; not the pnpm catalog of dependency versions |
 | Owner | Responsável | The founder, who owns the repository and is the first approver; "founder" in product docs means the same person |
-| Active version | Versão ativa | A route version whose activation counts and that has no rejection that counts; the only kind the engine evaluates for a case |
+| Active version | Versão ativa | A route version whose activation counts and that has no rejection, pending or counted; the only kind the engine evaluates for a case |
 | Decisive missing fact | Dado decisivo pendente | An unknown fact whose answer could change an evaluation's status |
 | Eligible | Elegível | Evaluation status: every requirement holds |
 | Not eligible | Não elegível | Evaluation status: a requirement does not hold |
