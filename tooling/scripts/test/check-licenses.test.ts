@@ -33,6 +33,19 @@ describe('license expressions', () => {
 });
 
 describe('license policy', () => {
+  it.each(['a@1.0.0', '@scope/a@1.0.0', 'a@1.0.0||1.0.1'])(
+    'accepts a null license for the exact versions %s',
+    (selector) => {
+      const policy = parseLicensePolicy(
+        JSON.stringify({
+          allow: [],
+          exceptions: [{ package: selector, license: null, reason: 'LICENSE is MIT' }],
+        }),
+      );
+      expect(policy.exceptions[0]?.license).toBeNull();
+    },
+  );
+
   it('reads allow and exceptions', () => {
     const policy = parseLicensePolicy(
       JSON.stringify({
@@ -48,6 +61,22 @@ describe('license policy', () => {
     ['no allow list', { exceptions: [] }],
     ['an empty license id', { allow: [''], exceptions: [] }],
     ['an exception without a reason', { allow: [], exceptions: [{ package: 'a', license: 'X' }] }],
+    [
+      'an exception without a license',
+      { allow: [], exceptions: [{ package: 'a', reason: 'tarball says MIT' }] },
+    ],
+    [
+      'an empty license',
+      { allow: [], exceptions: [{ package: 'a@1.0.0', license: '', reason: 'x' }] },
+    ],
+    [
+      'a license that is not a string',
+      { allow: [], exceptions: [{ package: 'a@1.0.0', license: 1, reason: 'x' }] },
+    ],
+    ...['a', 'a*', 'a@*', '@scope/a', 'a-*@1.0.0'].map((selector): [string, unknown] => [
+      `a null license for ${selector}`,
+      { allow: [], exceptions: [{ package: selector, license: null, reason: 'LICENSE is MIT' }] },
+    ]),
   ])('rejects %s', (_label, value) => {
     expect(() => parseLicensePolicy(JSON.stringify(value))).toThrow();
   });
@@ -56,7 +85,10 @@ describe('license policy', () => {
 describe('license check', () => {
   const policy: LicensePolicy = {
     allow,
-    exceptions: [{ package: 'lightningcss*', license: 'MPL-2.0', reason: 'build tool' }],
+    exceptions: [
+      { package: 'lightningcss*', license: 'MPL-2.0', reason: 'build tool' },
+      { package: 'bare@1.0.0', license: null, reason: 'LICENSE file is MIT' },
+    ],
   };
   const release = (license: string | undefined): RegistryRelease => ({
     publishedAt: '2026-01-01T00:00:00Z',
@@ -73,6 +105,16 @@ describe('license check', () => {
   it('accepts an allowed license and an excepted package', () => {
     expect(check('zod', 'MIT')).toEqual([]);
     expect(check('lightningcss-linux-x64-gnu', 'MPL-2.0')).toEqual([]);
+  });
+
+  it('accepts a release with no registry license only through a null exception', () => {
+    expect(check('bare', undefined)).toEqual([]);
+    expect(check('bare', 'GPL-3.0-only')).toEqual([
+      { where: 'bare@1.0.0', problem: 'has license GPL-3.0-only, which is not allowed' },
+    ]);
+    expect(check('lightningcss', undefined)).toEqual([
+      { where: 'lightningcss@1.0.0', problem: 'has no SPDX license on the registry' },
+    ]);
   });
 
   it.each<[string, string, string | undefined, string]>([

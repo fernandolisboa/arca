@@ -22,6 +22,11 @@
       "package": "lightningcss-*@1.33.0",
       "license": "MPL-2.0",
       "reason": "Platform binaries of lightningcss 1.33.0; same reason. Pinned to the version, so an update is judged again."
+    },
+    {
+      "package": "@vercel/cli-auth@0.0.1",
+      "license": null,
+      "reason": "Its package.json has no license field; the LICENSE file in the published tarball is Apache-2.0 (checked 2026-11-02). A dependency of @workflow/cli, which the workflow package (ADR-0009) always installs; not bundled into any deployed function."
     }
   ]
 }
