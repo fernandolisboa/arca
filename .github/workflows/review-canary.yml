@@ -73,7 +73,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           CHANGE_HEAD: ${{ inputs.change-agents && github.event.pull_request.head.sha || '' }}
-          SKIP_IF_PASSED: ${{ inputs.skip-if-passed && '--skip-if-passed' || '' }}
+          # A dispatch by another workflow never forces a full run while a pass exists (ADR-0013).
+          SKIP_IF_PASSED: >-
+            ${{ (inputs.skip-if-passed || (github.event_name == 'workflow_dispatch' &&
+            github.actor == 'github-actions[bot]')) && '--skip-if-passed' || '' }}
           REVIEW_MODEL_FABLE: ${{ vars.REVIEW_MODEL_FABLE }}
           REVIEW_MODEL_OPUS: ${{ vars.REVIEW_MODEL_OPUS }}
           REVIEW_MODEL_HAIKU: ${{ vars.REVIEW_MODEL_HAIKU }}

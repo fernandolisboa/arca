@@ -3,6 +3,8 @@ import { commentMarker } from './comment.ts';
 import type { CanaryStatus } from './verdict.ts';
 
 export const canaryWorkflow = '.github/workflows/review-canary.yml';
+/** Dispatches the canary after a push to main, which the reviewer action cannot run on. */
+const canaryPushWorkflow = '.github/workflows/review-canary-push.yml';
 /** Events whose canary runs count: only runs of main's own definition. */
 const canaryEvents = new Set(['schedule', 'workflow_dispatch']);
 
@@ -81,12 +83,19 @@ export async function canaryState(
       return 'passed';
     }
   }
+  // A push workflow that has not dispatched the canary yet counts too, so a gate run right after a
+  // merge waits for the canary instead of failing.
   for (const status of ['in_progress', 'queued', 'waiting', 'pending', 'requested']) {
     const runs = records(
       await request('GET', canaryRunsPath(repository, status, 20)),
       'workflow_runs',
     );
     if (runs.some((run) => canaryEvents.has(String(run['event'])))) return 'running';
+    const pushRuns = records(
+      await request('GET', canaryRunsPath(repository, status, 20, canaryPushWorkflow)),
+      'workflow_runs',
+    );
+    if (pushRuns.some((run) => run['event'] === 'push')) return 'running';
   }
   return 'missing';
 }
@@ -119,8 +128,13 @@ async function newestFailedCanaryRun(request: GitHubRequest, repository: string)
   return newest;
 }
 
-function canaryRunsPath(repository: string, status: string, perPage: number): string {
-  const file = canaryWorkflow.slice(canaryWorkflow.lastIndexOf('/') + 1);
+function canaryRunsPath(
+  repository: string,
+  status: string,
+  perPage: number,
+  workflow: string = canaryWorkflow,
+): string {
+  const file = workflow.slice(workflow.lastIndexOf('/') + 1);
   return `/repos/${repository}/actions/workflows/${file}/runs?branch=main&status=${status}&per_page=${String(perPage)}`;
 }
 

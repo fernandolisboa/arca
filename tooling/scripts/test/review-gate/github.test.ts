@@ -16,6 +16,8 @@ interface Fake {
   runs?: Record<number, unknown>;
   inProgress?: unknown[];
   pending?: unknown[];
+  /** Runs of the push workflow, whatever the status filter. */
+  pushRuns?: unknown[];
   completed?: unknown[];
   comments?: unknown[];
 }
@@ -26,6 +28,8 @@ function fake(state: Fake) {
     calls.push({ method, path, body });
     if (path.includes('/actions/artifacts'))
       return Promise.resolve({ artifacts: state.artifacts ?? [] });
+    if (path.includes('/workflows/review-canary-push.yml/'))
+      return Promise.resolve({ workflow_runs: state.pushRuns ?? [] });
     const run = /\/actions\/runs\/(\d+)$/.exec(path);
     if (run) return Promise.resolve(state.runs?.[Number(run[1])]);
     if (path.includes('status=in_progress'))
@@ -146,6 +150,11 @@ describe('canary lookup', () => {
   // A dispatched run waits as pending while an earlier run holds the concurrency group.
   it('reports a canary waiting for its concurrency group on main', async () => {
     const { request } = fake({ pending: [{ event: 'workflow_dispatch' }] });
+    expect(await canaryState(request, repository, fingerprint)).toBe('running');
+  });
+
+  it('reports a canary that the push workflow has yet to dispatch', async () => {
+    const { request } = fake({ pushRuns: [{ event: 'push' }] });
     expect(await canaryState(request, repository, fingerprint)).toBe('running');
   });
 

@@ -214,6 +214,18 @@ describe('gate fingerprint', () => {
     expect(gateFingerprint(repo, 'HEAD', models)).not.toBe(first);
   });
 
+  // The push workflow only starts the canary; it shapes nothing the reviewers see (ADR-0013).
+  it('ignores the push workflow and counts the canary workflow', async () => {
+    commit('base');
+    const first = gateFingerprint(repo, 'HEAD', models);
+    await put('.github/workflows/review-canary-push.yml', 'name: changed\n');
+    commit('push workflow');
+    expect(gateFingerprint(repo, 'HEAD', models)).toBe(first);
+    await put('.github/workflows/review-canary.yml', 'name: changed\n');
+    commit('canary workflow');
+    expect(gateFingerprint(repo, 'HEAD', models)).not.toBe(first);
+  });
+
   it('runs each alias as is unless its variable pins a model', () => {
     expect(resolvedModels({})).toEqual({ fable: 'fable', opus: 'opus', haiku: 'haiku' });
     expect(resolvedModels({ REVIEW_MODEL_OPUS: 'model-b', REVIEW_MODEL_HAIKU: '' })).toEqual({
@@ -389,12 +401,18 @@ describe('review workflows', () => {
     ]);
   }
 
+  async function readWorkflow(file: string): Promise<unknown> {
+    return parse(await readFile(join(root, '.github', 'workflows', file), 'utf8')) as unknown;
+  }
+
+  function jobsOf(workflow: unknown): Record<string, unknown> {
+    return isRecord(workflow) && isRecord(workflow['jobs']) ? workflow['jobs'] : {};
+  }
+
   it.each(['review-gate.yml', 'review-canary.yml'])(
     '%s checks out exactly the instruction files, the actions and the scan rules, and passes every model variable',
     async (file) => {
-      const workflow = parse(
-        await readFile(join(root, '.github', 'workflows', file), 'utf8'),
-      ) as unknown;
+      const workflow = await readWorkflow(file);
       const sparse = valuesOf(workflow, 'sparse-checkout');
       expect(sparse.length).toBeGreaterThan(0);
       for (const list of sparse) {
@@ -420,10 +438,7 @@ describe('review workflows', () => {
   );
 
   it('fails a re-run of the canary on main in every job that runs or judges a model', async () => {
-    const workflow = parse(
-      await readFile(join(root, '.github', 'workflows', 'review-canary.yml'), 'utf8'),
-    ) as unknown;
-    const jobs = isRecord(workflow) && isRecord(workflow['jobs']) ? workflow['jobs'] : {};
+    const jobs = jobsOf(await readWorkflow('review-canary.yml'));
     for (const name of ['run', 'evaluate']) {
       const job = jobs[name];
       const steps = isRecord(job) && Array.isArray(job['steps']) ? job['steps'] : [];
@@ -439,16 +454,12 @@ describe('review workflows', () => {
 
   // GitHub refuses to start a called workflow whose jobs ask for more than the caller grants.
   it('keeps every canary job within the permissions the gate grants when it calls the canary', async () => {
-    const read = async (file: string) =>
-      parse(await readFile(join(root, '.github', 'workflows', file), 'utf8')) as unknown;
-    const jobsOf = (workflow: unknown) =>
-      isRecord(workflow) && isRecord(workflow['jobs']) ? workflow['jobs'] : {};
-    const caller = jobsOf(await read('review-gate.yml'))['canary'];
+    const caller = jobsOf(await readWorkflow('review-gate.yml'))['canary'];
     const granted =
       isRecord(caller) && isRecord(caller['permissions']) ? caller['permissions'] : {};
     const rank = (level: unknown) =>
       ['none', 'read', 'write'].indexOf(typeof level === 'string' ? level : 'invalid');
-    for (const job of Object.values(jobsOf(await read('review-canary.yml')))) {
+    for (const job of Object.values(jobsOf(await readWorkflow('review-canary.yml')))) {
       const asked = isRecord(job) ? job['permissions'] : undefined;
       // A shorthand such as read-all would ask for every scope; none of these jobs may use one.
       expect(asked === undefined || isRecord(asked)).toBe(true);
@@ -461,22 +472,25 @@ describe('review workflows', () => {
 
   // anthropics/claude-code-action fails on push events with "Unsupported event type".
   it('starts the canary on a push only by dispatching it', async () => {
-    const read = async (file: string) =>
-      parse(await readFile(join(root, '.github', 'workflows', file), 'utf8')) as unknown;
-    const canary = await read('review-canary.yml');
+    const canary = await readWorkflow('review-canary.yml');
     expect(
       isRecord(canary) && isRecord(canary['on']) ? Object.keys(canary['on']) : [],
     ).not.toContain('push');
-    const push = await read('review-canary-push.yml');
+    const push = await readWorkflow('review-canary-push.yml');
     expect(isRecord(push) ? push['on'] : undefined).toEqual({ push: { branches: ['main'] } });
     expect(isRecord(push) ? push['permissions'] : undefined).toEqual({});
-    const jobs = isRecord(push) && isRecord(push['jobs']) ? Object.values(push['jobs']) : [];
+    const jobs = Object.values(jobsOf(push));
     expect(jobs).toHaveLength(1);
     expect(isRecord(jobs[0]) ? jobs[0]['permissions'] : undefined).toEqual({ actions: 'write' });
     const steps = isRecord(jobs[0]) && Array.isArray(jobs[0]['steps']) ? jobs[0]['steps'] : [];
     expect(steps).toHaveLength(1);
-    expect(String((steps[0] as Record<string, unknown>)['run'])).toMatch(
-      /^gh workflow run review-canary\.yml .*--ref main -f skip-if-passed=true$/,
+    const run = String((steps[0] as Record<string, unknown>)['run']);
+    expect(run).toContain('gh workflow run review-canary.yml');
+    expect(run).toContain('--ref main');
+    expect(run).toContain('-f skip-if-passed=true');
+    // A bot's dispatch never forces a full run while a pass exists.
+    expect(String(valuesOf(canary, 'SKIP_IF_PASSED')[0])).toContain(
+      "github.event_name == 'workflow_dispatch' && github.actor == 'github-actions[bot]'",
     );
   });
 
@@ -496,10 +510,7 @@ describe('review workflows', () => {
     );
     expect(action).toContain('allowed_bots=claude,dependabot\n');
     const allowances = async (file: string) =>
-      valuesOf(
-        parse(await readFile(join(root, '.github', 'workflows', file), 'utf8')) as unknown,
-        'allow-dispatch-bot',
-      );
+      valuesOf(await readWorkflow(file), 'allow-dispatch-bot');
     expect(await allowances('review-gate.yml')).toEqual([]);
     expect(await allowances('review-canary.yml')).toEqual([
       "${{ github.event_name == 'workflow_dispatch' }}",
