@@ -50,6 +50,14 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Personal-data registry | (technical only) | The list of every table with personal data and how each is erased and exported |
 | Erasure tombstone | (technical only) | A record of an erased account kept with the backups so a restore does not bring it back |
 | Account deletion | Exclusão da conta | Erasing an account and its data after a 7-day window the person can cancel |
+| Pending deletion | Exclusão pendente | The 7-day state after a deletion request, when sign-in only offers to cancel it |
+| Erasure | (technical only) | The workflow that deletes an account's rows and stored objects once its deletion is due; crypto-shredding is erasing by destroying the only key |
+| Vault unlock | Desbloqueio do cofre | Opening the vault on a device with a passkey, valid for 15 minutes |
+| Recovery passkey | Nova chave de acesso (recuperação) | A passkey registered through recovery, inactive for 24 hours and cancellable by any active passkey |
+| Identity rotation | Troca da chave do cofre | Replacing a vault identity with a new one and re-encrypting the documents encrypted to it |
+| Restore drill | (technical only) | The quarterly rehearsal that restores a backup into a throwaway branch and checks it |
+| Unconfirmed account | Conta aguardando confirmação | An invited account its inviter has not confirmed yet; it cannot invite, create cases, upload or share documents, or use AI features |
+| Owner | (technical only) | In these docs, either the project owner (the person who runs Arca) or the account that owns a document or row; the text says which |
 | Data export | Exportação dos dados | A file with all of an account's data, built on request |
 | Notification channel | Canal de notificação | A place an account receives notices: email or one device's push subscription |
 | Real-data gate | (technical only) | The checklist that must be complete before production accepts family data |

@@ -60,7 +60,7 @@ Facts checked on 2026-11-02:
 
 - Download URLs carry `response-cache-control=no-store`, so neither the browser cache nor the service worker keeps ciphertext.
 - The server issues envelopes and document download URLs only to a session with a `vault_unlock` step-up ([ADR-0015](0015-identity-enrollment-step-up-and-recovery.md)) less than 15 minutes old. Reaching plaintext therefore always needs a fresh user verification checked by the server, as ARCHITECTURE.md requires, including on a device that keeps a locally wrapped identity.
-- On a PRF device the PRF ceremony that opens the envelope is a second, client-side user-verified assertion; the two prompts happen at most once per 15 minutes. The server never sees PRF output.
+- On a PRF device the PRF ceremony that opens the envelope is a second, client-side user-verified assertion; the two prompts happen at most once per 15 minutes. The server never sees PRF output, and the client enforces it: the `Passkeys` port refuses server-issued options with `prf.eval`, `prf.evalByCredential` or any extension outside an allow-list (`prf: {}` at registration only), and strips extension results other than `prf.enabled` from every response before it is sent; the ceremony that evaluates PRF runs only inside the `VaultEnvelopes` adapter, with user verification required.
 - The unlocked identity lives in memory for the tab's session and is dropped on sign-out, after 15 minutes idle, or when the page is hidden for 15 minutes.
 
 ### Plaintext for an authorized processing session

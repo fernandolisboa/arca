@@ -10,6 +10,7 @@ As of 2026-11-02. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md).
 | Account after a deletion request | 7 days locked, then erased | `eraseAccount` workflow |
 | Sessions | 3 days idle, 30 days at most | Better Auth expiry plus a daily cleanup job |
 | Invites | 48 hours unaccepted; once accepted, until the inviter confirms or declines the link, or 30 days | Daily cleanup job |
+| Unconfirmed invited accounts | Erased when the inviter declines them, or when `confirmed_at` is still empty 30 days after creation | Daily cleanup job starts `eraseAccount` |
 | Account links (inviter and invitee) | While both accounts exist | Registry |
 | Step-up challenges | 2 minutes, single use | Expiry check plus a daily cleanup job |
 | Stored step-up assertions | As long as the record they prove (for example, a knowledge-base activation), and erased with the account | Registry |
