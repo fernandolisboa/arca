@@ -52,6 +52,11 @@ overrides:
   # The SDK's CLI pins chokidar 4.0.3, published without the provenance 4.0.1 carried. 5.0.0 has
   # provenance and the same watch API, ESM-only like the CLI. Drop once the CLI moves past 4.x.
   '@workflow/cli>chokidar': 5.0.0
+  # The Workflow SDK pins undici 7.30.0 and zod 4.1.11 and 4.5.4, all with advisories fixed in
+  # undici 7.30.1 and zod 4.6.6 (OSV, checked 2026-11-02). Patch and minor releases of the same
+  # major; the ranges retire these lines once the SDK ships fixed versions.
+  'undici@<7.30.1': 7.30.1
+  'zod@<4.6.6': 4.6.7
 
 catalog:
   '@hono/zod-openapi': 1.6.3
