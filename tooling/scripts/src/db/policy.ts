@@ -26,6 +26,11 @@ export interface GuardPolicy {
   readonly securityDefinerFunctions: readonly string[];
   /** Extensions a migration may create. */
   readonly migrationExtensions: readonly string[];
+  /**
+   * Qualified names (`schema.table.constraint`) of deferrable constraints. Deferred checks run at
+   * COMMIT, after the guards, so each entry needs a review of what code its check can reach.
+   */
+  readonly deferrableConstraints: readonly string[];
 }
 
 export interface DatabasePolicy {
@@ -76,6 +81,7 @@ export function parseGuardPolicy(value: unknown): GuardPolicy {
     foreignTables: list('foreignTables'),
     securityDefinerFunctions: list('securityDefinerFunctions'),
     migrationExtensions: list('migrationExtensions'),
+    deferrableConstraints: list('deferrableConstraints'),
   };
 }
 

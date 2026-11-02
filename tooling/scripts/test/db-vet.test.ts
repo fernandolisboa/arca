@@ -52,6 +52,7 @@ describe('vetMigration', () => {
     ['CREATE TEMP VIEW pg_class AS SELECT 1', 'creates a temporary object'],
     ['CREATE TEMPORARY TABLE t (id int)', 'creates a temporary object'],
     ['CREATE EXTENSION dblink', 'creates extension dblink, which is not allowed'],
+    ['DECLARE c CURSOR WITH HOLD FOR SELECT 1', 'declares a cursor'],
   ])('rejects %s', async (sql, problem) => {
     expect((await problems(`CREATE SCHEMA a; ${sql};`)).join('\n')).toContain(
       `statement 2 ${problem}`,

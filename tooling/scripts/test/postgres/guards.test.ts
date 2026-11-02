@@ -72,6 +72,11 @@ const fixtures: [number, string, string][] = [
     'role default */app_api/app.person_id=00000000-0000-4000-8000-000000000000 is not allow-listed',
   ],
   [8, 'CREATE EXTENSION pgcrypto', 'extension pgcrypto is not allow-listed'],
+  [
+    9,
+    'CREATE TABLE app.a (id int PRIMARY KEY); CREATE TABLE app.b (a int REFERENCES app.a DEFERRABLE)',
+    'constraint b_a_fkey on app.b is deferrable and not allow-listed',
+  ],
   [8, 'DROP EXTENSION plpgsql', 'extension plpgsql is expected but not installed'],
 ];
 

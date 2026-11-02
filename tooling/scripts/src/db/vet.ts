@@ -37,6 +37,7 @@ function problemsIn(statement: Record<string, unknown>, allowedExtensions: reado
   const [kind] = Object.keys(statement);
   if (kind === transactionControl) problems.add('controls the transaction');
   if (kind === 'VariableSetStmt') problems.add('changes a setting or role (SET or RESET)');
+  if (kind === 'DeclareCursorStmt') problems.add('declares a cursor');
   if (kind !== undefined && roleStatements.has(kind))
     problems.add('changes roles or role settings');
   if (kind === 'CreateExtensionStmt') {

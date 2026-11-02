@@ -222,7 +222,7 @@ describe('migrate', () => {
          BEGIN PERFORM app.hijack(); RETURN $1; END $$;
        CREATE TABLE app.cases (id uuid PRIMARY KEY);
        CREATE INDEX i ON arca_migrations.journal (app.hijack_name(name))`,
-      'the journal table has an unexpected index',
+      'the journal table has an index other than its plain primary key',
     ],
     [
       'a deferred trigger that creates a table at COMMIT, after the guards',
@@ -235,7 +235,85 @@ describe('migrate', () => {
        CREATE CONSTRAINT TRIGGER late AFTER INSERT ON app.queue
          DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION app.late();
        INSERT INTO app.queue VALUES (1)`,
-      'guard 1: table app.leak does not have row-level security enabled and forced',
+      'guard 9: constraint late on app.queue is deferrable and not allow-listed',
+    ],
+    [
+      'a WITH HOLD cursor, which would run at COMMIT',
+      `CREATE TABLE app.cases (id uuid PRIMARY KEY);
+       ALTER TABLE app.cases ENABLE ROW LEVEL SECURITY;
+       ALTER TABLE app.cases FORCE ROW LEVEL SECURITY;
+       CREATE FUNCTION app.at_commit() RETURNS int LANGUAGE plpgsql AS $$
+         BEGIN EXECUTE 'ALTER TABLE app.cases DISABLE ROW LEVEL SECURITY'; RETURN 1; END $$;
+       DECLARE hold_cursor CURSOR WITH HOLD FOR SELECT app.at_commit()`,
+      'declares a cursor',
+    ],
+    [
+      'a WITH HOLD cursor declared in a DO block',
+      `CREATE TABLE app.cases (id uuid PRIMARY KEY);
+       ALTER TABLE app.cases ENABLE ROW LEVEL SECURITY;
+       ALTER TABLE app.cases FORCE ROW LEVEL SECURITY;
+       CREATE FUNCTION app.at_commit() RETURNS int LANGUAGE plpgsql AS $$
+         BEGIN EXECUTE 'ALTER TABLE app.cases DISABLE ROW LEVEL SECURITY'; RETURN 1; END $$;
+       DO $d$ BEGIN EXECUTE $q$DECLARE hold_cursor CURSOR WITH HOLD FOR SELECT app.at_commit()$q$; END $d$`,
+      'left cursor hold_cursor open',
+    ],
+    [
+      'a deferrable constraint trigger',
+      `CREATE TABLE app.ticks (id int, n int);
+       ALTER TABLE app.ticks ENABLE ROW LEVEL SECURITY;
+       ALTER TABLE app.ticks FORCE ROW LEVEL SECURITY;
+       CREATE POLICY open ON app.ticks USING (true) WITH CHECK (true);
+       CREATE FUNCTION app.noop() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NULL; END $$;
+       CREATE CONSTRAINT TRIGGER t AFTER INSERT ON app.ticks
+         DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION app.noop()`,
+      'guard 9: constraint t on app.ticks is deferrable and not allow-listed',
+    ],
+    [
+      'a deferrable exclusion constraint whose recheck runs code',
+      `CREATE TABLE app.ticks (id int, n int);
+       ALTER TABLE app.ticks ENABLE ROW LEVEL SECURITY;
+       ALTER TABLE app.ticks FORCE ROW LEVEL SECURITY;
+       CREATE POLICY open ON app.ticks USING (true) WITH CHECK (true);
+       CREATE FUNCTION app.k(n int) RETURNS int LANGUAGE sql IMMUTABLE AS 'SELECT n';
+       ALTER TABLE app.ticks ADD CONSTRAINT x EXCLUDE USING btree ((app.k(n)) WITH =)
+         DEFERRABLE INITIALLY DEFERRED;
+       INSERT INTO app.ticks VALUES (1, 1), (2, 1);
+       UPDATE app.ticks SET n = 3 WHERE id = 1`,
+      'guard 9: constraint x on app.ticks is deferrable and not allow-listed',
+    ],
+    [
+      'a journal index predicate that unpins the search path when planned',
+      `CREATE TABLE app.cases (id uuid PRIMARY KEY);
+       CREATE FUNCTION app.always(text, text) RETURNS boolean LANGUAGE sql IMMUTABLE AS 'SELECT true';
+       CREATE OPERATOR app.= (LEFTARG = text, RIGHTARG = text, FUNCTION = app.always);
+       CREATE FUNCTION app.unpin(int) RETURNS boolean LANGUAGE plpgsql IMMUTABLE AS $$
+         BEGIN PERFORM pg_catalog.set_config('search_path', 'app, pg_catalog', true); RETURN true; END $$;
+       ALTER TABLE arca_migrations.journal DROP CONSTRAINT journal_pkey;
+       CREATE INDEX journal_p ON arca_migrations.journal (name) WHERE app.unpin(1)`,
+      'the journal table has an index other than its plain primary key',
+    ],
+    [
+      'a journal child table whose index predicate unpins the search path',
+      `CREATE TABLE app.cases (id uuid PRIMARY KEY);
+       CREATE FUNCTION app.always(text, text) RETURNS boolean LANGUAGE sql IMMUTABLE AS 'SELECT true';
+       CREATE OPERATOR app.= (LEFTARG = text, RIGHTARG = text, FUNCTION = app.always);
+       CREATE FUNCTION app.unpin(int) RETURNS boolean LANGUAGE plpgsql IMMUTABLE AS $$
+         BEGIN PERFORM pg_catalog.set_config('search_path', 'app, pg_catalog', true); RETURN true; END $$;
+       CREATE TABLE app.journal_child () INHERITS (arca_migrations.journal);
+       ALTER TABLE app.journal_child ENABLE ROW LEVEL SECURITY;
+       ALTER TABLE app.journal_child FORCE ROW LEVEL SECURITY;
+       CREATE INDEX journal_child_p ON app.journal_child (name) WHERE app.unpin(1)`,
+      'the journal table has inheritance',
+    ],
+    [
+      'journal statistics whose expression unpins the search path',
+      `CREATE TABLE app.cases (id uuid PRIMARY KEY);
+       CREATE FUNCTION app.always(text, text) RETURNS boolean LANGUAGE sql IMMUTABLE AS 'SELECT true';
+       CREATE OPERATOR app.= (LEFTARG = text, RIGHTARG = text, FUNCTION = app.always);
+       CREATE FUNCTION app.unpin(int) RETURNS boolean LANGUAGE plpgsql IMMUTABLE AS $$
+         BEGIN PERFORM pg_catalog.set_config('search_path', 'app, pg_catalog', true); RETURN true; END $$;
+       CREATE STATISTICS app.journal_s ON (app.unpin(1)) FROM arca_migrations.journal`,
+      'the journal table has extended statistics',
     ],
     [
       'a table without row-level security',
@@ -260,6 +338,31 @@ describe('migrate', () => {
     expect(await schemaExists('canary')).toBe(false);
     expect(await journal()).toEqual(files.map((file) => file.name));
     expect(await roleState()).toEqual(before);
+  });
+
+  it('never runs a deferred event whose trigger the migration dropped', async () => {
+    const files = await realMigrations();
+    const policy = await containerPolicy();
+    const sql = `CREATE TABLE app.ticks (id int);
+      ALTER TABLE app.ticks ENABLE ROW LEVEL SECURITY;
+      ALTER TABLE app.ticks FORCE ROW LEVEL SECURITY;
+      CREATE POLICY open ON app.ticks USING (true) WITH CHECK (true);
+      CREATE FUNCTION app.late() RETURNS trigger LANGUAGE plpgsql AS $$
+        BEGIN EXECUTE 'CREATE TABLE app.leak (id int)'; RETURN NULL; END $$;
+      CREATE CONSTRAINT TRIGGER late AFTER INSERT ON app.ticks
+        DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION app.late();
+      INSERT INTO app.ticks VALUES (1);
+      DROP TRIGGER late ON app.ticks;`;
+    await migrate(
+      migratorTarget(database),
+      [...files, migration('20990101000000_drop', sql)],
+      policy,
+    );
+    await withClient(adminTarget(database), async (client) => {
+      const leak = await client.query(`SELECT pg_catalog.to_regclass('app.leak') AS leak`);
+      expect(leak.rows).toEqual([{ leak: null }]);
+      expect(await runGuards(client, policy)).toEqual([]);
+    });
   });
 
   it('ignores PGOPTIONS and PGCLIENTENCODING, so the server lexes as the parser does', async () => {

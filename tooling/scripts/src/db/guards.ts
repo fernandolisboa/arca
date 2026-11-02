@@ -192,6 +192,33 @@ function extensions(client: Query, policy: DatabasePolicy) {
   );
 }
 
+/**
+ * Guard 9: nothing deferrable outside the allow-list. A deferred trigger or constraint check runs at
+ * COMMIT, after every other guard, so it could undo what they checked. A trigger with pending
+ * events cannot be dropped or altered, so any event still queued belongs to a row found here.
+ */
+function deferrableConstraints(client: Query, policy: DatabasePolicy) {
+  return rows(
+    client,
+    `SELECT problem FROM (
+       SELECT pg_catalog.format('constraint %I on %I.%I is deferrable and not allow-listed',
+                k.conname, n.nspname, c.relname) AS problem
+         FROM pg_catalog.pg_constraint k
+         JOIN pg_catalog.pg_class c ON c.oid = k.conrelid
+         JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+        WHERE k.condeferrable AND ${userSchemas}
+          AND NOT (n.nspname || '.' || c.relname || '.' || k.conname = ANY ($1::text[]))
+       UNION ALL
+       SELECT pg_catalog.format('trigger %I on %I.%I is deferrable', t.tgname, n.nspname, c.relname)
+         FROM pg_catalog.pg_trigger t
+         JOIN pg_catalog.pg_class c ON c.oid = t.tgrelid
+         JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+        WHERE t.tgdeferrable AND t.tgconstraint = 0 AND ${userSchemas}
+     ) found ORDER BY 1`,
+    [policy.guards.deferrableConstraints],
+  );
+}
+
 const guards = [
   tablesWithoutForcedRls,
   unsafeViewsAndFunctions,
@@ -201,9 +228,10 @@ const guards = [
   (client: Query) => runtimeRolePrivileges(client),
   roleSettings,
   extensions,
+  deferrableConstraints,
 ] as const;
 
-/** Runs guards 1 to 8 (spec 0001, R7) and returns every violation, numbered by guard. */
+/** Runs guards 1 to 9 (spec 0001, R7) and returns every violation, numbered by guard. */
 export async function runGuards(client: Query, policy: DatabasePolicy): Promise<GuardViolation[]> {
   const violations: GuardViolation[] = [];
   for (const [index, guard] of guards.entries()) {

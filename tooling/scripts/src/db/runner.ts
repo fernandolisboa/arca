@@ -25,7 +25,11 @@ const journalTable = 'arca_migrations.journal';
 
 const pinnedSearchPath = 'pg_catalog, pg_temp';
 
-/** The journal exactly as the runner creates it: anything a migration attached could run code. */
+/**
+ * The journal exactly as the runner creates it. Anything a migration attached could run its code
+ * when the journal is written or planned (a default, constraint, index expression or predicate,
+ * statistics expression, child table), so the shape is checked before the journal is read.
+ */
 const journalShapeQuery = `
   WITH journal AS (SELECT '${journalTable}'::pg_catalog.regclass AS oid)
   SELECT problem FROM (
@@ -54,13 +58,22 @@ const journalShapeQuery = `
       FROM pg_catalog.pg_constraint k JOIN journal j ON k.conrelid = j.oid
      WHERE k.contype NOT IN ('p', 'n')
     UNION ALL
-    SELECT 'the journal table has an unexpected index'
+    SELECT 'the journal table has an index other than its plain primary key'
      WHERE (SELECT pg_catalog.count(*) FROM pg_catalog.pg_index i JOIN journal j ON i.indrelid = j.oid) <> 1
+        OR NOT EXISTS (SELECT FROM pg_catalog.pg_index i JOIN journal j ON i.indrelid = j.oid
+                        WHERE i.indisprimary AND i.indkey::text = '1'
+                          AND i.indexprs IS NULL AND i.indpred IS NULL)
+    UNION ALL
+    SELECT 'the journal table has inheritance' FROM pg_catalog.pg_inherits h JOIN journal j
+        ON h.inhrelid = j.oid OR h.inhparent = j.oid
+    UNION ALL
+    SELECT 'the journal table has extended statistics' FROM pg_catalog.pg_statistic_ext x
+      JOIN journal j ON x.stxrelid = j.oid
   ) found`;
 
 async function readJournal(client: pg.Client): Promise<JournalRow[]> {
   const result = await client.query<JournalRow>(
-    `SELECT name, checksum FROM ${journalTable} ORDER BY name COLLATE "C"`,
+    `SELECT name, checksum FROM ONLY ${journalTable} ORDER BY name COLLATE "C"`,
   );
   return result.rows;
 }
@@ -68,31 +81,9 @@ async function readJournal(client: pg.Client): Promise<JournalRow[]> {
 /** Checks that only the runner can satisfy: they cover what a DO block can do past the parser. */
 async function transactionChecks(
   client: pg.Client,
-  transactionId: string,
   expectedJournal: readonly JournalRow[],
 ): Promise<string[]> {
   const problems: string[] = [];
-  const identity = await client.query<{
-    current: string;
-    session: string;
-    xid: string;
-    searchPath: string;
-  }>(
-    `SELECT pg_catalog.current_user() AS current, pg_catalog.session_user() AS session,
-            pg_catalog.pg_current_xact_id()::text AS xid,
-            pg_catalog.current_setting('search_path') AS "searchPath"`,
-  );
-  const row = identity.rows[0];
-  if (row?.searchPath !== pinnedSearchPath) {
-    problems.push(`search_path is ${String(row?.searchPath)} during the checks`);
-  }
-  if (row?.current !== migratorRole || row.session !== migratorRole) {
-    problems.push(
-      `ran as ${String(row?.current)} (session ${String(row?.session)}), not ${migratorRole}`,
-    );
-  }
-  if (row?.xid !== transactionId) problems.push('the transaction ended inside a migration');
-
   // The shape is checked before the journal is read, so reading it runs no migration code.
   const journalShape = await client.query<{ problem: string }>(journalShapeQuery);
   problems.push(...journalShape.rows.map((found) => found.problem));
@@ -125,12 +116,49 @@ async function transactionChecks(
                            'pg_catalog.pg_db_role_setting'::pg_catalog.regclass)`,
   );
   for (const { name } of roleWrites.rows) problems.push(`changed roles (wrote ${name})`);
+
+  // A WITH HOLD cursor would run its query at COMMIT, after the guards; rejecting rolls it back
+  // unrun. The runner's own unnamed portal is listed with an empty name.
+  const cursors = await client.query<{ name: string }>(
+    `SELECT name FROM pg_catalog.pg_cursors WHERE name <> ''`,
+  );
+  for (const { name } of cursors.rows) problems.push(`left cursor ${name} open`);
+  return problems;
+}
+
+/**
+ * Runs last, after the guards: if any migration code had run after the pin, the search path or the
+ * role would show it.
+ */
+async function identityChecks(client: pg.Client, transactionId: string): Promise<string[]> {
+  const problems: string[] = [];
+  const identity = await client.query<{
+    current: string;
+    session: string;
+    xid: string;
+    searchPath: string;
+  }>(
+    `SELECT pg_catalog.current_user() AS current, pg_catalog.session_user() AS session,
+            pg_catalog.pg_current_xact_id()::text AS xid,
+            pg_catalog.current_setting('search_path') AS "searchPath"`,
+  );
+  const row = identity.rows[0];
+  if (row?.searchPath !== pinnedSearchPath) {
+    problems.push(`search_path is ${String(row?.searchPath)} during the checks`);
+  }
+  if (row?.current !== migratorRole || row.session !== migratorRole) {
+    problems.push(
+      `ran as ${String(row?.current)} (session ${String(row?.session)}), not ${migratorRole}`,
+    );
+  }
+  if (row?.xid !== transactionId) problems.push('the transaction ended inside a migration');
+
   return problems;
 }
 
 /**
  * Applies pending migrations as app_migrator in one transaction that commits only if the
- * transaction checks and guards 1 to 8 pass (spec 0001, R7). Throws MigrationRejected otherwise,
+ * transaction checks and guards 1 to 9 pass (spec 0001, R7). Throws MigrationRejected otherwise,
  * after rolling everything back.
  */
 export async function migrate(
@@ -210,17 +238,19 @@ async function applyInTransaction(
       file.checksum,
     ]);
   }
-  // Deferred constraint triggers would otherwise run migration code at COMMIT, after the guards.
-  await client.query('SET CONSTRAINTS ALL IMMEDIATE');
-  // From here on no migration code runs, so the pinned search path holds through the checks; the
-  // identity check confirms it.
+  // From here on the runner reads only built-in catalogs and a journal whose shape it checks first,
+  // so no migration code runs. What would run at COMMIT, after the guards, is rejected instead: a
+  // deferred trigger or constraint (guard 9) and a WITH HOLD cursor (the cursor check). The last
+  // check confirms the pin still holds.
   await client.query(`SET LOCAL search_path = ${pinnedSearchPath}`);
+  await client.query("SET LOCAL client_encoding = 'UTF8'");
   await client.query('RESET ROLE');
 
   const expected = [...before, ...plan.pending.map(({ name, checksum }) => ({ name, checksum }))];
-  const problems = await transactionChecks(client, transactionId, expected);
+  const problems = await transactionChecks(client, expected);
   const violations: GuardViolation[] = await runGuards(client, policy);
   problems.push(...violations.map(({ guard, problem }) => `guard ${String(guard)}: ${problem}`));
+  problems.push(...(await identityChecks(client, transactionId)));
   if (problems.length > 0) throw new MigrationRejected(problems);
   return plan.pending.map((file) => file.name);
 }
