@@ -129,7 +129,7 @@ Recorded here so the requirement is not lost; implemented by the consultancy cor
 - `docs/threat-models/foundations.md`: STRIDE plus the LLM and agentic risks for the whole foundations epic (specs 0001, 0003, 0004, 0005), assets, trust boundaries and data flows, each threat mapped to its control and test, and the accepted residuals with the ADR that accepts them.
 - **Real-data gate**, kept as a checklist in the epic issue and in `docs/runbooks/real-data-gate.md`. Production accepts family data only when all are true:
   1. Previews fork from `development`, proven by R1.
-  2. Spec 0003 is done in production on the production domain, including recovery.
+  2. Spec 0003 is done in production on the production host, including recovery, which needs the email domain (ADR-0015).
   3. Sentry reports from server and client, scrubbed (R3 to R5).
   4. Registry guard, export and deletion work (R7 to R9).
   5. Retention jobs run (R10).

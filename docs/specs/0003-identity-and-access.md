@@ -83,12 +83,12 @@ Members of the family sign in with passkeys, invited by someone already in, on e
 ### R8. Email
 
 - An `EmailSender` port in `apps/api` with two adapters: Resend (production only) and an outbox writer (every other environment). Messages are built from i18n templates in pt-BR with generic text and one link; no personal data beyond the recipient address.
-- Resend: the production domain added with the São Paulo sending region, SPF, DKIM and DMARC set; the API key is a Sensitive Vercel variable (Production only). The ticket records Resend's log retention for the plan in [RETENTION.md](../RETENTION.md).
+- Resend: the email domain (one the project owns; ADR-0015) added with the São Paulo sending region, SPF, DKIM and DMARC set; the API key is a Sensitive Vercel variable (Production only). The ticket records Resend's log retention for the plan in [RETENTION.md](../RETENTION.md).
 - Outbox: table `auth.outbox`, present in every environment so schemas never diverge; production refuses to select the outbox adapter; shown at `/internal/outbox` only on preview deployments, behind Vercel Deployment Protection; rows expire after 7 days.
 
 ### R9. Relying party and environments
 
-- A repository configuration file names the production relying-party ID and origin. While it is empty, production refuses owner enrollment, invites, registration and recovery with a clear error code, and the web app shows that sign-in is not available yet.
+- A repository configuration file names the production relying-party ID and origin (for now the project's `vercel.app` host, ADR-0015). While it is empty, production refuses owner enrollment, invites, registration and recovery with a clear error code, and the web app shows that sign-in is not available yet. While no email domain is configured, production refuses invites and recovery with their own error code.
 - A preview uses its branch URL host (`VERCEL_BRANCH_URL`) as relying-party ID and origin; ceremonies from any other origin, including the per-deployment URL, are rejected.
 - Local development uses `localhost`, which WebAuthn treats as a secure context.
 
@@ -124,5 +124,5 @@ Assets: passkeys, sessions, recovery codes, invites, the enrollment code, stored
 
 - Every requirement is covered by a test: unit tests for the step-up challenge and re-verification, database tests for privileges and the audit log's grants, and Playwright with a virtual authenticator (with PRF) for enrollment, invite, sign-in, step-up, recovery and device revocation at phone and desktop sizes.
 - The access-matrix suite covers `app_auth` and `app_audit`.
-- A preview shows invite, sign-in, step-up, recovery and devices with the outbox; owner enrollment is proven in Playwright against an empty database, since seeded previews already have accounts; production refuses enrollment until the relying-party file names the domain.
+- A preview shows invite, sign-in, step-up, recovery and devices with the outbox; owner enrollment is proven in Playwright against an empty database, since seeded previews already have accounts; production refuses enrollment until the relying-party file names the host, and invites and recovery until an email domain is configured.
 - No user-facing string outside i18n; no personal data in fixtures, logs or telemetry.

@@ -2,7 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-11-02
-- Amends: [ADR-0006](0006-auth.md) (enrollment, step-up mechanics, recovery details, session transport timing), [ADR-0005](0005-platform-strategy.md) and [ADR-0010](0010-stack-revised.md) (native bearer tokens move to Phase 4)
+- Amends: [ADR-0006](0006-auth.md) (enrollment, step-up mechanics, recovery details, session transport timing, and the production relying-party ID for now), [ADR-0005](0005-platform-strategy.md) and [ADR-0010](0010-stack-revised.md) (native bearer tokens move to Phase 4)
 - Spec: [0003 identity and access](../specs/0003-identity-and-access.md)
 
 ## Context
@@ -12,7 +12,7 @@ ADR-0006 chose Better Auth with passkeys only, step-up for sensitive actions and
 - **Who may create an account.** Until Phase 3, Arca serves one family. Open sign-up would let anyone on the internet create accounts, store data and spend AI budget.
 - **The first account.** Someone has to become the first user of an empty production database without an operator touching it, and before any invite exists.
 - **Step-up bound to what it approves.** A step-up that proves only "someone verified recently" can be spent on another action by whoever shares the session. Some approvals must also be provable later: knowledge-base decisions (ADR-0014, proposed in pull request #39) will need a person's passkey step-up bound to a content hash, re-verifiable against keys pinned outside the database. Their purposes, tables and ceremony come in their own spec and ADR after this one; this ADR only provides the purpose-bound step-up they will consume. Better Auth's passkey plugin issues its own challenges for sign-in only.
-- **The relying-party ID.** Passkeys are bound to it. Production uses the production domain, which is not registered yet. `vercel.app` is on the [Public Suffix List](https://publicsuffix.org/list/public_suffix_list.dat) (checked 2026-11-01 for ADR-0010), so previews cannot share one relying-party ID.
+- **The relying-party ID.** Passkeys are bound to it. The project owner decided (2026-11-02) not to register a domain for now, so production uses the project's own `vercel.app` host, renamed from the generated one to a meaningful name (`arca.vercel.app` belongs to another Vercel account). `vercel.app` is on the [Public Suffix List](https://publicsuffix.org/list/public_suffix_list.dat) (checked 2026-11-01 for ADR-0010), so each host is its own site: production's host can be a relying-party ID, and previews cannot share one. A custom domain may come later.
 - **Identity name.** The request identity in the database is `app.person_id` (spec 0001, R7). A case holds people who never sign in (children, a grandparent described by a relative), so the signed-in identity is an account, not a case person.
 - **Native sessions.** ADR-0006 asks for bearer tokens on native apps. No native app exists until Phase 4.
 
@@ -66,7 +66,7 @@ The step-by-step procedure, encodings and tests are normative in [spec 0003](../
 
 ### Relying party per environment
 
-- Production uses the production domain as relying-party ID, set in a repository configuration file. Until that file names a domain, production refuses every registration and enrollment, so no passkey is ever bound to a temporary host.
+- Production uses its production host as relying-party ID, set in a repository configuration file; for now that is the project's `vercel.app` host. Until that file names a host, production refuses every registration and enrollment. Moving to a custom domain later invalidates every passkey and every vault envelope sealed to one (PRF), leaving the recovery kits, so the move must happen before anyone besides the project owner has an account; the project owner then enrolls again and opens the vault with the recovery secret.
 - A preview uses its branch URL host as relying-party ID and rejects ceremonies from any other origin. Preview passkeys are throwaway, like preview data.
 
 ### Recovery
@@ -86,7 +86,7 @@ The step-by-step procedure, encodings and tests are normative in [spec 0003](../
 
 ### Email
 
-- Resend sends from the production domain with the sending region set to São Paulo. Messages carry a link and generic text. Link tokens (invite, enrollment, recovery) travel only in the URL fragment: the web app reads the fragment and sends the token in a POST body, and the API accepts these tokens in no path or query parameter, so they never reach request logs, history or a `Referer`; the data-flow register records that Resend stores recipient addresses and metadata in the United States.
+- Resend sends from an email domain the project owns, with the sending region set to São Paulo. A `vercel.app` host cannot be verified for sending, so until such a domain is registered and added, production sends no email and refuses invites and recovery with a clear error code; owner enrollment needs no email and works. Messages carry a link and generic text. Link tokens (invite, enrollment, recovery) travel only in the URL fragment: the web app reads the fragment and sends the token in a POST body, and the API accepts these tokens in no path or query parameter, so they never reach request logs, history or a `Referer`; the data-flow register records that Resend stores recipient addresses and metadata in the United States.
 - Non-production environments never send email. Their sender writes to an outbox table that a preview-only page shows, behind Vercel Deployment Protection. The table exists in every environment, so schemas never diverge; production refuses to select the outbox adapter.
 - Resend is called through its REST API with `fetch`, with no SDK package.
 
@@ -108,7 +108,7 @@ The step-by-step procedure, encodings and tests are normative in [spec 0003](../
 
 ## Consequences
 
-- Production cannot have users until the domain is registered and set; previews can.
+- Until an email domain is registered, production holds only the project owner, without email recovery (a synced passkey is the fallback); the real-data gate needs recovery in production (spec 0004 R13), so it needs that domain. Previews do everything through the outbox.
 - Owner enrollment depends on the owner running `pnpm enrollment-code` once and keeping the code.
 - Step-up and its stored assertions are security-critical code with must-pass security and auth-and-cryptography reviews.
 - The `app.person_id` rename touches the identity helper, the pool's connection check and their tests.
