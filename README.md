@@ -14,7 +14,7 @@ Requirements: Node.js at the version in [.nvmrc](.nvmrc) and pnpm at the exact v
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm check    # format check, dependency sources, boundaries, lint, typecheck, tests and build, through Turborepo
+pnpm check    # format check, dependency sources, boundaries, web bundle, lint, typecheck, tests and build, through Turborepo
 ```
 
 Set `TURBO_TELEMETRY_DISABLED=1` in your shell to turn off Turborepo's anonymous usage telemetry; CI sets it.
@@ -28,6 +28,8 @@ One origin: `pnpm --filter @arca/api build` builds `apps/web` and then the Nitro
 Database: roles live in [packages/db/bootstrap.sql](packages/db/bootstrap.sql) and migrations in `packages/db/migrations/<timestamp>_<name>/migration.sql`. The runner in [tooling/scripts/src/db](tooling/scripts/src/db) applies them as `app_migrator` in one transaction that commits only if the guards pass (spec R7). To run the database tests, start a throwaway Postgres 18 (for example `docker run -d -p 127.0.0.1:5432:5432 -e POSTGRES_PASSWORD=postgres postgres:18`; the tests create roles across the server, so never point them at a shared one), then `ARCA_TEST_DB_ADMIN_PASSWORD=postgres pnpm test:db`, which runs each package's database tests one package at a time. CI runs them in the `db` job.
 
 Runtime database access goes through `@arca/db`: `createRolePool` logs in as `app_api` or `app_jobs` with every field explicit and rejects a connection running as any other role, and `withIdentity` sets the request identity for one transaction. Only the build scripts in `tooling/scripts` may read the owner's variables (`DATABASE_*`, `PG*`, `POSTGRES_*`, `NEON_*`); the `arca/no-owner-environment` lint rule enforces it, and runtime code reads its own variables by name in one config module.
+
+Web app: `pnpm --filter @arca/web dev` serves `apps/web` with Vite at http://localhost:5173 (calls to `/v1` need the API on the same origin, so check the API status through the built app). `pnpm turbo run e2e` builds the web app and the Nitro server and runs the Playwright suite against it at phone and desktop sizes; install the browser once with `pnpm --filter @arca/web exec playwright install chromium`, or point `ARCA_E2E_CHROMIUM` at a local Chromium. User-facing text lives in the pt-BR catalog in [packages/i18n](packages/i18n/src/catalogs/pt-BR.ts), in ICU message format; a key that is not in the catalog fails the typecheck.
 
 Single steps: `pnpm format`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`. Code layout: [ARCHITECTURE.md](docs/ARCHITECTURE.md#platforms-and-code-layout) and the [spec](docs/specs/0001-foundations-scaffold.md#layout).
 

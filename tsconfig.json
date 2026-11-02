@@ -17,10 +17,10 @@
       "path": "packages/domain"
     },
     {
-      "path": "packages/i18n"
+      "path": "packages/i18n/tsconfig.build.json"
     },
     {
-      "path": "packages/platform"
+      "path": "packages/platform/tsconfig.build.json"
     },
     {
       "path": "packages/ui"

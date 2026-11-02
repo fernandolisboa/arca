@@ -24,3 +24,6 @@ apps/api/generated/
 # Nitro build output.
 .output/
 .nitro/
+# Playwright output.
+test-results/
+playwright-report/

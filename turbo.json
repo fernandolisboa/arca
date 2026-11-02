@@ -28,6 +28,14 @@
     "@arca/api#test": {
       "dependsOn": ["^build", "@arca/web#build"],
       "inputs": ["$TURBO_DEFAULT$", "generated/**"]
+    },
+    "//#check:web-bundle": {
+      "dependsOn": ["@arca/web#build"]
+    },
+    "@arca/web#e2e": {
+      "dependsOn": ["@arca/api#build"],
+      "cache": false,
+      "passThroughEnv": ["ARCA_E2E_CHROMIUM", "PLAYWRIGHT_BROWSERS_PATH"]
     }
   }
 }

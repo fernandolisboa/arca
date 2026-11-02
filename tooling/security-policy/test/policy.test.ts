@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { contentSecurityPolicy, securityHeaders } from '../src/index.js';
+import { contentSecurityPolicy, isUnpublishedFile, securityHeaders } from '../src/index.js';
 
 describe('securityHeaders', () => {
   it('matches spec 0001, R4', () => {
@@ -14,4 +14,20 @@ describe('securityHeaders', () => {
       'permissions-policy': 'camera=(), microphone=(), geolocation=()',
     });
   });
+});
+
+describe('isUnpublishedFile', () => {
+  it.each(['.tsbuildinfo', 'assets/index-abc.js.map', 'icons/.DS_Store', '.well-known/x'])(
+    'leaves out %s',
+    (path) => {
+      expect(isUnpublishedFile(path)).toBe(true);
+    },
+  );
+
+  it.each(['index.html', 'assets/index-abc.js', 'icons/icon-192.png', 'manifest.webmanifest'])(
+    'publishes %s',
+    (path) => {
+      expect(isUnpublishedFile(path)).toBe(false);
+    },
+  );
 });

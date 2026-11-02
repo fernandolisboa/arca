@@ -1,3 +1,5 @@
+// First, so it runs before the route schemas are built.
+import './jitless.js';
 import type { z } from 'zod';
 import { apiBasePath, ErrorResponse, type RouteDefinition } from '../routes/index.js';
 
