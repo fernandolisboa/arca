@@ -325,6 +325,7 @@ describe('canary corpus', () => {
     const reviewer = {
       name: 'security-reviewer',
       mustPass: true,
+      areaScoped: false,
       model: 'fable',
       effort: 'high',
       tools: [],
@@ -357,6 +358,20 @@ describe('canary corpus', () => {
         JSON.stringify({ findings: [], unassessed: [{ reason: 'missing_context', note: 'n' }] }),
       ).passed,
     ).toBe(false);
+    expect(
+      judgeCanaryRun(
+        run,
+        reviewer,
+        JSON.stringify({ findings: [], unassessed: [{ reason: 'outside_area', note: 'n' }] }),
+      ).passed,
+    ).toBe(false);
+    expect(
+      judgeCanaryRun(
+        run,
+        { ...reviewer, name: 'data-access-reviewer', areaScoped: true },
+        JSON.stringify({ findings: [], unassessed: [{ reason: 'outside_area', note: 'n' }] }),
+      ).detail,
+    ).toBe("the reviewer's verdict was pass");
     const both = { ...run, categories: ['injection' as const, 'instruction-injection' as const] };
     expect(judgeCanaryRun(both, reviewer, finding('injection')).detail).toBe(
       'blocked, but not for instruction-injection',
