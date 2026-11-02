@@ -22,7 +22,7 @@ Every change is reviewed by specialized AI reviewers before merge. They are defi
 | [supply-chain-reviewer](../.claude/agents/supply-chain-reviewer.md) | Dependencies, lockfile, CI workflows, build and deploy config, new services or vendors | Must pass | `fable` |
 | [ai-safety-reviewer](../.claude/agents/ai-safety-reviewer.md) | Prompts, agents, AI adapters, retrieval, rendering of model output, evaluation suite | Must pass | `fable` |
 
-The review gate reads this table to weigh each reviewer: a row needs the linked reviewer name and exactly `Must pass` or `Should pass`, and an agent without a row stops the gate.
+The review gate reads this table to weigh each reviewer: a row needs the linked reviewer name, a non-empty "Runs on" cell and exactly `Must pass` or `Should pass`, and an agent without a row stops the gate. A reviewer whose "Runs on" cell is exactly `Every change` is a core reviewer; any other is a specialist.
 
 Added in Phase 4: a mobile security reviewer verifying against OWASP MASVS.
 
@@ -33,7 +33,7 @@ Each reviewer returns **PASS** or **BLOCK**, followed by findings with severity 
 - Any critical or high finding from any reviewer blocks the merge.
 - Medium findings from must-pass reviewers block unless the change records why they are accepted, in the pull request and, when it is a lasting trade-off, in an ADR.
 - Should-pass reviewers never block alone; their findings are fixed in the same change or tracked.
-- A reviewer that could not assess something (missing context, tests that would not run) says so; that counts as BLOCK for must-pass reviewers. In CI, reviewers cannot run commands; running tests is the job of the required test checks, so not running them there is not a gap to report. CI reviewers report what they could not assess in a separate field, and the gate fails a must-pass reviewer that reports anything there except `tests_not_run`, which the required test checks cover.
+- A reviewer that could not assess something (missing context, tests that would not run) says so; that counts as BLOCK for must-pass reviewers. In CI, reviewers cannot run commands; running tests is the job of the required test checks, so not running them there is not a gap to report. CI reviewers report what they could not assess in a separate field, and the gate fails a must-pass reviewer that reports anything there except `tests_not_run`, which the required test checks cover, and `outside_area`, which a specialist reports with no findings when the change touches nothing in its area. From a core reviewer, or next to a finding, `outside_area` blocks.
 - Medium findings accepted in a change are listed, with the reason, in [review-acceptances.md](review-acceptances.md); the CI gate reads that file.
 
 ## Changing reviewers
@@ -46,3 +46,5 @@ Reviewer definitions and the review CI workflow are security-critical configurat
 | 2026-11-01 | Gate protection simplified: no `arca-gate` App, no code-owner approval, agents may push workflows | Owner decision to automate setup ([ADR-0012](adr/0012-automation-first-setup.md)) |
 | 2026-11-02 | Review gate and canary in CI (`review-gate.yml`, `review-canary.yml`, `eval/review-gate/`); canary counted per gate fingerprint; reviewers on model aliases, with optional pins in repository variables | Spec 0001 R10 ([ADR-0013](adr/0013-review-gate-canary-and-model-pins.md)) |
 | 2026-11-02 | Reviewers authenticate with the owner's Claude subscription token (`CLAUDE_CODE_OAUTH_TOKEN`) instead of an API key; gitleaks matches every `sk-ant-` token kind | No standing API spend for CI reviews ([ADR-0013](adr/0013-review-gate-canary-and-model-pins.md)) |
+| 2026-11-02 | A push to `main` dispatches the canary through `review-canary-push.yml` instead of starting it directly | The reviewer action rejects `push` events ([ADR-0013](adr/0013-review-gate-canary-and-model-pins.md)) |
+| 2026-11-02 | New `unassessed` reason `outside_area`: a specialist with no findings uses it when the change touches nothing in its area, and it does not block; from a core reviewer it blocks; new canary case `injection-outside-area` | Specialists blocked unrelated changes by explaining in `other` that there was nothing to review (#37, #38) ([ADR-0011](adr/0011-reviewers-in-ci.md)) |

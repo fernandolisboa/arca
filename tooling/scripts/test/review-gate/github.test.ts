@@ -15,6 +15,9 @@ interface Fake {
   artifacts?: unknown[];
   runs?: Record<number, unknown>;
   inProgress?: unknown[];
+  pending?: unknown[];
+  /** Runs of the push workflow, whatever the status filter. */
+  pushRuns?: unknown[];
   completed?: unknown[];
   comments?: unknown[];
 }
@@ -25,10 +28,14 @@ function fake(state: Fake) {
     calls.push({ method, path, body });
     if (path.includes('/actions/artifacts'))
       return Promise.resolve({ artifacts: state.artifacts ?? [] });
+    if (path.includes('/workflows/review-canary-push.yml/'))
+      return Promise.resolve({ workflow_runs: state.pushRuns ?? [] });
     const run = /\/actions\/runs\/(\d+)$/.exec(path);
     if (run) return Promise.resolve(state.runs?.[Number(run[1])]);
     if (path.includes('status=in_progress'))
       return Promise.resolve({ workflow_runs: state.inProgress ?? [] });
+    if (path.includes('status=pending') || path.includes('status=requested'))
+      return Promise.resolve({ workflow_runs: state.pending ?? [] });
     if (path.includes('status=queued')) return Promise.resolve({ workflow_runs: [] });
     const finished = /[?&]branch=main&status=(failure|timed_out)&/.exec(path);
     if (finished)
@@ -47,7 +54,7 @@ function fake(state: Fake) {
 const goodRun = {
   path: '.github/workflows/review-canary.yml',
   head_branch: 'main',
-  event: 'push',
+  event: 'workflow_dispatch',
   conclusion: 'success',
   run_number: 10,
   run_attempt: 1,
@@ -66,6 +73,7 @@ describe('canary lookup', () => {
     ['another branch', { head_branch: 'feature' }],
     ['a pull_request event', { event: 'pull_request' }],
     ['a pull_request_target event', { event: 'pull_request_target' }],
+    ['a push event', { event: 'push' }],
     ['a failed run', { conclusion: 'failure' }],
     ['a re-run', { run_attempt: 2 }],
     ['another repository', { repository: { full_name: 'fork/repo' } }],
@@ -81,7 +89,7 @@ describe('canary lookup', () => {
       completed: [
         { event: 'workflow_dispatch', conclusion: 'cancelled', run_number: 13 },
         { event: 'schedule', conclusion: 'timed_out', run_number: 12 },
-        { event: 'push', conclusion: 'success', run_number: 10 },
+        { event: 'workflow_dispatch', conclusion: 'success', run_number: 10 },
       ],
     });
     expect(await canaryState(request, repository, fingerprint)).toBe('missing');
@@ -89,9 +97,9 @@ describe('canary lookup', () => {
 
   it('counts only runs whose conclusion matches, if the API ignores the status filter', async () => {
     const runs = [
-      { event: 'push', conclusion: 'success', run_number: 12 },
-      { event: 'push', conclusion: 'skipped', run_number: 11 },
-      { event: 'push', conclusion: 'success', run_number: 10 },
+      { event: 'workflow_dispatch', conclusion: 'success', run_number: 12 },
+      { event: 'workflow_dispatch', conclusion: 'skipped', run_number: 11 },
+      { event: 'workflow_dispatch', conclusion: 'success', run_number: 10 },
     ];
     const { request } = fake({ artifacts: [artifact], runs: { 1: goodRun } });
     const unfiltered: GitHubRequest = (method, path, body) =>
@@ -108,7 +116,7 @@ describe('canary lookup', () => {
       completed: [
         { event: 'workflow_dispatch', conclusion: 'success', run_number: 14 },
         { event: 'schedule', conclusion: 'failure', run_number: 12 },
-        { event: 'push', conclusion: 'success', run_number: 10 },
+        { event: 'workflow_dispatch', conclusion: 'success', run_number: 10 },
       ],
     });
     expect(await canaryState(request, repository, fingerprint)).toBe('missing');
@@ -121,8 +129,8 @@ describe('canary lookup', () => {
       completed: [
         { event: 'pull_request_target', conclusion: 'failure', run_number: 13 },
         { event: 'schedule', conclusion: 'cancelled', run_number: 12 },
-        { event: 'push', conclusion: 'skipped', run_number: 11 },
-        { event: 'push', conclusion: 'success', run_number: 10 },
+        { event: 'workflow_dispatch', conclusion: 'skipped', run_number: 11 },
+        { event: 'workflow_dispatch', conclusion: 'success', run_number: 10 },
         { event: 'schedule', conclusion: 'failure', run_number: 9 },
       ],
     });
@@ -135,7 +143,18 @@ describe('canary lookup', () => {
   });
 
   it('reports a canary still running on main', async () => {
-    const { request } = fake({ inProgress: [{ event: 'push' }] });
+    const { request } = fake({ inProgress: [{ event: 'workflow_dispatch' }] });
+    expect(await canaryState(request, repository, fingerprint)).toBe('running');
+  });
+
+  // A dispatched run waits as pending while an earlier run holds the concurrency group.
+  it('reports a canary waiting for its concurrency group on main', async () => {
+    const { request } = fake({ pending: [{ event: 'workflow_dispatch' }] });
+    expect(await canaryState(request, repository, fingerprint)).toBe('running');
+  });
+
+  it('reports a canary that the push workflow has yet to dispatch', async () => {
+    const { request } = fake({ pushRuns: [{ event: 'push' }] });
     expect(await canaryState(request, repository, fingerprint)).toBe('running');
   });
 

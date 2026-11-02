@@ -8,8 +8,9 @@ import {
   parseReviewerOutput,
 } from '../../src/review-gate/verdict.ts';
 
-const mustPass = { name: 'security-reviewer', mustPass: true };
-const shouldPass = { name: 'standards-reviewer', mustPass: false };
+const mustPass = { name: 'security-reviewer', mustPass: true, areaScoped: false };
+const shouldPass = { name: 'standards-reviewer', mustPass: false, areaScoped: false };
+const specialist = { name: 'data-access-reviewer', mustPass: true, areaScoped: true };
 
 function finding(overrides: Partial<Finding> = {}): Finding {
   return {
@@ -69,7 +70,7 @@ describe('reviewer output', () => {
 
 describe('reviewer verdict and gate (spec 0001, R10)', () => {
   const judge = (
-    reviewer: { name: string; mustPass: boolean },
+    reviewer: { name: string; mustPass: boolean; areaScoped: boolean },
     raw: string | undefined,
     rows: Acceptance[] = [],
   ) => judgeReviewer(reviewer, raw, rows, 42);
@@ -127,6 +128,36 @@ describe('reviewer verdict and gate (spec 0001, R10)', () => {
     expect(failsGate(judge(mustPass, output([], [{ reason: 'tests_not_run', note: 'n' }])))).toBe(
       false,
     );
+  });
+
+  it('outside_area from a specialist with no findings passes, since its area is untouched', () => {
+    const outsideArea = { reason: 'outside_area', note: 'Only CI workflows changed.' };
+    const judgment = judge(specialist, output([], [outsideArea]));
+    expect(judgment.outcome).toBe('pass');
+    expect(judgment.unassessed).toEqual([]);
+    expect(failsGate(judgment)).toBe(false);
+  });
+
+  it('outside_area next to any finding blocks, since the reviewer found something in its area', () => {
+    const outsideArea = { reason: 'outside_area', note: 'n' };
+    const judgment = judge(specialist, output([finding({ severity: 'low' })], [outsideArea]));
+    expect(judgment.unassessed).toEqual([outsideArea]);
+    expect(failsGate(judgment)).toBe(true);
+  });
+
+  it('outside_area from a core reviewer blocks, since it reviews every change', () => {
+    const outsideArea = { reason: 'outside_area', note: 'Docs only.' };
+    const judgment = judge(mustPass, output([], [outsideArea]));
+    expect(judgment.unassessed).toEqual([outsideArea]);
+    expect(failsGate(judgment)).toBe(true);
+  });
+
+  it('outside_area does not cover another unassessed entry', () => {
+    const entries = [
+      { reason: 'outside_area', note: 'n' },
+      { reason: 'missing_context', note: 'n' },
+    ];
+    expect(failsGate(judge(specialist, output([], entries)))).toBe(true);
   });
 
   it('an unassessed entry from a should-pass reviewer does not fail the gate', () => {

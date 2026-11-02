@@ -2,6 +2,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
 import { parseAcceptances } from '../../src/review-gate/acceptances.ts';
 import { commentMarker, inert, renderComment } from '../../src/review-gate/comment.ts';
+import { reviewerPrompt } from '../../src/review-gate/prompt.ts';
 import {
   AgentDefinitionError,
   parseAgentDefinition,
@@ -121,11 +122,35 @@ describe('agent definitions', () => {
     expect(reviewers.find((reviewer) => reviewer.name === 'standards-reviewer')?.mustPass).toBe(
       false,
     );
+    const specialists = reviewers.filter((reviewer) => reviewer.areaScoped).map((r) => r.name);
+    expect(specialists.sort()).toEqual([
+      'ai-safety-reviewer',
+      'auth-crypto-reviewer',
+      'data-access-reviewer',
+      'supply-chain-reviewer',
+    ]);
+  });
+
+  it('reads a row without a "Runs on" cell as no row', () => {
+    const weights = reviewerWeights('| [new-reviewer](x.md) |  | Must pass | `fable` |');
+    expect(weights.has('new-reviewer')).toBe(false);
   });
 
   it('refuses a reviewer without a weight', () => {
     const agent = parseAgentDefinition(definition('name: new-reviewer\ntools: Read\nmodel: fable'));
     expect(() => withWeights([agent], new Map())).toThrow('no row in the docs/REVIEW.md table');
+  });
+});
+
+describe('reviewer prompt scope', () => {
+  const base = { name: 'x-reviewer', model: 'fable', effort: undefined, tools: [], body: 'Body.' };
+
+  it('offers outside_area only to a specialist', () => {
+    const specialist = reviewerPrompt({ ...base, mustPass: true, areaScoped: true }, 'n');
+    const core = reviewerPrompt({ ...base, mustPass: true, areaScoped: false }, 'n');
+    expect(specialist).toContain('one `unassessed` entry with reason `outside_area`');
+    expect(core).toContain('never use the `outside_area` reason');
+    expect(core).not.toContain('one `unassessed` entry with reason `outside_area`');
   });
 });
 
@@ -163,7 +188,7 @@ describe('comment', () => {
       unassessed: [{ reason: 'tests_not_run', note: 'CI runs them' }],
     });
     const judgment = judgeReviewer(
-      { name: 'security-reviewer', mustPass: true },
+      { name: 'security-reviewer', mustPass: true, areaScoped: false },
       raw,
       [
         {
