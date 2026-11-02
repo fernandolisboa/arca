@@ -1,8 +1,8 @@
 # ADR-0013: Review gate canary keyed by the gate's fingerprint, and reviewers on model aliases
 
-- Status: Accepted; revised on 2026-11-02 so reviewers run on model aliases, with repository variables as optional pins
+- Status: Accepted; revised on 2026-11-02 so reviewers run on model aliases, with repository variables as optional pins, and on the owner's Claude subscription instead of an API key
 - Date: 2026-11-02
-- Amends: [ADR-0011](0011-reviewers-in-ci.md) (canary trigger, which model each reviewer runs on, Dependabot key)
+- Amends: [ADR-0011](0011-reviewers-in-ci.md) (canary trigger, which model each reviewer runs on, the reviewers' credential and its Dependabot copy)
 
 ## Context
 
@@ -41,14 +41,25 @@ A called workflow sees only the secrets its caller passes, including environment
 - **Optional pins.** A repository variable (`REVIEW_MODEL_FABLE`, `REVIEW_MODEL_OPUS`, `REVIEW_MODEL_HAIKU`) pins its alias to a model ID when one is set, for example to hold a model back while a regression is investigated. An empty or unset variable means the alias. A malformed value fails the job, and an alias the gate does not know fails before any model runs.
 - **What the fingerprint holds.** The resolved value for each alias: the pin when set, otherwise the alias itself. Changing or removing a pin changes the fingerprint, so it has no canary pass until the canary runs with it; dispatch the canary on `main` after changing one. An alias that moves to a new model leaves the fingerprint unchanged: the weekly full run re-tests it, and a failure there revokes the pass (above).
 
+### Reviewers run on the owner's Claude subscription
+
+- **The credential.** The review and canary jobs authenticate the action with a Claude Code OAuth token, made once with `claude setup-token` and stored as `CLAUDE_CODE_OAUTH_TOKEN`, not with an API key. Runs then use the owner's Claude subscription instead of API billing ([Claude Code GitHub Actions](https://code.claude.com/docs/en/github-actions), checked 2026-11-02).
+- **Why.** Claude Code usage through an API key draws on purchased API credit, which promotional credits do not cover. The owner does not want a standing API spend for CI reviews.
+- **Cost.** Reviews and canary runs count against the subscription's usage limits, shared with the owner's own use. A run that hits a limit fails, and the gate fails closed. This holds only while the account's extra usage (paid overage) stays off; with it on, a heavy week or a leaked token turns into the spend this section avoids.
+- **Lifetime.** `claude setup-token` makes a one-year token ([Authentication](https://code.claude.com/docs/en/authentication#generate-a-long-lived-token), checked 2026-11-02). When it expires, every review and the weekly canary fail, and the failed canary revokes the pass. [OPEN-QUESTIONS](../OPEN-QUESTIONS.md) tracks the rotation date; rotating means running `claude setup-token` again and replacing both copies of the secret.
+- **Scope.** The token can only make model requests, but on the owner's whole account: it cannot be limited to this repository. GitHub keeps it in the `review` environment, limited to `main`, and as the Dependabot fallback below; only jobs that name it receive it.
+- **Terms.** Requests run under the owner's subscription terms, not the API's commercial terms, so the data-flow register records them and the account's model-improvement setting stays off. The content is this public repository's code, docs and synthetic canary cases, never case data.
+- **Leak detection.** The default gitleaks rules match API and admin keys only, so `.github/policy/gitleaks.toml` adds a rule for every `sk-ant-` token kind. The reviewer output scan therefore catches a leaked OAuth token too.
+
 ### Dependabot uses a Dependabot secret of the same name, as a fallback
 
-- Whether the `review` environment's key reaches a Dependabot-triggered `pull_request_target` run is not documented. As a fallback, Dependabot gets a second Anthropic key, with its own spend limit, stored as a Dependabot secret named `ANTHROPIC_API_KEY`.
-- The review job reads `secrets.ANTHROPIC_API_KEY` either way, so no workflow or allow-list change is needed.
+- Whether the `review` environment's token reaches a Dependabot-triggered `pull_request_target` run is not documented. As a fallback, the same token is also stored as a Dependabot secret named `CLAUDE_CODE_OAUTH_TOKEN`.
+- The review job reads `secrets.CLAUDE_CODE_OAUTH_TOKEN` either way, so no workflow or allow-list change is needed.
+- Both copies hold the same token, so they are rotated and revoked together. A separate token for Dependabot would only separate their usage; it adds a second rotation for no change in exposure, since a Dependabot secret reaches only Dependabot-triggered runs of jobs that name it, and the secrets lint keeps it out of every `pull_request` workflow.
 - The token's access comes from each job's `permissions` key. The read-only limit for Dependabot covers only the events listed above, not `pull_request_target`, so the report job keeps `checks: write` and `pull-requests: write`.
 - The action runs for `dependabot` through `allowed_bots`.
 - Dependabot never creates a branch that is a pull request's base here, so the no-secrets case does not arise.
-- The first Dependabot pull request after setup confirms the key, and any pins set, reach the run. If it shows otherwise, this ADR is updated.
+- The first Dependabot pull request after setup confirms the token, and any pins set, reach the run. If it shows otherwise, this ADR is updated.
 
 ### How a reviewer runs
 
@@ -60,7 +71,7 @@ A called workflow sees only the secrets its caller passes, including environment
 - **The agent body.** It goes into the prompt, so it is never loaded as an agent file.
 - **The output.** It is scanned with gitleaks before it is uploaded as an artifact; on a match it is dropped and the reviewer counts as missing.
 - **The canary's retry.** The action retries a canary run once when it lacks a blocking finding of every expected category, so a failed first attempt does not fail the run on its own.
-- **The pull-request canary's key.** The gate passes `ANTHROPIC_API_KEY` by name to `review-canary.yml`, whose `run` job names the `review` environment. GitHub resolves the name from that environment.
+- **The pull-request canary's token.** The gate passes `CLAUDE_CODE_OAUTH_TOKEN` by name to `review-canary.yml`, whose `run` job names the `review` environment. GitHub resolves the name from that environment.
 
 ## Alternatives
 
@@ -76,7 +87,7 @@ A called workflow sees only the secrets its caller passes, including environment
 
 - **Cost.** A change to docs, reviewers or the gate costs one canary run, about 80 model runs. Other merges cost nothing extra, and the weekly run catches drift, including a new model behind an alias.
 - **Doc changes count.** Any change under `docs/` changes the fingerprint, since reference docs reach the reviewers. Docs-heavy weeks cost more canary runs.
-- **Setup by the owner, once.** [ADR-0012](0012-automation-first-setup.md) has agents apply repository settings, but the GitHub access agents have here cannot write environments, secrets or variables. The owner sets the `review` environment with its key and the Dependabot secret, then dispatches the canary. The model variables are optional. The step is in [OPEN-QUESTIONS.md](../OPEN-QUESTIONS.md). Until then, the gate and the canary fail closed.
+- **Setup by the owner, once.** [ADR-0012](0012-automation-first-setup.md) has agents apply repository settings, but the GitHub access agents have here cannot write environments, secrets or variables. The owner sets the `review` environment with the subscription token and the Dependabot secret, then dispatches the canary. The model variables are optional. The step is in [OPEN-QUESTIONS.md](../OPEN-QUESTIONS.md). Until then, the gate and the canary fail closed.
 - **A new model reviews before it is tested.** ADR-0011 had every model change reviewed, and the first version of this ADR re-tested a new pin before it counted. An alias that moves to a new model gates pull requests at once; the canary tests it at the next weekly or dispatched run, so the gap can be up to a week. A failure then stops the gate. To hold a model back, set its variable to the previous model ID and dispatch the canary.
 - **Corpus depth.** Each reviewer has one known-bad payload, so a reviewer narrowed to exactly that payload would still pass its own case. The pull request that weakens it is also reviewed by `main`'s unchanged reviewers, and the injected cases test the same reviewers again. More payloads per reviewer are tracked as a follow-up.
 

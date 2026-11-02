@@ -109,7 +109,7 @@ jobs:
           model: ${{ vars[matrix.modelVariable] || matrix.model }}
           effort: ${{ matrix.effort }}
           output-file: ${{ runner.temp }}/output/${{ matrix.reviewer }}.json
-          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude-code-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}
       - name: Upload the reviewer's output
         if: ${{ !cancelled() }}
@@ -122,7 +122,7 @@ jobs:
 
   # A change to the reviewers runs the canary with its own definitions; a pass there stands in for
   # main's canary result, so a change that repairs the reviewers can merge. A called workflow sees
-  # only the secrets its caller passes, even for a job with an environment, so the key is passed
+  # only the secrets its caller passes, even for a job with an environment, so the token is passed
   # by name; GitHub resolves it from the review environment of the called job. The called
   # workflow's jobs may ask for no more than these permissions; issues: write is for its evaluate
   # job, which opens no issue in this mode.
@@ -137,7 +137,7 @@ jobs:
     with:
       change-agents: true
     secrets:
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
   report:
     needs: [prepare, review, canary]

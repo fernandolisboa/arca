@@ -18,7 +18,7 @@ on:
         type: boolean
         default: false
     secrets:
-      ANTHROPIC_API_KEY:
+      CLAUDE_CODE_OAUTH_TOKEN:
         required: true
 
 permissions: {}
@@ -141,7 +141,7 @@ jobs:
           effort: ${{ matrix.effort }}
           output-file: ${{ runner.temp }}/out/${{ matrix.case }}/${{ matrix.reviewer }}.json
           expect-categories: ${{ toJSON(matrix.categories) }}
-          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude-code-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}
       - name: Upload the output
         if: ${{ !cancelled() }}

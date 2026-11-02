@@ -157,7 +157,7 @@ eval/
 
 All workflows: actions pinned by full commit SHA; top-level `permissions: {}`, with jobs granting only what they need; GitHub-hosted runners; `actions/checkout` with `persist-credentials: false`. Workflows on `pull_request` and `push` use `concurrency` per ref; workflows on `pull_request_target` (the review gate and the policy checks) group by pull request number. Values from the event (branch names, titles, file names) reach `run:` steps only through `env:` and are validated against a strict pattern before use. The review gate filters on `branches: [main]`, so its definition always comes from `main`, and runs only for pull requests from this repository.
 
-**Secrets.** No repository-level secrets. One GitHub environment, `review` (Anthropic key), limited to `main`. Workflows on `pull_request_target` and on `push` to `main` run with ref `main`; runs on `pull_request` do not, so branch code never reaches it. The owner connection string and the role passwords live in Vercel (R9). GitHub does not document whether environment secrets reach a Dependabot-triggered `pull_request_target` run, so Dependabot also gets a Dependabot secret of the same name, `ANTHROPIC_API_KEY`, holding a second, spend-limited Anthropic key, as a fallback ([ADR-0013](../adr/0013-review-gate-canary-and-model-pins.md), with sources).
+**Secrets.** No repository-level secrets. One GitHub environment, `review` (the owner's Claude subscription token), limited to `main`. Workflows on `pull_request_target` and on `push` to `main` run with ref `main`; runs on `pull_request` do not, so branch code never reaches it. The owner connection string and the role passwords live in Vercel (R9). GitHub does not document whether environment secrets reach a Dependabot-triggered `pull_request_target` run, so Dependabot also gets a Dependabot secret of the same name, `CLAUDE_CODE_OAUTH_TOKEN`, holding the same token, as a fallback ([ADR-0013](../adr/0013-review-gate-canary-and-model-pins.md), with sources).
 
 A CI lint checks each workflow file against an allow-list of the secrets and environments it may use; workflows on `pull_request`, `deployment` or `deployment_status` use none, since those run the definition from a branch or from whatever commit was deployed. The lint reads the allow-list from `main`, so a workflow that needs a new secret is preceded by its own PR to the list.
 
@@ -266,7 +266,7 @@ The latest stable release of each, checked on the npm registry on 2026-11-01, un
 
 ## Threat model for this slice
 
-Assets in play: the Anthropic API key in a GitHub environment; the owner connection string and role passwords in Vercel; the owner's tokens in the agent environment; the integrity of `main` and of the review gate. No personal data exists yet.
+Assets in play: the Claude subscription token in a GitHub environment; the owner connection string and role passwords in Vercel; the owner's tokens in the agent environment; the integrity of `main` and of the review gate. No personal data exists yet.
 
 | Threat (STRIDE, LLM and agentic) | Where | Control in this slice |
 | --- | --- | --- |
@@ -275,7 +275,7 @@ Assets in play: the Anthropic API key in a GitHub environment; the owner connect
 | Tampering: a migration disables its own guards | Database | Parser-vetted statements; runner-owned transaction checked by transaction ID; guards on `pg_catalog` only; roles created only by `bootstrap.sql`; `app_migrator` without `CREATEROLE` |
 | Elevation: an agent misusing the owner's tokens | GitHub, Vercel, Neon | Fine-grained GitHub token limited to this repository, with an expiry; no Neon API key at all; agents' instructions and the reviewers. Residual, accepted in ADR-0012 |
 | Information disclosure: secret in a commit | Repository | Push protection, gitleaks, `.env.example` only |
-| Elevation: branch code reaching secrets | CI, previews | GitHub secrets only in environments limited to `main`; event values only through validated `env:`; Git Fork Protection. Residual, accepted: preview builds and running functions can read the owner connection string in Vercel ([ADR-0012](../adr/0012-automation-first-setup.md)) |
+| Elevation: branch code reaching secrets | CI, previews | GitHub secrets only in environments limited to `main`, plus the review token's Dependabot copy, which only Dependabot-triggered jobs that name it receive; event values only through validated `env:`; Git Fork Protection. Residual, accepted: preview builds and running functions can read the owner connection string in Vercel ([ADR-0012](../adr/0012-automation-first-setup.md)) |
 | Prompt injection steering the reviewers | Review gate | Diff and files only, as data; base-branch standards; verdict computed in code; canary suite |
 | Information disclosure through the gate's comment | Review gate | No symlinks; `Read` denied outside the workspace and on `.git`; `persist-credentials: false`; model job holds no write token; comment built from schema fields, escaped, gitleaks-scanned |
 | Denial of wallet | API, workflows | No public route starts workflows; cron needs a `CRON_SECRET` of 32 characters or more; the SDK's runner is private to the queue; its webhook route is public and answers 404, since no workflow creates hooks; health check cached |

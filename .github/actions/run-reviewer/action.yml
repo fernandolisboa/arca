@@ -27,8 +27,8 @@ inputs:
       For the canary, a JSON list of categories. A run without a blocking finding of every one is
       retried once.
     default: ''
-  anthropic-api-key:
-    description: The key from the review environment.
+  claude-code-oauth-token:
+    description: The Claude subscription token from the review environment.
     required: true
   github-token:
     description: The job's read-only token.
@@ -96,7 +96,7 @@ runs:
       continue-on-error: true
       uses: anthropics/claude-code-action@925afb53776cf1a2b738c6bdbed37b4d4000ef13 # v1.0.262
       with:
-        anthropic_api_key: ${{ inputs.anthropic-api-key }}
+        claude_code_oauth_token: ${{ inputs.claude-code-oauth-token }}
         github_token: ${{ inputs.github-token }}
         allowed_bots: claude,dependabot
         prompt: ${{ steps.load.outputs.prompt }}
@@ -137,7 +137,7 @@ runs:
       continue-on-error: true
       uses: anthropics/claude-code-action@925afb53776cf1a2b738c6bdbed37b4d4000ef13 # v1.0.262
       with:
-        anthropic_api_key: ${{ inputs.anthropic-api-key }}
+        claude_code_oauth_token: ${{ inputs.claude-code-oauth-token }}
         github_token: ${{ inputs.github-token }}
         allowed_bots: claude,dependabot
         prompt: ${{ steps.load.outputs.prompt }}
