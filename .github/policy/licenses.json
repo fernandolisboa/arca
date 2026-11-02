@@ -10,7 +10,8 @@
     "CC0-1.0",
     "CC-BY-4.0",
     "Unlicense",
-    "Python-2.0"
+    "Python-2.0",
+    "GPL-2.0-or-later"
   ],
   "exceptions": [
     {

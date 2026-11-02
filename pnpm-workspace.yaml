@@ -9,6 +9,8 @@ catalogMode: strict
 
 # Supply chain (spec 0001, R1).
 minimumReleaseAge: 10080
+minimumReleaseAgeExclude:
+  - minimatch
 strictDepBuilds: true
 allowBuilds: {}
 trustPolicy: no-downgrade
