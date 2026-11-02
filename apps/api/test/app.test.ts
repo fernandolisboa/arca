@@ -177,3 +177,75 @@ describe('errors', () => {
     },
   );
 });
+
+describe('GET /internal/cron/heartbeat (spec 0001, R6)', () => {
+  const secret = 'cron-secret-for-tests';
+
+  function cronSetup(readSecret: () => string = () => secret) {
+    const started: string[] = [];
+    const app = createApp({
+      checkDatabase: () => Promise.resolve('ok'),
+      logger: silentLogger,
+      cron: {
+        readSecret,
+        startHeartbeat: (runDate) => {
+          started.push(runDate);
+          return Promise.resolve('wrun_test');
+        },
+        clock: () => new Date('2026-11-02T23:30:00.000-03:00'),
+      },
+    });
+    const call = (authorization?: string) =>
+      app.request('/internal/cron/heartbeat', {
+        headers: authorization === undefined ? {} : { authorization },
+      });
+    return { app, call, started };
+  }
+
+  it('starts the heartbeat for the UTC date and answers 202', async () => {
+    const { call, started } = cronSetup();
+    const response = await call(`Bearer ${secret}`);
+    expect(response.status).toBe(202);
+    expect(await response.text()).toBe('');
+    expect(started).toEqual(['2026-11-03']);
+  });
+
+  it.each([
+    ['no token', undefined],
+    ['a wrong token', `Bearer ${'x'.repeat(secret.length)}`],
+    ['a token of another length', 'Bearer short'],
+  ])('answers 401 to %s and starts nothing', async (_label, authorization) => {
+    const { call, started } = cronSetup();
+    const response = await call(authorization);
+    expect(response.status).toBe(401);
+    expect(await response.json()).toEqual({ error: { code: 'unauthorized' } });
+    expect(started).toEqual([]);
+  });
+
+  it('fails closed when the secret is not configured', async () => {
+    const { call, started } = cronSetup(() => {
+      throw new Error('CRON_SECRET is not set');
+    });
+    const response = await call(`Bearer ${secret}`);
+    expect(response.status).toBe(500);
+    expect(started).toEqual([]);
+  });
+
+  it('is not served without the cron dependencies', async () => {
+    const { app } = setup(() => Promise.resolve('ok'));
+    const response = await app.request('/internal/cron/heartbeat', {
+      headers: { authorization: `Bearer ${secret}` },
+    });
+    expect(response.status).toBe(404);
+  });
+
+  it('only answers GET', async () => {
+    const { app, started } = cronSetup();
+    const response = await app.request('/internal/cron/heartbeat', {
+      method: 'POST',
+      headers: { authorization: `Bearer ${secret}` },
+    });
+    expect(response.status).toBe(404);
+    expect(started).toEqual([]);
+  });
+});

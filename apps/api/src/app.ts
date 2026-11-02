@@ -6,8 +6,18 @@ import { HTTPException } from 'hono/http-exception';
 import { createMiddleware } from 'hono/factory';
 import { routePath } from 'hono/route';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
+import { bearerMatches } from './cron-auth.js';
 import { cachedDatabaseCheck, type CheckDatabase } from './database-health.js';
 import type { Logger } from './logger.js';
+import { utcDate, type IsoDate } from './workflows/workflow-arguments.js';
+
+/** What the cron routes need; absent in tests that do not exercise them. */
+export interface CronDependencies {
+  /** Throws when `CRON_SECRET` is not set, which answers 500. */
+  readonly readSecret: () => string;
+  readonly startHeartbeat: (runDate: IsoDate) => Promise<unknown>;
+  readonly clock?: () => Date;
+}
 
 export interface AppDependencies {
   readonly checkDatabase: CheckDatabase;
@@ -15,9 +25,11 @@ export interface AppDependencies {
   /** Monotonic milliseconds, for durations and the health cache. */
   readonly now?: () => number;
   readonly newRequestId?: () => string;
+  readonly cron?: CronDependencies;
 }
 
-export type ErrorCode = 'invalid_request' | 'not_found' | 'request_failed' | 'internal_error';
+export type ErrorCode =
+  'invalid_request' | 'unauthorized' | 'not_found' | 'request_failed' | 'internal_error';
 
 export interface AppEnv {
   Variables: {
@@ -61,6 +73,7 @@ export function createApp({
   logger,
   now = () => performance.now(),
   newRequestId = () => crypto.randomUUID(),
+  cron,
 }: AppDependencies) {
   const app = createRouter();
 
@@ -108,6 +121,19 @@ export function createApp({
   });
 
   app.route(apiBasePath, v1);
+
+  // Vercel cron sends GET with `Authorization: Bearer <CRON_SECRET>` (spec 0001, R6). Not part of
+  // the OpenAPI document, and the only route that starts a workflow.
+  if (cron !== undefined) {
+    const { readSecret, startHeartbeat, clock = () => new Date() } = cron;
+    app.get('/internal/cron/heartbeat', async (c) => {
+      if (!bearerMatches(c.req.header('authorization'), readSecret())) {
+        return reject(c, 'unauthorized', 401);
+      }
+      await startHeartbeat(utcDate(clock()));
+      return c.body(null, 202);
+    });
+  }
   return app;
 }
 

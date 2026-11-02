@@ -1,8 +1,10 @@
 import { useRuntimeConfig } from 'nitro/runtime-config';
 import { createApp } from './app.js';
-import { databaseTargetFrom, readApiSecrets } from './config.js';
+import { databaseTargetFrom, readApiSecrets, readCronSecret } from './config.js';
 import { apiDatabase } from './database.js';
 import { createLogger } from './logger.js';
+import { heartbeat } from './workflows/heartbeat.js';
+import { startWorkflow } from './workflows/start-workflow.js';
 
 const logger = createLogger();
 
@@ -21,7 +23,14 @@ function connected() {
   return database;
 }
 
-const app = createApp({ checkDatabase: () => connected().checkDatabase(), logger });
+const app = createApp({
+  checkDatabase: () => connected().checkDatabase(),
+  logger,
+  cron: {
+    readSecret: readCronSecret,
+    startHeartbeat: (runDate) => startWorkflow(heartbeat, [runDate]),
+  },
+});
 
 /**
  * The Nitro route for the API and the other paths that never fall back to the SPA (see

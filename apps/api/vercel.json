@@ -1,5 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nitro",
-  "buildCommand": "cd ../.. && pnpm --fail-if-no-match --filter @arca/scripts db:bootstrap && pnpm --fail-if-no-match --filter @arca/scripts db:migrate && pnpm --fail-if-no-match --filter @arca/scripts db:runtime-config && pnpm turbo run build --filter=@arca/api"
+  "buildCommand": "cd ../.. && pnpm --fail-if-no-match --filter @arca/scripts db:bootstrap && pnpm --fail-if-no-match --filter @arca/scripts db:migrate && pnpm --fail-if-no-match --filter @arca/scripts db:runtime-config && pnpm turbo run build --filter=@arca/api",
+  "crons": [
+    {
+      "path": "/internal/cron/heartbeat",
+      "schedule": "0 6 * * *"
+    }
+  ]
 }

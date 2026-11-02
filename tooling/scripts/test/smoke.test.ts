@@ -12,13 +12,17 @@ interface Answer {
   readonly contentType?: string;
 }
 
-/** Answers `/v1/health` with each of `health` in turn, repeating the last, and `/` with `page`. */
+/**
+ * Answers `/v1/health` with each of `health` in turn, repeating the last, `/` with `page`, and the
+ * workflow runner with `runnerStatus`.
+ */
 function fakeFetch(
   health: readonly Answer[],
   {
     page = {},
+    runnerStatus = 404,
     headers = securityHeaders,
-  }: { page?: Answer; headers?: Record<string, string> } = {},
+  }: { page?: Answer; runnerStatus?: number; headers?: Record<string, string> } = {},
 ): { fetchUrl: typeof fetch; healthCalls: () => number } {
   let calls = 0;
   const fetchUrl: typeof fetch = (input) => {
@@ -32,6 +36,9 @@ function fakeFetch(
           headers: { ...headers, 'content-type': 'application/json' },
         }),
       );
+    }
+    if (path === '/.well-known/workflow/v1/flow') {
+      return Promise.resolve(new Response(null, { status: runnerStatus }));
     }
     return Promise.resolve(
       new Response('<!doctype html>', {
@@ -82,6 +89,7 @@ describe('production smoke test (spec 0001, R9)', () => {
     expect(await smokeTest(origin, { fetchUrl, attempts: 2, retryDelayMs: 0 })).toEqual([
       { where: '/v1/health', problem: 'request failed: TypeError' },
       { where: '/', problem: 'request failed: TypeError' },
+      { where: '/.well-known/workflow/v1/flow', problem: 'request failed: TypeError' },
     ]);
   });
 
@@ -107,4 +115,20 @@ describe('production smoke test (spec 0001, R9)', () => {
       ]),
     );
   });
+
+  it.each([401, 403, 404])('accepts a runner that the platform closes with %i', async (status) => {
+    expect(await run(fakeFetch([healthy], { runnerStatus: status }))).toEqual([]);
+  });
+
+  it.each([200, 202, 400, 500])(
+    'fails when an unsigned request reaches the runner and gets %i',
+    async (status) => {
+      expect(await run(fakeFetch([healthy], { runnerStatus: status }))).toEqual([
+        {
+          where: '/.well-known/workflow/v1/flow',
+          problem: `answered ${String(status)} to an unsigned request`,
+        },
+      ]);
+    },
+  );
 });

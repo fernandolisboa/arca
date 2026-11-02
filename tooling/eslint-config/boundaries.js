@@ -116,6 +116,12 @@ export const databaseDrivers = {
 /** The @arca/db files allowed to import a database driver. */
 export const databaseDriverFiles = ['src/pool.ts', 'src/database.ts', 'test/**'];
 
+/**
+ * In any package, the tests against a disposable Postgres server, which set up databases and roles
+ * as its admin. They pass every connection field explicitly.
+ */
+export const databaseTestFiles = ['test/postgres/**'];
+
 const sniffing =
   'Do not detect the operating system or browser. Read capabilities through @arca/platform.';
 const sniffedProperty = '/^(userAgent|userAgentData|platform)$/';

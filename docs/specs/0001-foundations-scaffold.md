@@ -118,8 +118,8 @@ eval/
 - `heartbeat(runDate)`: one step opens a transaction as `app_jobs` and reads `now()`. The run writes nothing and returns nothing that needs keeping.
 - Trigger: a daily Vercel cron sends `GET /internal/cron/heartbeat` (Vercel cron always uses GET). The route checks `Authorization: Bearer <CRON_SECRET>` by hashing both values and comparing the digests in constant time (lengths may differ), and returns 401 otherwise. `runDate` is the UTC date. No other route of ours starts workflows. The route is not in the OpenAPI document.
 - Workflow and step function names are generic (`heartbeat`, `readDatabaseTime`). No run attributes. Errors thrown from steps carry codes only.
-- The Workflow SDK's own routes must reject requests that the platform's queue did not sign. The ticket records how the SDK authenticates them, with a source, in ADR-0009. A post-deploy smoke test sends an unsigned request and expects rejection. If the SDK does not authenticate them, the slice stops and a decision comes back to the owner.
-- Tests: the workflow runs locally against the Postgres container; the helper's options are asserted.
+- The Workflow SDK's own routes must reject requests that the platform's queue did not sign. The SDK does not check a signature; the platform keeps the runner private as a queue consumer, which the owner accepted on 2026-11-02 (recorded with its source in ADR-0009). A test asserts the runner's queue trigger in the Vercel build output, and the post-deploy smoke test sends an unsigned request and requires 401, 403 or 404.
+- Tests: the workflow runs on the SDK's local world from the built server's cron route to a completed step against the Postgres container (`pnpm test:db`); the helper's options, the identifier-only argument type and the cron route's token check are asserted.
 
 ### R7. Database foundation
 
@@ -254,7 +254,7 @@ The latest stable release of each, checked on the npm registry on 2026-11-01, un
 | i18next, react-i18next, i18next-icu | 26.x, 17.x, 2.6 | Latest; react-i18next accepts TypeScript 7 |
 | Hono | 4.13 | Latest stable. Hono 5 is at its first release candidate; `@hono/zod-openapi` and Nitro are not proven against it, and it offers this slice nothing. Revisit at 5.0 |
 | Zod, `@hono/zod-openapi` | 4.6, 1.6 | Latest |
-| `workflow` | 5.2+ | Latest; 5.x is required for region pinning ([ADR-0009](../adr/0009-background-jobs-guarantees.md)) |
+| `workflow` | 5.2.3 | Latest; 5.x is required for region pinning ([ADR-0009](../adr/0009-background-jobs-guarantees.md)) |
 | Nitro | 3.0.260903-beta | Pre-release, required: the Workflow SDK's Hono path needs Nitro 3. The newest release older than 7 days; move to the release candidate (3.0.261029-rc) once it is |
 | Drizzle ORM, drizzle-kit | 1.0 release candidate | Pre-release, chosen: 0.45 would force a 1.0 migration within months, and 1.0 has the reworked RLS and role APIs we depend on. Risk is low while no case tables exist; any RC bug found is fixed or pinned before the first case table |
 | `pg` | 8.x | Latest; driver for Drizzle, the migration runner and the guard tests |
@@ -278,7 +278,7 @@ Assets in play: the Anthropic API key in a GitHub environment; the owner connect
 | Elevation: branch code reaching secrets | CI, previews | GitHub secrets only in environments limited to `main`; event values only through validated `env:`; Git Fork Protection. Residual, accepted: preview builds and running functions can read the owner connection string in Vercel ([ADR-0012](../adr/0012-automation-first-setup.md)) |
 | Prompt injection steering the reviewers | Review gate | Diff and files only, as data; base-branch standards; verdict computed in code; canary suite |
 | Information disclosure through the gate's comment | Review gate | No symlinks; `Read` denied outside the workspace and on `.git`; `persist-credentials: false`; model job holds no write token; comment built from schema fields, escaped, gitleaks-scanned |
-| Denial of wallet | API, workflows | No public route starts workflows; cron needs `CRON_SECRET`; SDK routes reject unsigned requests; health check cached |
+| Denial of wallet | API, workflows | No public route starts workflows; cron needs a `CRON_SECRET` of 32 characters or more; the SDK's runner is private to the queue; its webhook route is public and answers 404, since no workflow creates hooks; health check cached |
 | Elevation: service connected with an owner role or bypassing RLS | Database | The API connects as `app_api`; the owner credentials (every injected name) read only by build scripts (lint, including indirect `process.env` access); each pooled connection checks `current_user`; the production smoke test requires `database: "ok"`; roles never created through the Neon API; guard tests 1 to 9 in every migration transaction and in CI; the database target check, so a preview build never bootstraps or migrates production. Residual, accepted: the owner string is readable at runtime (ADR-0012) |
 | Injection into the identity statement | Database | `set_config` with bind parameters and UUID validation |
 | Information disclosure: production data in a preview or on a laptop | Database | No family data until the case-data slice, which is blocked on a synthetic `development` default branch; Vercel's Development environment is not connected to the database |

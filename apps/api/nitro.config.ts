@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fallbackExclusions, securityHeaders, unpublishedFiles } from '@arca/security-policy';
+import workflow from 'workflow/nitro';
 import { defineConfig } from 'nitro';
 
 // apps/web's static build, served from the same origin as the API (spec 0001, R4).
@@ -32,6 +33,10 @@ export default defineConfig({
   routes,
   errorHandler: './src/error-handler.ts',
   plugins: ['./src/quiet-errors.ts'],
+  // The Workflow SDK's build and routes (spec 0001, R6; ADR-0009). No dashboard: runs are seen in
+  // Vercel's, and a local one would serve run data from this origin.
+  modules: [workflow],
+  workflow: { dirs: ['src/workflows'], dashboard: false, runtime: 'nodejs26.x' },
   publicAssets: [{ dir: webDist, baseURL: '/', ignore: [...unpublishedFiles] }],
   renderer: { template: join(webDist, 'index.html'), static: true },
   routeRules: { '/**': { headers: { ...securityHeaders } } },

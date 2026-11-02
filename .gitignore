@@ -24,6 +24,8 @@ apps/api/generated/
 # Nitro build output.
 .output/
 .nitro/
+# The Workflow SDK's local world.
+.workflow-data/
 # Playwright output.
 test-results/
 playwright-report/

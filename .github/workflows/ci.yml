@@ -78,7 +78,7 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup-pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Migrations, canaries, guards and the runtime client against Postgres 18
+      - name: Migrations, canaries, guards, the runtime client and the heartbeat against Postgres 18
         run: pnpm test:db
 
   sbom:

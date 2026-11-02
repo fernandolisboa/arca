@@ -10,6 +10,7 @@ import {
   contractSurfaceFiles,
   databaseDriverFiles,
   databaseDrivers,
+  databaseTestFiles,
   domain,
   restrictionRules,
   web,
@@ -101,9 +102,9 @@ export function arcaConfig({ rootDir, kinds = [] }) {
           },
         }
       : [],
-    kinds.includes('db')
+    restrictions.includes(databaseDrivers)
       ? {
-          files: databaseDriverFiles,
+          files: kinds.includes('db') ? databaseDriverFiles : databaseTestFiles,
           rules: {
             'no-restricted-imports': 'off',
             'no-restricted-syntax': 'off',
