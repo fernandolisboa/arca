@@ -12,7 +12,10 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Dependent | Dependente | A person covered through the principal applicant, as defined by the route |
 | Destination | Destino | A country a person accepts moving to |
 | Route | Rota | A legal pathway to live in a country (a visa, residence permit or citizenship path) |
-| Route version | Versão da rota | An immutable snapshot of a route's rules, with source and effective dates |
+| Route version | Versão da rota | An immutable snapshot of a route's rules, with its sources, effective date and pinned country sets and official-domain lists |
+| Rule | Regra | The requirements, assessments, dependents, costs and durations of one route version |
+| Rule case | Internal, no UI label | One table-driven test entry for a route version, in its cases file; not a family's case |
+| Official-domain list | Internal, no UI label | A versioned list of hosts that count as official for a country or international body |
 | Evaluation | Avaliação | The result of applying a route version to a person or unit |
 | Evaluation engine | Internal, no UI label | The pure functions in `packages/domain` that select a version, compute the unit and evaluate requirements |
 | Case snapshot | Internal, no UI label | The engine's structured, free-text-free view of a case at one moment (`CaseSnapshot`) |
@@ -34,9 +37,9 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Official source | Fonte oficial | A source on a host the knowledge base lists as official for a country or an international body |
 | Secondary source | Fonte secundária | A non-official source cited beside an official one, never instead of it |
 | Stale source | Fonte desatualizada | A source not re-verified in the last 90 days; evaluations that cite it say the rule needs re-checking |
-| Activation | Ativação | An approver's passkey approval of one route version, bound to its content hash; counts 48 hours after its notice |
-| Rejection | Recusa | An approver's passkey decision that a proposed version will never be used; selection skips it |
-| Veto | Veto | An approver's passkey cancellation of a pending activation or of a new approver allow-list, within its 48 hours |
+| Activation | Ativação | An approver's passkey approval of one route version or allow-list version, bound to its content hash; counts 48 hours after its notice |
+| Rejection | Recusa | An approver's passkey decision that a version, proposed or active, will never be used; counts 48 hours after its notice, then selection skips it |
+| Veto | Veto | An approver's passkey cancellation of a pending decision within its 48 hours |
 | Approver | Aprovador | A person in the approver allow-list who may activate, reject or veto knowledge-base versions with a pinned passkey |
 | Decision | Decisão | An approver's activation, rejection or veto, stored with its passkey assertion |
 | Notice | Aviso de segurança | The email and device message sent for every decision and new allow-list version; the 48-hour delay runs from it |
@@ -52,6 +55,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Unavailable | Indisponível | Evaluation status: no version in effect, or the route is closed |
 | Knowledge base | Base de conhecimento | Sourced, versioned rules and information about routes, documents, steps and pitfalls |
 | Knowledge item | Item da base | One sourced entry in the knowledge base |
+| Research agent | Internal, no UI label | The agent that proposes route versions from official sources as pull requests |
 | Rule watcher | Vigia de regras | Scheduled job that detects rule changes and proposes updates |
 | Fixture route | Internal, no UI label | A made-up route on a user-assigned country code (`QM` to `QZ`, except `QO` and `QU`) that proves the schema in tests; never shown to users |
 | Synthetic family | Internal, no UI label | An invented case snapshot in `eval/families`, shared by rule cases and AI evaluation; never real data |

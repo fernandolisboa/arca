@@ -1,6 +1,6 @@
 # ADR-0010: Application stack, revised
 
-- Status: Accepted; preview databases and deploys amended by [ADR-0012](0012-automation-first-setup.md) (Vercel–Neon integration, linked Vercel project, one Neon project)
+- Status: Accepted; preview databases and deploys amended by [ADR-0012](0012-automation-first-setup.md) (Vercel–Neon integration, linked Vercel project, one Neon project); fast-check for property tests and `@simplewebauthn/server` as a direct API dependency added by [ADR-0014](0014-knowledge-base-as-reviewed-data.md)
 - Date: 2026-11-01
 - Supersedes: [ADR-0003](0003-stack.md)
 

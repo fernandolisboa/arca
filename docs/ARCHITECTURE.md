@@ -91,7 +91,8 @@ Entities, not final schema:
 - `asset`, `sale`, `gift`, `fx_transfer`: the source-of-funds trail.
 - `plan`, `task`, `task_dependency`: the executable plan, with the execution mode of each task.
 - `document`: type, owner, validity, apostille, translation and a pointer to the encrypted file.
-- `knowledge_decision`, `knowledge_notice`: an approver's activation, rejection or veto of one route version or allow-list version (target and content hash, approver and credential IDs from the allow-list, the step-up assertion bytes and nonce, a database-set time) and each notice sent for it. Append-only: `app_api` inserts and reads, no runtime role updates or deletes ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)).
+- `knowledge_decision`, `knowledge_notice`: an approver's activation or rejection of a route version, activation of an allow-list version, or veto of a pending decision (target and content hash, approver and credential IDs from the allow-list, the step-up assertion bytes and nonce, a database-set time), and each notice sent for it. Append-only: `app_api` inserts and reads, no runtime role updates or deletes ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)).
+- `step_up_challenge`: single-use challenges for those decisions, for 2 minutes, scoped to the requesting session (ADR-0014).
 - `contact`: external contacts. Watcher proposals are pull requests, decided in `knowledge_decision` (ADR-0014).
 - `knowledge_item`: requirement, document, step, form, fee, deadline, common pitfall or interview question, each with source and verification date. Whether these and `action_point` are files like route versions is decided in consultancy core slice 5 (ADR-0014).
 
@@ -109,7 +110,7 @@ Specialized agents work on the knowledge base and the case model:
 | Research agent | Proposes route versions from official sources when the base does not cover a question |
 | Concierge | Arrival and settling in the destination |
 
-Each agent gets only the tools its task needs, set in its definition. The research agent and the watcher read untrusted web pages, so they get one proposal tool that opens a pull request with knowledge data and nothing else: no shell, no merge, no approver files, no workflows ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md#what-agents-may-do)).
+Each agent gets only the tools its task needs, set in its definition. The research agent and the watcher read untrusted web pages, so they get one proposal tool that opens a pull request with route versions and country sets and nothing else: no shell, no merge, no official-domain lists, no approver files, no workflows ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md#what-agents-may-do)).
 
 **Golden rule:** no agent states a requirement that is not in the knowledge base with a source. When the base does not cover a question, the agent says it does not know and opens a research task, which enters the base only after human approval.
 
@@ -152,9 +153,10 @@ Every service that touches Arca's data, and what it may receive. A new processor
 
 | Service | Role | Receives | Location |
 | --- | --- | --- | --- |
+| GitHub (public repository) | Source, docs and knowledge data | Code and public rules; the approver allow-list's approver and account IDs, public keys and salted address commitments (confirmable by guessing, [ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)); no case data | Public |
 | Neon (Postgres) | Primary database | All case data, under forced row-level security | São Paulo (`sa-east-1`) |
 | Vercel | Client hosting, API functions, Workflows | All case data in processing; the database owner connection string (used by the build, readable by running functions) and the runtime role passwords ([ADR-0012](adr/0012-automation-first-setup.md)); workflow run payloads holding identifiers only, with zero retention ([ADR-0009](adr/0009-background-jobs-guarantees.md)) | São Paulo (`gru1`) for functions, run payloads and queues; run metadata (names, statuses, timestamps, no personal data) is processed outside Brazil and kept up to one year |
-| Anthropic (CI review) | Reviewer subagents and their canary in CI ([ADR-0011](adr/0011-reviewers-in-ci.md), [ADR-0013](adr/0013-review-gate-canary-and-model-pins.md)) | Source code, diffs, file lists and file history (SHAs, dates, paths), the repository's docs and the synthetic canary cases; never case data, pull request text or contributor emails | Vendor cloud, outside Brazil; under the owner's Claude subscription terms, with the model-improvement setting off (ADR-0013) |
+| Anthropic (CI review) | Reviewer subagents and their canary in CI ([ADR-0011](adr/0011-reviewers-in-ci.md), [ADR-0013](adr/0013-review-gate-canary-and-model-pins.md)) | Source code, diffs, file lists and file history (SHAs, dates, paths), the repository's docs and the synthetic canary cases; never case data, pull request text or contributor emails; the approver allow-list's account IDs and salted address commitments are in the docs and data they read | Vendor cloud, outside Brazil; under the owner's Claude subscription terms, with the model-improvement setting off (ADR-0013) |
 | AWS S3 | Document storage and off-vendor backups | Ciphertext only | São Paulo (`sa-east-1`) |
 | AWS KMS | Field-encryption key wrapping | Data keys, never data | São Paulo (`sa-east-1`) |
 | Anthropic (Claude) | LLM calls | Minimal fields per call; no names, document numbers or account numbers | Vendor cloud, outside Brazil |
