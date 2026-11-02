@@ -49,8 +49,16 @@ export const categories = {
 export type Category = keyof typeof categories;
 const categoryNames = Object.keys(categories) as [Category, ...Category[]];
 
-/** Why a reviewer could not assess part of a change (spec 0001, R10). */
-export const unassessedReasons = ['tests_not_run', 'missing_context', 'other'] as const;
+/**
+ * Why a reviewer could not assess part of a change (spec 0001, R10). `outside_area` means the
+ * change touches nothing the reviewer covers.
+ */
+export const unassessedReasons = [
+  'tests_not_run',
+  'missing_context',
+  'outside_area',
+  'other',
+] as const;
 
 const finding = z.strictObject({
   severity: z.enum(severities),

@@ -11,7 +11,7 @@ export interface ReviewerJudgment {
   readonly blocking: readonly Finding[];
   /** Medium findings an acceptance row covers. */
   readonly accepted: readonly Finding[];
-  /** Unassessed entries that make this reviewer block (anything but `tests_not_run`). */
+  /** Unassessed entries that make this reviewer block (see `judgeReviewer`). */
   readonly unassessed: readonly ReviewerOutput['unassessed'][number][];
 }
 
@@ -33,7 +33,9 @@ export function parseReviewerOutput(
 /**
  * One reviewer's verdict (spec 0001, R10): critical and high findings block; a medium blocks unless
  * an acceptance row for this pull request matches reviewer, file and category exactly; an
- * unassessed entry other than `tests_not_run` blocks.
+ * unassessed entry blocks, except `tests_not_run`, and `outside_area` from a reviewer that reports
+ * no findings at all. A reviewer that reports findings has found something in its area, so its
+ * `outside_area` entry contradicts its output and blocks.
  */
 export function judgeReviewer(
   reviewer: { readonly name: string; readonly mustPass: boolean },
@@ -70,7 +72,11 @@ export function judgeReviewer(
       finding.severity === 'high' ||
       (finding.severity === 'medium' && !accepted.includes(finding)),
   );
-  const unassessed = parsed.unassessed.filter((entry) => entry.reason !== 'tests_not_run');
+  const outsideAreaCounts = parsed.findings.length === 0;
+  const unassessed = parsed.unassessed.filter(
+    (entry) =>
+      entry.reason !== 'tests_not_run' && !(entry.reason === 'outside_area' && outsideAreaCounts),
+  );
   const outcome = blocking.length > 0 || unassessed.length > 0 ? 'block' : 'pass';
   return { ...base, outcome, output: parsed, blocking, accepted, unassessed };
 }

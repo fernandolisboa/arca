@@ -129,6 +129,29 @@ describe('reviewer verdict and gate (spec 0001, R10)', () => {
     );
   });
 
+  it('outside_area with no findings passes, since the change is not in the reviewer area', () => {
+    const outsideArea = { reason: 'outside_area', note: 'Only CI workflows changed.' };
+    const judgment = judge(mustPass, output([], [outsideArea]));
+    expect(judgment.outcome).toBe('pass');
+    expect(judgment.unassessed).toEqual([]);
+    expect(failsGate(judgment)).toBe(false);
+  });
+
+  it('outside_area next to any finding blocks, since the reviewer found something in its area', () => {
+    const outsideArea = { reason: 'outside_area', note: 'n' };
+    const judgment = judge(mustPass, output([finding({ severity: 'low' })], [outsideArea]));
+    expect(judgment.unassessed).toEqual([outsideArea]);
+    expect(failsGate(judgment)).toBe(true);
+  });
+
+  it('outside_area does not cover another unassessed entry', () => {
+    const entries = [
+      { reason: 'outside_area', note: 'n' },
+      { reason: 'missing_context', note: 'n' },
+    ];
+    expect(failsGate(judge(mustPass, output([], entries)))).toBe(true);
+  });
+
   it('an unassessed entry from a should-pass reviewer does not fail the gate', () => {
     expect(
       failsGate(judge(shouldPass, output([], [{ reason: 'missing_context', note: 'n' }]))),

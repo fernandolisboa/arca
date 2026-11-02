@@ -1,6 +1,6 @@
 # ADR-0011: Reviewer subagents run in CI as a required check
 
-- Status: Accepted; amended by [ADR-0012](0012-automation-first-setup.md): no `arca-gate` App, no code-owner approval, agents may push workflows, recovery procedure replaced; amended by [ADR-0013](0013-review-gate-canary-and-model-pins.md): canary counted per gate fingerprint, reviewers on model aliases with optional pins in repository variables, reviewers on the owner's Claude subscription token instead of an API key, with a Dependabot secret of the same name
+- Status: Accepted; amended by [ADR-0012](0012-automation-first-setup.md): no `arca-gate` App, no code-owner approval, agents may push workflows, recovery procedure replaced; amended by [ADR-0013](0013-review-gate-canary-and-model-pins.md): canary counted per gate fingerprint, reviewers on model aliases with optional pins in repository variables, reviewers on the owner's Claude subscription token instead of an API key, with a Dependabot secret of the same name; a specialist that reports a change as outside its area (`outside_area`, no findings) passes
 - Date: 2026-11-01
 
 ## Context
@@ -35,7 +35,7 @@ Three facts shape the design:
 - Reviewers return JSON against a schema: findings (severity, stable category, file, line, text) and what they could not assess. The verdict is computed in code, not taken from the model:
   - any critical or high finding fails;
   - a medium finding fails unless [review-acceptances.md](../review-acceptances.md), read from the pull request head, has a row for this pull request matching reviewer, file and category exactly; the row counts only because the file is code-owned, so the pull request cannot merge without the owner approving it;
-  - anything a must-pass reviewer could not assess fails, except the fixed `tests_not_run` reason, which the required test checks cover;
+  - anything a must-pass reviewer could not assess fails, except the fixed `tests_not_run` reason, which the required test checks cover, and the fixed `outside_area` reason from a reviewer with no findings, which says the change touches nothing in its area. A specialist is must-pass only when its area is touched, so without that reason a reviewer explaining why it had nothing to review blocked every unrelated change. The canary keeps the reason honest: a target reviewer that reports its own known-bad payload as `outside_area` does not block, so the canary fails;
   - missing or invalid output fails.
 - A report job without a model, which never checks out the pull request, creates the check run and posts one comment built only from schema fields, with Markdown escaped, links and images stripped, and mentions and issue references neutralized. It scans the comment with gitleaks; a match posts nothing and fails the check.
 - For dependency changes, a reviewer PASS is not sufficient on its own: osv-scanner and the lockfile policy check (release age, registry integrity, licenses) must also pass. Those checks take their scripts and policy files from `main` and read the pull request's lockfile as data, so the change they judge cannot weaken them.

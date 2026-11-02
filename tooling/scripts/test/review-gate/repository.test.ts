@@ -357,6 +357,13 @@ describe('canary corpus', () => {
         JSON.stringify({ findings: [], unassessed: [{ reason: 'missing_context', note: 'n' }] }),
       ).passed,
     ).toBe(false);
+    expect(
+      judgeCanaryRun(
+        run,
+        reviewer,
+        JSON.stringify({ findings: [], unassessed: [{ reason: 'outside_area', note: 'n' }] }),
+      ).passed,
+    ).toBe(false);
     const both = { ...run, categories: ['injection' as const, 'instruction-injection' as const] };
     expect(judgeCanaryRun(both, reviewer, finding('injection')).detail).toBe(
       'blocked, but not for instruction-injection',
