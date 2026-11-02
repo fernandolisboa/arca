@@ -108,6 +108,48 @@ describe('workflow secrets lint', () => {
     expect(await problems(file)).toContainEqual(expect.stringContaining(expected));
   });
 
+  it('rejects a pull_request workflow that calls a workflow allowed a secret', async () => {
+    expect(await problems('pull-request-calls-workflow.yml')).toEqual([
+      'calls ./.github/workflows/allowed.yml, which may use secret ANTHROPIC_API_KEY',
+      'calls ./.github/workflows/allowed.yml, which may use environment review',
+    ]);
+  });
+
+  it('rejects a call to a workflow allowed more than its caller', async () => {
+    const callerAllowedNothing = {
+      ...policy,
+      'pull-request-calls-workflow.yml': { secrets: [], environments: [] },
+    };
+    const source = (
+      await readFile(new URL('pull-request-calls-workflow.yml', fixtures), 'utf8')
+    ).replace('on: pull_request', 'on: push');
+    expect(
+      checkWorkflow('pull-request-calls-workflow.yml', source, callerAllowedNothing).map(
+        ({ problem }) => problem,
+      ),
+    ).toEqual([
+      'calls ./.github/workflows/allowed.yml, which may use secret ANTHROPIC_API_KEY',
+      'calls ./.github/workflows/allowed.yml, which may use environment review',
+    ]);
+  });
+
+  it('accepts a call to a workflow allowed no more than its caller', async () => {
+    const source = (
+      await readFile(new URL('pull-request-calls-workflow.yml', fixtures), 'utf8')
+    ).replace('on: pull_request', 'on: push');
+    expect(checkWorkflow('pull-request-calls-workflow.yml', source, policy)).toEqual([]);
+  });
+
+  it('rejects a call to a workflow missing from the policy', async () => {
+    expect(await problems('calls-unlisted-workflow.yml')).toEqual([
+      'calls ./.github/workflows/not-in-policy.yml, which is not in the secrets policy',
+    ]);
+  });
+
+  it('ignores policy entries for workflow files that do not exist yet', async () => {
+    expect(await check('allowed.yml', { ...policy, 'not-yet.yml': listed })).toEqual([]);
+  });
+
   it('rejects a workflow missing from the policy', async () => {
     expect(await check('allowed.yml', {})).toEqual([
       { where: 'allowed.yml', problem: 'is not in the secrets policy' },

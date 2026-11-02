@@ -12,6 +12,9 @@ export type SecretsPolicy = Readonly<
 const secretReference = /(?<![\w.-])secrets(?![\w-])(?:\s*\.\s*([A-Za-z_][A-Za-z0-9_]*))?/gi;
 const githubReference = /(?<![\w.-])github(?![\w-])(?:\s*\.\s*([A-Za-z_][\w-]*))?/gi;
 
+/** A job-level call to a reusable workflow in this repository; group 1 is its file name. */
+const reusableWorkflow = /^\.\/\.github\/workflows\/([A-Za-z0-9_-]+\.ya?ml)$/;
+
 export function checkWorkflow(file: string, source: string, policy: SecretsPolicy): Violation[] {
   const name = basename(file);
   const violations: Violation[] = [];
@@ -49,6 +52,27 @@ export function checkWorkflow(file: string, source: string, policy: SecretsPolic
     if (onPullRequest) add(`runs on pull_request and uses environment ${environment}`);
     else if (!allowedEnvironments.includes(environment.toLowerCase())) {
       add(`uses environment ${environment}, which is not allowed`);
+    }
+  }
+  // A called workflow runs with its caller's trigger, so the caller must be allowed whatever the
+  // callee may use; otherwise a pull_request workflow could reach a secret through a local call.
+  for (const local of localUses(workflow)) {
+    const callee = reusableWorkflow.exec(local)?.[1];
+    if (callee === undefined) continue;
+    const calleePolicy = policy[callee];
+    if (calleePolicy === undefined) {
+      add(`calls ${local}, which is not in the secrets policy`);
+      continue;
+    }
+    for (const secret of calleePolicy.secrets) {
+      if (onPullRequest || !allowedSecrets.includes(secret.toUpperCase())) {
+        add(`calls ${local}, which may use secret ${secret}`);
+      }
+    }
+    for (const environment of calleePolicy.environments) {
+      if (onPullRequest || !allowedEnvironments.includes(environment.toLowerCase())) {
+        add(`calls ${local}, which may use environment ${environment}`);
+      }
     }
   }
   return violations;
