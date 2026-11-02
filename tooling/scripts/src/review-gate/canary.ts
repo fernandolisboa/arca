@@ -16,11 +16,8 @@ const caseId = /^[a-z0-9][a-z0-9-]*$/;
 
 export interface CanaryCase {
   readonly id: string;
-  /**
-   * Who runs the case in a slim run: `all` its targets, the listed `some` of them, or `none`, when
-   * only a full run covers it. Payload and `prepare-rejects` cases are `all`.
-   */
-  readonly slim: { readonly targets: 'all' | 'none' } | { readonly targets: readonly string[] };
+  /** The target reviewers that run the case in a slim run: all of them, the listed ones, or none. */
+  readonly slim: 'all' | 'none' | readonly string[];
   readonly description: string;
   /** `block`: every target reviewer must block for its category. `prepare-rejects`: no model runs. */
   readonly expect: 'block' | 'prepare-rejects';
@@ -72,7 +69,7 @@ export async function loadCases(
 
   const cases: CanaryCase[] = [...payloads.values()].map((payload) => ({
     id: `known-bad-${payload.reviewer}`,
-    slim: { targets: 'all' },
+    slim: 'all',
     description: `A known-bad change in the ${payload.reviewer}'s area`,
     expect: 'block',
     targets: { [payload.reviewer]: [payload.category] },
@@ -95,7 +92,6 @@ export async function loadCases(
     if (expect !== 'block' && expect !== 'prepare-rejects') {
       throw new CorpusError(`case ${id} expects neither "block" nor "prepare-rejects"`);
     }
-
     const included = data['payloads'] === 'must-pass' ? mustPass : stringList(data['payloads'], id);
     const targets: Record<string, Category[]> = {};
     const addTarget = (reviewer: string, category: Category) => {
@@ -121,8 +117,7 @@ export async function loadCases(
     }
     cases.push({
       id,
-      slim:
-        expect === 'prepare-rejects' ? { targets: 'all' } : slimTargets(data['slim'], targets, id),
+      slim: expect === 'prepare-rejects' ? 'all' : slimTargets(data['slim'], targets, id),
       description: typeof data['description'] === 'string' ? data['description'] : id,
       expect,
       targets,
@@ -240,11 +235,7 @@ async function copyFixtures(from: string, to: string): Promise<void> {
   }
 }
 
-/**
- * `full` runs the whole corpus. `slim` runs one known-bad case per reviewer, the cases that need
- * no model, and each injected case against the targets its `"slim"` names, so every gate change
- * meets every injection shape at a fraction of a full run's cost (ADR-0013).
- */
+/** A slim run tests a gate change at a fraction of a full run's cost (ADR-0013). */
 export type CanaryScope = 'full' | 'slim';
 
 export function canaryScope(value: string | undefined): CanaryScope {
@@ -278,11 +269,11 @@ export function scopedTargets(
   testCase: CanaryCase,
   scope: CanaryScope,
 ): Readonly<Record<string, readonly Category[]>> {
-  const { targets } = testCase.slim;
-  if (scope === 'full' || targets === 'all') return testCase.targets;
-  if (targets === 'none') return {};
+  const { slim } = testCase;
+  if (scope === 'full' || slim === 'all') return testCase.targets;
+  if (slim === 'none') return {};
   return Object.fromEntries(
-    Object.entries(testCase.targets).filter(([name]) => targets.includes(name)),
+    Object.entries(testCase.targets).filter(([name]) => slim.includes(name)),
   );
 }
 
@@ -409,14 +400,14 @@ function slimTargets(
   targets: Readonly<Record<string, readonly Category[]>>,
   id: string,
 ): CanaryCase['slim'] {
-  if (value === undefined) return { targets: 'none' };
-  if (value === true) return { targets: 'all' };
+  if (value === undefined) return 'none';
+  if (value === true) return 'all';
   if (
     Array.isArray(value) &&
     value.length > 0 &&
-    value.every((name) => typeof name === 'string' && name in targets)
+    value.every((name) => typeof name === 'string' && Object.hasOwn(targets, name))
   ) {
-    return { targets: value as string[] };
+    return value as string[];
   }
   throw new CorpusError(`case ${id} has a "slim" that is neither true nor a list of its targets`);
 }

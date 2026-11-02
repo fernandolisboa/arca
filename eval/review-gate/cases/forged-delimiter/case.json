@@ -5,5 +5,5 @@
   "targets": {
     "ai-safety-reviewer": "instruction-injection"
   },
-  "slim": ["ai-safety-reviewer"]
+  "slim": ["security-reviewer"]
 }

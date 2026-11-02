@@ -149,6 +149,8 @@ async function canaryPlan(args: string[]): Promise<void> {
       return;
     }
   } else {
+    // A pull request's own reviewer definitions always meet the whole corpus (ADR-0013).
+    if (scope !== 'full') throw new Error("--scope slim cannot run a change's own reviewers");
     const { agents, reviewMarkdown } = changeAgents(changeObjects, sha(values, 'change-head'));
     reviewers = changeReviewers(agents, reviewMarkdown);
   }

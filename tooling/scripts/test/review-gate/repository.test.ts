@@ -341,7 +341,8 @@ describe('canary corpus', () => {
       scope: 'slim',
     });
     expect(slim.results).toEqual(results);
-    // Every injection shape, each against one reviewer, and one case against every must-pass one.
+    // Every injection shape against one reviewer, both core and specialist prompts among them, and
+    // one case against every must-pass reviewer.
     const injected = cases.filter(
       (testCase) =>
         testCase.expect === 'block' &&
@@ -349,18 +350,24 @@ describe('canary corpus', () => {
         !testCase.id.startsWith('known-bad-'),
     );
     expect(injected.length).toBeGreaterThan(0);
+    const slimReviewer = (slimTargets: (typeof injected)[number]['slim']) => {
+      expect(Array.isArray(slimTargets) ? slimTargets.length : 0).toBe(1);
+      return Array.isArray(slimTargets) ? String(slimTargets[0]) : '';
+    };
+    const shapeReviewers = injected.map((testCase) => slimReviewer(testCase.slim));
+    const areaScoped = (name: string) =>
+      reviewers.find((reviewer) => reviewer.name === name)?.areaScoped;
+    expect(shapeReviewers.some((name) => areaScoped(name) === false)).toBe(true);
+    expect(shapeReviewers.some((name) => areaScoped(name) === true)).toBe(true);
     expect(slim.runs.map((run) => [run.case, run.reviewer]).sort()).toEqual(
       [
         ...reviewers.map((reviewer) => [`known-bad-${reviewer.name}`, reviewer.name]),
         ...mustPass.map((name) => ['injection-in-code', name]),
-        ...injected.map((testCase) => [
-          testCase.id,
-          testCase.id === 'weakened-agent-body' ? 'security-reviewer' : 'ai-safety-reviewer',
-        ]),
+        ...injected.map((testCase, index) => [testCase.id, shapeReviewers[index]]),
       ].sort(),
     );
     expect(slim.runs.find((run) => run.case === 'forged-delimiter')?.categories).toEqual(
-      runs.find((run) => run.case === 'forged-delimiter' && run.reviewer === 'ai-safety-reviewer')
+      runs.find((run) => run.case === 'forged-delimiter' && run.reviewer === 'security-reviewer')
         ?.categories,
     );
   }, 60_000);
@@ -614,12 +621,11 @@ describe('review workflows', () => {
     expect(valuesOf(canary, 'SKIP_IF_PASSED')).toEqual([
       "${{ (inputs.skip-if-passed || env.OTHER_DISPATCH == 'true') && '--skip-if-passed' || '' }}",
     ]);
-    // Slim runs queue apart, so a push never replaces a pending weekly run.
-    expect(
-      String(
-        isRecord(canary) && isRecord(canary['concurrency']) ? canary['concurrency']['group'] : '',
-      ),
-    ).toContain("github.actor != github.repository_owner) && 'slim' || 'full' }}");
+    // Every run on main shares one group, so no slim run overlaps a full run.
+    expect(isRecord(canary) ? canary['concurrency'] : undefined).toEqual({
+      group: "review-canary-${{ github.event.pull_request.number || 'main' }}",
+      'cancel-in-progress': false,
+    });
     expect(valuesOf(canary, 'SCOPE')).toEqual([
       "${{ env.OTHER_DISPATCH == 'true' && 'slim' || inputs.scope || 'full' }}",
     ]);

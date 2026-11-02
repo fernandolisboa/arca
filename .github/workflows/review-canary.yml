@@ -35,13 +35,10 @@ on:
 
 permissions: {}
 
-# A pending run is replaced by a newer one in its group, so slim runs dispatched for pushes queue
-# apart from full runs: a push never replaces a pending weekly run (ADR-0013).
+# One group for every run on main, so a run plans only after the previous one concluded: runs are
+# ordered by run number, and an overlapping slim run could otherwise clear a failure (ADR-0013).
 concurrency:
-  group: >-
-    review-canary-${{ github.event.pull_request.number || 'main' }}-${{
-    (github.event_name == 'workflow_dispatch' && github.actor != github.repository_owner)
-    && 'slim' || 'full' }}
+  group: review-canary-${{ github.event.pull_request.number || 'main' }}
   cancel-in-progress: false
 
 env:
