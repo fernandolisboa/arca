@@ -28,7 +28,7 @@
 
 - A file under `packages/knowledge/data` never changes once it is on `main`. CI fails a pull request that modifies, renames or deletes one. Cases files are the one exception: entries may be added, never changed or removed.
 - A rule change is a new version with a later effective date. A correction of a data error is a new version with a `corrects` field naming an earlier version and that version's effective date, which wins over the version it fixes.
-- Each version is identified by its route ID and number, and by a SHA-256 content hash of the RFC 8785 canonical JSON of the version together with every country-set and official-domain version it pins. Evaluations record both, plus the engine's commit, so an old evaluation can be reproduced exactly.
+- Each version is identified by its route ID and number, and by a SHA-256 content hash of the RFC 8785 canonical JSON of the version together with every country-set, official-domain and countries version it pins. Evaluations record both, plus the engine's commit, so an old evaluation can be reproduced exactly.
 
 ### Approval in two steps
 
@@ -37,7 +37,7 @@
 
 Activation rules:
 
-- **Who:** approvers come from an allow-list kept in the repository and reviewed like code, never from the database. Each entry pins the approver's account, the credential IDs and public keys allowed to activate, and the address for activation notices. It starts with the owner alone. Being in a case grants nothing.
+- **Who:** approvers come from an allow-list kept in the repository as immutable, numbered files and reviewed like code, never from the database. Each entry pins the approver's account, the credential IDs and public keys allowed to activate, and the address for activation notices. It starts with the owner alone. Being in a case grants nothing.
 - **Challenge:** a server-issued, random, single-use nonce, combined deterministically with the purpose, route ID, number and content hash (SHA-256 over their canonical encoding), so an assertion signs exactly one version.
 - **Verification:** every time it loads activations, the API recomputes the challenge from the stored activation and compares it with the assertion's `clientDataJSON`, checks the relying-party ID, the origin and the user-presence and user-verification flags, and checks the signature against a public key pinned in the allow-list, never against a credential row in the database. It fails closed: any error means not active. An activation signed with a key removed from the allow-list stops counting.
 - **Delay and notice:** an activation counts only 48 hours after the production API, which runs code from `main`, sends its notice to the pinned address and to every registered device. The notice names the version, the approver and the credential. Removing the key from the allow-list within the window cancels it.
@@ -69,4 +69,4 @@ Activation is built in slice 3, together with the activation screen. Until then 
 - Every rule has a reviewable history in Git, tests beside it, and a reproducible identity.
 - The owner activates each rule once, in the app. The activation screen must make that quick and must show the real rule, not a model's description of it.
 - Adding a route stays a data change: a new JSON file and its cases, no code. A route that the schema cannot express extends the schema generically, which is a code change in `packages/domain` with its own review.
-- Residual risk, in line with ADR-0012: an agent with the owner's tokens can still merge a bad proposal, or add a key of its own to the allow-list or change the activation check through a pull request. Each is a reviewed change in Git, and a new key still has to wait out the 48-hour notice sent to the pinned address. With the owner database credentials that ADR-0012 leaves readable to preview builds, an attacker can write activation rows, but cannot make them count without a pinned key's signature over that exact version.
+- Residual risk, in line with ADR-0012: an agent holding the owner's GitHub token can merge a bad proposal, change the activation check, or add a key of its own and change the notice address in the allow-list, and, through a preview build that reads the owner database credentials, write activation rows and suppress the notice. That is the same exposure ADR-0012 accepts for any code change. What this design guarantees is narrower: an activation row written with database access alone, without a change to the reviewed allow-list, never counts, because it needs a pinned key's signature over that exact version; and the 48-hour notice protects against a key added in Git by someone without database access. Allow-list versions are immutable files, and a change to one notifies the addresses of the previous version too.

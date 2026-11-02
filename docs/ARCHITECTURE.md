@@ -50,8 +50,8 @@ packages/
   i18n/         message catalogs (pt-BR first)
   platform/     capability ports and their adapters (web, capacitor, tauri)
   db/           Drizzle schema and migrations, role SQL, the runtime role pool and request identity
-  knowledge/    the knowledge base as data: route versions and their cases, country sets, the country
-                list; validated, hashed and bundled into the API ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md))
+  knowledge/    the knowledge base as data: route versions and their cases, country sets, official-domain
+                lists, the country lists; validated, hashed and bundled into the API ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md))
 tooling/        shared ESLint and TypeScript configs, security header policy, repository scripts
                 (dependency-source, boundary and bundle checks, CI policy scripts, migration runner,
                 the review gate in scripts/src/review-gate)
@@ -135,7 +135,7 @@ The suite runs on every change to a prompt, model, adapter or rule version, and 
 
 ## Security
 
-- Passwordless login (passkeys), with re-authentication to open the vault and for financial actions.
+- Passwordless login (passkeys), with re-authentication to open the vault, for financial actions and to activate a knowledge-base version ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)).
 - Row-level security on every table with case data, scoped by case and person. Each unit's finances are visible to others only if the owner shares them.
 - Client-side encryption for documents: each case has a data key wrapped by the users' keys; storage holds ciphertext. Trade-off: AI extraction runs only when the user opens a document and authorizes it.
 - Two-person approval to change bank or exchange details.

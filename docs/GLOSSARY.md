@@ -27,6 +27,9 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Assessment | Critério subjetivo | A judgment factor of a route version, such as national importance; shown with its evidence, never as pass or fail |
 | Country set | Grupo de países | A versioned, sourced list of countries a rule refers to, such as treaty countries |
 | Proposed version | Versão proposta | A route version in the catalog that the owner has not activated yet |
+| Official source | Fonte oficial | A source on a government host the knowledge base lists as official for that country |
+| Secondary source | Fonte secundária | A non-official source cited beside an official one, never instead of it |
+| Stale source | Fonte desatualizada | A source not re-verified in the last 90 days; evaluations that cite it say the rule needs re-checking |
 | Activation | Ativação | The owner's passkey approval of one route version, bound to its content hash |
 | Active version | Versão ativa | A route version with an activation; the only kind the engine evaluates for a case |
 | Decisive missing fact | Informação que falta | An unknown fact whose answer could change an evaluation's status |

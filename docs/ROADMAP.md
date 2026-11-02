@@ -47,14 +47,13 @@ The research in [research/](research/) feeds the knowledge seed of Phase 1 (cons
 
 - Rules engine and knowledge base, specified in [specs/0002-rules-engine-and-knowledge-base.md](specs/0002-rules-engine-and-knowledge-base.md), with the knowledge base as reviewed data activated by the owner's passkey ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)).
 - Knowledge seed for the first countries, from official sources.
-- AI intake (text first) and case model, with playback and correction.
+- AI intake (text first, proposed) and case model, with playback and correction; permissions per person and unit; audit log.
 - Destination comparison weighted by each person.
 - Strategy recommendation with alternatives, pros, cons, risks, cost and time.
 - Personalized document checklist.
 - Step-by-step plan with execution modes and action points.
 - On-call assistant with cited sources.
 - Assets, tax and FX simulator; source-of-funds trail.
-- Permissions per person and unit; audit log.
 
 ## Phase 2 — Execution (web)
 
