@@ -66,7 +66,7 @@ Revisited at the start of every epic. New features list the assets they touch an
 - Vault encryption on the client, with its own ADR before implementation: standard primitives, documented key wrapping, recovery and rotation, and the path by which plaintext reaches an authorized processing session.
 - Bank account and document numbers encrypted per field with KMS-wrapped keys ([ADR-0008](adr/0008-database-security-and-environments.md)).
 - Deleting a case destroys its keys (crypto-shredding) and its rows, and deletes related stored objects, traces and error reports; workflow runs hold identifiers only with zero retention and have their payloads purged by Vercel within 36 days, and their metadata (no personal data) within one year ([ADR-0009](adr/0009-background-jobs-guarantees.md)); in-app account deletion and data export from Phase 1.
-- Retention periods defined per data type before real data enters (Phase 1).
+- Retention periods defined per data type before real data enters (Phase 1). One exception is already set: approver and credential IDs in knowledge-base decisions and notices are kept after the approver's account is deleted, as an integrity record ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)).
 - Backups per ADR-0008: RPO 15 minutes, RTO 4 hours, an off-vendor encrypted copy, quarterly restore drills.
 
 **AI**
@@ -78,6 +78,7 @@ Revisited at the start of every epic. New features list the assets they touch an
 - Development, preview and production are separate: production is its own Neon branch; before the first case-data table, previews are switched to fork from a `development` branch that never held production data ([ADR-0012](adr/0012-automation-first-setup.md)). Developer machines are never connected to the hosted database. Production data never leaves production: preview and CI databases start from a synthetic seed. Previews sit behind deployment protection.
 - Secrets live in the platform's environment-variable store, never in the repository; scoped per environment and rotated. Cloud access uses OIDC federation (Vercel and GitHub Actions to AWS), so no long-lived cloud keys exist.
 - Every vendor and store account is owned by the organization, uses phishing-resistant MFA (passkeys or security keys), named accounts and least-privilege roles.
+- The platform account (Apple or Google) that syncs a knowledge-base approver's passkeys uses phishing-resistant MFA, which the approver attests when the key is pinned; approvers beyond the owner use a device-bound security key ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)).
 
 **Software delivery**
 - Branch protection, required checks and the reviewer gates in [REVIEW.md](REVIEW.md): a must-pass security reviewer on every change, plus must-pass specialists (auth and cryptography, data access, supply chain, AI safety) on changes in their areas, so sensitive changes get at least two independent security reads.

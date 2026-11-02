@@ -19,7 +19,7 @@ Family first: the product for other families starts only after the founder's fam
 - ~~Stack confirmed~~ Done: [ADR-0010](adr/0010-stack-revised.md) (superseding ADR-0003), with auth ([ADR-0006](adr/0006-auth.md)), background jobs ([ADR-0009](adr/0009-background-jobs-guarantees.md), superseding ADR-0007), reviewers in CI ([ADR-0011](adr/0011-reviewers-in-ci.md)), automation-first setup ([ADR-0012](adr/0012-automation-first-setup.md)) and database security and environments ([ADR-0008](adr/0008-database-security-and-environments.md)).
 - Production domain chosen and registered (passkeys depend on it from day one).
 
-The research in [research/](research/) feeds the knowledge seed of Phase 1 (consultancy core, slice 2), where each rule is re-verified against an official source. Phase 0 does not depend on code: the questions in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) can be answered while the repository is set up.
+Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase 0, since it needs neither real route data nor case data. The research in [research/](research/) feeds the knowledge seed of Phase 1 (consultancy core, slice 2), where each rule is re-verified against an official source. Phase 0 does not depend on code: the questions in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) can be answered while the repository is set up.
 
 ## Phase 1 — Family MVP (web)
 

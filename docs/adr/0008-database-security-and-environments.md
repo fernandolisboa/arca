@@ -1,6 +1,6 @@
 # ADR-0008: Database roles, row-level security, field encryption, backups and environments
 
-- Status: Accepted; workflow run deletion amended by [ADR-0009](0009-background-jobs-guarantees.md); environments (one Neon project created through Vercel; previews fork from a synthetic `development` branch before any family data exists) amended by [ADR-0012](0012-automation-first-setup.md)
+- Status: Accepted; workflow run deletion amended by [ADR-0009](0009-background-jobs-guarantees.md); environments (one Neon project created through Vercel; previews fork from a synthetic `development` branch before any family data exists) amended by [ADR-0012](0012-automation-first-setup.md); two append-only knowledge-base tables written by `app_api` added by [ADR-0014](0014-knowledge-base-as-reviewed-data.md)
 - Date: 2026-11-01
 
 ## Context
@@ -23,7 +23,7 @@
 
 | Role | Purpose | Privileges |
 | --- | --- | --- |
-| `app_api` | API requests | `NOBYPASSRLS`; DML on case tables, always under RLS |
+| `app_api` | API requests | `NOBYPASSRLS`; DML on case tables, always under RLS; `INSERT` (without the time columns) and `SELECT` only on `knowledge_decision` and `knowledge_notice` ([ADR-0014](0014-knowledge-base-as-reviewed-data.md)) |
 | `app_jobs` | Workflow steps | `NOBYPASSRLS`; only the tables its jobs need |
 | `app_auth` | Better Auth | Only the auth tables (users, sessions, passkeys), which are not under per-person RLS |
 | `app_audit` | Audit writer | `INSERT` only on the audit log; no `UPDATE` or `DELETE` for anyone but the migrator |

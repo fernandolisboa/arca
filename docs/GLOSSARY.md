@@ -25,7 +25,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Delegated | Delegado | The step goes to a professional or partner, with the case summary ready |
 | Family (mode) | Em família | The step is assigned to a relative in the case who offered to help |
 | Action point | Ponto de ação | Where a step actually happens: link, phone, office, partner |
-| Fact | Informação | A typed value about a person or unit that rules read, such as an age at a date; derived from the case in code |
+| Fact | Dado | A typed value about a person or unit that rules read, such as an age at a date; derived from the case in code |
 | Requirement | Requisito | A condition of a route version, evaluated as true, false or unknown, with a source |
 | Assessment | Critério subjetivo | A judgment factor of a route version, such as national importance; shown with its evidence, never as pass or fail |
 | Country set | Grupo de países | A versioned, sourced list of countries a rule refers to, such as treaty countries |
@@ -37,6 +37,10 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Activation | Ativação | An approver's passkey approval of one route version, bound to its content hash; counts 48 hours after its notice |
 | Rejection | Recusa | An approver's passkey decision that a proposed version will never be used; selection skips it |
 | Veto | Veto | An approver's passkey cancellation of a pending activation or of a new approver allow-list, within its 48 hours |
+| Approver | Aprovador | A person in the approver allow-list who may activate, reject or veto knowledge-base versions with a pinned passkey |
+| Decision | Decisão | An approver's activation, rejection or veto, stored with its passkey assertion |
+| Notice | Aviso de segurança | The email and device message sent for every decision and new allow-list version; the 48-hour delay runs from it |
+| Step-up | Confirmação com passkey | A fresh passkey verification for one sensitive action, bound to that action |
 | Approver allow-list | Lista de aprovadores | The reviewed file that names who may activate, reject or veto, with their pinned passkey keys. Internal; the UI says who approves |
 | Active version | Versão ativa | A route version with an activation; the only kind the engine evaluates for a case |
 | Decisive missing fact | Dado decisivo pendente | An unknown fact whose answer could change an evaluation's status |
@@ -49,7 +53,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Knowledge base | Base de conhecimento | Sourced, versioned rules and information about routes, documents, steps and pitfalls |
 | Knowledge item | Item da base | One sourced entry in the knowledge base |
 | Rule watcher | Vigia de regras | Scheduled job that detects rule changes and proposes updates |
-| Fixture route | Internal, no UI label | A made-up route on a user-assigned country code (`QM` to `QZ`) that proves the schema in tests; never shown to users |
+| Fixture route | Internal, no UI label | A made-up route on a user-assigned country code (`QM` to `QZ`, except `QO` and `QU`) that proves the schema in tests; never shown to users |
 | Synthetic family | Internal, no UI label | An invented case snapshot in `eval/families`, shared by rule cases and AI evaluation; never real data |
 | Source-of-funds trail | Trilha da origem dos recursos | Documented chain from an asset to the money used in a route |
 | Apostille | Apostila | Hague Convention certification of a public document |

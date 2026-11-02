@@ -51,7 +51,7 @@ packages/
   platform/     capability ports and their adapters (web, capacitor, tauri)
   db/           Drizzle schema and migrations, role SQL, the runtime role pool and request identity
   knowledge/    the knowledge base as data: route versions and their cases, country sets, official-domain
-                lists, the country lists; validated, hashed and bundled into the API ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md))
+                lists, the countries file and the approver allow-list; validated, hashed and bundled into the API ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md))
 tooling/        shared ESLint and TypeScript configs, security header policy, repository scripts
                 (dependency-source, boundary and bundle checks, CI policy scripts, migration runner,
                 the review gate in scripts/src/review-gate)
@@ -106,7 +106,10 @@ Specialized agents work on the knowledge base and the case model:
 | Writer | Cover letters, business plans, source-of-funds statements |
 | Interviewer | Voice simulation of consular interviews |
 | Watcher | Rule changes in the selected countries |
+| Research agent | Proposes route versions from official sources when the base does not cover a question |
 | Concierge | Arrival and settling in the destination |
+
+Each agent gets only the tools its task needs, set in its definition. The research agent and the watcher read untrusted web pages, so they get one proposal tool that opens a pull request with knowledge data and nothing else: no shell, no merge, no approver files, no workflows ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md#what-agents-may-do)).
 
 **Golden rule:** no agent states a requirement that is not in the knowledge base with a source. When the base does not cover a question, the agent says it does not know and opens a research task, which enters the base only after human approval.
 
