@@ -1,0 +1,31 @@
+name: review-canary-push
+
+# anthropics/claude-code-action rejects push events, so a push to main dispatches the canary,
+# which then runs only when the gate fingerprint has no pass yet (ADR-0013). This lives apart from
+# review-canary.yml because the review gate calls that workflow, and a called workflow's jobs may
+# not ask for more permissions than the caller grants.
+
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      # A workflow_dispatch made with GITHUB_TOKEN starts a run, unlike most events it creates.
+      - name: Dispatch the canary on main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in 1 2 3; do
+            gh workflow run review-canary.yml --repo "$GITHUB_REPOSITORY" --ref main \
+              -f skip-if-passed=true && exit 0
+            sleep $((attempt * 10))
+          done
+          exit 1

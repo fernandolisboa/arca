@@ -33,6 +33,11 @@ inputs:
   github-token:
     description: The job's read-only token.
     required: true
+  allow-dispatch-bot:
+    description: >-
+      'true' for a canary run on main dispatched by review-canary-push.yml, whose actor is
+      github-actions[bot]; the action otherwise refuses bot actors outside allowed_bots.
+    default: 'false'
 runs:
   using: composite
   steps:
@@ -51,6 +56,7 @@ runs:
         SCHEMA_FILE: ${{ inputs.schema-file }}
         MODEL: ${{ inputs.model }}
         EFFORT: ${{ inputs.effort }}
+        ALLOW_DISPATCH_BOT: ${{ inputs.allow-dispatch-bot }}
       run: |
         if [[ ! "$MODEL" =~ ^[a-z0-9][a-z0-9.-]{0,99}$ ]]; then
           echo "::error::The model alias or pinned model ID is missing or malformed."
@@ -67,6 +73,9 @@ runs:
         # Read-only: Read, Grep and Glob, within the workspace, with no hooks, MCP servers, skills,
         # plugins or memory. Only main's CLAUDE.md loads as project settings.
         settings='{"disableAllHooks":true,"autoMemoryEnabled":false,"includeGitInstructions":false,"disableBundledSkills":true,"disableClaudeAiConnectors":true,"enableAllProjectMcpServers":false,"permissions":{"blockReadsOutsideWorkingDirectories":true,"deny":["Read(./.git/**)","Read(./**/.git/**)","Read(//proc/**)","Read(//sys/**)","Read(//tmp/**)","Read(~/.claude/**)","Read(~/work/_temp/**)"]}}'
+        allowed_bots=claude,dependabot
+        if [[ "$ALLOW_DISPATCH_BOT" == true ]]; then allowed_bots+=,github-actions; fi
+        echo "allowed-bots=$allowed_bots" >> "$GITHUB_OUTPUT"
         delimiter="REVIEWER_$(openssl rand -hex 16)"
         {
           echo "prompt<<$delimiter"
@@ -98,7 +107,7 @@ runs:
       with:
         claude_code_oauth_token: ${{ inputs.claude-code-oauth-token }}
         github_token: ${{ inputs.github-token }}
-        allowed_bots: claude,dependabot
+        allowed_bots: ${{ steps.load.outputs.allowed-bots }}
         prompt: ${{ steps.load.outputs.prompt }}
         show_full_output: 'false'
         display_report: 'false'
@@ -139,7 +148,7 @@ runs:
       with:
         claude_code_oauth_token: ${{ inputs.claude-code-oauth-token }}
         github_token: ${{ inputs.github-token }}
-        allowed_bots: claude,dependabot
+        allowed_bots: ${{ steps.load.outputs.allowed-bots }}
         prompt: ${{ steps.load.outputs.prompt }}
         show_full_output: 'false'
         display_report: 'false'
