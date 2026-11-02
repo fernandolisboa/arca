@@ -14,6 +14,17 @@ export const modelVariables = {
   opus: 'REVIEW_MODEL_OPUS',
   haiku: 'REVIEW_MODEL_HAIKU',
 } as const;
+export type ModelAlias = keyof typeof modelVariables;
+
+/**
+ * The alias a reviewer runs on in the gate when its own model never answers, such as when the
+ * subscription's limit for that model is reached (ADR-0013). The canary never falls back.
+ */
+export const fallbackModels: Readonly<Record<ModelAlias, ModelAlias>> = {
+  fable: 'opus',
+  opus: 'fable',
+  haiku: 'opus',
+};
 
 export interface AgentDefinition {
   readonly name: string;

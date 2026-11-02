@@ -21,8 +21,12 @@ env:
   DO_NOT_TRACK: '1'
 
 jobs:
+  # A draft cannot merge, so it is not reviewed until it is marked ready: the reviewers run on the
+  # owner's subscription limits (ADR-0013).
   prepare:
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      !github.event.pull_request.draft
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
@@ -107,6 +111,7 @@ jobs:
           prompt-file: ${{ runner.temp }}/gate/prompts/${{ matrix.reviewer }}.md
           schema-file: ${{ runner.temp }}/gate/schema.json
           model: ${{ vars[matrix.modelVariable] || matrix.model }}
+          fallback-model: ${{ vars[matrix.fallbackModelVariable] || matrix.fallbackModel }}
           effort: ${{ matrix.effort }}
           output-file: ${{ runner.temp }}/output/${{ matrix.reviewer }}.json
           claude-code-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -142,7 +147,9 @@ jobs:
   report:
     needs: [prepare, review, canary]
     # Not on a cancelled run: a newer push superseded it, and its run reports instead.
-    if: ${{ !cancelled() && github.event.pull_request.head.repo.full_name == github.repository }}
+    if: >-
+      ${{ !cancelled() && github.event.pull_request.head.repo.full_name == github.repository &&
+      !github.event.pull_request.draft }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     permissions:
