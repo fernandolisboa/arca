@@ -19,7 +19,7 @@
 
 ### Where the base lives
 
-- Route versions, country sets (for example, the E-2 treaty countries), the official-domain lists and the country list are JSON files in `packages/knowledge`, one file per version, validated by the rule schema in `packages/domain` (spec 0002).
+- Route versions, country sets (for example, the E-2 treaty countries), the official-domain lists, the country lists and the approver allow-list are JSON files in `packages/knowledge/data`, one file per version, validated by the rule schema in `packages/domain` (spec 0002).
 - Each route version ships with its table-driven cases in a sibling file. CI rejects a version whose cases do not exercise every requirement every way.
 - The API bundles the validated catalog at build time. The database holds the activations, and gets knowledge tables only when retrieval (pgvector) needs them.
 - Whether documents, steps, fees and action points (`knowledge_item`, `action_point`) also become files is decided by slice 5.
@@ -27,8 +27,8 @@
 ### Immutability
 
 - A file under `packages/knowledge/data` never changes once it is on `main`. CI fails a pull request that modifies, renames or deletes one. Cases files are the one exception: entries may be added, never changed or removed.
-- A rule change is a new version with a later effective date. A correction of a data error is a new version with a `corrects` field naming an earlier version and that version's effective date, which wins over the version it fixes.
-- Each version is identified by its route ID and number, and by a SHA-256 content hash of the RFC 8785 canonical JSON of the version together with every country-set, official-domain and countries version it pins. Evaluations record both, plus the engine's commit, so an old evaluation can be reproduced exactly.
+- A rule change is a new version with a later effective date. A correction of a data error is a new version with a `corrects` field naming an earlier version, at any effective date; once the correction is in effect, the version it fixes is no longer selected (spec 0002, R5).
+- Each version is identified by its route ID and number, and by a SHA-256 content hash of the RFC 8785 canonical JSON of the version together with every file it pins, transitively (country sets, official-domain lists, the country lists). Evaluations record both, plus the engine's commit, so an old evaluation can be reproduced exactly.
 
 ### Approval in two steps
 
@@ -37,10 +37,10 @@
 
 Activation rules:
 
-- **Who:** approvers come from an allow-list kept in the repository as immutable, numbered files and reviewed like code, never from the database. Each entry pins the approver's account, the credential IDs and public keys allowed to activate, and the address for activation notices. It starts with the owner alone. Being in a case grants nothing.
+- **Who:** approvers come from an allow-list kept in the repository as immutable, numbered files under `packages/knowledge/data/approvers`, covered by the immutability check and reviewed like code, never from the database. Each entry pins the approver's account, the credential IDs and public keys allowed to activate, and the address for activation notices. It starts with the owner alone. Being in a case grants nothing.
 - **Challenge:** a server-issued, random, single-use nonce, combined deterministically with the purpose, route ID, number and content hash (SHA-256 over their canonical encoding), so an assertion signs exactly one version.
 - **Verification:** every time it loads activations, the API recomputes the challenge from the stored activation and compares it with the assertion's `clientDataJSON`, checks the relying-party ID, the origin and the user-presence and user-verification flags, and checks the signature against a public key pinned in the allow-list, never against a credential row in the database. It fails closed: any error means not active. An activation signed with a key removed from the allow-list stops counting.
-- **Delay and notice:** an activation counts only 48 hours after the production API, which runs code from `main`, sends its notice to the pinned address and to every registered device. The notice names the version, the approver and the credential. Removing the key from the allow-list within the window cancels it.
+- **Delay and notice:** an activation counts only 48 hours after the production API, which runs code from `main`, sends its notice to the pinned address and to every registered device. The notice names the version, the approver and the credential. Removing the key from the allow-list within the window cancels it. When the production API first loads a new allow-list version, it notifies the addresses of the previous version too, and no key that version adds can make an activation count until 48 hours after that notice.
 - **Matching:** the domain package only matches activations to versions by ID and hash; it never verifies signatures.
 - **What the owner sees:** the activation screen renders each requirement, dependent rule, cost and duration deterministically from the expression tree, with no model in the path; lists the members of each pinned country set; shows the diff against the version it replaces, sets included; and shows each source's host in punycode, flagging hosts that are new since that version. Free-text fields are escaped.
 
@@ -69,4 +69,4 @@ Activation is built in slice 3, together with the activation screen. Until then 
 - Every rule has a reviewable history in Git, tests beside it, and a reproducible identity.
 - The owner activates each rule once, in the app. The activation screen must make that quick and must show the real rule, not a model's description of it.
 - Adding a route stays a data change: a new JSON file and its cases, no code. A route that the schema cannot express extends the schema generically, which is a code change in `packages/domain` with its own review.
-- Residual risk, in line with ADR-0012: an agent holding the owner's GitHub token can merge a bad proposal, change the activation check, or add a key of its own and change the notice address in the allow-list, and, through a preview build that reads the owner database credentials, write activation rows and suppress the notice. That is the same exposure ADR-0012 accepts for any code change. What this design guarantees is narrower: an activation row written with database access alone, without a change to the reviewed allow-list, never counts, because it needs a pinned key's signature over that exact version; and the 48-hour notice protects against a key added in Git by someone without database access. Allow-list versions are immutable files, and a change to one notifies the addresses of the previous version too.
+- Residual risk, in line with ADR-0012: an agent holding the owner's GitHub token can merge a bad proposal, change the activation check, or add a key of its own and change the notice address in the allow-list, and, through a preview build that reads the owner database credentials, write activation rows and suppress the notice. That is the same exposure ADR-0012 accepts for any code change. What this design guarantees is narrower: an activation row written with database access alone, without a change to the reviewed allow-list, never counts, because it needs a pinned key's signature over that exact version; and the 48-hour notice protects against a key added in Git by someone without database access.
