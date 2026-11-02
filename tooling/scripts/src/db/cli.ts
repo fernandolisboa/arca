@@ -3,8 +3,8 @@ import { join } from 'node:path';
 import { bootstrap, renderBootstrap } from './bootstrap.ts';
 import { buildTarget, requiredVariable } from './connection.ts';
 import { readMigrations } from './migrations.ts';
-import { environmentFor, readDatabasePolicy } from './policy.ts';
-import { migrate, migratorRole } from './runner.ts';
+import { environmentFor, migratorRole, readDatabasePolicy } from './policy.ts';
+import { migrate } from './runner.ts';
 
 const dbPackage = join(import.meta.dirname, '../../../../packages/db');
 

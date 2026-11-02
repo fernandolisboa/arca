@@ -5,8 +5,7 @@ import pg from 'pg';
 import { bootstrap, renderBootstrap, type RolePasswords } from '../../src/db/bootstrap.ts';
 import { clientFor, requiredVariable, type ConnectionTarget } from '../../src/db/connection.ts';
 import { checksum, readMigrations, type MigrationFile } from '../../src/db/migrations.ts';
-import { readDatabasePolicy, type DatabasePolicy } from '../../src/db/policy.ts';
-import { migratorRole } from '../../src/db/runner.ts';
+import { migratorRole, readDatabasePolicy, type DatabasePolicy } from '../../src/db/policy.ts';
 
 // A disposable Postgres 18 server, never a shared one: the tests create roles cluster-wide.
 const env = process.env;

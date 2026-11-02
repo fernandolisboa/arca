@@ -162,6 +162,27 @@ describe('migrate', () => {
       'the journal table has a trigger',
     ],
     [
+      'a COMMIT hidden from the parser by standard_conforming_strings',
+      `SELECT pg_catalog.set_config('standard_conforming_strings', 'off', true);
+       SELECT 'x\\' , 'y; COMMIT; SELECT 1 --'`,
+      'cannot insert multiple commands into a prepared statement',
+    ],
+    [
+      'a rule on the journal',
+      'CREATE RULE r AS ON INSERT TO arca_migrations.journal DO ALSO SELECT 1',
+      'the journal table has a rule',
+    ],
+    [
+      'a policy on the journal',
+      'CREATE POLICY p ON arca_migrations.journal USING (true)',
+      'the journal table has a policy',
+    ],
+    [
+      'row-level security on the journal',
+      'ALTER TABLE arca_migrations.journal ENABLE ROW LEVEL SECURITY',
+      'the journal table has row-level security on',
+    ],
+    [
       'a table without row-level security',
       'CREATE TABLE app.cases (id uuid PRIMARY KEY)',
       'guard 1: table app.cases does not have row-level security enabled and forced',
@@ -184,6 +205,24 @@ describe('migrate', () => {
     expect(await schemaExists('canary')).toBe(false);
     expect(await journal()).toEqual(files.map((file) => file.name));
     expect(await roleState()).toEqual(before);
+  });
+
+  it('ignores PGOPTIONS, so the server lexes as the parser does', async () => {
+    const saved = process.env['PGOPTIONS'];
+    process.env['PGOPTIONS'] = '-c standard_conforming_strings=off';
+    try {
+      const setting = await withClient(migratorTarget(database), async (client) => {
+        const result = await client.query<{ value: string }>(
+          'SELECT pg_catalog.current_setting($1) AS value',
+          ['standard_conforming_strings'],
+        );
+        return result.rows[0]?.value;
+      });
+      expect(setting).toBe('on');
+    } finally {
+      if (saved === undefined) delete process.env['PGOPTIONS'];
+      else process.env['PGOPTIONS'] = saved;
+    }
   });
 
   it('reports every vetting problem before it connects', async () => {

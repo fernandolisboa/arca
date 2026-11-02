@@ -26,7 +26,8 @@ export async function readMigrations(dir: string): Promise<MigrationFile[]> {
   const names = entries
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
-    .sort();
+    // Code-point order, as the journal sorts with COLLATE "C".
+    .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
   const files: MigrationFile[] = [];
   for (const name of names) {
     if (!migrationName.test(name))

@@ -35,7 +35,8 @@ export interface DatabasePolicy {
 }
 
 export const appRoles = ['app_migrator', 'app_api', 'app_jobs', 'app_auth', 'app_audit'] as const;
-export const runtimeRoles = ['app_api', 'app_jobs', 'app_auth', 'app_audit'] as const;
+export const migratorRole = 'app_migrator';
+export const runtimeRoles = appRoles.filter((role) => role !== migratorRole);
 
 /**
  * The environment follows from the host the runner connects to, never from migration data or an

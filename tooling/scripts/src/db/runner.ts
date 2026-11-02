@@ -2,7 +2,7 @@ import type pg from 'pg';
 import { clientFor, type ConnectionTarget } from './connection.ts';
 import { runGuards, type GuardViolation } from './guards.ts';
 import { pendingMigrations, type JournalRow, type MigrationFile } from './migrations.ts';
-import type { DatabasePolicy } from './policy.ts';
+import { migratorRole, type DatabasePolicy } from './policy.ts';
 import { vetMigration } from './vet.ts';
 
 export interface MigrationResult {
@@ -18,7 +18,6 @@ export class MigrationRejected extends Error {
   }
 }
 
-export const migratorRole = 'app_migrator';
 // A fixed key, so two runs on the same database cannot interleave.
 const advisoryLockKey = 4_174_523_011;
 
@@ -26,7 +25,7 @@ const journalTable = 'arca_migrations.journal';
 
 async function readJournal(client: pg.Client): Promise<JournalRow[]> {
   const result = await client.query<JournalRow>(
-    `SELECT name, checksum FROM ${journalTable} ORDER BY name`,
+    `SELECT name, checksum FROM ${journalTable} ORDER BY name COLLATE "C"`,
   );
   return result.rows;
 }
@@ -140,6 +139,9 @@ async function applyInTransaction(
   policy: DatabasePolicy,
 ): Promise<string[]> {
   await client.query('SELECT pg_catalog.pg_advisory_xact_lock($1)', [advisoryLockKey]);
+  // A migration blocked behind live traffic fails fast instead of holding its locks until the
+  // build times out. Set after the advisory lock, so a second build still waits for the first.
+  await client.query("SET LOCAL lock_timeout = '30s'");
   const transaction = await client.query<{ xid: string }>(
     'SELECT pg_catalog.pg_current_xact_id()::text AS xid',
   );
@@ -157,15 +159,27 @@ async function applyInTransaction(
   if ('problem' in plan) throw new MigrationRejected([plan.problem]);
 
   for (const file of plan.pending) {
-    for (const statement of statements.get(file.name) ?? []) await client.query(statement);
+    for (const statement of statements.get(file.name) ?? []) {
+      // The extended protocol runs exactly one command per call. The simple protocol would run
+      // every command the server finds in the text, and a migration that changes how the server
+      // lexes (standard_conforming_strings off) could hide a COMMIT from the parser that vetted it.
+      // @types/pg does not declare queryMode, which node-postgres 8 supports.
+      const query: pg.QueryConfig & { queryMode: 'extended' } = {
+        text: statement,
+        queryMode: 'extended',
+      };
+      await client.query(query);
+    }
+  }
+  // Right after the last statement, before anything else reads a name.
+  await client.query('SET LOCAL search_path = pg_catalog, pg_temp');
+  await client.query('RESET ROLE');
+  for (const file of plan.pending) {
     await client.query(`INSERT INTO ${journalTable} (name, checksum) VALUES ($1, $2)`, [
       file.name,
       file.checksum,
     ]);
   }
-  // Right after the last statement, before anything else reads a name.
-  await client.query('SET LOCAL search_path = pg_catalog, pg_temp');
-  await client.query('RESET ROLE');
 
   const expected = [...before, ...plan.pending.map(({ name, checksum }) => ({ name, checksum }))];
   const problems = await transactionChecks(client, transactionId, expected);

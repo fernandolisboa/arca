@@ -32,6 +32,11 @@ const fixtures: [number, string, string][] = [
   [2, 'CREATE VIEW app.v AS SELECT 1 AS one', 'view app.v does not set security_invoker = true'],
   [
     2,
+    'CREATE VIEW app.v WITH (security_invoker = off) AS SELECT 1 AS one',
+    'view app.v does not set security_invoker = true',
+  ],
+  [
+    2,
     'CREATE MATERIALIZED VIEW app.m AS SELECT 1 AS one',
     'materialized view app.m is not allow-listed',
   ],
@@ -75,6 +80,23 @@ describe('guards', () => {
     const policy = await containerPolicy();
     await withClient(adminTarget(database), async (client) => {
       expect(await runGuards(client, policy)).toEqual([]);
+    });
+  });
+
+  it('accept any spelling of security_invoker on', async () => {
+    const policy = await containerPolicy();
+    await withClient(adminTarget(database), async (client) => {
+      await client.query('BEGIN');
+      try {
+        for (const [index, value] of ['true', 'on', '1', 'yes'].entries()) {
+          await client.query(
+            `CREATE VIEW app.v${String(index)} WITH (security_invoker = ${value}) AS SELECT 1 AS one`,
+          );
+        }
+        expect(await runGuards(client, policy)).toEqual([]);
+      } finally {
+        await client.query('ROLLBACK');
+      }
     });
   });
 

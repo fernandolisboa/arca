@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config';
 // so they run one at a time.
 export default defineConfig({
   test: {
-    include: ['test/db/**/*.test.ts'],
+    include: ['test/postgres/**/*.test.ts'],
     fileParallelism: false,
     testTimeout: 60_000,
     hookTimeout: 60_000,

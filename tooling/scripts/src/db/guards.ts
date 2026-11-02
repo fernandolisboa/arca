@@ -43,8 +43,10 @@ function unsafeViewsAndFunctions(client: Query, policy: DatabasePolicy) {
          FROM pg_catalog.pg_class c
          JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
         WHERE c.relkind = 'v' AND ${userSchemas}
-          AND NOT coalesce('security_invoker=true' = ANY (c.reloptions)
-                        OR 'security_invoker=on' = ANY (c.reloptions), false)
+          AND NOT EXISTS (
+            SELECT FROM pg_catalog.pg_options_to_table(c.reloptions) o
+             WHERE o.option_name = 'security_invoker'
+               AND pg_catalog.lower(o.option_value) IN ('true', 'on', 'yes', '1'))
        UNION ALL
        SELECT pg_catalog.format('%s %I.%I is not allow-listed',
                 CASE c.relkind WHEN 'm' THEN 'materialized view' ELSE 'foreign table' END, n.nspname, c.relname)
