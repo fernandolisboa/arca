@@ -51,8 +51,8 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Knowledge catalog | Internal, no UI label | The validated, hashed route data that `packages/knowledge` builds and the API bundles; not the pnpm catalog of dependency versions |
 | Approver list | Internal, no UI label | The reviewed, versioned file in the repository that names the approvers and pins their credentials; designed with consultancy core slice 3 |
 | Credential | Credencial | A passkey or security key pinned for an approver: the everyday credential or the offline credential |
-| Everyday credential | Chave de acesso | An approver's synced passkey, usually the phone's, for rule decisions and vetoes |
-| Offline credential | Chave de segurança | An approver's hardware security key, device-bound and attested, the only credential that may propose an approver-list change |
+| Everyday credential | Chave de acesso | An approver's synced passkey, usually the phone's, for rule decisions and vetoes; it is a passkey, so it shares that label, and screens tell it apart only from the offline credential |
+| Offline credential | Chave de segurança | An approver's hardware security key, device-bound and attested, the only credential that may propose an approver-list change, besides the recovery path |
 | Recovery path | Internal, no UI label | The delayed, notified way to restore an approver who lost every credential; never rests on Git or email alone |
 | Activation screen | Tela de ativação | Where an approver reviews a proposed version as data and activates or rejects it |
 | Research task | Pesquisa pendente | The request opened when the knowledge base cannot answer a question; a research agent works it into a proposal |
