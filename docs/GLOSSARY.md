@@ -64,5 +64,5 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Data export | Exportação dos dados | A file with all of an account's data, built on request |
 | Notification channel | Canal de notificação | A place an account receives notices: email or one device's push subscription |
 | Real-data gate | (technical only) | The checklist that must be complete before production accepts family data |
-| Lineage mark | (technical only) | The database comment that proves a preview did not branch from production |
+| Lineage mark | (technical only) | A comment on the migration runner's schema that marks a database as production or forked from it; a preview build that finds it fails |
 | Outbox | Caixa de saída de teste | Where non-production environments keep emails instead of sending them; never in production |
