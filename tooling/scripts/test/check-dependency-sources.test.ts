@@ -95,6 +95,27 @@ describe('pnpm-workspace.yaml', () => {
     expect(messages).toEqual([expect.stringContaining(expected)]);
   });
 
+  it('reads the release-age settings', () => {
+    const config = yaml(
+      'packages:',
+      '  - apps/*',
+      'minimumReleaseAge: 10080',
+      'minimumReleaseAgeExclude:',
+      '  - zod',
+      "  - '@hono/*'",
+    );
+    expect(config.minimumReleaseAgeMinutes).toBe(10080);
+    expect(config.minimumReleaseAgeExclude).toEqual(['zod', '@hono/*']);
+    const invalid = yaml('packages:', '  - apps/*', 'minimumReleaseAge: soon');
+    expect(invalid.minimumReleaseAgeMinutes).toBeUndefined();
+    expect(invalid.problems).toEqual([
+      {
+        where: 'pnpm-workspace.yaml minimumReleaseAge',
+        problem: 'must be a non-negative integer of minutes',
+      },
+    ]);
+  });
+
   it('requires a packages list', () => {
     expect(checkWorkspaceConfig(yaml('catalog:', '  zod: 4.6.7'))).toEqual([
       { where: 'pnpm-workspace.yaml packages', problem: 'must be a list' },

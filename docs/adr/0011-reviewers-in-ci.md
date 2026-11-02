@@ -38,7 +38,7 @@ Three facts shape the design:
   - anything a must-pass reviewer could not assess fails, except the fixed `tests_not_run` reason, which the required test checks cover;
   - missing or invalid output fails.
 - A report job without a model, which never checks out the pull request, creates the check run and posts one comment built only from schema fields, with Markdown escaped, links and images stripped, and mentions and issue references neutralized. It scans the comment with gitleaks; a match posts nothing and fails the check.
-- For dependency changes, a reviewer PASS is not sufficient on its own: osv-scanner, dependency review and the release-age check must also pass. Those checks take their scripts and policy files from `main` and read the pull request's lockfile as data, so the change they judge cannot weaken them.
+- For dependency changes, a reviewer PASS is not sufficient on its own: osv-scanner and the lockfile policy check (release age, registry integrity, licenses) must also pass. Those checks take their scripts and policy files from `main` and read the pull request's lockfile as data, so the change they judge cannot weaken them.
 
 ### Changing the gate
 

@@ -27,6 +27,10 @@ export interface WorkspaceConfig {
   /** `<catalog>/<package>` → version; the default catalog is named `default`. */
   readonly catalogs: ReadonlyMap<string, string>;
   readonly overrides: ReadonlyMap<string, string>;
+  /** `minimumReleaseAge`, in minutes; undefined when missing or invalid (invalid is also a problem). */
+  readonly minimumReleaseAgeMinutes: number | undefined;
+  /** `minimumReleaseAgeExclude`: names or `*` patterns, optionally with `@v1 || v2` exact versions. */
+  readonly minimumReleaseAgeExclude: readonly string[];
   /** Entries in the sections above that do not have the expected shape. */
   readonly problems: readonly Violation[];
 }
@@ -80,7 +84,30 @@ export function parseWorkspaceYaml(text: string): WorkspaceConfig {
   const overrides = new Map<string, string>();
   stringMap('overrides', root['overrides'], overrides);
 
-  return { packageRoots, catalogs, overrides, problems };
+  const age = root['minimumReleaseAge'];
+  const minimumReleaseAgeMinutes =
+    typeof age === 'number' && Number.isInteger(age) && age >= 0 ? age : undefined;
+  if (age !== undefined && minimumReleaseAgeMinutes === undefined) {
+    problem('minimumReleaseAge', 'must be a non-negative integer of minutes');
+  }
+  const exclude = root['minimumReleaseAgeExclude'] ?? [];
+  const minimumReleaseAgeExclude: string[] = [];
+  if (!Array.isArray(exclude)) problem('minimumReleaseAgeExclude', 'must be a list');
+  else {
+    for (const entry of exclude as unknown[]) {
+      if (typeof entry === 'string') minimumReleaseAgeExclude.push(entry);
+      else problem('minimumReleaseAgeExclude', `${JSON.stringify(entry)} must be a string`);
+    }
+  }
+
+  return {
+    packageRoots,
+    catalogs,
+    overrides,
+    minimumReleaseAgeMinutes,
+    minimumReleaseAgeExclude,
+    problems,
+  };
 }
 
 export async function readWorkspaceConfig(rootDir: string): Promise<WorkspaceConfig> {

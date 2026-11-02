@@ -1,0 +1,25 @@
+# Version updates (spec 0001, R8). The 7-day cooldown matches pnpm's minimumReleaseAge, so an
+# update never proposes a release that the lockfile-policy check's release-age rule would reject.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    versioning-strategy: increase
+    groups:
+      npm:
+        patterns: ['*']
+  - package-ecosystem: github-actions
+    directories:
+      - /
+      - /.github/actions/*
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ['*']

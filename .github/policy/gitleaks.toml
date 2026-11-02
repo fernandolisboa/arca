@@ -1,0 +1,5 @@
+# gitleaks configuration, read from main (spec 0001, R8): the default rules, nothing allow-listed.
+title = "arca"
+
+[extend]
+useDefault = true
