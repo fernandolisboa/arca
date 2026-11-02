@@ -15,7 +15,7 @@ import {
   wrapUntrusted,
 } from '../../src/review-gate/input.ts';
 import { mainReviewers } from '../../src/review-gate/load.ts';
-import { modelVariables } from '../../src/review-gate/reviewers.ts';
+import { fallbackModels, modelVariables } from '../../src/review-gate/reviewers.ts';
 
 const root = new URL('../../../../', import.meta.url).pathname;
 let scratch: string;
@@ -337,6 +337,8 @@ describe('canary corpus', () => {
       categories: ['injection' as const],
       model: 'fable',
       modelVariable: 'REVIEW_MODEL_FABLE',
+      fallbackModel: 'opus',
+      fallbackModelVariable: 'REVIEW_MODEL_OPUS',
       effort: 'high',
     };
     const finding = (category: string, severity = 'high') =>
@@ -445,6 +447,11 @@ describe('review workflows', () => {
       for (const model of models) {
         expect(model).toBe('${{ vars[matrix.modelVariable] || matrix.model }}');
       }
+      const fallbacks = valuesOf(workflow, 'fallback-model');
+      expect(fallbacks).toHaveLength(models.length);
+      for (const fallback of fallbacks) {
+        expect(fallback).toBe('${{ vars[matrix.fallbackModelVariable] || matrix.fallbackModel }}');
+      }
       for (const env of valuesOf(workflow, 'env').filter(isRecord)) {
         const pinned = Object.keys(env).filter((name) => name.startsWith('REVIEW_MODEL_'));
         if (pinned.length > 0) expect(pinned.sort()).toEqual(Object.values(modelVariables).sort());
@@ -519,6 +526,7 @@ describe('review workflows', () => {
     expect(valuesOf(parse(action) as unknown, 'allowed_bots')).toEqual([
       '${{ steps.load.outputs.allowed-bots }}',
       '${{ steps.load.outputs.allowed-bots }}',
+      '${{ steps.load.outputs.allowed-bots }}',
     ]);
     expect(action).toContain(
       'if [[ "$ALLOW_DISPATCH_BOT" == true ]]; then allowed_bots+=,github-actions; fi',
@@ -530,5 +538,56 @@ describe('review workflows', () => {
     expect(await allowances('review-canary.yml')).toEqual([
       "${{ github.event_name == 'workflow_dispatch' }}",
     ]);
+  });
+
+  it('runs on the fallback model only when the first model never answered', async () => {
+    const action = parse(
+      await readFile(join(root, '.github', 'actions', 'run-reviewer', 'action.yml'), 'utf8'),
+    ) as unknown;
+    const runs = isRecord(action) && isRecord(action['runs']) ? action['runs'] : {};
+    const steps = (Array.isArray(runs['steps']) ? runs['steps'] : []).filter(isRecord);
+    const step = (id: string) => steps.find((candidate) => candidate['id'] === id) ?? {};
+    expect(step('answered')['if']).toBe("steps.review.outputs.structured_output == ''");
+    expect(step('fallback')['if']).toBe("steps.answered.outputs.fallback == 'true'");
+    const withInputs = step('fallback')['with'];
+    expect(isRecord(withInputs) && withInputs['claude_args']).toBe(
+      '${{ steps.load.outputs.fallback-claude-args }}',
+    );
+
+    const filter = /jq -e \\\n\s*'([^']*)'/.exec(String(step('answered')['run']))?.[1];
+    expect(filter).toBeDefined();
+    const dir = await mkdtemp(join(tmpdir(), 'arca-fallback-'));
+    const answered = async (result: Record<string, unknown>) => {
+      const file = join(dir, 'execution.json');
+      await writeFile(file, JSON.stringify([{ type: 'system', subtype: 'init' }, result]));
+      try {
+        execFileSync('jq', ['-e', filter ?? '', file], { stdio: 'ignore' });
+        return 'fallback';
+      } catch {
+        return 'keep';
+      }
+    };
+    try {
+      expect(await answered({ type: 'result', is_error: true, modelUsage: {} })).toBe('fallback');
+      expect(await answered({ type: 'result', is_error: true })).toBe('fallback');
+      expect(
+        await answered({
+          type: 'result',
+          is_error: true,
+          modelUsage: { fable: { inputTokens: 9 } },
+        }),
+      ).toBe('keep');
+      expect(await answered({ type: 'result', is_error: false, modelUsage: {} })).toBe('keep');
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('gives every model alias a different fallback that has its own pin variable', () => {
+    for (const [alias, fallback] of Object.entries(fallbackModels)) {
+      expect(fallback).not.toBe(alias);
+      expect(Object.keys(modelVariables)).toContain(fallback);
+    }
+    expect(Object.keys(fallbackModels).sort()).toEqual(Object.keys(modelVariables).sort());
   });
 });

@@ -2,11 +2,13 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
   AgentDefinitionError,
+  fallbackModels,
   modelVariables,
   parseAgentDefinition,
   reviewerWeights,
   withWeights,
   type AgentDefinition,
+  type ModelAlias,
   type Reviewer,
 } from './reviewers.ts';
 
@@ -50,15 +52,20 @@ export interface MatrixEntry {
   readonly reviewer: string;
   readonly model: string;
   readonly modelVariable: string;
+  readonly fallbackModel: string;
+  readonly fallbackModelVariable: string;
   readonly effort: string;
 }
 
 /** One matrix entry per reviewer: its model alias and the variable that may pin it; `checked` vouches for the alias. */
 export function matrixEntry(reviewer: Reviewer): MatrixEntry {
+  const fallbackModel = fallbackModels[reviewer.model as ModelAlias];
   return {
     reviewer: reviewer.name,
     model: reviewer.model,
-    modelVariable: modelVariables[reviewer.model as keyof typeof modelVariables],
+    modelVariable: modelVariables[reviewer.model as ModelAlias],
+    fallbackModel,
+    fallbackModelVariable: modelVariables[fallbackModel],
     effort: reviewer.effort ?? '',
   };
 }

@@ -14,6 +14,11 @@ inputs:
   model:
     description: The reviewer's model alias, or the model ID its repository variable pins it to.
     required: true
+  fallback-model:
+    description: >-
+      The model alias, or pinned model ID, to run once more on when the first attempt ends before
+      its model answers, such as when the subscription's limit for that model is reached.
+    required: true
   effort:
     description: The reviewer's effort level, or empty.
     default: ''
@@ -55,13 +60,16 @@ runs:
         PROMPT_FILE: ${{ inputs.prompt-file }}
         SCHEMA_FILE: ${{ inputs.schema-file }}
         MODEL: ${{ inputs.model }}
+        FALLBACK_MODEL: ${{ inputs.fallback-model }}
         EFFORT: ${{ inputs.effort }}
         ALLOW_DISPATCH_BOT: ${{ inputs.allow-dispatch-bot }}
       run: |
-        if [[ ! "$MODEL" =~ ^[a-z0-9][a-z0-9.-]{0,99}$ ]]; then
-          echo "::error::The model alias or pinned model ID is missing or malformed."
-          exit 1
-        fi
+        for model in "$MODEL" "$FALLBACK_MODEL"; do
+          if [[ ! "$model" =~ ^[a-z0-9][a-z0-9.-]{0,99}$ ]]; then
+            echo "::error::A model alias or pinned model ID is missing or malformed."
+            exit 1
+          fi
+        done
         [[ -z "$EFFORT" || "$EFFORT" =~ ^(low|medium|high|xhigh|max)$ ]]
         test -d review-input
         schema="$(jq -c . "$SCHEMA_FILE")"
@@ -76,13 +84,9 @@ runs:
         allowed_bots=claude,dependabot
         if [[ "$ALLOW_DISPATCH_BOT" == true ]]; then allowed_bots+=,github-actions; fi
         echo "allowed-bots=$allowed_bots" >> "$GITHUB_OUTPUT"
-        delimiter="REVIEWER_$(openssl rand -hex 16)"
-        {
-          echo "prompt<<$delimiter"
-          cat "$PROMPT_FILE"
-          echo "$delimiter"
-          echo "claude-args<<$delimiter"
-          echo "--model $MODEL${EFFORT:+ --effort $EFFORT}"
+        # The same arguments for the model and for the fallback; only the model differs.
+        reviewer_args() {
+          echo "--model $1${EFFORT:+ --effort $EFFORT}"
           echo "--setting-sources project"
           echo "--strict-mcp-config"
           echo "--mcp-config '{\"mcpServers\":{}}'"
@@ -93,6 +97,17 @@ runs:
           echo "--disallowedTools Bash,Write,Edit,NotebookEdit,WebFetch,WebSearch,Task,Agent,mcp__*"
           echo "--settings '$settings'"
           echo "--json-schema '$schema'"
+        }
+        delimiter="REVIEWER_$(openssl rand -hex 16)"
+        {
+          echo "prompt<<$delimiter"
+          cat "$PROMPT_FILE"
+          echo "$delimiter"
+          echo "claude-args<<$delimiter"
+          reviewer_args "$MODEL"
+          echo "$delimiter"
+          echo "fallback-claude-args<<$delimiter"
+          reviewer_args "$FALLBACK_MODEL"
           echo "$delimiter"
         } >> "$GITHUB_OUTPUT"
     # Before any model runs, so no output can exist unless the scan below can run.
@@ -122,6 +137,46 @@ runs:
         mkdir -p "$(dirname "$OUTPUT_FILE")"
         rm -f "$OUTPUT_FILE"
         if [[ -n "$OUTPUT" ]]; then printf '%s' "$OUTPUT" > "$OUTPUT_FILE"; fi
+    # A run whose model never answered (an error with no model usage, such as the subscription's
+    # limit for that model) judged nothing, so it runs once on the fallback model. Any run in which
+    # a model answered keeps its outcome, so nothing in the change can choose the model it meets.
+    - name: Check whether the model answered
+      id: answered
+      if: steps.review.outputs.structured_output == ''
+      shell: bash
+      env:
+        EXECUTION_FILE: ${{ steps.review.outputs.execution_file }}
+      run: |
+        if [[ -s "$EXECUTION_FILE" ]] && jq -e \
+          '[.[] | select(.type == "result")] | last
+           | .is_error == true and ((.modelUsage // {}) | length) == 0' \
+          "$EXECUTION_FILE" > /dev/null 2>&1; then
+          echo "::warning::The reviewer's model did not answer; running once on the fallback model."
+          echo "fallback=true" >> "$GITHUB_OUTPUT"
+        fi
+    - name: Review on the fallback model
+      id: fallback
+      if: steps.answered.outputs.fallback == 'true'
+      continue-on-error: true
+      uses: anthropics/claude-code-action@925afb53776cf1a2b738c6bdbed37b4d4000ef13 # v1.0.262
+      with:
+        claude_code_oauth_token: ${{ inputs.claude-code-oauth-token }}
+        github_token: ${{ inputs.github-token }}
+        allowed_bots: ${{ steps.load.outputs.allowed-bots }}
+        prompt: ${{ steps.load.outputs.prompt }}
+        show_full_output: 'false'
+        display_report: 'false'
+        classify_inline_comments: 'false'
+        claude_args: ${{ steps.load.outputs.fallback-claude-args }}
+    - name: Save the fallback's structured output
+      if: steps.answered.outputs.fallback == 'true'
+      shell: bash
+      env:
+        OUTPUT: ${{ steps.fallback.outputs.structured_output }}
+        OUTPUT_FILE: ${{ inputs.output-file }}
+      run: |
+        rm -f "$OUTPUT_FILE"
+        if [[ -n "$OUTPUT" ]]; then printf '%s' "$OUTPUT" > "$OUTPUT_FILE"; fi
     # A looser form of judgeCanaryRun in tooling/scripts/src/review-gate/canary.ts, which judges
     # the final output with the schema; this only decides whether to retry.
     - name: Check for a blocking finding of every expected category
@@ -140,6 +195,7 @@ runs:
         else
           echo "retry=true" >> "$GITHUB_OUTPUT"
         fi
+    # On the model the last attempt ran on.
     - name: Retry once
       id: retry
       if: steps.check.outputs.retry == 'true'
@@ -153,7 +209,9 @@ runs:
         show_full_output: 'false'
         display_report: 'false'
         classify_inline_comments: 'false'
-        claude_args: ${{ steps.load.outputs.claude-args }}
+        claude_args: >-
+          ${{ steps.answered.outputs.fallback == 'true' && steps.load.outputs.fallback-claude-args
+          || steps.load.outputs.claude-args }}
     - name: Save the retry's structured output
       if: steps.check.outputs.retry == 'true'
       shell: bash
