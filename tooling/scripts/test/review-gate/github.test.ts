@@ -30,7 +30,7 @@ function fake(state: Fake) {
     if (path.includes('status=in_progress'))
       return Promise.resolve({ workflow_runs: state.inProgress ?? [] });
     if (path.includes('status=queued')) return Promise.resolve({ workflow_runs: [] });
-    const finished = /[?&]branch=main&status=(failure|timed_out|startup_failure)&/.exec(path);
+    const finished = /[?&]branch=main&status=(failure|timed_out)&/.exec(path);
     if (finished)
       return Promise.resolve({
         workflow_runs: (state.completed ?? []).filter(
@@ -50,6 +50,7 @@ const goodRun = {
   event: 'push',
   conclusion: 'success',
   run_number: 10,
+  run_attempt: 1,
   repository: { full_name: repository },
 };
 const artifact = { expired: false, workflow_run: { id: 1, head_branch: 'main' } };
@@ -66,6 +67,7 @@ describe('canary lookup', () => {
     ['a pull_request event', { event: 'pull_request' }],
     ['a pull_request_target event', { event: 'pull_request_target' }],
     ['a failed run', { conclusion: 'failure' }],
+    ['a re-run', { run_attempt: 2 }],
     ['another repository', { repository: { full_name: 'fork/repo' } }],
   ])('does not count an artifact from %s', async (_label, change) => {
     const { request } = fake({ artifacts: [artifact], runs: { 1: { ...goodRun, ...change } } });
@@ -83,6 +85,20 @@ describe('canary lookup', () => {
       ],
     });
     expect(await canaryState(request, repository, fingerprint)).toBe('missing');
+  });
+
+  it('counts only runs whose conclusion matches, if the API ignores the status filter', async () => {
+    const runs = [
+      { event: 'push', conclusion: 'success', run_number: 12 },
+      { event: 'push', conclusion: 'skipped', run_number: 11 },
+      { event: 'push', conclusion: 'success', run_number: 10 },
+    ];
+    const { request } = fake({ artifacts: [artifact], runs: { 1: goodRun } });
+    const unfiltered: GitHubRequest = (method, path, body) =>
+      /status=(failure|timed_out)&/.test(path)
+        ? Promise.resolve({ workflow_runs: runs })
+        : request(method, path, body);
+    expect(await canaryState(unfiltered, repository, fingerprint)).toBe('passed');
   });
 
   it('keeps an old pass revoked after a newer pass under another fingerprint', async () => {

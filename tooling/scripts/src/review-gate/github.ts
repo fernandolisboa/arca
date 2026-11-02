@@ -42,10 +42,12 @@ function records(value: unknown, key: string): Record<string, unknown>[] {
 
 /**
  * Whether the canary passed for this gate fingerprint: an artifact named for it, uploaded by a
- * successful run of main's canary workflow. An artifact from any other workflow, branch or event
- * does not count, so a side branch cannot fake one. A pass older than the newest failed canary run
- * on main does not count either: a model alias can move to a new model without changing the
- * fingerprint, so an old pass may vouch for a model that has since failed (ADR-0013).
+ * successful first attempt of main's canary workflow. An artifact from any other workflow, branch
+ * or event does not count, so a side branch cannot fake one. A re-run does not count, since it
+ * reads the model variables again and may test other models than the plan fingerprinted. A pass
+ * older than the newest failed canary run on main does not count either: a model alias can move to
+ * a new model without changing the fingerprint, so an old pass may vouch for a model that has
+ * since failed (ADR-0013).
  */
 export async function canaryState(
   request: GitHubRequest,
@@ -72,6 +74,7 @@ export async function canaryState(
       details['conclusion'] === 'success' &&
       isRecord(details['repository']) &&
       details['repository']['full_name'] === repository &&
+      details['run_attempt'] === 1 &&
       typeof details['run_number'] === 'number' &&
       details['run_number'] > failedAfter
     ) {
@@ -88,8 +91,11 @@ export async function canaryState(
   return 'missing';
 }
 
-/** Conclusions of a finished run that did not pass; cancelled and skipped runs prove nothing. */
-const failedConclusions = ['failure', 'timed_out', 'startup_failure'] as const;
+/**
+ * Conclusions of a run that tested a model and did not pass. Cancelled and skipped runs prove
+ * nothing, and neither does a startup failure, which runs no model.
+ */
+const failedConclusions = ['failure', 'timed_out'] as const;
 
 /** The run number of the newest canary run on main that failed, or 0 when there is none. */
 async function newestFailedCanaryRun(request: GitHubRequest, repository: string): Promise<number> {
@@ -101,7 +107,11 @@ async function newestFailedCanaryRun(request: GitHubRequest, repository: string)
     );
     for (const run of runs) {
       const number = run['run_number'];
-      if (canaryEvents.has(String(run['event'])) && typeof number === 'number') {
+      if (
+        run['conclusion'] === conclusion &&
+        canaryEvents.has(String(run['event'])) &&
+        typeof number === 'number'
+      ) {
         newest = Math.max(newest, number);
       }
     }
