@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p src/service-worker/tsconfig.json && tsc -p e2e/tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json && tsc -p src/service-worker/tsconfig.json && tsc -p e2e/tsconfig.json",
     "lint": "eslint .",
     "e2e": "playwright test -c e2e"
   },

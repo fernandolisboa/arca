@@ -29,7 +29,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - name: Generated files are committed and current
-        run: git diff --exit-code
+        run: |
+          git status --porcelain
+          test -z "$(git status --porcelain)"
 
   e2e:
     runs-on: ubuntu-24.04
@@ -43,7 +45,7 @@ jobs:
       - uses: ./.github/actions/setup-pnpm
       - run: pnpm install --frozen-lockfile
       - name: Chromium for the installed Playwright version
-        run: pnpm --filter @arca/web exec playwright install --with-deps chromium
+        run: pnpm --filter @arca/web exec playwright install --with-deps --only-shell chromium
       - name: The built app at phone and desktop sizes (spec 0001, R8)
         run: pnpm turbo run e2e
 

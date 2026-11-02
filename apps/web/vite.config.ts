@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFile, readdir } from 'node:fs/promises';
 import { join, relative, resolve, sep } from 'node:path';
 import { defaultLocale, resources } from '@arca/i18n';
+import { isUnpublishedFile } from '@arca/security-policy';
 import tailwindcss from '@tailwindcss/vite';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
@@ -36,11 +37,8 @@ const manifest = {
 
 const serviceWorkerFile = 'sw.js';
 
-/** Files the service worker must not precache: source maps, dotfiles and the worker itself. */
-const notPrecached = (file: string) =>
-  file.endsWith('.map') ||
-  file === serviceWorkerFile ||
-  file.split('/').some((part) => part.startsWith('.'));
+/** Never precached: what the server does not publish, and the worker itself. */
+const notPrecached = (file: string) => file === serviceWorkerFile || isUnpublishedFile(file);
 
 async function precacheManifest(outDir: string) {
   const files = (await readdir(outDir, { recursive: true, withFileTypes: true }))

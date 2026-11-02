@@ -27,23 +27,29 @@ function Home() {
 function HealthStatus() {
   const { t } = useTranslation();
   const health = useQuery(healthQuery);
-  if (health.isPending) {
-    return <p role="status">{t('health.checking')}</p>;
-  }
-  if (health.isError) {
-    return (
-      <div className="flex flex-col items-start gap-3">
-        <p role="status" className="text-danger">
-          {t('health.unreachable')}
-        </p>
-        <Button onClick={() => void health.refetch()}>{t('health.retry')}</Button>
-      </div>
-    );
-  }
-  const { status } = health.data;
+  // One live region whose text changes, so screen readers announce each new state.
+  const [message, tone] = health.isPending
+    ? [t('health.checking'), 'text-ink-muted']
+    : health.isError
+      ? [t('health.unreachable'), 'text-danger']
+      : [
+          t('health.status', { status: health.data.status }),
+          health.data.status === 'ok' ? 'text-ok' : 'text-warning',
+        ];
   return (
-    <p role="status" className={status === 'ok' ? 'text-ok' : 'text-warning'}>
-      {t('health.status', { status })}
-    </p>
+    <div className="flex flex-col items-start gap-3">
+      <p role="status" className={tone}>
+        {message}
+      </p>
+      {health.isError && (
+        <Button
+          disabled={health.isFetching}
+          aria-busy={health.isFetching}
+          onClick={() => void health.refetch()}
+        >
+          {t('health.retry')}
+        </Button>
+      )}
+    </div>
   );
 }

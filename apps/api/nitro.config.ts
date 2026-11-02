@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { fallbackExclusions, securityHeaders } from '@arca/security-policy';
+import { fallbackExclusions, securityHeaders, unpublishedFiles } from '@arca/security-policy';
 import { defineConfig } from 'nitro';
 
 // apps/web's static build, served from the same origin as the API (spec 0001, R4).
@@ -32,8 +32,7 @@ export default defineConfig({
   routes,
   errorHandler: './src/error-handler.ts',
   plugins: ['./src/quiet-errors.ts'],
-  // Never published: dotfiles, and the source maps the web build keeps for the bundle check.
-  publicAssets: [{ dir: webDist, baseURL: '/', ignore: ['**/.*', '**/*.map'] }],
+  publicAssets: [{ dir: webDist, baseURL: '/', ignore: [...unpublishedFiles] }],
   renderer: { template: join(webDist, 'index.html'), static: true },
   routeRules: { '/**': { headers: { ...securityHeaders } } },
   runtimeConfig: { database },

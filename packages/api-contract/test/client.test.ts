@@ -1,12 +1,16 @@
-import { globalConfig } from 'zod/v4/core';
-import { describe, expect, it } from 'vitest';
-import { routes } from '../src/client/index.js';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('client entry', () => {
-  it('turns off Zod JIT before any schema is built, for the strict CSP', () => {
-    expect(globalConfig.jitless).toBe(true);
+  it('never probes `new Function`, which the strict CSP reports, while it builds schemas', async () => {
+    const probe = vi.spyOn(globalThis, 'Function');
+    const { routes } = await import('../src/client/index.js');
     expect(
       routes.health.response.schema.parse({ status: 'ok', checks: { database: 'ok' } }),
     ).toEqual({ status: 'ok', checks: { database: 'ok' } });
+    expect(probe).not.toHaveBeenCalled();
   });
 });

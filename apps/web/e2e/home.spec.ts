@@ -1,3 +1,5 @@
+import { createServer, request as forward } from 'node:http';
+import type { AddressInfo } from 'node:net';
 import { expect, test, type Page } from '@playwright/test';
 
 /** Console errors, uncaught errors and CSP or Trusted Types violations seen by the page. */
@@ -80,6 +82,14 @@ test('never caches /v1 responses', async ({ page, context }) => {
   });
   expect(cached).toContain('/index.html');
   expect(cached.filter((path) => path === '/v1' || path.startsWith('/v1/'))).toEqual([]);
+  expect(cached.filter((path) => path.endsWith('.map') || path === '/sw.js')).toEqual([]);
+
+  // An excluded prefix never falls back to the shell, with or without a query string.
+  for (const path of ['/v1/unknown', '/v1?x=1', '/internal?x=1']) {
+    const response = await page.goto(path);
+    expect(response?.status(), path).toBe(404);
+  }
+  await page.goto('/');
 
   // Offline, the shell still loads from the precache but the API status cannot.
   await context.setOffline(true);
@@ -91,4 +101,48 @@ test('never caches /v1 responses', async ({ page, context }) => {
   const retry = page.getByRole('button', { name: 'Tentar de novo' });
   const box = await retry.boundingBox();
   expect(box?.height).toBeGreaterThanOrEqual(44);
+});
+
+test('serves pages from the network, so a header change reaches installed clients', async ({
+  page,
+  baseURL,
+}) => {
+  // A proxy in front of the server that can rewrite the CSP, as a header-only deploy would.
+  const upstream = new URL(baseURL ?? '');
+  let tightened = false;
+  const proxy = createServer((incoming, outgoing) => {
+    const upstreamRequest = forward(
+      {
+        host: upstream.hostname,
+        port: upstream.port,
+        path: incoming.url,
+        method: incoming.method,
+        headers: incoming.headers,
+      },
+      (response) => {
+        const headers = { ...response.headers };
+        const policy = headers['content-security-policy'];
+        if (tightened && typeof policy === 'string') {
+          headers['content-security-policy'] = `${policy}; upgrade-insecure-requests`;
+        }
+        outgoing.writeHead(response.statusCode ?? 502, headers);
+        response.pipe(outgoing);
+      },
+    );
+    incoming.pipe(upstreamRequest);
+  });
+  await new Promise<void>((resolve) => proxy.listen(0, '127.0.0.1', resolve));
+  const origin = `http://127.0.0.1:${String((proxy.address() as AddressInfo).port)}`;
+  try {
+    await page.goto(`${origin}/`);
+    await activeServiceWorker(page);
+    await page.reload();
+    tightened = true;
+    const response = await page.reload();
+    expect(await page.evaluate(() => navigator.serviceWorker.controller !== null)).toBe(true);
+    expect(response?.headers()['content-security-policy']).toMatch(/upgrade-insecure-requests$/);
+  } finally {
+    await page.close();
+    await new Promise((resolve) => proxy.close(resolve));
+  }
 });

@@ -4,7 +4,7 @@
 export const ptBR = {
   app: {
     name: 'Arca',
-    description: 'Assessoria de imigração para a sua família, do primeiro plano até a chegada.',
+    description: 'Assessoria de imigração para a sua família, do planejamento até a chegada.',
   },
   shell: {
     skipToContent: 'Pular para o conteúdo',

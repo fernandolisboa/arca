@@ -21,7 +21,8 @@ blockExoticSubdeps: true
 
 overrides:
   # Tailwind pins 1.32.0 while Vite uses 1.33.0. One copy instead of two, and the one whose
-  # MPL-2.0 license already has an exception in .github/policy/licenses.json.
+  # MPL-2.0 license already has an exception in .github/policy/licenses.json. Recheck on every
+  # Tailwind update, and drop it once Tailwind pins the version Vite uses.
   '@tailwindcss/node>lightningcss': 1.33.0
 
 catalog:

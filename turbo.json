@@ -34,7 +34,8 @@
     },
     "@arca/web#e2e": {
       "dependsOn": ["@arca/api#build"],
-      "cache": false
+      "cache": false,
+      "passThroughEnv": ["ARCA_E2E_CHROMIUM", "PLAYWRIGHT_BROWSERS_PATH"]
     }
   }
 }

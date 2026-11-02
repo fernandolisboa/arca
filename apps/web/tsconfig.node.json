@@ -1,0 +1,12 @@
+{
+  "extends": "@arca/tsconfig/node.json",
+  "compilerOptions": {
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "composite": false,
+    "rootDir": "${configDir}",
+    "tsBuildInfoFile": null
+  },
+  "include": ["vite.config.ts"]
+}

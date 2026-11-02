@@ -7,7 +7,7 @@ export interface AppShellProps {
   readonly children: ReactNode;
 }
 
-const mainId = 'conteudo';
+const mainId = 'main-content';
 
 /**
  * The page frame: clear of notches and home indicators through the safe-area insets, one column
