@@ -14,7 +14,7 @@ Arca uses several kinds of AI (see [ARCHITECTURE.md](../ARCHITECTURE.md#ai-stack
 - Adapters implement those ports for specific providers (for example, a Claude adapter and a Jev adapter for `Classifier`).
 - Which adapter runs is configuration. Switching requires a run of the synthetic evaluation suite showing equal or better quality for that capability.
 - Calls to third-party models send only the fields the call needs. No names, document numbers or account numbers.
-- **Document-processing exception.** Reading a document (OCR, review) necessarily sends its content, names and numbers included. This happens only when the document's owner authorizes it for that document, only through the `DocumentReader` and `SpeechToText` ports, preferring vendor terms that exclude training and retention, and the vendor is listed in the data-flow register. Extracted results are stored encrypted like the document.
+- **Document-processing exception.** Reading a document (OCR, review) necessarily sends its content, names and numbers included. This happens only when the document's owner authorizes it for that document, only through the `DocumentReader` and `SpeechToText` ports, preferring vendor terms that exclude training and retention, and the vendor is listed in the data-flow register. Extracted results are stored encrypted like the document; the path and what may leave the vault are fixed in [ADR-0018](0018-vault-encryption.md).
 - Model output that is rendered to users has remote images stripped and links marked, so injected instructions cannot exfiltrate data through URLs.
 - Classifier results carry a probability. Below a configured confidence threshold, the app asks the person instead of acting.
 

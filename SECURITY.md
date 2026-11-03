@@ -4,7 +4,7 @@
 
 Please report vulnerabilities privately through GitHub Security Advisories ("Report a vulnerability" on this repository's Security tab). Do not open public issues for security problems.
 
-Once the production domain is live, a `security@` address and `/.well-known/security.txt` will be published there as well.
+`/.well-known/security.txt` is published at `https://arca.filx.app` once the app is live, pointing to the repository's private vulnerability reporting.
 
 We acknowledge reports within three business days and keep reporters informed until the issue is resolved.
 
