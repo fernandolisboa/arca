@@ -1,12 +1,19 @@
 import { z } from 'zod';
 import {
   type CalendarDate,
-  addDays,
   calendarDateSchema,
   compareDates,
+  firstDate,
+  tryAddDays,
 } from '../calendar/calendar-date.js';
 import { type CurrencyCode, currencyCodeSchema, minorUnitExponent } from './currency.js';
-import { decimalSchema, normalizeScaled, powerOfTen, scaledDecimal } from './decimal.js';
+import {
+  decimalSchema,
+  isPositiveDecimal,
+  normalizeScaled,
+  powerOfTen,
+  scaledDecimal,
+} from './decimal.js';
 import type { ExactAmount } from './money.js';
 
 /** A rate is usable for at most this many days after its date. */
@@ -17,19 +24,18 @@ const fxRateSchema = z
     from: currencyCodeSchema,
     to: currencyCodeSchema,
     /** Units of `to` per unit of `from`. */
-    rate: decimalSchema,
+    rate: decimalSchema.refine(isPositiveDecimal, { message: 'A rate is positive' }),
     date: calendarDateSchema,
     source: z.string().min(1).max(200),
   })
-  .refine((rate) => rate.from !== rate.to, { message: 'A rate converts between two currencies' })
-  .refine((rate) => scaledDecimal(rate.rate).units > 0n, { message: 'A rate is positive' });
+  .refine((rate) => rate.from !== rate.to, { message: 'A rate converts between two currencies' });
 
 /**
  * Rates the caller supplies, with their date and source. Pairs are directional: no inversion and
  * no cross rates. The engine never fetches a rate (spec 0002, R2).
  */
 export const fxTableSchema = z
-  .strictObject({ rates: z.array(fxRateSchema) })
+  .strictObject({ rates: z.array(fxRateSchema).max(10_000) })
   .refine((table) => new Set(table.rates.map(rateKey)).size === table.rates.length, {
     message: 'Two rates for the same pair and date',
   });
@@ -52,7 +58,7 @@ export function findRate(
   pair: CurrencyPair,
   factsAsOf: CalendarDate,
 ): FxRate | undefined {
-  const oldest = addDays(factsAsOf, -maxRateAgeDays);
+  const oldest = tryAddDays(factsAsOf, -maxRateAgeDays) ?? firstDate;
   const candidates = table.rates.filter(
     (rate) =>
       rate.from === pair.from &&

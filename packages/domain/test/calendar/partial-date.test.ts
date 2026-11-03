@@ -4,6 +4,7 @@ import {
   type CalendarDate,
   type ComparisonOperator,
   type DateValue,
+  addDays,
   compareDates,
   compareDateValues,
   dateRange,
@@ -89,7 +90,9 @@ describe('compareDateValues', () => {
         dateValues,
         dateValues,
         fc.constantFrom(...operators),
-        (left, right, operator) => {
+        fc.integer({ min: 0, max: 365 }),
+        fc.integer({ min: 0, max: 365 }),
+        (left, right, operator, leftOffset, rightOffset) => {
           const result = compareDateValues(left, operator, right);
           const leftRange = dateRange(left);
           const rightRange = dateRange(right);
@@ -98,6 +101,9 @@ describe('compareDateValues', () => {
           );
           if (result !== 'unknown') {
             expect(corners.every((corner) => corner === result)).toBe(true);
+            const leftSample = within(leftRange.min, leftRange.max, leftOffset);
+            const rightSample = within(rightRange.min, rightRange.max, rightOffset);
+            expect(holds(leftSample, operator, rightSample)).toBe(result);
           }
           if (left.length === 10 && right.length === 10) {
             expect(result).toBe(holds(left as CalendarDate, operator, right as CalendarDate));
@@ -108,12 +114,41 @@ describe('compareDateValues', () => {
   });
 });
 
+function within(min: CalendarDate, max: CalendarDate, offset: number): CalendarDate {
+  const date = addDays(min, offset);
+  return compareDates(date, max) > 0 ? max : date;
+}
+
 describe('elapsedSinceValue', () => {
   it('is unknown while the partial start straddles the threshold', () => {
     const p18y = parseDuration('P18Y');
     expect(elapsedSinceValue(partial('2008'), p18y, date('2027-01-01'))).toBe(true);
     expect(elapsedSinceValue(partial('2008'), p18y, date('2025-12-31'))).toBe(false);
     expect(elapsedSinceValue(partial('2008'), p18y, date('2026-06-01'))).toBe('unknown');
+  });
+
+  it('never throws, even past year 9999', () => {
+    expect(elapsedSinceValue(partial('9999'), parseDuration('P1Y'), date('2026-01-01'))).toBe(
+      false,
+    );
+    expect(elapsedSinceValue(date('9999-12-31'), parseDuration('P1D'), date('9999-12-31'))).toBe(
+      false,
+    );
+    fc.assert(
+      fc.property(
+        dateValues,
+        fc.record({
+          years: fc.integer({ min: 0, max: 9999 }),
+          months: fc.integer({ min: 0, max: 99_999 }),
+          days: fc.integer({ min: 0, max: 999_999 }),
+        }),
+        calendarDates(),
+        (start, { years, months, days }, reference) => {
+          const added = parseDuration(`P${String(years)}Y${String(months)}M${String(days)}D`);
+          expect(() => elapsedSinceValue(start, added, reference)).not.toThrow();
+        },
+      ),
+    );
   });
 
   it('matches elapsedSince on full dates', () => {

@@ -33,17 +33,17 @@ export function toExact(value: Money): ExactAmount {
   return { units: BigInt(value.amount), scale: 0, currency: value.currency };
 }
 
-export function addMoney(left: ExactAmount, right: ExactAmount): ExactAmount {
+export function addExact(left: ExactAmount, right: ExactAmount): ExactAmount {
   const [a, b, scale] = alignScales(left, right);
   return withCurrency(sameCurrency(left, right), { units: a + b, scale });
 }
 
-export function subtractMoney(left: ExactAmount, right: ExactAmount): ExactAmount {
+export function subtractExact(left: ExactAmount, right: ExactAmount): ExactAmount {
   const [a, b, scale] = alignScales(left, right);
   return withCurrency(sameCurrency(left, right), { units: a - b, scale });
 }
 
-export function multiplyMoney(amount: ExactAmount, factor: Decimal): ExactAmount {
+export function multiplyExact(amount: ExactAmount, factor: Decimal): ExactAmount {
   const multiplier = scaledDecimal(factor);
   return withCurrency(amount.currency, {
     units: amount.units * multiplier.units,
@@ -52,23 +52,23 @@ export function multiplyMoney(amount: ExactAmount, factor: Decimal): ExactAmount
 }
 
 /** The sum of exact amounts in one currency; zero for none. */
-export function sumMoney(amounts: readonly ExactAmount[], currency: CurrencyCode): ExactAmount {
-  return amounts.reduce(addMoney, { units: 0n, scale: 0, currency });
+export function sumExact(amounts: readonly ExactAmount[], currency: CurrencyCode): ExactAmount {
+  return amounts.reduce(addExact, { units: 0n, scale: 0, currency });
 }
 
-export function compareMoney(left: ExactAmount, right: ExactAmount): number {
+export function compareExact(left: ExactAmount, right: ExactAmount): number {
   sameCurrency(left, right);
   const [a, b] = alignScales(left, right);
   if (a === b) return 0;
   return a < b ? -1 : 1;
 }
 
-export function minMoney(left: ExactAmount, right: ExactAmount): ExactAmount {
-  return compareMoney(left, right) <= 0 ? left : right;
+export function minExact(left: ExactAmount, right: ExactAmount): ExactAmount {
+  return compareExact(left, right) <= 0 ? left : right;
 }
 
-export function maxMoney(left: ExactAmount, right: ExactAmount): ExactAmount {
-  return compareMoney(left, right) >= 0 ? left : right;
+export function maxExact(left: ExactAmount, right: ExactAmount): ExactAmount {
+  return compareExact(left, right) >= 0 ? left : right;
 }
 
 /** Rounds to whole minor units, half to even. Used once, on a reported amount. */

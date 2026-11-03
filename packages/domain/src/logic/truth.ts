@@ -3,8 +3,8 @@ export type Truth = true | false | 'unknown';
 
 export type ComparisonOperator = 'eq' | 'ne' | 'lt' | 'lte' | 'gt' | 'gte';
 
-/** A closed range of possible values. A known value is a range of one point. */
-export interface Range<T> {
+/** A closed interval of possible values. A known value is a range of one point. */
+export interface Interval<T> {
   readonly min: T;
   readonly max: T;
 }
@@ -12,13 +12,13 @@ export interface Range<T> {
 export type Compare<T> = (left: T, right: T) => number;
 
 /**
- * Compares two ranges: decided only when every pair of values they can take gives the same answer.
- * Ranges ignore links between operands, so a decided answer is never wrong but some stay unknown.
+ * Compares two intervals: decided only when every pair of values they can take gives the same
+ * answer. Intervals ignore links between operands, so a decided answer is never wrong but some stay unknown.
  */
-export function compareRanges<T>(
-  left: Range<T>,
+export function compareIntervals<T>(
+  left: Interval<T>,
   operator: ComparisonOperator,
-  right: Range<T>,
+  right: Interval<T>,
   compare: Compare<T>,
 ): Truth {
   switch (operator) {
@@ -27,9 +27,9 @@ export function compareRanges<T>(
     case 'lte':
       return decide(compare(left.max, right.min) <= 0, compare(left.min, right.max) > 0);
     case 'gt':
-      return compareRanges(right, 'lt', left, compare);
+      return compareIntervals(right, 'lt', left, compare);
     case 'gte':
-      return compareRanges(right, 'lte', left, compare);
+      return compareIntervals(right, 'lte', left, compare);
     case 'eq':
       return decide(
         compare(left.min, left.max) === 0 &&
@@ -38,7 +38,7 @@ export function compareRanges<T>(
         compare(left.max, right.min) < 0 || compare(right.max, left.min) < 0,
       );
     case 'ne':
-      return not(compareRanges(left, 'eq', right, compare));
+      return not(compareIntervals(left, 'eq', right, compare));
   }
 }
 

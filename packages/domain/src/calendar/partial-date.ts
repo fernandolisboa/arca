@@ -1,18 +1,17 @@
 import { z } from 'zod';
 import {
-  type Compare,
   type ComparisonOperator,
-  type Range,
+  type Interval,
   type Truth,
-  compareRanges,
+  compareIntervals,
 } from '../logic/truth.js';
 import {
   type CalendarDate,
-  addDuration,
   calendarDate,
   calendarDateSchema,
   compareDates,
   daysInMonth,
+  elapsedSince,
 } from './calendar-date.js';
 import type { Duration } from './duration.js';
 
@@ -47,7 +46,7 @@ export function parsePartialDate(value: string): PartialDate {
 }
 
 /** The earliest and latest calendar dates a value could be. A full date is a range of one day. */
-export function dateRange(value: DateValue): Range<CalendarDate> {
+export function dateRange(value: DateValue): Interval<CalendarDate> {
   if (value.length === 10) {
     const date = value as CalendarDate;
     return { min: date, max: date };
@@ -66,15 +65,13 @@ export function dateRange(value: DateValue): Range<CalendarDate> {
   };
 }
 
-const byDate: Compare<CalendarDate> = compareDates;
-
 /** True or false only when every date the values could be gives the same answer. */
 export function compareDateValues(
   left: DateValue,
   operator: ComparisonOperator,
   right: DateValue,
 ): Truth {
-  return compareRanges(dateRange(left), operator, dateRange(right), byDate);
+  return compareIntervals(dateRange(left), operator, dateRange(right), compareDates);
 }
 
 /**
@@ -87,7 +84,7 @@ export function elapsedSinceValue(
   reference: CalendarDate,
 ): Truth {
   const { min, max } = dateRange(start);
-  if (compareDates(addDuration(max, duration), reference) <= 0) return true;
-  if (compareDates(addDuration(min, duration), reference) > 0) return false;
+  if (elapsedSince(max, duration, reference)) return true;
+  if (!elapsedSince(min, duration, reference)) return false;
   return 'unknown';
 }

@@ -2,10 +2,11 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import {
   type FxTable,
-  compareMoney,
+  compareExact,
   convert,
   findRate,
   fxTableSchema,
+  minorUnitExponent,
   money,
   parseCalendarDate,
   roundHalfEven,
@@ -60,6 +61,19 @@ describe('findRate', () => {
     );
   });
 
+  it('returns a failed result for a malformed rate instead of throwing', () => {
+    for (const rate of ['abc', '1.0000000000001', '-0', '']) {
+      const result = fxTableSchema.safeParse({
+        rates: [{ from: 'USD', to: 'BRL', rate, date: '2026-01-01', source: 'fixture' }],
+      });
+      expect(result.success).toBe(false);
+    }
+  });
+
+  it('works in the first week of year 1', () => {
+    expect(findRate(usdToEur, { from: 'USD', to: 'EUR' }, date('0001-01-03'))).toBeUndefined();
+  });
+
   it.each([
     [{ from: 'USD', to: 'USD', rate: '1', date: '2026-10-30' }],
     [{ from: 'USD', to: 'EUR', rate: '0', date: '2026-10-30' }],
@@ -80,13 +94,13 @@ describe('convert', () => {
 
     const kwd = convert(toExact(money(1_001, 'JPY')), 'KWD', usdToEur, date('2026-11-03'));
     if (kwd.kind !== 'converted') throw new Error('expected a conversion');
-    expect(compareMoney(kwd.amount, { units: 2002n, scale: 0, currency: 'KWD' })).toBe(0);
+    expect(compareExact(kwd.amount, { units: 2002n, scale: 0, currency: 'KWD' })).toBe(0);
   });
 
   it('keeps fractions until the comparison', () => {
     const result = convert(toExact(money(1, 'USD')), 'EUR', usdToEur, date('2026-11-03'));
     if (result.kind !== 'converted') throw new Error('expected a conversion');
-    expect(compareMoney(result.amount, { units: 92n, scale: 2, currency: 'EUR' })).toBe(0);
+    expect(compareExact(result.amount, { units: 92n, scale: 2, currency: 'EUR' })).toBe(0);
     expect(roundHalfEven(result.amount).amount).toBe(1);
   });
 
@@ -106,24 +120,36 @@ describe('convert', () => {
   });
 
   it('rounds a conversion within half a minor unit of the exact value', () => {
+    const currencies = ['USD', 'JPY', 'KWD', 'CLF'] as const;
     fc.assert(
       fc.property(
+        fc.constantFrom(...currencies),
+        fc.constantFrom(...currencies),
         fc.integer({ min: 0, max: 1_000_000_000 }),
         fc.integer({ min: 1, max: 1_000_000 }),
         fc.integer({ min: 0, max: 6 }),
-        (cents, rateUnits, rateScale) => {
-          const rate = (rateUnits / 10 ** rateScale).toFixed(rateScale);
-          const rates = table([{ from: 'USD', to: 'EUR', rate, date: '2026-11-01' }]);
-          const result = convert(toExact(money(cents, 'USD')), 'EUR', rates, date('2026-11-03'));
+        (from, to, minorUnits, rateUnits, rateScale) => {
+          // Exact target minor units = minorUnits * rateUnits * 10^(to - from) / 10^rateScale.
+          const shift = minorUnitExponent(to) - minorUnitExponent(from);
+          const numerator =
+            BigInt(minorUnits) * BigInt(rateUnits) * 10n ** BigInt(Math.max(0, shift));
+          const denominator = 10n ** BigInt(rateScale + Math.max(0, -shift));
+          fc.pre(from !== to && numerator / denominator < BigInt(Number.MAX_SAFE_INTEGER));
+          const rate = decimalString(BigInt(rateUnits), rateScale);
+          const rates = table([{ from, to, rate, date: '2026-11-01' }]);
+          const result = convert(toExact(money(minorUnits, from)), to, rates, date('2026-11-03'));
           if (result.kind !== 'converted') throw new Error('expected a conversion');
-          const exactTimesScale = BigInt(cents) * BigInt(rateUnits);
           const rounded = BigInt(roundHalfEven(result.amount).amount);
-          const distance = exactTimesScale - rounded * 10n ** BigInt(rateScale);
-          expect((distance < 0n ? -distance : distance) * 2n <= 10n ** BigInt(rateScale)).toBe(
-            true,
-          );
+          const distance = numerator - rounded * denominator;
+          expect((distance < 0n ? -distance : distance) * 2n <= denominator).toBe(true);
         },
       ),
     );
   });
 });
+
+function decimalString(units: bigint, scale: number): string {
+  if (scale === 0) return units.toString();
+  const digits = units.toString().padStart(scale + 1, '0');
+  return `${digits.slice(0, -scale)}.${digits.slice(-scale)}`;
+}

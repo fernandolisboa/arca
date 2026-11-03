@@ -20,6 +20,12 @@ export interface Scaled {
   readonly scale: number;
 }
 
+/** True for a well-formed decimal greater than zero; never throws on malformed input. */
+export function isPositiveDecimal(value: string): boolean {
+  const match = decimalPattern.exec(value);
+  return match !== null && match[1] !== '-' && /[1-9]/.test(`${match[2] ?? ''}${match[3] ?? ''}`);
+}
+
 export function parseDecimal(value: string): Decimal {
   return decimalSchema.parse(value);
 }
@@ -32,7 +38,13 @@ export function scaledDecimal(decimal: Decimal): Scaled {
   return { units: match[1] === '-' ? -magnitude : magnitude, scale: fraction.length };
 }
 
+/** Scales stay small: each operation adds at most 12 digits and results are normalized. */
+const maxScale = 1000;
+
 export function powerOfTen(exponent: number): bigint {
+  if (!Number.isInteger(exponent) || exponent < 0 || exponent > maxScale) {
+    throw new RangeError('Scale out of range');
+  }
   return 10n ** BigInt(exponent);
 }
 

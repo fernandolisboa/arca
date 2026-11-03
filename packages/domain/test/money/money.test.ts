@@ -2,17 +2,17 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import {
   type ExactAmount,
-  addMoney,
-  compareMoney,
-  maxMoney,
-  minMoney,
+  addExact,
+  compareExact,
+  maxExact,
+  minExact,
   minorUnitExponent,
   money,
-  multiplyMoney,
+  multiplyExact,
   parseDecimal,
   roundHalfEven,
-  subtractMoney,
-  sumMoney,
+  subtractExact,
+  sumExact,
   toExact,
 } from '../../src/index.js';
 
@@ -58,11 +58,11 @@ describe('exact arithmetic', () => {
   it('adds, subtracts and compares like integers', () => {
     fc.assert(
       fc.property(safeAmounts, safeAmounts, (a, b) => {
-        expect(roundHalfEven(addMoney(eur(a), eur(b))).amount).toBe(a + b);
-        expect(roundHalfEven(subtractMoney(eur(a), eur(b))).amount).toBe(a - b);
-        expect(compareMoney(eur(a), eur(b))).toBe(Math.sign(a - b));
-        expect(roundHalfEven(minMoney(eur(a), eur(b))).amount).toBe(Math.min(a, b));
-        expect(roundHalfEven(maxMoney(eur(a), eur(b))).amount).toBe(Math.max(a, b));
+        expect(roundHalfEven(addExact(eur(a), eur(b))).amount).toBe(a + b);
+        expect(roundHalfEven(subtractExact(eur(a), eur(b))).amount).toBe(a - b);
+        expect(compareExact(eur(a), eur(b))).toBe(Math.sign(a - b));
+        expect(roundHalfEven(minExact(eur(a), eur(b))).amount).toBe(Math.min(a, b));
+        expect(roundHalfEven(maxExact(eur(a), eur(b))).amount).toBe(Math.max(a, b));
       }),
     );
   });
@@ -70,29 +70,29 @@ describe('exact arithmetic', () => {
   it('is associative and commutative', () => {
     fc.assert(
       fc.property(safeAmounts, safeAmounts, safeAmounts, (a, b, c) => {
-        const left = addMoney(addMoney(eur(a), eur(b)), eur(c));
-        const right = addMoney(eur(a), addMoney(eur(c), eur(b)));
-        expect(compareMoney(left, right)).toBe(0);
+        const left = addExact(addExact(eur(a), eur(b)), eur(c));
+        const right = addExact(eur(a), addExact(eur(c), eur(b)));
+        expect(compareExact(left, right)).toBe(0);
       }),
     );
   });
 
   it('compares a multiplied amount exactly, before rounding', () => {
-    const share = multiplyMoney(eur(87_000), parseDecimal('0.5'));
-    expect(compareMoney(share, eur(43_500))).toBe(0);
-    const third = multiplyMoney(eur(100), parseDecimal('0.333333333333'));
-    expect(compareMoney(third, eur(33))).toBe(1);
-    expect(compareMoney(multiplyMoney(eur(1), parseDecimal('0.5')), eur(0))).toBe(1);
+    const share = multiplyExact(eur(87_000), parseDecimal('0.5'));
+    expect(compareExact(share, eur(43_500))).toBe(0);
+    const third = multiplyExact(eur(100), parseDecimal('0.333333333333'));
+    expect(compareExact(third, eur(33))).toBe(1);
+    expect(compareExact(multiplyExact(eur(1), parseDecimal('0.5')), eur(0))).toBe(1);
   });
 
   it('refuses to mix currencies', () => {
     const usd = toExact(money(100, 'USD'));
-    expect(() => addMoney(eur(100), usd)).toThrow(RangeError);
-    expect(() => compareMoney(eur(100), usd)).toThrow(RangeError);
+    expect(() => addExact(eur(100), usd)).toThrow(RangeError);
+    expect(() => compareExact(eur(100), usd)).toThrow(RangeError);
   });
 
   it('sums to zero when empty', () => {
-    expect(roundHalfEven(sumMoney([], 'EUR'))).toEqual({ amount: 0, currency: 'EUR' });
+    expect(roundHalfEven(sumExact([], 'EUR'))).toEqual({ amount: 0, currency: 'EUR' });
   });
 });
 
@@ -108,7 +108,7 @@ describe('roundHalfEven', () => {
     ['-2.5', -2],
     ['-2.6', -3],
   ])('%s rounds to %i', (factor, expected) => {
-    expect(roundHalfEven(multiplyMoney(eur(1), parseDecimal(factor))).amount).toBe(expected);
+    expect(roundHalfEven(multiplyExact(eur(1), parseDecimal(factor))).amount).toBe(expected);
   });
 
   it('rounds to the nearest unit, ties to even', () => {
@@ -130,7 +130,7 @@ describe('roundHalfEven', () => {
 
   it('refuses an amount outside the safe range', () => {
     expect(() =>
-      roundHalfEven(multiplyMoney(eur(Number.MAX_SAFE_INTEGER), parseDecimal('2'))),
+      roundHalfEven(multiplyExact(eur(Number.MAX_SAFE_INTEGER), parseDecimal('2'))),
     ).toThrow(RangeError);
   });
 });

@@ -6,6 +6,9 @@ const calendarDatePattern = /^(\d{4})-(\d{2})-(\d{2})$/;
 const minYear = 1;
 const maxYear = 9999;
 
+export const firstDate = '0001-01-01' as CalendarDate;
+export const lastDate = '9999-12-31' as CalendarDate;
+
 /**
  * An ISO 8601 calendar date, `YYYY-MM-DD`, with no time or time zone, from year 1 to 9999. In this
  * form, string order is date order.
@@ -70,16 +73,33 @@ export function daysInMonth(year: number, month: number): number {
  * `Temporal.PlainDate.add` does.
  */
 export function addDuration(date: CalendarDate, duration: Duration): CalendarDate {
-  const { years, months, days } = durationParts(duration);
-  return addDays(addMonths(date, years * 12 + months), days);
+  return inRange(tryAddDuration(date, duration));
 }
 
 /** Adds whole months (negative to go back), clamping to the month's last day. */
 export function addMonths(date: CalendarDate, months: number): CalendarDate {
+  return inRange(tryAddMonths(date, months));
+}
+
+/** Adds days (negative to go back). */
+export function addDays(date: CalendarDate, days: number): CalendarDate {
+  return inRange(tryAddDays(date, days));
+}
+
+/** Like `addDuration`, but undefined when the result is outside years 1 to 9999. */
+export function tryAddDuration(date: CalendarDate, duration: Duration): CalendarDate | undefined {
+  const { years, months, days } = durationParts(duration);
+  const shifted = tryAddMonths(date, years * 12 + months);
+  return shifted === undefined ? undefined : tryAddDays(shifted, days);
+}
+
+export function tryAddMonths(date: CalendarDate, months: number): CalendarDate | undefined {
   const { year, month, day } = dateParts(date);
   const monthIndex = year * 12 + (month - 1) + months;
   const targetYear = Math.floor(monthIndex / 12);
   const targetMonth = monthIndex - targetYear * 12 + 1;
+  if (!Number.isInteger(monthIndex) || targetYear < minYear || targetYear > maxYear)
+    return undefined;
   return calendarDate({
     year: targetYear,
     month: targetMonth,
@@ -87,9 +107,12 @@ export function addMonths(date: CalendarDate, months: number): CalendarDate {
   });
 }
 
-/** Adds days (negative to go back). */
-export function addDays(date: CalendarDate, days: number): CalendarDate {
-  return fromDayNumber(toDayNumber(dateParts(date)) + days);
+export function tryAddDays(date: CalendarDate, days: number): CalendarDate | undefined {
+  const dayNumber = toDayNumber(dateParts(date)) + days;
+  if (!Number.isInteger(dayNumber) || dayNumber < firstDayNumber || dayNumber > lastDayNumber) {
+    return undefined;
+  }
+  return fromDayNumber(dayNumber);
 }
 
 /**
@@ -118,7 +141,13 @@ export function elapsedSince(
   duration: Duration,
   reference: CalendarDate,
 ): boolean {
-  return compareDates(addDuration(start, duration), reference) <= 0;
+  const end = tryAddDuration(start, duration);
+  return end !== undefined && compareDates(end, reference) <= 0;
+}
+
+function inRange(date: CalendarDate | undefined): CalendarDate {
+  if (date === undefined) throw new RangeError('Date outside years 1 to 9999');
+  return date;
 }
 
 function isValidParts({ year, month, day }: DateParts): boolean {
@@ -165,3 +194,6 @@ function fromDayNumber(dayNumber: number): CalendarDate {
   const year = yearOfEra + era * 400 + (month <= 2 ? 1 : 0);
   return calendarDate({ year, month, day });
 }
+
+const firstDayNumber = toDayNumber({ year: minYear, month: 1, day: 1 });
+const lastDayNumber = toDayNumber({ year: maxYear, month: 12, day: 31 });
