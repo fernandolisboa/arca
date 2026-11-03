@@ -20,12 +20,120 @@
       "sha256": "89b197ead6975fcef8b04645aa4202c198cffc85d3ba877bc23ed6a1e292e383"
     },
     {
+      "path": "routes/qm-chain/1",
+      "sha256": "22d417c39c7188d724be7d75455d59ad32693796695efbf57c4c1c57fc82877d"
+    },
+    {
+      "path": "routes/qm-chain/2",
+      "sha256": "ead713fe23519e82290d0d06495638fceed8a1f3f7b0e8a1f1c2fc2b6c066684"
+    },
+    {
+      "path": "routes/qm-chain/3",
+      "sha256": "8b9ec6769f1d0343b65f93ce787d28bf14f8944a2f9d504753465ec9e593e7a5"
+    },
+    {
+      "path": "routes/qm-closure-proposed/1",
+      "sha256": "7676aacce13ed0c6f12a4d8abe79bf4927395fa9b51325a3da38a8059c65ec6d"
+    },
+    {
+      "path": "routes/qm-closure-proposed/2",
+      "sha256": "90d02a1b5b2c2ce35030a6b6ab9a23c42928f76395f4b7d7e7ff9300a5aa9685"
+    },
+    {
+      "path": "routes/qm-correction-before-correction/1",
+      "sha256": "f20bf9b32ea10600da871cc1486c299a26e0669ef91c11e8f805990551a3db00"
+    },
+    {
+      "path": "routes/qm-correction-before-correction/2",
+      "sha256": "e5e3664cd84200818e78b19228e92029d31928796b2221c6f3634911cacc7a3a"
+    },
+    {
+      "path": "routes/qm-correction-before-correction/3",
+      "sha256": "a0d7e460ca67fd9a5589965815409ad613582badfa02321c8bcc565136bf267e"
+    },
+    {
+      "path": "routes/qm-correction-of-correction/1",
+      "sha256": "6953f9a7f1cc98d0bf1dbf50fe41e40cdd0ddbcb8d351e0aeadbc7914e5ef56f"
+    },
+    {
+      "path": "routes/qm-correction-of-correction/2",
+      "sha256": "d0ede0e88aa0a4ba2068c75860df945c2614b4efd25f6febddcc814030d8c418"
+    },
+    {
+      "path": "routes/qm-correction-of-correction/3",
+      "sha256": "ad4a77577156e3b29984a4f15e416076af809219bc280f47302d1fa837793698"
+    },
+    {
+      "path": "routes/qm-correction-of-correction/4",
+      "sha256": "091c41965b08a5658dd10e0c0d4a746f8a0ffa23ce0f67161f07349961ff332b"
+    },
+    {
+      "path": "routes/qm-corrections/1",
+      "sha256": "5ed44eaf9f8d5062bcefea335de8120fd29f98142171dfb89768124b6a09c1ce"
+    },
+    {
+      "path": "routes/qm-corrections/2",
+      "sha256": "c773170147accd9942d64e1a1edb4f4b829c88c62d972e5800aa28e3f6aa7d6c"
+    },
+    {
+      "path": "routes/qm-corrections/3",
+      "sha256": "4e60569fce0503f81eebc08d64552ea32f1830f2a271995169362011c768d402"
+    },
+    {
+      "path": "routes/qm-corrections/4",
+      "sha256": "eaa56706e849996e7cbd0f7407d8227a5c6fdb63ad32e291fbdcb66082e75aaa"
+    },
+    {
+      "path": "routes/qm-corrections/5",
+      "sha256": "81119228cd9b26270b47358712dacbaad521bf0a69029dd2b0b5c0d7795af71a"
+    },
+    {
+      "path": "routes/qm-early-correction/1",
+      "sha256": "5aa2544017b1c5e686cc404b3adee24f2059f0d1d83285f5dc3cba6f1af0626b"
+    },
+    {
+      "path": "routes/qm-early-correction/2",
+      "sha256": "18e44d140092e1d5bd03ffe60804453291aa127912e85bbfa5115c41482f0cdb"
+    },
+    {
       "path": "routes/qm-family-reunification/1",
       "sha256": "1e3aee1362594f5fac9210e4ec15e022cdc56eb22481b89e8ad44a38e0608688"
     },
     {
+      "path": "routes/qm-newer-versions/1",
+      "sha256": "8a85382b0989d92e1ae3fc08cbdb5d8f7f465cfc9f55bd5fe73ba4e1e6e105cd"
+    },
+    {
+      "path": "routes/qm-newer-versions/2",
+      "sha256": "1db4542b5cd78374ed3bed67876de5bf856a2af34f4fdb4ae0e11bcbf0d29775"
+    },
+    {
+      "path": "routes/qm-newer-versions/3",
+      "sha256": "ce994a19a05a66084f3866c3853041d8b1258520ffc2a2ec5e8930cb432ca169"
+    },
+    {
       "path": "routes/qm-passive-income/1",
-      "sha256": "6dd395221fafd354f84950c76cb3bb5ba3a332b54b64ada35fc4cc333e8a97eb"
+      "sha256": "a79f6b3e0d88015a7f53945329503e96f6edc294a1ee098bb4810e9ee71e8109"
+    },
+    {
+      "path": "routes/qm-rejected-correction/1",
+      "sha256": "9937f534598ae436688dd7afab8cd2e7fd3ee1b51a8640efff61dc10b22111db"
+    },
+    {
+      "path": "routes/qm-rejected-correction/2",
+      "sha256": "4d180b0151edd944d81a28889f4506febeef1105ea4900a06159d31f3706833e"
+    },
+    {
+      "path": "routes/qm-rejected-correction/3",
+      "sha256": "55b3b5487bc841238a8e2bde9c6e1bdc24e2ce5d3275c8ce2cc224736ab4b1c6"
+    },
+    {
+      "path": "routes/qm-replaced/1",
+      "sha256": "6ee8e0578ef782b83bc7a5c969773ae85e43fdee946fd5236f0d50b373e55dc2"
+    },
+    {
+      "path": "routes/qm-replaced/2",
+      "sha256": "23ee9dcdfec18a18b71d2d7a5c04ea2cb77cf506c5e66cb392eb28deb4594f7b"
     },
     {
       "path": "routes/qn-descent/1",

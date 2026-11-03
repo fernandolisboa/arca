@@ -119,6 +119,19 @@ export function evaluateVersion(
   principalId: string,
   context: VersionContext,
 ): Evaluation {
+  return evaluateVersionTraced(snapshot, entry, principalId, context).evaluation;
+}
+
+/**
+ * `evaluateVersion` with every trace it computed: dependent conditions, requirements, assessment
+ * evidence and costs. The engine's tests bound their size; nothing else needs them.
+ */
+export function evaluateVersionTraced(
+  snapshot: CaseSnapshot,
+  entry: CatalogEntry,
+  principalId: string,
+  context: VersionContext,
+): { readonly evaluation: Evaluation; readonly traces: readonly Trace[] } {
   const prepared = prepare(snapshot, entry, principalId, context);
   const { version } = prepared;
   const { unit, traces: unitTraces } = unitOf(prepared);
@@ -136,11 +149,13 @@ export function evaluateVersion(
       trace,
     };
   });
+  const evidenceTraces: Trace[] = [];
   const assessments = version.assessments.map((assessment): AssessmentResult => {
-    const read = assessment.evidence.map((reference) => ({
-      reference,
-      value: valueOf(evaluate({ op: 'fact', key: reference }, frame)),
-    }));
+    const read = assessment.evidence.map((reference) => {
+      const trace = evaluate({ op: 'fact', key: reference }, frame);
+      evidenceTraces.push(trace);
+      return { reference, value: valueOf(trace) };
+    });
     return {
       id: assessment.id,
       title: assessment.title,
@@ -164,7 +179,7 @@ export function evaluateVersion(
     ...requirements.map((requirement) => requirement.trace),
     ...costs.traces,
   ]);
-  return {
+  const evaluation: Evaluation = {
     routeId: version.routeId,
     versionNumber: version.number,
     hash: entry.identity.hash,
@@ -184,6 +199,15 @@ export function evaluateVersion(
     totals: totals(costs.priced, unit, version.costs, version.currency),
     durations: version.durations.map((stage) => ({ ...stage, sources: cite(stage.sources) })),
     rates: gaps.rates,
+  };
+  return {
+    evaluation,
+    traces: [
+      ...unitTraces,
+      ...requirements.map((requirement) => requirement.trace),
+      ...evidenceTraces,
+      ...costs.traces,
+    ],
   };
 }
 
