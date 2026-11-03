@@ -224,6 +224,19 @@ describe('CaseSnapshot', () => {
     ).toBe(true);
   });
 
+  it('accepts a couple that divorced and remarried within the same year', () => {
+    expect(
+      accepts({
+        ...base,
+        people: [{ id: 'p1' }, { id: 'p2' }],
+        relationships: [
+          { kind: 'spouse', people: ['p1', 'p2'], start: '2010', end: '2010' },
+          { kind: 'spouse', people: ['p1', 'p2'], start: '2010', end: 'none' },
+        ],
+      }),
+    ).toBe(true);
+  });
+
   it('accepts four parents, such as two biological and two adoptive', () => {
     expect(
       accepts({

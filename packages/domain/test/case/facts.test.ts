@@ -207,6 +207,25 @@ describe('person.liquidAssets', () => {
     ).toEqual({ value: euros(0n), missingRates: [{ from: 'BRL', to: 'EUR' }] });
   });
 
+  it('reports every missing rate and keeps what converted as the lower bound', () => {
+    expect(
+      read({
+        people: [recorded('p1')],
+        assets: [
+          asset({}),
+          asset({ id: 'a2', value: { amount: 3000, currency: 'BRL' } }),
+          asset({ id: 'a3', value: { amount: 3000, currency: 'JPY' } }),
+        ],
+      }),
+    ).toEqual({
+      value: euros(1000n),
+      missingRates: [
+        { from: 'BRL', to: 'EUR' },
+        { from: 'JPY', to: 'EUR' },
+      ],
+    });
+  });
+
   it('keeps the certain part when only a possible amount lacks a rate', () => {
     expect(
       read({
@@ -418,12 +437,17 @@ describe('edge validity at a date', () => {
     });
   });
 
+  const bio = { parentKind: 'biological' };
   const validity = (relationship: object, birthDate: string | undefined, at: string): unknown => {
     const line = snapshot({
       people: [birthDate === undefined ? { id: 'p1' } : { id: 'p1', birthDate }, { id: 'm1' }],
       relationships: [{ kind: 'parent', parent: 'm1', child: 'p1', ...relationship }],
     });
-    return parents(indexSnapshot(line), 'p1', parseCalendarDate(at)).map((parent) => parent.valid);
+    return parents(
+      indexSnapshot(line, parseCalendarDate('2026-11-03')),
+      'p1',
+      parseCalendarDate(at),
+    ).map((parent) => parent.valid);
   };
 
   it.each([
@@ -431,9 +455,30 @@ describe('edge validity at a date', () => {
     ['an adoption once it starts', { start: '2030-01-01' }, '2010-01-01', '2030-01-01', true],
     ['an adoption in a known year', { start: '2026' }, '2010-01-01', '2026-11-03', 'unknown'],
     ['a parent before the child is born', {}, '2028-05-01', '2026-11-03', false],
-    ["a parent from the child's birth", {}, '2028-05-01', '2028-05-01', true],
-    ['a parent of a child born in a known year', {}, '2026', '2026-11-03', 'unknown'],
-    ['a parent of a child with no birth date', {}, undefined, '2026-11-03', true],
+    ['a biological parent from the birth', bio, '2020-05-01', '2020-05-01', true],
+    ['a biological parent in the birth year', bio, '2020', '2020-06-01', 'unknown'],
+    [
+      'an undated adoption before the record',
+      { parentKind: 'adoptive' },
+      '2010-01-01',
+      '2020-01-01',
+      'unknown',
+    ],
+    [
+      'an undated adoption once recorded',
+      { parentKind: 'adoptive' },
+      '2010-01-01',
+      '2026-11-03',
+      true,
+    ],
+    [
+      'a parent of a child with no birth date, in the past',
+      bio,
+      undefined,
+      '1900-01-01',
+      'unknown',
+    ],
+    ['a parent of a child with no birth date, once recorded', bio, undefined, '2026-11-03', true],
   ])('reads %s', (_label, relationship, birthDate, at, expected) => {
     expect(validity(relationship, birthDate, at)).toEqual([expected]);
   });
@@ -520,10 +565,10 @@ describe('edge facts', () => {
       ...(edge === undefined ? {} : { edge: edge as never }),
     }).value;
 
-  it('reads "none" as an end later than any date, a date as itself and absent as unknown', () => {
+  it('reads "none" as an end after the date, a date as itself and absent as unknown', () => {
     expect(read('edge.end', 'p2', partnership)).toEqual({
       type: 'date',
-      min: '9999-12-31',
+      min: '2026-11-04',
       max: '9999-12-31',
     });
     expect(read('edge.end', 'p3', marriage)).toEqual({

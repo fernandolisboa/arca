@@ -1,5 +1,5 @@
 import { type LeapDayBirthday, ageYears } from '../calendar/age.js';
-import { type CalendarDate, compareDates } from '../calendar/calendar-date.js';
+import { type CalendarDate, compareDates, tryAddDays } from '../calendar/calendar-date.js';
 import { type DateValue, after, dateRange, onOrBefore } from '../calendar/partial-date.js';
 import { type Interval, type Truth, and, or } from '../logic/truth.js';
 import {
@@ -226,16 +226,16 @@ export const factCatalog = {
     scope: 'edge',
     derive: (binding) => dateFact(edgeOf(binding).start),
   },
-  /** The end of a couple edge; `"none"` reads as no date at all, so it is never before another. */
+  /** The end of a couple edge; `"none"` means it has not ended by the date, so it is later. */
   'edge.end': {
     type: { kind: 'date' },
     scope: 'edge',
-    derive: (binding) => {
+    derive: (binding, at) => {
       const edge = edgeOf(binding);
       if (edge.kind === 'parent' || edge.end === undefined) return dateFact(undefined);
-      return edge.end === 'none'
-        ? { value: { type: 'date', min: unknownDate().max, max: unknownDate().max } }
-        : dateFact(edge.end);
+      if (edge.end !== 'none') return dateFact(edge.end);
+      const unknown = unknownDate();
+      return { value: { ...unknown, min: tryAddDays(at, 1) ?? unknown.max } };
     },
   },
   /** Whether the candidate depends financially on the person they were reached from. */
@@ -459,8 +459,11 @@ class MoneySum {
 
   result(): Derived {
     const missingRates: CurrencyPair[] = [];
-    const total = (amounts: Map<CurrencyCode, ExactAmount>): ExactAmount | undefined => {
+    const total = (
+      amounts: Map<CurrencyCode, ExactAmount>,
+    ): { sum: ExactAmount; complete: boolean } => {
       let sum: ExactAmount = { units: 0n, scale: 0, currency: this.environment.currency };
+      let complete = true;
       for (const amount of amounts.values()) {
         const converted = convert(
           amount,
@@ -472,20 +475,21 @@ class MoneySum {
           if (!missingRates.some((pair) => pair.from === converted.pair.from)) {
             missingRates.push(converted.pair);
           }
-          return undefined;
+          complete = false;
+        } else {
+          sum = addExact(sum, converted.amount);
         }
-        sum = addExact(sum, converted.amount);
       }
-      return sum;
+      return { sum, complete };
     };
     const certain = total(this.certain);
     const possible = total(this.possible);
-    const zero = { units: 0n, scale: 0, currency: this.environment.currency };
-    const min = certain ?? zero;
+    // Amounts are never negative, so what converted is a lower bound even when a rate is missing.
+    const min = certain.sum;
     const max =
-      this.unbounded || certain === undefined || possible === undefined
+      this.unbounded || !certain.complete || !possible.complete
         ? undefined
-        : addExact(certain, possible);
+        : addExact(certain.sum, possible.sum);
     const value: NumberValue = {
       type: 'number',
       currency: this.environment.currency,

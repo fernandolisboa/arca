@@ -240,11 +240,11 @@ function endpoints(edge: Relationship): [string, string] {
   return edge.kind === 'parent' ? [edge.parent, edge.child] : [edge.people[0], edge.people[1]];
 }
 
-/** Couples may marry twice, so a couple edge is told apart by its start. */
+/** Couples may marry twice, even within a year, so a couple edge is told apart by its dates. */
 function edgeKey(edge: Relationship): string {
   if (edge.kind === 'parent') return `parent:${edge.parent}>${edge.child}`;
   const [a, b] = [...edge.people].sort();
-  return `${edge.kind}:${a ?? ''}:${b ?? ''}:${edge.start ?? ''}`;
+  return `${edge.kind}:${a ?? ''}:${b ?? ''}:${edge.start ?? ''}:${edge.end ?? ''}`;
 }
 
 function hasParentCycle(edges: readonly { parent: string; child: string }[]): boolean {

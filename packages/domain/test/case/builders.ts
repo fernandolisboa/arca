@@ -26,7 +26,7 @@ export function environment(
   overrides: { readonly unit?: NonNullable<FactEnvironment['unit']> } = {},
 ): FactEnvironment {
   return {
-    snapshot: indexSnapshot(value),
+    snapshot: indexSnapshot(value, parseCalendarDate('2026-11-03')),
     principalId: 'p1',
     currency: 'EUR',
     fx: fxTableSchema.parse({
