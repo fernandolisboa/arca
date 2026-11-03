@@ -13,6 +13,9 @@ import {
   isCalendarDate,
   parseCalendarDate,
   parseDuration,
+  tryAddDays,
+  tryAddDuration,
+  tryAddMonths,
   wholeMonthsBetween,
   wholeYearsBetween,
 } from '../../src/index.js';
@@ -182,5 +185,29 @@ describe('elapsedSince', () => {
   it('holds on the anniversary and not the day before', () => {
     expect(elapsedSince(date('2024-11-03'), duration('P2Y'), date('2026-11-03'))).toBe(true);
     expect(elapsedSince(date('2024-11-03'), duration('P2Y'), date('2026-11-02'))).toBe(false);
+  });
+});
+
+describe('tryAdd', () => {
+  it.each([
+    ['9999-12-31', 1],
+    ['0001-01-01', -1],
+    ['2026-11-03', 0.5],
+    ['2026-11-03', Number.NaN],
+  ])('days: %s + %d is undefined', (start, days) => {
+    expect(tryAddDays(date(start), days)).toBeUndefined();
+  });
+
+  it.each([
+    ['9999-12-01', 1],
+    ['0001-01-31', -1],
+    ['2026-11-03', 1.5],
+  ])('months: %s + %d is undefined', (start, months) => {
+    expect(tryAddMonths(date(start), months)).toBeUndefined();
+  });
+
+  it('duration: undefined past year 9999, a date otherwise', () => {
+    expect(tryAddDuration(date('9999-06-01'), duration('P1Y'))).toBeUndefined();
+    expect(tryAddDuration(date('2026-01-31'), duration('P1M'))).toBe('2026-02-28');
   });
 });

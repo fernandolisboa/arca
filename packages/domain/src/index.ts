@@ -47,8 +47,10 @@ export {
   type ComparisonOperator,
   type Interval,
   type Truth,
+  and,
   compareIntervals,
   not,
+  or,
 } from './logic/truth.js';
 export {
   type CurrencyCode,
@@ -56,7 +58,7 @@ export {
   minorUnitExponent,
   minorUnitExponents,
 } from './money/currency.js';
-export { type Decimal, decimalSchema, isPositiveDecimal, parseDecimal } from './money/decimal.js';
+export { type Decimal, decimalSchema, parseDecimal } from './money/decimal.js';
 export {
   type Conversion,
   type CurrencyPair,
@@ -82,3 +84,47 @@ export {
   sumExact,
   toExact,
 } from './money/money.js';
+export {
+  type Derived,
+  type FactBinding,
+  type FactDefinition,
+  type FactEnvironment,
+  type FactKey,
+  type FactScope,
+  type FactType,
+  type LineageBinding,
+  factCatalog,
+  isFactKey,
+} from './case/facts.js';
+export {
+  type IndexedSnapshot,
+  type Neighbor,
+  children,
+  couples,
+  edgeValidAt,
+  indexSnapshot,
+  isRecordedInFull,
+  parents,
+} from './case/graph.js';
+export {
+  type Asset,
+  type CaseSnapshot,
+  type Citizenship,
+  type CompletenessMarker,
+  type CountryCode,
+  type Person,
+  type Relationship,
+  caseSnapshotSchema,
+  completenessMarkerSchema,
+  countryCodeSchema,
+  personIdSchema,
+} from './case/snapshot.js';
+export {
+  type BooleanValue,
+  type DateValueRange,
+  type NumberValue,
+  type TokenListValue,
+  type TokenValue,
+  type Value,
+  isKnown,
+} from './logic/value.js';
