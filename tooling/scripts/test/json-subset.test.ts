@@ -1,6 +1,11 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { type Json, JsonSubsetError, hiddenCharacters, parseJsonSubset } from '../scripts/json.ts';
+import {
+  type Json,
+  JsonSubsetError,
+  hiddenCharacters,
+  parseJsonSubset,
+} from '../src/json-subset.ts';
 
 const parse = (text: string, depth = 48): Json =>
   parseJsonSubset(new TextEncoder().encode(text), depth);

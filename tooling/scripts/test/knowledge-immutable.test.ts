@@ -200,6 +200,18 @@ describe('knowledge-immutable', () => {
     });
   });
 
+  it.each<[string, string, Special]>([
+    ['the data root', 'packages/knowledge/data', new Special('../../elsewhere', '120000')],
+    ['the vendor root', 'packages/knowledge/vendor', new Special('../../elsewhere', '120000')],
+    ['the vendor root', 'packages/knowledge/vendor', new Special('', '160000', 'commit')],
+  ])('refuses %s as a link or a submodule', async (_, root, entry) => {
+    expect(
+      await problems((tree) => {
+        tree[root] = entry;
+      }),
+    ).toContain(`${root}: must be a directory, not a link or a submodule`);
+  });
+
   describe('hashes.json', () => {
     it.each<[string, (tree: Tree) => void, string]>([
       [
@@ -324,6 +336,22 @@ describe('knowledge-immutable', () => {
       ],
     ])('refuses %s', async (_, change, message, domainChanged) => {
       expect(await problems(change, { domainChanged })).toContain(message);
+    });
+
+    it('refuses a case whose 0 became -0', async () => {
+      const base = baseTree();
+      casesOf(base)[0] = caseEntry('c1', { expected: { status: 'eligible', amount: 0 } });
+      expect(
+        await problems(
+          (tree) => {
+            tree[casesPath] = JSON.stringify({
+              schemaVersion: 1,
+              cases: [caseEntry('c1', { expected: { status: 'eligible', amount: 0 } })],
+            }).replace('"amount":0', '"amount":-0');
+          },
+          { base },
+        ),
+      ).toContain(`${casesPath}: changed the entry with id c1; entries are append-only`);
     });
 
     it('refuses superseding a case that is already superseded', async () => {
@@ -457,6 +485,22 @@ describe('knowledge-immutable', () => {
     const next = { ...entry, tag: '2.0.0', commit: 'b'.repeat(40) };
     const entriesOf = (tree: Tree): object[] => (tree[vendored] as { entries: object[] }).entries;
 
+    it('refuses an entry with a duplicate key, which a reviewer would misread', async () => {
+      const found = await problems((tree) => {
+        tree[vendored] = JSON.stringify({ schemaVersion: 1, entries: [entry, next] }).replace(
+          '"tag":"2.0.0"',
+          '"tag":"9.9.9","tag":"2.0.0"',
+        );
+      });
+      expect(
+        found.some((problem) =>
+          problem.startsWith(
+            `${vendored}: is not in the accepted JSON subset: Duplicate key "tag"`,
+          ),
+        ),
+      ).toBe(true);
+    });
+
     it('passes a new valid entry on for upstream checks', async () => {
       const head = baseTree();
       entriesOf(head).push(next);
@@ -488,6 +532,17 @@ describe('knowledge-immutable', () => {
           tree[`${vendor}sample/2.0.0/manifest.json`] = next;
         },
         `${vendored}: changes in a policy pull request of its own, before any vendored file`,
+      ],
+      [
+        'vendored-sources.json changed with an entry',
+        (tree) => {
+          entriesOf(tree).push(next);
+          (tree[sources] as { sources: object[] }).sources.push({
+            repository: 'example-org/more',
+            licenses: [],
+          });
+        },
+        `${sources}: changes in a policy pull request of its own`,
       ],
       [
         'an entry from a repository not allow-listed',

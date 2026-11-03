@@ -119,23 +119,23 @@ jobs:
       - name: Install the scripts from main
         working-directory: policy
         run: pnpm install --frozen-lockfile --filter @arca/scripts
-      # After every install step. Both commits are fetched into main's clone and read with git as
-      # data (spec 0002, R6); no file of the change is checked out and nothing runs from it. Only
-      # a new vendored.json entry reaches the network, to GitHub, with no credentials.
-      - name: Fetch the base and the change (data only)
+      # After every install step. The change's commit is fetched into main's clone and read with
+      # git as data (spec 0002, R6); no file of it is checked out and nothing runs from it. The base
+      # is main's tip as checked out: the ruleset requires branches to be up to date, so the change
+      # contains it. Only a new vendored.json entry reaches the network, to GitHub, with no
+      # credentials.
+      - name: Fetch the change (data only)
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-          git -C policy fetch --no-tags --depth=1 origin "$BASE_SHA" "$HEAD_SHA"
-      - name: Check knowledge and vendored files against the base
+          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          git -C policy fetch --no-tags --depth=1 origin "$HEAD_SHA"
+      - name: Check knowledge and vendored files against main
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: >-
           node policy/tooling/scripts/src/check-knowledge-immutable.ts
-          policy "$BASE_SHA" "$HEAD_SHA"
+          policy "$(git -C policy rev-parse HEAD)" "$HEAD_SHA"
 
   osv-scanner:
     runs-on: ubuntu-24.04

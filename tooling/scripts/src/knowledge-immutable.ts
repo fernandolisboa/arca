@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { TreeFile } from './git-tree.ts';
 import { hostOf } from './host.ts';
+import { JsonSubsetError, parseJsonSubset } from './json-subset.ts';
 import { isRecord, type Violation } from './report.ts';
 import {
   entryProblems,
@@ -10,8 +11,10 @@ import {
   type VendoredSource,
 } from './vendored.ts';
 
-export const dataRoot = 'packages/knowledge/data/';
-export const vendorRoot = 'packages/knowledge/vendor/';
+/** The directories the check watches; each must be a directory, or absent, in the change. */
+export const knowledgeRoots = ['packages/knowledge/data', 'packages/knowledge/vendor'] as const;
+export const dataRoot = `${knowledgeRoots[0]}/`;
+export const vendorRoot = `${knowledgeRoots[1]}/`;
 export const domainSource = 'packages/domain/src';
 export const vendoredPolicy = '.github/policy/vendored.json';
 export const vendoredSources = '.github/policy/vendored-sources.json';
@@ -19,6 +22,8 @@ const hashesPath = `${dataRoot}hashes.json`;
 const casesPattern = /^packages\/knowledge\/data\/routes\/[^/]+\/[^/]+\.cases\.json$/;
 const officialPattern = /^packages\/knowledge\/data\/official-domains\/([^/]+)\/([0-9]+)\.json$/;
 const regularFile = { mode: '100644', type: 'blob' };
+/** At least the build's nesting limit; the build applies its own, stricter one. */
+const maxJsonDepth = 64;
 
 /** One side of the comparison: its files under the watched paths and a way to read them. */
 export interface Side {
@@ -64,6 +69,12 @@ class Check {
 
   async run(): Promise<void> {
     const { base, head } = this.#change;
+    for (const root of knowledgeRoots) {
+      const entry = head.files.get(root);
+      if (entry !== undefined && entry.type !== 'tree') {
+        this.#add(root, 'must be a directory, not a link or a submodule');
+      }
+    }
     for (const [path, file] of knowledgeFiles(base.files)) {
       const after = head.files.get(path);
       if (after === undefined) {
@@ -270,7 +281,7 @@ class Check {
    * an entry already on main, and hashes to that entry's data or license file.
    */
   async #checkVendored(): Promise<void> {
-    const { base, head } = this.#change;
+    const { base } = this.#change;
     const sources = parseSources(
       await this.#json(base, vendoredSources, { schemaVersion: 1, sources: [] }),
     );
@@ -284,8 +295,13 @@ class Check {
       this.#add(vendoredPolicy, `on the base branch ${approved}`);
       return;
     }
-    if (base.files.get(vendoredPolicy)?.object !== head.files.get(vendoredPolicy)?.object) {
-      await this.#checkVendoredEntries(approved, sources);
+    const policyChanged = changedObject(this.#change, vendoredPolicy);
+    if (policyChanged) await this.#checkVendoredEntries(approved, sources);
+    if (
+      changedObject(this.#change, vendoredSources) &&
+      (policyChanged || this.#changed.length > 0)
+    ) {
+      this.#add(vendoredSources, 'changes in a policy pull request of its own');
     }
     await this.#checkVendorFiles(approved.filter(isRecord));
   }
@@ -336,12 +352,15 @@ class Check {
         this.#add(manifestPath, 'must exist and equal an entry of vendored.json on main');
         continue;
       }
-      const files = [...head.files.keys()].filter(
-        (path) =>
-          path.startsWith(directory) &&
-          path !== manifestPath &&
-          !path.slice(directory.length).includes('/'),
-      );
+      const files = [...head.files]
+        .filter(
+          ([path, file]) =>
+            file.type === 'blob' &&
+            path.startsWith(directory) &&
+            path !== manifestPath &&
+            !path.slice(directory.length).includes('/'),
+        )
+        .map(([path]) => path);
       const digests = new Map<string, string>();
       for (const path of files) digests.set(path, sha256(await head.read(path)));
       for (const path of added.filter((path) => files.includes(path))) {
@@ -359,11 +378,12 @@ class Check {
   }
 
   async #json(side: Side, path: string, missing?: unknown): Promise<unknown> {
-    if (!side.files.has(path)) return missing;
+    if (side.files.get(path)?.type !== 'blob') return missing;
     try {
-      return JSON.parse((await side.read(path)).toString('utf8')) as unknown;
-    } catch {
-      this.#add(path, 'is not valid JSON');
+      return parseJsonSubset(await side.read(path), maxJsonDepth);
+    } catch (error) {
+      if (!(error instanceof JsonSubsetError)) throw error;
+      this.#add(path, `is not in the accepted JSON subset: ${error.message}`);
       return undefined;
     }
   }
@@ -374,7 +394,14 @@ class Check {
 }
 
 function knowledgeFiles(files: ReadonlyMap<string, TreeFile>): [string, TreeFile][] {
-  return [...files].filter(([path]) => path.startsWith(dataRoot) || path.startsWith(vendorRoot));
+  return [...files].filter(
+    ([path, file]) =>
+      file.type !== 'tree' && (path.startsWith(dataRoot) || path.startsWith(vendorRoot)),
+  );
+}
+
+function changedObject({ base, head }: KnowledgeChange, path: string): boolean {
+  return base.files.get(path)?.object !== head.files.get(path)?.object;
 }
 
 function keyed(list: unknown, key: string): Record<string, unknown>[] | undefined {
@@ -413,6 +440,7 @@ export function canonical(value: unknown): string {
     const keys = Object.keys(value).sort();
     return `{${keys.map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`).join(',')}}`;
   }
+  if (Object.is(value, -0)) return '-0';
   return value === undefined ? 'undefined' : JSON.stringify(value);
 }
 

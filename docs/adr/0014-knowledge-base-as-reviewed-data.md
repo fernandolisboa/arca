@@ -96,7 +96,7 @@ The owner chose to be the only approver, helped by a specialized agent, over a d
 
 ### Trust roots in their own pull requests
 
-Official-domain lists decide what counts as official. The `knowledge-immutable` check fails a pull request that changes them together with any other knowledge data, except an append to `hashes.json` (spec 0002, R6). A host added to a list cites proof on a host already in a merged list version, or on a registry such as a country's domain authority; the first list for an issuer gets its own reviewed pull request. Country guides get the same rule when slice 2 adds them, and the approver list when slice 3 adds it.
+Official-domain lists decide what counts as official. The `knowledge-immutable` check fails a pull request that changes them together with any other knowledge data, except an append to `hashes.json` (spec 0002, R6). A host added to a list cites proof on a host already in a merged list version; the first list for an issuer, which has no such host, cites a registry such as the country's domain authority and gets its own reviewed pull request. Until registries are listed as data, `knowledge-immutable` enforces the first rule and the reviewer checks the registry citation. Country guides get the same rule when slice 2 adds them, and the approver list when slice 3 adds it.
 
 ## Alternatives
 

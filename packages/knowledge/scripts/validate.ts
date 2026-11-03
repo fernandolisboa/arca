@@ -24,7 +24,7 @@ import {
   countriesFileSchema,
   formerCountriesFileSchema,
 } from './files.ts';
-import type { Json } from './json.ts';
+import type { Json } from '@arca/scripts/json';
 import type { FileKind, Issue, RawData, RawFile } from './load.ts';
 
 /** A route version as the catalog carries it: the reviewed JSON, its hash and its country sets. */

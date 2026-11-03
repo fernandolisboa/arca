@@ -1,4 +1,4 @@
-import type { Json } from './json.ts';
+import type { Json } from '@arca/scripts/json';
 
 /**
  * RFC 8785 (JCS) serialization, with no Node dependency so the web client can use it later (spec

@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { promisify } from 'node:util';
@@ -53,14 +53,28 @@ describe('check-knowledge-immutable', () => {
     const name = `${data}/odd\tname\n"q".json`;
     const head = await commit(dir, { [name]: '{}' });
     const files = await new GitRepository(dir).files(head, [data]);
-    expect([...files.keys()]).toEqual([name]);
+    expect([...files.keys()]).toEqual(['packages', 'packages/knowledge', data, name]);
     expect(files.get(name)?.mode).toBe('100644');
+    expect(files.get(data)?.type).toBe('tree');
   });
 
   it('refuses a revision that is an option', async () => {
     const dir = await repository();
     await commit(dir, { 'a.txt': 'a' });
     await expect(new GitRepository(dir).commit('--output=/tmp/x')).rejects.toThrow();
+  });
+
+  it('fails a vendor directory that is a symbolic link to unapproved files', async () => {
+    const dir = await repository();
+    const base = await commit(dir, { [`${data}/countries/1.json`]: '{}' });
+    await mkdir(join(dir, 'unapproved'));
+    await writeFile(join(dir, 'unapproved/manifest.json'), '{}');
+    await symlink('../../unapproved', join(dir, 'packages/knowledge/vendor'));
+    const head = await commit(dir, {});
+    expect(await check(dir, base, head)).toEqual({
+      code: 1,
+      output: 'packages/knowledge/vendor: must be a directory, not a link or a submodule\n',
+    });
   });
 
   it('passes an append and fails an edit, from git history alone', async () => {

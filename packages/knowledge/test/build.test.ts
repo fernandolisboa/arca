@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { buildKnowledge, catalogModule, formatIssue } from '../scripts/build.ts';
 import { contentHash } from '../scripts/content-hash.ts';
-import type { Json } from '../scripts/json.ts';
+import type { Json } from '@arca/scripts/json';
 import { baseTree, buildDate, emptyHashes, routeVersion, writeTree } from './data.ts';
 
 async function issuesOf(tree: Record<string, unknown>, hashes?: unknown): Promise<string[]> {

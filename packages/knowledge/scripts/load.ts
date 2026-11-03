@@ -2,7 +2,7 @@ import { constants } from 'node:fs';
 import { open, readdir } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 import { maxKnowledgeJsonDepth } from '@arca/domain';
-import { type Json, JsonSubsetError, parseJsonSubset } from './json.ts';
+import { type Json, JsonSubsetError, parseJsonSubset } from '@arca/scripts/json';
 
 /** A problem found in the knowledge data, by file and JSON pointer. */
 export interface Issue {

@@ -1,4 +1,4 @@
-import type { Json } from './json.ts';
+import type { Json } from '@arca/scripts/json';
 
 /** A test vector from RFC 8785, with the canonical form the RFC gives for it. */
 export interface Vector {

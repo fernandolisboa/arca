@@ -36,9 +36,21 @@ export class GitRepository {
     return (await this.#git(['merge-base', left, right])).trim();
   }
 
-  /** Every file under the given paths of a commit, by path, read with NUL-separated output. */
+  /**
+   * Every entry under the given paths of a commit, by path, read with NUL-separated output. Trees
+   * on the way are listed too, so a path that is a link or a submodule instead of a directory shows.
+   */
   async files(commit: string, paths: readonly string[]): Promise<Map<string, TreeFile>> {
-    const output = await this.#git(['ls-tree', '-r', '-z', '--full-tree', commit, '--', ...paths]);
+    const output = await this.#git([
+      'ls-tree',
+      '-r',
+      '-t',
+      '-z',
+      '--full-tree',
+      commit,
+      '--',
+      ...paths,
+    ]);
     const files = new Map<string, TreeFile>();
     for (const record of output.split('\0')) {
       if (record === '') continue;
