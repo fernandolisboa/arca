@@ -40,10 +40,10 @@ export function checkVersionOrder(versions: readonly VersionDates[]): Map<number
  * Adding a correction of `target` to the lower versions, all treated as active, must make selection
  * pick it, from its `effectiveFrom` on, on every date where it picked the target, a correction of
  * the target (directly or through a chain) or a version the correction's own chain removes. A
- * correction that starts before that group's first date also takes the run just before it, but
- * not the whole run unless that version is in its chain. Every other date keeps its version, and
- * the correction is in effect on some date. So a correction never shadows a version it does not
- * fix, and a newer correction is never shadowed by an older one.
+ * correction that starts before the first of those dates also takes the run just before it, but not
+ * the whole run unless that version is in its chain. Every other date keeps its version. So a
+ * correction never shadows a version it does not fix, and a newer correction is never shadowed by
+ * an older one.
  */
 function correctionProblem(
   correction: VersionDates,
@@ -65,7 +65,7 @@ function correctionProblem(
   );
   const before = selector(lower);
   const after = selector([...lower, correction]);
-  const groupStart = dates.find((date) => isIn(group, before(date)));
+  const groupStart = dates.find((date) => isIn(group, before(date)) || isIn(removes, before(date)));
   if (groupStart === undefined) {
     return 'The corrected version is never in effect, so it cannot be fixed';
   }
@@ -74,10 +74,10 @@ function correctionProblem(
   if (previous !== undefined && !removes.has(previous)) {
     const previousStart = dates.find((date) => before(date) === previous);
     if (previousStart !== undefined && compareDates(correction.effectiveFrom, previousStart) <= 0) {
-      return `A correction starts after the start of version ${String(previous)}'s period, which it does not fix`;
+      return `A correction must start after the start of version ${String(previous)}'s period, which it does not fix`;
     }
   }
-  let inEffect = false;
+  // On its own date the correction is the latest candidate and wins, so it is always in effect.
   for (const date of dates) {
     const was = before(date);
     const taken =
@@ -90,11 +90,8 @@ function correctionProblem(
     if (actual !== expected) {
       return `From ${date}, selection would pick ${describe(actual)} instead of ${describe(expected)}`;
     }
-    inEffect ||= taken;
   }
-  return inEffect
-    ? undefined
-    : 'A correction starts before the period of the version it fixes ends';
+  return undefined;
 }
 
 /** The versions a correction removes in turn: the one it names, the one that names, and so on. */

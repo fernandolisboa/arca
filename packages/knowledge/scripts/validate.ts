@@ -35,7 +35,7 @@ export interface BuiltEntry {
 
 export interface ValidatedData {
   readonly entries: readonly BuiltEntry[];
-  /** Content hash by path under `data` without the extension, for route versions and country sets. */
+  /** Content hash of each valid route version and country set, by path without the extension. */
   readonly hashes: ReadonlyMap<string, string>;
   /** Every route version and country set path that would have a hash, valid or not. */
   readonly hashable: ReadonlySet<string>;
@@ -318,8 +318,8 @@ function withoutExtension(file: string): string {
 
 /**
  * The URL as written: `https://`, then a host with no user information, port, backslash, extra
- * slash, percent-encoding or full-width dot, which WHATWG parsing would otherwise forgive or map. The host a
- * reviewer reads is then the host matched, up to case and punycode.
+ * slash, percent-encoding or full-width dot, which WHATWG parsing would otherwise forgive or map.
+ * The host a reviewer reads is then the host matched, up to case, punycode and IDNA mapping.
  */
 const plainAuthority = /^https:\/\/[^/?#\\@:%\s\u3002\uff0e\uff61]+(?:[/?#]|$)/;
 

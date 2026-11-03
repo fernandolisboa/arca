@@ -7,9 +7,9 @@ import { rfc8785Vectors } from './vectors.ts';
 const hashesFile = 'hashes.json';
 
 /**
- * Compares the computed hashes with the committed ones (spec 0002, R6). Every vector and every valid
- * route version and country set has an entry with the same hash; a missing entry is reported with
- * the hash to append, and an entry for a file that does not exist is an issue too.
+ * Compares the computed hashes with the committed ones (spec 0002, R6). Every vector and every
+ * valid route version and country set has an entry with the same hash; a missing entry is reported
+ * with the hash to append, and an entry for a file that does not exist is an issue too.
  */
 export function checkHashes(
   recorded: Json | undefined,

@@ -11,8 +11,8 @@ const decoder = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true });
 /**
  * Parses a knowledge file strictly: UTF-8 with no byte order mark, RFC 8259 syntax, integers only
  * and within ±(2^53 - 1), strings and keys in NFC, well formed and free of control, format or
- * invisible characters, no duplicate keys, and nesting no deeper than `maxDepth`. Strings are checked, never normalized, so the bytes hashed are the bytes
- * reviewed.
+ * invisible characters, no duplicate keys, and nesting no deeper than `maxDepth`. Strings are
+ * checked, never normalized, so the bytes hashed are the bytes reviewed.
  */
 export function parseJsonSubset(bytes: Uint8Array, maxDepth: number): Json {
   let text: string;
