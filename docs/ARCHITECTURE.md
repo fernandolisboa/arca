@@ -53,15 +53,9 @@ packages/
   knowledge/    the knowledge base as data: route versions and their cases, country sets, official-domain
                 lists and the countries files; validated, hashed and bundled into the API ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md))
 tooling/        shared ESLint and TypeScript configs, security header policy, repository scripts
-<<<<<<< HEAD
-                (dependency-source, boundary and bundle checks, CI policy scripts, migration runner,
-                the review gate in scripts/src/review-gate)
-eval/           evaluation corpora: the review gate's canary in review-gate/, the synthetic families in
-                families/, later the synthetic AI evaluation suite
-=======
                 (dependency-source, boundary and bundle checks, CI policy scripts, migration runner)
-eval/           planned: the synthetic AI evaluation suite
->>>>>>> origin/main
+eval/           evaluation corpora: the synthetic families in families/ (spec 0002), later the synthetic AI
+                evaluation suite
 ```
 
 Rules that keep every platform possible:
@@ -111,9 +105,10 @@ Specialized agents work on the knowledge base and the case model:
 | Interviewer | Voice simulation of consular interviews |
 | Watcher | Rule changes in the selected countries |
 | Research agent | Proposes route versions from official sources when the base does not cover a question |
+| Independent check | Compares each proposed version with its official sources, using a guide per country, and reports to the owner before activation; advisory only |
 | Concierge | Arrival and settling in the destination |
 
-Each agent gets only the tools its task needs, set in its definition. The research agent and the watcher read untrusted web pages, so they get a constrained fetch tool and one proposal tool that opens a pull request with new route versions and country sets, and nothing else: no shell, no case data, no merge, no official-domain lists, no approver list, no workflows ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md#research-agents-required-properties)).
+Each agent gets only the tools its task needs, set in its definition. The research agent and the watcher read untrusted web pages, so they get a constrained fetch tool and one proposal tool that opens a pull request with new route versions and country sets, and nothing else: no shell, no case data, no merge, no official-domain lists, no approver list, no workflows ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md#research-agents-required-properties)). The independent check gets the same fetch tool, limited to the version's sources and official hosts, and a report sink only; slice 2 places the country guides.
 
 **Golden rule:** no agent states a requirement that is not in the knowledge base with a source. When the base does not cover a question, the agent says it does not know and opens a research task, which enters the base only after human approval.
 

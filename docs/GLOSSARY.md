@@ -56,8 +56,8 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Recovery path | Internal, no UI label | The delayed, notified way to restore an approver who lost every credential; never rests on Git or email alone |
 | Activation screen | Tela de ativação | Where an approver reviews a proposed version as data and activates or rejects it |
 | Independent check | Verificação independente | The agent report that compares a proposed version with its official sources before the owner decides; advisory only |
-| Country skill | Internal, no UI label | The reviewed file per country that the independent check loads: official hosts, governing laws, known pitfalls; never a source |
-| Rule report | Avisar regra errada | A person's flag that a rule they were shown may be wrong; opens a research task |
+| Country guide | Internal, no UI label | The reviewed data file per country that the independent check loads: governing laws, how they change, known pitfalls; never a source and never a list of official hosts; not a Claude Code skill |
+| Rule report | Aviso de regra errada | A person's flag that a rule they were shown may be wrong; opens a research task. The button reads "Avisar regra errada" |
 | Research task | Pesquisa pendente | The request opened when the knowledge base cannot answer a question; a research agent works it into a proposal |
 | Possible dependent | Possível dependente | A person a route might cover, pending unknown facts |
 | Candidate | Internal, no UI label | The person a dependent rule is being evaluated for |
