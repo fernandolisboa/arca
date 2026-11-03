@@ -31,6 +31,8 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Family (mode) | Em família | The step is assigned to a relative in the case who offered to help |
 | Action point | Ponto de ação | Where a step actually happens: link, phone, office, partner; says whether the step can be done online |
 | Family area | Área da família | The screen with the people in a case, who has an account, invites and who may upload documents for whom; grants no access by itself |
+| Progress | Progresso | Documents obtained and steps done out of what a person's or the family's chosen routes need, computed in code; unknowns shown apart |
+| Shared analysis | Análise compartilhada | A comparison or recommendation an adult opens, read-only and revocable, to chosen people in the case; not a document share |
 | Guided tour | Tour guiado | The first-run walkthrough of the app and the hint shown the first time a screen opens; skippable and replayable |
 | Fact | Dado | A typed value about a person or unit that rules read, such as an age at a date; derived from the case in code |
 | Requirement | Requisito | A condition of a route version, evaluated as true, false or unknown, with a source |

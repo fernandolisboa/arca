@@ -58,12 +58,12 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 **Epic: family area and guidance** ([#117](https://github.com/fernandolisboa/arca/issues/117); each item lands in the consultancy core slice or foundations spec it names)
 
 - Family area: the people in the case, who has an account, invites (slice 3).
-- A trusted adult uploads documents for another person, by that person's permission; a parent holds a child's documents (slice 3 and the vault).
-- Sharing a destination analysis with relatives, so each starts their own checklist (slice 4).
-- Progress per person and for the whole family, computed in code (slice 5).
-- Steps marked as doable online, with the official link, including documents issued in Brazil (slice 5 and the knowledge base).
-- Guided tour of the app and a hint per screen, after the design system.
-- Setup guide for every key and secret the project owner manages (`docs/SETUP.md`).
+- A trusted adult uploads documents for another person, by that person's permission; an account holder holds the documents of a case person without an account, such as a child (slice 3 and the vault; needs an ADR-0018 amendment on who owns such an upload first, [#119](https://github.com/fernandolisboa/arca/issues/119)).
+- Sharing an analysis with chosen people in the case, so each starts their own checklist; relatives join through the family area first (slice 4).
+- Progress per person and for the whole family, computed in code; each person's bar is visible to those they share it with, and the family bar counts only what the viewer may see (slice 5).
+- Steps marked as doable online, with the official link, sourced like any knowledge fact, for the country that issues each document (most often Brazil) as well as the destination (slice 5 and the knowledge base).
+- Guided tour of the app and a hint per screen, built on `packages/ui` after the first screens of slice 3; separate from Phase 3's onboarding of new families.
+- Setup guide for every key and secret the project owner manages (`docs/SETUP.md`): names, where each lives, who creates it and how to rotate it, never values; links to ADR-0012 instead of repeating it.
 
 ## Phase 2 — Execution (web)
 

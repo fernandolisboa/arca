@@ -39,7 +39,7 @@ The same step appears differently depending on the person's stated preference, t
 | Delegated | "Call this number or talk to this person about your case", with a case summary ready to send | The person prefers someone else to handle it, or the step has a legal complication |
 | Family | The task goes to someone in the case who offered to help | A trusted relative is part of the case |
 
-This requires the knowledge base to store the **action point** of each step, not only the rule: official portal link and whether the step can be done online, phone number, consulate by jurisdiction (which depends on where the person lives), what to bring, and vetted partners by region. Action points cover the country that issues each document (most often Brazil), not only the destination.
+This requires the knowledge base to store the **action point** of each step, not only the rule: official portal link and whether the step can be done online, phone number, consulate by jurisdiction (which depends on where the person lives), what to bring, and vetted partners by region. Action points cover the country that issues each document (often the person's country of citizenship), not only the destination.
 
 ## Services
 
@@ -50,8 +50,8 @@ This requires the knowledge base to store the **action point** of each step, not
 | Strategy recommendation | Per unit: recommended route and two alternatives, with pros, cons, risks, total cost, time to residence and to citizenship, and the reason behind each point, with sources | MVP |
 | Document checklist | Per person and route: where to obtain each document, cost, lead time, validity, apostille and sworn translation needs | MVP |
 | Step-by-step plan | Ordered tasks with owner, deadline, dependencies, execution mode and a how-to for each step | MVP |
-| Family area | The people in the case, who has an account, invites; a trusted adult can upload documents for someone who allows it; a parent holds a child's documents; an analysis can be shared so each relative starts their own checklist | MVP |
-| Progress | A bar per person and one for the family, from what each route still needs, computed in code | MVP |
+| Family area | The people in the case, who has an account, invites; a trusted adult can upload documents for someone who allows it; an account holder holds the documents of a person without an account, such as a child; an analysis can be shared so each relative starts their own checklist | MVP |
+| Progress | A bar per person and one for the family, from what each unit's chosen route still needs, computed in code; unknown requirements show as unknown, never as met; each bar is visible only to whom its person shares it with | MVP |
 | Guided tour | A short first-run tour and a hint per screen, skippable and replayable | MVP |
 | On-call questions | Assistant that answers any time with the case's context, cites sources and says when it does not know | MVP |
 | Assets and currency | Sale, tax and FX simulator; documented source-of-funds trail | MVP |
