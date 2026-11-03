@@ -54,7 +54,11 @@ The first case is the founder's own family. The app goes to other families only 
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Phases and the gates between them |
 | [docs/GLOSSARY.md](docs/GLOSSARY.md) | Domain terms and their pt-BR UI equivalents |
 | [docs/OPEN-QUESTIONS.md](docs/OPEN-QUESTIONS.md) | Decisions still pending |
+<<<<<<< HEAD
 | [docs/adr/](docs/adr/) | Architecture decision records: language, rules as data, stack, AI ports, platforms, auth, background jobs, database security, reviewers in CI, automation-first setup, the review gate canary and model aliases, the knowledge base as reviewed data |
+=======
+| [docs/adr/](docs/adr/) | Architecture decision records: language, rules as data, stack, AI ports, platforms, auth, background jobs, database security, automation-first setup, reviewers in the authoring session |
+>>>>>>> origin/main
 | [docs/specs/](docs/specs/) | Feature specs, written before tickets and code |
 | [docs/research/](docs/research/) | Sourced research notes that seed the knowledge base |
 

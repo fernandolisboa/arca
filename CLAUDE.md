@@ -38,7 +38,7 @@ Security is a product pillar. Before working on any feature, read [docs/SECURITY
 ## How we build
 
 - Workflow per feature: spec → tickets → tests first (TDD) → implementation → multi-reviewer pass → merge.
-- Reviewers are the subagents in `.claude/agents/`, run in parallel on the diff before every commit and pull request, and again in CI as the required `review-gate` check ([ADR-0011](docs/adr/0011-reviewers-in-ci.md)). Rules, triggers and verdicts: [docs/REVIEW.md](docs/REVIEW.md).
+- Reviewers are the subagents in `.claude/agents/`, run in parallel on the diff before every pull request and again before merging. CI runs only deterministic checks ([ADR-0019](docs/adr/0019-reviewers-in-the-authoring-session.md)). Rules, triggers and verdicts: [docs/REVIEW.md](docs/REVIEW.md).
   - **Core, every change:** correctness, security and architecture (must pass); standards and context (should pass).
   - **Specialists, must pass when their area is touched:** auth and cryptography; data access (schema, migrations, row-level security, roles, environments); supply chain (dependencies, CI, build, vendors); AI safety (prompts, agents, adapters, model output, evaluation).
   - Any critical or high finding blocks the merge. The owner stays out of the loop; the reviewers are the gate.

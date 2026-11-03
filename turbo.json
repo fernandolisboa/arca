@@ -55,16 +55,6 @@
         "ARCA_TEST_DB_ADMIN_PASSWORD"
       ]
     },
-    "@arca/scripts#test": {
-      "dependsOn": ["^build"],
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        "$TURBO_ROOT$/.claude/agents/**",
-        "$TURBO_ROOT$/docs/**",
-        "$TURBO_ROOT$/eval/review-gate/**",
-        "$TURBO_ROOT$/.github/workflows/review-*.yml"
-      ]
-    },
     "//#check:web-bundle": {
       "dependsOn": ["@arca/web#build"]
     },

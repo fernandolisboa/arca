@@ -34,7 +34,7 @@
 
 ### Approval in two steps
 
-1. **Proposal.** A change reaches `main` through a pull request like any other, reviewed by the gate. Merged versions are *proposed*: they exist in the catalog, but the engine does not evaluate them for any case.
+1. **Proposal.** A change reaches `main` through a pull request like any other, reviewed by the reviewer subagents ([ADR-0019](0019-reviewers-in-the-authoring-session.md)). Merged versions are *proposed*: they exist in the catalog, but the engine does not evaluate them for any case.
 2. **Decision.** An approver either *activates* or *rejects* a version in the app, with a passkey step-up bound to its content hash.
    - Only an active version is evaluated.
    - A rejected version is never selected; the route reads whatever selection picks without it, by the rule in spec 0002 R5, which also covers a later correction of a rejected one. It can never be activated again; a fix is a new version. Rejection works on a proposed version, which is how a bad proposal stops blocking a route, and on an active one, which takes a rule out of use. A rejection wins over an activation of the same version.

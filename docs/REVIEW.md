@@ -1,6 +1,6 @@
 # Review
 
-Every change is reviewed by specialized AI reviewers before merge. They are defined as Claude Code subagents in [`.claude/agents/`](../.claude/agents/). The session that wrote the change runs them in parallel on the diff before opening a pull request, and CI runs them again as the required `review-gate` check ([ADR-0011](adr/0011-reviewers-in-ci.md)). No change merges with a blocking finding open.
+Every change is reviewed by specialized AI reviewers before merge. They are defined as Claude Code subagents in [`.claude/agents/`](../.claude/agents/). The session that wrote the change runs them in parallel on the diff before opening a pull request and again before merging ([ADR-0019](adr/0019-reviewers-in-the-authoring-session.md)). CI runs only the deterministic checks. No change merges with a blocking finding open.
 
 ## Gates, in order
 
@@ -22,7 +22,7 @@ Every change is reviewed by specialized AI reviewers before merge. They are defi
 | [supply-chain-reviewer](../.claude/agents/supply-chain-reviewer.md) | Dependencies, lockfile, CI workflows, build and deploy config, new services or vendors | Must pass | `fable` |
 | [ai-safety-reviewer](../.claude/agents/ai-safety-reviewer.md) | Prompts, agents, AI adapters, retrieval, rendering of model output, evaluation suite | Must pass | `fable` |
 
-The review gate reads this table to weigh each reviewer: a row needs the linked reviewer name, a non-empty "Runs on" cell and exactly `Must pass` or `Should pass`, and an agent without a row stops the gate. A reviewer whose "Runs on" cell is exactly `Every change` is a core reviewer; any other is a specialist.
+A reviewer that runs on every change is a core reviewer; any other is a specialist. A specialist with no findings on a change that touches nothing in its area passes.
 
 Added in Phase 4: a mobile security reviewer verifying against OWASP MASVS.
 
@@ -33,12 +33,12 @@ Each reviewer returns **PASS** or **BLOCK**, followed by findings with severity 
 - Any critical or high finding from any reviewer blocks the merge.
 - Medium findings from must-pass reviewers block unless the change records why they are accepted, in the pull request and, when it is a lasting trade-off, in an ADR.
 - Should-pass reviewers never block alone; their findings are fixed in the same change or tracked.
-- A reviewer that could not assess something (missing context, tests that would not run) says so; that counts as BLOCK for must-pass reviewers. In CI, reviewers cannot run commands; running tests is the job of the required test checks, so not running them there is not a gap to report. CI reviewers report what they could not assess in a separate field, and the gate fails a must-pass reviewer that reports anything there except `tests_not_run`, which the required test checks cover, and `outside_area`, which a specialist reports with no findings when the change touches nothing in its area. From a core reviewer, or next to a finding, `outside_area` blocks.
-- Medium findings accepted in a change are listed, with the reason, in [review-acceptances.md](review-acceptances.md); the CI gate reads that file.
+- A reviewer that could not assess something (missing context, tests that would not run) says so; that counts as BLOCK for must-pass reviewers.
+- Medium findings accepted in a change are listed, with the reason, in the pull request description.
 
 ## Changing reviewers
 
-Reviewer definitions and the review CI workflow are security-critical configuration. Changing either requires a PASS from the security, architecture and supply-chain reviewers, and an entry in this file ([ADR-0011](adr/0011-reviewers-in-ci.md), [ADR-0012](adr/0012-automation-first-setup.md)).
+Reviewer definitions and this file are security-critical configuration. Changing either requires a PASS from the security, architecture and supply-chain reviewers, and an entry in this table ([ADR-0019](adr/0019-reviewers-in-the-authoring-session.md)).
 
 | Date | Change | Why |
 | --- | --- | --- |
@@ -50,3 +50,5 @@ Reviewer definitions and the review CI workflow are security-critical configurat
 | 2026-11-02 | New `unassessed` reason `outside_area`: a specialist with no findings uses it when the change touches nothing in its area, and it does not block; from a core reviewer it blocks; new canary case `injection-outside-area` | Specialists blocked unrelated changes by explaining in `other` that there was nothing to review (#37, #38) ([ADR-0011](adr/0011-reviewers-in-ci.md)) |
 | 2026-11-02 | In the gate, a reviewer whose model never answers (an API error with no tokens used, such as a subscription limit) runs once on a fallback model: `fable` to `opus`, `opus` to `fable`, `haiku` to `opus`; the canary never falls back | Every `fable` reviewer failed on a per-model subscription limit while the others ran ([ADR-0013](adr/0013-review-gate-canary-and-model-pins.md)) |
 | 2026-11-02 | The gate skips draft pull requests and reviews them when they are marked ready | Drafts cannot merge; this saves subscription usage while authors iterate ([ADR-0013](adr/0013-review-gate-canary-and-model-pins.md)) |
+| 2026-11-02 | A canary dispatched for a push to `main` runs slim: one known-bad case per reviewer, every injected case against one reviewer, and one injected case against every must-pass reviewer; the weekly run covers the whole corpus, and after any failed run only a full run can pass; only the owner's dispatch can run full or force a run; a "Runs on" cell that nearly reads `Every change` stops the gate; the fallback ignores Claude Code's side requests on another model when deciding whether the reviewer's model answered | Every gate change cost a full canary of about 85 model runs against the subscription's limits ([ADR-0013](adr/0013-review-gate-canary-and-model-pins.md)) |
+| 2026-11-03 | Reviewers run only in the authoring session; the CI review gate, the canary, `eval/review-gate/` and `review-acceptances.md` are removed | Subscription limits and upkeep out of proportion to a single-family app ([ADR-0019](adr/0019-reviewers-in-the-authoring-session.md)) |
