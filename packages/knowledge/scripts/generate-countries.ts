@@ -60,8 +60,9 @@ async function latestCountries(countriesDir: string): Promise<CountriesFile | un
 
 /**
  * Builds the next countries file from the vendored CLDR release (spec 0002, R7). Fails on a
- * vendored file or license that does not match the pins, and on any region code that is neither
- * excluded nor in the previous countries file, so a reviewed change classifies it first. Returns
+ * vendored file or license that does not match the pins, on any region code that is neither
+ * excluded nor in the previous countries file, and on any code of the previous file the release
+ * drops unless it is listed as withdrawn, so a reviewed change classifies each first. Returns
  * undefined when the latest file already holds the same release and codes.
  */
 export async function generateCountries(
@@ -70,14 +71,16 @@ export async function generateCountries(
   const territories = await readVendored(join(packageDir, 'vendor', 'cldr', cldr.release));
   const countriesDir = join(packageDir, 'data', 'countries');
   const previous = await latestCountries(countriesDir);
-  const { included, unclassified } = classifyRegions(
+  const { included, unclassified, removed } = classifyRegions(
     regionCodes(parseJsonSubset(territories, maxKnowledgeJsonDepth)),
     previous?.codes,
   );
-  if (unclassified.length > 0) {
-    throw new Error(
-      `Classify these region codes in scripts/countries.ts first: ${unclassified.join(', ')}`,
-    );
+  const problems = [
+    unclassified.length > 0 && `Classify these new region codes: ${unclassified.join(', ')}`,
+    removed.length > 0 && `List these dropped codes in withdrawnRegions: ${removed.join(', ')}`,
+  ].filter((problem) => problem !== false);
+  if (problems.length > 0) {
+    throw new Error(`In scripts/countries.ts first:\n${problems.join('\n')}`);
   }
   if (
     previous?.cldr.sha256 === cldr.sha256 &&

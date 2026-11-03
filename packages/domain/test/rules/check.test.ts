@@ -12,7 +12,8 @@ const context: CheckContext = {
   countrySets: new Set(['treaty']),
   leapDayBirthday: true,
   referenceDates: new Set(['filingDate']),
-  countries: new Set(['QM', 'QN', 'YUCS']),
+  countries: new Set(['QM', 'QN']),
+  formerCountries: new Set(['YUCS']),
 };
 const requirement: CheckScope = { current: true, unit: true, edge: false };
 const dependent: CheckScope = { current: true, unit: false, edge: true };
@@ -108,6 +109,20 @@ describe('checkExpression', () => {
       { kind: 'boolean' },
     ],
     [
+      'a residence country equal to a current country',
+      { op: 'eq', left: fact('principal.residenceCountry'), right: { op: 'token', value: 'QM' } },
+      { kind: 'boolean' },
+    ],
+    [
+      'citizenships intersecting a pinned set',
+      {
+        op: 'intersects',
+        list: fact('principal.citizenships'),
+        set: { op: 'set', id: 'treaty' },
+      },
+      { kind: 'boolean' },
+    ],
+    [
       'converted money',
       {
         op: 'gte',
@@ -167,6 +182,22 @@ describe('checkExpression', () => {
     [
       'a country literal not in the pinned countries files',
       { op: 'in', item: fact('principal.residenceCountry'), set: { op: 'tokens', values: ['QZ'] } },
+    ],
+    [
+      'a single country literal not in the pinned countries files',
+      { op: 'eq', left: fact('principal.residenceCountry'), right: { op: 'token', value: 'QZ' } },
+    ],
+    [
+      'a former state as a residence country',
+      {
+        op: 'in',
+        item: fact('principal.residenceCountry'),
+        set: { op: 'tokens', values: ['YUCS'] },
+      },
+    ],
+    [
+      'a former state compared with a residence country',
+      { op: 'eq', left: { op: 'token', value: 'YUCS' }, right: fact('principal.residenceCountry') },
     ],
     [
       'a lowercase country literal',

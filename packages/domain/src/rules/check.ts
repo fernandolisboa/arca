@@ -17,7 +17,8 @@ export type ExpressionType =
   | { readonly kind: 'set'; readonly domain: TokenDomain; readonly values?: readonly string[] };
 
 /** Countries, the values of a catalog enumeration, or a literal whose domain its use decides. */
-export type TokenDomain = 'country' | 'literal' | readonly string[];
+/** `former-country` also admits ISO 3166-3 former states; both are country codes. */
+export type TokenDomain = 'country' | 'former-country' | 'literal' | readonly string[];
 
 /** Where an expression sits, which decides the facts and collections it may read. */
 export interface CheckScope {
@@ -38,8 +39,10 @@ export interface CheckContext {
   readonly leapDayBirthday: boolean;
   /** Names of the reference dates the version declares. */
   readonly referenceDates: ReadonlySet<string>;
-  /** Codes in the countries and former-countries files the version pins (spec 0002, R7). */
+  /** Codes in the countries file the version pins (spec 0002, R7). */
   readonly countries: ReadonlySet<string>;
+  /** Codes in the former-countries file it pins, for citizenship and ancestry facts only. */
+  readonly formerCountries: ReadonlySet<string>;
 }
 
 export interface CheckIssue {
@@ -293,13 +296,21 @@ class Checker {
     const fits =
       tokens.domain === 'literal'
         ? (tokens.values ?? []).every((value) =>
-            domain === 'country'
-              ? countryCodeSchema.safeParse(value).success && this.context.countries.has(value)
+            isCountryDomain(domain)
+              ? this.knownCountry(domain, value)
               : domain === 'literal' || domain.includes(value),
           )
         : sameDomain(domain, tokens.domain);
     if (!fits) this.fail(path, 'The values are outside the domain of the fact');
     return fits;
+  }
+
+  private knownCountry(domain: 'country' | 'former-country', value: string): boolean {
+    if (!countryCodeSchema.safeParse(value).success) return false;
+    return (
+      this.context.countries.has(value) ||
+      (domain === 'former-country' && this.context.formerCountries.has(value))
+    );
   }
 
   private allBoolean(
@@ -366,9 +377,9 @@ function typeOf(type: FactType, currency: CurrencyCode): ExpressionType {
     case 'date':
       return { kind: 'date' };
     case 'country':
-      return { kind: 'token', domain: 'country' };
+      return { kind: 'token', domain: countryDomain(type.formerStates) };
     case 'countries':
-      return { kind: 'list', domain: 'country' };
+      return { kind: 'list', domain: countryDomain(type.formerStates) };
     case 'enum':
       return { kind: 'token', domain: type.values };
     case 'enum-list':
@@ -376,7 +387,16 @@ function typeOf(type: FactType, currency: CurrencyCode): ExpressionType {
   }
 }
 
+function countryDomain(formerStates: boolean | undefined): TokenDomain {
+  return formerStates === true ? 'former-country' : 'country';
+}
+
+function isCountryDomain(domain: TokenDomain): domain is 'country' | 'former-country' {
+  return domain === 'country' || domain === 'former-country';
+}
+
 function sameDomain(left: TokenDomain, right: TokenDomain): boolean {
+  if (isCountryDomain(left) && isCountryDomain(right)) return true;
   if (typeof left === 'string' || typeof right === 'string') return left === right;
   return left.length === right.length && left.every((value) => right.includes(value));
 }

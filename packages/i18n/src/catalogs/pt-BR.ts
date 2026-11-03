@@ -49,7 +49,7 @@ export const ptBR = {
     NQAQ: 'Terra da Rainha Maud',
     NTHH: 'Zona Neutra entre Arábia Saudita e Iraque',
     PCHH: 'Território Fiduciário das Ilhas do Pacífico',
-    PUUM: 'Ilhas do Pacífico dos Estados Unidos',
+    PUUM: 'Ilhas Menores do Pacífico dos Estados Unidos',
     PZPA: 'Zona do Canal do Panamá',
     RHZW: 'Rodésia do Sul',
     SKIN: 'Sikkim',

@@ -64,7 +64,11 @@ describe('classifyRegions', () => {
     ['the unknown region', 'ZZ'],
     ['an exceptionally reserved code', 'CQ'],
   ])('excludes %s', (_, code) => {
-    expect(classifyRegions([code], undefined)).toEqual({ included: [], unclassified: [] });
+    expect(classifyRegions([code], undefined)).toEqual({
+      included: [],
+      unclassified: [],
+      removed: [],
+    });
   });
 
   it('includes Kosovo', () => {
@@ -75,7 +79,12 @@ describe('classifyRegions', () => {
     expect(classifyRegions(['FR', 'BR', 'NQ', 'EU'], ['FR', 'BR'])).toEqual({
       included: ['BR', 'FR'],
       unclassified: ['NQ'],
+      removed: [],
     });
+  });
+
+  it('reports a code of the previous file the release drops', () => {
+    expect(classifyRegions(['FR'], ['BR', 'FR']).removed).toEqual(['BR']);
   });
 
   it('holds back a code that is not alpha-2', () => {
@@ -102,15 +111,26 @@ describe('generateCountries', () => {
     expect(await generateCountries(packageDir)).toBeUndefined();
   });
 
-  it('fails when a new release adds a code no reviewed change classified', async () => {
+  it.each([
+    [
+      'adds a code no reviewed change classified',
+      (codes: string[]) => codes.slice(1),
+      /new region codes: AD/,
+    ],
+    [
+      'drops a code without listing it as withdrawn',
+      (codes: string[]) => [...codes, 'QM'],
+      /dropped codes in withdrawnRegions: QM/,
+    ],
+  ])('fails when a new release %s', async (_, previousCodes, problem) => {
     const dir = await scratchPackage();
     const first = await generateCountries(dir);
     if (first === undefined) throw new Error('Expected a first file');
     const file = JSON.parse(first.content) as { codes: string[] };
-    file.codes = file.codes.filter((code) => code !== 'XK');
+    file.codes = previousCodes(file.codes).sort();
     await mkdir(join(dir, 'data', 'countries'), { recursive: true });
     await writeFile(join(dir, 'data', 'countries', '1.json'), JSON.stringify(file));
-    await expect(generateCountries(dir)).rejects.toThrow(/XK/);
+    await expect(generateCountries(dir)).rejects.toThrow(problem);
   });
 
   it.each(['territories.json', 'LICENSE'])(
@@ -122,4 +142,12 @@ describe('generateCountries', () => {
       await expect(generateCountries(dir)).rejects.toThrow(/pinned SHA-256/);
     },
   );
+
+  it('fails when the manifest names another tag', async () => {
+    const dir = await scratchPackage();
+    const path = join(dir, 'vendor', 'cldr', cldr.release, 'manifest.json');
+    const manifest = JSON.parse(await readFile(path, 'utf8')) as Record<string, unknown>;
+    await writeFile(path, JSON.stringify({ ...manifest, tag: '48.0.0' }));
+    await expect(generateCountries(dir)).rejects.toThrow(/another tag/);
+  });
 });

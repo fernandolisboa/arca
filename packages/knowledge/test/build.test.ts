@@ -12,6 +12,27 @@ async function issuesOf(tree: Record<string, unknown>, hashes?: unknown): Promis
   return issues.map(formatIssue);
 }
 
+const tokenRequirement = (expression: object): Record<string, unknown> => ({
+  requirements: [
+    {
+      id: 'listed',
+      title: 'The principal fits the listed countries',
+      expression,
+      sources: ['law'],
+    },
+  ],
+});
+const citizenOf = (values: string[]): object => ({
+  op: 'intersects',
+  list: { op: 'fact', key: 'principal.citizenships' },
+  set: { op: 'tokens', values },
+});
+const residentOf = (values: string[]): object => ({
+  op: 'in',
+  item: { op: 'fact', key: 'principal.residenceCountry' },
+  set: { op: 'tokens', values },
+});
+
 describe('buildKnowledge', () => {
   it('refuses user-assigned codes outside a fixture build', async () => {
     const { issues } = await buildKnowledge(await writeTree(baseTree()), buildDate);
@@ -23,6 +44,13 @@ describe('buildKnowledge', () => {
   it('builds the real data directory', async () => {
     const dataDir = fileURLToPath(new URL('../data', import.meta.url));
     expect((await buildKnowledge(dataDir, buildDate)).issues).toEqual([]);
+  });
+
+  it('checks country tokens against the pinned countries and former countries', async () => {
+    const tree = baseTree();
+    tree['routes/qm-work/1.json'] = routeVersion(tokenRequirement(citizenOf(['QN', 'QMHH'])));
+    const { issues } = await buildKnowledge(await writeTree(tree), buildDate, fixtures);
+    expect(issues.filter((issue) => issue.file !== 'hashes.json')).toEqual([]);
   });
 
   it('builds a valid tree into one entry per route version', async () => {
@@ -219,6 +247,20 @@ describe('buildKnowledge', () => {
           };
         },
         'country-sets/treaty/1.json /members/0: A member is in the pinned countries or former countries',
+      ],
+      [
+        'a country token outside the pinned files',
+        (tree) => {
+          tree['routes/qm-work/1.json'] = routeVersion(tokenRequirement(citizenOf(['QZ'])));
+        },
+        'routes/qm-work/1.json /requirements/0/expression: The values are outside the domain of the fact',
+      ],
+      [
+        'a former state in a fact about current countries',
+        (tree) => {
+          tree['routes/qm-work/1.json'] = routeVersion(tokenRequirement(residentOf(['QMHH'])));
+        },
+        'routes/qm-work/1.json /requirements/0/expression: The values are outside the domain of the fact',
       ],
       [
         'a route country outside the pinned countries',

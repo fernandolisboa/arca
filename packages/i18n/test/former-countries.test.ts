@@ -5,7 +5,7 @@ import { ptBR } from '../src/catalogs/pt-BR.js';
 const dataDir = new URL('../../knowledge/data/former-countries/', import.meta.url);
 
 async function formerCountryCodes(): Promise<string[]> {
-  const names = await readdir(dataDir);
+  const names = (await readdir(dataDir)).filter((name) => /^[1-9][0-9]*\.json$/.test(name));
   const files = await Promise.all(
     names.map(async (name) => {
       const text = await readFile(new URL(name, dataDir), 'utf8');

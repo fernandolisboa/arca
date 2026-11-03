@@ -63,7 +63,7 @@ export function checkCountrySet(set: CountrySet, official: OfficialHosts): Check
 export function checkRouteVersion(
   version: RouteVersion,
   official: OfficialHosts,
-  countries: ReadonlySet<string>,
+  countries: { readonly current: ReadonlySet<string>; readonly former: ReadonlySet<string> },
 ): CheckIssue[] {
   const issues: CheckIssue[] = [];
   const issue = (path: string, message: string): void => {
@@ -128,7 +128,8 @@ export function checkRouteVersion(
     countrySets: new Set(version.countrySets.map((pin) => pin.id)),
     leapDayBirthday: version.leapDayBirthday !== undefined,
     referenceDates: new Set(version.referenceDates ?? []),
-    countries,
+    countries: countries.current,
+    formerCountries: countries.former,
   };
   const expressions: Expression[] = [];
   const expect = (

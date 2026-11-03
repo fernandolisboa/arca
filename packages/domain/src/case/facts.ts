@@ -89,7 +89,12 @@ export interface Derived {
 export type FactScope = 'person' | 'unit' | 'edge' | 'lineage';
 
 export type FactType =
-  | { readonly kind: 'boolean' | 'integer' | 'money' | 'date' | 'country' | 'countries' }
+  | { readonly kind: 'boolean' | 'integer' | 'money' | 'date' }
+  | {
+      readonly kind: 'country' | 'countries';
+      /** Admits ISO 3166-3 former states, as citizenship and ancestry facts do (spec 0002, R7). */
+      readonly formerStates?: boolean;
+    }
   | { readonly kind: 'enum' | 'enum-list'; readonly values: readonly string[] };
 
 export interface FactDefinition {
@@ -126,7 +131,7 @@ export const factCatalog = {
     }),
   },
   'person.citizenships': {
-    type: { kind: 'countries' },
+    type: { kind: 'countries', formerStates: true },
     scope: 'person',
     derive: ({ environment, personId }, at) => ({
       value: citizenshipsDuring(person(environment, personId), { min: at, max: at }),
@@ -295,7 +300,7 @@ export const factCatalog = {
     derive: (binding) => dateFact(person(binding.environment, nextInLine(binding)).birthDate),
   },
   'lineage.citizenshipsAtChildBirth': {
-    type: { kind: 'countries' },
+    type: { kind: 'countries', formerStates: true },
     scope: 'lineage',
     derive: (binding) => {
       const birth = person(binding.environment, nextInLine(binding)).birthDate;

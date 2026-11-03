@@ -27,6 +27,12 @@ export const excludedRegions: ReadonlySet<string> = new Set([
   'TA',
 ]);
 
+/**
+ * Codes an earlier countries file has that a later CLDR release drops, each acknowledged here by a
+ * reviewed change before the generator leaves it out.
+ */
+export const withdrawnRegions: ReadonlySet<string> = new Set();
+
 const numericRegion = /^[0-9]{3}$/;
 const alpha2 = /^[A-Z]{2}$/;
 
@@ -45,12 +51,15 @@ export interface Classification {
   readonly included: readonly string[];
   /** Codes neither excluded nor in the previous countries file; a reviewer must classify them. */
   readonly unclassified: readonly string[];
+  /** Codes of the previous file the release no longer includes and `withdrawnRegions` lacks. */
+  readonly removed: readonly string[];
 }
 
 /**
  * Splits CLDR's region codes into the countries file's codes and the excluded ones. With a
  * previous file, an included code it does not have is unclassified until a reviewed change lists
- * it; the first file has no predecessor, so its whole list is the baseline its own review checks.
+ * it, and a code it has that is no longer included is removed until `withdrawnRegions` lists it;
+ * the first file has no predecessor, so its whole list is the baseline its own review checks.
  */
 export function classifyRegions(
   codes: readonly string[],
@@ -66,5 +75,8 @@ export function classifyRegions(
       included.push(code);
     }
   }
-  return { included: included.sort(), unclassified: unclassified.sort() };
+  const removed = (previous ?? []).filter(
+    (code) => !included.includes(code) && !withdrawnRegions.has(code),
+  );
+  return { included: included.sort(), unclassified: unclassified.sort(), removed: removed.sort() };
 }
