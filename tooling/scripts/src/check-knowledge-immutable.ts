@@ -19,8 +19,8 @@ const watched = [...knowledgeRoots, vendoredPolicy, vendoredSources];
  * 0002, R6 and R7), reading both commits from git as data. CI passes main's tip as `base`; the
  * ruleset requires branches to be up to date, so `head` contains it and the difference is the pull
  * request's own. Without revisions it compares HEAD with its merge base with origin/main, as
- * `pnpm check:knowledge-immutable` does. New vendored.json
- * entries are then checked against upstream, the only step that reaches the network.
+ * `pnpm check:knowledge-immutable` does. New vendored.json entries are then checked against
+ * upstream, the only step that reaches the network.
  */
 async function main(): Promise<void> {
   const [directory = '.', baseRevision, headRevision] = process.argv.slice(2);

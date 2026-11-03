@@ -20,7 +20,8 @@ export interface OfficialHosts {
   readonly hosts: readonly string[];
   /**
    * The lowercase ASCII (punycode) host of an `https` URL with no user information or port, or
-   * `undefined` for any other URL. `hostOf` in `@arca/scripts/host` parses URLs; this pure package does not.
+   * `undefined` for any other URL. `hostOf` in `@arca/scripts/host` parses URLs; this pure
+   * package does not.
    */
   readonly hostOf: (url: string) => string | undefined;
 }

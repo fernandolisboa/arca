@@ -69,10 +69,19 @@ class Check {
 
   async run(): Promise<void> {
     const { base, head } = this.#change;
-    for (const root of knowledgeRoots) {
-      const entry = head.files.get(root);
+    for (const directory of ['packages', 'packages/knowledge', ...knowledgeRoots]) {
+      const entry = head.files.get(directory);
       if (entry !== undefined && entry.type !== 'tree') {
-        this.#add(root, 'must be a directory, not a link or a submodule');
+        this.#add(directory, 'must be a directory, not a link or a submodule');
+      }
+    }
+    for (const policy of [vendoredPolicy, vendoredSources]) {
+      const entry = head.files.get(policy);
+      if (
+        entry !== undefined &&
+        (entry.mode !== regularFile.mode || entry.type !== regularFile.type)
+      ) {
+        this.#add(policy, 'must be a regular file');
       }
     }
     for (const [path, file] of knowledgeFiles(base.files)) {
@@ -281,7 +290,7 @@ class Check {
    * an entry already on main, and hashes to that entry's data or license file.
    */
   async #checkVendored(): Promise<void> {
-    const { base } = this.#change;
+    const { base, head } = this.#change;
     const sources = parseSources(
       await this.#json(base, vendoredSources, { schemaVersion: 1, sources: [] }),
     );
@@ -295,8 +304,9 @@ class Check {
       this.#add(vendoredPolicy, `on the base branch ${approved}`);
       return;
     }
-    const policyChanged = changedObject(this.#change, vendoredPolicy);
-    if (policyChanged) await this.#checkVendoredEntries(approved, sources);
+    const entries = parseVendored(await this.#json(head, vendoredPolicy, empty));
+    const policyChanged = canonical(entries) !== canonical(approved);
+    if (policyChanged) this.#checkVendoredEntries(approved, entries, sources);
     if (
       changedObject(this.#change, vendoredSources) &&
       (policyChanged || this.#changed.length > 0)
@@ -306,20 +316,17 @@ class Check {
     await this.#checkVendorFiles(approved.filter(isRecord));
   }
 
-  async #checkVendoredEntries(
+  #checkVendoredEntries(
     approved: unknown[],
+    entries: unknown[] | string,
     sources: readonly VendoredSource[],
-  ): Promise<void> {
-    const { head } = this.#change;
+  ): void {
     if (this.#changed.length > 0) {
       this.#add(
         vendoredPolicy,
         'changes in a policy pull request of its own, before any vendored file',
       );
     }
-    const entries = parseVendored(
-      await this.#json(head, vendoredPolicy, { schemaVersion: 1, entries: [] }),
-    );
     if (typeof entries === 'string') {
       this.#add(vendoredPolicy, entries);
       return;

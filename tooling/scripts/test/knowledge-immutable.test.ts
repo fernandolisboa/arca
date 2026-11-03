@@ -212,6 +212,37 @@ describe('knowledge-immutable', () => {
     ).toContain(`${root}: must be a directory, not a link or a submodule`);
   });
 
+  it.each(['packages', 'packages/knowledge'])('refuses %s as a link', async (directory) => {
+    expect(
+      await problems((tree) => {
+        tree[directory] = new Special('../elsewhere', '120000');
+      }),
+    ).toContain(`${directory}: must be a directory, not a link or a submodule`);
+  });
+
+  it.each([vendored, sources])('refuses %s as a link', async (policy) => {
+    expect(
+      await problems((tree) => {
+        tree[policy] = new Special('{"schemaVersion":1,"entries":[]}', '120000');
+      }),
+    ).toContain(`${policy}: must be a regular file`);
+  });
+
+  it('accepts adding an empty vendored.json with vendored-sources.json', async () => {
+    const base = baseTree();
+    Reflect.deleteProperty(base, vendored);
+    Reflect.deleteProperty(base, sources);
+    expect(
+      await problems(
+        (tree) => {
+          tree[vendored] = { schemaVersion: 1, entries: [] };
+          tree[sources] = sourcesFile;
+        },
+        { base },
+      ),
+    ).toEqual([]);
+  });
+
   describe('hashes.json', () => {
     it.each<[string, (tree: Tree) => void, string]>([
       [
@@ -338,20 +369,23 @@ describe('knowledge-immutable', () => {
       expect(await problems(change, { domainChanged })).toContain(message);
     });
 
-    it('refuses a case whose 0 became -0', async () => {
+    it('refuses a case whose 0 became -0, which hashes the same', async () => {
       const base = baseTree();
       casesOf(base)[0] = caseEntry('c1', { expected: { status: 'eligible', amount: 0 } });
+      const found = await problems(
+        (tree) => {
+          tree[casesPath] = JSON.stringify({ schemaVersion: 1, cases: casesOf(base) }).replace(
+            '"amount":0',
+            '"amount":-0',
+          );
+        },
+        { base },
+      );
       expect(
-        await problems(
-          (tree) => {
-            tree[casesPath] = JSON.stringify({
-              schemaVersion: 1,
-              cases: [caseEntry('c1', { expected: { status: 'eligible', amount: 0 } })],
-            }).replace('"amount":0', '"amount":-0');
-          },
-          { base },
+        found.some((problem) =>
+          problem.startsWith(`${casesPath}: is not in the accepted JSON subset`),
         ),
-      ).toContain(`${casesPath}: changed the entry with id c1; entries are append-only`);
+      ).toBe(true);
     });
 
     it('refuses superseding a case that is already superseded', async () => {

@@ -56,6 +56,7 @@ describe('parseJsonSubset', () => {
     ['an unescaped control character', '"a\u0001"'],
     ['an invalid escape', '"\\x41"'],
     ['a leading zero', '01'],
+    ['negative zero', '-0'],
     ['a trailing comma', '[1,]'],
     ['content after the value', '{} {}'],
     ['a byte order mark', '\ufeff{}'],
