@@ -25,7 +25,7 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 
 **Epic: cross-platform foundations** (done before any feature that touches case data, identity or AI, so native phases add adapters instead of rewrites)
 
-- Specified in four slices: [0001 scaffold](specs/0001-foundations-scaffold.md); [0003 identity and access](specs/0003-identity-and-access.md); [0004 real-data readiness](specs/0004-real-data-readiness.md), which ends with the real-data gate production must pass before family data enters; [0005 vault, device capabilities and notifications](specs/0005-vault-devices-and-notifications.md).
+- Specified in five slices: [0001 scaffold](specs/0001-foundations-scaffold.md); [0006 design system and theming](specs/0006-design-system-and-theming.md); [0003 identity and access](specs/0003-identity-and-access.md); [0004 real-data readiness](specs/0004-real-data-readiness.md), which ends with the real-data gate production must pass before family data enters; [0005 vault, device capabilities and notifications](specs/0005-vault-devices-and-notifications.md).
 - Monorepo with `packages/domain`, `packages/api-contract`, `packages/ui`, `packages/i18n`, `packages/platform`, `apps/api`, `apps/web` ([ARCHITECTURE.md](ARCHITECTURE.md#platforms-and-code-layout)).
 - Empty app deployed end to end (web, API, a sample workflow, database) in São Paulo, with protected preview deployments per pull request.
 - Environments per [ADR-0008](adr/0008-database-security-and-environments.md) and [ADR-0012](adr/0012-automation-first-setup.md): a production Neon branch that previews stop forking from before any family data exists, synthetic seed for everything else, secrets per environment, OIDC to AWS.
@@ -40,7 +40,7 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 - `platform` port with web adapters: passkeys, vault envelopes, camera capture, file picking, notifications, secure key storage, sharing, receiving shared files, deep links.
 - Notification service with per-device channels (web push first).
 - Vault encryption format documented and platform-neutral; key recovery designed and tested.
-- Responsive, touch-first layouts from phone to tablet to desktop, safe-area aware.
+- Responsive, touch-first layouts from phone to tablet to desktop, safe-area aware, with the themes and navigation layouts of [spec 0006](specs/0006-design-system-and-theming.md).
 - CI running unit tests and the synthetic evaluation suite; the multi-reviewer pass runs in the authoring session ([ADR-0019](adr/0019-reviewers-in-the-authoring-session.md)).
 
 **Epic: consultancy core** (slices and dependencies in [specs/0002-rules-engine-and-knowledge-base.md](specs/0002-rules-engine-and-knowledge-base.md#the-epic-consultancy-core); the case model and intake wait for the foundations' identity and data-protection work above)
