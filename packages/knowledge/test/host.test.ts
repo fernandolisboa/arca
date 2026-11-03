@@ -25,6 +25,8 @@ describe('hostOf', () => {
     'https://\\user:pw@gov.example/',
     'https:////evil@gov.example/',
     'https://gov.example\\@evil.example/',
+    'https://evil.example%2egov.example/',
+    'https://evil.example\u3002gov.example/',
     'https://gov.example\t/',
     'not a url',
   ])('has no host to match for %s', (url) => {

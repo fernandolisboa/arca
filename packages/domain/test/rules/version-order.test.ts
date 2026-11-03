@@ -1,5 +1,7 @@
+import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { parseCalendarDate } from '../../src/calendar/calendar-date.js';
+import { identityKey, selectVersion } from '../../src/rules/catalog.js';
 import { type VersionDates, checkVersionOrder } from '../../src/rules/version-order.js';
 
 const version = (number: number, effectiveFrom: string, corrects?: number): VersionDates => ({
@@ -38,6 +40,19 @@ describe('checkVersionOrder', () => {
         version(3, '2022-01-01', 2),
         version(4, '2022-01-01', 3),
         version(5, '2023-01-01', 2),
+      ],
+    ],
+    [
+      'a correction from the start of a version its chain removes',
+      [version(1, '2020-01-01'), version(2, '2022-01-01', 1), version(3, '2020-01-01', 2)],
+    ],
+    [
+      'a correction of a version whose late correction was itself corrected',
+      [
+        version(1, '2020-01-01'),
+        version(2, '2022-01-01', 1),
+        version(3, '2021-01-01', 2),
+        version(4, '2021-01-01', 1),
       ],
     ],
     [
@@ -96,7 +111,63 @@ describe('checkVersionOrder', () => {
       ],
       5,
     ],
+    [
+      'a correction that lets a superseded correction come back',
+      [
+        version(1, '2020-01-01'),
+        version(2, '2022-01-01', 1),
+        version(3, '2022-01-01', 1),
+        version(4, '2021-01-01', 3),
+      ],
+      4,
+    ],
   ])('refuses %s', (_, versions, number) => {
     expect(checkVersionOrder(versions).get(number)).toHaveLength(1);
+  });
+
+  it('never lets an older version of a corrected group come back once a correction starts', () => {
+    const dates = ['2020-01-01', '2021-01-01', '2022-01-01', '2023-01-01', '2024-01-01'];
+    const history = fc
+      .array(fc.tuple(fc.constantFrom(...dates), fc.nat(6)), { minLength: 1, maxLength: 6 })
+      .map((specs) =>
+        specs.map(([date, pick], index) =>
+          version(index + 1, date, pick === 0 || pick > index ? undefined : pick),
+        ),
+      );
+    fc.assert(
+      fc.property(history, (versions) => {
+        fc.pre(checkVersionOrder(versions).size === 0);
+        const identities = versions.map(({ routeId, number, effectiveFrom, corrects }) => ({
+          routeId,
+          number,
+          effectiveFrom,
+          ...(corrects === undefined ? {} : { corrects }),
+          status: 'open' as const,
+          hash: '',
+        }));
+        const states = new Map(
+          identities.map((identity) => [identityKey(identity), 'active' as const]),
+        );
+        const byNumber = new Map(versions.map((entry) => [entry.number, entry]));
+        const reaches = (from: number | undefined, target: number): boolean => {
+          for (let next = from, steps = 0; next !== undefined && steps < 10; steps += 1) {
+            if (next === target) return true;
+            next = byNumber.get(next)?.corrects;
+          }
+          return false;
+        };
+        for (const correction of versions) {
+          const target = correction.corrects;
+          if (target === undefined) continue;
+          for (const date of dates) {
+            if (date < correction.effectiveFrom) continue;
+            const selected = selectVersion(identities, parseCalendarDate(date), states)?.identity;
+            if (selected === undefined || selected.number >= correction.number) continue;
+            expect(selected.number === target || reaches(selected.corrects, target)).toBe(false);
+          }
+        }
+      }),
+      { numRuns: 5000 },
+    );
   });
 });

@@ -274,7 +274,7 @@ describe('buildKnowledge', () => {
             corrects: 1,
           });
         },
-        'routes/qm-work/3.json: A correction starts before the period of the version it fixes ends',
+        'routes/qm-work/3.json: From 2022-01-01, selection would pick version 3 instead of version 2',
       ],
       [
         'a schema violation',

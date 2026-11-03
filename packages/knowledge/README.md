@@ -43,7 +43,7 @@ Add the new numbered file, run the build, and append the `{ "path", "sha256" }` 
   - an earlier date, when the original started too late;
   - a later date inside the original's period, for an error found late.
 
-The build checks the bounds. The period of the fixed version is the run of dates on which selection over the lower-numbered versions, all treated as active and leaving out other corrections of the same version, picks it. A correction starts before that period ends and after the start of the period before it (any date when none comes before, so a correction of the first version may predate it). Corrections of the same version never start earlier as their numbers grow. Old evaluations keep pointing at the version they used. Cases files for each version come with #48.
+The build checks a correction by its outcome: added to the lower-numbered versions, all treated as active, selection must pick it from its `effectiveFrom` on wherever it picked the fixed version, another correction of it or a version its chain removes (and, for an early start, the run just before, without taking all of an unrelated version's run), and nothing else may change. So a correction never shadows a version it does not fix, and a newer correction is never shadowed by an older one. Old evaluations keep pointing at the version they used. Cases files for each version come with #48.
 
 ## Runtime entry points
 

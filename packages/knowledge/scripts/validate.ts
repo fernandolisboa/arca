@@ -317,16 +317,17 @@ function withoutExtension(file: string): string {
 }
 
 /**
+ * The URL as written: `https://`, then a host with no user information, port, backslash, extra
+ * slash, percent-encoding or full-width dot, which WHATWG parsing would otherwise forgive or map. The host a
+ * reviewer reads is then the host matched, up to case and punycode.
+ */
+const plainAuthority = /^https:\/\/[^/?#\\@:%\s\u3002\uff0e\uff61]+(?:[/?#]|$)/;
+
+/**
  * The host official-source matching reads (spec 0002, R4): WHATWG URL parsing lowercases the host
  * and converts it to ASCII (punycode). Anything but `https` without user information or an explicit
  * port has no host to match.
  */
-/**
- * The URL as written: `https://`, then a host with no user information, port, backslash or extra
- * slash, which WHATWG parsing would otherwise forgive and hide.
- */
-const plainAuthority = /^https:\/\/[^/?#\\@:\s]+(?:[/?#]|$)/;
-
 export function hostOf(url: string): string | undefined {
   if (!URL.canParse(url)) return undefined;
   const parsed = new URL(url);
