@@ -1,6 +1,6 @@
 # ADR-0012: Automation-first setup with the owner's tokens and the Vercel–Neon integration
 
-- Status: Accepted; password transport corrected on 2026-11-02 after Neon rejected SCRAM verifiers (spec 0001 R7); review gate section superseded by [ADR-0019](0019-reviewers-in-the-authoring-session.md) on 2026-11-03
+- Status: Accepted; password transport corrected on 2026-11-02 after Neon rejected SCRAM verifiers (spec 0001 R7); review gate section superseded by [ADR-0019](0019-reviewers-in-the-authoring-session.md) on 2026-11-03; the `main` ruleset, imported by the owner on 2026-11-03, does not pin required checks to an app
 - Date: 2026-11-01
 - Amends: [ADR-0008](0008-database-security-and-environments.md) (environments), [ADR-0010](0010-stack-revised.md) (deploys), [ADR-0011](0011-reviewers-in-ci.md) (how the gate is protected)
 
