@@ -263,6 +263,19 @@ describe('buildKnowledge', () => {
         'routes/qm-work/1.json /requirements/0/expression: The values are outside the domain of the fact',
       ],
       [
+        'a set with a former state in a fact about current countries',
+        (tree) => {
+          tree['routes/qm-work/1.json'] = routeVersion(
+            tokenRequirement({
+              op: 'in',
+              item: { op: 'fact', key: 'principal.residenceCountry' },
+              set: { op: 'set', id: 'treaty' },
+            }),
+          );
+        },
+        'routes/qm-work/1.json /requirements/0/expression: The values are outside the domain of the fact',
+      ],
+      [
         'a route country outside the pinned countries',
         (tree) => {
           tree['routes/qz-work/1.json'] = routeVersion({ routeId: 'qz-work', country: 'QZ' });

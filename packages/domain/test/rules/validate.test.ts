@@ -120,6 +120,7 @@ function issues(patch: object): string[] {
   return checkRouteVersion(version, official, {
     current: new Set(['QM', 'QN']),
     former: new Set(['YUCS']),
+    setsWithFormer: new Set(),
   }).map((issue) => `${issue.path}: ${issue.message}`);
 }
 

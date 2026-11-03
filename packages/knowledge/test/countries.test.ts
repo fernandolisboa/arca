@@ -4,7 +4,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { classifyRegions, cldr, regionCodes } from '../scripts/countries.ts';
+import {
+  classifyRegions,
+  cldr,
+  excludedRegions,
+  reclassification,
+  regionCodes,
+} from '../scripts/countries.ts';
 import { countriesFileSchema } from '../scripts/files.ts';
 import { generateCountries } from '../scripts/generate-countries.ts';
 
@@ -87,6 +93,22 @@ describe('classifyRegions', () => {
     expect(classifyRegions(['FR'], ['BR', 'FR']).removed).toEqual(['BR']);
   });
 
+  it('applies reviewed admissions and withdrawals', () => {
+    const reviewed = { admitted: new Set(['NQ']), withdrawn: new Set(['BR']) };
+    expect(classifyRegions(['FR', 'NQ'], ['BR', 'FR'], reviewed)).toEqual({
+      included: ['FR', 'NQ'],
+      unclassified: [],
+      removed: [],
+    });
+  });
+
+  it('keeps the reviewed lists apart from the exclusions', () => {
+    const { admitted, withdrawn } = reclassification;
+    expect(
+      [...admitted].filter((code) => excludedRegions.has(code) || withdrawn.has(code)),
+    ).toEqual([]);
+  });
+
   it('holds back a code that is not alpha-2', () => {
     expect(classifyRegions(['BRA'], undefined).unclassified).toEqual(['BRA']);
   });
@@ -115,12 +137,12 @@ describe('generateCountries', () => {
     [
       'adds a code no reviewed change classified',
       (codes: string[]) => codes.slice(1),
-      /new region codes: AD/,
+      /exclude these new region codes: AD/,
     ],
     [
       'drops a code without listing it as withdrawn',
       (codes: string[]) => [...codes, 'QM'],
-      /dropped codes in withdrawnRegions: QM/,
+      /Withdraw these dropped codes: QM/,
     ],
   ])('fails when a new release %s', async (_, previousCodes, problem) => {
     const dir = await scratchPackage();

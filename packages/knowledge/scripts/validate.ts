@@ -213,13 +213,15 @@ class Validation {
     this.checkVerified(raw, data.sources, '/sources');
     const countries = this.resolve(raw, 'countries', data.countries, '/countries');
     const former = this.resolve(raw, 'former-countries', data.formerCountries, '/formerCountries');
+    const current = new Set(countries?.data.codes ?? []);
+    const setsWithFormer = new Set<string>();
     data.countrySets.forEach((pin, index) => {
-      this.resolve(raw, 'country-sets', pin, `/countrySets/${String(index)}`);
+      const set = this.resolve(raw, 'country-sets', pin, `/countrySets/${String(index)}`);
+      if (set?.data.members.some((member) => !current.has(member)) === true) {
+        setsWithFormer.add(pin.id);
+      }
     });
-    const known = {
-      current: new Set(countries?.data.codes ?? []),
-      former: new Set(former?.data.codes ?? []),
-    };
+    const known = { current, former: new Set(former?.data.codes ?? []), setsWithFormer };
     const official = this.officialHosts(raw, data.officialDomains);
     if (official !== undefined) this.reportChecks(raw, checkRouteVersion(data, official, known));
     if (countries !== undefined && !countries.data.codes.includes(data.country)) {

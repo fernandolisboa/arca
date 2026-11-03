@@ -16,8 +16,10 @@ export type ExpressionType =
   | { readonly kind: 'list'; readonly domain: TokenDomain }
   | { readonly kind: 'set'; readonly domain: TokenDomain; readonly values?: readonly string[] };
 
-/** Countries, the values of a catalog enumeration, or a literal whose domain its use decides. */
-/** `former-country` also admits ISO 3166-3 former states; both are country codes. */
+/**
+ * Countries, the values of a catalog enumeration, or a literal whose domain its use decides.
+ * `former-country` also admits ISO 3166-3 former states; a `country` fact admits current ones only.
+ */
 export type TokenDomain = 'country' | 'former-country' | 'literal' | readonly string[];
 
 /** Where an expression sits, which decides the facts and collections it may read. */
@@ -43,6 +45,8 @@ export interface CheckContext {
   readonly countries: ReadonlySet<string>;
   /** Codes in the former-countries file it pins, for citizenship and ancestry facts only. */
   readonly formerCountries: ReadonlySet<string>;
+  /** IDs of the pinned country sets with a member outside the pinned countries file. */
+  readonly formerCountrySets: ReadonlySet<string>;
 }
 
 export interface CheckIssue {
@@ -99,7 +103,10 @@ class Checker {
         if (!this.context.countrySets.has(expression.id)) {
           return this.fail(path, `Country set ${expression.id} is not pinned by the version`);
         }
-        return { kind: 'set', domain: 'country' };
+        return {
+          kind: 'set',
+          domain: this.context.formerCountrySets.has(expression.id) ? 'former-country' : 'country',
+        };
       case 'fact':
         if (!this.declared(expression.at, path)) return undefined;
         return this.fact(expression.key, scope, path);
@@ -300,7 +307,7 @@ class Checker {
               ? this.knownCountry(domain, value)
               : domain === 'literal' || domain.includes(value),
           )
-        : sameDomain(domain, tokens.domain);
+        : fitsDomain(domain, tokens.domain);
     if (!fits) this.fail(path, 'The values are outside the domain of the fact');
     return fits;
   }
@@ -395,8 +402,11 @@ function isCountryDomain(domain: TokenDomain): domain is 'country' | 'former-cou
   return domain === 'country' || domain === 'former-country';
 }
 
-function sameDomain(left: TokenDomain, right: TokenDomain): boolean {
-  if (isCountryDomain(left) && isCountryDomain(right)) return true;
-  if (typeof left === 'string' || typeof right === 'string') return left === right;
-  return left.length === right.length && left.every((value) => right.includes(value));
+/** Whether values of the `values` domain can be values of the `target` domain. */
+function fitsDomain(target: TokenDomain, values: TokenDomain): boolean {
+  if (isCountryDomain(target) && isCountryDomain(values)) {
+    return target === 'former-country' || values === 'country';
+  }
+  if (typeof target === 'string' || typeof values === 'string') return target === values;
+  return target.length === values.length && target.every((value) => values.includes(value));
 }

@@ -27,11 +27,15 @@ export const excludedRegions: ReadonlySet<string> = new Set([
   'TA',
 ]);
 
-/**
- * Codes an earlier countries file has that a later CLDR release drops, each acknowledged here by a
- * reviewed change before the generator leaves it out.
- */
-export const withdrawnRegions: ReadonlySet<string> = new Set();
+/** Reviewed changes to the previous countries file, applied by the next regeneration. */
+export interface Reclassification {
+  /** Codes a new CLDR release adds that are countries; the rest go in `excludedRegions`. */
+  readonly admitted: ReadonlySet<string>;
+  /** Codes of the previous file a new release drops, acknowledged before they are left out. */
+  readonly withdrawn: ReadonlySet<string>;
+}
+
+export const reclassification: Reclassification = { admitted: new Set(), withdrawn: new Set() };
 
 const numericRegion = /^[0-9]{3}$/;
 const alpha2 = /^[A-Z]{2}$/;
@@ -49,34 +53,36 @@ export function regionCodes(territories: unknown): string[] {
 
 export interface Classification {
   readonly included: readonly string[];
-  /** Codes neither excluded nor in the previous countries file; a reviewer must classify them. */
+  /** Codes neither excluded, admitted nor in the previous file; a reviewer must classify them. */
   readonly unclassified: readonly string[];
-  /** Codes of the previous file the release no longer includes and `withdrawnRegions` lacks. */
+  /** Codes of the previous file the release no longer includes and nobody withdrew. */
   readonly removed: readonly string[];
 }
 
 /**
  * Splits CLDR's region codes into the countries file's codes and the excluded ones. With a
- * previous file, an included code it does not have is unclassified until a reviewed change lists
- * it, and a code it has that is no longer included is removed until `withdrawnRegions` lists it;
+ * previous file, a code it does not have is unclassified until a reviewed change admits or
+ * excludes it, and a code it has that is no longer included is removed until one withdraws it;
  * the first file has no predecessor, so its whole list is the baseline its own review checks.
  */
 export function classifyRegions(
   codes: readonly string[],
   previous: readonly string[] | undefined,
+  { admitted, withdrawn }: Reclassification = reclassification,
 ): Classification {
   const included: string[] = [];
   const unclassified: string[] = [];
   for (const code of codes) {
     if (numericRegion.test(code) || excludedRegions.has(code)) continue;
-    if (!alpha2.test(code) || (previous !== undefined && !previous.includes(code))) {
+    const known = previous === undefined || previous.includes(code) || admitted.has(code);
+    if (!alpha2.test(code) || !known) {
       unclassified.push(code);
     } else {
       included.push(code);
     }
   }
   const removed = (previous ?? []).filter(
-    (code) => !included.includes(code) && !withdrawnRegions.has(code),
+    (code) => !included.includes(code) && !withdrawn.has(code),
   );
   return { included: included.sort(), unclassified: unclassified.sort(), removed: removed.sort() };
 }

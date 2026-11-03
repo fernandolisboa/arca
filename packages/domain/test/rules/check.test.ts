@@ -9,11 +9,12 @@ import { expressionSchema, isNonNegative } from '../../src/rules/expression.js';
 
 const context: CheckContext = {
   currency: 'EUR',
-  countrySets: new Set(['treaty']),
+  countrySets: new Set(['treaty', 'historic']),
   leapDayBirthday: true,
   referenceDates: new Set(['filingDate']),
   countries: new Set(['QM', 'QN']),
   formerCountries: new Set(['YUCS']),
+  formerCountrySets: new Set(['historic']),
 };
 const requirement: CheckScope = { current: true, unit: true, edge: false };
 const dependent: CheckScope = { current: true, unit: false, edge: true };
@@ -114,6 +115,15 @@ describe('checkExpression', () => {
       { kind: 'boolean' },
     ],
     [
+      'citizenships intersecting a set with former states',
+      {
+        op: 'intersects',
+        list: fact('principal.citizenships'),
+        set: { op: 'set', id: 'historic' },
+      },
+      { kind: 'boolean' },
+    ],
+    [
       'citizenships intersecting a pinned set',
       {
         op: 'intersects',
@@ -147,7 +157,7 @@ describe('checkExpression', () => {
           where: {
             op: 'intersects',
             list: fact('lineage.citizenshipsAtChildBirth'),
-            set: { op: 'tokens', values: ['QM'] },
+            set: { op: 'tokens', values: ['QM', 'YUCS'] },
           },
         },
       },
@@ -198,6 +208,10 @@ describe('checkExpression', () => {
     [
       'a former state compared with a residence country',
       { op: 'eq', left: { op: 'token', value: 'YUCS' }, right: fact('principal.residenceCountry') },
+    ],
+    [
+      'a residence country in a set with former states',
+      { op: 'in', item: fact('principal.residenceCountry'), set: { op: 'set', id: 'historic' } },
     ],
     [
       'a lowercase country literal',

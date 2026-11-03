@@ -76,8 +76,9 @@ export async function generateCountries(
     previous?.codes,
   );
   const problems = [
-    unclassified.length > 0 && `Classify these new region codes: ${unclassified.join(', ')}`,
-    removed.length > 0 && `List these dropped codes in withdrawnRegions: ${removed.join(', ')}`,
+    unclassified.length > 0 &&
+      `Admit or exclude these new region codes: ${unclassified.join(', ')}`,
+    removed.length > 0 && `Withdraw these dropped codes: ${removed.join(', ')}`,
   ].filter((problem) => problem !== false);
   if (problems.length > 0) {
     throw new Error(`In scripts/countries.ts first:\n${problems.join('\n')}`);
