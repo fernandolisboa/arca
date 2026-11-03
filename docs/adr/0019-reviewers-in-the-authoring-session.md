@@ -38,7 +38,7 @@ ADR-0011 and ADR-0013 run the reviewer subagents in CI as a required `review-gat
   - `ci.yml` runs the branch's own copy; of the pull request checks, only `policy.yml` runs its definition from `main`.
 
   What still limits this:
-  - the deterministic checks on every pull request, advisory until the spec 0001 R8 ruleset is applied;
+  - the deterministic checks on every pull request, required by the spec 0001 R8 ruleset (applied 2026-11-03);
   - the owner's GitHub token is fine-grained, limited to this repository and expiring;
   - no case data exists yet. Revisit this decision before the first real case data is stored.
 - Reviewer prompts are no longer tested against a canary corpus. A weakened reviewer would show up only as missed findings.
@@ -47,7 +47,7 @@ ADR-0011 and ADR-0013 run the reviewer subagents in CI as a required `review-gat
   - delete the Dependabot secret of the same name;
   - delete any `REVIEW_MODEL_*` variables.
 
-  The token is a live one-year subscription credential that nothing reads any more. Once this change merges, the workflow secrets lint refuses it in every workflow. The pending `main` ruleset (spec 0001 R8, not yet applied) no longer lists a `review-gate` check.
+  The token is a live one-year subscription credential that nothing reads any more. Once this change merges, the workflow secrets lint refuses it in every workflow. The `main` ruleset (spec 0001 R8), applied on 2026-11-03, does not list a `review-gate` check.
 - Revisit this decision if the project gains contributors outside the owner's own sessions. The removed code is in the history at commit `6214a6a`.
 
 ## Alternatives considered
