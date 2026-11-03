@@ -2,7 +2,8 @@ import { z } from 'zod';
 import { calendarDateSchema } from '../calendar/calendar-date.js';
 import { durationSchema } from '../calendar/duration.js';
 import { currencyCodeSchema } from '../money/currency.js';
-import { decimalSchema } from '../money/decimal.js';
+import { type Decimal, decimalSchema, scaledDecimal } from '../money/decimal.js';
+import { resolveFactReference } from './fact-reference.js';
 
 /** Identifiers inside knowledge files: requirement, source, cost and country set IDs. */
 export const slugSchema = z.string().regex(/^[a-z0-9][a-z0-9-]{0,63}$/);
@@ -14,7 +15,10 @@ export const referenceDateNameSchema = z.string().regex(/^[a-z][a-zA-Z0-9]{0,31}
 export const tokenSchema = z.string().regex(/^[A-Za-z0-9_]{1,40}$/);
 
 /** A fact key with its binding prefix, such as `principal.ageYears`. */
-export const factReferenceSchema = z.string().regex(/^[a-z][a-zA-Z]*(?:\.[a-z][a-zA-Z]*){1,2}$/);
+export const factReferenceSchema = z
+  .string()
+  .max(80)
+  .regex(/^[a-z][a-zA-Z]*(?:\.[a-z][a-zA-Z]*){1,2}$/);
 
 export const collectionNames = [
   'unit.members',
@@ -193,4 +197,36 @@ export function nodeCount(expression: Expression): number {
 
 export function depth(expression: Expression): number {
   return 1 + Math.max(0, ...childrenOf(expression).map(depth));
+}
+
+/**
+ * Whether an expression can never be negative, so an unbounded sum of it is unbounded above only
+ * (spec 0002, R4): no `sub`, no negative literal or multiplier, only non-negative facts.
+ */
+export function isNonNegative(expression: Expression): boolean {
+  switch (expression.op) {
+    case 'int':
+      return expression.value >= 0;
+    case 'decimal':
+      return scaledDecimal(expression.value as Decimal).units >= 0n;
+    case 'money':
+      return expression.amount >= 0;
+    case 'fact':
+      return resolveFactReference(expression.key)?.definition.nonNegative === true;
+    case 'mul':
+      return (
+        scaledDecimal(expression.by as Decimal).units >= 0n && isNonNegative(expression.operand)
+      );
+    case 'add':
+    case 'min':
+    case 'max':
+    case 'convert':
+      return childrenOf(expression).every(isNonNegative);
+    case 'sum':
+      return isNonNegative(expression.value);
+    case 'count':
+      return true;
+    default:
+      return false;
+  }
 }

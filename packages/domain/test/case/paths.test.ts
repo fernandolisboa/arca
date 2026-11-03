@@ -41,8 +41,30 @@ describe('followPath', () => {
   it('reaches someone across an undated edge only possibly, and reports missing markers', () => {
     const partners = followPath(family, 'p1', ['partner'], today);
     expect(partners.reached.map(({ id, reached }) => [id, reached])).toEqual([['p6', 'unknown']]);
-    expect(partners.complete).toBe(false);
-    expect(followPath(family, 'p1', ['child'], today).complete).toBe(true);
+    expect(partners.missingMarkers).toEqual([{ personId: 'p1', marker: 'partners' }]);
+    expect(followPath(family, 'p1', ['child'], today).missingMarkers).toEqual([]);
+  });
+
+  it('returns each person once, with every edge they were reached by', () => {
+    const remarried = indexSnapshot(
+      snapshot({
+        people: [{ id: 'p1' }, { id: 'p2' }, { id: 's1' }, { id: 'm1' }, { id: 'f1' }],
+        relationships: [
+          { kind: 'spouse', people: ['p1', 'p2'], start: '2001-01-01' },
+          { kind: 'spouse', people: ['p1', 'p2'], start: '2010-01-01', end: 'none' },
+          { kind: 'parent', parent: 'm1', child: 'p1', parentKind: 'biological' },
+          { kind: 'parent', parent: 'f1', child: 'p1', parentKind: 'biological' },
+          { kind: 'parent', parent: 'm1', child: 's1', parentKind: 'biological' },
+          { kind: 'parent', parent: 'f1', child: 's1', parentKind: 'biological' },
+        ],
+      }),
+    );
+    const spouses = followPath(remarried, 'p1', ['spouse'], today).reached;
+    expect(spouses.map(({ id, reached, arrivals }) => [id, reached, arrivals.length])).toEqual([
+      ['p2', true, 2],
+    ]);
+    const siblings = followPath(remarried, 'p1', ['parent', 'child'], today).reached;
+    expect(siblings.map(({ id, arrivals }) => [id, arrivals.length])).toEqual([['s1', 2]]);
   });
 
   it('never returns the principal', () => {
@@ -69,14 +91,17 @@ describe('ancestorLines', () => {
         ],
       }),
     );
-    const { lines, complete } = ancestorLines(value, 'p1', 2, today);
+    const { lines, missingMarkers } = ancestorLines(value, 'p1', 2, today);
     expect(lines.map((line) => line.path)).toEqual([
       ['p2', 'p1'],
       ['p3', 'p1'],
       ['g1', 'p2', 'p1'],
       ['g1', 'p3', 'p1'],
     ]);
-    expect(complete).toBe(true);
-    expect(ancestorLines(value, 'p1', 3, today).complete).toBe(false);
+    expect(missingMarkers).toEqual([]);
+    expect(ancestorLines(value, 'p1', 3, today).missingMarkers).toEqual([
+      { personId: 'g1', marker: 'parents' },
+      { personId: 'g1', marker: 'parents' },
+    ]);
   });
 });

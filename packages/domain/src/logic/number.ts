@@ -1,6 +1,11 @@
-import type { Scaled } from '../money/decimal.js';
-import { alignScales, compareScaled, normalizeScaled, scaledDecimal } from '../money/decimal.js';
-import type { Decimal } from '../money/decimal.js';
+import {
+  type Decimal,
+  type Scaled,
+  alignScales,
+  compareScaled,
+  normalizeScaled,
+  scaledDecimal,
+} from '../money/decimal.js';
 import { type ComparisonOperator, type Interval, type Truth, compareIntervals } from './truth.js';
 import type { NumberValue } from './value.js';
 
@@ -10,7 +15,12 @@ import type { NumberValue } from './value.js';
  * zero, and `min` and `max` apply to each bound.
  */
 export function addNumbers(left: NumberValue, right: NumberValue): NumberValue {
-  return number(left, both(left.min, right.min, addScaled), both(left.max, right.max, addScaled));
+  return number(
+    left,
+    both(left.min, right.min, addScaled),
+    both(left.max, right.max, addScaled),
+    right,
+  );
 }
 
 export function subtractNumbers(left: NumberValue, right: NumberValue): NumberValue {
@@ -18,6 +28,7 @@ export function subtractNumbers(left: NumberValue, right: NumberValue): NumberVa
     left,
     both(left.min, right.max, subtractScaled),
     both(left.max, right.min, subtractScaled),
+    right,
   );
 }
 
@@ -50,11 +61,6 @@ export function compareNumbers(
   right: NumberValue,
 ): Truth {
   return compareIntervals(extended(left), operator, extended(right), compareExtended);
-}
-
-/** A number known to be at least zero keeps that lower bound when its upper bound opens. */
-export function isNonNegative(value: NumberValue): boolean {
-  return value.min !== undefined && value.min.units >= 0n;
 }
 
 type Extended = Scaled | 'below' | 'above';
@@ -91,6 +97,7 @@ function extreme(values: readonly NumberValue[], direction: 1 | -1): NumberValue
       result,
       pick(result.min, value.min, direction === -1),
       pick(result.max, value.max, direction === 1),
+      value,
     );
   }, first);
 }
@@ -113,10 +120,16 @@ function subtractScaled(left: Scaled, right: Scaled): Scaled {
   return normalizeScaled({ units: a - b, scale });
 }
 
-function number(like: NumberValue, min: Scaled | undefined, max: Scaled | undefined): NumberValue {
+function number(
+  like: NumberValue,
+  min: Scaled | undefined,
+  max: Scaled | undefined,
+  other?: NumberValue,
+): NumberValue {
+  const currency = like.currency ?? other?.currency;
   return {
     type: 'number',
-    ...(like.currency === undefined ? {} : { currency: like.currency }),
+    ...(currency === undefined ? {} : { currency }),
     ...(min === undefined ? {} : { min }),
     ...(max === undefined ? {} : { max }),
   };

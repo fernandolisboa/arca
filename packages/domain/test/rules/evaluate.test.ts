@@ -17,7 +17,7 @@ function frame(
   return {
     environment: environment(value, options.unit === undefined ? {} : { unit: options.unit }),
     at: parseCalendarDate('2026-11-03'),
-    referenceDates: Object.fromEntries(
+    referenceDates: new Map(
       Object.entries(options.referenceDates ?? {}).map(([name, date]) => [
         name,
         parseCalendarDate(date),
@@ -357,5 +357,62 @@ describe('lines of ancestors', () => {
         run({ op: 'some', over: 'principal.ancestors', generations: 2, where: yes }, frame(value)),
       ),
     ).toBe('unknown');
+  });
+});
+
+describe('regressions from review', () => {
+  it('keeps the currency of an empty sum, so convert works for a family of one', () => {
+    const alone = frame(snapshot({}), { unit: { included: ['p1'], possible: [], open: false } });
+    const fees = {
+      op: 'sum',
+      over: 'unit.dependents',
+      value: { op: 'money', amount: 500, currency: 'USD' },
+    };
+    const trace = run(
+      {
+        op: 'lte',
+        left: { op: 'convert', operand: fees, currency: 'EUR' },
+        right: { op: 'money', amount: 0, currency: 'EUR' },
+      },
+      alone,
+    );
+    expect(truthOf(trace)).toBe(true);
+  });
+
+  it('never reads a reference date as an inherited property', () => {
+    const value = snapshot({});
+    const trace = run(
+      {
+        op: 'since',
+        date: { op: 'date', value: '2026-11-01' },
+        duration: 'P10Y',
+        at: 'constructor',
+      },
+      frame(value),
+    );
+    expect(trace.value).toEqual({ type: 'boolean', value: 'unknown' });
+    expect(trace.missingDate).toBe('constructor');
+  });
+
+  it('refuses a since reference date after the date the snapshot describes', () => {
+    expect(() =>
+      run(
+        {
+          op: 'since',
+          date: { op: 'date', value: '2020-01-01' },
+          duration: 'P1Y',
+          at: 'filingDate',
+        },
+        frame(snapshot({}), { referenceDates: { filingDate: '2027-01-01' } }),
+      ),
+    ).toThrow(RangeError);
+  });
+
+  it('names the markers that leave a line of ancestors open', () => {
+    const trace = run(
+      { op: 'some', over: 'principal.ancestors', generations: 1, where: yes },
+      frame(snapshot({})),
+    );
+    expect(trace.incomplete).toEqual({ missingMarkers: [{ personId: 'p1', marker: 'parents' }] });
   });
 });

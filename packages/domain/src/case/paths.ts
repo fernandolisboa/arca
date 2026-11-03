@@ -14,17 +14,32 @@ export const relationshipSteps = ['spouse', 'partner', 'child', 'parent'] as con
 
 export type RelationshipStep = (typeof relationshipSteps)[number];
 
-/** Someone a relationship path reaches, the last edge crossed, and whether it holds at the date. */
-export interface Reached {
-  readonly id: string;
+/** A last edge a path crossed to reach someone, and whether the path through it holds. */
+export interface Arrival {
   readonly edge: Relationship;
   readonly reached: Truth;
 }
 
+/**
+ * Someone a relationship path reaches, once, with every last edge it arrived by. Edge facts are
+ * read per arrival, so a rule's condition holds for the person when it holds through any of them.
+ */
+export interface Reached {
+  readonly id: string;
+  readonly reached: Truth;
+  readonly arrivals: readonly Arrival[];
+}
+
+/** Someone whose relationships of a kind are not recorded in full, so more people may exist. */
+export interface MissingMarker {
+  readonly personId: string;
+  readonly marker: CompletenessMarker;
+}
+
 export interface PathResult {
   readonly reached: readonly Reached[];
-  /** False when someone on the way lacks the completeness marker for the next step. */
-  readonly complete: boolean;
+  /** People on the way who lack the completeness marker for the next step. */
+  readonly missingMarkers: readonly MissingMarker[];
 }
 
 const markers: Record<RelationshipStep, CompletenessMarker> = {
@@ -45,35 +60,32 @@ export function followPath(
   steps: readonly RelationshipStep[],
   date: CalendarDate,
 ): PathResult {
-  let frontier: { id: string; edge?: Relationship; reached: Truth }[] = [
-    { id: principalId, reached: true },
-  ];
-  let complete = true;
+  let frontier: Reached[] = [{ id: principalId, reached: true, arrivals: [] }];
+  const missingMarkers: MissingMarker[] = [];
   for (const step of steps) {
-    const next = new Map<string, { id: string; edge: Relationship; reached: Truth }>();
+    const next = new Map<string, Map<Relationship, Truth>>();
     for (const from of frontier) {
-      if (!isRecordedInFull(indexed.person(from.id), markers[step])) complete = false;
+      if (!isRecordedInFull(indexed.person(from.id), markers[step])) {
+        missingMarkers.push({ personId: from.id, marker: markers[step] });
+      }
       for (const neighbor of neighbors(indexed, from.id, step, date)) {
         const reached = and([from.reached, neighbor.valid]);
         if (reached === false) continue;
-        const key = `${neighbor.id}|${String(indexed.snapshot.relationships.indexOf(neighbor.edge))}`;
-        const previous = next.get(key);
-        next.set(key, {
-          id: neighbor.id,
-          edge: neighbor.edge,
-          reached: previous === undefined ? reached : or([previous.reached, reached]),
-        });
+        const arrivals = next.get(neighbor.id) ?? new Map<Relationship, Truth>();
+        const previous = arrivals.get(neighbor.edge);
+        arrivals.set(neighbor.edge, previous === undefined ? reached : or([previous, reached]));
+        next.set(neighbor.id, arrivals);
       }
     }
-    frontier = [...next.values()];
+    frontier = [...next].map(([id, arrivals]) => ({
+      id,
+      reached: or([...arrivals.values()]),
+      arrivals: [...arrivals].map(([edge, reached]) => ({ edge, reached })),
+    }));
   }
   return {
-    reached: frontier.flatMap((entry) =>
-      entry.edge === undefined || entry.id === principalId
-        ? []
-        : [{ id: entry.id, edge: entry.edge, reached: entry.reached }],
-    ),
-    complete,
+    reached: frontier.filter((entry) => entry.id !== principalId && entry.arrivals.length > 0),
+    missingMarkers,
   };
 }
 
@@ -85,8 +97,8 @@ export interface AncestorLine {
 
 export interface AncestorLines {
   readonly lines: readonly AncestorLine[];
-  /** False when someone short of the last generation lacks the `parents` marker. */
-  readonly complete: boolean;
+  /** People short of the last generation who lack the `parents` marker. */
+  readonly missingMarkers: readonly MissingMarker[];
 }
 
 /**
@@ -102,12 +114,14 @@ export function ancestorLines(
 ): AncestorLines {
   const lines: AncestorLine[] = [];
   let frontier: AncestorLine[] = [{ path: [principalId], valid: true }];
-  let complete = true;
+  const missingMarkers: MissingMarker[] = [];
   for (let generation = 1; generation <= generations; generation += 1) {
     const next: AncestorLine[] = [];
     for (const line of frontier) {
       const head = line.path[0] ?? principalId;
-      if (!isRecordedInFull(indexed.person(head), 'parents')) complete = false;
+      if (!isRecordedInFull(indexed.person(head), 'parents')) {
+        missingMarkers.push({ personId: head, marker: 'parents' });
+      }
       for (const parent of parents(indexed, head, date)) {
         const valid = and([line.valid, parent.valid]);
         if (valid !== false) next.push({ path: [parent.id, ...line.path], valid });
@@ -116,7 +130,7 @@ export function ancestorLines(
     lines.push(...next);
     frontier = next;
   }
-  return { lines, complete };
+  return { lines, missingMarkers };
 }
 
 function neighbors(

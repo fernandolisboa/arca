@@ -1,14 +1,7 @@
 import type { FactType } from '../case/facts.js';
 import { countryCodeSchema } from '../case/snapshot.js';
 import type { CurrencyCode } from '../money/currency.js';
-import { scaledDecimal, type Decimal } from '../money/decimal.js';
-import {
-  type CollectionName,
-  type Expression,
-  childrenOf,
-  maxExpressionDepth,
-  depth,
-} from './expression.js';
+import { type CollectionName, type Expression, maxExpressionDepth, depth } from './expression.js';
 import { type FactTarget, resolveFactReference } from './fact-reference.js';
 
 /** The static type of an expression. A `set` is a country set or a literal list of tokens. */
@@ -31,6 +24,8 @@ export interface CheckScope {
   readonly edge: boolean;
   /** Inside a line of ancestors: at the ancestor itself, or at a link below it. */
   readonly lineage?: 'ancestor' | 'link';
+  /** Inside a collection, where only `lineage.links` (inside ancestors) may nest. */
+  readonly nested?: boolean;
 }
 
 export interface CheckContext {
@@ -38,6 +33,8 @@ export interface CheckContext {
   /** IDs of the country sets the route version pins. */
   readonly countrySets: ReadonlySet<string>;
   readonly leapDayBirthday: boolean;
+  /** Names of the reference dates the version declares. */
+  readonly referenceDates: ReadonlySet<string>;
 }
 
 export interface CheckIssue {
@@ -61,38 +58,6 @@ export function checkExpression(
     return undefined;
   }
   return new Checker(context, issues).check(expression, scope, path);
-}
-
-/**
- * Whether an expression can never be negative, so an unbounded sum of it is unbounded above only
- * (spec 0002, R4): no `sub`, no negative literal or multiplier, only non-negative facts.
- */
-export function isNonNegative(expression: Expression): boolean {
-  switch (expression.op) {
-    case 'int':
-      return expression.value >= 0;
-    case 'decimal':
-      return scaledDecimal(expression.value as Decimal).units >= 0n;
-    case 'money':
-      return expression.amount >= 0;
-    case 'fact':
-      return resolveFactReference(expression.key)?.definition.nonNegative === true;
-    case 'mul':
-      return (
-        scaledDecimal(expression.by as Decimal).units >= 0n && isNonNegative(expression.operand)
-      );
-    case 'add':
-    case 'min':
-    case 'max':
-    case 'convert':
-      return childrenOf(expression).every(isNonNegative);
-    case 'sum':
-      return isNonNegative(expression.value);
-    case 'count':
-      return true;
-    default:
-      return false;
-  }
 }
 
 const boolean: ExpressionType = { kind: 'boolean' };
@@ -128,6 +93,7 @@ class Checker {
         }
         return { kind: 'set', domain: 'country' };
       case 'fact':
+        if (!this.declared(expression.at, path)) return undefined;
         return this.fact(expression.key, scope, path);
       case 'eq':
       case 'ne':
@@ -164,10 +130,21 @@ class Checker {
         return this.allBoolean([expression.operand], scope, at('operand')) ? boolean : undefined;
       case 'add':
       case 'sub':
-        return this.numbers([expression.left, expression.right], scope, path);
+        return this.numbers(
+          [
+            [expression.left, at('left')],
+            [expression.right, at('right')],
+          ],
+          path,
+          scope,
+        );
       case 'min':
       case 'max':
-        return this.numbers(expression.operands, scope, at('operands'));
+        return this.numbers(
+          expression.operands.map((operand, index) => [operand, at(`operands/${String(index)}`)]),
+          path,
+          scope,
+        );
       case 'mul': {
         const operand = this.check(expression.operand, scope, at('operand'));
         if (operand === undefined) return undefined;
@@ -182,6 +159,7 @@ class Checker {
         return { kind: 'number', currency: expression.currency as CurrencyCode };
       }
       case 'since': {
+        if (!this.declared(expression.at, path)) return undefined;
         const date = this.check(expression.date, scope, at('date'));
         if (date === undefined) return undefined;
         if (date.kind !== 'date') return this.fail(path, 'since takes a date');
@@ -217,6 +195,13 @@ class Checker {
     }
   }
 
+  /** Whether a named reference date is one the version declares. */
+  declared(name: string | undefined, path: string): boolean {
+    if (name === undefined || this.context.referenceDates.has(name)) return true;
+    this.fail(path, `Reference date ${name} is not declared by the version`);
+    return false;
+  }
+
   private fact(reference: string, scope: CheckScope, path: string): ExpressionType | undefined {
     const resolved = resolveFactReference(reference);
     if (resolved === undefined) return this.fail(path, `Unknown fact ${reference}`);
@@ -235,6 +220,11 @@ class Checker {
     scope: CheckScope,
     path: string,
   ): CheckScope | undefined {
+    // Nesting multiplies the work by the size of each collection, so only a line's links nest.
+    if (scope.nested === true && !(over === 'lineage.links' && scope.lineage === 'ancestor')) {
+      this.fail(path, 'Collections do not nest, except lineage.links inside principal.ancestors');
+      return undefined;
+    }
     if ((over === 'principal.ancestors') !== (generations !== undefined)) {
       this.fail(path, 'generations is given for principal.ancestors, and only there');
       return undefined;
@@ -246,15 +236,15 @@ class Checker {
           this.fail(path, `${over} cannot be read here`);
           return undefined;
         }
-        return { current: true, unit: true, edge: false };
+        return { current: true, unit: true, edge: false, nested: true };
       case 'principal.ancestors':
-        return { current: true, unit: scope.unit, edge: false, lineage: 'ancestor' };
+        return { current: true, unit: scope.unit, edge: false, lineage: 'ancestor', nested: true };
       case 'lineage.links':
         if (scope.lineage === undefined) {
           this.fail(path, 'lineage.links is read inside principal.ancestors');
           return undefined;
         }
-        return { current: true, unit: scope.unit, edge: false, lineage: 'link' };
+        return { current: true, unit: scope.unit, edge: false, lineage: 'link', nested: true };
     }
   }
 
@@ -314,13 +304,11 @@ class Checker {
   }
 
   private numbers(
-    operands: readonly Expression[],
-    scope: CheckScope,
+    operands: readonly (readonly [Expression, string])[],
     path: string,
+    scope: CheckScope,
   ): ExpressionType | undefined {
-    const types = operands.map((operand, index) =>
-      this.check(operand, scope, `${path}/${String(index)}`),
-    );
+    const types = operands.map(([operand, at]) => this.check(operand, scope, at));
     if (types.some((type) => type === undefined)) return undefined;
     const [first, ...rest] = types as ExpressionType[];
     if (first?.kind !== 'number' || rest.some((type) => type.kind !== 'number')) {

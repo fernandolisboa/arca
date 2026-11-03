@@ -4,14 +4,14 @@ import {
   type CheckIssue,
   type CheckScope,
   checkExpression,
-  isNonNegative,
 } from '../../src/rules/check.js';
-import { expressionSchema } from '../../src/rules/expression.js';
+import { expressionSchema, isNonNegative } from '../../src/rules/expression.js';
 
 const context: CheckContext = {
   currency: 'EUR',
   countrySets: new Set(['treaty']),
   leapDayBirthday: true,
+  referenceDates: new Set(['filingDate']),
 };
 const requirement: CheckScope = { current: true, unit: true, edge: false };
 const dependent: CheckScope = { current: true, unit: false, edge: true };
@@ -27,7 +27,11 @@ function check(
   return { type, issues };
 }
 
-const fact = (key: string): object => ({ op: 'fact', key });
+const fact = (key: string, at?: string): object => ({
+  op: 'fact',
+  key,
+  ...(at === undefined ? {} : { at }),
+});
 const int = (value: number): object => ({ op: 'int', value });
 const euros = (amount: number): object => ({ op: 'money', amount, currency: 'EUR' });
 
@@ -226,6 +230,43 @@ describe('checkExpression', () => {
     );
     expect(issues).toEqual([]);
     expect(type).toEqual({ kind: 'boolean' });
+  });
+
+  it.each([
+    [
+      'members inside members',
+      {
+        op: 'some',
+        over: 'unit.members',
+        where: { op: 'some', over: 'unit.members', where: { op: 'bool', value: true } },
+      },
+    ],
+    [
+      'ancestors inside ancestors',
+      {
+        op: 'some',
+        over: 'principal.ancestors',
+        generations: 4,
+        where: {
+          op: 'some',
+          over: 'principal.ancestors',
+          generations: 4,
+          where: { op: 'bool', value: true },
+        },
+      },
+    ],
+    ['an undeclared reference date', fact('principal.ageYears', 'constructor')],
+    [
+      'since at an undeclared date',
+      { op: 'since', date: { op: 'date', value: '2020-01-01' }, duration: 'P1Y', at: 'arrival' },
+    ],
+  ])('rejects %s', (_label, input) => {
+    expect(check(input).issues.length).toBeGreaterThan(0);
+  });
+
+  it('points at the operand that is wrong', () => {
+    const { issues } = check({ op: 'add', left: euros(1), right: fact('person.name') });
+    expect(issues.map((issue) => issue.path)).toEqual(['/right']);
   });
 
   it('rejects nesting deeper than 16', () => {

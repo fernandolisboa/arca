@@ -3,29 +3,64 @@ import type { CurrencyCode } from '../money/currency.js';
 import { type CheckContext, type CheckIssue, type CheckScope, checkExpression } from './check.js';
 import { type Expression, maxNodesPerVersion, nodeCount } from './expression.js';
 import { resolveFactReference } from './fact-reference.js';
-import type { RouteVersion, Source } from './route-version.js';
+import type { CountrySet, RouteVersion, Source } from './route-version.js';
 
 const requirementScope: CheckScope = { current: true, unit: true, edge: false };
 const dependentScope: CheckScope = { current: true, unit: false, edge: true };
 const perDependentScope: CheckScope = { current: true, unit: true, edge: true };
 
+/** How to tell an official source: the hosts of the pinned official-domain lists, and a parser. */
+export interface OfficialHosts {
+  readonly hosts: readonly string[];
+  /**
+   * The lowercase ASCII (punycode) host of an `https` URL with no user information or port, or
+   * `undefined` for any other URL. The knowledge package parses URLs; this pure package does not.
+   */
+  readonly hostOf: (url: string) => string | undefined;
+}
+
+/** A host equal to a listed host or a subdomain of it on a label boundary (spec 0002, R4). */
+export function hostMatches(host: string, hosts: readonly string[]): boolean {
+  return hosts.some((listed) => host === listed || host.endsWith(`.${listed}`));
+}
+
+function officialUrl(url: string, official: OfficialHosts): boolean {
+  const host = official.hostOf(url);
+  return host !== undefined && hostMatches(host, official.hosts);
+}
+
+/** Checks a country set's sources: each official one on a pinned host, and at least one. */
+export function checkCountrySet(set: CountrySet, official: OfficialHosts): CheckIssue[] {
+  const issues: CheckIssue[] = [];
+  set.sources.forEach((source, index) => {
+    if (source.kind === 'official' && !officialUrl(source.url, official)) {
+      issues.push({
+        path: `/sources/${String(index)}`,
+        message: 'An official source is on a pinned official host',
+      });
+    }
+  });
+  if (
+    !set.sources.some((source) => source.kind === 'official' && officialUrl(source.url, official))
+  ) {
+    issues.push({ path: '/sources', message: 'At least one source is official' });
+  }
+  return issues;
+}
+
 /**
  * Checks what the schema cannot (spec 0002, R4): references between parts of the version, source
  * kinds, the shape of a closed version, and every expression against the fact catalog. Returns
- * the issues; none means valid. `isOfficialUrl` matches a URL against the official-domain lists
- * the version pins; the knowledge package parses URLs, which this pure package does not.
+ * the issues; none means valid.
  */
-export function checkRouteVersion(
-  version: RouteVersion,
-  isOfficialUrl: (url: string) => boolean,
-): CheckIssue[] {
+export function checkRouteVersion(version: RouteVersion, official: OfficialHosts): CheckIssue[] {
   const issues: CheckIssue[] = [];
   const issue = (path: string, message: string): void => {
     issues.push({ path, message });
   };
   const sources = new Map(version.sources.map((source) => [source.id, source]));
-  const official = (source: Source | undefined): boolean =>
-    source?.kind === 'official' && isOfficialUrl(source.url);
+  const isOfficial = (source: Source | undefined): boolean =>
+    source?.kind === 'official' && officialUrl(source.url, official);
 
   if (version.routeId.slice(0, 2) !== version.country.toLowerCase()) {
     issue('/routeId', 'A route ID starts with its country code in lowercase');
@@ -42,13 +77,13 @@ export function checkRouteVersion(
     if (new Set(ids).size !== ids.length) issue(`/${kind}`, 'IDs are unique');
   }
   version.sources.forEach((source, index) => {
-    if (source.kind === 'official' && !isOfficialUrl(source.url)) {
+    if (source.kind === 'official' && !officialUrl(source.url, official)) {
       issue(`/sources/${String(index)}`, 'An official source is on a pinned official host');
     }
   });
   const cites = (path: string, ids: readonly string[]): void => {
     if (ids.some((id) => !sources.has(id))) issue(path, 'Every cited source is in sources');
-    if (!ids.some((id) => official(sources.get(id)))) {
+    if (!ids.some((id) => isOfficial(sources.get(id)))) {
       issue(path, 'At least one cited source is official');
     }
   };
@@ -81,6 +116,7 @@ export function checkRouteVersion(
     currency: version.currency,
     countrySets: new Set(version.countrySets.map((pin) => pin.id)),
     leapDayBirthday: version.leapDayBirthday !== undefined,
+    referenceDates: new Set(version.referenceDates ?? []),
   };
   const expressions: Expression[] = [];
   const expect = (
@@ -123,6 +159,9 @@ export function checkRouteVersion(
   });
   version.dependents.forEach((rule, index) => {
     const path = `/dependents/${String(index)}`;
+    if (rule.at !== undefined && !context.referenceDates.has(rule.at)) {
+      issue(`${path}/at`, `Reference date ${rule.at} is not declared by the version`);
+    }
     cites(`${path}/sources`, rule.sources);
     expect(rule.condition, dependentScope, `${path}/condition`, condition);
   });

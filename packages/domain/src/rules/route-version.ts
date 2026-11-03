@@ -94,6 +94,8 @@ export const routeVersionSchema = z
     currency: currencyCodeSchema,
     leapDayBirthday: leapDayBirthdaySchema.optional(),
     leapDayBirthdaySources: sourceIds.optional(),
+    /** Named dates the context supplies, such as `filingDate`; rules may read facts at them. */
+    referenceDates: z.array(referenceDateNameSchema).max(10).optional(),
     sources: z.array(sourceSchema).min(1).max(50),
     closureSources: sourceIds.optional(),
     countries: pinSchema,
@@ -143,7 +145,12 @@ export const officialDomainListSchema = z.strictObject({
   hosts: z
     .array(
       z.strictObject({
-        host: z.string().regex(/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/),
+        host: z
+          .string()
+          .max(253)
+          .regex(
+            /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z]{2,63}|xn--[a-z0-9-]{1,59})$/,
+          ),
         source: sourceSchema,
       }),
     )
@@ -157,3 +164,22 @@ export type OfficialDomainList = z.infer<typeof officialDomainListSchema>;
 export function routeVersionJsonSchema(): unknown {
   return z.toJSONSchema(routeVersionSchema, { io: 'input', unrepresentable: 'any' });
 }
+
+/**
+ * Whether parsed JSON nests no deeper than `max`, checked without recursion so a hostile file
+ * cannot overflow the stack before the schema's own limits apply.
+ */
+export function jsonDepthWithin(value: unknown, max: number): boolean {
+  const stack: { node: unknown; depth: number }[] = [{ node: value, depth: 0 }];
+  for (let next = stack.pop(); next !== undefined; next = stack.pop()) {
+    if (next.depth > max) return false;
+    if (typeof next.node === 'object' && next.node !== null) {
+      for (const child of Object.values(next.node))
+        stack.push({ node: child, depth: next.depth + 1 });
+    }
+  }
+  return true;
+}
+
+/** Deep enough for a 16-level expression (two JSON levels each) inside a version file. */
+export const maxKnowledgeJsonDepth = 48;

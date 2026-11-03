@@ -2,9 +2,16 @@ import { describe, expect, it } from 'vitest';
 import {
   type RouteVersion,
   routeVersionJsonSchema,
+  countrySetSchema,
+  jsonDepthWithin,
   routeVersionSchema,
 } from '../../src/rules/route-version.js';
-import { checkRouteVersion } from '../../src/rules/validate.js';
+import {
+  type OfficialHosts,
+  checkCountrySet,
+  checkRouteVersion,
+  hostMatches,
+} from '../../src/rules/validate.js';
 
 /** A synthetic route version: invented country code, hosts and amounts. */
 const valid = {
@@ -103,11 +110,14 @@ const valid = {
   durations: [{ id: 'decision', title: 'To a decision', min: 'P2M', max: 'P6M', sources: ['law'] }],
 };
 
-const isOfficial = (url: string): boolean => url.startsWith('https://www.gov.example/');
+const official: OfficialHosts = {
+  hosts: ['gov.example'],
+  hostOf: (url) => /^https:\/\/([a-z0-9.-]+)\//.exec(url)?.[1],
+};
 
 function issues(patch: object): string[] {
   const version: RouteVersion = routeVersionSchema.parse({ ...valid, ...patch });
-  return checkRouteVersion(version, isOfficial).map((issue) => `${issue.path}: ${issue.message}`);
+  return checkRouteVersion(version, official).map((issue) => `${issue.path}: ${issue.message}`);
 }
 
 describe('route version', () => {
@@ -194,6 +204,11 @@ describe('route version', () => {
     ],
     ['an open version with closure sources', { closureSources: ['law'] }, '/closureSources'],
     [
+      'a dependent rule at an undeclared date',
+      { dependents: [{ ...valid.dependents[0], at: 'filingDate' }] },
+      '/dependents/0/at',
+    ],
+    [
       'an unpinned set',
       {
         requirements: [
@@ -237,5 +252,43 @@ describe('route version', () => {
     const schema = routeVersionJsonSchema() as { type?: string; properties?: object };
     expect(schema.type).toBe('object');
     expect(Object.keys(schema.properties ?? {})).toContain('requirements');
+  });
+});
+
+describe('official hosts', () => {
+  it.each([
+    ['gov.example', true],
+    ['www.gov.example', true],
+    ['evil-gov.example', false],
+    ['gov.example.evil', false],
+  ])('%s', (host, expected) => {
+    expect(hostMatches(host, ['gov.example'])).toBe(expected);
+  });
+
+  it("checks a country set's official sources", () => {
+    const set = countrySetSchema.parse({
+      schemaVersion: 1,
+      id: 'treaty',
+      number: 1,
+      title: 'Treaty countries',
+      members: ['QM', 'QN'],
+      sources: [valid.sources[0]],
+      countries: { id: 'countries', number: 1 },
+      formerCountries: { id: 'former-countries', number: 1 },
+      officialDomains: [{ id: 'qm-gov', number: 1 }],
+    });
+    expect(checkCountrySet(set, official)).toEqual([]);
+    expect(checkCountrySet({ ...set, sources: [valid.sources[1]] } as never, official)).toEqual([
+      { path: '/sources', message: 'At least one source is official' },
+    ]);
+  });
+});
+
+describe('jsonDepthWithin', () => {
+  it('refuses very deep JSON without overflowing the stack', () => {
+    let deep: object = { op: 'bool', value: true };
+    for (let level = 0; level < 20_000; level += 1) deep = { op: 'not', operand: deep };
+    expect(jsonDepthWithin(deep, 48)).toBe(false);
+    expect(jsonDepthWithin(valid, 48)).toBe(true);
   });
 });

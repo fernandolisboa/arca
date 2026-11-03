@@ -1,5 +1,4 @@
-import { type CalendarDate, compareDates } from '../calendar/calendar-date.js';
-import { elapsedSince } from '../calendar/calendar-date.js';
+import { type CalendarDate, compareDates, elapsedSince } from '../calendar/calendar-date.js';
 import type { Duration } from '../calendar/duration.js';
 import {
   type FactBinding,
@@ -8,7 +7,8 @@ import {
   type LineageBinding,
   deriveFact,
 } from '../case/facts.js';
-import { ancestorLines } from '../case/paths.js';
+import { assertRecordedBy } from '../case/graph.js';
+import { type MissingMarker, ancestorLines } from '../case/paths.js';
 import type { Relationship } from '../case/snapshot.js';
 import {
   addNumbers,
@@ -32,8 +32,7 @@ import {
 import type { CurrencyCode } from '../money/currency.js';
 import { type Decimal, scaledDecimal } from '../money/decimal.js';
 import { type CurrencyPair, convert } from '../money/fx.js';
-import { isNonNegative } from './check.js';
-import type { CollectionName, Expression } from './expression.js';
+import { type CollectionName, type Expression, isNonNegative } from './expression.js';
 import { resolveFactReference } from './fact-reference.js';
 
 /** A country set or a literal list of tokens. */
@@ -49,7 +48,7 @@ export interface Frame {
   readonly environment: FactEnvironment;
   /** The date facts are read and edges crossed at: `factsAsOf`, or the rule's named date. */
   readonly at: CalendarDate;
-  readonly referenceDates: Readonly<Partial<Record<string, CalendarDate>>>;
+  readonly referenceDates: ReadonlyMap<string, CalendarDate>;
   readonly countrySets: ReadonlyMap<string, readonly string[]>;
   readonly current: string;
   readonly edge?: Relationship;
@@ -66,8 +65,11 @@ export interface Trace {
   readonly children: readonly Trace[];
   readonly fact?: { readonly reference: string; readonly personId: string };
   readonly item?: { readonly personId: string; readonly membership: Truth };
-  /** A collection that may hold people who are not recorded. */
-  readonly incomplete?: true;
+  /**
+   * A collection that may hold people who are not recorded, with the markers whose absence opens
+   * it (an open unit adds none here; the unit computation reports its own).
+   */
+  readonly incomplete?: { readonly missingMarkers: readonly MissingMarker[] };
   readonly missingRates?: readonly CurrencyPair[];
   readonly missingDate?: string;
 }
@@ -193,7 +195,7 @@ function readFact(reference: string, dateName: string | undefined, frame: Frame)
   const binding = bindingFor(resolved.target, frame);
   const fact = { reference, personId: binding.personId };
   if (dateName !== undefined) {
-    const date = frame.referenceDates[dateName];
+    const date = frame.referenceDates.get(dateName);
     if (date === undefined) {
       const value = unknownOf(resolved.definition.type, frame.environment.currency);
       return { op: 'fact', value, children: [], fact, missingDate: dateName };
@@ -306,7 +308,8 @@ function convertTrace(operand: Trace, currency: string, frame: Frame): Trace {
 
 function since(expression: Extract<Expression, { op: 'since' }>, frame: Frame): Trace {
   const date = evaluate(expression.date, frame);
-  const reference = expression.at === undefined ? frame.at : frame.referenceDates[expression.at];
+  const reference =
+    expression.at === undefined ? frame.at : frame.referenceDates.get(expression.at);
   if (reference === undefined) {
     return {
       op: 'since',
@@ -315,6 +318,7 @@ function since(expression: Extract<Expression, { op: 'since' }>, frame: Frame): 
       ...(expression.at === undefined ? {} : { missingDate: expression.at }),
     };
   }
+  assertRecordedBy(frame.environment.snapshot, reference);
   const range = date.value as { min: CalendarDate; max: CalendarDate };
   const duration = expression.duration as Duration;
   const truth: Truth = elapsedSince(range.max, duration, reference)
@@ -339,7 +343,11 @@ interface Counted {
 type CollectionExpression = Extract<Expression, { op: 'count' | 'some' | 'every' | 'sum' }>;
 
 function collection(expression: CollectionExpression, frame: Frame): Trace {
-  const { items, complete } = itemsOf(expression.over, expression.generations, frame);
+  const { items, complete, missingMarkers } = itemsOf(
+    expression.over,
+    expression.generations,
+    frame,
+  );
   const traces: Trace[] = [];
   const counted: Counted[] = [];
   for (const item of items) {
@@ -361,9 +369,9 @@ function collection(expression: CollectionExpression, frame: Frame): Trace {
   }
   return {
     op: expression.op,
-    value: aggregate(expression, counted, complete),
+    value: aggregate(expression, counted, complete, frame),
     children: traces,
-    ...(complete ? {} : { incomplete: true }),
+    ...(complete ? {} : { incomplete: { missingMarkers } }),
   };
 }
 
@@ -375,6 +383,7 @@ function aggregate(
   expression: CollectionExpression,
   counted: readonly Counted[],
   complete: boolean,
+  frame: Frame,
 ): Value {
   const counts = counted.map((entry) => and([entry.membership, entry.condition]));
   switch (expression.op) {
@@ -399,8 +408,7 @@ function aggregate(
         if (truth === false || entry.value === undefined) return;
         total = addNumbers(total, truth === true ? entry.value : orZero(entry.value));
       });
-      const currency = counted.find((entry) => entry.value?.currency !== undefined)?.value
-        ?.currency;
+      const currency = staticCurrency(expression.value, frame);
       const summed: NumberValue = { ...total, ...(currency === undefined ? {} : { currency }) };
       if (complete) return summed;
       const openAbove: NumberValue = withoutBound(summed, 'max');
@@ -413,7 +421,7 @@ function itemsOf(
   over: CollectionName,
   generations: number | undefined,
   frame: Frame,
-): { items: Item[]; complete: boolean } {
+): { items: Item[]; complete: boolean; missingMarkers: readonly MissingMarker[] } {
   const { environment } = frame;
   const at = (current: string, lineage?: LineageBinding): Frame => {
     const { at: date, referenceDates, countrySets } = frame;
@@ -441,11 +449,12 @@ function itemsOf(
             .map((id): Item => ({ frame: at(id), membership: 'unknown' })),
         ],
         complete: !unit.open,
+        missingMarkers: [],
       };
     }
     case 'principal.ancestors': {
       if (generations === undefined) throw new RangeError('Unchecked ancestors collection');
-      const { lines, complete } = ancestorLines(
+      const { lines, missingMarkers } = ancestorLines(
         environment.snapshot,
         environment.principalId,
         generations,
@@ -456,7 +465,8 @@ function itemsOf(
           frame: at(line.path[0] ?? environment.principalId, { path: line.path, position: 0 }),
           membership: line.valid,
         })),
-        complete,
+        complete: missingMarkers.length === 0,
+        missingMarkers,
       };
     }
     case 'lineage.links': {
@@ -465,7 +475,7 @@ function itemsOf(
         frame: at(id, { path, position: index + 1 }),
         membership: true,
       }));
-      return { items: links, complete: true };
+      return { items: links, complete: true, missingMarkers: [] };
     }
   }
 }
@@ -538,5 +548,35 @@ function unknownOf(type: FactType, currency: CurrencyCode): Value {
     case 'countries':
     case 'enum-list':
       return { type: 'tokens', definite: [], possible: [], complete: false };
+  }
+}
+
+/**
+ * The currency of a number expression, known statically, so an empty sum keeps it. Money facts are
+ * in the version's currency.
+ */
+function staticCurrency(expression: Expression, frame: Frame): CurrencyCode | undefined {
+  switch (expression.op) {
+    case 'money':
+    case 'convert':
+      return expression.currency as CurrencyCode;
+    case 'fact':
+      return resolveFactReference(expression.key)?.definition.type.kind === 'money'
+        ? frame.environment.currency
+        : undefined;
+    case 'add':
+    case 'sub':
+      return staticCurrency(expression.left, frame);
+    case 'mul':
+      return staticCurrency(expression.operand, frame);
+    case 'min':
+    case 'max':
+      return expression.operands[0] === undefined
+        ? undefined
+        : staticCurrency(expression.operands[0], frame);
+    case 'sum':
+      return staticCurrency(expression.value, frame);
+    default:
+      return undefined;
   }
 }
