@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "repository": "unicode-org/cldr-json",
+      "licenses": [
+        {
+          "license": "Unicode-3.0",
+          "sha256": "220ba0e1c43b99530d2d5bdb892a99dca0989414f51ab695ecd90163eaa1ec3b"
+        }
+      ]
+    }
+  ]
+}

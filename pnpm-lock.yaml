@@ -583,6 +583,9 @@ importers:
       '@arca/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint-config
+      '@arca/scripts':
+        specifier: workspace:*
+        version: link:../../tooling/scripts
       '@arca/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig

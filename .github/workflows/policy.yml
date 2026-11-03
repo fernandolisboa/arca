@@ -101,6 +101,42 @@ jobs:
           policy/pnpm-lock.yaml
           "$RUNNER_TEMP/change-lock.yaml"
 
+  knowledge-immutable:
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Check out main (workflow, policy and scripts)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: policy
+          persist-credentials: false
+      - uses: ./policy/.github/actions/setup-pnpm
+        with:
+          directory: policy
+      - name: Install the scripts from main
+        working-directory: policy
+        run: pnpm install --frozen-lockfile --filter @arca/scripts
+      # After every install step. Both commits are fetched into main's clone and read with git as
+      # data (spec 0002, R6); no file of the change is checked out and nothing runs from it. Only
+      # a new vendored.json entry reaches the network, to GitHub, with no credentials.
+      - name: Fetch the base and the change (data only)
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          git -C policy fetch --no-tags --depth=1 origin "$BASE_SHA" "$HEAD_SHA"
+      - name: Check knowledge and vendored files against the base
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: >-
+          node policy/tooling/scripts/src/check-knowledge-immutable.ts
+          policy "$BASE_SHA" "$HEAD_SHA"
+
   osv-scanner:
     runs-on: ubuntu-24.04
     timeout-minutes: 10

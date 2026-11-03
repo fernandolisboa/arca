@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hostOf } from '../scripts/validate.ts';
+import { hostOf } from '../src/host.ts';
 
 describe('hostOf', () => {
   it.each([

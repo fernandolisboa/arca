@@ -17,7 +17,7 @@ src/                                        the runtime entry; pure, no I/O
 src/generated/catalog.ts                    written by the build, not checked in
 ```
 
-Every file in `data` is immutable once on `main`. A change is a new numbered file; `hashes.json` and cases files only gain entries.
+Every file in `data` is immutable once on `main`. A change is a new numbered file; `hashes.json` and cases files only gain entries. The required check `knowledge-immutable` enforces this from `main` on every pull request (`tooling/scripts/src/check-knowledge-immutable.ts`, which reads hosts with the same `hostOf` the build uses, from `@arca/scripts/host`; run it locally with `pnpm check:knowledge-immutable`). It also keeps official-domain lists in pull requests of their own and admits a file under `vendor` only once `.github/policy/vendored.json` on `main` approves it.
 
 ## Building
 
