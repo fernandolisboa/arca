@@ -1,6 +1,6 @@
 # ADR-0013: Review gate canary keyed by the gate's fingerprint, and reviewers on model aliases
 
-- Status: Accepted; revised on 2026-11-02 so reviewers run on model aliases, with repository variables as optional pins, and on the owner's Claude subscription instead of an API key; revised again the same day so a push to `main` dispatches the canary from `review-canary-push.yml`, so a gate reviewer whose model never answers runs once on a fallback model, so the gate skips draft pull requests, and so a push to `main` runs a slim canary while the weekly run covers the whole corpus
+- Status: Superseded by [ADR-0019](0019-reviewers-in-the-authoring-session.md) on 2026-11-03. Before that: Accepted; revised on 2026-11-02 so reviewers run on model aliases, with repository variables as optional pins, and on the owner's Claude subscription instead of an API key; revised again the same day so a push to `main` dispatches the canary from `review-canary-push.yml`, so a gate reviewer whose model never answers runs once on a fallback model, so the gate skips draft pull requests, and so a push to `main` runs a slim canary while the weekly run covers the whole corpus
 - Date: 2026-11-02
 - Amends: [ADR-0011](0011-reviewers-in-ci.md) (canary trigger and scope, which model each reviewer runs on and its fallback, the reviewers' credential and its Dependabot copy, `allowed_bots`, draft pull requests)
 

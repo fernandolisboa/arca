@@ -146,10 +146,10 @@ describe('workflow secrets lint', () => {
   });
 
   it.each([
-    'fernandolisboa/arca/.github/workflows/review-canary.yml@main',
+    'fernandolisboa/arca/.github/workflows/ci.yml@main',
     'someone/else/.github/workflows/x.yml@0123456789abcdef0123456789abcdef01234567',
   ])('rejects a call to the non-local reusable workflow %s', (uses) => {
-    const source = `on: push\npermissions: {}\njobs:\n  canary:\n    uses: ${uses}\n`;
+    const source = `on: push\npermissions: {}\njobs:\n  called:\n    uses: ${uses}\n`;
     expect(checkWorkflow('allowed.yml', source, policy).map(({ problem }) => problem)).toEqual([
       `calls ${uses}; reusable workflows must be local (./.github/workflows/<file>)`,
     ]);
