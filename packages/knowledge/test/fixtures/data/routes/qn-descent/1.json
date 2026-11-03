@@ -35,7 +35,7 @@
   "requirements": [
     {
       "id": "line",
-      "title": "A line of citizens from a parent or grandparent",
+      "title": "A line of citizens from a parent or grandparent who was a citizen of the former state",
       "expression": {
         "op": "some",
         "over": "principal.ancestors",
@@ -51,7 +51,7 @@
               },
               "set": {
                 "op": "tokens",
-                "values": ["QN", "QMHH"]
+                "values": ["QMHH"]
               }
             },
             {

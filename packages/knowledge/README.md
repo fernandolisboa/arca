@@ -79,10 +79,10 @@ Every route version ships with `<n>.cases.json` beside it, and `test/cases` runs
 }
 ```
 
-- A case has a `family` from `eval/families/<id>/<n>.json`, pinned by the hash of its bytes, or an inline `snapshot`. Families are synthetic and never change: extending one is a new number. Optional: `factsAsOf`, `referenceDates` (`{ "filingDate": "2026-09-01" }`) and `fx`.
+- A case has a `family` from `eval/families/<id>/<n>.json`, pinned by the hash of its bytes, or an inline `snapshot`. Families are synthetic and never change, which `knowledge-immutable` enforces: extending one is a new number. Optional: `factsAsOf`, `referenceDates` (`{ "filingDate": "2026-09-01" }`) and `fx`.
 - `missingFacts` are written as the runner prints them: `<fact>@<person>`, with ` edge <edge>` or ` line <ids>` when the fact is read across one; `relationship <edge>`; `marker <marker>@<person>`.
 - Coverage, from the results: every requirement is true, false and unknown at least once; every dependent rule includes someone and, on its own, excludes someone; an open version reaches `eligible` (`needs_assessment` when it has assessments), `not_eligible` and `missing_information`; a closed one, `unavailable`.
-- Cases are append-only. When a change to `packages/domain/src` changes a result, add a case with `supersedes` and `reason` that differs only in `expected`; the runner skips the case it replaces.
+- Cases in `data` are append-only (fixture cases are test code and change with the engine in review). When a change to `packages/domain/src` changes a result, add a case with `supersedes` and `reason` that differs only in `expected`; the runner skips the case it replaces.
 
 ## Runtime entry points
 

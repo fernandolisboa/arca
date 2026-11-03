@@ -93,7 +93,6 @@ export {
   caseSnapshotSchema,
   completenessMarkerSchema,
   countryCodeSchema,
-  edgeKey,
   opaqueIdSchema,
 } from './case/snapshot.js';
 export {

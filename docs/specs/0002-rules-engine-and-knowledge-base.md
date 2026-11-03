@@ -173,7 +173,7 @@ Pure functions in `packages/domain/src/rules`, with no I/O and no model calls. T
 
 ### R8. Table-driven cases, fixtures and families
 
-- **Cases files.** Each `<n>.cases.json` lists entries for that version, run through `evaluateVersion`, with an `id`, a snapshot (inline, or a family from `eval/families` named by ID, number and the SHA-256 of its file; family files are numbered and immutable, so extending a family is a new number and old cases keep theirs), the principal, the context dates, FX rates when needed, and the expected status, unit and decisive missing facts. CI runs them all. Expected results live only here.
+- **Cases files.** Each `<n>.cases.json` lists entries for that version, run through `evaluateVersion`, with an `id`, a snapshot (inline, or a family from `eval/families` named by ID, number and the SHA-256 of its file; family files are numbered and immutable, which `knowledge-immutable` enforces, so extending a family is a new number and old cases keep theirs), the principal, the context dates, FX rates when needed, and the expected status, unit and decisive missing facts. CI runs them all. Expected results live only here.
 - **Coverage**, measured from the engine's trace across a version's cases file: every requirement evaluates to true, false and unknown at least once; every dependent rule includes and excludes someone at least once; the statuses `eligible` (or `needs_assessment` when the version has assessments), `not_eligible` and `missing_information` each appear. A `closed` version needs one case, `unavailable`. Selection, rejection, `pending_activation` and `newerProposedVersion` are covered by the engine's own tests on the fixture routes, with fixture `states`.
 - **Fixture routes** prove the schema before real data exists. They use user-assigned country codes, are labeled as fixtures, and cover these shapes:
   - a threshold computed from the unit's composition (D7-like);
@@ -192,7 +192,7 @@ Pure functions in `packages/domain/src/rules`, with no I/O and no model calls. T
   - two corrections of the same version, the newer one dated earlier, which validation rejects;
   - a version without `corrects` dated before an existing correction (v1 in January, v2 correcting v1 in March, v3 in February), which validation rejects, and its accepted form, v3 correcting v2 in February;
   - a correction of a rejected correction, which still removes the original.
-- **Synthetic families** in `eval/families/`: a single person; a couple with young children; divorced parents with shared custody; dependent elderly parents; a previous visa refusal; assets held by an ex-spouse; and a large two-generation family of six adults. All values are invented and mirror no real person's ages, dates or holdings.
+- **Synthetic families** in `eval/families/`: a single person; a couple with young children; divorced parents with shared custody; dependent elderly parents; a previous visa refusal; assets held by an ex-spouse; and a large three-generation family of six adults. All values are invented and mirror no real person's ages, dates or holdings.
 
 ### R9. Staleness
 

@@ -1,4 +1,6 @@
 import {
+  type MissingFact,
+  type Relationship,
   calendarDateSchema,
   caseSnapshotSchema,
   fxTableSchema,
@@ -29,7 +31,7 @@ export const ruleCaseSchema = z
     id: slugSchema,
     /** A case this one replaces, after a change to the domain code changed its result (R6). */
     supersedes: slugSchema.optional(),
-    reason: z.string().min(1).max(500).optional(),
+    reason: z.string().regex(/\S/).max(500).optional(),
     family: z
       .strictObject({ id: slugSchema, number: z.number().int().min(1), sha256: sha256Schema })
       .optional(),
@@ -60,3 +62,31 @@ export const casesFileSchema = z.strictObject({
 
 export type RuleCase = z.infer<typeof ruleCaseSchema>;
 export type CasesFile = z.infer<typeof casesFileSchema>;
+
+/**
+ * A missing fact as a cases file writes it, and as reviewers read it: `<fact>@<person>`, with
+ * ` edge <edge>` or ` line <ancestor>>…>principal` when read across one; `relationship <edge>`;
+ * `marker <marker>@<person>`. Cases files only gain entries, so this format never changes.
+ */
+export function describeMissingFact(fact: MissingFact): string {
+  switch (fact.kind) {
+    case 'fact': {
+      const via = [
+        ...(fact.edge === undefined ? [] : [`edge ${describeEdge(fact.edge)}`]),
+        ...(fact.line === undefined ? [] : [`line ${fact.line.join('>')}`]),
+      ];
+      return [`${fact.reference}@${fact.personId}`, ...via].join(' ');
+    }
+    case 'relationship':
+      return `relationship ${describeEdge(fact.edge)}`;
+    case 'marker':
+      return `marker ${fact.marker}@${fact.personId}`;
+  }
+}
+
+/** `parent:<parent>><child>`, or `<spouse|partner>:<a>:<b>:<start>:<end>` with the people sorted. */
+function describeEdge(edge: Relationship): string {
+  if (edge.kind === 'parent') return `parent:${edge.parent}>${edge.child}`;
+  const [a, b] = [...edge.people].sort();
+  return [edge.kind, a, b, edge.start ?? '', edge.end ?? ''].join(':');
+}

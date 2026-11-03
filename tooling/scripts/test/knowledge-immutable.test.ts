@@ -6,6 +6,7 @@ import { checkKnowledgeChange, type Side } from '../src/knowledge-immutable.ts';
 const data = 'packages/knowledge/data/';
 const vendor = 'packages/knowledge/vendor/';
 const vendored = '.github/policy/vendored.json';
+const family = 'eval/families/single/1.json';
 const sources = '.github/policy/vendored-sources.json';
 
 /** File content with a git mode and object type other than a regular file's. */
@@ -62,6 +63,7 @@ const caseEntry = (id: string, overrides: object = {}): Record<string, unknown> 
 function baseTree(): Tree {
   return {
     [`${data}countries/1.json`]: { codes: ['QM'] },
+    [family]: { recordedOn: '2026-10-01', members: ['p1'] },
     [`${data}routes/qm-work/1.json`]: { number: 1 },
     [`${data}routes/qm-work/1.cases.json`]: { schemaVersion: 1, cases: [caseEntry('c1')] },
     [`${data}hashes.json`]: {
@@ -212,13 +214,30 @@ describe('knowledge-immutable', () => {
     ).toContain(`${root}: must be a directory, not a link or a submodule`);
   });
 
-  it.each(['packages', 'packages/knowledge'])('refuses %s as a link', async (directory) => {
+  it('keeps synthetic families immutable, and accepts a new number', async () => {
     expect(
       await problems((tree) => {
-        tree[directory] = new Special('../elsewhere', '120000');
+        tree[family] = { recordedOn: '2026-10-02', members: ['p1'] };
+        tree['eval/families/single/2.json'] = { recordedOn: '2026-10-02', members: ['p1'] };
       }),
-    ).toContain(`${directory}: must be a directory, not a link or a submodule`);
+    ).toEqual([`${family}: was modified; it is immutable, so add a new numbered file instead`]);
+    expect(
+      await problems((tree) => {
+        Reflect.deleteProperty(tree, family);
+      }),
+    ).toEqual([`${family}: exists on the base branch and was deleted or renamed; it is immutable`]);
   });
+
+  it.each(['packages', 'packages/knowledge', 'eval', 'eval/families'])(
+    'refuses %s as a link',
+    async (directory) => {
+      expect(
+        await problems((tree) => {
+          tree[directory] = new Special('../elsewhere', '120000');
+        }),
+      ).toContain(`${directory}: must be a directory, not a link or a submodule`);
+    },
+  );
 
   it.each([vendored, sources])('refuses %s as a link', async (policy) => {
     expect(

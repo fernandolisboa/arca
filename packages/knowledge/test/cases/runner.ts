@@ -1,46 +1,26 @@
 import { createHash } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
   type CaseSnapshot,
   type CatalogEntry,
   type Evaluation,
-  type MissingFact,
   type VersionContext,
   caseSnapshotSchema,
   computeUnit,
-  edgeKey,
   evaluateVersion,
   fxTableSchema,
   maxKnowledgeJsonDepth,
   parseCalendarDate,
 } from '@arca/domain';
 import { parseJsonSubset } from '@arca/scripts/json';
-import { type RuleCase, casesFileSchema } from '../../scripts/cases.ts';
+import { type RuleCase, casesFileSchema, describeMissingFact } from '../../scripts/cases.ts';
 import { hashesFileSchema } from '../../scripts/files.ts';
-import { loadData } from '../../scripts/load.ts';
+import { loadData, readKnowledgeFile } from '../../scripts/load.ts';
 import type { ReproductionLookup } from '../../src/reproduction.ts';
 
 const casesPath = /^routes\/([a-z0-9-]+)\/([1-9][0-9]*)\.cases\.json$/;
 const versionPath = /^routes\/([a-z0-9-]+)\/([1-9][0-9]*)\.json$/;
 const noRates = fxTableSchema.parse({ rates: [] });
-
-/** A missing fact as a cases file writes it: what to ask, about whom, and through which link. */
-export function describeMissingFact(fact: MissingFact): string {
-  switch (fact.kind) {
-    case 'fact': {
-      const via = [
-        ...(fact.edge === undefined ? [] : [`edge ${edgeKey(fact.edge)}`]),
-        ...(fact.line === undefined ? [] : [`line ${fact.line.join('>')}`]),
-      ];
-      return [`${fact.reference}@${fact.personId}`, ...via].join(' ');
-    }
-    case 'relationship':
-      return `relationship ${edgeKey(fact.edge)}`;
-    case 'marker':
-      return `marker ${fact.marker}@${fact.personId}`;
-  }
-}
 
 export interface CasesRun {
   readonly cases: number;
@@ -79,7 +59,7 @@ export async function runCases(
       continue;
     }
     const parsed = casesFileSchema.safeParse(
-      parseJsonSubset(await readFile(join(dataDir, file)), maxKnowledgeJsonDepth),
+      parseJsonSubset(await readKnowledgeFile(join(dataDir, file)), maxKnowledgeJsonDepth),
     );
     if (!parsed.success) {
       problems.push(`${file}: ${parsed.error.message}`);
@@ -87,36 +67,55 @@ export async function runCases(
     }
     const ids = parsed.data.cases.map((entry) => entry.id);
     if (new Set(ids).size !== ids.length) problems.push(`${file}: Case IDs are unique`);
-    const superseded = new Set(parsed.data.cases.flatMap((entry) => entry.supersedes ?? []));
-    for (const id of superseded) {
-      if (!ids.includes(id)) problems.push(`${file}: A superseded case ${id} is in the file`);
+    const targets = parsed.data.cases.flatMap((entry) =>
+      entry.supersedes === undefined || entry.supersedes === entry.id ? [] : [entry.supersedes],
+    );
+    const superseded = new Set(targets);
+    if (superseded.size !== targets.length) {
+      problems.push(`${file}: A case is superseded at most once`);
+    }
+    for (const entry of parsed.data.cases) {
+      if (entry.supersedes === entry.id) problems.push(`${file} ${entry.id}: supersedes itself`);
+      else if (entry.supersedes !== undefined && !ids.includes(entry.supersedes)) {
+        problems.push(`${file} ${entry.id}: The case it supersedes is in the file`);
+      }
     }
     const current = parsed.data.cases.filter((entry) => !superseded.has(entry.id));
     const runs: Run[] = [];
     for (const ruleCase of current) {
       const where = `${file} ${ruleCase.id}`;
-      const snapshot = await snapshotOf(ruleCase, familiesDir);
-      if (typeof snapshot === 'string') {
-        problems.push(`${where}: ${snapshot}`);
-        continue;
+      try {
+        const snapshot = await snapshotOf(ruleCase, familiesDir);
+        const evaluation = evaluateVersion(
+          snapshot,
+          entry,
+          ruleCase.principal,
+          contextOf(ruleCase),
+        );
+        runs.push({ ruleCase, snapshot, evaluation });
+        problems.push(...compare(ruleCase, evaluation).map((problem) => `${where}: ${problem}`));
+        cases += 1;
+      } catch (error) {
+        // One broken case is reported and the rest still run.
+        problems.push(`${where}: ${error instanceof Error ? error.message : String(error)}`);
       }
-      const evaluation = evaluateVersion(snapshot, entry, ruleCase.principal, contextOf(ruleCase));
-      runs.push({ ruleCase, snapshot, evaluation });
-      problems.push(...compare(ruleCase, evaluation).map((problem) => `${where}: ${problem}`));
-      cases += 1;
     }
     problems.push(...coverage(entry, runs).map((gap) => `${file}: ${gap}`));
   }
   return { cases, problems };
 }
 
-async function snapshotOf(ruleCase: RuleCase, familiesDir: string): Promise<CaseSnapshot | string> {
+async function snapshotOf(ruleCase: RuleCase, familiesDir: string): Promise<CaseSnapshot> {
   if (ruleCase.snapshot !== undefined) return ruleCase.snapshot;
   const family = ruleCase.family;
-  if (family === undefined) return 'The case has no snapshot';
-  const bytes = await readFile(join(familiesDir, family.id, `${String(family.number)}.json`));
+  if (family === undefined) throw new Error('The case has no snapshot');
+  const bytes = await readKnowledgeFile(
+    join(familiesDir, family.id, `${String(family.number)}.json`),
+  );
   if (createHash('sha256').update(bytes).digest('hex') !== family.sha256) {
-    return `Family ${family.id} ${String(family.number)} does not hash to the pinned SHA-256`;
+    throw new Error(
+      `Family ${family.id} ${String(family.number)} does not hash to the pinned SHA-256`,
+    );
   }
   return caseSnapshotSchema.parse(parseJsonSubset(bytes, maxKnowledgeJsonDepth));
 }
@@ -170,8 +169,9 @@ interface Run {
 /**
  * The coverage rules of spec 0002 R8, from the engine's results: every requirement true, false and
  * unknown at least once; every dependent rule including and excluding someone; the statuses each
- * open version must reach, and `unavailable` for a closed one. A rule excludes someone when, on its
- * own, it reaches a person whose condition fails.
+ * open version must reach, and `unavailable` for a closed one. Each dependent rule is measured on
+ * its own, so another rule cannot cover for it: it includes someone, and reaches someone whose
+ * condition fails.
  */
 function coverage(entry: CatalogEntry, runs: readonly Run[]): string[] {
   const { version } = entry;
@@ -201,18 +201,15 @@ function coverage(entry: CatalogEntry, runs: readonly Run[]): string[] {
     }
   }
   for (const rule of version.dependents) {
-    const includes = runs.some((run) =>
-      run.evaluation.unit.dependents.some((member) => member.rules.includes(rule.id)),
-    );
-    if (!includes) gaps.push(`Dependent rule ${rule.id} never includes anyone`);
     const alone: CatalogEntry = { ...entry, version: { ...version, dependents: [rule] } };
-    const excludes = runs.some((run) =>
-      computeUnit(
-        run.snapshot,
-        alone,
-        run.ruleCase.principal,
-        contextOf(run.ruleCase),
-      ).excluded.some((person) => person.reason === 'condition_not_met'),
+    const units = runs.map((run) =>
+      computeUnit(run.snapshot, alone, run.ruleCase.principal, contextOf(run.ruleCase)),
+    );
+    if (!units.some((unit) => unit.dependents.length > 0)) {
+      gaps.push(`Dependent rule ${rule.id} never includes anyone`);
+    }
+    const excludes = units.some((unit) =>
+      unit.excluded.some((person) => person.reason === 'condition_not_met'),
     );
     if (!excludes) gaps.push(`Dependent rule ${rule.id} never excludes anyone`);
   }

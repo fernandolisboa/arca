@@ -56,6 +56,33 @@
       }
     },
     {
+      "id": "shared-custody-child-income-unknown",
+      "family": {
+        "id": "shared-custody",
+        "number": 1,
+        "sha256": "14d0abb8c47b58be036b93116c5c40cbd47f2adca5c54cf3ab8a7a6079ba5dfe"
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "BRL",
+            "to": "EUR",
+            "rate": "0.16",
+            "date": "2026-09-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "expected": {
+        "status": "missing_information",
+        "dependents": ["p3"],
+        "possibleDependents": [],
+        "missingFacts": ["person.monthlyPassiveIncome@p3"]
+      }
+    },
+    {
       "id": "income-covers-spouse-and-minor-child",
       "snapshot": {
         "recordedOn": "2026-10-01",

@@ -29,7 +29,7 @@
     },
     {
       "path": "routes/qn-descent/1",
-      "sha256": "19c9d9dda0ceb8b5abc2e344ca33d9a055ff78d1abb04b2896ce51ffb64a1f8e"
+      "sha256": "baaedbe355b98d5decbcf73c42f6c75b59344fabd7ca08ee5005c64a29fe3a46"
     },
     {
       "path": "routes/qp-treaty-investor/1",
@@ -41,7 +41,7 @@
     },
     {
       "path": "routes/qs-investor/1",
-      "sha256": "49b4a76f11edb2cb9a8d53a6235bdaf96af8c7975759a844d23f838eb86a91ea"
+      "sha256": "fb521cada0b726f335b1be3b62d4f038b5da4d35fbc3f666b82215a28752ad5b"
     },
     {
       "path": "routes/qs-seasonal-work/1",

@@ -4,7 +4,7 @@
     {
       "id": "six-adults-short-of-capital",
       "family": {
-        "id": "two-generation-six-adults",
+        "id": "three-generation-six-adults",
         "number": 1,
         "sha256": "ddc9eb7c9551e9b8b309e2094c5bcd3d499921b354a3b9bbcf388aa2f5879dd9"
       },
@@ -221,6 +221,123 @@
       "factsAsOf": "2026-09-10",
       "expected": {
         "status": "eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "adoption-without-a-start-before-the-record",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p4"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1980-01-20",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1980-01-20",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
+          },
+          {
+            "id": "p4",
+            "birthDate": "2017-08-08",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2017-08-08",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "recordedInFull": ["spouses"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p1",
+            "child": "p4",
+            "parentKind": "adoptive"
+          }
+        ],
+        "assets": [
+          {
+            "id": "a1",
+            "kind": "cash",
+            "owners": [
+              {
+                "person": "p1",
+                "share": "1"
+              }
+            ],
+            "value": {
+              "amount": 100000000,
+              "currency": "BRL"
+            },
+            "valuedAt": "2026-09-30",
+            "liquid": true,
+            "sold": "none"
+          }
+        ]
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "BRL",
+            "to": "USD",
+            "rate": "0.18",
+            "date": "2026-09-08",
+            "source": "fixture"
+          }
+        ]
+      },
+      "referenceDates": {
+        "filingDate": "2026-09-01"
+      },
+      "factsAsOf": "2026-09-10",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": ["p4"],
+        "missingFacts": ["relationship parent:p1>p4", "marker assets@p4", "unit.liquidAssets@p1"]
+      }
+    },
+    {
+      "id": "ex-spouse-holds-the-capital",
+      "family": {
+        "id": "ex-spouse-assets",
+        "number": 1,
+        "sha256": "cc922e95e6690197578d601764faee9e3a27c4911b162642056ffa5867a31bc1"
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "BRL",
+            "to": "USD",
+            "rate": "0.18",
+            "date": "2026-09-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "referenceDates": {
+        "filingDate": "2026-09-01"
+      },
+      "expected": {
+        "status": "not_eligible",
         "dependents": [],
         "possibleDependents": [],
         "missingFacts": []

@@ -55,7 +55,7 @@
   "dependents": [
     {
       "id": "spouse",
-      "title": "Spouse married by the filing date",
+      "title": "Spouse married before the filing date",
       "path": ["spouse"],
       "condition": {
         "op": "since",

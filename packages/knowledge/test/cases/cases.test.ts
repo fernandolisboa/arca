@@ -1,11 +1,11 @@
-import { readFile, readdir } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { caseSnapshotSchema, maxKnowledgeJsonDepth, parseCalendarDate } from '@arca/domain';
 import { parseJsonSubset } from '@arca/scripts/json';
 import { describe, expect, it } from 'vitest';
-import { buildKnowledge } from '../../scripts/build.ts';
-import { formatIssue } from '../../scripts/build.ts';
+import { buildKnowledge, formatIssue } from '../../scripts/build.ts';
+import { readKnowledgeFile } from '../../scripts/load.ts';
 import { createReproductionLookup, reproductionEntry } from '../../src/reproduction.ts';
 import { parseEntries } from '../../src/entries.ts';
 import { runCases } from './runner.ts';
@@ -38,7 +38,7 @@ describe('table-driven cases', () => {
       );
       expect(names, id).toEqual(names.map((_, index) => `${String(index + 1)}.json`));
       for (const name of names) {
-        const bytes = await readFile(join(familiesDir, id, name));
+        const bytes = await readKnowledgeFile(join(familiesDir, id, name));
         const parsed = caseSnapshotSchema.safeParse(parseJsonSubset(bytes, maxKnowledgeJsonDepth));
         expect(parsed.success, `${id}/${name}`).toBe(true);
       }
