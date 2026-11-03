@@ -17,7 +17,7 @@ Family first: the product for other families starts only after the founder's fam
 - Case 1 facts gathered; ancestry of all six adults mapped.
 - Route catalog researched for the countries the family selects.
 - ~~Stack confirmed~~ Done: [ADR-0010](adr/0010-stack-revised.md) (superseding ADR-0003), with auth ([ADR-0006](adr/0006-auth.md)), background jobs ([ADR-0009](adr/0009-background-jobs-guarantees.md), superseding ADR-0007), reviewers in CI ([ADR-0011](adr/0011-reviewers-in-ci.md), superseded by [ADR-0019](adr/0019-reviewers-in-the-authoring-session.md)), automation-first setup ([ADR-0012](adr/0012-automation-first-setup.md)) and database security and environments ([ADR-0008](adr/0008-database-security-and-environments.md)).
-- Production domain chosen and registered (passkeys depend on it from day one).
+- Production host named and an owned email domain registered (passkeys depend on the host from day one; production stays closed without the email domain; [ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)).
 
 Phase 0 does not depend on code: the questions in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) can be answered while the repository is set up.
 
@@ -36,7 +36,7 @@ Phase 0 does not depend on code: the questions in [OPEN-QUESTIONS.md](OPEN-QUEST
 - Before real family data enters: in-app account deletion and data export, retention periods ([RETENTION.md](RETENTION.md)), incident response runbook, off-vendor backups, threat model for the epic ([ADR-0017](adr/0017-data-lifecycle-and-backups.md), spec 0004).
 - Client builds to a static bundle; no server-rendering dependency.
 - Versioned typed API; every feature goes through it.
-- Passkeys on the production domain, invite-only enrollment, purpose-bound step-up and recovery ([ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)); cookie sessions on the web. Secure-storage tokens for native apps come with Phase 4; nothing in the design blocks them.
+- Passkeys on the production host, invite-only enrollment, purpose-bound step-up and recovery ([ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)); cookie sessions on the web. Secure-storage tokens for native apps come with Phase 4; nothing in the design blocks them.
 - `platform` port with web adapters: passkeys, vault envelopes, camera capture, file picking, notifications, secure key storage, sharing, receiving shared files, deep links.
 - Notification service with per-device channels (web push first).
 - Vault encryption format documented and platform-neutral; key recovery designed and tested.
@@ -65,7 +65,7 @@ Multi-family accounts, guided onboarding, billing, expanded catalog, self-help p
 ## Phase 4 — Android
 
 - Capacitor Android project wrapping the web client.
-- Android adapters for the `platform` port: ML Kit document scanner, Android Keystore with biometric unlock, FCM push, share-sheet target, App Links on the production domain, passkeys through Credential Manager with Digital Asset Links.
+- Android adapters for the `platform` port: ML Kit document scanner, Android Keystore with biometric unlock, FCM push, share-sheet target, App Links on the production host, passkeys through Credential Manager with Digital Asset Links.
 - Bearer sessions for the native app (Better Auth bearer plugin), with the token in the Keystore and the Capacitor origin on the CORS allow-list ([ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)).
 - Native polish: splash screen, offline screens, back-button behavior, in-app browser for external links.
 - Release pipeline: signed builds in CI, crash reporting with personal data scrubbed.

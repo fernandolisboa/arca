@@ -2,7 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-11-02
-- Amends: [ADR-0006](0006-auth.md) (enrollment, step-up mechanics, recovery details, session transport timing, and the production relying-party ID for now), [ADR-0005](0005-platform-strategy.md) and [ADR-0010](0010-stack-revised.md) (native bearer tokens move to Phase 4)
+- Amends: [ADR-0006](0006-auth.md) (enrollment, step-up mechanics, recovery details, session transport timing, and the production relying-party ID for now), [ADR-0005](0005-platform-strategy.md) (the production relying-party host for now) and, with [ADR-0010](0010-stack-revised.md), native bearer tokens move to Phase 4
 - Spec: [0003 identity and access](../specs/0003-identity-and-access.md)
 
 ## Context
