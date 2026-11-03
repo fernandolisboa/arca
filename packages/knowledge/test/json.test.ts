@@ -5,19 +5,18 @@ import { type Json, JsonSubsetError, parseJsonSubset } from '../scripts/json.ts'
 const parse = (text: string, depth = 48): Json =>
   parseJsonSubset(new TextEncoder().encode(text), depth);
 
+const hidden = /[\u061c\u200b-\u200f\u202a-\u202e\u2060-\u2064\u2066-\u2069\ufeff]/;
+const allowed = (text: string): boolean => text.normalize('NFC') === text && !hidden.test(text);
+
 const subsetValue: fc.Arbitrary<Json> = fc.letrec<{ value: Json }>((tie) => ({
   value: fc.oneof(
     { depthSize: 'small' },
     fc.constant(null),
     fc.boolean(),
     fc.maxSafeInteger(),
-    fc.string({ unit: 'grapheme' }).filter((text) => text.normalize('NFC') === text),
+    fc.string({ unit: 'grapheme' }).filter(allowed),
     fc.array(tie('value'), { maxLength: 4 }),
-    fc.dictionary(
-      fc.string({ unit: 'grapheme' }).filter((text) => text.normalize('NFC') === text),
-      tie('value'),
-      { maxKeys: 4 },
-    ),
+    fc.dictionary(fc.string({ unit: 'grapheme' }).filter(allowed), tie('value'), { maxKeys: 4 }),
   ),
 })).value;
 
@@ -57,6 +56,10 @@ describe('parseJsonSubset', () => {
     ['a byte order mark', '\ufeff{}'],
     ['single quotes', "{'a':1}"],
     ['an unterminated string', '"abc'],
+    ['a right-to-left override', '"abc\u202edef"'],
+    ['an escaped right-to-left override', '"abc\\u202edef"'],
+    ['a zero-width space in a key', '{"a\u200bb":1}'],
+    ['a byte order mark inside a string', '"a\ufeffb"'],
   ])('refuses %s', (_, text) => {
     expect(() => parse(text)).toThrow(JsonSubsetError);
   });

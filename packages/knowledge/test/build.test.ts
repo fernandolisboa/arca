@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { buildKnowledge, catalogModule, formatIssue } from '../scripts/build.ts';
-import { contentHash } from '../scripts/canonical.ts';
+import { contentHash } from '../scripts/content-hash.ts';
 import type { Json } from '../scripts/json.ts';
 import { baseTree, buildDate, emptyHashes, routeVersion, writeTree } from './data.ts';
 
@@ -45,6 +45,13 @@ describe('buildKnowledge', () => {
     );
   });
 
+  it('keeps the hash of a fixed tree, so a change to the container shows up in review', async () => {
+    const { entries } = await buildKnowledge(await writeTree(baseTree()), buildDate);
+    expect(entries[0]?.hash).toBe(
+      '6a10f911228fe06df327ffe50277bc3b3f3aa36a28aded5f3baedd10f48e5cbd',
+    );
+  });
+
   it('changes the hash when a pinned file changes', async () => {
     const first = await buildKnowledge(await writeTree(baseTree()), buildDate);
     const tree = baseTree();
@@ -83,7 +90,10 @@ describe('buildKnowledge', () => {
 
     it('reports a changed vector hash and an entry with no file', async () => {
       const hashes = emptyHashes();
-      hashes.vectors = hashes.vectors.map((vector) => ({ ...vector, sha256: 'f'.repeat(64) }));
+      hashes.vectors = [
+        ...hashes.vectors.map((vector) => ({ ...vector, sha256: 'f'.repeat(64) })),
+        { name: 'gone', sha256: 'f'.repeat(64) },
+      ];
       hashes.files = [{ path: 'routes/qm-gone/1', sha256: 'a'.repeat(64) }];
       const issues = await issuesOf({}, hashes);
       expect(issues).toEqual([
@@ -91,6 +101,7 @@ describe('buildKnowledge', () => {
         expect.stringContaining('vector sorting hashes to'),
         expect.stringContaining('vector numbers hashes to'),
         'hashes.json: routes/qm-gone/1 has a recorded hash but no file',
+        'hashes.json: vector gone has a recorded hash but no vector',
       ]);
     });
 
@@ -137,7 +148,9 @@ describe('buildKnowledge', () => {
       const dir = await writeTree({});
       await rm(join(dir, 'hashes.json'));
       const { issues } = await buildKnowledge(dir, buildDate);
-      expect(issues.map(formatIssue)).toEqual(['hashes.json: The hashes file is missing']);
+      expect(issues.map(formatIssue)).toEqual([
+        'hashes.json: The hashes file is missing or unreadable',
+      ]);
     });
 
     it('collects cases files for the cases runner without parsing them here', async () => {

@@ -1,11 +1,10 @@
+import { type CalendarDate, compareDates } from '../calendar/calendar-date.js';
 import {
-  type CalendarDate,
   type DecisionStates,
   type VersionIdentity,
-  compareDates,
   identityKey,
   selectVersion,
-} from '@arca/domain';
+} from './catalog.js';
 
 /** What the order checks read about a version. */
 export interface VersionDates {
@@ -16,10 +15,10 @@ export interface VersionDates {
 }
 
 /**
- * Checks the dates of one route's versions (spec 0002, R6): a version that corrects nothing starts strictly after every lower-numbered version; a
- * correction falls inside the bounds the period of the version it fixes sets; corrections of the
- * same version do not start earlier as their numbers grow. Returns one message per problem, keyed
- * by version number.
+ * Checks the dates of one route's versions (spec 0002, R6), given contiguous numbers. A version
+ * that corrects nothing starts strictly after every lower-numbered version. A correction falls
+ * inside the bounds set by the period of the version it fixes, and corrections of one version
+ * never start earlier as their numbers grow. Returns the problems by version number.
  */
 export function checkVersionOrder(versions: readonly VersionDates[]): Map<number, string[]> {
   const problems = new Map<number, string[]>();
@@ -39,16 +38,21 @@ export function checkVersionOrder(versions: readonly VersionDates[]): Map<number
       }
       continue;
     }
-    const message = correctionBoundsProblem(version, lower);
+    const message = correctionBoundsProblem(
+      version,
+      lower.filter((other) => other.corrects !== version.corrects),
+    );
     if (message !== undefined) report(version.number, message);
-    const previous = latestCorrection.get(version.corrects);
-    if (previous !== undefined && compareDates(version.effectiveFrom, previous.effectiveFrom) < 0) {
+    const latest = latestCorrection.get(version.corrects);
+    if (latest !== undefined && compareDates(version.effectiveFrom, latest.effectiveFrom) < 0) {
       report(
         version.number,
-        `A correction of version ${String(version.corrects)} starts no earlier than version ${String(previous.number)}, which corrects it too`,
+        `A correction of version ${String(version.corrects)} starts no earlier than version ${String(latest.number)}, which corrects it too`,
       );
     }
-    latestCorrection.set(version.corrects, version);
+    if (latest === undefined || compareDates(version.effectiveFrom, latest.effectiveFrom) >= 0) {
+      latestCorrection.set(version.corrects, version);
+    }
   }
   return problems;
 }
@@ -60,9 +64,9 @@ interface Segment {
 }
 
 /**
- * The bounds of a correction: the period of the version it fixes is the run of dates on which
- * selection over the lower-numbered versions, all active, picks it. The correction starts before
- * that period ends and after the start of the period before it, if any.
+ * The period of the corrected version is the run of dates on which selection over `lower` (the
+ * lower-numbered versions without other corrections of the same version), all active, picks it.
+ * The correction starts before that period ends and after the start of the period before it.
  */
 function correctionBoundsProblem(
   correction: VersionDates,

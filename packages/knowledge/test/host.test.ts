@@ -13,6 +13,9 @@ describe('hostOf', () => {
   it.each([
     'http://gov.example/',
     'https://user@gov.example/',
+    'https://@gov.example/',
+    'https://:@gov.example/',
+    'https://gov.example:/',
     'https://user:secret@gov.example/',
     'https://gov.example:8443/',
     'https://gov.example:443/',

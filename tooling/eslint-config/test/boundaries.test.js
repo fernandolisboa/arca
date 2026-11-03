@@ -111,8 +111,15 @@ describe('knowledge', () => {
     ['src/file-read.ts', 'no-restricted-imports'],
     ['src/console.ts', 'no-restricted-globals'],
     ['src/relative-reproduction.ts', 'no-restricted-imports'],
+    ['src/raw-catalog.ts', 'no-restricted-imports'],
   ])('%s fails with %s', async (file, rule) => {
     expect(await ruleIds('knowledge', ['knowledge'], file)).toContain(rule);
+  });
+
+  it('lets the entry point read the built catalog', async () => {
+    expect(await ruleIds('knowledge', ['knowledge'], 'src/index.ts')).not.toContain(
+      'no-restricted-imports',
+    );
   });
 
   it('lets the build scripts read files', async () => {
@@ -126,6 +133,8 @@ describe('reproduction lookup', () => {
   it.each([
     ['src/reproduction-import.ts', 'no-restricted-imports'],
     ['src/dynamic-reproduction.ts', 'no-restricted-syntax'],
+    ['src/reproduction-folder.ts', 'no-restricted-imports'],
+    ['src/reproduction/reexport.ts', 'no-restricted-syntax'],
   ])('%s fails with %s', async (file, rule) => {
     expect(await ruleIds('api', ['api'], file)).toContain(rule);
   });

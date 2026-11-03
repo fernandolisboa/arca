@@ -6,7 +6,7 @@ import { expect } from 'vitest';
 import { buildKnowledge, catalogModule } from '../scripts/build.ts';
 import { parseEntries } from '../src/entries.ts';
 import { rfc8785Vectors } from '../scripts/vectors.ts';
-import { contentHash } from '../scripts/canonical.ts';
+import { contentHash } from '../scripts/content-hash.ts';
 import { loadData } from '../scripts/load.ts';
 import { validateData } from '../scripts/validate.ts';
 

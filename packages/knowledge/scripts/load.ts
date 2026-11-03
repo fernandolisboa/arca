@@ -90,8 +90,6 @@ export async function loadData(dataDir: string): Promise<RawData> {
     if (placed === undefined) hashes = json;
     else files.push({ file, json, ...placed });
   }
-  if (hashes === undefined)
-    issues.push({ file: hashesFile, message: 'The hashes file is missing' });
   files.sort((left, right) => left.file.localeCompare(right.file, 'en'));
   return { files, cases: cases.sort(), hashes, issues };
 }

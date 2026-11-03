@@ -1,4 +1,4 @@
-import { contentHash } from './canonical.ts';
+import { contentHash } from './content-hash.ts';
 import { hashesFileSchema } from './files.ts';
 import type { Json } from './json.ts';
 import type { Issue } from './load.ts';
@@ -16,7 +16,8 @@ export function checkHashes(
   computed: ReadonlyMap<string, string>,
   existing: ReadonlySet<string>,
 ): Issue[] {
-  if (recorded === undefined) return [];
+  if (recorded === undefined)
+    return [{ file: hashesFile, message: 'The hashes file is missing or unreadable' }];
   const parsed = hashesFileSchema.safeParse(recorded);
   if (!parsed.success) {
     return parsed.error.issues.map((problem) => ({
@@ -46,6 +47,10 @@ export function checkHashes(
   for (const [path, hash] of computed) compare(path, files.get(path), hash, issue);
   for (const path of files.keys()) {
     if (!existing.has(path)) issue(`${path} has a recorded hash but no file`);
+  }
+  const names = new Set(rfc8785Vectors.map((vector) => vector.name));
+  for (const name of vectors.keys()) {
+    if (!names.has(name)) issue(`vector ${name} has a recorded hash but no vector`);
   }
   return issues;
 }

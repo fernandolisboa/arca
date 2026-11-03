@@ -1,5 +1,6 @@
 import { type CatalogEntry, identityKey } from '@arca/domain';
-import { catalogEntries } from './entries.js';
+import { parseEntries } from './entries.js';
+import { catalogData } from './generated/catalog.js';
 
 export type ReproductionLookup = (
   routeId: string,
@@ -19,4 +20,4 @@ export function createReproductionLookup(
  * rejected stays reproducible with `evaluateVersion` (spec 0002, R5). Lint allows importing this
  * entry point only in the cases runner and the reproduction path, never where `evaluateRoute` runs.
  */
-export const reproductionEntry = createReproductionLookup(catalogEntries);
+export const reproductionEntry = createReproductionLookup(parseEntries(catalogData));

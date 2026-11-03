@@ -10,8 +10,8 @@ const decoder = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true });
 
 /**
  * Parses a knowledge file strictly: UTF-8 with no byte order mark, RFC 8259 syntax, integers only
- * and within ±(2^53 - 1), strings and keys in NFC and well formed, no duplicate keys, and nesting no
- * deeper than `maxDepth`. Strings are checked, never normalized, so the bytes hashed are the bytes
+ * and within ±(2^53 - 1), strings and keys in NFC, well formed and free of invisible or
+ * bidirectional controls, no duplicate keys, and nesting no deeper than `maxDepth`. Strings are checked, never normalized, so the bytes hashed are the bytes
  * reviewed.
  */
 export function parseJsonSubset(bytes: Uint8Array, maxDepth: number): Json {
@@ -38,6 +38,8 @@ const escapes: Readonly<Record<string, string>> = {
 const numberPattern = /-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/y;
 const integerPattern = /^-?(?:0|[1-9]\d*)$/;
 const hexPattern = /^[0-9a-fA-F]{4}$/;
+/** Characters that hide or reorder text, so a reviewer would not see what is hashed. */
+const invisiblePattern = /[\u061c\u200b-\u200f\u202a-\u202e\u2060-\u2064\u2066-\u2069\ufeff]/;
 
 class Parser {
   private position = 0;
@@ -138,6 +140,9 @@ class Parser {
     }
     if (!result.isWellFormed()) this.fail('A string holds a lone surrogate');
     if (result.normalize('NFC') !== result) this.fail('A string is not in NFC');
+    if (invisiblePattern.test(result)) {
+      this.fail('A string holds an invisible or bidirectional control character');
+    }
     return result;
   }
 

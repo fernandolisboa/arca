@@ -48,6 +48,18 @@ export function identityKey(
   return `${identity.routeId}/${String(identity.number)}/${identity.hash}`;
 }
 
+/** The identity of a version with its content hash. */
+export function versionIdentity(version: RouteVersion, hash: string): VersionIdentity {
+  return {
+    routeId: version.routeId,
+    number: version.number,
+    effectiveFrom: version.effectiveFrom,
+    ...(version.corrects === undefined ? {} : { corrects: version.corrects }),
+    status: version.status,
+    hash,
+  };
+}
+
 /** Every identity field agrees, so the content evaluated is the content selected. */
 export function sameIdentity(left: VersionIdentity, right: VersionIdentity): boolean {
   return (

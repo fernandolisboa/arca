@@ -1,8 +1,8 @@
 import { sourceSchema } from '@arca/domain';
 import { z } from 'zod';
+import { sha256Schema as sha256 } from '../src/entries.ts';
 
 const number = z.number().int().min(1);
-const sha256 = z.string().regex(/^[0-9a-f]{64}$/);
 
 /** Current countries, ISO 3166-1 alpha-2 (spec 0002, R7). The generator writes these files. */
 export const countriesFileSchema = z.strictObject({

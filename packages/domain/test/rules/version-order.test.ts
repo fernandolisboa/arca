@@ -1,6 +1,6 @@
-import { parseCalendarDate } from '@arca/domain';
 import { describe, expect, it } from 'vitest';
-import { type VersionDates, checkVersionOrder } from '../scripts/corrections.ts';
+import { parseCalendarDate } from '../../src/calendar/calendar-date.js';
+import { type VersionDates, checkVersionOrder } from '../../src/rules/version-order.js';
 
 const version = (number: number, effectiveFrom: string, corrects?: number): VersionDates => ({
   routeId: 'qm-work',
@@ -19,6 +19,18 @@ describe('checkVersionOrder', () => {
     ['a correction that starts earlier', [...history, version(3, '2021-06-01', 2)]],
     ['a correction found late, inside the period', [...history, version(3, '2023-01-01', 2)]],
     ['a correction of the first version before it', [...history, version(3, '2019-01-01', 1)]],
+    [
+      'two corrections of one version in date order',
+      [...history, version(3, '2022-01-01', 2), version(4, '2023-01-01', 2)],
+    ],
+    [
+      'a later correction of a version a late correction fixed',
+      [...history, version(3, '2023-01-01', 2), version(4, '2023-01-01', 2)],
+    ],
+    [
+      'two corrections of one version on its date',
+      [version(1, '2020-01-01'), version(2, '2020-01-01', 1), version(3, '2020-01-01', 1)],
+    ],
     [
       'a correction of a correction',
       [...history, version(3, '2022-01-01', 2), version(4, '2022-01-01', 3)],
@@ -51,19 +63,19 @@ describe('checkVersionOrder', () => {
     ],
     ['a correction before the period before', [...history, version(3, '2019-06-01', 2)], 3],
     [
-      'a correction of a version already corrected away',
-      [version(1, '2020-01-01'), version(2, '2020-01-01', 1), version(3, '2020-01-01', 1)],
-      3,
-    ],
-    [
-      'a second correction once the first has replaced the version from its start',
-      [...history, version(3, '2022-01-01', 2), version(4, '2023-01-01', 2)],
-      4,
-    ],
-    [
       'a correction older than an earlier correction of the same version',
       [...history, version(3, '2023-01-01', 2), version(4, '2022-06-01', 2)],
       4,
+    ],
+    [
+      'a correction older than the latest correction, not only the one before',
+      [
+        ...history,
+        version(3, '2023-01-01', 2),
+        version(4, '2022-06-01', 2),
+        version(5, '2022-09-01', 2),
+      ],
+      5,
     ],
   ])('refuses %s', (_, versions, number) => {
     expect(checkVersionOrder(versions).get(number)).toHaveLength(1);

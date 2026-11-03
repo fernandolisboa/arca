@@ -24,17 +24,28 @@ Every file in `data` is immutable once on `main`. A change is a new numbered fil
 `pnpm --filter @arca/knowledge catalog` (the Turborepo task `@arca/knowledge#catalog`, which `typecheck`, `lint`, `test` and `build` depend on) runs `scripts/build.ts`:
 
 1. Reads every file under `data`. A file outside the layout, a symbolic link or a file over 1 MB is an issue.
-2. Parses each one in the accepted JSON subset: UTF-8 without a byte order mark, integers only and within ±(2^53 − 1), strings in NFC (checked, never normalized), no duplicate keys, bounded nesting.
+2. Parses each one in the accepted JSON subset: UTF-8 without a byte order mark, integers only and within ±(2^53 − 1), strings in NFC (checked, never normalized) with no invisible or bidirectional control characters, no duplicate keys, bounded nesting.
 3. Validates it against the schemas in `@arca/domain` and the rules of spec 0002 R6: IDs and numbers match the path, numbers are contiguous, pins resolve to valid files, official sources sit on a pinned official host, members and route countries are in the pinned countries files, `verifiedAt` is not after the build date, and version dates and corrections stay inside their bounds.
 4. Hashes each route version and country set: SHA-256 over the RFC 8785 canonical JSON of `{ "version": <file>, "pinned": { "<kind>/<id>/<number>": <file>, … } }`, holding every file it pins, transitively.
 5. Compares every hash, and the hashes of the RFC 8785 test vectors, with `data/hashes.json`.
-6. Writes `src/generated/catalog.ts`. Any issue fails the build and writes nothing.
+6. Writes `src/generated/catalog.ts`. Any issue fails the build and deletes the module, so no tool keeps serving an earlier catalog.
 
 ## Adding a file
 
 Add the new numbered file, run the build, and append the `{ "path", "sha256" }` entry the build prints for it to `files` in `data/hashes.json`. Never edit an existing entry: a hash that changes means the canonicalizer or a pinned file changed, and an activation of the old content no longer covers it.
 
+## Changing a rule
+
+- **A rule change** (the law changed): a new version numbered after the last one, with an `effectiveFrom` strictly after every earlier version's, corrections included.
+- **A rule change dated earlier** than the latest version: write it as a correction of the version in effect from the latest `effectiveFrom` onward, carrying the merged content.
+- **A data error** (the version was wrong from the start): a new version with `corrects: <n>`, where `n` is the version it fixes. Its `effectiveFrom` goes in one of three places:
+  - the date of the version it fixes, which it then replaces entirely (a tie goes to the higher number);
+  - an earlier date, when the original started too late;
+  - a later date inside the original's period, for an error found late.
+
+The build checks the bounds. The period of the fixed version is the run of dates on which selection over the lower-numbered versions, all treated as active and leaving out other corrections of the same version, picks it. A correction starts before that period ends and after the start of the period before it (any date when none comes before, so a correction of the first version may predate it). Corrections of the same version never start earlier as their numbers grow. Old evaluations keep pointing at the version they used. Cases files for each version come with #48.
+
 ## Runtime entry points
 
 - `@arca/knowledge` exports `routeCatalog`, the `RouteCatalog` the engine reads: every version's identity, and a full entry only for an exact identity (route, number and content hash) whose decision state is active.
-- `@arca/knowledge/reproduction` exports `reproductionEntry(routeId, number, hash)`, which ignores decision states so an old evaluation stays reproducible. Lint allows importing it only in the cases runner (`test/cases`), the reproduction path (`src/reproduction`) and its own test.
+- `@arca/knowledge/reproduction` exports `reproductionEntry(routeId, number, hash)`, which ignores decision states so an old evaluation stays reproducible. Modules and folders named `reproduction` are reserved for it: lint allows importing them only in the cases runner (`test/cases`), the reproduction path (`src/reproduction`, `test/reproduction`) and the lookup's own test, and those files may not re-export it. Inside this package only the two entry points read the built catalog.

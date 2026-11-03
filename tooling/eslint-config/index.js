@@ -11,10 +11,13 @@ import {
   databaseDriverFiles,
   databaseDrivers,
   databaseTestFiles,
-  domain,
+  knowledgeCatalogReaders,
   knowledgeRuntimeFiles,
+  pureRuntime,
+  rawCatalog,
   reproductionLookup,
   reproductionLookupFiles,
+  reproductionReexport,
   restrictionRules,
   web,
   workflowStart,
@@ -26,7 +29,7 @@ import { noRelativeImportOutsidePackage } from './rules/no-relative-import-outsi
 /** Package kinds (spec 0001, R2) and the restrictions each one adds. */
 const restrictionsByKind = {
   /** packages/domain: pure code, no I/O and no clock. */
-  domain: [domain],
+  domain: [pureRuntime],
   /** packages/platform: browser globals; native APIs are allowed here and nowhere else. */
   browser: [],
   /** apps/web and packages/ui: no OS sniffing or native imports; React and i18n rules. */
@@ -41,8 +44,8 @@ const restrictionsByKind = {
   db: [],
   /** tooling/scripts: the build scripts, the only code allowed to read the owner variables (R7). */
   scripts: [],
-  /** packages/knowledge: its runtime entry is pure like the domain (restricted per file below). */
-  knowledge: [],
+  /** packages/knowledge: only its entry points read the built catalog; `src` is pure (below). */
+  knowledge: [rawCatalog],
 };
 
 /** @typedef {keyof typeof restrictionsByKind} Kind */
@@ -71,9 +74,21 @@ export function arcaConfig({ rootDir, kinds = [] }) {
     ...(isScripts ? [] : [databaseDrivers]),
     reproductionLookup,
   ];
-  /** The restrictions without one kind, for the files that kind exempts. */
-  const without = (/** @type {import('./boundaries.js').Restrictions} */ exempt) =>
-    restrictionRules(restrictions.filter((entry) => entry !== exempt));
+  /** @typedef {import('./boundaries.js').Restrictions} Restrictions */
+  /**
+   * Rules for a group of files, replacing the package-wide ones. ESLint keeps the last block that
+   * sets a rule, so groups must not overlap, except the knowledge catalog readers inside `src`.
+   *
+   * @param {Restrictions[]} exempt
+   * @param {Restrictions[]} added
+   */
+  const scoped = (exempt, added = []) => ({
+    'no-restricted-imports': 'off',
+    'no-restricted-syntax': 'off',
+    'no-restricted-globals': 'off',
+    'no-restricted-properties': 'off',
+    ...restrictionRules([...restrictions.filter((entry) => !exempt.includes(entry)), ...added]),
+  });
   return tseslint.config(
     {
       ignores: [
@@ -110,39 +125,24 @@ export function arcaConfig({ rootDir, kinds = [] }) {
       },
     },
     restrictions.includes(workflowStart)
-      ? {
-          files: [workflowStartHelper],
-          rules: {
-            'no-restricted-imports': 'off',
-            'no-restricted-syntax': 'off',
-            ...without(workflowStart),
-          },
-        }
+      ? { files: [workflowStartHelper], rules: scoped([workflowStart]) }
       : [],
     restrictions.includes(databaseDrivers)
       ? {
           files: kinds.includes('db') ? databaseDriverFiles : databaseTestFiles,
-          rules: {
-            'no-restricted-imports': 'off',
-            'no-restricted-syntax': 'off',
-            ...without(databaseDrivers),
-          },
+          rules: scoped([databaseDrivers]),
         }
       : [],
-    {
-      files: reproductionLookupFiles,
-      rules: {
-        'no-restricted-imports': 'off',
-        'no-restricted-syntax': 'off',
-        ...without(reproductionLookup),
-      },
-    },
+    { files: reproductionLookupFiles, rules: scoped([reproductionLookup], [reproductionReexport]) },
     kinds.includes('knowledge')
-      ? {
-          files: knowledgeRuntimeFiles,
-          languageOptions: { globals: globals.es2025 },
-          rules: restrictionRules([...restrictions, domain]),
-        }
+      ? [
+          {
+            files: knowledgeRuntimeFiles,
+            languageOptions: { globals: globals.es2025 },
+            rules: scoped([], [pureRuntime]),
+          },
+          { files: knowledgeCatalogReaders, rules: scoped([rawCatalog], [pureRuntime]) },
+        ]
       : [],
     kinds.includes('contract')
       ? {

@@ -9,14 +9,14 @@ import {
   type Source,
   checkCountrySet,
   checkRouteVersion,
+  checkVersionOrder,
   compareDates,
   countrySetSchema,
   officialDomainListSchema,
   routeVersionSchema,
 } from '@arca/domain';
 import type { z } from 'zod';
-import { contentHash } from './canonical.ts';
-import { checkVersionOrder } from './corrections.ts';
+import { contentHash } from './content-hash.ts';
 import {
   type CountriesFile,
   type FormerCountriesFile,
@@ -37,6 +37,8 @@ export interface ValidatedData {
   readonly entries: readonly BuiltEntry[];
   /** Content hash by path under `data` without the extension, for route versions and country sets. */
   readonly hashes: ReadonlyMap<string, string>;
+  /** Every route version and country set path that would have a hash, valid or not. */
+  readonly hashable: ReadonlySet<string>;
   readonly issues: readonly Issue[];
 }
 
@@ -113,7 +115,12 @@ class Validation {
         });
       }
     }
-    return { entries, hashes, issues: this.issues };
+    const hashable = new Set(
+      this.raw.files
+        .filter((file) => file.kind === 'country-sets' || file.kind === 'routes')
+        .map((file) => withoutExtension(file.file)),
+    );
+    return { entries, hashes, hashable, issues: this.issues };
   }
 
   private parse(file: RawFile): void {
@@ -317,8 +324,7 @@ function withoutExtension(file: string): string {
 export function hostOf(url: string): string | undefined {
   if (!URL.canParse(url)) return undefined;
   const parsed = new URL(url);
-  if (parsed.protocol !== 'https:' || parsed.username !== '' || parsed.password !== '')
-    return undefined;
-  if (parsed.port !== '' || /^https:\/\/[^/?#]*:/.test(url)) return undefined;
+  // Any `@` or `:` in the authority, even with nothing around it, is user information or a port.
+  if (parsed.protocol !== 'https:' || /^https:\/\/[^/?#\\]*[@:]/.test(url)) return undefined;
   return parsed.hostname;
 }

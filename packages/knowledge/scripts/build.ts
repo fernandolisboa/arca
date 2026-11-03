@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { type CalendarDate, parseCalendarDate } from '@arca/domain';
@@ -18,14 +18,9 @@ export async function buildKnowledge(
 ): Promise<KnowledgeBuild> {
   const raw = await loadData(dataDir);
   const validated = validateData(raw, buildDate);
-  const hashed = new Set(
-    raw.files
-      .filter((file) => file.kind === 'routes' || file.kind === 'country-sets')
-      .map((file) => file.file.replace(/\.json$/, '')),
-  );
   return {
     entries: validated.entries,
-    issues: [...validated.issues, ...checkHashes(raw.hashes, validated.hashes, hashed)],
+    issues: [...validated.issues, ...checkHashes(raw.hashes, validated.hashes, validated.hashable)],
   };
 }
 
@@ -48,13 +43,15 @@ export function formatIssue(issue: Issue): string {
 async function main(): Promise<void> {
   const packageDir = fileURLToPath(new URL('..', import.meta.url));
   const today = parseCalendarDate(new Date().toISOString().slice(0, 10));
+  const target = join(packageDir, 'src', 'generated', 'catalog.ts');
   const { entries, issues } = await buildKnowledge(join(packageDir, 'data'), today);
   if (issues.length > 0) {
+    // A catalog from an earlier build would otherwise still be served by tools run outside Turbo.
+    await rm(target, { force: true });
     process.stderr.write(`${issues.map(formatIssue).join('\n')}\n`);
     process.exitCode = 1;
     return;
   }
-  const target = join(packageDir, 'src', 'generated', 'catalog.ts');
   await mkdir(dirname(target), { recursive: true });
   await writeFile(target, catalogModule(entries));
   process.stdout.write(`Knowledge catalog: ${String(entries.length)} route versions\n`);
