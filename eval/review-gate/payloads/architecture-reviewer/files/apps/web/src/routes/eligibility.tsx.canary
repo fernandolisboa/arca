@@ -1,9 +1,0 @@
-import { evaluateRoute, loadRuleVersion } from '@arca/domain';
-import { useCaseFacts } from '../case-facts';
-
-export function EligibilityPanel({ routeId }: { routeId: string }) {
-  const facts = useCaseFacts();
-  const rules = loadRuleVersion(routeId);
-  const result = evaluateRoute(rules, facts);
-  return <EligibilityResult result={result} />;
-}

@@ -27,6 +27,8 @@ Facts that shape what stays:
 
 ### The review gate
 
+Superseded by [ADR-0019](0019-reviewers-in-the-authoring-session.md) on 2026-11-03: the reviewers no longer run in CI, so this section is history.
+
 - The reviewers still run in CI as the required `review-gate` check, as ADR-0011 describes, with the verdict computed in code and the canary suite. The check is created by the workflow's own `GITHUB_TOKEN`, and the ruleset pins every required check, `review-gate` included, to GitHub Actions.
 - Dropped: the `arca-gate` App and its `gate` environment; `CODEOWNERS` and the code-owner ruleset; the rule that agents cannot push workflows. Each existed to keep agents from acting with the owner's authority, which agents now hold by decision.
 - `docs/review-acceptances.md` rows are added by the author of the change, and the reviewers on the next run see them in the diff.

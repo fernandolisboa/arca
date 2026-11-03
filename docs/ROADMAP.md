@@ -41,7 +41,7 @@ Phase 0 does not depend on code: the questions in [OPEN-QUESTIONS.md](OPEN-QUEST
 - Notification service with per-device channels (web push first).
 - Vault encryption format documented and platform-neutral; key recovery designed and tested.
 - Responsive, touch-first layouts from phone to tablet to desktop, safe-area aware.
-- CI running unit tests, the synthetic evaluation suite and the multi-reviewer pass.
+- CI running unit tests and the synthetic evaluation suite; the multi-reviewer pass runs in the authoring session ([ADR-0019](adr/0019-reviewers-in-the-authoring-session.md)).
 
 **Epic: consultancy core**
 

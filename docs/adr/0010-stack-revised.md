@@ -27,7 +27,7 @@
 | Dependency updates | Renovate | Dependabot version updates with a cooldown equal to pnpm's minimum release age; Renovate only if Dependabot cannot update pnpm catalog entries (checked while scaffolding) | One fewer third-party app with write access to the repository |
 | Typed client | Generated for every platform | Derived from the Zod contract, no code generation | Every client is TypeScript; the OpenAPI generators available require TypeScript 5; runtime validation catches drift |
 | TypeScript | Strict | TypeScript 7 for builds, 6.0 for lint tooling | Latest compiler; typescript-eslint does not support 7 yet |
-| Code review gate | Reviewer subagents run by the authoring session | The same reviewers also run in CI as a required check ([ADR-0011](0011-reviewers-in-ci.md)) | A local run cannot be enforced |
+| Code review gate | Reviewer subagents run by the authoring session | The same reviewers also run in CI as a required check ([ADR-0011](0011-reviewers-in-ci.md)); reverted by [ADR-0019](0019-reviewers-in-the-authoring-session.md), so only the authoring session runs them | A local run cannot be enforced |
 
 ## Decision
 
