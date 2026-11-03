@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "vectors": [
+    {
+      "name": "primitives",
+      "sha256": "2d5e01a318d0f0879ab568c4be289c8b1f64ef8921a53c6277d5e069978baacb"
+    },
+    {
+      "name": "sorting",
+      "sha256": "5e321556d22018a9656991a9e94f77ec175fa193e52a2429d312f8419ec8b08c"
+    },
+    {
+      "name": "numbers",
+      "sha256": "2bb871d729d2db80eda1ae2b3e7a9bc5028979103235ab3682063191b3cb52c3"
+    }
+  ],
+  "files": [
+    {
+      "path": "country-sets/treaty/1",
+      "sha256": "89b197ead6975fcef8b04645aa4202c198cffc85d3ba877bc23ed6a1e292e383"
+    },
+    {
+      "path": "routes/qm-family-reunification/1",
+      "sha256": "1e3aee1362594f5fac9210e4ec15e022cdc56eb22481b89e8ad44a38e0608688"
+    },
+    {
+      "path": "routes/qm-passive-income/1",
+      "sha256": "6dd395221fafd354f84950c76cb3bb5ba3a332b54b64ada35fc4cc333e8a97eb"
+    },
+    {
+      "path": "routes/qn-descent/1",
+      "sha256": "baaedbe355b98d5decbcf73c42f6c75b59344fabd7ca08ee5005c64a29fe3a46"
+    },
+    {
+      "path": "routes/qp-treaty-investor/1",
+      "sha256": "9c0b60f8ad6da15a7a3bd0f0e7ab6bdd4a78b38fa6d4db777204434248c485e4"
+    },
+    {
+      "path": "routes/qr-national-interest/1",
+      "sha256": "5b89ee3fd22c4f96d6d3137c47953fc202145a1614624633b2e5f8a893f6cead"
+    },
+    {
+      "path": "routes/qs-investor/1",
+      "sha256": "fb521cada0b726f335b1be3b62d4f038b5da4d35fbc3f666b82215a28752ad5b"
+    },
+    {
+      "path": "routes/qs-seasonal-work/1",
+      "sha256": "eabdd1ef93fbf70ee5b2372b7d5f9c0660484a30b48b6332fbe851e251f89ad8"
+    },
+    {
+      "path": "routes/qt-closed/1",
+      "sha256": "3d191cf05ded2b0f3be0c2cd6afb6d4c58bfb9329976f4920ace036010797d26"
+    }
+  ]
+}

@@ -43,7 +43,11 @@
     },
     "@arca/knowledge#test": {
       "dependsOn": ["^build", "catalog"],
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/.github/policy/vendored.json"]
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/.github/policy/vendored.json",
+        "$TURBO_ROOT$/eval/families/**"
+      ]
     },
     "@arca/i18n#test": {
       "dependsOn": ["^build"],

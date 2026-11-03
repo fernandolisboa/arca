@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "routeId": "qp-treaty-investor",
+  "number": 1,
+  "title": "Fixture: treaty investor",
+  "country": "QP",
+  "tags": ["fixture", "investment"],
+  "effectiveFrom": "2020-01-01",
+  "status": "open",
+  "currency": "EUR",
+  "sources": [
+    {
+      "id": "law",
+      "url": "https://www.gov.example/fixture-act",
+      "title": "Fixture residence act",
+      "kind": "official",
+      "verifiedAt": "2026-09-01"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "fixture-gov",
+      "number": 1
+    }
+  ],
+  "countrySets": [
+    {
+      "id": "treaty",
+      "number": 1
+    }
+  ],
+  "requirements": [
+    {
+      "id": "treaty-national",
+      "title": "A citizen of a treaty country",
+      "expression": {
+        "op": "intersects",
+        "list": {
+          "op": "fact",
+          "key": "principal.citizenships"
+        },
+        "set": {
+          "op": "set",
+          "id": "treaty"
+        }
+      },
+      "sources": ["law"]
+    },
+    {
+      "id": "investment",
+      "title": "A substantial investment",
+      "expression": {
+        "op": "gte",
+        "left": {
+          "op": "fact",
+          "key": "principal.liquidAssets"
+        },
+        "right": {
+          "op": "money",
+          "amount": 10000000,
+          "currency": "EUR"
+        }
+      },
+      "sources": ["law"]
+    }
+  ],
+  "assessments": [],
+  "dependents": [],
+  "costs": [],
+  "durations": []
+}

@@ -1,0 +1,122 @@
+{
+  "recordedOn": "2026-10-01",
+  "members": [
+    "p1",
+    "p3"
+  ],
+  "people": [
+    {
+      "id": "p1",
+      "birthDate": "1984-02-14",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "1984-02-14",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR",
+      "educationLevel": 6,
+      "incomes": [
+        {
+          "kind": "active",
+          "monthly": {
+            "amount": 1500000,
+            "currency": "BRL"
+          },
+          "sourceCountry": "BR"
+        }
+      ],
+      "immigrationHistory": [],
+      "jobOffers": [],
+      "financiallyDependentOn": [],
+      "recordedInFull": [
+        "spouses",
+        "partners",
+        "children",
+        "assets"
+      ]
+    },
+    {
+      "id": "p2",
+      "birthDate": "1985-09-30",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "1985-09-30",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR"
+    },
+    {
+      "id": "p3",
+      "birthDate": "2012-07-08",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "2012-07-08",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR",
+      "financiallyDependentOn": [
+        "p1",
+        "p2"
+      ],
+      "studying": true,
+      "recordedInFull": [
+        "spouses",
+        "partners",
+        "children"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "kind": "spouse",
+      "people": [
+        "p1",
+        "p2"
+      ],
+      "start": "2008-10-18",
+      "end": "2019-03-01"
+    },
+    {
+      "kind": "parent",
+      "parent": "p1",
+      "child": "p3",
+      "parentKind": "biological",
+      "custody": "shared"
+    },
+    {
+      "kind": "parent",
+      "parent": "p2",
+      "child": "p3",
+      "parentKind": "biological",
+      "custody": "shared"
+    }
+  ],
+  "assets": [
+    {
+      "id": "a1",
+      "kind": "cash",
+      "owners": [
+        {
+          "person": "p1",
+          "share": "1"
+        }
+      ],
+      "value": {
+        "amount": 21000000,
+        "currency": "BRL"
+      },
+      "valuedAt": "2026-09-30",
+      "liquid": true,
+      "sold": "none"
+    }
+  ]
+}

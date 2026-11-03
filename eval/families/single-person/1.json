@@ -1,0 +1,72 @@
+{
+  "recordedOn": "2026-10-01",
+  "members": [
+    "p1"
+  ],
+  "people": [
+    {
+      "id": "p1",
+      "birthDate": "1991-04-12",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "1991-04-12",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR",
+      "educationLevel": 6,
+      "languages": [
+        {
+          "language": "pt",
+          "level": "native"
+        },
+        {
+          "language": "en",
+          "level": "B2"
+        }
+      ],
+      "incomes": [
+        {
+          "kind": "active",
+          "monthly": {
+            "amount": 1250000,
+            "currency": "BRL"
+          },
+          "sourceCountry": "BR"
+        }
+      ],
+      "immigrationHistory": [],
+      "jobOffers": [],
+      "financiallyDependentOn": [],
+      "studying": false,
+      "recordedInFull": [
+        "spouses",
+        "partners",
+        "children",
+        "assets"
+      ]
+    }
+  ],
+  "relationships": [],
+  "assets": [
+    {
+      "id": "a1",
+      "kind": "cash",
+      "owners": [
+        {
+          "person": "p1",
+          "share": "1"
+        }
+      ],
+      "value": {
+        "amount": 8500000,
+        "currency": "BRL"
+      },
+      "valuedAt": "2026-09-30",
+      "liquid": true,
+      "sold": "none"
+    }
+  ]
+}

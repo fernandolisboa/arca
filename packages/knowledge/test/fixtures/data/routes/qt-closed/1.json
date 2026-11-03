@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "routeId": "qt-closed",
+  "number": 1,
+  "title": "Fixture: closed golden residence",
+  "country": "QT",
+  "tags": ["fixture", "investment"],
+  "effectiveFrom": "2020-01-01",
+  "status": "closed",
+  "currency": "EUR",
+  "sources": [
+    {
+      "id": "law",
+      "url": "https://www.gov.example/fixture-act",
+      "title": "Fixture residence act",
+      "kind": "official",
+      "verifiedAt": "2026-09-01"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "fixture-gov",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [],
+  "assessments": [],
+  "dependents": [],
+  "costs": [],
+  "durations": [],
+  "closureSources": ["law"]
+}

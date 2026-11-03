@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "routeId": "qs-investor",
+  "number": 1,
+  "title": "Fixture: investor residence",
+  "country": "QS",
+  "tags": ["fixture", "investment"],
+  "effectiveFrom": "2020-01-01",
+  "status": "open",
+  "currency": "USD",
+  "sources": [
+    {
+      "id": "law",
+      "url": "https://www.gov.example/fixture-act",
+      "title": "Fixture residence act",
+      "kind": "official",
+      "verifiedAt": "2026-09-01"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "fixture-gov",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "investment",
+      "title": "Capital for the investment",
+      "expression": {
+        "op": "gte",
+        "left": {
+          "op": "fact",
+          "key": "unit.liquidAssets"
+        },
+        "right": {
+          "op": "money",
+          "amount": 80000000,
+          "currency": "USD"
+        }
+      },
+      "sources": ["law"]
+    }
+  ],
+  "assessments": [],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse married before the filing date",
+      "path": ["spouse"],
+      "condition": {
+        "op": "since",
+        "date": {
+          "op": "fact",
+          "key": "edge.start"
+        },
+        "duration": "P1D",
+        "at": "filingDate"
+      },
+      "sources": ["law"]
+    },
+    {
+      "id": "children",
+      "title": "Unmarried children under 21",
+      "path": ["child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 21
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          }
+        ]
+      },
+      "sources": ["law"]
+    }
+  ],
+  "costs": [],
+  "durations": [],
+  "leapDayBirthday": "feb-28",
+  "leapDayBirthdaySources": ["law"],
+  "referenceDates": ["filingDate"]
+}

@@ -1,0 +1,208 @@
+{
+  "recordedOn": "2026-10-01",
+  "members": [
+    "p1",
+    "p2",
+    "p3",
+    "p4"
+  ],
+  "people": [
+    {
+      "id": "p1",
+      "birthDate": "1986-08-03",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "1986-08-03",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR",
+      "educationLevel": 7,
+      "incomes": [
+        {
+          "kind": "active",
+          "monthly": {
+            "amount": 2100000,
+            "currency": "BRL"
+          },
+          "sourceCountry": "BR"
+        }
+      ],
+      "immigrationHistory": [],
+      "jobOffers": [],
+      "financiallyDependentOn": [],
+      "studying": false,
+      "recordedInFull": [
+        "spouses",
+        "partners",
+        "children",
+        "assets"
+      ]
+    },
+    {
+      "id": "p2",
+      "birthDate": "1988-01-27",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "1988-01-27",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR",
+      "educationLevel": 6,
+      "incomes": [
+        {
+          "kind": "passive",
+          "monthly": {
+            "amount": 650000,
+            "currency": "BRL"
+          },
+          "sourceCountry": "BR"
+        }
+      ],
+      "immigrationHistory": [],
+      "jobOffers": [],
+      "financiallyDependentOn": [],
+      "studying": false,
+      "recordedInFull": [
+        "spouses",
+        "partners",
+        "children",
+        "assets"
+      ]
+    },
+    {
+      "id": "p3",
+      "birthDate": "2018-05-19",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "2018-05-19",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR",
+      "financiallyDependentOn": [
+        "p1",
+        "p2"
+      ],
+      "studying": true,
+      "recordedInFull": [
+        "spouses",
+        "partners",
+        "children"
+      ]
+    },
+    {
+      "id": "p4",
+      "birthDate": "2021-11-02",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "2021-11-02",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR",
+      "financiallyDependentOn": [
+        "p1",
+        "p2"
+      ],
+      "studying": false,
+      "recordedInFull": [
+        "spouses",
+        "partners",
+        "children"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "kind": "spouse",
+      "people": [
+        "p1",
+        "p2"
+      ],
+      "start": "2014-05-10",
+      "end": "none"
+    },
+    {
+      "kind": "parent",
+      "parent": "p1",
+      "child": "p3",
+      "parentKind": "biological",
+      "custody": "full"
+    },
+    {
+      "kind": "parent",
+      "parent": "p2",
+      "child": "p3",
+      "parentKind": "biological",
+      "custody": "full"
+    },
+    {
+      "kind": "parent",
+      "parent": "p1",
+      "child": "p4",
+      "parentKind": "biological",
+      "custody": "full"
+    },
+    {
+      "kind": "parent",
+      "parent": "p2",
+      "child": "p4",
+      "parentKind": "biological",
+      "custody": "full"
+    }
+  ],
+  "assets": [
+    {
+      "id": "a1",
+      "kind": "investment",
+      "owners": [
+        {
+          "person": "p1",
+          "share": "0.5"
+        },
+        {
+          "person": "p2",
+          "share": "0.5"
+        }
+      ],
+      "value": {
+        "amount": 64000000,
+        "currency": "BRL"
+      },
+      "valuedAt": "2026-09-30",
+      "liquid": true,
+      "sold": "none"
+    },
+    {
+      "id": "a2",
+      "kind": "real_estate",
+      "owners": [
+        {
+          "person": "p1",
+          "share": "0.5"
+        },
+        {
+          "person": "p2",
+          "share": "0.5"
+        }
+      ],
+      "value": {
+        "amount": 95000000,
+        "currency": "BRL"
+      },
+      "valuedAt": "2026-06-30",
+      "liquid": false,
+      "sold": "none"
+    }
+  ]
+}

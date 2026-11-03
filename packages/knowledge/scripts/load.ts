@@ -162,3 +162,17 @@ async function readBounded(absolute: string): Promise<Buffer | undefined> {
 function isErrorCode(error: unknown, code: string): boolean {
   return error instanceof Error && 'code' in error && error.code === code;
 }
+
+/**
+ * Reads a knowledge-related file outside `data`, such as a cases file or a synthetic family, the way
+ * the loader reads `data`: a regular file whose last path component is not a link, at most the
+ * loader's size limit. Linked directories on the way are `knowledge-immutable`'s to refuse.
+ */
+export async function readKnowledgeFile(absolute: string): Promise<Buffer> {
+  const bytes = await readBounded(absolute);
+  if (bytes === undefined) throw new Error(`${absolute}: A knowledge file is a regular file`);
+  if (bytes.length > maxFileBytes) {
+    throw new Error(`${absolute}: A knowledge file is at most ${String(maxFileBytes)} bytes`);
+  }
+  return bytes;
+}

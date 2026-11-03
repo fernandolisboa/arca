@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "former-countries",
+  "number": 1,
+  "codes": ["QMHH"],
+  "sources": [
+    {
+      "id": "fixture-iso",
+      "url": "https://www.iso.example/3166-3",
+      "title": "Fixture former codes",
+      "kind": "secondary",
+      "verifiedAt": "2026-09-01"
+    }
+  ]
+}

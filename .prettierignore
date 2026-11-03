@@ -20,3 +20,5 @@ apps/web/src/routeTree.gen.ts
 packages/knowledge/src/generated/
 # Vendored upstream files, kept byte for byte (spec 0002, R7).
 packages/knowledge/vendor/
+# Synthetic families, pinned by the SHA-256 of their bytes in cases files (spec 0002, R8).
+eval/families/

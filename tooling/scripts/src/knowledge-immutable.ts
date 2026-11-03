@@ -11,12 +11,27 @@ import {
   type VendoredSource,
 } from './vendored.ts';
 
-/** The directories the check watches; each must be a directory, or absent, in the change. */
-export const knowledgeRoots = ['packages/knowledge/data', 'packages/knowledge/vendor'] as const;
+/**
+ * The directories the check watches, each with its ancestors a directory, or absent, in the
+ * change: the knowledge data, the vendored files and the synthetic families cases pin (R8).
+ */
+export const knowledgeRoots = [
+  'packages/knowledge/data',
+  'packages/knowledge/vendor',
+  'eval/families',
+] as const;
 export const dataRoot = `${knowledgeRoots[0]}/`;
 export const vendorRoot = `${knowledgeRoots[1]}/`;
 export const domainSource = 'packages/domain/src';
 export const vendoredPolicy = '.github/policy/vendored.json';
+/** The roots and their ancestors, and the policy files' directories, so none of them is a link. */
+const watchedDirectories = [
+  ...new Set(
+    [...knowledgeRoots, '.github/policy'].flatMap((root) =>
+      root.split('/').map((_, index, parts) => parts.slice(0, index + 1).join('/')),
+    ),
+  ),
+];
 export const vendoredSources = '.github/policy/vendored-sources.json';
 const hashesPath = `${dataRoot}hashes.json`;
 const casesPattern = /^packages\/knowledge\/data\/routes\/[^/]+\/[^/]+\.cases\.json$/;
@@ -45,8 +60,8 @@ export interface KnowledgeVerdict {
 }
 
 /**
- * The `knowledge-immutable` rules (spec 0002, R6 and R7): nothing under `data` or `vendor` that the
- * base has may change, move or disappear; cases files, hashes.json and vendored.json only gain
+ * The `knowledge-immutable` rules (spec 0002, R6 to R8): nothing under `data`, `vendor` or
+ * `eval/families` that the base has may change, move or disappear; cases files, hashes.json and vendored.json only gain
  * entries; official-domain lists change alone; new vendored files match an entry already on main.
  */
 export async function checkKnowledgeChange(change: KnowledgeChange): Promise<KnowledgeVerdict> {
@@ -69,7 +84,7 @@ class Check {
 
   async run(): Promise<void> {
     const { base, head } = this.#change;
-    for (const directory of ['packages', 'packages/knowledge', ...knowledgeRoots]) {
+    for (const directory of watchedDirectories) {
       const entry = head.files.get(directory);
       if (entry !== undefined && entry.type !== 'tree') {
         this.#add(directory, 'must be a directory, not a link or a submodule');
@@ -403,7 +418,7 @@ class Check {
 function knowledgeFiles(files: ReadonlyMap<string, TreeFile>): [string, TreeFile][] {
   return [...files].filter(
     ([path, file]) =>
-      file.type !== 'tree' && (path.startsWith(dataRoot) || path.startsWith(vendorRoot)),
+      file.type !== 'tree' && knowledgeRoots.some((root) => path.startsWith(`${root}/`)),
   );
 }
 

@@ -1,0 +1,150 @@
+{
+  "recordedOn": "2026-10-01",
+  "members": [
+    "p1",
+    "p2",
+    "p5",
+    "p6"
+  ],
+  "people": [
+    {
+      "id": "p1",
+      "birthDate": "1979-06-21",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "1979-06-21",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR",
+      "educationLevel": 7,
+      "incomes": [
+        {
+          "kind": "active",
+          "monthly": {
+            "amount": 2600000,
+            "currency": "BRL"
+          },
+          "sourceCountry": "BR"
+        },
+        {
+          "kind": "passive",
+          "monthly": {
+            "amount": 400000,
+            "currency": "BRL"
+          },
+          "sourceCountry": "BR"
+        }
+      ],
+      "immigrationHistory": [],
+      "jobOffers": [],
+      "financiallyDependentOn": [],
+      "recordedInFull": [
+        "spouses",
+        "partners",
+        "children",
+        "parents",
+        "assets"
+      ]
+    },
+    {
+      "id": "p2",
+      "birthDate": "1981-03-09",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "1981-03-09",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR",
+      "educationLevel": 6,
+      "incomes": [],
+      "financiallyDependentOn": [],
+      "recordedInFull": [
+        "spouses",
+        "partners",
+        "children",
+        "parents",
+        "assets"
+      ]
+    },
+    {
+      "id": "p5",
+      "birthDate": "1950-12-01",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "1950-12-01",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR",
+      "financiallyDependentOn": [
+        "p1"
+      ]
+    },
+    {
+      "id": "p6",
+      "birthDate": "1947-04-17",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "1947-04-17",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR",
+      "financiallyDependentOn": [
+        "p1"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "kind": "spouse",
+      "people": [
+        "p1",
+        "p2"
+      ],
+      "start": "2006-09-02",
+      "end": "none"
+    },
+    {
+      "kind": "parent",
+      "parent": "p5",
+      "child": "p1",
+      "parentKind": "biological"
+    },
+    {
+      "kind": "parent",
+      "parent": "p6",
+      "child": "p2",
+      "parentKind": "biological"
+    }
+  ],
+  "assets": [
+    {
+      "id": "a1",
+      "kind": "cash",
+      "owners": [
+        {
+          "person": "p1",
+          "share": "1"
+        }
+      ],
+      "value": {
+        "amount": 43000000,
+        "currency": "BRL"
+      },
+      "valuedAt": "2026-09-30",
+      "liquid": true,
+      "sold": "none"
+    }
+  ]
+}

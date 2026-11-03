@@ -15,8 +15,8 @@ const watched = [...knowledgeRoots, vendoredPolicy, vendoredSources];
 /**
  * Usage: check-knowledge-immutable.ts <repository> [<base> <head>]
  *
- * Compares the knowledge data, the vendored files and vendored.json of `head` with `base` (spec
- * 0002, R6 and R7), reading both commits from git as data. CI passes main's tip as `base`; the
+ * Compares the knowledge data, the vendored files, the synthetic families and vendored.json of
+ * `head` with `base` (spec 0002, R6 to R8), reading both commits from git as data. CI passes main's tip as `base`; the
  * ruleset requires branches to be up to date, so `head` contains it and the difference is the pull
  * request's own. Without revisions it compares HEAD with its merge base with origin/main, as
  * `pnpm check:knowledge-immutable` does. New vendored.json entries are then checked against

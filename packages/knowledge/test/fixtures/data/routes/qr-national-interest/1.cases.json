@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "advanced-degree",
+      "family": {
+        "id": "couple-young-children",
+        "number": 1,
+        "sha256": "7c953f9e6667ff6a69be1c1cf6522097496b2d99ae4dd542820de0370c9e7f11"
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "BRL",
+            "to": "EUR",
+            "rate": "0.16",
+            "date": "2026-09-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "expected": {
+        "status": "needs_assessment",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "no-advanced-degree",
+      "family": {
+        "id": "single-person",
+        "number": 1,
+        "sha256": "7a45d6696cb09589b8904d27134b8858cfc4b62855da90cbab4352419f2f36d8"
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "BRL",
+            "to": "EUR",
+            "rate": "0.16",
+            "date": "2026-09-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "education-unknown",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1985-01-01"
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": ["principal.educationLevel@p1"]
+      }
+    }
+  ]
+}

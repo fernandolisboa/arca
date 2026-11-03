@@ -114,6 +114,7 @@ export {
   routeVersionSchema,
   sourceSchema,
 } from './rules/route-version.js';
+export { referenceDateNameSchema, slugSchema } from './rules/expression.js';
 export { type CheckIssue } from './rules/check.js';
 export {
   type OfficialHosts,

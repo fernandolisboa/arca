@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "fixture-gov",
+  "number": 1,
+  "issuer": "Fixture government",
+  "hosts": [
+    {
+      "host": "gov.example",
+      "source": {
+        "id": "registry",
+        "url": "https://registry.example/gov",
+        "title": "Fixture registry",
+        "kind": "official",
+        "verifiedAt": "2026-09-01"
+      }
+    }
+  ]
+}

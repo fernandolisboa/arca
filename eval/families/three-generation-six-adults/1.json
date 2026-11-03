@@ -1,0 +1,306 @@
+{
+  "recordedOn": "2026-10-01",
+  "members": [
+    "p1",
+    "p2",
+    "p3",
+    "p4",
+    "p5",
+    "p6"
+  ],
+  "people": [
+    {
+      "id": "p1",
+      "birthDate": "1975-09-14",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "1975-09-14",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR",
+      "educationLevel": 7,
+      "incomes": [
+        {
+          "kind": "active",
+          "monthly": {
+            "amount": 3200000,
+            "currency": "BRL"
+          },
+          "sourceCountry": "BR"
+        }
+      ],
+      "immigrationHistory": [],
+      "jobOffers": [],
+      "financiallyDependentOn": [],
+      "studying": false,
+      "recordedInFull": [
+        "spouses",
+        "partners",
+        "children",
+        "parents",
+        "assets"
+      ]
+    },
+    {
+      "id": "p2",
+      "birthDate": "1977-02-03",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "1977-02-03",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR",
+      "educationLevel": 6,
+      "incomes": [
+        {
+          "kind": "passive",
+          "monthly": {
+            "amount": 900000,
+            "currency": "BRL"
+          },
+          "sourceCountry": "BR"
+        }
+      ],
+      "immigrationHistory": [],
+      "jobOffers": [],
+      "financiallyDependentOn": [],
+      "studying": false,
+      "recordedInFull": [
+        "spouses",
+        "partners",
+        "children",
+        "parents",
+        "assets"
+      ]
+    },
+    {
+      "id": "p3",
+      "birthDate": "1999-11-23",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "1999-11-23",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR",
+      "educationLevel": 6,
+      "incomes": [],
+      "financiallyDependentOn": [
+        "p1",
+        "p2"
+      ],
+      "studying": true,
+      "recordedInFull": [
+        "spouses",
+        "partners",
+        "children"
+      ]
+    },
+    {
+      "id": "p4",
+      "birthDate": "2002-06-30",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "2002-06-30",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR",
+      "educationLevel": 5,
+      "incomes": [
+        {
+          "kind": "active",
+          "monthly": {
+            "amount": 450000,
+            "currency": "BRL"
+          },
+          "sourceCountry": "BR"
+        }
+      ],
+      "financiallyDependentOn": [],
+      "studying": false,
+      "recordedInFull": [
+        "spouses",
+        "partners",
+        "children"
+      ]
+    },
+    {
+      "id": "p5",
+      "birthDate": "1948-03-02",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "1948-03-02",
+          "lost": "none",
+          "basis": "birth"
+        },
+        {
+          "country": "QN",
+          "acquired": "1948-03-02",
+          "lost": "none",
+          "basis": "descent"
+        }
+      ],
+      "residenceCountry": "BR",
+      "financiallyDependentOn": [
+        "p1"
+      ],
+      "recordedInFull": [
+        "parents"
+      ]
+    },
+    {
+      "id": "p6",
+      "birthDate": "1951-08-19",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "1951-08-19",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR",
+      "financiallyDependentOn": [
+        "p1"
+      ]
+    },
+    {
+      "id": "p7",
+      "birthDate": "1920",
+      "citizenships": [
+        {
+          "country": "QMHH",
+          "acquired": "1920",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "kind": "spouse",
+      "people": [
+        "p1",
+        "p2"
+      ],
+      "start": "1998-12-05",
+      "end": "none"
+    },
+    {
+      "kind": "parent",
+      "parent": "p1",
+      "child": "p3",
+      "parentKind": "biological"
+    },
+    {
+      "kind": "parent",
+      "parent": "p2",
+      "child": "p3",
+      "parentKind": "biological"
+    },
+    {
+      "kind": "parent",
+      "parent": "p1",
+      "child": "p4",
+      "parentKind": "biological"
+    },
+    {
+      "kind": "parent",
+      "parent": "p2",
+      "child": "p4",
+      "parentKind": "biological"
+    },
+    {
+      "kind": "parent",
+      "parent": "p5",
+      "child": "p1",
+      "parentKind": "biological"
+    },
+    {
+      "kind": "parent",
+      "parent": "p6",
+      "child": "p1",
+      "parentKind": "biological"
+    },
+    {
+      "kind": "parent",
+      "parent": "p7",
+      "child": "p5",
+      "parentKind": "biological"
+    }
+  ],
+  "assets": [
+    {
+      "id": "a1",
+      "kind": "cash",
+      "owners": [
+        {
+          "person": "p1",
+          "share": "1"
+        }
+      ],
+      "value": {
+        "amount": 52000000,
+        "currency": "BRL"
+      },
+      "valuedAt": "2026-09-30",
+      "liquid": true,
+      "sold": "none"
+    },
+    {
+      "id": "a2",
+      "kind": "investment",
+      "owners": [
+        {
+          "person": "p1",
+          "share": "0.5"
+        },
+        {
+          "person": "p2",
+          "share": "0.5"
+        }
+      ],
+      "value": {
+        "amount": 310000000,
+        "currency": "BRL"
+      },
+      "valuedAt": "2026-09-30",
+      "liquid": true,
+      "sold": "none"
+    },
+    {
+      "id": "a3",
+      "kind": "real_estate",
+      "owners": [
+        {
+          "person": "p5",
+          "share": "0.5"
+        },
+        {
+          "person": "p6",
+          "share": "0.5"
+        }
+      ],
+      "value": {
+        "amount": 120000000,
+        "currency": "BRL"
+      },
+      "valuedAt": "2026-06-30",
+      "liquid": false,
+      "sold": "none"
+    }
+  ]
+}
