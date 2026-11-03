@@ -125,9 +125,14 @@ class Checker {
       }
       case 'all':
       case 'any':
-        return this.allBoolean(expression.operands, scope, at('operands')) ? boolean : undefined;
+        return this.allBoolean(
+          expression.operands.map((operand, index) => [operand, at(`operands/${String(index)}`)]),
+          scope,
+        )
+          ? boolean
+          : undefined;
       case 'not':
-        return this.allBoolean([expression.operand], scope, at('operand')) ? boolean : undefined;
+        return this.allBoolean([[expression.operand, at('operand')]], scope) ? boolean : undefined;
       case 'add':
       case 'sub':
         return this.numbers(
@@ -176,7 +181,7 @@ class Checker {
       case 'every': {
         const inner = this.collection(expression.over, expression.generations, scope, path);
         if (inner === undefined) return undefined;
-        if (!this.allBoolean([expression.where], inner, at('where'))) return undefined;
+        if (!this.allBoolean([[expression.where, at('where')]], inner)) return undefined;
         return expression.op === 'count' ? { kind: 'number' } : boolean;
       }
       case 'sum': {
@@ -184,7 +189,7 @@ class Checker {
         if (inner === undefined) return undefined;
         if (
           expression.where !== undefined &&
-          !this.allBoolean([expression.where], inner, at('where'))
+          !this.allBoolean([[expression.where, at('where')]], inner)
         ) {
           return undefined;
         }
@@ -196,7 +201,7 @@ class Checker {
   }
 
   /** Whether a named reference date is one the version declares. */
-  declared(name: string | undefined, path: string): boolean {
+  private declared(name: string | undefined, path: string): boolean {
     if (name === undefined || this.context.referenceDates.has(name)) return true;
     this.fail(path, `Reference date ${name} is not declared by the version`);
     return false;
@@ -292,12 +297,15 @@ class Checker {
     return fits;
   }
 
-  private allBoolean(operands: readonly Expression[], scope: CheckScope, path: string): boolean {
+  private allBoolean(
+    operands: readonly (readonly [Expression, string])[],
+    scope: CheckScope,
+  ): boolean {
     return operands
-      .map((operand, index) => {
-        const type = this.check(operand, scope, `${path}/${String(index)}`);
+      .map(([operand, path]) => {
+        const type = this.check(operand, scope, path);
         if (type === undefined) return false;
-        if (type.kind !== 'boolean') this.fail(`${path}/${String(index)}`, 'A condition is needed');
+        if (type.kind !== 'boolean') this.fail(path, 'A condition is needed');
         return type.kind === 'boolean';
       })
       .every(Boolean);

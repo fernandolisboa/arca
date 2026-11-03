@@ -107,9 +107,16 @@ export {
   type RouteVersion,
   type Source,
   countrySetSchema,
+  jsonDepthWithin,
+  maxKnowledgeJsonDepth,
   officialDomainListSchema,
   routeVersionJsonSchema,
   routeVersionSchema,
 } from './rules/route-version.js';
 export { type CheckIssue } from './rules/check.js';
-export { checkRouteVersion } from './rules/validate.js';
+export {
+  type OfficialHosts,
+  checkCountrySet,
+  checkRouteVersion,
+  hostMatches,
+} from './rules/validate.js';

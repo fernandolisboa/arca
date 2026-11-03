@@ -269,6 +269,11 @@ describe('checkExpression', () => {
     expect(issues.map((issue) => issue.path)).toEqual(['/right']);
   });
 
+  it('points into a condition that is not boolean', () => {
+    const { issues } = check({ op: 'some', over: 'unit.members', where: int(1) });
+    expect(issues.map((issue) => issue.path)).toEqual(['/where']);
+  });
+
   it('rejects nesting deeper than 16', () => {
     let expression: object = { op: 'bool', value: true };
     for (let level = 0; level < 16; level += 1) expression = { op: 'not', operand: expression };

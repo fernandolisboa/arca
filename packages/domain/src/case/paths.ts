@@ -119,7 +119,8 @@ export function ancestorLines(
     const next: AncestorLine[] = [];
     for (const line of frontier) {
       const head = line.path[0] ?? principalId;
-      if (!isRecordedInFull(indexed.person(head), 'parents')) {
+      const known = missingMarkers.some((missing) => missing.personId === head);
+      if (!known && !isRecordedInFull(indexed.person(head), 'parents')) {
         missingMarkers.push({ personId: head, marker: 'parents' });
       }
       for (const parent of parents(indexed, head, date)) {

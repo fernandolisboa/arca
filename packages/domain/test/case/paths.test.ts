@@ -101,7 +101,6 @@ describe('ancestorLines', () => {
     expect(missingMarkers).toEqual([]);
     expect(ancestorLines(value, 'p1', 3, today).missingMarkers).toEqual([
       { personId: 'g1', marker: 'parents' },
-      { personId: 'g1', marker: 'parents' },
     ]);
   });
 });
