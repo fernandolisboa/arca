@@ -1,5 +1,6 @@
 import { type CalendarDate, firstDate, lastDate } from '../calendar/calendar-date.js';
 import type { CurrencyCode } from '../money/currency.js';
+import { compareScaled } from '../money/decimal.js';
 import type { Scaled } from '../money/decimal.js';
 import type { Truth } from './truth.js';
 
@@ -52,11 +53,6 @@ export function booleanValue(value: Truth): BooleanValue {
   return { type: 'boolean', value };
 }
 
-export function integerValue(value: number): NumberValue {
-  const point = { units: BigInt(value), scale: 0 };
-  return { type: 'number', min: point, max: point };
-}
-
 export function integerRange(min: number | undefined, max: number | undefined): NumberValue {
   return {
     type: 'number',
@@ -82,8 +78,7 @@ export function isKnown(value: Value): boolean {
       return (
         value.min !== undefined &&
         value.max !== undefined &&
-        value.min.units * 10n ** BigInt(value.max.scale) ===
-          value.max.units * 10n ** BigInt(value.min.scale)
+        compareScaled(value.min, value.max) === 0
       );
     case 'date':
       return value.min === value.max;

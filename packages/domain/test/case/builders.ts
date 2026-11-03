@@ -1,15 +1,14 @@
+import { parseCalendarDate } from '../../src/calendar/calendar-date.js';
 import {
-  type CaseSnapshot,
   type FactBinding,
   type FactEnvironment,
   type FactKey,
-  type Value,
-  caseSnapshotSchema,
   factCatalog,
-  fxTableSchema,
-  indexSnapshot,
-  parseCalendarDate,
-} from '../../src/index.js';
+} from '../../src/case/facts.js';
+import { indexSnapshot } from '../../src/case/graph.js';
+import { type CaseSnapshot, caseSnapshotSchema } from '../../src/case/snapshot.js';
+import type { Value } from '../../src/logic/value.js';
+import { fxTableSchema } from '../../src/money/fx.js';
 
 /** Synthetic snapshots only: invented IDs, dates and amounts. */
 export function snapshot(input: Partial<Record<keyof CaseSnapshot, unknown>>): CaseSnapshot {
@@ -24,7 +23,7 @@ export function snapshot(input: Partial<Record<keyof CaseSnapshot, unknown>>): C
 
 export function environment(
   value: CaseSnapshot,
-  overrides: Partial<FactEnvironment> = {},
+  overrides: { readonly unit?: NonNullable<FactEnvironment['unit']> } = {},
 ): FactEnvironment {
   return {
     snapshot: indexSnapshot(value),
@@ -33,6 +32,7 @@ export function environment(
     fx: fxTableSchema.parse({
       rates: [{ from: 'USD', to: 'EUR', rate: '0.5', date: '2026-11-01', source: 'fixture' }],
     }),
+    factsAsOf: parseCalendarDate('2026-11-03'),
     leapDayBirthday: 'feb-28',
     routeCountry: 'QM',
     ...overrides,

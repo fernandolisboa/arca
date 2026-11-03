@@ -1,6 +1,6 @@
-import { ageYears, type LeapDayBirthday } from '../calendar/age.js';
-import { type CalendarDate, compareDates, firstDate, lastDate } from '../calendar/calendar-date.js';
-import { type DateValue, dateRange } from '../calendar/partial-date.js';
+import { type LeapDayBirthday, ageYears } from '../calendar/age.js';
+import { type CalendarDate, compareDates } from '../calendar/calendar-date.js';
+import { type DateValue, after, dateRange, onOrBefore } from '../calendar/partial-date.js';
 import { type Interval, type Truth, and, or } from '../logic/truth.js';
 import {
   type NumberValue,
@@ -9,20 +9,21 @@ import {
   booleanValue,
   integerRange,
   tokenValue,
+  unknownDate,
 } from '../logic/value.js';
 import type { CurrencyCode } from '../money/currency.js';
 import type { Decimal } from '../money/decimal.js';
 import { type CurrencyPair, type FxTable, convert } from '../money/fx.js';
 import { type ExactAmount, type Money, addExact, multiplyExact, toExact } from '../money/money.js';
+import { type IndexedSnapshot, couples, isRecordedInFull, parents } from './graph.js';
 import {
-  type IndexedSnapshot,
-  after,
-  couples,
-  isRecordedInFull,
-  onOrBefore,
-  parents,
-} from './graph.js';
-import type { Person, Relationship } from './snapshot.js';
+  type CountryCode,
+  type Person,
+  type Relationship,
+  custodies,
+  isicSections,
+  parentKinds,
+} from './snapshot.js';
 
 /** What every fact of one evaluation reads besides the person it is about. */
 export interface FactEnvironment {
@@ -31,14 +32,23 @@ export interface FactEnvironment {
   /** The route version's currency; money facts are converted to it. */
   readonly currency: CurrencyCode;
   readonly fx: FxTable;
+  /** The date FX rates are taken at (spec 0002, R2), whatever date a fact is read at. */
+  readonly factsAsOf: CalendarDate;
   readonly leapDayBirthday?: LeapDayBirthday;
   /** The route version's country, for facts relative to it such as job offers. */
-  readonly routeCountry: string;
-  /** The unit, once computed: the people it includes and those it might. */
-  readonly unit?: { readonly included: readonly string[]; readonly possible: readonly string[] };
+  readonly routeCountry: CountryCode;
+  /**
+   * The unit, once computed: the people it includes (the principal among them), those it might,
+   * and whether unrecorded people might belong to it.
+   */
+  readonly unit?: {
+    readonly included: readonly string[];
+    readonly possible: readonly string[];
+    readonly open: boolean;
+  };
 }
 
-/** A line from an ancestor down to the principal, and the position of the person in focus. */
+/** A line from an ancestor (position 0) down to the principal, and the person in focus. */
 export interface LineageBinding {
   readonly path: readonly string[];
   readonly position: number;
@@ -57,6 +67,11 @@ export interface Derived {
   readonly missingRates?: readonly CurrencyPair[];
 }
 
+/**
+ * What a fact is about: a person (the principal, a candidate dependent, a member inside a
+ * collection or an ancestor, depending on where the expression reads it), the unit, the edge a
+ * candidate was reached by, or the line from an ancestor to the principal.
+ */
 export type FactScope = 'person' | 'unit' | 'edge' | 'lineage';
 
 export type FactType =
@@ -74,10 +89,6 @@ export interface FactDefinition {
   readonly isBirthDate?: boolean;
   readonly derive: (binding: FactBinding, at: CalendarDate) => Derived;
 }
-
-const isicSections = 'ABCDEFGHIJKLMNOPQRSTU'.split('');
-const parentKinds = ['biological', 'adoptive'] as const;
-const custodies = ['full', 'shared', 'none'] as const;
 
 /**
  * The closed catalog of facts rules can read (spec 0002, R3). Keys under `person.` read the person
@@ -127,19 +138,20 @@ export const factCatalog = {
     type: { kind: 'money' },
     scope: 'person',
     nonNegative: true,
-    derive: (binding, at) => monthlyIncome(binding, at, 'active'),
+    derive: (binding) => monthlyIncome(binding, 'active'),
   },
   'person.monthlyPassiveIncome': {
     type: { kind: 'money' },
     scope: 'person',
     nonNegative: true,
-    derive: (binding, at) => monthlyIncome(binding, at, 'passive'),
+    derive: (binding) => monthlyIncome(binding, 'passive'),
   },
   'person.liquidAssets': {
     type: { kind: 'money' },
     scope: 'person',
     nonNegative: true,
-    derive: ({ environment, personId }, at) => liquidAssets(environment, [personId], [], at),
+    derive: ({ environment, personId }, at) =>
+      liquidAssets(environment, { included: [personId], possible: [], open: false }, at),
   },
   'person.visaRefusals': {
     type: { kind: 'integer' },
@@ -152,14 +164,9 @@ export const factCatalog = {
   'person.dependsOnPrincipal': {
     type: { kind: 'boolean' },
     scope: 'person',
-    derive: ({ environment, personId }) => {
-      const dependsOn = person(environment, personId).financiallyDependentOn;
-      return {
-        value: booleanValue(
-          dependsOn === undefined ? 'unknown' : dependsOn.includes(environment.principalId),
-        ),
-      };
-    },
+    derive: ({ environment, personId }) => ({
+      value: dependsOn(person(environment, personId), environment.principalId),
+    }),
   },
   'person.studying': {
     type: { kind: 'boolean' },
@@ -194,29 +201,51 @@ export const factCatalog = {
     scope: 'unit',
     nonNegative: true,
     derive: ({ environment }, at) => {
-      const unit = environment.unit;
-      if (unit === undefined) throw new RangeError('The unit is not computed yet');
-      return liquidAssets(environment, unit.included, unit.possible, at);
+      if (environment.unit === undefined) throw new RangeError('The unit is not computed yet');
+      return liquidAssets(environment, environment.unit, at);
     },
   },
   'edge.parentKind': {
     type: { kind: 'enum', values: parentKinds },
     scope: 'edge',
-    derive: ({ edge }) => ({
-      value: tokenValue(edge?.kind === 'parent' ? edge.parentKind : undefined),
-    }),
+    derive: (binding) => {
+      const edge = edgeOf(binding);
+      return { value: tokenValue(edge.kind === 'parent' ? edge.parentKind : undefined) };
+    },
   },
   'edge.custody': {
     type: { kind: 'enum', values: custodies },
     scope: 'edge',
-    derive: ({ edge }) => ({
-      value: tokenValue(edge?.kind === 'parent' ? edge.custody : undefined),
-    }),
+    derive: (binding) => {
+      const edge = edgeOf(binding);
+      return { value: tokenValue(edge.kind === 'parent' ? edge.custody : undefined) };
+    },
   },
   'edge.start': {
     type: { kind: 'date' },
     scope: 'edge',
-    derive: ({ edge }) => dateFact(edge?.start),
+    derive: (binding) => dateFact(edgeOf(binding).start),
+  },
+  /** The end of a couple edge; `"none"` reads as no date at all, so it is never before another. */
+  'edge.end': {
+    type: { kind: 'date' },
+    scope: 'edge',
+    derive: (binding) => {
+      const edge = edgeOf(binding);
+      if (edge.kind === 'parent' || edge.end === undefined) return dateFact(undefined);
+      return edge.end === 'none'
+        ? { value: { type: 'date', min: unknownDate().max, max: unknownDate().max } }
+        : dateFact(edge.end);
+    },
+  },
+  /** Whether the candidate depends financially on the person they were reached from. */
+  'edge.dependsOnLinkedPerson': {
+    type: { kind: 'boolean' },
+    scope: 'edge',
+    derive: (binding) => {
+      const linked = otherEnd(edgeOf(binding), binding.personId);
+      return { value: dependsOn(person(binding.environment, binding.personId), linked) };
+    },
   },
   'lineage.generation': {
     type: { kind: 'integer' },
@@ -247,7 +276,7 @@ export const factCatalog = {
     scope: 'lineage',
     derive: (binding) => {
       const birth = person(binding.environment, nextInLine(binding)).birthDate;
-      const during = birth === undefined ? { min: firstDate, max: lastDate } : dateRange(birth);
+      const during = birth === undefined ? unknownDate() : dateRange(birth);
       return { value: citizenshipsDuring(person(binding.environment, binding.personId), during) };
     },
   },
@@ -264,38 +293,49 @@ function person(environment: FactEnvironment, id: string): Person {
 }
 
 function dateFact(value: DateValue | undefined): Derived {
-  const range = value === undefined ? { min: firstDate, max: lastDate } : dateRange(value);
-  return { value: { type: 'date', ...range } };
+  return { value: value === undefined ? unknownDate() : { type: 'date', ...dateRange(value) } };
+}
+
+function dependsOn(subject: Person, on: string): Value {
+  const list = subject.financiallyDependentOn;
+  return booleanValue(list === undefined ? 'unknown' : list.includes(on));
 }
 
 /**
- * Whole years at `at`. A partial birth date gives a range. Someone not yet born at `at` counts as
- * age zero, so a rule read at an earlier reference date still has an answer.
+ * Whole years at `at`. A partial birth date gives a range. Someone born after `at` counts as age
+ * zero; edges to them are not valid before their birth, so they are reached only through an
+ * explicit adoption date.
  */
 function ageRange(
   birthDate: DateValue | undefined,
   at: CalendarDate,
   leapDayBirthday: LeapDayBirthday | undefined,
 ): NumberValue {
-  if (birthDate === undefined) return integerRange(0, undefined);
-  if (leapDayBirthday === undefined)
+  if (leapDayBirthday === undefined) {
     throw new RangeError('The route version sets no leapDayBirthday');
+  }
+  if (birthDate === undefined) return integerRange(0, undefined);
   const { min, max } = dateRange(birthDate);
   const age = (birth: CalendarDate): number =>
     compareDates(birth, at) > 0 ? 0 : ageYears(birth, at, leapDayBirthday);
   return integerRange(age(max), age(min));
 }
 
-/** Citizenships held throughout an interval of dates: certainly, possibly, and whether complete. */
+/**
+ * Citizenships held throughout an interval of dates: certainly, possibly, and whether the list is
+ * complete. A citizenship by birth is held from the holder's birth.
+ */
 function citizenshipsDuring(subject: Person, during: Interval<CalendarDate>): TokenListValue {
   if (subject.citizenships === undefined) return tokens([], [], false);
   const held = subject.citizenships.map((citizenship) => {
+    const since =
+      citizenship.acquired ?? (citizenship.basis === 'birth' ? subject.birthDate : undefined);
     const acquired: Truth =
-      citizenship.basis === 'birth'
-        ? true
-        : citizenship.acquired === undefined
-          ? 'unknown'
-          : onOrBefore(citizenship.acquired, during);
+      since === undefined
+        ? citizenship.basis === 'birth'
+          ? true
+          : 'unknown'
+        : onOrBefore(since, during);
     const notLost: Truth =
       citizenship.lost === undefined
         ? 'unknown'
@@ -339,30 +379,33 @@ function visaRefusals(subject: Person, at: CalendarDate): NumberValue {
 
 function monthlyIncome(
   { environment, personId }: FactBinding,
-  at: CalendarDate,
   kind: 'active' | 'passive',
 ): Derived {
   const incomes = person(environment, personId).incomes;
-  const sum = new MoneySum(environment, at);
-  if (incomes === undefined) return sum.unbounded();
-  for (const income of incomes.filter((entry) => entry.kind === kind)) {
+  const sum = new MoneySum(environment);
+  if (incomes === undefined) sum.open();
+  for (const income of (incomes ?? []).filter((entry) => entry.kind === kind)) {
     sum.add(toExact(income.monthly), true);
   }
   return sum.result();
 }
 
 /**
- * Liquid assets owned by some people, each counted at its owner's share, plus what possible
- * members might add. An asset counts when it is liquid and not sold by `at`; an unknown answer to
- * either makes its share possible instead of certain.
+ * Liquid assets owned by the unit's people, each counted at its owner's share. An asset counts
+ * when it is liquid and not sold by `at`; an unknown answer, or an owner who is only possibly in
+ * the unit, makes its share possible instead of certain. Anyone whose assets are not recorded in
+ * full, or unrecorded people in an open unit, leave the total unbounded above.
  */
 function liquidAssets(
   environment: FactEnvironment,
-  included: readonly string[],
-  possible: readonly string[],
+  unit: NonNullable<FactEnvironment['unit']>,
   at: CalendarDate,
 ): Derived {
-  const sum = new MoneySum(environment, at);
+  const sum = new MoneySum(environment);
+  const people = [...unit.included, ...unit.possible];
+  if (unit.open || people.some((id) => !isRecordedInFull(person(environment, id), 'assets'))) {
+    sum.open();
+  }
   for (const asset of environment.snapshot.snapshot.assets) {
     const counted = and([
       asset.liquid ?? 'unknown',
@@ -373,9 +416,9 @@ function liquidAssets(
           : after(asset.sold, { min: at, max: at }),
     ]);
     for (const owner of asset.owners) {
-      const membership: Truth = included.includes(owner.person)
+      const membership: Truth = unit.included.includes(owner.person)
         ? true
-        : possible.includes(owner.person)
+        : unit.possible.includes(owner.person)
           ? 'unknown'
           : false;
       sum.add(share(asset.value, owner.share), and([counted, membership]));
@@ -388,48 +431,79 @@ function share(value: Money, ownerShare: Decimal): ExactAmount {
   return multiplyExact(toExact(value), ownerShare);
 }
 
-/** Sums non-negative amounts into the route's currency, as a range when some may not count. */
+/**
+ * Sums non-negative amounts into the route's currency as an interval: certain amounts raise both
+ * bounds, possible ones only the upper. Totals per source currency are converted once each, at
+ * `factsAsOf`; a missing rate leaves the upper bound open and is reported.
+ */
 class MoneySum {
   private readonly environment: FactEnvironment;
-  private readonly at: CalendarDate;
-  private min: ExactAmount;
-  private max: ExactAmount | undefined;
-  private readonly missingRates: CurrencyPair[] = [];
+  private readonly certain = new Map<CurrencyCode, ExactAmount>();
+  private readonly possible = new Map<CurrencyCode, ExactAmount>();
+  private unbounded = false;
 
-  constructor(environment: FactEnvironment, at: CalendarDate) {
+  constructor(environment: FactEnvironment) {
     this.environment = environment;
-    this.at = at;
-    this.min = { units: 0n, scale: 0, currency: environment.currency };
-    this.max = this.min;
+  }
+
+  open(): void {
+    this.unbounded = true;
   }
 
   add(amount: ExactAmount, counts: Truth): void {
     if (counts === false) return;
-    const converted = convert(amount, this.environment.currency, this.environment.fx, this.at);
-    if (converted.kind === 'missing_rate') {
-      if (!this.missingRates.some((pair) => pair.from === converted.pair.from)) {
-        this.missingRates.push(converted.pair);
-      }
-      this.max = undefined;
-      return;
-    }
-    if (counts === true) this.min = addExact(this.min, converted.amount);
-    if (this.max !== undefined) this.max = addExact(this.max, converted.amount);
-  }
-
-  unbounded(): Derived {
-    return { value: { type: 'number', currency: this.environment.currency, min: this.min } };
+    const target = counts === true ? this.certain : this.possible;
+    const previous = target.get(amount.currency);
+    target.set(amount.currency, previous === undefined ? amount : addExact(previous, amount));
   }
 
   result(): Derived {
+    const missingRates: CurrencyPair[] = [];
+    const total = (amounts: Map<CurrencyCode, ExactAmount>): ExactAmount | undefined => {
+      let sum: ExactAmount = { units: 0n, scale: 0, currency: this.environment.currency };
+      for (const amount of amounts.values()) {
+        const converted = convert(
+          amount,
+          this.environment.currency,
+          this.environment.fx,
+          this.environment.factsAsOf,
+        );
+        if (converted.kind === 'missing_rate') {
+          if (!missingRates.some((pair) => pair.from === converted.pair.from)) {
+            missingRates.push(converted.pair);
+          }
+          return undefined;
+        }
+        sum = addExact(sum, converted.amount);
+      }
+      return sum;
+    };
+    const certain = total(this.certain);
+    const possible = total(this.possible);
+    const zero = { units: 0n, scale: 0, currency: this.environment.currency };
+    const min = certain ?? zero;
+    const max =
+      this.unbounded || certain === undefined || possible === undefined
+        ? undefined
+        : addExact(certain, possible);
     const value: NumberValue = {
       type: 'number',
       currency: this.environment.currency,
-      min: this.min,
-      ...(this.max === undefined ? {} : { max: this.max }),
+      min,
+      ...(max === undefined ? {} : { max }),
     };
-    return this.missingRates.length === 0 ? { value } : { value, missingRates: this.missingRates };
+    return missingRates.length === 0 ? { value } : { value, missingRates };
   }
+}
+
+function edgeOf(binding: FactBinding): Relationship {
+  if (binding.edge === undefined) throw new RangeError('An edge fact outside a dependent rule');
+  return binding.edge;
+}
+
+function otherEnd(edge: Relationship, id: string): string {
+  if (edge.kind === 'parent') return edge.parent === id ? edge.child : edge.parent;
+  return edge.people[0] === id ? edge.people[1] : edge.people[0];
 }
 
 function lineageOf(binding: FactBinding): LineageBinding {

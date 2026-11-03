@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { caseSnapshotSchema } from '../../src/index.js';
+import { caseSnapshotSchema } from '../../src/case/snapshot.js';
 
 const base = { members: ['p1'], people: [{ id: 'p1' }], relationships: [], assets: [] };
 
@@ -60,6 +60,122 @@ describe('CaseSnapshot', () => {
     ],
     ['a lowercase country', { ...base, people: [{ id: 'p1', residenceCountry: 'br' }] }],
     ['an unknown marker', { ...base, people: [{ id: 'p1', recordedInFull: ['siblings'] }] }],
+    [
+      'an ID that reads as a name',
+      { ...base, members: ['maria-silva'], people: [{ id: 'maria-silva' }] },
+    ],
+    [
+      'an ID that reads as a document number',
+      { ...base, members: ['12345678909'], people: [{ id: '12345678909' }] },
+    ],
+    [
+      'a negative income',
+      {
+        ...base,
+        people: [
+          {
+            id: 'p1',
+            incomes: [
+              { kind: 'active', monthly: { amount: -1, currency: 'EUR' }, sourceCountry: 'QM' },
+            ],
+          },
+        ],
+      },
+    ],
+    [
+      'a duplicate owner',
+      {
+        ...base,
+        assets: [
+          {
+            ...asset,
+            owners: [
+              { person: 'p1', share: '0.5' },
+              { person: 'p1', share: '0.5' },
+            ],
+          },
+        ],
+      },
+    ],
+    [
+      'an unknown owner',
+      { ...base, assets: [{ ...asset, owners: [{ person: 'p9', share: '1' }] }] },
+    ],
+    ['a duplicate asset', { ...base, assets: [asset, asset] }],
+    ['a duplicate member', { ...base, members: ['p1', 'p1'] }],
+    [
+      'a duplicate marker',
+      { ...base, people: [{ id: 'p1', recordedInFull: ['assets', 'assets'] }] },
+    ],
+    ['self-dependence', { ...base, people: [{ id: 'p1', financiallyDependentOn: ['p1'] }] }],
+    [
+      'dependence on nobody known',
+      { ...base, people: [{ id: 'p1', financiallyDependentOn: ['p9'] }] },
+    ],
+    [
+      'a citizenship lost before it was acquired',
+      {
+        ...base,
+        people: [
+          {
+            id: 'p1',
+            citizenships: [{ country: 'QM', acquired: '2010-01-01', lost: '2009-12-31' }],
+          },
+        ],
+      },
+    ],
+    [
+      'a parent cycle',
+      {
+        ...base,
+        people: [{ id: 'p1' }, { id: 'p2' }],
+        relationships: [
+          { kind: 'parent', parent: 'p1', child: 'p2' },
+          { kind: 'parent', parent: 'p2', child: 'p1' },
+        ],
+      },
+    ],
+    [
+      'a duplicate parent edge',
+      {
+        ...base,
+        people: [{ id: 'p1' }, { id: 'p2' }],
+        relationships: [
+          { kind: 'parent', parent: 'p2', child: 'p1' },
+          { kind: 'parent', parent: 'p2', child: 'p1', parentKind: 'biological' },
+        ],
+      },
+    ],
+    [
+      'the same marriage twice, in either order',
+      {
+        ...base,
+        people: [{ id: 'p1' }, { id: 'p2' }],
+        relationships: [
+          { kind: 'spouse', people: ['p1', 'p2'], start: '2010-01-01' },
+          { kind: 'spouse', people: ['p2', 'p1'], start: '2010-01-01' },
+        ],
+      },
+    ],
+    [
+      'more than four parents',
+      {
+        ...base,
+        people: [{ id: 'p1' }, ...[2, 3, 4, 5, 6].map((n) => ({ id: `p${String(n)}` }))],
+        relationships: [2, 3, 4, 5, 6].map((n) => ({
+          kind: 'parent',
+          parent: `p${String(n)}`,
+          child: 'p1',
+        })),
+      },
+    ],
+    [
+      'an unknown ISIC section',
+      {
+        ...base,
+        people: [{ id: 'p1', jobOffers: [{ country: 'QM', sector: 'Z', temporary: true }] }],
+      },
+    ],
   ])('rejects %s', (_label, input) => {
     expect(accepts(input)).toBe(false);
   });
@@ -91,6 +207,44 @@ describe('CaseSnapshot', () => {
       accepts({
         ...base,
         people: [{ id: 'p1', citizenships: [{ country: 'YUCS', basis: 'birth' }] }],
+      }),
+    ).toBe(true);
+  });
+
+  it('accepts a remarriage of the same couple with a new start', () => {
+    expect(
+      accepts({
+        ...base,
+        people: [{ id: 'p1' }, { id: 'p2' }],
+        relationships: [
+          { kind: 'spouse', people: ['p1', 'p2'], start: '2001-01-01', end: '2005-01-01' },
+          { kind: 'spouse', people: ['p1', 'p2'], start: '2010-01-01', end: 'none' },
+        ],
+      }),
+    ).toBe(true);
+  });
+
+  it('accepts four parents, such as two biological and two adoptive', () => {
+    expect(
+      accepts({
+        ...base,
+        people: [{ id: 'p1' }, ...[2, 3, 4, 5].map((n) => ({ id: `p${String(n)}` }))],
+        relationships: [2, 3, 4, 5].map((n) => ({
+          kind: 'parent',
+          parent: `p${String(n)}`,
+          child: 'p1',
+        })),
+      }),
+    ).toBe(true);
+  });
+
+  it('accepts a citizenship lost in the year it was acquired, when only the year is known', () => {
+    expect(
+      accepts({
+        ...base,
+        people: [
+          { id: 'p1', citizenships: [{ country: 'QM', acquired: '2010-06-01', lost: '2010' }] },
+        ],
       }),
     ).toBe(true);
   });
