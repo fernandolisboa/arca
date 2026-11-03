@@ -46,7 +46,7 @@ This requires the knowledge base to store the **action point** of each step, not
 | Immigration-firm service | How Arca delivers it | Phase |
 | --- | --- | --- |
 | Intake interview | Conversational diagnosis with AI, person by person: education, work, languages, health, assets, travel history, previous visa refusals, ancestry, life priorities | MVP |
-| Destination comparison | Pros and cons of each selected country, weighted by each person: cost of living, taxes, language, healthcare, safety, jobs in their field, schools, climate, distance to Brazil, Brazilian community, dual citizenship | MVP |
+| Destination comparison | Each person picks criteria and weights and sees a score per criterion and a ranked total per country, computed in code; criteria include cost of living, taxes, language, healthcare, safety, jobs in their field, schools, climate, distance to Brazil, Brazilian community, dual citizenship | MVP |
 | Strategy recommendation | Per unit: recommended route and two alternatives, with pros, cons, risks, total cost, time to residence and to citizenship, and the reason behind each point, with sources | MVP |
 | Document checklist | Per person and route: where to obtain each document, cost, lead time, validity, apostille and sworn translation needs | MVP |
 | Step-by-step plan | Ordered tasks with owner, deadline, dependencies, execution mode and a how-to for each step | MVP |

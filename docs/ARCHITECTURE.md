@@ -10,16 +10,17 @@ The center of Arca is the **evaluation engine**: it crosses a versioned catalog 
 flowchart LR
   subgraph Rules
     SRC[Official sources<br/>per selected country] --> WATCH[Rule watcher<br/>scheduled job + LLM]
-    WATCH --> REVIEW[Human review]
+    WATCH --> REVIEW[Pull request review<br/>gate]
     RESEARCH[Research agent<br/>new country or route] --> REVIEW
     REVIEW --> KB[(Knowledge base<br/>route versions, action points)]
+    KB --> ACTIVATE[Human approval:<br/>owner activates with a passkey]
   end
   subgraph Case
     INTAKE[Free description<br/>text or voice] --> EXTRACT[Structured extraction]
     EXTRACT --> CONFIRM[Playback and correction]
     CONFIRM --> CASE[(Case model<br/>people, relationships,<br/>assets, ancestry, aspirations)]
   end
-  KB --> ENGINE{{Evaluation engine<br/>pure function}}
+  ACTIVATE --> ENGINE{{Evaluation engine<br/>pure function}}
   CASE --> ENGINE
   ENGINE --> RANK[Multi-criteria ranking]
   RANK --> PLAN[Plan and tasks<br/>with execution mode]
@@ -29,7 +30,7 @@ flowchart LR
   VAULT --> PLAN
 ```
 
-The rule watcher never changes a rule on its own: it proposes, a person approves, and the engine re-evaluates routes in use.
+The rule watcher never changes a rule on its own: it proposes, a person approves, and the engine re-evaluates routes in use. Route versions are JSON files in `packages/knowledge`, reviewed as pull requests and immutable once merged; a merged version stays proposed until the owner activates it in the app with a passkey ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md), [spec 0002](specs/0002-rules-engine-and-knowledge-base.md)).
 
 ## Platforms and code layout
 
@@ -50,11 +51,14 @@ packages/
   platform/     capability ports and their adapters (web, capacitor, tauri)
   db/           Drizzle schema and migrations, role SQL, the runtime role pool and request identity,
                 the personal-data registry and the synthetic seed
+  knowledge/    the knowledge base as data: route versions and their cases, country sets, official-domain
+                lists and the countries files; validated, hashed and bundled into the API ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md))
   telemetry/    the one scrubber every log, error, trace and LLM-trace exporter uses (ADR-0016)
   vault/        client-side document encryption in the age format (ADR-0018); never used by the API
 tooling/        shared ESLint and TypeScript configs, security header policy, repository scripts
                 (dependency-source, boundary and bundle checks, CI policy scripts, migration runner)
-eval/           planned: the synthetic AI evaluation suite
+eval/           evaluation corpora: the synthetic families in families/ (spec 0002), later the synthetic AI
+                evaluation suite
 infra/aws/      CloudFormation templates the owner launches once: the backup account and the
                 application account (ADR-0017, spec 0005)
 ```
@@ -88,14 +92,14 @@ Entities, not final schema:
 - `aspiration`: priorities, deal-breakers, budget, timeline, risk tolerance and preferred execution mode, per person.
 - `country`, `destination_choice`: catalog countries and the ones each person selected, with priority and the stay-together constraint.
 - `ancestor`: parents and grandparents with country, dates, naturalization and certificates.
-- `route`, `route_version`: routes per country; declarative requirements, costs, dependents covered, `sourceUrl`, `verifiedAt`, effective dates.
+- `route`, `route_version`: routes per country; declarative requirements, costs, dependents covered, `sources` (URL, kind, `verifiedAt`), effective dates, pinned country sets and official-domain lists. Files in `packages/knowledge`, not tables ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)); approvers' decisions on them are stored as the consultancy core's slice 3 specifies.
 - `action_point`: where each step happens (official link, phone, consulate by jurisdiction, partner by region).
 - `evaluation`: person or unit × route version → status, missing requirements, estimated cost and time.
 - `asset`, `sale`, `gift`, `fx_transfer`: the source-of-funds trail.
 - `plan`, `task`, `task_dependency`: the executable plan, with the execution mode of each task.
 - `document`: type, owner, validity, apostille, translation and a pointer to the encrypted file.
-- `contact`, `rule_change`: external contacts; watcher proposals with diff and decision.
-- `knowledge_item`: requirement, document, step, form, fee, deadline, common pitfall or interview question, each with source and verification date.
+- `contact`: external contacts. Watcher proposals are pull requests, activated or rejected by an approver (ADR-0014).
+- `knowledge_item`: requirement, document, step, form, fee, deadline, common pitfall or interview question, each with source and verification date. Whether these and `action_point` are files like route versions is decided in consultancy core slice 5 (ADR-0014).
 
 ## Agents
 
@@ -108,7 +112,11 @@ Specialized agents work on the knowledge base and the case model:
 | Writer | Cover letters, business plans, source-of-funds statements |
 | Interviewer | Voice simulation of consular interviews |
 | Watcher | Rule changes in the selected countries |
+| Research agent | Proposes route versions from official sources when the base does not cover a question |
+| Independent check | Compares each proposed version with its official sources, using a guide per country, and reports to the owner before activation; advisory only |
 | Concierge | Arrival and settling in the destination |
+
+Each agent gets only the tools its task needs, set in its definition. The research agent and the watcher read untrusted web pages, so they get a constrained fetch tool and one proposal tool that opens a pull request with new route versions and country sets, and nothing else: no shell, no case data, no merge, no official-domain lists, no approver list, no workflows ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md#research-agents-required-properties)). The independent check gets the same fetch tool, limited to the version's sources and official hosts, and a report sink only; slice 2 places the country guides.
 
 **Golden rule:** no agent states a requirement that is not in the knowledge base with a source. When the base does not cover a question, the agent says it does not know and opens a research task, which enters the base only after human approval.
 
@@ -137,7 +145,7 @@ The suite runs on every change to a prompt, model, adapter or rule version, and 
 
 ## Security
 
-- Passwordless login (passkeys), invite-only, with purpose-bound step-up for sensitive and financial actions and a user-verified passkey ceremony to open the vault ([ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)).
+- Passwordless login (passkeys), invite-only, with purpose-bound step-up for sensitive and financial actions and a user-verified passkey ceremony to open the vault ([ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)); step-up also activates or rejects a knowledge-base version ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)).
 - Row-level security on every table with case data, scoped by account and then by case membership (ADR-0008, ADR-0015). Each unit's finances are visible to others only if the owner shares them.
 - Client-side encryption for documents in the age format: each person has a hybrid post-quantum identity, kept on the server only inside envelopes their passkeys or recovery kit open; each document is encrypted to its owner and the people it is shared with; storage holds ciphertext ([ADR-0018](adr/0018-vault-encryption.md)). Trade-off: AI extraction runs only when the user opens a document and authorizes it.
 - Two-person approval to change bank or exchange details.
@@ -151,6 +159,7 @@ Every service that touches Arca's data, and what it may receive. A new processor
 
 | Service | Role | Receives | Location |
 | --- | --- | --- | --- |
+| GitHub (public repository) | Source, docs and knowledge data | Code and public rules ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)); no case data | Public |
 | Neon (Postgres) | Primary database | All case data, under forced row-level security | São Paulo (`sa-east-1`) |
 | Vercel | Client hosting, API functions, Workflows | All case data in processing; the database owner connection string (used by the build, readable by running functions) and the runtime role passwords ([ADR-0012](adr/0012-automation-first-setup.md)); workflow run payloads holding identifiers only, with zero retention ([ADR-0009](adr/0009-background-jobs-guarantees.md)) | São Paulo (`gru1`) for functions, run payloads and queues; run metadata (names, statuses, timestamps, no personal data) is processed outside Brazil and kept up to one year |
 | AWS S3 (application account) | Document storage | Client-side ciphertext only, under random object keys | São Paulo (`sa-east-1`) |

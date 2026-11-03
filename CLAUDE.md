@@ -18,7 +18,7 @@ An immigration consultancy in an app. A user describes their family in free text
 2. **Eligibility is deterministic.** Rules are versioned data evaluated by pure functions ([ADR-0002](docs/adr/0002-rules-as-versioned-data.md)). An LLM may explain, extract or draft; it never decides whether someone qualifies.
 3. **Dates, ages and money are computed in code.** Never ask a model to compare dates, check an age limit or add amounts.
 4. **Units are computed per route.** Who can accompany whom depends on the destination and visa (for example, U.S. EB-5 covers spouse and unmarried children under 21; Portuguese family reunification can include dependent parents). Never store a fixed family partition.
-5. **Knowledge-base changes need human approval.** Research agents and the rule watcher propose; a person approves; only then does the evaluation engine see the change.
+5. **Knowledge-base changes need human approval.** Research agents and the rule watcher propose; a person approves or rejects with a passkey; only then does the evaluation engine evaluate the change. Version selection may read a proposed version's identity, never its content, so a pending change shows as pending instead of being ignored ([ADR-0014](docs/adr/0014-knowledge-base-as-reviewed-data.md)).
 6. **Rule versions are immutable.** A rule change creates a new version with its own effective dates; old evaluations stay reproducible.
 7. **The catalog is open.** Never hard-code a country, route, visa category or route type (work, investment, study, family, descent, retirement, digital nomad, humanitarian, seasonal work such as U.S. H-2A, and any other). Countries come from a dataset; routes, categories and their requirements are data. Adding a route is a data change reviewed by a person, never a code change. The engine must evaluate any route expressible in the rule schema; if a real route cannot be expressed, extend the schema generically.
 
@@ -70,7 +70,7 @@ Accepted: [ADR-0010](docs/adr/0010-stack-revised.md), which supersedes ADR-0003.
 - Production data never leaves production; non-production databases start from the synthetic seed.
 - Workflow step inputs and outputs carry identifiers only.
 - No home-made cryptography. The vault follows [ADR-0018](docs/adr/0018-vault-encryption.md).
-The first engineering task is scaffolding the monorepo as described in ADR-0010, the spec in [docs/specs/0001-foundations-scaffold.md](docs/specs/0001-foundations-scaffold.md) and the code layout in ARCHITECTURE.md, with CI, linting, tests and a deployable empty app before any feature work.
+The first engineering task is scaffolding the monorepo as described in ADR-0010, the spec in [docs/specs/0001-foundations-scaffold.md](docs/specs/0001-foundations-scaffold.md) and the code layout in ARCHITECTURE.md, with CI, linting, tests and a deployable empty app before any feature work. Pure domain code over public data with no API route, such as consultancy core slice 1 ([spec 0002](docs/specs/0002-rules-engine-and-knowledge-base.md)), may start once that scaffold is on `main`; anything that touches case data, identity or AI waits for the whole foundations epic ([ROADMAP.md](docs/ROADMAP.md)).
 
 ## Definition of done
 

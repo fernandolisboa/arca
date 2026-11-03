@@ -4,8 +4,8 @@ Family first: the product for other families starts only after the founder's fam
 
 | Phase | Platform | Focus | Gate to the next phase |
 | --- | --- | --- | --- |
-| 0. Discovery (now) | — | Understand case 1, seed the knowledge base, confirm stack and domain | Routes chosen for each unit |
-| 1. Family MVP | Web PWA | The consultancy core, plus cross-platform foundations | All six people using it; destination lawyer engaged where needed |
+| 0. Discovery (now) | — | Understand case 1, research routes for the knowledge base, confirm stack and domain | Routes chosen for each unit |
+| 1. Family MVP | Web PWA | The consultancy core, plus cross-platform foundations | All six people using it |
 | 2. Execution | Web PWA | Carry the plan through | It worked for the family |
 | 3. Product | Web PWA | Other families | Paying families active; web stable |
 | 4. Android | Android | Native app on Google Play | Released to production on Play |
@@ -19,11 +19,11 @@ Family first: the product for other families starts only after the founder's fam
 - ~~Stack confirmed~~ Done: [ADR-0010](adr/0010-stack-revised.md) (superseding ADR-0003), with auth ([ADR-0006](adr/0006-auth.md)), background jobs ([ADR-0009](adr/0009-background-jobs-guarantees.md), superseding ADR-0007), reviewers in CI ([ADR-0011](adr/0011-reviewers-in-ci.md), superseded by [ADR-0019](adr/0019-reviewers-in-the-authoring-session.md)), automation-first setup ([ADR-0012](adr/0012-automation-first-setup.md)) and database security and environments ([ADR-0008](adr/0008-database-security-and-environments.md)).
 - Production host `arca.filx.app` set (done 2026-11-03) and its Resend sending domain verified (passkeys depend on the host from day one; production stays closed until email works; [ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)).
 
-Phase 0 does not depend on code: the questions in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) can be answered while the repository is set up.
+Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase 0, since it needs neither real route data nor case data. The research in [research/](research/) feeds the knowledge seed of Phase 1 (consultancy core, slice 2), where each rule is re-verified against an official source. Phase 0 does not depend on code: the questions in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) can be answered while the repository is set up.
 
 ## Phase 1 — Family MVP (web)
 
-**Epic: cross-platform foundations** (done before feature work, so native phases add adapters instead of rewrites)
+**Epic: cross-platform foundations** (done before any feature that touches case data, identity or AI, so native phases add adapters instead of rewrites)
 
 - Specified in four slices: [0001 scaffold](specs/0001-foundations-scaffold.md); [0003 identity and access](specs/0003-identity-and-access.md); [0004 real-data readiness](specs/0004-real-data-readiness.md), which ends with the real-data gate production must pass before family data enters; [0005 vault, device capabilities and notifications](specs/0005-vault-devices-and-notifications.md).
 - Monorepo with `packages/domain`, `packages/api-contract`, `packages/ui`, `packages/i18n`, `packages/platform`, `apps/api`, `apps/web` ([ARCHITECTURE.md](ARCHITECTURE.md#platforms-and-code-layout)).
@@ -36,23 +36,24 @@ Phase 0 does not depend on code: the questions in [OPEN-QUESTIONS.md](OPEN-QUEST
 - Before real family data enters: in-app account deletion and data export, retention periods ([RETENTION.md](RETENTION.md)), incident response runbook, off-vendor backups, threat model for the epic ([ADR-0017](adr/0017-data-lifecycle-and-backups.md), spec 0004).
 - Client builds to a static bundle; no server-rendering dependency.
 - Versioned typed API; every feature goes through it.
-- Passkeys on the production host, invite-only enrollment, purpose-bound step-up and recovery ([ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)); cookie sessions on the web. Secure-storage tokens for native apps come with Phase 4; nothing in the design blocks them.
+- Passkeys on the production host, invite-only enrollment, purpose-bound step-up (which knowledge-base decisions use, [ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)) and recovery ([ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)); cookie sessions on the web. Secure-storage tokens for native apps come with Phase 4; nothing in the design blocks them.
 - `platform` port with web adapters: passkeys, vault envelopes, camera capture, file picking, notifications, secure key storage, sharing, receiving shared files, deep links.
 - Notification service with per-device channels (web push first).
 - Vault encryption format documented and platform-neutral; key recovery designed and tested.
 - Responsive, touch-first layouts from phone to tablet to desktop, safe-area aware.
 - CI running unit tests and the synthetic evaluation suite; the multi-reviewer pass runs in the authoring session ([ADR-0019](adr/0019-reviewers-in-the-authoring-session.md)).
 
-**Epic: consultancy core**
+**Epic: consultancy core** (slices and dependencies in [specs/0002-rules-engine-and-knowledge-base.md](specs/0002-rules-engine-and-knowledge-base.md#the-epic-consultancy-core); the case model and intake wait for the foundations' identity and data-protection work above)
 
-- AI intake and case model, with playback and correction.
+- Rules engine and knowledge base, specified in [specs/0002-rules-engine-and-knowledge-base.md](specs/0002-rules-engine-and-knowledge-base.md), with the knowledge base as reviewed data activated by the owner's passkey ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)).
+- Knowledge seed for the first countries, from official sources.
+- AI intake (text first, proposed) and case model, with playback and correction; permissions per person and unit; audit log.
 - Destination comparison weighted by each person.
 - Strategy recommendation with alternatives, pros, cons, risks, cost and time.
 - Personalized document checklist.
 - Step-by-step plan with execution modes and action points.
 - On-call assistant with cited sources.
 - Assets, tax and FX simulator; source-of-funds trail.
-- Permissions per person and unit; audit log.
 
 ## Phase 2 — Execution (web)
 
