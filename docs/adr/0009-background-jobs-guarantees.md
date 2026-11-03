@@ -31,7 +31,7 @@ The reasons for choosing Vercel Workflows in ADR-0007 still hold: no extra vendo
 - **Nitro** is the API's build and deploy shell, because the Workflow SDK needs it with Hono. It is pinned exactly. The Hono app is built and tested without Nitro, so Nitro can be replaced without touching routes.
 - Steps are idempotent and retry safely; side effects are keyed to avoid duplicates.
 - Results that change the knowledge base enter as proposals awaiting human approval ([ADR-0002](0002-rules-as-versioned-data.md)).
-- Jobs that need a document's plaintext follow the vault encryption ADR (pending); plaintext exists only in memory during a processing session the user authorized.
+- No job handles document plaintext: [ADR-0018](0018-vault-encryption.md) allows plaintext only in the memory of one request the owner authorized.
 - No public, unauthenticated route starts a workflow.
 
 ### Amendment to ADR-0008

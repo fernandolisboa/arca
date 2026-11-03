@@ -29,7 +29,7 @@ Revisited at the start of every epic. New features list the assets they touch an
 
 | Threat | Example | Main controls |
 | --- | --- | --- |
-| Account takeover | Phished or stolen session | Passkeys only; step-up for vault and financial actions; session binding and short lifetimes; alerts on new devices |
+| Account takeover | Phished or stolen session | Passkeys only; step-up for vault, financial and account changes; sessions bound to their passkey, with a 3-day idle and 30-day absolute lifetime (ADR-0015 records the trade-off); notices on new passkeys and on sign-ins from an unseen browser or system |
 | Broken access control | User reads another case by changing an ID | API authorization plus row-level security; an access-matrix test suite for every endpoint |
 | Intra-family exposure or coercion | A separated spouse sees the other's finances; one relative controls another's application | Per-person ownership and explicit sharing; each adult signs in separately; audit log visible to the data owner |
 | Indirect prompt injection | Text in an uploaded PDF or a researched web page tells an agent to reveal data or change a rule | Document and web content treated as data, never instructions; agents have no write tools outside their task; schema-validated outputs; knowledge-base changes need human approval; injection cases in the evaluation suite |
@@ -42,16 +42,16 @@ Revisited at the start of every epic. New features list the assets they touch an
 | Cross-site scripting | Injected script reads decrypted documents in the browser | Strict CSP and Trusted Types; no third-party scripts in the app; sanitized rendering of untrusted text, including model output |
 | Data exfiltration through model output | Injected instructions make the assistant render an image URL that carries case data | Remote images stripped and links marked in rendered model output |
 | Payment-detail fraud | Bank details swapped before a large transfer | Two-person approval and a cooling-off notice for any change to bank or exchange details |
-| Lost or stolen device | Phone unlocked by a thief | Vault requires fresh passkey verification; remote sign-out of devices; native keys behind biometrics |
+| Lost or stolen device | Phone unlocked by a thief | Vault requires fresh passkey verification; revoking the device's passkey signs out its sessions and offers vault identity rotation; native keys behind biometrics |
 | Impersonation of Arca or partners | Phishing messages "from Arca" asking for payment | Arca never requests payment or documents by message link; partner contacts shown only inside the app; published anti-phishing guidance |
 | Denial of wallet | Abuse of AI endpoints runs up costs | Per-user and per-case rate limits and budgets; alerts on spend anomalies |
 
 ## Required controls
 
 **Identity and access**
-- Better Auth with passkeys only ([ADR-0006](adr/0006-auth.md)); native passkey APIs on mobile; step-up for sensitive actions; device list with remote sign-out; recovery that never rests on email alone.
+- Better Auth with passkeys only ([ADR-0006](adr/0006-auth.md), [ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)); invite-only enrollment until Phase 3; native passkey APIs on mobile; purpose-bound step-up for sensitive actions, its assertion stored and re-verifiable; device list with remote sign-out; recovery that needs the email link and the recovery code, with a 24-hour inactive period and notices.
 - Forced row-level security on every table with case data, identity set per transaction, plus API-level checks; deny-by-default policies ([ADR-0008](adr/0008-database-security-and-environments.md)).
-- Separate SQL-created roles for API, jobs, auth, audit and migrations, none able to bypass row-level security.
+- Separate SQL-created roles for API, jobs, auth, audit, backup ([ADR-0017](adr/0017-data-lifecycle-and-backups.md)) and migrations, none able to bypass row-level security.
 - Access-matrix tests in CI for every role, person and table.
 
 **Web and API**
@@ -63,11 +63,11 @@ Revisited at the start of every epic. New features list the assets they touch an
 - Untrusted rich text (including model output) is sanitized before rendering; external links are marked and opened safely.
 
 **Data**
-- Vault encryption on the client, with its own ADR before implementation: standard primitives, documented key wrapping, recovery and rotation, and the path by which plaintext reaches an authorized processing session.
+- Vault encryption on the client in the age format with hybrid post-quantum recipients, passkey (PRF) and recovery-kit envelopes, rotation, and plaintext reaching an authorized processing session only in one request's memory ([ADR-0018](adr/0018-vault-encryption.md)).
 - Bank account and document numbers encrypted per field with KMS-wrapped keys ([ADR-0008](adr/0008-database-security-and-environments.md)).
-- Deleting a case destroys its keys (crypto-shredding) and its rows, and deletes related stored objects, traces and error reports; workflow runs hold identifiers only with zero retention and have their payloads purged by Vercel within 36 days, and their metadata (no personal data) within one year ([ADR-0009](adr/0009-background-jobs-guarantees.md)); in-app account deletion and data export from Phase 1.
-- Retention periods defined per data type before real data enters (Phase 1).
-- Backups per ADR-0008: RPO 15 minutes, RTO 4 hours, an off-vendor encrypted copy, quarterly restore drills.
+- Deleting an account destroys its vault envelopes (crypto-shredding, [ADR-0018](adr/0018-vault-encryption.md)) and its rows, and deletes its stored objects; traces and error reports never carry account identifiers, so they need no deletion ([ADR-0016](adr/0016-observability-and-scrubbing.md), [ADR-0017](adr/0017-data-lifecycle-and-backups.md)); workflow runs hold identifiers only with zero retention and have their payloads purged by Vercel within 36 days, and their metadata (no personal data) within one year ([ADR-0009](adr/0009-background-jobs-guarantees.md)); in-app account deletion and data export from Phase 1.
+- Retention periods per data type, each with its enforcement: [RETENTION.md](RETENTION.md). Every table is in the personal-data registry or on its no-personal-data list, enforced by a guard ([ADR-0017](adr/0017-data-lifecycle-and-backups.md)).
+- Backups per ADR-0008 and [ADR-0017](adr/0017-data-lifecycle-and-backups.md): RPO 15 minutes inside Neon's history window and up to 24 hours beyond it or after losing the Neon or Vercel account, RTO 4 hours, a daily off-vendor copy in a separate AWS account under Object Lock, written by a role that cannot read it back, quarterly restore drills.
 
 **AI**
 - Every adapter enforces data minimization ([ADR-0004](adr/0004-ai-providers-behind-ports.md)); prefer vendor settings that disable training on and retention of our data, recorded in the data-flow register.
@@ -87,6 +87,6 @@ Revisited at the start of every epic. New features list the assets they touch an
 
 **Operations**
 - Security events (sign-ins, step-ups, vault access, permission and bank-detail changes) go to the audit log and alerting. The audit log is append-only, enforced by database grants.
-- Incident response runbook before real data enters (Phase 1): severity levels, containment steps, owner contacts, and notification steps. Under Brazil's Resolução CD/ANPD 15/2024, a controller notifies the ANPD and affected data subjects within 3 business days of learning that an incident affected personal data ([Cescon Barrieu](https://cesconbarrieu.com.br/anpd-aprova-o-regulamento-de-comunicacao-de-incidente-de-seguranca/)).
+- Incident response runbook before real data enters (Phase 1, [spec 0004](specs/0004-real-data-readiness.md) R11): severity levels, containment steps, owner contacts, and notification steps. Under Brazil's Resolução CD/ANPD 15/2024, a controller notifies the ANPD and affected data subjects within 3 business days of learning that an incident affected personal data ([Cescon Barrieu](https://cesconbarrieu.com.br/anpd-aprova-o-regulamento-de-comunicacao-de-incidente-de-seguranca/)).
 - A component-level threat model (STRIDE plus the LLM and agentic risks above) is written for each epic before its code.
-- Responsible disclosure: [SECURITY.md](../SECURITY.md) in the repository and `security.txt` on the production domain.
+- Responsible disclosure: [SECURITY.md](../SECURITY.md) in the repository and `security.txt` on the production host.

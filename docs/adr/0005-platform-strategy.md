@@ -1,6 +1,6 @@
 # ADR-0005: Platform strategy — web first, then Android, Apple and desktop
 
-- Status: Accepted
+- Status: Accepted; native bearer sessions moved to Phase 4 by [ADR-0015](0015-identity-enrollment-step-up-and-recovery.md)
 - Date: 2026-11-01
 
 ## Context
@@ -32,7 +32,7 @@ What each platform adds for Arca:
 ### Built in Phase 1 so nothing blocks the native phases
 
 - Monorepo layout with a pure domain package, an API contract package and a portable client ([ARCHITECTURE.md](../ARCHITECTURE.md#platforms-and-code-layout)).
-- Passkeys scoped to the final production domain from day one. Native apps reuse the same passkeys through Digital Asset Links (Android) and Associated Domains (iOS), calling native passkey APIs through the `platform` port, because WebAuthn inside the WebView runs on a `localhost` origin ([ADR-0006](0006-auth.md)). Changing the domain later would invalidate every passkey.
+- Passkeys scoped to the production host from day one (amended by [ADR-0015](0015-identity-enrollment-step-up-and-recovery.md): for now the project's `vercel.app` host). Native apps reuse the same passkeys through Digital Asset Links (Android) and Associated Domains (iOS), calling native passkey APIs through the `platform` port, because WebAuthn inside the WebView runs on a `localhost` origin ([ADR-0006](0006-auth.md)). Changing the domain later would invalidate every passkey.
 - Authentication that supports both cookie sessions (web) and tokens kept in secure storage (native).
 - Notification service with one channel per device type: web push now, FCM and APNs later.
 - Deep links that use the same URL paths as the web app.

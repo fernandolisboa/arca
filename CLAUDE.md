@@ -69,7 +69,7 @@ Accepted: [ADR-0010](docs/adr/0010-stack-revised.md), which supersedes ADR-0003.
 - Services never connect to the database with an owner or console-created role; use the roles in ADR-0008, with the request identity set per transaction.
 - Production data never leaves production; non-production databases start from the synthetic seed.
 - Workflow step inputs and outputs carry identifiers only.
-- No home-made cryptography. The vault waits for its own ADR.
+- No home-made cryptography. The vault follows [ADR-0018](docs/adr/0018-vault-encryption.md).
 The first engineering task is scaffolding the monorepo as described in ADR-0010, the spec in [docs/specs/0001-foundations-scaffold.md](docs/specs/0001-foundations-scaffold.md) and the code layout in ARCHITECTURE.md, with CI, linting, tests and a deployable empty app before any feature work.
 
 ## Definition of done
