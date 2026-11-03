@@ -39,7 +39,7 @@ TypeScript end to end, in a pnpm + Turborepo monorepo.
 | Monorepo | pnpm workspaces + Turborepo |
 | Client | React + Vite single-page app, installable PWA |
 | Routing and server state | TanStack Router, TanStack Query |
-| UI | Tailwind CSS with accessible headless primitives (Radix, shadcn/ui pattern) owned in `packages/ui` |
+| UI | Tailwind CSS with accessible headless primitives (Radix, shadcn/ui pattern) owned in `packages/ui`; themes, self-hosted fonts, Lucide icons and CSS motion per [ADR-0020](0020-themeable-ui.md) |
 | Forms and validation | React Hook Form + Zod, sharing schemas with the API contract |
 | i18n | i18next with ICU message format; `pt-BR` first |
 | API | Hono on Node, built and deployed with Nitro; versioned (`/v1`); contract in Zod with `@hono/zod-openapi`, exported as OpenAPI; typed client derived from the same Zod route definitions in `packages/api-contract`, validating responses at runtime, used by every platform |
