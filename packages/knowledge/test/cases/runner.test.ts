@@ -44,7 +44,8 @@ const children = {
   sources: ['law'],
 };
 
-async function run(tree: Record<string, unknown>, familiesDir = tmpdir()): Promise<CasesRun> {
+async function run(tree: Record<string, unknown>, families?: string): Promise<CasesRun> {
+  const familiesDir = families ?? (await mkdtemp(join(tmpdir(), 'arca-families-')));
   const dir = await writeTree(tree);
   const { entries, issues } = await buildKnowledge(dir, buildDate, fixtures);
   expect(issues).toEqual([]);
