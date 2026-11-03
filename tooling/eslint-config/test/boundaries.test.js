@@ -116,9 +116,18 @@ describe('knowledge', () => {
     expect(await ruleIds('knowledge', ['knowledge'], file)).toContain(rule);
   });
 
-  it('lets the entry point read the built catalog', async () => {
+  it('lets the entry points read the built catalog', async () => {
     expect(await ruleIds('knowledge', ['knowledge'], 'src/index.ts')).not.toContain(
       'no-restricted-imports',
+    );
+    expect(await ruleIds('knowledge', ['knowledge'], 'src/reproduction.ts')).not.toContain(
+      'no-restricted-imports',
+    );
+  });
+
+  it('keeps the entry points pure', async () => {
+    expect(await ruleIds('knowledge', ['knowledge'], 'src/reproduction.ts')).toContain(
+      'no-restricted-globals',
     );
   });
 
@@ -137,6 +146,12 @@ describe('reproduction lookup', () => {
     ['src/reproduction/reexport.ts', 'no-restricted-syntax'],
   ])('%s fails with %s', async (file, rule) => {
     expect(await ruleIds('api', ['api'], file)).toContain(rule);
+  });
+
+  it('stays forbidden in files exempt from another restriction', async () => {
+    expect(await ruleIds('db', ['db'], 'test/reproduction-import.ts')).toContain(
+      'no-restricted-imports',
+    );
   });
 
   it.each([

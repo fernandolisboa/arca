@@ -1,12 +1,12 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { type Json, JsonSubsetError, parseJsonSubset } from '../scripts/json.ts';
+import { type Json, JsonSubsetError, hiddenCharacters, parseJsonSubset } from '../scripts/json.ts';
 
 const parse = (text: string, depth = 48): Json =>
   parseJsonSubset(new TextEncoder().encode(text), depth);
 
-const hidden = /[\u061c\u200b-\u200f\u202a-\u202e\u2060-\u2064\u2066-\u2069\ufeff]/;
-const allowed = (text: string): boolean => text.normalize('NFC') === text && !hidden.test(text);
+const allowed = (text: string): boolean =>
+  text.normalize('NFC') === text && !hiddenCharacters.test(text);
 
 const subsetValue: fc.Arbitrary<Json> = fc.letrec<{ value: Json }>((tie) => ({
   value: fc.oneof(
@@ -36,7 +36,7 @@ describe('parseJsonSubset', () => {
   });
 
   it('reads escapes, including a surrogate pair', () => {
-    expect(parse('"\\u00e9\\n\\ud83d\\ude00\\/"')).toBe('\u00e9\n\ud83d\ude00/');
+    expect(parse('"\\u00e9\\ud83d\\ude00\\/"')).toBe('\u00e9\ud83d\ude00/');
   });
 
   it.each([
@@ -60,6 +60,13 @@ describe('parseJsonSubset', () => {
     ['an escaped right-to-left override', '"abc\\u202edef"'],
     ['a zero-width space in a key', '{"a\u200bb":1}'],
     ['a byte order mark inside a string', '"a\ufeffb"'],
+    ['a tag character', '"a\udb40\udc41b"'],
+    ['a soft hyphen', '"a\u00adb"'],
+    ['a variation selector', '"a\ufe0fb"'],
+    ['a line separator', '"a\u2028b"'],
+    ['an escaped line feed', '"a\\nb"'],
+    ['an escaped C0 control', '"a\\u0001b"'],
+    ['a C1 control', '"a\u0085b"'],
   ])('refuses %s', (_, text) => {
     expect(() => parse(text)).toThrow(JsonSubsetError);
   });

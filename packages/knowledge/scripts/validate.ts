@@ -321,10 +321,23 @@ function withoutExtension(file: string): string {
  * and converts it to ASCII (punycode). Anything but `https` without user information or an explicit
  * port has no host to match.
  */
+/**
+ * The URL as written: `https://`, then a host with no user information, port, backslash or extra
+ * slash, which WHATWG parsing would otherwise forgive and hide.
+ */
+const plainAuthority = /^https:\/\/[^/?#\\@:\s]+(?:[/?#]|$)/;
+
 export function hostOf(url: string): string | undefined {
   if (!URL.canParse(url)) return undefined;
   const parsed = new URL(url);
-  // Any `@` or `:` in the authority, even with nothing around it, is user information or a port.
-  if (parsed.protocol !== 'https:' || /^https:\/\/[^/?#\\]*[@:]/.test(url)) return undefined;
+  if (
+    parsed.protocol !== 'https:' ||
+    parsed.username !== '' ||
+    parsed.password !== '' ||
+    parsed.port !== '' ||
+    !plainAuthority.test(url)
+  ) {
+    return undefined;
+  }
   return parsed.hostname;
 }

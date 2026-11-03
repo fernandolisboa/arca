@@ -20,6 +20,12 @@ describe('hostOf', () => {
     'https://gov.example:8443/',
     'https://gov.example:443/',
     'https://[::1]/',
+    'https:///user@gov.example/',
+    'https:///gov.example:8443/',
+    'https://\\user:pw@gov.example/',
+    'https:////evil@gov.example/',
+    'https://gov.example\\@evil.example/',
+    'https://gov.example\t/',
     'not a url',
   ])('has no host to match for %s', (url) => {
     expect(hostOf(url)).toBeUndefined();

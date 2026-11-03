@@ -44,10 +44,10 @@ async function main(): Promise<void> {
   const packageDir = fileURLToPath(new URL('..', import.meta.url));
   const today = parseCalendarDate(new Date().toISOString().slice(0, 10));
   const target = join(packageDir, 'src', 'generated', 'catalog.ts');
+  // Removed first, so a failed or crashed build leaves no earlier catalog for tools outside Turbo.
+  await rm(target, { force: true });
   const { entries, issues } = await buildKnowledge(join(packageDir, 'data'), today);
   if (issues.length > 0) {
-    // A catalog from an earlier build would otherwise still be served by tools run outside Turbo.
-    await rm(target, { force: true });
     process.stderr.write(`${issues.map(formatIssue).join('\n')}\n`);
     process.exitCode = 1;
     return;

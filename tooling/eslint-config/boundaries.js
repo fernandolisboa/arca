@@ -170,8 +170,8 @@ export const reproductionLookup = {
 };
 
 /**
- * The files allowed to import the reproduction lookup may not pass it on, so it never reaches a
- * module the restriction covers.
+ * The files allowed to import the reproduction lookup may not re-export it with `export … from`.
+ * Other ways of passing it on are left to review.
  *
  * @type {Restrictions}
  */

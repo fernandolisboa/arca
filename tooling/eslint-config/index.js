@@ -77,7 +77,8 @@ export function arcaConfig({ rootDir, kinds = [] }) {
   /** @typedef {import('./boundaries.js').Restrictions} Restrictions */
   /**
    * Rules for a group of files, replacing the package-wide ones. ESLint keeps the last block that
-   * sets a rule, so groups must not overlap, except the knowledge catalog readers inside `src`.
+   * sets a rule, so groups must not overlap. Inside knowledge `src` the later, stricter blocks win:
+   * the catalog readers keep the pure rules, and `src/reproduction/**` there gets no exemption.
    *
    * @param {Restrictions[]} exempt
    * @param {Restrictions[]} added

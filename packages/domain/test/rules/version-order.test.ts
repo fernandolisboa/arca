@@ -32,6 +32,15 @@ describe('checkVersionOrder', () => {
       [version(1, '2020-01-01'), version(2, '2020-01-01', 1), version(3, '2020-01-01', 1)],
     ],
     [
+      'a correction after a chain of corrections of the same version, on its date',
+      [
+        ...history,
+        version(3, '2022-01-01', 2),
+        version(4, '2022-01-01', 3),
+        version(5, '2023-01-01', 2),
+      ],
+    ],
+    [
       'a correction of a correction',
       [...history, version(3, '2022-01-01', 2), version(4, '2022-01-01', 3)],
     ],
@@ -66,6 +75,16 @@ describe('checkVersionOrder', () => {
       'a correction older than an earlier correction of the same version',
       [...history, version(3, '2023-01-01', 2), version(4, '2022-06-01', 2)],
       4,
+    ],
+    [
+      'a correction older than a correction of an earlier correction of the same version',
+      [
+        ...history,
+        version(3, '2022-01-01', 2),
+        version(4, '2023-01-01', 3),
+        version(5, '2022-06-01', 2),
+      ],
+      5,
     ],
     [
       'a correction older than the latest correction, not only the one before',

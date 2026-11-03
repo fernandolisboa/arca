@@ -17,8 +17,9 @@ export interface VersionDates {
 /**
  * Checks the dates of one route's versions (spec 0002, R6), given contiguous numbers. A version
  * that corrects nothing starts strictly after every lower-numbered version. A correction falls
- * inside the bounds set by the period of the version it fixes, and corrections of one version
- * never start earlier as their numbers grow. Returns the problems by version number.
+ * inside the bounds set by the period of the version it fixes, and starts no earlier than any
+ * earlier correction of that version, direct or through a chain, so a newer correction is never
+ * shadowed by an older one. Returns the problems by version number.
  */
 export function checkVersionOrder(versions: readonly VersionDates[]): Map<number, string[]> {
   const problems = new Map<number, string[]>();
@@ -26,7 +27,7 @@ export function checkVersionOrder(versions: readonly VersionDates[]): Map<number
     problems.set(number, [...(problems.get(number) ?? []), message]);
   };
   const sorted = [...versions].sort((left, right) => left.number - right.number);
-  const latestCorrection = new Map<number, VersionDates>();
+  const byNumber = new Map(sorted.map((version) => [version.number, version]));
   for (const version of sorted) {
     const lower = sorted.filter((other) => other.number < version.number);
     if (version.corrects === undefined) {
@@ -38,23 +39,38 @@ export function checkVersionOrder(versions: readonly VersionDates[]): Map<number
       }
       continue;
     }
+    const target = version.corrects;
+    const tree = lower.filter((other) => correctsChainReaches(other, target, byNumber));
     const message = correctionBoundsProblem(
       version,
-      lower.filter((other) => other.corrects !== version.corrects),
+      lower.filter((other) => !tree.includes(other)),
     );
     if (message !== undefined) report(version.number, message);
-    const latest = latestCorrection.get(version.corrects);
-    if (latest !== undefined && compareDates(version.effectiveFrom, latest.effectiveFrom) < 0) {
-      report(
-        version.number,
-        `A correction of version ${String(version.corrects)} starts no earlier than version ${String(latest.number)}, which corrects it too`,
-      );
-    }
-    if (latest === undefined || compareDates(version.effectiveFrom, latest.effectiveFrom) >= 0) {
-      latestCorrection.set(version.corrects, version);
+    for (const earlier of tree) {
+      if (compareDates(version.effectiveFrom, earlier.effectiveFrom) < 0) {
+        report(
+          version.number,
+          `A correction of version ${String(target)} starts no earlier than version ${String(earlier.number)}, which corrects it too`,
+        );
+      }
     }
   }
   return problems;
+}
+
+/** Whether a version corrects `target`, directly or by correcting a correction of it. */
+function correctsChainReaches(
+  version: VersionDates,
+  target: number,
+  byNumber: ReadonlyMap<number, VersionDates>,
+): boolean {
+  const seen = new Set<number>();
+  for (let next = version.corrects; next !== undefined && !seen.has(next);) {
+    if (next === target) return true;
+    seen.add(next);
+    next = byNumber.get(next)?.corrects;
+  }
+  return false;
 }
 
 interface Segment {
@@ -65,7 +81,8 @@ interface Segment {
 
 /**
  * The period of the corrected version is the run of dates on which selection over `lower` (the
- * lower-numbered versions without other corrections of the same version), all active, picks it.
+ * lower-numbered versions without other corrections of the same version, direct or through a
+ * chain), all active, picks it.
  * The correction starts before that period ends and after the start of the period before it.
  */
 function correctionBoundsProblem(

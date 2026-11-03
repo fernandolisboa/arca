@@ -72,7 +72,7 @@ tooling/
   - `packages/api-contract/src/routes` and `src/client`: no imports of `hono` or `@hono/*`.
   - `apps/api/src/workflows`: `start` from `workflow/api` may be imported only by the shared start helper (R6).
   - `packages/knowledge/src`: the `packages/domain` rules, since the runtime entry is pure; its build scripts and tests read files; only its entry points import the built catalog ([spec 0002](0002-rules-engine-and-knowledge-base.md) R1).
-  - Every package: `@arca/knowledge/reproduction`, which ignores decision states, and any module or folder named `reproduction` may be imported only by the cases runner (`test/cases`), the reproduction path (`src/reproduction`, `test/reproduction`) and the lookup's own test, which may not re-export it (spec 0002 R5).
+  - Every package: `@arca/knowledge/reproduction`, which ignores decision states, and any module or folder named `reproduction` may be imported only by the cases runner (`test/cases`), the reproduction path (`src/reproduction`, `test/reproduction`) and the lookup's own test, which may not re-export it with `export … from` (spec 0002 R5).
 - ESLint bans relative imports that cross a package root (`../../packages/…`).
 - A bundle check fails if Hono or `@hono/zod-openapi` modules appear in `apps/web/dist`.
 - Each rule has a test fixture that must fail, so a misconfigured rule is caught.
