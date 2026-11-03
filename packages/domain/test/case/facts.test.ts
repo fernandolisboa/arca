@@ -131,6 +131,13 @@ describe('person.hasSpouse: edge end and the completeness marker', () => {
     });
   });
 
+  it('names the missing marker when only it leaves the answer open', () => {
+    const env = environment(snapshot({ people: people(undefined), relationships: [] }));
+    expect(derive('person.hasSpouse', { environment: env, personId: 'p1' }).missingMarkers).toEqual(
+      [{ personId: 'p1', marker: 'spouses' }],
+    );
+  });
+
   it('does not reach a marriage that starts after the date', () => {
     const env = environment(
       snapshot({
@@ -176,8 +183,15 @@ describe('person.liquidAssets', () => {
   });
 
   it('is unbounded above while assets are not recorded in full, even with none listed', () => {
-    expect(read({ people: [{ id: 'p1' }], assets: [] })).toEqual({ value: euros(0n) });
-    expect(read({ people: [{ id: 'p1' }], assets: [asset({})] })).toEqual({ value: euros(1000n) });
+    const missingMarkers = [{ personId: 'p1', marker: 'assets' }];
+    expect(read({ people: [{ id: 'p1' }], assets: [] })).toEqual({
+      value: euros(0n),
+      missingMarkers,
+    });
+    expect(read({ people: [{ id: 'p1' }], assets: [asset({})] })).toEqual({
+      value: euros(1000n),
+      missingMarkers,
+    });
     expect(read({ people: [recorded('p1')], assets: [] })).toEqual({ value: euros(0n, 0n) });
   });
 
@@ -195,7 +209,10 @@ describe('person.liquidAssets', () => {
           }),
         ],
       }),
-    ).toEqual({ value: euros(750n, 750n) });
+    ).toEqual({
+      value: euros(750n, 750n),
+      rates: [{ from: 'USD', to: 'EUR', rate: '0.5', date: '2026-11-01', source: 'fixture' }],
+    });
   });
 
   it('reports a missing rate and leaves the total unbounded above', () => {
@@ -204,7 +221,11 @@ describe('person.liquidAssets', () => {
         people: [recorded('p1')],
         assets: [asset({ value: { amount: 3000, currency: 'BRL' } })],
       }),
-    ).toEqual({ value: euros(0n), missingRates: [{ from: 'BRL', to: 'EUR' }] });
+    ).toEqual({
+      value: euros(0n),
+      missingRates: [{ from: 'BRL', to: 'EUR' }],
+      onlyRatesOrDatesMissing: true,
+    });
   });
 
   it('reports every missing rate and keeps what converted as the lower bound', () => {
@@ -223,6 +244,7 @@ describe('person.liquidAssets', () => {
         { from: 'BRL', to: 'EUR' },
         { from: 'JPY', to: 'EUR' },
       ],
+      onlyRatesOrDatesMissing: true,
     });
   });
 
@@ -246,7 +268,9 @@ describe('person.liquidAssets', () => {
     });
     const unitAssets = (open: boolean): unknown =>
       derive('unit.liquidAssets', {
-        environment: environment(value, { unit: { included: ['p1'], possible: ['p2'], open } }),
+        environment: environment(value, {
+          unit: { included: ['p1'], possible: ['p2'], open, missingMarkers: [] },
+        }),
         personId: 'p1',
       }).value;
     expect(unitAssets(false)).toEqual(euros(1000n, 2000n));

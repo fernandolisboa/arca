@@ -1,6 +1,12 @@
 import { type Duration, durationParts, durationUnits } from '../calendar/duration.js';
 import type { CurrencyCode } from '../money/currency.js';
-import { type CheckContext, type CheckIssue, type CheckScope, checkExpression } from './check.js';
+import {
+  type CheckContext,
+  type CheckIssue,
+  type CheckScope,
+  ageNeedsLeapDay,
+  checkExpression,
+} from './check.js';
 import { type Expression, maxNodesPerVersion, nodeCount } from './expression.js';
 import { resolveFactReference } from './fact-reference.js';
 import type { CountrySet, RouteVersion, Source } from './route-version.js';
@@ -151,9 +157,12 @@ export function checkRouteVersion(version: RouteVersion, official: OfficialHosts
     const path = `/assessments/${String(index)}`;
     cites(`${path}/sources`, assessment.sources);
     assessment.evidence.forEach((reference, position) => {
-      const target = resolveFactReference(reference)?.target;
-      if (target !== 'principal' && target !== 'unit') {
-        issue(`${path}/evidence/${String(position)}`, 'Evidence is a principal or unit fact');
+      const resolved = resolveFactReference(reference);
+      const at = `${path}/evidence/${String(position)}`;
+      if (resolved?.target !== 'principal' && resolved?.target !== 'unit') {
+        issue(at, 'Evidence is a principal or unit fact');
+      } else if (resolved.definition.readsAge === true && !context.leapDayBirthday) {
+        issue(at, ageNeedsLeapDay);
       }
     });
   });

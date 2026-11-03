@@ -23,6 +23,8 @@ const nodeBuiltins = builtinModules.filter((name) => !name.startsWith('_'));
 
 const domainIo = 'packages/domain is pure: no I/O. Pass data in from the API layer.';
 const domainTime = 'packages/domain takes time as an argument; do not read the clock.';
+const domainLogging =
+  'packages/domain never logs: snapshots and evaluations are personal data (spec 0002, R5).';
 
 /** @type {Restrictions} */
 export const domain = {
@@ -59,15 +61,17 @@ export const domain = {
       message: domainIo,
     },
   ],
-  globals: ['fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource', 'process'].map((name) => ({
-    name,
-    message: domainIo,
-  })),
-  properties: ['globalThis', 'window', 'self'].map((object) => ({
-    object,
-    property: 'fetch',
-    message: domainIo,
-  })),
+  globals: [
+    ...['fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource', 'process'].map((name) => ({
+      name,
+      message: domainIo,
+    })),
+    { name: 'console', message: domainLogging },
+  ],
+  properties: ['globalThis', 'window', 'self'].flatMap((object) => [
+    { object, property: 'fetch', message: domainIo },
+    { object, property: 'console', message: domainLogging },
+  ]),
   // Syntactic guards against mistakes, not enforcement: an alias such as `const D = Date` passes.
   syntax: [
     {

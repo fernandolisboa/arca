@@ -120,3 +120,41 @@ export {
   checkRouteVersion,
   hostMatches,
 } from './rules/validate.js';
+export {
+  type CatalogEntry,
+  type DecisionState,
+  type DecisionStates,
+  type RouteCatalog,
+  type Selection,
+  type VersionIdentity,
+  identityKey,
+  newerProposedVersion,
+  sameIdentity,
+  selectVersion,
+  stateOf,
+} from './rules/catalog.js';
+export { type EvaluationContext, type VersionContext } from './rules/context.js';
+export {
+  type AmountRange,
+  type AssessmentResult,
+  type CostItem,
+  type CostTotal,
+  type DurationResult,
+  type Evaluation,
+  type EvaluationStatus,
+  type RequirementResult,
+  type RouteEvaluation,
+  evaluateRoute,
+  evaluateVersion,
+} from './rules/engine.js';
+export { type Trace } from './rules/evaluate.js';
+export { type MissingFact } from './rules/missing.js';
+export {
+  type Dependent,
+  type ExcludedPerson,
+  type PossibleDependent,
+  type Unit,
+  computeUnit,
+} from './rules/unit.js';
+export { type MissingMarker } from './case/graph.js';
+export { type Value } from './logic/value.js';

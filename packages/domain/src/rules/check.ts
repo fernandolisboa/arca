@@ -4,6 +4,9 @@ import type { CurrencyCode } from '../money/currency.js';
 import { type CollectionName, type Expression, maxExpressionDepth, depth } from './expression.js';
 import { type FactTarget, resolveFactReference } from './fact-reference.js';
 
+/** A version that reads an age states how a 29 February birthday counts (spec 0002, R2). */
+export const ageNeedsLeapDay = 'An age needs the version to set leapDayBirthday';
+
 /** The static type of an expression. A `set` is a country set or a literal list of tokens. */
 export type ExpressionType =
   | { readonly kind: 'boolean' }
@@ -214,7 +217,7 @@ class Checker {
       return this.fail(path, `${reference} cannot be read here`);
     }
     if (resolved.definition.readsAge === true && !this.context.leapDayBirthday) {
-      return this.fail(path, 'An age needs the version to set leapDayBirthday');
+      return this.fail(path, ageNeedsLeapDay);
     }
     return typeOf(resolved.definition.type, this.context.currency);
   }

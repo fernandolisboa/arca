@@ -7,8 +7,8 @@ import {
   type LineageBinding,
   deriveFact,
 } from '../case/facts.js';
-import { assertRecordedBy } from '../case/graph.js';
-import { type MissingMarker, ancestorLines } from '../case/paths.js';
+import { type MissingMarker, assertRecordedBy } from '../case/graph.js';
+import { ancestorLines } from '../case/paths.js';
 import type { Relationship } from '../case/snapshot.js';
 import {
   addNumbers,
@@ -16,7 +16,9 @@ import {
   maxNumbers,
   minNumbers,
   multiplyNumber,
+  orZero,
   subtractNumbers,
+  zeroBound,
 } from '../logic/number.js';
 import { type Truth, and, compareIntervals, not, or } from '../logic/truth.js';
 import {
@@ -31,7 +33,7 @@ import {
 } from '../logic/value.js';
 import type { CurrencyCode } from '../money/currency.js';
 import { type Decimal, scaledDecimal } from '../money/decimal.js';
-import { type CurrencyPair, convert } from '../money/fx.js';
+import { type CurrencyPair, type FxRate, convert } from '../money/fx.js';
 import { type CollectionName, type Expression, isNonNegative } from './expression.js';
 import { resolveFactReference } from './fact-reference.js';
 
@@ -63,15 +65,33 @@ export interface Trace {
   readonly op: Expression['op'] | 'item';
   readonly value: Evaluated;
   readonly children: readonly Trace[];
-  readonly fact?: { readonly reference: string; readonly personId: string };
-  readonly item?: { readonly personId: string; readonly membership: Truth };
-  /**
-   * A collection that may hold people who are not recorded, with the markers whose absence opens
-   * it (an open unit adds none here; the unit computation reports its own).
-   */
+  readonly fact?: FactRead;
+  /** A collection item; on a line of ancestors, the edges whose validity is unknown. */
+  readonly item?: {
+    readonly personId: string;
+    readonly membership: Truth;
+    readonly uncertainEdges?: readonly Relationship[];
+  };
+  /** A collection that may hold people who are not recorded, and the markers whose absence opens it. */
   readonly incomplete?: { readonly missingMarkers: readonly MissingMarker[] };
+  /** On a fact, the completeness markers whose absence leaves its value open. */
+  readonly missingMarkers?: readonly MissingMarker[];
   readonly missingRates?: readonly CurrencyPair[];
+  readonly rates?: readonly FxRate[];
   readonly missingDate?: string;
+  /** On a fact, nothing the family can answer leaves it open: only FX rates or reference dates. */
+  readonly onlyRatesOrDatesMissing?: true;
+}
+
+/**
+ * A fact read on a person; for an edge fact, the edge it was read across, and for a lineage fact,
+ * the line from the ancestor to the principal, since one person can be reached by several.
+ */
+export interface FactRead {
+  readonly reference: string;
+  readonly personId: string;
+  readonly edge?: Relationship;
+  readonly line?: readonly string[];
 }
 
 /**
@@ -193,7 +213,14 @@ function readFact(reference: string, dateName: string | undefined, frame: Frame)
   const resolved = resolveFactReference(reference);
   if (resolved === undefined) throw new RangeError('Unchecked fact reference');
   const binding = bindingFor(resolved.target, frame);
-  const fact = { reference, personId: binding.personId };
+  const fact: FactRead = {
+    reference,
+    personId: binding.personId,
+    ...(resolved.target === 'edge' && binding.edge !== undefined ? { edge: binding.edge } : {}),
+    ...(resolved.definition.scope === 'lineage' && binding.lineage !== undefined
+      ? { line: binding.lineage.path }
+      : {}),
+  };
   if (dateName !== undefined) {
     const date = frame.referenceDates.get(dateName);
     if (date === undefined) {
@@ -205,16 +232,16 @@ function readFact(reference: string, dateName: string | undefined, frame: Frame)
   return factTrace(deriveFact(resolved.key, binding, frame.at), fact);
 }
 
-function factTrace(
-  derived: ReturnType<typeof deriveFact>,
-  fact: { reference: string; personId: string },
-): Trace {
+function factTrace(derived: ReturnType<typeof deriveFact>, fact: FactRead): Trace {
   return {
     op: 'fact',
     value: derived.value,
     children: [],
     fact,
     ...(derived.missingRates === undefined ? {} : { missingRates: derived.missingRates }),
+    ...(derived.rates === undefined ? {} : { rates: derived.rates }),
+    ...(derived.missingMarkers === undefined ? {} : { missingMarkers: derived.missingMarkers }),
+    ...(derived.onlyRatesOrDatesMissing === undefined ? {} : { onlyRatesOrDatesMissing: true }),
   };
 }
 
@@ -278,6 +305,7 @@ function convertTrace(operand: Trace, currency: string, frame: Frame): Trace {
   if (from === undefined) throw new RangeError('Unchecked conversion');
   const { fx, factsAsOf } = frame.environment;
   const missing: CurrencyPair[] = [];
+  const rates: FxRate[] = [];
   const bound = (scaledBound: NumberValue['min']): NumberValue['min'] => {
     if (scaledBound === undefined) return undefined;
     const converted = convert({ ...scaledBound, currency: from }, to, fx, factsAsOf);
@@ -285,6 +313,7 @@ function convertTrace(operand: Trace, currency: string, frame: Frame): Trace {
       if (missing.length === 0) missing.push(converted.pair);
       return undefined;
     }
+    if (converted.rate !== undefined && rates.length === 0) rates.push(converted.rate);
     return { units: converted.amount.units, scale: converted.amount.scale };
   };
   const min = bound(value.min);
@@ -303,6 +332,7 @@ function convertTrace(operand: Trace, currency: string, frame: Frame): Trace {
     value: converted,
     children: [operand],
     ...(missing.length > 0 ? { missingRates: missing } : {}),
+    ...(rates.length > 0 ? { rates } : {}),
   };
 }
 
@@ -332,6 +362,7 @@ function since(expression: Extract<Expression, { op: 'since' }>, frame: Frame): 
 interface Item {
   readonly frame: Frame;
   readonly membership: Truth;
+  readonly uncertainEdges?: readonly Relationship[];
 }
 
 interface Counted {
@@ -364,7 +395,11 @@ function collection(expression: CollectionExpression, frame: Frame): Trace {
       op: 'item',
       value: booleanValue(and([entry.membership, entry.condition])),
       children: [condition, value].filter((trace) => trace !== undefined),
-      item: { personId: item.frame.current, membership: item.membership },
+      item: {
+        personId: item.frame.current,
+        membership: item.membership,
+        ...(item.uncertainEdges === undefined ? {} : { uncertainEdges: item.uncertainEdges }),
+      },
     });
   }
   return {
@@ -401,8 +436,7 @@ function aggregate(
       return integerRange(certain, complete ? certain + possible : undefined);
     }
     case 'sum': {
-      const zero = { units: 0n, scale: 0 };
-      let total: NumberValue = { type: 'number', min: zero, max: zero };
+      let total: NumberValue = { type: 'number', min: zeroBound, max: zeroBound };
       counted.forEach((entry, index) => {
         const truth = counts[index];
         if (truth === false || entry.value === undefined) return;
@@ -449,7 +483,7 @@ function itemsOf(
             .map((id): Item => ({ frame: at(id), membership: 'unknown' })),
         ],
         complete: !unit.open,
-        missingMarkers: [],
+        missingMarkers: unit.missingMarkers,
       };
     }
     case 'principal.ancestors': {
@@ -463,7 +497,8 @@ function itemsOf(
       return {
         items: lines.map((line) => ({
           frame: at(line.path[0] ?? environment.principalId, { path: line.path, position: 0 }),
-          membership: line.valid,
+          membership: line.reached,
+          uncertainEdges: line.uncertainEdges,
         })),
         complete: missingMarkers.length === 0,
         missingMarkers,
@@ -488,7 +523,8 @@ function node(op: Expression['op'], value: Evaluated, children: readonly Trace[]
   return { op, value, children };
 }
 
-function numberOf(trace: Trace): NumberValue {
+/** The number a checked numeric expression evaluated to. */
+export function numberOf(trace: Trace): NumberValue {
   if (trace.value.type !== 'number') throw new RangeError('Unchecked arithmetic');
   return trace.value;
 }
@@ -502,23 +538,6 @@ function pinnedSet(frame: Frame, id: string): readonly string[] {
   const set = frame.countrySets.get(id);
   if (set === undefined) throw new RangeError('A country set the version does not pin');
   return set;
-}
-
-/** A possible amount counts as zero or as itself. */
-function orZero(value: NumberValue): NumberValue {
-  const zero: NumberValue = {
-    type: 'number',
-    min: { units: 0n, scale: 0 },
-    max: { units: 0n, scale: 0 },
-  };
-  const lower = minNumbers([zero, value]);
-  const upper = maxNumbers([zero, value]);
-  return {
-    type: 'number',
-    ...(value.currency === undefined ? {} : { currency: value.currency }),
-    ...(lower.min === undefined ? {} : { min: lower.min }),
-    ...(upper.max === undefined ? {} : { max: upper.max }),
-  };
 }
 
 function withoutBound(value: NumberValue, bound: 'min' | 'max'): NumberValue {

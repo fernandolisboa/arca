@@ -44,6 +44,6 @@ export function derive(
   key: FactKey,
   binding: Omit<FactBinding, 'environment'> & { environment: FactEnvironment },
   at = '2026-11-03',
-): { value: Value; missingRates?: readonly unknown[] } {
+): { value: Value; missingRates?: readonly unknown[]; missingMarkers?: readonly unknown[] } {
   return deriveFact(key, binding, parseCalendarDate(at));
 }
