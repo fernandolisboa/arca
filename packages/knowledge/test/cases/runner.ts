@@ -13,7 +13,12 @@ import {
   parseCalendarDate,
 } from '@arca/domain';
 import { parseJsonSubset } from '@arca/scripts/json';
-import { type RuleCase, casesFileSchema, describeMissingFact } from '../../scripts/cases.ts';
+import {
+  type CasesFile,
+  type RuleCase,
+  casesFileSchema,
+  describeMissingFact,
+} from '../../scripts/cases.ts';
 import { hashesFileSchema } from '../../scripts/files.ts';
 import { loadData, readKnowledgeFile } from '../../scripts/load.ts';
 import type { ReproductionLookup } from '../../src/reproduction.ts';
@@ -58,29 +63,14 @@ export async function runCases(
       problems.push(`${file}: The version it covers is in the catalog`);
       continue;
     }
-    const parsed = casesFileSchema.safeParse(
-      parseJsonSubset(await readKnowledgeFile(join(dataDir, file)), maxKnowledgeJsonDepth),
-    );
-    if (!parsed.success) {
-      problems.push(`${file}: ${parsed.error.message}`);
+    const parsed = await readCases(join(dataDir, file));
+    if (typeof parsed === 'string') {
+      problems.push(`${file}: ${parsed}`);
       continue;
     }
-    const ids = parsed.data.cases.map((entry) => entry.id);
-    if (new Set(ids).size !== ids.length) problems.push(`${file}: Case IDs are unique`);
-    const targets = parsed.data.cases.flatMap((entry) =>
-      entry.supersedes === undefined || entry.supersedes === entry.id ? [] : [entry.supersedes],
-    );
-    const superseded = new Set(targets);
-    if (superseded.size !== targets.length) {
-      problems.push(`${file}: A case is superseded at most once`);
-    }
-    for (const entry of parsed.data.cases) {
-      if (entry.supersedes === entry.id) problems.push(`${file} ${entry.id}: supersedes itself`);
-      else if (entry.supersedes !== undefined && !ids.includes(entry.supersedes)) {
-        problems.push(`${file} ${entry.id}: The case it supersedes is in the file`);
-      }
-    }
-    const current = parsed.data.cases.filter((entry) => !superseded.has(entry.id));
+    problems.push(...supersedeProblems(parsed.cases).map((problem) => `${file}${problem}`));
+    const superseded = new Set(parsed.cases.flatMap((entry) => entry.supersedes ?? []));
+    const current = parsed.cases.filter((entry) => !superseded.has(entry.id));
     const runs: Run[] = [];
     for (const ruleCase of current) {
       const where = `${file} ${ruleCase.id}`;
@@ -103,6 +93,50 @@ export async function runCases(
     problems.push(...coverage(entry, runs).map((gap) => `${file}: ${gap}`));
   }
   return { cases, problems };
+}
+
+/** The parsed cases file, or why it could not be read. */
+async function readCases(path: string): Promise<CasesFile | string> {
+  try {
+    const parsed = casesFileSchema.safeParse(
+      parseJsonSubset(await readKnowledgeFile(path), maxKnowledgeJsonDepth),
+    );
+    return parsed.success ? parsed.data : parsed.error.message;
+  } catch (error) {
+    return error instanceof Error ? error.message : String(error);
+  }
+}
+
+/**
+ * Each problem starts with `: ` for the file or ` <id>: ` for a case. IDs are unique, a case is
+ * superseded at most once, and every chain of supersedes ends at a case in the file, without a
+ * cycle, which would otherwise drop every case in it unreported.
+ */
+function supersedeProblems(cases: readonly RuleCase[]): string[] {
+  const problems: string[] = [];
+  const ids = cases.map((entry) => entry.id);
+  if (new Set(ids).size !== ids.length) problems.push(': Case IDs are unique');
+  const targets = cases.flatMap((entry) => entry.supersedes ?? []);
+  if (new Set(targets).size !== targets.length) {
+    problems.push(': A case is superseded at most once');
+  }
+  const next = new Map(cases.map((entry) => [entry.id, entry.supersedes]));
+  for (const entry of cases) {
+    if (entry.supersedes === undefined) continue;
+    if (!next.has(entry.supersedes)) {
+      problems.push(` ${entry.id}: The case it supersedes is in the file`);
+      continue;
+    }
+    const seen = new Set([entry.id]);
+    for (let id = next.get(entry.id); id !== undefined; id = next.get(id)) {
+      if (seen.has(id)) {
+        problems.push(` ${entry.id}: Its chain of supersedes forms a cycle`);
+        break;
+      }
+      seen.add(id);
+    }
+  }
+  return problems;
 }
 
 async function snapshotOf(ruleCase: RuleCase, familiesDir: string): Promise<CaseSnapshot> {

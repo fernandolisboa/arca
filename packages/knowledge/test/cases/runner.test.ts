@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { buildKnowledge } from '../../scripts/build.ts';
 import { parseEntries } from '../../src/entries.ts';
 import { createReproductionLookup } from '../../src/reproduction.ts';
-import { baseTree, buildDate, fixtures, writeTree } from '../data.ts';
+import { baseTree, buildDate, fixtures, routeVersion, writeTree } from '../data.ts';
 import { type CasesRun, runCases } from './runner.ts';
 
 /** Synthetic only: a treaty citizen of a user-assigned country. */
@@ -74,6 +74,90 @@ describe('runCases', () => {
     expect(problems.some((problem) => problem.includes(' old: '))).toBe(false);
   });
 
+  it('refuses a supersede of itself, of a missing case, twice, or in a cycle', async () => {
+    const superseding = (id: string, supersedes: string) => ({
+      ...eligible,
+      id,
+      supersedes,
+      reason: 'The engine changed',
+    });
+    const { problems } = await run(
+      withCases([
+        eligible,
+        superseding('self', 'self'),
+        superseding('ghost', 'missing'),
+        superseding('first', 'treaty-citizen'),
+        superseding('second', 'treaty-citizen'),
+        superseding('ping', 'pong'),
+        superseding('pong', 'ping'),
+      ]),
+    );
+    expect(problems.filter((problem) => !problem.includes('Requirement'))).toEqual([
+      'routes/qm-work/1.cases.json: A case is superseded at most once',
+      'routes/qm-work/1.cases.json self: Its chain of supersedes forms a cycle',
+      'routes/qm-work/1.cases.json ghost: The case it supersedes is in the file',
+      'routes/qm-work/1.cases.json ping: Its chain of supersedes forms a cycle',
+      'routes/qm-work/1.cases.json pong: Its chain of supersedes forms a cycle',
+      'routes/qm-work/1.cases.json: No case is not_eligible',
+      'routes/qm-work/1.cases.json: No case is missing_information',
+    ]);
+  });
+
+  it('reports a cases file it cannot parse, and still runs the other files', async () => {
+    const { problems } = await run({ ...baseTree(), 'routes/qm-work/1.cases.json': '{' });
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toMatch(/^routes\/qm-work\/1\.cases\.json: /);
+  });
+
+  it('measures each dependent rule alone, so a possible dependent includes no one', async () => {
+    const children = {
+      id: 'children',
+      title: 'Children under 18',
+      path: ['child'],
+      condition: {
+        op: 'lt',
+        left: { op: 'fact', key: 'person.ageYears' },
+        right: { op: 'int', value: 18 },
+      },
+      sources: ['law'],
+    };
+    const family = {
+      ...citizen,
+      members: ['p1', 'p2', 'p3'],
+      people: [
+        { ...citizen.people[0], recordedInFull: ['children'] },
+        { id: 'p2' },
+        { id: 'p3', birthDate: '1990-01-01' },
+      ],
+      relationships: [
+        { kind: 'parent', parent: 'p1', child: 'p2', parentKind: 'biological' },
+        { kind: 'parent', parent: 'p1', child: 'p3', parentKind: 'biological' },
+      ],
+    };
+    const { problems } = await run({
+      ...baseTree(),
+      'routes/qm-work/1.json': routeVersion({
+        dependents: [children],
+        leapDayBirthday: 'feb-28',
+        leapDayBirthdaySources: ['law'],
+      }),
+      'routes/qm-work/1.cases.json': {
+        schemaVersion: 1,
+        cases: [
+          {
+            ...eligible,
+            snapshot: family,
+            expected: { ...eligible.expected, possibleDependents: ['p2'] },
+          },
+        ],
+      },
+    });
+    expect(problems).toContain(
+      'routes/qm-work/1.cases.json: Dependent rule children never includes anyone',
+    );
+    expect(problems.some((problem) => problem.includes('never excludes'))).toBe(false);
+  });
+
   it('refuses a family whose bytes do not match the pinned hash', async () => {
     const familiesDir = await mkdtemp(join(tmpdir(), 'arca-families-'));
     await mkdir(join(familiesDir, 'citizen'));
@@ -83,8 +167,13 @@ describe('runCases', () => {
       snapshot: undefined,
       family: { id: 'citizen', number: 1, sha256: 'a'.repeat(64) },
     };
-    expect((await run(withCases([pinned]), familiesDir)).problems).toContain(
+    const { problems, cases } = await run(
+      withCases([pinned, { ...eligible, id: 'after-the-broken-case' }]),
+      familiesDir,
+    );
+    expect(problems).toContain(
       'routes/qm-work/1.cases.json treaty-citizen: Family citizen 1 does not hash to the pinned SHA-256',
     );
+    expect(cases).toBe(1);
   });
 });

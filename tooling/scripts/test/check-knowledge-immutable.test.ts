@@ -77,6 +77,19 @@ describe('check-knowledge-immutable', () => {
     });
   });
 
+  it('fails a watched ancestor that is a symbolic link, with no file under it on main', async () => {
+    const dir = await repository();
+    const base = await commit(dir, { [`${data}/countries/1.json`]: '{}' });
+    await mkdir(join(dir, 'elsewhere/families/someone'), { recursive: true });
+    await writeFile(join(dir, 'elsewhere/families/someone/1.json'), '{}');
+    await symlink('elsewhere', join(dir, 'eval'));
+    const head = await commit(dir, {});
+    expect(await check(dir, base, head)).toEqual({
+      code: 1,
+      output: 'eval: must be a directory, not a link or a submodule\n',
+    });
+  });
+
   it('passes an append and fails an edit, from git history alone', async () => {
     const dir = await repository();
     const base = await commit(dir, {

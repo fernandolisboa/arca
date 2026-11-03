@@ -37,27 +37,23 @@ export class GitRepository {
   }
 
   /**
-   * Every entry under the given paths of a commit, by path, read with NUL-separated output. Trees
-   * on the way are listed too, so a path that is a link or a submodule instead of a directory shows.
+   * Every entry under the given paths of a commit, by path, read with NUL-separated output. Each
+   * path and its ancestors are listed on their own as well, so one that is a link or a submodule
+   * instead of a directory shows even when a recursive listing below it finds nothing.
    */
   async files(commit: string, paths: readonly string[]): Promise<Map<string, TreeFile>> {
-    const output = await this.#git([
-      'ls-tree',
-      '-r',
-      '-t',
-      '-z',
-      '--full-tree',
-      commit,
-      '--',
-      ...paths,
-    ]);
-    const files = new Map<string, TreeFile>();
-    for (const record of output.split('\0')) {
-      if (record === '') continue;
-      const tab = record.indexOf('\t');
-      const [mode = '', type = '', object = ''] = record.slice(0, tab).split(' ');
-      files.set(record.slice(tab + 1), { mode, type, object });
-    }
+    const files = entries(
+      await this.#git(['ls-tree', '-r', '-t', '-z', '--full-tree', commit, '--', ...paths]),
+    );
+    const ancestors = new Set(
+      paths.flatMap((path) =>
+        path.split('/').map((_, index, parts) => parts.slice(0, index + 1).join('/')),
+      ),
+    );
+    const own = entries(
+      await this.#git(['ls-tree', '-z', '--full-tree', commit, '--', ...ancestors]),
+    );
+    for (const [path, file] of own) if (!files.has(path)) files.set(path, file);
     return files;
   }
 
@@ -83,4 +79,15 @@ export class GitRepository {
     const { stdout } = await run('git', args, { cwd: this.#dir, maxBuffer: 64 * 1024 * 1024 });
     return stdout;
   }
+}
+
+function entries(output: string): Map<string, TreeFile> {
+  const files = new Map<string, TreeFile>();
+  for (const record of output.split('\0')) {
+    if (record === '') continue;
+    const tab = record.indexOf('\t');
+    const [mode = '', type = '', object = ''] = record.slice(0, tab).split(' ');
+    files.set(record.slice(tab + 1), { mode, type, object });
+  }
+  return files;
 }
