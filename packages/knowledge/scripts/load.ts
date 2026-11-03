@@ -1,4 +1,5 @@
-import { lstat, readFile, readdir } from 'node:fs/promises';
+import { constants } from 'node:fs';
+import { open, readdir } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 import { maxKnowledgeJsonDepth } from '@arca/domain';
 import { type Json, JsonSubsetError, parseJsonSubset } from './json.ts';
@@ -55,6 +56,7 @@ const layouts: readonly { kind: FileKind; pattern: RegExp; fixedId?: string }[] 
 ];
 const casesPattern = new RegExp(`^routes/${idPart}/${numberPart}\\.cases\\.json$`);
 const hashesFile = 'hashes.json';
+const notRegular = 'Only regular files belong in data';
 
 /**
  * Reads every file under the data directory. Each must sit where the layout of spec 0002 puts it,
@@ -73,7 +75,7 @@ export async function loadData(dataDir: string): Promise<RawData> {
     const absolute = join(entry.parentPath, entry.name);
     const file = relative(dataDir, absolute).split(sep).join('/');
     if (!entry.isFile()) {
-      issues.push({ file, message: 'Only regular files belong in data' });
+      issues.push({ file, message: notRegular });
       continue;
     }
     if (casesPattern.test(file)) {
@@ -111,16 +113,52 @@ async function readJson(
   file: string,
   issues: Issue[],
 ): Promise<Json | undefined> {
-  const { size } = await lstat(absolute);
-  if (size > maxFileBytes) {
+  const bytes = await readBounded(absolute);
+  if (bytes === undefined) {
+    issues.push({ file, message: notRegular });
+    return undefined;
+  }
+  if (bytes.length > maxFileBytes) {
     issues.push({ file, message: `A knowledge file is at most ${String(maxFileBytes)} bytes` });
     return undefined;
   }
   try {
-    return parseJsonSubset(await readFile(absolute), maxKnowledgeJsonDepth);
+    return parseJsonSubset(bytes, maxKnowledgeJsonDepth);
   } catch (error) {
     if (!(error instanceof JsonSubsetError)) throw error;
     issues.push({ file, message: error.message });
     return undefined;
   }
+}
+
+/**
+ * Checks and reads through one handle opened without following a symbolic link, so the file read is
+ * the file checked even if the path is swapped in between; non-blocking so a swapped-in pipe cannot
+ * hang the build. Reads at most one byte past the limit.
+ */
+async function readBounded(absolute: string): Promise<Buffer | undefined> {
+  let handle;
+  try {
+    handle = await open(absolute, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
+  } catch (error) {
+    if (isErrorCode(error, 'ELOOP')) return undefined;
+    throw error;
+  }
+  try {
+    if (!(await handle.stat()).isFile()) return undefined;
+    const buffer = Buffer.alloc(maxFileBytes + 1);
+    let length = 0;
+    while (length < buffer.length) {
+      const { bytesRead } = await handle.read(buffer, length, buffer.length - length, length);
+      if (bytesRead === 0) break;
+      length += bytesRead;
+    }
+    return buffer.subarray(0, length);
+  } finally {
+    await handle.close();
+  }
+}
+
+function isErrorCode(error: unknown, code: string): boolean {
+  return error instanceof Error && 'code' in error && error.code === code;
 }

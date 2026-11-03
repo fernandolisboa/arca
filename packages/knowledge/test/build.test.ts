@@ -144,6 +144,15 @@ describe('buildKnowledge', () => {
       );
     });
 
+    it.each([
+      [1024 * 1024, false],
+      [1024 * 1024 + 1, true],
+    ])('limits a file of %i bytes (refused: %s)', async (size, refused) => {
+      const tree = { ...baseTree(), 'countries/2.json': ' '.repeat(size) };
+      const sizeIssue = 'countries/2.json: A knowledge file is at most 1048576 bytes';
+      expect((await issuesOf(tree)).includes(sizeIssue)).toBe(refused);
+    });
+
     it('requires hashes.json', async () => {
       const dir = await writeTree({});
       await rm(join(dir, 'hashes.json'));
