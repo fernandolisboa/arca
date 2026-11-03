@@ -239,7 +239,9 @@ describe('collections over the unit', () => {
   ];
   const value = snapshot({ members: ['p1', 'p2', 'p3', 'p4'], people });
   const unit = (open = false): Frame =>
-    frame(value, { unit: { included: ['p1', 'p2', 'p3'], possible: ['p4'], open } });
+    frame(value, {
+      unit: { included: ['p1', 'p2', 'p3'], possible: ['p4'], open, missingMarkers: [] },
+    });
   const adult = { op: 'gte', left: fact('person.ageYears'), right: int(18) };
 
   it('counts certain and possible members, and opens for an open unit', () => {
@@ -362,7 +364,9 @@ describe('lines of ancestors', () => {
 
 describe('regressions from review', () => {
   it('keeps the currency of an empty sum, so convert works for a family of one', () => {
-    const alone = frame(snapshot({}), { unit: { included: ['p1'], possible: [], open: false } });
+    const alone = frame(snapshot({}), {
+      unit: { included: ['p1'], possible: [], open: false, missingMarkers: [] },
+    });
     const fees = {
       op: 'sum',
       over: 'unit.dependents',

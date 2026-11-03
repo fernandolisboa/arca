@@ -13,7 +13,7 @@ import {
 } from '../logic/value.js';
 import type { CurrencyCode } from '../money/currency.js';
 import type { Decimal } from '../money/decimal.js';
-import { type CurrencyPair, type FxTable, convert } from '../money/fx.js';
+import { type CurrencyPair, type FxRate, type FxTable, convert } from '../money/fx.js';
 import { type ExactAmount, type Money, addExact, multiplyExact, toExact } from '../money/money.js';
 import {
   type IndexedSnapshot,
@@ -22,6 +22,7 @@ import {
   isRecordedInFull,
   parents,
 } from './graph.js';
+import type { MissingMarker } from './paths.js';
 import {
   type CountryCode,
   type Person,
@@ -45,12 +46,13 @@ export interface FactEnvironment {
   readonly routeCountry: CountryCode;
   /**
    * The unit, once computed: the people it includes (the principal among them), those it might,
-   * and whether unrecorded people might belong to it.
+   * whether unrecorded people might belong to it, and the markers whose absence leaves it open.
    */
   readonly unit?: {
     readonly included: readonly string[];
     readonly possible: readonly string[];
     readonly open: boolean;
+    readonly missingMarkers: readonly MissingMarker[];
   };
 }
 
@@ -71,6 +73,10 @@ export interface FactBinding {
 export interface Derived {
   readonly value: Value;
   readonly missingRates?: readonly CurrencyPair[];
+  /** The FX rates the value was converted with. */
+  readonly rates?: readonly FxRate[];
+  /** Completeness markers whose absence leaves the value open. */
+  readonly missingMarkers?: readonly MissingMarker[];
 }
 
 /**
@@ -157,7 +163,11 @@ export const factCatalog = {
     scope: 'person',
     nonNegative: true,
     derive: ({ environment, personId }, at) =>
-      liquidAssets(environment, { included: [personId], possible: [], open: false }, at),
+      liquidAssets(
+        environment,
+        { included: [personId], possible: [], open: false, missingMarkers: [] },
+        at,
+      ),
   },
   'person.visaRefusals': {
     type: { kind: 'integer' },
@@ -188,7 +198,11 @@ export const factCatalog = {
       const spouses = couples(environment.snapshot, personId, 'spouse', at);
       const any = or(spouses.map((spouse) => spouse.valid));
       const complete = isRecordedInFull(person(environment, personId), 'spouses');
-      return { value: booleanValue(any === false && !complete ? 'unknown' : any) };
+      if (any !== false || complete) return { value: booleanValue(any) };
+      return {
+        value: booleanValue('unknown'),
+        missingMarkers: [{ personId, marker: 'spouses' }],
+      };
     },
   },
   'person.temporaryJobOfferSectors': {
@@ -397,7 +411,7 @@ function monthlyIncome(
 ): Derived {
   const incomes = person(environment, personId).incomes;
   const sum = new MoneySum(environment);
-  if (incomes === undefined) sum.open();
+  if (incomes === undefined) sum.open([]);
   for (const income of (incomes ?? []).filter((entry) => entry.kind === kind)) {
     sum.add(toExact(income.monthly), true);
   }
@@ -416,10 +430,10 @@ function liquidAssets(
   at: CalendarDate,
 ): Derived {
   const sum = new MoneySum(environment);
-  const people = [...unit.included, ...unit.possible];
-  if (unit.open || people.some((id) => !isRecordedInFull(person(environment, id), 'assets'))) {
-    sum.open();
-  }
+  const unlisted = [...unit.included, ...unit.possible]
+    .filter((id) => !isRecordedInFull(person(environment, id), 'assets'))
+    .map((personId): MissingMarker => ({ personId, marker: 'assets' }));
+  if (unit.open || unlisted.length > 0) sum.open([...unit.missingMarkers, ...unlisted]);
   for (const asset of environment.snapshot.snapshot.assets) {
     const counted = and([
       asset.liquid ?? 'unknown',
@@ -455,13 +469,16 @@ class MoneySum {
   private readonly certain = new Map<CurrencyCode, ExactAmount>();
   private readonly possible = new Map<CurrencyCode, ExactAmount>();
   private unbounded = false;
+  private missingMarkers: readonly MissingMarker[] = [];
 
   constructor(environment: FactEnvironment) {
     this.environment = environment;
   }
 
-  open(): void {
+  /** More amounts may exist, for want of these markers. */
+  open(missingMarkers: readonly MissingMarker[]): void {
     this.unbounded = true;
+    this.missingMarkers = missingMarkers;
   }
 
   add(amount: ExactAmount, counts: Truth): void {
@@ -473,6 +490,7 @@ class MoneySum {
 
   result(): Derived {
     const missingRates: CurrencyPair[] = [];
+    const rates: FxRate[] = [];
     const total = (
       amounts: Map<CurrencyCode, ExactAmount>,
     ): { sum: ExactAmount; complete: boolean } => {
@@ -492,6 +510,7 @@ class MoneySum {
           complete = false;
         } else {
           sum = addExact(sum, converted.amount);
+          if (converted.rate !== undefined) rates.push(converted.rate);
         }
       }
       return { sum, complete };
@@ -510,7 +529,12 @@ class MoneySum {
       min,
       ...(max === undefined ? {} : { max }),
     };
-    return missingRates.length === 0 ? { value } : { value, missingRates };
+    return {
+      value,
+      ...(missingRates.length === 0 ? {} : { missingRates }),
+      ...(rates.length === 0 ? {} : { rates }),
+      ...(this.missingMarkers.length === 0 ? {} : { missingMarkers: this.missingMarkers }),
+    };
   }
 }
 

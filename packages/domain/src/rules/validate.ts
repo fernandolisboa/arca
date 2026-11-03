@@ -151,9 +151,12 @@ export function checkRouteVersion(version: RouteVersion, official: OfficialHosts
     const path = `/assessments/${String(index)}`;
     cites(`${path}/sources`, assessment.sources);
     assessment.evidence.forEach((reference, position) => {
-      const target = resolveFactReference(reference)?.target;
-      if (target !== 'principal' && target !== 'unit') {
-        issue(`${path}/evidence/${String(position)}`, 'Evidence is a principal or unit fact');
+      const resolved = resolveFactReference(reference);
+      const at = `${path}/evidence/${String(position)}`;
+      if (resolved?.target !== 'principal' && resolved?.target !== 'unit') {
+        issue(at, 'Evidence is a principal or unit fact');
+      } else if (resolved.definition.readsAge === true && !context.leapDayBirthday) {
+        issue(at, 'An age needs the version to set leapDayBirthday');
       }
     });
   });

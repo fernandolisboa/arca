@@ -29,6 +29,7 @@ describe('domain', () => {
     ['drizzle.ts', 'no-restricted-imports'],
     ['http-client.ts', 'no-restricted-imports'],
     ['fetch.ts', 'no-restricted-globals'],
+    ['console.ts', 'no-restricted-globals'],
     ['global-fetch.ts', 'no-restricted-properties'],
     ['clock-now.ts', 'no-restricted-syntax'],
     ['clock-new.ts', 'no-restricted-syntax'],

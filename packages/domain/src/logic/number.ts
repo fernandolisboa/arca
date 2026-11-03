@@ -55,6 +55,19 @@ export function maxNumbers(values: readonly NumberValue[]): NumberValue {
   return extreme(values, 1);
 }
 
+/** The smallest interval holding every value: the lowest minimum and the highest maximum. */
+export function hullNumbers(values: readonly NumberValue[]): NumberValue {
+  const [first] = values;
+  if (first === undefined) throw new RangeError('No operands');
+  return number(first, minNumbers(values).min, maxNumbers(values).max);
+}
+
+/** An amount that may not count: zero or itself. */
+export function orZero(value: NumberValue): NumberValue {
+  const zero = { units: 0n, scale: 0 };
+  return hullNumbers([value, number(value, zero, zero)]);
+}
+
 export function compareNumbers(
   left: NumberValue,
   operator: ComparisonOperator,

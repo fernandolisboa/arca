@@ -67,6 +67,33 @@ describe('followPath', () => {
     expect(siblings.map(({ id, arrivals }) => [id, arrivals.length])).toEqual([['s1', 2]]);
   });
 
+  it('names the edges whose validity is unknown, and none once a path certainly holds', () => {
+    const before = parseCalendarDate('2020-01-01');
+    // Synthetic: p2 was adopted by p1 on an unknown date; p3 is p2's child, born 2019.
+    const adoption = { kind: 'parent', parent: 'p1', child: 'p2', parentKind: 'adoptive' };
+    const birth = { kind: 'parent', parent: 'p2', child: 'p3', parentKind: 'biological' };
+    const value = indexSnapshot(
+      snapshot({
+        people: [
+          { id: 'p1' },
+          { id: 'p2', birthDate: '2000-01-01' },
+          { id: 'p3', birthDate: '2019-01-01' },
+        ],
+        relationships: [adoption, birth],
+      }),
+    );
+    const [grandchild] = followPath(value, 'p1', ['child', 'child'], before).reached;
+    expect(grandchild).toMatchObject({ id: 'p3', reached: 'unknown', uncertainEdges: [adoption] });
+    expect(grandchild?.arrivals).toMatchObject([{ edge: birth, uncertainEdges: [adoption] }]);
+    expect(followPath(value, 'p1', ['child', 'child'], today).reached).toMatchObject([
+      { id: 'p3', reached: true, uncertainEdges: [] },
+    ]);
+    expect(ancestorLines(value, 'p3', 2, before).lines).toMatchObject([
+      { path: ['p2', 'p3'], reached: true, uncertainEdges: [] },
+      { path: ['p1', 'p2', 'p3'], reached: 'unknown', uncertainEdges: [adoption] },
+    ]);
+  });
+
   it('never returns the principal', () => {
     expect(ids(['child', 'parent'])).toEqual([]);
   });

@@ -14,19 +14,26 @@ export const relationshipSteps = ['spouse', 'partner', 'child', 'parent'] as con
 
 export type RelationshipStep = (typeof relationshipSteps)[number];
 
-/** A last edge a path crossed to reach someone, and whether the path through it holds. */
-export interface Arrival {
-  readonly edge: Relationship;
+/**
+ * Whether a path holds, and when that is unknown, the edges on it whose validity at the date is
+ * unknown: the relationships a family can answer about (spec 0002, R5).
+ */
+export interface Reach {
   readonly reached: Truth;
+  readonly uncertainEdges: readonly Relationship[];
+}
+
+/** A last edge a path crossed to reach someone, and whether the path through it holds. */
+export interface Arrival extends Reach {
+  readonly edge: Relationship;
 }
 
 /**
  * Someone a relationship path reaches, once, with every last edge it arrived by. Edge facts are
  * read per arrival, so a rule's condition holds for the person when it holds through any of them.
  */
-export interface Reached {
+export interface Reached extends Reach {
   readonly id: string;
-  readonly reached: Truth;
   readonly arrivals: readonly Arrival[];
 }
 
@@ -60,28 +67,26 @@ export function followPath(
   steps: readonly RelationshipStep[],
   date: CalendarDate,
 ): PathResult {
-  let frontier: Reached[] = [{ id: principalId, reached: true, arrivals: [] }];
+  let frontier: Reached[] = [{ id: principalId, reached: true, uncertainEdges: [], arrivals: [] }];
   const missingMarkers: MissingMarker[] = [];
   for (const step of steps) {
-    const next = new Map<string, Map<Relationship, Truth>>();
+    const next = new Map<string, Map<Relationship, Reach>>();
     for (const from of frontier) {
       if (!isRecordedInFull(indexed.person(from.id), markers[step])) {
         missingMarkers.push({ personId: from.id, marker: markers[step] });
       }
       for (const neighbor of neighbors(indexed, from.id, step, date)) {
-        const reached = and([from.reached, neighbor.valid]);
-        if (reached === false) continue;
-        const arrivals = next.get(neighbor.id) ?? new Map<Relationship, Truth>();
-        const previous = arrivals.get(neighbor.edge);
-        arrivals.set(neighbor.edge, previous === undefined ? reached : or([previous, reached]));
+        const reach = cross(from, neighbor);
+        if (reach.reached === false) continue;
+        const arrivals = next.get(neighbor.id) ?? new Map<Relationship, Reach>();
+        arrivals.set(neighbor.edge, join(arrivals.get(neighbor.edge) ?? unreached, reach));
         next.set(neighbor.id, arrivals);
       }
     }
-    frontier = [...next].map(([id, arrivals]) => ({
-      id,
-      reached: or([...arrivals.values()]),
-      arrivals: [...arrivals].map(([edge, reached]) => ({ edge, reached })),
-    }));
+    frontier = [...next].map(([id, arrivals]) => {
+      const reach = [...arrivals.values()].reduce<Reach>(join, unreached);
+      return { id, ...reach, arrivals: [...arrivals].map(([edge, each]) => ({ edge, ...each })) };
+    });
   }
   return {
     reached: frontier.filter((entry) => entry.id !== principalId && entry.arrivals.length > 0),
@@ -90,9 +95,8 @@ export function followPath(
 }
 
 /** A line from an ancestor (first) down to the principal (last). */
-export interface AncestorLine {
+export interface AncestorLine extends Reach {
   readonly path: readonly string[];
-  readonly valid: Truth;
 }
 
 export interface AncestorLines {
@@ -113,7 +117,7 @@ export function ancestorLines(
   date: CalendarDate,
 ): AncestorLines {
   const lines: AncestorLine[] = [];
-  let frontier: AncestorLine[] = [{ path: [principalId], valid: true }];
+  let frontier: AncestorLine[] = [{ path: [principalId], reached: true, uncertainEdges: [] }];
   const missingMarkers: MissingMarker[] = [];
   for (let generation = 1; generation <= generations; generation += 1) {
     const next: AncestorLine[] = [];
@@ -124,14 +128,34 @@ export function ancestorLines(
         missingMarkers.push({ personId: head, marker: 'parents' });
       }
       for (const parent of parents(indexed, head, date)) {
-        const valid = and([line.valid, parent.valid]);
-        if (valid !== false) next.push({ path: [parent.id, ...line.path], valid });
+        const reach = cross(line, parent);
+        if (reach.reached !== false) next.push({ path: [parent.id, ...line.path], ...reach });
       }
     }
     lines.push(...next);
     frontier = next;
   }
   return { lines, missingMarkers };
+}
+
+/** A path extended across one more edge. */
+function cross(from: Reach, neighbor: Neighbor): Reach {
+  const reached = and([from.reached, neighbor.valid]);
+  if (reached !== 'unknown') return { reached, uncertainEdges: [] };
+  const crossed = neighbor.valid === 'unknown' ? [neighbor.edge] : [];
+  return { reached, uncertainEdges: [...from.uncertainEdges, ...crossed] };
+}
+
+const unreached: Reach = { reached: false, uncertainEdges: [] };
+
+/** Two paths to the same place: either may hold. */
+function join(left: Reach, right: Reach): Reach {
+  const reached = or([left.reached, right.reached]);
+  if (reached !== 'unknown') return { reached, uncertainEdges: [] };
+  return {
+    reached,
+    uncertainEdges: [...new Set([...left.uncertainEdges, ...right.uncertainEdges])],
+  };
 }
 
 function neighbors(
