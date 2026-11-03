@@ -55,6 +55,16 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 - On-call assistant with cited sources.
 - Assets, tax and FX simulator; source-of-funds trail.
 
+**Epic: family area and guidance** ([#117](https://github.com/fernandolisboa/arca/issues/117); each item lands in the consultancy core slice or foundations spec it names)
+
+- Family area: the people in the case, who has an account, invites (slice 3).
+- A trusted adult uploads documents for another person, by that person's permission; a parent holds a child's documents (slice 3 and the vault).
+- Sharing a destination analysis with relatives, so each starts their own checklist (slice 4).
+- Progress per person and for the whole family, computed in code (slice 5).
+- Steps marked as doable online, with the official link, including documents issued in Brazil (slice 5 and the knowledge base).
+- Guided tour of the app and a hint per screen, after the design system.
+- Setup guide for every key and secret the project owner manages (`docs/SETUP.md`).
+
 ## Phase 2 — Execution (web)
 
 Document review; form drafts; writing (letters, business plan, source of funds); interview practice by voice; tracking and the rule watcher; arrival and settling checklists; partner network.
