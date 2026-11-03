@@ -112,6 +112,7 @@ export {
   officialDomainListSchema,
   routeVersionJsonSchema,
   routeVersionSchema,
+  sourceSchema,
 } from './rules/route-version.js';
 export { type CheckIssue } from './rules/check.js';
 export {

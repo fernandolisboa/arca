@@ -11,9 +11,10 @@ import { reportViolations } from './report.ts';
 /** Which workspace packages each package may depend on (spec 0001, R2). */
 export const allowedDependencies: Readonly<Record<string, readonly string[]>> = {
   '@arca/web': ['@arca/api-contract', '@arca/ui', '@arca/i18n', '@arca/platform'],
-  '@arca/api': ['@arca/domain', '@arca/api-contract', '@arca/db'],
+  '@arca/api': ['@arca/domain', '@arca/api-contract', '@arca/db', '@arca/knowledge'],
   '@arca/ui': ['@arca/i18n'],
   '@arca/domain': [],
+  '@arca/knowledge': ['@arca/domain'],
   '@arca/api-contract': [],
   '@arca/platform': [],
   '@arca/i18n': [],

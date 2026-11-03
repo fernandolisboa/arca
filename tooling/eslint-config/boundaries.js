@@ -21,10 +21,12 @@ const nodeBuiltins = builtinModules.filter((name) => !name.startsWith('_'));
  * }} Restrictions
  */
 
-const domainIo = 'packages/domain is pure: no I/O. Pass data in from the API layer.';
-const domainTime = 'packages/domain takes time as an argument; do not read the clock.';
+const domainIo =
+  'packages/domain and the knowledge runtime are pure: no I/O. Pass data in from the API layer.';
+const domainTime =
+  'packages/domain and the knowledge runtime take time as an argument; do not read the clock.';
 const domainLogging =
-  'packages/domain never logs: snapshots and evaluations are personal data (spec 0002, R5).';
+  'packages/domain and the knowledge runtime never log: snapshots and evaluations are personal data (spec 0002, R5).';
 
 /** @type {Restrictions} */
 export const domain = {
@@ -125,6 +127,34 @@ export const databaseDriverFiles = ['src/pool.ts', 'src/database.ts', 'test/**']
  * as its admin. They pass every connection field explicitly.
  */
 export const databaseTestFiles = ['test/postgres/**'];
+
+/** The knowledge runtime entry: pure like the domain; scripts and tests read files (spec 0002, R1). */
+export const knowledgeRuntimeFiles = ['src/**'];
+
+const reproductionOnly =
+  'The reproduction lookup ignores decision states, so it is imported only by the cases runner and the reproduction path (spec 0002, R5).';
+// Matches the package entry point and a relative import of the module inside the package.
+const reproductionModule =
+  '^(?:@arca/knowledge/reproduction|(?:\\.{1,2}/)+(?:[^/]+/)*reproduction(?:\\.[jt]s)?)$';
+
+/**
+ * Every package: the reproduction lookup only where reproducing an old evaluation is the job.
+ *
+ * @type {Restrictions}
+ */
+export const reproductionLookup = {
+  patterns: [{ regex: reproductionModule, message: reproductionOnly }],
+};
+
+/**
+ * The files allowed to import the reproduction lookup: the cases runner, the reproduction path and
+ * the lookup's own test.
+ */
+export const reproductionLookupFiles = [
+  'test/cases/**',
+  'src/reproduction/**',
+  'test/reproduction.test.ts',
+];
 
 const sniffing =
   'Do not detect the operating system or browser. Read capabilities through @arca/platform.';

@@ -106,6 +106,40 @@ describe('api', () => {
   });
 });
 
+describe('knowledge', () => {
+  it.each([
+    ['src/file-read.ts', 'no-restricted-imports'],
+    ['src/console.ts', 'no-restricted-globals'],
+    ['src/relative-reproduction.ts', 'no-restricted-imports'],
+  ])('%s fails with %s', async (file, rule) => {
+    expect(await ruleIds('knowledge', ['knowledge'], file)).toContain(rule);
+  });
+
+  it('lets the build scripts read files', async () => {
+    expect(await ruleIds('knowledge', ['knowledge'], 'scripts/file-read.ts')).not.toContain(
+      'no-restricted-imports',
+    );
+  });
+});
+
+describe('reproduction lookup', () => {
+  it.each([
+    ['src/reproduction-import.ts', 'no-restricted-imports'],
+    ['src/dynamic-reproduction.ts', 'no-restricted-syntax'],
+  ])('%s fails with %s', async (file, rule) => {
+    expect(await ruleIds('api', ['api'], file)).toContain(rule);
+  });
+
+  it.each([
+    ['api', ['api'], 'src/reproduction/replay.ts'],
+    ['knowledge', ['knowledge'], 'test/cases/runner.ts'],
+  ])('%s/%s may import it', async (dir, kinds, file) => {
+    const rules = await ruleIds(dir, /** @type {import('../index.js').Kind[]} */ (kinds), file);
+    expect(rules).not.toContain('no-restricted-imports');
+    expect(rules).not.toContain('no-restricted-syntax');
+  });
+});
+
 describe('contract', () => {
   it.each([
     ['src/routes/hono.ts', 'no-restricted-imports'],

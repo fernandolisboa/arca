@@ -16,3 +16,5 @@ packages/db/migrations/**/snapshot.json
 apps/web/src/routeTree.gen.ts
 **/test-results/
 **/playwright-report/
+# Written by the knowledge build (spec 0002, R1).
+packages/knowledge/src/generated/

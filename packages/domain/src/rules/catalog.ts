@@ -42,7 +42,9 @@ export interface RouteCatalog {
 }
 
 /** The key of a version in `DecisionStates`: an activation covers this exact content. */
-export function identityKey(identity: VersionIdentity): string {
+export function identityKey(
+  identity: Pick<VersionIdentity, 'routeId' | 'number' | 'hash'>,
+): string {
   return `${identity.routeId}/${String(identity.number)}/${identity.hash}`;
 }
 

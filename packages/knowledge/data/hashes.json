@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "vectors": [
+    {
+      "name": "primitives",
+      "sha256": "2d5e01a318d0f0879ab568c4be289c8b1f64ef8921a53c6277d5e069978baacb"
+    },
+    {
+      "name": "sorting",
+      "sha256": "5e321556d22018a9656991a9e94f77ec175fa193e52a2429d312f8419ec8b08c"
+    },
+    {
+      "name": "numbers",
+      "sha256": "2bb871d729d2db80eda1ae2b3e7a9bc5028979103235ab3682063191b3cb52c3"
+    }
+  ],
+  "files": []
+}

@@ -12,6 +12,9 @@ import {
   databaseDrivers,
   databaseTestFiles,
   domain,
+  knowledgeRuntimeFiles,
+  reproductionLookup,
+  reproductionLookupFiles,
   restrictionRules,
   web,
   workflowStart,
@@ -38,6 +41,8 @@ const restrictionsByKind = {
   db: [],
   /** tooling/scripts: the build scripts, the only code allowed to read the owner variables (R7). */
   scripts: [],
+  /** packages/knowledge: its runtime entry is pure like the domain (restricted per file below). */
+  knowledge: [],
 };
 
 /** @typedef {keyof typeof restrictionsByKind} Kind */
@@ -64,10 +69,22 @@ export function arcaConfig({ rootDir, kinds = [] }) {
   const restrictions = [
     ...kinds.flatMap((kind) => restrictionsByKind[kind]),
     ...(isScripts ? [] : [databaseDrivers]),
+    reproductionLookup,
   ];
+  /** The restrictions without one kind, for the files that kind exempts. */
+  const without = (/** @type {import('./boundaries.js').Restrictions} */ exempt) =>
+    restrictionRules(restrictions.filter((entry) => entry !== exempt));
   return tseslint.config(
     {
-      ignores: ['dist/**', 'coverage/**', '.output/**', '.nitro/**', '.vercel/**', 'generated/**'],
+      ignores: [
+        'dist/**',
+        'coverage/**',
+        '.output/**',
+        '.nitro/**',
+        '.vercel/**',
+        'generated/**',
+        'src/generated/**',
+      ],
     },
     js.configs.recommended,
     tseslint.configs.strictTypeChecked,
@@ -98,7 +115,7 @@ export function arcaConfig({ rootDir, kinds = [] }) {
           rules: {
             'no-restricted-imports': 'off',
             'no-restricted-syntax': 'off',
-            ...restrictionRules(restrictions.filter((entry) => entry !== workflowStart)),
+            ...without(workflowStart),
           },
         }
       : [],
@@ -108,8 +125,23 @@ export function arcaConfig({ rootDir, kinds = [] }) {
           rules: {
             'no-restricted-imports': 'off',
             'no-restricted-syntax': 'off',
-            ...restrictionRules(restrictions.filter((entry) => entry !== databaseDrivers)),
+            ...without(databaseDrivers),
           },
+        }
+      : [],
+    {
+      files: reproductionLookupFiles,
+      rules: {
+        'no-restricted-imports': 'off',
+        'no-restricted-syntax': 'off',
+        ...without(reproductionLookup),
+      },
+    },
+    kinds.includes('knowledge')
+      ? {
+          files: knowledgeRuntimeFiles,
+          languageOptions: { globals: globals.es2025 },
+          rules: restrictionRules([...restrictions, domain]),
         }
       : [],
     kinds.includes('contract')
