@@ -21,16 +21,22 @@ const nodeBuiltins = builtinModules.filter((name) => !name.startsWith('_'));
  * }} Restrictions
  */
 
-const domainIo = 'packages/domain is pure: no I/O. Pass data in from the API layer.';
-const domainTime = 'packages/domain takes time as an argument; do not read the clock.';
-const domainLogging =
-  'packages/domain never logs: snapshots and evaluations are personal data (spec 0002, R5).';
+const pureIo =
+  'packages/domain and the knowledge runtime are pure: no I/O. Pass data in from the API layer.';
+const pureTime =
+  'packages/domain and the knowledge runtime take time as an argument; do not read the clock.';
+const pureLogging =
+  'packages/domain and the knowledge runtime never log: snapshots and evaluations are personal data (spec 0002, R5).';
 
-/** @type {Restrictions} */
-export const domain = {
-  paths: nodeBuiltins.map((name) => ({ name, message: domainIo })),
+/**
+ * Pure code: packages/domain and the knowledge runtime entry.
+ *
+ * @type {Restrictions}
+ */
+export const pureRuntime = {
+  paths: nodeBuiltins.map((name) => ({ name, message: pureIo })),
   patterns: [
-    { group: ['node:*'], message: domainIo },
+    { group: ['node:*'], message: pureIo },
     {
       group: [
         'pg',
@@ -43,7 +49,7 @@ export const domain = {
         '@arca/db',
         '@arca/db/*',
       ],
-      message: domainIo,
+      message: pureIo,
     },
     {
       group: [
@@ -58,35 +64,35 @@ export const domain = {
         'hono/*',
         '@hono/*',
       ],
-      message: domainIo,
+      message: pureIo,
     },
   ],
   globals: [
     ...['fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource', 'process'].map((name) => ({
       name,
-      message: domainIo,
+      message: pureIo,
     })),
-    { name: 'console', message: domainLogging },
+    { name: 'console', message: pureLogging },
   ],
   properties: ['globalThis', 'window', 'self'].flatMap((object) => [
-    { object, property: 'fetch', message: domainIo },
-    { object, property: 'console', message: domainLogging },
+    { object, property: 'fetch', message: pureIo },
+    { object, property: 'console', message: pureLogging },
   ]),
   // Syntactic guards against mistakes, not enforcement: an alias such as `const D = Date` passes.
   syntax: [
     {
       selector:
         "NewExpression[arguments.length=0]:matches([callee.name='Date'], [callee.property.name='Date'])",
-      message: domainTime,
+      message: pureTime,
     },
     {
       selector: "CallExpression:matches([callee.name='Date'], [callee.property.name='Date'])",
-      message: domainTime,
+      message: pureTime,
     },
     {
       selector:
         "CallExpression[callee.property.name='now']:matches([callee.object.name='Date'], [callee.object.property.name='Date'])",
-      message: domainTime,
+      message: pureTime,
     },
   ],
 };
@@ -125,6 +131,66 @@ export const databaseDriverFiles = ['src/pool.ts', 'src/database.ts', 'test/**']
  * as its admin. They pass every connection field explicitly.
  */
 export const databaseTestFiles = ['test/postgres/**'];
+
+/** The knowledge runtime entry: pure like the domain; scripts and tests read files (spec 0002, R1). */
+export const knowledgeRuntimeFiles = ['src/**'];
+
+/** The knowledge runtime files that read the built catalog, each behind its own entry point. */
+export const knowledgeCatalogReaders = ['src/index.ts', 'src/reproduction.ts'];
+
+/**
+ * packages/knowledge: only the entry points read the built catalog, so no other module can hand
+ * out every version regardless of its decision state.
+ *
+ * @type {Restrictions}
+ */
+export const rawCatalog = {
+  patterns: [
+    {
+      regex: '(?:^|/)generated/catalog(?:\\.[jt]s)?$',
+      message:
+        'Only the entry points read the built catalog; the runtime reaches it through routeCatalog (spec 0002, R5).',
+    },
+  ],
+};
+
+const reproductionOnly =
+  'Modules named reproduction are the reproduction path: they ignore decision states, so only the cases runner and the reproduction path import them (spec 0002, R5).';
+// The lookup's entry point, and any relative import of a module or folder named reproduction.
+const reproductionModule =
+  '^(?:@arca/knowledge/reproduction|(?:\\.{1,2}/)+(?:[^/]+/)*reproduction(?:\\.[jt]s|/.*)?)$';
+
+/**
+ * Every package: the reproduction lookup only where reproducing an old evaluation is the job.
+ *
+ * @type {Restrictions}
+ */
+export const reproductionLookup = {
+  patterns: [{ regex: reproductionModule, message: reproductionOnly }],
+};
+
+/**
+ * The files allowed to import the reproduction lookup may not re-export it with `export … from`.
+ * Other ways of passing it on are left to review.
+ *
+ * @type {Restrictions}
+ */
+export const reproductionReexport = {
+  syntax: [
+    {
+      selector: `:matches(ExportAllDeclaration, ExportNamedDeclaration)[source.value=/${selectorRegex(reproductionModule)}/]`,
+      message: reproductionOnly,
+    },
+  ],
+};
+
+/** The cases runner and the reproduction path, with their tests. */
+export const reproductionLookupFiles = [
+  'test/cases/**',
+  'src/reproduction/**',
+  'test/reproduction/**',
+  'test/reproduction.test.ts',
+];
 
 const sniffing =
   'Do not detect the operating system or browser. Read capabilities through @arca/platform.';

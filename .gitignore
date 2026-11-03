@@ -29,3 +29,6 @@ apps/api/generated/
 # Playwright output.
 test-results/
 playwright-report/
+
+# Written by the knowledge build (spec 0002, R1).
+packages/knowledge/src/generated/

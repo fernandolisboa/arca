@@ -42,8 +42,22 @@ export interface RouteCatalog {
 }
 
 /** The key of a version in `DecisionStates`: an activation covers this exact content. */
-export function identityKey(identity: VersionIdentity): string {
+export function identityKey(
+  identity: Pick<VersionIdentity, 'routeId' | 'number' | 'hash'>,
+): string {
   return `${identity.routeId}/${String(identity.number)}/${identity.hash}`;
+}
+
+/** The identity of a version with its content hash. */
+export function versionIdentity(version: RouteVersion, hash: string): VersionIdentity {
+  return {
+    routeId: version.routeId,
+    number: version.number,
+    effectiveFrom: version.effectiveFrom,
+    ...(version.corrects === undefined ? {} : { corrects: version.corrects }),
+    status: version.status,
+    hash,
+  };
 }
 
 /** Every identity field agrees, so the content evaluated is the content selected. */

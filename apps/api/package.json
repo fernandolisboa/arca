@@ -25,6 +25,7 @@
   "dependencies": {
     "@arca/api-contract": "workspace:*",
     "@arca/db": "workspace:*",
+    "@arca/knowledge": "workspace:*",
     "@hono/zod-openapi": "catalog:",
     "hono": "catalog:",
     "workflow": "catalog:",

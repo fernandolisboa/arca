@@ -3,7 +3,12 @@ import type { FactEnvironment } from '../case/facts.js';
 import { type IndexedSnapshot, assertRecordedBy, indexSnapshot } from '../case/graph.js';
 import type { CaseSnapshot } from '../case/snapshot.js';
 import type { FxTable } from '../money/fx.js';
-import type { CatalogEntry, DecisionStates } from './catalog.js';
+import {
+  type CatalogEntry,
+  type DecisionStates,
+  sameIdentity,
+  versionIdentity,
+} from './catalog.js';
 import type { Frame } from './evaluate.js';
 import type { RouteVersion } from './route-version.js';
 
@@ -50,13 +55,7 @@ export function prepare(
   context: VersionContext,
 ): Prepared {
   const { version, identity } = entry;
-  if (
-    identity.routeId !== version.routeId ||
-    identity.number !== version.number ||
-    identity.effectiveFrom !== version.effectiveFrom ||
-    identity.corrects !== version.corrects ||
-    identity.status !== version.status
-  ) {
+  if (!sameIdentity(identity, versionIdentity(version, identity.hash))) {
     throw new RangeError('An entry whose identity is not its version');
   }
   const indexed = indexSnapshot(snapshot);

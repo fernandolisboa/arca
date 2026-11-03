@@ -112,6 +112,7 @@ export {
   officialDomainListSchema,
   routeVersionJsonSchema,
   routeVersionSchema,
+  sourceSchema,
 } from './rules/route-version.js';
 export { type CheckIssue } from './rules/check.js';
 export {
@@ -132,7 +133,9 @@ export {
   sameIdentity,
   selectVersion,
   stateOf,
+  versionIdentity,
 } from './rules/catalog.js';
+export { type VersionDates, checkVersionOrder } from './rules/version-order.js';
 export { type EvaluationContext, type VersionContext } from './rules/context.js';
 export {
   type AmountRange,

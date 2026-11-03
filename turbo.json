@@ -20,6 +20,24 @@
     "test": {
       "dependsOn": ["^build"]
     },
+    "@arca/knowledge#catalog": {
+      "dependsOn": ["^build"],
+      "outputs": ["src/generated/**"],
+      "inputs": ["data/**", "scripts/**", "package.json"]
+    },
+    "@arca/knowledge#build": {
+      "dependsOn": ["^build", "catalog"],
+      "outputs": ["dist/**"]
+    },
+    "@arca/knowledge#typecheck": {
+      "dependsOn": ["^build", "catalog"]
+    },
+    "@arca/knowledge#lint": {
+      "dependsOn": ["^build", "catalog"]
+    },
+    "@arca/knowledge#test": {
+      "dependsOn": ["^build", "catalog"]
+    },
     "@arca/api-contract#typecheck": {
       "dependsOn": ["^build", "build"]
     },
