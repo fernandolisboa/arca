@@ -24,8 +24,8 @@ Each slice gets its own spec when it starts. Order and dependencies:
 | Slice | Delivers | Depends on |
 | --- | --- | --- |
 | 1. Rules engine and knowledge base (this spec) | Schema, engine, units, catalog | Foundations scaffold (spec 0001): its workspace, boundary check and CI must be on `main` before the tickets start |
-| 2. Knowledge seed | Route versions for the first countries, from official sources, with cases; research notes in `docs/research/` are the starting point; the research agent with its proposal tool and its adversarial evaluation cases (ADR-0014) | Slice 1 schema (R4); the owner's choice of countries |
-| 3. Case model and text intake | Case tables under forced row-level security, free-text intake through the `Extractor` port, playback and correction, decisive questions, permissions per person and unit, audit log, and the activation screen with decisions, notices and vetoes (ADR-0014) | Slice 1; the rest of the foundations epic (passkeys and purpose-bound step-up, synthetic `development` branch, deletion and export, retention, incident runbook, observability with scrubbing); an Anthropic API budget |
+| 2. Knowledge seed | Route versions for the first countries, from official sources, with cases; research notes in `docs/research/` are the starting point; the research agent with its proposal tool, the independent check agent with a skill file per seeded country, and their evaluation cases (ADR-0014) | Slice 1 schema (R4); the owner's choice of countries |
+| 3. Case model and text intake | Case tables under forced row-level security, free-text intake through the `Extractor` port, playback and correction, decisive questions, permissions per person and unit, audit log, the activation screen with decisions, notices, vetoes and the independent check's report, and reporting a wrong rule (ADR-0014) | Slice 1; the rest of the foundations epic (passkeys and purpose-bound step-up, synthetic `development` branch, deletion and export, retention, incident runbook, observability with scrubbing); an Anthropic API budget |
 | 4. Comparison and recommendation | Destination comparison weighted per person, ranking of route combinations, routes chained to citizenship | Slices 2 and 3 |
 | 5. Checklist and plan | Documents, steps, action points, execution modes; decides whether knowledge items and action points are files like route versions | Slice 4 |
 | 6. On-call assistant | Answers with cited sources over active knowledge | Slices 2 and 3; an `Embedder` vendor ADR |
@@ -270,7 +270,7 @@ Taken on 2026-11-02 under the owner's standing instruction that agents decide te
 | API endpoints in this slice? | None | Nothing reaches users until slice 3 (YAGNI) |
 | Text or voice intake? | Text first; voice later through `SpeechToText` | Voice adds a vendor ADR and builds on the text path; recorded in OPEN-QUESTIONS.md as provisional |
 
-**For the owner** (asked separately and tracked in [OPEN-QUESTIONS.md](../OPEN-QUESTIONS.md); this spec does not depend on the answers):
+**For the owner** (tracked in [OPEN-QUESTIONS.md](../OPEN-QUESTIONS.md); this spec does not depend on the answers):
 
-1. Who activates rules before the app uses them: the owner alone, or the owner plus a destination lawyer for the routes the family chooses.
-2. Which countries slice 2 researches first.
+1. Who activates rules: decided 2026-11-03. The owner alone, helped by an independent check agent with country skills; no lawyer (ADR-0014).
+2. Which countries slice 2 researches first: open.

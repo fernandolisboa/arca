@@ -63,7 +63,7 @@ The decision ceremony, the approver list and its lifecycle, notices and storage 
 - **Outside production**, fixture decisions for fixture routes come from a test file that the production build does not bundle. They carry other origins, so the production verifier rejects them.
 - **What the owner sees.** The activation screen shows the rule as data, rendered deterministically: its expression tree, its pinned country sets with their members, the diff against the version it replaces, each source's full URL, shown as text rather than a raw link, with new hosts flagged, and whether each source's page hash matches the previous verification, and its rule cases. No model is in the path.
 
-With a single approver, the veto window protects against the owner's own mistakes, and, provided the owner acts within the window, a stolen credential leads at worst to a lockout resolved by the recovery path, never to a rule the owner did not approve; it is not a second opinion. Adding a destination lawyer as an approver is an open question for the owner.
+With a single approver, the veto window protects against the owner's own mistakes, and, provided the owner acts within the window, a stolen credential leads at worst to a lockout resolved by the recovery path, never to a rule the owner did not approve; it is not a second opinion. The owner decided (2026-11-03) to be the only approver and not to hire a lawyer; the second opinion comes from the independent check below, and errors found later are fixed through the correction path.
 
 ### Research agents: required properties
 
@@ -75,6 +75,19 @@ The research agent and its tools are specified with slice 2. That design must gi
 - **Its own credential.** The adapter authenticates as a dedicated GitHub App installation, never a personal token, so its pull requests carry a bot identity distinct from the owner's. Installation tokens are short-lived and minted per task, the App's permissions are contents and pull requests on this repository only, with no workflows permission, its private key is a Production-only secret, and the tool pushes only to branches under a fixed prefix, rate-limited per task. Slice 2 says where the agent runs and adds the GitHub row of the data-flow register for what the runtime sends.
 - **Never deciding.** Agents never decide on a version; that needs an approver's passkey.
 - **Adversarial cases** in the evaluation suite, each expected to produce only a correctly structured proposal or a refusal: a page with injected instructions, where no free-text field of the proposal may carry text from the page other than its title; a lookalike official host; an attempt to touch the approver list, an official-domain list or a path outside knowledge data; a page targeting a different route; a page asking the agent to fetch a URL that carries task content; a page pointing the agent at an internal or private address; a page that supplies its own verification date; a proposal citing an official-host URL the agent never fetched.
+
+### Independent check before activation
+
+The owner chose the owner plus a specialized agent over a destination lawyer. Slice 2 builds that agent with the research agent, under the same properties, and these on top:
+
+- **Separate from the proposer.** It runs as its own task and reads only the proposed version, its pinned files, its cases and the official sources it cites, fetched again with the research agent's fetch tool. It never sees the proposer's reasoning or the proposal's pull request text.
+- **Country skills.** Each country has a reviewed skill file in the repository: its official hosts, the laws and regulations that govern each route, how they are usually amended, and known pitfalls (for example, a threshold quoted in a different currency, or a rule kept only for pending applications). The agent loads the skill for the version's country. A skill change is a reviewed pull request like any other; a skill never counts as a source, so every requirement still cites an official page.
+- **Advisory only.** It returns a structured report per requirement, assessment, dependent rule, cost and duration: matches its source, differs (with the quoted passage and its URL) or could not be checked. The activation screen shows the report beside the rule as model output, with links marked and remote images stripped. It never activates, rejects or edits a version; a difference becomes a correction proposed through the normal path.
+- **Its own evaluation cases.** Known-wrong versions (a changed threshold, a dropped dependent condition, an expired rule) that it must flag, and correct ones it must pass, in the evaluation suite.
+
+### Reporting a wrong rule
+
+A person in a case can mark a rule shown to them as possibly wrong, with a note and optionally a link. That opens a research task carrying only the route ID, version number and requirement key, never case facts or the note's personal content (slice 3 screens it before it reaches an agent). The research agent investigates, and a confirmed error becomes a correction version that the owner activates like any other. Until then the rule stays as it is, with the report visible to the owner.
 
 ### Trust roots in their own pull requests
 
