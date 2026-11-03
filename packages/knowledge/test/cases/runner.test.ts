@@ -31,6 +31,19 @@ const eligible = {
   expected: { status: 'eligible', dependents: [], possibleDependents: [], missingFacts: [] },
 };
 
+/** Children under 18. */
+const children = {
+  id: 'children',
+  title: 'Children under 18',
+  path: ['child'],
+  condition: {
+    op: 'lt',
+    left: { op: 'fact', key: 'person.ageYears' },
+    right: { op: 'int', value: 18 },
+  },
+  sources: ['law'],
+};
+
 async function run(tree: Record<string, unknown>, familiesDir = tmpdir()): Promise<CasesRun> {
   const dir = await writeTree(tree);
   const { entries, issues } = await buildKnowledge(dir, buildDate, fixtures);
@@ -104,23 +117,23 @@ describe('runCases', () => {
   });
 
   it('reports a cases file it cannot parse, and still runs the other files', async () => {
-    const { problems } = await run({ ...baseTree(), 'routes/qm-work/1.cases.json': '{' });
-    expect(problems).toHaveLength(1);
-    expect(problems[0]).toMatch(/^routes\/qm-work\/1\.cases\.json: /);
+    const { problems, cases } = await run({
+      ...baseTree(),
+      'routes/qm-work/1.cases.json': '{',
+      'routes/qm-other/1.json': routeVersion({ routeId: 'qm-other' }),
+      'routes/qm-other/1.cases.json': { schemaVersion: 1, cases: [eligible] },
+    });
+    expect(cases).toBe(1);
+    expect(problems.at(-1)).toMatch(/^routes\/qm-work\/1\.cases\.json: /);
+    expect(problems.slice(0, -1)).toEqual([
+      'routes/qm-other/1.cases.json: No case is not_eligible',
+      'routes/qm-other/1.cases.json: No case is missing_information',
+      'routes/qm-other/1.cases.json: Requirement treaty-citizen is never false',
+      'routes/qm-other/1.cases.json: Requirement treaty-citizen is never unknown',
+    ]);
   });
 
   it('measures each dependent rule alone, so a possible dependent includes no one', async () => {
-    const children = {
-      id: 'children',
-      title: 'Children under 18',
-      path: ['child'],
-      condition: {
-        op: 'lt',
-        left: { op: 'fact', key: 'person.ageYears' },
-        right: { op: 'int', value: 18 },
-      },
-      sources: ['law'],
-    };
     const family = {
       ...citizen,
       members: ['p1', 'p2', 'p3'],
@@ -156,6 +169,51 @@ describe('runCases', () => {
       'routes/qm-work/1.cases.json: Dependent rule children never includes anyone',
     );
     expect(problems.some((problem) => problem.includes('never excludes'))).toBe(false);
+  });
+
+  it('does not count a rule as including someone another rule included', async () => {
+    const students = {
+      id: 'students',
+      title: 'Children who study',
+      path: ['child'],
+      condition: { op: 'fact', key: 'person.studying' },
+      sources: ['law'],
+    };
+    const family = {
+      ...citizen,
+      members: ['p1', 'p2', 'p3'],
+      people: [
+        { ...citizen.people[0], recordedInFull: ['children'] },
+        { id: 'p2', birthDate: '2015-01-01' },
+        { id: 'p3', birthDate: '1990-01-01', studying: false },
+      ],
+      relationships: [
+        { kind: 'parent', parent: 'p1', child: 'p2', parentKind: 'biological' },
+        { kind: 'parent', parent: 'p1', child: 'p3', parentKind: 'biological' },
+      ],
+    };
+    const { problems } = await run({
+      ...baseTree(),
+      'routes/qm-work/1.json': routeVersion({
+        dependents: [children, students],
+        leapDayBirthday: 'feb-28',
+        leapDayBirthdaySources: ['law'],
+      }),
+      'routes/qm-work/1.cases.json': {
+        schemaVersion: 1,
+        cases: [
+          {
+            ...eligible,
+            snapshot: family,
+            expected: { ...eligible.expected, dependents: ['p2'] },
+          },
+        ],
+      },
+    });
+    expect(problems).toContain(
+      'routes/qm-work/1.cases.json: Dependent rule students never includes anyone',
+    );
+    expect(problems.some((problem) => problem.includes('children never'))).toBe(false);
   });
 
   it('refuses a family whose bytes do not match the pinned hash', async () => {

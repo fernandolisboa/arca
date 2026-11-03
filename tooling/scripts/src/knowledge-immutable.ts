@@ -22,15 +22,16 @@ export const knowledgeRoots = [
 ] as const;
 export const dataRoot = `${knowledgeRoots[0]}/`;
 export const vendorRoot = `${knowledgeRoots[1]}/`;
+export const domainSource = 'packages/domain/src';
+export const vendoredPolicy = '.github/policy/vendored.json';
+/** The roots and their ancestors, and the policy files' directories, so none of them is a link. */
 const watchedDirectories = [
   ...new Set(
-    knowledgeRoots.flatMap((root) =>
+    [...knowledgeRoots, '.github/policy'].flatMap((root) =>
       root.split('/').map((_, index, parts) => parts.slice(0, index + 1).join('/')),
     ),
   ),
 ];
-export const domainSource = 'packages/domain/src';
-export const vendoredPolicy = '.github/policy/vendored.json';
 export const vendoredSources = '.github/policy/vendored-sources.json';
 const hashesPath = `${dataRoot}hashes.json`;
 const casesPattern = /^packages\/knowledge\/data\/routes\/[^/]+\/[^/]+\.cases\.json$/;

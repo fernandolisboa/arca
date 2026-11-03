@@ -228,7 +228,7 @@ describe('knowledge-immutable', () => {
     ).toEqual([`${family}: exists on the base branch and was deleted or renamed; it is immutable`]);
   });
 
-  it.each(['packages', 'packages/knowledge', 'eval', 'eval/families'])(
+  it.each(['packages', 'packages/knowledge', 'eval', 'eval/families', '.github', '.github/policy'])(
     'refuses %s as a link',
     async (directory) => {
       expect(
