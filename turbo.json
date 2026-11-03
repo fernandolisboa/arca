@@ -55,9 +55,6 @@
         "ARCA_TEST_DB_ADMIN_PASSWORD"
       ]
     },
-    "@arca/scripts#test": {
-      "dependsOn": ["^build"]
-    },
     "//#check:web-bundle": {
       "dependsOn": ["@arca/web#build"]
     },

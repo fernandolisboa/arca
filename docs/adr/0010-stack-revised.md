@@ -1,6 +1,6 @@
 # ADR-0010: Application stack, revised
 
-- Status: Accepted; preview databases and deploys amended by [ADR-0012](0012-automation-first-setup.md) (Vercel–Neon integration, linked Vercel project, one Neon project)
+- Status: Accepted; preview databases and deploys amended by [ADR-0012](0012-automation-first-setup.md) (Vercel–Neon integration, linked Vercel project, one Neon project); code review amended by [ADR-0019](0019-reviewers-in-the-authoring-session.md) (reviewers no longer run in CI)
 - Date: 2026-11-01
 - Supersedes: [ADR-0003](0003-stack.md)
 
@@ -57,7 +57,7 @@ TypeScript end to end, in a pnpm + Turborepo monorepo.
 | Rate limiting | Vercel Firewall at the edge, plus limits and per-person AI budgets stored in Postgres |
 | Testing | Vitest (unit and integration), a Postgres service container in CI for database tests, Playwright (end to end), the access-matrix suite for row-level security, the synthetic evaluation suite for AI behavior; preview deployments use Neon branches forked from production until a synthetic `development` branch becomes the default, before the first case-data table ([ADR-0012](0012-automation-first-setup.md)) |
 | Code quality | ESLint with typescript-eslint strict type-checked rules, Prettier |
-| CI and supply chain | GitHub Actions pinned by commit SHA, least-privilege permissions; Dependabot version updates with a cooldown (Renovate only as the fallback above); Dependabot alerts and osv-scanner for dependency advisories; CodeQL for code scanning; secret scanning with push protection; gitleaks; SBOM per build; pnpm configured to block dependency install scripts (allow-list only) and to wait a minimum release age before adopting new versions; Turborepo without remote cache until cache artifacts are signed; the reviewer subagents as a required check ([ADR-0011](0011-reviewers-in-ci.md)) |
+| CI and supply chain | GitHub Actions pinned by commit SHA, least-privilege permissions; Dependabot version updates with a cooldown (Renovate only as the fallback above); Dependabot alerts and osv-scanner for dependency advisories; CodeQL for code scanning; secret scanning with push protection; gitleaks; SBOM per build; pnpm configured to block dependency install scripts (allow-list only) and to wait a minimum release age before adopting new versions; Turborepo without remote cache until cache artifacts are signed |
 | Mobile | Capacitor (Android in Phase 4, iOS and iPadOS in Phase 5) |
 | Desktop | Tauri (Phase 6, only if its gate passes) |
 

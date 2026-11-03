@@ -51,7 +51,7 @@ packages/
   db/           Drizzle schema and migrations, role SQL, the runtime role pool and request identity
 tooling/        shared ESLint and TypeScript configs, security header policy, repository scripts
                 (dependency-source, boundary and bundle checks, CI policy scripts, migration runner)
-eval/           evaluation corpora, later the synthetic AI evaluation suite
+eval/           planned: the synthetic AI evaluation suite
 ```
 
 Rules that keep every platform possible:

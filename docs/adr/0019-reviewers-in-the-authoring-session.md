@@ -29,17 +29,25 @@ ADR-0011 and ADR-0013 run the reviewer subagents in CI as a required `review-gat
 
 ## Consequences
 
-- No subscription usage in CI, and nothing for the owner to configure or keep running.
-- Nothing a branch rule can check proves that the reviewers ran. A session that skips them, or an agent steered by injected text into weakening an agent definition, is not caught by CI. Two things limit this:
-  - the deterministic checks still run on every pull request;
-  - changes to `.claude/agents/` and `docs/REVIEW.md` still need a PASS from the security, architecture and supply-chain reviewers, and an entry in the REVIEW.md change log.
-- Reviewer prompts are no longer tested against a canary corpus. A weakened reviewer would show up only as missed findings.
-- Optional cleanup for the owner, in the repository settings:
-  - the `review` environment and its `CLAUDE_CODE_OAUTH_TOKEN` secret;
-  - the Dependabot secret of the same name;
-  - any `REVIEW_MODEL_*` variables.
+- No subscription usage in CI and nothing to keep running, after the one-time cleanup below.
+- Nothing a branch rule can check proves that the reviewers ran. Residual risks, accepted:
+  - A session can skip the reviewers.
+  - Injected text in a diff, doc, commit message or fetched page can steer a local reviewer to a false PASS. The removed canary tested exactly this, and nothing tests it now.
+  - Local reviewers can run commands with the session's credentials, including the owner's GitHub token ([ADR-0012](0012-automation-first-setup.md)). CI reviewers could only read files, so injected text that reaches a reviewer can now do more.
+  - The reviewers load the branch's own agent definitions and `CLAUDE.md` files. A change that weakens a reviewer is judged by the weakened reviewer, so the rule that `.claude/agents/` and `docs/REVIEW.md` changes need a PASS from the security, architecture and supply-chain reviewers is attested by the same session.
+  - `ci.yml` runs the branch's own copy; only `policy.yml` runs its definition from `main`.
 
-  None of these is read any more.
+  What still limits this:
+  - the deterministic checks on every pull request;
+  - the owner's GitHub token is fine-grained, limited to this repository and expiring;
+  - no case data exists yet. Revisit this decision before the first real case data is stored.
+- Reviewer prompts are no longer tested against a canary corpus. A weakened reviewer would show up only as missed findings.
+- **Required cleanup by the owner**, since agents cannot write these settings:
+  - delete the `review` environment and its `CLAUDE_CODE_OAUTH_TOKEN` secret;
+  - delete the Dependabot secret of the same name;
+  - delete any `REVIEW_MODEL_*` variables.
+
+  The token is a live one-year subscription credential that nothing reads any more. Once this change merges, the workflow secrets lint refuses it in every workflow. The pending `main` ruleset (spec 0001 R8, not yet applied) no longer lists a `review-gate` check.
 - Revisit this decision if the project gains contributors outside the owner's own sessions. The removed code is in the history at commit `6214a6a`.
 
 ## Alternatives considered

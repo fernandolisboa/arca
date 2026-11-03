@@ -3,11 +3,11 @@
 - Status: Ready for tickets
 - Date: 2026-11-01
 - Epic: cross-platform foundations ([ROADMAP.md](../ROADMAP.md#phase-1--family-mvp-web))
-- Decisions: [ADR-0012](../adr/0012-automation-first-setup.md) (amends the others where they differ), [ADR-0009](../adr/0009-background-jobs-guarantees.md), [ADR-0010](../adr/0010-stack-revised.md), [ADR-0011](../adr/0011-reviewers-in-ci.md), [ADR-0008](../adr/0008-database-security-and-environments.md), [ADR-0005](../adr/0005-platform-strategy.md)
+- Decisions: [ADR-0012](../adr/0012-automation-first-setup.md) (amends the others where they differ), [ADR-0009](../adr/0009-background-jobs-guarantees.md), [ADR-0010](../adr/0010-stack-revised.md), [ADR-0011](../adr/0011-reviewers-in-ci.md) (superseded by [ADR-0019](../adr/0019-reviewers-in-the-authoring-session.md)), [ADR-0008](../adr/0008-database-security-and-environments.md), [ADR-0005](../adr/0005-platform-strategy.md)
 
 ## Goal
 
-A monorepo that builds, tests and deploys an empty Arca end to end: a pt-BR web shell and an API on one origin, one sample workflow and a database with its roles, all in São Paulo, with every CI gate from REVIEW.md enforced as a required check. Feature work after this adds code to an existing structure; it does not set up structure.
+A monorepo that builds, tests and deploys an empty Arca end to end: a pt-BR web shell and an API on one origin, one sample workflow and a database with its roles, all in São Paulo, with every automated check from REVIEW.md enforced as a required check. Feature work after this adds code to an existing structure; it does not set up structure.
 
 ## Scope
 
@@ -176,7 +176,7 @@ A CI lint checks each workflow file against an allow-list of the secrets and env
 - Repository settings, applied by an agent through the GitHub API with the owner's token ([ADR-0012](../adr/0012-automation-first-setup.md)) and listed in the PR that applies them:
   - Ruleset **main**: requires every check above, with strict status checks (branch up to date before merge), each pinned to GitHub Actions; linear history; no force pushes or deletion. No bypass actors.
   - Secret scanning push protection, Dependabot alerts, private vulnerability reporting.
-- The ticket verifies once that a pull request with a failing required check cannot merge,.
+- The ticket verifies once that a pull request with a failing required check cannot merge.
 
 ### R9. Deploy
 
@@ -236,12 +236,12 @@ Assets in play: the owner connection string and role passwords in Vercel; the ow
 | Threat (STRIDE, LLM and agentic) | Where | Control in this slice |
 | --- | --- | --- |
 | Tampering: malicious dependency or action | Install, CI | R1 pnpm settings and exact pins, SHA-pinned actions, osv-scanner, the lockfile release-age, integrity and license check, Dependabot cooldown, supply-chain reviewer, dependency-check policy from `main` |
-| Tampering: a change weakens the reviewers | `.claude/agents/`, REVIEW.md | A change to either needs a PASS from the security, architecture and supply-chain reviewers and a REVIEW.md change-log entry; the deterministic checks come from `main`. Residual, accepted in [ADR-0019](../adr/0019-reviewers-in-the-authoring-session.md): nothing in CI proves the reviewers ran. Agents hold the owner's token and could change the ruleset ([ADR-0012](../adr/0012-automation-first-setup.md)) |
+| Tampering: a change weakens the reviewers | `.claude/agents/`, REVIEW.md | A change to either needs a PASS from the security, architecture and supply-chain reviewers and a REVIEW.md change-log entry; the policy checks come from `main`. Residual, accepted in [ADR-0019](../adr/0019-reviewers-in-the-authoring-session.md): nothing in CI proves the reviewers ran, and a branch that weakens the agent definitions is judged by the weakened reviewers. Agents hold the owner's token and could change the ruleset ([ADR-0012](../adr/0012-automation-first-setup.md)) |
 | Tampering: a migration disables its own guards | Database | Parser-vetted statements; runner-owned transaction checked by transaction ID; guards on `pg_catalog` only; roles created only by `bootstrap.sql`; `app_migrator` without `CREATEROLE` |
 | Elevation: an agent misusing the owner's tokens | GitHub, Vercel, Neon | Fine-grained GitHub token limited to this repository, with an expiry; no Neon API key at all; agents' instructions and the reviewers. Residual, accepted in ADR-0012 |
 | Information disclosure: secret in a commit | Repository | Push protection, gitleaks, `.env.example` only |
 | Elevation: branch code reaching secrets | CI, previews | No GitHub secrets besides each workflow's `GITHUB_TOKEN`; event values only through validated `env:`; Git Fork Protection. Residual, accepted: preview builds and running functions can read the owner connection string in Vercel ([ADR-0012](../adr/0012-automation-first-setup.md)) |
-| Prompt injection steering the reviewers | Authoring session | Reviewers read the diff and files as data; standards from `CLAUDE.md`, REVIEW and SECURITY only. Residual as above |
+| Prompt injection steering the reviewers | Authoring session | Reviewers are told to read the diff and files as data. Residual, accepted in ADR-0019: nothing enforces it, and local reviewers can run commands with the session's credentials |
 | Denial of wallet | API, workflows | No public route starts workflows; cron needs a `CRON_SECRET` of 32 characters or more; the SDK's runner is private to the queue; its webhook route is public and answers 404, since no workflow creates hooks; health check cached |
 | Elevation: service connected with an owner role or bypassing RLS | Database | The API connects as `app_api`; the owner credentials (every injected name) read only by build scripts (lint, including indirect `process.env` access); each pooled connection checks `current_user`; the production smoke test requires `database: "ok"`; roles never created through the Neon API; guard tests 1 to 9 in every migration transaction and in CI; the database target check, so a preview build never bootstraps or migrates production. Residual, accepted: the owner string is readable at runtime (ADR-0012) |
 | Injection into the identity statement | Database | `set_config` with bind parameters and UUID validation |
