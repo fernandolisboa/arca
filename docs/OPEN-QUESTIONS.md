@@ -26,5 +26,5 @@
 
 - [ ] Which partner types to seed first (destination lawyers, sworn translators, FX providers) and how to vet them.
 - [x] Who activates knowledge-base versions ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)): the founder alone, with an independent check agent that uses a guide per country; no lawyer and no invited reviewers per country (decided 2026-11-03).
-- [ ] Which countries the knowledge seed (consultancy core slice 2, [spec 0002](specs/0002-rules-engine-and-knowledge-base.md#the-epic-consultancy-core)) researches first.
+- [x] Which countries the knowledge seed (consultancy core slice 2, [spec 0002](specs/0002-rules-engine-and-knowledge-base.md#the-epic-consultancy-core)) researches first: the United States and Portugal, then 19 more in the owner's order (decided 2026-11-03).
 - [ ] Voice in the MVP intake, or text first. Proposed: text first, voice later through `SpeechToText` ([spec 0002](specs/0002-rules-engine-and-knowledge-base.md#the-epic-consultancy-core)), until the founder confirms.
