@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "routeId": "qs-seasonal-work",
+  "number": 1,
+  "title": "Fixture: seasonal farm work",
+  "country": "QS",
+  "tags": ["fixture", "seasonal-work"],
+  "effectiveFrom": "2020-01-01",
+  "status": "open",
+  "currency": "EUR",
+  "sources": [
+    {
+      "id": "law",
+      "url": "https://www.gov.example/fixture-act",
+      "title": "Fixture residence act",
+      "kind": "official",
+      "verifiedAt": "2026-09-01"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "fixture-gov",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "farm-offer",
+      "title": "A temporary farm job offer in the country",
+      "expression": {
+        "op": "intersects",
+        "list": {
+          "op": "fact",
+          "key": "principal.temporaryJobOfferSectors"
+        },
+        "set": {
+          "op": "tokens",
+          "values": ["A"]
+        }
+      },
+      "sources": ["law"]
+    },
+    {
+      "id": "no-refusal",
+      "title": "No earlier visa refusal",
+      "expression": {
+        "op": "eq",
+        "left": {
+          "op": "fact",
+          "key": "principal.visaRefusals"
+        },
+        "right": {
+          "op": "int",
+          "value": 0
+        }
+      },
+      "sources": ["law"]
+    }
+  ],
+  "assessments": [],
+  "dependents": [],
+  "costs": [],
+  "durations": []
+}

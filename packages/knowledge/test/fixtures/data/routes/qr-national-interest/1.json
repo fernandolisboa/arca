@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "routeId": "qr-national-interest",
+  "number": 1,
+  "title": "Fixture: national interest work",
+  "country": "QR",
+  "tags": ["fixture", "work"],
+  "effectiveFrom": "2020-01-01",
+  "status": "open",
+  "currency": "EUR",
+  "sources": [
+    {
+      "id": "law",
+      "url": "https://www.gov.example/fixture-act",
+      "title": "Fixture residence act",
+      "kind": "official",
+      "verifiedAt": "2026-09-01"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "fixture-gov",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "degree",
+      "title": "An advanced degree",
+      "expression": {
+        "op": "gte",
+        "left": {
+          "op": "fact",
+          "key": "principal.educationLevel"
+        },
+        "right": {
+          "op": "int",
+          "value": 7
+        }
+      },
+      "sources": ["law"]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "national-importance",
+      "title": "Work of national importance",
+      "evidence": ["principal.educationLevel", "principal.monthlyActiveIncome"],
+      "sources": ["law"]
+    }
+  ],
+  "dependents": [],
+  "costs": [],
+  "durations": []
+}

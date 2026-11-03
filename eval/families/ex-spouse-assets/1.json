@@ -1,0 +1,101 @@
+{
+  "recordedOn": "2026-10-01",
+  "members": [
+    "p1"
+  ],
+  "people": [
+    {
+      "id": "p1",
+      "birthDate": "1983-05-28",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "1983-05-28",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR",
+      "educationLevel": 6,
+      "incomes": [
+        {
+          "kind": "active",
+          "monthly": {
+            "amount": 1350000,
+            "currency": "BRL"
+          },
+          "sourceCountry": "BR"
+        }
+      ],
+      "immigrationHistory": [],
+      "jobOffers": [],
+      "financiallyDependentOn": [],
+      "recordedInFull": [
+        "spouses",
+        "partners",
+        "children",
+        "assets"
+      ]
+    },
+    {
+      "id": "p2",
+      "birthDate": "1982-12-11",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "1982-12-11",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR"
+    }
+  ],
+  "relationships": [
+    {
+      "kind": "spouse",
+      "people": [
+        "p1",
+        "p2"
+      ],
+      "start": "2010-04-24",
+      "end": "2021-11-15"
+    }
+  ],
+  "assets": [
+    {
+      "id": "a1",
+      "kind": "cash",
+      "owners": [
+        {
+          "person": "p1",
+          "share": "1"
+        }
+      ],
+      "value": {
+        "amount": 6000000,
+        "currency": "BRL"
+      },
+      "valuedAt": "2026-09-30",
+      "liquid": true,
+      "sold": "none"
+    },
+    {
+      "id": "a2",
+      "kind": "investment",
+      "owners": [
+        {
+          "person": "p2",
+          "share": "1"
+        }
+      ],
+      "value": {
+        "amount": 180000000,
+        "currency": "BRL"
+      },
+      "valuedAt": "2026-09-30",
+      "liquid": true,
+      "sold": "none"
+    }
+  ]
+}

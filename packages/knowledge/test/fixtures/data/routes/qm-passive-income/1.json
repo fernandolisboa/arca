@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "routeId": "qm-passive-income",
+  "number": 1,
+  "title": "Fixture: passive income residence",
+  "country": "QM",
+  "tags": ["fixture", "retirement"],
+  "effectiveFrom": "2020-01-01",
+  "status": "open",
+  "currency": "EUR",
+  "sources": [
+    {
+      "id": "law",
+      "url": "https://www.gov.example/fixture-act",
+      "title": "Fixture residence act",
+      "kind": "official",
+      "verifiedAt": "2026-09-01"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "fixture-gov",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "income",
+      "title": "Passive income covers the unit",
+      "expression": {
+        "op": "gte",
+        "left": {
+          "op": "sum",
+          "over": "unit.members",
+          "value": {
+            "op": "fact",
+            "key": "person.monthlyPassiveIncome"
+          }
+        },
+        "right": {
+          "op": "add",
+          "left": {
+            "op": "money",
+            "amount": 87000,
+            "currency": "EUR"
+          },
+          "right": {
+            "op": "add",
+            "left": {
+              "op": "sum",
+              "over": "unit.dependents",
+              "value": {
+                "op": "money",
+                "amount": 43500,
+                "currency": "EUR"
+              },
+              "where": {
+                "op": "gte",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              }
+            },
+            "right": {
+              "op": "sum",
+              "over": "unit.dependents",
+              "value": {
+                "op": "money",
+                "amount": 26100,
+                "currency": "EUR"
+              },
+              "where": {
+                "op": "lt",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              }
+            }
+          }
+        }
+      },
+      "sources": ["law"]
+    }
+  ],
+  "assessments": [],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse living in the same country",
+      "path": ["spouse"],
+      "condition": {
+        "op": "eq",
+        "left": {
+          "op": "fact",
+          "key": "person.residenceCountry"
+        },
+        "right": {
+          "op": "fact",
+          "key": "principal.residenceCountry"
+        }
+      },
+      "sources": ["law"]
+    },
+    {
+      "id": "minor-children",
+      "title": "Children under 18",
+      "path": ["child"],
+      "condition": {
+        "op": "lt",
+        "left": {
+          "op": "fact",
+          "key": "person.ageYears"
+        },
+        "right": {
+          "op": "int",
+          "value": 18
+        }
+      },
+      "sources": ["law"]
+    }
+  ],
+  "costs": [],
+  "durations": [],
+  "leapDayBirthday": "feb-28",
+  "leapDayBirthdaySources": ["law"]
+}

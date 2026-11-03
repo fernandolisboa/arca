@@ -1,0 +1,340 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "six-adults-short-of-capital",
+      "family": {
+        "id": "two-generation-six-adults",
+        "number": 1,
+        "sha256": "ddc9eb7c9551e9b8b309e2094c5bcd3d499921b354a3b9bbcf388aa2f5879dd9"
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "BRL",
+            "to": "USD",
+            "rate": "0.18",
+            "date": "2026-09-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "referenceDates": {
+        "filingDate": "2026-09-01"
+      },
+      "expected": {
+        "status": "not_eligible",
+        "dependents": ["p2"],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "adopted-children-with-and-without-start",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p3", "p4"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1980-01-20",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1980-01-20",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
+          },
+          {
+            "id": "p3",
+            "birthDate": "2015-04-04",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2015-04-04",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "recordedInFull": ["spouses"]
+          },
+          {
+            "id": "p4",
+            "birthDate": "2017-08-08",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2017-08-08",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "recordedInFull": ["spouses"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p1",
+            "child": "p3",
+            "parentKind": "adoptive",
+            "start": "2020-03-01"
+          },
+          {
+            "kind": "parent",
+            "parent": "p1",
+            "child": "p4",
+            "parentKind": "adoptive"
+          }
+        ],
+        "assets": [
+          {
+            "id": "a1",
+            "kind": "cash",
+            "owners": [
+              {
+                "person": "p1",
+                "share": "1"
+              }
+            ],
+            "value": {
+              "amount": 500000000,
+              "currency": "BRL"
+            },
+            "valuedAt": "2026-09-30",
+            "liquid": true,
+            "sold": "none"
+          }
+        ]
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "BRL",
+            "to": "USD",
+            "rate": "0.18",
+            "date": "2026-09-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "referenceDates": {
+        "filingDate": "2026-09-01"
+      },
+      "expected": {
+        "status": "eligible",
+        "dependents": ["p3", "p4"],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "adoption-after-the-facts-date",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p3"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1980-01-20",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1980-01-20",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
+          },
+          {
+            "id": "p3",
+            "birthDate": "2015-04-04",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2015-04-04",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "recordedInFull": ["spouses"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p1",
+            "child": "p3",
+            "parentKind": "adoptive",
+            "start": "2026-09-20"
+          }
+        ],
+        "assets": [
+          {
+            "id": "a1",
+            "kind": "cash",
+            "owners": [
+              {
+                "person": "p1",
+                "share": "1"
+              }
+            ],
+            "value": {
+              "amount": 500000000,
+              "currency": "BRL"
+            },
+            "valuedAt": "2026-09-30",
+            "liquid": true,
+            "sold": "none"
+          }
+        ]
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "BRL",
+            "to": "USD",
+            "rate": "0.18",
+            "date": "2026-09-08",
+            "source": "fixture"
+          }
+        ]
+      },
+      "referenceDates": {
+        "filingDate": "2026-09-01"
+      },
+      "factsAsOf": "2026-09-10",
+      "expected": {
+        "status": "eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "married-after-filing-and-child-marital-status-unknown",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p2", "p3"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1980-01-20",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1980-01-20",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1985-05-05",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1985-05-05",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
+          },
+          {
+            "id": "p3",
+            "birthDate": "2008-03-03",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2008-03-03",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR"
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "spouse",
+            "people": ["p1", "p2"],
+            "start": "2026-09-15",
+            "end": "none"
+          },
+          {
+            "kind": "parent",
+            "parent": "p1",
+            "child": "p3",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": [
+          {
+            "id": "a1",
+            "kind": "cash",
+            "owners": [
+              {
+                "person": "p1",
+                "share": "1"
+              }
+            ],
+            "value": {
+              "amount": 100000000,
+              "currency": "BRL"
+            },
+            "valuedAt": "2026-09-30",
+            "liquid": true,
+            "sold": "none"
+          }
+        ]
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "BRL",
+            "to": "USD",
+            "rate": "0.18",
+            "date": "2026-09-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "referenceDates": {
+        "filingDate": "2026-09-01"
+      },
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": ["p3"],
+        "missingFacts": [
+          "person.hasSpouse@p3",
+          "marker spouses@p3",
+          "marker assets@p3",
+          "unit.liquidAssets@p1"
+        ]
+      }
+    }
+  ]
+}

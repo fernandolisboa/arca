@@ -1,0 +1,68 @@
+{
+  "recordedOn": "2026-10-01",
+  "members": [
+    "p1"
+  ],
+  "people": [
+    {
+      "id": "p1",
+      "birthDate": "1993-10-05",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "1993-10-05",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR",
+      "educationLevel": 6,
+      "incomes": [
+        {
+          "kind": "active",
+          "monthly": {
+            "amount": 980000,
+            "currency": "BRL"
+          },
+          "sourceCountry": "BR"
+        }
+      ],
+      "immigrationHistory": [
+        {
+          "country": "QS",
+          "kind": "visa_refusal",
+          "date": "2023-07"
+        }
+      ],
+      "jobOffers": [],
+      "financiallyDependentOn": [],
+      "studying": false,
+      "recordedInFull": [
+        "spouses",
+        "partners",
+        "children",
+        "assets"
+      ]
+    }
+  ],
+  "relationships": [],
+  "assets": [
+    {
+      "id": "a1",
+      "kind": "cash",
+      "owners": [
+        {
+          "person": "p1",
+          "share": "1"
+        }
+      ],
+      "value": {
+        "amount": 3200000,
+        "currency": "BRL"
+      },
+      "valuedAt": "2026-09-30",
+      "liquid": true,
+      "sold": "none"
+    }
+  ]
+}

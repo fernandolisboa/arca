@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "treaty-national-with-capital",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1985-01-01",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1985-01-01",
+                "lost": "none"
+              },
+              {
+                "country": "QN",
+                "acquired": "2019-06-01",
+                "lost": "none",
+                "basis": "descent"
+              }
+            ],
+            "residenceCountry": "BR",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
+          }
+        ],
+        "relationships": [],
+        "assets": [
+          {
+            "id": "a1",
+            "kind": "cash",
+            "owners": [
+              {
+                "person": "p1",
+                "share": "1"
+              }
+            ],
+            "value": {
+              "amount": 100000000,
+              "currency": "BRL"
+            },
+            "valuedAt": "2026-09-30",
+            "liquid": true,
+            "sold": "none"
+          }
+        ]
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "BRL",
+            "to": "EUR",
+            "rate": "0.16",
+            "date": "2026-09-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "expected": {
+        "status": "eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "not-a-treaty-national",
+      "family": {
+        "id": "single-person",
+        "number": 1,
+        "sha256": "7a45d6696cb09589b8904d27134b8858cfc4b62855da90cbab4352419f2f36d8"
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "BRL",
+            "to": "EUR",
+            "rate": "0.16",
+            "date": "2026-09-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "citizenships-and-assets-unknown",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1985-01-01"
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "BRL",
+            "to": "EUR",
+            "rate": "0.16",
+            "date": "2026-09-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": [
+          "principal.citizenships@p1",
+          "marker assets@p1",
+          "principal.liquidAssets@p1"
+        ]
+      }
+    },
+    {
+      "id": "treaty-national-short-of-capital",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1985-01-01",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1985-01-01",
+                "lost": "none"
+              },
+              {
+                "country": "QN",
+                "acquired": "2019-06-01",
+                "lost": "none",
+                "basis": "descent"
+              }
+            ],
+            "residenceCountry": "BR",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
+          }
+        ],
+        "relationships": [],
+        "assets": [
+          {
+            "id": "a1",
+            "kind": "cash",
+            "owners": [
+              {
+                "person": "p1",
+                "share": "1"
+              }
+            ],
+            "value": {
+              "amount": 10000000,
+              "currency": "BRL"
+            },
+            "valuedAt": "2026-09-30",
+            "liquid": true,
+            "sold": "none"
+          }
+        ]
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "BRL",
+            "to": "EUR",
+            "rate": "0.16",
+            "date": "2026-09-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    }
+  ]
+}

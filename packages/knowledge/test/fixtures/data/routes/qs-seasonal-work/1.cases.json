@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "farm-offer",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1995-05-05",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1995-05-05",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "jobOffers": [
+              {
+                "country": "QS",
+                "sector": "A",
+                "temporary": true
+              }
+            ],
+            "immigrationHistory": []
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "earlier-refusal",
+      "family": {
+        "id": "previous-visa-refusal",
+        "number": 1,
+        "sha256": "0363257855566fdae33861893fdd2725f0b26f1dbc08cb5a7a03eaf59e63baa1"
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "offer-unknown",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1995-05-05",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1995-05-05",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "immigrationHistory": []
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": ["principal.temporaryJobOfferSectors@p1"]
+      }
+    },
+    {
+      "id": "offer-and-history-unknown-with-offer",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1995-05-05",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1995-05-05",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "jobOffers": [
+              {
+                "country": "QS",
+                "sector": "A",
+                "temporary": true
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": ["principal.visaRefusals@p1"]
+      }
+    }
+  ]
+}

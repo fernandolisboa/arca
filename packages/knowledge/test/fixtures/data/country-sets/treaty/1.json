@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "treaty",
+  "number": 1,
+  "title": "Fixture treaty countries",
+  "members": ["QN", "QR"],
+  "sources": [
+    {
+      "id": "law",
+      "url": "https://www.gov.example/fixture-act",
+      "title": "Fixture residence act",
+      "kind": "official",
+      "verifiedAt": "2026-09-01"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "fixture-gov",
+      "number": 1
+    }
+  ]
+}

@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "routeId": "qm-family-reunification",
+  "number": 1,
+  "title": "Fixture: family reunification",
+  "country": "QM",
+  "tags": ["fixture", "family"],
+  "effectiveFrom": "2020-01-01",
+  "status": "open",
+  "currency": "EUR",
+  "sources": [
+    {
+      "id": "law",
+      "url": "https://www.gov.example/fixture-act",
+      "title": "Fixture residence act",
+      "kind": "official",
+      "verifiedAt": "2026-09-01"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "fixture-gov",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "resident",
+      "title": "The principal lives in the country",
+      "expression": {
+        "op": "eq",
+        "left": {
+          "op": "fact",
+          "key": "principal.residenceCountry"
+        },
+        "right": {
+          "op": "token",
+          "value": "QM"
+        }
+      },
+      "sources": ["law"]
+    },
+    {
+      "id": "means",
+      "title": "Means for the unit",
+      "expression": {
+        "op": "gte",
+        "left": {
+          "op": "fact",
+          "key": "unit.liquidAssets"
+        },
+        "right": {
+          "op": "add",
+          "left": {
+            "op": "money",
+            "amount": 500000,
+            "currency": "EUR"
+          },
+          "right": {
+            "op": "sum",
+            "over": "unit.dependents",
+            "value": {
+              "op": "money",
+              "amount": 250000,
+              "currency": "EUR"
+            }
+          }
+        }
+      },
+      "sources": ["law"]
+    }
+  ],
+  "assessments": [],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse aged 21 or over",
+      "path": ["spouse"],
+      "condition": {
+        "op": "gte",
+        "left": {
+          "op": "fact",
+          "key": "person.ageYears"
+        },
+        "right": {
+          "op": "int",
+          "value": 21
+        }
+      },
+      "sources": ["law"]
+    },
+    {
+      "id": "parents",
+      "title": "Parents who depend on the principal",
+      "path": ["parent"],
+      "condition": {
+        "op": "fact",
+        "key": "person.dependsOnPrincipal"
+      },
+      "sources": ["law"]
+    },
+    {
+      "id": "spouse-parents",
+      "title": "Parents of the spouse who depend on the principal",
+      "path": ["spouse", "parent"],
+      "condition": {
+        "op": "fact",
+        "key": "person.dependsOnPrincipal"
+      },
+      "sources": ["law"]
+    }
+  ],
+  "costs": [],
+  "durations": [],
+  "leapDayBirthday": "feb-28",
+  "leapDayBirthdaySources": ["law"]
+}

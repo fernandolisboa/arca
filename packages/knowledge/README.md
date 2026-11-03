@@ -16,6 +16,8 @@ scripts/                                    load, validate, hash and write the c
 vendor/cldr/<release>/                      the pinned CLDR territories file, its license and manifest
 src/                                        the runtime entry; pure, no I/O
 src/generated/catalog.ts                    written by the build, not checked in
+test/fixtures/data/                         fixture routes on user-assigned codes, with cases (R8)
+test/cases/                                 the cases runner
 ```
 
 Every file in `data` is immutable once on `main`. A change is a new numbered file; `hashes.json` and cases files only gain entries. The required check `knowledge-immutable` enforces this from `main` on every pull request (`tooling/scripts/src/check-knowledge-immutable.ts`, which reads hosts with the same `hostOf` the build uses, from `@arca/scripts/host`; run it locally with `pnpm check:knowledge-immutable`). It also keeps official-domain lists in pull requests of their own and admits a file under `vendor` only once `.github/policy/vendored.json` on `main` approves it.
@@ -50,7 +52,37 @@ Add the new numbered file, run the build, and append the `{ "path", "sha256" }` 
   - an earlier date, when the original started too late;
   - a later date inside the original's period, for an error found late.
 
-The build checks a correction by its outcome: added to the lower-numbered versions, all treated as active, selection must pick it from its `effectiveFrom` on wherever it picked the fixed version, another correction of it or a version its chain removes (and, for an early start, the run just before, without taking all of an unrelated version's run), and nothing else may change. So a correction never shadows a version it does not fix, and a newer correction is never shadowed by an older one. Old evaluations keep pointing at the version they used. Cases files for each version come with #48.
+The build checks a correction by its outcome: added to the lower-numbered versions, all treated as active, selection must pick it from its `effectiveFrom` on wherever it picked the fixed version, another correction of it or a version its chain removes (and, for an early start, the run just before, without taking all of an unrelated version's run), and nothing else may change. So a correction never shadows a version it does not fix, and a newer correction is never shadowed by an older one. Old evaluations keep pointing at the version they used.
+
+## Cases
+
+Every route version ships with `<n>.cases.json` beside it, and `test/cases` runs them all through `evaluateVersion`, for `data` and for the fixture routes in `test/fixtures/data`:
+
+```json
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "children-income-unknown",
+      "family": { "id": "couple-young-children", "number": 1, "sha256": "<SHA-256 of the file>" },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "fx": { "rates": [{ "from": "BRL", "to": "EUR", "rate": "0.16", "date": "2026-09-30", "source": "…" }] },
+      "expected": {
+        "status": "missing_information",
+        "dependents": ["p2", "p3", "p4"],
+        "possibleDependents": [],
+        "missingFacts": ["person.monthlyPassiveIncome@p3", "person.monthlyPassiveIncome@p4"]
+      }
+    }
+  ]
+}
+```
+
+- A case has a `family` from `eval/families/<id>/<n>.json`, pinned by the hash of its bytes, or an inline `snapshot`. Families are synthetic and never change: extending one is a new number. Optional: `factsAsOf`, `referenceDates` (`{ "filingDate": "2026-09-01" }`) and `fx`.
+- `missingFacts` are written as the runner prints them: `<fact>@<person>`, with ` edge <edge>` or ` line <ids>` when the fact is read across one; `relationship <edge>`; `marker <marker>@<person>`.
+- Coverage, from the results: every requirement is true, false and unknown at least once; every dependent rule includes someone and, on its own, excludes someone; an open version reaches `eligible` (`needs_assessment` when it has assessments), `not_eligible` and `missing_information`; a closed one, `unavailable`.
+- Cases are append-only. When a change to `packages/domain/src` changes a result, add a case with `supersedes` and `reason` that differs only in `expected`; the runner skips the case it replaces.
 
 ## Runtime entry points
 

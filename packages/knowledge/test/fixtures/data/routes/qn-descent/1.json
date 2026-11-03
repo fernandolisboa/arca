@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "routeId": "qn-descent",
+  "number": 1,
+  "title": "Fixture: citizenship by descent",
+  "country": "QN",
+  "tags": ["fixture", "descent"],
+  "effectiveFrom": "2020-01-01",
+  "status": "open",
+  "currency": "EUR",
+  "sources": [
+    {
+      "id": "law",
+      "url": "https://www.gov.example/fixture-act",
+      "title": "Fixture residence act",
+      "kind": "official",
+      "verifiedAt": "2026-09-01"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "fixture-gov",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "line",
+      "title": "A line of citizens from a parent or grandparent",
+      "expression": {
+        "op": "some",
+        "over": "principal.ancestors",
+        "generations": 2,
+        "where": {
+          "op": "all",
+          "operands": [
+            {
+              "op": "intersects",
+              "list": {
+                "op": "fact",
+                "key": "lineage.citizenshipsAtChildBirth"
+              },
+              "set": {
+                "op": "tokens",
+                "values": ["QN", "QMHH"]
+              }
+            },
+            {
+              "op": "every",
+              "over": "lineage.links",
+              "where": {
+                "op": "intersects",
+                "list": {
+                  "op": "fact",
+                  "key": "lineage.citizenshipsAtChildBirth"
+                },
+                "set": {
+                  "op": "tokens",
+                  "values": ["QN", "QMHH"]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "sources": ["law"]
+    }
+  ],
+  "assessments": [],
+  "dependents": [],
+  "costs": [],
+  "durations": []
+}

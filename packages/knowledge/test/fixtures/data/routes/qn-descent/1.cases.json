@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "grandfather-of-a-former-state",
+      "family": {
+        "id": "two-generation-six-adults",
+        "number": 1,
+        "sha256": "ddc9eb7c9551e9b8b309e2094c5bcd3d499921b354a3b9bbcf388aa2f5879dd9"
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "parents-not-recorded",
+      "family": {
+        "id": "single-person",
+        "number": 1,
+        "sha256": "7a45d6696cb09589b8904d27134b8858cfc4b62855da90cbab4352419f2f36d8"
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": ["marker parents@p1"]
+      }
+    },
+    {
+      "id": "no-line-of-citizens",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1990-01-01",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1990-01-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1960-01-01",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1960-01-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "recordedInFull": ["parents"]
+          },
+          {
+            "id": "p3",
+            "birthDate": "1962-01-01",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1962-01-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "recordedInFull": ["parents"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p1",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p3",
+            "child": "p1",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    }
+  ]
+}
