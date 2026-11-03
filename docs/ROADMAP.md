@@ -25,7 +25,7 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 
 **Epic: cross-platform foundations** (done before any feature that touches case data, identity or AI, so native phases add adapters instead of rewrites)
 
-- Specified in four slices: [0001 scaffold](specs/0001-foundations-scaffold.md); [0003 identity and access](specs/0003-identity-and-access.md); [0004 real-data readiness](specs/0004-real-data-readiness.md), which ends with the real-data gate production must pass before family data enters; [0005 vault, device capabilities and notifications](specs/0005-vault-devices-and-notifications.md).
+- Specified in five slices: [0001 scaffold](specs/0001-foundations-scaffold.md); [0006 design system and theming](specs/0006-design-system-and-theming.md); [0003 identity and access](specs/0003-identity-and-access.md); [0004 real-data readiness](specs/0004-real-data-readiness.md), which ends with the real-data gate production must pass before family data enters; [0005 vault, device capabilities and notifications](specs/0005-vault-devices-and-notifications.md).
 - Monorepo with `packages/domain`, `packages/api-contract`, `packages/ui`, `packages/i18n`, `packages/platform`, `apps/api`, `apps/web` ([ARCHITECTURE.md](ARCHITECTURE.md#platforms-and-code-layout)).
 - Empty app deployed end to end (web, API, a sample workflow, database) in São Paulo, with protected preview deployments per pull request.
 - Environments per [ADR-0008](adr/0008-database-security-and-environments.md) and [ADR-0012](adr/0012-automation-first-setup.md): a production Neon branch that previews stop forking from before any family data exists, synthetic seed for everything else, secrets per environment, OIDC to AWS.
@@ -40,7 +40,7 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 - `platform` port with web adapters: passkeys, vault envelopes, camera capture, file picking, notifications, secure key storage, sharing, receiving shared files, deep links.
 - Notification service with per-device channels (web push first).
 - Vault encryption format documented and platform-neutral; key recovery designed and tested.
-- Responsive, touch-first layouts from phone to tablet to desktop, safe-area aware.
+- Responsive, touch-first layouts from phone to tablet to desktop, safe-area aware, with the themes and navigation layouts of [spec 0006](specs/0006-design-system-and-theming.md).
 - CI running unit tests and the synthetic evaluation suite; the multi-reviewer pass runs in the authoring session ([ADR-0019](adr/0019-reviewers-in-the-authoring-session.md)).
 
 **Epic: consultancy core** (slices and dependencies in [specs/0002-rules-engine-and-knowledge-base.md](specs/0002-rules-engine-and-knowledge-base.md#the-epic-consultancy-core); the case model and intake wait for the foundations' identity and data-protection work above)
@@ -54,6 +54,16 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 - Step-by-step plan with execution modes and action points.
 - On-call assistant with cited sources.
 - Assets, tax and FX simulator; source-of-funds trail.
+
+**Epic: family area and guidance** ([#117](https://github.com/fernandolisboa/arca/issues/117); each item lands in the consultancy core slice or foundations spec it names)
+
+- Family area: the people in the case, who has an account, invites (slice 3).
+- A trusted adult uploads documents for another person, by that person's permission; an account holder holds the documents of a case person without an account, such as a child (slice 3 and the vault; needs an ADR-0018 amendment on who owns such an upload first, [#119](https://github.com/fernandolisboa/arca/issues/119)).
+- Sharing an analysis with chosen people in the case, so each starts their own checklist; relatives join through the family area first (slice 4).
+- Progress per person and for the whole family, computed in code; each person's bar is visible to those they share it with, and the family bar counts only what the viewer may see (slice 5).
+- Steps marked as doable online, with the official link, sourced like any knowledge fact, for the country that issues each document (most often Brazil) as well as the destination (slice 5 and the knowledge base).
+- Guided tour of the app and a hint per screen, using the CoachMark pattern of [spec 0006](specs/0006-design-system-and-theming.md), after the first screens of slice 3; separate from Phase 3's onboarding of new families.
+- Setup guide for every key and secret the project owner manages (`docs/SETUP.md`): names, where each lives, who creates it and how to rotate it, never values; links to ADR-0012 instead of repeating it.
 
 ## Phase 2 — Execution (web)
 

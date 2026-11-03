@@ -1,6 +1,6 @@
 # ADR-0010: Application stack, revised
 
-- Status: Accepted; preview databases and deploys amended by [ADR-0012](0012-automation-first-setup.md) (Vercel–Neon integration, linked Vercel project, one Neon project); errors, traces and LLM tracing amended by [ADR-0016](0016-observability-and-scrubbing.md); vault inputs answered by [ADR-0018](0018-vault-encryption.md), which also adds the environment's storage bucket origin to `connect-src`; native bearer tokens moved to Phase 4 by [ADR-0015](0015-identity-enrollment-step-up-and-recovery.md); S3 also holds the off-vendor database backups, encrypted at rest with a backup-account KMS key, per [ADR-0017](0017-data-lifecycle-and-backups.md); code review amended by [ADR-0019](0019-reviewers-in-the-authoring-session.md) (reviewers no longer run in CI); fast-check for property tests added by [ADR-0014](0014-knowledge-base-as-reviewed-data.md)
+- Status: Accepted; preview databases and deploys amended by [ADR-0012](0012-automation-first-setup.md) (Vercel–Neon integration, linked Vercel project, one Neon project); errors, traces and LLM tracing amended by [ADR-0016](0016-observability-and-scrubbing.md); vault inputs answered by [ADR-0018](0018-vault-encryption.md), which also adds the environment's storage bucket origin to `connect-src`; native bearer tokens moved to Phase 4 by [ADR-0015](0015-identity-enrollment-step-up-and-recovery.md); S3 also holds the off-vendor database backups, encrypted at rest with a backup-account KMS key, per [ADR-0017](0017-data-lifecycle-and-backups.md); code review amended by [ADR-0019](0019-reviewers-in-the-authoring-session.md) (reviewers no longer run in CI); fast-check for property tests added by [ADR-0014](0014-knowledge-base-as-reviewed-data.md); themes, self-hosted fonts, Lucide icons, CSS motion and axe tests added by [ADR-0020](0020-themeable-ui.md)
 - Date: 2026-11-01
 - Supersedes: [ADR-0003](0003-stack.md)
 
@@ -39,7 +39,7 @@ TypeScript end to end, in a pnpm + Turborepo monorepo.
 | Monorepo | pnpm workspaces + Turborepo |
 | Client | React + Vite single-page app, installable PWA |
 | Routing and server state | TanStack Router, TanStack Query |
-| UI | Tailwind CSS with accessible headless primitives (Radix, shadcn/ui pattern) owned in `packages/ui` |
+| UI | Tailwind CSS with accessible headless primitives (Radix, shadcn/ui pattern) owned in `packages/ui`; themes, self-hosted fonts, Lucide icons and CSS motion per [ADR-0020](0020-themeable-ui.md) |
 | Forms and validation | React Hook Form + Zod, sharing schemas with the API contract |
 | i18n | i18next with ICU message format; `pt-BR` first |
 | API | Hono on Node, built and deployed with Nitro; versioned (`/v1`); contract in Zod with `@hono/zod-openapi`, exported as OpenAPI; typed client derived from the same Zod route definitions in `packages/api-contract`, validating responses at runtime, used by every platform |
