@@ -55,7 +55,7 @@ The first case is the founder's own family. The app goes to other families only 
 | [docs/GLOSSARY.md](docs/GLOSSARY.md) | Domain terms and their pt-BR UI equivalents |
 | [docs/OPEN-QUESTIONS.md](docs/OPEN-QUESTIONS.md) | Decisions still pending |
 | [docs/RETENTION.md](docs/RETENTION.md) | How long each kind of data is kept, and what enforces it |
-| [docs/adr/](docs/adr/) | Architecture decision records: language, rules as data, stack, AI ports, platforms, auth, background jobs, database security, reviewers in CI, automation-first setup, review gate canary and model aliases, identity, observability, data lifecycle and backups, vault encryption |
+| [docs/adr/](docs/adr/) | Architecture decision records: language, rules as data, stack, AI ports, platforms, auth, background jobs, database security, automation-first setup, reviewers in the authoring session, identity, observability, data lifecycle and backups, vault encryption |
 | [docs/specs/](docs/specs/) | Feature specs, written before tickets and code |
 | [docs/research/](docs/research/) | Sourced research notes that seed the knowledge base |
 

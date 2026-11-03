@@ -53,10 +53,8 @@ packages/
   telemetry/    the one scrubber every log, error, trace and LLM-trace exporter uses (ADR-0016)
   vault/        client-side document encryption in the age format (ADR-0018); never used by the API
 tooling/        shared ESLint and TypeScript configs, security header policy, repository scripts
-                (dependency-source, boundary and bundle checks, CI policy scripts, migration runner,
-                the review gate in scripts/src/review-gate)
-eval/           evaluation corpora: the review gate's canary in review-gate/, later the synthetic
-                AI evaluation suite
+                (dependency-source, boundary and bundle checks, CI policy scripts, migration runner)
+eval/           planned: the synthetic AI evaluation suite
 infra/aws/      CloudFormation templates the owner launches once: the backup account and the
                 application account (ADR-0017, spec 0005)
 ```
@@ -155,7 +153,6 @@ Every service that touches Arca's data, and what it may receive. A new processor
 | --- | --- | --- | --- |
 | Neon (Postgres) | Primary database | All case data, under forced row-level security | São Paulo (`sa-east-1`) |
 | Vercel | Client hosting, API functions, Workflows | All case data in processing; the database owner connection string (used by the build, readable by running functions) and the runtime role passwords ([ADR-0012](adr/0012-automation-first-setup.md)); workflow run payloads holding identifiers only, with zero retention ([ADR-0009](adr/0009-background-jobs-guarantees.md)) | São Paulo (`gru1`) for functions, run payloads and queues; run metadata (names, statuses, timestamps, no personal data) is processed outside Brazil and kept up to one year |
-| Anthropic (CI review) | Reviewer subagents and their canary in CI ([ADR-0011](adr/0011-reviewers-in-ci.md), [ADR-0013](adr/0013-review-gate-canary-and-model-pins.md)) | Source code, diffs, file lists and file history (SHAs, dates, paths), the repository's docs and the synthetic canary cases; never case data, pull request text or contributor emails | Vendor cloud, outside Brazil; under the owner's Claude subscription terms, with the model-improvement setting off (ADR-0013) |
 | AWS S3 (application account) | Document storage | Client-side ciphertext only, under random object keys | São Paulo (`sa-east-1`) |
 | AWS S3 and KMS (backup account) | Off-vendor backups ([ADR-0017](adr/0017-data-lifecycle-and-backups.md)) | A daily copy of every backed-up table and erasure tombstones, written by the production Vercel role (no read, decrypt or delete); a replica of the document bucket, written by S3 replication; all encrypted at rest with a customer-managed key and read only by the owner's MFA-gated restore role in a CodeBuild job in the same account, which holds a per-run, branch-scoped Neon owner password in Secrets Manager and connects out to Neon to load a restore branch; the job's logs (status only, no row contents) stay 35 days in a KMS-encrypted CloudWatch log group | São Paulo (`sa-east-1`) |
 | AWS KMS | Field-encryption key wrapping | Data keys, never data | São Paulo (`sa-east-1`) |

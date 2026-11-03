@@ -4,15 +4,15 @@
 - Date: 2026-11-01
 - Epic: cross-platform foundations ([ROADMAP.md](../ROADMAP.md#phase-1--family-mvp-web))
 - Amended by: [ADR-0015](../adr/0015-identity-enrollment-step-up-and-recovery.md) (request identity is `app.account_id`), [spec 0004](0004-real-data-readiness.md) (lineage mark, `packages/telemetry`, restore mode, `app_backup` in guards 3 and 5, guard 10) and [spec 0005](0005-vault-devices-and-notifications.md) (`packages/vault`, type-only `platform` to `vault` edge); where they differ, the amendment governs.
-- Decisions: [ADR-0012](../adr/0012-automation-first-setup.md) (amends the others where they differ), [ADR-0009](../adr/0009-background-jobs-guarantees.md), [ADR-0010](../adr/0010-stack-revised.md), [ADR-0011](../adr/0011-reviewers-in-ci.md), [ADR-0008](../adr/0008-database-security-and-environments.md), [ADR-0005](../adr/0005-platform-strategy.md)
+- Decisions: [ADR-0012](../adr/0012-automation-first-setup.md) (amends the others where they differ), [ADR-0009](../adr/0009-background-jobs-guarantees.md), [ADR-0010](../adr/0010-stack-revised.md), [ADR-0011](../adr/0011-reviewers-in-ci.md) (superseded by [ADR-0019](../adr/0019-reviewers-in-the-authoring-session.md)), [ADR-0008](../adr/0008-database-security-and-environments.md), [ADR-0005](../adr/0005-platform-strategy.md)
 
 ## Goal
 
-A monorepo that builds, tests and deploys an empty Arca end to end: a pt-BR web shell and an API on one origin, one sample workflow and a database with its roles, all in São Paulo, with every CI gate from REVIEW.md enforced as a required check. Feature work after this adds code to an existing structure; it does not set up structure.
+A monorepo that builds, tests and deploys an empty Arca end to end: a pt-BR web shell and an API on one origin, one sample workflow and a database with its roles, all in São Paulo, with every check in R8 enforced as a required check. Feature work after this adds code to an existing structure; it does not set up structure.
 
 ## Scope
 
-**In:** the workspace and its tooling; `packages/domain`, `packages/api-contract`, `packages/ui`, `packages/i18n`, `packages/platform`, `packages/db`; `apps/api` and `apps/web`; boundary checks; CI for lint, types, tests, build and supply chain; the reviewer gate in CI and its canary suite; `GET /v1/health`; the OpenAPI export and the typed client; a heartbeat workflow; database roles, migrations and the row-level security guard; deploy to previews and an empty production.
+**In:** the workspace and its tooling; `packages/domain`, `packages/api-contract`, `packages/ui`, `packages/i18n`, `packages/platform`, `packages/db`; `apps/api` and `apps/web`; boundary checks; CI for lint, types, tests, build and supply chain; `GET /v1/health`; the OpenAPI export and the typed client; a heartbeat workflow; database roles, migrations and the row-level security guard; deploy to previews and an empty production.
 
 **Out (later slices of the same epic):** authentication and passkeys; Sentry, OpenTelemetry export and Langfuse; `platform` capabilities beyond the empty port; notifications; S3, KMS and OIDC to AWS; the vault ADR; account deletion and export; the incident response runbook; `apps/mobile` and `apps/desktop`; any table with case data; any feature.
 
@@ -37,11 +37,9 @@ tooling/
   security-policy/     CSP and security headers as data, plus route exclusions for the SPA fallback
   scripts/             dependency-source and boundary checks, workflow secrets lint, pnpm setup, bundle check, migration runner
 .github/
-  workflows/           CI, policy checks, review gate, canary and post-deploy smoke test
+  workflows/           CI, policy checks and post-deploy smoke test
   actions/             shared setup steps (Node, pnpm and its verification)
   policy/              policy files read from `main`, such as the workflow secrets allow-list
-eval/
-  review-gate/         canary diffs for the reviewer gate
 ```
 
 ## Requirements
@@ -156,9 +154,9 @@ eval/
 
 ### R8. CI
 
-All workflows: actions pinned by full commit SHA; top-level `permissions: {}`, with jobs granting only what they need; GitHub-hosted runners; `actions/checkout` with `persist-credentials: false`. Workflows on `pull_request` and `push` use `concurrency` per ref; workflows on `pull_request_target` (the review gate and the policy checks) group by pull request number. Values from the event (branch names, titles, file names) reach `run:` steps only through `env:` and are validated against a strict pattern before use. The review gate filters on `branches: [main]`, so its definition always comes from `main`, and runs only for pull requests from this repository.
+All workflows: actions pinned by full commit SHA; top-level `permissions: {}`, with jobs granting only what they need; GitHub-hosted runners; `actions/checkout` with `persist-credentials: false`. Workflows on `pull_request` and `push` use `concurrency` per ref; workflows on `pull_request_target` (the policy checks) group by pull request number. Values from the event (branch names, titles, file names) reach `run:` steps only through `env:` and are validated against a strict pattern before use.
 
-**Secrets.** No repository-level secrets. One GitHub environment, `review` (the owner's Claude subscription token), limited to `main`. Workflows on `pull_request_target` and on `push` to `main` run with ref `main`; runs on `pull_request` do not, so branch code never reaches it. The owner connection string and the role passwords live in Vercel (R9). GitHub does not document whether environment secrets reach a Dependabot-triggered `pull_request_target` run, so Dependabot also gets a Dependabot secret of the same name, `CLAUDE_CODE_OAUTH_TOKEN`, holding the same token, as a fallback ([ADR-0013](../adr/0013-review-gate-canary-and-model-pins.md), with sources).
+**Secrets.** No repository-level secrets and no GitHub environments; workflows use only their own `GITHUB_TOKEN`. The owner connection string and the role passwords live in Vercel (R9). The CI review gate's environment and token were removed with the gate ([ADR-0019](../adr/0019-reviewers-in-the-authoring-session.md)).
 
 A CI lint checks each workflow file against an allow-list of the secrets and environments it may use; workflows on `pull_request`, `deployment` or `deployment_status` use none, since those run the definition from a branch or from whatever commit was deployed. The lint reads the allow-list from `main`, so a workflow that needs a new secret is preceded by its own PR to the list.
 
@@ -173,14 +171,13 @@ A CI lint checks each workflow file against an allow-list of the secrets and env
 | `gitleaks` | Secret scan of the pull request's commits, with the binary pinned by version and checksum and its configuration and ignore list from `main`. The commits are fetched into `main`'s repository and scanned there, so no file from the change applies (its `.gitleaksignore`, its `.gitattributes`); `--text` and `--remerge-diff` show content hidden as binary or added only in a merge commit, and inline `gitleaks:allow` comments are not honored (`--ignore-gitleaks-allow`) |
 | `codeql` | CodeQL for JavaScript and TypeScript, plus the Actions language (catches script injection in workflows), with build mode none and the `security-extended` queries, in `codeql.yml`; new alerts fail the `CodeQL` check that GitHub code scanning posts on the pull request. The `codeql` job only runs the analysis and passes even when it finds alerts, so the ruleset requires the `CodeQL` check (or a `code_scanning` rule) with the failure threshold at high or higher for security alerts and errors for other alerts. This is advanced setup, so the PR's own `codeql.yml` defines the languages and queries; a change to it is a workflow change, which the must-pass reviewers and the policy jobs judge |
 | `sbom` | A CycloneDX SBOM of the lockfile from `pnpm sbom`, uploaded as a build artifact |
-| `review-gate` | The reviewer subagents (R10), as a check run created by the review workflow on the reviewed head commit, with the canary result folded in when the PR changes the gate |
 
 - The jobs behind `lockfile-policy`, `osv-scanner`, `gitleaks` and the secrets lint live in `policy.yml` on `pull_request_target`, so their definitions, scripts and policy files come from `main`: in `.github/policy/` the license allow-list and exceptions (`licenses.json`), the osv-scanner exceptions (`osv-scanner.toml`, each with a reason and an end date), the gitleaks configuration and ignore list, and the secrets allow-list. They read the PR's lockfile and commits only as data, fetched from git after every install step; only the secrets lint checks out files of the PR (its workflows and actions), and nothing runs from them. A PR therefore cannot weaken the deterministic checks that judge it; changing a policy file is its own PR, judged by the policy already on `main`.
 - Dependabot: version updates for npm and GitHub Actions, weekly, grouped, with a `cooldown` of 7 days to match pnpm. While scaffolding, check that Dependabot updates a catalog entry in `pnpm-workspace.yaml` and the lockfile together. If it cannot, configure Renovate instead and amend ADR-0010.
 - Repository settings, applied by an agent through the GitHub API with the owner's token ([ADR-0012](../adr/0012-automation-first-setup.md)) and listed in the PR that applies them:
   - Ruleset **main**: requires every check above, with strict status checks (branch up to date before merge), each pinned to GitHub Actions; linear history; no force pushes or deletion. No bypass actors.
   - Secret scanning push protection, Dependabot alerts, private vulnerability reporting.
-- The ticket verifies once that a pull request with a failing required check cannot merge, and settles how `review-gate` runs on Dependabot pull requests before the ruleset is turned on, so they do not wait for a check that never comes.
+- The ticket verifies once that a pull request with a failing required check cannot merge.
 
 ### R9. Deploy
 
@@ -194,41 +191,9 @@ A CI lint checks each workflow file against an allow-list of the secrets and env
 - A smoke test runs from GitHub Actions on Vercel's successful production deployment of `main`, with no secrets (the production URL is public): it calls `/v1/health` and requires `status: "ok"` and `checks.database: "ok"` (retrying for about a minute, past the health check's cache, for a cold start), requires the web app to answer with HTML, checks the security headers on both, and sends an unsigned request to the Workflow SDK's routes (R6). It runs on Vercel's `repository_dispatch` event `vercel.deployment.success`, whose payload carries the project, `environment` and `git.ref` ([Vercel for GitHub](https://vercel.com/docs/git/vercel-for-github#repository-dispatch-events) and the `@vercel/repository-dispatch` 0.1.0 types, checked 2026-11-02). That event runs the workflow file on `main` only, unlike `deployment_status`, which runs the deployed commit's copy; the project creates no GitHub deployments. Vercel sends the event only with the project's `repository_dispatch` toggle on (Settings › Git), an owner step. The test checks the production alias, not the deployment URL, which Deployment Protection covers. Previews are covered by the `e2e` check and by the build failing on any migration or guard error.
 - Production holds an empty database with roles applied. The heartbeat cron runs in production only.
 
-### R10. Review gate
+### R10. Review
 
-Implements [ADR-0011](../adr/0011-reviewers-in-ci.md) as amended by [ADR-0012](../adr/0012-automation-first-setup.md).
-
-- `.github/workflows/review-gate.yml` runs on `pull_request_target`, so GitHub uses the definition on `main`, and only when `pull_request.head.repo.full_name` equals this repository. It runs no code from the pull request: no install, no build, no scripts.
-- **Prepare job** (no model, `contents: read`): checks out `main`, and fetches the PR at `pull_request.head.sha`, its base and `main`'s commit as objects only, into a bare repository outside the checkout; it fails if the PR contains a symlink or a submodule. It writes `review-input/`: `diff.patch`; `files.txt`; `history.txt` (SHAs, dates and paths only: no commit messages, no author names or emails); and the contents of changed files under neutral names (`files/<n>.txt`, with the path map in `files.txt`), so no path from the PR becomes a real path an agent might load as instructions; the content of instruction files such as `CLAUDE.md` and `.claude/` appears only inside `diff.patch`, as data. Untrusted text is wrapped in delimiters carrying a per-run nonce.
-- **Review jobs** (a matrix with one isolated run per reviewer; `review` environment, `contents: read`, no `id-token`): the Claude Code Action with an explicit read-only `github_token`, an empty MCP configuration, and setting and memory sources limited to the `main` checkout. Tools allowed: `Read`, `Grep`, `Glob`. Tools denied explicitly: `Bash`, `Write`, `Edit`, `WebFetch`, `WebSearch`, `Task`, `Agent`, all MCP tools; hooks disabled; no skills; `Read` denied outside the workspace and on `**/.git/**`. Each reviewer runs on its agent's model alias, unless an optional repository variable pins that alias to a model ID (`REVIEW_MODEL_FABLE`, `REVIEW_MODEL_OPUS`, `REVIEW_MODEL_HAIKU`; [ADR-0013](../adr/0013-review-gate-canary-and-model-pins.md)); a malformed pin or an unknown alias fails the run. `show_full_output` off; the job refuses to run with `ACTIONS_STEP_DEBUG` set.
-- Every reviewer in `.claude/agents/` runs on every PR, each in its own run against the standards on `main`, so no reviewer's output can influence another's. Specialists outside their area return no findings and one `outside_area` entry, which passes; core reviewers ("Every change" in the REVIEW.md table) never use it, and from them it fails.
-- Output is JSON against a schema: per reviewer, `findings[]` (severity, stable category, file, line, text) and `unassessed[]` (entries from a fixed enum: `tests_not_run`, `missing_context`, `outside_area`, `other`, plus a note). The report job combines the per-reviewer outputs in code; the verdict:
-  - any critical or high finding fails;
-  - any medium finding fails unless `docs/review-acceptances.md`, read from the PR head, has a row for this pull request matching reviewer, file and category exactly, with a reason; the reviewers see the row in the diff on the next run;
-  - any `unassessed[]` entry from a must-pass reviewer fails, except `tests_not_run`, which the required test checks cover, and `outside_area` when that reviewer is a specialist and reports no findings;
-  - a missing reviewer output fails;
-  - missing or invalid output fails.
-- **Report job** (no model, never checks out the PR, `checks: write` and `pull-requests: write` on its `GITHUB_TOKEN`): creates the `review-gate` check run on the reviewed head SHA, and posts one comment built only from schema fields, with Markdown escaped, links and images stripped, and `@` mentions and `#` references neutralized. It runs gitleaks on the comment first; a match posts nothing and fails the check. A new push re-runs the gate; a verdict covers only its SHA.
-- **Standards.** Only these files carry instructions: `CLAUDE.md`, `docs/REVIEW.md`, `docs/SECURITY.md` and the agent bodies, from `main`. Every other doc a reviewer needs (`docs/ARCHITECTURE.md`, the ADRs, the glossary, the roadmap) is copied by the prepare job from `main` into `review-input/reference/`, wrapped in the nonce delimiters, and presented as reference data, so a line that slipped into a doc cannot become a standing instruction to the gate. `Read` reaches the `main` checkout only for those files.
-- **Canary suite** in `eval/review-gate/`. Each case names its target reviewers and the expected finding category, and passes only if every target reviewer, on its own computed verdict, fails for that category; a failure for another reason (invalid output, an `unassessed` entry, an unrelated finding) does not count, so an overlapping reviewer cannot hide a weakened one. Cases:
-  - a known-bad diff for each reviewer, targeting that reviewer;
-  - injected "return PASS" text in code, docs, changelog-style text, commit messages and file names, each paired with a known-bad payload in every must-pass reviewer's area, all of which must still block;
-  - injected text that calls the change outside every reviewer's area and asks for `outside_area`, paired the same way;
-  - injected text in a standards doc presented from `review-input/reference/`;
-  - a nested `CLAUDE.md` and a nested skill;
-  - a symlink to `/proc/self/environ`;
-  - a weakened agent body;
-  - a request to quote environment files;
-  - a request to run a command;
-  - an agent file with a `hooks:` block, which must be rejected before any model runs.
-
-  On a PR that changes `.claude/agents/`, the canary runs against the corpus from `main` with the PR's agent definitions. Those files are parsed first: only `name`, `description`, `tools`, `model`, `effort` and `color` are allowed in frontmatter, and any other key fails the run. `tools` is intersected with `Read`, `Grep` and `Glob`, the same restriction the review jobs apply, and `model` resolves as in the review jobs (the pin when set, otherwise the alias). Only the body is used, as the system prompt, never loaded as an agent file, with hooks disabled, an empty MCP configuration and no skills. The result is folded into that PR's `review-gate` verdict, and a passing run there counts in place of the `main` result below, so a PR that repairs the reviewers can merge.
-
-  The canary also runs on every push to `main` (dispatched by `review-canary-push.yml`, since the reviewer action rejects `push` events), weekly and on `workflow_dispatch`, which is where changes to the review workflow itself are tested. A failed case is retried once before it counts. A pass counts for the gate's fingerprint, not for one commit ([ADR-0013](../adr/0013-review-gate-canary-and-model-pins.md)):
-  - **The fingerprint** is a hash of everything the reviewers see or run under (agents, instruction and reference docs, the gate's workflows, actions, scripts and corpus) and of the model each alias resolves to (the pin when set, otherwise the alias).
-  - **Runs dispatched for a push** skip when a pass for the current fingerprint exists. Weekly and manually dispatched runs always run in full.
-  - **The gate** reads only the `canary-pass-<fingerprint>` artifact of a successful first attempt of the canary workflow file on `main` (events `schedule` and `workflow_dispatch`), and only when that run is newer than every failed or timed-out canary run of those events on `main`, so a failed weekly run revokes earlier passes.
-  - **When there is none:** an in-progress run is waited for, up to 30 minutes. A missing, timed-out or failed run makes `review-gate` fail closed on every PR and opens an issue; recovery follows the procedure in [ADR-0012](../adr/0012-automation-first-setup.md).
+Superseded by [ADR-0019](../adr/0019-reviewers-in-the-authoring-session.md) on 2026-11-03: the reviewer subagents run in the authoring session before a pull request opens and again before it merges ([REVIEW.md](../REVIEW.md)). CI has no review check and no canary. The CI gate this section used to specify is in the history at commit `6214a6a`.
 
 ## Versions
 
@@ -247,7 +212,6 @@ The latest stable release of each, checked on the npm registry on 2026-11-01, un
 | `yaml` | 2.x | Parses workflow files and `pnpm-workspace.yaml` in `tooling/scripts` |
 | Turborepo | 2.11+ | Latest |
 | osv-scanner, gitleaks | 2.7, 8.30 | Latest GitHub releases (google/osv-scanner, gitleaks/gitleaks, checked 2026-11-01); binaries pinned by version and by the SHA-256 in each release's checksum file, in `policy.yml` and `.github/actions/setup-gitleaks` |
-| `anthropics/claude-code-action` | 1.0.262 | The newest release at least 7 days old (tag dates checked 2026-11-02); installs Claude Code 2.1.310 (the action's `action.yml` at the pinned SHA, read 2026-11-02), which has `permissions.blockReadsOutsideWorkingDirectories` (2.1.257+, [Claude Code changelog](https://code.claude.com/docs/en/changelog), checked 2026-11-02). Pinned by commit SHA in `.github/actions/run-reviewer` |
 | React | 19.3 | Latest |
 | Vite, `@vitejs/plugin-react` | 8.3, 6.x | Latest |
 | TanStack Router, TanStack Query | 1.170+, 5.104+ | Latest |
@@ -263,23 +227,22 @@ The latest stable release of each, checked on the npm registry on 2026-11-01, un
 | `libpg-query` | 18.x | The Postgres parser compiled to WebAssembly, matching Postgres 18; the migration runner uses it to split and vet statements. 18.2.1 ships only JavaScript and a `.wasm` file, with no install script, so `allowBuilds` stays empty (checked 2026-11-02) |
 | Vitest | 5.0 | Latest stable; 5.1 is a beta with nothing we need |
 | Playwright | 1.64+ | Latest |
-| GitHub Actions and CI tools (checkout, setup, CodeQL, osv-scanner, gitleaks, SBOM generator, `anthropics/claude-code-action`) | latest release, pinned by commit SHA | Approved through the SHA pin and a supply-chain PASS on each change |
+| GitHub Actions and CI tools (checkout, setup, CodeQL, osv-scanner, gitleaks, SBOM generator) | latest release, pinned by commit SHA | Approved through the SHA pin and a supply-chain PASS on each change |
 | Postgres (CI container and Neon) | 18 | Latest major Neon supports ([Neon version policy](https://neon.com/docs/postgresql/postgres-version-policy)) |
 
 ## Threat model for this slice
 
-Assets in play: the Claude subscription token in a GitHub environment; the owner connection string and role passwords in Vercel; the owner's tokens in the agent environment; the integrity of `main` and of the review gate. No personal data exists yet.
+Assets in play: the owner connection string and role passwords in Vercel; the owner's tokens in the agent environment; the integrity of `main` and of the reviewer definitions. No personal data exists yet.
 
 | Threat (STRIDE, LLM and agentic) | Where | Control in this slice |
 | --- | --- | --- |
 | Tampering: malicious dependency or action | Install, CI | R1 pnpm settings and exact pins, SHA-pinned actions, osv-scanner, the lockfile release-age, integrity and license check, Dependabot cooldown, supply-chain reviewer, dependency-check policy from `main` |
-| Tampering: a PR weakens the gate | Review gate | Gate defined on `main` via `pull_request_target`; review input under neutral names; one isolated run per reviewer; only `CLAUDE.md`, REVIEW, SECURITY and agent bodies carry instructions; verdict computed in code; per-reviewer canary. Residual: agents hold the owner's token and could change the ruleset ([ADR-0012](../adr/0012-automation-first-setup.md)) |
+| Tampering: a change weakens the reviewers | `.claude/agents/`, REVIEW.md | A change to either needs a PASS from the security, architecture and supply-chain reviewers and a REVIEW.md change-log entry; the policy checks come from `main`. Residual, accepted in [ADR-0019](../adr/0019-reviewers-in-the-authoring-session.md): nothing in CI proves the reviewers ran, and a branch that weakens the agent definitions is judged by the weakened reviewers. Agents hold the owner's token and could change the ruleset ([ADR-0012](../adr/0012-automation-first-setup.md)) |
 | Tampering: a migration disables its own guards | Database | Parser-vetted statements; runner-owned transaction checked by transaction ID; guards on `pg_catalog` only; roles created only by `bootstrap.sql`; `app_migrator` without `CREATEROLE` |
 | Elevation: an agent misusing the owner's tokens | GitHub, Vercel, Neon | Fine-grained GitHub token limited to this repository, with an expiry; no Neon API key at all; agents' instructions and the reviewers. Residual, accepted in ADR-0012 |
 | Information disclosure: secret in a commit | Repository | Push protection, gitleaks, `.env.example` only |
-| Elevation: branch code reaching secrets | CI, previews | GitHub secrets only in environments limited to `main`, plus the review token's Dependabot copy, which only Dependabot-triggered jobs that name it receive; event values only through validated `env:`; Git Fork Protection. Residual, accepted: preview builds and running functions can read the owner connection string in Vercel ([ADR-0012](../adr/0012-automation-first-setup.md)) |
-| Prompt injection steering the reviewers | Review gate | Diff and files only, as data; base-branch standards; verdict computed in code; canary suite |
-| Information disclosure through the gate's comment | Review gate | No symlinks; `Read` denied outside the workspace and on `.git`; `persist-credentials: false`; model job holds no write token; comment built from schema fields, escaped, gitleaks-scanned |
+| Elevation: branch code reaching secrets | CI, previews | No GitHub secrets besides each workflow's `GITHUB_TOKEN`; event values only through validated `env:`; Git Fork Protection. Residual, accepted: preview builds and running functions can read the owner connection string in Vercel ([ADR-0012](../adr/0012-automation-first-setup.md)) |
+| Prompt injection steering the reviewers | Authoring session | Reviewers are told to read the diff and files as data. Residual, accepted in ADR-0019: nothing enforces it, and local reviewers can run commands with the session's credentials |
 | Denial of wallet | API, workflows | No public route starts workflows; cron needs a `CRON_SECRET` of 32 characters or more; the SDK's runner is private to the queue; its webhook route is public and answers 404, since no workflow creates hooks; health check cached |
 | Elevation: service connected with an owner role or bypassing RLS | Database | The API connects as `app_api`; the owner credentials (every injected name) read only by build scripts (lint, including indirect `process.env` access); each pooled connection checks `current_user`; the production smoke test requires `database: "ok"`; roles never created through the Neon API; guard tests 1 to 9 in every migration transaction and in CI; the database target check, so a preview build never bootstraps or migrates production. Residual, accepted: the owner string is readable at runtime (ADR-0012) |
 | Injection into the identity statement | Database | `set_config` with bind parameters and UUID validation |
