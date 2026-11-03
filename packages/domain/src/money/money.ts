@@ -4,6 +4,7 @@ import {
   type Decimal,
   type Scaled,
   alignScales,
+  compareScaled,
   normalizeScaled,
   powerOfTen,
   scaledDecimal,
@@ -58,9 +59,7 @@ export function sumExact(amounts: readonly ExactAmount[], currency: CurrencyCode
 
 export function compareExact(left: ExactAmount, right: ExactAmount): number {
   sameCurrency(left, right);
-  const [a, b] = alignScales(left, right);
-  if (a === b) return 0;
-  return a < b ? -1 : 1;
+  return compareScaled(left, right);
 }
 
 export function minExact(left: ExactAmount, right: ExactAmount): ExactAmount {

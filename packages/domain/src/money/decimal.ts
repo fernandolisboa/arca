@@ -58,6 +58,12 @@ export function alignScales(left: Scaled, right: Scaled): [bigint, bigint, numbe
   ];
 }
 
+export function compareScaled(left: Scaled, right: Scaled): number {
+  const [a, b] = alignScales(left, right);
+  if (a === b) return 0;
+  return a < b ? -1 : 1;
+}
+
 /** Drops trailing zeros so repeated operations do not grow the scale. */
 export function normalizeScaled({ units, scale }: Scaled): Scaled {
   let normalizedUnits = units;

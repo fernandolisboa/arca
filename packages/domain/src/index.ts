@@ -56,7 +56,7 @@ export {
   minorUnitExponent,
   minorUnitExponents,
 } from './money/currency.js';
-export { type Decimal, decimalSchema, isPositiveDecimal, parseDecimal } from './money/decimal.js';
+export { type Decimal, decimalSchema, parseDecimal } from './money/decimal.js';
 export {
   type Conversion,
   type CurrencyPair,
@@ -82,3 +82,16 @@ export {
   sumExact,
   toExact,
 } from './money/money.js';
+export {
+  type Asset,
+  type CaseSnapshot,
+  type Citizenship,
+  type CompletenessMarker,
+  type CountryCode,
+  type Person,
+  type Relationship,
+  caseSnapshotSchema,
+  completenessMarkerSchema,
+  countryCodeSchema,
+  opaqueIdSchema,
+} from './case/snapshot.js';

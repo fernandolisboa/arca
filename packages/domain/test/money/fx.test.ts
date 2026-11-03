@@ -72,6 +72,19 @@ describe('findRate', () => {
 
   it('works in the first week of year 1', () => {
     expect(findRate(usdToEur, { from: 'USD', to: 'EUR' }, date('0001-01-03'))).toBeUndefined();
+    const early = table([{ from: 'USD', to: 'EUR', rate: '0.8', date: '0001-01-01' }]);
+    expect(findRate(early, { from: 'USD', to: 'EUR' }, date('0001-01-03'))?.rate).toBe('0.8');
+  });
+
+  it('caps a table at 10,000 rates', () => {
+    const rates = Array.from({ length: 10_001 }, () => ({
+      from: 'USD',
+      to: 'EUR',
+      rate: '1',
+      date: '2026-01-01',
+      source: 'fixture',
+    }));
+    expect(fxTableSchema.safeParse({ rates }).success).toBe(false);
   });
 
   it.each([

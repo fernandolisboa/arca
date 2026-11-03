@@ -88,3 +88,13 @@ export function elapsedSinceValue(
   if (!elapsedSince(min, duration, reference)) return false;
   return 'unknown';
 }
+
+/** Whether a possibly partial date falls on or before every date in an interval. */
+export function onOrBefore(value: DateValue, interval: Interval<CalendarDate>): Truth {
+  return compareIntervals(dateRange(value), 'lte', interval, compareDates);
+}
+
+/** Whether a possibly partial date falls after every date in an interval. */
+export function after(value: DateValue, interval: Interval<CalendarDate>): Truth {
+  return compareIntervals(dateRange(value), 'gt', interval, compareDates);
+}
