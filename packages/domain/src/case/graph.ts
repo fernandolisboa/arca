@@ -3,21 +3,16 @@ import { compareDateValues } from '../calendar/partial-date.js';
 import { type Truth, and } from '../logic/truth.js';
 import type { CaseSnapshot, CompletenessMarker, Person, Relationship } from './snapshot.js';
 
-/**
- * A validated snapshot indexed for lookups. `recordedOn` is the date it describes: everyone in it
- * was born, and every recorded adoption had happened, by then.
- */
+/** A validated snapshot indexed for lookups. */
 export interface IndexedSnapshot {
   readonly snapshot: CaseSnapshot;
-  readonly recordedOn: CalendarDate;
   readonly person: (id: string) => Person;
 }
 
-export function indexSnapshot(snapshot: CaseSnapshot, recordedOn: CalendarDate): IndexedSnapshot {
+export function indexSnapshot(snapshot: CaseSnapshot): IndexedSnapshot {
   const byId = new Map(snapshot.people.map((person) => [person.id, person]));
   return {
     snapshot,
-    recordedOn,
     person: (id) => {
       const person = byId.get(id);
       if (person === undefined) throw new RangeError('Unknown person');
@@ -35,24 +30,32 @@ export interface Neighbor {
   readonly valid: Truth;
 }
 
+/** Facts hold as of `recordedOn`, so nothing is read at a later date. */
+export function assertRecordedBy(indexed: IndexedSnapshot, date: CalendarDate): void {
+  if (compareDates(date, indexed.snapshot.recordedOn) > 0) {
+    throw new RangeError('A fact is read after the date the snapshot describes');
+  }
+}
+
 /**
  * Whether an edge holds at a date: started on or before it and, for a couple, not ended by it. An
- * unknown start or end makes it unknown. A parent edge has no end. Without a start, a biological
- * link holds from the child's birth and any other from an unknown date no later than
- * `recordedOn`, so it holds from then on and is unknown before (never before the child's birth).
+ * unknown start or end makes it unknown. A parent edge has no end and never holds before the
+ * child's birth. Without a start, a biological link holds from the birth and any other link from
+ * an unknown date no later than `recordedOn`, so it is certain only at `recordedOn`.
  */
 export function edgeValidAt(
   indexed: IndexedSnapshot,
   edge: Relationship,
   date: CalendarDate,
 ): Truth {
+  assertRecordedBy(indexed, date);
   if (edge.kind === 'parent') {
-    if (edge.start !== undefined) return compareDateValues(edge.start, 'lte', date);
     const birth = indexed.person(edge.child).birthDate;
     const born = birth === undefined ? 'unknown' : compareDateValues(birth, 'lte', date);
     if (born === false) return false;
+    if (edge.start !== undefined) return compareDateValues(edge.start, 'lte', date);
     if (born === true && edge.parentKind === 'biological') return true;
-    return compareDates(date, indexed.recordedOn) >= 0 ? true : 'unknown';
+    return compareDates(date, indexed.snapshot.recordedOn) === 0 ? true : 'unknown';
   }
   const started = edge.start === undefined ? 'unknown' : compareDateValues(edge.start, 'lte', date);
   const notEnded =

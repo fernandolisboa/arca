@@ -15,7 +15,13 @@ import type { CurrencyCode } from '../money/currency.js';
 import type { Decimal } from '../money/decimal.js';
 import { type CurrencyPair, type FxTable, convert } from '../money/fx.js';
 import { type ExactAmount, type Money, addExact, multiplyExact, toExact } from '../money/money.js';
-import { type IndexedSnapshot, couples, isRecordedInFull, parents } from './graph.js';
+import {
+  type IndexedSnapshot,
+  assertRecordedBy,
+  couples,
+  isRecordedInFull,
+  parents,
+} from './graph.js';
 import {
   type CountryCode,
   type Person,
@@ -226,16 +232,17 @@ export const factCatalog = {
     scope: 'edge',
     derive: (binding) => dateFact(edgeOf(binding).start),
   },
-  /** The end of a couple edge; `"none"` means it has not ended by the date, so it is later. */
+  /** The end of a couple edge; `"none"` means it had not ended by `recordedOn`, so it is later. */
   'edge.end': {
     type: { kind: 'date' },
     scope: 'edge',
-    derive: (binding, at) => {
+    derive: (binding) => {
       const edge = edgeOf(binding);
       if (edge.kind === 'parent' || edge.end === undefined) return dateFact(undefined);
       if (edge.end !== 'none') return dateFact(edge.end);
       const unknown = unknownDate();
-      return { value: { ...unknown, min: tryAddDays(at, 1) ?? unknown.max } };
+      const recordedOn = binding.environment.snapshot.snapshot.recordedOn;
+      return { value: { ...unknown, min: tryAddDays(recordedOn, 1) ?? unknown.max } };
     },
   },
   /** Whether the candidate depends financially on the person they were reached from. */
@@ -286,6 +293,13 @@ export type FactKey = keyof typeof factCatalog;
 
 export function isFactKey(key: string): key is FactKey {
   return Object.hasOwn(factCatalog, key);
+}
+
+/** Derives a fact, refusing a date after the one the snapshot describes. */
+export function deriveFact(key: FactKey, binding: FactBinding, at: CalendarDate): Derived {
+  assertRecordedBy(binding.environment.snapshot, at);
+  assertRecordedBy(binding.environment.snapshot, binding.environment.factsAsOf);
+  return factCatalog[key].derive(binding, at);
 }
 
 function person(environment: FactEnvironment, id: string): Person {

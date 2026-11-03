@@ -190,6 +190,11 @@ const assetSchema = z
  */
 export const caseSnapshotSchema = z
   .strictObject({
+    /**
+     * The date the snapshot describes. `"none"`, complete lists and completeness markers hold as
+     * of then, so facts are read only at dates on or before it.
+     */
+    recordedOn: calendarDateSchema,
     members: z.array(opaqueIdSchema).min(1).max(30),
     people: z.array(personSchema).min(1).max(60),
     relationships: z.array(relationshipSchema).max(200),

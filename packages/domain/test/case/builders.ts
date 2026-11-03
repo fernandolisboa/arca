@@ -3,7 +3,7 @@ import {
   type FactBinding,
   type FactEnvironment,
   type FactKey,
-  factCatalog,
+  deriveFact,
 } from '../../src/case/facts.js';
 import { indexSnapshot } from '../../src/case/graph.js';
 import { type CaseSnapshot, caseSnapshotSchema } from '../../src/case/snapshot.js';
@@ -13,6 +13,7 @@ import { fxTableSchema } from '../../src/money/fx.js';
 /** Synthetic snapshots only: invented IDs, dates and amounts. */
 export function snapshot(input: Partial<Record<keyof CaseSnapshot, unknown>>): CaseSnapshot {
   return caseSnapshotSchema.parse({
+    recordedOn: '2026-11-03',
     members: ['p1'],
     people: [{ id: 'p1' }],
     relationships: [],
@@ -26,7 +27,7 @@ export function environment(
   overrides: { readonly unit?: NonNullable<FactEnvironment['unit']> } = {},
 ): FactEnvironment {
   return {
-    snapshot: indexSnapshot(value, parseCalendarDate('2026-11-03')),
+    snapshot: indexSnapshot(value),
     principalId: 'p1',
     currency: 'EUR',
     fx: fxTableSchema.parse({
@@ -44,5 +45,5 @@ export function derive(
   binding: Omit<FactBinding, 'environment'> & { environment: FactEnvironment },
   at = '2026-11-03',
 ): { value: Value; missingRates?: readonly unknown[] } {
-  return factCatalog[key].derive(binding, parseCalendarDate(at));
+  return deriveFact(key, binding, parseCalendarDate(at));
 }

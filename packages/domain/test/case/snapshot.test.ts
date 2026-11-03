@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { caseSnapshotSchema } from '../../src/case/snapshot.js';
 
-const base = { members: ['p1'], people: [{ id: 'p1' }], relationships: [], assets: [] };
+const base = {
+  recordedOn: '2026-11-03',
+  members: ['p1'],
+  people: [{ id: 'p1' }],
+  relationships: [],
+  assets: [],
+};
 
 function accepts(input: object): boolean {
   return caseSnapshotSchema.safeParse(input).success;

@@ -438,49 +438,46 @@ describe('edge validity at a date', () => {
   });
 
   const bio = { parentKind: 'biological' };
-  const validity = (relationship: object, birthDate: string | undefined, at: string): unknown => {
+  const validity = (
+    relationship: object,
+    birthDate: string | undefined,
+    at: string,
+    recordedOn: string,
+  ): unknown => {
     const line = snapshot({
+      recordedOn,
       people: [birthDate === undefined ? { id: 'p1' } : { id: 'p1', birthDate }, { id: 'm1' }],
       relationships: [{ kind: 'parent', parent: 'm1', child: 'p1', ...relationship }],
     });
-    return parents(
-      indexSnapshot(line, parseCalendarDate('2026-11-03')),
-      'p1',
-      parseCalendarDate(at),
-    ).map((parent) => parent.valid);
+    return parents(indexSnapshot(line), 'p1', parseCalendarDate(at)).map((parent) => parent.valid);
   };
+  const adoptive = { parentKind: 'adoptive' };
+  const now = '2026-11-03';
 
   it.each([
-    ['an adoption before it starts', { start: '2030-01-01' }, '2010-01-01', '2026-11-03', false],
-    ['an adoption once it starts', { start: '2030-01-01' }, '2010-01-01', '2030-01-01', true],
-    ['an adoption in a known year', { start: '2026' }, '2010-01-01', '2026-11-03', 'unknown'],
-    ['a parent before the child is born', {}, '2028-05-01', '2026-11-03', false],
+    ['an adoption before it starts', { start: '2026-01-01' }, '2010-01-01', '2025-11-03', false],
+    ['an adoption once it starts', { start: '2026-01-01' }, '2010-01-01', now, true],
+    ['an adoption in a known year', { start: '2026' }, '2010-01-01', now, 'unknown'],
+    [
+      'a dated adoption before the birth',
+      { start: '2009-01-01' },
+      '2010-06-15',
+      '2009-06-01',
+      false,
+    ],
+    ['a parent before the child is born', {}, '2026-12-01', now, false],
     ['a biological parent from the birth', bio, '2020-05-01', '2020-05-01', true],
     ['a biological parent in the birth year', bio, '2020', '2020-06-01', 'unknown'],
-    [
-      'an undated adoption before the record',
-      { parentKind: 'adoptive' },
-      '2010-01-01',
-      '2020-01-01',
-      'unknown',
-    ],
-    [
-      'an undated adoption once recorded',
-      { parentKind: 'adoptive' },
-      '2010-01-01',
-      '2026-11-03',
-      true,
-    ],
-    [
-      'a parent of a child with no birth date, in the past',
-      bio,
-      undefined,
-      '1900-01-01',
-      'unknown',
-    ],
-    ['a parent of a child with no birth date, once recorded', bio, undefined, '2026-11-03', true],
+    ['an undated adoption before the record', adoptive, '2010-01-01', '2020-01-01', 'unknown'],
+    ['an undated adoption at the record', adoptive, '2010-01-01', now, true],
+    ['a child with no birth date, in the past', bio, undefined, '1900-01-01', 'unknown'],
+    ['a child with no birth date, at the record', bio, undefined, now, true],
   ])('reads %s', (_label, relationship, birthDate, at, expected) => {
-    expect(validity(relationship, birthDate, at)).toEqual([expected]);
+    expect(validity(relationship, birthDate, at, now)).toEqual([expected]);
+  });
+
+  it('refuses to read an edge after the date the snapshot describes', () => {
+    expect(() => validity(bio, '2010-01-01', '2026-11-04', now)).toThrow(RangeError);
   });
 });
 
@@ -597,6 +594,19 @@ describe('edge facts', () => {
   it('refuses an edge fact without an edge and a lineage fact without a line', () => {
     expect(() => read('edge.end', 'p2', undefined)).toThrow(RangeError);
     expect(() => derive('lineage.generation', { environment: env, personId: 'p1' })).toThrow(
+      RangeError,
+    );
+  });
+});
+
+describe('reading dates', () => {
+  it('refuses a fact read after the date the snapshot describes', () => {
+    const env = environment(snapshot({}));
+    expect(() =>
+      derive('person.studying', { environment: env, personId: 'p1' }, '2026-11-04'),
+    ).toThrow(RangeError);
+    const later = { ...env, factsAsOf: parseCalendarDate('2026-11-04') };
+    expect(() => derive('person.studying', { environment: later, personId: 'p1' })).toThrow(
       RangeError,
     );
   });
