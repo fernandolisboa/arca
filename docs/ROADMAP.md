@@ -5,7 +5,7 @@ Family first: the product for other families starts only after the founder's fam
 | Phase | Platform | Focus | Gate to the next phase |
 | --- | --- | --- | --- |
 | 0. Discovery (now) | — | Understand case 1, research routes for the knowledge base, confirm stack and domain | Routes chosen for each unit |
-| 1. Family MVP | Web PWA | The consultancy core, plus cross-platform foundations | All six people using it; a destination lawyer only for the family's own filings, if the owner wants one, never for approving rules |
+| 1. Family MVP | Web PWA | The consultancy core, plus cross-platform foundations | All six people using it |
 | 2. Execution | Web PWA | Carry the plan through | It worked for the family |
 | 3. Product | Web PWA | Other families | Paying families active; web stable |
 | 4. Android | Android | Native app on Google Play | Released to production on Play |
