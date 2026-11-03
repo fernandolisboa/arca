@@ -117,6 +117,7 @@ export {
 export { type CheckIssue } from './rules/check.js';
 export {
   type OfficialHosts,
+  type PinnedCountries,
   checkCountrySet,
   checkRouteVersion,
   hostMatches,

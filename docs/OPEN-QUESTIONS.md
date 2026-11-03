@@ -24,6 +24,8 @@ Made by agents, tracked here so they are not lost.
 - [ ] `@noble/post-quantum` audit: the vault's residual ends when one is published ([ADR-0018](adr/0018-vault-encryption.md)).
 - [ ] Web push library (spec 0005 R7): a maintained WebCrypto-based one with provenance, or `web-push` with an MPL-2.0 license exception, decided by the notifications ticket.
 - [ ] One active passkey controls the account (ADR-0015 residual): decide before the real-data gate whether revoking passkeys, regenerating the kit and cancelling recovery need the designated adult or a 24-hour cancellable delay.
+- [ ] Renamed states in citizenship and ancestry facts: ISO 3166-3 also retires codes of states that still exist under a new name (`BUMM` to `MM`, `DYBJ` to `BJ`, `ZRCD` to `CD`). Decide, before the first descent route, whether a rule naming the current code also matches the retired one, as a reviewed mapping in the knowledge base ([spec 0002](specs/0002-rules-engine-and-knowledge-base.md#r7-countries)).
+- [ ] Former states in an ancestor's residence: only citizenship facts admit ISO 3166-3 codes today, so a rule cannot match an ancestor's last residence in a former state. Decide with the first descent route whether `lineage.ancestor.residenceCountry` admits them.
 - [ ] Langfuse retention, set when it is adopted ([ADR-0016](adr/0016-observability-and-scrubbing.md)).
 
 ## Case 1 facts to gather (answers go into the app, not this repo)

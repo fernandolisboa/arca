@@ -12,7 +12,8 @@ data/country-sets/<id>/<n>.json             versioned country sets
 data/routes/<route-id>/<n>.json             one file per route version
 data/routes/<route-id>/<n>.cases.json       table-driven cases for that version (R8)
 data/hashes.json                            committed content hashes, append-only
-scripts/                                    load, validate, hash and write the catalog
+scripts/                                    load, validate, hash and write the catalog; generate countries
+vendor/cldr/<release>/                      the pinned CLDR territories file, its license and manifest
 src/                                        the runtime entry; pure, no I/O
 src/generated/catalog.ts                    written by the build, not checked in
 ```
@@ -29,6 +30,12 @@ Every file in `data` is immutable once on `main`. A change is a new numbered fil
 4. Hashes each route version and country set: SHA-256 over the RFC 8785 canonical JSON of `{ "version": <file>, "pinned": { "<kind>/<id>/<number>": <file>, … } }`, holding every file it pins, transitively.
 5. Compares every hash, and the hashes of the RFC 8785 test vectors, with `data/hashes.json`.
 6. Writes `src/generated/catalog.ts`. Any issue fails the build and deletes the module, so no tool keeps serving an earlier catalog.
+
+## Countries
+
+`data/countries/<n>.json` is generated, never written by hand. `pnpm --filter @arca/knowledge countries:generate` runs `scripts/generate-countries.ts`, which only a maintainer runs and never `pnpm check` or the build. It checks the vendored CLDR file and license against the pins in `scripts/countries.ts`, keeps every alpha-2 region CLDR lists except the exclusions there (`XK` stays), and writes the next numbered file. It fails on any code that is neither excluded, admitted nor in the previous countries file, and on any code of the previous file the release drops unless it is withdrawn, so a new CLDR release's changes are classified in `reclassification` (in `scripts/countries.ts`) by a reviewed change first. A new release is vendored after its entry is approved in `.github/policy/vendored.json`; then update the pins and regenerate.
+
+`data/former-countries/<n>.json` lists ISO 3166-3 codes, with sources; their names live in the i18n catalogs (`formerCountries`), because `Intl.DisplayNames` names only current countries. A test in `@arca/i18n` fails when a code has no name. User-assigned codes `QM` to `QZ` (except `QO` and `QU`) are for test fixtures only, and the real build rejects them.
 
 ## Adding a file
 

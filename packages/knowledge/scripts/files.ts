@@ -9,6 +9,13 @@ export const countriesFileSchema = z.strictObject({
   schemaVersion: z.literal(1),
   id: z.literal('countries'),
   number,
+  /** The vendored CLDR release the codes come from, its file's hash and its license. */
+  cldr: z.strictObject({
+    release: z.string().regex(/^[0-9]+\.[0-9]+\.[0-9]+$/),
+    sha256,
+    license: z.literal('Unicode-3.0'),
+    licenseSha256: sha256,
+  }),
   codes: z
     .array(z.string().regex(/^[A-Z]{2}$/))
     .min(1)

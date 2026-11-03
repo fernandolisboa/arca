@@ -26,6 +26,16 @@ export interface OfficialHosts {
   readonly hostOf: (url: string) => string | undefined;
 }
 
+/** The codes a route version's pinned files allow (spec 0002, R7). */
+export interface PinnedCountries {
+  /** The countries file's codes. */
+  readonly current: ReadonlySet<string>;
+  /** The former-countries file's codes. */
+  readonly former: ReadonlySet<string>;
+  /** IDs of the pinned country sets with a member outside `current`. */
+  readonly setsWithFormer: ReadonlySet<string>;
+}
+
 /** A host equal to a listed host or a subdomain of it on a label boundary (spec 0002, R4). */
 export function hostMatches(host: string, hosts: readonly string[]): boolean {
   return hosts.some((listed) => host === listed || host.endsWith(`.${listed}`));
@@ -60,7 +70,11 @@ export function checkCountrySet(set: CountrySet, official: OfficialHosts): Check
  * kinds, the shape of a closed version, and every expression against the fact catalog. Returns
  * the issues; none means valid.
  */
-export function checkRouteVersion(version: RouteVersion, official: OfficialHosts): CheckIssue[] {
+export function checkRouteVersion(
+  version: RouteVersion,
+  official: OfficialHosts,
+  countries: PinnedCountries,
+): CheckIssue[] {
   const issues: CheckIssue[] = [];
   const issue = (path: string, message: string): void => {
     issues.push({ path, message });
@@ -124,6 +138,9 @@ export function checkRouteVersion(version: RouteVersion, official: OfficialHosts
     countrySets: new Set(version.countrySets.map((pin) => pin.id)),
     leapDayBirthday: version.leapDayBirthday !== undefined,
     referenceDates: new Set(version.referenceDates ?? []),
+    countries: countries.current,
+    formerCountries: countries.former,
+    formerCountrySets: countries.setsWithFormer,
   };
   const expressions: Expression[] = [];
   const expect = (

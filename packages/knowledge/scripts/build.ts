@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { type CalendarDate, parseCalendarDate } from '@arca/domain';
 import { checkHashes } from './hashes.ts';
 import { type Issue, loadData } from './load.ts';
-import { type BuiltEntry, validateData } from './validate.ts';
+import { type BuiltEntry, type ValidationOptions, validateData } from './validate.ts';
 
 export interface KnowledgeBuild {
   readonly entries: readonly BuiltEntry[];
@@ -15,9 +15,10 @@ export interface KnowledgeBuild {
 export async function buildKnowledge(
   dataDir: string,
   buildDate: CalendarDate,
+  options: ValidationOptions = {},
 ): Promise<KnowledgeBuild> {
   const raw = await loadData(dataDir);
-  const validated = validateData(raw, buildDate);
+  const validated = validateData(raw, buildDate, options);
   return {
     entries: validated.entries,
     issues: [...validated.issues, ...checkHashes(raw.hashes, validated.hashes, validated.hashable)],

@@ -5,22 +5,57 @@ import { describe, expect, it } from 'vitest';
 import { buildKnowledge, catalogModule, formatIssue } from '../scripts/build.ts';
 import { contentHash } from '../scripts/content-hash.ts';
 import type { Json } from '@arca/scripts/json';
-import { baseTree, buildDate, emptyHashes, routeVersion, writeTree } from './data.ts';
+import { baseTree, buildDate, emptyHashes, fixtures, routeVersion, writeTree } from './data.ts';
 
 async function issuesOf(tree: Record<string, unknown>, hashes?: unknown): Promise<string[]> {
-  const { issues } = await buildKnowledge(await writeTree(tree, hashes), buildDate);
+  const { issues } = await buildKnowledge(await writeTree(tree, hashes), buildDate, fixtures);
   return issues.map(formatIssue);
 }
 
+const tokenRequirement = (expression: object): Record<string, unknown> => ({
+  requirements: [
+    {
+      id: 'listed',
+      title: 'The principal fits the listed countries',
+      expression,
+      sources: ['law'],
+    },
+  ],
+});
+const citizenOf = (values: string[]): object => ({
+  op: 'intersects',
+  list: { op: 'fact', key: 'principal.citizenships' },
+  set: { op: 'tokens', values },
+});
+const residentOf = (values: string[]): object => ({
+  op: 'in',
+  item: { op: 'fact', key: 'principal.residenceCountry' },
+  set: { op: 'tokens', values },
+});
+
 describe('buildKnowledge', () => {
+  it('refuses user-assigned codes outside a fixture build', async () => {
+    const { issues } = await buildKnowledge(await writeTree(baseTree()), buildDate);
+    expect(issues.map(formatIssue)).toContain(
+      'countries/1.json /codes: User-assigned codes are for fixtures only',
+    );
+  });
+
   it('builds the real data directory', async () => {
     const dataDir = fileURLToPath(new URL('../data', import.meta.url));
     expect((await buildKnowledge(dataDir, buildDate)).issues).toEqual([]);
   });
 
+  it('checks country tokens against the pinned countries and former countries', async () => {
+    const tree = baseTree();
+    tree['routes/qm-work/1.json'] = routeVersion(tokenRequirement(citizenOf(['QN', 'QMHH'])));
+    const { issues } = await buildKnowledge(await writeTree(tree), buildDate, fixtures);
+    expect(issues.filter((issue) => issue.file !== 'hashes.json')).toEqual([]);
+  });
+
   it('builds a valid tree into one entry per route version', async () => {
     const tree = baseTree();
-    const { entries, issues } = await buildKnowledge(await writeTree(tree), buildDate);
+    const { entries, issues } = await buildKnowledge(await writeTree(tree), buildDate, fixtures);
     expect(issues).toEqual([]);
     expect(entries).toEqual([
       {
@@ -33,7 +68,7 @@ describe('buildKnowledge', () => {
 
   it('hashes the version with every file it pins, transitively, in one container', async () => {
     const tree = baseTree();
-    const { entries } = await buildKnowledge(await writeTree(tree), buildDate);
+    const { entries } = await buildKnowledge(await writeTree(tree), buildDate, fixtures);
     const pinned = {
       'countries/countries/1': tree['countries/1.json'],
       'former-countries/former-countries/1': tree['former-countries/1.json'],
@@ -46,20 +81,20 @@ describe('buildKnowledge', () => {
   });
 
   it('keeps the hash of a fixed tree, so a change to the container shows up in review', async () => {
-    const { entries } = await buildKnowledge(await writeTree(baseTree()), buildDate);
+    const { entries } = await buildKnowledge(await writeTree(baseTree()), buildDate, fixtures);
     expect(entries[0]?.hash).toBe(
-      '6a10f911228fe06df327ffe50277bc3b3f3aa36a28aded5f3baedd10f48e5cbd',
+      'c756ab8089f87e0a95cc93235e23b394f2c67e8fb09031995ce7652543bbbab5',
     );
   });
 
   it('changes the hash when a pinned file changes', async () => {
-    const first = await buildKnowledge(await writeTree(baseTree()), buildDate);
+    const first = await buildKnowledge(await writeTree(baseTree()), buildDate, fixtures);
     const tree = baseTree();
     tree['country-sets/treaty/1.json'] = {
       ...(tree['country-sets/treaty/1.json'] as object),
       title: 'Treaty countries, renamed',
     };
-    const second = await buildKnowledge(await writeTree(tree), buildDate);
+    const second = await buildKnowledge(await writeTree(tree), buildDate, fixtures);
     expect(second.entries[0]?.hash).not.toBe(first.entries[0]?.hash);
   });
 
@@ -138,7 +173,7 @@ describe('buildKnowledge', () => {
     it('refuses a symbolic link', async () => {
       const dir = await writeTree(baseTree());
       await symlink(join(dir, 'countries/1.json'), join(dir, 'countries/2.json'));
-      const { issues } = await buildKnowledge(dir, buildDate);
+      const { issues } = await buildKnowledge(dir, buildDate, fixtures);
       expect(issues.map(formatIssue)).toContain(
         'countries/2.json: Only regular files belong in data',
       );
@@ -156,7 +191,7 @@ describe('buildKnowledge', () => {
     it('requires hashes.json', async () => {
       const dir = await writeTree({});
       await rm(join(dir, 'hashes.json'));
-      const { issues } = await buildKnowledge(dir, buildDate);
+      const { issues } = await buildKnowledge(dir, buildDate, fixtures);
       expect(issues.map(formatIssue)).toEqual([
         'hashes.json: The hashes file is missing or unreadable',
       ]);
@@ -214,6 +249,47 @@ describe('buildKnowledge', () => {
         'country-sets/treaty/1.json /members/0: A member is in the pinned countries or former countries',
       ],
       [
+        'a country token outside the pinned files',
+        (tree) => {
+          tree['routes/qm-work/1.json'] = routeVersion(tokenRequirement(citizenOf(['QZ'])));
+        },
+        'routes/qm-work/1.json /requirements/0/expression: The values are outside the domain of the fact',
+      ],
+      [
+        'a former state in a fact about current countries',
+        (tree) => {
+          tree['routes/qm-work/1.json'] = routeVersion(tokenRequirement(residentOf(['QMHH'])));
+        },
+        'routes/qm-work/1.json /requirements/0/expression: The values are outside the domain of the fact',
+      ],
+      [
+        'a set with a former state in a fact about current countries',
+        (tree) => {
+          tree['routes/qm-work/1.json'] = routeVersion(
+            tokenRequirement({
+              op: 'in',
+              item: { op: 'fact', key: 'principal.residenceCountry' },
+              set: { op: 'set', id: 'treaty' },
+            }),
+          );
+        },
+        'routes/qm-work/1.json /requirements/0/expression: The values are outside the domain of the fact',
+      ],
+      [
+        "a set member outside the route's countries and former countries",
+        (tree) => {
+          tree['countries/2.json'] = {
+            ...(tree['countries/1.json'] as object),
+            number: 2,
+            codes: ['QM'],
+          };
+          tree['routes/qm-work/1.json'] = routeVersion({
+            countries: { id: 'countries', number: 2 },
+          });
+        },
+        "routes/qm-work/1.json /countrySets/0: A set's members are in the route's countries or former countries",
+      ],
+      [
         'a route country outside the pinned countries',
         (tree) => {
           tree['routes/qz-work/1.json'] = routeVersion({ routeId: 'qz-work', country: 'QZ' });
@@ -265,9 +341,7 @@ describe('buildKnowledge', () => {
         'a duplicate country code',
         (tree) => {
           tree['countries/1.json'] = {
-            schemaVersion: 1,
-            id: 'countries',
-            number: 1,
+            ...(tree['countries/1.json'] as object),
             codes: ['QM', 'QM'],
           };
         },
@@ -307,6 +381,7 @@ describe('buildKnowledge', () => {
       const { entries, issues } = await buildKnowledge(
         await writeTree(tree, emptyHashes()),
         buildDate,
+        fixtures,
       );
       expect(entries).toEqual([]);
       expect(issues.map(formatIssue)).not.toContainEqual(
@@ -318,7 +393,7 @@ describe('buildKnowledge', () => {
 
 describe('catalogModule', () => {
   it('keeps the data as data, through JSON.parse', async () => {
-    const { entries } = await buildKnowledge(await writeTree(baseTree()), buildDate);
+    const { entries } = await buildKnowledge(await writeTree(baseTree()), buildDate, fixtures);
     const module = catalogModule(entries);
     expect(module).toMatch(/^\/\/ Generated by scripts\/build\.ts/);
     const literal = /JSON\.parse\((.*)\);$/m.exec(module)?.[1] ?? '';

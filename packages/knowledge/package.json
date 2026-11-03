@@ -15,6 +15,7 @@
   },
   "scripts": {
     "catalog": "node scripts/build.ts",
+    "countries:generate": "node scripts/generate-countries.ts",
     "build": "tsc -b tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint .",
