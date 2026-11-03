@@ -276,6 +276,20 @@ describe('buildKnowledge', () => {
         'routes/qm-work/1.json /requirements/0/expression: The values are outside the domain of the fact',
       ],
       [
+        "a set member outside the route's countries and former countries",
+        (tree) => {
+          tree['countries/2.json'] = {
+            ...(tree['countries/1.json'] as object),
+            number: 2,
+            codes: ['QM'],
+          };
+          tree['routes/qm-work/1.json'] = routeVersion({
+            countries: { id: 'countries', number: 2 },
+          });
+        },
+        "routes/qm-work/1.json /countrySets/0: A set's members are in the route's countries or former countries",
+      ],
+      [
         'a route country outside the pinned countries',
         (tree) => {
           tree['routes/qz-work/1.json'] = routeVersion({ routeId: 'qz-work', country: 'QZ' });

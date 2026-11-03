@@ -286,9 +286,12 @@ class Checker {
         this.fail(path, 'Two literals are compared');
         return false;
       }
-      return left.domain === 'literal'
-        ? this.tokensFit(right.domain, left, path)
-        : this.tokensFit(left.domain, right, path);
+      if (left.domain === 'literal') return this.tokensFit(right.domain, left, path);
+      if (right.domain === 'literal') return this.tokensFit(left.domain, right, path);
+      // Two facts hold case values, so equality is symmetric: either domain may hold the other.
+      const fits = fitsDomain(left.domain, right.domain) || fitsDomain(right.domain, left.domain);
+      if (!fits) this.fail(path, 'The values are outside the domain of the fact');
+      return fits;
     }
     this.fail(
       path,

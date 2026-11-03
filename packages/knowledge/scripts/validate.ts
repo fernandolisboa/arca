@@ -214,14 +214,24 @@ class Validation {
     const countries = this.resolve(raw, 'countries', data.countries, '/countries');
     const former = this.resolve(raw, 'former-countries', data.formerCountries, '/formerCountries');
     const current = new Set(countries?.data.codes ?? []);
+    const formerCodes = new Set(former?.data.codes ?? []);
     const setsWithFormer = new Set<string>();
     data.countrySets.forEach((pin, index) => {
-      const set = this.resolve(raw, 'country-sets', pin, `/countrySets/${String(index)}`);
-      if (set?.data.members.some((member) => !current.has(member)) === true) {
-        setsWithFormer.add(pin.id);
+      const path = `/countrySets/${String(index)}`;
+      const set = this.resolve(raw, 'country-sets', pin, path);
+      const outside = set?.data.members.filter((member) => !current.has(member)) ?? [];
+      if (outside.length > 0) setsWithFormer.add(pin.id);
+      if (countries !== undefined && former !== undefined) {
+        if (outside.some((member) => !formerCodes.has(member))) {
+          this.report(
+            raw,
+            "A set's members are in the route's countries or former countries",
+            path,
+          );
+        }
       }
     });
-    const known = { current, former: new Set(former?.data.codes ?? []), setsWithFormer };
+    const known = { current, former: formerCodes, setsWithFormer };
     const official = this.officialHosts(raw, data.officialDomains);
     if (official !== undefined) this.reportChecks(raw, checkRouteVersion(data, official, known));
     if (countries !== undefined && !countries.data.codes.includes(data.country)) {
