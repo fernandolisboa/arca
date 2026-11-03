@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "former-countries",
+  "number": 1,
+  "codes": [
+    "AIDJ",
+    "ANHH",
+    "BQAQ",
+    "BUMM",
+    "BYAA",
+    "CSHH",
+    "CSXX",
+    "CTKI",
+    "DDDE",
+    "DYBJ",
+    "FQHH",
+    "FXFR",
+    "GEHH",
+    "HVBF",
+    "JTUM",
+    "MIUM",
+    "NHVU",
+    "NQAQ",
+    "NTHH",
+    "PCHH",
+    "PUUM",
+    "PZPA",
+    "RHZW",
+    "SKIN",
+    "SUHH",
+    "TPTL",
+    "VDVN",
+    "WKUM",
+    "YDYE",
+    "YUCS",
+    "ZRCD"
+  ],
+  "sources": [
+    {
+      "id": "iso-3166-3-list",
+      "url": "https://en.wikipedia.org/wiki/ISO_3166-3",
+      "title": "ISO 3166-3, the codes for formerly used country names",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-03"
+    }
+  ]
+}

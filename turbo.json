@@ -42,7 +42,12 @@
       "dependsOn": ["^build", "catalog"]
     },
     "@arca/knowledge#test": {
-      "dependsOn": ["^build", "catalog"]
+      "dependsOn": ["^build", "catalog"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/.github/policy/vendored.json"]
+    },
+    "@arca/i18n#test": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/packages/knowledge/data/former-countries/**"]
     },
     "@arca/api-contract#typecheck": {
       "dependsOn": ["^build", "build"]

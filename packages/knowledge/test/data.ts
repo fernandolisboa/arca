@@ -12,6 +12,8 @@ import { validateData } from '../scripts/validate.ts';
 
 /** Synthetic knowledge only: user-assigned country codes, reserved hosts, invented rules. */
 export const buildDate = parseCalendarDate('2026-11-03');
+/** Synthetic trees use user-assigned codes, which only a fixture build accepts. */
+export const fixtures = { fixtures: true } as const;
 
 const source = (id: string, url = 'https://www.gov.example/law'): object => ({
   id,
@@ -64,7 +66,18 @@ export function routeVersion(overrides: Record<string, unknown> = {}): Record<st
 /** A valid data tree, by path under `data`, without `hashes.json`. */
 export function baseTree(): Record<string, unknown> {
   return {
-    'countries/1.json': { schemaVersion: 1, id: 'countries', number: 1, codes: ['QM', 'QN'] },
+    'countries/1.json': {
+      schemaVersion: 1,
+      id: 'countries',
+      number: 1,
+      cldr: {
+        release: '1.0.0',
+        sha256: 'a'.repeat(64),
+        license: 'Unicode-3.0',
+        licenseSha256: 'b'.repeat(64),
+      },
+      codes: ['QM', 'QN'],
+    },
     'former-countries/1.json': {
       schemaVersion: 1,
       id: 'former-countries',
@@ -111,7 +124,7 @@ export async function writeTree(tree: Record<string, unknown>, hashes?: unknown)
 
 async function sealed(dir: string): Promise<unknown> {
   await writeFile(join(dir, 'hashes.json'), JSON.stringify(emptyHashes()));
-  const { hashes } = validateData(await loadData(dir), buildDate);
+  const { hashes } = validateData(await loadData(dir), buildDate, fixtures);
   return {
     ...emptyHashes(),
     files: [...hashes].map(([path, sha256]) => ({ path, sha256 })),
@@ -131,7 +144,7 @@ export function emptyHashes(): { schemaVersion: 1; vectors: object[]; files: obj
 
 /** Entries as the runtime reads them: built, written to the module and parsed back. */
 export async function builtEntries(tree = baseTree()): Promise<ReadonlyMap<string, CatalogEntry>> {
-  const { entries, issues } = await buildKnowledge(await writeTree(tree), buildDate);
+  const { entries, issues } = await buildKnowledge(await writeTree(tree), buildDate, fixtures);
   expect(issues).toEqual([]);
   const literal = /JSON\.parse\((.*)\);$/m.exec(catalogModule(entries))?.[1] ?? '';
   return parseEntries(JSON.parse(JSON.parse(literal) as string));

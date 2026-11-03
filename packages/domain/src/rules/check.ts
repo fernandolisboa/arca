@@ -38,6 +38,8 @@ export interface CheckContext {
   readonly leapDayBirthday: boolean;
   /** Names of the reference dates the version declares. */
   readonly referenceDates: ReadonlySet<string>;
+  /** Codes in the countries and former-countries files the version pins (spec 0002, R7). */
+  readonly countries: ReadonlySet<string>;
 }
 
 export interface CheckIssue {
@@ -292,7 +294,7 @@ class Checker {
       tokens.domain === 'literal'
         ? (tokens.values ?? []).every((value) =>
             domain === 'country'
-              ? countryCodeSchema.safeParse(value).success
+              ? countryCodeSchema.safeParse(value).success && this.context.countries.has(value)
               : domain === 'literal' || domain.includes(value),
           )
         : sameDomain(domain, tokens.domain);

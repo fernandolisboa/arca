@@ -117,7 +117,9 @@ const official: OfficialHosts = {
 
 function issues(patch: object): string[] {
   const version: RouteVersion = routeVersionSchema.parse({ ...valid, ...patch });
-  return checkRouteVersion(version, official).map((issue) => `${issue.path}: ${issue.message}`);
+  return checkRouteVersion(version, official, new Set(['QM', 'QN'])).map(
+    (issue) => `${issue.path}: ${issue.message}`,
+  );
 }
 
 describe('route version', () => {

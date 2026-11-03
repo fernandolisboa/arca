@@ -64,8 +64,20 @@ const schemas: { readonly [K in FileKind]: z.ZodType<ParsedOf<K>['data']> } = {
  * Validates every knowledge file against spec 0002 (R4, R6, R7) and hashes each route version and
  * country set over everything it pins. A file with issues gets no hash and no entry.
  */
-export function validateData(raw: RawData, buildDate: CalendarDate): ValidatedData {
-  return new Validation(raw, buildDate).run();
+export interface ValidationOptions {
+  /** Accept the user-assigned codes fixtures use (`QM` to `QZ`, except `QO` and `QU`). */
+  readonly fixtures?: boolean;
+}
+
+/** User-assigned ISO 3166 codes reserved for fixtures (spec 0002, R7); CLDR uses `QO`. */
+const fixtureCode = /^Q[MNPQRSTVWXYZ]/;
+
+export function validateData(
+  raw: RawData,
+  buildDate: CalendarDate,
+  options: ValidationOptions = {},
+): ValidatedData {
+  return new Validation(raw, buildDate, options.fixtures ?? false).run();
 }
 
 class Validation {
@@ -74,10 +86,12 @@ class Validation {
   private readonly failed = new Set<string>();
   private readonly raw: RawData;
   private readonly buildDate: CalendarDate;
+  private readonly fixtures: boolean;
 
-  constructor(raw: RawData, buildDate: CalendarDate) {
+  constructor(raw: RawData, buildDate: CalendarDate, fixtures: boolean) {
     this.raw = raw;
     this.buildDate = buildDate;
+    this.fixtures = fixtures;
     this.issues = [...raw.issues];
   }
 
@@ -91,6 +105,9 @@ class Validation {
         this.checkVerified(file.raw, file.data.sources, '/sources');
       if (file.kind === 'countries' || file.kind === 'former-countries') {
         this.checkUnique(file.raw, file.data.codes, '/codes');
+        if (!this.fixtures && file.data.codes.some((code) => fixtureCode.test(code))) {
+          this.report(file.raw, 'User-assigned codes are for fixtures only', '/codes');
+        }
       }
     }
     for (const file of this.parsed.values()) {
@@ -195,12 +212,13 @@ class Validation {
     const { data, raw } = file;
     this.checkVerified(raw, data.sources, '/sources');
     const countries = this.resolve(raw, 'countries', data.countries, '/countries');
-    this.resolve(raw, 'former-countries', data.formerCountries, '/formerCountries');
+    const former = this.resolve(raw, 'former-countries', data.formerCountries, '/formerCountries');
     data.countrySets.forEach((pin, index) => {
       this.resolve(raw, 'country-sets', pin, `/countrySets/${String(index)}`);
     });
+    const known = new Set([...(countries?.data.codes ?? []), ...(former?.data.codes ?? [])]);
     const official = this.officialHosts(raw, data.officialDomains);
-    if (official !== undefined) this.reportChecks(raw, checkRouteVersion(data, official));
+    if (official !== undefined) this.reportChecks(raw, checkRouteVersion(data, official, known));
     if (countries !== undefined && !countries.data.codes.includes(data.country)) {
       this.report(raw, 'The country is in the pinned countries file', '/country');
     }

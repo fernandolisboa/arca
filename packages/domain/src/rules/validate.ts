@@ -60,7 +60,11 @@ export function checkCountrySet(set: CountrySet, official: OfficialHosts): Check
  * kinds, the shape of a closed version, and every expression against the fact catalog. Returns
  * the issues; none means valid.
  */
-export function checkRouteVersion(version: RouteVersion, official: OfficialHosts): CheckIssue[] {
+export function checkRouteVersion(
+  version: RouteVersion,
+  official: OfficialHosts,
+  countries: ReadonlySet<string>,
+): CheckIssue[] {
   const issues: CheckIssue[] = [];
   const issue = (path: string, message: string): void => {
     issues.push({ path, message });
@@ -124,6 +128,7 @@ export function checkRouteVersion(version: RouteVersion, official: OfficialHosts
     countrySets: new Set(version.countrySets.map((pin) => pin.id)),
     leapDayBirthday: version.leapDayBirthday !== undefined,
     referenceDates: new Set(version.referenceDates ?? []),
+    countries,
   };
   const expressions: Expression[] = [];
   const expect = (

@@ -12,6 +12,7 @@ const context: CheckContext = {
   countrySets: new Set(['treaty']),
   leapDayBirthday: true,
   referenceDates: new Set(['filingDate']),
+  countries: new Set(['QM', 'QN', 'YUCS']),
 };
 const requirement: CheckScope = { current: true, unit: true, edge: false };
 const dependent: CheckScope = { current: true, unit: false, edge: true };
@@ -162,6 +163,10 @@ describe('checkExpression', () => {
       'a token outside the enum',
       { op: 'eq', left: fact('edge.parentKind'), right: { op: 'token', value: 'foster' } },
       dependent,
+    ],
+    [
+      'a country literal not in the pinned countries files',
+      { op: 'in', item: fact('principal.residenceCountry'), set: { op: 'tokens', values: ['QZ'] } },
     ],
     [
       'a lowercase country literal',

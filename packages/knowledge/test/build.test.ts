@@ -5,14 +5,21 @@ import { describe, expect, it } from 'vitest';
 import { buildKnowledge, catalogModule, formatIssue } from '../scripts/build.ts';
 import { contentHash } from '../scripts/content-hash.ts';
 import type { Json } from '@arca/scripts/json';
-import { baseTree, buildDate, emptyHashes, routeVersion, writeTree } from './data.ts';
+import { baseTree, buildDate, emptyHashes, fixtures, routeVersion, writeTree } from './data.ts';
 
 async function issuesOf(tree: Record<string, unknown>, hashes?: unknown): Promise<string[]> {
-  const { issues } = await buildKnowledge(await writeTree(tree, hashes), buildDate);
+  const { issues } = await buildKnowledge(await writeTree(tree, hashes), buildDate, fixtures);
   return issues.map(formatIssue);
 }
 
 describe('buildKnowledge', () => {
+  it('refuses user-assigned codes outside a fixture build', async () => {
+    const { issues } = await buildKnowledge(await writeTree(baseTree()), buildDate);
+    expect(issues.map(formatIssue)).toContain(
+      'countries/1.json /codes: User-assigned codes are for fixtures only',
+    );
+  });
+
   it('builds the real data directory', async () => {
     const dataDir = fileURLToPath(new URL('../data', import.meta.url));
     expect((await buildKnowledge(dataDir, buildDate)).issues).toEqual([]);
@@ -20,7 +27,7 @@ describe('buildKnowledge', () => {
 
   it('builds a valid tree into one entry per route version', async () => {
     const tree = baseTree();
-    const { entries, issues } = await buildKnowledge(await writeTree(tree), buildDate);
+    const { entries, issues } = await buildKnowledge(await writeTree(tree), buildDate, fixtures);
     expect(issues).toEqual([]);
     expect(entries).toEqual([
       {
@@ -33,7 +40,7 @@ describe('buildKnowledge', () => {
 
   it('hashes the version with every file it pins, transitively, in one container', async () => {
     const tree = baseTree();
-    const { entries } = await buildKnowledge(await writeTree(tree), buildDate);
+    const { entries } = await buildKnowledge(await writeTree(tree), buildDate, fixtures);
     const pinned = {
       'countries/countries/1': tree['countries/1.json'],
       'former-countries/former-countries/1': tree['former-countries/1.json'],
@@ -46,20 +53,20 @@ describe('buildKnowledge', () => {
   });
 
   it('keeps the hash of a fixed tree, so a change to the container shows up in review', async () => {
-    const { entries } = await buildKnowledge(await writeTree(baseTree()), buildDate);
+    const { entries } = await buildKnowledge(await writeTree(baseTree()), buildDate, fixtures);
     expect(entries[0]?.hash).toBe(
-      '6a10f911228fe06df327ffe50277bc3b3f3aa36a28aded5f3baedd10f48e5cbd',
+      'c756ab8089f87e0a95cc93235e23b394f2c67e8fb09031995ce7652543bbbab5',
     );
   });
 
   it('changes the hash when a pinned file changes', async () => {
-    const first = await buildKnowledge(await writeTree(baseTree()), buildDate);
+    const first = await buildKnowledge(await writeTree(baseTree()), buildDate, fixtures);
     const tree = baseTree();
     tree['country-sets/treaty/1.json'] = {
       ...(tree['country-sets/treaty/1.json'] as object),
       title: 'Treaty countries, renamed',
     };
-    const second = await buildKnowledge(await writeTree(tree), buildDate);
+    const second = await buildKnowledge(await writeTree(tree), buildDate, fixtures);
     expect(second.entries[0]?.hash).not.toBe(first.entries[0]?.hash);
   });
 
@@ -138,7 +145,7 @@ describe('buildKnowledge', () => {
     it('refuses a symbolic link', async () => {
       const dir = await writeTree(baseTree());
       await symlink(join(dir, 'countries/1.json'), join(dir, 'countries/2.json'));
-      const { issues } = await buildKnowledge(dir, buildDate);
+      const { issues } = await buildKnowledge(dir, buildDate, fixtures);
       expect(issues.map(formatIssue)).toContain(
         'countries/2.json: Only regular files belong in data',
       );
@@ -156,7 +163,7 @@ describe('buildKnowledge', () => {
     it('requires hashes.json', async () => {
       const dir = await writeTree({});
       await rm(join(dir, 'hashes.json'));
-      const { issues } = await buildKnowledge(dir, buildDate);
+      const { issues } = await buildKnowledge(dir, buildDate, fixtures);
       expect(issues.map(formatIssue)).toEqual([
         'hashes.json: The hashes file is missing or unreadable',
       ]);
@@ -265,9 +272,7 @@ describe('buildKnowledge', () => {
         'a duplicate country code',
         (tree) => {
           tree['countries/1.json'] = {
-            schemaVersion: 1,
-            id: 'countries',
-            number: 1,
+            ...(tree['countries/1.json'] as object),
             codes: ['QM', 'QM'],
           };
         },
@@ -307,6 +312,7 @@ describe('buildKnowledge', () => {
       const { entries, issues } = await buildKnowledge(
         await writeTree(tree, emptyHashes()),
         buildDate,
+        fixtures,
       );
       expect(entries).toEqual([]);
       expect(issues.map(formatIssue)).not.toContainEqual(
@@ -318,7 +324,7 @@ describe('buildKnowledge', () => {
 
 describe('catalogModule', () => {
   it('keeps the data as data, through JSON.parse', async () => {
-    const { entries } = await buildKnowledge(await writeTree(baseTree()), buildDate);
+    const { entries } = await buildKnowledge(await writeTree(baseTree()), buildDate, fixtures);
     const module = catalogModule(entries);
     expect(module).toMatch(/^\/\/ Generated by scripts\/build\.ts/);
     const literal = /JSON\.parse\((.*)\);$/m.exec(module)?.[1] ?? '';
