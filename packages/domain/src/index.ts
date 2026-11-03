@@ -95,3 +95,28 @@ export {
   countryCodeSchema,
   opaqueIdSchema,
 } from './case/snapshot.js';
+export {
+  type Assessment,
+  type Cost,
+  type CountrySet,
+  type DependentRule,
+  type DurationStage,
+  type OfficialDomainList,
+  type Pin,
+  type Requirement,
+  type RouteVersion,
+  type Source,
+  countrySetSchema,
+  jsonDepthWithin,
+  maxKnowledgeJsonDepth,
+  officialDomainListSchema,
+  routeVersionJsonSchema,
+  routeVersionSchema,
+} from './rules/route-version.js';
+export { type CheckIssue } from './rules/check.js';
+export {
+  type OfficialHosts,
+  checkCountrySet,
+  checkRouteVersion,
+  hostMatches,
+} from './rules/validate.js';
