@@ -7,7 +7,7 @@
 
 ## Goal
 
-A monorepo that builds, tests and deploys an empty Arca end to end: a pt-BR web shell and an API on one origin, one sample workflow and a database with its roles, all in São Paulo, with every automated check from REVIEW.md enforced as a required check. Feature work after this adds code to an existing structure; it does not set up structure.
+A monorepo that builds, tests and deploys an empty Arca end to end: a pt-BR web shell and an API on one origin, one sample workflow and a database with its roles, all in São Paulo, with every check in R8 enforced as a required check. Feature work after this adds code to an existing structure; it does not set up structure.
 
 ## Scope
 

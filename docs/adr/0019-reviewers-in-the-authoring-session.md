@@ -16,7 +16,7 @@ ADR-0011 and ADR-0013 run the reviewer subagents in CI as a required `review-gat
 ## Decision
 
 - The session that writes a change runs the reviewer subagents in `.claude/agents/` on the diff, in parallel, before it opens a pull request and again before it merges. Verdict rules stay as in [REVIEW.md](../REVIEW.md).
-- CI keeps only deterministic checks: types, lint, tests, build, the policy checks, CodeQL, dependency advisories and secret scanning. These stay the required checks.
+- CI keeps only deterministic checks: types, lint, tests, build, the policy checks, CodeQL, dependency advisories and secret scanning. These stay the checks the `main` ruleset will require (spec 0001 R8).
 - Removed:
   - `review-gate.yml`, `review-canary.yml` and `review-canary-push.yml`;
   - the `run-reviewer` action;
@@ -35,10 +35,10 @@ ADR-0011 and ADR-0013 run the reviewer subagents in CI as a required `review-gat
   - Injected text in a diff, doc, commit message or fetched page can steer a local reviewer to a false PASS. The removed canary tested exactly this, and nothing tests it now.
   - Local reviewers can run commands with the session's credentials, including the owner's GitHub token ([ADR-0012](0012-automation-first-setup.md)). CI reviewers could only read files, so injected text that reaches a reviewer can now do more.
   - The reviewers load the branch's own agent definitions and `CLAUDE.md` files. A change that weakens a reviewer is judged by the weakened reviewer, so the rule that `.claude/agents/` and `docs/REVIEW.md` changes need a PASS from the security, architecture and supply-chain reviewers is attested by the same session.
-  - `ci.yml` runs the branch's own copy; only `policy.yml` runs its definition from `main`.
+  - `ci.yml` runs the branch's own copy; of the pull request checks, only `policy.yml` runs its definition from `main`.
 
   What still limits this:
-  - the deterministic checks on every pull request;
+  - the deterministic checks on every pull request, advisory until the spec 0001 R8 ruleset is applied;
   - the owner's GitHub token is fine-grained, limited to this repository and expiring;
   - no case data exists yet. Revisit this decision before the first real case data is stored.
 - Reviewer prompts are no longer tested against a canary corpus. A weakened reviewer would show up only as missed findings.
