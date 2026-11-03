@@ -410,6 +410,34 @@ describe('evaluateVersion', () => {
     });
   });
 
+  it('lists no fact when only a rate leaves a possible dependent, and their assets, open', () => {
+    const value = snapshot({
+      members: ['p1', 'p2'],
+      people: [known('p1', '1980-01-01'), known('p2', '2012-01-01')],
+      relationships: [{ kind: 'parent', parent: 'p1', child: 'p2', parentKind: 'biological' }],
+      assets: [cash('p1', 1200_00), cash('p2', 1, 'BRL')],
+    });
+    const poorChildren = entry({
+      dependents: [
+        {
+          id: 'children',
+          title: 'Children without means',
+          path: ['child'],
+          condition: {
+            op: 'lt',
+            left: { op: 'fact', key: 'person.liquidAssets' },
+            right: { op: 'money', amount: 1000_00, currency: 'EUR' },
+          },
+          sources: ['law'],
+        },
+      ],
+    });
+    const evaluation = evaluateVersion(value, poorChildren, 'p1', context());
+    expect(evaluation.unit.possibleDependents.map((person) => person.personId)).toEqual(['p2']);
+    expect(evaluation.missingRates).toEqual([{ from: 'BRL', to: 'EUR' }]);
+    expect(evaluation.missingFacts).toEqual([]);
+  });
+
   it('lists no fact when only a reference date leaves the unit open', () => {
     const atFiling = entry({
       referenceDates: ['filingDate'],
@@ -795,6 +823,17 @@ describe('evaluateRoute', () => {
       pending: v2.identity,
     });
     expect(lookup.activeEntry).not.toHaveBeenCalled();
+  });
+
+  it('refuses an entry with the selected key but another effective date', () => {
+    const later = entry({ effectiveFrom: '2027-01-01' });
+    const misdated: RouteCatalog = {
+      identities: () => [v1.identity],
+      activeEntry: () => later,
+    };
+    expect(() => evaluateRoute(alone(5000_00), misdated, 'qm-sample', 'p1', context())).toThrow(
+      RangeError,
+    );
   });
 
   it('refuses an entry other than the version selected and activated', () => {

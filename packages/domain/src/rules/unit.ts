@@ -25,8 +25,8 @@ export interface PossibleDependent extends Dependent {
 }
 
 /**
- * Someone the version does not cover: no rule's path reaches them, no condition holds, or a rule
- * that might cover them reads a reference date the context lacks.
+ * Someone the version does not cover: no rule's path reaches them, no condition holds, or, while
+ * any dependent rule lacks its reference date, nobody can be ruled out.
  */
 export interface ExcludedPerson {
   readonly personId: string;

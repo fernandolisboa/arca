@@ -11,8 +11,8 @@ import {
   type CatalogEntry,
   type RouteCatalog,
   type VersionIdentity,
-  identityKey,
   newerProposedVersion,
+  sameIdentity,
   selectVersion,
 } from './catalog.js';
 import {
@@ -228,10 +228,7 @@ export function evaluateRoute(
   }
   const entry = catalog.activeEntry(selection.identity, context.states);
   // The activation covers one exact content, so an entry for any other refuses to evaluate.
-  if (
-    entry?.identity.routeId !== routeId ||
-    identityKey(entry.identity) !== identityKey(selection.identity)
-  ) {
+  if (entry?.identity.routeId !== routeId || !sameIdentity(entry.identity, selection.identity)) {
     throw new RangeError('The catalog has no entry for the active version selected');
   }
   const evaluation = evaluateVersion(snapshot, entry, principalId, context);

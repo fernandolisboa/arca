@@ -451,7 +451,8 @@ function liquidAssets(
         : unit.possible.includes(owner.person)
           ? 'unknown'
           : false;
-      sum.add(share(asset.value, owner.share), and([counted, membership]));
+      // A share possible only through a possible owner is settled by that owner's own facts.
+      sum.add(share(asset.value, owner.share), and([counted, membership]), counted === 'unknown');
     }
   }
   return sum.result();
@@ -488,8 +489,9 @@ class MoneySum {
     this.missingMarkers = missingMarkers;
   }
 
-  add(amount: ExactAmount, counts: Truth): void {
+  add(amount: ExactAmount, counts: Truth, answerable = true): void {
     if (counts === false) return;
+    if (counts === 'unknown' && answerable) this.answerablyOpen = true;
     const target = counts === true ? this.certain : this.possible;
     const previous = target.get(amount.currency);
     target.set(amount.currency, previous === undefined ? amount : addExact(previous, amount));
@@ -541,9 +543,7 @@ class MoneySum {
       ...(missingRates.length === 0 ? {} : { missingRates }),
       ...(rates.length === 0 ? {} : { rates }),
       ...(this.missingMarkers.length === 0 ? {} : { missingMarkers: this.missingMarkers }),
-      ...((missingRates.length > 0 || this.unbounded) &&
-      this.possible.size === 0 &&
-      !this.answerablyOpen
+      ...((missingRates.length > 0 || this.unbounded) && !this.answerablyOpen
         ? { onlyRatesOrDatesMissing: true }
         : {}),
     };

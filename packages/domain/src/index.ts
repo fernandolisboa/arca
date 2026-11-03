@@ -129,6 +129,7 @@ export {
   type VersionIdentity,
   identityKey,
   newerProposedVersion,
+  sameIdentity,
   selectVersion,
   stateOf,
 } from './rules/catalog.js';

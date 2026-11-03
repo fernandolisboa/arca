@@ -46,6 +46,16 @@ export function identityKey(identity: VersionIdentity): string {
   return `${identity.routeId}/${String(identity.number)}/${identity.hash}`;
 }
 
+/** Every identity field agrees, so the content evaluated is the content selected. */
+export function sameIdentity(left: VersionIdentity, right: VersionIdentity): boolean {
+  return (
+    identityKey(left) === identityKey(right) &&
+    left.effectiveFrom === right.effectiveFrom &&
+    left.corrects === right.corrects &&
+    left.status === right.status
+  );
+}
+
 export function stateOf(identity: VersionIdentity, states: DecisionStates): DecisionState {
   return states.get(identityKey(identity)) ?? 'proposed';
 }
