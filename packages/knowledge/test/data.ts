@@ -1,9 +1,10 @@
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { type CatalogEntry, parseCalendarDate } from '@arca/domain';
 import { expect } from 'vitest';
-import { buildKnowledge, catalogModule } from '../scripts/build.ts';
+import { buildKnowledge, catalogModule, formatIssue } from '../scripts/build.ts';
 import { parseEntries } from '../src/entries.ts';
 import { rfc8785Vectors } from '../scripts/vectors.ts';
 import { contentHash } from '../scripts/content-hash.ts';
@@ -148,4 +149,14 @@ export async function builtEntries(tree = baseTree()): Promise<ReadonlyMap<strin
   expect(issues).toEqual([]);
   const literal = /JSON\.parse\((.*)\);$/m.exec(catalogModule(entries))?.[1] ?? '';
   return parseEntries(JSON.parse(JSON.parse(literal) as string));
+}
+
+/** The committed fixture routes on user-assigned codes (spec 0002, R8). */
+export const fixturesDir = fileURLToPath(new URL('fixtures/data', import.meta.url));
+
+/** The fixture routes, built with no issues. */
+export async function fixtureEntries(): Promise<ReadonlyMap<string, CatalogEntry>> {
+  const { entries, issues } = await buildKnowledge(fixturesDir, buildDate, fixtures);
+  expect(issues.map(formatIssue)).toEqual([]);
+  return parseEntries(entries);
 }

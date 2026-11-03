@@ -173,22 +173,6 @@
         }
       },
       "sources": ["law"]
-    },
-    {
-      "id": "means-proof",
-      "title": "Proof of means for the unit",
-      "kind": "proof_of_means",
-      "amount": {
-        "op": "sum",
-        "over": "unit.dependents",
-        "value": {
-          "op": "money",
-          "amount": 43500,
-          "currency": "EUR"
-        }
-      },
-      "appliesTo": "unit",
-      "sources": ["law"]
     }
   ],
   "durations": [],

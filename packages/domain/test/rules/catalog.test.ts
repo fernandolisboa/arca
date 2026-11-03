@@ -83,10 +83,11 @@ describe('selectVersion', () => {
   });
 
   it('drops a chain of corrections at once, even through a rejected link', () => {
+    // Dated so that v1, the latest, would win if the chain stopped at the rejected v2.
     const chain = [
       identity(1, '2020-01-01'),
-      identity(2, '2020-01-01', 1),
-      identity(3, '2020-01-01', 2),
+      identity(2, '2019-06-01', 1),
+      identity(3, '2019-01-01', 2),
     ];
     expect(selected(chain, '2021-01-01')).toEqual([3, 'active']);
     expect(selected(chain, '2021-01-01', { 2: 'rejected' })).toEqual([3, 'active']);

@@ -34,17 +34,17 @@
   "countrySets": [],
   "requirements": [
     {
-      "id": "resident",
-      "title": "The principal lives in the country",
+      "id": "adult",
+      "title": "The principal is an adult",
       "expression": {
-        "op": "eq",
+        "op": "gte",
         "left": {
           "op": "fact",
-          "key": "principal.residenceCountry"
+          "key": "principal.ageYears"
         },
         "right": {
-          "op": "token",
-          "value": "QM"
+          "op": "int",
+          "value": 18
         }
       },
       "sources": ["law"]
@@ -53,5 +53,7 @@
   "assessments": [],
   "dependents": [],
   "costs": [],
-  "durations": []
+  "durations": [],
+  "leapDayBirthday": "feb-28",
+  "leapDayBirthdaySources": ["law"]
 }

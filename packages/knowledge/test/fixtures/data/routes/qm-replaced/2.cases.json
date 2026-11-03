@@ -2,27 +2,11 @@
   "schemaVersion": 1,
   "cases": [
     {
-      "id": "resident",
-      "snapshot": {
-        "recordedOn": "2026-10-01",
-        "members": ["p1"],
-        "people": [
-          {
-            "id": "p1",
-            "birthDate": "1990-01-01",
-            "citizenships": [
-              {
-                "country": "BR",
-                "acquired": "1990-01-01",
-                "lost": "none",
-                "basis": "birth"
-              }
-            ],
-            "residenceCountry": "QM"
-          }
-        ],
-        "relationships": [],
-        "assets": []
+      "id": "adult",
+      "family": {
+        "id": "single-person",
+        "number": 1,
+        "sha256": "7a45d6696cb09589b8904d27134b8858cfc4b62855da90cbab4352419f2f36d8"
       },
       "principal": "p1",
       "rulesAsOf": "2026-10-01",
@@ -34,11 +18,27 @@
       }
     },
     {
-      "id": "abroad",
-      "family": {
-        "id": "single-person",
-        "number": 1,
-        "sha256": "7a45d6696cb09589b8904d27134b8858cfc4b62855da90cbab4352419f2f36d8"
+      "id": "minor",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "2009-01-01",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2009-01-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR"
+          }
+        ],
+        "relationships": [],
+        "assets": []
       },
       "principal": "p1",
       "rulesAsOf": "2026-10-01",
@@ -50,14 +50,13 @@
       }
     },
     {
-      "id": "residence-unknown",
+      "id": "birth-date-unknown",
       "snapshot": {
         "recordedOn": "2026-10-01",
         "members": ["p1"],
         "people": [
           {
-            "id": "p1",
-            "birthDate": "1990-01-01"
+            "id": "p1"
           }
         ],
         "relationships": [],
@@ -69,7 +68,7 @@
         "status": "missing_information",
         "dependents": [],
         "possibleDependents": [],
-        "missingFacts": ["principal.residenceCountry@p1"]
+        "missingFacts": ["principal.ageYears@p1"]
       }
     }
   ]

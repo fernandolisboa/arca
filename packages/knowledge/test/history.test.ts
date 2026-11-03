@@ -1,4 +1,3 @@
-import { fileURLToPath } from 'node:url';
 import {
   type CaseSnapshot,
   type DecisionState,
@@ -12,10 +11,15 @@ import {
 import { beforeAll, describe, expect, it } from 'vitest';
 import { buildKnowledge, formatIssue } from '../scripts/build.ts';
 import { createRouteCatalog } from '../src/catalog.ts';
-import { parseEntries } from '../src/entries.ts';
-import { baseTree, buildDate, emptyHashes, fixtures, routeVersion, writeTree } from './data.ts';
-
-const fixturesDir = fileURLToPath(new URL('fixtures/data', import.meta.url));
+import {
+  baseTree,
+  buildDate,
+  emptyHashes,
+  fixtureEntries,
+  fixtures,
+  routeVersion,
+  writeTree,
+} from './data.ts';
 
 const version = (number: number, effectiveFrom: string, corrects?: number, extra: object = {}) =>
   routeVersion({
@@ -140,9 +144,7 @@ describe('selection over the fixture histories, with fixture states (spec 0002, 
   let catalog: ReturnType<typeof createRouteCatalog>;
 
   beforeAll(async () => {
-    const { entries, issues } = await buildKnowledge(fixturesDir, buildDate, fixtures);
-    expect(issues.map(formatIssue)).toEqual([]);
-    catalog = createRouteCatalog(parseEntries(entries));
+    catalog = createRouteCatalog(await fixtureEntries());
   });
 
   /** Every version of the route active unless listed. */
@@ -192,13 +194,6 @@ describe('selection over the fixture histories, with fixture states (spec 0002, 
       { evaluated: 2, status: 'unavailable' },
     ],
     [
-      'a pending application under the replaced version',
-      'qm-replaced',
-      '2026-03-01',
-      {},
-      { evaluated: 1, status: 'eligible' },
-    ],
-    [
       'the replacing version',
       'qm-replaced',
       '2026-09-01',
@@ -227,7 +222,7 @@ describe('selection over the fixture histories, with fixture states (spec 0002, 
       { evaluated: 3, status: 'eligible' },
     ],
     [
-      'a correction dated after the version it fixes',
+      'a later correction of a version already corrected on its own date',
       'qm-corrections',
       '2023-06-01',
       {},
@@ -265,6 +260,13 @@ describe('selection over the fixture histories, with fixture states (spec 0002, 
       'the end of a chain of corrections',
       'qm-chain',
       '2021-01-01',
+      {},
+      { evaluated: 3, status: 'eligible' },
+    ],
+    [
+      'the end of a chain before its middle starts, so v1 goes only with the whole chain',
+      'qm-chain',
+      '2020-06-01',
       {},
       { evaluated: 3, status: 'eligible' },
     ],
@@ -325,6 +327,13 @@ describe('selection over the fixture histories, with fixture states (spec 0002, 
       { evaluated: 3, status: 'eligible' },
     ],
     [
+      'a correction with its own correction left proposed',
+      'qm-correction-of-correction',
+      '2024-03-15',
+      { 4: 'proposed' },
+      { evaluated: 3, status: 'eligible', newer: { version: 4, from: '2024-04-01' } },
+    ],
+    [
       'a correction of that correction',
       'qm-correction-of-correction',
       '2024-04-15',
@@ -354,5 +363,37 @@ describe('selection over the fixture histories, with fixture states (spec 0002, 
     ],
   ])('selects %s', (_, routeId, rulesAsOf, decided, expected) => {
     expect(evaluate(routeId, rulesAsOf, decided)).toEqual(expected);
+  });
+
+  it('evaluates a pending application with the rules of its filing date and current facts', () => {
+    // Synthetic: a principal who turns 18 between the filing date and the record date.
+    const applicant = caseSnapshotSchema.parse({
+      recordedOn: '2026-10-01',
+      members: ['p1'],
+      people: [{ id: 'p1', birthDate: '2008-06-01' }],
+      relationships: [],
+      assets: [],
+    });
+    const states = new Map(
+      catalog
+        .identities('qm-replaced')
+        .map((identity) => [identityKey(identity), 'active' as const]),
+    );
+    const result = evaluateRoute(applicant, catalog, 'qm-replaced', 'p1', {
+      rulesAsOf: parseCalendarDate('2026-03-01'),
+      factsAsOf: parseCalendarDate('2026-10-01'),
+      today: parseCalendarDate('2026-11-03'),
+      fx: fxTableSchema.parse({ rates: [] }),
+      states,
+      engineCommit: 'history',
+    });
+    if (result.kind !== 'evaluated') throw new Error(`Expected an evaluation, got ${result.kind}`);
+    const { versionNumber, rulesAsOf, factsAsOf } = result.evaluation;
+    expect({ versionNumber, status: result.status, rulesAsOf, factsAsOf }).toEqual({
+      versionNumber: 1,
+      status: 'eligible',
+      rulesAsOf: '2026-03-01',
+      factsAsOf: '2026-10-01',
+    });
   });
 });
