@@ -1,6 +1,6 @@
 import { contentHash } from './content-hash.ts';
 import { hashesFileSchema } from './files.ts';
-import type { Json } from './json.ts';
+import type { Json } from '@arca/scripts/json';
 import type { Issue } from './load.ts';
 import { rfc8785Vectors } from './vectors.ts';
 

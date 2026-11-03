@@ -15,6 +15,7 @@ import {
   officialDomainListSchema,
   routeVersionSchema,
 } from '@arca/domain';
+import { hostOf } from '@arca/scripts/host';
 import type { z } from 'zod';
 import { contentHash } from './content-hash.ts';
 import {
@@ -23,7 +24,7 @@ import {
   countriesFileSchema,
   formerCountriesFileSchema,
 } from './files.ts';
-import type { Json } from './json.ts';
+import type { Json } from '@arca/scripts/json';
 import type { FileKind, Issue, RawData, RawFile } from './load.ts';
 
 /** A route version as the catalog carries it: the reviewed JSON, its hash and its country sets. */
@@ -314,31 +315,4 @@ function keyOf(kind: FileKind, id: string, number: number): string {
 
 function withoutExtension(file: string): string {
   return file.replace(/\.json$/, '');
-}
-
-/**
- * The URL as written: `https://`, then a host with no user information, port, backslash, extra
- * slash, percent-encoding or full-width dot, which WHATWG parsing would otherwise forgive or map.
- * The host a reviewer reads is then the host matched, up to case, punycode and IDNA mapping.
- */
-const plainAuthority = /^https:\/\/[^/?#\\@:%\s\u3002\uff0e\uff61]+(?:[/?#]|$)/;
-
-/**
- * The host official-source matching reads (spec 0002, R4): WHATWG URL parsing lowercases the host
- * and converts it to ASCII (punycode). Anything but `https` without user information or an explicit
- * port has no host to match.
- */
-export function hostOf(url: string): string | undefined {
-  if (!URL.canParse(url)) return undefined;
-  const parsed = new URL(url);
-  if (
-    parsed.protocol !== 'https:' ||
-    parsed.username !== '' ||
-    parsed.password !== '' ||
-    parsed.port !== '' ||
-    !plainAuthority.test(url)
-  ) {
-    return undefined;
-  }
-  return parsed.hostname;
 }

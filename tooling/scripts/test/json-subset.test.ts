@@ -1,6 +1,11 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { type Json, JsonSubsetError, hiddenCharacters, parseJsonSubset } from '../scripts/json.ts';
+import {
+  type Json,
+  JsonSubsetError,
+  hiddenCharacters,
+  parseJsonSubset,
+} from '../src/json-subset.ts';
 
 const parse = (text: string, depth = 48): Json =>
   parseJsonSubset(new TextEncoder().encode(text), depth);
@@ -51,6 +56,7 @@ describe('parseJsonSubset', () => {
     ['an unescaped control character', '"a\u0001"'],
     ['an invalid escape', '"\\x41"'],
     ['a leading zero', '01'],
+    ['negative zero', '-0'],
     ['a trailing comma', '[1,]'],
     ['content after the value', '{} {}'],
     ['a byte order mark', '\ufeff{}'],

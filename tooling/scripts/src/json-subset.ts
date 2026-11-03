@@ -36,7 +36,8 @@ const escapes: Readonly<Record<string, string>> = {
   t: '\t',
 };
 const numberPattern = /-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/y;
-const integerPattern = /^-?(?:0|[1-9]\d*)$/;
+/** No `-0`: RFC 8785 writes it as `0`, so two files would share a content hash. */
+const integerPattern = /^(?:0|-?[1-9]\d*)$/;
 const hexPattern = /^[0-9a-fA-F]{4}$/;
 /**
  * Controls, format and default-ignorable characters, which hide or reorder text, so a reviewer

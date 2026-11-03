@@ -583,6 +583,9 @@ importers:
       '@arca/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint-config
+      '@arca/scripts':
+        specifier: workspace:*
+        version: link:../../tooling/scripts
       '@arca/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
@@ -702,6 +705,9 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 10.13.0(jiti@2.7.0)(supports-color@10.2.2)
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.10.2
       typescript:
         specifier: 'catalog:'
         version: 7.0.2

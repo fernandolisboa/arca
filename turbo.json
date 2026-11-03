@@ -23,7 +23,13 @@
     "@arca/knowledge#catalog": {
       "dependsOn": ["^build"],
       "outputs": ["src/generated/**"],
-      "inputs": ["data/**", "scripts/**", "package.json"]
+      "inputs": [
+        "data/**",
+        "scripts/**",
+        "package.json",
+        "$TURBO_ROOT$/tooling/scripts/src/host.ts",
+        "$TURBO_ROOT$/tooling/scripts/src/json-subset.ts"
+      ]
     },
     "@arca/knowledge#build": {
       "dependsOn": ["^build", "catalog"],

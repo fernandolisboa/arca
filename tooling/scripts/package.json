@@ -3,6 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    "./host": "./src/host.ts",
+    "./json": "./src/json-subset.ts"
+  },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint .",
@@ -25,6 +29,7 @@
     "@types/node": "catalog:",
     "@types/pg": "catalog:",
     "eslint": "catalog:",
+    "fast-check": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

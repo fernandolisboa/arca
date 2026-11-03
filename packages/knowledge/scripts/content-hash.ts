@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { canonicalize } from './canonical.ts';
-import type { Json } from './json.ts';
+import type { Json } from '@arca/scripts/json';
 
 /** SHA-256, in lowercase hex, of the UTF-8 bytes of the RFC 8785 canonical form (spec 0002, R6). */
 export function contentHash(value: Json): string {

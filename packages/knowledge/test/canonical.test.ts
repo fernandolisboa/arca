@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { canonicalize } from '../scripts/canonical.ts';
 import { contentHash } from '../scripts/content-hash.ts';
 import { hashesFileSchema } from '../scripts/files.ts';
-import type { Json } from '../scripts/json.ts';
+import type { Json } from '@arca/scripts/json';
 import { fromBits, nonFiniteSamples, rfc8785Vectors } from '../scripts/vectors.ts';
 
 /** The UTF-8 bytes RFC 8785 section 3.2.4 gives for its sample, as printed there. */
