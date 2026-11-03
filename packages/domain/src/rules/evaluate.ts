@@ -7,8 +7,8 @@ import {
   type LineageBinding,
   deriveFact,
 } from '../case/facts.js';
-import { assertRecordedBy } from '../case/graph.js';
-import { type MissingMarker, ancestorLines } from '../case/paths.js';
+import { type MissingMarker, assertRecordedBy } from '../case/graph.js';
+import { ancestorLines } from '../case/paths.js';
 import type { Relationship } from '../case/snapshot.js';
 import {
   addNumbers,
@@ -18,6 +18,7 @@ import {
   multiplyNumber,
   orZero,
   subtractNumbers,
+  zeroBound,
 } from '../logic/number.js';
 import { type Truth, and, compareIntervals, not, or } from '../logic/truth.js';
 import {
@@ -64,7 +65,7 @@ export interface Trace {
   readonly op: Expression['op'] | 'item';
   readonly value: Evaluated;
   readonly children: readonly Trace[];
-  readonly fact?: { readonly reference: string; readonly personId: string };
+  readonly fact?: FactRead;
   /** A collection item; on a line of ancestors, the edges whose validity is unknown. */
   readonly item?: {
     readonly personId: string;
@@ -78,6 +79,19 @@ export interface Trace {
   readonly missingRates?: readonly CurrencyPair[];
   readonly rates?: readonly FxRate[];
   readonly missingDate?: string;
+  /** On a fact, nothing the family can answer leaves it open: only FX rates or reference dates. */
+  readonly onlyRatesOrDatesMissing?: true;
+}
+
+/**
+ * A fact read on a person; for an edge fact, the edge it was read across, and for a lineage fact,
+ * the line from the ancestor to the principal, since one person can be reached by several.
+ */
+export interface FactRead {
+  readonly reference: string;
+  readonly personId: string;
+  readonly edge?: Relationship;
+  readonly line?: readonly string[];
 }
 
 /**
@@ -199,7 +213,14 @@ function readFact(reference: string, dateName: string | undefined, frame: Frame)
   const resolved = resolveFactReference(reference);
   if (resolved === undefined) throw new RangeError('Unchecked fact reference');
   const binding = bindingFor(resolved.target, frame);
-  const fact = { reference, personId: binding.personId };
+  const fact: FactRead = {
+    reference,
+    personId: binding.personId,
+    ...(resolved.target === 'edge' && binding.edge !== undefined ? { edge: binding.edge } : {}),
+    ...(resolved.definition.scope === 'lineage' && binding.lineage !== undefined
+      ? { line: binding.lineage.path }
+      : {}),
+  };
   if (dateName !== undefined) {
     const date = frame.referenceDates.get(dateName);
     if (date === undefined) {
@@ -211,10 +232,7 @@ function readFact(reference: string, dateName: string | undefined, frame: Frame)
   return factTrace(deriveFact(resolved.key, binding, frame.at), fact);
 }
 
-function factTrace(
-  derived: ReturnType<typeof deriveFact>,
-  fact: { reference: string; personId: string },
-): Trace {
+function factTrace(derived: ReturnType<typeof deriveFact>, fact: FactRead): Trace {
   return {
     op: 'fact',
     value: derived.value,
@@ -223,6 +241,7 @@ function factTrace(
     ...(derived.missingRates === undefined ? {} : { missingRates: derived.missingRates }),
     ...(derived.rates === undefined ? {} : { rates: derived.rates }),
     ...(derived.missingMarkers === undefined ? {} : { missingMarkers: derived.missingMarkers }),
+    ...(derived.onlyRatesOrDatesMissing === undefined ? {} : { onlyRatesOrDatesMissing: true }),
   };
 }
 
@@ -417,8 +436,7 @@ function aggregate(
       return integerRange(certain, complete ? certain + possible : undefined);
     }
     case 'sum': {
-      const zero = { units: 0n, scale: 0 };
-      let total: NumberValue = { type: 'number', min: zero, max: zero };
+      let total: NumberValue = { type: 'number', min: zeroBound, max: zeroBound };
       counted.forEach((entry, index) => {
         const truth = counts[index];
         if (truth === false || entry.value === undefined) return;
@@ -505,7 +523,8 @@ function node(op: Expression['op'], value: Evaluated, children: readonly Trace[]
   return { op, value, children };
 }
 
-function numberOf(trace: Trace): NumberValue {
+/** The number a checked numeric expression evaluated to. */
+export function numberOf(trace: Trace): NumberValue {
   if (trace.value.type !== 'number') throw new RangeError('Unchecked arithmetic');
   return trace.value;
 }

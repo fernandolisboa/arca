@@ -1,16 +1,16 @@
-import type { MissingMarker } from '../case/paths.js';
-import type { Relationship } from '../case/snapshot.js';
+import type { MissingMarker } from '../case/graph.js';
+import { type Relationship, edgeKey } from '../case/snapshot.js';
 import { type Truth, and, not, or } from '../logic/truth.js';
 import { isKnown } from '../logic/value.js';
 import type { CurrencyPair, FxRate } from '../money/fx.js';
-import { type Trace, truthOf } from './evaluate.js';
+import { type FactRead, type Trace, truthOf } from './evaluate.js';
 
 /**
  * Something the family can answer that would change a result: a fact about a person, whether a
  * relationship held at the date, or whether a kind of relationship or asset is recorded in full.
  */
 export type MissingFact =
-  | { readonly kind: 'fact'; readonly reference: string; readonly personId: string }
+  | ({ readonly kind: 'fact' } & FactRead)
   | { readonly kind: 'relationship'; readonly edge: Relationship }
   | ({ readonly kind: 'marker' } & MissingMarker);
 
@@ -53,10 +53,7 @@ function collect(trace: Trace, unit: UnitGaps): MissingFact[] {
 function factGaps(trace: Trace, unit: UnitGaps): MissingFact[] {
   if (trace.fact === undefined || trace.missingDate !== undefined) return [];
   const gaps: MissingFact[] = (trace.missingMarkers ?? []).map(marker);
-  if (trace.missingRates === undefined) {
-    const { reference, personId } = trace.fact;
-    gaps.push({ kind: 'fact', reference, personId });
-  }
+  if (trace.onlyRatesOrDatesMissing !== true) gaps.push({ kind: 'fact', ...trace.fact });
   if (trace.fact.reference.startsWith('unit.')) gaps.push(...unit.all());
   return gaps;
 }
@@ -64,14 +61,14 @@ function factGaps(trace: Trace, unit: UnitGaps): MissingFact[] {
 function collectionGaps(trace: Trace, unit: UnitGaps): MissingFact[] {
   const gaps: MissingFact[] = (trace.incomplete?.missingMarkers ?? []).map(marker);
   for (const item of trace.children) {
-    const info = item.item;
-    if (info === undefined) continue;
+    const membershipInfo = item.item;
+    if (membershipInfo === undefined) continue;
     const { condition, value } = parts(trace.op, item.children);
-    const { membership } = info;
+    const { membership } = membershipInfo;
     const holds: Truth = condition === undefined ? true : truthOf(condition);
     const membershipGaps = (): readonly MissingFact[] =>
-      info.uncertainEdges?.map((edge): MissingFact => ({ kind: 'relationship', edge })) ??
-      unit.member(info.personId);
+      membershipInfo.uncertainEdges?.map((edge): MissingFact => ({ kind: 'relationship', edge })) ??
+      unit.member(membershipInfo.personId);
     if (trace.op === 'every') {
       if (or([not(membership), holds]) !== 'unknown') continue;
       if (holds === 'unknown' && condition !== undefined) gaps.push(...collect(condition, unit));
@@ -136,11 +133,17 @@ export function distinct(facts: readonly MissingFact[]): MissingFact[] {
 function keyOf(fact: MissingFact): string {
   switch (fact.kind) {
     case 'fact':
-      return `fact:${fact.reference}:${fact.personId}`;
+      return [
+        'fact',
+        fact.reference,
+        fact.personId,
+        fact.edge === undefined ? '' : edgeKey(fact.edge),
+        fact.line?.join('<') ?? '',
+      ].join(':');
     case 'marker':
       return `marker:${fact.personId}:${fact.marker}`;
     case 'relationship':
-      return `relationship:${JSON.stringify(fact.edge)}`;
+      return `relationship:${edgeKey(fact.edge)}`;
   }
 }
 

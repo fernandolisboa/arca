@@ -17,12 +17,12 @@ import { type CurrencyPair, type FxRate, type FxTable, convert } from '../money/
 import { type ExactAmount, type Money, addExact, multiplyExact, toExact } from '../money/money.js';
 import {
   type IndexedSnapshot,
+  type MissingMarker,
   assertRecordedBy,
   couples,
   isRecordedInFull,
   parents,
 } from './graph.js';
-import type { MissingMarker } from './paths.js';
 import {
   type CountryCode,
   type Person,
@@ -77,6 +77,8 @@ export interface Derived {
   readonly rates?: readonly FxRate[];
   /** Completeness markers whose absence leaves the value open. */
   readonly missingMarkers?: readonly MissingMarker[];
+  /** Nothing the family can answer leaves it open: only FX rates or reference dates. */
+  readonly onlyRatesOrDatesMissing?: true;
 }
 
 /**
@@ -411,7 +413,7 @@ function monthlyIncome(
 ): Derived {
   const incomes = person(environment, personId).incomes;
   const sum = new MoneySum(environment);
-  if (incomes === undefined) sum.open([]);
+  if (incomes === undefined) sum.open([], true);
   for (const income of (incomes ?? []).filter((entry) => entry.kind === kind)) {
     sum.add(toExact(income.monthly), true);
   }
@@ -469,15 +471,20 @@ class MoneySum {
   private readonly certain = new Map<CurrencyCode, ExactAmount>();
   private readonly possible = new Map<CurrencyCode, ExactAmount>();
   private unbounded = false;
+  private answerablyOpen = false;
   private missingMarkers: readonly MissingMarker[] = [];
 
   constructor(environment: FactEnvironment) {
     this.environment = environment;
   }
 
-  /** More amounts may exist, for want of these markers. */
-  open(missingMarkers: readonly MissingMarker[]): void {
+  /**
+   * More amounts may exist, for want of these markers or of a list the family can complete; an
+   * open unit with no marker missing waits on a reference date instead.
+   */
+  open(missingMarkers: readonly MissingMarker[], answerable = missingMarkers.length > 0): void {
     this.unbounded = true;
+    this.answerablyOpen ||= answerable;
     this.missingMarkers = missingMarkers;
   }
 
@@ -534,6 +541,11 @@ class MoneySum {
       ...(missingRates.length === 0 ? {} : { missingRates }),
       ...(rates.length === 0 ? {} : { rates }),
       ...(this.missingMarkers.length === 0 ? {} : { missingMarkers: this.missingMarkers }),
+      ...((missingRates.length > 0 || this.unbounded) &&
+      this.possible.size === 0 &&
+      !this.answerablyOpen
+        ? { onlyRatesOrDatesMissing: true }
+        : {}),
     };
   }
 }

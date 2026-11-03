@@ -23,6 +23,9 @@ export interface EvaluationContext {
   readonly engineCommit: string;
 }
 
+/** What evaluating one given version reads: no decision states, since it does no selection. */
+export type VersionContext = Omit<EvaluationContext, 'states'>;
+
 /** A version bound to one snapshot and principal, checked once. */
 export interface Prepared {
   readonly indexed: IndexedSnapshot;
@@ -32,7 +35,7 @@ export interface Prepared {
   readonly factsAsOf: CalendarDate;
   readonly referenceDates: ReadonlyMap<string, CalendarDate>;
   readonly countrySets: ReadonlyMap<string, readonly string[]>;
-  readonly context: EvaluationContext;
+  readonly context: VersionContext;
 }
 
 /**
@@ -44,18 +47,21 @@ export function prepare(
   snapshot: CaseSnapshot,
   entry: CatalogEntry,
   principalId: string,
-  context: EvaluationContext,
+  context: VersionContext,
 ): Prepared {
   const { version, identity } = entry;
-  if (identity.routeId !== version.routeId || identity.number !== version.number) {
+  if (
+    identity.routeId !== version.routeId ||
+    identity.number !== version.number ||
+    identity.effectiveFrom !== version.effectiveFrom ||
+    identity.corrects !== version.corrects ||
+    identity.status !== version.status
+  ) {
     throw new RangeError('An entry whose identity is not its version');
   }
   const indexed = indexSnapshot(snapshot);
   if (!snapshot.members.includes(principalId)) throw new RangeError('The principal is a member');
-  const factsAsOf = context.factsAsOf ?? context.rulesAsOf;
-  const referenceDates = context.referenceDates ?? new Map<string, CalendarDate>();
-  assertRecordedBy(indexed, factsAsOf);
-  for (const date of referenceDates.values()) assertRecordedBy(indexed, date);
+  const { factsAsOf, referenceDates } = contextDates(indexed, context);
   const countrySets = new Map(
     version.countrySets.map((pin) => {
       const set = entry.countrySets.find(
@@ -77,7 +83,18 @@ export function prepare(
   };
 }
 
-/** The fact environment of a prepared version, with the unit once it is computed. */
+/** The context's dates, refused when any is after the snapshot's `recordedOn` (spec 0002, R3). */
+export function contextDates(
+  indexed: IndexedSnapshot,
+  context: VersionContext,
+): { factsAsOf: CalendarDate; referenceDates: ReadonlyMap<string, CalendarDate> } {
+  const factsAsOf = context.factsAsOf ?? context.rulesAsOf;
+  const referenceDates = context.referenceDates ?? new Map<string, CalendarDate>();
+  assertRecordedBy(indexed, factsAsOf);
+  for (const date of referenceDates.values()) assertRecordedBy(indexed, date);
+  return { factsAsOf, referenceDates };
+}
+
 export function environmentOf(prepared: Prepared, unit?: FactEnvironment['unit']): FactEnvironment {
   const { indexed, version, principalId, factsAsOf, context } = prepared;
   return {
@@ -92,7 +109,6 @@ export function environmentOf(prepared: Prepared, unit?: FactEnvironment['unit']
   };
 }
 
-/** A frame on the principal at `factsAsOf`. */
 export function principalFrame(prepared: Prepared, environment: FactEnvironment): Frame {
   return {
     environment,

@@ -50,7 +50,6 @@ export function stateOf(identity: VersionIdentity, states: DecisionStates): Deci
   return states.get(identityKey(identity)) ?? 'proposed';
 }
 
-/** The version in effect and its decision state. */
 export interface Selection {
   readonly identity: VersionIdentity;
   readonly state: DecisionState;
@@ -102,7 +101,7 @@ export function selectVersion(
  * The first version, not active, that selection would pick at `rulesAsOf` or a later date in place
  * of `selected`: a pending rule change or correction the user should hear about (spec 0002, R5).
  */
-export function newerPendingVersion(
+export function newerProposedVersion(
   identities: readonly VersionIdentity[],
   selected: VersionIdentity,
   rulesAsOf: CalendarDate,

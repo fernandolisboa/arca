@@ -96,6 +96,12 @@ export function children(indexed: IndexedSnapshot, id: string, date: CalendarDat
   );
 }
 
+/** Someone whose relationships or assets of a kind are not recorded in full, so more may exist. */
+export interface MissingMarker {
+  readonly personId: string;
+  readonly marker: CompletenessMarker;
+}
+
 export function isRecordedInFull(person: Person, marker: CompletenessMarker): boolean {
   return person.recordedInFull?.includes(marker) ?? false;
 }

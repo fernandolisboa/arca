@@ -68,11 +68,10 @@ export const domain = {
     })),
     { name: 'console', message: domainLogging },
   ],
-  properties: ['globalThis', 'window', 'self'].map((object) => ({
-    object,
-    property: 'fetch',
-    message: domainIo,
-  })),
+  properties: ['globalThis', 'window', 'self'].flatMap((object) => [
+    { object, property: 'fetch', message: domainIo },
+    { object, property: 'console', message: domainLogging },
+  ]),
   // Syntactic guards against mistakes, not enforcement: an alias such as `const D = Date` passes.
   syntax: [
     {

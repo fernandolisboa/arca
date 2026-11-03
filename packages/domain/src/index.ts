@@ -128,10 +128,11 @@ export {
   type Selection,
   type VersionIdentity,
   identityKey,
-  newerPendingVersion,
+  newerProposedVersion,
   selectVersion,
+  stateOf,
 } from './rules/catalog.js';
-export { type EvaluationContext } from './rules/context.js';
+export { type EvaluationContext, type VersionContext } from './rules/context.js';
 export {
   type AmountRange,
   type AssessmentResult,
@@ -148,9 +149,11 @@ export {
 export { type Trace } from './rules/evaluate.js';
 export { type MissingFact } from './rules/missing.js';
 export {
-  type OutsideUnit,
-  type PossibleMember,
+  type Dependent,
+  type ExcludedPerson,
+  type PossibleDependent,
   type Unit,
-  type UnitMember,
   computeUnit,
 } from './rules/unit.js';
+export { type MissingMarker } from './case/graph.js';
+export { type Value } from './logic/value.js';

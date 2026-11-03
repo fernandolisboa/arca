@@ -202,6 +202,17 @@ describe('route version', () => {
       { assessments: [{ ...valid.assessments[0], evidence: ['person.studying'] }] },
       '/assessments/0/evidence/0',
     ],
+    [
+      'evidence reading an age without the leap-day convention',
+      {
+        leapDayBirthday: undefined,
+        leapDayBirthdaySources: undefined,
+        requirements: [],
+        dependents: [],
+        assessments: [{ ...valid.assessments[0], evidence: ['principal.ageYears'] }],
+      },
+      '/assessments/0/evidence/0',
+    ],
     ['an open version with closure sources', { closureSources: ['law'] }, '/closureSources'],
     [
       'a dependent rule at an undeclared date',

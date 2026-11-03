@@ -6,11 +6,13 @@ import {
   type RouteCatalog,
   type VersionIdentity,
   identityKey,
+  stateOf,
 } from '../../src/rules/catalog.js';
 import { evaluateRoute, evaluateVersion } from '../../src/rules/engine.js';
 import type { Trace } from '../../src/rules/evaluate.js';
 import { nodeCount } from '../../src/rules/expression.js';
-import { computeUnit } from '../../src/rules/unit.js';
+import { prepare } from '../../src/rules/context.js';
+import { computeUnit, unitOf } from '../../src/rules/unit.js';
 import { snapshot } from '../case/builders.js';
 import { context, entry, sampleVersion } from './fixtures.js';
 
@@ -24,11 +26,16 @@ const known = (id: string, birthDate: string, extra: object = {}): object => ({
   ...extra,
 });
 
-const cash = (owner: string, amount: number): object => ({
-  id: `a${owner.slice(1)}`,
+const cash = (
+  owner: string,
+  amount: number,
+  currency = 'EUR',
+  id = `a${owner.slice(1)}`,
+): object => ({
+  id,
   kind: 'cash',
   owners: [{ person: owner, share: '1' }],
-  value: { amount, currency: 'EUR' },
+  value: { amount, currency },
   valuedAt: '2026-10-01',
   liquid: true,
   sold: 'none',
@@ -69,22 +76,22 @@ describe('computeUnit', () => {
   const unit = computeUnit(family(), entry(), 'p1', context());
 
   it('includes who the rules cover, each once, with the rules and edges that cover them', () => {
-    expect(unit.included.map((member) => [member.personId, member.rules])).toEqual([
+    expect(unit.dependents.map((member) => [member.personId, member.rules])).toEqual([
       ['p2', ['spouse']],
       ['p4', ['children']],
       ['p7', ['parents']],
     ]);
-    expect(unit.included[0]?.edges).toHaveLength(1);
+    expect(unit.dependents[0]?.edges).toHaveLength(1);
   });
 
   it('lists possible dependents with what would settle them', () => {
-    expect(unit.possible.map((member) => member.personId)).toEqual(['p6', 'p8']);
-    expect(unit.possible[0]?.missingFacts).toEqual([
+    expect(unit.possibleDependents.map((member) => member.personId)).toEqual(['p6', 'p8']);
+    expect(unit.possibleDependents[0]?.missingFacts).toEqual([
       { kind: 'fact', reference: 'person.ageYears', personId: 'p6' },
       { kind: 'marker', personId: 'p6', marker: 'spouses' },
       { kind: 'fact', reference: 'person.hasSpouse', personId: 'p6' },
     ]);
-    expect(unit.possible[1]?.missingFacts).toEqual([
+    expect(unit.possibleDependents[1]?.missingFacts).toEqual([
       { kind: 'fact', reference: 'person.dependsOnPrincipal', personId: 'p8' },
     ]);
   });
@@ -108,6 +115,74 @@ describe('computeUnit', () => {
     ]);
   });
 
+  it.each<[string, object, object, string, string]>([
+    [
+      'a dated adoption, after it',
+      { start: '2015-01-01', parentKind: 'adoptive' },
+      { birthDate: '2012-01-01' },
+      '2020-01-01',
+      'dependent',
+    ],
+    [
+      'a dated adoption, before it',
+      { start: '2015-01-01', parentKind: 'adoptive' },
+      { birthDate: '2012-01-01' },
+      '2014-01-01',
+      'not_related',
+    ],
+    [
+      'a biological link, before the birth',
+      { parentKind: 'biological' },
+      { birthDate: '2012-01-01' },
+      '2011-01-01',
+      'not_related',
+    ],
+    [
+      'a biological link, birth unknown',
+      { parentKind: 'biological' },
+      {},
+      '2020-01-01',
+      'possible',
+    ],
+  ])('follows %s', (_label, link, child, factsAsOf, expected) => {
+    const value = snapshot({
+      members: ['p1', 'p2'],
+      people: [known('p1', '1980-01-01'), { id: 'p2', recordedInFull: everything, ...child }],
+      relationships: [{ kind: 'parent', parent: 'p1', child: 'p2', ...link }],
+    });
+    const unit = computeUnit(
+      value,
+      entry(),
+      'p1',
+      context({ factsAsOf: parseCalendarDate(factsAsOf) }),
+    );
+    const outcome =
+      unit.dependents.length > 0
+        ? 'dependent'
+        : unit.possibleDependents.length > 0
+          ? 'possible'
+          : unit.excluded[0]?.reason;
+    expect(outcome).toBe(expected);
+  });
+
+  it('names the relationship when a birth date leaves an edge unknown', () => {
+    const value = snapshot({
+      members: ['p1', 'p2'],
+      people: [known('p1', '1980-01-01'), { id: 'p2', recordedInFull: everything }],
+      relationships: [{ kind: 'parent', parent: 'p1', child: 'p2', parentKind: 'biological' }],
+    });
+    const [possible] = computeUnit(
+      value,
+      entry(),
+      'p1',
+      context({ factsAsOf: parseCalendarDate('2020-01-01') }),
+    ).possibleDependents;
+    expect(possible?.missingFacts).toContainEqual({
+      kind: 'relationship',
+      edge: { kind: 'parent', parent: 'p1', child: 'p2', parentKind: 'biological' },
+    });
+  });
+
   it('makes an undated adoption possible before recordedOn, naming the relationship', () => {
     const adoption = { kind: 'parent', parent: 'p1', child: 'p2', parentKind: 'adoptive' };
     const value = snapshot({
@@ -116,14 +191,14 @@ describe('computeUnit', () => {
       relationships: [adoption],
     });
     const now = computeUnit(value, entry(), 'p1', context());
-    expect(now.included.map((member) => member.personId)).toEqual(['p2']);
+    expect(now.dependents.map((member) => member.personId)).toEqual(['p2']);
     const earlier = computeUnit(
       value,
       entry(),
       'p1',
       context({ factsAsOf: parseCalendarDate('2020-01-01') }),
     );
-    expect(earlier.possible.map((member) => member.missingFacts)).toEqual([
+    expect(earlier.possibleDependents.map((member) => member.missingFacts)).toEqual([
       [{ kind: 'relationship', edge: adoption }],
     ]);
   });
@@ -144,7 +219,18 @@ describe('computeUnit', () => {
       context({ referenceDates: new Map([['filingDate', parseCalendarDate('2018-01-01')]]) }),
     );
     // Aged 18 when filed, so the age protection keeps p5 in.
-    expect(filed.included.map((member) => member.personId)).toEqual(['p4', 'p5']);
+    expect(filed.dependents.map((member) => member.personId)).toEqual(['p4', 'p5']);
+  });
+
+  it('never calls someone unrelated while a rule that might cover them lacks its date', () => {
+    const atFiling = entry({
+      referenceDates: ['filingDate'],
+      dependents: [{ ...sampleVersion.dependents[1], at: 'filingDate' }],
+    });
+    const unit = computeUnit(family(), atFiling, 'p1', context());
+    expect(new Set(unit.excluded.map((person) => person.reason))).toEqual(
+      new Set(['reference_date_missing']),
+    );
   });
 });
 
@@ -215,6 +301,208 @@ describe('evaluateVersion', () => {
     );
   });
 
+  const requirement = (expression: object): object => ({
+    requirements: [{ id: 'only', title: 'Only', expression, sources: ['law'] }],
+  });
+  const overDependents = (op: string, where: object): object => ({
+    op,
+    over: 'unit.dependents',
+    where,
+  });
+  const age = (comparison: string, years: number): object => ({
+    op: comparison,
+    left: { op: 'fact', key: 'person.ageYears' },
+    right: { op: 'int', value: years },
+  });
+  const p6Age = { kind: 'fact', reference: 'person.ageYears', personId: 'p6' };
+  const p8Dependence = { kind: 'fact', reference: 'person.dependsOnPrincipal', personId: 'p8' };
+
+  it.each<[string, object, object[], object[]]>([
+    [
+      'every: an item whose condition already holds adds nothing',
+      overDependents('every', age('lt', 100)),
+      [p6Age],
+      [p8Dependence],
+    ],
+    [
+      'some: an item whose condition is false adds nothing',
+      overDependents('some', age('gt', 100)),
+      [p6Age],
+      [p8Dependence],
+    ],
+    [
+      'count: every possible member matters',
+      {
+        op: 'gte',
+        left: { op: 'count', over: 'unit.dependents', where: { op: 'bool', value: true } },
+        right: { op: 'int', value: 5 },
+      },
+      [p8Dependence, { kind: 'fact', reference: 'person.hasSpouse', personId: 'p6' }],
+      [],
+    ],
+  ])('collections, %s', (_label, expression, present, absent) => {
+    const { status, missingFacts } = evaluateVersion(
+      family(),
+      entry(requirement(expression)),
+      'p1',
+      context(),
+    );
+    expect(status).toBe('missing_information');
+    for (const fact of present) expect(missingFacts).toContainEqual(fact);
+    for (const fact of absent) expect(missingFacts).not.toContainEqual(fact);
+  });
+
+  it('names the relationships a line of ancestors depends on', () => {
+    const adoption = { kind: 'parent', parent: 'p9', child: 'p1', parentKind: 'adoptive' };
+    const value = snapshot({
+      people: [known('p1', '1980-01-01'), known('p9', '1950-01-01')],
+      relationships: [adoption],
+    });
+    const anyParent = {
+      op: 'some',
+      over: 'principal.ancestors',
+      generations: 1,
+      where: { op: 'bool', value: true },
+    };
+    const evaluation = evaluateVersion(
+      value,
+      entry({ ...requirement(anyParent), dependents: [] }),
+      'p1',
+      context({ factsAsOf: parseCalendarDate('2020-01-01') }),
+    );
+    expect(evaluation.missingFacts).toEqual([{ kind: 'relationship', edge: adoption }]);
+  });
+
+  it('names the markers that leave an open unit open', () => {
+    const value = snapshot({
+      people: [
+        {
+          ...known('p1', '1980-01-01'),
+          recordedInFull: ['spouses', 'parents', 'assets'],
+        },
+      ],
+      assets: [cash('p1', 5000_00)],
+    });
+    const evaluation = evaluateVersion(value, entry(), 'p1', context());
+    expect(evaluation.missingFacts).toContainEqual({
+      kind: 'marker',
+      personId: 'p1',
+      marker: 'children',
+    });
+  });
+
+  it('still lists a fact the family can answer when a rate is also missing', () => {
+    const value = snapshot({
+      people: [known('p1', '1980-01-01')],
+      assets: [
+        cash('p1', 1, 'BRL', 'a9'),
+        { ...(cash('p1', 5000_00) as Record<string, unknown>), liquid: undefined },
+      ].map((asset) =>
+        Object.fromEntries(Object.entries(asset).filter(([, field]) => field !== undefined)),
+      ),
+    });
+    const evaluation = evaluateVersion(value, entry(), 'p1', context());
+    expect(evaluation.missingRates).toEqual([{ from: 'BRL', to: 'EUR' }]);
+    expect(evaluation.missingFacts).toContainEqual({
+      kind: 'fact',
+      reference: 'unit.liquidAssets',
+      personId: 'p1',
+    });
+  });
+
+  it('lists no fact when only a reference date leaves the unit open', () => {
+    const atFiling = entry({
+      referenceDates: ['filingDate'],
+      dependents: [{ ...sampleVersion.dependents[1], at: 'filingDate' }],
+    });
+    const evaluation = evaluateVersion(alone(5000_00), atFiling, 'p1', context());
+    expect(evaluation.status).toBe('missing_information');
+    expect(evaluation.missingDates).toEqual(['filingDate']);
+    expect(evaluation.missingFacts).toEqual([]);
+  });
+
+  it('names the edge an edge fact was read across', () => {
+    const first = { kind: 'parent', parent: 'p1', child: 'p2', parentKind: 'adoptive' };
+    const second = { kind: 'spouse', people: ['p1', 'p2'], start: '2020-01-01', end: 'none' };
+    const value = snapshot({
+      members: ['p1', 'p2'],
+      people: [known('p1', '1980-01-01'), known('p2', '1990-01-01')],
+      relationships: [first, second],
+      assets: [cash('p1', 5000_00)],
+    });
+    const custody = entry({
+      dependents: [
+        {
+          id: 'any',
+          title: 'Anyone close',
+          path: ['child'],
+          condition: {
+            op: 'eq',
+            left: { op: 'fact', key: 'edge.custody' },
+            right: { op: 'token', value: 'full' },
+          },
+          sources: ['law'],
+        },
+      ],
+    });
+    const [possible] = computeUnit(value, custody, 'p1', context()).possibleDependents;
+    expect(possible?.missingFacts).toEqual([
+      { kind: 'fact', reference: 'edge.custody', personId: 'p2', edge: first },
+    ]);
+  });
+
+  it('decides a per-dependent cost only through an edge that certainly covers the dependent', () => {
+    // Synthetic: p3 is p1's biological child and the adoptive child of p2, whose marriage to p1
+    // has an unknown start. A fee for adopted children may or may not apply.
+    const value = snapshot({
+      members: ['p1', 'p2', 'p3'],
+      people: [known('p1', '1980-01-01'), known('p2', '1981-01-01'), known('p3', '2012-01-01')],
+      relationships: [
+        { kind: 'spouse', people: ['p1', 'p2'], end: 'none' },
+        { kind: 'parent', parent: 'p1', child: 'p3', parentKind: 'biological' },
+        { kind: 'parent', parent: 'p2', child: 'p3', parentKind: 'adoptive', start: '2016-01-01' },
+      ],
+      assets: [cash('p1', 5000_00)],
+    });
+    const adopted = entry({
+      dependents: [
+        {
+          id: 'children',
+          title: 'Children',
+          path: ['child'],
+          condition: { op: 'bool', value: true },
+          sources: ['law'],
+        },
+        {
+          id: 'stepchildren',
+          title: 'Stepchildren',
+          path: ['spouse', 'child'],
+          condition: { op: 'bool', value: true },
+          sources: ['law'],
+        },
+      ],
+      costs: [
+        {
+          id: 'adoption-fee',
+          title: 'Adoption fee',
+          kind: 'fee',
+          amount: { op: 'money', amount: 70_00, currency: 'EUR' },
+          appliesTo: 'each_dependent',
+          condition: {
+            op: 'eq',
+            left: { op: 'fact', key: 'edge.parentKind' },
+            right: { op: 'token', value: 'adoptive' },
+          },
+          sources: ['law'],
+        },
+      ],
+    });
+    const evaluation = evaluateVersion(value, adopted, 'p1', context());
+    expect(evaluation.costs.find((cost) => cost.personId === 'p3')?.applies).toBe('unknown');
+    expect(evaluation.totals[0]?.certain.max).toEqual({ amount: 0, currency: 'EUR' });
+    expect(evaluation.totals[0]?.possibleExtra.max).toEqual({ amount: 70_00, currency: 'EUR' });
+  });
+
   it('lists no missing facts when a requirement is false', () => {
     const young = snapshot({
       people: [{ id: 'p1', birthDate: '2015-01-01' }],
@@ -257,18 +545,7 @@ describe('evaluateVersion', () => {
   it('reports missing rates and dates apart, and the rates it used', () => {
     const value = snapshot({
       people: [known('p1', '1980-01-01')],
-      assets: [
-        {
-          ...(cash('p1', 1000_00) as Record<string, unknown>),
-          value: { amount: 4000_00, currency: 'USD' },
-        },
-        {
-          ...(cash('p2', 0) as Record<string, unknown>),
-          id: 'a9',
-          owners: [{ person: 'p1', share: '1' }],
-          value: { amount: 1, currency: 'BRL' },
-        },
-      ],
+      assets: [cash('p1', 4000_00, 'USD'), cash('p1', 1, 'BRL', 'a9')],
     });
     const atFiling = entry({
       referenceDates: ['filingDate'],
@@ -427,6 +704,16 @@ describe('evaluateVersion', () => {
       'an entry without its pinned set',
       () => evaluateVersion(alone(1), { ...entry(), countrySets: [] }, 'p1', context()),
     ],
+    [
+      'an identity that is not its version',
+      () =>
+        evaluateVersion(
+          alone(1),
+          { ...entry(), identity: { ...entry().identity, status: 'closed' } },
+          'p1',
+          context(),
+        ),
+    ],
   ])('refuses %s', (_label, run) => {
     expect(run).toThrow(RangeError);
   });
@@ -450,14 +737,16 @@ describe('evaluateVersion', () => {
     const version = entry();
     const evaluation = evaluateVersion(value, version, 'p1', context());
     const traces = [
-      ...evaluation.unit.traces,
+      ...unitOf(prepare(value, version, 'p1', context())).traces,
       ...evaluation.requirements.map((requirement) => requirement.trace),
     ];
     const expressions = [
       ...version.version.requirements.map((requirement) => requirement.expression),
       ...version.version.dependents.map((rule) => rule.condition),
     ];
-    const bound = expressions.reduce((total, each) => total + nodeCount(each), 0) * 12;
+    // Items grow with people, and dependent conditions with the edges people are reached by.
+    const scale = value.people.length + value.relationships.length;
+    const bound = expressions.reduce((total, each) => total + nodeCount(each), 0) * scale;
     expect(traces.reduce((total, trace) => total + traceSize(trace), 0)).toBeLessThanOrEqual(bound);
   });
 });
@@ -472,8 +761,8 @@ describe('evaluateRoute', () => {
   const catalog = (entries = [v1, v2]): RouteCatalog => ({
     identities: () => entries.map((each) => each.identity),
     activeEntry: vi.fn((identity: VersionIdentity, states: DecisionStates) =>
-      states.get(identityKey(identity)) === 'active'
-        ? entries.find((each) => each.identity.number === identity.number)
+      stateOf(identity, states) === 'active'
+        ? entries.find((each) => identityKey(each.identity) === identityKey(identity))
         : undefined,
     ),
   });
@@ -506,6 +795,28 @@ describe('evaluateRoute', () => {
       pending: v2.identity,
     });
     expect(lookup.activeEntry).not.toHaveBeenCalled();
+  });
+
+  it('refuses an entry other than the version selected and activated', () => {
+    const swapped: RouteCatalog = {
+      identities: () => [v1.identity],
+      activeEntry: () => ({ ...v1, identity: { ...v1.identity, hash: 'other' } }),
+    };
+    expect(() => evaluateRoute(alone(5000_00), swapped, 'qm-sample', 'p1', context())).toThrow(
+      RangeError,
+    );
+  });
+
+  it('refuses a factsAsOf after recordedOn even before selection', () => {
+    expect(() =>
+      evaluateRoute(
+        alone(5000_00),
+        catalog(),
+        'qm-sample',
+        'p1',
+        context({ rulesAsOf: parseCalendarDate('2027-02-01') }),
+      ),
+    ).toThrow(RangeError);
   });
 
   it('is unavailable when no version is in effect', () => {

@@ -1,6 +1,12 @@
 import { type Duration, durationParts, durationUnits } from '../calendar/duration.js';
 import type { CurrencyCode } from '../money/currency.js';
-import { type CheckContext, type CheckIssue, type CheckScope, checkExpression } from './check.js';
+import {
+  type CheckContext,
+  type CheckIssue,
+  type CheckScope,
+  ageNeedsLeapDay,
+  checkExpression,
+} from './check.js';
 import { type Expression, maxNodesPerVersion, nodeCount } from './expression.js';
 import { resolveFactReference } from './fact-reference.js';
 import type { CountrySet, RouteVersion, Source } from './route-version.js';
@@ -156,7 +162,7 @@ export function checkRouteVersion(version: RouteVersion, official: OfficialHosts
       if (resolved?.target !== 'principal' && resolved?.target !== 'unit') {
         issue(at, 'Evidence is a principal or unit fact');
       } else if (resolved.definition.readsAge === true && !context.leapDayBirthday) {
-        issue(at, 'An age needs the version to set leapDayBirthday');
+        issue(at, ageNeedsLeapDay);
       }
     });
   });

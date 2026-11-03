@@ -2,6 +2,7 @@ import type { CalendarDate } from '../calendar/calendar-date.js';
 import { type Truth, and, or } from '../logic/truth.js';
 import {
   type IndexedSnapshot,
+  type MissingMarker,
   type Neighbor,
   children,
   couples,
@@ -35,12 +36,6 @@ export interface Arrival extends Reach {
 export interface Reached extends Reach {
   readonly id: string;
   readonly arrivals: readonly Arrival[];
-}
-
-/** Someone whose relationships of a kind are not recorded in full, so more people may exist. */
-export interface MissingMarker {
-  readonly personId: string;
-  readonly marker: CompletenessMarker;
 }
 
 export interface PathResult {

@@ -5,7 +5,7 @@ import {
   type DecisionStates,
   type VersionIdentity,
   identityKey,
-  newerPendingVersion,
+  newerProposedVersion,
   selectVersion,
 } from '../../src/rules/catalog.js';
 
@@ -117,13 +117,13 @@ describe('selectVersion', () => {
   });
 });
 
-describe('newerPendingVersion', () => {
+describe('newerProposedVersion', () => {
   const first = identity(1, '2020-01-01');
   const versions = [first, identity(2, '2027-01-01'), identity(3, '2026-12-01', 1)];
   const at = parseCalendarDate('2026-11-03');
 
   it('names a later rule change that is not active, with the date it applies from', () => {
-    const result = newerPendingVersion(
+    const result = newerProposedVersion(
       versions,
       first,
       at,
@@ -133,14 +133,14 @@ describe('newerPendingVersion', () => {
   });
 
   it('names a proposed correction of the selected version', () => {
-    const result = newerPendingVersion(versions, first, at, states(versions, { 3: 'proposed' }));
+    const result = newerProposedVersion(versions, first, at, states(versions, { 3: 'proposed' }));
     expect(result).toEqual({ identity: versions[2], from: '2026-12-01' });
   });
 
   it('is absent when every later version is active or rejected', () => {
-    expect(newerPendingVersion(versions, first, at, states(versions))).toBeUndefined();
+    expect(newerProposedVersion(versions, first, at, states(versions))).toBeUndefined();
     expect(
-      newerPendingVersion(versions, first, at, states(versions, { 2: 'rejected', 3: 'rejected' })),
+      newerProposedVersion(versions, first, at, states(versions, { 2: 'rejected', 3: 'rejected' })),
     ).toBeUndefined();
   });
 });

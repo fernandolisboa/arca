@@ -1,29 +1,33 @@
 import type { CalendarDate } from '../calendar/calendar-date.js';
+import { indexSnapshot } from '../case/graph.js';
 import type { CaseSnapshot } from '../case/snapshot.js';
-import { addNumbers, hullNumbers, orZero } from '../logic/number.js';
+import { addNumbers, hullNumbers, orZero, zeroBound } from '../logic/number.js';
 import { type Truth, and, or } from '../logic/truth.js';
 import { type NumberValue, type Value, isKnown } from '../logic/value.js';
 import type { CurrencyCode } from '../money/currency.js';
-import type { FxRate } from '../money/fx.js';
+import type { CurrencyPair, FxRate } from '../money/fx.js';
 import { type Money, roundHalfEven } from '../money/money.js';
 import {
   type CatalogEntry,
   type RouteCatalog,
   type VersionIdentity,
-  newerPendingVersion,
+  identityKey,
+  newerProposedVersion,
   selectVersion,
 } from './catalog.js';
 import {
   type EvaluationContext,
   type Prepared,
+  type VersionContext,
+  contextDates,
   environmentOf,
   prepare,
   principalFrame,
 } from './context.js';
-import { type Frame, type Trace, evaluate, truthOf } from './evaluate.js';
+import { type Frame, type Trace, evaluate, numberOf, truthOf } from './evaluate.js';
 import { type MissingFact, type UnitGaps, decisiveFacts, distinct, traceGaps } from './missing.js';
 import type { Cost, DurationStage, Source } from './route-version.js';
-import { type Unit, type UnitMember, unitEnvironment, unitOf } from './unit.js';
+import { type Unit, unitEnvironment, unitOf } from './unit.js';
 
 export type EvaluationStatus =
   'unavailable' | 'not_eligible' | 'missing_information' | 'needs_assessment' | 'eligible';
@@ -96,7 +100,7 @@ export interface Evaluation {
   readonly requirements: readonly RequirementResult[];
   readonly assessments: readonly AssessmentResult[];
   readonly missingFacts: readonly MissingFact[];
-  readonly missingRates: readonly { readonly from: CurrencyCode; readonly to: CurrencyCode }[];
+  readonly missingRates: readonly CurrencyPair[];
   readonly missingDates: readonly string[];
   readonly costs: readonly CostItem[];
   readonly totals: readonly CostTotal[];
@@ -113,11 +117,11 @@ export function evaluateVersion(
   snapshot: CaseSnapshot,
   entry: CatalogEntry,
   principalId: string,
-  context: EvaluationContext,
+  context: VersionContext,
 ): Evaluation {
   const prepared = prepare(snapshot, entry, principalId, context);
   const { version } = prepared;
-  const unit = unitOf(prepared);
+  const { unit, traces: unitTraces } = unitOf(prepared);
   const environment = environmentOf(prepared, unitEnvironment(unit));
   const frame = principalFrame(prepared, environment);
   const cite = citations(version.sources);
@@ -135,7 +139,7 @@ export function evaluateVersion(
   const assessments = version.assessments.map((assessment): AssessmentResult => {
     const read = assessment.evidence.map((reference) => ({
       reference,
-      value: evaluate({ op: 'fact', key: reference }, frame).value as Value,
+      value: valueOf(evaluate({ op: 'fact', key: reference }, frame)),
     }));
     return {
       id: assessment.id,
@@ -156,7 +160,7 @@ export function evaluateVersion(
         );
   const costs = costItems(prepared, frame, unit, cite);
   const gaps = traceGaps([
-    ...unit.traces,
+    ...unitTraces,
     ...requirements.map((requirement) => requirement.trace),
     ...costs.traces,
   ]);
@@ -215,18 +219,23 @@ export function evaluateRoute(
   principalId: string,
   context: EvaluationContext,
 ): RouteEvaluation {
+  contextDates(indexSnapshot(snapshot), context);
   const identities = catalog.identities(routeId);
   const selection = selectVersion(identities, context.rulesAsOf, context.states);
   if (selection === undefined) return { kind: 'no_version', status: 'unavailable', routeId };
-  const entry =
-    selection.state === 'active'
-      ? catalog.activeEntry(selection.identity, context.states)
-      : undefined;
-  if (entry === undefined) {
+  if (selection.state !== 'active') {
     return { kind: 'pending', status: 'pending_activation', routeId, pending: selection.identity };
   }
+  const entry = catalog.activeEntry(selection.identity, context.states);
+  // The activation covers one exact content, so an entry for any other refuses to evaluate.
+  if (
+    entry?.identity.routeId !== routeId ||
+    identityKey(entry.identity) !== identityKey(selection.identity)
+  ) {
+    throw new RangeError('The catalog has no entry for the active version selected');
+  }
   const evaluation = evaluateVersion(snapshot, entry, principalId, context);
-  const newer = newerPendingVersion(
+  const newer = newerProposedVersion(
     identities,
     selection.identity,
     context.rulesAsOf,
@@ -254,14 +263,16 @@ function statusOf(
 }
 
 function unitGaps(unit: Unit): UnitGaps {
-  const byPerson = new Map(unit.possible.map((member) => [member.personId, member.missingFacts]));
+  const byPerson = new Map(
+    unit.possibleDependents.map((member) => [member.personId, member.missingFacts]),
+  );
   const markers = unit.missingMarkers.map((missing): MissingFact => ({
     kind: 'marker',
     ...missing,
   }));
   return {
     member: (personId) => byPerson.get(personId) ?? [],
-    all: () => [...unit.possible.flatMap((member) => member.missingFacts), ...markers],
+    all: () => [...unit.possibleDependents.flatMap((member) => member.missingFacts), ...markers],
   };
 }
 
@@ -308,7 +319,7 @@ function costItems(
     traces.push(amount, ...(condition === undefined ? [] : [condition]));
     return {
       condition: condition === undefined ? true : truthOf(condition),
-      amount: amount.value as NumberValue,
+      amount: numberOf(amount),
     };
   };
   for (const cost of prepared.version.costs) {
@@ -321,20 +332,18 @@ function costItems(
       );
       continue;
     }
-    const dependents: [UnitMember, Truth][] = [
-      ...unit.included.map((member): [UnitMember, Truth] => [member, true]),
-      ...unit.possible.map((member): [UnitMember, Truth] => [member, 'unknown']),
-    ];
-    for (const [member, membership] of dependents) {
+    for (const dependent of [...unit.dependents, ...unit.possibleDependents]) {
       // A dependent reached by several edges pays once: the cost applies when it applies through
-      // any of them, and its amount ranges over theirs.
-      const perEdge = member.edges.map((edge) =>
-        price(cost, { ...frame, current: member.personId, edge }),
+      // an edge that covers them, and its amount ranges over those edges.
+      const perEdge = dependent.edges.map(({ edge, holds }) => {
+        const priced = price(cost, { ...frame, current: dependent.personId, edge });
+        return { applies: and([holds, priced.condition]), amount: priced.amount };
+      });
+      const counted = perEdge.filter((entry) => entry.applies !== false);
+      const amount = hullNumbers(
+        (counted.length > 0 ? counted : perEdge).map((entry) => entry.amount),
       );
-      const condition = or(perEdge.map((entry) => entry.condition));
-      const counted = perEdge.filter((entry) => entry.condition !== false);
-      const amount = hullNumbers((counted.length > 0 ? counted : perEdge).map((e) => e.amount));
-      add(cost, { applies: and([membership, condition]), amount }, member.personId);
+      add(cost, { applies: or(perEdge.map((entry) => entry.applies)), amount }, dependent.personId);
     }
   }
   return { items, priced, traces };
@@ -349,8 +358,8 @@ function totals(
   const zero = (currency: CurrencyCode): NumberValue => ({
     type: 'number',
     currency,
-    min: none,
-    max: none,
+    min: zeroBound,
+    max: zeroBound,
   });
   const byCurrency = new Map<CurrencyCode, { certain: NumberValue; extra: NumberValue }>();
   if (costs.length > 0) {
@@ -382,8 +391,6 @@ function totals(
   }));
 }
 
-const none = { units: 0n, scale: 0 };
-
 function minOnly(value: NumberValue): Pick<NumberValue, 'min'> {
   return value.min === undefined ? {} : { min: value.min };
 }
@@ -395,4 +402,9 @@ function rounded(value: NumberValue): AmountRange {
     ...(value.min === undefined ? {} : { min: roundHalfEven({ ...value.min, currency }) }),
     ...(value.max === undefined ? {} : { max: roundHalfEven({ ...value.max, currency }) }),
   };
+}
+
+function valueOf(trace: Trace): Value {
+  if (trace.value.type === 'set') throw new RangeError('A set where a fact value is needed');
+  return trace.value;
 }

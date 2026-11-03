@@ -221,7 +221,11 @@ describe('person.liquidAssets', () => {
         people: [recorded('p1')],
         assets: [asset({ value: { amount: 3000, currency: 'BRL' } })],
       }),
-    ).toEqual({ value: euros(0n), missingRates: [{ from: 'BRL', to: 'EUR' }] });
+    ).toEqual({
+      value: euros(0n),
+      missingRates: [{ from: 'BRL', to: 'EUR' }],
+      onlyRatesOrDatesMissing: true,
+    });
   });
 
   it('reports every missing rate and keeps what converted as the lower bound', () => {
@@ -240,6 +244,7 @@ describe('person.liquidAssets', () => {
         { from: 'BRL', to: 'EUR' },
         { from: 'JPY', to: 'EUR' },
       ],
+      onlyRatesOrDatesMissing: true,
     });
   });
 

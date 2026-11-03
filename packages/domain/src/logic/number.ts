@@ -34,10 +34,7 @@ export function subtractNumbers(left: NumberValue, right: NumberValue): NumberVa
 
 export function multiplyNumber(value: NumberValue, factor: Decimal): NumberValue {
   const by = scaledDecimal(factor);
-  if (by.units === 0n) {
-    const zero = { units: 0n, scale: 0 };
-    return number(value, zero, zero);
-  }
+  if (by.units === 0n) return number(value, zeroBound, zeroBound);
   const times = (bound: Scaled | undefined): Scaled | undefined =>
     bound === undefined
       ? undefined
@@ -62,10 +59,11 @@ export function hullNumbers(values: readonly NumberValue[]): NumberValue {
   return number(first, minNumbers(values).min, maxNumbers(values).max);
 }
 
+export const zeroBound: Scaled = { units: 0n, scale: 0 };
+
 /** An amount that may not count: zero or itself. */
 export function orZero(value: NumberValue): NumberValue {
-  const zero = { units: 0n, scale: 0 };
-  return hullNumbers([value, number(value, zero, zero)]);
+  return hullNumbers([value, number(value, zeroBound, zeroBound)]);
 }
 
 export function compareNumbers(
