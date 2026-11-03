@@ -75,6 +75,7 @@ catalog:
   drizzle-kit: 1.0.0-rc.5
   drizzle-orm: 1.0.0-rc.5
   eslint: 10.13.0
+  fast-check: 4.10.2
   hono: 4.13.14
   i18next-icu: 2.6.1
   i18next: 26.5.11
