@@ -60,7 +60,7 @@ Superseded by [ADR-0019](0019-reviewers-in-the-authoring-session.md) on 2026-11-
 
 ## Consequences
 
-- An agent holding the owner's GitHub token can change the ruleset, merge without checks, or create a passing check of any required name from a workflow of its own, since every required check is pinned to GitHub Actions. The control is the agents' instructions and the reviewers, not GitHub. A prompt injection that reaches an agent can do what the token allows, which is why the token is limited to this repository and expires.
+- An agent holding the owner's GitHub token can change the ruleset, merge without checks, or create a passing check of any required name from a workflow of its own, since a pin to GitHub Actions would still accept any workflow's check, and the ruleset applied on 2026-11-03 does not pin checks at all. The control is the agents' instructions and the reviewers, not GitHub. A prompt injection that reaches an agent can do what the token allows, which is why the token is limited to this repository and expires.
 - **Accepted by the owner:** the owner connection string sits in Vercel's Production and Preview variables, so running functions and preview builds of any same-repository branch can read it. Whoever gets code execution in the API, or writes a branch, can bypass row-level security and reach every family's data. Fork pull requests do not get it (Vercel Git Fork Protection stays on).
 - Until the `development` branch exists, previews fork from production. This is safe only while production holds no family data, so the case-data slice is blocked on it.
 - The runner and its guards run from the commit being deployed, not from `main`; a change that weakens them is caught by the reviewers, not by the pipeline.
