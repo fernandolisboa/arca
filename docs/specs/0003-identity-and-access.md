@@ -50,7 +50,7 @@ Members of the family sign in with passkeys, invited by someone already in, on e
 ### R4. Sessions and devices
 
 - Cookie `__Host-` prefixed, `Secure`, `HttpOnly`, `SameSite=Lax`; idle timeout 3 days; absolute lifetime 30 days, enforced by a check on the session's creation time.
-- Better Auth's origin check on, trusted origins limited to the environment's own origin. Every state-changing `/v1/*` route of our own (not only Better Auth's) passes a Hono middleware that rejects a request whose `Origin` (or, without it, `Sec-Fetch-Site`) is not the environment's own origin, and one that carries neither (a test covers the no-header case); `SameSite=Lax` is not the only guard.
+- Better Auth's origin check on, trusted origins limited to the environment's own origin. Every state-changing `/v1/*` route of our own (not only Better Auth's) passes a Hono middleware that rejects a request whose `Origin` is not the environment's own origin (or, without it, whose `Sec-Fetch-Site` is not `same-origin`, so a sibling `filx.app` subdomain counts as cross-origin), and one that carries neither (a test covers the no-header case); `SameSite=Lax` is not the only guard.
 - The session stores a device description derived on the server from the user agent as two closed enums (browser family, operating system family), rendered by the client and the notice templates through i18n; never the raw user agent or the IP address.
 - The session stores the credential ID that signed it in.
 - Adding a passkey to an account that already has one needs a `sensitive_settings` step-up. The new passkey cannot sign in or satisfy a step-up for 24 hours; during that window any older active passkey can cancel it from the device list with a `sensitive_settings` step-up, every session shows a banner, and the account gets notices (R7). This is the same rule as a recovery passkey (R6).
@@ -83,12 +83,12 @@ Members of the family sign in with passkeys, invited by someone already in, on e
 ### R8. Email
 
 - An `EmailSender` port in `apps/api` with two adapters: Resend (production only) and an outbox writer (every other environment). Messages are built from i18n templates in pt-BR with generic text and one link; no personal data beyond the recipient address.
-- Resend: the email domain (one the project owns; ADR-0015) added with the São Paulo sending region, SPF, DKIM and DMARC set; the API key is a Sensitive Vercel variable (Production only). The email domain counts as configured when the relying-party configuration file names a sender domain and the Resend key is present; production checks both at startup. The ticket records Resend's log retention for the plan in [RETENTION.md](../RETENTION.md).
+- Resend: the sending domain `arca.filx.app` (ADR-0015) added with the São Paulo sending region, SPF, DKIM and DMARC set; the API key is a Sensitive Vercel variable (Production only). The email domain counts as configured when the relying-party configuration file names a sender domain and the Resend key is present; production checks both at startup. The ticket records Resend's log retention for the plan in [RETENTION.md](../RETENTION.md).
 - Outbox: table `auth.outbox`, present in every environment so schemas never diverge; production refuses to select the outbox adapter; shown at `/internal/outbox` only on preview deployments, behind Vercel Deployment Protection; rows expire after 7 days.
 
 ### R9. Relying party and environments
 
-- A repository configuration file names the production relying-party ID and origin (for now the project's `vercel.app` host, ADR-0015). While it is empty, or while no email domain is configured (R8), production refuses owner enrollment, invites, registration and recovery with a clear error code, and the web app shows that sign-in is not available yet. The host gets its meaningful name before the file names it.
+- A repository configuration file names the production relying-party ID and origin (`arca.filx.app`, ADR-0015). While it is empty, or while no email domain is configured (R8), production refuses owner enrollment, invites, registration and recovery with a clear error code, and the web app shows that sign-in is not available yet.
 - A preview uses its branch URL host (`VERCEL_BRANCH_URL`) as relying-party ID and origin; ceremonies from any other origin, including the per-deployment URL, are rejected.
 - Local development uses `localhost`, which WebAuthn treats as a secure context.
 
