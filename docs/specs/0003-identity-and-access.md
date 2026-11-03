@@ -88,7 +88,7 @@ Members of the family sign in with passkeys, invited by someone already in, on e
 
 ### R9. Relying party and environments
 
-- A repository configuration file names the production relying-party ID and origin (for now the project's `vercel.app` host, ADR-0015). While it is empty, production refuses owner enrollment, invites, registration and recovery with a clear error code, and the web app shows that sign-in is not available yet. While no email domain is configured, production refuses invites and recovery with their own error code.
+- A repository configuration file names the production relying-party ID and origin (for now the project's `vercel.app` host, ADR-0015). While it is empty, or while no email domain is configured (R8), production refuses owner enrollment, invites, registration and recovery with a clear error code, and the web app shows that sign-in is not available yet. The host gets its meaningful name before the file names it.
 - A preview uses its branch URL host (`VERCEL_BRANCH_URL`) as relying-party ID and origin; ceremonies from any other origin, including the per-deployment URL, are rejected.
 - Local development uses `localhost`, which WebAuthn treats as a secure context.
 
@@ -124,5 +124,5 @@ Assets: passkeys, sessions, recovery codes, invites, the enrollment code, stored
 
 - Every requirement is covered by a test: unit tests for the step-up challenge and re-verification, database tests for privileges and the audit log's grants, and Playwright with a virtual authenticator (with PRF) for enrollment, invite, sign-in, step-up, recovery and device revocation at phone and desktop sizes.
 - The access-matrix suite covers `app_auth` and `app_audit`.
-- A preview shows invite, sign-in, step-up, recovery and devices with the outbox; owner enrollment is proven in Playwright against an empty database, since seeded previews already have accounts; production refuses enrollment until the relying-party file names the host, and invites and recovery until an email domain is configured.
+- A preview shows invite, sign-in, step-up, recovery and devices with the outbox; owner enrollment is proven in Playwright against an empty database, since seeded previews already have accounts; production refuses enrollment until the relying-party file names the host and an email domain is configured.
 - No user-facing string outside i18n; no personal data in fixtures, logs or telemetry.
