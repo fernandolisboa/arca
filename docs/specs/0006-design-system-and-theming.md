@@ -24,11 +24,16 @@ The owner picked these on 2026-11-03. Identifiers are English; the pt-BR labels 
 | --- | --- | --- |
 | Color theme | `notebook` | `serene`, `panel` |
 | Mode | `dark` | `light`, `system` |
-| Font pair | `expressive` | `editorial`, `clean`, `technical` |
+| Font pair | `expressive` until the owner picks among the nine | `editorial`, `elegant`, `geometric`, `retro`, `friendly`, `readable`, `clean`, `technical` |
 | Corners | `square` | `soft`, `round` |
-| Navigation from 768 px | `top` | `side`, `floating-dock` |
-| Navigation below 768 px | `floating-dock` | `fixed-dock` |
+| Navigation from 768 px | `top` | `side`, `floating-dock`, `menu` |
+| Navigation below 768 px | `fixed-dock` | `floating-dock`, `menu` |
+| Dock edge (floating dock only) | `bottom` | `left`, `right` |
+| Text size | `100` | `112`, `125`, `150` (percent of the root size) |
+| Contrast | `standard` | `high` |
 | Motion | `on` | `off` (also forced off by `prefers-reduced-motion: reduce`) |
+
+These ten axes are the whole preference set. Each is one attribute on `<html>`: `data-theme`, `data-mode`, `data-font`, `data-corners`, `data-nav-wide`, `data-nav-narrow`, `data-dock-edge`, `data-text-size`, `data-contrast`, `data-motion`.
 
 ## Tokens
 
@@ -68,10 +73,19 @@ Non-text cues (bars on `track`, the dashed `line` border of unknown items) are b
 | --- | --- | --- | --- |
 | `expressive` | Bricolage Grotesque 600–700 | DM Sans 400–700 | DM Sans, tabular figures |
 | `editorial` | Fraunces 500–600 | Source Sans 3 400–700 | Source Sans 3, tabular figures |
+| `elegant` | Instrument Serif 400 | Instrument Sans 400–700 | Instrument Sans, tabular figures |
+| `geometric` | Space Grotesk 500–700 | Manrope 400–700 | Space Grotesk, tabular figures |
+| `retro` | Young Serif 400 | Work Sans 400–700 | Work Sans, tabular figures |
+| `friendly` | Nunito 800 | Nunito 400–600 | Nunito, tabular figures |
+| `readable` | Atkinson Hyperlegible Next 700 | Atkinson Hyperlegible Next 400 | Atkinson Hyperlegible Next, tabular figures |
 | `clean` | Inter 700 | Inter 400–600 | Inter, tabular figures |
 | `technical` | IBM Plex Sans 600 | IBM Plex Sans 400–600 | IBM Plex Mono 500 |
 
-Scale (rem at 16 px): 0.75 caption, 0.875 small, 1 body, 1.125 lead, 1.375 title, 1.75 page title, 2.25 hero. Body line height 1.5; titles 1.15–1.25. Body text never below 1 rem on phones; captions are for metadata only (sources, dates).
+Scale (rem at 16 px): 0.75 caption, 0.875 small, 1 body, 1.125 lead, 1.375 title, 1.75 page title, 2.25 hero. Body line height 1.5; titles 1.15–1.25. Body text never below 1 rem on phones; captions are for metadata only (sources, dates). Every size is in rem, so the text-size axis scales the whole scale; layouts reflow without horizontal scroll at 150% and at 200% browser zoom.
+
+### High contrast
+
+`data-contrast="high"` overrides, in every palette: `muted` becomes `ink`; `line` and `second` reach 3:1 against `bg` and `surface`; text on `soft` uses `ink`; and `primary` used as text or as a fill switches to a per-palette `primaryHigh`, chosen so every text pair reaches 7:1 (WCAG AAA). R1 holds the values and R3 checks them.
 
 ### Shape, space and motion
 
@@ -89,8 +103,12 @@ Motion: `duration-fast` 150 ms (hover, press), `duration-base` 250 ms (theme cha
 ## Shell and navigation
 
 - Four navigation items: home, countries, plan and documents. Their labels and icons are defined once and every layout renders the same list.
-- **Below 768 px:** a bottom dock with icon over label. `fixed-dock` is attached to the bottom edge; `floating-dock` sits 14 px from the sides and 16 px above the safe area, with `radius-dock` and a shadow. Content gets bottom padding equal to the dock height plus the safe-area inset, so nothing hides behind it.
-- **From 768 px:** `top` is a bar with the mark and the navigation items in a row; `side` is a 216 px column with the mark on top; `floating-dock` is a centered bar above the bottom edge. The active item uses `primary` on `soft`.
+- **Below 768 px:** `fixed-dock` is attached to the bottom edge, icon over label. `floating-dock` sits 14 px from the screen edges with `radius-dock` and a shadow. `menu` is a top bar with the mark and a menu button. Content gets padding equal to the dock size plus the safe-area inset on the dock's side, so nothing hides behind it.
+- **From 768 px:** `top` is a bar with the mark and the navigation items in a row; `side` is a 216 px column with the mark on top; `floating-dock` is a bar centered on its edge; `menu` is the same top bar as on phones. The active item uses `primary` on `soft`.
+- **Floating dock edge.** The person drags the dock and it snaps to the nearest of bottom, left and right, with the edge saved as the `dock-edge` axis. On the left or right it stacks the items vertically. Dragging is never the only way: the same choice is in Settings, so keyboard and screen-reader users can make it.
+- **Menu.** The menu button opens a panel (a full-width sheet below 768 px, a 340 px panel from the top right above) with labelled groups: navigation (the same items), account (profile, passkeys, appearance, notifications, once each page exists), help (rule report) and sign out, set apart in `dangerInk`. It traps focus, closes on Escape and on the close button, and returns focus to the menu button.
+- **More destinations.** A dock holds at most five items plus the Settings entry; anything more (for example a family area) goes in the menu's account group and, from 768 px, in the top bar or side column.
+- **Settings entry.** Every layout has one: the last item of a dock, a gear button at the end of the top bar, the bottom of the side column, and the account group of the menu.
 - Content column max width 1200 px on desktop; screens use a two-column grid from 1024 px where the spec of the screen says so.
 - The shell keeps spec 0001's safe-area insets and skip link.
 
@@ -103,6 +121,8 @@ These come from the mockups and every feature reuses them:
 - **Source line:** "Fonte: domain · verificado em" and the verification date, in caption size, under any requirement, fee, threshold or deadline (CLAUDE.md rule 1). The date is a plain calendar date from `packages/domain`, formatted for the locale with `Intl.DateTimeFormat` and no time-zone conversion, so it never shifts a day.
 - **Status chips:** active version (`ok`), pending activation (`warn`), unknown (`soft` with `muted` text). Unknown items use a dashed border on their card and say a research task is open. Labels follow [GLOSSARY.md](../GLOSSARY.md).
 - **Rule report:** the "Avisar regra errada" link on every route screen; it opens a research task (GLOSSARY.md).
+- **Coach mark (guided tour):** a spotlight on one element, dimming the rest with `bg` at 70%, and a card beside it with the step title, one or two lines, "x de n", and Skip, Back and Next (Done on the last step). Focus moves to the card and returns to the element; Escape skips. With motion off the spotlight jumps instead of gliding. It never covers the navigation it points at, and on phones the card docks above or below the target. The tour can be replayed from help in the menu.
+- **Progress bar:** the ranking bar's track and fill, with a text label ("3 de 12") that carries the value, for per-person and family progress.
 - **Flags:** SVG flags rendered at 26 × 18 px with a 1 px `line` ring, bundled and served from the app's own origin, rendered as React components or `<img src>`, never injected as markup. The flag set is chosen with the country dataset in consultancy core slice 2, through an amendment to ADR-0020 and a supply-chain review; until then, the country code in a chip.
 
 ## Copy
@@ -119,16 +139,16 @@ When the authoring session has the `/super-copy` skill, it runs its pass that re
 ## Requirements
 
 - **R1 Theme data.** `packages/ui/src/theme/` exports the palettes, font pairs, radius sets and motion tokens above as typed, readonly data, with a type that forces every palette to define every key, plus the identifier list of each of the seven axes. The existing components and `apps/web` move from the spec 0001 token names (`brand`, `ink-muted`, `surface-raised`) to these.
-- **R2 Generated CSS.** A script writes `packages/ui/src/themes.css` with one block per `[data-theme][data-mode]` pair, one per `[data-font]` and one per `[data-corners]`, plus the system-mode blocks under `prefers-color-scheme`, the defaults on `:root` so a bare `<html>` still has every token, and `color-scheme` per mode (replacing spec 0001's `color-scheme: light dark`). `styles.css` maps Tailwind `@theme` tokens to those properties. The same script writes the allow-list the boot script in R7 reads. A test fails when either committed file differs from the script's output.
-- **R3 Contrast test.** A Vitest suite computes WCAG 2.x contrast for every pair in [Contrast pairs](#color) in every palette and fails below 4.5:1.
-- **R4 Fonts.** The Fontsource packages from ADR-0020, the latin and latin-ext subsets only, imported statically in the app entry with `font-display: swap`. Browsers download a font file only when a rule uses it, so non-default pairs cost a few KB of CSS until chosen, and the app stays one chunk (spec 0001's `skipWaiting` assumption holds). Font files are never inlined as `data:` URIs (`build.assetsInlineLimit` excludes `.woff2`), since `default-src 'self'` covers fonts and blocks `data:`. The service worker precaches the default pair's files only; other pairs load from the network and fall back to the system font offline. A Playwright check fails on any CSP violation while switching pairs.
+- **R2 Generated CSS.** A script writes `packages/ui/src/themes.css` with one block per `[data-theme][data-mode]` pair, one per `[data-font]` and one per `[data-corners]`, plus the `[data-mode="system"]` blocks under `prefers-color-scheme`, the high-contrast overrides, the text-size steps, the defaults on `:root` so a bare `<html>` still has every token, and `color-scheme` per mode (replacing spec 0001's `color-scheme: light dark`). and the `@font-face` rules of every pair, written from the theme data and pointing at the latin and latin-ext `.woff2` files each Fontsource package exports under `./files/*`. `styles.css` maps Tailwind `@theme` tokens to those properties. A test fails when the committed file differs from the script's output.
+- **R3 Contrast test.** A Vitest suite computes WCAG 2.x contrast for every pair in [Contrast pairs](#color) in every palette and fails below 4.5:1, and below 7:1 for text pairs and 3:1 for `line` and `second` with high contrast on.
+- **R4 Fonts.** The Fontsource packages from ADR-0020, through the `@font-face` rules R2 generates (latin and latin-ext only, `font-display: swap`), never the packages' own CSS, which covers every subset. Browsers download a font file only when a rule uses it, so non-default pairs cost a few KB of CSS until chosen, and the app stays one chunk (spec 0001's `skipWaiting` assumption holds). Font files are never inlined as `data:` URIs (`build.assetsInlineLimit` excludes `.woff2`), since `default-src 'self'` covers fonts and blocks `data:`. The precache list in `apps/web/vite.config.ts` excludes every `.woff2` except the default pair's; other pairs load from the network and fall back to the system font offline. A Playwright check fails on any CSP violation while switching pairs.
 - **R5 Icons.** `lucide-react` wrapped by an `Icon` component in `packages/ui` that takes a name from a fixed union, sets `aria-hidden` unless given a label, and uses `currentColor` at 2 px stroke. A lint rule blocks importing `lucide-react` outside `packages/ui`.
 - **R6 Motion.** Duration and easing tokens; a `data-motion` attribute; a global rule that zeroes durations under `[data-motion="off"]` and under `prefers-reduced-motion: reduce`; page navigation uses `document.startViewTransition` when present and motion is on, and an instant swap otherwise; `::view-transition-*` animations are zeroed by the same rule.
-- **R7 Preferences.** An `appearance` module in `apps/web` reads and writes the seven axes to `localStorage` under one versioned key, validated with Zod enums built from the identifier lists `@arca/ui` exports; unknown values fall back to defaults. Before first paint, a classic same-origin script (`/appearance-boot.js`, loaded in `<head>` without `defer` or `type=module`) applies them: it checks each value against the generated allow-list, calls `setAttribute` only for the fixed `data-*` names and the `theme-color` meta tag (the `appearance` module updates that tag on every change), uses no HTML sinks, and applies the defaults on any exception. No inline script, so the CSP is unchanged; the worker precaches the file with the shell. `index.html` carries the default attributes statically, and the web manifest's `theme_color` and `background_color` use the default palette's `bg`.
-- **R8 AppShell.** `AppShell` takes the navigation items and the two layout preferences and renders the layouts in [Shell and navigation](#shell-and-navigation), switching at 768 px with CSS only. It shows only the items whose page exists, so until the features land it shows home alone and grows as pages are added; no placeholder pages.
-- **R9 Settings screen.** Creates the Settings page, reachable from the profile button in the header, with an appearance section: one control group per axis with a live preview, the narrow-screen group showing only the dock options. Strings in the pt-BR catalog.
-- **R10 Patterns.** `NextActionCard`, `RankingRow`, `SourceLine`, `StatusChip` in `packages/ui`, each with one Vitest render test that checks its content, keyboard reachability and screen-reader labels. Themes are covered by R3 and R11, not per component.
-- **R11 End-to-end.** Playwright opens the home screen at 390, 820 and 1280 px in each navigation layout and checks: every navigation item reachable by keyboard, no horizontal scroll, nothing behind the dock, and `@axe-core/playwright` reports no violations in the default theme and in one light theme.
+- **R7 Preferences.** An `appearance` module in `apps/web` reads and writes the ten axes to `localStorage` under one versioned key, validated with Zod enums built from the identifier lists `@arca/ui` exports; unknown values fall back to defaults. Before first paint, a classic same-origin script (`/appearance-boot.js`, loaded in `<head>` without `defer` or `type=module`) applies them. It is built by the existing plugin in `apps/web/vite.config.ts` as an IIFE from a TypeScript source that imports the same identifier lists, as `sw.ts` is, so it stays under strict types, lint and tests; the plugin injects its tag only into the production `index.html`, and in development the `appearance` module applies the preferences on load. It accepts only allow-listed values, calls `setAttribute` only for the fixed `data-*` names and the `theme-color` meta tag (in `system` mode, from `matchMedia`; the `appearance` module updates it on every change), uses no HTML sinks, and applies the defaults on any exception. A test feeds it tampered and unknown stored values and expects the defaults. No inline script, so the CSP is unchanged; the worker precaches the file with the shell. `index.html` carries the default attributes statically, and the web manifest's `theme_color` and `background_color` use the default palette's `bg`.
+- **R8 AppShell.** `AppShell` takes the navigation items and the layout preferences (wide, narrow, dock edge), including dragging the floating dock with snap and the menu panel, and renders the layouts in [Shell and navigation](#shell-and-navigation), switching at 768 px with CSS only. It shows only the items whose page exists, so until the features land it shows home alone and grows as pages are added; no placeholder pages.
+- **R9 Settings screen.** Creates the Settings page, reached from the Settings entry in every layout, with an appearance section: one control group per axis with a live preview; the narrow-screen group offers the docks and the menu, and the dock-edge group appears with the floating dock. Strings in the pt-BR catalog.
+- **R10 Patterns.** `NextActionCard`, `RankingRow`, `ProgressBar`, `SourceLine`, `StatusChip` and `CoachMark` in `packages/ui`, each with one Vitest render test that checks its content, keyboard reachability and screen-reader labels. Themes are covered by R3 and R11, not per component.
+- **R11 End-to-end.** Playwright opens the home screen at 390, 820 and 1280 px in each navigation layout and dock edge, and at text size 150%, and checks: every navigation item, the Settings entry and the menu reachable by keyboard, the menu closing on Escape with focus returned, no horizontal scroll, nothing behind the dock, and `@axe-core/playwright` reports no violations in the default theme and in one light theme.
 
 ## Threat model for this slice
 
@@ -140,11 +160,11 @@ When the authoring session has the `/super-copy` skill, it runs its pass that re
 | Tampering: a compromised font or icon package | Supply chain | Packages with provenance and no install scripts, version cooldown and lockfile policy (ADR-0010); OFL-1.1 added to the license allow-list in its own policy pull request |
 | Denial of service: a stale cached chunk after a deploy | Service worker | No code splitting for fonts (R4); the app stays one chunk |
 
-Preferences are display settings, not personal data. When they sync with the account (spec 0003), they become per-account rows under row-level security.
+Preferences are display settings, not case data. On the device they identify no one. Once synced per account (in the spec that adds sync), they are personal data: per-account rows under row-level security, never in logs or analytics.
 
 ## Definition of done
 
-- R1 to R11 covered by tests; the contrast test and the generated-file freshness test run in CI.
+- R1 to R11 covered by tests; the contrast test, the generated-file freshness test and the boot-script fallback test run in CI.
 - Playwright with `@axe-core/playwright` passes at 390, 820 and 1280 px in every navigation layout, with no CSP violation reported.
 - Every new string is in the pt-BR catalog and follows [Copy](#copy).
 - No hard-coded color, radius or font outside `packages/ui/src/theme/`.

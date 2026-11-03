@@ -3,7 +3,7 @@
 - Status: Ready for tickets
 - Date: 2026-11-01
 - Epic: cross-platform foundations ([ROADMAP.md](../ROADMAP.md#phase-1--family-mvp-web))
-- Amended by: [ADR-0015](../adr/0015-identity-enrollment-step-up-and-recovery.md) (request identity is `app.account_id`), [spec 0004](0004-real-data-readiness.md) (lineage mark, `packages/telemetry`, restore mode, `app_backup` in guards 3 and 5, guard 10) [spec 0005](0005-vault-devices-and-notifications.md) (`packages/vault`, type-only `platform` to `vault` edge) and [spec 0006](0006-design-system-and-theming.md) (theme tokens replace the R5 placeholders; the appearance boot script); where they differ, the amendment governs.
+- Amended by: [ADR-0015](../adr/0015-identity-enrollment-step-up-and-recovery.md) (request identity is `app.account_id`), [spec 0004](0004-real-data-readiness.md) (lineage mark, `packages/telemetry`, restore mode, `app_backup` in guards 3 and 5, guard 10), [spec 0005](0005-vault-devices-and-notifications.md) (`packages/vault`, type-only `platform` to `vault` edge) and [spec 0006](0006-design-system-and-theming.md) (theme tokens replace the R5 placeholders; the appearance boot script; `OFL-1.1` joins the license allow-list); where they differ, the amendment governs.
 - Decisions: [ADR-0012](../adr/0012-automation-first-setup.md) (amends the others where they differ), [ADR-0009](../adr/0009-background-jobs-guarantees.md), [ADR-0010](../adr/0010-stack-revised.md), [ADR-0011](../adr/0011-reviewers-in-ci.md) (superseded by [ADR-0019](../adr/0019-reviewers-in-the-authoring-session.md)), [ADR-0008](../adr/0008-database-security-and-environments.md), [ADR-0005](../adr/0005-platform-strategy.md)
 
 ## Goal
