@@ -20,6 +20,11 @@ async function encrypted(plaintext: Uint8Array, recipients: readonly string[]) {
   return bytesOf(await encryptDocument(streamOf(plaintext), recipients));
 }
 
+async function digest(bytes: Uint8Array) {
+  const hash = new Uint8Array(await crypto.subtle.digest('SHA-256', new Uint8Array(bytes)));
+  return [...hash].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
 async function opened(ciphertext: Uint8Array, identity: VaultIdentity) {
   return bytesOf(await decryptDocument(streamOf(ciphertext), identity));
 }
@@ -48,7 +53,7 @@ describe('documents (spec 0005, R1)', () => {
     const plaintext = crypto.getRandomValues(new Uint8Array(Math.min(size, 65_536)));
     const document = new Uint8Array(size).map((_, index) => plaintext[index % 65_536] ?? 0);
     const ciphertext = await encrypted(document, [await recipientOf(owner)]);
-    expect(await opened(ciphertext, owner)).toEqual(document);
+    expect(await digest(await opened(ciphertext, owner))).toBe(await digest(document));
   });
 
   it('opens for every recipient and no one else', async () => {

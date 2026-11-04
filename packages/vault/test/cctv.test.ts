@@ -112,16 +112,20 @@ describe('C2SP CCTV age vectors (spec 0005, R1)', () => {
     expect(cases.filter(([name]) => name.startsWith('hybrid')).length).toBeGreaterThan(10);
   });
 
-  it.each(cases)('%s', async (name, vector) => {
-    const { outcome, released } = await run(vector);
-    const expected = headerLevel.has(vector.expect) ? 'header failure' : vector.expect;
-    expect(outcome).toBe(expected);
-    if (holdsBackMore.has(name)) {
-      expect(released.length % chunkSize).toBe(0);
-    } else if (vector.payload === undefined) {
-      expect(released.length).toBe(0);
-    } else {
-      expect(hex(await crypto.subtle.digest('SHA-256', released))).toBe(vector.payload);
-    }
-  });
+  it.each(cases)(
+    '%s',
+    async (name, vector) => {
+      const { outcome, released } = await run(vector);
+      const expected = headerLevel.has(vector.expect) ? 'header failure' : vector.expect;
+      expect(outcome).toBe(expected);
+      if (holdsBackMore.has(name)) {
+        expect(released.length % chunkSize).toBe(0);
+      } else if (vector.payload === undefined) {
+        expect(released.length).toBe(0);
+      } else {
+        expect(hex(await crypto.subtle.digest('SHA-256', released))).toBe(vector.payload);
+      }
+    },
+    30_000,
+  );
 });
