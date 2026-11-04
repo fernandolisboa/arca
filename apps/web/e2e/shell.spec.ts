@@ -1,43 +1,23 @@
 import { expect, test, type Page } from '@playwright/test';
+import {
+  horizontalOverflow,
+  isWide,
+  layoutName,
+  open,
+  sizes,
+  usesMenu,
+  type Layout,
+} from './layouts.js';
 import { reportViolations, watchProblems } from './problems.js';
 
 test.beforeEach(async ({ page }) => {
   await reportViolations(page);
 });
 
-interface Layout {
-  readonly narrow: string;
-  readonly wide: string;
-  readonly edge: string;
-}
-
-/** Stores the layout as the person's choice, so the boot script applies it before first paint. */
-async function open(page: Page, layout: Layout) {
-  await page.addInitScript((chosen) => {
-    const axes = { navNarrow: chosen.narrow, navWide: chosen.wide, dockEdge: chosen.edge };
-    localStorage.setItem('arca.appearance', JSON.stringify({ v: 1, axes }));
-  }, layout);
-  await page.goto('/');
+async function openHome(page: Page, layout: Layout) {
+  await open(page, layout);
   await expect(page.getByRole('heading', { level: 1, name: 'Arca' })).toBeVisible();
 }
-
-const narrowLayouts: Layout[] = [
-  { narrow: 'menu', wide: 'menu', edge: 'bottom' },
-  { narrow: 'fixed-dock', wide: 'menu', edge: 'bottom' },
-  { narrow: 'floating-dock', wide: 'menu', edge: 'bottom' },
-  { narrow: 'floating-dock', wide: 'menu', edge: 'left' },
-  { narrow: 'floating-dock', wide: 'menu', edge: 'right' },
-];
-
-const wideLayouts: Layout[] = [
-  { narrow: 'menu', wide: 'menu', edge: 'bottom' },
-  { narrow: 'menu', wide: 'top', edge: 'bottom' },
-  { narrow: 'menu', wide: 'side', edge: 'bottom' },
-  { narrow: 'menu', wide: 'floating-dock', edge: 'bottom' },
-  { narrow: 'menu', wide: 'floating-dock', edge: 'left' },
-];
-
-const usesMenu = (layout: Layout, wide: boolean) => (wide ? layout.wide : layout.narrow) === 'menu';
 
 /** A dock or the side column, which the content must stay clear of. */
 const hasFixedNav = (layout: Layout, wide: boolean) =>
@@ -55,30 +35,34 @@ async function tabTo(page: Page, name: string, limit = 12) {
   throw new Error(`Tab never reached "${name}"`);
 }
 
-for (const [width, layouts] of [
-  [390, narrowLayouts],
-  [1280, wideLayouts],
-] as const) {
+for (const [width, baseLayouts] of sizes) {
   test.describe(`at ${String(width)} px`, () => {
     test.use({ viewport: { width, height: 800 } });
 
+    const layouts = ['100', '150'].flatMap((textSize) =>
+      baseLayouts.map((layout) => ({ ...layout, textSize })),
+    );
     for (const layout of layouts) {
-      const name = `${layout.narrow} / ${layout.wide} / ${layout.edge}`;
+      const name = `${layoutName(layout)} at ${layout.textSize}%`;
 
       test(`reaches every item by keyboard in ${name}`, async ({ page }) => {
         const problems = watchProblems(page);
-        await open(page, layout);
-        if (usesMenu(layout, width >= 768)) {
+        await openHome(page, layout);
+        if (usesMenu(layout, isWide(width))) {
           await tabTo(page, 'Abrir menu');
           await page.keyboard.press('Enter');
           const toggle = page.getByRole('button', { name: 'Fechar menu' });
           await expect(toggle).toHaveAttribute('aria-expanded', 'true');
           await expect(page.getByRole('link', { name: 'Início' })).toBeFocused();
 
-          // Focus stays on the menu button and the panel.
-          await page.keyboard.press('Tab');
+          // Focus stays on the menu button and the panel, wrapping at both ends.
+          await page.keyboard.press('Shift+Tab');
           await expect(toggle).toBeFocused();
           await page.keyboard.press('Shift+Tab');
+          await expect(page.getByRole('link', { name: 'Configurações' })).toBeFocused();
+          await page.keyboard.press('Tab');
+          await expect(toggle).toBeFocused();
+          await page.keyboard.press('Tab');
           await expect(page.getByRole('link', { name: 'Início' })).toBeFocused();
 
           await page.keyboard.press('Escape');
@@ -97,14 +81,16 @@ for (const [width, layouts] of [
             'aria-current',
             'page',
           );
+          await tabTo(page, 'Configurações', 4);
           await expect(page.getByRole('button', { name: 'Abrir menu' })).toHaveCount(0);
         }
+        expect(await horizontalOverflow(page)).toBe(0);
         expect(problems).toEqual([]);
       });
 
-      if (hasFixedNav(layout, width >= 768)) {
+      if (hasFixedNav(layout, isWide(width))) {
         test(`keeps content clear of the dock or column in ${name}`, async ({ page }) => {
-          await open(page, layout);
+          await openHome(page, layout);
           const { content, nav } = await page.evaluate(() => {
             const main = document.getElementById('main-content');
             main?.append(Object.assign(document.createElement('div'), { style: 'height: 3000px' }));
@@ -126,20 +112,20 @@ for (const [width, layouts] of [
                 left: (rect?.left ?? 0) + pad('Left'),
                 right: (rect?.right ?? 0) - pad('Right'),
               },
-              nav: { top: navRect?.top ?? 0, left: navRect?.left ?? 0, right: navRect?.right ?? 0 },
+              nav:
+                navRect === undefined
+                  ? null
+                  : { top: navRect.top, left: navRect.left, right: navRect.right },
             };
           });
-          if (layout.wide === 'side' && width >= 768)
+          if (nav === null) throw new Error('no dock or column is on screen');
+          if (layout.wide === 'side' && isWide(width))
             expect(content.left).toBeGreaterThanOrEqual(nav.right);
           else if (layout.edge === 'left' && layout.narrow !== 'fixed-dock')
             expect(content.left).toBeGreaterThanOrEqual(nav.right);
           else if (layout.edge === 'right' && layout.narrow !== 'fixed-dock')
             expect(content.right).toBeLessThanOrEqual(nav.left);
           else expect(content.bottom).toBeLessThanOrEqual(nav.top);
-          const overflow = await page.evaluate(
-            () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-          );
-          expect(overflow).toBe(0);
         });
       }
     }
@@ -150,14 +136,14 @@ test.describe('floating dock', () => {
   test.use({ viewport: { width: 390, height: 800 } });
 
   test('stays put when its grip is only tapped', async ({ page }) => {
-    await open(page, { narrow: 'floating-dock', wide: 'menu', edge: 'bottom' });
+    await openHome(page, { narrow: 'floating-dock', wide: 'menu', edge: 'bottom' });
     const dock = page.locator('nav[data-dock="floating"]');
     await dock.locator('[data-dock-grip]').click();
     await expect(dock).toHaveAttribute('data-edge', 'bottom');
   });
 
   test('snaps to the nearest edge when dragged by its grip', async ({ page }) => {
-    await open(page, { narrow: 'floating-dock', wide: 'menu', edge: 'bottom' });
+    await openHome(page, { narrow: 'floating-dock', wide: 'menu', edge: 'bottom' });
     const dock = page.locator('nav[data-dock="floating"]');
     await expect(dock).toHaveAttribute('data-edge', 'bottom');
     const grip = dock.locator('[data-dock-grip]');

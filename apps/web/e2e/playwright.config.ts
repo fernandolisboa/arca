@@ -13,7 +13,8 @@ const server = 'node ../../api/.output/server/index.mjs';
 
 /**
  * End-to-end tests against the built app served locally: the Nitro server from apps/api with
- * this app's static build, at phone and desktop sizes (spec 0001, R8). One server runs with no
+ * this app's static build, at phone and desktop sizes (spec 0001, R8); the shell and accessibility
+ * suites set their own widths, tablet included (spec 0006, R11). One server runs with no
  * database, so the API reports itself degraded. When ARCA_E2E_DATABASE names a database on the
  * ARCA_TEST_DB_* server, a second one reaches it, for the sign-in tests (spec 0003, R3).
  */
