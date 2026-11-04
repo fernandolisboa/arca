@@ -13,6 +13,7 @@ export default defineConfig({
     './src/enrollment-schema.ts',
     './src/audit-schema.ts',
     './src/vault-schema.ts',
+    './src/notification-schema.ts',
   ],
   out: './migrations',
 });

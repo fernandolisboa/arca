@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { enforcedRows } from '../src/account/retention.js';
 
 // RETENTION.md and the daily jobs say the same thing (spec 0004, R10).
-const notMigratedYet = ['Pending document uploads', 'Notification messages', 'Vault envelopes'];
+const notMigratedYet = ['Pending document uploads', 'Vault envelopes'];
 
 async function rowsForTheDailyJobs(): Promise<string[]> {
   const text = await readFile(join(import.meta.dirname, '../../../docs/RETENTION.md'), 'utf8');
