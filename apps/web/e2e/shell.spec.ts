@@ -75,10 +75,14 @@ for (const [width, layouts] of [
           await expect(toggle).toHaveAttribute('aria-expanded', 'true');
           await expect(page.getByRole('link', { name: 'Início' })).toBeFocused();
 
-          // Focus stays on the menu button and the panel.
-          await page.keyboard.press('Tab');
+          // Focus stays on the menu button and the panel, wrapping at both ends.
+          await page.keyboard.press('Shift+Tab');
           await expect(toggle).toBeFocused();
           await page.keyboard.press('Shift+Tab');
+          await expect(page.getByRole('link', { name: 'Configurações' })).toBeFocused();
+          await page.keyboard.press('Tab');
+          await expect(toggle).toBeFocused();
+          await page.keyboard.press('Tab');
           await expect(page.getByRole('link', { name: 'Início' })).toBeFocused();
 
           await page.keyboard.press('Escape');
@@ -97,6 +101,7 @@ for (const [width, layouts] of [
             'aria-current',
             'page',
           );
+          await tabTo(page, 'Configurações', 4);
           await expect(page.getByRole('button', { name: 'Abrir menu' })).toHaveCount(0);
         }
         expect(problems).toEqual([]);
