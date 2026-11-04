@@ -1,0 +1,620 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "0e16c124-c76c-4413-85ff-16f1a76f9fec",
+  "prevIds": [
+    "02a89089-fc3d-4c58-b9b1-c61333cd16d8"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "auth",
+        "passkey_capability"
+      ],
+      "writes": [
+        "s|tbl|auth.passkey_capability",
+        "n|tbl|auth.passkey_capability",
+        "e|tbl|auth.passkey_capability",
+        "n|rel|auth.passkey_capability",
+        "n|type|auth.passkey_capability",
+        "n|rel|auth.passkey_capability_pkey"
+      ],
+      "reads": [
+        "n|sch|auth"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "auth",
+        "recovery_code"
+      ],
+      "writes": [
+        "s|tbl|auth.recovery_code",
+        "n|tbl|auth.recovery_code",
+        "e|tbl|auth.recovery_code",
+        "n|rel|auth.recovery_code",
+        "n|type|auth.recovery_code",
+        "n|rel|auth.recovery_code_pkey"
+      ],
+      "reads": [
+        "n|sch|auth"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "auth",
+        "registration_context"
+      ],
+      "writes": [
+        "s|tbl|auth.registration_context",
+        "n|tbl|auth.registration_context",
+        "e|tbl|auth.registration_context",
+        "n|rel|auth.registration_context",
+        "n|type|auth.registration_context",
+        "n|rel|auth.registration_context_pkey",
+        "n|rel|auth.registration_context_token_hash_key"
+      ],
+      "reads": [
+        "n|sch|auth"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "auth",
+        "setup"
+      ],
+      "writes": [
+        "s|tbl|auth.setup",
+        "n|tbl|auth.setup",
+        "e|tbl|auth.setup",
+        "n|rel|auth.setup",
+        "n|type|auth.setup",
+        "n|rel|auth.setup_pkey"
+      ],
+      "reads": [
+        "n|sch|auth"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "auth",
+        "user",
+        "confirmed_at"
+      ],
+      "writes": [
+        "s|col|auth.user.confirmed_at",
+        "n|col|auth.user.confirmed_at",
+        "e|col|auth.user.confirmed_at"
+      ],
+      "reads": [
+        "n|tbl|auth.user",
+        "n|sch|auth"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "auth",
+        "registration_context",
+        "registration_context_expires_at_idx"
+      ],
+      "writes": [
+        "s|idx|auth.registration_context_expires_at_idx",
+        "n|idx|auth.registration_context_expires_at_idx",
+        "e|idx|auth.registration_context_expires_at_idx",
+        "n|rel|auth.registration_context_expires_at_idx"
+      ],
+      "reads": [
+        "n|tbl|auth.registration_context",
+        "n|sch|auth",
+        "n|col|auth.registration_context.expires_at"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "auth",
+        "passkey_capability"
+      ],
+      "writes": [
+        "s|fk|auth.passkey_capability.passkey_capability_credential_id_passkey_credential_id_fkey",
+        "n|fk|auth.passkey_capability.passkey_capability_credential_id_passkey_credential_id_fkey",
+        "e|fk|auth.passkey_capability.passkey_capability_credential_id_passkey_credential_id_fkey",
+        "n|con|auth.passkey_capability.passkey_capability_credential_id_passkey_credential_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|auth.passkey_capability",
+        "n|sch|auth",
+        "n|tbl|auth.passkey",
+        "n|sch|auth",
+        "n|col|auth.passkey_capability.credential_id",
+        "n|col|auth.passkey.credential_id",
+        "e|uniqueness|auth.passkey.credential_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "auth",
+        "recovery_code"
+      ],
+      "writes": [
+        "s|fk|auth.recovery_code.recovery_code_account_id_user_id_fkey",
+        "n|fk|auth.recovery_code.recovery_code_account_id_user_id_fkey",
+        "e|fk|auth.recovery_code.recovery_code_account_id_user_id_fkey",
+        "n|con|auth.recovery_code.recovery_code_account_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|auth.recovery_code",
+        "n|sch|auth",
+        "n|tbl|auth.user",
+        "n|sch|auth",
+        "n|col|auth.recovery_code.account_id",
+        "n|col|auth.user.id",
+        "e|uniqueness|auth.user.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "name": "passkey_capability",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "name": "recovery_code",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "name": "registration_context",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "name": "setup",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "user",
+        "name": "confirmed_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "passkey_capability",
+        "name": "credential_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "passkey_capability",
+        "name": "prf_enabled",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "recovery_code",
+        "name": "account_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "recovery_code",
+        "name": "salt",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "recovery_code",
+        "name": "code_hash",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "recovery_code",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "recovery_code",
+        "name": "confirmed_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "registration_context",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "registration_context",
+        "name": "token_hash",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "registration_context",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "registration_context",
+        "name": "email",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "registration_context",
+        "name": "expires_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now() + interval '30 minutes'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "setup",
+        "name": "code_hash",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "setup",
+        "name": "used_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "registration_context",
+        "name": "registration_context_expires_at_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "expires_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "passkey_capability",
+        "name": "passkey_capability_credential_id_passkey_credential_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "credential_id"
+        ],
+        "schemaTo": "auth",
+        "tableTo": "passkey",
+        "columnsTo": [
+          "credential_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "recovery_code",
+        "name": "recovery_code_account_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "account_id"
+        ],
+        "schemaTo": "auth",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "passkey_capability",
+        "name": "passkey_capability_pkey",
+        "columns": [
+          "credential_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "recovery_code",
+        "name": "recovery_code_pkey",
+        "columns": [
+          "account_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "registration_context",
+        "name": "registration_context_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "setup",
+        "name": "setup_pkey",
+        "columns": [
+          "code_hash"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "registration_context",
+        "name": "registration_context_token_hash_key",
+        "nameExplicit": false,
+        "columns": [
+          "token_hash"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "recovery_code",
+        "name": "recovery_code_salt_length",
+        "value": "octet_length(\"salt\") = 16",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "recovery_code",
+        "name": "recovery_code_hash_length",
+        "value": "octet_length(\"code_hash\") = 32",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "registration_context",
+        "name": "registration_context_kind",
+        "value": "\"kind\" IN ('owner')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "registration_context",
+        "name": "registration_context_token_length",
+        "value": "octet_length(\"token_hash\") = 32",
+        "entityType": "checks"
+      }
+    }
+  ]
+}

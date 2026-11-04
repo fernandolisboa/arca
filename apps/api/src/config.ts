@@ -1,4 +1,5 @@
 import type { DatabaseTarget } from '@arca/db';
+import { enrollmentCodeHash } from './auth/enrollment-code-hash.js';
 
 /**
  * The one place the API reads its configuration (spec 0001, R7): environment variables, each by
@@ -144,4 +145,21 @@ export function databaseTargetFrom(value: unknown): DatabaseTarget {
     throw new MissingConfigError('the database name was not configured at build time');
   }
   return { host, port: 5432, database: name, ssl: !loopbackHosts.has(host) };
+}
+
+const sha256HexPattern = /^[0-9a-f]{64}$/;
+
+/**
+ * The owner enrollment code's hash (spec 0003, R2): the committed one, or in development only
+ * `ARCA_ENROLLMENT_CODE_HASH`, so a local or end-to-end server can enroll with a code of its own.
+ * Null keeps owner enrollment closed.
+ */
+export function readEnrollmentCodeHash(environment: DeploymentEnvironment): string | null {
+  const local =
+    environment === 'development' ? process.env['ARCA_ENROLLMENT_CODE_HASH'] : undefined;
+  const hash = local === undefined || local === '' ? enrollmentCodeHash : local;
+  if (hash !== null && !sha256HexPattern.test(hash)) {
+    throw new MissingConfigError('the enrollment code hash is not a SHA-256 hex digest');
+  }
+  return hash;
 }

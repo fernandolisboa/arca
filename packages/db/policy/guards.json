@@ -17,6 +17,10 @@
       "reason": "Better Auth table; only app_auth has privileges on the auth schema, and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
     },
     {
+      "table": "auth.passkey_capability",
+      "reason": "Arca's record of what each passkey's authenticator reported at registration; only app_auth has privileges on the auth schema, and it is written during registration, before any per-request identity exists, so row-level security would not narrow anything."
+    },
+    {
       "table": "auth.passkey_client",
       "reason": "Arca's table in the auth schema; only app_auth has privileges on the auth schema, and it is read and written during sign-in, before any per-request identity exists, so row-level security would not narrow anything."
     },
@@ -25,8 +29,20 @@
       "reason": "Arca's request counters in the auth schema; only app_auth has privileges on the auth schema, the rows hold no personal data (keys are HMACs), and they are written before any per-request identity exists, so row-level security would not narrow anything."
     },
     {
+      "table": "auth.recovery_code",
+      "reason": "Arca's salted recovery-code hashes in the auth schema; only app_auth has privileges on the auth schema, and recovery reads them before anyone is signed in, so row-level security would not narrow anything."
+    },
+    {
+      "table": "auth.registration_context",
+      "reason": "Arca's single-use registration contexts in the auth schema; only app_auth has privileges on the auth schema, and they are read before any account exists, so row-level security would not narrow anything."
+    },
+    {
       "table": "auth.session",
       "reason": "Better Auth table; only app_auth has privileges on the auth schema, and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
+    },
+    {
+      "table": "auth.setup",
+      "reason": "Arca's spent enrollment codes in the auth schema; only app_auth has privileges on the auth schema, the rows hold only code hashes and are read before any account exists, so row-level security would not narrow anything."
     },
     {
       "table": "auth.step_up",

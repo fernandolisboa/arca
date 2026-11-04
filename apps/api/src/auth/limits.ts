@@ -28,3 +28,13 @@ export const stepUpLimits = {
   options: { name: 'step_up_options_session', limit: 20, windowSeconds: hour },
   verify: { name: 'step_up_verify_session', limit: 20, windowSeconds: hour },
 } as const satisfies Record<string, RateLimitRule>;
+
+/**
+ * Per-IP limits on enrollment and registration (spec 0003, R10). The registration link's token
+ * is 256 random bits, so these bound load, not guessing.
+ */
+export const registrationLimits = {
+  enrollOwner: { name: 'enroll_owner_ip', limit: 5, windowSeconds: hour },
+  options: { name: 'registration_options_ip', limit: 30, windowSeconds: hour },
+  verify: { name: 'registration_verify_ip', limit: 30, windowSeconds: hour },
+} as const satisfies Record<string, RateLimitRule>;

@@ -7,6 +7,7 @@ import {
   readDeploymentEnvironment,
   readAuthSecrets,
   readCronSecret,
+  readEnrollmentCodeHash,
   readJobsDatabasePassword,
   readRateLimitKey,
 } from '../src/config.js';
@@ -215,5 +216,25 @@ describe('readDeploymentEnvironment', () => {
     vi.stubEnv('VERCEL_ENV', 'preview');
     vi.stubEnv('VERCEL_TARGET_ENV', 'staging');
     expect(() => readDeploymentEnvironment()).toThrow(MissingConfigError);
+  });
+});
+
+describe('readEnrollmentCodeHash (spec 0003, R2)', () => {
+  const hash = 'a'.repeat(64);
+
+  it('keeps owner enrollment closed until a hash is committed', () => {
+    expect(readEnrollmentCodeHash('production')).toBeNull();
+  });
+
+  it('takes a local hash only in development', () => {
+    vi.stubEnv('ARCA_ENROLLMENT_CODE_HASH', hash);
+    expect(readEnrollmentCodeHash('development')).toBe(hash);
+    expect(readEnrollmentCodeHash('preview')).toBeNull();
+    expect(readEnrollmentCodeHash('production')).toBeNull();
+  });
+
+  it('refuses a value that is not a SHA-256 hex digest', () => {
+    vi.stubEnv('ARCA_ENROLLMENT_CODE_HASH', 'A'.repeat(64));
+    expect(() => readEnrollmentCodeHash('development')).toThrow(MissingConfigError);
   });
 });

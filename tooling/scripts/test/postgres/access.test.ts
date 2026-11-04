@@ -28,9 +28,13 @@ const authTables = [
   'account',
   'outbox',
   'passkey',
+  'passkey_capability',
   'passkey_client',
   'rate_limit',
+  'recovery_code',
+  'registration_context',
   'session',
+  'setup',
   'step_up',
   'step_up_challenge',
   'user',
@@ -92,22 +96,32 @@ describe('the auth schema access matrix', () => {
       schema: ['USAGE'],
       ...Object.fromEntries(authTables.map((table) => [table, dml])),
       outbox: ['SELECT', 'INSERT', 'DELETE'],
+      passkey_capability: ['SELECT', 'INSERT'],
       passkey_client: ['SELECT', 'INSERT', 'DELETE'],
+      recovery_code: ['SELECT', 'INSERT'],
+      registration_context: ['SELECT', 'INSERT', 'DELETE'],
+      setup: ['SELECT', 'INSERT'],
       step_up: ['SELECT', 'INSERT', 'DELETE'],
       step_up_challenge: ['SELECT', 'INSERT', 'DELETE'],
     });
   });
 
-  it('lets app_auth update only when a step-up was spent', async () => {
+  it.each([
+    ['step_up', ['consumed_at']],
+    ['recovery_code', ['salt', 'code_hash', 'created_at', 'confirmed_at']],
+  ])('lets app_auth update only the columns it must on auth.%s', async (table, columns) => {
     const updatable = await withClient(adminTarget(database), async (client) => {
       const result = await client.query<{ name: string }>(
         `SELECT attname AS name FROM pg_catalog.pg_attribute
-          WHERE attrelid = 'auth.step_up'::regclass AND attnum > 0 AND NOT attisdropped
-            AND pg_catalog.has_column_privilege('app_auth', attrelid, attnum, 'UPDATE')`,
+          WHERE attrelid = pg_catalog.format('auth.%I', $1::text)::regclass
+            AND attnum > 0 AND NOT attisdropped
+            AND pg_catalog.has_column_privilege('app_auth', attrelid, attnum, 'UPDATE')
+          ORDER BY attnum`,
+        [table],
       );
       return result.rows.map((row) => row.name);
     });
-    expect(updatable).toEqual(['consumed_at']);
+    expect(updatable).toEqual(columns);
   });
 
   it.each(runtimeRoles.filter((role) => role !== 'app_auth'))(

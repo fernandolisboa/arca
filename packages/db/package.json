@@ -24,6 +24,10 @@
       "types": "./dist/rate-limit-schema.d.ts",
       "default": "./dist/rate-limit-schema.js"
     },
+    "./enrollment-schema": {
+      "types": "./dist/enrollment-schema.d.ts",
+      "default": "./dist/enrollment-schema.js"
+    },
     "./step-up-schema": {
       "types": "./dist/step-up-schema.d.ts",
       "default": "./dist/step-up-schema.js"

@@ -1,6 +1,8 @@
 import type { Database } from '@arca/db';
 import { describe, expect, it } from 'vitest';
 import { createAuth } from '../src/auth/auth.js';
+import { ownerCode } from '../src/auth/enrollment.js';
+import { registrationHooks } from '../src/auth/registration.js';
 import type { Logger } from '../src/logger.js';
 import { allowAll } from './limits.js';
 
@@ -8,12 +10,14 @@ const lines: unknown[] = [];
 const logger: Logger = { info: (entry) => lines.push(entry), error: (entry) => lines.push(entry) };
 
 // Never queried: these tests read the configuration only.
+const audit = { record: () => Promise.resolve() };
 const auth = createAuth({
   db: {} as Database,
+  registration: registrationHooks({ db: {} as Database, audit, ownerCode: ownerCode(null) }),
   secret: 'test-only-secret-'.padEnd(32, 'x'),
   origin: 'https://preview.example.com',
   logger,
-  audit: { record: () => Promise.resolve() },
+  audit,
   notices: { send: () => Promise.resolve() },
   limiter: allowAll,
 });
@@ -78,6 +82,39 @@ describe('the Better Auth configuration (spec 0003, R1)', () => {
     ],
   ])('refuses a session from %s', async (_label, context) => {
     await expect(before({ userId: 'u' }, context)).rejects.toThrow();
+  });
+});
+
+describe('passkey registration (spec 0003, R2 and R3)', () => {
+  const [plugin] = auth.options.plugins;
+  const options = (plugin as unknown as { options: Record<string, unknown> }).options;
+
+  it('asks for a discoverable credential, user verification and PRF support', () => {
+    expect(options['authenticatorSelection']).toEqual({
+      residentKey: 'required',
+      userVerification: 'required',
+    });
+    expect(options['registration']).toMatchObject({
+      requireSession: false,
+      extensions: { prf: {} },
+    });
+  });
+
+  it('refuses a registration session without a registered passkey', async () => {
+    const before = auth.options.databaseHooks.session.create.before as unknown as (
+      session: Record<string, unknown>,
+      context: { path: string; body: unknown; headers: Headers },
+    ) => Promise<unknown>;
+    await expect(
+      before(
+        { userId: 'u' },
+        {
+          path: '/passkey/verify-registration',
+          body: { response: { id: 'cred-1' } },
+          headers: new Headers(),
+        },
+      ),
+    ).rejects.toThrow();
   });
 });
 

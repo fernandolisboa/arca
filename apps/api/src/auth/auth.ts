@@ -6,10 +6,11 @@ import {
   user,
   verification as verificationTable,
 } from '@arca/db/auth-schema';
-import type { Database } from '@arca/db';
+import type { Database, Transaction } from '@arca/db';
+import type { AuthenticationExtensionsClientInputs } from '@simplewebauthn/server';
 import { betterAuth } from 'better-auth';
 import { APIError, createAuthMiddleware, isAPIError } from 'better-auth/api';
-import { and, eq, lt, lte, sql } from 'drizzle-orm';
+import { and, eq, gt, lt, lte, sql } from 'drizzle-orm';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { authBasePath, DeviceDescription } from '@arca/api-contract/routes';
 import type { AuditLog } from '../audit/log.js';
@@ -18,6 +19,7 @@ import type { Logger } from '../logger.js';
 import { describeDevice } from './device.js';
 import { signInFailedLog } from './limits.js';
 import type { RateLimiter } from './rate-limit.js';
+import type { RegistrationHooks } from './registration.js';
 import { noticeNewSignIn } from './sign-in-notice.js';
 
 export interface AuthSettings {
@@ -33,11 +35,16 @@ export interface AuthSettings {
   readonly notices: Notices;
   /** Spaces out the failed sign-in events of one credential (spec 0003, R7 and R10). */
   readonly limiter: Pick<RateLimiter, 'hit'>;
+  /** Passkey-first registration's callbacks, which share the adapter's transactions. */
+  readonly registration: RegistrationHooks;
 }
 
 const daySeconds = 24 * 60 * 60;
 const signInPath = '/passkey/verify-authentication';
 const signInOptionsPath = '/passkey/generate-authenticate-options';
+const registrationPath = '/passkey/verify-registration';
+/** SimpleWebAuthn's types predate PRF; an empty request only asks whether it is supported. */
+const prfSupportProbe = { prf: {} } as AuthenticationExtensionsClientInputs;
 
 /** The credential ID a sign-in's assertion names, if any. */
 function assertedCredential(body: unknown) {
@@ -60,14 +67,28 @@ function requireUserVerified(userVerified: boolean | undefined): void {
  * magic links, social and anonymous sign-in are never configured, and the router in front of it
  * lets through only the allow-listed endpoints. Telemetry is off.
  */
-export function createAuth({ db, secret, origin, logger, audit, notices, limiter }: AuthSettings) {
+export function createAuth({
+  db,
+  secret,
+  origin,
+  logger,
+  audit,
+  notices,
+  limiter,
+  registration,
+}: AuthSettings) {
   return betterAuth({
     appName: 'Arca',
     baseURL: origin,
     basePath: authBasePath,
     secret,
     trustedOrigins: [origin],
-    database: drizzleAdapter(db, { provider: 'pg', schema: authSchema }),
+    // Real transactions, so a registration's account, passkey and session commit together.
+    database: drizzleAdapter(registration.adapterDb, {
+      provider: 'pg',
+      schema: authSchema,
+      transaction: true,
+    }),
     telemetry: { enabled: false },
     // Better Auth's messages and arguments can carry addresses or request details, so only the
     // level reaches the log (spec 0001, R3).
@@ -158,13 +179,16 @@ export function createAuth({ db, secret, origin, logger, audit, notices, limiter
         create: {
           // Neither the IP address nor the raw user agent is stored; the device is two enums.
           // Sessions come only from a verified passkey, and each records its credential.
-          before: (session, context) => {
-            const credentialId = signingCredential(context);
+          before: async (session, context) => {
+            const credentialId =
+              context?.path === registrationPath
+                ? await registration.registeredPasskey()
+                : signingCredential(context);
             if (credentialId === undefined) {
-              return Promise.reject(new APIError('UNAUTHORIZED', { code: 'NO_PASSKEY' }));
+              throw new APIError('UNAUTHORIZED', { code: 'NO_PASSKEY' });
             }
             const { browser, os } = describeDevice(context?.headers?.get('user-agent'));
-            return Promise.resolve({
+            return {
               data: {
                 ...session,
                 ipAddress: null,
@@ -173,7 +197,7 @@ export function createAuth({ db, secret, origin, logger, audit, notices, limiter
                 deviceOs: os,
                 credentialId,
               },
-            });
+            };
           },
           // Every new session is a sign-in, whichever endpoint created it. The session row is
           // already committed here, so if either write fails the session is deleted and the
@@ -211,6 +235,15 @@ export function createAuth({ db, secret, origin, logger, audit, notices, limiter
         rpID: new URL(origin).hostname,
         rpName: 'Arca',
         origin,
+        // A discoverable credential with user verification, and PRF asked only to learn whether
+        // the authenticator supports it (spec 0003, R3; ADR-0018).
+        authenticatorSelection: { residentKey: 'required', userVerification: 'required' },
+        registration: {
+          requireSession: false,
+          extensions: prfSupportProbe,
+          resolveUser: registration.resolveUser,
+          afterVerification: registration.afterVerification,
+        },
         authentication: {
           afterVerification: ({ verification }) => {
             requireUserVerified(verification.authenticationInfo.userVerified);
@@ -251,17 +284,14 @@ export function createAuth({ db, secret, origin, logger, audit, notices, limiter
   }
 
   async function noticeSignIn(session: Record<string, unknown> & { userId: string }) {
-    const [account] = await db
-      .select({ email: user.email })
-      .from(user)
-      .where(eq(user.id, session.userId));
-    if (account === undefined) return;
+    const email = await accounts.emailOf(db, session.userId);
+    if (email === undefined) return;
     await noticeNewSignIn(
       { db, notices },
       {
         credentialId: String(session['credentialId']),
         device: describeSession(session),
-        email: account.email,
+        email,
         at: new Date(),
       },
     );
@@ -269,6 +299,32 @@ export function createAuth({ db, secret, origin, logger, audit, notices, limiter
 }
 
 export type Auth = ReturnType<typeof createAuth>;
+
+/**
+ * The account rows the rest of the API needs, so the auth schema is read here alone (spec 0003,
+ * R1). Each takes the database or the transaction to run in.
+ */
+export const accounts = {
+  anyExists: async (db: Database | Transaction) =>
+    (await db.select({ id: user.id }).from(user).limit(1)).length > 0,
+  /** An account confirmed from the start, as owner enrollment creates it (spec 0003, R2). */
+  createConfirmed: async (db: Database | Transaction, email: string) => {
+    const [created] = await db
+      .insert(user)
+      .values({ name: '', email, emailVerified: true, confirmedAt: sql`now()` })
+      .returning({ id: user.id });
+    return created?.id;
+  },
+  emailOf: async (db: Database | Transaction, accountId: string) =>
+    (await db.select({ email: user.email }).from(user).where(eq(user.id, accountId)))[0]?.email,
+  createdWithinDay: async (db: Database | Transaction, accountId: string) =>
+    (
+      await db
+        .select({ id: user.id })
+        .from(user)
+        .where(and(eq(user.id, accountId), gt(user.createdAt, sql`now() - interval '1 day'`)))
+    ).length === 1,
+};
 
 /** A passkey as a step-up verifies against it. */
 export interface StoredCredential {

@@ -1,5 +1,5 @@
 import { createHash, generateKeyPairSync, randomBytes, sign } from 'node:crypto';
-import type { PasskeyAssertion } from '@arca/api-contract/routes';
+import type { PasskeyAssertion, PasskeyAttestation } from '@arca/api-contract/routes';
 
 const sha256 = (data: Buffer | string) => createHash('sha256').update(data).digest();
 
@@ -11,6 +11,33 @@ function coseKey(x: Buffer, y: Buffer): Buffer {
     Buffer.from([0x22, 0x58, 0x20]),
     y,
   ]);
+}
+
+/** CBOR for the "none" attestation of a credential: {fmt: "none", attStmt: {}, authData}. */
+function noneAttestation(authData: Buffer): Buffer {
+  const text = (value: string) =>
+    Buffer.concat([Buffer.from([0x60 + value.length]), Buffer.from(value)]);
+  const length = Buffer.alloc(2);
+  length.writeUInt16BE(authData.length);
+  return Buffer.concat([
+    Buffer.from([0xa3]),
+    text('fmt'),
+    text('none'),
+    text('attStmt'),
+    Buffer.from([0xa0]),
+    text('authData'),
+    Buffer.from([0x59]),
+    length,
+    authData,
+  ]);
+}
+
+export interface AttestationOptions {
+  readonly challenge: string;
+  readonly origin: string;
+  readonly userVerified?: boolean;
+  /** What the authenticator reports for the PRF extension; absent, it reports nothing. */
+  readonly prfEnabled?: boolean;
 }
 
 export interface AssertionOptions {
@@ -27,15 +54,50 @@ export interface AssertionOptions {
 export function softwarePasskey(rpId: string) {
   const { privateKey, publicKey } = generateKeyPairSync('ec', { namedCurve: 'P-256' });
   const { x, y } = publicKey.export({ format: 'jwk' });
-  const credentialId = randomBytes(16).toString('base64url');
+  const rawId = randomBytes(16);
+  const credentialId = rawId.toString('base64url');
+  const cose = coseKey(Buffer.from(String(x), 'base64url'), Buffer.from(String(y), 'base64url'));
   let counter = 0;
   return {
     credentialId,
+    /** Registers the key as a synced passkey would, with no attestation statement. */
+    attest({
+      challenge,
+      origin,
+      userVerified = true,
+      prfEnabled,
+    }: AttestationOptions): PasskeyAttestation {
+      // UP, UV when verified, backup eligible and backed up, attested credential data.
+      const flags = 0x01 | (userVerified ? 0x04 : 0) | 0x08 | 0x10 | 0x40;
+      const idLength = Buffer.alloc(2);
+      idLength.writeUInt16BE(rawId.length);
+      const authenticatorData = Buffer.concat([
+        sha256(rpId),
+        Buffer.from([flags]),
+        Buffer.alloc(4),
+        Buffer.alloc(16),
+        idLength,
+        rawId,
+        cose,
+      ]);
+      const clientDataJSON = Buffer.from(
+        JSON.stringify({ type: 'webauthn.create', challenge, origin, crossOrigin: false }),
+      );
+      return {
+        id: credentialId,
+        rawId: credentialId,
+        type: 'public-key',
+        response: {
+          clientDataJSON: clientDataJSON.toString('base64url'),
+          attestationObject: noneAttestation(authenticatorData).toString('base64url'),
+          transports: ['internal', 'hybrid'],
+        },
+        authenticatorAttachment: 'platform',
+        clientExtensionResults: prfEnabled === undefined ? {} : { prf: { enabled: prfEnabled } },
+      };
+    },
     /** As the passkey plugin stores it. */
-    publicKey: coseKey(
-      Buffer.from(String(x), 'base64url'),
-      Buffer.from(String(y), 'base64url'),
-    ).toString('base64'),
+    publicKey: cose.toString('base64'),
     assert({ challenge, origin, userVerified = true }: AssertionOptions): PasskeyAssertion {
       counter += 1;
       const flags = 0x01 | (userVerified ? 0x04 : 0);

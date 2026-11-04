@@ -4,6 +4,12 @@ import {
   AuditEventsQuery,
   authBasePath,
   authRoutes,
+  enrollOwner,
+  regenerateRecoveryKit,
+  registrationOptions,
+  registrationVerify,
+  StepUpAction,
+  stepUpNonceHeader,
   StepUpOptionsRequest,
   stepUpVerify,
   type ErrorResponse,
@@ -16,10 +22,14 @@ import { createMiddleware } from 'hono/factory';
 import { routePath } from 'hono/route';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import type { AuditReader } from './audit/log.js';
-import { authRouteLimits, stepUpLimits } from './auth/limits.js';
+import type { Enrollment } from './auth/enrollment.js';
+import { authRouteLimits, registrationLimits, stepUpLimits } from './auth/limits.js';
 import type { RateLimiter, RateLimitRule } from './auth/rate-limit.js';
-import type { AuthService } from './auth/service.js';
-import type { StepUpService } from './auth/step-up.js';
+import type { RecoveryKits } from './auth/recovery-kit.js';
+import type { Registration, RegistrationOutcome } from './auth/registration.js';
+import type { AuthService, SignedIn } from './auth/service.js';
+import type { CanonicalAction } from './auth/step-up-encoding.js';
+import type { ActionPurpose, StepUpService } from './auth/step-up.js';
 import type { OutboxEntry } from './email/outbox.js';
 import { bearerMatches } from './cron-auth.js';
 import { cachedDatabaseCheck, type CheckDatabase } from './database-health.js';
@@ -60,6 +70,12 @@ export interface AppDependencies {
   readonly authLimits?: AuthLimits;
   /** Purpose-bound step-up (spec 0003, R5); absent, its routes answer 401. */
   readonly stepUp?: StepUpService;
+  /** Owner enrollment (spec 0003, R2); absent, its route is a 404. */
+  readonly enrollment?: Enrollment;
+  /** Passkey-first registration from a link (spec 0003, R2); absent, its routes are a 404. */
+  readonly registration?: Registration;
+  /** The account part of the recovery kit (spec 0003, R6); absent, its routes answer 401. */
+  readonly recoveryKits?: RecoveryKits;
   /** The signed-in account's audit events; absent, the route answers 401. */
   readonly audit?: AuditReader;
   /**
@@ -76,6 +92,10 @@ export type ErrorCode =
   | 'not_found'
   | 'rate_limited'
   | 'step_up_refused'
+  | 'step_up_required'
+  | 'invalid_code'
+  | 'registration_refused'
+  | 'email_unavailable'
   | 'request_failed'
   | 'internal_error';
 
@@ -170,6 +190,9 @@ export function createApp({
   auth,
   authLimits,
   stepUp,
+  enrollment,
+  registration,
+  recoveryKits,
   audit,
   outbox,
 }: AppDependencies) {
@@ -238,9 +261,49 @@ export function createApp({
     c.set('errorCode', 'rate_limited');
     return c.json({ error: { code: 'rate_limited' } } satisfies ErrorResponse, 429);
   };
-  const unauthorized = (c: Context<AppEnv>) => {
-    c.set('errorCode', 'unauthorized');
-    return c.json({ error: { code: 'unauthorized' } } satisfies ErrorResponse, 401);
+  const fail = <Status extends 401 | 403 | 404 | 503>(
+    c: Context<AppEnv>,
+    code: ErrorCode,
+    status: Status,
+  ) => {
+    c.set('errorCode', code);
+    return c.json({ error: { code } } satisfies ErrorResponse, status);
+  };
+  const unauthorized = (c: Context<AppEnv>) => fail(c, 'unauthorized', 401);
+  /** Counted per client address, for the routes that come before any session. */
+  const overAddressLimit = (c: Context<AppEnv>, limits: AuthLimits, rule: RateLimitRule) =>
+    overLimit(c, limits, rule, limits.clientAddress(c.req.raw.headers));
+  /**
+   * `requireStepUp` (spec 0003, R5): spends this session's step-up for the purpose and for the
+   * action recomputed from this request, with the nonce the client sent in its header.
+   */
+  const stepUpGranted = async (
+    c: Context<AppEnv>,
+    current: SignedIn,
+    purpose: ActionPurpose,
+    action: Omit<CanonicalAction, 'nonce'>,
+  ) => {
+    const nonce = StepUpAction.shape.nonce.safeParse(c.req.header(stepUpNonceHeader));
+    if (stepUp === undefined || !nonce.success) return false;
+    return stepUp.consume(current, purpose, {
+      ...action,
+      nonce: new Uint8Array(Buffer.from(nonce.data, 'base64url')),
+    });
+  };
+  const registered = <Body extends object>(
+    c: Context<AppEnv>,
+    outcome: RegistrationOutcome<Body>,
+  ) => {
+    if (!outcome.ok) {
+      if (outcome.reason === 'not_found') return fail(c, 'not_found', 404);
+      return fail(
+        c,
+        outcome.reason === 'invalid_code' ? 'invalid_code' : 'registration_refused',
+        403,
+      );
+    }
+    for (const cookie of outcome.setCookies) c.header('set-cookie', cookie, { append: true });
+    return c.json(outcome.body, 200);
   };
 
   v1.openapi(openApiRoutes.session, async (c) => {
@@ -272,9 +335,61 @@ export function createApp({
     const { challengeId, response } = stepUpVerify.body.parse(await c.req.json());
     // One answer for every refusal reason, apart from the session's own 401.
     if (!(await stepUp.verify(current, challengeId, response))) {
-      c.set('errorCode', 'step_up_refused');
-      return c.json({ error: { code: 'step_up_refused' } } satisfies ErrorResponse, 403);
+      return fail(c, 'step_up_refused', 403);
     }
+    return c.json({}, 200);
+  });
+
+  v1.openapi(openApiRoutes.enrollOwner, async (c) => {
+    if (enrollment === undefined || authLimits === undefined) return fail(c, 'not_found', 404);
+    const limited = await overAddressLimit(c, authLimits, registrationLimits.enrollOwner);
+    if (limited !== undefined) return limited;
+    const outcome = await enrollment.enrollOwner(enrollOwner.body.parse(await c.req.json()));
+    if (outcome === 'not_found') return fail(c, 'not_found', 404);
+    if (outcome === 'email_unavailable') return fail(c, 'email_unavailable', 503);
+    return c.json({}, 200);
+  });
+
+  v1.openapi(openApiRoutes.registrationOptions, async (c) => {
+    if (registration === undefined || authLimits === undefined) return fail(c, 'not_found', 404);
+    const limited = await overAddressLimit(c, authLimits, registrationLimits.options);
+    if (limited !== undefined) return limited;
+    const request = registrationOptions.body.parse(await c.req.json());
+    return registered(c, await registration.options(c.req.raw.headers, request));
+  });
+
+  v1.openapi(openApiRoutes.registrationVerify, async (c) => {
+    if (registration === undefined || authLimits === undefined) return fail(c, 'not_found', 404);
+    const limited = await overAddressLimit(c, authLimits, registrationLimits.verify);
+    if (limited !== undefined) return limited;
+    const request = registrationVerify.body.parse(await c.req.json());
+    return registered(c, await registration.verify(c.req.raw.headers, request));
+  });
+
+  v1.openapi(openApiRoutes.recoveryKitStatus, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || recoveryKits === undefined) return unauthorized(c);
+    return c.json({ status: await recoveryKits.status(current.accountId) }, 200);
+  });
+
+  // The first kit comes with the account; replacing one needs a step-up (spec 0003, R6).
+  v1.openapi(openApiRoutes.regenerateRecoveryKit, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || recoveryKits === undefined) return unauthorized(c);
+    const first = await recoveryKits.issueFirst(current.accountId);
+    if (first !== null) return c.json({ code: first }, 200);
+    const approved = await stepUpGranted(c, current, 'sensitive_settings', {
+      action: regenerateRecoveryKit.operationId,
+      targets: [],
+    });
+    if (!approved) return fail(c, 'step_up_required', 403);
+    return c.json({ code: await recoveryKits.regenerate(current.accountId) }, 200);
+  });
+
+  v1.openapi(openApiRoutes.confirmRecoveryKit, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || recoveryKits === undefined) return unauthorized(c);
+    if (!(await recoveryKits.confirm(current.accountId))) return fail(c, 'not_found', 404);
     return c.json({}, 200);
   });
 
