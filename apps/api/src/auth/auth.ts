@@ -36,7 +36,8 @@ export function createAuth({ db, secret, origin, logger }: AuthSettings) {
     logger: {
       level: 'warn',
       log: (level) => {
-        logger.error({ errorName: level === 'error' ? 'BetterAuthError' : 'BetterAuthWarning' });
+        if (level === 'error') logger.error({ errorName: 'BetterAuthError' });
+        else logger.info({ errorName: 'BetterAuthWarning' });
       },
     },
     emailAndPassword: { enabled: false },

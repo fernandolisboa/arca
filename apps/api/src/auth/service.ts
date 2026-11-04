@@ -13,7 +13,9 @@ export function authService(auth: Auth): AuthService {
   return {
     handle: (request) => auth.handler(request),
     session: async (headers) => {
-      const found = await auth.api.getSession({ headers });
+      // No sliding refresh: it would move the stored expiry without the cookie that carries it.
+      // Session lifetimes and their refresh come with spec 0003 R4.
+      const found = await auth.api.getSession({ headers, query: { disableRefresh: true } });
       if (found === null) return null;
       // Parsed, so a stored device value outside the enums fails loudly instead of reaching a client.
       return SessionResponse.parse({

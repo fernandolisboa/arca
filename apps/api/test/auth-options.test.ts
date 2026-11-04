@@ -36,6 +36,29 @@ describe('the Better Auth configuration (spec 0003, R1)', () => {
     lines.length = 0;
     const log = auth.options.logger.log as (level: string, ...rest: unknown[]) => void;
     log('error', 'Failed for owner@example.com', { email: 'x@example.com' });
-    expect(lines).toEqual([{ errorName: 'BetterAuthError' }]);
+    log('warn', 'Odd request from owner@example.com');
+    expect(lines).toEqual([{ errorName: 'BetterAuthError' }, { errorName: 'BetterAuthWarning' }]);
+  });
+
+  it('stores no network details and derives the device from the user agent', async () => {
+    const before = auth.options.databaseHooks.session.create.before as unknown as (
+      session: Record<string, unknown>,
+      context: { headers: Headers },
+    ) => Promise<{ data: Record<string, unknown> }>;
+    const headers = new Headers({
+      'user-agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0',
+      'x-forwarded-for': '192.0.2.10',
+    });
+    const { data } = await before(
+      { userId: 'u', ipAddress: '192.0.2.10', userAgent: 'raw agent' },
+      { headers },
+    );
+    expect(data).toEqual({
+      userId: 'u',
+      ipAddress: null,
+      userAgent: null,
+      deviceBrowser: 'firefox',
+      deviceOs: 'linux',
+    });
   });
 });

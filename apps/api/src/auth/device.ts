@@ -1,9 +1,5 @@
 import type { DeviceDescription } from '@arca/api-contract/routes';
 
-/**
- * The device a session runs on, as two closed enums derived on the server from the user agent
- * (spec 0003, R4). The raw user agent is never stored; clients render these through i18n.
- */
 type BrowserFamily = DeviceDescription['browser'];
 type OsFamily = DeviceDescription['os'];
 
@@ -37,6 +33,10 @@ function firstMatch<Family extends string>(
   return rules.find(([, pattern]) => pattern.test(userAgent))?.[0] ?? 'other';
 }
 
+/**
+ * The device a session runs on, as two closed enums derived on the server from the user agent
+ * (spec 0003, R4). The raw user agent is never stored; clients render these through i18n.
+ */
 export function describeDevice(userAgent: string | null | undefined): DeviceDescription {
   if (typeof userAgent !== 'string' || userAgent.length > maximumLength) {
     return { browser: 'other', os: 'other' };

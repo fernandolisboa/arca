@@ -52,12 +52,15 @@ const originHostPattern = /^[a-z0-9](?:[a-z0-9.-]{0,251}[a-z0-9])?$/;
 /**
  * The origin the auth routes run on, from Vercel's system variables: a preview's branch URL, so
  * the per-deployment URL is not trusted, and the production domain. Until spec 0003 R9 moves
- * production to a reviewed file, the production host is Vercel's. Locally, Nitro's dev server.
+ * production to a reviewed file, the production host is Vercel's. Off Vercel, Nitro's dev server;
+ * on Vercel a missing or unknown environment fails instead of falling back to it.
  */
 export function readAuthOrigin(): string {
-  const environment = process.env['VERCEL_ENV'];
-  if (environment === undefined || environment === '' || environment === 'development') {
-    return 'http://localhost:3000';
+  if (process.env['VERCEL'] !== '1') return 'http://localhost:3000';
+  const environment = required('VERCEL_ENV', process.env['VERCEL_ENV']);
+  if (environment === 'development') return 'http://localhost:3000';
+  if (environment !== 'production' && environment !== 'preview') {
+    throw new MissingConfigError('VERCEL_ENV is not a known environment');
   }
   const [name, value] =
     environment === 'production'

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   databaseTargetFrom,
   MissingConfigError,
@@ -103,6 +103,10 @@ describe('readAuthSecrets', () => {
 });
 
 describe('readAuthOrigin', () => {
+  beforeEach(() => {
+    vi.stubEnv('VERCEL', '1');
+  });
+
   it('uses the branch URL on a preview, never the deployment URL', () => {
     vi.stubEnv('VERCEL_ENV', 'preview');
     vi.stubEnv('VERCEL_BRANCH_URL', 'arca-git-feature-team.vercel.app');
@@ -117,8 +121,14 @@ describe('readAuthOrigin', () => {
   });
 
   it('uses the local dev server outside Vercel', () => {
-    vi.stubEnv('VERCEL_ENV', undefined);
+    vi.stubEnv('VERCEL', undefined);
+    vi.stubEnv('VERCEL_ENV', 'production');
     expect(readAuthOrigin()).toBe('http://localhost:3000');
+  });
+
+  it.each([undefined, '', 'staging'])('fails closed on Vercel with VERCEL_ENV %j', (value) => {
+    vi.stubEnv('VERCEL_ENV', value);
+    expect(() => readAuthOrigin()).toThrow(MissingConfigError);
   });
 
   it.each([undefined, '', 'evil.example.com/path', 'user@host.example.com', 'host:8443'])(
