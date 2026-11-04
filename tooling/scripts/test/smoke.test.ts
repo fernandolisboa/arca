@@ -4,6 +4,9 @@ import { smokeTest } from '../src/smoke.ts';
 
 const origin = new URL('https://arca.example');
 const healthy = { body: { status: 'ok', checks: { database: 'ok' } } };
+const now = new Date('2026-11-04T12:00:00Z');
+const securityTxt = (expires: string) =>
+  `Contact: https://github.com/fernandolisboa/arca/security/advisories/new\nExpires: ${expires}\n`;
 
 interface Answer {
   readonly status?: number;
@@ -22,7 +25,13 @@ function fakeFetch(
     page = {},
     runnerStatus = 404,
     headers = securityHeaders,
-  }: { page?: Answer; runnerStatus?: number; headers?: Record<string, string> } = {},
+    contact = { raw: securityTxt('2027-11-04T00:00:00.000Z') },
+  }: {
+    page?: Answer;
+    runnerStatus?: number;
+    headers?: Record<string, string>;
+    contact?: Answer;
+  } = {},
 ): { fetchUrl: typeof fetch; healthCalls: () => number } {
   let calls = 0;
   const fetchUrl: typeof fetch = (input) => {
@@ -34,6 +43,14 @@ function fakeFetch(
         new Response(answer.raw ?? JSON.stringify(answer.body), {
           status: answer.status ?? 200,
           headers: { ...headers, 'content-type': 'application/json' },
+        }),
+      );
+    }
+    if (path === '/.well-known/security.txt') {
+      return Promise.resolve(
+        new Response(contact.raw ?? '', {
+          status: contact.status ?? 200,
+          headers: { 'content-type': 'text/plain; charset=UTF-8' },
         }),
       );
     }
@@ -51,7 +68,7 @@ function fakeFetch(
 }
 
 const run = (fake: ReturnType<typeof fakeFetch>) =>
-  smokeTest(origin, { fetchUrl: fake.fetchUrl, attempts: 3, retryDelayMs: 0 });
+  smokeTest(origin, { fetchUrl: fake.fetchUrl, attempts: 3, retryDelayMs: 0, now: () => now });
 
 describe('production smoke test (spec 0001, R9)', () => {
   it('passes with a healthy database, the web app and every security header', async () => {
@@ -90,6 +107,7 @@ describe('production smoke test (spec 0001, R9)', () => {
       { where: '/v1/health', problem: 'request failed: TypeError' },
       { where: '/', problem: 'request failed: TypeError' },
       { where: '/.well-known/workflow/v1/flow', problem: 'request failed: TypeError' },
+      { where: '/.well-known/security.txt', problem: 'request failed: TypeError' },
     ]);
   });
 
@@ -131,4 +149,28 @@ describe('production smoke test (spec 0001, R9)', () => {
       ]);
     },
   );
+
+  it.each<[string, Answer, string]>([
+    [
+      'is 30 days from expiry',
+      { raw: securityTxt('2026-12-04T12:00:00Z') },
+      'expires in 30 days; renew Expires',
+    ],
+    [
+      'has expired',
+      { raw: securityTxt('2026-11-01T00:00:00Z') },
+      'expires in -4 days; renew Expires',
+    ],
+    ['has no Expires', { raw: 'Contact: https://example.com/report\n' }, 'has no valid Expires'],
+    [
+      'has no https Contact',
+      { raw: 'Contact: mailto:x@example.com\nExpires: 2027-11-04T00:00:00Z\n' },
+      'names no https Contact',
+    ],
+    ['is missing', { status: 404 }, 'answered 404'],
+  ])('fails when security.txt %s', async (_label, contact, problem) => {
+    expect(await run(fakeFetch([healthy], { contact }))).toEqual([
+      { where: '/.well-known/security.txt', problem },
+    ]);
+  });
 });

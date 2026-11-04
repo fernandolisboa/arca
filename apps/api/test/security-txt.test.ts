@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
-import { securityContact } from '../src/security-txt.js';
+import { securityContact, securityTxt } from '../src/security-txt.js';
 
 const day = 24 * 60 * 60 * 1000;
 
@@ -24,6 +24,10 @@ describe('/.well-known/security.txt (spec 0004, R11)', () => {
         '',
       ].join('\n'),
     );
+  });
+
+  it('names no canonical address while production has no host', () => {
+    expect(securityTxt(null)).not.toContain('Canonical:');
   });
 
   it('is renewed at least 30 days before it expires, and never set more than a year ahead', () => {

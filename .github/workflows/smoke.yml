@@ -2,10 +2,13 @@ name: smoke
 
 # Spec 0001, R9: after Vercel deploys main to production, check the live app from outside, with no
 # secrets (the production origin is public). Vercel sends repository_dispatch events, which run
-# this file as it is on main, never a branch's copy; workflow_dispatch runs it by hand.
+# this file as it is on main, never a branch's copy; workflow_dispatch runs it by hand. The weekly
+# run catches what drifts between deploys, such as security.txt nearing its Expires (spec 0004, R11).
 on:
   repository_dispatch:
     types: [vercel.deployment.success]
+  schedule:
+    - cron: '41 7 * * 1'
   workflow_dispatch:
 
 permissions: {}
@@ -19,7 +22,7 @@ env:
 jobs:
   production:
     if: >-
-      github.event_name == 'workflow_dispatch' || (
+      github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (
         github.event.client_payload.project.name == 'arca' &&
         github.event.client_payload.environment == 'production' &&
         (github.event.client_payload.git.ref == 'main' ||

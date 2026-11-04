@@ -18,33 +18,64 @@ export interface Repository {
   readonly exists: (path: string) => boolean;
 }
 
-const fence = /^(?:```|~~~)/;
-// Inline links and images, `[text](target "title")`; reference definitions, `[id]: target`.
-const inlineLink = /!?\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+"[^"]*")?\s*\)/g;
-const referenceLink = /^\s{0,3}\[[^\]]+\]:\s*<?(\S+?)>?(?:\s+"[^"]*")?\s*$/;
+const fenceOpen = /^ {0,3}(`{3,}|~{3,})/;
+// The text of a link may hold one level of brackets, as a linked image does: `[![alt](i)](t)`.
+const linkText = String.raw`\[(?:[^\[\]]|\[[^\]]*\])*\]`;
+const linkTitle = String.raw`(?:\s+(?:"[^"]*"|'[^']*'|\([^)]*\)))?`;
+// Inline links and images, `[text](target "title")` or `[text](<target with spaces>)`.
+const inlineLink = new RegExp(
+  String.raw`!?${linkText}\(\s*(?:<([^>]*)>|([^)\s]+))${linkTitle}\s*\)`,
+  'g',
+);
+const image = new RegExp(String.raw`!\[[^\]]*\]\(\s*(?:<([^>]*)>|([^)\s]+))${linkTitle}\s*\)`, 'g');
+// Reference definitions, `[id]: target`; a footnote, `[^1]: text`, is not one.
+const referenceLink = new RegExp(
+  String.raw`^\s{0,3}\[(?!\^)[^\]]+\]:\s*<?(\S+?)>?${linkTitle}\s*$`,
+);
 const external = /^[a-z][a-z0-9+.-]*:/i;
 
-/** The anchor GitHub gives a heading: lowercased, punctuation dropped, spaces as hyphens. */
+/**
+ * The anchor GitHub gives a heading: lowercased, punctuation dropped, spaces as hyphens. An
+ * approximation of github-slugger without the dependency; where it differs (HTML tags in a
+ * heading, emphasis marks), a valid link is reported, never a broken one passed.
+ */
 export function headingAnchor(heading: string): string {
   return heading
     .trim()
     .toLowerCase()
     .replace(/`/g, '')
     .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-    .replace(/[^\p{L}\p{N}\s_-]/gu, '')
+    .replace(/[^\p{L}\p{M}\p{N}\s_-]/gu, '')
     .replace(/\s/g, '-');
 }
 
-/** The lines of a document outside fenced code. */
+/**
+ * The lines of a document outside fenced code. A fence closes only on a run of its own character
+ * at least as long as the one that opened it, with nothing after it.
+ */
 function proseLines(text: string): string[] {
   const lines: string[] = [];
-  let inFence = false;
+  let open: string | undefined;
   for (const line of text.split('\n')) {
-    if (fence.test(line.trim())) {
-      inFence = !inFence;
-      continue;
+    const run = fenceOpen.exec(line)?.[1];
+    if (open === undefined) {
+      // A backtick fence's info string has no backtick; otherwise the line is inline code.
+      if (
+        run !== undefined &&
+        !(run.startsWith('`') && line.trim().slice(run.length).includes('`'))
+      ) {
+        open = run;
+        continue;
+      }
+      lines.push(line);
+    } else if (
+      run !== undefined &&
+      run.startsWith(open.charAt(0)) &&
+      run.length >= open.length &&
+      line.trim() === run
+    ) {
+      open = undefined;
     }
-    if (!inFence) lines.push(line);
   }
   return lines;
 }
@@ -55,10 +86,15 @@ function anchorsOf(text: string): Set<string> {
   for (const line of proseLines(text)) {
     const heading = /^#{1,6}\s+(.*?)\s*#*\s*$/.exec(line)?.[1];
     if (heading === undefined) continue;
-    const anchor = headingAnchor(heading);
-    const count = seen.get(anchor) ?? 0;
-    seen.set(anchor, count + 1);
-    anchors.add(count === 0 ? anchor : `${anchor}-${String(count)}`);
+    const base = headingAnchor(heading);
+    let anchor = base;
+    let count = seen.get(base) ?? 0;
+    while (anchors.has(anchor)) {
+      count += 1;
+      anchor = `${base}-${String(count)}`;
+    }
+    seen.set(base, count);
+    anchors.add(anchor);
   }
   return anchors;
 }
@@ -69,9 +105,12 @@ function linksOf(text: string): string[] {
     const line = raw.replace(/`[^`]*`/g, '``');
     const reference = referenceLink.exec(line)?.[1];
     if (reference !== undefined) return [reference];
-    return [...line.matchAll(inlineLink)].flatMap((match) =>
-      match[1] === undefined ? [] : [match[1]],
-    );
+    // A linked image holds two targets: the link's, and the image's inside its text.
+    const targets = [...line.matchAll(inlineLink), ...line.matchAll(image)].flatMap((match) => {
+      const target = match[1] ?? match[2];
+      return target === undefined ? [] : [target];
+    });
+    return [...new Set(targets)];
   });
 }
 
@@ -115,7 +154,14 @@ export function checkDocLinks({ documents, exists }: Repository): Violation[] {
       }
       if (anchor === undefined || anchor === '') continue;
       if (targetText === undefined) continue;
-      if (!anchorsIn(resolved, targetText).has(decodeURIComponent(anchor).toLowerCase())) {
+      let heading: string;
+      try {
+        heading = decodeURIComponent(anchor).toLowerCase();
+      } catch {
+        violations.push({ where: path, problem: `${link} is not a valid link` });
+        continue;
+      }
+      if (!anchorsIn(resolved, targetText).has(heading)) {
         violations.push({ where: path, problem: `${link} names a heading that does not exist` });
       }
     }
@@ -127,15 +173,17 @@ const run = promisify(execFile);
 
 async function main(): Promise<void> {
   const rootDir = process.cwd();
-  const { stdout } = await run(
-    'git',
-    ['ls-files', '-z', '--cached', '--others', '--exclude-standard'],
-    {
-      cwd: rootDir,
-      maxBuffer: 64 * 1024 * 1024,
-    },
+  const list = async (...args: string[]) =>
+    (
+      await run('git', ['ls-files', '-z', ...args], { cwd: rootDir, maxBuffer: 64 * 1024 * 1024 })
+    ).stdout
+      .split('\0')
+      .filter((file) => file !== '');
+  // Files deleted from the work tree but still in the index are gone for a reader too.
+  const deleted = new Set(await list('--deleted'));
+  const files = (await list('--cached', '--others', '--exclude-standard')).filter(
+    (file) => !deleted.has(file),
   );
-  const files = stdout.split('\0').filter((file) => file !== '');
   const documents = await Promise.all(
     files
       .filter((file) => file.endsWith('.md'))

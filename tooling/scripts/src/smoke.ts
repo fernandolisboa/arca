@@ -3,6 +3,10 @@ import { securityHeaders } from '@arca/security-policy';
 import { isRecord, reportViolations, type Violation } from './report.ts';
 
 const workflowRunnerPath = '/.well-known/workflow/v1/flow';
+const securityTxtPath = '/.well-known/security.txt';
+const dayMs = 24 * 60 * 60 * 1000;
+/** security.txt is renewed at least this long before it expires (spec 0004, R11). */
+const renewalDays = 30;
 /** How the platform refuses a request to a private function. */
 const platformRejections: ReadonlySet<number> = new Set([401, 403, 404]);
 
@@ -13,17 +17,25 @@ export interface SmokeOptions {
   /** Longer than the API's 10-second cache of a failed database check. */
   readonly retryDelayMs?: number;
   readonly timeoutMs?: number;
+  readonly now?: () => Date;
 }
 
 /**
  * The production smoke test (spec 0001, R9): the health check reports `ok` with the database
  * reached as the API's own role, the web app answers, both carry the security headers, and the
- * workflow runner refuses an unsigned request. It needs no secret, since the production domain is
- * public.
+ * workflow runner refuses an unsigned request, and `security.txt` is more than 30 days from its
+ * `Expires` (spec 0004, R11; the weekly run catches it between deploys). It needs no secret, since
+ * the production domain is public.
  */
 export async function smokeTest(
   origin: URL,
-  { fetchUrl = fetch, attempts = 6, retryDelayMs = 15_000, timeoutMs = 10_000 }: SmokeOptions = {},
+  {
+    fetchUrl = fetch,
+    attempts = 6,
+    retryDelayMs = 15_000,
+    timeoutMs = 10_000,
+    now = () => new Date(),
+  }: SmokeOptions = {},
 ): Promise<Violation[]> {
   const request = (path: string, init: RequestInit = {}) =>
     fetchUrl(new URL(path, origin), {
@@ -72,6 +84,9 @@ export async function smokeTest(
     });
   }
 
+  const contact = await securityTxtProblem(await get(securityTxtPath), now());
+  if (contact !== undefined) violations.push({ where: securityTxtPath, problem: contact });
+
   for (const [path, response] of [
     ['/', page],
     ['/v1/health', health],
@@ -84,6 +99,20 @@ export async function smokeTest(
     }
   }
   return violations;
+}
+
+async function securityTxtProblem(
+  response: Response | Error,
+  now: Date,
+): Promise<string | undefined> {
+  if (response instanceof Error) return `request failed: ${response.name}`;
+  if (response.status !== 200) return `answered ${String(response.status)}`;
+  const text = await response.text();
+  if (!/^Contact: https:\/\/\S+$/m.test(text)) return 'names no https Contact';
+  const expires = Date.parse(/^Expires: (\S+)$/m.exec(text)?.[1] ?? '');
+  if (Number.isNaN(expires)) return 'has no valid Expires';
+  const days = Math.floor((expires - now.getTime()) / dayMs);
+  return days > renewalDays ? undefined : `expires in ${String(days)} days; renew Expires`;
 }
 
 async function healthProblem(response: Response | Error): Promise<string | undefined> {
