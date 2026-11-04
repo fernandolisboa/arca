@@ -31,8 +31,8 @@ const passwords: Record<RuntimeRole, string> = {
 };
 const credentials = (role: RuntimeRole): RoleCredentials => ({ role, password: passwords[role] });
 
-const personA = '0b9c3d6e-1f2a-4b5c-8d7e-9f0a1b2c3d4e';
-const personB = '7a6b5c4d-3e2f-4a1b-9c8d-7e6f5a4b3c2d';
+const accountA = '0b9c3d6e-1f2a-4b5c-8d7e-9f0a1b2c3d4e';
+const accountB = '7a6b5c4d-3e2f-4a1b-9c8d-7e6f5a4b3c2d';
 const someCase = 'c0ffee00-0000-4000-8000-000000000001';
 
 async function asAdmin<T>(name: string, use: (client: pg.Client) => Promise<T>): Promise<T> {
@@ -79,14 +79,14 @@ beforeAll(async () => {
   // A test-only table with the policy shape case tables will use (spec 0001, R7).
   await asAdmin(database, (client) =>
     client.query(`
-      CREATE TABLE public.identity_probe (person_id uuid NOT NULL, case_id uuid);
+      CREATE TABLE public.identity_probe (account_id uuid NOT NULL, case_id uuid);
       ALTER TABLE public.identity_probe ENABLE ROW LEVEL SECURITY;
       ALTER TABLE public.identity_probe FORCE ROW LEVEL SECURITY;
       CREATE POLICY own_rows ON public.identity_probe
-        USING (person_id = nullif(current_setting('app.person_id', true), '')::uuid);
+        USING (account_id = nullif(current_setting('app.account_id', true), '')::uuid);
       GRANT SELECT ON public.identity_probe TO app_api;
       INSERT INTO public.identity_probe VALUES
-        ('${personA}', NULL), ('${personA}', '${someCase}'), ('${personB}', NULL);
+        ('${accountA}', NULL), ('${accountA}', '${someCase}'), ('${accountB}', NULL);
     `),
   );
 });
@@ -146,7 +146,7 @@ describe('role pool', () => {
   });
 
   it('closes a connection that starts with an identity from PGOPTIONS', async () => {
-    vi.stubEnv('PGOPTIONS', `-c app.person_id=${personA}`);
+    vi.stubEnv('PGOPTIONS', `-c app.account_id=${accountA}`);
     try {
       const pool = poolFor('app_api');
       await expect(pool.query('SELECT 1')).rejects.toBeInstanceOf(ConnectionCheckError);
@@ -172,7 +172,7 @@ describe('role pool', () => {
 });
 
 describe('withIdentity', () => {
-  const probe = sql`SELECT person_id, case_id FROM public.identity_probe ORDER BY case_id NULLS FIRST`;
+  const probe = sql`SELECT account_id, case_id FROM public.identity_probe ORDER BY case_id NULLS FIRST`;
 
   async function select(executor: Database | Transaction, query = probe) {
     const result = await executor.execute(query);
@@ -185,38 +185,38 @@ describe('withIdentity', () => {
     expect(await select(db)).toEqual([]);
   });
 
-  it('returns only the rows of the person set for the transaction', async () => {
+  it('returns only the rows of the account set for the transaction', async () => {
     const db = createDatabase(poolFor('app_api'));
-    const rows = await withIdentity(db, { personId: personA, caseId: someCase }, async (tx) => {
+    const rows = await withIdentity(db, { accountId: accountA, caseId: someCase }, async (tx) => {
       expect(await select(tx, sql`SELECT current_setting('app.case_id', true) AS case_id`)).toEqual(
         [{ case_id: someCase }],
       );
       return select(tx);
     });
     expect(rows).toEqual([
-      { person_id: personA, case_id: null },
-      { person_id: personA, case_id: someCase },
+      { account_id: accountA, case_id: null },
+      { account_id: accountA, case_id: someCase },
     ]);
   });
 
   it('does not carry the identity into the next transaction on the same connection', async () => {
     const pool = poolFor('app_api', 1);
     const db = createDatabase(pool);
-    await withIdentity(db, { personId: personB }, async (tx) => {
+    await withIdentity(db, { accountId: accountB }, async (tx) => {
       expect(await select(tx)).toHaveLength(1);
     });
     const after = await db.transaction(async (tx) => ({
-      setting: await select(tx, sql`SELECT current_setting('app.person_id', true) AS person`),
+      setting: await select(tx, sql`SELECT current_setting('app.account_id', true) AS account`),
       visible: await select(tx),
     }));
     expect(pool.totalCount).toBe(1);
-    expect(after).toEqual({ setting: [{ person: '' }], visible: [] });
+    expect(after).toEqual({ setting: [{ account: '' }], visible: [] });
   });
 
   it('fails when work swallowed a database error, instead of committing nothing', async () => {
     const db = createDatabase(poolFor('app_api'));
     await expect(
-      withIdentity(db, { personId: personA }, async (tx) => {
+      withIdentity(db, { accountId: accountA }, async (tx) => {
         await tx.execute(sql`SELECT 1 / 0`).catch(() => undefined);
         return 'ok';
       }),
@@ -227,8 +227,8 @@ describe('withIdentity', () => {
     const pool = poolFor('app_api');
     const db = createDatabase(pool);
     await expect(
-      withIdentity(db, { personId: `${personA}'; SELECT 1; --` }, () => Promise.resolve()),
-    ).rejects.toThrow('personId is not a UUID');
+      withIdentity(db, { accountId: `${accountA}'; SELECT 1; --` }, () => Promise.resolve()),
+    ).rejects.toThrow('accountId is not a UUID');
     expect(pool.totalCount).toBe(0);
   });
 });
