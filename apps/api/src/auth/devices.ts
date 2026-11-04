@@ -41,11 +41,8 @@ export interface Devices {
   /**
    * What every session of the account shows (spec 0003, R4, R6), once the waits that are over
    * are recorded as activations: when the newest pending passkey becomes active, and whether a
-   * recovery passkey is pending, which restricts every session.
-   */
-  /**
-   * Records the waits that are over first; with a session, also says whether it outlived them,
-   * since a recovery passkey's activation ends the sessions it restricted.
+   * recovery passkey is pending, which restricts every session. With a session, also whether it
+   * outlived them, since a recovery passkey's activation ends the sessions it restricted.
    */
   readonly status: (accountId: string, sessionId?: string) => Promise<AccountStatus>;
 }
@@ -78,7 +75,9 @@ export function createDevices({
 }: DeviceSettings): Devices {
   const creation = passkeyCreation({ db, origin });
 
-  const notify = accountNotice({ db, notices, logger, label: 'DeviceNotice', clock });
+  const notify = accountNotice<
+    'passkey_added' | 'passkey_revoked' | 'pending_passkey_cancelled' | 'sessions_revoked'
+  >({ db, notices, logger, label: 'DeviceNotice', clock });
 
   /** Sessions created before this are past their absolute lifetime (spec 0003, R4). */
   const liveSince = () => new Date(clock().getTime() - absoluteSessionLifetimeMs);

@@ -117,8 +117,9 @@ export const passkeyChallenge = auth.table(
 
 /**
  * Recovery links (spec 0003, R6): the token is 256 random bits and only its SHA-256 hash is
- * stored; one per account, valid for 30 minutes. Accepting the recovery code marks it redeemed,
- * which makes it the registration context for the rest of its 30 minutes; registering the
+ * stored; one per account, valid for `recoveryLinkMinutes` (the insert sets it; the default only
+ * matches it). Accepting the recovery code marks it redeemed and replaces the hash with the
+ * registration token's, which makes it the registration context for the rest of its time; registering the
  * recovery passkey deletes it, so it is single use. Never backed up.
  */
 export const recoveryLink = auth.table(

@@ -112,12 +112,6 @@ const linksOf = (account: Account) =>
     account.accountId,
   ]);
 
-/** The link ends early, as when its page was closed; a provisional code keeps its own end. */
-const linkClosed = (account: Account) =>
-  testDatabase.asAdmin((client) =>
-    client.query('DELETE FROM auth.recovery_link WHERE account_id = $1', [account.accountId]),
-  );
-
 /** Moves the account's link and any provisional code past their end. */
 const linkExpired = (account: Account) =>
   testDatabase.asAdmin(async (client) => {
@@ -188,13 +182,12 @@ describe('starting recovery (spec 0003, R6)', () => {
     expect(await closed.start('nobody@example.com')).toBe('email_unavailable');
   });
 
-  it('does not replace a link whose code was accepted', async () => {
+  it('replaces an open context, which only the new code it issued resumes', async () => {
     const { account, code } = await owner();
     const registration = await opened(await linkFor(account), code);
-    const before = mailTo(account).length;
-    await recovery.start(account.email);
-    expect(mailTo(account)).toHaveLength(before);
-    await registered(registration);
+    const again = await linkFor(account);
+    expect(await recovery.options(registration)).toBeNull();
+    expect(await recovery.redeem(again, code)).toEqual({ ok: false, reason: 'invalid_code' });
   });
 });
 
@@ -210,7 +203,6 @@ describe('redeeming the code (spec 0003, R6)', () => {
     // The old code is spent: a new link does not take it.
     const issued = outcome.ok ? outcome.code : '';
     expect(issued).not.toBe(code);
-    await linkClosed(account);
     const again = await linkFor(account);
     expect(await recovery.redeem(again, code)).toEqual({ ok: false, reason: 'invalid_code' });
   });
@@ -282,9 +274,11 @@ describe('redeeming the code (spec 0003, R6)', () => {
     const first = await linkFor(account);
     const outcome = await recovery.redeem(first, code);
     const issued = outcome.ok ? outcome.code : '';
-    await linkClosed(account);
+    // The page was lost after the code was accepted: a new link and the new code resume it.
     const second = await linkFor(account);
-    expect((await recovery.redeem(second, issued)).ok).toBe(true);
+    const resumed = await recovery.redeem(second, issued);
+    expect(resumed.ok).toBe(true);
+    await registered(resumed.ok ? resumed.token : '');
   });
 });
 
@@ -392,6 +386,16 @@ describe('the wait of a recovery passkey (spec 0003, R6)', () => {
     const [kept] = account.keys;
     expect(await devices.revokePasskey(signedIn, kept.id)).toBe('recovery_pending');
     expect(await fixtures.events(account, ['passkey_revoked'])).toEqual([]);
+  });
+
+  it('answers a restricted session as ended when another request ran the activation', async () => {
+    const { account, signedIn } = await recovered();
+    await fixtures.waitOver(account);
+    await devices.status(account.accountId);
+    expect(await devices.status(account.accountId, signedIn.sessionId)).toMatchObject({
+      recoveryPending: false,
+      sessionEnded: true,
+    });
   });
 
   it('cancelling it deletes the recovery code, which closes recovery', async () => {

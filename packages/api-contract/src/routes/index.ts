@@ -433,16 +433,16 @@ export const RecoveryRedeemRequest = z.strictObject({
 });
 export type RecoveryRedeemRequest = z.infer<typeof RecoveryRedeemRequest>;
 
-/**
- * Spends the recovery code and answers the new one at once, before the passkey ceremony; the
- * link then serves as the registration context until it expires.
- */
 export const RecoveryRedeemResponse = RecoveryKit.extend({
   /** The registration's own token, which replaces the emailed link's: the link no longer works. */
   token: LinkToken,
 });
 export type RecoveryRedeemResponse = z.infer<typeof RecoveryRedeemResponse>;
 
+/**
+ * Spends the recovery code and answers the new one at once, before the passkey ceremony, with
+ * the registration token that replaces the link's until the link expires.
+ */
 export const recoveryRedeem = {
   method: 'post',
   path: '/auth/recovery/redeem',

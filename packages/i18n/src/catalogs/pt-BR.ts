@@ -141,7 +141,7 @@ export const ptBR = {
       'Uma chave de acesso nova foi criada na sua conta. Ela passa a valer em {activeFrom}. Se não foi você, cancele agora.',
     pendingLink: 'Ver a chave nova',
     recoveryPending:
-      'Alguém pediu a recuperação da sua conta e criou uma chave de acesso nova. Ela passa a valer em {activeFrom}, e aí este dispositivo é desconectado. Até lá, você só pode ver esse aviso e cancelar a recuperação. Se não foi você, cancele agora.',
+      'Alguém pediu a recuperação da sua conta e criou uma chave de acesso nova. Quando ela passar a valer, este dispositivo é desconectado. Até lá, você só pode ver este aviso e cancelar a recuperação. Se não foi você, cancele agora.',
     recoveryLink: 'Cancelar a recuperação',
   },
   /** Creating the first account (spec 0003, R2): the owner's link request, then the passkey. */
@@ -251,7 +251,7 @@ export const ptBR = {
     revokePasskey: 'Remover esta chave',
     cancelPending: 'Cancelar esta chave',
     recoveryPasskey:
-      'Chave criada por uma recuperação de conta. Passa a valer em {activeFrom}. Se não foi você, cancele agora.',
+      'Nova chave de acesso (recuperação). Passa a valer em {activeFrom}. Se não foi você, cancele agora.',
     cancelRecovery: 'Cancelar a recuperação',
     restricted:
       'Enquanto a recuperação da conta estiver pendente, você só pode cancelar a chave criada por ela.',
@@ -311,7 +311,7 @@ export const ptBR = {
     },
     passkey: {
       title: 'Crie a sua chave de acesso nova',
-      lead: 'O seu celular ou computador vai pedir para salvar uma chave de acesso para o Arca. Ela só passa a valer {hours} horas depois. Até lá, avisamos os dispositivos que já estavam na sua conta, e eles podem cancelar se não foi você.',
+      lead: 'O seu celular ou computador vai pedir para salvar uma chave de acesso para o Arca. Ela só passa a valer {hours} horas depois. Até lá, avisamos você por email, e os dispositivos que já estavam na sua conta mostram um aviso e podem cancelar se não foi você.',
       submit: 'Criar chave de acesso',
       waiting: 'Confirme no seu dispositivo para continuar.',
       failure:
@@ -320,7 +320,7 @@ export const ptBR = {
     done: {
       title: 'Chave nova criada',
       lead: 'Ela passa a valer daqui a {hours} horas. Depois disso, entre no Arca com ela. Os dispositivos que já estavam na sua conta ficam limitados até lá e depois são desconectados.',
-      signIn: 'Ir para a tela de entrar',
+      signIn: 'Entrar no Arca',
     },
   },
   /** Coarse device families, as sessions record them (spec 0003, R4). */

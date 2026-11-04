@@ -67,7 +67,12 @@ export function recoveryKits({
   logger,
   random = randomBytes,
 }: RecoveryKitSettings): RecoveryKits {
-  const notify = accountNotice({ db, notices, logger, label: 'RecoveryKitNotice' });
+  const notify = accountNotice<'recovery_kit_regenerated'>({
+    db,
+    notices,
+    logger,
+    label: 'RecoveryKitNotice',
+  });
   const draw = () => {
     const code = crockfordBase32(random(16));
     const salt = random(16);

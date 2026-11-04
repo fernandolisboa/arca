@@ -8,7 +8,7 @@ import {
 import type { Database, Transaction } from '@arca/db';
 import { recoveryCode, recoveryLink, recoveryLock } from '@arca/db/enrollment-schema';
 import type { I18n } from '@arca/i18n';
-import { and, eq, gt, isNotNull, isNull, lte, or, sql } from 'drizzle-orm';
+import { and, eq, gt, isNotNull, lte, or, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import type { EmailMessage, EmailSender } from '../email/email.js';
 import type { Notices } from '../email/notices.js';
@@ -123,24 +123,18 @@ export function createRecovery({
     });
   };
 
-  const notify = accountNotice({ db, notices, logger, label: 'RecoveryNotice' });
+  const notify = accountNotice<'recovery_started' | 'recovery_completed' | 'recovery_locked'>({
+    db,
+    notices,
+    logger,
+    label: 'RecoveryNotice',
+  });
 
   /**
-   * Open when the account has a code that counts, is not locked, no redeemed link is live and no
-   * recovery passkey is pending; a recovery under way is never replaced from the address alone.
+   * Open when the account has a code that counts, is not locked and no recovery passkey is
+   * pending. A page lost after its code was accepted is resumed with a new link and the new code.
    */
   async function open(accountId: string) {
-    const [redeemed] = await db
-      .select({ id: recoveryLink.accountId })
-      .from(recoveryLink)
-      .where(
-        and(
-          eq(recoveryLink.accountId, accountId),
-          isNotNull(recoveryLink.redeemedAt),
-          gt(recoveryLink.expiresAt, sql`now()`),
-        ),
-      );
-    if (redeemed !== undefined) return false;
     const [lock] = await db
       .select({ id: recoveryLock.accountId })
       .from(recoveryLock)
@@ -159,17 +153,12 @@ export function createRecovery({
     if (accountId === undefined || !(await open(accountId))) return;
     const token = random(32).toString('base64url');
     const issued = await db.transaction(async (tx) => {
-      // One link per account: a new one replaces an earlier link whose code was not accepted,
-      // and expired links of every account go with it, so the table stays bounded. A context
-      // redeemed meanwhile stays, and its account's unique row refuses the new link.
+      // One link per account: a new one replaces the earlier link or open context, and expired
+      // links of every account go with it, so the table stays bounded. Only the new code a
+      // redeemed context issued redeems the new link; a concurrent start inserts nothing.
       await tx
         .delete(recoveryLink)
-        .where(
-          or(
-            and(eq(recoveryLink.accountId, accountId), isNull(recoveryLink.redeemedAt)),
-            lte(recoveryLink.expiresAt, sql`now()`),
-          ),
-        );
+        .where(or(eq(recoveryLink.accountId, accountId), lte(recoveryLink.expiresAt, sql`now()`)));
       const inserted = await tx
         .insert(recoveryLink)
         .values({

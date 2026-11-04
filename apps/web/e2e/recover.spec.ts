@@ -116,7 +116,7 @@ test('recovers from the link and the code, restricting the old session until it 
 
   await page.getByRole('link', { name: 'Cancelar a recuperação' }).click();
   await expect(page.getByRole('heading', { level: 2, name: 'Dispositivos' })).toBeVisible();
-  await expect(page.getByText(/^Chave criada por uma recuperação de conta\./)).toBeVisible();
+  await expect(page.getByText(/^Nova chave de acesso \(recuperação\)\./)).toBeVisible();
   await expect(page.getByRole('button', { name: 'Adicionar chave de acesso' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Remover esta chave' })).toHaveCount(0);
   await expectAccessible(page);
