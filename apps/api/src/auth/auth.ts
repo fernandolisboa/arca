@@ -77,8 +77,8 @@ export function createAuth({ db, secret, origin, logger, audit }: AuthSettings) 
             });
           },
           // Every new session is a sign-in, whichever endpoint created it. The session row is
-          // already committed here, so if the event cannot be recorded the session is deleted
-          // and the sign-in fails: no usable session goes unrecorded.
+          // already committed here, so if either write fails the session is deleted and the
+          // sign-in fails: no usable session goes unrecorded.
           after: async (session) => {
             try {
               await audit.record({
@@ -87,14 +87,14 @@ export function createAuth({ db, secret, origin, logger, audit }: AuthSettings) 
                 actorAccountId: session.userId,
                 details: describeSession(session),
               });
+              await db
+                .update(user)
+                .set({ lastSignInAt: new Date() })
+                .where(eq(user.id, session.userId));
             } catch (error) {
               await db.delete(sessionTable).where(eq(sessionTable.id, session.id));
               throw error;
             }
-            await db
-              .update(user)
-              .set({ lastSignInAt: new Date() })
-              .where(eq(user.id, session.userId));
           },
         },
       },

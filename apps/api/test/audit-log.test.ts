@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { auditLog, InvalidAuditEventError, type AuditRecord } from '../src/audit/log.js';
 
 const account = '3f2b8a4e-6c1d-4e5f-9a7b-0c1d2e3f4a5b';
-const passkey = '9d8c7b6a-5f4e-4d3c-8b2a-1f0e9d8c7b6a';
+const registeredId = '9d8c7b6a-5f4e-4d3c-8b2a-1f0e9d8c7b6a';
 
 function recorder() {
   const statements: unknown[] = [];
@@ -20,7 +20,7 @@ const valid: AuditRecord<'passkey_added'> = {
   code: 'passkey_added',
   subjectAccountId: account,
   actorAccountId: account,
-  details: { passkeyId: passkey },
+  details: { passkeyId: registeredId },
 };
 
 describe('the audit log writer (spec 0003, R7)', () => {
@@ -67,13 +67,20 @@ describe('the audit log writer (spec 0003, R7)', () => {
     ).rejects.toThrow('audit event passkey_added is not allowed');
   });
 
+  it('does not repeat an unknown code in the error message', async () => {
+    const { log } = recorder();
+    await expect(
+      log.record({ ...valid, code: 'owner@example.com' } as unknown as AuditRecord),
+    ).rejects.toThrow(/^unknown audit event code$/);
+  });
+
   it('accepts a system event with no actor', async () => {
     const { log, statements } = recorder();
     await log.record({
       code: 'invite_expired',
       subjectAccountId: account,
       actorAccountId: null,
-      details: { inviteId: passkey },
+      details: { inviteId: registeredId },
     });
     expect(statements).toHaveLength(1);
   });
