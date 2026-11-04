@@ -269,6 +269,29 @@ describe('redeeming the code (spec 0003, R6)', () => {
     expect(outcome.ok).toBe(true);
   });
 
+  it('keeps the new code for the whole new link when the page is lost near the end', async () => {
+    const { account, code } = await owner();
+    const outcome = await recovery.redeem(await linkFor(account), code);
+    const issued = outcome.ok ? outcome.code : '';
+    await testDatabase.asAdmin((client) =>
+      client.query(
+        `UPDATE auth.recovery_code SET provisional_until = now() + interval '1 minute'
+          WHERE account_id = $1`,
+        [account.accountId],
+      ),
+    );
+    const second = await linkFor(account);
+    const lasts = await fixtures.count(
+      `SELECT round(extract(epoch FROM provisional_until - now()) / 60)::int AS n
+         FROM auth.recovery_code WHERE account_id = $1`,
+      [account.accountId],
+    );
+    expect(lasts).toBe(recoveryLinkMinutes);
+    const resumed = await recovery.redeem(second, issued);
+    expect(resumed.ok).toBe(true);
+    await registered(resumed.ok ? resumed.token : '');
+  });
+
   it('lets the owner retry with the new code inside the window', async () => {
     const { account, code } = await owner();
     const first = await linkFor(account);
@@ -277,6 +300,34 @@ describe('redeeming the code (spec 0003, R6)', () => {
     // The page was lost after the code was accepted: a new link and the new code resume it.
     const second = await linkFor(account);
     const resumed = await recovery.redeem(second, issued);
+    expect(resumed.ok).toBe(true);
+    await registered(resumed.ok ? resumed.token : '');
+  });
+
+  it('keeps the new code past a lock that someone with only the inbox set off', async () => {
+    const { account, code } = await owner();
+    const outcome = await recovery.redeem(await linkFor(account), code);
+    const issued = outcome.ok ? outcome.code : '';
+    const stolen = await linkFor(account);
+    for (let attempt = 0; attempt < recoveryAttempts; attempt += 1) {
+      await recovery.redeem(stolen, 'WRONG');
+    }
+    const lasts = await fixtures.count(
+      `SELECT round(extract(epoch FROM provisional_until - locked_until) / 60)::int AS n
+         FROM auth.recovery_code JOIN auth.recovery_lock USING (account_id)
+        WHERE account_id = $1`,
+      [account.accountId],
+    );
+    expect(lasts).toBe(recoveryLinkMinutes);
+    await testDatabase.asAdmin((client) =>
+      client.query(
+        `UPDATE auth.recovery_lock SET locked_until = now() - interval '1 second'
+          WHERE account_id = $1`,
+        [account.accountId],
+      ),
+    );
+    expect(await kits.status(account.accountId)).toBe('unsaved');
+    const resumed = await recovery.redeem(await linkFor(account), issued);
     expect(resumed.ok).toBe(true);
     await registered(resumed.ok ? resumed.token : '');
   });
@@ -410,6 +461,22 @@ describe('the wait of a recovery passkey (spec 0003, R6)', () => {
     const before = mailTo(account).length;
     await recovery.start(account.email);
     expect(mailTo(account)).toHaveLength(before);
+  });
+
+  it('opens nothing on a link a start raced in before the passkey registered', async () => {
+    const started = await owner();
+    const outcome = await recovery.redeem(await linkFor(started.account), started.code);
+    const issued = outcome.ok ? outcome.code : '';
+    await registered(outcome.ok ? outcome.token : '');
+    const token = Buffer.alloc(32, 9).toString('base64url');
+    await testDatabase.asAdmin((client) =>
+      client.query(
+        `INSERT INTO auth.recovery_link (token_hash, account_id, expires_at)
+         VALUES (sha256($1::bytea), $2, now() + interval '30 minutes')`,
+        [Buffer.from(token), started.account.accountId],
+      ),
+    );
+    expect(await recovery.redeem(token, issued)).toEqual({ ok: false, reason: 'not_found' });
   });
 
   it('keeps an old code from opening a second recovery', async () => {

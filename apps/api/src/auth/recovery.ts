@@ -167,8 +167,20 @@ export function createRecovery({
           expiresAt: sql`now() + make_interval(mins => ${recoveryLinkMinutes})`,
         })
         .onConflictDoNothing({ target: recoveryLink.accountId })
-        .returning({ accountId: recoveryLink.accountId });
-      if (inserted.length === 0) return false;
+        .returning({ expiresAt: recoveryLink.expiresAt });
+      const [link] = inserted;
+      if (link === undefined) return false;
+      // A provisional code resumes a lost page on the new link, so it lasts as long as the link.
+      await tx
+        .update(recoveryCode)
+        .set({ provisionalUntil: link.expiresAt })
+        .where(
+          and(
+            eq(recoveryCode.accountId, accountId),
+            isNotNull(recoveryCode.provisionalUntil),
+            codeCounts,
+          ),
+        );
       await audit.record({
         code: 'recovery_started',
         subjectAccountId: accountId,
@@ -204,6 +216,20 @@ export function createRecovery({
       })
       .where(eq(recoveryLock.accountId, accountId));
     await tx.delete(recoveryLink).where(eq(recoveryLink.tokenHash, tokenHash));
+    // Someone holding only the inbox can lock a recovery the owner has under way; the new code it
+    // issued must outlive the lock, or the account would be left with no code at all.
+    await tx
+      .update(recoveryCode)
+      .set({
+        provisionalUntil: sql`now() + make_interval(hours => ${lockHours}, mins => ${recoveryLinkMinutes})`,
+      })
+      .where(
+        and(
+          eq(recoveryCode.accountId, accountId),
+          isNotNull(recoveryCode.provisionalUntil),
+          codeCounts,
+        ),
+      );
     return 'locked' as const;
   }
 
@@ -233,6 +259,8 @@ export function createRecovery({
           .where(eq(recoveryLock.accountId, accountId))
           .for('update');
         if (lock?.locked === true) return { ok: false, reason: 'locked' };
+        // A start that raced the registration of an earlier recovery's passkey opens nothing.
+        if (await devices.recoveryPending(tx, accountId)) return { ok: false, reason: 'not_found' };
         const [stored] = await tx
           .select({ salt: recoveryCode.salt, codeHash: recoveryCode.codeHash })
           .from(recoveryCode)
