@@ -35,6 +35,10 @@
     "./registry": {
       "types": "./dist/registry.d.ts",
       "default": "./dist/registry.js"
+    },
+    "./vault-schema": {
+      "types": "./dist/vault-schema.d.ts",
+      "default": "./dist/vault-schema.js"
     }
   },
   "scripts": {

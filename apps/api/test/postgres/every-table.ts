@@ -80,6 +80,21 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
       `invited-${randomBytes(6).toString('hex')}@example.com`,
       bytes(32),
     ]);
+    const recipientId = randomUUID();
+    await insert(`INSERT INTO vault.recipient (id, account_id, recipient) VALUES ($1, $2, $3)`, [
+      recipientId,
+      accountId,
+      'age1pq1qqqq',
+    ]);
+    await insert(
+      `INSERT INTO vault.envelope (account_id, recipient_id, kind, credential_id, ciphertext)
+       VALUES ($1, $2, 'passkey_prf', $3, $4), ($1, $2, 'recovery', NULL, $4)`,
+      [accountId, recipientId, credentialId, bytes(256)],
+    );
+    await insert(
+      `INSERT INTO vault.sharing_state (account_id, version, state, tag) VALUES ($1, 1, $2, $3)`,
+      [accountId, Buffer.from('{}'), bytes(32)],
+    );
     await insert(
       `INSERT INTO audit.event (subject_account_id, actor_account_id, code) VALUES ($1, $2, 'sign_in')`,
       [accountId, accountId],
