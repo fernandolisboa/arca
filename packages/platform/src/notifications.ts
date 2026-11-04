@@ -15,8 +15,14 @@ export class NotificationsDeniedError extends Error {
 /** Push notifications for this device. Subscribing must start from a user gesture. */
 export interface Notifications {
   permission(): Promise<NotificationPermission>;
-  /** Asks for permission if needed, then subscribes with the environment's VAPID public key. */
-  subscribe(applicationServerKey: Uint8Array): Promise<PushChannel>;
+  /**
+   * Asks for permission if needed, then subscribes with the environment's VAPID public key.
+   * `fresh` drops a subscription this device already holds, so the new one shares nothing with it.
+   */
+  subscribe(
+    applicationServerKey: Uint8Array,
+    options?: { readonly fresh?: boolean },
+  ): Promise<PushChannel>;
   /** Ends this device's subscription, if any. */
   unsubscribe(): Promise<void>;
 }

@@ -45,7 +45,7 @@ export function createWebNotifications(
       'notifications',
       () => permissions[scope.Notification.permission],
     ),
-    async subscribe(applicationServerKey) {
+    async subscribe(applicationServerKey, { fresh = false } = {}) {
       requireCapability(capabilities, 'notifications');
       if ((await scope.Notification.requestPermission()) !== 'granted') {
         throw new NotificationsDeniedError('notifications were not allowed');
@@ -55,7 +55,7 @@ export function createWebNotifications(
       const existing = await registration.pushManager.getSubscription();
       if (
         existing !== null &&
-        !sameKey(existing.options.applicationServerKey, applicationServerKey)
+        (fresh || !sameKey(existing.options.applicationServerKey, applicationServerKey))
       ) {
         await existing.unsubscribe();
       }
