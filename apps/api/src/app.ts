@@ -75,6 +75,7 @@ export type ErrorCode =
   | 'cross_origin'
   | 'not_found'
   | 'rate_limited'
+  | 'step_up_refused'
   | 'request_failed'
   | 'internal_error';
 
@@ -269,7 +270,11 @@ export function createApp({
     const limited = await overLimit(c, authLimits, stepUpLimits.verify, current.sessionId);
     if (limited !== undefined) return limited;
     const { challengeId, response } = stepUpVerify.body.parse(await c.req.json());
-    if (!(await stepUp.verify(current, challengeId, response))) return unauthorized(c);
+    // One answer for every refusal reason, apart from the session's own 401.
+    if (!(await stepUp.verify(current, challengeId, response))) {
+      c.set('errorCode', 'step_up_refused');
+      return c.json({ error: { code: 'step_up_refused' } } satisfies ErrorResponse, 403);
+    }
     return c.json({}, 200);
   });
 

@@ -487,7 +487,7 @@ describe('step-up through the API (spec 0003, R5)', () => {
     };
     const response = passkey.assert({ challenge: request.challenge, origin });
     expect((await stepUp('verify', cookie, { challengeId, response })).status).toBe(200);
-    expect((await stepUp('verify', cookie, { challengeId, response })).status).toBe(401);
+    expect((await stepUp('verify', cookie, { challengeId, response })).status).toBe(403);
   });
 
   it('refuses a step-up without a session', async () => {

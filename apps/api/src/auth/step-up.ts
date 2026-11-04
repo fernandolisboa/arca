@@ -16,13 +16,8 @@ import { and, eq, gt, isNull, lt, lte, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import type { Logger } from '../logger.js';
 import type { CredentialStore } from './auth.js';
+import type { SignedIn } from './service.js';
 import { stepUpChallenge, subjectHash, type CanonicalAction } from './step-up-encoding.js';
-
-/** The session a step-up is bound to. */
-export interface SignedIn {
-  readonly accountId: string;
-  readonly sessionId: string;
-}
 
 export type ActionPurpose = Exclude<StepUpPurpose, 'vault_unlock'>;
 
@@ -179,33 +174,24 @@ export function createStepUp({
         return false;
       }
       if (!(await credentials.advanceCounter(credential.credentialId, newCounter))) return false;
-      const [stored] = await db
-        .insert(stepUp)
-        .values({
-          accountId,
-          sessionId,
-          credentialId: credential.credentialId,
-          purpose,
-          subjectHash: issued.subjectHash,
-          nonce: issued.nonce,
-          authenticatorData: Buffer.from(response.response.authenticatorData, 'base64url'),
-          clientDataJson: Buffer.from(response.response.clientDataJSON, 'base64url'),
-          signature: Buffer.from(response.response.signature, 'base64url'),
-        })
-        .returning({ id: stepUp.id });
-      if (stored === undefined) throw new Error('the step-up was not stored');
-      // An unrecorded step-up must not approve anything (spec 0003, R7).
-      try {
-        await audit.record({
-          code: 'step_up_verified',
-          subjectAccountId: accountId,
-          actorAccountId: accountId,
-          details: { purpose },
-        });
-      } catch (error) {
-        await db.delete(stepUp).where(eq(stepUp.id, stored.id));
-        throw error;
-      }
+      // Recorded first: a step-up no event records must never be stored, let alone spent (R7).
+      await audit.record({
+        code: 'step_up_verified',
+        subjectAccountId: accountId,
+        actorAccountId: accountId,
+        details: { purpose },
+      });
+      await db.insert(stepUp).values({
+        accountId,
+        sessionId,
+        credentialId: credential.credentialId,
+        purpose,
+        subjectHash: issued.subjectHash,
+        nonce: issued.nonce,
+        authenticatorData: Buffer.from(response.response.authenticatorData, 'base64url'),
+        clientDataJson: Buffer.from(response.response.clientDataJSON, 'base64url'),
+        signature: Buffer.from(response.response.signature, 'base64url'),
+      });
       return true;
     },
 

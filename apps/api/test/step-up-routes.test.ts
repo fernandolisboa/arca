@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import type { RateLimitRule } from '../src/auth/rate-limit.js';
-import type { SignedIn, StepUpService } from '../src/auth/step-up.js';
+import type { SignedIn } from '../src/auth/service.js';
+import type { StepUpService } from '../src/auth/step-up.js';
 import type { Logger } from '../src/logger.js';
 
 const silentLogger: Logger = { info: () => undefined, error: () => undefined };
@@ -88,7 +89,7 @@ describe('the step-up routes (spec 0003, R5)', () => {
     ]);
   });
 
-  it('answers 200 to a verified step-up and 401 to any refused one', async () => {
+  it('answers 200 to a verified step-up and 403 to any refused one', async () => {
     const accepted = setup();
     const ok = await accepted.post('verify', { challengeId, response: assertion });
     expect(ok.status).toBe(200);
@@ -96,8 +97,8 @@ describe('the step-up routes (spec 0003, R5)', () => {
     expect(accepted.hits.map(({ rule }) => rule.name)).toEqual(['step_up_verify_session']);
     const refused = setup({ verified: false });
     const no = await refused.post('verify', { challengeId, response: assertion });
-    expect(no.status).toBe(401);
-    expect(await no.json()).toEqual({ error: { code: 'unauthorized' } });
+    expect(no.status).toBe(403);
+    expect(await no.json()).toEqual({ error: { code: 'step_up_refused' } });
   });
 
   it.each(['options', 'verify'])('answers 401 to %s without a session', async (path) => {

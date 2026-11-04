@@ -6,6 +6,10 @@ import { auth, session, user } from './auth-schema.js';
 const purposeCheck = (column: unknown) =>
   sql`${column} IN ('sensitive_settings', 'account_deletion', 'data_export', 'financial_action', 'vault_unlock', 'vault_write')`;
 
+/** `vault_unlock` alone carries no subject; every other purpose carries a 32-byte one. */
+const subjectCheck = (purpose: unknown, subject: unknown) =>
+  sql`(${purpose} = 'vault_unlock') = (octet_length(${subject}) = 0) AND octet_length(${subject}) IN (0, 32)`;
+
 /**
  * Open step-up challenges (spec 0003, R5): bound to the session and account that asked, single use
  * (deleted when verified) and valid for 2 minutes. Only app_auth touches it; never backed up.
@@ -31,7 +35,7 @@ export const stepUpChallenge = auth.table(
   (table) => [
     index('step_up_challenge_expires_at_idx').on(table.expiresAt),
     check('step_up_challenge_purpose', purposeCheck(table.purpose)),
-    check('step_up_challenge_subject_length', sql`octet_length(${table.subjectHash}) IN (0, 32)`),
+    check('step_up_challenge_subject', subjectCheck(table.purpose, table.subjectHash)),
     check('step_up_challenge_nonce_length', sql`octet_length(${table.nonce}) = 32`),
   ],
 );
@@ -63,8 +67,12 @@ export const stepUp = auth.table(
   (table) => [
     index('step_up_session_purpose_idx').on(table.sessionId, table.purpose, table.verifiedAt),
     index('step_up_account_id_idx').on(table.accountId),
+    // For the sweep of step-ups never spent.
+    index('step_up_unspent_idx')
+      .on(table.verifiedAt)
+      .where(sql`${table.consumedAt} IS NULL`),
     check('step_up_purpose', purposeCheck(table.purpose)),
-    check('step_up_subject_length', sql`octet_length(${table.subjectHash}) IN (0, 32)`),
+    check('step_up_subject', subjectCheck(table.purpose, table.subjectHash)),
     check('step_up_nonce_length', sql`octet_length(${table.nonce}) = 32`),
   ],
 );

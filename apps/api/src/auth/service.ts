@@ -1,7 +1,6 @@
 import { SessionResponse } from '@arca/api-contract/routes';
 import { APIError } from 'better-auth/api';
 import type { Auth } from './auth.js';
-import type { SignedIn } from './step-up.js';
 
 /** No session lives longer than this, however active it is (spec 0003, R4). */
 export const absoluteSessionLifetimeMs = 30 * 24 * 60 * 60 * 1000;
@@ -10,6 +9,12 @@ export interface RefreshedSession {
   readonly session: SessionResponse | null;
   /** Better Auth's cookies for the slid expiry, to pass on to the client unchanged. */
   readonly setCookies: readonly string[];
+}
+
+/** The account and session a request is signed in with. */
+export interface SignedIn {
+  readonly accountId: string;
+  readonly sessionId: string;
 }
 
 /** What the API needs from Better Auth; tests give a fake. */

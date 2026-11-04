@@ -2,7 +2,7 @@
   "type": "diff",
   "version": "9",
   "dialect": "postgres",
-  "id": "23d23b28-6638-4367-b482-e05f24de1c6a",
+  "id": "d1b8028d-51f7-4bb2-ab09-71fc5ad768ec",
   "prevIds": [
     "617b3a94-a346-4351-bfda-3b02b1709956"
   ],
@@ -85,6 +85,26 @@
         "n|tbl|auth.step_up",
         "n|sch|auth",
         "n|col|auth.step_up.account_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "auth",
+        "step_up",
+        "step_up_unspent_idx"
+      ],
+      "writes": [
+        "s|idx|auth.step_up_unspent_idx",
+        "n|idx|auth.step_up_unspent_idx",
+        "e|idx|auth.step_up_unspent_idx",
+        "n|rel|auth.step_up_unspent_idx"
+      ],
+      "reads": [
+        "n|tbl|auth.step_up",
+        "n|sch|auth",
+        "n|col|auth.step_up.verified_at"
       ]
     },
     {
@@ -566,6 +586,30 @@
       "op": "create",
       "row": {
         "schema": "auth",
+        "table": "step_up",
+        "name": "step_up_unspent_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "verified_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": "\"consumed_at\" IS NULL",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
         "table": "step_up_challenge",
         "name": "step_up_challenge_expires_at_idx",
         "nameExplicit": true,
@@ -687,8 +731,8 @@
       "row": {
         "schema": "auth",
         "table": "step_up",
-        "name": "step_up_subject_length",
-        "value": "octet_length(\"subject_hash\") IN (0, 32)",
+        "name": "step_up_subject",
+        "value": "(\"purpose\" = 'vault_unlock') = (octet_length(\"subject_hash\") = 0) AND octet_length(\"subject_hash\") IN (0, 32)",
         "entityType": "checks"
       }
     },
@@ -717,8 +761,8 @@
       "row": {
         "schema": "auth",
         "table": "step_up_challenge",
-        "name": "step_up_challenge_subject_length",
-        "value": "octet_length(\"subject_hash\") IN (0, 32)",
+        "name": "step_up_challenge_subject",
+        "value": "(\"purpose\" = 'vault_unlock') = (octet_length(\"subject_hash\") = 0) AND octet_length(\"subject_hash\") IN (0, 32)",
         "entityType": "checks"
       }
     },

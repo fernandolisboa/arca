@@ -3,7 +3,8 @@ import type { StepUpOptionsRequest } from '@arca/api-contract/routes';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { auditLog } from '../../src/audit/log.js';
 import { credentialStore } from '../../src/auth/auth.js';
-import { createStepUp, type SignedIn, type StepUpService } from '../../src/auth/step-up.js';
+import type { SignedIn } from '../../src/auth/service.js';
+import { createStepUp, type StepUpService } from '../../src/auth/step-up.js';
 import type { CanonicalAction } from '../../src/auth/step-up-encoding.js';
 import { reverifyStepUp } from '../../src/auth/step-up-reverify.js';
 import { softwarePasskey, type SoftwarePasskey } from '../software-passkey.js';
@@ -139,6 +140,17 @@ async function stepUpRows(accountId: string) {
   });
 }
 
+async function stepUpEvents(accountId: string) {
+  return testDatabase.asAdmin(async (client) => {
+    const result = await client.query<{ actor: string; details: unknown }>(
+      `SELECT actor_account_id AS actor, details FROM audit.event
+        WHERE subject_account_id = $1 AND code = 'step_up_verified'`,
+      [accountId],
+    );
+    return result.rows;
+  });
+}
+
 describe('a step-up (spec 0003, R5)', () => {
   it('approves exactly the action it was verified for, once', async () => {
     const owner = await person();
@@ -164,14 +176,7 @@ describe('a step-up (spec 0003, R5)', () => {
     const owner = await person();
     const action = revokeSession(randomUUID());
     await ceremony(owner, toRequest('data_export', action));
-    const events = await testDatabase.asAdmin(async (client) => {
-      const result = await client.query<{ actor: string; details: unknown }>(
-        `SELECT actor_account_id AS actor, details FROM audit.event
-          WHERE subject_account_id = $1 AND code = 'step_up_verified'`,
-        [owner.signedIn.accountId],
-      );
-      return result.rows;
-    });
+    const events = await stepUpEvents(owner.signedIn.accountId);
     expect(events).toEqual([
       { actor: owner.signedIn.accountId, details: { purpose: 'data_export' } },
     ]);
@@ -374,6 +379,26 @@ describe('a step-up that must be refused (spec 0003, R5)', () => {
     const owner = await person();
     await ceremony(owner, sensitive(revokeSession('a')), { userVerified: false });
     expect(await stepUpRows(owner.signedIn.accountId)).toEqual([]);
+    expect(await stepUpEvents(owner.signedIn.accountId)).toEqual([]);
+  });
+
+  it('stores no step-up when its event cannot be recorded', async () => {
+    const owner = await person();
+    const unrecorded = createStepUp({
+      db: testDatabase.authDb,
+      credentials: credentialStore(testDatabase.authDb),
+      audit: { record: () => Promise.reject(new Error('audit unavailable')) },
+      origin,
+      logger: silentLogger,
+    });
+    const action = revokeSession(randomUUID());
+    const { challengeId, options } = await unrecorded.options(owner.signedIn, sensitive(action));
+    const response = owner.passkey.assert({ challenge: options.challenge, origin });
+    await expect(unrecorded.verify(owner.signedIn, challengeId, response)).rejects.toThrow(
+      'audit unavailable',
+    );
+    expect(await stepUpRows(owner.signedIn.accountId)).toEqual([]);
+    expect(await stepUp.consume(owner.signedIn, 'sensitive_settings', action)).toBe(false);
   });
 });
 
@@ -406,6 +431,30 @@ describe('vault_unlock (spec 0003, R5)', () => {
       nonce: nonce(),
     };
     expect(await stepUp.consume(owner.signedIn, 'vault_write', writeAction)).toBe(false);
+  });
+});
+
+describe('the step-up tables', () => {
+  it.each([
+    ['a subject for vault_unlock', 'vault_unlock', 32],
+    ['no subject for another purpose', 'sensitive_settings', 0],
+  ])('refuse %s', async (_, purpose, subjectLength) => {
+    const owner = await person();
+    await expect(
+      testDatabase.asAdmin((client) =>
+        client.query(
+          `INSERT INTO auth.step_up_challenge (account_id, session_id, purpose, subject_hash, nonce)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [
+            owner.signedIn.accountId,
+            owner.signedIn.sessionId,
+            purpose,
+            Buffer.alloc(subjectLength),
+            Buffer.alloc(32),
+          ],
+        ),
+      ),
+    ).rejects.toThrow('step_up_challenge_subject');
   });
 });
 
