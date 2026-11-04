@@ -486,6 +486,7 @@ export interface CredentialStore {
    * revocation wait for this commit, so it also ends what was recorded (spec 0003, R4).
    */
   readonly advanceCounter: (
+    accountId: string,
     credentialId: string,
     counter: number,
     record: (tx: Transaction) => Promise<void>,
@@ -532,14 +533,23 @@ export function credentialStore(db: Database): CredentialStore {
         );
       return row === undefined ? null : toCredential(row);
     },
-    advanceCounter: (credentialId, counter, record) =>
+    advanceCounter: (accountId, credentialId, counter, record) =>
       db.transaction(async (tx) => {
+        // The account row first, as every erasure locks it before its passkeys, so a step-up
+        // recording while the account is erased cannot deadlock with it.
+        const [held] = await tx
+          .select({ id: user.id })
+          .from(user)
+          .where(eq(user.id, accountId))
+          .for('key share');
+        if (held === undefined) return false;
         const moved = await tx
           .update(passkeyTable)
           .set({ counter })
           .where(
             and(
               eq(passkeyTable.credentialID, credentialId),
+              eq(passkeyTable.userId, accountId),
               // Authenticators without a counter always send 0, which verification only lets
               // through while the stored counter is 0 too.
               counter === 0 ? eq(passkeyTable.counter, 0) : lt(passkeyTable.counter, counter),

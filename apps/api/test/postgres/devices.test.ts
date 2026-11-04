@@ -386,6 +386,25 @@ describe('revoking a passkey (spec 0003, R4)', () => {
   });
 });
 
+/** Resolves once some query on the test database waits for a lock; fails after 5 seconds. */
+async function waitForBlockedQuery() {
+  const deadline = Date.now() + 5000;
+  while (Date.now() < deadline) {
+    const blocked = await testDatabase.asAdmin(
+      async (client) =>
+        (
+          await client.query<{ n: number }>(
+            `SELECT count(*)::int AS n FROM pg_catalog.pg_stat_activity
+              WHERE datname = current_database() AND wait_event_type = 'Lock'`,
+          )
+        ).rows[0]?.n ?? 0,
+    );
+    if (blocked > 0) return;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  throw new Error('no query waited for a lock');
+}
+
 describe('a step-up and a revocation of its passkey at once (spec 0003, R4 and R5)', () => {
   it('makes the revocation wait for the step-up, then end it', async () => {
     const owner = await account();
@@ -402,6 +421,8 @@ describe('a step-up and a revocation of its passkey at once (spec 0003, R4 and R
         record: async (event) => {
           if (event.code === 'step_up_verified') {
             revocation = devices.revokePasskey(current, older.id);
+            // Proves the revocation is waiting on the passkey row this verification holds.
+            await waitForBlockedQuery();
           }
           await audit.record(event);
         },

@@ -193,26 +193,31 @@ export function createStepUp({
       } catch {
         return false;
       }
-      return credentials.advanceCounter(credential.credentialId, newCounter, async (tx) => {
-        // Recorded first: a step-up no event records must never be stored, let alone spent (R7).
-        await audit.record({
-          code: 'step_up_verified',
-          subjectAccountId: accountId,
-          actorAccountId: accountId,
-          details: { purpose },
-        });
-        await tx.insert(stepUp).values({
-          accountId,
-          sessionId,
-          credentialId: credential.credentialId,
-          purpose,
-          subjectHash: issued.subjectHash,
-          nonce: issued.nonce,
-          authenticatorData: Buffer.from(response.response.authenticatorData, 'base64url'),
-          clientDataJson: Buffer.from(response.response.clientDataJSON, 'base64url'),
-          signature: Buffer.from(response.response.signature, 'base64url'),
-        });
-      });
+      return credentials.advanceCounter(
+        accountId,
+        credential.credentialId,
+        newCounter,
+        async (tx) => {
+          // Recorded first: a step-up no event records must never be stored, let alone spent (R7).
+          await audit.record({
+            code: 'step_up_verified',
+            subjectAccountId: accountId,
+            actorAccountId: accountId,
+            details: { purpose },
+          });
+          await tx.insert(stepUp).values({
+            accountId,
+            sessionId,
+            credentialId: credential.credentialId,
+            purpose,
+            subjectHash: issued.subjectHash,
+            nonce: issued.nonce,
+            authenticatorData: Buffer.from(response.response.authenticatorData, 'base64url'),
+            clientDataJson: Buffer.from(response.response.clientDataJSON, 'base64url'),
+            signature: Buffer.from(response.response.signature, 'base64url'),
+          });
+        },
+      );
     },
 
     consume: async ({ accountId, sessionId }, purpose, action) => {
