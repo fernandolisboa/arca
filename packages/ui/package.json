@@ -8,20 +8,28 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./theme/ids": {
+      "types": "./dist/theme/ids.d.ts",
+      "default": "./dist/theme/ids.js"
+    },
     "./styles.css": "./src/styles.css"
   },
   "scripts": {
-    "build": "tsc -b",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "eslint ."
+    "build": "tsc -b tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "themes": "vitest run test/themes-css.test.ts --update"
   },
   "devDependencies": {
     "@arca/eslint-config": "workspace:*",
     "@arca/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
     "@types/react": "catalog:",
     "eslint": "catalog:",
     "react": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "react": "catalog:"

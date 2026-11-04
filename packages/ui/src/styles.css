@@ -1,46 +1,77 @@
 /*
- * Design tokens for Tailwind 4 (spec 0001, R5). Apps import this after `tailwindcss`; @source
- * makes Tailwind scan this package's components for the classes they use.
+ * Tailwind 4 tokens (spec 0006, R2). `themes.css` sets the `--arca-*` properties per theme, mode,
+ * font pair, corner set, text size, contrast and motion; `@theme inline` maps utilities onto them,
+ * so a utility such as `bg-primary` follows the attributes on `<html>`. Apps import this after
+ * `tailwindcss`; @source makes Tailwind scan this package's components for the classes they use.
  */
-@source "./";
+@import './themes.css';
+
+@source './';
+
+@theme inline {
+  --color-bg: var(--arca-bg);
+  --color-surface: var(--arca-surface);
+  --color-ink: var(--arca-ink);
+  --color-muted: var(--arca-muted);
+  --color-line: var(--arca-line);
+  --color-primary: var(--arca-primary);
+  --color-primary-hover: color-mix(in oklab, var(--arca-primary) 88%, var(--arca-ink));
+  --color-primary-pressed: color-mix(in oklab, var(--arca-primary) 76%, var(--arca-ink));
+  --color-on-primary: var(--arca-on-primary);
+  --color-soft: var(--arca-soft);
+  --color-track: var(--arca-track);
+  --color-second: var(--arca-second);
+  --color-ok-bg: var(--arca-ok-bg);
+  --color-ok-ink: var(--arca-ok-ink);
+  --color-warn-bg: var(--arca-warn-bg);
+  --color-warn-ink: var(--arca-warn-ink);
+  --color-danger-bg: var(--arca-danger-bg);
+  --color-danger-ink: var(--arca-danger-ink);
+
+  --font-sans: var(--arca-font-body);
+
+  --radius-card: var(--arca-radius-card);
+  --radius-control: var(--arca-radius-control);
+  --radius-chip: var(--arca-radius-chip);
+  --radius-dock: var(--arca-radius-dock);
+
+  --ease-out: var(--arca-ease-out);
+}
 
 @theme {
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-
-  --color-surface: oklch(98.5% 0.004 230);
-  --color-surface-raised: oklch(100% 0 0);
-  --color-line: oklch(90% 0.01 230);
-  --color-ink: oklch(23% 0.02 240);
-  --color-ink-muted: oklch(45% 0.02 240);
-  --color-brand: oklch(44% 0.09 215);
-  --color-brand-strong: oklch(37% 0.09 215);
-  --color-on-brand: oklch(99% 0 0);
-  --color-ok: oklch(50% 0.12 150);
-  --color-warning: oklch(55% 0.13 70);
-  --color-danger: oklch(52% 0.18 25);
-
   /* The minimum touch target: 44 px. */
   --spacing-touch: 2.75rem;
+
+  /* Type scale in rem, so the text-size axis scales all of it (spec 0006, Type). */
+  --text-caption: 0.75rem;
+  --text-small: 0.875rem;
+  --text-body: 1rem;
+  --text-lead: 1.125rem;
+  --text-title: 1.375rem;
+  --text-title--line-height: 1.25;
+  --text-page-title: 1.75rem;
+  --text-page-title--line-height: 1.2;
+  --text-hero: 2.25rem;
+  --text-hero--line-height: 1.15;
 }
 
 @layer base {
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --color-surface: oklch(19% 0.015 240);
-      --color-surface-raised: oklch(23% 0.015 240);
-      --color-line: oklch(32% 0.015 240);
-      --color-ink: oklch(94% 0.01 230);
-      --color-ink-muted: oklch(75% 0.015 230);
-      --color-brand: oklch(72% 0.09 210);
-      --color-brand-strong: oklch(80% 0.08 210);
-      --color-on-brand: oklch(18% 0.02 240);
-      --color-ok: oklch(75% 0.13 150);
-      --color-warning: oklch(80% 0.12 80);
-      --color-danger: oklch(72% 0.15 25);
-    }
+  html {
+    background-color: var(--arca-bg);
+    color: var(--arca-ink);
+    font-family: var(--arca-font-body);
+    font-weight: var(--arca-font-body-weight);
+    line-height: 1.5;
   }
+}
 
-  :root {
-    color-scheme: light dark;
-  }
+@utility font-display {
+  font-family: var(--arca-font-display);
+  font-weight: var(--arca-font-display-weight);
+}
+
+@utility font-numeric {
+  font-family: var(--arca-font-numeric);
+  font-weight: var(--arca-font-numeric-weight);
+  font-variant-numeric: tabular-nums;
 }

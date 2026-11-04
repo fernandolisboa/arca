@@ -10,10 +10,10 @@ function Home() {
   const { t } = useTranslation();
   return (
     <div className="flex flex-col gap-6">
-      <p className="max-w-prose text-ink-muted">{t('app.description')}</p>
+      <p className="max-w-prose text-muted">{t('app.description')}</p>
       <section
         aria-labelledby="health-title"
-        className="rounded-lg border border-line bg-surface-raised p-4"
+        className="rounded-card border border-line bg-surface p-4"
       >
         <h2 id="health-title" className="font-semibold">
           {t('health.title')}
@@ -29,12 +29,12 @@ function HealthStatus() {
   const health = useQuery(healthQuery);
   // One live region whose text changes, so screen readers announce each new state.
   const [message, tone] = health.isPending
-    ? [t('health.checking'), 'text-ink-muted']
+    ? [t('health.checking'), 'text-muted']
     : health.isError
-      ? [t('health.unreachable'), 'text-danger']
+      ? [t('health.unreachable'), 'text-danger-ink']
       : [
           t('health.status', { status: health.data.status }),
-          health.data.status === 'ok' ? 'text-ok' : 'text-warning',
+          health.data.status === 'ok' ? 'text-ok-ink' : 'text-warn-ink',
         ];
   return (
     <div className="flex flex-col items-start gap-3">
