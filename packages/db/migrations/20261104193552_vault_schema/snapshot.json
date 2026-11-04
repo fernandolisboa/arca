@@ -1,0 +1,1334 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "01fbd997-2648-4ea8-b155-1d9ff91e1157",
+  "prevIds": [
+    "c342161e-3ee4-431d-89de-d09d6d627c13"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_schema",
+      "statementTarget": [
+        "schema",
+        "vault"
+      ],
+      "writes": [
+        "s|sch|vault",
+        "n|sch|vault",
+        "e|sch|vault"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "vault",
+        "envelope"
+      ],
+      "writes": [
+        "s|tbl|vault.envelope",
+        "n|tbl|vault.envelope",
+        "e|tbl|vault.envelope",
+        "n|rel|vault.envelope",
+        "n|type|vault.envelope",
+        "n|rel|vault.envelope_pkey"
+      ],
+      "reads": [
+        "n|sch|vault"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "vault",
+        "recipient"
+      ],
+      "writes": [
+        "s|tbl|vault.recipient",
+        "n|tbl|vault.recipient",
+        "e|tbl|vault.recipient",
+        "n|rel|vault.recipient",
+        "n|type|vault.recipient",
+        "n|rel|vault.recipient_pkey",
+        "n|rel|vault.recipient_id_account_id_key"
+      ],
+      "reads": [
+        "n|sch|vault"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "vault",
+        "sharing_state"
+      ],
+      "writes": [
+        "s|tbl|vault.sharing_state",
+        "n|tbl|vault.sharing_state",
+        "e|tbl|vault.sharing_state",
+        "n|rel|vault.sharing_state",
+        "n|type|vault.sharing_state",
+        "n|rel|vault.sharing_state_pkey"
+      ],
+      "reads": [
+        "n|sch|vault"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "vault",
+        "envelope",
+        "envelope_passkey_idx"
+      ],
+      "writes": [
+        "s|idx|vault.envelope_passkey_idx",
+        "n|idx|vault.envelope_passkey_idx",
+        "e|idx|vault.envelope_passkey_idx",
+        "n|rel|vault.envelope_passkey_idx"
+      ],
+      "reads": [
+        "n|tbl|vault.envelope",
+        "n|sch|vault",
+        "n|col|vault.envelope.recipient_id",
+        "n|col|vault.envelope.credential_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "vault",
+        "envelope",
+        "envelope_recovery_idx"
+      ],
+      "writes": [
+        "s|idx|vault.envelope_recovery_idx",
+        "n|idx|vault.envelope_recovery_idx",
+        "e|idx|vault.envelope_recovery_idx",
+        "n|rel|vault.envelope_recovery_idx"
+      ],
+      "reads": [
+        "n|tbl|vault.envelope",
+        "n|sch|vault",
+        "n|col|vault.envelope.recipient_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "vault",
+        "envelope",
+        "envelope_account_id_idx"
+      ],
+      "writes": [
+        "s|idx|vault.envelope_account_id_idx",
+        "n|idx|vault.envelope_account_id_idx",
+        "e|idx|vault.envelope_account_id_idx",
+        "n|rel|vault.envelope_account_id_idx"
+      ],
+      "reads": [
+        "n|tbl|vault.envelope",
+        "n|sch|vault",
+        "n|col|vault.envelope.account_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "vault",
+        "recipient",
+        "recipient_current_idx"
+      ],
+      "writes": [
+        "s|idx|vault.recipient_current_idx",
+        "n|idx|vault.recipient_current_idx",
+        "e|idx|vault.recipient_current_idx",
+        "n|rel|vault.recipient_current_idx"
+      ],
+      "reads": [
+        "n|tbl|vault.recipient",
+        "n|sch|vault",
+        "n|col|vault.recipient.account_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "vault",
+        "envelope"
+      ],
+      "writes": [
+        "s|fk|vault.envelope.envelope_recipient_fkey",
+        "n|fk|vault.envelope.envelope_recipient_fkey",
+        "e|fk|vault.envelope.envelope_recipient_fkey",
+        "n|con|vault.envelope.envelope_recipient_fkey"
+      ],
+      "reads": [
+        "n|tbl|vault.envelope",
+        "n|sch|vault",
+        "n|tbl|vault.recipient",
+        "n|sch|vault",
+        "n|col|vault.envelope.recipient_id",
+        "n|col|vault.envelope.account_id",
+        "n|col|vault.recipient.id",
+        "n|col|vault.recipient.account_id",
+        "e|uniqueness|vault.recipient.account_id.id"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "envelope"
+      ],
+      "writes": [
+        "s|pol|vault.envelope.envelope_select_own",
+        "n|pol|vault.envelope.envelope_select_own",
+        "e|pol|vault.envelope.envelope_select_own"
+      ],
+      "reads": [
+        "n|tbl|vault.envelope",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.envelope"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "envelope"
+      ],
+      "writes": [
+        "s|pol|vault.envelope.envelope_insert_own",
+        "n|pol|vault.envelope.envelope_insert_own",
+        "e|pol|vault.envelope.envelope_insert_own"
+      ],
+      "reads": [
+        "n|tbl|vault.envelope",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.envelope"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "envelope"
+      ],
+      "writes": [
+        "s|pol|vault.envelope.envelope_update_own",
+        "n|pol|vault.envelope.envelope_update_own",
+        "e|pol|vault.envelope.envelope_update_own"
+      ],
+      "reads": [
+        "n|tbl|vault.envelope",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.envelope"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "envelope"
+      ],
+      "writes": [
+        "s|pol|vault.envelope.envelope_delete_own",
+        "n|pol|vault.envelope.envelope_delete_own",
+        "e|pol|vault.envelope.envelope_delete_own"
+      ],
+      "reads": [
+        "n|tbl|vault.envelope",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.envelope"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "envelope"
+      ],
+      "writes": [
+        "s|pol|vault.envelope.envelope_select_own_by_jobs",
+        "n|pol|vault.envelope.envelope_select_own_by_jobs",
+        "e|pol|vault.envelope.envelope_select_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|vault.envelope",
+        "n|sch|vault",
+        "n|role|app_jobs",
+        "e|rls|vault.envelope"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "envelope"
+      ],
+      "writes": [
+        "s|pol|vault.envelope.envelope_delete_own_by_jobs",
+        "n|pol|vault.envelope.envelope_delete_own_by_jobs",
+        "e|pol|vault.envelope.envelope_delete_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|vault.envelope",
+        "n|sch|vault",
+        "n|role|app_jobs",
+        "e|rls|vault.envelope"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "recipient"
+      ],
+      "writes": [
+        "s|pol|vault.recipient.recipient_select_own",
+        "n|pol|vault.recipient.recipient_select_own",
+        "e|pol|vault.recipient.recipient_select_own"
+      ],
+      "reads": [
+        "n|tbl|vault.recipient",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.recipient"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "recipient"
+      ],
+      "writes": [
+        "s|pol|vault.recipient.recipient_insert_own",
+        "n|pol|vault.recipient.recipient_insert_own",
+        "e|pol|vault.recipient.recipient_insert_own"
+      ],
+      "reads": [
+        "n|tbl|vault.recipient",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.recipient"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "recipient"
+      ],
+      "writes": [
+        "s|pol|vault.recipient.recipient_update_own",
+        "n|pol|vault.recipient.recipient_update_own",
+        "e|pol|vault.recipient.recipient_update_own"
+      ],
+      "reads": [
+        "n|tbl|vault.recipient",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.recipient"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "recipient"
+      ],
+      "writes": [
+        "s|pol|vault.recipient.recipient_select_own_by_jobs",
+        "n|pol|vault.recipient.recipient_select_own_by_jobs",
+        "e|pol|vault.recipient.recipient_select_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|vault.recipient",
+        "n|sch|vault",
+        "n|role|app_jobs",
+        "e|rls|vault.recipient"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "recipient"
+      ],
+      "writes": [
+        "s|pol|vault.recipient.recipient_delete_own_by_jobs",
+        "n|pol|vault.recipient.recipient_delete_own_by_jobs",
+        "e|pol|vault.recipient.recipient_delete_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|vault.recipient",
+        "n|sch|vault",
+        "n|role|app_jobs",
+        "e|rls|vault.recipient"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "sharing_state"
+      ],
+      "writes": [
+        "s|pol|vault.sharing_state.sharing_state_select_own",
+        "n|pol|vault.sharing_state.sharing_state_select_own",
+        "e|pol|vault.sharing_state.sharing_state_select_own"
+      ],
+      "reads": [
+        "n|tbl|vault.sharing_state",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.sharing_state"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "sharing_state"
+      ],
+      "writes": [
+        "s|pol|vault.sharing_state.sharing_state_insert_own",
+        "n|pol|vault.sharing_state.sharing_state_insert_own",
+        "e|pol|vault.sharing_state.sharing_state_insert_own"
+      ],
+      "reads": [
+        "n|tbl|vault.sharing_state",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.sharing_state"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "sharing_state"
+      ],
+      "writes": [
+        "s|pol|vault.sharing_state.sharing_state_update_own",
+        "n|pol|vault.sharing_state.sharing_state_update_own",
+        "e|pol|vault.sharing_state.sharing_state_update_own"
+      ],
+      "reads": [
+        "n|tbl|vault.sharing_state",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.sharing_state"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "sharing_state"
+      ],
+      "writes": [
+        "s|pol|vault.sharing_state.sharing_state_select_own_by_jobs",
+        "n|pol|vault.sharing_state.sharing_state_select_own_by_jobs",
+        "e|pol|vault.sharing_state.sharing_state_select_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|vault.sharing_state",
+        "n|sch|vault",
+        "n|role|app_jobs",
+        "e|rls|vault.sharing_state"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "sharing_state"
+      ],
+      "writes": [
+        "s|pol|vault.sharing_state.sharing_state_delete_own_by_jobs",
+        "n|pol|vault.sharing_state.sharing_state_delete_own_by_jobs",
+        "e|pol|vault.sharing_state.sharing_state_delete_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|vault.sharing_state",
+        "n|sch|vault",
+        "n|role|app_jobs",
+        "e|rls|vault.sharing_state"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "name": "vault",
+        "entityType": "schemas"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "name": "envelope",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "name": "recipient",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "name": "sharing_state",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "account_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "recipient_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "credential_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "ciphertext",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "recipient",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "recipient",
+        "name": "account_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "recipient",
+        "name": "recipient",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "recipient",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "recipient",
+        "name": "rotated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "sharing_state",
+        "name": "account_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "sharing_state",
+        "name": "version",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "sharing_state",
+        "name": "state",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "sharing_state",
+        "name": "tag",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "sharing_state",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "envelope_passkey_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "recipient_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "credential_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"kind\" = 'passkey_prf'",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "envelope_recovery_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "recipient_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"kind\" = 'recovery'",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "envelope_account_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "account_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "recipient",
+        "name": "recipient_current_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "account_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"rotated_at\" IS NULL",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "envelope_recipient_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "recipient_id",
+          "account_id"
+        ],
+        "schemaTo": "vault",
+        "tableTo": "recipient",
+        "columnsTo": [
+          "id",
+          "account_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "envelope_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "recipient",
+        "name": "recipient_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "sharing_state",
+        "name": "sharing_state_pkey",
+        "columns": [
+          "account_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "recipient",
+        "name": "recipient_id_account_id_key",
+        "nameExplicit": true,
+        "columns": [
+          "id",
+          "account_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "envelope_kind",
+        "value": "\"kind\" IN ('passkey_prf', 'recovery')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "envelope_credential_for_passkey",
+        "value": "(\"kind\" = 'passkey_prf') = (\"credential_id\" IS NOT NULL)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "envelope_credential_format",
+        "value": "\"credential_id\" ~ '^[A-Za-z0-9_-]+$' AND char_length(\"credential_id\") BETWEEN 16 AND 1366",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "envelope_age_file",
+        "value": "octet_length(\"ciphertext\") BETWEEN 64 AND 16384",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "recipient",
+        "name": "recipient_hybrid",
+        "value": "\"recipient\" ~ '^age1pq1[02-9ac-hj-np-z]+$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "recipient",
+        "name": "recipient_length",
+        "value": "char_length(\"recipient\") BETWEEN 8 AND 2100",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "recipient",
+        "name": "recipient_rotated_after_created",
+        "value": "\"rotated_at\" IS NULL OR \"rotated_at\" >= \"created_at\"",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "sharing_state",
+        "name": "sharing_state_version",
+        "value": "\"version\" > 0",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "sharing_state",
+        "name": "sharing_state_tag_length",
+        "value": "octet_length(\"tag\") = 32",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "sharing_state",
+        "name": "sharing_state_size",
+        "value": "octet_length(\"state\") <= 1048576",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "envelope_select_own",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"vault\".\"envelope\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "envelope_insert_own",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "\"vault\".\"envelope\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "envelope_update_own",
+        "as": "PERMISSIVE",
+        "for": "UPDATE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"vault\".\"envelope\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": "\"vault\".\"envelope\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "envelope_delete_own",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"vault\".\"envelope\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "envelope_select_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"vault\".\"envelope\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "envelope",
+        "name": "envelope_delete_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"vault\".\"envelope\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "recipient",
+        "name": "recipient_select_own",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"vault\".\"recipient\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "recipient",
+        "name": "recipient_insert_own",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "\"vault\".\"recipient\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "recipient",
+        "name": "recipient_update_own",
+        "as": "PERMISSIVE",
+        "for": "UPDATE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"vault\".\"recipient\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": "\"vault\".\"recipient\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "recipient",
+        "name": "recipient_select_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"vault\".\"recipient\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "recipient",
+        "name": "recipient_delete_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"vault\".\"recipient\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "sharing_state",
+        "name": "sharing_state_select_own",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"vault\".\"sharing_state\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "sharing_state",
+        "name": "sharing_state_insert_own",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "\"vault\".\"sharing_state\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "sharing_state",
+        "name": "sharing_state_update_own",
+        "as": "PERMISSIVE",
+        "for": "UPDATE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"vault\".\"sharing_state\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": "\"vault\".\"sharing_state\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "sharing_state",
+        "name": "sharing_state_select_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"vault\".\"sharing_state\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "sharing_state",
+        "name": "sharing_state_delete_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"vault\".\"sharing_state\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    }
+  ]
+}

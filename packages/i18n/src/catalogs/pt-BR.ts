@@ -465,6 +465,9 @@ export const ptBR = {
       stepUpChallenges: 'Pedidos de confirmação com chave de acesso',
       invites: 'Convites enviados',
       securityHistory: 'Histórico de segurança',
+      vaultEnvelopes: 'Envelopes do cofre',
+      vaultSharingState: 'Lista de compartilhamento do cofre',
+      vaultRecipients: 'Destinatários do cofre',
     },
   },
   /**
