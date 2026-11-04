@@ -1,24 +1,19 @@
-/**
- * Native capabilities the UI may use (docs/ARCHITECTURE.md, capability ports). UI code asks this
- * port what is available and never checks the operating system (ADR-0005).
- */
-export type Capability =
-  | 'documentCapture'
-  | 'keyStorage'
-  | 'biometricUnlock'
-  | 'notifications'
-  | 'receiveSharedFiles'
-  | 'deepLinks';
-
-export interface Capabilities {
-  has(capability: Capability): boolean;
-}
-
-/** The web adapter: no native capability is offered yet; each arrives with its feature. */
-export function createWebCapabilities(): Capabilities {
-  return { has: () => false };
-}
-
+export {
+  CapabilityUnavailableError,
+  capabilities,
+  type Capabilities,
+  type Capability,
+  type Unavailability,
+} from './capabilities.js';
+export { NotAnAppPathError, type DeepLinks } from './deep-links.js';
+export type { DocumentCapture, FilePicking, PickOptions } from './files.js';
+export type { KeyContext, KeyStorage, StoredSecret } from './key-storage.js';
+export {
+  NotificationsDeniedError,
+  type NotificationPermission,
+  type Notifications,
+  type PushChannel,
+} from './notifications.js';
 export {
   createPasskeys,
   PasskeyOptionsRefusedError,
@@ -29,4 +24,13 @@ export {
   type RegistrationResponseJSON,
   type WebAuthnBrowser,
 } from './passkeys.js';
+export type { ShareContent, SharedFiles, Sharing } from './sharing.js';
+export {
+  EnvelopeNotOpenedError,
+  type VaultEnvelope,
+  type VaultEnvelopes,
+} from './vault-envelopes.js';
+export { detectWebFeatures, webCapabilities, type WebFeatures } from './web-capabilities.js';
+export { createWebDeepLinks } from './web-deep-links.js';
 export { createWebPasskeys } from './web-passkeys.js';
+export { createWebPlatform, type Platform } from './web-platform.js';

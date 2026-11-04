@@ -1,17 +1,40 @@
 import { describe, expect, it } from 'vitest';
-import { createWebCapabilities, type Capability } from '../src/index.js';
+import { capabilities, webCapabilities, type WebFeatures } from '../src/index.js';
 
-const all: readonly Capability[] = [
-  'documentCapture',
-  'keyStorage',
-  'biometricUnlock',
-  'notifications',
-  'receiveSharedFiles',
-  'deepLinks',
-];
+const everything: WebFeatures = {
+  pushApi: true,
+  serviceWorker: true,
+  standalone: false,
+  keyStorage: true,
+  webShare: true,
+};
 
-describe('web capabilities', () => {
-  it.each(all)('reports %s as unavailable', (capability) => {
-    expect(createWebCapabilities().has(capability)).toBe(false);
+describe('web capabilities (spec 0005, R5)', () => {
+  it('offers what the browser has, except receiving shared files', () => {
+    const web = webCapabilities(everything);
+    expect(capabilities.filter((capability) => !web.has(capability))).toEqual([
+      'receiveSharedFiles',
+    ]);
+    expect(web.whyUnavailable('receiveSharedFiles')).toBe('unsupported');
+  });
+
+  it.each([
+    ['needs-install', { pushApi: false, standalone: false }],
+    ['unsupported', { pushApi: false, standalone: true }],
+    ['unsupported', { pushApi: false, serviceWorker: false, standalone: false }],
+    [undefined, { pushApi: true, standalone: false }],
+  ] as const)('reports notifications as %s for %o', (reason, features) => {
+    expect(webCapabilities({ ...everything, ...features }).whyUnavailable('notifications')).toBe(
+      reason,
+    );
+  });
+
+  it.each([
+    ['keyStorage', { keyStorage: false }],
+    ['sharing', { webShare: false }],
+  ] as const)('reports %s as unsupported without its API', (capability, features) => {
+    const web = webCapabilities({ ...everything, ...features });
+    expect(web.has(capability)).toBe(false);
+    expect(web.whyUnavailable(capability)).toBe('unsupported');
   });
 });

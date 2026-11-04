@@ -82,6 +82,12 @@ Rules that keep every platform possible:
 | Passkeys | WebAuthn | Credential Manager | Authentication Services | OS passkey APIs where available |
 | Vault envelopes (passkey PRF, user-verified, biometric where the platform offers it) | WebAuthn PRF through `age-encryption` | Credential Manager PRF supplied to the same `age-encryption` code in the app's JavaScript runtime, else the recovery kit with the identity wrapped in Android Keystore | Authentication Services PRF supplied the same way, else the recovery kit with the identity wrapped in the Keychain | OS support where available, else the recovery kit |
 
+Each port has one conformance suite in `packages/platform/src/conformance`, written once ([spec 0005](specs/0005-vault-devices-and-notifications.md#r5-platform-port-and-web-adapters) R5). Vitest runs every suite against in-memory fakes. Playwright runs it against the web adapters in Chromium, with pages served from the built package by request interception. A later Capacitor or Tauri adapter must pass the same suites.
+
+- A port method called while its capability is missing rejects with `CapabilityUnavailableError`.
+- `Capabilities.whyUnavailable()` says why a capability is missing: `unsupported`, or `needs-install` for web push before the app is installed.
+- On the web, receiving shared files stays unavailable until the web app manifest declares a `share_target`.
+
 ## Data model
 
 Entities, not final schema:

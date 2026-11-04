@@ -109,6 +109,11 @@
         "BETTER_AUTH_SECRET",
         "ARCA_RATE_LIMIT_KEY"
       ]
+    },
+    "@arca/platform#e2e": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "passThroughEnv": ["ARCA_E2E_CHROMIUM", "PLAYWRIGHT_BROWSERS_PATH"]
     }
   }
 }

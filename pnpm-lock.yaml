@@ -737,6 +737,9 @@ importers:
 
   packages/platform:
     dependencies:
+      '@arca/vault':
+        specifier: workspace:*
+        version: link:../vault
       '@simplewebauthn/browser':
         specifier: 'catalog:'
         version: 13.3.0
@@ -747,6 +750,12 @@ importers:
       '@arca/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
+      '@playwright/test':
+        specifier: 'catalog:'
+        version: 1.64.1
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
       eslint:
         specifier: 'catalog:'
         version: 10.13.0(jiti@2.7.0)(supports-color@10.2.2)

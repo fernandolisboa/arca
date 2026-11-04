@@ -7,20 +7,28 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./conformance": {
+      "types": "./dist/conformance/index.d.ts",
+      "default": "./dist/conformance/index.js"
     }
   },
   "scripts": {
     "build": "tsc -b tsconfig.build.json",
-    "typecheck": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json && tsc -p e2e/tsconfig.json",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "e2e": "playwright test -c e2e"
   },
   "dependencies": {
+    "@arca/vault": "workspace:*",
     "@simplewebauthn/browser": "catalog:"
   },
   "devDependencies": {
     "@arca/eslint-config": "workspace:*",
     "@arca/tsconfig": "workspace:*",
+    "@playwright/test": "catalog:",
+    "@types/node": "catalog:",
     "eslint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
