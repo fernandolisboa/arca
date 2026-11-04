@@ -478,6 +478,82 @@ export const declineInvite = {
   response: { description: 'Declined', schema: InviteDecisionResponse },
 } as const satisfies RouteDefinition<typeof InviteDecisionResponse>;
 
+/** A live session as the device list shows it (spec 0003, R4). */
+export const DeviceSession = z.object({
+  id: z.uuid(),
+  device: DeviceDescription,
+  createdAt: z.iso.datetime({ offset: true }),
+  /** When the session was last slid, at most once a day. */
+  lastUsedAt: z.iso.datetime({ offset: true }),
+  /** The session making this request. */
+  current: z.boolean(),
+});
+export type DeviceSession = z.infer<typeof DeviceSession>;
+
+export const DevicePasskey = z.object({
+  id: z.uuid(),
+  /** Null only for a passkey stored without the time, which the passkey plugin never does. */
+  createdAt: z.iso.datetime({ offset: true }).nullable(),
+  /** Whether it signed in the session making this request. */
+  current: z.boolean(),
+  sessions: z.array(DeviceSession),
+});
+export type DevicePasskey = z.infer<typeof DevicePasskey>;
+
+export const DevicesResponse = z.object({ passkeys: z.array(DevicePasskey) });
+export type DevicesResponse = z.infer<typeof DevicesResponse>;
+
+export const listDevices = {
+  method: 'get',
+  path: '/devices',
+  operationId: 'listDevices',
+  summary:
+    "The signed-in account's passkeys, oldest first, each with the live sessions it signed in; 401 without a session",
+  response: { description: 'Passkeys and sessions', schema: DevicesResponse },
+} as const satisfies RouteDefinition<typeof DevicesResponse>;
+
+export const RevokeSessionRequest = z.strictObject({ sessionId: z.uuid() });
+export type RevokeSessionRequest = z.infer<typeof RevokeSessionRequest>;
+
+export const RevokePasskeyRequest = z.strictObject({ passkeyId: z.uuid() });
+export type RevokePasskeyRequest = z.infer<typeof RevokePasskeyRequest>;
+
+export const RevokeResponse = z.object({});
+export type RevokeResponse = z.infer<typeof RevokeResponse>;
+
+/**
+ * Each revocation needs a `sensitive_settings` step-up for its own action, with the session or
+ * the passkey as the only target, or none for the other sessions (spec 0003, R4).
+ */
+export const revokeSession = {
+  method: 'post',
+  path: '/devices/sessions/revoke',
+  operationId: 'revokeSession',
+  summary:
+    "Ends one of the account's sessions, after a step-up; 403 step_up_required, 404 not_found",
+  body: RevokeSessionRequest,
+  response: { description: 'Revoked', schema: RevokeResponse },
+} as const satisfies RouteDefinition<typeof RevokeResponse>;
+
+export const revokePasskey = {
+  method: 'post',
+  path: '/devices/passkeys/revoke',
+  operationId: 'revokePasskey',
+  summary:
+    "Removes one of the account's passkeys and ends every session it signed in, after a step-up; 403 step_up_required, 404 not_found, 409 last_active_passkey",
+  body: RevokePasskeyRequest,
+  response: { description: 'Revoked', schema: RevokeResponse },
+} as const satisfies RouteDefinition<typeof RevokeResponse>;
+
+export const revokeOtherSessions = {
+  method: 'post',
+  path: '/devices/sessions/revoke-others',
+  operationId: 'revokeOtherSessions',
+  summary: 'Ends every session of the account but this one, after a step-up; 403 step_up_required',
+  body: z.strictObject({}),
+  response: { description: 'Revoked', schema: RevokeResponse },
+} as const satisfies RouteDefinition<typeof RevokeResponse>;
+
 const passkeyEvent = z.strictObject({ passkeyId: z.uuid() });
 const inviteEvent = z.strictObject({ inviteId: z.uuid() });
 const noDetails = z.strictObject({});
@@ -571,6 +647,10 @@ export const routes = {
   inviteDetails,
   confirmInvite,
   declineInvite,
+  listDevices,
+  revokeSession,
+  revokePasskey,
+  revokeOtherSessions,
   auditEvents,
 } as const;
 

@@ -6,6 +6,7 @@ import { createAuth, credentialStore } from './auth/auth.js';
 import { rateLimiter, type RateLimiter } from './auth/rate-limit.js';
 import { clientAddressFor } from './client-address.js';
 import { createEnrollment, ownerCode, type Enrollment } from './auth/enrollment.js';
+import { createDevices, type Devices } from './auth/devices.js';
 import { createInvites, type Invites } from './auth/invites.js';
 import { recoveryKits, type RecoveryKits } from './auth/recovery-kit.js';
 import { registration, registrationHooks, type Registration } from './auth/registration.js';
@@ -83,6 +84,7 @@ interface AuthParts {
   readonly registration: Registration;
   readonly recoveryKits: RecoveryKits;
   readonly invites: Invites;
+  readonly devices: Devices;
 }
 
 let parts: Promise<AuthParts> | undefined;
@@ -117,6 +119,7 @@ function authParts(): Promise<AuthParts> {
       registration: registration(auth, hooks, enrollmentCode, logger, invites.accepted),
       recoveryKits: recoveryKits({ db, audit, notices, logger }),
       invites,
+      devices: createDevices({ db, audit, notices, logger }),
     };
   })();
   // A failed build is retried on the next request instead of being cached.
@@ -186,6 +189,15 @@ const app = createApp({
     decline: async (inviterId, inviteId) =>
       (await authParts()).invites.decline(inviterId, inviteId),
     accepted: async (inviteId) => (await authParts()).invites.accepted(inviteId),
+  },
+  devices: {
+    list: async (signedIn) => (await authParts()).devices.list(signedIn),
+    revokeSession: async (signedIn, sessionId) =>
+      (await authParts()).devices.revokeSession(signedIn, sessionId),
+    revokePasskey: async (signedIn, passkeyId) =>
+      (await authParts()).devices.revokePasskey(signedIn, passkeyId),
+    revokeOtherSessions: async (signedIn) =>
+      (await authParts()).devices.revokeOtherSessions(signedIn),
   },
   authLimits: {
     limiter,

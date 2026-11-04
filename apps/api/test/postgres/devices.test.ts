@@ -1,0 +1,347 @@
+import { randomBytes, randomUUID } from 'node:crypto';
+import type { StepUpOptionsRequest } from '@arca/api-contract/routes';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { auditLog } from '../../src/audit/log.js';
+import { credentialStore } from '../../src/auth/auth.js';
+import { createDevices, type Devices } from '../../src/auth/devices.js';
+import type { SignedIn } from '../../src/auth/service.js';
+import { createStepUp, type StepUpService } from '../../src/auth/step-up.js';
+import type { Notice } from '../../src/email/notices.js';
+import { softwarePasskey, type SoftwarePasskey } from '../software-passkey.js';
+import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
+
+// The device list and its revocations on the real migrations and the app_auth pool (spec 0003,
+// R4). Synthetic data only.
+const origin = 'http://localhost:3000';
+const rpId = 'localhost';
+
+let testDatabase: AuthTestDatabase;
+let devices: Devices;
+let stepUp: StepUpService;
+const sent: Notice[] = [];
+
+beforeAll(async () => {
+  testDatabase = await authTestDatabase();
+  const { authDb, auditDb } = testDatabase;
+  const audit = auditLog(auditDb);
+  devices = createDevices({
+    db: authDb,
+    audit,
+    notices: {
+      send: (notice) => {
+        sent.push(notice);
+        return Promise.resolve();
+      },
+    },
+    logger: silentLogger,
+  });
+  stepUp = createStepUp({
+    db: authDb,
+    credentials: credentialStore(authDb),
+    audit,
+    origin,
+    logger: silentLogger,
+  });
+});
+
+afterAll(async () => {
+  await testDatabase.drop();
+});
+
+interface Key {
+  readonly id: string;
+  readonly passkey: SoftwarePasskey;
+}
+
+interface Account {
+  readonly accountId: string;
+  readonly email: string;
+  readonly keys: readonly [Key, ...Key[]];
+}
+
+/** An account with this many passkeys, stored as the passkey plugin stores them, oldest first. */
+async function account(passkeys = 2): Promise<Account> {
+  const accountId = randomUUID();
+  const email = `${accountId}@example.com`;
+  const keys: Key[] = [];
+  await testDatabase.asAdmin(async (client) => {
+    await client.query(`INSERT INTO auth.user (id, name, email) VALUES ($1, '', $2)`, [
+      accountId,
+      email,
+    ]);
+    for (let index = 0; index < passkeys; index += 1) {
+      const passkey = softwarePasskey(rpId);
+      const id = randomUUID();
+      await client.query(
+        `INSERT INTO auth.passkey
+           (id, public_key, user_id, credential_id, counter, device_type, backed_up, created_at)
+         VALUES ($1, $2, $3, $4, 0, 'multiDevice', true, now() - make_interval(days => $5))`,
+        [id, passkey.publicKey, accountId, passkey.credentialId, passkeys - index],
+      );
+      await client.query(
+        `INSERT INTO auth.passkey_client (credential_id, browser, os) VALUES ($1, 'firefox', 'linux')`,
+        [passkey.credentialId],
+      );
+      keys.push({ id, passkey });
+    }
+  });
+  return { accountId, email, keys: keys as [Key, ...Key[]] };
+}
+
+/** A session the key signed in, `age` old and last slid `idle` ago. */
+async function session(
+  owner: Account,
+  key: Key,
+  { age = '1 hour', idle = '1 minute', expiresIn = '1 day' } = {},
+): Promise<SignedIn> {
+  const sessionId = randomUUID();
+  await testDatabase.asAdmin((client) =>
+    client.query(
+      `INSERT INTO auth.session
+         (id, expires_at, token, user_id, device_browser, device_os, credential_id, created_at, updated_at)
+       VALUES ($1, now() + $2::interval, $3, $4, 'chrome', 'android', $5,
+               now() - $6::interval, now() - $7::interval)`,
+      [
+        sessionId,
+        expiresIn,
+        randomBytes(16).toString('hex'),
+        owner.accountId,
+        key.passkey.credentialId,
+        age,
+        idle,
+      ],
+    ),
+  );
+  return { accountId: owner.accountId, sessionId };
+}
+
+async function count(sql: string, values: readonly unknown[]): Promise<number> {
+  return testDatabase.asAdmin(
+    async (client) =>
+      (await client.query<{ n: number }>(sql, [...values])).rows[0]?.n ?? Number.NaN,
+  );
+}
+
+const sessionsOf = (owner: Account) =>
+  testDatabase.asAdmin(async (client) =>
+    (
+      await client.query<{ id: string }>(
+        'SELECT id FROM auth.session WHERE user_id = $1 ORDER BY id',
+        [owner.accountId],
+      )
+    ).rows.map(({ id }) => id),
+  );
+
+const events = (owner: Account) =>
+  testDatabase.asAdmin(
+    async (client) =>
+      (
+        await client.query<{ code: string; actor: string | null; details: unknown }>(
+          `SELECT code, actor_account_id AS actor, details FROM audit.event
+            WHERE subject_account_id = $1 AND code IN ('passkey_revoked', 'session_revoked')
+            ORDER BY time, id`,
+          [owner.accountId],
+        )
+      ).rows,
+  );
+
+const noticesTo = (owner: Account) =>
+  sent.filter(({ to }) => to === owner.email).map(({ kind }) => kind);
+
+/** A verified step-up of this purpose for this session, signed by the key. */
+async function verifiedStepUp(signedIn: SignedIn, key: Key, request: StepUpOptionsRequest) {
+  const { challengeId, options } = await stepUp.options(signedIn, request);
+  const response = key.passkey.assert({ challenge: options.challenge, origin });
+  expect(await stepUp.verify(signedIn, challengeId, response)).toBe(true);
+}
+
+const sensitive = (action: string): StepUpOptionsRequest => ({
+  purpose: 'sensitive_settings',
+  target: { action, targets: [], nonce: randomBytes(16).toString('base64url') },
+});
+
+describe('the device list (spec 0003, R4)', () => {
+  it("lists the account's passkeys oldest first, each with its live sessions", async () => {
+    const owner = await account();
+    const [older, newer] = owner.keys as [Key, Key];
+    const current = await session(owner, newer, { idle: '1 minute' });
+    const elsewhere = await session(owner, older, { age: '3 hours', idle: '2 hours' });
+    await session(owner, older, { expiresIn: '-1 second' });
+    await session(owner, older, { age: '30 days 1 minute', idle: '1 minute' });
+    const stranger = await account(1);
+    await session(stranger, stranger.keys[0]);
+
+    const listed = await devices.list(current);
+    expect(listed.passkeys.map(({ id, current: here }) => [id, here])).toEqual([
+      [older.id, false],
+      [newer.id, true],
+    ]);
+    expect(listed.passkeys.map(({ sessions }) => sessions.map(({ id }) => id))).toEqual([
+      [elsewhere.sessionId],
+      [current.sessionId],
+    ]);
+    expect(listed.passkeys[1]?.sessions[0]).toMatchObject({
+      device: { browser: 'chrome', os: 'android' },
+      current: true,
+    });
+    const [shown] = listed.passkeys[0]?.sessions ?? [];
+    expect(Date.parse(shown?.lastUsedAt ?? '')).toBeGreaterThan(Date.parse(shown?.createdAt ?? ''));
+  });
+});
+
+describe('revoking a session (spec 0003, R4)', () => {
+  it("ends one of the account's sessions, with an event", async () => {
+    const owner = await account(1);
+    const key = owner.keys[0];
+    const current = await session(owner, key);
+    const other = await session(owner, key);
+    expect(await devices.revokeSession(current, other.sessionId)).toBe(true);
+    expect(await sessionsOf(owner)).toEqual([current.sessionId]);
+    expect(await events(owner)).toEqual([
+      {
+        code: 'session_revoked',
+        actor: owner.accountId,
+        details: { sessionId: other.sessionId },
+      },
+    ]);
+  });
+
+  it("leaves another account's session alone", async () => {
+    const owner = await account(1);
+    const current = await session(owner, owner.keys[0]);
+    const stranger = await account(1);
+    const theirs = await session(stranger, stranger.keys[0]);
+    expect(await devices.revokeSession(current, theirs.sessionId)).toBe(false);
+    expect(await devices.revokeSession(current, randomUUID())).toBe(false);
+    expect(await sessionsOf(stranger)).toEqual([theirs.sessionId]);
+    expect(await events(owner)).toEqual([]);
+  });
+});
+
+describe('revoking a passkey (spec 0003, R4)', () => {
+  it('ends the sessions it signed in and keeps those of another passkey', async () => {
+    const owner = await account();
+    const [older, newer] = owner.keys as [Key, Key];
+    const current = await session(owner, newer);
+    await session(owner, older);
+    await session(owner, older);
+    expect(await devices.revokePasskey(current, older.id)).toBe('revoked');
+    expect(await sessionsOf(owner)).toEqual([current.sessionId]);
+    expect(
+      await count('SELECT count(*)::int AS n FROM auth.passkey_client WHERE credential_id = $1', [
+        older.passkey.credentialId,
+      ]),
+    ).toBe(0);
+    expect(await events(owner)).toEqual([
+      { code: 'passkey_revoked', actor: owner.accountId, details: { passkeyId: older.id } },
+    ]);
+    expect(noticesTo(owner)).toEqual(['passkey_revoked']);
+    const listed = await devices.list(current);
+    expect(listed.passkeys.map(({ id }) => id)).toEqual([newer.id]);
+  });
+
+  it('ends what it approved and nothing spent yet, in any session, and keeps what was spent', async () => {
+    const owner = await account();
+    const [older, newer] = owner.keys as [Key, Key];
+    const current = await session(owner, newer);
+    // Another session that the older passkey did not sign in, where it still approved things.
+    const elsewhere = await session(owner, newer);
+    await verifiedStepUp(elsewhere, older, { purpose: 'vault_unlock' });
+    await verifiedStepUp(elsewhere, older, sensitive('regenerateRecoveryKit'));
+    await verifiedStepUp(elsewhere, older, sensitive('confirmInvite'));
+    await testDatabase.asAdmin((client) =>
+      client.query(
+        `UPDATE auth.step_up SET consumed_at = now()
+          WHERE account_id = $1 AND subject_hash = (
+            SELECT subject_hash FROM auth.step_up WHERE account_id = $1 AND purpose = 'sensitive_settings'
+             ORDER BY verified_at LIMIT 1)`,
+        [owner.accountId],
+      ),
+    );
+    await verifiedStepUp(elsewhere, newer, sensitive('regenerateRecoveryKit'));
+    expect(await stepUp.vaultUnlocked(elsewhere)).toBe(true);
+
+    expect(await devices.revokePasskey(current, older.id)).toBe('revoked');
+    expect(await stepUp.vaultUnlocked(elsewhere)).toBe(false);
+    const left = await testDatabase.asAdmin(
+      async (client) =>
+        (
+          await client.query<{ credential_id: string; spent: boolean }>(
+            `SELECT credential_id, consumed_at IS NOT NULL AS spent FROM auth.step_up
+              WHERE account_id = $1 ORDER BY verified_at`,
+            [owner.accountId],
+          )
+        ).rows,
+    );
+    expect(left).toEqual([
+      { credential_id: older.passkey.credentialId, spent: true },
+      { credential_id: newer.passkey.credentialId, spent: false },
+    ]);
+  });
+
+  it('keeps the last passkey, and says so', async () => {
+    const owner = await account(1);
+    const key = owner.keys[0];
+    const current = await session(owner, key);
+    expect(await devices.revokePasskey(current, key.id)).toBe('last_active');
+    expect(await sessionsOf(owner)).toEqual([current.sessionId]);
+    expect(await events(owner)).toEqual([]);
+    expect(noticesTo(owner)).toEqual([]);
+  });
+
+  it('keeps one passkey when two revocations race', async () => {
+    const owner = await account();
+    const [older, newer] = owner.keys as [Key, Key];
+    const first = await session(owner, older);
+    const second = await session(owner, newer);
+    const outcomes = await Promise.all([
+      devices.revokePasskey(first, newer.id),
+      devices.revokePasskey(second, older.id),
+    ]);
+    expect([...outcomes].sort()).toEqual(['last_active', 'revoked']);
+    expect(
+      await count('SELECT count(*)::int AS n FROM auth.passkey WHERE user_id = $1', [
+        owner.accountId,
+      ]),
+    ).toBe(1);
+  });
+
+  it('finds no passkey of another account, nor one that does not exist', async () => {
+    const owner = await account();
+    const current = await session(owner, owner.keys[0]);
+    const stranger = await account();
+    expect(await devices.revokePasskey(current, stranger.keys[0].id)).toBe('not_found');
+    expect(await devices.revokePasskey(current, randomUUID())).toBe('not_found');
+    expect(
+      await count('SELECT count(*)::int AS n FROM auth.passkey WHERE user_id = $1', [
+        stranger.accountId,
+      ]),
+    ).toBe(2);
+  });
+});
+
+describe('signing out the other sessions (spec 0003, R4)', () => {
+  it('leaves only the current session and sends one notice', async () => {
+    const owner = await account();
+    const [older, newer] = owner.keys as [Key, Key];
+    const current = await session(owner, newer);
+    const others = [await session(owner, older), await session(owner, newer)];
+    const stranger = await account(1);
+    const theirs = await session(stranger, stranger.keys[0]);
+    await devices.revokeOtherSessions(current);
+    expect(await sessionsOf(owner)).toEqual([current.sessionId]);
+    expect(await sessionsOf(stranger)).toEqual([theirs.sessionId]);
+    expect((await events(owner)).map(({ details }) => details)).toEqual(
+      expect.arrayContaining(others.map(({ sessionId }) => ({ sessionId }))),
+    );
+    expect(noticesTo(owner)).toEqual(['sessions_revoked']);
+  });
+
+  it('sends nothing when there is no other session', async () => {
+    const owner = await account(1);
+    const current = await session(owner, owner.keys[0]);
+    await devices.revokeOtherSessions(current);
+    expect(await sessionsOf(owner)).toEqual([current.sessionId]);
+    expect(noticesTo(owner)).toEqual([]);
+  });
+});
