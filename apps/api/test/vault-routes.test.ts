@@ -4,7 +4,14 @@ import { createApp } from '../src/app.js';
 import type { Devices } from '../src/auth/devices.js';
 import type { SignedIn } from '../src/auth/service.js';
 import type { StepUpService } from '../src/auth/step-up.js';
-import type { EnvelopeAdded, Vault, VaultSetUp } from '../src/vault/vault.js';
+import type { CanonicalAction } from '../src/auth/step-up-encoding.js';
+import type {
+  EnvelopeAdded,
+  RecoveryResealed,
+  Vault,
+  VaultRotation,
+  VaultSetUp,
+} from '../src/vault/vault.js';
 import type { Logger } from '@arca/telemetry';
 import { noLimits } from './limits.js';
 
@@ -40,17 +47,27 @@ function setup({
   setUp = 'created',
   added = 'added',
   stored = true,
+  approved = true,
+  rotated = 'rotated',
+  resealed = 'resealed',
 }: {
   unlocked?: boolean;
   setUp?: VaultSetUp;
   added?: EnvelopeAdded;
   stored?: boolean;
+  approved?: boolean;
+  rotated?: VaultRotation;
+  resealed?: RecoveryResealed;
 } = {}) {
   const calls: unknown[] = [];
+  const spent: { purpose: string; action: CanonicalAction }[] = [];
   const stepUp: StepUpService = {
     options: () => Promise.reject(new Error('unused')),
     verify: () => Promise.reject(new Error('unused')),
-    consume: () => Promise.resolve(true),
+    consume: (_, purpose, action) => {
+      spent.push({ purpose, action });
+      return Promise.resolve(approved);
+    },
     vaultUnlocked: () => Promise.resolve(unlocked),
   };
   const vault: Vault = {
@@ -70,6 +87,18 @@ function setup({
     forgetPasskey: (accountId, credential) => {
       calls.push(['forgetPasskey', accountId, credential]);
       return Promise.resolve();
+    },
+    rotate: (accountId, request) => {
+      calls.push(['rotate', accountId, request]);
+      return Promise.resolve(rotated);
+    },
+    resealRecovery: (accountId, request) => {
+      calls.push(['resealRecovery', accountId, request]);
+      return Promise.resolve(resealed);
+    },
+    reset: (accountId) => {
+      calls.push(['reset', accountId]);
+      return Promise.resolve(stored);
     },
   };
   const devices = {
@@ -104,7 +133,7 @@ function setup({
     devices,
     vault,
   });
-  const call = (method: 'GET' | 'POST', path: string, body?: unknown) =>
+  const call = (method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, body?: unknown) =>
     app.request(`/v1${path}`, {
       method,
       headers: {
@@ -115,7 +144,7 @@ function setup({
       },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     });
-  return { call, calls };
+  return { call, calls, spent };
 }
 
 const setUpBody = {
@@ -206,5 +235,98 @@ describe('vault routes (spec 0005, R2)', () => {
       ['forgetPasskey', owner.accountId, credentialId],
       ['revokePasskey', passkeyId],
     ]);
+  });
+});
+
+const nonce = new Uint8Array(Buffer.from('MzMzMzMzMzMzMzMzMzMzMw', 'base64url'));
+const recipientIds = [
+  '0b4f6a1e-2c3d-4e5f-8a9b-0c1d2e3f4a5b',
+  '7e6d5c4b-3a29-4817-8f6e-5d4c3b2a1908',
+];
+const rotateBody = { ...setUpBody, from: recipientIds[0] };
+const resealBody = {
+  envelopes: recipientIds.map((recipientId) => ({ recipientId, ciphertext: sealed })),
+};
+
+describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
+  it.each([
+    ['POST', '/vault/rotate', rotateBody],
+    ['PUT', '/vault/recovery-envelopes', resealBody],
+    ['DELETE', '/vault', {}],
+  ] as const)('answers 403 to %s %s without its step-up', async (method, path, body) => {
+    const { call, calls } = setup({ approved: false });
+    const response = await call(method, path, body);
+    expect(response.status).toBe(403);
+    expect(await errorOf(response)).toBe('step_up_required');
+    expect(calls).toEqual([]);
+  });
+
+  it('binds a rotation to the recipient it rotates and the new one', async () => {
+    const { call, calls, spent } = setup();
+    expect((await call('POST', '/vault/rotate', rotateBody)).status).toBe(200);
+    expect(spent).toEqual([
+      {
+        purpose: 'sensitive_settings',
+        action: {
+          action: 'rotateVaultIdentity',
+          targets: [rotateBody.from],
+          fields: { recipient },
+          nonce,
+        },
+      },
+    ]);
+    expect(calls).toEqual([['rotate', owner.accountId, rotateBody]]);
+  });
+
+  it.each([
+    ['no_vault', 404, 'not_found'],
+    ['changed', 409, 'vault_changed'],
+    ['unknown_passkey', 400, 'invalid_request'],
+  ] as const)('answers a %s rotation with %i', async (outcome, status, code) => {
+    const response = await setup({ rotated: outcome }).call('POST', '/vault/rotate', rotateBody);
+    expect(response.status).toBe(status);
+    expect(await errorOf(response)).toBe(code);
+  });
+
+  it('binds a re-seal to the recipients in order', async () => {
+    const { call, calls, spent } = setup();
+    expect((await call('PUT', '/vault/recovery-envelopes', resealBody)).status).toBe(200);
+    expect(spent).toEqual([
+      {
+        purpose: 'sensitive_settings',
+        action: { action: 'resealVaultRecovery', targets: recipientIds, nonce },
+      },
+    ]);
+    expect(calls).toEqual([['resealRecovery', owner.accountId, resealBody]]);
+  });
+
+  it.each([
+    ['no_vault', 404, 'not_found'],
+    ['changed', 409, 'vault_changed'],
+  ] as const)('answers a %s re-seal with %i', async (outcome, status, code) => {
+    const response = await setup({ resealed: outcome }).call(
+      'PUT',
+      '/vault/recovery-envelopes',
+      resealBody,
+    );
+    expect(response.status).toBe(status);
+    expect(await errorOf(response)).toBe(code);
+  });
+
+  it('refuses a re-seal naming one recipient twice', async () => {
+    const { call, calls } = setup();
+    const body = { envelopes: [resealBody.envelopes[0], resealBody.envelopes[0]] };
+    expect((await call('PUT', '/vault/recovery-envelopes', body)).status).toBe(400);
+    expect(calls).toEqual([]);
+  });
+
+  it('resets the vault after its step-up, and 404 with nothing to reset', async () => {
+    const { call, calls, spent } = setup();
+    expect((await call('DELETE', '/vault', {})).status).toBe(200);
+    expect(spent).toEqual([
+      { purpose: 'sensitive_settings', action: { action: 'resetVault', targets: [], nonce } },
+    ]);
+    expect(calls).toEqual([['reset', owner.accountId]]);
+    expect((await setup({ stored: false }).call('DELETE', '/vault', {})).status).toBe(404);
   });
 });

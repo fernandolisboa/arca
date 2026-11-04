@@ -68,7 +68,7 @@ export const recipient = vault.table(
     uniqueIndex('recipient_current_idx')
       .on(table.accountId)
       .where(sql`${table.rotatedAt} IS NULL`),
-    ...ownRowPolicies('recipient', table.accountId, ['select', 'insert', 'update']),
+    ...ownRowPolicies('recipient', table.accountId, ['select', 'insert', 'update', 'delete']),
   ],
 );
 
@@ -127,6 +127,6 @@ export const sharingState = vault.table(
     check('sharing_state_version', sql`${table.version} > 0`),
     check('sharing_state_tag_length', sql`octet_length(${table.tag}) = 32`),
     check('sharing_state_size', sql`octet_length(${table.state}) <= 1048576`),
-    ...ownRowPolicies('sharing_state', table.accountId, ['select', 'insert', 'update']),
+    ...ownRowPolicies('sharing_state', table.accountId, ['select', 'insert', 'update', 'delete']),
   ],
 );

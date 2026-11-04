@@ -26,6 +26,9 @@ import {
   revokeSession,
   setUpVault,
   addVaultEnvelope,
+  rotateVaultIdentity,
+  resealVaultRecovery,
+  resetVault,
   StepUpAction,
   stepUpNonceHeader,
   StepUpOptionsRequest,
@@ -187,6 +190,7 @@ export type ErrorCode =
   | 'recovery_pending'
   | 'deletion_pending'
   | 'vault_exists'
+  | 'vault_changed'
   | 'accounts_closed'
   | 'too_large'
   | 'request_failed'
@@ -900,6 +904,51 @@ export function createApp({
     const outcome = await vault.addEnvelope(current.accountId, sealed);
     if (outcome === 'no_vault') return fail(c, 'not_found', 404);
     if (outcome === 'unknown_passkey') return fail(c, 'invalid_request', 400);
+    return c.json({}, 200);
+  });
+
+  // Changing which identity or secret opens the vault is bound to its action by a step-up.
+  v1.openapi(openApiRoutes.rotateVaultIdentity, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || vault === undefined) return unauthorized(c);
+    const request = rotateVaultIdentity.body.parse(await c.req.json());
+    const approved = await stepUpGranted(c, current, 'sensitive_settings', {
+      action: rotateVaultIdentity.operationId,
+      targets: [request.from],
+      fields: { recipient: request.recipient },
+    });
+    if (!approved) return fail(c, 'step_up_required', 403);
+    const outcome = await vault.rotate(current.accountId, request);
+    if (outcome === 'no_vault') return fail(c, 'not_found', 404);
+    if (outcome === 'changed') return fail(c, 'vault_changed', 409);
+    if (outcome === 'unknown_passkey') return fail(c, 'invalid_request', 400);
+    return c.json({}, 200);
+  });
+
+  v1.openapi(openApiRoutes.resealVaultRecovery, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || vault === undefined) return unauthorized(c);
+    const request = resealVaultRecovery.body.parse(await c.req.json());
+    const approved = await stepUpGranted(c, current, 'sensitive_settings', {
+      action: resealVaultRecovery.operationId,
+      targets: request.envelopes.map(({ recipientId }) => recipientId),
+    });
+    if (!approved) return fail(c, 'step_up_required', 403);
+    const outcome = await vault.resealRecovery(current.accountId, request);
+    if (outcome === 'no_vault') return fail(c, 'not_found', 404);
+    if (outcome === 'changed') return fail(c, 'vault_changed', 409);
+    return c.json({}, 200);
+  });
+
+  v1.openapi(openApiRoutes.resetVault, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || vault === undefined) return unauthorized(c);
+    const approved = await stepUpGranted(c, current, 'sensitive_settings', {
+      action: resetVault.operationId,
+      targets: [],
+    });
+    if (!approved) return fail(c, 'step_up_required', 403);
+    if (!(await vault.reset(current.accountId))) return fail(c, 'not_found', 404);
     return c.json({}, 200);
   });
 
