@@ -24,7 +24,15 @@ afterAll(async () => {
   await dropDatabase(database);
 });
 
-const authTables = ['account', 'passkey', 'session', 'user', 'verification'];
+const authTables = [
+  'account',
+  'outbox',
+  'passkey',
+  'passkey_client',
+  'session',
+  'user',
+  'verification',
+];
 const tablePrivileges = [
   'SELECT',
   'INSERT',
@@ -80,6 +88,8 @@ describe('the auth schema access matrix', () => {
     expect(await privileges('app_auth')).toEqual({
       schema: ['USAGE'],
       ...Object.fromEntries(authTables.map((table) => [table, dml])),
+      outbox: ['SELECT', 'INSERT', 'DELETE'],
+      passkey_client: ['SELECT', 'INSERT'],
     });
   });
 

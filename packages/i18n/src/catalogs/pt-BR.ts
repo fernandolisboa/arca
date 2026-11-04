@@ -24,6 +24,58 @@ export const ptBR = {
     unreachable: 'Não conseguimos falar com o serviço agora. Tente de novo em instantes.',
     retry: 'Tentar de novo',
   },
+  /** Coarse device families, as sessions record them (spec 0003, R4). */
+  device: {
+    browser:
+      '{browser, select, edge {Edge} samsung_internet {Samsung Internet} opera {Opera} firefox {Firefox} chrome {Chrome} safari {Safari} other {não identificado}}',
+    os: '{os, select, ios {iOS} ipados {iPadOS} android {Android} chromeos {ChromeOS} windows {Windows} macos {macOS} linux {Linux} other {não identificado}}',
+  },
+  /**
+   * Security notices by email (spec 0003, R7 and R8): generic text and one link, nothing personal
+   * beyond the address it goes to. `when` is already formatted in Brasília time.
+   */
+  email: {
+    link: 'Abrir o Arca: {url}',
+    signature: 'Equipe Arca',
+    notice: {
+      passkey_added: {
+        subject: 'Nova chave de acesso na sua conta',
+        body: 'Uma nova chave de acesso foi adicionada à sua conta Arca em {when} (horário de Brasília). Ela só começa a funcionar daqui a 24 horas. Se não foi você, cancele essa chave em Dispositivos antes disso.',
+      },
+      new_sign_in: {
+        subject: 'Nova entrada na sua conta',
+        body: 'Alguém entrou na sua conta Arca em {when} (horário de Brasília). Navegador: {browser}. Sistema: {os}. É a primeira vez que essa chave de acesso entra por esse navegador ou sistema. Se foi você, não precisa fazer nada. Se não foi, encerre a sessão e remova a chave em Dispositivos.',
+      },
+      passkey_revoked: {
+        subject: 'Uma chave de acesso foi removida',
+        body: 'Uma chave de acesso foi removida da sua conta Arca em {when} (horário de Brasília), e as sessões abertas com ela foram encerradas. Se não foi você, entre no Arca e confira seus dispositivos.',
+      },
+      pending_passkey_cancelled: {
+        subject: 'Chave de acesso pendente cancelada',
+        body: 'A chave de acesso que ainda esperava as 24 horas para funcionar foi cancelada em {when} (horário de Brasília). Ela não vai funcionar na sua conta.',
+      },
+      recovery_kit_regenerated: {
+        subject: 'Novo kit de recuperação',
+        body: 'Um novo kit de recuperação foi gerado para sua conta Arca em {when} (horário de Brasília). O código de recuperação antigo deixou de valer. Se não foi você, entre no Arca e confira seus dispositivos.',
+      },
+      recovery_started: {
+        subject: 'Pedido de recuperação da sua conta',
+        body: 'Alguém pediu para recuperar sua conta Arca em {when} (horário de Brasília). Se foi você, siga o link do outro email que mandamos. Se não foi, sua conta continua segura, porque o pedido não dá acesso sem o seu código de recuperação.',
+      },
+      recovery_completed: {
+        subject: 'Nova chave de acesso criada por recuperação',
+        body: 'Uma chave de acesso foi criada pela recuperação da sua conta Arca em {when} (horário de Brasília). Ela começa a funcionar daqui a 24 horas e, até lá, suas sessões abertas só mostram um aviso sobre a recuperação. Se não foi você, cancele a recuperação no Arca com uma chave de acesso sua.',
+      },
+      recovery_locked: {
+        subject: 'Recuperação bloqueada por 24 horas',
+        body: 'O código de recuperação da sua conta Arca foi digitado errado várias vezes em {when} (horário de Brasília). Por segurança, a recuperação fica bloqueada pelas próximas 24 horas.',
+      },
+      sessions_revoked: {
+        subject: 'Suas outras sessões foram encerradas',
+        body: 'Todas as outras sessões da sua conta Arca foram encerradas em {when} (horário de Brasília). Só o dispositivo que fez isso continua conectado. Se não foi você, entre no Arca e confira seus dispositivos.',
+      },
+    },
+  },
   /**
    * Former states (ISO 3166-3), which Intl.DisplayNames does not name. Current countries are
    * named by Intl.DisplayNames, never here.

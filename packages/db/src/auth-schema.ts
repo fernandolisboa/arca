@@ -17,7 +17,8 @@ import {
  */
 export const auth = pgSchema('auth');
 
-const createdAt = () => timestamp('created_at', { withTimezone: true }).notNull().defaultNow();
+export const createdAt = () =>
+  timestamp('created_at', { withTimezone: true }).notNull().defaultNow();
 const updatedAt = () => timestamp('updated_at', { withTimezone: true }).notNull().defaultNow();
 
 export const user = auth.table('user', {
@@ -124,4 +125,5 @@ export const passkey = auth.table(
   (table) => [index('passkey_user_id_idx').on(table.userId)],
 );
 
+/** The tables Better Auth's adapter maps; the others are read by Arca's own modules. */
 export const authSchema = { user, session, account, verification, passkey } as const;

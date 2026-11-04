@@ -14,6 +14,7 @@ import { routePath } from 'hono/route';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import type { AuditReader } from './audit/log.js';
 import type { AuthService } from './auth/service.js';
+import type { OutboxEntry } from './email/outbox.js';
 import { bearerMatches } from './cron-auth.js';
 import { cachedDatabaseCheck, type CheckDatabase } from './database-health.js';
 import type { Logger } from './logger.js';
@@ -38,6 +39,11 @@ export interface AppDependencies {
   readonly auth?: AuthService;
   /** The signed-in account's audit events; absent, the route answers 401. */
   readonly audit?: AuditReader;
+  /**
+   * The outbox's messages, given only on preview deployments, which Vercel Deployment
+   * Protection keeps private (spec 0003, R8); absent, `/internal/outbox` is a 404.
+   */
+  readonly outbox?: () => Promise<readonly OutboxEntry[]>;
 }
 
 export type ErrorCode =
@@ -88,6 +94,7 @@ export function createApp({
   cron,
   auth,
   audit,
+  outbox,
 }: AppDependencies) {
   const app = createRouter();
 
@@ -166,6 +173,10 @@ export function createApp({
     if (auth === undefined || !allowed.has(key)) return reject(c, 'not_found', 404);
     return auth.handle(c.req.raw);
   });
+
+  if (outbox !== undefined) {
+    app.get('/internal/outbox', async (c) => c.json({ messages: await outbox() }, 200));
+  }
 
   // Vercel cron sends GET with `Authorization: Bearer <CRON_SECRET>` (spec 0001, R6). Not part of
   // the OpenAPI document, and the only route that starts a workflow.

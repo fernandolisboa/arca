@@ -12,6 +12,10 @@
       "types": "./dist/audit-schema.d.ts",
       "default": "./dist/audit-schema.js"
     },
+    "./notice-schema": {
+      "types": "./dist/notice-schema.d.ts",
+      "default": "./dist/notice-schema.js"
+    },
     "./auth-schema": {
       "types": "./dist/auth-schema.d.ts",
       "default": "./dist/auth-schema.js"

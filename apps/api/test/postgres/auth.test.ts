@@ -2,12 +2,16 @@ import { randomBytes } from 'node:crypto';
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { makeSignature } from 'better-auth/crypto';
+import { sql } from 'drizzle-orm';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
 import { createAuth, type Auth } from '../../src/auth/auth.js';
 import { authService } from '../../src/auth/service.js';
 import { auditLog, auditReader } from '../../src/audit/log.js';
+import { noticeNewSignIn, recordPasskeyClient } from '../../src/auth/sign-in-notice.js';
+import type { Notice } from '../../src/email/notices.js';
+import { outboxSender, readOutbox } from '../../src/email/outbox.js';
 import { apiDatabase, auditDatabase, authDatabase } from '../../src/database.js';
 import type { Database } from '@arca/db';
 import type { Logger } from '../../src/logger.js';
@@ -252,5 +256,77 @@ describe('Better Auth on the app_auth pool', () => {
     const { cookie } = await signedIn('other@example.com');
     const forged = cookie.replace(/\.[^.]*$/, '.forged');
     expect((await app.request('/v1/session', { headers: { cookie: forged } })).status).toBe(401);
+  });
+});
+
+/** A passkey row for a synthetic account; the credential ID is synthetic too. */
+async function withPasskey(email: string): Promise<string> {
+  const { userId } = await signedIn(email);
+  const credentialId = `credential-${randomBytes(8).toString('hex')}`;
+  await asAdmin(database, (client) =>
+    client.query(
+      `INSERT INTO auth.passkey (public_key, user_id, credential_id, counter, device_type, backed_up)
+       VALUES ('synthetic', $1, $2, 0, 'multiDevice', true)`,
+      [userId, credentialId],
+    ),
+  );
+  return credentialId;
+}
+
+describe('new-sign-in notices (spec 0003, R7)', () => {
+  it('sends one notice for a family not seen before for that passkey, and none for a repeat', async () => {
+    const credentialId = await withPasskey('notices@example.com');
+    const sent: Notice[] = [];
+    const deps = {
+      db: authDb,
+      notices: { send: (notice: Notice) => Promise.resolve(void sent.push(notice)) },
+    };
+    const signIn = (browser: 'firefox' | 'chrome', os: 'linux' | 'android') =>
+      noticeNewSignIn(deps, {
+        credentialId,
+        device: { browser, os },
+        email: 'notices@example.com',
+        at: new Date(),
+      });
+    await signIn('firefox', 'linux'); // the registration's families: no notice
+    await signIn('firefox', 'linux');
+    expect(sent).toEqual([]);
+    await signIn('chrome', 'linux');
+    await signIn('chrome', 'linux');
+    await signIn('firefox', 'android');
+    expect(sent.map((notice) => notice.kind === 'new_sign_in' && notice.device)).toEqual([
+      { browser: 'chrome', os: 'linux' },
+      { browser: 'firefox', os: 'android' },
+    ]);
+  });
+
+  it('forgets the families when app_auth deletes the passkey', async () => {
+    const credentialId = await withPasskey('forget@example.org');
+    await recordPasskeyClient(authDb, credentialId, { browser: 'safari', os: 'ios' });
+    await authDb.execute(sql`DELETE FROM auth.passkey WHERE credential_id = ${credentialId}`);
+    const remaining = await asAdmin(database, (client) =>
+      client.query('SELECT FROM auth.passkey_client WHERE credential_id = $1', [credentialId]),
+    );
+    expect(remaining.rowCount).toBe(0);
+  });
+});
+
+describe('the outbox (spec 0003, R8)', () => {
+  it('keeps sent messages for the preview page and drops them after 7 days', async () => {
+    const outbox = outboxSender(authDb, 'preview');
+    await outbox.send({ to: 'old@example.com', subject: 'Antigo', text: 'Texto' });
+    await asAdmin(database, (client) =>
+      client.query("UPDATE auth.outbox SET expires_at = now() - interval '1 second'"),
+    );
+    await outbox.send({ to: 'new@example.com', subject: 'Novo', text: 'Texto' });
+    expect(await readOutbox(authDb, 'preview')).toEqual([
+      expect.objectContaining({ to: 'new@example.com', subject: 'Novo', text: 'Texto' }),
+    ]);
+    const stored = await asAdmin(database, (client) =>
+      client.query<{ recipient: string; days: number }>(
+        `SELECT recipient, extract(day FROM expires_at - created_at)::int AS days FROM auth.outbox`,
+      ),
+    );
+    expect(stored.rows).toEqual([{ recipient: 'new@example.com', days: 7 }]);
   });
 });

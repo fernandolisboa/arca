@@ -54,19 +54,35 @@ export function readAuthSecrets(): AuthSecrets {
 
 const originHostPattern = /^[a-z0-9](?:[a-z0-9.-]{0,251}[a-z0-9])?$/;
 
+export type DeploymentEnvironment = 'production' | 'preview' | 'development';
+
+/**
+ * Which deployment this is, from Vercel's system variables. Off Vercel it is development; on
+ * Vercel a missing or unknown VERCEL_ENV fails instead of falling back to it, and so does a custom
+ * environment, which Vercel reports as a preview.
+ */
+export function readDeploymentEnvironment(): DeploymentEnvironment {
+  if (process.env['VERCEL'] !== '1') return 'development';
+  const environment = required('VERCEL_ENV', process.env['VERCEL_ENV']);
+  if (environment !== 'production' && environment !== 'preview' && environment !== 'development') {
+    throw new MissingConfigError('VERCEL_ENV is not a known environment');
+  }
+  const target = process.env['VERCEL_TARGET_ENV'];
+  if (target !== undefined && target !== environment) {
+    throw new MissingConfigError('custom Vercel environments are not supported');
+  }
+  return environment;
+}
+
 /**
  * The origin the auth routes run on, from Vercel's system variables: a preview's branch URL, so
  * the per-deployment URL is not trusted, and the production domain. Until spec 0003 R9 moves
- * production to a reviewed file, the production host is Vercel's. Off Vercel, Nitro's dev server;
- * on Vercel a missing or unknown environment fails instead of falling back to it.
+ * production to a reviewed file, the production host is Vercel's. In development, Nitro's dev
+ * server.
  */
 export function readAuthOrigin(): string {
-  if (process.env['VERCEL'] !== '1') return 'http://localhost:3000';
-  const environment = required('VERCEL_ENV', process.env['VERCEL_ENV']);
+  const environment = readDeploymentEnvironment();
   if (environment === 'development') return 'http://localhost:3000';
-  if (environment !== 'production' && environment !== 'preview') {
-    throw new MissingConfigError('VERCEL_ENV is not a known environment');
-  }
   const [name, value] =
     environment === 'production'
       ? ['VERCEL_PROJECT_PRODUCTION_URL', process.env['VERCEL_PROJECT_PRODUCTION_URL']]

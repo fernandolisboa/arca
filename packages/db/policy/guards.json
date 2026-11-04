@@ -9,8 +9,16 @@
       "reason": "Better Auth table; only app_auth has privileges on the auth schema, and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
     },
     {
+      "table": "auth.outbox",
+      "reason": "Non-production outbox written and read by app_auth only; no per-request identity, so row-level security would not narrow anything."
+    },
+    {
       "table": "auth.passkey",
       "reason": "Better Auth table; only app_auth has privileges on the auth schema, and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
+    },
+    {
+      "table": "auth.passkey_client",
+      "reason": "Arca's table in the auth schema; only app_auth has privileges on the auth schema, and it is read and written during sign-in, before any per-request identity exists, so row-level security would not narrow anything."
     },
     {
       "table": "auth.session",

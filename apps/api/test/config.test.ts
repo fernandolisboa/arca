@@ -4,6 +4,7 @@ import {
   MissingConfigError,
   readApiSecrets,
   readAuthOrigin,
+  readDeploymentEnvironment,
   readAuthSecrets,
   readCronSecret,
   readJobsDatabasePassword,
@@ -144,4 +145,38 @@ describe('readAuthOrigin', () => {
       expect(() => readAuthOrigin()).toThrow(MissingConfigError);
     },
   );
+});
+
+describe('readDeploymentEnvironment', () => {
+  it('is development off Vercel, whatever VERCEL_ENV says', () => {
+    vi.stubEnv('VERCEL', undefined);
+    vi.stubEnv('VERCEL_ENV', 'production');
+    expect(readDeploymentEnvironment()).toBe('development');
+  });
+
+  it.each(['production', 'preview', 'development'])('reads %s on Vercel', (value) => {
+    vi.stubEnv('VERCEL', '1');
+    vi.stubEnv('VERCEL_ENV', value);
+    expect(readDeploymentEnvironment()).toBe(value);
+  });
+
+  it.each([undefined, '', 'staging'])('fails closed on Vercel with VERCEL_ENV %j', (value) => {
+    vi.stubEnv('VERCEL', '1');
+    vi.stubEnv('VERCEL_ENV', value);
+    expect(() => readDeploymentEnvironment()).toThrow(MissingConfigError);
+  });
+
+  it('accepts a VERCEL_TARGET_ENV that matches VERCEL_ENV', () => {
+    vi.stubEnv('VERCEL', '1');
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    vi.stubEnv('VERCEL_TARGET_ENV', 'preview');
+    expect(readDeploymentEnvironment()).toBe('preview');
+  });
+
+  it('fails closed on a custom environment, which Vercel reports as a preview', () => {
+    vi.stubEnv('VERCEL', '1');
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    vi.stubEnv('VERCEL_TARGET_ENV', 'staging');
+    expect(() => readDeploymentEnvironment()).toThrow(MissingConfigError);
+  });
 });

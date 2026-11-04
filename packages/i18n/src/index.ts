@@ -8,6 +8,9 @@ export const resources = { [defaultLocale]: { translation: ptBR } } as const;
 
 export type Messages = typeof ptBR;
 
+/** An instance from {@link createI18n}, for packages that render messages without React. */
+export type I18n = i18n;
+
 declare module 'i18next' {
   interface CustomTypeOptions {
     defaultNS: 'translation';
