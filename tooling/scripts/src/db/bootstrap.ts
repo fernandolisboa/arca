@@ -2,7 +2,13 @@ import { clientFor, type ConnectionTarget } from './connection.ts';
 import { checkDeploymentTarget, type Deployment } from './deployment-target.ts';
 
 /** The roles whose passwords bootstrap.sql sets, each through a `'{{role}}'` placeholder. */
-export const rolesWithPasswords = ['app_migrator', 'app_api', 'app_jobs', 'app_auth'] as const;
+export const rolesWithPasswords = [
+  'app_migrator',
+  'app_api',
+  'app_jobs',
+  'app_auth',
+  'app_audit',
+] as const;
 export type RoleWithPassword = (typeof rolesWithPasswords)[number];
 export type RolePasswords = Readonly<Record<RoleWithPassword, string>>;
 

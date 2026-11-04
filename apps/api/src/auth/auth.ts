@@ -4,7 +4,8 @@ import type { Database } from '@arca/db';
 import { betterAuth } from 'better-auth';
 import { eq } from 'drizzle-orm';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { authBasePath } from '@arca/api-contract/routes';
+import { authBasePath, DeviceDescription } from '@arca/api-contract/routes';
+import type { AuditLog } from '../audit/log.js';
 import type { Logger } from '../logger.js';
 import { describeDevice } from './device.js';
 
@@ -15,6 +16,8 @@ export interface AuthSettings {
   /** The environment's own origin, the only one trusted (spec 0003, R4 and R9). */
   readonly origin: string;
   readonly logger: Logger;
+  /** Every sign-in is recorded (spec 0003, R7). */
+  readonly audit: AuditLog;
 }
 
 /**
@@ -22,7 +25,7 @@ export interface AuthSettings {
  * magic links, social and anonymous sign-in are never configured, and the router in front of it
  * lets through only the allow-listed endpoints. Telemetry is off.
  */
-export function createAuth({ db, secret, origin, logger }: AuthSettings) {
+export function createAuth({ db, secret, origin, logger, audit }: AuthSettings) {
   return betterAuth({
     appName: 'Arca',
     baseURL: origin,
@@ -73,12 +76,19 @@ export function createAuth({ db, secret, origin, logger }: AuthSettings) {
               },
             });
           },
-          // Every new session is a sign-in, whichever endpoint created it.
+          // Every new session is a sign-in, whichever endpoint created it. If either write fails
+          // the sign-in fails, so no session goes unrecorded.
           after: async (session) => {
             await db
               .update(user)
               .set({ lastSignInAt: new Date() })
               .where(eq(user.id, session.userId));
+            await audit.record({
+              code: 'sign_in',
+              subjectAccountId: session.userId,
+              actorAccountId: session.userId,
+              details: describeSession(session),
+            });
           },
         },
       },
@@ -88,3 +98,8 @@ export function createAuth({ db, secret, origin, logger }: AuthSettings) {
 }
 
 export type Auth = ReturnType<typeof createAuth>;
+
+/** The device enums the create hook stored; parsed again by the audit log. */
+function describeSession(session: Record<string, unknown>) {
+  return DeviceDescription.parse({ browser: session['deviceBrowser'], os: session['deviceOs'] });
+}

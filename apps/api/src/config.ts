@@ -29,6 +29,11 @@ export function readJobsDatabasePassword(): string {
   return required('ARCA_DB_JOBS_PASSWORD', process.env['ARCA_DB_JOBS_PASSWORD']);
 }
 
+/** The app_audit password, for the audit log's writer (spec 0003, R7). */
+export function readAuditDatabasePassword(): string {
+  return required('ARCA_DB_AUDIT_PASSWORD', process.env['ARCA_DB_AUDIT_PASSWORD']);
+}
+
 export interface AuthSecrets {
   /** The app_auth role's password, for Better Auth's own pool (spec 0003, R1). */
   readonly databasePassword: string;

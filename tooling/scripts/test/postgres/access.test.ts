@@ -93,3 +93,97 @@ describe('the auth schema access matrix', () => {
     },
   );
 });
+
+const auditColumns = [
+  'id',
+  'time',
+  'actor_account_id',
+  'subject_account_id',
+  'code',
+  'request_id',
+  'details',
+];
+
+/** Per column, the privileges a role holds on audit.event, table-level grants included. */
+async function auditPrivileges(role: string) {
+  return withClient(adminTarget(database), async (client) => {
+    const schema = await client.query<{ usage: boolean }>(
+      `SELECT pg_catalog.has_schema_privilege($1, 'audit', 'USAGE') AS usage`,
+      [role],
+    );
+    const columns: Record<string, string[]> = {};
+    for (const column of auditColumns) {
+      const granted: string[] = [];
+      for (const privilege of ['SELECT', 'INSERT', 'UPDATE', 'REFERENCES']) {
+        const row = await client.query<{ granted: boolean }>(
+          `SELECT pg_catalog.has_column_privilege($1, 'audit.event', $2, $3) AS granted`,
+          [role, column, privilege],
+        );
+        if (row.rows[0]?.granted) granted.push(privilege);
+      }
+      columns[column] = granted;
+    }
+    const table: string[] = [];
+    for (const privilege of ['DELETE', 'TRUNCATE', 'TRIGGER']) {
+      const row = await client.query<{ granted: boolean }>(
+        `SELECT pg_catalog.has_table_privilege($1, 'audit.event', $2) AS granted`,
+        [role, privilege],
+      );
+      if (row.rows[0]?.granted) table.push(privilege);
+    }
+    return { usage: schema.rows[0]?.usage, columns, table };
+  });
+}
+
+const onEveryColumn = (privileges: string[]) =>
+  Object.fromEntries(auditColumns.map((column) => [column, privileges]));
+
+describe('the audit schema access matrix (spec 0003, R7)', () => {
+  it('has only the event table, with no foreign keys and forced row-level security', async () => {
+    const shape = await withClient(adminTarget(database), async (client) => {
+      const tables = await client.query<{ name: string; forced: boolean }>(
+        `SELECT c.relname AS name, c.relrowsecurity AND c.relforcerowsecurity AS forced
+           FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+          WHERE n.nspname = 'audit' AND c.relkind IN ('r', 'p', 'v', 'm', 'f') ORDER BY 1`,
+      );
+      const foreignKeys = await client.query(
+        `SELECT FROM pg_catalog.pg_constraint k
+           JOIN pg_catalog.pg_namespace n ON n.oid = k.connamespace
+          WHERE n.nspname = 'audit' AND k.contype = 'f'`,
+      );
+      return { tables: tables.rows, foreignKeys: foreignKeys.rowCount };
+    });
+    expect(shape).toEqual({ tables: [{ name: 'event', forced: true }], foreignKeys: 0 });
+  });
+
+  it('lets app_audit insert every column but the ID and the time, and nothing else', async () => {
+    expect(await auditPrivileges('app_audit')).toEqual({
+      usage: true,
+      columns: {
+        ...onEveryColumn(['INSERT']),
+        id: [],
+        time: [],
+      },
+      table: [],
+    });
+  });
+
+  it('lets app_api only read', async () => {
+    expect(await auditPrivileges('app_api')).toEqual({
+      usage: true,
+      columns: onEveryColumn(['SELECT']),
+      table: [],
+    });
+  });
+
+  it.each(runtimeRoles.filter((role) => role !== 'app_audit' && role !== 'app_api'))(
+    'gives %s no access to the audit schema',
+    async (role) => {
+      expect(await auditPrivileges(role)).toEqual({
+        usage: false,
+        columns: onEveryColumn([]),
+        table: [],
+      });
+    },
+  );
+});

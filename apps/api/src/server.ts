@@ -1,15 +1,17 @@
 import { useRuntimeConfig } from 'nitro/runtime-config';
 import { createApp } from './app.js';
+import { auditLog, auditReader } from './audit/log.js';
 import { createAuth } from './auth/auth.js';
 import { authService, type AuthService } from './auth/service.js';
 import {
   databaseTargetFrom,
   readApiSecrets,
+  readAuditDatabasePassword,
   readAuthOrigin,
   readAuthSecrets,
   readCronSecret,
 } from './config.js';
-import { apiDatabase, authDatabase } from './database.js';
+import { apiDatabase, auditDatabase, authDatabase } from './database.js';
 import { createLogger } from './logger.js';
 import { heartbeat } from './workflows/heartbeat.js';
 import { startWorkflow } from './workflows/start-workflow.js';
@@ -37,13 +39,11 @@ let auth: AuthService | undefined;
 function authenticator(): AuthService {
   if (auth === undefined) {
     const secrets = readAuthSecrets();
-    const { db } = authDatabase(
-      databaseTargetFrom(useRuntimeConfig()['database']),
-      secrets.databasePassword,
-      logger,
-    );
+    const target = databaseTargetFrom(useRuntimeConfig()['database']);
+    const { db } = authDatabase(target, secrets.databasePassword, logger);
+    const audit = auditLog(auditDatabase(target, readAuditDatabasePassword(), logger).db);
     auth = authService(
-      createAuth({ db, secret: secrets.secret, origin: readAuthOrigin(), logger }),
+      createAuth({ db, secret: secrets.secret, origin: readAuthOrigin(), logger, audit }),
     );
   }
   return auth;
@@ -60,6 +60,7 @@ const app = createApp({
     handle: (request) => authenticator().handle(request),
     session: (headers) => authenticator().session(headers),
   },
+  audit: { events: (accountId, query) => auditReader(connected().db).events(accountId, query) },
 });
 
 /**

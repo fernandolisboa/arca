@@ -44,6 +44,10 @@ export function roleDatabase(
 export const apiDatabase = (target: DatabaseTarget, password: string, logger: Logger) =>
   roleDatabase('app_api', target, password, logger);
 
+/** The audit log's writer, as app_audit: it may only insert audit events (spec 0003, R7). */
+export const auditDatabase = (target: DatabaseTarget, password: string, logger: Logger) =>
+  roleDatabase('app_audit', target, password, logger);
+
 /** Better Auth's database, as app_auth: the only role with access to the auth schema. */
 export const authDatabase = (target: DatabaseTarget, password: string, logger: Logger) =>
   roleDatabase('app_auth', target, password, logger);

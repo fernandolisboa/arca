@@ -29,6 +29,7 @@ const passwords: Record<RuntimeRole, string> = {
   app_api: randomBytes(24).toString('base64url'),
   app_jobs: randomBytes(24).toString('base64url'),
   app_auth: randomBytes(24).toString('base64url'),
+  app_audit: randomBytes(24).toString('base64url'),
 };
 const credentials = (role: RuntimeRole): RoleCredentials => ({ role, password: passwords[role] });
 
@@ -67,7 +68,7 @@ const createdRoles: RuntimeRole[] = [];
 beforeAll(async () => {
   await asAdmin('postgres', async (client) => {
     await client.query(`CREATE DATABASE ${database}`);
-    for (const role of ['app_api', 'app_jobs', 'app_auth'] as const) {
+    for (const role of ['app_api', 'app_jobs', 'app_auth', 'app_audit'] as const) {
       const exists = await client.query('SELECT FROM pg_catalog.pg_roles WHERE rolname = $1', [
         role,
       ]);
@@ -101,7 +102,7 @@ afterAll(async () => {
 });
 
 describe('role pool', () => {
-  it.each(['app_api', 'app_jobs', 'app_auth'] as const)(
+  it.each(['app_api', 'app_jobs', 'app_auth', 'app_audit'] as const)(
     'connects as the role it was made for: %s',
     async (role) => {
       expect(await roleStatus(poolFor(role), role)).toBe('ok');
