@@ -5,6 +5,7 @@ import {
   type CatalogEntry,
   identityKey,
   parseCalendarDate,
+  sameIdentity,
   selectVersion,
   staleAfterDays,
   staleSources,
@@ -17,6 +18,8 @@ import { buildKnowledge, formatIssue } from './build.ts';
 export interface StaleRow {
   readonly routeId: string;
   readonly version: number;
+  /** The pinned country set the source belongs to, as `<id>/<number>`; absent for the version's own. */
+  readonly countrySet?: string;
   readonly sourceId: string;
   readonly host: string;
   readonly verifiedAt: CalendarDate;
@@ -42,20 +45,30 @@ export function staleRows(
       identities.map((identity) => [identityKey(identity), 'active' as const]),
     );
     const selected = selectVersion(identities, date, allActive);
-    const entry = versions.find((each) => each.identity.number === selected?.identity.number);
+    const entry =
+      selected && versions.find((each) => sameIdentity(each.identity, selected.identity));
     if (entry === undefined) continue;
-    for (const { source, daysSinceVerified } of staleSources(entry.version, date)) {
+    for (const { source, daysSinceVerified, countrySet } of staleSources(entry, date)) {
       rows.push({
         routeId,
         version: entry.identity.number,
+        ...(countrySet === undefined
+          ? {}
+          : { countrySet: `${countrySet.id}/${String(countrySet.number)}` }),
         sourceId: source.id,
-        host: hostOf(source.url) ?? 'unparsable',
+        host: plainHost(source.url),
         verifiedAt: source.verifiedAt,
         daysSinceVerified,
       });
     }
   }
   return rows;
+}
+
+/** A host made of plain DNS characters only, so it cannot break out of its Markdown cell. */
+function plainHost(url: string): string {
+  const host = hostOf(url);
+  return host !== undefined && /^[a-z0-9.-]+$/.test(host) ? host : 'unparsable';
 }
 
 /** The report as Markdown, for the `knowledge-staleness` issue. Every cell is an identifier. */
@@ -69,12 +82,13 @@ export function formatReport(rows: readonly StaleRow[], date: CalendarDate): str
   if (rows.length === 0) return [...header, 'No stale sources.', ''].join('\n');
   return [
     ...header,
-    '| Route | Version | Source | Host | Verified | Days since |',
-    '| --- | --- | --- | --- | --- | --- |',
+    '| Route | Version | Country set | Source | Host | Verified | Days since |',
+    '| --- | --- | --- | --- | --- | --- | --- |',
     ...rows.map((row) => {
       const cells = [
         row.routeId,
         String(row.version),
+        row.countrySet ?? '-',
         row.sourceId,
         row.host,
         row.verifiedAt,

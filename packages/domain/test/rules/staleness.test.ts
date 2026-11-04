@@ -7,10 +7,11 @@ import {
   identityKey,
   stateOf,
 } from '../../src/rules/catalog.js';
-import { evaluateRoute } from '../../src/rules/engine.js';
+import { evaluateRoute, evaluateVersion } from '../../src/rules/engine.js';
 import { staleSources } from '../../src/rules/staleness.js';
 import { snapshot } from '../case/builders.js';
-import { context, entry, sampleVersion } from './fixtures.js';
+import { countrySetSchema } from '../../src/rules/route-version.js';
+import { context, entry, sampleVersion, treaty } from './fixtures.js';
 
 /** Synthetic sources only: invented hosts and dates. */
 const source = (id: string, verifiedAt: string): object => ({
@@ -36,10 +37,22 @@ function withSources(patch: object = {}): CatalogEntry {
 }
 
 const ids = (version: CatalogEntry, today: string) =>
-  staleSources(version.version, parseCalendarDate(today)).map(({ source, daysSinceVerified }) => [
+  staleSources(version, parseCalendarDate(today)).map(({ source, daysSinceVerified }) => [
     source.id,
     daysSinceVerified,
   ]);
+
+/** The sample version with a stale `probe` source that only the patched field cites. */
+const citedBy = (patch: (version: typeof sampleVersion) => object): CatalogEntry =>
+  entry({
+    sources: [source('law', '2026-10-01'), source('probe', '2020-01-01')],
+    ...patch(sampleVersion),
+  });
+
+const withProbe = <T extends { readonly sources: readonly string[] }>(rules: readonly T[]) =>
+  rules.map((rule, index) =>
+    index === 0 ? { ...rule, sources: [...rule.sources, 'probe'] } : rule,
+  );
 
 describe('staleSources', () => {
   it('lists a cited source verified more than 90 days before today', () => {
@@ -48,17 +61,61 @@ describe('staleSources', () => {
   });
 
   it('ignores a source no rule cites', () => {
-    expect(ids(withSources(), '2027-06-01').map(([id]) => id)).toEqual(['law', 'cited']);
+    expect(ids(withSources(), '2026-12-30').map(([id]) => id)).toEqual(['cited']);
   });
 
-  it('counts closure sources', () => {
-    const closed = entry({
-      status: 'closed',
-      sources: [source('law', '2026-10-01'), source('closure', '2025-01-01')],
-      closureSources: ['closure'],
-    });
-    expect(ids(closed, '2026-11-03')).toEqual([['closure', 671]]);
+  it.each<[string, (version: typeof sampleVersion) => object]>([
+    ['a requirement', (version) => ({ requirements: withProbe(version.requirements) })],
+    [
+      'an assessment',
+      () => ({
+        assessments: [
+          {
+            id: 'ties',
+            title: 'Ties to the country',
+            evidence: ['principal.residenceCountry'],
+            sources: ['probe'],
+          },
+        ],
+      }),
+    ],
+    ['a dependent rule', (version) => ({ dependents: withProbe(version.dependents) })],
+    ['a cost', (version) => ({ costs: withProbe(version.costs) })],
+    ['a duration', (version) => ({ durations: withProbe(version.durations) })],
+    ['the leap-day choice', () => ({ leapDayBirthdaySources: ['probe'] })],
+    ['a closure', () => ({ status: 'closed', closureSources: ['probe'] })],
+  ])('counts a source cited only by %s', (_, patch) => {
+    expect(ids(citedBy(patch), '2026-11-03')).toEqual([['probe', 2498]]);
   });
+
+  it('counts the sources of a pinned country set, naming the set', () => {
+    const pinned = entry();
+    const set = countrySetSchema.parse({
+      ...treaty,
+      sources: [source('treaty-text', '2026-01-01'), source('treaty-list', '2026-10-01')],
+    });
+    const stale = staleSources({ ...pinned, countrySets: [set] }, parseCalendarDate('2026-11-03'));
+    expect(
+      stale.map(({ source: { id }, daysSinceVerified, countrySet }) => ({
+        id,
+        daysSinceVerified,
+        countrySet,
+      })),
+    ).toEqual([
+      { id: 'treaty-text', daysSinceVerified: 306, countrySet: { id: 'treaty', number: 2 } },
+    ]);
+  });
+});
+
+it('records the date an evaluation judged staleness at', () => {
+  const today = parseCalendarDate('2026-11-03');
+  const evaluation = evaluateVersion(
+    snapshot({ people: [{ id: 'p1', birthDate: '1980-01-01' }] }),
+    withSources(),
+    'p1',
+    context({ today }),
+  );
+  expect(evaluation.today).toBe(today);
 });
 
 describe('the stale flag (spec 0002, R9)', () => {
@@ -115,6 +172,14 @@ describe('the stale flag (spec 0002, R9)', () => {
   it('never flags a superseded version reached through a past rulesAsOf', () => {
     expect(evaluate([old, replacement], '2026-01-01')).toEqual({
       stale: false,
+      version: 1,
+      sources: ['cited'],
+    });
+  });
+
+  it('flags a version reached through a past rulesAsOf once its replacement is rejected', () => {
+    expect(evaluate([old, replacement], '2026-01-01', { 2: 'rejected' })).toEqual({
+      stale: true,
       version: 1,
       sources: ['cited'],
     });

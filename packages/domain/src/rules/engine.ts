@@ -94,6 +94,8 @@ export interface Evaluation {
   readonly engineCommit: string;
   readonly rulesAsOf: CalendarDate;
   readonly factsAsOf: CalendarDate;
+  /** The date staleness was judged at (R9). */
+  readonly today: CalendarDate;
   readonly referenceDates: readonly { readonly name: string; readonly date: CalendarDate }[];
   readonly principalId: string;
   readonly unit: Unit;
@@ -189,6 +191,7 @@ export function evaluateVersionTraced(
     engineCommit: context.engineCommit,
     rulesAsOf: context.rulesAsOf,
     factsAsOf: prepared.factsAsOf,
+    today: context.today,
     referenceDates: [...prepared.referenceDates].map(([name, date]) => ({ name, date })),
     principalId,
     unit,
@@ -202,7 +205,7 @@ export function evaluateVersionTraced(
     totals: totals(costs.priced, unit, version.costs, version.currency),
     durations: version.durations.map((stage) => ({ ...stage, sources: cite(stage.sources) })),
     rates: gaps.rates,
-    staleSources: staleSources(version, context.today),
+    staleSources: staleSources(entry, context.today),
   };
   return {
     evaluation,

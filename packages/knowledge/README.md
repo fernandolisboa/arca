@@ -88,7 +88,7 @@ Every route version ships with `<n>.cases.json` beside it, and `test/cases` runs
 
 ## Staleness
 
-A source is stale when it was verified more than 90 days before the context's `today` (spec 0002, R9). An evaluation lists the stale sources it cites, and `evaluateRoute` sets `stale` only on the version in effect today, never on a superseded one reached through a past `rulesAsOf`. `pnpm --filter @arca/knowledge staleness-report [date]` prints the stale sources of the version each route selects, every version treated as active, as identifiers only. Re-verifying a source is a new version.
+A source is stale when it was verified more than 90 days before the context's `today` (spec 0002, R9), which the evaluation records. An evaluation lists the stale sources it cites, its pinned country sets' included, and `evaluateRoute` sets `stale` only on the version in effect today, never on a superseded one reached through a past `rulesAsOf`. `pnpm --filter @arca/knowledge staleness-report [date]` prints the stale sources of the version each route selects, every version treated as active, as identifiers only. Re-verifying a source is a new version.
 
 ## Runtime entry points
 
