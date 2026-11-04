@@ -27,6 +27,7 @@
     "@arca/db": "workspace:*",
     "@arca/i18n": "workspace:*",
     "@arca/knowledge": "workspace:*",
+    "@arca/telemetry": "workspace:*",
     "@better-auth/passkey": "catalog:",
     "@hono/zod-openapi": "catalog:",
     "@simplewebauthn/server": "catalog:",

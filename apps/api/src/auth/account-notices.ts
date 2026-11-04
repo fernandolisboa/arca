@@ -1,6 +1,6 @@
 import type { Database } from '@arca/db';
 import type { NoticeKind, Notices } from '../email/notices.js';
-import type { Logger } from '../logger.js';
+import type { Logger } from '@arca/telemetry';
 import { accounts } from './auth.js';
 
 /** Each module names the notices it sends, so the type says which module sends what. */

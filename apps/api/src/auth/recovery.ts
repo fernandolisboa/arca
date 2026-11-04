@@ -12,7 +12,7 @@ import { and, eq, gt, isNotNull, lte, or, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import type { EmailMessage, EmailSender } from '../email/email.js';
 import type { Notices } from '../email/notices.js';
-import type { Logger } from '../logger.js';
+import type { Logger } from '@arca/telemetry';
 import { accountNotice } from './account-notices.js';
 import { accounts, devices } from './auth.js';
 import type { AccountStatus } from './devices.js';

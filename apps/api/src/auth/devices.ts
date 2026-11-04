@@ -11,7 +11,7 @@ import { passkeyChallenge as challenge, recoveryCode } from '@arca/db/enrollment
 import { and, eq, lte, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import type { Notices } from '../email/notices.js';
-import type { Logger } from '../logger.js';
+import type { Logger } from '@arca/telemetry';
 import { accountNotice } from './account-notices.js';
 import { devices } from './auth.js';
 import { passkeyCreation } from './passkey-creation.js';

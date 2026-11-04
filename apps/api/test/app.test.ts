@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { createApp, createRouter } from '../src/app.js';
 import type { CheckDatabase } from '../src/database-health.js';
 import type { AuthService } from '../src/auth/service.js';
-import { createLogger, type Logger } from '../src/logger.js';
+import { createLogger, type Logger } from '@arca/telemetry';
 import { noLimits } from './limits.js';
 
 const silentLogger: Logger = { info: () => undefined, error: () => undefined };

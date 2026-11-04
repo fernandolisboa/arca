@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import type { RateLimitRule } from '../src/auth/rate-limit.js';
 import type { Recovery, RecoveryRegistration, RedeemOutcome } from '../src/auth/recovery.js';
-import type { Logger } from '../src/logger.js';
+import type { Logger } from '@arca/telemetry';
 import { noLimits } from './limits.js';
 import { attestation, creationOptions } from './passkey-fixtures.js';
 

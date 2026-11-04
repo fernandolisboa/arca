@@ -32,11 +32,11 @@ import {
   outboxReaderFor,
 } from './email/environment.js';
 import { createNotices } from './email/notices.js';
-import { createLogger } from './logger.js';
+import { stdoutLogger } from './logger.js';
 import { heartbeat } from './workflows/heartbeat.js';
 import { startWorkflow } from './workflows/start-workflow.js';
 
-const logger = createLogger();
+const logger = stdoutLogger();
 
 let database: ReturnType<typeof apiDatabase> | undefined;
 

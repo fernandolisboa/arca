@@ -1,4 +1,4 @@
-import type { Logger } from '../logger.js';
+import type { Logger } from '@arca/telemetry';
 
 export type StepErrorCode = 'database_unavailable';
 

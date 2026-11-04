@@ -13,7 +13,7 @@ import type {
 import { APIError, isAPIError } from 'better-auth/api';
 import { and, eq, gt, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
-import type { Logger } from '../logger.js';
+import type { Logger } from '@arca/telemetry';
 import { accounts, type Auth } from './auth.js';
 import { sha256, type OwnerCode } from './enrollment.js';
 import { liveInvite } from './invites.js';

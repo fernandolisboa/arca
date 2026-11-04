@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { LogEntry, Logger } from '../src/logger.js';
+import type { LogEntry, Logger } from '@arca/telemetry';
 import { StepError, withStepError } from '../src/workflows/step-error.js';
 
 function recordingLogger() {

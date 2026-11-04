@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createLogger } from '../src/logger.js';
+import { createLogger } from '../src/index.js';
 
 describe('logger', () => {
   it('writes allow-listed fields and drops everything else', () => {
@@ -36,5 +36,22 @@ describe('logger', () => {
       route: 'x'.repeat(257),
     });
     expect(JSON.parse(lines[0] ?? '')).toEqual({ level: 'error', errorName: 'TypeError' });
+  });
+
+  it('keeps a trace ID and a labelled error name, and drops a trace ID of another shape', () => {
+    const lines: string[] = [];
+    createLogger((line) => lines.push(line)).error({
+      traceId: '0123456789abcdef0123456789abcdef',
+      errorName: 'RecoveryStart:TypeError',
+    });
+    createLogger((line) => lines.push(line)).error({ traceId: 'someone@example.test' });
+    expect(lines.map((line) => JSON.parse(line) as unknown)).toEqual([
+      {
+        level: 'error',
+        traceId: '0123456789abcdef0123456789abcdef',
+        errorName: 'RecoveryStart:TypeError',
+      },
+      { level: 'error' },
+    ]);
   });
 });

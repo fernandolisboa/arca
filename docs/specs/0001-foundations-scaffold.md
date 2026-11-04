@@ -59,11 +59,11 @@ tooling/
 
 | Package | May depend on |
 | --- | --- |
-| `apps/web` | `api-contract`, `ui`, `i18n`, `platform` |
-| `apps/api` | `domain`, `api-contract`, `db`, `knowledge` (added by [spec 0002](0002-rules-engine-and-knowledge-base.md)), `i18n` (added by [spec 0003](0003-identity-and-access.md), for email) |
+| `apps/web` | `api-contract`, `ui`, `i18n`, `platform`, `telemetry` (added by [spec 0004](0004-real-data-readiness.md)) |
+| `apps/api` | `domain`, `api-contract`, `db`, `knowledge` (added by [spec 0002](0002-rules-engine-and-knowledge-base.md)), `i18n` (added by [spec 0003](0003-identity-and-access.md), for email), `telemetry` (added by spec 0004) |
 | `packages/ui` | `i18n` |
 | `packages/knowledge` | `domain` (added by spec 0002) |
-| `packages/domain`, `packages/api-contract`, `packages/platform`, `packages/i18n`, `packages/db` | nothing in the workspace |
+| `packages/domain`, `packages/api-contract`, `packages/platform`, `packages/i18n`, `packages/db`, `packages/telemetry` | nothing in the workspace |
 
 - ESLint, scoped by package:
   - `packages/domain`: no imports of `node:*`, database clients, HTTP clients or `fetch`; no `Date.now()` or `new Date()` without arguments (time is passed in).

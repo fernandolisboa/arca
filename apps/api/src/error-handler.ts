@@ -1,7 +1,8 @@
 import type { ErrorResponse } from '@arca/api-contract/routes';
 import { securityHeaders } from '@arca/security-policy';
 import type { ErrorCode } from './app.js';
-import { createLogger, type Logger } from './logger.js';
+import type { Logger } from '@arca/telemetry';
+import { stdoutLogger } from './logger.js';
 
 /** The fields Nitro's errors carry that this handler reads. */
 interface NitroError {
@@ -56,4 +57,4 @@ export function createErrorHandler(logger: Logger) {
   };
 }
 
-export default createErrorHandler(createLogger());
+export default createErrorHandler(stdoutLogger());

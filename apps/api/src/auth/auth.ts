@@ -32,7 +32,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { authBasePath, DeviceDescription, pendingPasskeyHours } from '@arca/api-contract/routes';
 import type { AuditLog } from '../audit/log.js';
 import type { Notices } from '../email/notices.js';
-import type { Logger } from '../logger.js';
+import type { Logger } from '@arca/telemetry';
 import { describeDevice } from './device.js';
 import { signInFailedLog } from './limits.js';
 import type { RateLimiter } from './rate-limit.js';
