@@ -99,6 +99,8 @@ export function sentryOptions({
     integrations: integrations(),
     // No load-time rewriting of third-party modules: none of the listed integrations needs it.
     enableRuntimeChannelInjection: false,
+    // No tracer provider, so other libraries' OpenTelemetry spans are never recorded.
+    enableOpenTelemetrySetup: false,
     dataCollection: noDataCollection,
     sendClientReports: false,
     // The scrubbers rebuild each payload from allow-listed fields only, in Sentry's own shapes.

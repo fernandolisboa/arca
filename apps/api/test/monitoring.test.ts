@@ -41,6 +41,7 @@ describe('Sentry options (spec 0004, R4)', () => {
       traceLifecycle: 'static',
       sendClientReports: false,
       enableRuntimeChannelInjection: false,
+      enableOpenTelemetrySetup: false,
     });
   });
 
