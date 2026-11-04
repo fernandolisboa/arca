@@ -4,7 +4,7 @@ import type { Database } from '@arca/db';
 import { recoveryCode } from '@arca/db/enrollment-schema';
 import { and, eq, gt, isNull, or, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
-import type { Notices } from '../email/notices.js';
+import type { Notifier } from '../notification/notifier.js';
 import type { Logger } from '@arca/telemetry';
 import { accountNotice } from './account-notices.js';
 import { accounts } from './auth.js';
@@ -55,7 +55,7 @@ export interface RecoveryKitSettings {
   /** A database on the app_auth pool. */
   readonly db: Database;
   readonly audit: AuditLog;
-  readonly notices: Notices;
+  readonly notifier: Notifier;
   readonly logger: Logger;
   readonly random?: (size: number) => Buffer;
 }
@@ -63,13 +63,12 @@ export interface RecoveryKitSettings {
 export function recoveryKits({
   db,
   audit,
-  notices,
+  notifier,
   logger,
   random = randomBytes,
 }: RecoveryKitSettings): RecoveryKits {
   const notify = accountNotice<'recovery_kit_regenerated'>({
-    db,
-    notices,
+    notifier,
     logger,
     label: 'RecoveryKitNotice',
   });

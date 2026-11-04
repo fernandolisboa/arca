@@ -12,7 +12,7 @@ import { and, count, desc, eq, gt, isNotNull, isNull, lte, or, sql, type SQL } f
 import { markForRetentionErasure } from '../account/deletion.js';
 import type { AuditLog } from '../audit/log.js';
 import { EmailNotConfiguredError, type EmailMessage, type EmailSender } from '../email/email.js';
-import type { Notices } from '../email/notices.js';
+import type { Notifier } from '../notification/notifier.js';
 import type { Logger } from '@arca/telemetry';
 import { accounts } from './auth.js';
 import { sha256 } from './enrollment.js';
@@ -50,7 +50,7 @@ export interface InviteSettings {
   readonly db: Database;
   readonly audit: AuditLog;
   readonly email: EmailSender;
-  readonly notices: Notices;
+  readonly notifier: Notifier;
   readonly i18n: I18n;
   readonly origin: string;
   readonly logger: Logger;
@@ -109,7 +109,7 @@ export function createInvites({
   db,
   audit,
   email,
-  notices,
+  notifier,
   i18n,
   origin,
   logger,
@@ -266,8 +266,9 @@ export function createInvites({
           .select({ inviterId: invite.inviterId })
           .from(invite)
           .where(eq(invite.id, inviteId));
-        const to = found === undefined ? undefined : await accounts.emailOf(db, found.inviterId);
-        if (to !== undefined) await notices.send({ kind: 'invite_accepted', to, at: new Date() });
+        if (found !== undefined) {
+          await notifier.notify(found.inviterId, { kind: 'invite_accepted' });
+        }
       } catch (error) {
         logger.error({
           errorName: `InviteAcceptedNotice:${error instanceof Error ? error.name : 'NonErrorThrown'}`,

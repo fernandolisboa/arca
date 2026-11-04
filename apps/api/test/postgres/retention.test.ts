@@ -13,6 +13,8 @@ import {
 import { auditLog } from '../../src/audit/log.js';
 import { accounts } from '../../src/auth/auth.js';
 import type { Notice, Notices } from '../../src/email/notices.js';
+import { createDelivery, deliverNow } from '../../src/notification/delivery.js';
+import { createNotifier } from '../../src/notification/notifier.js';
 import { authTestDatabase, type AuthTestDatabase } from './auth-database.js';
 import { seeded } from './every-table.js';
 
@@ -36,7 +38,16 @@ const retentionWith = (ownedRules?: readonly OwnedExpiryRule[]): Retention =>
     authDb: testDatabase.authDb,
     jobsDb: testDatabase.jobsDb,
     audit: auditLog(testDatabase.auditDb),
-    notices,
+    // As the daily job runs it: the warning delivered in the step, before the marking commits.
+    notifier: createNotifier({
+      db: testDatabase.jobsDb,
+      startDelivery: (accountId, messageId) =>
+        deliverNow(
+          createDelivery({ jobsDb: testDatabase.jobsDb, authDb: testDatabase.authDb, notices }),
+          accountId,
+          messageId,
+        ),
+    }),
     ...(ownedRules === undefined ? {} : { ownedRules }),
   });
 
@@ -68,6 +79,16 @@ async function events(accountId: string, code: string) {
     [accountId, code],
   );
 }
+
+/** The warnings produced for these accounts, as app_jobs recorded them. */
+const warningsTo = (owners: readonly { accountId: string }[]) =>
+  admin<{ account: string; details: object; delivered: boolean }>(
+    `SELECT m.account_id AS account, m.details,
+            EXISTS (SELECT FROM notification.delivery d WHERE d.message_id = m.id) AS delivered
+       FROM notification.message m
+      WHERE m.account_id = ANY ($1) AND m.code = 'inactivity_warning'`,
+    [owners.map(({ accountId }) => accountId)],
+  );
 
 async function deletionOf(accountId: string) {
   const [row] = await admin<{ due: Date | null; reason: string | null }>(
@@ -263,16 +284,24 @@ describe('the inactivity job (spec 0004, R10)', () => {
       ]);
     }
     expect(await deletionOf(recent.accountId)).toEqual({ due: null, reason: null });
-    const warned = sent.filter(({ to }) =>
+    const warned = await warningsTo([atCutoff, neverSignedIn, recent]);
+    expect(warned.map(({ account }) => account).sort()).toEqual(
+      [atCutoff.accountId, neverSignedIn.accountId].sort(),
+    );
+    for (const message of warned) {
+      expect(message).toMatchObject({ details: { dueAt: dueAt.toISOString() }, delivered: true });
+    }
+    const emailed = sent.filter(({ to }) =>
       [atCutoff.email, neverSignedIn.email, recent.email].includes(to),
     );
-    expect(warned.map(({ to }) => to).sort()).toEqual([atCutoff.email, neverSignedIn.email].sort());
-    expect(warned.every(({ kind }) => kind === 'inactivity_warning')).toBe(true);
-    expect(warned[0]).toMatchObject({ at: now, dueAt });
+    expect(emailed.map(({ to }) => to).sort()).toEqual(
+      [atCutoff.email, neverSignedIn.email].sort(),
+    );
+    expect(emailed.every((notice) => notice.kind === 'inactivity_warning')).toBe(true);
+    expect(emailed[0]).toMatchObject({ dueAt });
 
-    sent = [];
     await retentionWith().warnInactiveAccounts(now);
-    expect(sent.filter(({ to }) => to === atCutoff.email)).toEqual([]);
+    expect(await warningsTo([atCutoff])).toHaveLength(1);
     expect(await events(atCutoff.accountId, 'deletion_requested')).toHaveLength(1);
   });
 

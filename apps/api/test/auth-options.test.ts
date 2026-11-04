@@ -5,6 +5,7 @@ import { ownerCode } from '../src/auth/enrollment.js';
 import { registrationHooks } from '../src/auth/registration.js';
 import type { Logger } from '@arca/telemetry';
 import { allowAll } from './limits.js';
+import { quietNotifier } from './notifications.js';
 
 const lines: unknown[] = [];
 const logger: Logger = { info: (entry) => lines.push(entry), error: (entry) => lines.push(entry) };
@@ -18,7 +19,7 @@ const auth = createAuth({
   origin: 'https://preview.example.com',
   logger,
   audit,
-  notices: { send: () => Promise.resolve() },
+  notifier: quietNotifier,
   limiter: allowAll,
 });
 

@@ -37,7 +37,7 @@ import {
   type DeletionReason,
 } from '@arca/api-contract/routes';
 import type { AuditLog } from '../audit/log.js';
-import type { Notices } from '../email/notices.js';
+import type { Notifier } from '../notification/notifier.js';
 import type { Logger } from '@arca/telemetry';
 import { describeDevice } from './device.js';
 import { signInFailedLog } from './limits.js';
@@ -54,8 +54,8 @@ export interface AuthSettings {
   readonly logger: Logger;
   /** Every sign-in is recorded (spec 0003, R7). */
   readonly audit: AuditLog;
-  /** Security notices by email, such as a sign-in from a new browser (spec 0003, R7). */
-  readonly notices: Notices;
+  /** Security notices, such as a sign-in from a new browser (spec 0003, R7). */
+  readonly notifier: Notifier;
   /** Spaces out the failed sign-in events of one credential (spec 0003, R7 and R10). */
   readonly limiter: Pick<RateLimiter, 'hit'>;
   /** Passkey-first registration's callbacks, which share the adapter's transactions. */
@@ -104,7 +104,7 @@ export function createAuth({
   origin,
   logger,
   audit,
-  notices,
+  notifier,
   limiter,
   registration,
 }: AuthSettings) {
@@ -328,15 +328,12 @@ export function createAuth({
   }
 
   async function noticeSignIn(session: Record<string, unknown> & { userId: string }) {
-    const email = await accounts.emailOf(db, session.userId);
-    if (email === undefined) return;
     await noticeNewSignIn(
-      { db, notices },
+      { db, notifier },
       {
+        accountId: session.userId,
         credentialId: String(session['credentialId']),
         device: describeSession(session),
-        email,
-        at: new Date(),
       },
     );
   }

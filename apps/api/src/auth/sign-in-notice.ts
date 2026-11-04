@@ -1,7 +1,7 @@
 import type { DeviceDescription } from '@arca/api-contract/routes';
 import type { Database } from '@arca/db';
 import { sql } from 'drizzle-orm';
-import type { Notices } from '../email/notices.js';
+import type { Notifier } from '../notification/notifier.js';
 
 /**
  * Records the families a passkey signed in from and reports whether this sign-in is from a
@@ -30,17 +30,16 @@ export async function recordPasskeyClient(
 
 /** After a passkey sign-in: one notice for a new browser or system family, none for a repeat. */
 export async function noticeNewSignIn(
-  { db, notices }: { readonly db: Database; readonly notices: Notices },
+  { db, notifier }: { readonly db: Database; readonly notifier: Notifier },
   sign: {
+    readonly accountId: string;
     readonly credentialId: string;
     readonly device: DeviceDescription;
-    readonly email: string;
-    readonly at: Date;
   },
 ): Promise<void> {
   if (!(await recordPasskeyClient(db, sign.credentialId, sign.device))) return;
   try {
-    await notices.send({ kind: 'new_sign_in', to: sign.email, at: sign.at, device: sign.device });
+    await notifier.notify(sign.accountId, { kind: 'new_sign_in', device: sign.device });
   } catch (error) {
     // Forgotten again, so the next sign-in from this family retries the notice.
     await db.execute(sql`

@@ -6,9 +6,9 @@ import { credentialStore } from '../../src/auth/auth.js';
 import { createDevices, type Devices } from '../../src/auth/devices.js';
 import type { SignedIn } from '../../src/auth/service.js';
 import { createStepUp, type StepUpService } from '../../src/auth/step-up.js';
-import type { Notice } from '../../src/email/notices.js';
 import { softwarePasskey, type SoftwarePasskey } from '../software-passkey.js';
 import { accountFixtures, type Account, type Key } from './accounts.js';
+import { recordingNotifier } from '../notifications.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
 
 // The device list and its revocations on the real migrations and the app_auth pool (spec 0003,
@@ -22,8 +22,7 @@ let testDatabase: AuthTestDatabase;
 let fixtures: ReturnType<typeof accountFixtures>;
 let devices: Devices;
 let stepUp: StepUpService;
-const sent: Notice[] = [];
-let noticesFail = false;
+const notified = recordingNotifier();
 const logged: string[] = [];
 
 beforeAll(async () => {
@@ -34,13 +33,7 @@ beforeAll(async () => {
   devices = createDevices({
     db: authDb,
     audit,
-    notices: {
-      send: (notice) => {
-        if (noticesFail) return Promise.reject(new Error('the sender is down'));
-        sent.push(notice);
-        return Promise.resolve();
-      },
-    },
+    notifier: notified.notifier,
     logger: {
       info: () => undefined,
       error: ({ errorName }) => {
@@ -67,8 +60,7 @@ const session = (...args: Parameters<typeof fixtures.session>) => fixtures.sessi
 const events = (owner: Account, codes = ['passkey_revoked', 'session_revoked']) =>
   fixtures.events(owner, codes);
 
-const noticesTo = (owner: Account) =>
-  sent.filter(({ to }) => to === owner.email).map(({ kind }) => kind);
+const noticesTo = (owner: Account) => notified.to(owner.accountId);
 
 /** A verified step-up of this purpose for this session, signed by the key. */
 async function verifiedStepUp(signedIn: SignedIn, key: Key, request: StepUpOptionsRequest) {
@@ -215,11 +207,11 @@ describe('revoking a passkey (spec 0003, R4)', () => {
     const owner = await account();
     const [older, newer] = owner.keys as [Key, Key];
     const current = await session(owner, newer);
-    noticesFail = true;
+    notified.failing = true;
     try {
       expect(await devices.revokePasskey(current, older.id, noVault)).toBe('revoked');
     } finally {
-      noticesFail = false;
+      notified.failing = false;
     }
     expect(
       await fixtures.count('SELECT count(*)::int AS n FROM auth.passkey WHERE user_id = $1', [

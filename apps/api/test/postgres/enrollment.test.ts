@@ -18,6 +18,7 @@ import { outboxSender, readOutbox } from '../../src/email/outbox.js';
 import { cookiesFrom } from '../cookies.js';
 import { allowAll } from '../limits.js';
 import { softwarePasskey, type SoftwarePasskey } from '../software-passkey.js';
+import { deliveringNotifier } from './notification-delivery.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
 
 // Owner enrollment, registration and the recovery kit on the real migrations, from an empty
@@ -37,14 +38,14 @@ beforeAll(async () => {
   const { authDb, auditDb, apiDb } = testDatabase;
   const i18n = await createI18n();
   const email = outboxSender(authDb, 'preview');
-  const notices = createNotices({ email, i18n, origin });
+  const notifier = deliveringNotifier(testDatabase, createNotices({ email, i18n, origin }));
   const audit = auditLog(auditDb);
   const matching = ownerCode(codeHash);
   const invites = createInvites({
     db: authDb,
     audit,
     email,
-    notices,
+    notifier,
     i18n,
     origin,
     logger: silentLogger,
@@ -60,7 +61,7 @@ beforeAll(async () => {
     origin,
     logger: silentLogger,
     audit,
-    notices,
+    notifier,
     limiter: allowAll,
     registration: hooks,
   });
@@ -80,7 +81,7 @@ beforeAll(async () => {
     }),
     enrollment: createEnrollment({ db: authDb, email, i18n, origin, ownerCode: matching }),
     registration: registration(auth, hooks, matching, silentLogger, invites.accepted),
-    recoveryKits: recoveryKits({ db: authDb, audit, notices, logger: silentLogger }),
+    recoveryKits: recoveryKits({ db: authDb, audit, notifier, logger: silentLogger }),
     invites,
     audit: auditReader(apiDb),
   });
