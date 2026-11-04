@@ -1,0 +1,76 @@
+name: knowledge-staleness
+
+# Spec 0002, R9: every week, list the knowledge sources verified more than 90 days ago and keep one
+# open issue, labeled knowledge-staleness, up to date. The report holds identifiers only. The first
+# job reads the repository and runs the report; the second, with no checkout and no install, posts
+# the report it receives as an artifact.
+on:
+  schedule:
+    - cron: '23 7 * * 1'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: knowledge-staleness
+  cancel-in-progress: false
+
+env:
+  TURBO_TELEMETRY_DISABLED: '1'
+  DO_NOT_TRACK: '1'
+
+jobs:
+  report:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo run build --filter=@arca/domain
+      - run: node packages/knowledge/scripts/staleness-report.ts > staleness-report.md
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: staleness-report
+          path: staleness-report.md
+          retention-days: 7
+          if-no-files-found: error
+
+  post:
+    needs: report
+    # A manual run from another branch would post that branch's knowledge base.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: staleness-report
+      - name: Update the staleness issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh label create knowledge-staleness --force \
+            --color c5def5 --description 'Weekly knowledge staleness report (spec 0002, R9)'
+          # The label alone finds the issue, and only one this workflow opened counts.
+          number=$(gh issue list --label knowledge-staleness --state open --limit 100 \
+            --json number,author \
+            --jq '[.[] | select(.author.login == "app/github-actions")][0].number // empty')
+          if [ -z "$number" ]; then
+            url=$(gh issue create --title 'Knowledge staleness report' \
+              --label knowledge-staleness --body-file staleness-report.md)
+            number=${url##*/}
+          fi
+          [[ "$number" =~ ^[0-9]+$ ]] || { echo 'Unexpected issue number' >&2; exit 1; }
+          gh issue edit "$number" --body-file staleness-report.md
+          if [ "$(gh api "repos/$GH_REPO/issues/$number" --jq .locked)" != true ]; then
+            gh api -X PUT "repos/$GH_REPO/issues/$number/lock" --silent
+          fi
