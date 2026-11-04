@@ -1,7 +1,13 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { Notice, Notices } from '../../src/email/notices.js';
+import { auditLog } from '../../src/audit/log.js';
+import {
+  createNotificationChannels,
+  type NotificationChannels,
+} from '../../src/notification/channels.js';
 import { createDelivery, deliverNow, type Delivery } from '../../src/notification/delivery.js';
+import type { PushOutcome, PushPayload, PushSender } from '../../src/notification/push.js';
 import { createNotifier, type Notifier } from '../../src/notification/notifier.js';
 import { authTestDatabase, type AuthTestDatabase } from './auth-database.js';
 
@@ -162,5 +168,134 @@ describe('notifications (spec 0005, R7)', () => {
   it('refuses an account ID that is not a UUID, before any SQL', async () => {
     await expect(notifier.notify('not-a-uuid', { kind: 'passkey_added' })).rejects.toThrow();
     expect(started).toEqual([]);
+  });
+});
+
+const subscription = (n: number) => ({
+  endpoint: `https://fcm.googleapis.com/fcm/send/synthetic-${String(n)}`,
+  p256dh: `B${'C'.repeat(86)}`,
+  auth: 'D'.repeat(22),
+  device: { browser: 'chrome' as const, os: 'android' as const },
+});
+
+const auditOf = (accountId: string) =>
+  admin<{ code: string; details: object }>(
+    `SELECT code, details FROM audit.event WHERE subject_account_id = $1 ORDER BY time`,
+    [accountId],
+  );
+
+describe('push channels (spec 0005, R7)', () => {
+  let channels: NotificationChannels;
+  beforeAll(() => {
+    channels = createNotificationChannels({
+      db: testDatabase.apiDb,
+      audit: auditLog(testDatabase.auditDb),
+    });
+  });
+
+  it('adds a subscription once, as app_api under the identity, and audits it', async () => {
+    const { accountId } = await account();
+    const channelId = await channels.addPush(accountId, subscription(1));
+    expect(await channels.addPush(accountId, subscription(1))).toBe(channelId);
+    expect(await channels.list(accountId)).toEqual([
+      {
+        id: channelId,
+        kind: 'web_push',
+        browser: 'chrome',
+        os: 'android',
+        createdAt: expect.any(String) as string,
+        lastSuccessAt: null,
+      },
+    ]);
+    expect(await auditOf(accountId)).toEqual([
+      { code: 'notification_channel_added', details: { channelId } },
+    ]);
+  });
+
+  it('replaces the channel of an endpoint whose keys were renewed', async () => {
+    const { accountId } = await account();
+    const first = await channels.addPush(accountId, subscription(2));
+    const renewed = await channels.addPush(accountId, { ...subscription(2), auth: 'E'.repeat(22) });
+    expect(renewed).not.toBe(first);
+    expect((await channels.list(accountId)).map(({ id }) => id)).toEqual([renewed]);
+  });
+
+  it("removes the account's push channel with its deliveries, never the email channel or another's", async () => {
+    const owner = await account();
+    const other = await account();
+    const channelId = await channels.addPush(owner.accountId, subscription(3));
+    const messageId = await notified(owner.accountId, { kind: 'passkey_added' });
+    await deliverNow(
+      createDelivery({ ...pools(), push: answering('delivered') }),
+      owner.accountId,
+      messageId,
+    );
+    const [email] = (await channels.list(owner.accountId)).filter(({ kind }) => kind === 'email');
+
+    expect(await channels.removePush(other.accountId, channelId)).toBe(false);
+    expect(await channels.removePush(owner.accountId, email?.id ?? '')).toBe(false);
+    expect(await channels.removePush(owner.accountId, channelId)).toBe(true);
+
+    expect((await channels.list(owner.accountId)).map(({ kind }) => kind)).toEqual(['email']);
+    expect(await deliveriesOf(messageId)).toEqual([{ channel_id: email?.id }]);
+    expect((await auditOf(owner.accountId)).map(({ code }) => code)).toEqual([
+      'notification_channel_added',
+      'notification_channel_removed',
+    ]);
+  });
+});
+
+const pools = () => ({ jobsDb: testDatabase.jobsDb, authDb: testDatabase.authDb, notices });
+
+function answering(outcome: PushOutcome) {
+  const pushed: PushPayload[] = [];
+  const sender: PushSender & { pushed: PushPayload[] } = {
+    pushed,
+    send: (_subscription, payload) => {
+      pushed.push(payload);
+      return Promise.resolve(outcome);
+    },
+  };
+  return sender;
+}
+
+describe('push delivery (spec 0005, R7)', () => {
+  const pushChannel = async (accountId: string, n: number) =>
+    createNotificationChannels({
+      db: testDatabase.apiDb,
+      audit: auditLog(testDatabase.auditDb),
+    }).addPush(accountId, subscription(n));
+
+  it('pushes the code and the message ID, and email gets its notice too', async () => {
+    const { accountId } = await account();
+    const channelId = await pushChannel(accountId, 10);
+    const messageId = await notified(accountId, { kind: 'recovery_completed' });
+    const push = answering('delivered');
+    await deliverNow(createDelivery({ ...pools(), push }), accountId, messageId);
+    expect(push.pushed).toEqual([{ code: 'recovery_completed', id: messageId }]);
+    expect(sent.map(({ kind }) => kind)).toEqual(['recovery_completed']);
+    expect(await deliveriesOf(messageId)).toHaveLength(2);
+    const [channel] = await admin<{ last: Date | null }>(
+      `SELECT last_success_at AS last FROM notification.channel WHERE id = $1`,
+      [channelId],
+    );
+    expect(channel?.last).toBeInstanceOf(Date);
+  });
+
+  it('deletes a channel the push service reports gone, recording nothing for it', async () => {
+    const { accountId } = await account();
+    const channelId = await pushChannel(accountId, 11);
+    const messageId = await notified(accountId, { kind: 'passkey_revoked' });
+    await deliverNow(createDelivery({ ...pools(), push: answering('gone') }), accountId, messageId);
+    expect(await admin(`SELECT FROM notification.channel WHERE id = $1`, [channelId])).toEqual([]);
+    expect(await deliveriesOf(messageId)).toHaveLength(1);
+  });
+
+  it('leaves push channels pending where the environment has no VAPID key', async () => {
+    const { accountId } = await account();
+    const channelId = await pushChannel(accountId, 12);
+    const messageId = await notified(accountId, { kind: 'passkey_revoked' });
+    await deliverNow(createDelivery(pools()), accountId, messageId);
+    expect(await delivery.pendingChannels(accountId, messageId)).toEqual([channelId]);
   });
 });

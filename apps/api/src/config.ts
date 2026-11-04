@@ -131,6 +131,11 @@ export function readResendKey(): string | undefined {
   return key !== undefined && resendKeyPattern.test(key) ? key : undefined;
 }
 
+/** The environment's VAPID private key as a JWK, a Sensitive variable (spec 0005, R7). */
+export function readVapidPrivateKey(): string | undefined {
+  return process.env['ARCA_VAPID_PRIVATE_KEY']?.trim();
+}
+
 /**
  * Keys the HMACs of the rate-limit counters (spec 0003, R10). Only the environment holds it, so
  * the database never holds anything that recovers an address; rotating it resets the counters.

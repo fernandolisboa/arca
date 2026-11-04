@@ -29,6 +29,7 @@ import {
   readEnrollmentCodeHash,
   readOwnOrigin,
   readRateLimitKey,
+  readVapidPrivateKey,
 } from './config.js';
 import { apiDatabase, auditDatabase, authDatabase } from './database.js';
 import {
@@ -38,7 +39,9 @@ import {
   outboxReaderFor,
 } from './email/environment.js';
 import { stdoutLogger } from './logger.js';
+import { createNotificationChannels } from './notification/channels.js';
 import { createNotifier } from './notification/notifier.js';
+import { vapidKeysFor } from './notification/vapid.js';
 import { monitorRequests, sendToSentry, startMonitoring, tunnelFor } from './monitoring.js';
 import { enforceRetention } from './workflows/enforce-retention.js';
 import { eraseAccount } from './workflows/erase-account.js';
@@ -189,6 +192,14 @@ async function vaultService() {
   });
 }
 
+/** The account's channels on the app_api pool, audited on app_audit. */
+async function notificationChannels() {
+  const { audit } = await authParts();
+  return createNotificationChannels({ db: connected().db, audit });
+}
+
+const pushKey = vapidKeysFor(environment, readVapidPrivateKey())?.publicKey ?? null;
+
 /**
  * Read once at load, but a missing setting only refuses state-changing requests (the auth routes
  * then fail and log it), so `GET /v1/health` and the static shell keep answering.
@@ -313,6 +324,16 @@ const app = createApp({
     resealRecovery: (accountId, request) =>
       vaultService().then((vault) => vault.resealRecovery(accountId, request)),
     reset: (accountId) => vaultService().then((vault) => vault.reset(accountId)),
+  },
+  notifications: {
+    channels: {
+      list: (accountId) => notificationChannels().then((channels) => channels.list(accountId)),
+      addPush: (accountId, subscription) =>
+        notificationChannels().then((channels) => channels.addPush(accountId, subscription)),
+      removePush: (accountId, channelId) =>
+        notificationChannels().then((channels) => channels.removePush(accountId, channelId)),
+    },
+    pushKey,
   },
   ...(outbox === undefined ? {} : { outbox }),
   ...(tunnel === undefined ? {} : { tunnel }),

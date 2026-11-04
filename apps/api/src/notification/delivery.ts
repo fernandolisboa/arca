@@ -2,7 +2,8 @@ import { withIdentity, type Database, type Transaction } from '@arca/db';
 import { sql } from 'drizzle-orm';
 import { accounts } from '../auth/auth.js';
 import type { Notices } from '../email/notices.js';
-import { noticeOf } from './notification.js';
+import { checkedCode, noticeOf } from './notification.js';
+import type { PushSender } from './push.js';
 
 /** The steps of `deliverNotification` (spec 0005, R7), each under the account's identity. */
 export interface Delivery {
@@ -18,9 +19,21 @@ export interface DeliveryDependencies {
   /** The app_auth pool, where the address stays. */
   readonly authDb: Database;
   readonly notices: Notices;
+  /** Absent where the environment has no VAPID key: push channels then wait, undelivered. */
+  readonly push?: PushSender;
 }
 
-export function createDelivery({ jobsDb, authDb, notices }: DeliveryDependencies): Delivery {
+interface PendingRow {
+  code: string;
+  details: unknown;
+  created_at: Date;
+  kind: 'email' | 'web_push';
+  endpoint: string | null;
+  p256dh: string | null;
+  auth_secret: string | null;
+}
+
+export function createDelivery({ jobsDb, authDb, notices, push }: DeliveryDependencies): Delivery {
   const asAccount = <T>(accountId: string, work: (tx: Transaction) => Promise<T>) =>
     withIdentity(jobsDb, { accountId }, work);
 
@@ -47,8 +60,8 @@ export function createDelivery({ jobsDb, authDb, notices }: DeliveryDependencies
     async deliver(accountId, messageId, channelId) {
       const [pending] = (
         await asAccount(accountId, (tx) =>
-          tx.execute<{ code: string; details: unknown; created_at: Date; kind: string }>(sql`
-            SELECT m.code, m.details, m.created_at, c.kind
+          tx.execute<PendingRow>(sql`
+            SELECT m.code, m.details, m.created_at, c.kind, c.endpoint, c.p256dh, c.auth_secret
               FROM notification.message m
               JOIN notification.channel c ON c.id = ${channelId} AND c.account_id = m.account_id
              WHERE m.id = ${messageId}
@@ -57,11 +70,26 @@ export function createDelivery({ jobsDb, authDb, notices }: DeliveryDependencies
                   WHERE d.message_id = m.id AND d.channel_id = c.id)`),
         )
       ).rows;
-      // Web push channels are delivered once the push sender lands.
-      if (pending?.kind !== 'email') return;
-      const to = await accounts.emailOf(authDb, accountId);
-      if (to === undefined) return;
-      await notices.send(noticeOf(pending, to, new Date(pending.created_at)));
+      if (pending === undefined) return;
+      if (pending.kind === 'email') {
+        const to = await accounts.emailOf(authDb, accountId);
+        if (to === undefined) return;
+        await notices.send(noticeOf(pending, to, new Date(pending.created_at)));
+      } else {
+        if (push === undefined) return;
+        const { endpoint, p256dh, auth_secret: authSecret } = pending;
+        if (endpoint === null || p256dh === null || authSecret === null) return;
+        const outcome = await push.send(
+          { endpoint, p256dh, authSecret },
+          { code: checkedCode(pending), id: messageId },
+        );
+        if (outcome === 'gone') {
+          await asAccount(accountId, (tx) =>
+            tx.execute(sql`DELETE FROM notification.channel WHERE id = ${channelId}`),
+          );
+          return;
+        }
+      }
       // A send whose record fails is sent again on the retry: at least once, never lost.
       await asAccount(accountId, async (tx) => {
         await tx.execute(sql`

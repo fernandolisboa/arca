@@ -29,6 +29,7 @@
     "@arca/knowledge": "workspace:*",
     "@arca/telemetry": "workspace:*",
     "@better-auth/passkey": "catalog:",
+    "@block65/webcrypto-web-push": "catalog:",
     "@hono/zod-openapi": "catalog:",
     "@sentry/hono": "catalog:",
     "@sentry/node": "catalog:",
