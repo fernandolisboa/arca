@@ -298,9 +298,8 @@ export function createApp({
     if (auth === undefined) return { current: null, status: null };
     const current = await auth.signedIn(headers);
     if (current === null || devices === undefined) return { current, status: null };
-    const status = await devices.status(current.accountId);
-    // A recovery passkey's activation ends the sessions it restricted, maybe this one.
-    return { current: status.sessionsEnded ? await auth.signedIn(headers) : current, status };
+    const status = await devices.status(current.accountId, current.sessionId);
+    return { current: status.sessionEnded ? null : current, status };
   };
   const sessionOf = (c: Context<AppEnv>) => {
     let found = c.get('session');
@@ -372,7 +371,8 @@ export function createApp({
   /**
    * While a recovery passkey waits, a session of its account may only show so and cancel it
    * from the device list (spec 0003, R6); every other route answers 403 `recovery_pending`.
-   * The recovery routes never read a session, so a cookie this browser still holds is no matter.
+   * Signing in and out stay open, so a shared device can still change hands; the recovery routes
+   * never read a session, so a cookie this browser still holds does not matter.
    */
   const whileRecoveryPending = new Set(
     [
@@ -385,6 +385,7 @@ export function createApp({
       openApiRoutes.recoveryRedeem,
       openApiRoutes.recoveryOptions,
       openApiRoutes.recoveryVerify,
+      ...authRoutes,
     ].map(({ method, path }) => `${method.toUpperCase()} ${apiBasePath}${path}`),
   );
   const restrictWhileRecoveryPending = createMiddleware<AppEnv>(async (c, next) => {
@@ -640,7 +641,7 @@ export function createApp({
     if (limited !== undefined) return limited;
     const { token, code } = recoveryRedeem.body.parse(await c.req.json());
     const outcome = await recovery.redeem(token, code);
-    if (outcome.ok) return c.json({ code: outcome.code }, 200);
+    if (outcome.ok) return c.json({ code: outcome.code, token: outcome.token }, 200);
     if (outcome.reason === 'not_found') return fail(c, 'not_found', 404);
     return fail(c, outcome.reason === 'locked' ? 'recovery_locked' : 'invalid_code', 403);
   });

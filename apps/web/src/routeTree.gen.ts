@@ -14,6 +14,7 @@ import { Route as DevicesRouteImport } from './routes/devices'
 import { Route as EnrollRouteImport } from './routes/enroll'
 import { Route as InviteRouteImport } from './routes/invite'
 import { Route as InvitesRouteImport } from './routes/invites'
+import { Route as RecoverRouteImport } from './routes/recover'
 import { Route as RecoveryKitRouteImport } from './routes/recovery-kit'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SignInRouteImport } from './routes/sign-in'
@@ -43,6 +44,11 @@ const InvitesRoute = InvitesRouteImport.update({
   path: '/invites',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecoverRoute = RecoverRouteImport.update({
+  id: '/recover',
+  path: '/recover',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RecoveryKitRoute = RecoveryKitRouteImport.update({
   id: '/recovery-kit',
   path: '/recovery-kit',
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/enroll': typeof EnrollRoute
   '/invite': typeof InviteRoute
   '/invites': typeof InvitesRoute
+  '/recover': typeof RecoverRoute
   '/recovery-kit': typeof RecoveryKitRoute
   '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/enroll': typeof EnrollRoute
   '/invite': typeof InviteRoute
   '/invites': typeof InvitesRoute
+  '/recover': typeof RecoverRoute
   '/recovery-kit': typeof RecoveryKitRoute
   '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/enroll': typeof EnrollRoute
   '/invite': typeof InviteRoute
   '/invites': typeof InvitesRoute
+  '/recover': typeof RecoverRoute
   '/recovery-kit': typeof RecoveryKitRoute
   '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/enroll'
     | '/invite'
     | '/invites'
+    | '/recover'
     | '/recovery-kit'
     | '/settings'
     | '/sign-in'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/enroll'
     | '/invite'
     | '/invites'
+    | '/recover'
     | '/recovery-kit'
     | '/settings'
     | '/sign-in'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/enroll'
     | '/invite'
     | '/invites'
+    | '/recover'
     | '/recovery-kit'
     | '/settings'
     | '/sign-in'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   EnrollRoute: typeof EnrollRoute
   InviteRoute: typeof InviteRoute
   InvitesRoute: typeof InvitesRoute
+  RecoverRoute: typeof RecoverRoute
   RecoveryKitRoute: typeof RecoveryKitRoute
   SettingsRoute: typeof SettingsRoute
   SignInRoute: typeof SignInRoute
@@ -171,6 +184,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InvitesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/recover': {
+      id: '/recover'
+      path: '/recover'
+      fullPath: '/recover'
+      preLoaderRoute: typeof RecoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/recovery-kit': {
       id: '/recovery-kit'
       path: '/recovery-kit'
@@ -201,6 +221,7 @@ const rootRouteChildren: RootRouteChildren = {
   EnrollRoute: EnrollRoute,
   InviteRoute: InviteRoute,
   InvitesRoute: InvitesRoute,
+  RecoverRoute: RecoverRoute,
   RecoveryKitRoute: RecoveryKitRoute,
   SettingsRoute: SettingsRoute,
   SignInRoute: SignInRoute,

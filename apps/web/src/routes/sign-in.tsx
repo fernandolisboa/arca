@@ -1,11 +1,12 @@
 import { pendingPasskeyHours } from '@arca/api-contract/client';
 import { Button } from '@arca/ui';
 import { useQueryClient } from '@tanstack/react-query';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { resetAccount } from '../api.js';
 import { TextField } from '../forms/text-field.js';
+import { textLinkClass } from '../forms/text-link.js';
 import { passkeys } from '../platform.js';
 import { failureOf, signInWithPasskey, type SignInFailure } from '../sign-in.js';
 
@@ -132,6 +133,12 @@ function SignIn() {
         {message}
       </p>
       <p className="text-small text-muted">{t('signIn.inviteOnly')}</p>
+      <div className="flex flex-col gap-1">
+        <p className="text-small text-muted">{t('signIn.lostAccess')}</p>
+        <Link to="/recover" className={textLinkClass}>
+          {t('signIn.recover')}
+        </Link>
+      </div>
     </section>
   );
 }

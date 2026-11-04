@@ -8,11 +8,12 @@ import {
 import type { Database, Transaction } from '@arca/db';
 import { recoveryCode, recoveryLink, recoveryLock } from '@arca/db/enrollment-schema';
 import type { I18n } from '@arca/i18n';
-import { and, eq, gt, isNotNull, lte, or, sql } from 'drizzle-orm';
+import { and, eq, gt, isNotNull, isNull, lte, or, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import type { EmailMessage, EmailSender } from '../email/email.js';
-import type { NoticeKind, Notices } from '../email/notices.js';
+import type { Notices } from '../email/notices.js';
 import type { Logger } from '../logger.js';
+import { accountNotice } from './account-notices.js';
 import { accounts, devices } from './auth.js';
 import type { AccountStatus } from './devices.js';
 import { sha256 } from './enrollment.js';
@@ -49,7 +50,7 @@ export function recoveryMessage(
 }
 
 export type RedeemOutcome =
-  | { readonly ok: true; readonly code: string }
+  | { readonly ok: true; readonly code: string; readonly token: string }
   | { readonly ok: false; readonly reason: 'not_found' | 'invalid_code' | 'locked' };
 
 export type RecoveryRegistration = 'registered' | 'refused' | 'not_found';
@@ -122,18 +123,7 @@ export function createRecovery({
     });
   };
 
-  /** A notice that fails to send never undoes the change; the failure is logged. */
-  async function notify(
-    accountId: string,
-    kind: Extract<NoticeKind, 'recovery_started' | 'recovery_completed' | 'recovery_locked'>,
-  ) {
-    try {
-      const to = await accounts.emailOf(db, accountId);
-      if (to !== undefined) await notices.send({ kind, to, at: new Date() });
-    } catch (error) {
-      logged('RecoveryNotice')(error);
-    }
-  }
+  const notify = accountNotice({ db, notices, logger, label: 'RecoveryNotice' });
 
   /**
    * Open when the account has a code that counts, is not locked, no redeemed link is live and no
@@ -168,27 +158,43 @@ export function createRecovery({
     const accountId = await accounts.idOf(db, address);
     if (accountId === undefined || !(await open(accountId))) return;
     const token = random(32).toString('base64url');
-    await db.transaction(async (tx) => {
-      // One link per account: a new one replaces any earlier link or open context, and expired
-      // links of every account go with it, so the table stays bounded.
+    const issued = await db.transaction(async (tx) => {
+      // One link per account: a new one replaces an earlier link whose code was not accepted,
+      // and expired links of every account go with it, so the table stays bounded. A context
+      // redeemed meanwhile stays, and its account's unique row refuses the new link.
       await tx
         .delete(recoveryLink)
-        .where(or(eq(recoveryLink.accountId, accountId), lte(recoveryLink.expiresAt, sql`now()`)));
-      await tx.insert(recoveryLink).values({ tokenHash: sha256(token), accountId });
+        .where(
+          or(
+            and(eq(recoveryLink.accountId, accountId), isNull(recoveryLink.redeemedAt)),
+            lte(recoveryLink.expiresAt, sql`now()`),
+          ),
+        );
+      const inserted = await tx
+        .insert(recoveryLink)
+        .values({
+          tokenHash: sha256(token),
+          accountId,
+          expiresAt: sql`now() + make_interval(mins => ${recoveryLinkMinutes})`,
+        })
+        .onConflictDoNothing({ target: recoveryLink.accountId })
+        .returning({ accountId: recoveryLink.accountId });
+      if (inserted.length === 0) return false;
       await audit.record({
         code: 'recovery_started',
         subjectAccountId: accountId,
         actorAccountId: null,
         details: {},
       });
+      return true;
     });
+    if (!issued) return;
     await email.send(recoveryMessage(i18n, origin, address, token));
     await notify(accountId, 'recovery_started');
   }
 
   /** One wrong code; the last allowed one locks recovery and ends the link. */
   async function refuse(tx: Transaction, accountId: string, tokenHash: Buffer) {
-    await tx.insert(recoveryLock).values({ accountId }).onConflictDoNothing();
     const [counted] = await tx
       .update(recoveryLock)
       .set({ failures: sql`${recoveryLock.failures} + 1` })
@@ -264,15 +270,18 @@ export function createRecovery({
           .insert(recoveryCode)
           .values({ accountId, ...row })
           .onConflictDoUpdate({ target: recoveryCode.accountId, set: row });
+        // A new token replaces the emailed one, so whoever else reads the inbox cannot finish
+        // the recovery this page opened.
+        const registration = random(32).toString('base64url');
         await tx
           .update(recoveryLink)
-          .set({ redeemedAt: sql`now()` })
+          .set({ tokenHash: sha256(registration), redeemedAt: sql`now()` })
           .where(eq(recoveryLink.tokenHash, tokenHash));
         await tx
           .update(recoveryLock)
           .set({ failures: 0 })
           .where(eq(recoveryLock.accountId, accountId));
-        return { ok: true, code: issued };
+        return { ok: true, code: issued, token: registration };
       });
       // Only the code that locks recovery reaches here as locked with the account known: a
       // locked account's link is gone, so later attempts answer not_found.
@@ -343,7 +352,7 @@ export function createRecovery({
         await tx.delete(recoveryLink).where(eq(recoveryLink.tokenHash, tokenHash));
         await tx
           .update(recoveryCode)
-          .set({ provisionalUntil: null })
+          .set({ provisionalUntil: null, confirmedAt: sql`now()` })
           .where(eq(recoveryCode.accountId, accountId));
         await audit.record({
           code: 'passkey_added',

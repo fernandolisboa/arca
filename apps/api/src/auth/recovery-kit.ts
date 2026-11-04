@@ -6,6 +6,7 @@ import { and, eq, gt, isNull, or, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import type { Notices } from '../email/notices.js';
 import type { Logger } from '../logger.js';
+import { accountNotice } from './account-notices.js';
 import { accounts } from './auth.js';
 
 const crockford = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
@@ -66,6 +67,7 @@ export function recoveryKits({
   logger,
   random = randomBytes,
 }: RecoveryKitSettings): RecoveryKits {
+  const notify = accountNotice({ db, notices, logger, label: 'RecoveryKitNotice' });
   const draw = () => {
     const code = crockfordBase32(random(16));
     const salt = random(16);
@@ -106,24 +108,14 @@ export function recoveryKits({
           target: recoveryCode.accountId,
           set: { ...row, createdAt: sql`now()`, confirmedAt: null, provisionalUntil: null },
         });
-      // A notice that fails to send never undoes the new kit; the failure is logged.
-      try {
-        const to = await accounts.emailOf(db, accountId);
-        if (to !== undefined) {
-          await notices.send({ kind: 'recovery_kit_regenerated', to, at: new Date() });
-        }
-      } catch (error) {
-        logger.error({
-          errorName: `RecoveryKitNotice:${error instanceof Error ? error.name : 'NonErrorThrown'}`,
-        });
-      }
+      await notify(accountId, 'recovery_kit_regenerated');
       return code;
     },
     confirm: async (accountId) => {
       const [kit] = await db
         .update(recoveryCode)
         .set({ confirmedAt: sql`coalesce(${recoveryCode.confirmedAt}, now())` })
-        .where(eq(recoveryCode.accountId, accountId))
+        .where(and(eq(recoveryCode.accountId, accountId), codeCounts))
         .returning({ accountId: recoveryCode.accountId });
       return kit !== undefined;
     },

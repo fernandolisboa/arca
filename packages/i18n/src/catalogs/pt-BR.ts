@@ -124,6 +124,8 @@ export const ptBR = {
     failure:
       '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} refused {Essa chave de acesso não abriu nenhuma conta. Se você criou essa chave há menos de {hours} horas, espere ela passar a valer, ou tente com outra.} limited {Muitas tentativas de entrar por esta conexão. Espere um pouco e tente de novo.} unavailable {Este navegador não aceita chaves de acesso. Abra o Arca em um navegador atualizado, como Chrome, Safari, Edge ou Firefox.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
     inviteOnly: 'Ainda não tem conta? O Arca funciona só por convite. Peça um a quem já usa.',
+    lostAccess: 'Perdeu todas as suas chaves de acesso?',
+    recover: 'Recuperar a conta',
   },
   session: {
     signedIn: 'Você entrou como {email}.',
@@ -138,6 +140,9 @@ export const ptBR = {
     pendingPasskey:
       'Uma chave de acesso nova foi criada na sua conta. Ela passa a valer em {activeFrom}. Se não foi você, cancele agora.',
     pendingLink: 'Ver a chave nova',
+    recoveryPending:
+      'Alguém pediu a recuperação da sua conta e criou uma chave de acesso nova. Ela passa a valer em {activeFrom}, e aí este dispositivo é desconectado. Até lá, você só pode ver esse aviso e cancelar a recuperação. Se não foi você, cancele agora.',
+    recoveryLink: 'Cancelar a recuperação',
   },
   /** Creating the first account (spec 0003, R2): the owner's link request, then the passkey. */
   enroll: {
@@ -228,7 +233,7 @@ export const ptBR = {
       'Crie uma para entrar por outro celular ou computador. Ela só passa a valer {hours} horas depois: se alguém criar uma sem você saber, dá tempo de cancelar.',
     add: 'Adicionar chave de acesso',
     waiting: 'Confirme no seu dispositivo para continuar.',
-    done: '{done, select, added {Chave criada. Ela passa a valer daqui a {hours} horas.} sessionRevoked {Dispositivo desconectado.} passkeyRevoked {Chave removida. Os dispositivos que entraram com ela foram desconectados.} pendingCancelled {Chave nova cancelada.} othersRevoked {Os outros dispositivos foram desconectados.} other {}}',
+    done: '{done, select, added {Chave criada. Ela passa a valer daqui a {hours} horas.} sessionRevoked {Dispositivo desconectado.} passkeyRevoked {Chave removida. Os dispositivos que entraram com ela foram desconectados.} pendingCancelled {Chave nova cancelada.} recoveryCancelled {Recuperação cancelada. O código de recuperação deixou de valer, então gere um novo kit de recuperação.} othersRevoked {Os outros dispositivos foram desconectados.} other {}}',
     failure:
       '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} not_found {Isso não está mais na sua lista. Atualize a página.} last_active {Esta é a única chave que já vale na sua conta. Crie outra e espere ela valer antes de remover esta.} refused {Não deu para salvar a chave nova. Tente de novo.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
     listTitle: 'Suas chaves de acesso',
@@ -245,6 +250,11 @@ export const ptBR = {
     revokeSession: 'Desconectar este dispositivo',
     revokePasskey: 'Remover esta chave',
     cancelPending: 'Cancelar esta chave',
+    recoveryPasskey:
+      'Chave criada por uma recuperação de conta. Passa a valer em {activeFrom}. Se não foi você, cancele agora.',
+    cancelRecovery: 'Cancelar a recuperação',
+    restricted:
+      'Enquanto a recuperação da conta estiver pendente, você só pode cancelar a chave criada por ela.',
     revokeOthers: 'Desconectar todos os outros dispositivos',
   },
   /** The account part of the recovery kit (spec 0003, R6): shown once, printed or written down. */
@@ -272,6 +282,46 @@ export const ptBR = {
     signIn: 'Entre para ver o seu kit de recuperação.',
     failure:
       '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+  },
+  /** Account recovery (spec 0003, R6): the emailed link, the recovery code, the new passkey. */
+  recover: {
+    request: {
+      title: 'Recuperar a conta',
+      lead: 'Perdeu todas as suas chaves de acesso? Digite o email da sua conta. Vamos mandar um link que, junto com o seu código de recuperação, deixa você criar uma chave nova.',
+      email: 'Email',
+      submit: 'Enviar o link',
+      sending: 'Enviando…',
+      sent: 'Se esse email tiver uma conta no Arca, o link já está a caminho. Ele vale por {minutes} minutos.',
+      failure:
+        '{reason, select, email_unavailable {O Arca ainda não consegue mandar emails. Tente de novo mais tarde.} limited {Muitas tentativas por esta conexão. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+    },
+    code: {
+      title: 'Digite o seu código de recuperação',
+      lead: 'É o código do seu kit de recuperação, o que você imprimiu ou anotou. Pode digitar com ou sem espaços.',
+      label: 'Código de recuperação',
+      submit: 'Continuar',
+      checking: 'Conferindo o código…',
+      failure:
+        '{reason, select, expired {Este link não vale mais. Peça um novo.} invalid_code {Esse código não confere. Confira e tente de novo. Depois de alguns erros, a recuperação fica bloqueada por 24 horas.} locked {Muitos códigos errados. A recuperação desta conta ficou bloqueada por 24 horas.} limited {Muitas tentativas por esta conexão. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+    },
+    newLink: 'Pedir um novo link',
+    newCode: {
+      title: 'Seu novo código de recuperação',
+      lead: 'O código que você digitou acabou de ser usado e não vale mais. Guarde este novo antes de continuar: ele aparece uma vez só.',
+    },
+    passkey: {
+      title: 'Crie a sua chave de acesso nova',
+      lead: 'O seu celular ou computador vai pedir para salvar uma chave de acesso para o Arca. Ela só passa a valer {hours} horas depois. Até lá, avisamos os dispositivos que já estavam na sua conta, e eles podem cancelar se não foi você.',
+      submit: 'Criar chave de acesso',
+      waiting: 'Confirme no seu dispositivo para continuar.',
+      failure:
+        '{reason, select, expired {O tempo para criar a chave acabou, e o código novo deixou de valer. Se ainda tiver a conta aberta em algum dispositivo, gere um novo kit de recuperação por lá.} cancelled {Não deu para criar a chave de acesso. Tente de novo quando quiser.} refused {Não deu para salvar a chave nova. Tente de novo.} unavailable {Este navegador não aceita chaves de acesso. Abra o link em um navegador atualizado, como Chrome, Safari, Edge ou Firefox.} limited {Muitas tentativas por esta conexão. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+    },
+    done: {
+      title: 'Chave nova criada',
+      lead: 'Ela passa a valer daqui a {hours} horas. Depois disso, entre no Arca com ela. Os dispositivos que já estavam na sua conta ficam limitados até lá e depois são desconectados.',
+      signIn: 'Ir para a tela de entrar',
+    },
   },
   /** Coarse device families, as sessions record them (spec 0003, R4). */
   device: {

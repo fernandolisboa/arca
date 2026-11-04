@@ -4,34 +4,17 @@ import type { RateLimitRule } from '../src/auth/rate-limit.js';
 import type { Recovery, RecoveryRegistration, RedeemOutcome } from '../src/auth/recovery.js';
 import type { Logger } from '../src/logger.js';
 import { noLimits } from './limits.js';
+import { attestation, creationOptions } from './passkey-fixtures.js';
 
 const silentLogger: Logger = { info: () => undefined, error: () => undefined };
 const origin = 'http://arca.test';
 const token = Buffer.alloc(32, 7).toString('base64url');
 const code = '0123456789ABCDEFGHJKMNPQRS';
-const creationOptions = {
-  challenge: 'Y2hhbGxlbmdl',
-  rp: { id: 'arca.test', name: 'Arca' },
-  user: { id: 'dXNlcg', name: 'owner@example.com', displayName: 'owner@example.com' },
-  pubKeyCredParams: [{ type: 'public-key' as const, alg: -7 }],
-  authenticatorSelection: {
-    residentKey: 'required' as const,
-    requireResidentKey: true as const,
-    userVerification: 'required' as const,
-  },
-  extensions: { prf: {} },
-};
-const attestation = {
-  id: 'Y3JlZA',
-  rawId: 'Y3JlZA',
-  type: 'public-key',
-  response: { clientDataJSON: 'e30', attestationObject: 'oA' },
-  clientExtensionResults: { prf: { enabled: true } },
-};
+const registration = Buffer.alloc(32, 9).toString('base64url');
 
 function setup({
   started = 'accepted',
-  redeemed = { ok: true, code },
+  redeemed = { ok: true, code, token: registration },
   options = creationOptions,
   registered = 'registered',
   refusedRule,
@@ -137,7 +120,7 @@ describe('the recovery routes (spec 0003, R6)', () => {
     const { post, calls } = setup();
     const response = await post('redeem', { token, code: 'abc' });
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ code });
+    expect(await response.json()).toEqual({ code, token: registration });
     expect(calls).toEqual([['redeem', token, 'abc']]);
   });
 

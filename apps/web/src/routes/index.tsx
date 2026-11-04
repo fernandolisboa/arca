@@ -4,6 +4,7 @@ import { Link, createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { healthQuery, recoveryKitQuery, sessionQuery } from '../api.js';
 import { textLinkClass } from '../forms/text-link.js';
+import { useDateFormat } from '../use-date-format.js';
 
 export const Route = createFileRoute('/')({ component: Home });
 
@@ -60,6 +61,14 @@ function SessionLine() {
   const { t } = useTranslation();
   const session = useQuery(sessionQuery);
   if (session.isPending) return null;
+  if (session.isSuccess && session.data.recoveryPending) {
+    return (
+      <>
+        <p>{t('session.signedIn', { email: session.data.email })}</p>
+        <RecoveryPendingNotice activeFrom={session.data.pendingPasskeyUntil} />
+      </>
+    );
+  }
   if (session.isSuccess) {
     return (
       <>
@@ -108,10 +117,34 @@ function KitNotice() {
   );
 }
 
+/**
+ * While a recovery passkey waits, every session of the account can only show this and cancel
+ * the recovery from the device list (spec 0003, R6).
+ */
+function RecoveryPendingNotice({ activeFrom }: { readonly activeFrom: string | null }) {
+  const { t } = useTranslation();
+  const when = useDateFormat();
+  return (
+    <section
+      aria-labelledby="recovery-pending-title"
+      className="flex flex-col gap-2 rounded-card border border-line bg-surface p-4"
+    >
+      <p id="recovery-pending-title" className="text-warn-ink">
+        {t('session.recoveryPending', {
+          activeFrom: activeFrom === null ? '' : when.format(new Date(activeFrom)),
+        })}
+      </p>
+      <Link to="/devices" className={textLinkClass}>
+        {t('session.recoveryLink')}
+      </Link>
+    </section>
+  );
+}
+
 /** Every session of the account sees a passkey added while it waits (spec 0003, R4). */
 function PendingPasskeyNotice({ activeFrom }: { readonly activeFrom: string }) {
-  const { t, i18n } = useTranslation();
-  const when = new Intl.DateTimeFormat(i18n.language, { dateStyle: 'short', timeStyle: 'short' });
+  const { t } = useTranslation();
+  const when = useDateFormat();
   return (
     <section
       aria-labelledby="pending-passkey-title"

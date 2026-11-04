@@ -17,6 +17,7 @@ const origin = 'http://localhost:3000';
 const rpId = 'localhost';
 
 let testDatabase: AuthTestDatabase;
+let fixtures: ReturnType<typeof accountFixtures>;
 let devices: Devices;
 let stepUp: StepUpService;
 const sent: Notice[] = [];
@@ -25,6 +26,7 @@ const logged: string[] = [];
 
 beforeAll(async () => {
   testDatabase = await authTestDatabase();
+  fixtures = accountFixtures(testDatabase, rpId);
   const { authDb, auditDb } = testDatabase;
   const audit = auditLog(auditDb);
   devices = createDevices({
@@ -58,16 +60,10 @@ afterAll(async () => {
   await testDatabase.drop();
 });
 
-const fixtures = () => accountFixtures(testDatabase, rpId);
-const account = (passkeys?: number) => fixtures().account(passkeys);
-const session = (...args: Parameters<ReturnType<typeof fixtures>['session']>) =>
-  fixtures().session(...args);
-const count = (sql: string, values: readonly unknown[]) => fixtures().count(sql, values);
-const sessionsOf = (owner: Account) => fixtures().sessionsOf(owner);
+const account = (passkeys?: number) => fixtures.account(passkeys);
+const session = (...args: Parameters<typeof fixtures.session>) => fixtures.session(...args);
 const events = (owner: Account, codes = ['passkey_revoked', 'session_revoked']) =>
-  fixtures().events(owner, codes);
-const pendingOf = (owner: Account) => fixtures().pendingOf(owner);
-const waitOver = (owner: Account) => fixtures().waitOver(owner);
+  fixtures.events(owner, codes);
 
 const noticesTo = (owner: Account) =>
   sent.filter(({ to }) => to === owner.email).map(({ kind }) => kind);
@@ -120,7 +116,7 @@ describe('revoking a session (spec 0003, R4)', () => {
     const current = await session(owner, key);
     const other = await session(owner, key);
     expect(await devices.revokeSession(current, other.sessionId)).toBe(true);
-    expect(await sessionsOf(owner)).toEqual([current.sessionId]);
+    expect(await fixtures.sessionsOf(owner)).toEqual([current.sessionId]);
     expect(await events(owner)).toEqual([
       {
         code: 'session_revoked',
@@ -137,7 +133,7 @@ describe('revoking a session (spec 0003, R4)', () => {
     const theirs = await session(stranger, stranger.keys[0]);
     expect(await devices.revokeSession(current, theirs.sessionId)).toBe(false);
     expect(await devices.revokeSession(current, randomUUID())).toBe(false);
-    expect(await sessionsOf(stranger)).toEqual([theirs.sessionId]);
+    expect(await fixtures.sessionsOf(stranger)).toEqual([theirs.sessionId]);
     expect(await events(owner)).toEqual([]);
   });
 });
@@ -150,11 +146,12 @@ describe('revoking a passkey (spec 0003, R4)', () => {
     await session(owner, older);
     await session(owner, older);
     expect(await devices.revokePasskey(current, older.id)).toBe('revoked');
-    expect(await sessionsOf(owner)).toEqual([current.sessionId]);
+    expect(await fixtures.sessionsOf(owner)).toEqual([current.sessionId]);
     expect(
-      await count('SELECT count(*)::int AS n FROM auth.passkey_client WHERE credential_id = $1', [
-        older.passkey.credentialId,
-      ]),
+      await fixtures.count(
+        'SELECT count(*)::int AS n FROM auth.passkey_client WHERE credential_id = $1',
+        [older.passkey.credentialId],
+      ),
     ).toBe(0);
     expect(await events(owner)).toEqual([
       { code: 'passkey_revoked', actor: owner.accountId, details: { passkeyId: older.id } },
@@ -209,7 +206,7 @@ describe('revoking a passkey (spec 0003, R4)', () => {
     const current = await session(owner, newer);
     const kept = await session(owner, older);
     expect(await devices.revokePasskey(current, newer.id)).toBe('revoked');
-    expect(await sessionsOf(owner)).toEqual([kept.sessionId]);
+    expect(await fixtures.sessionsOf(owner)).toEqual([kept.sessionId]);
   });
 
   it('stands when its notice fails, and logs the failure', async () => {
@@ -223,7 +220,7 @@ describe('revoking a passkey (spec 0003, R4)', () => {
       noticesFail = false;
     }
     expect(
-      await count('SELECT count(*)::int AS n FROM auth.passkey WHERE user_id = $1', [
+      await fixtures.count('SELECT count(*)::int AS n FROM auth.passkey WHERE user_id = $1', [
         owner.accountId,
       ]),
     ).toBe(1);
@@ -255,7 +252,7 @@ describe('revoking a passkey (spec 0003, R4)', () => {
     expect(await racing.verify(current, challengeId, response)).toBe(false);
     expect(await racing.vaultUnlocked(current)).toBe(false);
     expect(
-      await count('SELECT count(*)::int AS n FROM auth.step_up WHERE account_id = $1', [
+      await fixtures.count('SELECT count(*)::int AS n FROM auth.step_up WHERE account_id = $1', [
         owner.accountId,
       ]),
     ).toBe(0);
@@ -266,7 +263,7 @@ describe('revoking a passkey (spec 0003, R4)', () => {
     const key = owner.keys[0];
     const current = await session(owner, key);
     expect(await devices.revokePasskey(current, key.id)).toBe('last_active');
-    expect(await sessionsOf(owner)).toEqual([current.sessionId]);
+    expect(await fixtures.sessionsOf(owner)).toEqual([current.sessionId]);
     expect(await events(owner)).toEqual([]);
     expect(noticesTo(owner)).toEqual([]);
   });
@@ -282,7 +279,7 @@ describe('revoking a passkey (spec 0003, R4)', () => {
     ]);
     expect([...outcomes].sort()).toEqual(['last_active', 'revoked']);
     expect(
-      await count('SELECT count(*)::int AS n FROM auth.passkey WHERE user_id = $1', [
+      await fixtures.count('SELECT count(*)::int AS n FROM auth.passkey WHERE user_id = $1', [
         owner.accountId,
       ]),
     ).toBe(1);
@@ -295,7 +292,7 @@ describe('revoking a passkey (spec 0003, R4)', () => {
     expect(await devices.revokePasskey(current, stranger.keys[0].id)).toBe('not_found');
     expect(await devices.revokePasskey(current, randomUUID())).toBe('not_found');
     expect(
-      await count('SELECT count(*)::int AS n FROM auth.passkey WHERE user_id = $1', [
+      await fixtures.count('SELECT count(*)::int AS n FROM auth.passkey WHERE user_id = $1', [
         stranger.accountId,
       ]),
     ).toBe(2);
@@ -363,8 +360,8 @@ describe('signing out the other sessions (spec 0003, R4)', () => {
     const stranger = await account(1);
     const theirs = await session(stranger, stranger.keys[0]);
     await devices.revokeOtherSessions(current);
-    expect(await sessionsOf(owner)).toEqual([current.sessionId]);
-    expect(await sessionsOf(stranger)).toEqual([theirs.sessionId]);
+    expect(await fixtures.sessionsOf(owner)).toEqual([current.sessionId]);
+    expect(await fixtures.sessionsOf(stranger)).toEqual([theirs.sessionId]);
     expect((await events(owner)).map(({ details }) => details)).toEqual(
       expect.arrayContaining(others.map(({ sessionId }) => ({ sessionId }))),
     );
@@ -378,7 +375,7 @@ describe('signing out the other sessions (spec 0003, R4)', () => {
     await session(owner, key, { expiresIn: '-1 second' });
     await session(owner, key, { age: '30 days 1 minute' });
     await devices.revokeOtherSessions(current);
-    expect(await sessionsOf(owner)).toEqual([current.sessionId]);
+    expect(await fixtures.sessionsOf(owner)).toEqual([current.sessionId]);
     expect(await events(owner)).toEqual([]);
     expect(noticesTo(owner)).toEqual([]);
   });
@@ -387,7 +384,7 @@ describe('signing out the other sessions (spec 0003, R4)', () => {
     const owner = await account(1);
     const current = await session(owner, owner.keys[0]);
     await devices.revokeOtherSessions(current);
-    expect(await sessionsOf(owner)).toEqual([current.sessionId]);
+    expect(await fixtures.sessionsOf(owner)).toEqual([current.sessionId]);
     expect(noticesTo(owner)).toEqual([]);
   });
 });
@@ -417,8 +414,8 @@ describe('adding a passkey (spec 0003, R4)', () => {
     const current = await session(owner, owner.keys[0]);
     const before = Date.now();
     await added(current);
-    expect(await sessionsOf(owner)).toEqual([current.sessionId]);
-    const [pending] = await pendingOf(owner);
+    expect(await fixtures.sessionsOf(owner)).toEqual([current.sessionId]);
+    const [pending] = await fixtures.pendingOf(owner);
     expect(await events(owner, ['passkey_added'])).toEqual([
       { code: 'passkey_added', actor: owner.accountId, details: { passkeyId: pending?.id } },
     ]);
@@ -431,7 +428,7 @@ describe('adding a passkey (spec 0003, R4)', () => {
     expect(activeFrom - before).toBeLessThan(24 * 60 * 60 * 1000 + 60_000);
     expect((await devices.status(owner.accountId)).pendingUntil?.getTime()).toBe(activeFrom);
     expect(
-      await count(
+      await fixtures.count(
         'SELECT count(*)::int AS n FROM auth.passkey_capability WHERE credential_id = $1 AND prf_enabled',
         [pending?.credentialId],
       ),
@@ -466,8 +463,8 @@ describe('adding a passkey (spec 0003, R4)', () => {
     const issued = await devices.addOptions(current);
     const borrowed = softwarePasskey(rpId).attest({ challenge: issued.options.challenge, origin });
     expect(await devices.add(theirs, issued.challengeId, borrowed)).toBe(false);
-    expect(await pendingOf(owner)).toEqual([]);
-    expect(await pendingOf(stranger)).toEqual([]);
+    expect(await fixtures.pendingOf(owner)).toEqual([]);
+    expect(await fixtures.pendingOf(stranger)).toEqual([]);
   });
 
   it('refuses a passkey for another relying party', async () => {
@@ -479,7 +476,7 @@ describe('adding a passkey (spec 0003, R4)', () => {
       origin,
     });
     expect(await devices.add(current, challengeId, response)).toBe(false);
-    expect(await pendingOf(owner)).toEqual([]);
+    expect(await fixtures.pendingOf(owner)).toEqual([]);
   });
 
   it('refuses a credential already stored, for this account or another, with no event', async () => {
@@ -491,11 +488,11 @@ describe('adding a passkey (spec 0003, R4)', () => {
       const response = held.passkey.attest({ challenge: options.challenge, origin });
       expect(await devices.add(current, challengeId, response)).toBe(false);
     }
-    expect(await pendingOf(owner)).toEqual([]);
+    expect(await fixtures.pendingOf(owner)).toEqual([]);
     expect(await events(owner, ['passkey_added'])).toEqual([]);
     expect(noticesTo(owner)).toEqual([]);
     expect(
-      await count('SELECT count(*)::int AS n FROM auth.passkey WHERE user_id = $1', [
+      await fixtures.count('SELECT count(*)::int AS n FROM auth.passkey WHERE user_id = $1', [
         stranger.accountId,
       ]),
     ).toBe(1);
@@ -523,7 +520,7 @@ describe('adding a passkey (spec 0003, R4)', () => {
     expect(await devices.add(other, challengeId, response)).toBe(false);
     expect(await devices.add(current, challengeId, response)).toBe(true);
     expect(await devices.add(current, challengeId, response)).toBe(false);
-    expect(await pendingOf(owner)).toHaveLength(1);
+    expect(await fixtures.pendingOf(owner)).toHaveLength(1);
   });
 
   it('refuses a passkey made without user verification, or for another origin', async () => {
@@ -540,7 +537,7 @@ describe('adding a passkey (spec 0003, R4)', () => {
       });
       expect(await devices.add(current, challengeId, response)).toBe(false);
     }
-    expect(await pendingOf(owner)).toEqual([]);
+    expect(await fixtures.pendingOf(owner)).toEqual([]);
     expect(noticesTo(owner)).toEqual([]);
   });
 
@@ -553,7 +550,7 @@ describe('adding a passkey (spec 0003, R4)', () => {
       owner.keys[0].passkey.credentialId,
     ]);
     expect(await stepsUp(current, passkey)).toBe(false);
-    await waitOver(owner);
+    await fixtures.waitOver(owner);
     expect(await stepsUp(current, passkey)).toBe(true);
   });
 
@@ -561,8 +558,8 @@ describe('adding a passkey (spec 0003, R4)', () => {
     const owner = await account(1);
     const current = await session(owner, owner.keys[0]);
     await added(current);
-    const [pending] = await pendingOf(owner);
-    await waitOver(owner);
+    const [pending] = await fixtures.pendingOf(owner);
+    await fixtures.waitOver(owner);
     expect((await devices.status(owner.accountId)).pendingUntil).toBeNull();
     const listed = await devices.list(current);
     expect(listed.passkeys.find(({ id }) => id === pending?.id)).toMatchObject({
@@ -572,14 +569,14 @@ describe('adding a passkey (spec 0003, R4)', () => {
     expect(await events(owner, ['passkey_activated'])).toEqual([
       { code: 'passkey_activated', actor: null, details: { passkeyId: pending?.id } },
     ]);
-    expect(await pendingOf(owner)).toEqual([]);
+    expect(await fixtures.pendingOf(owner)).toEqual([]);
   });
 
   it('records an activation once when two reads find it due at once', async () => {
     const owner = await account(1);
     const current = await session(owner, owner.keys[0]);
     await added(current);
-    await waitOver(owner);
+    await fixtures.waitOver(owner);
     await Promise.all([
       devices.list(current),
       devices.status(owner.accountId),
@@ -592,7 +589,7 @@ describe('adding a passkey (spec 0003, R4)', () => {
     const owner = await account(1);
     const current = await session(owner, owner.keys[0]);
     await added(current);
-    const [pending] = await pendingOf(owner);
+    const [pending] = await fixtures.pendingOf(owner);
     expect(await devices.revokePasskey(current, owner.keys[0].id)).toBe('last_active');
     expect(await devices.revokePasskey(current, pending?.id ?? '')).toBe('revoked');
     expect(noticesTo(owner)).toEqual(['passkey_added', 'pending_passkey_cancelled']);

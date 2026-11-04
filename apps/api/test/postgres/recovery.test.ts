@@ -1,3 +1,4 @@
+import { recoveryLinkMinutes } from '@arca/api-contract/routes';
 import { createI18n } from '@arca/i18n';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { auditLog } from '../../src/audit/log.js';
@@ -89,7 +90,14 @@ async function linkFor(account: Account) {
   return token ?? '';
 }
 
-/** Registers a new software passkey on a redeemed link. */
+/** Spends the code on the link; the registration's own token, which replaces the link's. */
+async function opened(token: string, code: string) {
+  const outcome = await recovery.redeem(token, code);
+  expect(outcome.ok).toBe(true);
+  return outcome.ok ? outcome.token : '';
+}
+
+/** Registers a new software passkey on an opened registration. */
 async function registered(token: string) {
   const options = await recovery.options(token);
   expect(options).not.toBeNull();
@@ -139,6 +147,17 @@ describe('starting recovery (spec 0003, R6)', () => {
     ]);
   });
 
+  it('makes the link last as long as the contract says', async () => {
+    const { account } = await owner();
+    await linkFor(account);
+    const minutes = await fixtures.count(
+      `SELECT round(extract(epoch FROM expires_at - now()) / 60)::int AS n
+         FROM auth.recovery_link WHERE account_id = $1`,
+      [account.accountId],
+    );
+    expect(minutes).toBe(recoveryLinkMinutes);
+  });
+
   it('keeps one link per account, the latest', async () => {
     const { account, code } = await owner();
     const first = await linkFor(account);
@@ -171,12 +190,11 @@ describe('starting recovery (spec 0003, R6)', () => {
 
   it('does not replace a link whose code was accepted', async () => {
     const { account, code } = await owner();
-    const token = await linkFor(account);
-    expect((await recovery.redeem(token, code)).ok).toBe(true);
+    const registration = await opened(await linkFor(account), code);
     const before = mailTo(account).length;
     await recovery.start(account.email);
     expect(mailTo(account)).toHaveLength(before);
-    await registered(token);
+    await registered(registration);
   });
 });
 
@@ -271,18 +289,17 @@ describe('redeeming the code (spec 0003, R6)', () => {
 });
 
 describe('registering the recovery passkey (spec 0003, R6)', () => {
-  it('stores it pending, keeps the new code, records it and opens no session', async () => {
+  it('stores it pending, keeps the new code as saved, records it and opens no session', async () => {
     const { account, signedIn, code } = await owner();
-    const token = await linkFor(account);
-    const outcome = await recovery.redeem(token, code);
+    const registration = await opened(await linkFor(account), code);
     expect(await recovery.options('B'.repeat(43))).toBeNull();
-    const passkey = await registered(token);
+    const passkey = await registered(registration);
     const [pending] = await fixtures.pendingOf(account);
     expect(pending).toMatchObject({ credentialId: passkey.credentialId, recovery: true });
     expect(await fixtures.sessionsOf(account)).toEqual([signedIn.sessionId]);
     expect(await linksOf(account)).toBe(0);
     await linkExpired(account);
-    expect(await kits.status(account.accountId)).toBe('unsaved');
+    expect(await kits.status(account.accountId)).toBe('saved');
     expect(await fixtures.events(account, ['passkey_added', 'recovery_completed'])).toEqual([
       { code: 'passkey_added', actor: null, details: { passkeyId: pending?.id } },
       { code: 'recovery_completed', actor: null, details: {} },
@@ -298,7 +315,17 @@ describe('registering the recovery passkey (spec 0003, R6)', () => {
         ).rows[0],
     );
     expect(client).toEqual(device);
-    expect(outcome.ok).toBe(true);
+  });
+
+  it('leaves the emailed token useless once the code is accepted', async () => {
+    const { account, code } = await owner();
+    const token = await linkFor(account);
+    const registration = await opened(token, code);
+    expect(registration).not.toBe(token);
+    expect(await recovery.options(token)).toBeNull();
+    const response = softwarePasskey(rpId).attest({ challenge: 'Y2hhbGxlbmdl', origin });
+    expect(await recovery.verify(token, response, device)).toBe('not_found');
+    await registered(registration);
   });
 
   it('refuses options before the code is accepted', async () => {
@@ -308,8 +335,7 @@ describe('registering the recovery passkey (spec 0003, R6)', () => {
 
   it('spends the challenge on its first attempt', async () => {
     const { account, code } = await owner();
-    const token = await linkFor(account);
-    await recovery.redeem(token, code);
+    const token = await opened(await linkFor(account), code);
     const options = await recovery.options(token);
     const wrongOrigin = softwarePasskey(rpId).attest({
       challenge: options?.challenge ?? '',
@@ -323,8 +349,7 @@ describe('registering the recovery passkey (spec 0003, R6)', () => {
 
   it('refuses a passkey on a link that ended', async () => {
     const { account, code } = await owner();
-    const token = await linkFor(account);
-    await recovery.redeem(token, code);
+    const token = await opened(await linkFor(account), code);
     const options = await recovery.options(token);
     await linkExpired(account);
     const response = softwarePasskey(rpId).attest({ challenge: options?.challenge ?? '', origin });
@@ -335,9 +360,7 @@ describe('registering the recovery passkey (spec 0003, R6)', () => {
 describe('the wait of a recovery passkey (spec 0003, R6)', () => {
   async function recovered() {
     const started = await owner();
-    const token = await linkFor(started.account);
-    await recovery.redeem(token, started.code);
-    await registered(token);
+    await registered(await opened(await linkFor(started.account), started.code));
     return started;
   }
 
@@ -350,12 +373,15 @@ describe('the wait of a recovery passkey (spec 0003, R6)', () => {
   });
 
   it('ends the restricted sessions once the passkey activates', async () => {
-    const { account } = await recovered();
+    const { account, signedIn } = await recovered();
     await fixtures.waitOver(account);
     const later = await fixtures.session(account, account.keys[0], { age: '0 seconds' });
-    expect(await devices.status(account.accountId)).toMatchObject({
+    expect(await devices.status(account.accountId, signedIn.sessionId)).toMatchObject({
       recoveryPending: false,
-      sessionsEnded: true,
+      sessionEnded: true,
+    });
+    expect(await devices.status(account.accountId, later.sessionId)).toMatchObject({
+      sessionEnded: false,
     });
     expect(await fixtures.sessionsOf(account)).toEqual([later.sessionId]);
     expect(await fixtures.events(account, ['passkey_activated'])).toHaveLength(1);

@@ -2,12 +2,13 @@ import { routes } from '@arca/api-contract/client';
 import { Button } from '@arca/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useId, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api, recoveryKitQuery, sessionQuery } from '../api.js';
-import { groupCode, newRecoveryCode } from '../enrollment.js';
+import { newRecoveryCode } from '../enrollment.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { Page } from '../page.js';
+import { RecoveryCodeSheet } from '../recovery-code.js';
 import { passkeys } from '../platform.js';
 import { commonFailure, reach, type CommonFailure } from '../requests.js';
 
@@ -35,7 +36,7 @@ function RecoveryKit() {
   if (code !== undefined) {
     return (
       <Section>
-        <ShownCode code={code} />
+        <ConfirmedCode code={code} />
       </Section>
     );
   }
@@ -91,113 +92,17 @@ function Section({ children }: { readonly children?: ReactNode }) {
   );
 }
 
-/** Starts a download of the text in the browser; the file never passes through the server. */
-function download(fileName: string, text: string) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = fileName;
-  anchor.click();
-  // Some browsers start reading the file only after the click returns.
-  setTimeout(() => {
-    URL.revokeObjectURL(url);
-  }, 60_000);
-}
-
-function ShownCode({ code }: { readonly code: string }) {
-  const { t } = useTranslation();
+function ConfirmedCode({ code }: { readonly code: string }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const labelId = useId();
-  const savedId = useId();
-  const [warned, setWarned] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [finishing, setFinishing] = useState(false);
-  const [failure, setFailure] = useState<CommonFailure>();
-  const grouped = groupCode(code);
-
-  const finish = () => {
-    setFailure(undefined);
-    setFinishing(true);
-    reach(api.call(routes.confirmRecoveryKit, {}))
-      .then(async () => {
+  return (
+    <RecoveryCodeSheet
+      code={code}
+      onSaved={async () => {
+        await reach(api.call(routes.confirmRecoveryKit, {}));
         await queryClient.invalidateQueries({ queryKey: recoveryKitQuery.queryKey });
         await navigate({ to: '/' });
-      })
-      .catch((error: unknown) => {
-        setFailure(commonFailure(error));
-        setFinishing(false);
-      });
-  };
-
-  return (
-    <>
-      <div
-        role="group"
-        aria-labelledby={labelId}
-        className="flex flex-col gap-2 rounded-card border border-line bg-surface p-4"
-      >
-        <p id={labelId} className="font-medium">
-          {t('recoveryKit.codeLabel')}
-        </p>
-        <p className="font-mono text-lead tracking-wider break-all text-ink" translate="no">
-          {grouped}
-        </p>
-      </div>
-      <p>{t('recoveryKit.keep')}</p>
-      <div className="flex flex-col gap-2 print:hidden">
-        <Button
-          onClick={() => {
-            window.print();
-          }}
-        >
-          {t('recoveryKit.print')}
-        </Button>
-        {warned ? (
-          <>
-            <p className="text-muted">{t('recoveryKit.downloadWarning')}</p>
-            <button
-              type="button"
-              className={textLinkClass}
-              onClick={() => {
-                download(t('recoveryKit.fileName'), t('recoveryKit.fileText', { code: grouped }));
-              }}
-            >
-              {t('recoveryKit.downloadAnyway')}
-            </button>
-          </>
-        ) : (
-          <button
-            type="button"
-            className={textLinkClass}
-            onClick={() => {
-              setWarned(true);
-            }}
-          >
-            {t('recoveryKit.download')}
-          </button>
-        )}
-      </div>
-      <div className="flex flex-col gap-4 print:hidden">
-        <div className="flex min-h-touch items-center gap-3">
-          <input
-            id={savedId}
-            type="checkbox"
-            checked={saved}
-            onChange={(event) => {
-              setSaved(event.currentTarget.checked);
-            }}
-            className="size-5 accent-primary"
-          />
-          <label htmlFor={savedId}>{t('recoveryKit.saved')}</label>
-        </div>
-        <Button disabled={!saved || finishing} aria-busy={finishing} onClick={finish}>
-          {t('recoveryKit.finish')}
-        </Button>
-        <p role="status" className={failure === undefined ? 'text-muted' : 'text-ink'}>
-          {failure === undefined ? '' : t('recoveryKit.failure', { reason: failure })}
-        </p>
-      </div>
-    </>
+      }}
+    />
   );
 }

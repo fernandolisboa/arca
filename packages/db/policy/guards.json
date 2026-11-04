@@ -30,7 +30,7 @@
     },
     {
       "table": "auth.recovery_link",
-      "reason": "Arca's recovery links, stored as token hashes; only app_auth has privileges on the auth schema, and they are read before any session exists, by the token alone, so row-level security would not narrow anything."
+      "reason": "Arca's recovery links, stored as token hashes; only app_auth has privileges on the auth schema, and they are read before any session exists, by the token or, before a link is issued, by the account, so row-level security would not narrow anything."
     },
     {
       "table": "auth.recovery_lock",

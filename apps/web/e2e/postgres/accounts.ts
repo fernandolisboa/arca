@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import pg from 'pg';
 import { databaseServer } from '../servers.js';
 
@@ -76,15 +76,47 @@ export async function resetEnrollment(): Promise<void> {
   });
 }
 
-/** The newest message the outbox holds for an address. */
-export async function latestEmailTo(recipient: string): Promise<string | undefined> {
+/** The newest message the outbox holds for an address, of those whose body has the text. */
+export async function latestEmailTo(
+  recipient: string,
+  containing = '',
+): Promise<string | undefined> {
   return asAdmin(async (client) => {
     const { rows } = await client.query<{ body: string }>(
-      'SELECT body FROM auth.outbox WHERE recipient = $1 ORDER BY created_at DESC LIMIT 1',
-      [recipient],
+      `SELECT body FROM auth.outbox WHERE recipient = $1 AND strpos(body, $2) > 0
+        ORDER BY created_at DESC LIMIT 1`,
+      [recipient, containing],
     );
     return rows[0]?.body;
   });
+}
+
+const crockford = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+
+/** A saved recovery kit for the account; the code, as the kit shows it, is returned. */
+export async function seedRecoveryCode(userId: string): Promise<string> {
+  const code = Array.from(randomBytes(26), (byte) => crockford.charAt(byte % 32)).join('');
+  const salt = randomBytes(16);
+  const codeHash = createHash('sha256').update(salt).update(code, 'utf8').digest();
+  await asAdmin((client) =>
+    client.query(
+      `INSERT INTO auth.recovery_code (account_id, salt, code_hash, confirmed_at)
+       VALUES ($1, $2, $3, now())`,
+      [userId, salt, codeHash],
+    ),
+  );
+  return code;
+}
+
+/** Ends the 24-hour wait of every pending passkey of the account. */
+export async function endPasskeyWaits(userId: string): Promise<void> {
+  await asAdmin((client) =>
+    client.query(
+      `UPDATE auth.passkey_activation SET active_from = now() - interval '1 second'
+        WHERE credential_id IN (SELECT credential_id FROM auth.passkey WHERE user_id = $1)`,
+      [userId],
+    ),
+  );
 }
 
 /** What the database recorded about an account's passkeys and recovery kit. */

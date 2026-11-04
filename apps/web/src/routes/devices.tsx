@@ -8,7 +8,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { devicesQuery, resetAccount, sessionQuery } from '../api.js';
+import { devicesQuery, recoveryKitQuery, resetAccount, sessionQuery } from '../api.js';
 import {
   addPasskey,
   deviceFailure,
@@ -20,10 +20,17 @@ import {
 import { dangerLinkClass, textLinkClass } from '../forms/text-link.js';
 import { Page } from '../page.js';
 import { passkeys } from '../platform.js';
+import { useDateFormat } from '../use-date-format.js';
 
 export const Route = createFileRoute('/devices')({ component: Devices });
 
-type Done = 'added' | 'sessionRevoked' | 'passkeyRevoked' | 'pendingCancelled' | 'othersRevoked';
+type Done =
+  | 'added'
+  | 'sessionRevoked'
+  | 'passkeyRevoked'
+  | 'pendingCancelled'
+  | 'recoveryCancelled'
+  | 'othersRevoked';
 
 interface Change {
   readonly run: () => Promise<void>;
@@ -65,6 +72,8 @@ function Devices() {
           : Promise.all([
               queryClient.invalidateQueries({ queryKey: devicesQuery.queryKey }),
               queryClient.invalidateQueries({ queryKey: sessionQuery.queryKey }),
+              // Cancelling a recovery deletes the recovery code, so the kit is missing again.
+              queryClient.invalidateQueries({ queryKey: recoveryKitQuery.queryKey }),
             ]));
       })
       .catch((error: unknown) => {
@@ -75,6 +84,8 @@ function Devices() {
       });
   };
 
+  // While a recovery passkey waits, cancelling it is all this session may do (spec 0003, R6).
+  const restricted = session.data?.recoveryPending === true;
   const message = waiting
     ? t('devices.waiting')
     : outcome === undefined
@@ -94,21 +105,25 @@ function Devices() {
       >
         {message}
       </p>
-      <section aria-labelledby="add-passkey-title" className="flex flex-col items-start gap-3">
-        <h3 id="add-passkey-title" className="font-display text-lead">
-          {t('devices.addTitle')}
-        </h3>
-        <p className="text-muted">{t('devices.addLead', { hours: pendingPasskeyHours })}</p>
-        <Button
-          disabled={waiting}
-          aria-busy={waiting}
-          onClick={() => {
-            change({ run: () => addPasskey(passkeys), done: 'added' });
-          }}
-        >
-          {t('devices.add')}
-        </Button>
-      </section>
+      {restricted ? (
+        <p className="text-warn-ink">{t('devices.restricted')}</p>
+      ) : (
+        <section aria-labelledby="add-passkey-title" className="flex flex-col items-start gap-3">
+          <h3 id="add-passkey-title" className="font-display text-lead">
+            {t('devices.addTitle')}
+          </h3>
+          <p className="text-muted">{t('devices.addLead', { hours: pendingPasskeyHours })}</p>
+          <Button
+            disabled={waiting}
+            aria-busy={waiting}
+            onClick={() => {
+              change({ run: () => addPasskey(passkeys), done: 'added' });
+            }}
+          >
+            {t('devices.add')}
+          </Button>
+        </section>
+      )}
       {devices.isError && (
         <div className="flex flex-col items-start gap-3">
           <p className="text-ink">{t('devices.listFailure')}</p>
@@ -125,42 +140,52 @@ function Devices() {
         <>
           <ul aria-label={t('devices.listTitle')} className="flex flex-col gap-3">
             {devices.data.passkeys.map((passkey) => (
-              <PasskeyCard key={passkey.id} passkey={passkey} waiting={waiting} onChange={change} />
+              <PasskeyCard
+                key={passkey.id}
+                passkey={passkey}
+                waiting={waiting}
+                restricted={restricted}
+                onChange={change}
+              />
             ))}
           </ul>
-          <button
-            type="button"
-            disabled={waiting}
-            className={`${dangerLinkClass} self-start`}
-            onClick={() => {
-              change({ run: () => revokeOtherSessions(passkeys), done: 'othersRevoked' });
-            }}
-          >
-            {t('devices.revokeOthers')}
-          </button>
+          {!restricted && (
+            <button
+              type="button"
+              disabled={waiting}
+              className={`${dangerLinkClass} self-start`}
+              onClick={() => {
+                change({ run: () => revokeOtherSessions(passkeys), done: 'othersRevoked' });
+              }}
+            >
+              {t('devices.revokeOthers')}
+            </button>
+          )}
         </>
       )}
     </Page>
   );
 }
 
-function useDateFormat() {
-  const { i18n } = useTranslation();
-  return new Intl.DateTimeFormat(i18n.language, { dateStyle: 'short', timeStyle: 'short' });
-}
-
 function PasskeyCard({
   passkey,
   waiting,
+  restricted,
   onChange,
 }: {
   readonly passkey: DevicePasskey;
   readonly waiting: boolean;
+  readonly restricted: boolean;
   readonly onChange: (change: Change) => void;
 }) {
   const { t } = useTranslation();
   const when = useDateFormat();
   const pending = passkey.state === 'pending';
+  const done = passkey.recovery
+    ? 'recoveryCancelled'
+    : pending
+      ? 'pendingCancelled'
+      : 'passkeyRevoked';
   return (
     <li className="flex flex-col gap-3 rounded-card border border-line bg-surface p-4">
       <div className="flex flex-col gap-1">
@@ -172,31 +197,47 @@ function PasskeyCard({
         {passkey.current && <p className="text-small text-muted">{t('devices.thisPasskey')}</p>}
         {pending && passkey.activeFrom !== null && (
           <p className="text-warn-ink">
-            {t('devices.pending', { activeFrom: when.format(new Date(passkey.activeFrom)) })}
+            {t(passkey.recovery ? 'devices.recoveryPasskey' : 'devices.pending', {
+              activeFrom: when.format(new Date(passkey.activeFrom)),
+            })}
           </p>
         )}
       </div>
       {passkey.sessions.length > 0 && (
         <ul aria-label={t('devices.sessionsOf')} className="flex flex-col gap-2">
           {passkey.sessions.map((session) => (
-            <SessionRow key={session.id} session={session} waiting={waiting} onChange={onChange} />
+            <SessionRow
+              key={session.id}
+              session={session}
+              waiting={waiting}
+              restricted={restricted}
+              onChange={onChange}
+            />
           ))}
         </ul>
       )}
-      <button
-        type="button"
-        disabled={waiting}
-        className={`${dangerLinkClass} self-start`}
-        onClick={() => {
-          onChange({
-            run: () => revokePasskey(passkeys, passkey.id),
-            done: pending ? 'pendingCancelled' : 'passkeyRevoked',
-            endsThisSession: passkey.current,
-          });
-        }}
-      >
-        {t(pending ? 'devices.cancelPending' : 'devices.revokePasskey')}
-      </button>
+      {(!restricted || passkey.recovery) && (
+        <button
+          type="button"
+          disabled={waiting}
+          className={`${dangerLinkClass} self-start`}
+          onClick={() => {
+            onChange({
+              run: () => revokePasskey(passkeys, passkey.id),
+              done,
+              endsThisSession: passkey.current,
+            });
+          }}
+        >
+          {t(
+            passkey.recovery
+              ? 'devices.cancelRecovery'
+              : pending
+                ? 'devices.cancelPending'
+                : 'devices.revokePasskey',
+          )}
+        </button>
+      )}
     </li>
   );
 }
@@ -204,10 +245,12 @@ function PasskeyCard({
 function SessionRow({
   session,
   waiting,
+  restricted,
   onChange,
 }: {
   readonly session: DeviceSession;
   readonly waiting: boolean;
+  readonly restricted: boolean;
   readonly onChange: (change: Change) => void;
 }) {
   const { t } = useTranslation();
@@ -228,7 +271,7 @@ function SessionRow({
       </p>
       {session.current ? (
         <p className="text-small text-muted">{t('devices.thisDevice')}</p>
-      ) : (
+      ) : restricted ? null : (
         <button
           type="button"
           disabled={waiting}

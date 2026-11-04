@@ -25,7 +25,7 @@ import {
   readRateLimitKey,
 } from './config.js';
 import { apiDatabase, auditDatabase, authDatabase } from './database.js';
-import { emailSenderFor, outboxReaderFor } from './email/environment.js';
+import { emailAvailableIn, emailSenderFor, outboxReaderFor } from './email/environment.js';
 import { createNotices } from './email/notices.js';
 import { createLogger } from './logger.js';
 import { heartbeat } from './workflows/heartbeat.js';
@@ -131,8 +131,7 @@ function authParts(): Promise<AuthParts> {
         i18n,
         origin,
         logger,
-        // Production has no sending domain yet (spec 0003, R9), whoever asks.
-        emailAvailable: environment !== 'production',
+        emailAvailable: emailAvailableIn(environment),
         status: devices.status,
       }),
     };

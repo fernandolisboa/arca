@@ -6,6 +6,7 @@ import type { CanonicalAction } from '../src/auth/step-up-encoding.js';
 import type { StepUpService } from '../src/auth/step-up.js';
 import type { Logger } from '../src/logger.js';
 import { noLimits } from './limits.js';
+import { attestation, creationOptions } from './passkey-fixtures.js';
 
 const silentLogger: Logger = { info: () => undefined, error: () => undefined };
 const origin = 'http://arca.test';
@@ -16,28 +17,7 @@ const owner: SignedIn = {
 const targetId = '5d4c3b2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a';
 const nonce = 'MzMzMzMzMzMzMzMzMzMzMw';
 const challengeId = '7b6a5f4e-3d2c-4b1a-9f8e-7d6c5b4a3f2e';
-const creationOptions = {
-  challengeId,
-  options: {
-    challenge: 'Y2hhbGxlbmdl',
-    rp: { id: 'arca.test', name: 'Arca' },
-    user: { id: 'dXNlcg', name: 'owner@example.com', displayName: 'owner@example.com' },
-    pubKeyCredParams: [{ type: 'public-key' as const, alg: -7 }],
-    authenticatorSelection: {
-      residentKey: 'required' as const,
-      requireResidentKey: true as const,
-      userVerification: 'required' as const,
-    },
-    extensions: { prf: {} },
-  },
-};
-const attestation = {
-  id: 'Y3JlZA',
-  rawId: 'Y3JlZA',
-  type: 'public-key',
-  response: { clientDataJSON: 'e30', attestationObject: 'oA' },
-  clientExtensionResults: { prf: { enabled: true } },
-};
+const addOptions = { challengeId, options: creationOptions };
 const activeFrom = new Date('2026-11-05T09:00:00.000Z');
 const session = {
   accountId: owner.accountId,
@@ -54,6 +34,7 @@ function setup({
   accepted = true,
   pendingUntil = null,
   recoveryPending = false,
+  sessionEnded = false,
   allowed = true,
 }: {
   signedIn?: SignedIn | null;
@@ -63,6 +44,7 @@ function setup({
   accepted?: boolean;
   pendingUntil?: Date | null;
   recoveryPending?: boolean;
+  sessionEnded?: boolean;
   allowed?: boolean;
 } = {}) {
   const calls: string[] = [];
@@ -96,7 +78,7 @@ function setup({
     },
     addOptions: (current) => {
       calls.push(`addOptions ${current.sessionId}`);
-      return Promise.resolve(creationOptions);
+      return Promise.resolve(addOptions);
     },
     add: (current, challengeId) => {
       calls.push(`add ${current.sessionId} ${challengeId}`);
@@ -104,7 +86,7 @@ function setup({
     },
     status: (accountId) => {
       checked.push(accountId);
-      return Promise.resolve({ pendingUntil, recoveryPending, sessionsEnded: false });
+      return Promise.resolve({ pendingUntil, recoveryPending, sessionEnded });
     },
   };
   const app = createApp({
@@ -112,7 +94,10 @@ function setup({
     logger: silentLogger,
     origin,
     auth: {
-      handle: () => Promise.resolve(Response.json({})),
+      handle: () => {
+        calls.push('auth');
+        return Promise.resolve(Response.json({}));
+      },
       signedIn: () => Promise.resolve(signedIn),
       refresh: () =>
         Promise.resolve({ session: signedIn === null ? null : session, setCookies: [] }),
@@ -167,7 +152,7 @@ describe('the device routes (spec 0003, R4)', () => {
       const { post, calls, spent } = setup();
       const response = await post(path, body);
       expect(response.status).toBe(200);
-      expect(await response.json()).toEqual(path === 'passkeys/options' ? creationOptions : {});
+      expect(await response.json()).toEqual(path === 'passkeys/options' ? addOptions : {});
       expect(spent).toHaveLength(1);
       expect(spent[0]?.purpose).toBe('sensitive_settings');
       expect(spent[0]?.action).toMatchObject({ action, targets });
@@ -277,5 +262,30 @@ describe('the device routes (spec 0003, R4)', () => {
     expect(refused.status).toBe(403);
     expect(await refused.json()).toEqual({ error: { code: 'recovery_pending' } });
     expect(restricted.calls).toEqual([`list ${owner.sessionId}`]);
+  });
+
+  it('keeps signing out and step-ups open to a restricted session', async () => {
+    const restricted = setup({ recoveryPending: true });
+    const headers = { origin, cookie: 'session=1', 'content-type': 'application/json' };
+    const signOut = await restricted.app.request('/v1/auth/sign-out', {
+      method: 'POST',
+      headers,
+      body: '{}',
+    });
+    expect(signOut.status).not.toBe(403);
+    expect(restricted.calls).toEqual(['auth']);
+    const stepUp = await restricted.app.request('/v1/auth/step-up/options', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ purpose: 'vault_unlock' }),
+    });
+    expect(stepUp.status).not.toBe(403);
+  });
+
+  it('answers 401 to a session that an activation just ended', async () => {
+    const ended = setup({ sessionEnded: true });
+    const headers = { origin, cookie: 'session=1' };
+    expect((await ended.app.request('/v1/devices', { headers })).status).toBe(401);
+    expect(ended.calls).toEqual([]);
   });
 });

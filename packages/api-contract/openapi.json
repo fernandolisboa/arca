@@ -1851,6 +1851,9 @@
                             ],
                             "format": "date-time"
                           },
+                          "recovery": {
+                            "type": "boolean"
+                          },
                           "sessions": {
                             "type": "array",
                             "items": {
@@ -1922,6 +1925,7 @@
                           "current",
                           "state",
                           "activeFrom",
+                          "recovery",
                           "sessions"
                         ]
                       }
@@ -2631,7 +2635,7 @@
         },
         "responses": {
           "200": {
-            "description": "The new recovery code",
+            "description": "The new recovery code and the registration token",
             "content": {
               "application/json": {
                 "schema": {
@@ -2640,10 +2644,15 @@
                     "code": {
                       "type": "string",
                       "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+                    },
+                    "token": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$"
                     }
                   },
                   "required": [
-                    "code"
+                    "code",
+                    "token"
                   ]
                 }
               }

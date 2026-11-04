@@ -10,9 +10,10 @@ import type { Database } from '@arca/db';
 import { passkeyChallenge as challenge, recoveryCode } from '@arca/db/enrollment-schema';
 import { and, eq, lte, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
-import type { NoticeKind, Notices } from '../email/notices.js';
+import type { Notices } from '../email/notices.js';
 import type { Logger } from '../logger.js';
-import { accounts, devices } from './auth.js';
+import { accountNotice } from './account-notices.js';
+import { devices } from './auth.js';
 import { passkeyCreation } from './passkey-creation.js';
 import { absoluteSessionLifetimeMs, type SignedIn } from './service.js';
 import { forgetUnspent } from './step-up.js';
@@ -42,14 +43,18 @@ export interface Devices {
    * are recorded as activations: when the newest pending passkey becomes active, and whether a
    * recovery passkey is pending, which restricts every session.
    */
-  readonly status: (accountId: string) => Promise<AccountStatus>;
+  /**
+   * Records the waits that are over first; with a session, also says whether it outlived them,
+   * since a recovery passkey's activation ends the sessions it restricted.
+   */
+  readonly status: (accountId: string, sessionId?: string) => Promise<AccountStatus>;
 }
 
 export interface AccountStatus {
   readonly pendingUntil: Date | null;
   readonly recoveryPending: boolean;
-  /** A recovery passkey just became active and ended the sessions it restricted. */
-  readonly sessionsEnded: boolean;
+  /** The session asked about no longer exists, maybe ended by a recovery passkey's activation. */
+  readonly sessionEnded: boolean;
 }
 
 export interface DeviceSettings {
@@ -73,23 +78,7 @@ export function createDevices({
 }: DeviceSettings): Devices {
   const creation = passkeyCreation({ db, origin });
 
-  /** A notice that fails to send never undoes the change; the failure is logged. */
-  async function notify(
-    accountId: string,
-    kind: Extract<
-      NoticeKind,
-      'passkey_added' | 'passkey_revoked' | 'pending_passkey_cancelled' | 'sessions_revoked'
-    >,
-  ) {
-    try {
-      const to = await accounts.emailOf(db, accountId);
-      if (to !== undefined) await notices.send({ kind, to, at: clock() });
-    } catch (error) {
-      logger.error({
-        errorName: `DeviceNotice:${error instanceof Error ? error.name : 'NonErrorThrown'}`,
-      });
-    }
-  }
+  const notify = accountNotice({ db, notices, logger, label: 'DeviceNotice', clock });
 
   /** Sessions created before this are past their absolute lifetime (spec 0003, R4). */
   const liveSince = () => new Date(clock().getTime() - absoluteSessionLifetimeMs);
@@ -105,7 +94,7 @@ export function createDevices({
   /** Each wait that is over becomes a `passkey activated` event, recorded before the commit. */
   const activateDue = (accountId: string) =>
     db.transaction(async (tx) => {
-      const { activated, sessionsEnded } = await devices.activateDue(tx, accountId);
+      const activated = await devices.activateDue(tx, accountId);
       for (const passkeyId of activated) {
         await audit.record({
           code: 'passkey_activated',
@@ -114,7 +103,6 @@ export function createDevices({
           details: { passkeyId },
         });
       }
-      return sessionsEnded;
     });
 
   return {
@@ -122,27 +110,30 @@ export function createDevices({
       await activateDue(accountId);
       const { passkeys, sessions } = await devices.of(db, accountId, liveSince());
       return {
-        passkeys: passkeys.map(({ id, credentialId, createdAt, pendingUntil }): DevicePasskey => {
-          const signed = sessions
-            .filter((session) => session.credentialId === credentialId)
-            .map((session) => ({
-              id: session.id,
-              // Parsed, so a stored value outside the enums fails loudly instead of reaching a
-              // client.
-              device: DeviceDescription.parse({ browser: session.browser, os: session.os }),
-              createdAt: session.createdAt.toISOString(),
-              lastUsedAt: session.updatedAt.toISOString(),
-              current: session.id === sessionId,
-            }));
-          return {
-            id,
-            createdAt: createdAt?.toISOString() ?? null,
-            current: signed.some(({ current }) => current),
-            state: pendingUntil === null ? 'active' : 'pending',
-            activeFrom: pendingUntil?.toISOString() ?? null,
-            sessions: signed,
-          };
-        }),
+        passkeys: passkeys.map(
+          ({ id, credentialId, createdAt, recovery, pendingUntil }): DevicePasskey => {
+            const signed = sessions
+              .filter((session) => session.credentialId === credentialId)
+              .map((session) => ({
+                id: session.id,
+                // Parsed, so a stored value outside the enums fails loudly instead of reaching a
+                // client.
+                device: DeviceDescription.parse({ browser: session.browser, os: session.os }),
+                createdAt: session.createdAt.toISOString(),
+                lastUsedAt: session.updatedAt.toISOString(),
+                current: session.id === sessionId,
+              }));
+            return {
+              id,
+              createdAt: createdAt?.toISOString() ?? null,
+              current: signed.some(({ current }) => current),
+              state: pendingUntil === null ? 'active' : 'pending',
+              activeFrom: pendingUntil?.toISOString() ?? null,
+              recovery,
+              sessions: signed,
+            };
+          },
+        ),
       };
     },
 
@@ -243,10 +234,9 @@ export function createDevices({
     // A failed record changes no answer: an added passkey's checks compare its wait with the
     // time, and a recovery passkey keeps every session restricted until its activation is
     // recorded with the revocation of those sessions.
-    status: async (accountId) => {
-      let sessionsEnded = false;
+    status: async (accountId, sessionId) => {
       try {
-        sessionsEnded = await activateDue(accountId);
+        await activateDue(accountId);
       } catch (error) {
         logger.error({
           errorName: `PasskeyActivation:${error instanceof Error ? error.name : 'NonErrorThrown'}`,
@@ -255,7 +245,8 @@ export function createDevices({
       return {
         pendingUntil: await devices.pendingUntil(db, accountId),
         recoveryPending: await devices.recoveryPending(db, accountId),
-        sessionsEnded,
+        // Read after the activation, whichever request ran it, so no ended session slips by.
+        sessionEnded: sessionId !== undefined && !(await devices.sessionExists(db, sessionId)),
       };
     },
   };

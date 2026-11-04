@@ -437,6 +437,12 @@ export type RecoveryRedeemRequest = z.infer<typeof RecoveryRedeemRequest>;
  * Spends the recovery code and answers the new one at once, before the passkey ceremony; the
  * link then serves as the registration context until it expires.
  */
+export const RecoveryRedeemResponse = RecoveryKit.extend({
+  /** The registration's own token, which replaces the emailed link's: the link no longer works. */
+  token: LinkToken,
+});
+export type RecoveryRedeemResponse = z.infer<typeof RecoveryRedeemResponse>;
+
 export const recoveryRedeem = {
   method: 'post',
   path: '/auth/recovery/redeem',
@@ -444,8 +450,11 @@ export const recoveryRedeem = {
   summary:
     'Exchanges the recovery code for a new one and opens the registration; 404 to a dead link, 403 invalid_code or recovery_locked',
   body: RecoveryRedeemRequest,
-  response: { description: 'The new recovery code', schema: RecoveryKit },
-} as const satisfies RouteDefinition<typeof RecoveryKit>;
+  response: {
+    description: 'The new recovery code and the registration token',
+    schema: RecoveryRedeemResponse,
+  },
+} as const satisfies RouteDefinition<typeof RecoveryRedeemResponse>;
 
 export const RecoveryOptionsRequest = z.strictObject({ token: LinkToken });
 export type RecoveryOptionsRequest = z.infer<typeof RecoveryOptionsRequest>;
@@ -588,6 +597,8 @@ export const DevicePasskey = z.object({
   state: z.enum(['active', 'pending']),
   /** When a pending passkey becomes active; null once it is. */
   activeFrom: z.iso.datetime({ offset: true }).nullable(),
+  /** A recovery's passkey, waiting: while it does, cancelling it is all a session may do (R6). */
+  recovery: z.boolean(),
   sessions: z.array(DeviceSession),
 });
 export type DevicePasskey = z.infer<typeof DevicePasskey>;

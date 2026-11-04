@@ -427,7 +427,7 @@ const pendingRecovery = (credentialId: typeof passkeyTable.credentialID) =>
     sql`(SELECT 1 FROM ${passkeyActivation}
           WHERE ${passkeyActivation.credentialID} = ${credentialId}
             AND ${passkeyActivation.recovery})`,
-  );
+  ).mapWith(Boolean);
 
 async function isPending(db: Database | Transaction, credentialId: string) {
   const [found] = await db
@@ -467,6 +467,7 @@ export const devices = {
         id: passkeyTable.id,
         credentialId: passkeyTable.credentialID,
         createdAt: passkeyTable.createdAt,
+        recovery: pendingRecovery(passkeyTable.credentialID),
         pendingUntil:
           sql<Date | null>`(SELECT ${passkeyActivation.activeFrom} FROM ${passkeyActivation}
           WHERE ${passkeyActivation.credentialID} = ${passkeyTable.credentialID}
@@ -624,6 +625,14 @@ export const devices = {
       .where(and(eq(passkeyTable.userId, accountId), gt(passkeyActivation.activeFrom, sql`now()`)));
     return found?.until ?? null;
   },
+  sessionExists: async (db: Database | Transaction, sessionId: string) =>
+    (
+      await db
+        .select({ id: sessionTable.id })
+        .from(sessionTable)
+        .where(eq(sessionTable.id, sessionId))
+        .limit(1)
+    ).length === 1,
   /** Whether a passkey a recovery registered is still waiting (spec 0003, R6). */
   recoveryPending: async (db: Database | Transaction, accountId: string) =>
     (
@@ -633,10 +642,7 @@ export const devices = {
         .where(and(eq(passkeyTable.userId, accountId), pendingRecovery(passkeyTable.credentialID)))
         .limit(1)
     ).length === 1,
-  /**
-   * Forgets the waits that are over: the IDs of the passkeys that became active, and whether a
-   * recovery passkey's activation ended sessions.
-   */
+  /** Forgets the waits that are over; the IDs of the passkeys that became active. */
   activateDue: async (tx: Transaction, accountId: string) => {
     const due = await tx
       .delete(passkeyActivation)
@@ -657,16 +663,22 @@ export const devices = {
         recovery: passkeyActivation.recovery,
         activeFrom: passkeyActivation.activeFrom,
       });
-    if (due.length === 0) return { activated: [], sessionsEnded: false };
+    if (due.length === 0) return [];
     // A recovery passkey's activation ends every session it restricted (spec 0003, R6): all
     // those signed in before it became active, which it could not have signed in itself.
     const recovered = due.filter(({ recovery }) => recovery);
     for (const { activeFrom } of recovered) {
+      // A JavaScript date drops the microseconds, so the cut-off is rounded up to the next one.
       await tx
         .delete(sessionTable)
-        .where(and(eq(sessionTable.userId, accountId), lt(sessionTable.createdAt, activeFrom)));
+        .where(
+          and(
+            eq(sessionTable.userId, accountId),
+            lt(sessionTable.createdAt, sql`${activeFrom}::timestamptz + interval '1 millisecond'`),
+          ),
+        );
     }
-    const activated = (
+    return (
       await tx
         .select({ id: passkeyTable.id })
         .from(passkeyTable)
@@ -677,7 +689,6 @@ export const devices = {
           ),
         )
     ).map(({ id }) => id);
-    return { activated, sessionsEnded: recovered.length > 0 };
   },
 };
 
