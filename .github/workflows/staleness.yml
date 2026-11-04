@@ -42,6 +42,8 @@ jobs:
 
   post:
     needs: report
+    # A manual run from another branch would post that branch's knowledge base.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
@@ -61,13 +63,14 @@ jobs:
           # The label alone finds the issue, and only one this workflow opened counts.
           number=$(gh issue list --label knowledge-staleness --state open --limit 100 \
             --json number,author \
-            --jq '[.[] | select(.author.login | endswith("github-actions"))][0].number // empty')
+            --jq '[.[] | select(.author.login == "app/github-actions")][0].number // empty')
           if [ -z "$number" ]; then
             url=$(gh issue create --title 'Knowledge staleness report' \
               --label knowledge-staleness --body-file staleness-report.md)
             number=${url##*/}
-          else
-            gh issue edit "$number" --body-file staleness-report.md
           fi
           [[ "$number" =~ ^[0-9]+$ ]] || { echo 'Unexpected issue number' >&2; exit 1; }
-          gh api -X PUT "repos/$GH_REPO/issues/$number/lock" --silent
+          gh issue edit "$number" --body-file staleness-report.md
+          if [ "$(gh api "repos/$GH_REPO/issues/$number" --jq .locked)" != true ]; then
+            gh api -X PUT "repos/$GH_REPO/issues/$number/lock" --silent
+          fi
