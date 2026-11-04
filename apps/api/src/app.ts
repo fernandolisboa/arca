@@ -24,6 +24,8 @@ import {
   revokeOtherSessions,
   revokePasskey,
   revokeSession,
+  setUpVault,
+  addVaultEnvelope,
   StepUpAction,
   stepUpNonceHeader,
   StepUpOptionsRequest,
@@ -67,6 +69,7 @@ import { bearerMatches } from './cron-auth.js';
 import { cachedDatabaseCheck, type CheckDatabase } from './database-health.js';
 import type { Tunnel } from './monitoring-tunnel.js';
 import { securityTxt } from './security-txt.js';
+import type { Vault } from './vault/vault.js';
 import { cspReportPath } from '@arca/security-policy';
 import { tunnelPath, type Logger } from '@arca/telemetry';
 import { utcDate, type IsoDate } from './workflows/workflow-arguments.js';
@@ -133,6 +136,8 @@ export interface AppDependencies {
   readonly dataExports?: DataExports;
   /** The account's deletion and its cancellation (spec 0004, R9); absent, the routes answer 401. */
   readonly accountDeletion?: AccountDeletion;
+  /** The vault's recipients and envelopes (spec 0005, R2); absent, its routes answer 401. */
+  readonly vault?: Vault;
   /**
    * The outbox's messages, given only on preview deployments, which Vercel Deployment
    * Protection keeps private (spec 0003, R8); absent, `/internal/outbox` is a 404.
@@ -181,6 +186,7 @@ export type ErrorCode =
   | 'recovery_locked'
   | 'recovery_pending'
   | 'deletion_pending'
+  | 'vault_exists'
   | 'accounts_closed'
   | 'too_large'
   | 'request_failed'
@@ -302,6 +308,7 @@ export function createApp({
   audit,
   dataExports,
   accountDeletion,
+  vault,
   outbox,
   monitor,
   syntheticError = false,
@@ -397,7 +404,7 @@ export function createApp({
     c.set('errorCode', 'rate_limited');
     return c.json({ error: { code: 'rate_limited' } } satisfies ErrorResponse, 429);
   };
-  const fail = <Status extends 401 | 403 | 404 | 409 | 503>(
+  const fail = <Status extends 400 | 401 | 403 | 404 | 409 | 503>(
     c: Context<AppEnv>,
     code: ErrorCode,
     status: Status,
@@ -702,7 +709,15 @@ export function createApp({
       targets: [passkeyId],
     });
     if (!approved) return fail(c, 'step_up_required', 403);
-    const outcome = await devices.revokePasskey(current, passkeyId);
+    // The passkey's vault envelope goes first, so a failure in between leaves an orphan the
+    // envelope route never serves rather than a revoked passkey that still opens the vault. It
+    // runs inside the app_auth transaction, so no path may take app_auth while holding app_api:
+    // the two small pools would wait on each other.
+    const outcome = await devices.revokePasskey(current, passkeyId, (credentialId) =>
+      vault === undefined
+        ? Promise.resolve()
+        : vault.forgetPasskey(current.accountId, credentialId),
+    );
     if (outcome === 'not_found') return fail(c, 'not_found', 404);
     if (outcome === 'last_active') return fail(c, 'last_active_passkey', 409);
     if (outcome === 'recovery_pending') return fail(c, 'recovery_pending', 403);
@@ -846,6 +861,45 @@ export function createApp({
     });
     if (!approved) return fail(c, 'step_up_required', 403);
     if (!(await accountDeletion.cancel(current.accountId))) return fail(c, 'not_found', 404);
+    return c.json({}, 200);
+  });
+
+  v1.openapi(openApiRoutes.vaultStatus, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || vault === undefined) return unauthorized(c);
+    return c.json(await vault.status(current.accountId), 200);
+  });
+
+  /** Reading or adding to the vault needs this session's `vault_unlock` window (spec 0005, R2). */
+  const unlocked = async (current: SignedIn) =>
+    stepUp !== undefined && (await stepUp.vaultUnlocked(current));
+
+  v1.openapi(openApiRoutes.setUpVault, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || vault === undefined) return unauthorized(c);
+    if (!(await unlocked(current))) return fail(c, 'step_up_required', 403);
+    const outcome = await vault.setUp(current.accountId, setUpVault.body.parse(await c.req.json()));
+    if (outcome === 'exists') return fail(c, 'vault_exists', 409);
+    if (outcome === 'unknown_passkey') return fail(c, 'invalid_request', 400);
+    return c.json({}, 200);
+  });
+
+  v1.openapi(openApiRoutes.vaultEnvelopes, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || vault === undefined) return unauthorized(c);
+    if (!(await unlocked(current))) return fail(c, 'step_up_required', 403);
+    const found = await vault.envelopes(current.accountId);
+    return found === null ? fail(c, 'not_found', 404) : c.json(found, 200);
+  });
+
+  v1.openapi(openApiRoutes.addVaultEnvelope, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || vault === undefined) return unauthorized(c);
+    if (!(await unlocked(current))) return fail(c, 'step_up_required', 403);
+    const sealed = addVaultEnvelope.body.parse(await c.req.json());
+    const outcome = await vault.addEnvelope(current.accountId, sealed);
+    if (outcome === 'no_vault') return fail(c, 'not_found', 404);
+    if (outcome === 'unknown_passkey') return fail(c, 'invalid_request', 400);
     return c.json({}, 200);
   });
 

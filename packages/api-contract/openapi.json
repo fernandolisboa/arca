@@ -3147,7 +3147,8 @@
                               "data_exported",
                               "deletion_requested",
                               "deletion_cancelled",
-                              "account_erased"
+                              "account_erased",
+                              "vault_envelopes_fetched"
                             ]
                           },
                           "actorAccountId": {
@@ -3427,6 +3428,346 @@
         "responses": {
           "200": {
             "description": "Deletion cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vault": {
+      "get": {
+        "operationId": "getVaultStatus",
+        "summary": "Whether the account's vault is set up, and its current public recipient; 401 without a session",
+        "responses": {
+          "200": {
+            "description": "The vault status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "recipient": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "maxLength": 2100,
+                      "pattern": "^age1pq1[02-9ac-hj-np-z]+$"
+                    }
+                  },
+                  "required": [
+                    "recipient"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "setUpVault",
+        "summary": "Stores a new vault's recipient and envelopes, within a vault_unlock window; 403 step_up_required, 409 vault_exists, 400 invalid_request for a credential that is not an active passkey of the account",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "recipient": {
+                    "type": "string",
+                    "maxLength": 2100,
+                    "pattern": "^age1pq1[02-9ac-hj-np-z]+$"
+                  },
+                  "passkeyEnvelopes": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "credentialId": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9_-]{16,1366}$"
+                        },
+                        "ciphertext": {
+                          "type": "string",
+                          "minLength": 86,
+                          "maxLength": 21846,
+                          "format": "base64url"
+                        }
+                      },
+                      "required": [
+                        "credentialId",
+                        "ciphertext"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 16
+                  },
+                  "recoveryEnvelope": {
+                    "type": "string",
+                    "minLength": 86,
+                    "maxLength": 21846,
+                    "format": "base64url"
+                  }
+                },
+                "required": [
+                  "recipient",
+                  "passkeyEnvelopes",
+                  "recoveryEnvelope"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Vault set up",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vault/envelopes": {
+      "get": {
+        "operationId": "getVaultEnvelopes",
+        "summary": "The vault's envelopes, within a vault_unlock window, recorded as fetched; 403 step_up_required, 404 not_found before the vault is set up",
+        "responses": {
+          "200": {
+            "description": "The envelopes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "recipients": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "recipient": {
+                            "type": "string",
+                            "maxLength": 2100,
+                            "pattern": "^age1pq1[02-9ac-hj-np-z]+$"
+                          },
+                          "current": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "recipient",
+                          "current"
+                        ]
+                      }
+                    },
+                    "envelopes": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "recipientId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "passkey_prf",
+                              "recovery"
+                            ]
+                          },
+                          "credentialId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "pattern": "^[A-Za-z0-9_-]{16,1366}$"
+                          },
+                          "ciphertext": {
+                            "type": "string",
+                            "minLength": 86,
+                            "maxLength": 21846,
+                            "format": "base64url"
+                          }
+                        },
+                        "required": [
+                          "recipientId",
+                          "kind",
+                          "credentialId",
+                          "ciphertext"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "recipients",
+                    "envelopes"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "addVaultEnvelope",
+        "summary": "Adds a passkey's envelope for the current recipient, within a vault_unlock window, keeping one already there; 403 step_up_required, 404 not_found before the vault is set up, 400 invalid_request for a credential that is not an active passkey of the account",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "credentialId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{16,1366}$"
+                  },
+                  "ciphertext": {
+                    "type": "string",
+                    "minLength": 86,
+                    "maxLength": 21846,
+                    "format": "base64url"
+                  }
+                },
+                "required": [
+                  "credentialId",
+                  "ciphertext"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Envelope stored",
             "content": {
               "application/json": {
                 "schema": {

@@ -15,6 +15,8 @@ import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-da
 // R4). Synthetic data only.
 const origin = 'http://localhost:3000';
 const rpId = 'localhost';
+/** No vault in these tests: nothing to delete before a revocation. */
+const noVault = () => Promise.resolve();
 
 let testDatabase: AuthTestDatabase;
 let fixtures: ReturnType<typeof accountFixtures>;
@@ -145,7 +147,7 @@ describe('revoking a passkey (spec 0003, R4)', () => {
     const current = await session(owner, newer);
     await session(owner, older);
     await session(owner, older);
-    expect(await devices.revokePasskey(current, older.id)).toBe('revoked');
+    expect(await devices.revokePasskey(current, older.id, noVault)).toBe('revoked');
     expect(await fixtures.sessionsOf(owner)).toEqual([current.sessionId]);
     expect(
       await fixtures.count(
@@ -182,7 +184,7 @@ describe('revoking a passkey (spec 0003, R4)', () => {
     await verifiedStepUp(elsewhere, newer, sensitive('regenerateRecoveryKit'));
     expect(await stepUp.vaultUnlocked(elsewhere)).toBe(true);
 
-    expect(await devices.revokePasskey(current, older.id)).toBe('revoked');
+    expect(await devices.revokePasskey(current, older.id, noVault)).toBe('revoked');
     expect(await stepUp.vaultUnlocked(elsewhere)).toBe(false);
     const left = await testDatabase.asAdmin(
       async (client) =>
@@ -205,7 +207,7 @@ describe('revoking a passkey (spec 0003, R4)', () => {
     const [older, newer] = owner.keys as [Key, Key];
     const current = await session(owner, newer);
     const kept = await session(owner, older);
-    expect(await devices.revokePasskey(current, newer.id)).toBe('revoked');
+    expect(await devices.revokePasskey(current, newer.id, noVault)).toBe('revoked');
     expect(await fixtures.sessionsOf(owner)).toEqual([kept.sessionId]);
   });
 
@@ -215,7 +217,7 @@ describe('revoking a passkey (spec 0003, R4)', () => {
     const current = await session(owner, newer);
     noticesFail = true;
     try {
-      expect(await devices.revokePasskey(current, older.id)).toBe('revoked');
+      expect(await devices.revokePasskey(current, older.id, noVault)).toBe('revoked');
     } finally {
       noticesFail = false;
     }
@@ -239,7 +241,7 @@ describe('revoking a passkey (spec 0003, R4)', () => {
         ...real,
         active: async (accountId, credentialId) => {
           const found = await real.active(accountId, credentialId);
-          expect(await devices.revokePasskey(current, older.id)).toBe('revoked');
+          expect(await devices.revokePasskey(current, older.id, noVault)).toBe('revoked');
           return found;
         },
       },
@@ -262,7 +264,7 @@ describe('revoking a passkey (spec 0003, R4)', () => {
     const owner = await account(1);
     const key = owner.keys[0];
     const current = await session(owner, key);
-    expect(await devices.revokePasskey(current, key.id)).toBe('last_active');
+    expect(await devices.revokePasskey(current, key.id, noVault)).toBe('last_active');
     expect(await fixtures.sessionsOf(owner)).toEqual([current.sessionId]);
     expect(await events(owner)).toEqual([]);
     expect(noticesTo(owner)).toEqual([]);
@@ -274,8 +276,8 @@ describe('revoking a passkey (spec 0003, R4)', () => {
     const first = await session(owner, older);
     const second = await session(owner, newer);
     const outcomes = await Promise.all([
-      devices.revokePasskey(first, newer.id),
-      devices.revokePasskey(second, older.id),
+      devices.revokePasskey(first, newer.id, noVault),
+      devices.revokePasskey(second, older.id, noVault),
     ]);
     expect([...outcomes].sort()).toEqual(['last_active', 'revoked']);
     expect(
@@ -289,8 +291,8 @@ describe('revoking a passkey (spec 0003, R4)', () => {
     const owner = await account();
     const current = await session(owner, owner.keys[0]);
     const stranger = await account();
-    expect(await devices.revokePasskey(current, stranger.keys[0].id)).toBe('not_found');
-    expect(await devices.revokePasskey(current, randomUUID())).toBe('not_found');
+    expect(await devices.revokePasskey(current, stranger.keys[0].id, noVault)).toBe('not_found');
+    expect(await devices.revokePasskey(current, randomUUID(), noVault)).toBe('not_found');
     expect(
       await fixtures.count('SELECT count(*)::int AS n FROM auth.passkey WHERE user_id = $1', [
         stranger.accountId,
@@ -333,7 +335,7 @@ describe('a step-up and a revocation of its passkey at once (spec 0003, R4 and R
         ...audit,
         record: async (event) => {
           if (event.code === 'step_up_verified') {
-            revocation = devices.revokePasskey(current, older.id);
+            revocation = devices.revokePasskey(current, older.id, noVault);
             // Proves the revocation is waiting on the passkey row this verification holds.
             await waitForBlockedQuery();
           }
@@ -590,8 +592,8 @@ describe('adding a passkey (spec 0003, R4)', () => {
     const current = await session(owner, owner.keys[0]);
     await added(current);
     const [pending] = await fixtures.pendingOf(owner);
-    expect(await devices.revokePasskey(current, owner.keys[0].id)).toBe('last_active');
-    expect(await devices.revokePasskey(current, pending?.id ?? '')).toBe('revoked');
+    expect(await devices.revokePasskey(current, owner.keys[0].id, noVault)).toBe('last_active');
+    expect(await devices.revokePasskey(current, pending?.id ?? '', noVault)).toBe('revoked');
     expect(noticesTo(owner)).toEqual(['passkey_added', 'pending_passkey_cancelled']);
     expect((await devices.status(owner.accountId)).pendingUntil).toBeNull();
     expect((await devices.list(current)).passkeys.map(({ id }) => id)).toEqual([owner.keys[0].id]);

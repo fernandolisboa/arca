@@ -7,6 +7,7 @@ import { accounts } from './auth/auth.js';
 import { createApp } from './app.js';
 import { auditLog, auditReader, type AuditLog } from './audit/log.js';
 import { createAuth, credentialStore } from './auth/auth.js';
+import { createVault } from './vault/vault.js';
 import { rateLimiter, type RateLimiter } from './auth/rate-limit.js';
 import { clientAddressFor } from './client-address.js';
 import { createEnrollment, ownerCode, type Enrollment } from './auth/enrollment.js';
@@ -174,6 +175,18 @@ function authParts(): Promise<AuthParts> {
   return parts;
 }
 
+/** The vault on the app_api pool, with the account's active passkeys read on app_auth. */
+async function vaultService() {
+  const { audit } = await authParts();
+  const credentials = credentialStore(authConnection());
+  return createVault({
+    db: connected().db,
+    activeCredentials: async (accountId) =>
+      (await credentials.activeOf(accountId)).map(({ credentialId }) => credentialId),
+    audit,
+  });
+}
+
 /**
  * Read once at load, but a missing setting only refuses state-changing requests (the auth routes
  * then fail and log it), so `GET /v1/health` and the static shell keep answering.
@@ -246,8 +259,8 @@ const app = createApp({
     list: async (signedIn) => (await authParts()).devices.list(signedIn),
     revokeSession: async (signedIn, sessionId) =>
       (await authParts()).devices.revokeSession(signedIn, sessionId),
-    revokePasskey: async (signedIn, passkeyId) =>
-      (await authParts()).devices.revokePasskey(signedIn, passkeyId),
+    revokePasskey: async (signedIn, passkeyId, beforeRevoke) =>
+      (await authParts()).devices.revokePasskey(signedIn, passkeyId, beforeRevoke),
     revokeOtherSessions: async (signedIn) =>
       (await authParts()).devices.revokeOtherSessions(signedIn),
     addOptions: async (signedIn) => (await authParts()).devices.addOptions(signedIn),
@@ -284,6 +297,15 @@ const app = createApp({
         i18n,
       }).build(accountId);
     },
+  },
+  vault: {
+    status: (accountId) => vaultService().then((vault) => vault.status(accountId)),
+    setUp: (accountId, request) => vaultService().then((vault) => vault.setUp(accountId, request)),
+    envelopes: (accountId) => vaultService().then((vault) => vault.envelopes(accountId)),
+    addEnvelope: (accountId, sealed) =>
+      vaultService().then((vault) => vault.addEnvelope(accountId, sealed)),
+    forgetPasskey: (accountId, credentialId) =>
+      vaultService().then((vault) => vault.forgetPasskey(accountId, credentialId)),
   },
   ...(outbox === undefined ? {} : { outbox }),
   ...(tunnel === undefined ? {} : { tunnel }),
