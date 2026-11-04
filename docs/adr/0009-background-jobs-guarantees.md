@@ -34,6 +34,10 @@ The reasons for choosing Vercel Workflows in ADR-0007 still hold: no extra vendo
 - No job handles document plaintext: [ADR-0018](0018-vault-encryption.md) allows plaintext only in the memory of one request the owner authorized.
 - No public, unauthenticated route starts a workflow.
 
+### Amendment, 2026-11-04: work behind an answer
+
+Finishing a request after its answer, in the same function invocation through the platform's `waitUntil`, is not background work under this ADR, and is allowed only where losing the work is harmless because the person can simply ask again. Nothing is queued or stored on the platform: its inputs live only in that invocation's memory. It is never retried, catches and logs its own errors by code only (nothing else observes it), stays well within the function's maximum duration, and never changes the answer or its timing. The first use is recovery's link email (spec 0003 R6): its route is public, so it may not start a workflow, and the address and token it needs would not belong in a run's payload anyway.
+
 ### Amendment to ADR-0008
 
 ADR-0008 says deleting a case deletes related data in workflow runs. That cannot be done. Instead: workflow runs hold identifiers only and start with zero retention, so after a case is deleted its runs hold only identifiers that point at nothing. Vercel deletes their payloads within 36 days; their metadata (IDs, names, statuses, timestamps, no personal data) can be kept up to one year. The retention schedule records both windows.

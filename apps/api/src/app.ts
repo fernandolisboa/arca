@@ -50,6 +50,7 @@ import {
 import type { RateLimiter, RateLimitRule } from './auth/rate-limit.js';
 import type { RecoveryKits } from './auth/recovery-kit.js';
 import type { Recovery } from './auth/recovery.js';
+import { behindAnswerOf } from './behind-answer.js';
 import type { Registration, RegistrationOutcome } from './auth/registration.js';
 import type { AuthService, SignedIn } from './auth/service.js';
 import type { CanonicalAction } from './auth/step-up-encoding.js';
@@ -674,7 +675,14 @@ export function createApp({
     const { email } = recoveryStart.body.parse(await c.req.json());
     const perEmail = await overLimit(c, authLimits, recoveryLimits.startEmail, email.toLowerCase());
     if (perEmail !== undefined) return perEmail;
-    if ((await recovery.start(email)) === 'email_unavailable') {
+    if (
+      (await recovery.start(
+        email,
+        behindAnswerOf(c.req.raw, () => {
+          logger.error({ errorName: 'BehindAnswerUnavailable' });
+        }),
+      )) === 'email_unavailable'
+    ) {
       return fail(c, 'email_unavailable', 503);
     }
     return c.json({}, 200);

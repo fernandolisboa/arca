@@ -55,9 +55,18 @@ export type RedeemOutcome =
 
 export type RecoveryRegistration = 'registered' | 'refused' | 'not_found';
 
+/** Keeps work running after the answer has gone (the platform's `waitUntil`). */
+export type BehindAnswer = (work: Promise<void>) => void;
+
 export interface Recovery {
-  /** The same outcome whether or not the address has an account. */
-  readonly start: (email: string) => Promise<'accepted' | 'email_unavailable'>;
+  /**
+   * The same outcome, at the same time, whether or not the address has an account: the lookup
+   * and the send run behind the answer.
+   */
+  readonly start: (
+    email: string,
+    behind: BehindAnswer,
+  ) => Promise<'accepted' | 'email_unavailable'>;
   readonly redeem: (token: string, code: string) => Promise<RedeemOutcome>;
   /** Null to a link that is dead or not redeemed. */
   readonly options: (token: string) => Promise<PasskeyCreationOptions | null>;
@@ -84,7 +93,7 @@ export interface RecoverySettings {
   readonly emailAvailable: boolean;
   /** Records the waits that are over first, so a pending recovery passkey is seen as it stands. */
   readonly status: (accountId: string) => Promise<AccountStatus>;
-  /** Every start takes at least this long, so its duration says nothing about the address. */
+  /** Every start answers after this long, which also slows guessing. */
   readonly startFloorMs?: number;
   readonly sleep?: (ms: number) => Promise<void>;
   readonly random?: (size: number) => Buffer;
@@ -235,13 +244,11 @@ export function createRecovery({
   }
 
   return {
-    start: async (address) => {
+    start: async (address, behind) => {
       if (!emailAvailable) return 'email_unavailable';
-      // Whatever happens, the answer and its timing class are the same for every address.
-      await Promise.all([
-        sendLink(address.toLowerCase()).catch(logged('RecoveryStart')),
-        sleep(startFloorMs),
-      ]);
+      // Nothing about the address is awaited, so the answer and its time are the same for all.
+      behind(sendLink(address.toLowerCase()).catch(logged('RecoveryStart')));
+      await sleep(startFloorMs);
       return 'accepted';
     },
 

@@ -81,9 +81,20 @@ const mailTo = (account: Account) => mail.filter(({ to }) => to === account.emai
 const noticesTo = (account: Account) =>
   sent.filter(({ to }) => to === account.email).map(({ kind }) => kind);
 
+const behind: Promise<void>[] = [];
+
+/** Starts recovery and waits for what ran behind the answer, as the platform does. */
+async function started(email: string) {
+  const answer = await recovery.start(email, (work) => {
+    behind.push(work);
+  });
+  await Promise.all(behind.splice(0));
+  return answer;
+}
+
 /** Starts recovery and reads the token from the fragment of the emailed link. */
 async function linkFor(account: Account) {
-  expect(await recovery.start(account.email)).toBe('accepted');
+  expect(await started(account.email)).toBe('accepted');
   const text = mailTo(account).at(-1)?.text ?? '';
   const token = /\/recover#([\w-]+)/.exec(text)?.[1];
   expect(token).toBeDefined();
@@ -129,8 +140,8 @@ const linkExpired = (account: Account) =>
 describe('starting recovery (spec 0003, R6)', () => {
   it('emails a link to an account and answers the same for an unknown address', async () => {
     const { account } = await owner();
-    expect(await recovery.start(account.email.toUpperCase())).toBe('accepted');
-    expect(await recovery.start('nobody@example.com')).toBe('accepted');
+    expect(await started(account.email.toUpperCase())).toBe('accepted');
+    expect(await started('nobody@example.com')).toBe('accepted');
     expect(floors).toEqual([1500, 1500]);
     expect(mail.filter(({ to }) => to === 'nobody@example.com')).toEqual([]);
     const [message] = mailTo(account);
@@ -161,9 +172,46 @@ describe('starting recovery (spec 0003, R6)', () => {
     expect((await recovery.redeem(second, code)).ok).toBe(true);
   });
 
+  it('answers without waiting for the send, which runs behind the answer', async () => {
+    const { account } = await owner();
+    const held: Promise<void>[] = [];
+    let release = (): void => undefined;
+    const stalled = createRecovery({
+      db: testDatabase.authDb,
+      audit: auditLog(testDatabase.auditDb),
+      email: {
+        send: (message) =>
+          new Promise<void>((resolve) => {
+            release = () => {
+              mail.push(message);
+              resolve();
+            };
+          }),
+      },
+      notices: { send: () => Promise.resolve() },
+      i18n: await createI18n(),
+      origin,
+      logger: silentLogger,
+      emailAvailable: true,
+      status: devices.status,
+      sleep: () => Promise.resolve(),
+    });
+    expect(
+      await stalled.start(account.email, (work) => {
+        held.push(work);
+      }),
+    ).toBe('accepted');
+    expect(held).toHaveLength(1);
+    expect(mailTo(account)).toEqual([]);
+    await expect.poll(() => linksOf(account)).toBe(1);
+    release();
+    await Promise.all(held);
+    expect(mailTo(account)).toHaveLength(1);
+  });
+
   it('sends nothing to an account without a recovery code', async () => {
     const account = await fixtures.account(1);
-    await recovery.start(account.email);
+    await started(account.email);
     expect(mailTo(account)).toEqual([]);
   });
 
@@ -179,7 +227,7 @@ describe('starting recovery (spec 0003, R6)', () => {
       emailAvailable: false,
       status: devices.status,
     });
-    expect(await closed.start('nobody@example.com')).toBe('email_unavailable');
+    expect(await closed.start('nobody@example.com', () => undefined)).toBe('email_unavailable');
   });
 
   it('replaces an open context, which only the new code it issued resumes', async () => {
@@ -225,7 +273,7 @@ describe('redeeming the code (spec 0003, R6)', () => {
     expect(await fixtures.events(account, ['recovery_failed'])).toHaveLength(recoveryAttempts);
     expect(await recovery.redeem(token, code)).toEqual({ ok: false, reason: 'not_found' });
     const before = mailTo(account).length;
-    await recovery.start(account.email);
+    await started(account.email);
     expect(mailTo(account)).toHaveLength(before);
     const lockedUntil = await testDatabase.asAdmin(
       async (client) =>
@@ -264,7 +312,7 @@ describe('redeeming the code (spec 0003, R6)', () => {
     expect(await kits.status(account.accountId)).toBe('none');
     // Neither code opens recovery any more: the old one was spent, the new one lapsed.
     const before = mailTo(account).length;
-    await recovery.start(account.email);
+    await started(account.email);
     expect(mailTo(account)).toHaveLength(before);
     expect(outcome.ok).toBe(true);
   });
@@ -413,7 +461,7 @@ describe('the wait of a recovery passkey (spec 0003, R6)', () => {
     const { account } = await recovered();
     expect(await devices.status(account.accountId)).toMatchObject({ recoveryPending: true });
     const before = mailTo(account).length;
-    await recovery.start(account.email);
+    await started(account.email);
     expect(mailTo(account)).toHaveLength(before);
   });
 
@@ -459,7 +507,7 @@ describe('the wait of a recovery passkey (spec 0003, R6)', () => {
       { code: 'recovery_cancelled', actor: account.accountId, details: {} },
     ]);
     const before = mailTo(account).length;
-    await recovery.start(account.email);
+    await started(account.email);
     expect(mailTo(account)).toHaveLength(before);
   });
 

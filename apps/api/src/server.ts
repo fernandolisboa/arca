@@ -226,7 +226,7 @@ const app = createApp({
     status: async (accountId) => (await authParts()).devices.status(accountId),
   },
   recovery: {
-    start: async (email) => (await authParts()).recovery.start(email),
+    start: async (email, behind) => (await authParts()).recovery.start(email, behind),
     redeem: async (token, code) => (await authParts()).recovery.redeem(token, code),
     options: async (token) => (await authParts()).recovery.options(token),
     verify: async (token, response, device) =>

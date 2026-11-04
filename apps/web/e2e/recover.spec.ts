@@ -71,10 +71,13 @@ async function recoverIn(browser: Browser, page: Page, email: string, code: stri
   );
   await expectAccessible(recovering);
 
-  const link = (await latestEmailTo(email, '/recover#'))?.match(
-    /http:\/\/\S+\/recover#[A-Za-z0-9_-]{43}/,
-  )?.[0];
-  expect(link).toBeDefined();
+  // The link is sent behind the answer, so it may land a moment after the status shows.
+  const recoveryLink = async () =>
+    (await latestEmailTo(email, '/recover#'))?.match(
+      /http:\/\/\S+\/recover#[A-Za-z0-9_-]{43}/,
+    )?.[0];
+  await expect.poll(recoveryLink).toBeDefined();
+  const link = await recoveryLink();
   await recovering.goto(link ?? '');
   await expect(recovering).toHaveURL(`${databaseServer.origin}/recover`);
   await recovering
