@@ -167,6 +167,7 @@ export const ptBR = {
       'Sua conta está aguardando a confirmação de quem convidou você. Até lá, você não consegue convidar ninguém nem enviar documentos.',
     invites: 'Convidar alguém',
     devices: 'Dispositivos',
+    vault: 'Cofre',
     pendingPasskey:
       'Uma chave de acesso nova foi criada na sua conta. Ela passa a valer em {activeFrom}. Se não foi você, cancele agora.',
     pendingLink: 'Ver a chave nova',
@@ -315,6 +316,37 @@ export const ptBR = {
     signIn: 'Entre para ver o seu kit de recuperação.',
     failure:
       '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+  },
+  /** The vault (spec 0005, R2): set up, opened with a passkey or the vault recovery secret, closed. */
+  vault: {
+    title: 'Cofre',
+    lead: 'O cofre guarda os seus documentos trancados com uma chave que só existe nos seus dispositivos. Nem o Arca consegue ler o que está lá dentro.',
+    signIn: 'Entre para abrir o seu cofre.',
+    statusFailure: 'Não conseguimos ver o seu cofre agora. Atualize a página para tentar de novo.',
+    setUpLead:
+      'Você ainda não tem um cofre. Ao criar, o Arca gera a chave do cofre aqui no seu dispositivo e um segredo de recuperação, que você guarda junto com o kit de recuperação.',
+    setUp: 'Criar meu cofre',
+    unlockLead: 'O cofre está fechado. Para abrir, confirme com a sua chave de acesso.',
+    unlock: 'Abrir o cofre',
+    waiting: 'Confirme no seu dispositivo para continuar.',
+    secretLead:
+      'Neste dispositivo, a sua chave de acesso ainda não abre o cofre. Digite o segredo de recuperação do cofre, o que está no seu kit de recuperação. Você só precisa fazer isso uma vez aqui.',
+    secretSubmit: 'Abrir com o segredo',
+    opened:
+      'O cofre está aberto neste dispositivo. Ele fecha sozinho depois de {minutes} minutos sem uso.',
+    lock: 'Fechar o cofre',
+    failure:
+      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} wrong_secret {Esse segredo não abre o cofre. Confira e tente de novo.} wrong_identity {A chave aberta não é a do seu cofre atual. Atualize a página e tente de novo.} exists {O seu cofre já foi criado em outro dispositivo. Atualize a página.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+    /** The vault part of the recovery kit (spec 0003, R6): shown once, after the check. */
+    kit: {
+      lead: 'Este é o segundo item do seu kit de recuperação. Ele aparece uma vez só.',
+      codeLabel: 'Segredo de recuperação do cofre',
+      keep: 'Guarde junto com o código de recuperação da conta: impresso ou anotado à mão, num lugar seguro, fora do computador. Se você perder todas as chaves de acesso, só ele abre o cofre.',
+      fileName: 'arca-segredo-do-cofre.txt',
+      fileText:
+        'Segredo de recuperação do cofre do Arca\n\n{code}\n\nEste segredo abre o seu cofre quando nenhuma chave de acesso consegue. Quem tiver o segredo e entrar na sua conta consegue ler os seus documentos, então guarde num lugar seguro.',
+      saved: 'Guardei o segredo num lugar seguro',
+    },
   },
   /** Account recovery (spec 0003, R6): the emailed link, the recovery code, the new passkey. */
   recover: {

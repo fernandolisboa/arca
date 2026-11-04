@@ -497,6 +497,9 @@ importers:
       '@arca/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@arca/vault':
+        specifier: workspace:*
+        version: link:../../packages/vault
       '@sentry/react':
         specifier: 'catalog:'
         version: 11.10.0(react@19.3.1)

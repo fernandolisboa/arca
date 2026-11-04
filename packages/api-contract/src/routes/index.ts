@@ -1088,4 +1088,5 @@ export const webPathSegments = [
   'recovery-kit',
   'settings',
   'sign-in',
+  'vault',
 ] as const;

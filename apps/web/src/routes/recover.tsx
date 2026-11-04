@@ -3,7 +3,7 @@ import { Button } from '@arca/ui';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useState, type SubmitEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { emailInput } from '../forms/inputs.js';
+import { emailInput, recoveryCodeInput } from '../forms/inputs.js';
 import { TextField } from '../forms/text-field.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { Page } from '../page.js';
@@ -21,21 +21,10 @@ import {
   type RedeemFailure,
 } from '../recovery.js';
 import { useLinkToken } from '../use-link-token.js';
+import { forgetVault } from '../vault-guard.js';
 import { usePasskeyAvailable } from '../use-passkey-available.js';
 
 export const Route = createFileRoute('/recover')({ component: Recover });
-
-/** The recovery code as people type it: no autofill, no autocorrect. */
-const codeInput = {
-  name: 'recovery-code',
-  type: 'text',
-  required: true,
-  maxLength: 64,
-  autoComplete: 'off',
-  autoCapitalize: 'characters',
-  autoCorrect: 'off',
-  spellCheck: false,
-} as const;
 
 /**
  * Account recovery (spec 0003, R6): without a link token, the person asks for the link; with
@@ -160,7 +149,7 @@ function RedeemCode({
       <form onSubmit={submit} className="flex flex-col gap-4">
         <TextField
           label={t('recover.code.label')}
-          {...codeInput}
+          {...recoveryCodeInput}
           value={code}
           onChange={(event) => {
             setCode(event.currentTarget.value);
@@ -220,6 +209,8 @@ function CreatePasskey({ token }: { readonly token: string }) {
     setFailure(undefined);
     setState('waiting');
     createRecoveryPasskey(passkeys, token)
+      // A recovery forgets the vault identity wrapped on this device (ADR-0018), best effort.
+      .then(() => forgetVault().catch(() => undefined))
       .then(() => {
         setState('done');
       })

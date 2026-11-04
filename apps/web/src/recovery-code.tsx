@@ -6,18 +6,39 @@ import { groupCode } from './enrollment.js';
 import { textLinkClass } from './forms/text-link.js';
 import { commonFailure, type CommonFailure } from './requests.js';
 
+const partLabels = {
+  account: {
+    codeLabel: 'recoveryKit.codeLabel',
+    keep: 'recoveryKit.keep',
+    fileName: 'recoveryKit.fileName',
+    fileText: 'recoveryKit.fileText',
+    saved: 'recoveryKit.saved',
+  },
+  vault: {
+    codeLabel: 'vault.kit.codeLabel',
+    keep: 'vault.kit.keep',
+    fileName: 'vault.kit.fileName',
+    fileText: 'vault.kit.fileText',
+    saved: 'vault.kit.saved',
+  },
+} as const;
+
 /**
- * The account recovery code, shown once (spec 0003, R6): print, a text file behind its warning,
- * and a checkbox before `onSaved`, which the screen that issued the code supplies.
+ * One part of the recovery kit, shown once (spec 0003, R6): the account recovery code or the vault
+ * recovery secret, with print, a text file behind its warning, and a checkbox before `onSaved`,
+ * which the screen that issued it supplies.
  */
 export function RecoveryCodeSheet({
   code,
   onSaved,
+  part = 'account',
 }: {
   readonly code: string;
   readonly onSaved: () => Promise<void>;
+  readonly part?: keyof typeof partLabels;
 }) {
   const { t } = useTranslation();
+  const labels = partLabels[part];
   const labelId = useId();
   const savedId = useId();
   const [warned, setWarned] = useState(false);
@@ -43,13 +64,13 @@ export function RecoveryCodeSheet({
         className="flex flex-col gap-2 rounded-card border border-line bg-surface p-4"
       >
         <p id={labelId} className="font-medium">
-          {t('recoveryKit.codeLabel')}
+          {t(labels.codeLabel)}
         </p>
         <p className="font-mono text-lead tracking-wider break-all text-ink" translate="no">
           {grouped}
         </p>
       </div>
-      <p>{t('recoveryKit.keep')}</p>
+      <p>{t(labels.keep)}</p>
       <div className="flex flex-col gap-2 print:hidden">
         <Button
           onClick={() => {
@@ -65,7 +86,7 @@ export function RecoveryCodeSheet({
               type="button"
               className={textLinkClass}
               onClick={() => {
-                download(t('recoveryKit.fileName'), t('recoveryKit.fileText', { code: grouped }));
+                download(t(labels.fileName), t(labels.fileText, { code: grouped }));
               }}
             >
               {t('recoveryKit.downloadAnyway')}
@@ -94,7 +115,7 @@ export function RecoveryCodeSheet({
             }}
             className="size-5 accent-primary"
           />
-          <label htmlFor={savedId}>{t('recoveryKit.saved')}</label>
+          <label htmlFor={savedId}>{t(labels.saved)}</label>
         </div>
         <Button disabled={!saved || finishing} aria-busy={finishing} onClick={finish}>
           {t('recoveryKit.finish')}

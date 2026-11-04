@@ -8,6 +8,8 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createFileRoute } from '@tanstack/react-router'
+
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DevicesRouteImport } from './routes/devices'
@@ -18,6 +20,8 @@ import { Route as RecoverRouteImport } from './routes/recover'
 import { Route as RecoveryKitRouteImport } from './routes/recovery-kit'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SignInRouteImport } from './routes/sign-in'
+
+const VaultLazyRouteImport = createFileRoute('/vault')()
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,6 +68,11 @@ const SignInRoute = SignInRouteImport.update({
   path: '/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VaultLazyRoute = VaultLazyRouteImport.update({
+  id: '/vault',
+  path: '/vault',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/vault.lazy').then((d) => d.Route))
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/recovery-kit': typeof RecoveryKitRoute
   '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
+  '/vault': typeof VaultLazyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -86,6 +96,7 @@ export interface FileRoutesByTo {
   '/recovery-kit': typeof RecoveryKitRoute
   '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
+  '/vault': typeof VaultLazyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -98,6 +109,7 @@ export interface FileRoutesById {
   '/recovery-kit': typeof RecoveryKitRoute
   '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
+  '/vault': typeof VaultLazyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +123,7 @@ export interface FileRouteTypes {
     | '/recovery-kit'
     | '/settings'
     | '/sign-in'
+    | '/vault'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +135,7 @@ export interface FileRouteTypes {
     | '/recovery-kit'
     | '/settings'
     | '/sign-in'
+    | '/vault'
   id:
     | '__root__'
     | '/'
@@ -133,6 +147,7 @@ export interface FileRouteTypes {
     | '/recovery-kit'
     | '/settings'
     | '/sign-in'
+    | '/vault'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -145,6 +160,7 @@ export interface RootRouteChildren {
   RecoveryKitRoute: typeof RecoveryKitRoute
   SettingsRoute: typeof SettingsRoute
   SignInRoute: typeof SignInRoute
+  VaultLazyRoute: typeof VaultLazyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -212,6 +228,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignInRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vault': {
+      id: '/vault'
+      path: '/vault'
+      fullPath: '/vault'
+      preLoaderRoute: typeof VaultLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -225,6 +248,7 @@ const rootRouteChildren: RootRouteChildren = {
   RecoveryKitRoute: RecoveryKitRoute,
   SettingsRoute: SettingsRoute,
   SignInRoute: SignInRoute,
+  VaultLazyRoute: VaultLazyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
