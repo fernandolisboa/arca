@@ -34,8 +34,10 @@ export type {
   RecoveryKitStatus,
   SessionResponse,
   StepUpAction,
+  StepUpOptionsRequest,
   StepUpPurpose,
   SignOutResponse,
+  VaultEnvelopesResponse,
 } from '../routes/index.js';
 
 export type Fetch = (input: string, init?: RequestInit) => Promise<Response>;

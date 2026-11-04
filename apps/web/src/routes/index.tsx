@@ -90,6 +90,9 @@ function SessionLine() {
         <Link to="/devices" className={textLinkClass}>
           {t('session.devices')}
         </Link>
+        <Link to="/vault" className={textLinkClass}>
+          {t('session.vault')}
+        </Link>
         {session.data.confirmed ? (
           <Link to="/invites" className={textLinkClass}>
             {t('session.invites')}

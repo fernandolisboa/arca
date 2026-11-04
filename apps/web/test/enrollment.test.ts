@@ -26,7 +26,7 @@ import {
 } from '../src/devices.js';
 import { UnreachableError } from '../src/requests.js';
 import { signOut } from '../src/sign-in.js';
-import { base64url } from '../src/step-up.js';
+import { base64url, fromBase64url } from '../src/base64url.js';
 
 interface Sent {
   readonly path: string;
@@ -36,6 +36,9 @@ interface Sent {
 
 const sent: Sent[] = [];
 let answers: Response[] = [];
+
+const { forgetKey } = vi.hoisted(() => ({ forgetKey: vi.fn(() => Promise.resolve()) }));
+vi.mock('../src/platform.js', () => ({ keyStorage: { forget: forgetKey } }));
 
 vi.mock('../src/api.js', () => ({
   api: createApiClient({
@@ -183,6 +186,12 @@ describe('formatting', () => {
   it('writes bytes as base64url without padding', () => {
     expect(base64url(new Uint8Array([0xfb, 0xff, 0xfe]))).toBe('-__-');
     expect(base64url(new Uint8Array(16))).toBe('AAAAAAAAAAAAAAAAAAAAAA');
+  });
+
+  it('reads base64url back to the same bytes', () => {
+    expect(fromBase64url('-__-')).toEqual(new Uint8Array([0xfb, 0xff, 0xfe]));
+    const bytes = crypto.getRandomValues(new Uint8Array(41));
+    expect(fromBase64url(base64url(bytes))).toEqual(bytes);
   });
 });
 
@@ -359,6 +368,13 @@ describe('a change of account', () => {
     expect(sent.map(({ path, body }) => ({ path, body }))).toEqual([
       { path: '/v1/auth/sign-out', body: {} },
     ]);
+  });
+
+  it('deletes the identity wrapped on this device before signing out (spec 0005, R2)', async () => {
+    forgetKey.mockClear();
+    answers = [Response.json({ success: true })];
+    await signOut();
+    expect(forgetKey).toHaveBeenCalledOnce();
   });
 
   it("drops every query that is the previous account's own, and only those", async () => {

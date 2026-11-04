@@ -40,6 +40,7 @@
     "@arca/platform": "workspace:*",
     "@arca/telemetry": "workspace:*",
     "@arca/ui": "workspace:*",
+    "@arca/vault": "workspace:*",
     "@sentry/react": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-router": "catalog:",

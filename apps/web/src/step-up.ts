@@ -2,18 +2,21 @@ import {
   routes,
   stepUpNonceHeader,
   type StepUpAction,
+  type StepUpOptionsRequest,
   type StepUpPurpose,
 } from '@arca/api-contract/client';
 import type { Passkeys } from '@arca/platform';
 import { api } from './api.js';
+import { base64url } from './base64url.js';
 import { toAssertion, toRequestOptions } from './passkey-json.js';
 import { reach } from './requests.js';
 
-/** Bytes as base64url without padding, as the contract carries them. */
-export function base64url(bytes: Uint8Array): string {
-  let binary = '';
-  for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
+/** Options, the passkey ceremony and verify; returns the credential ID the person approved with. */
+async function verifyStepUp(passkeys: Passkeys, request: StepUpOptionsRequest): Promise<string> {
+  const { challengeId, options } = await reach(api.call(routes.stepUpOptions, request));
+  const response = await passkeys.get(toRequestOptions(options));
+  await reach(api.call(routes.stepUpVerify, { challengeId, response: toAssertion(response) }));
+  return response.id;
 }
 
 /**
@@ -27,10 +30,14 @@ export async function stepUpFor(
   purpose: Exclude<StepUpPurpose, 'vault_unlock'> = 'sensitive_settings',
 ): Promise<ReturnType<typeof api.withHeaders>> {
   const nonce = base64url(crypto.getRandomValues(new Uint8Array(16)));
-  const { challengeId, options } = await reach(
-    api.call(routes.stepUpOptions, { purpose, target: { ...action, nonce } }),
-  );
-  const response = await passkeys.get(toRequestOptions(options));
-  await reach(api.call(routes.stepUpVerify, { challengeId, response: toAssertion(response) }));
+  await verifyStepUp(passkeys, { purpose, target: { ...action, nonce } });
   return api.withHeaders({ [stepUpNonceHeader]: nonce });
+}
+
+/**
+ * Opens this session's 15-minute `vault_unlock` window (spec 0005, R2) and returns the passkey
+ * that opened it, whose envelope the device then opens.
+ */
+export function openVaultWindow(passkeys: Passkeys): Promise<string> {
+  return verifyStepUp(passkeys, { purpose: 'vault_unlock' });
 }

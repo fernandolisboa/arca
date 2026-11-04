@@ -25,15 +25,17 @@ async function asAdmin<T>(work: (client: pg.Client) => Promise<T>): Promise<T> {
   }
 }
 
-/** A synthetic account with one passkey. */
-export async function seedAccount({
-  credentialId,
-  publicKey,
-}: {
-  readonly credentialId: string;
-  readonly publicKey: string;
-}): Promise<{ userId: string; email: string }> {
-  const userId = randomUUID();
+/** A synthetic account with one passkey; `userId` when the credential already names its user. */
+export async function seedAccount(
+  {
+    credentialId,
+    publicKey,
+  }: {
+    readonly credentialId: string;
+    readonly publicKey: string;
+  },
+  userId: string = randomUUID(),
+): Promise<{ userId: string; email: string }> {
   const email = `e2e-${userId}@example.com`;
   await asAdmin(async (client) => {
     await client.query(
