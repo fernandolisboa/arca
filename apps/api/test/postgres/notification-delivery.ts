@@ -9,6 +9,7 @@ export function deliveringNotifier(testDatabase: AuthTestDatabase, notices: Noti
     jobsDb: testDatabase.jobsDb,
     authDb: testDatabase.authDb,
     notices,
+    logger: silentLogger,
   });
   return createNotifier({
     db: testDatabase.apiDb,

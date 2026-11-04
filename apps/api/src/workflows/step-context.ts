@@ -105,6 +105,7 @@ export const deliverySteps = once(async (): Promise<Delivery> =>
     jobsDb: jobsDatabase(),
     authDb: authDatabase(),
     notices: await notices(),
+    logger: stepTelemetry.logger,
     ...pushSender(),
   }),
 );

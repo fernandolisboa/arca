@@ -1,3 +1,4 @@
+import { createECDH } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import type { NotificationChannel } from '@arca/api-contract/routes';
 import type { Logger } from '@arca/telemetry';
@@ -21,10 +22,15 @@ const nonceHeader = 'MzMzMzMzMzMzMzMzMzMzMw';
 const nonce = new Uint8Array(Buffer.from(nonceHeader, 'base64url'));
 const subscription = {
   endpoint: 'https://fcm.googleapis.com/fcm/send/synthetic-subscription',
-  p256dh: `B${'C'.repeat(86)}`,
+  p256dh: browserKey(),
   auth: 'D'.repeat(22),
   device: { browser: 'chrome', os: 'android' },
 };
+
+function browserKey() {
+  const ecdh = createECDH('prime256v1');
+  return ecdh.generateKeys().toString('base64url');
+}
 const channel: NotificationChannel = {
   id: channelId,
   kind: 'web_push',
@@ -139,6 +145,15 @@ describe('notification channel routes (spec 0005, R7)', () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ channelId });
     expect(calls).toEqual([['addPush', owner.accountId, subscription]]);
+  });
+
+  it('refuses a key that is no point on P-256, which no push could ever use', async () => {
+    const { call, calls } = setup();
+    const p256dh = `B${'C'.repeat(86)}`;
+    const response = await call('POST', '/notifications/channels', { ...subscription, p256dh });
+    expect(response.status).toBe(400);
+    expect(await errorOf(response)).toBe('invalid_request');
+    expect(calls).toEqual([]);
   });
 
   it('answers 409 too_many_push_channels once the account has its maximum', async () => {

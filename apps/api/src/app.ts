@@ -76,6 +76,7 @@ import { cachedDatabaseCheck, type CheckDatabase } from './database-health.js';
 import type { Tunnel } from './monitoring-tunnel.js';
 import { securityTxt } from './security-txt.js';
 import type { NotificationChannels } from './notification/channels.js';
+import { isP256PublicKey } from './notification/push.js';
 import type { Vault } from './vault/vault.js';
 import { cspReportPath } from '@arca/security-policy';
 import { tunnelPath, type Logger } from '@arca/telemetry';
@@ -985,6 +986,7 @@ export function createApp({
     );
     if (limited !== undefined) return limited;
     const subscription = addPushChannel.body.parse(await c.req.json());
+    if (!isP256PublicKey(subscription.p256dh)) return fail(c, 'invalid_request', 400);
     if (notifications.pushKey === null) return fail(c, 'push_unavailable', 503);
     const outcome = await notifications.channels.addPush(current.accountId, subscription);
     if (outcome === 'too_many') return fail(c, 'too_many_push_channels', 409);

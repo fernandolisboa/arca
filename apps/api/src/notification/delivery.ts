@@ -22,6 +22,7 @@ export interface DeliveryDependencies {
   readonly notices: Notices;
   /** Absent where the environment has no VAPID key: push channels then wait, undelivered. */
   readonly push?: PushSender;
+  readonly logger: Logger;
 }
 
 /** A push that failed for a reason that may pass, such as a slow or busy push service. */
@@ -39,7 +40,13 @@ interface PendingRow {
   auth_secret: string | null;
 }
 
-export function createDelivery({ jobsDb, authDb, notices, push }: DeliveryDependencies): Delivery {
+export function createDelivery({
+  jobsDb,
+  authDb,
+  notices,
+  push,
+  logger,
+}: DeliveryDependencies): Delivery {
   const asAccount = <T>(accountId: string, work: (tx: Transaction) => Promise<T>) =>
     withIdentity(jobsDb, { accountId }, work);
 
@@ -92,6 +99,8 @@ export function createDelivery({ jobsDb, authDb, notices, push }: DeliveryDepend
             throw new PushFailedError('push failed', { cause: error });
           });
         if (outcome === 'gone') {
+          // Counted, so a refusal of our own making (a broken key) shows before every channel goes.
+          logger.error({ errorName: 'notification_push_gone' });
           await asAccount(accountId, (tx) =>
             tx.execute(sql`DELETE FROM notification.channel WHERE id = ${channelId}`),
           );
@@ -122,13 +131,16 @@ export async function deliverNow(
   messageId: string,
   logger: Logger,
 ): Promise<void> {
-  for (const channelId of await delivery.pendingChannels(accountId, messageId)) {
-    try {
-      await delivery.deliver(accountId, messageId, channelId);
-    } catch (error) {
-      if (!(error instanceof PushFailedError)) throw error;
-      const cause = error.cause instanceof Error ? error.cause.name : 'NonErrorThrown';
-      logger.error({ errorName: `notification_push_failed:${cause}` });
-    }
+  const channels = await delivery.pendingChannels(accountId, messageId);
+  // Side by side, so slow push services cost the job one timeout, not one per channel.
+  const outcomes = await Promise.allSettled(
+    channels.map((channelId) => delivery.deliver(accountId, messageId, channelId)),
+  );
+  for (const outcome of outcomes) {
+    if (outcome.status === 'fulfilled') continue;
+    const error: unknown = outcome.reason;
+    if (!(error instanceof PushFailedError)) throw error;
+    const cause = error.cause instanceof Error ? error.cause.name : 'NonErrorThrown';
+    logger.error({ errorName: `notification_push_failed:${cause}` });
   }
 }

@@ -43,7 +43,12 @@ const retentionWith = (ownedRules?: readonly OwnedExpiryRule[]): Retention =>
       db: testDatabase.jobsDb,
       startDelivery: (accountId, messageId) =>
         deliverNow(
-          createDelivery({ jobsDb: testDatabase.jobsDb, authDb: testDatabase.authDb, notices }),
+          createDelivery({
+            jobsDb: testDatabase.jobsDb,
+            authDb: testDatabase.authDb,
+            notices,
+            logger: silentLogger,
+          }),
           accountId,
           messageId,
           silentLogger,

@@ -38,7 +38,7 @@ const notices: Notices = {
 
 beforeAll(async () => {
   testDatabase = await authTestDatabase();
-  delivery = createDelivery({ jobsDb: testDatabase.jobsDb, authDb: testDatabase.authDb, notices });
+  delivery = createDelivery(pools());
   notifier = createNotifier({
     db: testDatabase.apiDb,
     startDelivery: (accountId, messageId) => {
@@ -285,7 +285,12 @@ describe('push channels (spec 0005, R7)', () => {
   });
 });
 
-const pools = () => ({ jobsDb: testDatabase.jobsDb, authDb: testDatabase.authDb, notices });
+const pools = () => ({
+  jobsDb: testDatabase.jobsDb,
+  authDb: testDatabase.authDb,
+  notices,
+  logger: recordingLogger,
+});
 
 function answering(outcome: PushOutcome) {
   const pushed: PushPayload[] = [];
@@ -328,7 +333,9 @@ describe('push delivery (spec 0005, R7)', () => {
     const { accountId } = await account();
     const channelId = await pushChannel(accountId, 11);
     const messageId = await notified(accountId, { kind: 'passkey_revoked' });
+    logged.length = 0;
     await deliverAll(createDelivery({ ...pools(), push: answering('gone') }), accountId, messageId);
+    expect(logged).toEqual(['notification_push_gone']);
     expect(await admin(`SELECT FROM notification.channel WHERE id = $1`, [channelId])).toEqual([]);
     expect(await deliveriesOf(messageId)).toHaveLength(1);
   });

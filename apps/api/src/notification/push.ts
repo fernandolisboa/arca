@@ -1,3 +1,4 @@
+import { createECDH } from 'node:crypto';
 import { isPushServiceEndpoint } from '@arca/api-contract/routes';
 import { buildPushPayload } from '@block65/webcrypto-web-push';
 import type { VapidKeys } from './vapid.js';
@@ -32,6 +33,20 @@ export class PushRejectedError extends Error {
   constructor(status: number) {
     super(`push service answered ${String(status)}`);
     this.status = status;
+  }
+}
+
+/** A browser's key is an uncompressed point on P-256; anything else could never be sent to. */
+export function isP256PublicKey(p256dh: string): boolean {
+  const point = Buffer.from(p256dh, 'base64url');
+  if (point.length !== 65 || point[0] !== 0x04) return false;
+  try {
+    const ecdh = createECDH('prime256v1');
+    ecdh.generateKeys();
+    ecdh.computeSecret(point);
+    return true;
+  } catch {
+    return false;
   }
 }
 
