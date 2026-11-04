@@ -1,9 +1,10 @@
 import { Button } from '@arca/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { sessionQuery } from '../api.js';
+import { TextField } from '../forms/text-field.js';
 import { passkeys } from '../platform.js';
 import { failureOf, signInWithPasskey, type SignInFailure } from '../sign-in.js';
 
@@ -26,12 +27,13 @@ const autofillRefreshMs = 4 * 60 * 1000;
 const autofillRetryMs = 1000;
 const autofillRetryMaxMs = 60 * 1000;
 
+/** The account field that offers the device's saved passkeys. */
+const accountInput = { name: 'username', type: 'text', autoComplete: 'username webauthn' } as const;
+
 function SignIn() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const accountId = useId();
-  const hintId = useId();
   const [support, setSupport] = useState<Support>();
   const [ceremony, setCeremony] = useState<Ceremony>('autofill');
   const [failure, setFailure] = useState<SignInFailure>();
@@ -113,22 +115,7 @@ function SignIn() {
         <p className="text-muted">{t('signIn.lead')}</p>
       </div>
       {support?.autofill === true && (
-        <div className="flex flex-col gap-1">
-          <label htmlFor={accountId} className="font-medium">
-            {t('signIn.account')}
-          </label>
-          <input
-            id={accountId}
-            name="username"
-            type="text"
-            autoComplete="username webauthn"
-            aria-describedby={hintId}
-            className="min-h-touch rounded-control border border-line bg-surface px-3 text-body text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          />
-          <p id={hintId} className="text-small text-muted">
-            {t('signIn.accountHint')}
-          </p>
-        </div>
+        <TextField label={t('signIn.account')} hint={t('signIn.accountHint')} {...accountInput} />
       )}
       <Button
         disabled={support?.available !== true || waiting}

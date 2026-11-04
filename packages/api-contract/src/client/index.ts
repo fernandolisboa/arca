@@ -3,7 +3,7 @@ import './jitless.js';
 import type { z } from 'zod';
 import { apiBasePath, ErrorResponse, type RouteDefinition } from '../routes/index.js';
 
-export { routes } from '../routes/index.js';
+export { routes, stepUpNonceHeader } from '../routes/index.js';
 export type {
   AuditEvent,
   AuditEventCode,
@@ -12,8 +12,12 @@ export type {
   DeviceDescription,
   HealthResponse,
   PasskeyAssertion,
+  PasskeyAttestation,
+  PasskeyCreationOptions,
   PasskeyRequestOptions,
+  RecoveryKitStatus,
   SessionResponse,
+  StepUpAction,
   SignOutResponse,
 } from '../routes/index.js';
 
@@ -23,6 +27,8 @@ export interface ApiClientOptions {
   /** Origin of the API: empty for the web build (same origin), absolute for native builds. */
   readonly origin: string;
   readonly fetch?: Fetch;
+  /** Sent with every request, besides the client's own. */
+  readonly headers?: Readonly<Record<string, string>>;
 }
 
 /** The API answered with an error status; `code` comes from its `{ error: { code } }` body. */
@@ -71,10 +77,17 @@ export interface ApiClient {
     route: Route,
     ...input: InputOf<Route>
   ): Promise<z.infer<Route['response']['schema']>>;
+  /** The same client sending these headers too, such as a guarded route's step-up nonce. */
+  withHeaders(headers: Readonly<Record<string, string>>): ApiClient;
 }
 
-export function createApiClient({ origin, fetch = globalThis.fetch }: ApiClientOptions): ApiClient {
+export function createApiClient({
+  origin,
+  fetch = globalThis.fetch,
+  headers: extra = {},
+}: ApiClientOptions): ApiClient {
   return {
+    withHeaders: (headers) => createApiClient({ origin, fetch, headers: { ...extra, ...headers } }),
     async call<Route extends RouteDefinition>(
       route: Route,
       ...[input]: InputOf<Route>
@@ -83,10 +96,11 @@ export function createApiClient({ origin, fetch = globalThis.fetch }: ApiClientO
         `${origin}${apiBasePath}${route.path}${queryString(route, input)}`,
         {
           method: route.method.toUpperCase(),
-          headers:
-            route.body === undefined
-              ? { accept: 'application/json' }
-              : { accept: 'application/json', 'content-type': 'application/json' },
+          headers: {
+            ...extra,
+            accept: 'application/json',
+            ...(route.body === undefined ? {} : { 'content-type': 'application/json' }),
+          },
           ...(route.body === undefined ? {} : { body: JSON.stringify(route.body.parse(input)) }),
         },
       );

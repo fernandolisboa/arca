@@ -2,7 +2,8 @@ import { Button } from '@arca/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { healthQuery, sessionQuery } from '../api.js';
+import { healthQuery, recoveryKitQuery, sessionQuery } from '../api.js';
+import { textLinkClass } from '../forms/text-link.js';
 
 export const Route = createFileRoute('/')({ component: Home });
 
@@ -59,13 +60,37 @@ function SessionLine() {
   const { t } = useTranslation();
   const session = useQuery(sessionQuery);
   if (session.isPending) return null;
-  if (session.isSuccess) return <p>{t('session.signedIn', { email: session.data.email })}</p>;
+  if (session.isSuccess) {
+    return (
+      <>
+        <p>{t('session.signedIn', { email: session.data.email })}</p>
+        <KitNotice />
+      </>
+    );
+  }
   return (
-    <Link
-      to="/sign-in"
-      className="inline-flex min-h-touch items-center self-start font-medium text-ink underline decoration-primary decoration-2 underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-    >
+    <Link to="/sign-in" className={textLinkClass}>
       {t('session.signIn')}
     </Link>
+  );
+}
+
+/** Until the recovery kit is saved, losing every passkey would lock the account (spec 0003, R6). */
+function KitNotice() {
+  const { t } = useTranslation();
+  const kit = useQuery(recoveryKitQuery);
+  if (!kit.isSuccess || kit.data.status === 'saved') return null;
+  return (
+    <section
+      aria-labelledby="kit-notice-title"
+      className="flex flex-col gap-2 rounded-card border border-line bg-surface p-4"
+    >
+      <p id="kit-notice-title" className="text-warn-ink">
+        {t('session.kitPending')}
+      </p>
+      <Link to="/recovery-kit" className={textLinkClass}>
+        {t('session.kitLink')}
+      </Link>
+    </section>
   );
 }

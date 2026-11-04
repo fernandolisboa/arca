@@ -51,6 +51,16 @@ for (const [width, layouts] of sizes) {
         expect(await scan(page)).toEqual([]);
         expect(problems).toEqual([]);
       });
+
+      test(`the enrollment form has no axe violation in ${theme.name}`, async ({ page }) => {
+        const problems = watchProblems(page);
+        await open(page, defaultLayout, { path: '/enroll', extra: theme.axes });
+        await expect(
+          page.getByRole('heading', { level: 2, name: 'Criar a primeira conta' }),
+        ).toBeVisible();
+        expect(await scan(page)).toEqual([]);
+        expect(problems).toEqual([]);
+      });
     }
   });
 }
