@@ -74,7 +74,6 @@ export function fakePlatform(capabilities: Capabilities) {
       }),
     },
     deepLinks: createWebDeepLinks(capabilities, origin),
-    vaultEnvelopes: fakeVaultEnvelopes(),
   };
   const set =
     <Value>(assign: (value: Value) => void) =>
