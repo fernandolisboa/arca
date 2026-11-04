@@ -103,7 +103,10 @@ function download(fileName: string, text: string) {
   anchor.href = url;
   anchor.download = fileName;
   anchor.click();
-  URL.revokeObjectURL(url);
+  // Some browsers start reading the file only after the click returns.
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 60_000);
 }
 
 function ShownCode({ code }: { readonly code: string }) {
@@ -134,15 +137,15 @@ function ShownCode({ code }: { readonly code: string }) {
 
   return (
     <>
-      <div className="flex flex-col gap-2 rounded-card border border-line bg-surface p-4">
+      <div
+        role="group"
+        aria-labelledby={labelId}
+        className="flex flex-col gap-2 rounded-card border border-line bg-surface p-4"
+      >
         <p id={labelId} className="font-medium">
           {t('recoveryKit.codeLabel')}
         </p>
-        <p
-          aria-labelledby={labelId}
-          className="font-mono text-lead tracking-wider break-all text-ink"
-          translate="no"
-        >
+        <p className="font-mono text-lead tracking-wider break-all text-ink" translate="no">
           {grouped}
         </p>
       </div>

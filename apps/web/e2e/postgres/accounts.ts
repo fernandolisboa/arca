@@ -64,6 +64,9 @@ export async function resetRateLimits(): Promise<void> {
  * account, no spent enrollment code and no pending link, and run before any test seeds an account.
  */
 export async function resetEnrollment(): Promise<void> {
+  if (!databaseServer.database.name.includes('e2e')) {
+    throw new Error('the enrollment tests empty their database, so its name must contain "e2e"');
+  }
   await asAdmin(async (client) => {
     await client.query('DELETE FROM auth."user"');
     await client.query('DELETE FROM auth.setup');

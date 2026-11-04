@@ -1,27 +1,11 @@
-import {
-  routes,
-  type PasskeyAssertion,
-  type PasskeyRequestOptions,
-} from '@arca/api-contract/client';
-import type {
-  AuthenticationResponseJSON,
-  Passkeys,
-  PublicKeyCredentialRequestOptionsJSON,
-} from '@arca/platform';
+import { routes, type PasskeyRequestOptions } from '@arca/api-contract/client';
+import type { Passkeys } from '@arca/platform';
 import { api } from './api.js';
+import { toAssertion, toRequestOptions } from './passkey-json.js';
 import { commonFailure, reach } from './requests.js';
 
 export type SignInFailure =
   'cancelled' | 'refused' | 'limited' | 'unavailable' | 'unreachable' | 'other';
-
-/** The contract keeps transports open-ended; the browser ignores the ones it does not know. */
-function toRequestOptions(options: PasskeyRequestOptions): PublicKeyCredentialRequestOptionsJSON {
-  return options as PublicKeyCredentialRequestOptionsJSON;
-}
-
-function toAssertion(response: AuthenticationResponseJSON): PasskeyAssertion {
-  return { ...response, clientExtensionResults: { ...response.clientExtensionResults } };
-}
 
 /** The last options request, so a new one starts only after it settled. */
 let lastOptions: Promise<unknown> = Promise.resolve();

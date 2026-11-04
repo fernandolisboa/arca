@@ -98,7 +98,7 @@ test('creates the first account from the emailed link, and shows its recovery ki
   await expect(page.getByText(`Você entrou como ${owner}.`)).toBeVisible();
   await page.getByRole('link', { name: 'Guardar o kit agora' }).click();
   await page.getByRole('button', { name: 'Mostrar meu código' }).click();
-  const code = page.getByLabel('Código de recuperação');
+  const code = page.getByRole('group', { name: 'Código de recuperação' }).getByText(groupedCode);
   await expect(code).toHaveText(groupedCode);
   const first = await code.textContent();
   expect(await scan(page)).toEqual([]);

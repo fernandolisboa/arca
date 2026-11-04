@@ -1,6 +1,8 @@
 import { routes, stepUpNonceHeader, type StepUpAction } from '@arca/api-contract/client';
-import type { Passkeys, PublicKeyCredentialRequestOptionsJSON } from '@arca/platform';
+import type { Passkeys } from '@arca/platform';
 import { api } from './api.js';
+import { toAssertion, toRequestOptions } from './passkey-json.js';
+import { reach } from './requests.js';
 
 /** Bytes as base64url without padding, as the contract carries them. */
 export function base64url(bytes: Uint8Array): string {
@@ -19,15 +21,10 @@ export async function stepUpFor(
   action: Omit<StepUpAction, 'nonce'>,
 ): Promise<ReturnType<typeof api.withHeaders>> {
   const nonce = base64url(crypto.getRandomValues(new Uint8Array(16)));
-  const { challengeId, options } = await api.call(routes.stepUpOptions, {
-    purpose: 'sensitive_settings',
-    target: { ...action, nonce },
-  });
-  // The contract keeps transports open-ended; the browser ignores the ones it does not know.
-  const response = await passkeys.get(options as PublicKeyCredentialRequestOptionsJSON);
-  await api.call(routes.stepUpVerify, {
-    challengeId,
-    response: { ...response, clientExtensionResults: { ...response.clientExtensionResults } },
-  });
+  const { challengeId, options } = await reach(
+    api.call(routes.stepUpOptions, { purpose: 'sensitive_settings', target: { ...action, nonce } }),
+  );
+  const response = await passkeys.get(toRequestOptions(options));
+  await reach(api.call(routes.stepUpVerify, { challengeId, response: toAssertion(response) }));
   return api.withHeaders({ [stepUpNonceHeader]: nonce });
 }
