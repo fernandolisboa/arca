@@ -8,7 +8,8 @@ import {
 import type { Database, Transaction } from '@arca/db';
 import { invite } from '@arca/db/enrollment-schema';
 import type { I18n } from '@arca/i18n';
-import { and, count, desc, eq, gt, isNotNull, isNull, lte, or, sql } from 'drizzle-orm';
+import { and, count, desc, eq, gt, isNotNull, isNull, lte, or, sql, type SQL } from 'drizzle-orm';
+import { markForRetentionErasure } from '../account/deletion.js';
 import type { AuditLog } from '../audit/log.js';
 import { EmailNotConfiguredError, type EmailMessage, type EmailSender } from '../email/email.js';
 import type { Notices } from '../email/notices.js';
@@ -53,6 +54,8 @@ export interface InviteSettings {
   readonly i18n: I18n;
   readonly origin: string;
   readonly logger: Logger;
+  /** Starts `eraseAccount` for a declined account (spec 0004, R9). */
+  readonly startErasure: (accountId: string) => Promise<unknown>;
   readonly random?: (size: number) => Buffer;
 }
 
@@ -67,11 +70,18 @@ export const liveInvite = (tokenHash?: Buffer, inviteId?: string) =>
 
 const open = liveInvite();
 
-/** Invites never accepted that have expired go, each with its `invite expired` event. */
-async function sweepExpired(tx: Transaction, audit: AuditLog) {
+/**
+ * Invites never accepted that have expired by `now` go, each with its `invite expired` event; the
+ * daily cleanup passes its own clock (spec 0004, R10).
+ */
+export async function sweepExpiredInvites(
+  tx: Transaction,
+  audit: AuditLog,
+  now: Date | SQL = sql`now()`,
+) {
   const expired = await tx
     .delete(invite)
-    .where(and(isNull(invite.acceptedAt), lte(invite.expiresAt, sql`now()`)))
+    .where(and(isNull(invite.acceptedAt), lte(invite.expiresAt, now)))
     .returning({ id: invite.id, inviterId: invite.inviterId });
   for (const { id, inviterId } of expired) {
     await audit.record({
@@ -103,6 +113,7 @@ export function createInvites({
   i18n,
   origin,
   logger,
+  startErasure,
   random = randomBytes,
 }: InviteSettings): Invites {
   return {
@@ -113,7 +124,7 @@ export function createInvites({
         // Concurrent invites from one account wait here, so the cap holds.
         if (!(await accounts.lock(tx, inviterId))) return 'unconfirmed';
         if (!(await accounts.isConfirmed(tx, inviterId))) return 'unconfirmed';
-        await sweepExpired(tx, audit);
+        await sweepExpiredInvites(tx, audit);
         // A new invite to the same address replaces the open one.
         await tx
           .delete(invite)
@@ -207,21 +218,46 @@ export function createInvites({
         return true;
       }),
 
-    // The invite goes with the account through its cascade, and the address is free again.
-    decline: (inviterId, inviteId) =>
-      db.transaction(async (tx) => {
+    // The account is due for erasure at once and loses its sessions; the invite goes now, so the
+    // decision is final, and `eraseAccount` frees the address (spec 0004, R10).
+    decline: async (inviterId, inviteId) => {
+      const declined = await db.transaction(async (tx) => {
         const accountId = await awaitingDecision(tx, inviterId, inviteId);
-        if (accountId === undefined || !(await accounts.eraseUnconfirmed(tx, accountId))) {
-          return false;
-        }
+        if (accountId === undefined) return undefined;
+        const marked = await markForRetentionErasure(tx, audit, {
+          accountId,
+          reason: 'invite_declined',
+          dueAt: 'now',
+          cutoff: new Date(),
+          actorAccountId: inviterId,
+        });
+        // An unconfirmed account the daily job already marked is erased anyway; the decision
+        // still stands.
+        const alreadyMarked =
+          !marked &&
+          !(await accounts.isConfirmed(tx, accountId)) &&
+          (await accounts.deletionDueAt(tx, accountId)) !== null;
+        if (!marked && !alreadyMarked) return undefined;
+        await tx.delete(invite).where(eq(invite.id, inviteId));
         await audit.record({
           code: 'invite_declined',
           subjectAccountId: inviterId,
           actorAccountId: inviterId,
           details: { inviteId },
         });
-        return true;
-      }),
+        return accountId;
+      });
+      if (declined === undefined) return false;
+      // A run that fails to start waits for the daily erasure, which finds the account due.
+      try {
+        await startErasure(declined);
+      } catch (error) {
+        logger.error({
+          errorName: `DeclinedErasure:${error instanceof Error ? error.name : 'NonErrorThrown'}`,
+        });
+      }
+      return true;
+    },
 
     // A notice that fails to send never undoes the registration; the failure is logged.
     accepted: async (inviteId) => {

@@ -1,10 +1,10 @@
 import type { Database } from '@arca/db';
-import type { NoticeKind, Notices } from '../email/notices.js';
+import type { Notices, PlainNoticeKind } from '../email/notices.js';
 import type { Logger } from '@arca/telemetry';
 import { accounts } from './auth.js';
 
 /** Each module names the notices it sends, so the type says which module sends what. */
-export type AccountNotice<Kind extends Exclude<NoticeKind, 'new_sign_in'>> = (
+export type AccountNotice<Kind extends PlainNoticeKind> = (
   accountId: string,
   kind: Kind,
 ) => Promise<void>;
@@ -13,7 +13,7 @@ export type AccountNotice<Kind extends Exclude<NoticeKind, 'new_sign_in'>> = (
  * Sends a security notice to the account's address. A notice that fails to send never undoes the
  * change it reports; the failure is logged under `label`, with no personal data.
  */
-export function accountNotice<Kind extends Exclude<NoticeKind, 'new_sign_in'>>({
+export function accountNotice<Kind extends PlainNoticeKind>({
   db,
   notices,
   logger,

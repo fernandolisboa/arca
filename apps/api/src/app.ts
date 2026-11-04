@@ -72,6 +72,8 @@ export interface CronDependencies {
   /** Throws when `CRON_SECRET` is not set, which answers 500. */
   readonly readSecret: () => string;
   readonly startHeartbeat: (runDate: IsoDate) => Promise<unknown>;
+  /** Starts `enforceRetention` for the day (spec 0004, R10). */
+  readonly startRetention: (runDate: IsoDate) => Promise<unknown>;
   /** Starts `eraseAccount` for every account whose deletion is due (spec 0004, R9). */
   readonly startDueErasures: () => Promise<unknown>;
   /** Deletes the rate-limit windows that have ended (spec 0003, R10). */
@@ -859,6 +861,7 @@ export function createApp({
     const {
       readSecret,
       startHeartbeat,
+      startRetention,
       startDueErasures,
       sweepRateLimits,
       clock = () => new Date(),
@@ -871,6 +874,10 @@ export function createApp({
     });
     app.get('/internal/cron/heartbeat', fromCron, async (c) => {
       await startHeartbeat(utcDate(clock()));
+      return c.body(null, 202);
+    });
+    app.get('/internal/cron/retention', fromCron, async (c) => {
+      await startRetention(utcDate(clock()));
       return c.body(null, 202);
     });
     app.get('/internal/cron/account-erasure', fromCron, async (c) => {

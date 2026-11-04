@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { eraseAccountNow, startEach, type Erasure } from '../src/account/erasure.js';
+import { forEachAccount } from '../src/account/each-account.js';
+import { eraseAccountNow, type Erasure } from '../src/account/erasure.js';
 import { tombstonesFor, TombstonesUnavailableError } from '../src/account/tombstones.js';
 import { eraseAccount } from '../src/workflows/erase-account.js';
 import { entityId } from '../src/workflows/workflow-arguments.js';
@@ -60,11 +61,11 @@ describe('eraseAccount (spec 0004, R9)', () => {
   );
 });
 
-describe('startEach', () => {
+describe('forEachAccount', () => {
   it('starts every account even when one start fails, then throws the failure', async () => {
     const started: string[] = [];
     const failure = new Error('start failed');
-    const run = startEach(['a', 'b', 'c'], (id) => {
+    const run = forEachAccount(['a', 'b', 'c'], (id) => {
       started.push(id);
       return id === 'a' ? Promise.reject(failure) : Promise.resolve();
     });

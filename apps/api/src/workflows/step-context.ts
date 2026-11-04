@@ -2,6 +2,7 @@ import { createI18n } from '@arca/i18n';
 import { useRuntimeConfig } from 'nitro/runtime-config';
 import { auditLog } from '../audit/log.js';
 import { createErasure, type Erasure } from '../account/erasure.js';
+import { createRetention, type Retention } from '../account/retention.js';
 import { tombstonesFor } from '../account/tombstones.js';
 import {
   databaseTargetFrom,
@@ -39,24 +40,39 @@ function auditDatabase() {
   return audit.db;
 }
 
-let erasure: Promise<Erasure> | undefined;
-
-export function erasureSteps(): Promise<Erasure> {
-  erasure ??= (async () => {
-    const environment = readDeploymentEnvironment();
-    const email = emailSenderFor(emailRouteFor(environment), environment, authDatabase);
-    const notices = createNotices({ email, i18n: await createI18n(), origin: readAuthOrigin() });
-    return createErasure({
-      authDb: authDatabase(),
-      jobsDb: jobsDatabase(),
-      audit: auditLog(auditDatabase()),
-      notices,
-      tombstones: tombstonesFor(environment),
+/** Built once per instance; a failed build is retried by the next step attempt, not cached. */
+function once<T>(build: () => Promise<T>): () => Promise<T> {
+  let built: Promise<T> | undefined;
+  return () => {
+    built ??= build();
+    built.catch(() => {
+      built = undefined;
     });
-  })();
-  // A failed build is retried by the step's next attempt instead of being cached.
-  erasure.catch(() => {
-    erasure = undefined;
-  });
-  return erasure;
+    return built;
+  };
 }
+
+const notices = once(async () => {
+  const environment = readDeploymentEnvironment();
+  const email = emailSenderFor(emailRouteFor(environment), environment, authDatabase);
+  return createNotices({ email, i18n: await createI18n(), origin: readAuthOrigin() });
+});
+
+export const erasureSteps = once(async (): Promise<Erasure> =>
+  createErasure({
+    authDb: authDatabase(),
+    jobsDb: jobsDatabase(),
+    audit: auditLog(auditDatabase()),
+    notices: await notices(),
+    tombstones: tombstonesFor(readDeploymentEnvironment()),
+  }),
+);
+
+export const retentionSteps = once(async (): Promise<Retention> =>
+  createRetention({
+    authDb: authDatabase(),
+    jobsDb: jobsDatabase(),
+    audit: auditLog(auditDatabase()),
+    notices: await notices(),
+  }),
+);

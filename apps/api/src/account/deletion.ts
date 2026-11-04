@@ -1,5 +1,5 @@
-import { deletionWaitDays } from '@arca/api-contract/routes';
-import type { Database } from '@arca/db';
+import { deletionWaitDays, type DeletionReason } from '@arca/api-contract/routes';
+import type { Database, Transaction } from '@arca/db';
 import type { Logger } from '@arca/telemetry';
 import type { AuditLog } from '../audit/log.js';
 import { accountNotice } from '../auth/account-notices.js';
@@ -84,4 +84,46 @@ export function createAccountDeletion({
       return cancelled;
     },
   };
+}
+
+export interface RetentionErasure {
+  readonly accountId: string;
+  readonly reason: Exclude<DeletionReason, 'owner_request'>;
+  readonly dueAt: Date | 'now';
+  /** The time the reason is checked against again, under the lock of the update. */
+  readonly cutoff: Date;
+  /** The inviter for a decline; null for the daily jobs. */
+  readonly actorAccountId: string | null;
+  /** Runs once the account is marked, before anything is recorded; a failure undoes the mark. */
+  readonly announce?: () => Promise<void>;
+}
+
+/**
+ * Marks an account for erasure for a retention reason (spec 0004, R10): ends its sessions and
+ * records `deletion requested` before the transaction commits, so a restore can corroborate the
+ * erasure. False when a deletion already waits or the reason no longer holds.
+ */
+export async function markForRetentionErasure(
+  tx: Transaction,
+  audit: AuditLog,
+  { accountId, reason, dueAt, cutoff, actorAccountId, announce }: RetentionErasure,
+): Promise<boolean> {
+  if (!(await accounts.markForErasure(tx, accountId, reason, { dueAt, cutoff }))) return false;
+  const ended = await devices.revokeAllSessions(tx, accountId);
+  await announce?.();
+  for (const sessionId of ended) {
+    await audit.record({
+      code: 'session_revoked',
+      subjectAccountId: accountId,
+      actorAccountId,
+      details: { sessionId },
+    });
+  }
+  await audit.record({
+    code: 'deletion_requested',
+    subjectAccountId: accountId,
+    actorAccountId,
+    details: { reason },
+  });
+  return true;
 }

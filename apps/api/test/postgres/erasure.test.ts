@@ -82,9 +82,11 @@ const dueAtOf = async (accountId: string) =>
     .rows[0] as { due: Date | null } | undefined;
 
 const makeDue = (accountId: string) =>
-  admin(`UPDATE auth.user SET deletion_due_at = now() - interval '1 minute' WHERE id = $1`, [
-    accountId,
-  ]);
+  admin(
+    `UPDATE auth.user SET deletion_due_at = now() - interval '1 minute',
+            deletion_reason = coalesce(deletion_reason, 'owner_request') WHERE id = $1`,
+    [accountId],
+  );
 
 /**
  * The account's rows per registry table, each counted by a role that sees them honestly: app_auth

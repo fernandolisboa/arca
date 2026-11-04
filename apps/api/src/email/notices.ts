@@ -17,10 +17,14 @@ export const noticeKinds = [
   'deletion_requested',
   'deletion_cancelled',
   'account_erased',
+  'inactivity_warning',
 ] as const;
 export type NoticeKind = (typeof noticeKinds)[number];
 
-/** The new-sign-in notice names the device families, and nothing more about it. */
+/**
+ * The new-sign-in notice names the device families, and nothing more about it; the inactivity
+ * warning carries its erasure time.
+ */
 export type Notice =
   | {
       readonly kind: 'new_sign_in';
@@ -28,7 +32,17 @@ export type Notice =
       readonly at: Date;
       readonly device: DeviceDescription;
     }
-  | { readonly kind: Exclude<NoticeKind, 'new_sign_in'>; readonly to: string; readonly at: Date };
+  | {
+      readonly kind: 'inactivity_warning';
+      readonly to: string;
+      readonly at: Date;
+      /** When the account is erased unless someone signs in. */
+      readonly dueAt: Date;
+    }
+  | { readonly kind: PlainNoticeKind; readonly to: string; readonly at: Date };
+
+/** The notices that carry nothing but their time. */
+export type PlainNoticeKind = Exclude<NoticeKind, 'new_sign_in' | 'inactivity_warning'>;
 
 const brasilia = new Intl.DateTimeFormat('pt-BR', {
   dateStyle: 'long',
@@ -48,6 +62,7 @@ export function noticeMessage(i18n: I18n, origin: string, notice: Notice): Email
   const body = i18n.t(`email.notice.${notice.kind}.body`, {
     when: brasilia.format(notice.at),
     ...device,
+    ...(notice.kind === 'inactivity_warning' ? { dueAt: brasilia.format(notice.dueAt) } : {}),
   });
   return {
     to: notice.to,

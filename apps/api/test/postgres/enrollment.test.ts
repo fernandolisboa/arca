@@ -2,6 +2,8 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { inviteLifetimeHours, type PasskeyCreationOptions } from '@arca/api-contract/routes';
 import { createI18n } from '@arca/i18n';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { createErasure, eraseAccountNow } from '../../src/account/erasure.js';
+import { noTombstones } from '../../src/account/tombstones.js';
 import { createApp, type App } from '../../src/app.js';
 import { auditLog, auditReader } from '../../src/audit/log.js';
 import { createAuth, credentialStore } from '../../src/auth/auth.js';
@@ -29,6 +31,7 @@ const ownerEmail = 'owner@example.com';
 
 let testDatabase: AuthTestDatabase;
 let app: App;
+const erasuresStarted: string[] = [];
 
 beforeAll(async () => {
   testDatabase = await authTestDatabase();
@@ -46,6 +49,10 @@ beforeAll(async () => {
     i18n,
     origin,
     logger: silentLogger,
+    startErasure: (accountId) => {
+      erasuresStarted.push(accountId);
+      return Promise.resolve();
+    },
   });
   const hooks = registrationHooks({ db: authDb, audit, ownerCode: matching });
   const auth = createAuth({
@@ -624,6 +631,51 @@ describe('invites (spec 0003, R2)', () => {
     const id = pending?.id ?? '';
     const nonce = await stepUp(owner, 'declineInvite', [id]);
     expect((await decide('decline', id, { 'arca-step-up-nonce': nonce })).status).toBe(200);
+    // Due at once, without its sessions or its invite, and handed to the erasure.
+    const marked = await testDatabase.asAdmin(
+      async (client) =>
+        (
+          await client.query<{ id: string; reason: string; due: boolean; sessions: number }>(
+            `SELECT u.id, u.deletion_reason AS reason, u.deletion_due_at <= now() AS due,
+                    (SELECT count(*)::int FROM auth.session s WHERE s.user_id = u.id) AS sessions
+               FROM auth.user u WHERE u.email = $1`,
+            [declined],
+          )
+        ).rows[0],
+    );
+    expect(marked).toMatchObject({ reason: 'invite_declined', due: true, sessions: 0 });
+    const accountId = marked?.id ?? '';
+    expect(erasuresStarted).toEqual([accountId]);
+    expect((await decide('decline', id, { 'arca-step-up-nonce': nonce })).status).not.toBe(200);
+    const requested = await testDatabase.asAdmin(
+      async (client) =>
+        (
+          await client.query<{ actor: string; details: object }>(
+            `SELECT actor_account_id AS actor, details FROM audit.event
+              WHERE subject_account_id = $1 AND code = 'deletion_requested'`,
+            [accountId],
+          )
+        ).rows,
+    );
+    const ownerId = await testDatabase.asAdmin(
+      async (client) =>
+        (
+          await client.query<{ id: string }>('SELECT id FROM auth.user WHERE email = $1', [
+            ownerEmail,
+          ])
+        ).rows[0]?.id,
+    );
+    expect(requested).toEqual([{ actor: ownerId, details: { reason: 'invite_declined' } }]);
+    await eraseAccountNow(
+      createErasure({
+        authDb: testDatabase.authDb,
+        jobsDb: testDatabase.jobsDb,
+        audit: auditLog(testDatabase.auditDb),
+        notices: { send: () => Promise.resolve() },
+        tombstones: noTombstones,
+      }),
+      accountId,
+    );
     const left = await testDatabase.asAdmin(
       async (client) =>
         (
@@ -637,6 +689,38 @@ describe('invites (spec 0003, R2)', () => {
     expect(left).toEqual({ users: 0, invites: 0 });
     expect(await eventCodes(owner.cookie)).toContain('invite_declined');
     expect((await invite(owner.cookie, declined)).status).toBe(200);
+  });
+
+  it('declines an account the daily job already marked, and refuses to confirm it', async () => {
+    const late = 'late@example.org';
+    expect((await invite(owner.cookie, late)).status).toBe(200);
+    const { verified } = await register(await latestToken('invite'), { typed: null });
+    expect(verified.status).toBe(200);
+    const id = (await listed(owner.cookie)).find((entry) => entry.email === late)?.id ?? '';
+    await testDatabase.asAdmin((client) =>
+      client.query(
+        `UPDATE auth.user SET deletion_due_at = now(), deletion_reason = 'invite_unconfirmed'
+          WHERE email = $1`,
+        [late],
+      ),
+    );
+    const confirmNonce = await stepUp(owner, 'confirmInvite', [id]);
+    expect((await decide('confirm', id, { 'arca-step-up-nonce': confirmNonce })).status).toBe(404);
+    const nonce = await stepUp(owner, 'declineInvite', [id]);
+    expect((await decide('decline', id, { 'arca-step-up-nonce': nonce })).status).toBe(200);
+    expect((await listed(owner.cookie)).find((entry) => entry.id === id)).toBeUndefined();
+    const reasons = await testDatabase.asAdmin(
+      async (client) =>
+        (
+          await client.query<{ reason: string }>(
+            `SELECT e.details->>'reason' AS reason FROM audit.event e
+               JOIN auth.user u ON u.id = e.subject_account_id
+              WHERE u.email = $1 AND e.code = 'deletion_requested'`,
+            [late],
+          )
+        ).rows,
+    );
+    expect(reasons).toEqual([]);
   });
 
   it('keeps at most 10 open invites per account, a new one to an address replacing the last', async () => {

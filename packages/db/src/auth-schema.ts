@@ -23,21 +23,33 @@ export const createdAt = () =>
   timestamp('created_at', { withTimezone: true }).notNull().defaultNow();
 const updatedAt = () => timestamp('updated_at', { withTimezone: true }).notNull().defaultNow();
 
-export const user = auth.table('user', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  name: text('name').notNull(),
-  email: text('email').notNull().unique(),
-  emailVerified: boolean('email_verified').notNull().default(false),
-  image: text('image'),
-  createdAt: createdAt(),
-  updatedAt: updatedAt(),
-  /** For the inactivity rule in RETENTION.md. */
-  lastSignInAt: timestamp('last_sign_in_at', { withTimezone: true }),
-  /** Set at owner enrollment, or when the inviter confirms the account; restricted while null. */
-  confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
-  /** While set, the account waits for erasure and may only cancel it (spec 0004, R9). */
-  deletionDueAt: timestamp('deletion_due_at', { withTimezone: true }),
-});
+export const user = auth.table(
+  'user',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: text('name').notNull(),
+    email: text('email').notNull().unique(),
+    emailVerified: boolean('email_verified').notNull().default(false),
+    image: text('image'),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+    /** For the inactivity rule in RETENTION.md. */
+    lastSignInAt: timestamp('last_sign_in_at', { withTimezone: true }),
+    /** Set at owner enrollment, or when the inviter confirms the account; restricted while null. */
+    confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+    /** While set, the account waits for erasure and may only cancel it (spec 0004, R9). */
+    deletionDueAt: timestamp('deletion_due_at', { withTimezone: true }),
+    /** Why the erasure waits (spec 0004, R10); set exactly while `deletion_due_at` is. */
+    deletionReason: text('deletion_reason'),
+  },
+  (table) => [
+    check(
+      'user_deletion_reason',
+      sql`(${table.deletionDueAt} IS NULL) = (${table.deletionReason} IS NULL)
+          AND ${table.deletionReason} IN ('owner_request', 'inactivity', 'invite_declined', 'invite_unconfirmed')`,
+    ),
+  ],
+);
 
 export const session = auth.table(
   'session',

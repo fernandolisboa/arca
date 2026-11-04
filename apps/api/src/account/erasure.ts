@@ -40,7 +40,8 @@ export interface ErasureDependencies {
   readonly clock?: () => Date;
 }
 
-function qualified(table: string): SQL {
+/** A registry table name, `schema.table`, as quoted SQL. */
+export function qualified(table: string): SQL {
   const [schema = '', name = ''] = table.split('.');
   return sql`${sql.identifier(schema)}.${sql.identifier(name)}`;
 }
@@ -127,23 +128,4 @@ export async function eraseAccountNow(erasure: Erasure, accountId: string): Prom
   await erasure.recordErased(accountId);
   await erasure.writeTombstone(accountId);
   return true;
-}
-
-/**
- * Starts a run for each account. A start that fails does not hold back the others; the first
- * failure is thrown once all were tried, so the cron call reports it.
- */
-export async function startEach(
-  accountIds: readonly string[],
-  start: (accountId: string) => Promise<unknown>,
-): Promise<void> {
-  const failures: unknown[] = [];
-  for (const accountId of accountIds) {
-    try {
-      await start(accountId);
-    } catch (error) {
-      failures.push(error);
-    }
-  }
-  if (failures.length > 0) throw failures[0];
 }
