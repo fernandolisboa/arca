@@ -1,6 +1,7 @@
 import { passkey } from '@better-auth/passkey';
 import {
   authSchema,
+  passkey as passkeyTable,
   session as sessionTable,
   user,
   verification as verificationTable,
@@ -15,6 +16,8 @@ import type { AuditLog } from '../audit/log.js';
 import type { Notices } from '../email/notices.js';
 import type { Logger } from '../logger.js';
 import { describeDevice } from './device.js';
+import { signInFailedLog } from './limits.js';
+import type { RateLimiter } from './rate-limit.js';
 import { noticeNewSignIn } from './sign-in-notice.js';
 
 export interface AuthSettings {
@@ -28,17 +31,23 @@ export interface AuthSettings {
   readonly audit: AuditLog;
   /** Security notices by email, such as a sign-in from a new browser (spec 0003, R7). */
   readonly notices: Notices;
+  /** Spaces out the failed sign-in events of one credential (spec 0003, R7 and R10). */
+  readonly limiter: RateLimiter;
 }
 
 const daySeconds = 24 * 60 * 60;
 const signInPath = '/passkey/verify-authentication';
 const signInOptionsPath = '/passkey/generate-authenticate-options';
 
+/** The credential ID a sign-in's assertion names, if any. */
+function assertedCredential(body: unknown) {
+  const { response } = (body ?? {}) as { response?: { id?: unknown } };
+  return typeof response?.id === 'string' && response.id !== '' ? response.id : undefined;
+}
+
 /** The credential ID of the assertion a sign-in verified; undefined on any other path. */
 function signingCredential(context: { path?: string; body?: unknown } | null | undefined) {
-  if (context?.path !== signInPath) return undefined;
-  const { response } = (context.body ?? {}) as { response?: { id?: unknown } };
-  return typeof response?.id === 'string' && response.id !== '' ? response.id : undefined;
+  return context?.path === signInPath ? assertedCredential(context.body) : undefined;
 }
 
 /** The authenticator's UV flag; the passkey plugin itself never requires it (spec 0003, R3). */
@@ -51,7 +60,7 @@ function requireUserVerified(userVerified: boolean | undefined): void {
  * magic links, social and anonymous sign-in are never configured, and the router in front of it
  * lets through only the allow-listed endpoints. Telemetry is off.
  */
-export function createAuth({ db, secret, origin, logger, audit, notices }: AuthSettings) {
+export function createAuth({ db, secret, origin, logger, audit, notices, limiter }: AuthSettings) {
   return betterAuth({
     appName: 'Arca',
     baseURL: origin,
@@ -108,17 +117,22 @@ export function createAuth({ db, secret, origin, logger, audit, notices }: AuthS
         ),
       ),
       // The plugin asks for user verification as "preferred"; Arca requires it (spec 0003, R3).
-      after: createAuthMiddleware((ctx): Promise<unknown> => {
+      // A refused sign-in with a known passkey is recorded; the refusal itself stands.
+      after: createAuthMiddleware(async (ctx): Promise<unknown> => {
         const returned: unknown = ctx.context.returned;
+        if (ctx.path === signInPath && returned instanceof APIError) {
+          await recordFailedSignIn(ctx.body);
+          return undefined;
+        }
         if (
           ctx.path !== signInOptionsPath ||
           typeof returned !== 'object' ||
           returned === null ||
           returned instanceof Error
         ) {
-          return Promise.resolve();
+          return undefined;
         }
-        return Promise.resolve(ctx.json({ ...returned, userVerification: 'required' }));
+        return ctx.json({ ...returned, userVerification: 'required' });
       }),
     },
     databaseHooks: {
@@ -206,6 +220,34 @@ export function createAuth({ db, secret, origin, logger, audit, notices }: AuthS
       }),
     ],
   });
+
+  /**
+   * One `sign_in_failed` event per credential per window, and only for a passkey that exists
+   * (spec 0003, R7): the person who holds it sees the attempts without the log filling up. A
+   * failure here is logged and never changes the refusal.
+   */
+  async function recordFailedSignIn(body: unknown) {
+    try {
+      const credentialId = assertedCredential(body);
+      if (credentialId === undefined) return;
+      const [found] = await db
+        .select({ id: passkeyTable.id, userId: passkeyTable.userId })
+        .from(passkeyTable)
+        .where(eq(passkeyTable.credentialID, credentialId));
+      if (found === undefined) return;
+      if (!(await limiter.hit(signInFailedLog, credentialId)).allowed) return;
+      await audit.record({
+        code: 'sign_in_failed',
+        subjectAccountId: found.userId,
+        actorAccountId: null,
+        details: { passkeyId: found.id },
+      });
+    } catch (error) {
+      logger.error({
+        errorName: `SignInFailedLog:${error instanceof Error ? error.name : 'NonErrorThrown'}`,
+      });
+    }
+  }
 
   async function noticeSignIn(session: Record<string, unknown> & { userId: string }) {
     const [account] = await db

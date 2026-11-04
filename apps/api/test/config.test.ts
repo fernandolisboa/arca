@@ -8,6 +8,7 @@ import {
   readAuthSecrets,
   readCronSecret,
   readJobsDatabasePassword,
+  readRateLimitKey,
 } from '../src/config.js';
 
 afterEach(() => {
@@ -53,6 +54,18 @@ describe('readCronSecret', () => {
   it.each([undefined, '', 'x'.repeat(31)])('fails closed on %j', (value) => {
     vi.stubEnv('CRON_SECRET', value);
     expect(() => readCronSecret()).toThrow(MissingConfigError);
+  });
+});
+
+describe('readRateLimitKey (spec 0003, R10)', () => {
+  it('reads a key of 32 characters or more', () => {
+    vi.stubEnv('ARCA_RATE_LIMIT_KEY', 'k'.repeat(32));
+    expect(readRateLimitKey()).toBe('k'.repeat(32));
+  });
+
+  it.each([undefined, '', 'k'.repeat(31)])('fails closed on %j', (value) => {
+    vi.stubEnv('ARCA_RATE_LIMIT_KEY', value);
+    expect(() => readRateLimitKey()).toThrow(MissingConfigError);
   });
 });
 

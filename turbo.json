@@ -105,7 +105,8 @@
         "ARCA_DB_API_PASSWORD",
         "ARCA_DB_AUTH_PASSWORD",
         "ARCA_DB_AUDIT_PASSWORD",
-        "BETTER_AUTH_SECRET"
+        "BETTER_AUTH_SECRET",
+        "ARCA_RATE_LIMIT_KEY"
       ]
     }
   }

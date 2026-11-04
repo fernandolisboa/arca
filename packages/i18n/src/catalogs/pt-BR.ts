@@ -41,7 +41,7 @@ export const ptBR = {
     button: 'Entrar com chave de acesso',
     waiting: 'Confirme no seu dispositivo para continuar.',
     failure:
-      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} refused {Essa chave de acesso não está ligada a nenhuma conta do Arca. Tente com outra.} unavailable {Este navegador não aceita chaves de acesso. Abra o Arca em um navegador atualizado, como Chrome, Safari, Edge ou Firefox.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} refused {Essa chave de acesso não está ligada a nenhuma conta do Arca. Tente com outra.} limited {Muitas tentativas em pouco tempo. Espere alguns minutos e tente de novo.} unavailable {Este navegador não aceita chaves de acesso. Abra o Arca em um navegador atualizado, como Chrome, Safari, Edge ou Firefox.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
     inviteOnly: 'Ainda não tem conta? O Arca funciona só por convite. Peça um a quem já usa.',
   },
   session: {

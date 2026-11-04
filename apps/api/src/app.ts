@@ -14,6 +14,8 @@ import { createMiddleware } from 'hono/factory';
 import { routePath } from 'hono/route';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import type { AuditReader } from './audit/log.js';
+import { authRouteLimits } from './auth/limits.js';
+import type { RateLimiter, RateLimitRule } from './auth/rate-limit.js';
 import type { AuthService } from './auth/service.js';
 import type { OutboxEntry } from './email/outbox.js';
 import { bearerMatches } from './cron-auth.js';
@@ -26,7 +28,16 @@ export interface CronDependencies {
   /** Throws when `CRON_SECRET` is not set, which answers 500. */
   readonly readSecret: () => string;
   readonly startHeartbeat: (runDate: IsoDate) => Promise<unknown>;
+  /** Deletes the rate-limit windows that have ended (spec 0003, R10). */
+  readonly sweepRateLimits: () => Promise<number>;
   readonly clock?: () => Date;
+}
+
+/** Limits on the auth routes (spec 0003, R10); required whenever `auth` is given. */
+export interface AuthLimits {
+  readonly limiter: RateLimiter;
+  /** The client's IP address, which the limiter HMACs before storing anything. */
+  readonly clientAddress: (headers: Headers) => string;
 }
 
 export interface AppDependencies {
@@ -43,6 +54,7 @@ export interface AppDependencies {
   readonly origin?: string;
   /** Better Auth behind the allow-list; absent, every auth path is a 404. */
   readonly auth?: AuthService;
+  readonly authLimits?: AuthLimits;
   /** The signed-in account's audit events; absent, the route answers 401. */
   readonly audit?: AuditReader;
   /**
@@ -57,6 +69,7 @@ export type ErrorCode =
   | 'unauthorized'
   | 'cross_origin'
   | 'not_found'
+  | 'rate_limited'
   | 'request_failed'
   | 'internal_error';
 
@@ -149,9 +162,14 @@ export function createApp({
   cron,
   origin,
   auth,
+  authLimits,
   audit,
   outbox,
 }: AppDependencies) {
+  // An auth route without its limit would be the gap the limits exist to close.
+  if (auth !== undefined && authLimits === undefined) {
+    throw new Error('the auth routes need their rate limits');
+  }
   const app = createRouter();
 
   const observe = createMiddleware<AppEnv>(async (c, next) => {
@@ -224,12 +242,26 @@ export function createApp({
 
   // Only allow-listed Better Auth endpoints reach it (spec 0003, R1). The match is on the exact
   // method and the raw path Better Auth will route on, so no encoding or extra segment slips by.
-  const allowed = new Map<string, RouteDefinition>(
-    authRoutes.map((route) => [`${route.method.toUpperCase()} ${apiBasePath}${route.path}`, route]),
+  const allowed = new Map<string, { route: RouteDefinition; limit: RateLimitRule }>(
+    authRoutes.map((route) => [
+      `${route.method.toUpperCase()} ${apiBasePath}${route.path}`,
+      { route, limit: authRouteLimits[route.operationId] },
+    ]),
   );
   app.all(`${authBasePath}/*`, async (c) => {
-    const route = allowed.get(`${c.req.method} ${new URL(c.req.url).pathname}`);
-    if (auth === undefined || route === undefined) return reject(c, 'not_found', 404);
+    const match = allowed.get(`${c.req.method} ${new URL(c.req.url).pathname}`);
+    if (auth === undefined || authLimits === undefined || match === undefined) {
+      return reject(c, 'not_found', 404);
+    }
+    const { route, limit } = match;
+    const outcome = await authLimits.limiter.hit(
+      limit,
+      authLimits.clientAddress(c.req.raw.headers),
+    );
+    if (!outcome.allowed) {
+      c.header('Retry-After', String(outcome.retryAfterSeconds));
+      return reject(c, 'rate_limited', 429);
+    }
     if (route.body !== undefined && !route.body.safeParse(await bodyOf(c.req.raw)).success) {
       return reject(c, 'invalid_request', 400);
     }
@@ -243,13 +275,21 @@ export function createApp({
   // Vercel cron sends GET with `Authorization: Bearer <CRON_SECRET>` (spec 0001, R6). Not part of
   // the OpenAPI document, and the only route that starts a workflow.
   if (cron !== undefined) {
-    const { readSecret, startHeartbeat, clock = () => new Date() } = cron;
-    app.get('/internal/cron/heartbeat', async (c) => {
+    const { readSecret, startHeartbeat, sweepRateLimits, clock = () => new Date() } = cron;
+    const fromCron = createMiddleware<AppEnv>(async (c, next) => {
       if (!bearerMatches(c.req.header('authorization'), readSecret())) {
         return reject(c, 'unauthorized', 401);
       }
+      return next();
+    });
+    app.get('/internal/cron/heartbeat', fromCron, async (c) => {
       await startHeartbeat(utcDate(clock()));
       return c.body(null, 202);
+    });
+    // A single idempotent delete, so it runs inline instead of as a workflow.
+    app.get('/internal/cron/rate-limit-sweep', fromCron, async (c) => {
+      await sweepRateLimits();
+      return c.body(null, 204);
     });
   }
   return app;

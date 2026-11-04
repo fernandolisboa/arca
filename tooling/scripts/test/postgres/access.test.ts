@@ -29,6 +29,7 @@ const authTables = [
   'outbox',
   'passkey',
   'passkey_client',
+  'rate_limit',
   'session',
   'user',
   'verification',

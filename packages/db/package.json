@@ -19,6 +19,10 @@
     "./auth-schema": {
       "types": "./dist/auth-schema.d.ts",
       "default": "./dist/auth-schema.js"
+    },
+    "./rate-limit-schema": {
+      "types": "./dist/rate-limit-schema.d.ts",
+      "default": "./dist/rate-limit-schema.js"
     }
   },
   "scripts": {

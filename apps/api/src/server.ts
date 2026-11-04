@@ -3,6 +3,8 @@ import { useRuntimeConfig } from 'nitro/runtime-config';
 import { createApp } from './app.js';
 import { auditLog, auditReader } from './audit/log.js';
 import { createAuth } from './auth/auth.js';
+import { rateLimiter, type RateLimiter } from './auth/rate-limit.js';
+import { clientAddressFor } from './client-address.js';
 import { authService, type AuthService } from './auth/service.js';
 import {
   databaseTargetFrom,
@@ -12,6 +14,7 @@ import {
   readAuthSecrets,
   readCronSecret,
   readDeploymentEnvironment,
+  readRateLimitKey,
 } from './config.js';
 import { apiDatabase, auditDatabase, authDatabase } from './database.js';
 import { emailSenderFor, outboxReaderFor } from './email/environment.js';
@@ -51,6 +54,14 @@ function authConnection() {
 
 const environment = readDeploymentEnvironment();
 
+let limiterInstance: RateLimiter | undefined;
+
+/** The auth routes' counters, on the app_auth pool, keyed by the environment's HMAC key. */
+function limiter(): RateLimiter {
+  limiterInstance ??= rateLimiter({ db: authConnection(), key: readRateLimitKey() });
+  return limiterInstance;
+}
+
 let auth: Promise<AuthService> | undefined;
 
 /** Better Auth on its own app_auth pool, built on the first auth request. */
@@ -72,6 +83,7 @@ function authenticator(): Promise<AuthService> {
         logger,
         audit,
         notices,
+        limiter: limiter(),
       }),
     );
   })();
@@ -104,12 +116,20 @@ const app = createApp({
   cron: {
     readSecret: readCronSecret,
     startHeartbeat: (runDate) => startWorkflow(heartbeat, [runDate]),
+    sweepRateLimits: () => limiter().sweep(),
   },
   ...withOrigin(ownOrigin()),
   auth: {
     handle: async (request) => (await authenticator()).handle(request),
     session: async (headers) => (await authenticator()).session(headers),
     refresh: async (headers) => (await authenticator()).refresh(headers),
+  },
+  authLimits: {
+    limiter: {
+      hit: (rule, subject) => limiter().hit(rule, subject),
+      sweep: () => limiter().sweep(),
+    },
+    clientAddress: clientAddressFor(environment),
   },
   audit: { events: (accountId, query) => auditReader(connected().db).events(accountId, query) },
   ...(outbox === undefined ? {} : { outbox }),

@@ -21,6 +21,10 @@
       "reason": "Arca's table in the auth schema; only app_auth has privileges on the auth schema, and it is read and written during sign-in, before any per-request identity exists, so row-level security would not narrow anything."
     },
     {
+      "table": "auth.rate_limit",
+      "reason": "Arca's request counters in the auth schema; only app_auth has privileges on the auth schema, the rows hold no personal data (keys are HMACs), and they are written before any per-request identity exists, so row-level security would not narrow anything."
+    },
+    {
       "table": "auth.session",
       "reason": "Better Auth table; only app_auth has privileges on the auth schema, and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
     },
