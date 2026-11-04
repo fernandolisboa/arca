@@ -306,6 +306,11 @@ const app = createApp({
       vaultService().then((vault) => vault.addEnvelope(accountId, sealed)),
     forgetPasskey: (accountId, credentialId) =>
       vaultService().then((vault) => vault.forgetPasskey(accountId, credentialId)),
+    rotate: (accountId, request) =>
+      vaultService().then((vault) => vault.rotate(accountId, request)),
+    resealRecovery: (accountId, request) =>
+      vaultService().then((vault) => vault.resealRecovery(accountId, request)),
+    reset: (accountId) => vaultService().then((vault) => vault.reset(accountId)),
   },
   ...(outbox === undefined ? {} : { outbox }),
   ...(tunnel === undefined ? {} : { tunnel }),

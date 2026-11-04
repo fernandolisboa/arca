@@ -1,0 +1,83 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "11c04716-e81d-42b4-ad79-dedd20e5e352",
+  "prevIds": [
+    "4b676458-81b5-4b63-90cd-d4d155aef867"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "recipient"
+      ],
+      "writes": [
+        "s|pol|vault.recipient.recipient_delete_own",
+        "n|pol|vault.recipient.recipient_delete_own",
+        "e|pol|vault.recipient.recipient_delete_own"
+      ],
+      "reads": [
+        "n|tbl|vault.recipient",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.recipient"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "sharing_state"
+      ],
+      "writes": [
+        "s|pol|vault.sharing_state.sharing_state_delete_own",
+        "n|pol|vault.sharing_state.sharing_state_delete_own",
+        "e|pol|vault.sharing_state.sharing_state_delete_own"
+      ],
+      "reads": [
+        "n|tbl|vault.sharing_state",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.sharing_state"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "recipient",
+        "name": "recipient_delete_own",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"vault\".\"recipient\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "sharing_state",
+        "name": "sharing_state_delete_own",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"vault\".\"sharing_state\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    }
+  ]
+}

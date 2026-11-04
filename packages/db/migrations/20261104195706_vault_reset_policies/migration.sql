@@ -1,0 +1,2 @@
+CREATE POLICY "recipient_delete_own" ON "vault"."recipient" AS PERMISSIVE FOR DELETE TO "app_api" USING ("vault"."recipient"."account_id" = nullif(current_setting('app.account_id', true), '')::uuid);--> statement-breakpoint
+CREATE POLICY "sharing_state_delete_own" ON "vault"."sharing_state" AS PERMISSIVE FOR DELETE TO "app_api" USING ("vault"."sharing_state"."account_id" = nullif(current_setting('app.account_id', true), '')::uuid);

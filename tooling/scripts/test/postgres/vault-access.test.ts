@@ -155,11 +155,13 @@ describe('the vault schema access matrix (spec 0005, R2)', () => {
         SELECT: tables.recipient,
         INSERT: ['account_id', 'recipient'],
         UPDATE: ['rotated_at'],
+        DELETE: ['*'],
       },
       sharing_state: {
         SELECT: tables.sharing_state,
         INSERT: ['account_id', 'version', 'state', 'tag'],
         UPDATE: ['version', 'state', 'tag', 'updated_at'],
+        DELETE: ['*'],
       },
     });
   });
@@ -244,19 +246,22 @@ describe('the vault schema access matrix (spec 0005, R2)', () => {
     ).rejects.toThrow(/envelope_recipient_fkey/);
   });
 
-  it("lets app_jobs under one identity erase nothing of another account's", async () => {
-    const erased = await as('app_jobs', owner, async (client) => {
-      const counts = [];
-      for (const table of ['envelope', 'sharing_state', 'recipient'] as const) {
-        counts.push(
-          (await client.query(`DELETE FROM vault.${table} WHERE account_id = $1`, [other]))
-            .rowCount,
-        );
-      }
-      return counts;
-    });
-    expect(erased).toEqual([0, 0, 0]);
-  });
+  it.each(['app_api', 'app_jobs'] as const)(
+    "lets %s under one identity delete nothing of another account's",
+    async (role) => {
+      const erased = await as(role, owner, async (client) => {
+        const counts = [];
+        for (const table of ['envelope', 'sharing_state', 'recipient'] as const) {
+          counts.push(
+            (await client.query(`DELETE FROM vault.${table} WHERE account_id = $1`, [other]))
+              .rowCount,
+          );
+        }
+        return counts;
+      });
+      expect(erased).toEqual([0, 0, 0]);
+    },
+  );
 
   it('allows one current recipient, one recovery envelope and one envelope per passkey', async () => {
     const duplicate = (sql: string, values: unknown[]) =>

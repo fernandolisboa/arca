@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { auditLog } from '../../src/audit/log.js';
 import { credentialStore } from '../../src/auth/auth.js';
@@ -246,5 +246,170 @@ describe('passkey revocation and the vault (spec 0005, R2)', () => {
       ]),
     ).toBe(2);
     expect((await envelopeRows(owner)).length).toBe(3);
+  });
+});
+
+const recipientsOf = (owner: Account) =>
+  testDatabase.asAdmin(
+    async (client) =>
+      (
+        await client.query<{ id: string; recipient: string; rotated: boolean }>(
+          `SELECT id, recipient, rotated_at IS NOT NULL AS rotated FROM vault.recipient
+            WHERE account_id = $1 ORDER BY created_at, rotated_at NULLS LAST`,
+          [owner.accountId],
+        )
+      ).rows,
+  );
+
+const currentId = async (owner: Account) =>
+  (await recipientsOf(owner)).find(({ rotated }) => !rotated)?.id ?? randomUUID();
+
+const identity = (owner: Account, from: string, passkeys = [credentialOf(owner)]) => ({
+  from,
+  recipient: recipientText(),
+  passkeyEnvelopes: passkeys.map((credentialId) => ({ credentialId, ciphertext: sealed() })),
+  recoveryEnvelope: sealed(),
+});
+
+describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
+  it('records the set-up', async () => {
+    const owner = await fixtures.account(1);
+    await setUp(owner);
+    expect(await fixtures.events(owner, ['vault_created'])).toEqual([
+      { code: 'vault_created', actor: owner.accountId, details: {} },
+    ]);
+  });
+
+  it('rotates: the new recipient is current and the old one keeps its envelopes', async () => {
+    const owner = await fixtures.account(1);
+    const { recipient: old } = await setUp(owner);
+    const next = identity(owner, await currentId(owner));
+    expect(await vault.rotate(owner.accountId, next)).toBe('rotated');
+    expect(
+      (await recipientsOf(owner)).map(({ recipient, rotated }) => ({ recipient, rotated })),
+    ).toEqual([
+      { recipient: old, rotated: true },
+      { recipient: next.recipient, rotated: false },
+    ]);
+    expect(await vault.status(owner.accountId)).toEqual({ recipient: next.recipient });
+    expect((await envelopeRows(owner)).length).toBe(4);
+    const found = await vault.envelopes(owner.accountId);
+    expect(found?.recipients.map(({ current }) => current)).toEqual([false, true]);
+    expect(await fixtures.events(owner, ['vault_identity_rotated'])).toHaveLength(1);
+  });
+
+  it('lets only one of two rotations from the same recipient through', async () => {
+    const owner = await fixtures.account(1);
+    await setUp(owner);
+    const from = await currentId(owner);
+    const outcomes = await Promise.all([
+      vault.rotate(owner.accountId, identity(owner, from)),
+      vault.rotate(owner.accountId, identity(owner, from)),
+    ]);
+    expect([...outcomes].sort()).toEqual(['changed', 'rotated']);
+    expect((await recipientsOf(owner)).filter(({ rotated }) => !rotated)).toHaveLength(1);
+  });
+
+  it('rotates nothing before set-up or with a stranger passkey', async () => {
+    const owner = await fixtures.account(1);
+    const stranger = await fixtures.account(1);
+    expect(await vault.rotate(owner.accountId, identity(owner, await currentId(owner)))).toBe(
+      'no_vault',
+    );
+    await setUp(owner);
+    expect(
+      await vault.rotate(
+        owner.accountId,
+        identity(owner, await currentId(owner), [credentialOf(stranger)]),
+      ),
+    ).toBe('unknown_passkey');
+    expect(await recipientsOf(owner)).toHaveLength(1);
+  });
+
+  it('refuses a rotation from a recipient another rotation already replaced', async () => {
+    const owner = await fixtures.account(1);
+    await setUp(owner);
+    const stale = await currentId(owner);
+    const newer = identity(owner, stale);
+    expect(await vault.rotate(owner.accountId, newer)).toBe('rotated');
+    expect(await vault.rotate(owner.accountId, identity(owner, stale))).toBe('changed');
+    expect(await vault.status(owner.accountId)).toEqual({ recipient: newer.recipient });
+  });
+
+  it('answers changed when another change left no current recipient to rotate', async () => {
+    const owner = await fixtures.account(1);
+    await setUp(owner);
+    await testDatabase.asAdmin((client) =>
+      client.query('UPDATE vault.recipient SET rotated_at = now() WHERE account_id = $1', [
+        owner.accountId,
+      ]),
+    );
+    expect(await vault.rotate(owner.accountId, identity(owner, await currentId(owner)))).toBe(
+      'changed',
+    );
+    expect(await recipientsOf(owner)).toHaveLength(1);
+  });
+
+  it('re-seals every recovery envelope, a rotated identity included, or none', async () => {
+    const owner = await fixtures.account(1);
+    await setUp(owner);
+    await vault.rotate(owner.accountId, identity(owner, await currentId(owner)));
+    const [older, newer] = await recipientsOf(owner);
+    const recoveryOf = async () =>
+      ((await vault.envelopes(owner.accountId))?.envelopes ?? [])
+        .filter(({ kind }) => kind === 'recovery')
+        .map(({ recipientId, ciphertext }) => ({ recipientId, ciphertext }));
+    const before = await recoveryOf();
+    expect(
+      await vault.resealRecovery(owner.accountId, {
+        envelopes: [{ recipientId: newer?.id ?? '', ciphertext: sealed() }],
+      }),
+    ).toBe('changed');
+    expect(await recoveryOf()).toEqual(before);
+    const resealed = [older, newer].map((row) => ({
+      recipientId: row?.id ?? '',
+      ciphertext: sealed(),
+    }));
+    expect(await vault.resealRecovery(owner.accountId, { envelopes: resealed })).toBe('resealed');
+    expect(
+      [...(await recoveryOf())].sort((a, b) => a.recipientId.localeCompare(b.recipientId)),
+    ).toEqual([...resealed].sort((a, b) => a.recipientId.localeCompare(b.recipientId)));
+    expect(await fixtures.events(owner, ['vault_recovery_resealed'])).toHaveLength(1);
+  });
+
+  it('re-seals nothing before set-up', async () => {
+    const owner = await fixtures.account(1);
+    expect(
+      await vault.resealRecovery(owner.accountId, {
+        envelopes: [{ recipientId: '0b4f6a1e-2c3d-4e5f-8a9b-0c1d2e3f4a5b', ciphertext: sealed() }],
+      }),
+    ).toBe('no_vault');
+  });
+
+  it("resets the account's vault and nothing of another's, so it can be set up again", async () => {
+    const owner = await fixtures.account(1);
+    const stranger = await fixtures.account(1);
+    expect(await vault.reset(owner.accountId)).toBe(false);
+    await setUp(owner);
+    await vault.rotate(owner.accountId, identity(owner, await currentId(owner)));
+    await setUp(stranger);
+    await testDatabase.asAdmin((client) =>
+      client.query(
+        `INSERT INTO vault.sharing_state (account_id, version, state, tag) VALUES ($1, 1, $2, $3)`,
+        [owner.accountId, Buffer.from('{}'), randomBytes(32)],
+      ),
+    );
+    expect(await vault.reset(owner.accountId)).toBe(true);
+    expect(await recipientsOf(owner)).toEqual([]);
+    expect(await envelopeRows(owner)).toEqual([]);
+    expect(
+      await fixtures.count(
+        'SELECT count(*)::int AS n FROM vault.sharing_state WHERE account_id = $1',
+        [owner.accountId],
+      ),
+    ).toBe(0);
+    expect(await recipientsOf(stranger)).toHaveLength(1);
+    expect(await fixtures.events(owner, ['vault_reset'])).toHaveLength(1);
+    expect((await setUp(owner)).outcome).toBe('created');
   });
 });

@@ -3148,7 +3148,11 @@
                               "deletion_requested",
                               "deletion_cancelled",
                               "account_erased",
-                              "vault_envelopes_fetched"
+                              "vault_created",
+                              "vault_envelopes_fetched",
+                              "vault_identity_rotated",
+                              "vault_recovery_resealed",
+                              "vault_reset"
                             ]
                           },
                           "actorAccountId": {
@@ -3620,6 +3624,62 @@
             }
           }
         }
+      },
+      "delete": {
+        "operationId": "resetVault",
+        "summary": "Deletes the vault's recipients, envelopes and sharing state, so it can be set up again, after a sensitive_settings step-up; 403 step_up_required, 404 not_found before set-up",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Vault reset",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/vault/envelopes": {
@@ -3768,6 +3828,197 @@
         "responses": {
           "200": {
             "description": "Envelope stored",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vault/rotate": {
+      "post": {
+        "operationId": "rotateVaultIdentity",
+        "summary": "Makes a new identity's recipient current, with its envelopes, and marks the old one rotated, keeping its envelopes, after a sensitive_settings step-up whose target is the rotated recipient and whose fields carry the new one; 403 step_up_required, 404 not_found before set-up, 409 vault_changed unless the recipient named is still current, 400 invalid_request for a credential that is not an active passkey of the account",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "recipient": {
+                    "type": "string",
+                    "maxLength": 2100,
+                    "pattern": "^age1pq1[02-9ac-hj-np-z]+$"
+                  },
+                  "passkeyEnvelopes": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "credentialId": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9_-]{16,1366}$"
+                        },
+                        "ciphertext": {
+                          "type": "string",
+                          "minLength": 86,
+                          "maxLength": 21846,
+                          "format": "base64url"
+                        }
+                      },
+                      "required": [
+                        "credentialId",
+                        "ciphertext"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 16
+                  },
+                  "recoveryEnvelope": {
+                    "type": "string",
+                    "minLength": 86,
+                    "maxLength": 21846,
+                    "format": "base64url"
+                  },
+                  "from": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "recipient",
+                  "passkeyEnvelopes",
+                  "recoveryEnvelope",
+                  "from"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Identity rotated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vault/recovery-envelopes": {
+      "put": {
+        "operationId": "resealVaultRecovery",
+        "summary": "Replaces every recovery envelope at once, so the old vault recovery secret opens none, after a sensitive_settings step-up whose targets are the recipient IDs in order; 403 step_up_required, 404 not_found before set-up, 409 vault_changed unless the list names exactly the account's recipients",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "envelopes": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "recipientId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "ciphertext": {
+                          "type": "string",
+                          "minLength": 86,
+                          "maxLength": 21846,
+                          "format": "base64url"
+                        }
+                      },
+                      "required": [
+                        "recipientId",
+                        "ciphertext"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 32
+                  }
+                },
+                "required": [
+                  "envelopes"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recovery envelopes re-sealed",
             "content": {
               "application/json": {
                 "schema": {

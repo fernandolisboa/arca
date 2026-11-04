@@ -1,16 +1,21 @@
 import type {
+  AuditEventCode,
   PasskeyEnvelope,
+  ResealVaultRecoveryRequest,
+  RotateVaultIdentityRequest,
   SetUpVaultRequest,
   VaultEnvelopesResponse,
   VaultStatusResponse,
 } from '@arca/api-contract/routes';
 import { withIdentity, type Database, type Transaction } from '@arca/db';
-import { envelope, recipient } from '@arca/db/vault-schema';
+import { envelope, recipient, sharingState } from '@arca/db/vault-schema';
 import { and, asc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 
 export type VaultSetUp = 'created' | 'exists' | 'unknown_passkey';
 export type EnvelopeAdded = 'added' | 'no_vault' | 'unknown_passkey';
+export type VaultRotation = 'rotated' | 'no_vault' | 'changed' | 'unknown_passkey';
+export type RecoveryResealed = 'resealed' | 'no_vault' | 'changed';
 
 /**
  * The vault's server side (spec 0005, R2): it stores what the device sealed and serves it back,
@@ -30,6 +35,29 @@ export interface Vault {
   readonly addEnvelope: (accountId: string, sealed: PasskeyEnvelope) => Promise<EnvelopeAdded>;
   /** Deletes the passkey's envelopes, for every recipient; idempotent. */
   readonly forgetPasskey: (accountId: string, credentialId: string) => Promise<void>;
+  /**
+   * Marks the named recipient rotated, if it is still current, and makes the new one current with
+   * its envelopes, in one transaction; the old recipient's envelopes stay until the cleanup
+   * (ADR-0018). A device that missed another rotation gets `changed`, never rotates the newer one.
+   */
+  readonly rotate: (
+    accountId: string,
+    request: RotateVaultIdentityRequest,
+  ) => Promise<VaultRotation>;
+  /**
+   * Replaces every recovery envelope, or none: the list must name exactly the recipients that
+   * have one, so no envelope is left sealed to the old secret (spec 0003, R6).
+   */
+  readonly resealRecovery: (
+    accountId: string,
+    request: ResealVaultRecoveryRequest,
+  ) => Promise<RecoveryResealed>;
+  /**
+   * Deletes the recipients, their envelopes and the sharing state, for a vault whose secret was
+   * lost before anything was stored in it. Refusing it while the account owns documents comes
+   * with the documents table (R4). False when there was nothing to delete.
+   */
+  readonly reset: (accountId: string) => Promise<boolean>;
 }
 
 export interface VaultSettings {
@@ -76,6 +104,16 @@ const insertEnvelopes = (
     )}
     ON CONFLICT DO NOTHING`);
 
+const isRecipientOf = (accountId: string) => eq(recipient.accountId, accountId);
+
+const anyRecipient = (tx: Transaction, accountId: string) =>
+  tx
+    .select({ id: recipient.id })
+    .from(recipient)
+    .where(isRecipientOf(accountId))
+    .limit(1)
+    .then(([found]) => found);
+
 const current = (tx: Transaction, accountId: string) =>
   tx
     .select({ id: recipient.id, recipient: recipient.recipient })
@@ -92,35 +130,48 @@ export function createVault({ db, activeCredentials, audit }: VaultSettings): Va
     return credentialIds.every((id) => active.has(id));
   };
 
+  const record = (accountId: string, code: AuditEventCode & `vault_${string}`) =>
+    audit.record({ code, subjectAccountId: accountId, actorAccountId: accountId, details: {} });
+
+  /** The new identity's recovery envelope and passkey envelopes, for its recipient. */
+  const storeIdentity = (
+    tx: Transaction,
+    accountId: string,
+    recipientId: string,
+    { passkeyEnvelopes, recoveryEnvelope }: SetUpVaultRequest,
+  ) =>
+    insertEnvelopes(tx, accountId, recipientId, [
+      { kind: 'recovery', credentialId: null, ciphertext: recoveryEnvelope },
+      ...passkeyEnvelopes.map(({ credentialId, ciphertext }) => ({
+        kind: 'passkey_prf' as const,
+        credentialId,
+        ciphertext,
+      })),
+    ]);
+
+  const passkeysActive = (accountId: string, { passkeyEnvelopes }: SetUpVaultRequest) =>
+    allActive(
+      accountId,
+      passkeyEnvelopes.map(({ credentialId }) => credentialId),
+    );
+
   return {
     status: async (accountId) => ({
       recipient: (await asAccount(accountId, (tx) => current(tx, accountId)))?.recipient ?? null,
     }),
 
-    setUp: async (accountId, { recipient: newRecipient, passkeyEnvelopes, recoveryEnvelope }) => {
-      if (
-        !(await allActive(
-          accountId,
-          passkeyEnvelopes.map(({ credentialId }) => credentialId),
-        ))
-      ) {
-        return 'unknown_passkey';
-      }
+    setUp: async (accountId, request) => {
+      if (!(await passkeysActive(accountId, request))) return 'unknown_passkey';
       // A current recipient already there, or one a concurrent set-up stored first, conflicts
       // with the one-current-recipient index, so nothing is stored.
-      return asAccount(accountId, async (tx) => {
-        const recipientId = await insertRecipient(tx, accountId, newRecipient);
+      const outcome = await asAccount(accountId, async (tx) => {
+        const recipientId = await insertRecipient(tx, accountId, request.recipient);
         if (recipientId === undefined) return 'exists' as const;
-        await insertEnvelopes(tx, accountId, recipientId, [
-          { kind: 'recovery', credentialId: null, ciphertext: recoveryEnvelope },
-          ...passkeyEnvelopes.map(({ credentialId, ciphertext }) => ({
-            kind: 'passkey_prf' as const,
-            credentialId,
-            ciphertext,
-          })),
-        ]);
+        await storeIdentity(tx, accountId, recipientId, request);
         return 'created' as const;
       });
+      if (outcome === 'created') await record(accountId, 'vault_created');
+      return outcome;
     },
 
     envelopes: async (accountId) => {
@@ -133,7 +184,7 @@ export function createVault({ db, activeCredentials, audit }: VaultSettings): Va
             rotatedAt: recipient.rotatedAt,
           })
           .from(recipient)
-          .where(eq(recipient.accountId, accountId))
+          .where(isRecipientOf(accountId))
           .orderBy(asc(recipient.createdAt), asc(recipient.id));
         if (!recipients.some(({ rotatedAt }) => rotatedAt === null)) return null;
         const envelopes = await tx
@@ -157,12 +208,7 @@ export function createVault({ db, activeCredentials, audit }: VaultSettings): Va
         return { recipients, envelopes };
       });
       if (found === null) return null;
-      await audit.record({
-        code: 'vault_envelopes_fetched',
-        subjectAccountId: accountId,
-        actorAccountId: accountId,
-        details: {},
-      });
+      await record(accountId, 'vault_envelopes_fetched');
       return {
         recipients: found.recipients.map(({ id, recipient: value, rotatedAt }) => ({
           id,
@@ -203,5 +249,72 @@ export function createVault({ db, activeCredentials, audit }: VaultSettings): Va
           ),
       );
     },
+
+    rotate: async (accountId, request) => {
+      if (!(await passkeysActive(accountId, request))) return 'unknown_passkey';
+      // Recorded before the commit, like every security event: a failed write keeps the old state.
+      return asAccount(accountId, async (tx) => {
+        // The update locks the row, so a concurrent rotation of the same recipient waits, then
+        // finds it rotated and answers `changed`.
+        const rotated = await tx.execute<{ id: string }>(sql`
+          UPDATE vault.recipient SET rotated_at = now()
+           WHERE id = ${request.from} AND account_id = ${accountId} AND rotated_at IS NULL
+          RETURNING id`);
+        if (rotated.rows.length === 0) {
+          return (await anyRecipient(tx, accountId)) === undefined
+            ? ('no_vault' as const)
+            : ('changed' as const);
+        }
+        const recipientId = await insertRecipient(tx, accountId, request.recipient);
+        if (recipientId === undefined) throw new Error('the rotated recipient is still current');
+        await storeIdentity(tx, accountId, recipientId, request);
+        await record(accountId, 'vault_identity_rotated');
+        return 'rotated' as const;
+      });
+    },
+
+    resealRecovery: async (accountId, { envelopes: resealed }) =>
+      asAccount(accountId, async (tx) => {
+        // The recipients are locked first, so a rotation adding one with its own recovery
+        // envelope either commits before this reads (and the list no longer matches) or waits.
+        await tx
+          .select({ id: recipient.id })
+          .from(recipient)
+          .where(isRecipientOf(accountId))
+          .for('update');
+        const kept = await tx
+          .select({ recipientId: envelope.recipientId })
+          .from(envelope)
+          .where(and(eq(envelope.accountId, accountId), eq(envelope.kind, 'recovery')))
+          .for('update');
+        if (kept.length === 0) return 'no_vault' as const;
+        const named = new Set(resealed.map(({ recipientId }) => recipientId));
+        if (
+          kept.length !== named.size ||
+          !kept.every(({ recipientId }) => named.has(recipientId))
+        ) {
+          return 'changed' as const;
+        }
+        for (const { recipientId, ciphertext } of resealed) {
+          await tx.execute(sql`
+            UPDATE vault.envelope SET ciphertext = ${bytes(ciphertext)}
+             WHERE account_id = ${accountId} AND recipient_id = ${recipientId}
+               AND kind = 'recovery'`);
+        }
+        await record(accountId, 'vault_recovery_resealed');
+        return 'resealed' as const;
+      }),
+
+    reset: (accountId) =>
+      asAccount(accountId, async (tx) => {
+        const recipients = await tx
+          .delete(recipient)
+          .where(isRecipientOf(accountId))
+          .returning({ id: recipient.id });
+        await tx.delete(sharingState).where(eq(sharingState.accountId, accountId));
+        if (recipients.length === 0) return false;
+        await record(accountId, 'vault_reset');
+        return true;
+      }),
   };
 }

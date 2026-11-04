@@ -759,7 +759,11 @@ export const auditEventDetails = {
   deletion_requested: z.strictObject({ reason: z.enum(deletionReasons) }),
   deletion_cancelled: z.strictObject({ reason: z.enum(['owner_cancel', 'sign_in']) }),
   account_erased: noDetails,
+  vault_created: noDetails,
   vault_envelopes_fetched: noDetails,
+  vault_identity_rotated: noDetails,
+  vault_recovery_resealed: noDetails,
+  vault_reset: noDetails,
 } as const;
 
 export type AuditEventCode = keyof typeof auditEventDetails;
@@ -961,6 +965,58 @@ export const addVaultEnvelope = {
   response: { description: 'Envelope stored', schema: AddVaultEnvelopeResponse },
 } as const satisfies RouteDefinition<typeof AddVaultEnvelopeResponse>;
 
+export const RotateVaultIdentityRequest = SetUpVaultRequest.extend({
+  /** The current recipient being rotated, as the device last fetched it. */
+  from: z.uuid(),
+});
+export type RotateVaultIdentityRequest = z.infer<typeof RotateVaultIdentityRequest>;
+
+export const RotateVaultIdentityResponse = z.object({});
+
+export const rotateVaultIdentity = {
+  method: 'post',
+  path: '/vault/rotate',
+  operationId: 'rotateVaultIdentity',
+  summary:
+    "Makes a new identity's recipient current, with its envelopes, and marks the old one rotated, keeping its envelopes, after a sensitive_settings step-up whose target is the rotated recipient and whose fields carry the new one; 403 step_up_required, 404 not_found before set-up, 409 vault_changed unless the recipient named is still current, 400 invalid_request for a credential that is not an active passkey of the account",
+  body: RotateVaultIdentityRequest,
+  response: { description: 'Identity rotated', schema: RotateVaultIdentityResponse },
+} as const satisfies RouteDefinition<typeof RotateVaultIdentityResponse>;
+
+export const ResealVaultRecoveryRequest = z.strictObject({
+  /** One per recipient the account keeps, each the identity sealed to the new recovery secret. */
+  envelopes: z
+    .array(z.strictObject({ recipientId: z.uuid(), ciphertext: VaultCiphertext }))
+    .min(1)
+    .max(32)
+    .refine((list) => new Set(list.map(({ recipientId }) => recipientId)).size === list.length),
+});
+export type ResealVaultRecoveryRequest = z.infer<typeof ResealVaultRecoveryRequest>;
+
+export const ResealVaultRecoveryResponse = z.object({});
+
+export const resealVaultRecovery = {
+  method: 'put',
+  path: '/vault/recovery-envelopes',
+  operationId: 'resealVaultRecovery',
+  summary:
+    "Replaces every recovery envelope at once, so the old vault recovery secret opens none, after a sensitive_settings step-up whose targets are the recipient IDs in order; 403 step_up_required, 404 not_found before set-up, 409 vault_changed unless the list names exactly the account's recipients",
+  body: ResealVaultRecoveryRequest,
+  response: { description: 'Recovery envelopes re-sealed', schema: ResealVaultRecoveryResponse },
+} as const satisfies RouteDefinition<typeof ResealVaultRecoveryResponse>;
+
+export const ResetVaultResponse = z.object({});
+
+export const resetVault = {
+  method: 'delete',
+  path: '/vault',
+  operationId: 'resetVault',
+  summary:
+    "Deletes the vault's recipients, envelopes and sharing state, so it can be set up again, after a sensitive_settings step-up; 403 step_up_required, 404 not_found before set-up",
+  body: z.strictObject({}),
+  response: { description: 'Vault reset', schema: ResetVaultResponse },
+} as const satisfies RouteDefinition<typeof ResetVaultResponse>;
+
 export const routes = {
   health,
   session,
@@ -998,6 +1054,9 @@ export const routes = {
   setUpVault,
   vaultEnvelopes,
   addVaultEnvelope,
+  rotateVaultIdentity,
+  resealVaultRecovery,
+  resetVault,
 } as const;
 
 /** The Better Auth endpoints the API lets through; every other path under /v1/auth is a 404. */
