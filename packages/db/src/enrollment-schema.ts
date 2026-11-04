@@ -163,7 +163,7 @@ export const recoveryLock = auth.table('recovery_lock', {
  * Invites (spec 0003, R2): the link token is 256 random bits and only its SHA-256 hash is stored;
  * single use through `accepted_at`, expiring after 48 hours. An accepted invite stays until the
  * inviter confirms or declines the new account; erasing either account erases the invite with
- * the invitee's address. Never backed up.
+ * the invitee's address. Backed up, since an accepted invite is the lasting link between them.
  */
 export const invite = auth.table(
   'invite',

@@ -2,7 +2,7 @@
   "tablesWithoutRowLevelSecurity": [
     {
       "table": "arca_migrations.journal",
-      "reason": "The migration runner's journal; only app_migrator touches it."
+      "reason": "The migration runner's journal; only app_migrator writes it, and app_backup reads it for the backup's journal head."
     },
     {
       "table": "auth.account",

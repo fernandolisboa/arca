@@ -287,6 +287,13 @@ describe('app_backup at run time (spec 0004, R12)', () => {
     expect(counted.rows[0]?.total).toBe(1);
   });
 
+  it.each(['SELECT name FROM arca_migrations.journal', 'SELECT email FROM auth.invite'])(
+    'reads what a backup needs: %s',
+    async (sql) => {
+      await expect(asBackup(sql)).resolves.toBeDefined();
+    },
+  );
+
   it.each([
     'SELECT FROM auth.session',
     'SELECT FROM auth.recovery_link',
