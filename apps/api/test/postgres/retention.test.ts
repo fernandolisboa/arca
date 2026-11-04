@@ -15,7 +15,7 @@ import { accounts } from '../../src/auth/auth.js';
 import type { Notice, Notices } from '../../src/email/notices.js';
 import { createDelivery, deliverNow } from '../../src/notification/delivery.js';
 import { createNotifier } from '../../src/notification/notifier.js';
-import { authTestDatabase, type AuthTestDatabase } from './auth-database.js';
+import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
 import { seeded } from './every-table.js';
 
 // The daily retention rules on the real migrations, through the runtime roles' pools (spec 0004,
@@ -43,9 +43,15 @@ const retentionWith = (ownedRules?: readonly OwnedExpiryRule[]): Retention =>
       db: testDatabase.jobsDb,
       startDelivery: (accountId, messageId) =>
         deliverNow(
-          createDelivery({ jobsDb: testDatabase.jobsDb, authDb: testDatabase.authDb, notices }),
+          createDelivery({
+            jobsDb: testDatabase.jobsDb,
+            authDb: testDatabase.authDb,
+            notices,
+            logger: silentLogger,
+          }),
           accountId,
           messageId,
+          silentLogger,
         ),
     }),
     ...(ownedRules === undefined ? {} : { ownedRules }),

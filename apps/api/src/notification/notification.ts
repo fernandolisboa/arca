@@ -45,6 +45,11 @@ const Stored = z.discriminatedUnion('code', [
   z.object({ code: z.enum(plainKinds), details: z.strictObject({}) }),
 ]);
 
+/** The stored message's code, once its details pass the closed list. */
+export function checkedCode(message: StoredMessage): Notification['kind'] {
+  return Stored.parse(message).code;
+}
+
 /** The notice a stored message words for `to`, at the time it was created. */
 export function noticeOf(message: StoredMessage, to: string, at: Date): Notice {
   const parsed = Stored.parse(message);

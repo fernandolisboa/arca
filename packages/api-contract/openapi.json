@@ -3152,7 +3152,9 @@
                               "vault_envelopes_fetched",
                               "vault_identity_rotated",
                               "vault_recovery_resealed",
-                              "vault_reset"
+                              "vault_reset",
+                              "notification_channel_added",
+                              "notification_channel_removed"
                             ]
                           },
                           "actorAccountId": {
@@ -4023,6 +4025,318 @@
         "responses": {
           "200": {
             "description": "Recovery envelopes re-sealed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/channels": {
+      "get": {
+        "operationId": "listNotificationChannels",
+        "summary": "The account's notification channels and the push key; 401 without a session",
+        "responses": {
+          "200": {
+            "description": "The channels",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "channels": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "email",
+                              "web_push"
+                            ]
+                          },
+                          "browser": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "enum": [
+                              "edge",
+                              "samsung_internet",
+                              "opera",
+                              "firefox",
+                              "chrome",
+                              "safari",
+                              "other",
+                              null
+                            ]
+                          },
+                          "os": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "enum": [
+                              "ios",
+                              "ipados",
+                              "android",
+                              "chromeos",
+                              "windows",
+                              "macos",
+                              "linux",
+                              "other",
+                              null
+                            ]
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "lastSuccessAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "date-time"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "kind",
+                          "browser",
+                          "os",
+                          "createdAt",
+                          "lastSuccessAt"
+                        ]
+                      }
+                    },
+                    "pushKey": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "pattern": "^[A-Za-z0-9_-]{87}$"
+                    }
+                  },
+                  "required": [
+                    "channels",
+                    "pushKey"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "addPushChannel",
+        "summary": "Adds this browser's push subscription, or returns the channel it already has; 409 too_many_push_channels past 10, 503 push_unavailable where push is not set up",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "endpoint": {
+                    "type": "string",
+                    "maxLength": 2048
+                  },
+                  "p256dh": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{87}$"
+                  },
+                  "auth": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{22}$"
+                  },
+                  "device": {
+                    "type": "object",
+                    "properties": {
+                      "browser": {
+                        "type": "string",
+                        "enum": [
+                          "edge",
+                          "samsung_internet",
+                          "opera",
+                          "firefox",
+                          "chrome",
+                          "safari",
+                          "other"
+                        ]
+                      },
+                      "os": {
+                        "type": "string",
+                        "enum": [
+                          "ios",
+                          "ipados",
+                          "android",
+                          "chromeos",
+                          "windows",
+                          "macos",
+                          "linux",
+                          "other"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "browser",
+                      "os"
+                    ]
+                  }
+                },
+                "required": [
+                  "endpoint",
+                  "p256dh",
+                  "auth",
+                  "device"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The channel",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "channelId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "channelId"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/channels/remove": {
+      "post": {
+        "operationId": "removeNotificationChannel",
+        "summary": "Removes a push channel after a sensitive_settings step-up; 403 step_up_required, 404 not_found for an unknown or email channel",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "channelId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "channelId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Removed",
             "content": {
               "application/json": {
                 "schema": {

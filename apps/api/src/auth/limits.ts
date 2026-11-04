@@ -50,6 +50,11 @@ export const deviceLimits = {
   addPasskey: { name: 'add_passkey_session', limit: 10, windowSeconds: hour },
 } as const satisfies Record<string, RateLimitRule>;
 
+/** Per-account limit on adding push channels, which the channel cap bounds again. */
+export const notificationLimits = {
+  addPushChannel: { name: 'add_push_channel_account', limit: 30, windowSeconds: hour },
+} as const satisfies Record<string, RateLimitRule>;
+
 /**
  * Limits on recovery (spec 0003, R10): starting is per email HMAC and per IP; the link's token is
  * 256 random bits and five wrong codes lock the account's recovery, so the rest bound load.

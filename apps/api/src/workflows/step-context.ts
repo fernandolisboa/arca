@@ -11,12 +11,15 @@ import {
   readDeploymentEnvironment,
   readJobsDatabasePassword,
   readOwnOrigin,
+  readVapidPrivateKey,
 } from '../config.js';
 import { roleDatabase } from '../database.js';
 import { emailRouteFor, emailSenderFor } from '../email/environment.js';
 import { createNotices } from '../email/notices.js';
 import { createDelivery, deliverNow, type Delivery } from '../notification/delivery.js';
 import { createNotifier } from '../notification/notifier.js';
+import { vapidPushSender } from '../notification/push.js';
+import { configuredVapidKeys } from '../notification/vapid.js';
 import { stdoutLogger } from '../logger.js';
 import { reportError, startMonitoring } from '../monitoring.js';
 import type { StepTelemetry } from './step-error.js';
@@ -87,8 +90,24 @@ export const erasureSteps = once(async (): Promise<Erasure> =>
   }),
 );
 
+/** Push goes out only where the environment has its VAPID key pair. */
+function pushSender() {
+  const keys = configuredVapidKeys(
+    readDeploymentEnvironment(),
+    readVapidPrivateKey(),
+    stepTelemetry.logger,
+  );
+  return keys === undefined ? {} : { push: vapidPushSender({ keys, contact: readAuthOrigin() }) };
+}
+
 export const deliverySteps = once(async (): Promise<Delivery> =>
-  createDelivery({ jobsDb: jobsDatabase(), authDb: authDatabase(), notices: await notices() }),
+  createDelivery({
+    jobsDb: jobsDatabase(),
+    authDb: authDatabase(),
+    notices: await notices(),
+    logger: stepTelemetry.logger,
+    ...pushSender(),
+  }),
 );
 
 /**
@@ -103,7 +122,8 @@ export const retentionSteps = once(async (): Promise<Retention> => {
     audit: auditLog(auditDatabase()),
     notifier: createNotifier({
       db: jobsDatabase(),
-      startDelivery: (accountId, messageId) => deliverNow(delivery, accountId, messageId),
+      startDelivery: (accountId, messageId) =>
+        deliverNow(delivery, accountId, messageId, stepTelemetry.logger),
     }),
   });
 });

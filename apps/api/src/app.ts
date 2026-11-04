@@ -29,6 +29,8 @@ import {
   rotateVaultIdentity,
   resealVaultRecovery,
   resetVault,
+  addPushChannel,
+  removeNotificationChannel,
   StepUpAction,
   stepUpNonceHeader,
   StepUpOptionsRequest,
@@ -55,6 +57,7 @@ import {
   deviceLimits,
   inviteLimits,
   monitoringLimits,
+  notificationLimits,
   recoveryLimits,
   registrationLimits,
   stepUpLimits,
@@ -72,6 +75,8 @@ import { bearerMatches } from './cron-auth.js';
 import { cachedDatabaseCheck, type CheckDatabase } from './database-health.js';
 import type { Tunnel } from './monitoring-tunnel.js';
 import { securityTxt } from './security-txt.js';
+import type { NotificationChannels } from './notification/channels.js';
+import { isP256PublicKey } from './notification/push.js';
 import type { Vault } from './vault/vault.js';
 import { cspReportPath } from '@arca/security-policy';
 import { tunnelPath, type Logger } from '@arca/telemetry';
@@ -141,6 +146,12 @@ export interface AppDependencies {
   readonly accountDeletion?: AccountDeletion;
   /** The vault's recipients and envelopes (spec 0005, R2); absent, its routes answer 401. */
   readonly vault?: Vault;
+  /** The account's notification channels (spec 0005, R7); absent, their routes answer 401. */
+  readonly notifications?: {
+    readonly channels: NotificationChannels;
+    /** The environment's VAPID public key; null where push is not set up. */
+    readonly pushKey: string | null;
+  };
   /**
    * The outbox's messages, given only on preview deployments, which Vercel Deployment
    * Protection keeps private (spec 0003, R8); absent, `/internal/outbox` is a 404.
@@ -191,6 +202,8 @@ export type ErrorCode =
   | 'deletion_pending'
   | 'vault_exists'
   | 'vault_changed'
+  | 'push_unavailable'
+  | 'too_many_push_channels'
   | 'accounts_closed'
   | 'too_large'
   | 'request_failed'
@@ -313,6 +326,7 @@ export function createApp({
   dataExports,
   accountDeletion,
   vault,
+  notifications,
   outbox,
   monitor,
   syntheticError = false,
@@ -949,6 +963,49 @@ export function createApp({
     });
     if (!approved) return fail(c, 'step_up_required', 403);
     if (!(await vault.reset(current.accountId))) return fail(c, 'not_found', 404);
+    return c.json({}, 200);
+  });
+
+  v1.openapi(openApiRoutes.notificationChannels, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || notifications === undefined) return unauthorized(c);
+    const channels = await notifications.channels.list(current.accountId);
+    return c.json({ channels, pushKey: notifications.pushKey }, 200);
+  });
+
+  v1.openapi(openApiRoutes.addPushChannel, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || notifications === undefined || authLimits === undefined) {
+      return unauthorized(c);
+    }
+    const limited = await overLimit(
+      c,
+      authLimits,
+      notificationLimits.addPushChannel,
+      current.accountId,
+    );
+    if (limited !== undefined) return limited;
+    const subscription = addPushChannel.body.parse(await c.req.json());
+    if (!isP256PublicKey(subscription.p256dh)) return fail(c, 'invalid_request', 400);
+    if (notifications.pushKey === null) return fail(c, 'push_unavailable', 503);
+    const outcome = await notifications.channels.addPush(current.accountId, subscription);
+    if (outcome === 'too_many') return fail(c, 'too_many_push_channels', 409);
+    return c.json(outcome, 200);
+  });
+
+  // A stolen session must not silence a channel (spec 0005, R7).
+  v1.openapi(openApiRoutes.removeNotificationChannel, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || notifications === undefined) return unauthorized(c);
+    const { channelId } = removeNotificationChannel.body.parse(await c.req.json());
+    const approved = await stepUpGranted(c, current, 'sensitive_settings', {
+      action: removeNotificationChannel.operationId,
+      targets: [channelId],
+    });
+    if (!approved) return fail(c, 'step_up_required', 403);
+    if (!(await notifications.channels.removePush(current.accountId, channelId))) {
+      return fail(c, 'not_found', 404);
+    }
     return c.json({}, 200);
   });
 

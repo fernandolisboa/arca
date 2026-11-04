@@ -19,7 +19,7 @@ export async function deliverOnChannel(
   channelId: EntityId,
 ): Promise<void> {
   'use step';
-  await withStepError('email_unavailable', stepTelemetry, async () =>
+  await withStepError('delivery_unavailable', stepTelemetry, async () =>
     (await deliverySteps()).deliver(accountId, messageId, channelId),
   );
 }

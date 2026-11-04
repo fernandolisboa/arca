@@ -764,6 +764,8 @@ export const auditEventDetails = {
   vault_identity_rotated: noDetails,
   vault_recovery_resealed: noDetails,
   vault_reset: noDetails,
+  notification_channel_added: z.strictObject({ channelId: z.uuid() }),
+  notification_channel_removed: z.strictObject({ channelId: z.uuid() }),
 } as const;
 
 export type AuditEventCode = keyof typeof auditEventDetails;
@@ -1022,6 +1024,100 @@ export const resetVault = {
   response: { description: 'Vault reset', schema: ResetVaultResponse },
 } as const satisfies RouteDefinition<typeof ResetVaultResponse>;
 
+/** Where an account's notifications go: its email, or a browser's push subscription (spec 0005, R7). */
+export const NotificationChannel = z.object({
+  id: z.uuid(),
+  kind: z.enum(['email', 'web_push']),
+  /** The families that subscribed; null for email. */
+  browser: z.enum(browserFamilies).nullable(),
+  os: z.enum(osFamilies).nullable(),
+  createdAt: z.iso.datetime({ offset: true }),
+  lastSuccessAt: z.iso.datetime({ offset: true }).nullable(),
+});
+export type NotificationChannel = z.infer<typeof NotificationChannel>;
+
+export const NotificationChannelsResponse = z.object({
+  channels: z.array(NotificationChannel),
+  /** The environment's VAPID public key, base64url; null where push is not set up. */
+  pushKey: z
+    .string()
+    .regex(/^[A-Za-z0-9_-]{87}$/)
+    .nullable(),
+});
+export type NotificationChannelsResponse = z.infer<typeof NotificationChannelsResponse>;
+
+export const notificationChannels = {
+  method: 'get',
+  path: '/notifications/channels',
+  operationId: 'listNotificationChannels',
+  summary: "The account's notification channels and the push key; 401 without a session",
+  response: { description: 'The channels', schema: NotificationChannelsResponse },
+} as const satisfies RouteDefinition<typeof NotificationChannelsResponse>;
+
+/**
+ * The browsers' push services (Chrome and the browsers built on it, Firefox, Safari, Edge): the
+ * server posts only to these, so a subscription cannot point it at any other host. Checked
+ * 2026-11-04 against https://pushpad.xyz/blog/what-are-the-browser-push-services/.
+ */
+const pushServiceHosts = [
+  'fcm.googleapis.com',
+  'android.googleapis.com',
+  'updates.push.services.mozilla.com',
+];
+const pushServiceDomains = ['.push.apple.com', '.notify.windows.com'];
+
+export function isPushServiceEndpoint(endpoint: string): boolean {
+  if (!endpoint.startsWith('https://')) return false;
+  let url: URL;
+  try {
+    url = new URL(endpoint);
+  } catch {
+    return false;
+  }
+  if (url.port !== '' || url.username !== '' || url.password !== '') return false;
+  const host = url.hostname;
+  return (
+    pushServiceHosts.includes(host) || pushServiceDomains.some((domain) => host.endsWith(domain))
+  );
+}
+
+/** A browser's push subscription, as `PushSubscription.toJSON()` gives it, keys unpadded. */
+export const AddPushChannelRequest = z.strictObject({
+  endpoint: z.string().max(2048).refine(isPushServiceEndpoint),
+  p256dh: z.string().regex(/^[A-Za-z0-9_-]{87}$/),
+  auth: z.string().regex(/^[A-Za-z0-9_-]{22}$/),
+  device: DeviceDescription,
+});
+export type AddPushChannelRequest = z.infer<typeof AddPushChannelRequest>;
+
+export const AddPushChannelResponse = z.object({ channelId: z.uuid() });
+export type AddPushChannelResponse = z.infer<typeof AddPushChannelResponse>;
+
+export const addPushChannel = {
+  method: 'post',
+  path: '/notifications/channels',
+  operationId: 'addPushChannel',
+  summary:
+    "Adds this browser's push subscription, or returns the channel it already has; 409 too_many_push_channels past 10, 503 push_unavailable where push is not set up",
+  body: AddPushChannelRequest,
+  response: { description: 'The channel', schema: AddPushChannelResponse },
+} as const satisfies RouteDefinition<typeof AddPushChannelResponse>;
+
+export const RemoveNotificationChannelRequest = z.strictObject({ channelId: z.uuid() });
+export type RemoveNotificationChannelRequest = z.infer<typeof RemoveNotificationChannelRequest>;
+
+export const RemoveNotificationChannelResponse = z.object({});
+
+export const removeNotificationChannel = {
+  method: 'post',
+  path: '/notifications/channels/remove',
+  operationId: 'removeNotificationChannel',
+  summary:
+    'Removes a push channel after a sensitive_settings step-up; 403 step_up_required, 404 not_found for an unknown or email channel',
+  body: RemoveNotificationChannelRequest,
+  response: { description: 'Removed', schema: RemoveNotificationChannelResponse },
+} as const satisfies RouteDefinition<typeof RemoveNotificationChannelResponse>;
+
 export const routes = {
   health,
   session,
@@ -1062,6 +1158,9 @@ export const routes = {
   rotateVaultIdentity,
   resealVaultRecovery,
   resetVault,
+  notificationChannels,
+  addPushChannel,
+  removeNotificationChannel,
 } as const;
 
 /** The Better Auth endpoints the API lets through; every other path under /v1/auth is a 404. */

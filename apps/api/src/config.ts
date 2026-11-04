@@ -132,6 +132,15 @@ export function readResendKey(): string | undefined {
 }
 
 /**
+ * The environment's VAPID private key, a Sensitive variable (spec 0005, R7): the P-256 private
+ * scalar alone, 43 characters of base64url, never a JWK or PEM.
+ */
+export function readVapidPrivateKey(): string | undefined {
+  const key = process.env['ARCA_VAPID_PRIVATE_KEY']?.trim();
+  return key === '' ? undefined : key;
+}
+
+/**
  * Keys the HMACs of the rate-limit counters (spec 0003, R10). Only the environment holds it, so
  * the database never holds anything that recovers an address; rotating it resets the counters.
  */

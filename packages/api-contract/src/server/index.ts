@@ -70,6 +70,9 @@ export const openApiRoutes = {
   rotateVaultIdentity: toOpenApiRoute(routes.rotateVaultIdentity),
   resealVaultRecovery: toOpenApiRoute(routes.resealVaultRecovery),
   resetVault: toOpenApiRoute(routes.resetVault),
+  notificationChannels: toOpenApiRoute(routes.notificationChannels),
+  addPushChannel: toOpenApiRoute(routes.addPushChannel),
+  removeNotificationChannel: toOpenApiRoute(routes.removeNotificationChannel),
 } as const;
 
 export const openApiInfo = { title: 'Arca API', version: '1.0.0' } as const;
