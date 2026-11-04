@@ -262,6 +262,10 @@ describe('GET /internal/cron/heartbeat (spec 0001, R6)', () => {
           started.push(runDate);
           return Promise.resolve('wrun_test');
         },
+        startRetention: (runDate) => {
+          started.push(`retention ${runDate}`);
+          return Promise.resolve('wrun_retention');
+        },
         startDueErasures: () => {
           started.push('erasures');
           return Promise.resolve();
@@ -323,6 +327,15 @@ describe('GET /internal/cron/heartbeat (spec 0001, R6)', () => {
     const response = await call(`Bearer ${secret}`, '/internal/cron/account-erasure');
     expect(response.status).toBe(202);
     expect(started).toEqual(['erasures']);
+  });
+
+  it('starts the retention rules for the UTC date daily, behind the same token (spec 0004, R10)', async () => {
+    const { call, started } = cronSetup();
+    expect((await call(undefined, '/internal/cron/retention')).status).toBe(401);
+    expect(started).toEqual([]);
+    const response = await call(`Bearer ${secret}`, '/internal/cron/retention');
+    expect(response.status).toBe(202);
+    expect(started).toEqual(['retention 2026-11-03']);
   });
 
   it('is not served without the cron dependencies', async () => {

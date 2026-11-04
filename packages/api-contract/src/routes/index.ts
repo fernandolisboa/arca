@@ -716,6 +716,18 @@ const inviteEvent = z.strictObject({ inviteId: z.uuid() });
 const noDetails = z.strictObject({});
 
 /**
+ * Why an account waits for erasure (spec 0004, R9 and R10): its owner asked, it went 3 years
+ * without a sign-in, or it was an invited account its inviter declined or never confirmed.
+ */
+export const deletionReasons = [
+  'owner_request',
+  'inactivity',
+  'invite_declined',
+  'invite_unconfirmed',
+] as const;
+export type DeletionReason = (typeof deletionReasons)[number];
+
+/**
  * The closed list of audit event codes and, for each, the only `details` keys it may carry:
  * identifiers and enum values, never personal data (spec 0003, R7). The server validates every
  * event against it before inserting.
@@ -744,8 +756,8 @@ export const auditEventDetails = {
   recovery_cancelled: noDetails,
   recovery_kit_regenerated: noDetails,
   data_exported: noDetails,
-  deletion_requested: z.strictObject({ reason: z.enum(['owner_request']) }),
-  deletion_cancelled: z.strictObject({ reason: z.enum(['owner_cancel']) }),
+  deletion_requested: z.strictObject({ reason: z.enum(deletionReasons) }),
+  deletion_cancelled: z.strictObject({ reason: z.enum(['owner_cancel', 'sign_in']) }),
   account_erased: noDetails,
 } as const;
 

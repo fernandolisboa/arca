@@ -431,6 +431,44 @@ describe('Better Auth on the app_auth pool', () => {
     });
   });
 
+  it('cancels an inactivity deletion still in its 60 days at sign-in, and no other (spec 0004, R10)', async () => {
+    const inactive = await account('inactive@example.com');
+    const leaving = await account('leaving@example.com');
+    await asAdmin(async (client) => {
+      const mark = `UPDATE auth.user SET deletion_due_at = now() + interval '30 days',
+                      deletion_reason = $2 WHERE id = $1`;
+      await client.query(mark, [inactive.userId, 'inactivity']);
+      await client.query(mark, [leaving.userId, 'owner_request']);
+    });
+    for (const { passkey } of [inactive, leaving]) {
+      expect((await passkeySignIn(passkey)).verified.status).toBe(200);
+    }
+    const state = await asAdmin(
+      async (client) =>
+        (
+          await client.query<{ id: string; reason: string | null }>(
+            'SELECT id, deletion_reason AS reason FROM auth.user WHERE id = ANY ($1)',
+            [[inactive.userId, leaving.userId]],
+          )
+        ).rows,
+    );
+    expect(Object.fromEntries(state.map(({ id, reason }) => [id, reason]))).toEqual({
+      [inactive.userId]: null,
+      [leaving.userId]: 'owner_request',
+    });
+    const cancelled = await asAdmin(
+      async (client) =>
+        (
+          await client.query<{ subject: string; details: object }>(
+            `SELECT subject_account_id AS subject, details FROM audit.event
+              WHERE code = 'deletion_cancelled' AND subject_account_id = ANY ($1)`,
+            [[inactive.userId, leaving.userId]],
+          )
+        ).rows,
+    );
+    expect(cancelled).toEqual([{ subject: inactive.userId, details: { reason: 'sign_in' } }]);
+  });
+
   it('pages through the events with a cursor', async () => {
     const { cookie, passkey } = await signedIn('pager@example.com');
     await passkeySignIn(passkey);

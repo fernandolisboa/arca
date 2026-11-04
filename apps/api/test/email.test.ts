@@ -21,9 +21,13 @@ const at = new Date('2026-11-04T15:30:00Z');
 const origin = 'https://preview.example.com';
 
 function notice(kind: (typeof noticeKinds)[number]): Notice {
-  return kind === 'new_sign_in'
-    ? { kind, to: 'owner@example.com', at, device: { browser: 'firefox', os: 'linux' } }
-    : { kind, to: 'owner@example.com', at };
+  if (kind === 'new_sign_in') {
+    return { kind, to: 'owner@example.com', at, device: { browser: 'firefox', os: 'linux' } };
+  }
+  if (kind === 'inactivity_warning') {
+    return { kind, to: 'owner@example.com', at, dueAt: new Date('2027-01-03T15:30:00Z') };
+  }
+  return { kind, to: 'owner@example.com', at };
 }
 
 describe('security notices (spec 0003, R7 and R8)', () => {

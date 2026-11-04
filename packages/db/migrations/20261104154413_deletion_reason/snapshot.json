@@ -1,0 +1,77 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "c82f40be-611a-49ba-8d2e-ff5f97e12731",
+  "prevIds": [
+    "9db739fe-0e83-4c0d-bc2d-14af98d6d40e"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "auth",
+        "user",
+        "deletion_reason"
+      ],
+      "writes": [
+        "s|col|auth.user.deletion_reason",
+        "n|col|auth.user.deletion_reason",
+        "e|col|auth.user.deletion_reason"
+      ],
+      "reads": [
+        "n|tbl|auth.user",
+        "n|sch|auth"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "auth",
+        "user"
+      ],
+      "writes": [
+        "s|ck|auth.user.user_deletion_reason",
+        "n|ck|auth.user.user_deletion_reason",
+        "e|ck|auth.user.user_deletion_reason",
+        "n|con|auth.user.user_deletion_reason"
+      ],
+      "reads": [
+        "n|tbl|auth.user",
+        "n|sch|auth",
+        "n|col|auth.user.deletion_due_at",
+        "n|col|auth.user.deletion_reason"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "user",
+        "name": "deletion_reason",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "user",
+        "name": "user_deletion_reason",
+        "value": "(\"deletion_due_at\" IS NULL) = (\"deletion_reason\" IS NULL)\n          AND \"deletion_reason\" IN ('owner_request', 'inactivity', 'invite_declined', 'invite_unconfirmed')",
+        "entityType": "checks"
+      }
+    }
+  ]
+}

@@ -259,8 +259,15 @@ export function createRecovery({
         const [link] = await live(tx, tokenHash);
         if (link === undefined || link.redeemed) return { ok: false, reason: 'not_found' };
         accountId = link.accountId;
-        // The account's lock row, held to the end, so wrong codes count one at a time.
-        await tx.insert(recoveryLock).values({ accountId }).onConflictDoNothing();
+        // The account's lock row, held to the end, so wrong codes count one at a time. The no-op
+        // update locks an existing row at once, so the daily cleanup cannot delete it in between.
+        await tx
+          .insert(recoveryLock)
+          .values({ accountId })
+          .onConflictDoUpdate({
+            target: recoveryLock.accountId,
+            set: { failures: sql`${recoveryLock.failures}` },
+          });
         const [lock] = await tx
           .select({ locked: sql<boolean>`${recoveryLock.lockedUntil} > now()` })
           .from(recoveryLock)

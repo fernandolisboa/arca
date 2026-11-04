@@ -418,7 +418,11 @@ export const ptBR = {
       },
       account_erased: {
         subject: 'Sua conta foi excluída',
-        body: 'Como você pediu, sua conta Arca e os dados dela foram apagados em {when} (horário de Brasília). Não vamos mais mandar emails sobre esta conta.',
+        body: 'Sua conta Arca e os dados dela foram apagados em {when} (horário de Brasília). Não vamos mais mandar emails sobre esta conta.',
+      },
+      inactivity_warning: {
+        subject: 'Sua conta Arca vai ser apagada por falta de uso',
+        body: 'Sua conta Arca está há 3 anos sem nenhum acesso. Por isso, a conta e os dados dela serão apagados em {dueAt} (horário de Brasília), sem volta. Para manter tudo, é só entrar no Arca com sua chave de acesso antes dessa data. Aviso enviado em {when} (horário de Brasília).',
       },
       recovery_kit_regenerated: {
         subject: 'Novo kit de recuperação',

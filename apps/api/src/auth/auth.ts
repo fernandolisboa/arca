@@ -27,9 +27,15 @@ import {
   ne,
   not,
   sql,
+  type SQL,
 } from 'drizzle-orm';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { authBasePath, DeviceDescription, pendingPasskeyHours } from '@arca/api-contract/routes';
+import {
+  authBasePath,
+  DeviceDescription,
+  pendingPasskeyHours,
+  type DeletionReason,
+} from '@arca/api-contract/routes';
 import type { AuditLog } from '../audit/log.js';
 import type { Notices } from '../email/notices.js';
 import type { Logger } from '@arca/telemetry';
@@ -240,6 +246,16 @@ export function createAuth({
                 .update(user)
                 .set({ lastSignInAt: new Date() })
                 .where(eq(user.id, session.userId));
+              // Signing in keeps an account the inactivity rule had marked (spec 0004, R10).
+              await db.transaction(async (tx) => {
+                if (!(await accounts.cancelInactivity(tx, session.userId))) return;
+                await audit.record({
+                  code: 'deletion_cancelled',
+                  subjectAccountId: session.userId,
+                  actorAccountId: session.userId,
+                  details: { reason: 'sign_in' },
+                });
+              });
             } catch (error) {
               await db.delete(sessionTable).where(eq(sessionTable.id, session.id));
               throw error;
@@ -328,6 +344,15 @@ export function createAuth({
 
 export type Auth = ReturnType<typeof createAuth>;
 
+/** What keeps each retention reason true, at its cutoff (spec 0004, R10). */
+const stillHolds: Record<Exclude<DeletionReason, 'owner_request'>, (cutoff: Date) => SQL> = {
+  inactivity: (cutoff) => sql`coalesce(${user.lastSignInAt}, ${user.createdAt}) <= ${cutoff}`,
+  invite_unconfirmed: (cutoff) =>
+    sql`${user.confirmedAt} IS NULL AND ${user.createdAt} <= ${cutoff}`,
+  // A decline holds whenever the account is still unconfirmed.
+  invite_declined: () => sql`${user.confirmedAt} IS NULL`,
+};
+
 /**
  * The account rows the rest of the API needs, so the auth schema is read here alone (spec 0003,
  * R1). Each takes the database or the transaction to run in.
@@ -374,25 +399,13 @@ export const accounts = {
         .from(user)
         .where(and(eq(user.id, accountId), isNotNull(user.confirmedAt)))
     ).length === 1,
-  /** False when the account is gone or already confirmed. */
+  /** False when the account is gone, already confirmed, or marked for erasure. */
   confirm: async (db: Database | Transaction, accountId: string) =>
     (
       await db
         .update(user)
         .set({ confirmedAt: sql`now()` })
-        .where(and(eq(user.id, accountId), isNull(user.confirmedAt)))
-        .returning({ id: user.id })
-    ).length === 1,
-  /**
-   * Erases an account that was never confirmed, with every auth row through the cascades. An
-   * unconfirmed account can hold nothing outside the auth schema yet; the full erasure (spec 0004,
-   * R9) takes over once it can.
-   */
-  eraseUnconfirmed: async (db: Database | Transaction, accountId: string) =>
-    (
-      await db
-        .delete(user)
-        .where(and(eq(user.id, accountId), isNull(user.confirmedAt)))
+        .where(and(eq(user.id, accountId), isNull(user.confirmedAt), isNull(user.deletionDueAt)))
         .returning({ id: user.id })
     ).length === 1,
   /**
@@ -405,6 +418,7 @@ export const accounts = {
         .update(user)
         .set({
           deletionDueAt: sql`coalesce(${user.deletionDueAt}, now() + make_interval(days => ${waitDays}))`,
+          deletionReason: sql`coalesce(${user.deletionReason}, 'owner_request')`,
         })
         .where(eq(user.id, accountId))
         .returning({ dueAt: user.deletionDueAt })
@@ -414,11 +428,70 @@ export const accounts = {
     (
       await db
         .update(user)
-        .set({ deletionDueAt: null })
+        .set({ deletionDueAt: null, deletionReason: null })
         // The statement's own time, not the transaction's, so a cancel never lands after the due time.
         .where(and(eq(user.id, accountId), gt(user.deletionDueAt, sql`statement_timestamp()`)))
         .returning({ id: user.id })
     ).length === 1,
+  /**
+   * Marks an account for erasure at `dueAt` for a retention reason (spec 0004, R10), only while no
+   * deletion waits and the reason still holds at `cutoff`; false otherwise, or when it is gone.
+   */
+  markForErasure: async (
+    db: Database | Transaction,
+    accountId: string,
+    reason: Exclude<DeletionReason, 'owner_request'>,
+    { dueAt, cutoff }: { readonly dueAt: Date | 'now'; readonly cutoff: Date },
+  ) =>
+    (
+      await db
+        .update(user)
+        // 'now' is the database's own time, which the erasure's due check reads.
+        .set({ deletionDueAt: dueAt === 'now' ? sql`now()` : dueAt, deletionReason: reason })
+        .where(and(eq(user.id, accountId), isNull(user.deletionDueAt), stillHolds[reason](cutoff)))
+        .returning({ id: user.id })
+    ).length === 1,
+  /** A sign-in ends an inactivity deletion still in its 60 days; true when it did. */
+  cancelInactivity: async (db: Database | Transaction, accountId: string) =>
+    (
+      await db
+        .update(user)
+        .set({ deletionDueAt: null, deletionReason: null })
+        .where(
+          and(
+            eq(user.id, accountId),
+            eq(user.deletionReason, 'inactivity'),
+            gt(user.deletionDueAt, sql`statement_timestamp()`),
+          ),
+        )
+        .returning({ id: user.id })
+    ).length === 1,
+  /** Every account's ID, for the per-account retention rules; identifiers only. */
+  ids: async (db: Database | Transaction) =>
+    (await db.select({ id: user.id }).from(user)).map(({ id }) => id),
+  /** Accounts with no deletion waiting whose last sign-in, or creation, is at `cutoff` or before. */
+  inactiveSince: async (db: Database | Transaction, cutoff: Date) =>
+    (
+      await db
+        .select({ id: user.id })
+        .from(user)
+        .where(
+          and(
+            isNull(user.deletionDueAt),
+            lte(sql`coalesce(${user.lastSignInAt}, ${user.createdAt})`, cutoff),
+          ),
+        )
+    ).map(({ id }) => id),
+  /** Invited accounts still unconfirmed, created at `cutoff` or before, with no deletion waiting. */
+  unconfirmedSince: async (db: Database | Transaction, cutoff: Date) =>
+    (
+      await db
+        .select({ id: user.id })
+        .from(user)
+        .where(
+          and(isNull(user.deletionDueAt), isNull(user.confirmedAt), lte(user.createdAt, cutoff)),
+        )
+    ).map(({ id }) => id),
   deletionDueAt: async (db: Database | Transaction, accountId: string) =>
     (await db.select({ dueAt: user.deletionDueAt }).from(user).where(eq(user.id, accountId)))[0]
       ?.dueAt ?? null,

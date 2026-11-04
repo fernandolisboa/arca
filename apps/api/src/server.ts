@@ -2,7 +2,7 @@ import { createI18n, type I18n } from '@arca/i18n';
 import { useRuntimeConfig } from 'nitro/runtime-config';
 import { createDataExports } from './account/data-export.js';
 import { createAccountDeletion, type AccountDeletion } from './account/deletion.js';
-import { startEach } from './account/erasure.js';
+import { forEachAccount } from './account/each-account.js';
 import { accounts } from './auth/auth.js';
 import { createApp } from './app.js';
 import { auditLog, auditReader, type AuditLog } from './audit/log.js';
@@ -37,6 +37,7 @@ import {
 } from './email/environment.js';
 import { createNotices } from './email/notices.js';
 import { stdoutLogger } from './logger.js';
+import { enforceRetention } from './workflows/enforce-retention.js';
 import { eraseAccount } from './workflows/erase-account.js';
 import { heartbeat } from './workflows/heartbeat.js';
 import { startWorkflow } from './workflows/start-workflow.js';
@@ -129,7 +130,16 @@ function authParts(): Promise<AuthParts> {
       limiter,
       registration: hooks,
     });
-    const invites = createInvites({ db, audit, email, notices, i18n, origin, logger });
+    const invites = createInvites({
+      db,
+      audit,
+      email,
+      notices,
+      i18n,
+      origin,
+      logger,
+      startErasure: (id) => startWorkflow(eraseAccount, [entityId(id)]),
+    });
     const devices = createDevices({ db, audit, notices, logger, origin });
     return {
       auth: authService(auth),
@@ -184,10 +194,11 @@ const app = createApp({
   cron: {
     readSecret: readCronSecret,
     startHeartbeat: (runDate) => startWorkflow(heartbeat, [runDate]),
+    startRetention: (runDate) => startWorkflow(enforceRetention, [runDate]),
     // A run per account from this server-side scan; a failed run is started again the next day,
     // since every step is idempotent and an erased account stays noted until its tombstone.
     startDueErasures: async () =>
-      startEach(await accounts.dueForErasure(authConnection()), (id) =>
+      forEachAccount(await accounts.dueForErasure(authConnection()), (id) =>
         startWorkflow(eraseAccount, [entityId(id)]),
       ),
     sweepRateLimits: () => limiter.sweep(),

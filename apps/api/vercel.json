@@ -8,6 +8,10 @@
       "schedule": "0 6 * * *"
     },
     {
+      "path": "/internal/cron/retention",
+      "schedule": "15 6 * * *"
+    },
+    {
       "path": "/internal/cron/account-erasure",
       "schedule": "0 7 * * *"
     },
