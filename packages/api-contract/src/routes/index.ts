@@ -1082,6 +1082,9 @@ export function isPushServiceEndpoint(endpoint: string): boolean {
 }
 
 /** A browser's push subscription, as `PushSubscription.toJSON()` gives it, keys unpadded. */
+/** Each push channel costs a step and a request per notice, so an account keeps a few. */
+export const maxPushChannels = 10;
+
 export const AddPushChannelRequest = z.strictObject({
   endpoint: z.string().max(2048).refine(isPushServiceEndpoint),
   p256dh: z.string().regex(/^[A-Za-z0-9_-]{87}$/),

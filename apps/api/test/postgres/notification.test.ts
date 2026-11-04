@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
+import { maxPushChannels } from '@arca/api-contract/routes';
 import type { Logger } from '@arca/telemetry';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { Notice, Notices } from '../../src/email/notices.js';
 import { auditLog } from '../../src/audit/log.js';
 import {
   createNotificationChannels,
-  maxPushChannels,
   type AddPushOutcome,
   type NotificationChannels,
 } from '../../src/notification/channels.js';

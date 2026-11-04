@@ -8,6 +8,7 @@ export {
   deletionWaitDays,
   inviteLifetimeHours,
   maxOpenInvites,
+  maxPushChannels,
   pendingPasskeyHours,
   recoveryLinkMinutes,
   routes,

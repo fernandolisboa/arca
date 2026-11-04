@@ -1,4 +1,4 @@
-import type { NotificationChannel } from '@arca/api-contract/client';
+import { maxPushChannels, type NotificationChannel } from '@arca/api-contract/client';
 import { Button } from '@arca/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
@@ -77,7 +77,7 @@ export function NotificationsSection() {
         ? ''
         : 'done' in outcome
           ? t('settings.notifications.done', { done: outcome.done })
-          : t('settings.notifications.failure', { reason: outcome.failure });
+          : t('settings.notifications.failure', { reason: outcome.failure, max: maxPushChannels });
 
   return (
     <section aria-labelledby="notifications-title" className="flex flex-col items-start gap-3">

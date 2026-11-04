@@ -40,8 +40,8 @@ export const ptBR = {
       unavailable:
         '{reason, select, install {Para receber avisos aqui, adicione o Arca à tela de início e abra o app por lá.} unsupported {Este navegador não mostra avisos do Arca. Eles continuam chegando por email.} not_set_up {Os avisos nos dispositivos ainda não estão disponíveis. Por enquanto, eles chegam por email.} denied {As notificações do Arca estão bloqueadas neste navegador. Para receber avisos aqui, libere as notificações do site nas configurações do navegador.} other {}}',
       failure:
-        '{reason, select, denied {As notificações não foram liberadas, então este dispositivo não vai receber avisos.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} too_many {Sua conta já recebe avisos em 10 dispositivos. Pare os avisos em um deles antes de ligar outro.} not_found {Isso não está mais na sua lista. Atualize a página.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
-      listFailure: 'Não conseguimos carregar seus avisos agora.',
+        '{reason, select, denied {As notificações não foram liberadas, então este dispositivo não vai receber avisos.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} too_many {Sua conta já recebe avisos em {max} dispositivos. Pare os avisos em um deles antes de ligar outro.} not_found {Isso não está mais na sua lista. Atualize a página.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+      listFailure: 'Não conseguimos carregar a lista agora. Tente de novo em instantes.',
     },
     dataExport: {
       title: 'Seus dados',
@@ -525,7 +525,7 @@ export const ptBR = {
     },
     pending_passkey_cancelled: {
       title: 'Chave de acesso pendente cancelada',
-      body: 'A chave nova que esperava as 24 horas não vai funcionar na sua conta.',
+      body: 'A chave de acesso nova, que ainda aguardava as 24 horas, foi cancelada e não vai funcionar.',
     },
     invite_accepted: {
       title: 'Seu convite foi aceito',

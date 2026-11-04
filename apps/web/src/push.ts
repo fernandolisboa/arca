@@ -9,6 +9,8 @@ import { stepUpFor } from './step-up.js';
 
 /** Subscribes this browser with the environment's key and adds it as the account's channel. */
 export async function enablePush(pushKey: string): Promise<void> {
+  // A subscription this browser kept from another account must not be shared with this one.
+  if (thisDeviceChannel() === undefined) await notifications.unsubscribe();
   const subscription = await notifications.subscribe(fromBase64url(pushKey));
   const { channelId } = await reach(api.call(routes.addPushChannel, subscription));
   rememberThisDeviceChannel(channelId);

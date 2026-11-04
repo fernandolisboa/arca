@@ -1,7 +1,8 @@
-import type {
-  AddPushChannelRequest,
-  DeviceDescription,
-  NotificationChannel,
+import {
+  maxPushChannels,
+  type AddPushChannelRequest,
+  type DeviceDescription,
+  type NotificationChannel,
 } from '@arca/api-contract/routes';
 import { withIdentity, type Database } from '@arca/db';
 import { sql } from 'drizzle-orm';
@@ -22,9 +23,6 @@ export interface NotificationChannels {
 
 /** `too_many`: the account already has `maxPushChannels` other push channels. */
 export type AddPushOutcome = { readonly channelId: string } | 'too_many';
-
-/** Each channel costs a step and a request per notice, so an account keeps a few. */
-export const maxPushChannels = 10;
 
 interface ChannelRow {
   id: string;
