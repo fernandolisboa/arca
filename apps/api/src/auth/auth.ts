@@ -1,13 +1,21 @@
 import { passkey } from '@better-auth/passkey';
-import { authSchema, session as sessionTable, user } from '@arca/db/auth-schema';
+import {
+  authSchema,
+  session as sessionTable,
+  user,
+  verification as verificationTable,
+} from '@arca/db/auth-schema';
 import type { Database } from '@arca/db';
 import { betterAuth } from 'better-auth';
-import { eq } from 'drizzle-orm';
+import { APIError, createAuthMiddleware } from 'better-auth/api';
+import { eq, lte, sql } from 'drizzle-orm';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { authBasePath, DeviceDescription } from '@arca/api-contract/routes';
 import type { AuditLog } from '../audit/log.js';
+import type { Notices } from '../email/notices.js';
 import type { Logger } from '../logger.js';
 import { describeDevice } from './device.js';
+import { noticeNewSignIn } from './sign-in-notice.js';
 
 export interface AuthSettings {
   /** A database on the app_auth pool; no other role may read the auth schema. */
@@ -18,6 +26,24 @@ export interface AuthSettings {
   readonly logger: Logger;
   /** Every sign-in is recorded (spec 0003, R7). */
   readonly audit: AuditLog;
+  /** Security notices by email, such as a sign-in from a new browser (spec 0003, R7). */
+  readonly notices: Notices;
+}
+
+const daySeconds = 24 * 60 * 60;
+const signInPath = '/passkey/verify-authentication';
+const signInOptionsPath = '/passkey/generate-authenticate-options';
+
+/** The credential ID of the assertion a sign-in verified; undefined on any other path. */
+function signingCredential(context: { path?: string; body?: unknown } | null | undefined) {
+  if (context?.path !== signInPath) return undefined;
+  const { response } = (context.body ?? {}) as { response?: { id?: unknown } };
+  return typeof response?.id === 'string' && response.id !== '' ? response.id : undefined;
+}
+
+/** The authenticator's UV flag; the passkey plugin itself never requires it (spec 0003, R3). */
+function requireUserVerified(userVerified: boolean | undefined): void {
+  if (userVerified !== true) throw new APIError('UNAUTHORIZED', { code: 'USER_NOT_VERIFIED' });
 }
 
 /**
@@ -25,7 +51,7 @@ export interface AuthSettings {
  * magic links, social and anonymous sign-in are never configured, and the router in front of it
  * lets through only the allow-listed endpoints. Telemetry is off.
  */
-export function createAuth({ db, secret, origin, logger, audit }: AuthSettings) {
+export function createAuth({ db, secret, origin, logger, audit, notices }: AuthSettings) {
   return betterAuth({
     appName: 'Arca',
     baseURL: origin,
@@ -50,21 +76,79 @@ export function createAuth({ db, secret, origin, logger, audit }: AuthSettings) 
         lastSignInAt: { type: 'date', required: false, input: false },
       },
     },
+    // A 3-day idle timeout, slid at most daily by GET /v1/session; the 30-day absolute lifetime
+    // is checked on the session's creation time (spec 0003, R4).
     session: {
+      expiresIn: 3 * daySeconds,
+      updateAge: daySeconds,
       additionalFields: {
         deviceBrowser: { type: 'string', required: true, input: false },
         deviceOs: { type: 'string', required: true, input: false },
+        credentialId: { type: 'string', required: true, input: false },
       },
     },
     advanced: {
       database: { generateId: 'uuid' },
       ipAddress: { disableIpTracking: true },
+      // Every cookie is __Host- (Secure, Path=/, no Domain), so a sibling filx.app subdomain
+      // cannot plant one (spec 0003, R4). Better Auth would add __Secure- instead, so its own
+      // prefix is off and the attributes are set here.
+      useSecureCookies: false,
+      cookiePrefix: '__Host-arca',
+      defaultCookieAttributes: { secure: true, httpOnly: true, sameSite: 'lax', path: '/' },
+    },
+    hooks: {
+      // The options endpoint reads any session to list its passkeys; it must not slide it, since
+      // only GET /v1/session may (spec 0003, R4).
+      before: createAuthMiddleware((ctx): Promise<unknown> =>
+        Promise.resolve(
+          ctx.path === signInOptionsPath
+            ? { context: { query: { ...ctx.query, disableRefresh: true } } }
+            : undefined,
+        ),
+      ),
+      // The plugin asks for user verification as "preferred"; Arca requires it (spec 0003, R3).
+      after: createAuthMiddleware((ctx): Promise<unknown> => {
+        const returned: unknown = ctx.context.returned;
+        if (
+          ctx.path !== signInOptionsPath ||
+          typeof returned !== 'object' ||
+          returned === null ||
+          returned instanceof Error
+        ) {
+          return Promise.resolve();
+        }
+        return Promise.resolve(ctx.json({ ...returned, userVerification: 'required' }));
+      }),
     },
     databaseHooks: {
+      // Each challenge is consumed only on its own verify, so abandoned ones are swept here; the
+      // table stays bounded by what one challenge lifetime can hold.
+      verification: {
+        create: {
+          // A failed sweep only delays the cleanup; it never fails the ceremony.
+          after: async () => {
+            try {
+              await db
+                .delete(verificationTable)
+                .where(lte(verificationTable.expiresAt, sql`now()`));
+            } catch (error) {
+              logger.error({
+                errorName: `ChallengeSweep:${error instanceof Error ? error.name : 'NonErrorThrown'}`,
+              });
+            }
+          },
+        },
+      },
       session: {
         create: {
           // Neither the IP address nor the raw user agent is stored; the device is two enums.
+          // Sessions come only from a verified passkey, and each records its credential.
           before: (session, context) => {
+            const credentialId = signingCredential(context);
+            if (credentialId === undefined) {
+              return Promise.reject(new APIError('UNAUTHORIZED', { code: 'NO_PASSKEY' }));
+            }
             const { browser, os } = describeDevice(context?.headers?.get('user-agent'));
             return Promise.resolve({
               data: {
@@ -73,6 +157,7 @@ export function createAuth({ db, secret, origin, logger, audit }: AuthSettings) 
                 userAgent: null,
                 deviceBrowser: browser,
                 deviceOs: os,
+                credentialId,
               },
             });
           },
@@ -95,12 +180,49 @@ export function createAuth({ db, secret, origin, logger, audit }: AuthSettings) 
               await db.delete(sessionTable).where(eq(sessionTable.id, session.id));
               throw error;
             }
+            // A notice that fails to send never blocks the sign-in; the failure is logged.
+            try {
+              await noticeSignIn(session);
+            } catch (error) {
+              logger.error({
+                errorName: `SignInNotice:${error instanceof Error ? error.name : 'NonErrorThrown'}`,
+              });
+            }
           },
         },
       },
     },
-    plugins: [passkey({ rpID: new URL(origin).hostname, rpName: 'Arca', origin })],
+    plugins: [
+      passkey({
+        rpID: new URL(origin).hostname,
+        rpName: 'Arca',
+        origin,
+        authentication: {
+          afterVerification: ({ verification }) => {
+            requireUserVerified(verification.authenticationInfo.userVerified);
+            return Promise.resolve();
+          },
+        },
+      }),
+    ],
   });
+
+  async function noticeSignIn(session: Record<string, unknown> & { userId: string }) {
+    const [account] = await db
+      .select({ email: user.email })
+      .from(user)
+      .where(eq(user.id, session.userId));
+    if (account === undefined) return;
+    await noticeNewSignIn(
+      { db, notices },
+      {
+        credentialId: String(session['credentialId']),
+        device: describeSession(session),
+        email: account.email,
+        at: new Date(),
+      },
+    );
+  }
 }
 
 export type Auth = ReturnType<typeof createAuth>;

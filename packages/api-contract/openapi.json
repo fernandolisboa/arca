@@ -246,6 +246,230 @@
         }
       }
     },
+    "/auth/passkey/generate-authenticate-options": {
+      "get": {
+        "operationId": "passkeySignInOptions",
+        "summary": "Options for a passkey sign-in, with a single-use challenge in a cookie",
+        "responses": {
+          "200": {
+            "description": "Request options",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "challenge": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9_-]*$"
+                    },
+                    "timeout": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    },
+                    "rpId": {
+                      "type": "string"
+                    },
+                    "allowCredentials": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]*$"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "public-key"
+                            ]
+                          },
+                          "transports": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "type"
+                        ]
+                      }
+                    },
+                    "userVerification": {
+                      "type": "string",
+                      "enum": [
+                        "required"
+                      ]
+                    },
+                    "extensions": {
+                      "type": "object",
+                      "additionalProperties": {}
+                    }
+                  },
+                  "required": [
+                    "challenge",
+                    "userVerification"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/passkey/verify-authentication": {
+      "post": {
+        "operationId": "passkeySignIn",
+        "summary": "Signs in with a passkey assertion and sets the session cookie",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "response": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_-]*$"
+                      },
+                      "rawId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_-]*$"
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "public-key"
+                        ]
+                      },
+                      "response": {
+                        "type": "object",
+                        "properties": {
+                          "clientDataJSON": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]*$"
+                          },
+                          "authenticatorData": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]*$"
+                          },
+                          "signature": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]*$"
+                          },
+                          "userHandle": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]*$"
+                          }
+                        },
+                        "required": [
+                          "clientDataJSON",
+                          "authenticatorData",
+                          "signature"
+                        ]
+                      },
+                      "authenticatorAttachment": {
+                        "type": "string",
+                        "enum": [
+                          "platform",
+                          "cross-platform"
+                        ]
+                      },
+                      "clientExtensionResults": {
+                        "type": "object",
+                        "additionalProperties": {}
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "rawId",
+                      "type",
+                      "response",
+                      "clientExtensionResults"
+                    ]
+                  }
+                },
+                "required": [
+                  "response"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/audit/events": {
       "get": {
         "operationId": "listAuditEvents",
