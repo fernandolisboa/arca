@@ -30,7 +30,7 @@ Facts checked on 2026-11-02:
 
 ### Sentry
 
-- One Sentry organization, created by the owner in the **German** data region, free Developer plan, owner account with a passkey. EU storage is the closest region to Brazil with a strong data-protection regime; the data-flow register records it.
+- One Sentry organization, created by the owner in the **German** data region (amended 2026-11-04: the owner's existing organization, in the United States; see the amendment below), free Developer plan, owner account with a passkey. EU storage is the closest region to Brazil with a strong data-protection regime; the data-flow register records it.
 - Server: the Sentry Node SDK with the Hono integration, errors and OpenTelemetry traces. `sendDefaultPii: false`, local variables off, profiling off. Traces sampled at 10% in production and 100% in previews. Span names use route patterns and generic workflow step names; database spans carry the operation and table name only; statement text is dropped. The only identifiers telemetry admits are the request ID, trace ID, release and environment: never account, case, document or session IDs. Telemetry holds no direct identifiers; it is pseudonymous only through our own audit log, which records the request ID, for Sentry's 30-day retention, so deletion has nothing to remove at Sentry.
 - Client: the Sentry React SDK, bundled (no CDN script), errors only, **no session replay ever**, console breadcrumbs off, fetch breadcrumbs reduced to route patterns.
 - **Browser events go through our own origin**: the managed tunnel, served by a Hono route in the API (not a Nitro integration, so the app stays testable without Nitro), accepts only our DSN, caps the envelope size, is rate-limited, and runs the scrubber again before forwarding. The CSP keeps `connect-src 'self'`. The tunnel path is excluded from the SPA fallback.
@@ -65,7 +65,7 @@ Made with the server ticket (#67), to keep the owner's part to one visit to Sent
 
 | Option | Why not |
 | --- | --- |
-| Sentry in the United States | Same price; the German region keeps telemetry under GDPR, the regime closest to the LGPD, and nothing argues for the United States |
+| Sentry in the United States | Same price; the German region keeps telemetry under GDPR, the regime closest to the LGPD. Chosen after all by the 2026-11-04 amendment, so the owner keeps one organization; events carry no personal data |
 | Browser SDK posting to Sentry directly | Widens the CSP, loses events to ad blockers, and skips our second scrub |
 | Self-hosted Sentry or GlitchTip in São Paulo | Another system to run, patch and back up for a one-family app |
 | Vercel Observability only | No error grouping or alerting comparable to Sentry, and logs on Pro are kept for a short window |

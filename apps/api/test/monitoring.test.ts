@@ -23,6 +23,8 @@ const synthetic = [
 describe('Sentry options (spec 0004, R4)', () => {
   it('reports to the repository project, and nowhere while it names no DSN', () => {
     expect(sentryOptions({ environment: 'production', origin })?.dsn).toBe(sentryProject.dsn);
+    // The region the data-flow register and RETENTION.md name.
+    expect(new URL(sentryProject.dsn ?? '').host).toMatch(/\.ingest\.us\.sentry\.io$/);
     expect(
       sentryOptions({ environment: 'production', origin, project: { ...project, dsn: null } }),
     ).toBeUndefined();
