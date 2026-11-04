@@ -118,10 +118,19 @@ async function throughContract(c: Context<AppEnv>, route: RouteDefinition, respo
   const status = response.status as ContentfulStatusCode;
   if (!response.ok) {
     await response.body?.cancel();
-    if (status >= 500) return reject(c, 'internal_error', status);
-    return reject(c, status === 401 ? 'unauthorized' : 'request_failed', status);
+    // One answer for every refusal, so a sign-in never tells whether a credential exists.
+    return status >= 500 ? reject(c, 'internal_error', status) : reject(c, 'unauthorized', 401);
   }
   return c.json(route.response.schema.parse(await response.json()), status);
+}
+
+/** The JSON body, read from a clone so the request still reaches Better Auth intact. */
+async function bodyOf(request: Request): Promise<unknown> {
+  try {
+    return await request.clone().json();
+  } catch {
+    return undefined;
+  }
 }
 
 /** A router whose validation failures answer `invalid_request` without the validator's details. */
@@ -221,6 +230,9 @@ export function createApp({
   app.all(`${authBasePath}/*`, async (c) => {
     const route = allowed.get(`${c.req.method} ${new URL(c.req.url).pathname}`);
     if (auth === undefined || route === undefined) return reject(c, 'not_found', 404);
+    if (route.body !== undefined && !route.body.safeParse(await bodyOf(c.req.raw)).success) {
+      return reject(c, 'invalid_request', 400);
+    }
     return throughContract(c, route, await auth.handle(c.req.raw));
   });
 

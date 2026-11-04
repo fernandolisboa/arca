@@ -1,4 +1,5 @@
 import { SessionResponse } from '@arca/api-contract/routes';
+import { APIError } from 'better-auth/api';
 import type { Auth } from './auth.js';
 
 /** No session lives longer than this, however active it is (spec 0003, R4). */
@@ -33,19 +34,36 @@ function toResponse(found: Found | null, now: Date): SessionResponse | null {
   });
 }
 
+/** A session deleted while it was being read (a sign-out in another tab) is no session. */
+async function unlessGone<T>(read: Promise<T>, gone: T): Promise<T> {
+  try {
+    return await read;
+  } catch (error) {
+    if (error instanceof APIError && error.statusCode === 401) return gone;
+    throw error;
+  }
+}
+
 export function authService(auth: Auth, clock: () => Date = () => new Date()): AuthService {
+  const read = (headers: Headers) =>
+    unlessGone(
+      auth.api.getSession({ headers, query: { disableRefresh: true }, returnHeaders: true }),
+      { response: null, headers: new Headers() },
+    );
   return {
     handle: (request) => auth.handler(request),
     // No sliding refresh here: it would move the stored expiry without the cookie that carries it.
-    session: async (headers) =>
-      toResponse(await auth.api.getSession({ headers, query: { disableRefresh: true } }), clock()),
+    session: async (headers) => toResponse((await read(headers)).response, clock()),
+    // The absolute lifetime is checked before sliding, so a session past it is never extended.
     refresh: async (headers) => {
-      const { response, headers: sent } = await auth.api.getSession({
-        headers,
-        returnHeaders: true,
+      const current = await read(headers);
+      const session = toResponse(current.response, clock());
+      if (session === null) return { session, setCookies: current.headers.getSetCookie() };
+      const slid = await unlessGone(auth.api.getSession({ headers, returnHeaders: true }), {
+        response: null,
+        headers: new Headers(),
       });
-      const session = toResponse(response, clock());
-      return { session, setCookies: session === null ? [] : sent.getSetCookie() };
+      return { session, setCookies: slid.headers.getSetCookie() };
     },
   };
 }

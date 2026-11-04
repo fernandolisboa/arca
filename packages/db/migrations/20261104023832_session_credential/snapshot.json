@@ -2,7 +2,7 @@
   "type": "diff",
   "version": "9",
   "dialect": "postgres",
-  "id": "283aee27-35de-4cf0-aef0-d2d7fac750f9",
+  "id": "59693b65-87eb-46b7-9a8e-c58e4e0ec484",
   "prevIds": [
     "da56dc67-60f3-4458-bb58-d2c3f3c33050"
   ],
@@ -23,6 +23,27 @@
       "reads": [
         "n|tbl|auth.session",
         "n|sch|auth"
+      ]
+    },
+    {
+      "statementType": "add_unique",
+      "statementTarget": [
+        "table",
+        "auth",
+        "passkey"
+      ],
+      "writes": [
+        "s|uq|auth.passkey.passkey_credential_user_key",
+        "n|uq|auth.passkey.passkey_credential_user_key",
+        "e|uq|auth.passkey.passkey_credential_user_key",
+        "n|con|auth.passkey.passkey_credential_user_key",
+        "n|rel|auth.passkey_credential_user_key"
+      ],
+      "reads": [
+        "n|tbl|auth.passkey",
+        "n|sch|auth",
+        "n|col|auth.passkey.credential_id",
+        "n|col|auth.passkey.user_id"
       ]
     },
     {
@@ -53,10 +74,10 @@
         "session"
       ],
       "writes": [
-        "s|fk|auth.session.session_credential_id_passkey_credential_id_fkey",
-        "n|fk|auth.session.session_credential_id_passkey_credential_id_fkey",
-        "e|fk|auth.session.session_credential_id_passkey_credential_id_fkey",
-        "n|con|auth.session.session_credential_id_passkey_credential_id_fkey"
+        "s|fk|auth.session.session_credential_fkey",
+        "n|fk|auth.session.session_credential_fkey",
+        "e|fk|auth.session.session_credential_fkey",
+        "n|con|auth.session.session_credential_fkey"
       ],
       "reads": [
         "n|tbl|auth.session",
@@ -64,8 +85,10 @@
         "n|tbl|auth.passkey",
         "n|sch|auth",
         "n|col|auth.session.credential_id",
+        "n|col|auth.session.user_id",
         "n|col|auth.passkey.credential_id",
-        "e|uniqueness|auth.passkey.credential_id"
+        "n|col|auth.passkey.user_id",
+        "e|uniqueness|auth.passkey.credential_id.user_id"
       ]
     }
   ],
@@ -115,19 +138,36 @@
       "row": {
         "schema": "auth",
         "table": "session",
-        "name": "session_credential_id_passkey_credential_id_fkey",
-        "nameExplicit": false,
+        "name": "session_credential_fkey",
+        "nameExplicit": true,
         "columns": [
-          "credential_id"
+          "credential_id",
+          "user_id"
         ],
         "schemaTo": "auth",
         "tableTo": "passkey",
         "columnsTo": [
-          "credential_id"
+          "credential_id",
+          "user_id"
         ],
         "onUpdate": "NO ACTION",
         "onDelete": "CASCADE",
         "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "passkey",
+        "name": "passkey_credential_user_key",
+        "nameExplicit": true,
+        "columns": [
+          "credential_id",
+          "user_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
       }
     }
   ]

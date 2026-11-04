@@ -285,6 +285,60 @@ describe('Better Auth on the app_auth pool', () => {
     expect((await app.request('/v1/audit/events', { headers: { cookie } })).status).toBe(401);
   });
 
+  it('never slides a session from the sign-in options, even one past 30 days', async () => {
+    const { cookie, userId } = await signedIn('lingering@example.org');
+    await asAdmin(database, (client) =>
+      client.query(
+        `UPDATE auth.session SET created_at = now() - interval '31 days',
+                expires_at = now() + interval '1 day' WHERE user_id = $1`,
+        [userId],
+      ),
+    );
+    const options = await app.request('/v1/auth/passkey/generate-authenticate-options', {
+      headers: { cookie },
+    });
+    expect(options.status).toBe(200);
+    expect(setsSession(options)).toBe(false);
+    expect(setsSession(await app.request('/v1/session', { headers: { cookie } }))).toBe(false);
+    const left = await asAdmin(database, async (client) => {
+      const result = await client.query<{ hours: number }>(
+        `SELECT extract(epoch FROM expires_at - now()) / 3600 AS hours
+           FROM auth.session WHERE user_id = $1`,
+        [userId],
+      );
+      return Number(result.rows[0]?.hours);
+    });
+    expect(left).toBeLessThan(25);
+  });
+
+  it('sweeps abandoned challenges whenever a new one is issued', async () => {
+    await asAdmin(database, (client) =>
+      client.query(
+        `INSERT INTO auth.verification (identifier, value, expires_at)
+         VALUES ('abandoned', '{}', now() - interval '1 minute')`,
+      ),
+    );
+    await app.request('/v1/auth/passkey/generate-authenticate-options');
+    const left = await asAdmin(database, (client) =>
+      client.query("SELECT FROM auth.verification WHERE identifier = 'abandoned'"),
+    );
+    expect(left.rowCount).toBe(0);
+  });
+
+  it("refuses a session tied to another account's passkey", async () => {
+    const { userId } = await signedIn('first@example.com');
+    const { passkey } = await account('second@example.com');
+    await expect(
+      asAdmin(database, (client) =>
+        client.query(
+          `INSERT INTO auth.session (expires_at, token, user_id, device_browser, device_os, credential_id)
+           VALUES (now() + interval '1 day', 'test-only-token', $1, 'other', 'other', $2)`,
+          [userId, passkey.credentialId],
+        ),
+      ),
+    ).rejects.toThrow(/session_credential_fkey/);
+  });
+
   it('refuses an assertion made without user verification, and opens no session', async () => {
     const { userId, passkey } = await account('unverified@example.com');
     const { verified } = await passkeySignIn(passkey, { userVerified: false });
@@ -410,7 +464,7 @@ describe('Better Auth on the app_auth pool', () => {
     });
     const { verified } = await passkeySignIn(passkey, { via: appFor(failing) });
     // The passkey plugin turns any error after verification into a failed sign-in.
-    expect(verified.status).toBe(400);
+    expect(verified.status).toBe(401);
     expect(setsSession(verified)).toBe(false);
     expect(await sessionsOf(userId)).toHaveLength(1);
   });
@@ -495,6 +549,23 @@ describe('new-sign-in notices (spec 0003, R7)', () => {
     });
     expect(verified.status).toBe(200);
     expect(lines).toEqual([{ errorName: 'SignInNotice:Error' }]);
+  });
+
+  it('retries the notice on the next sign-in when sending failed', async () => {
+    const email = 'retried@example.com';
+    const failing = createAuth({
+      db: authDb,
+      secret,
+      origin,
+      logger,
+      audit: auditLog(auditDb),
+      notices: { send: () => Promise.reject(new Error('email unavailable')) },
+    });
+    const { passkey } = await signedIn(email, { userAgent: firefoxOnLinux });
+    await passkeySignIn(passkey, { userAgent: chromeOnAndroid, via: appFor(failing) });
+    expect(await outboxFor(email)).toEqual([]);
+    await passkeySignIn(passkey, { userAgent: chromeOnAndroid });
+    expect(await outboxFor(email)).toEqual([{ subject: 'Nova entrada na sua conta' }]);
   });
 
   it('forgets the families when app_auth deletes the passkey', async () => {

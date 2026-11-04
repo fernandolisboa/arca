@@ -15,6 +15,24 @@ const signedIn: SessionResponse = {
 
 const origin = 'http://arca.test';
 
+/** A well-formed assertion; the fake Better Auth never verifies it. */
+const assertion = JSON.stringify({
+  response: {
+    id: 'Y3JlZA',
+    rawId: 'Y3JlZA',
+    type: 'public-key',
+    response: { clientDataJSON: 'e30', authenticatorData: 'AA', signature: 'AA' },
+    clientExtensionResults: {},
+  },
+});
+
+const verify = (app: ReturnType<typeof setup>['app'], body: string = assertion) =>
+  app.request('/v1/auth/passkey/verify-authentication', {
+    method: 'POST',
+    headers: { origin, 'content-type': 'application/json' },
+    body,
+  });
+
 function setup(
   session: SessionResponse | null = null,
   answer: () => Response = () => Response.json({ success: true }),
@@ -96,10 +114,7 @@ describe('the Better Auth allow-list (spec 0003, R1)', () => {
   it('lets through the passkey sign-in endpoints', async () => {
     const { app, handled } = setup(null, () => Response.json({}));
     await app.request('/v1/auth/passkey/generate-authenticate-options');
-    await app.request('/v1/auth/passkey/verify-authentication', {
-      method: 'POST',
-      headers: { origin },
-    });
+    await verify(app);
     expect(handled).toEqual([
       'GET /v1/auth/passkey/generate-authenticate-options',
       'POST /v1/auth/passkey/verify-authentication',
@@ -117,10 +132,7 @@ describe("Better Auth's answers, re-encoded through the contract", () => {
       response.headers.append('set-cookie', '__Host-arca.session_token=x; Path=/; Secure');
       return response;
     });
-    const response = await app.request('/v1/auth/passkey/verify-authentication', {
-      method: 'POST',
-      headers: { origin },
-    });
+    const response = await verify(app);
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({});
     expect(response.headers.getSetCookie()).toEqual([
@@ -128,34 +140,39 @@ describe("Better Auth's answers, re-encoded through the contract", () => {
     ]);
   });
 
-  it("answers our error code, never Better Auth's message", async () => {
-    const { app } = setup(null, () =>
-      Response.json({ code: 'PASSKEY_NOT_FOUND', message: 'Passkey not found' }, { status: 401 }),
-    );
-    const response = await app.request('/v1/auth/passkey/verify-authentication', {
-      method: 'POST',
-      headers: { origin },
-    });
+  it.each([
+    ['an unknown passkey', 401, 'PASSKEY_NOT_FOUND'],
+    ['a failed verification', 400, 'AUTHENTICATION_FAILED'],
+  ])("answers the same 401 to %s, never Better Auth's message", async (_label, status, code) => {
+    const { app } = setup(null, () => Response.json({ code, message: 'details' }, { status }));
+    const response = await verify(app);
     expect(response.status).toBe(401);
     expect(await response.json()).toEqual({ error: { code: 'unauthorized' } });
   });
 
-  it('forces user verification into the sign-in options it passes on', async () => {
+  it.each([
+    ['no body', ''],
+    ['a body outside the contract', JSON.stringify({ response: { id: 1 } })],
+  ])('answers 400 to %s before Better Auth sees it', async (_label, body) => {
+    const { app, handled } = setup();
+    const response = await verify(app, body);
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: { code: 'invalid_request' } });
+    expect(handled).toEqual([]);
+  });
+
+  it('fails closed on sign-in options that do not require user verification', async () => {
     const { app } = setup(null, () =>
-      Response.json({ challenge: 'abc', rpId: 'arca.test', userVerification: 'required' }),
+      Response.json({ challenge: 'abc', rpId: 'arca.test', userVerification: 'preferred' }),
     );
     const response = await app.request('/v1/auth/passkey/generate-authenticate-options');
-    expect(await response.json()).toEqual({
-      challenge: 'abc',
-      rpId: 'arca.test',
-      userVerification: 'required',
-    });
+    expect(response.status).toBe(500);
   });
 });
 
 describe('the origin check on state-changing /v1 routes (spec 0003, R4)', () => {
   const signOut = (headers: Record<string, string>) =>
-    setup().app.request('/v1/auth/sign-out', { method: 'POST', headers });
+    setup().app.request('/v1/auth/sign-out', { method: 'POST', headers, body: '{}' });
 
   it.each([
     ['a sibling filx.app origin', { origin: 'https://other.filx.app' }],

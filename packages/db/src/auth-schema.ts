@@ -2,11 +2,13 @@ import { sql } from 'drizzle-orm';
 import {
   boolean,
   check,
+  foreignKey,
   index,
   integer,
   pgSchema,
   text,
   timestamp,
+  unique,
   uuid,
 } from 'drizzle-orm/pg-core';
 
@@ -51,13 +53,17 @@ export const session = auth.table(
     deviceBrowser: text('device_browser').notNull(),
     deviceOs: text('device_os').notNull(),
     /** The passkey that signed this session in; revoking it ends the session (spec 0003, R4). */
-    credentialId: text('credential_id')
-      .notNull()
-      .references(() => passkey.credentialID, { onDelete: 'cascade' }),
+    credentialId: text('credential_id').notNull(),
   },
   (table) => [
     index('session_user_id_idx').on(table.userId),
     index('session_credential_id_idx').on(table.credentialId),
+    // The passkey must belong to the session's own account.
+    foreignKey({
+      name: 'session_credential_fkey',
+      columns: [table.credentialId, table.userId],
+      foreignColumns: [passkey.credentialID, passkey.userId],
+    }).onDelete('cascade'),
     // Neither the IP address nor the raw user agent is ever stored (spec 0003, R4).
     check(
       'session_no_network_details',
@@ -127,7 +133,10 @@ export const passkey = auth.table(
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     aaguid: text('aaguid'),
   },
-  (table) => [index('passkey_user_id_idx').on(table.userId)],
+  (table) => [
+    index('passkey_user_id_idx').on(table.userId),
+    unique('passkey_credential_user_key').on(table.credentialID, table.userId),
+  ],
 );
 
 /** The tables Better Auth's adapter maps; the others are read by Arca's own modules. */

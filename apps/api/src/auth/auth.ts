@@ -1,9 +1,14 @@
 import { passkey } from '@better-auth/passkey';
-import { authSchema, session as sessionTable, user } from '@arca/db/auth-schema';
+import {
+  authSchema,
+  session as sessionTable,
+  user,
+  verification as verificationTable,
+} from '@arca/db/auth-schema';
 import type { Database } from '@arca/db';
 import { betterAuth } from 'better-auth';
 import { APIError, createAuthMiddleware } from 'better-auth/api';
-import { eq } from 'drizzle-orm';
+import { eq, lte, sql } from 'drizzle-orm';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { authBasePath, DeviceDescription } from '@arca/api-contract/routes';
 import type { AuditLog } from '../audit/log.js';
@@ -93,16 +98,39 @@ export function createAuth({ db, secret, origin, logger, audit, notices }: AuthS
       defaultCookieAttributes: { secure: true, httpOnly: true, sameSite: 'lax', path: '/' },
     },
     hooks: {
+      // The options endpoint reads any session to list its passkeys; it must not slide it, since
+      // only GET /v1/session may (spec 0003, R4).
+      before: createAuthMiddleware((ctx): Promise<unknown> =>
+        Promise.resolve(
+          ctx.path === signInOptionsPath
+            ? { context: { query: { ...ctx.query, disableRefresh: true } } }
+            : undefined,
+        ),
+      ),
       // The plugin asks for user verification as "preferred"; Arca requires it (spec 0003, R3).
       after: createAuthMiddleware((ctx): Promise<unknown> => {
         const returned: unknown = ctx.context.returned;
-        if (ctx.path !== signInOptionsPath || typeof returned !== 'object' || returned === null) {
+        if (
+          ctx.path !== signInOptionsPath ||
+          typeof returned !== 'object' ||
+          returned === null ||
+          returned instanceof Error
+        ) {
           return Promise.resolve();
         }
         return Promise.resolve(ctx.json({ ...returned, userVerification: 'required' }));
       }),
     },
     databaseHooks: {
+      // Each challenge is consumed only on its own verify, so abandoned ones are swept here; the
+      // table stays bounded by what one challenge lifetime can hold.
+      verification: {
+        create: {
+          after: async () => {
+            await db.delete(verificationTable).where(lte(verificationTable.expiresAt, sql`now()`));
+          },
+        },
+      },
       session: {
         create: {
           // Neither the IP address nor the raw user agent is stored; the device is two enums.
@@ -160,13 +188,6 @@ export function createAuth({ db, secret, origin, logger, audit, notices }: AuthS
         rpID: new URL(origin).hostname,
         rpName: 'Arca',
         origin,
-        authenticatorSelection: { residentKey: 'required', userVerification: 'required' },
-        registration: {
-          afterVerification: ({ verification }) => {
-            requireUserVerified(verification.registrationInfo?.userVerified);
-            return Promise.resolve();
-          },
-        },
         authentication: {
           afterVerification: ({ verification }) => {
             requireUserVerified(verification.authenticationInfo.userVerified);
