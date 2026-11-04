@@ -18,8 +18,8 @@ export function base64url(bytes: Uint8Array): string {
 
 /**
  * A step-up for one action (spec 0003, R5), `sensitive_settings` unless named: a fresh 128-bit
- * nonce, options bound to the action, the passkey ceremony and verify. Returns the client that sends the nonce
- * with the action itself, which the server then lets run once.
+ * nonce, options bound to the action, the passkey ceremony and verify. Returns the client that
+ * sends the nonce with the action itself, which the server then lets run once.
  */
 export async function stepUpFor(
   passkeys: Passkeys,

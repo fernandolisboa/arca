@@ -106,7 +106,8 @@ export async function readCatalog(client: Pick<ClientBase, 'query'>): Promise<Ca
 /**
  * The types an export projection may carry: scalars the contract's values hold, plus `bytea`,
  * which the export always masks. A domain, an array or JSON would slip past the mask or the
- * contract, so it fails here instead of in an export.
+ * contract, so it fails here instead of in an export. No `uuid`: identifiers stay out of exports
+ * until a projection needs one and says why.
  */
 const exportableTypes = new Set([
   'text',
@@ -114,7 +115,6 @@ const exportableTypes = new Set([
   'bool',
   'int2',
   'int4',
-  'uuid',
   'date',
   'timestamptz',
   'bytea',
