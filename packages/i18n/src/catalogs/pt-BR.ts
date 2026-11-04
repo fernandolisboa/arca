@@ -142,6 +142,12 @@ export const ptBR = {
   email: {
     link: 'Abrir o Arca: {url}',
     signature: 'Equipe Arca',
+    /** The link that opens the first account's registration; it carries a one-time token. */
+    enrollment: {
+      subject: 'Seu link para criar a conta no Arca',
+      body: 'Use o link abaixo para criar sua conta no Arca com uma chave de acesso. Ele vale por 30 minutos e funciona uma vez só. Na página, digite o código de cadastro que você guardou. Se não foi você que pediu, pode ignorar este email.',
+      link: 'Criar a conta: {url}',
+    },
     notice: {
       passkey_added: {
         subject: 'Nova chave de acesso na sua conta',

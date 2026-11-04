@@ -794,6 +794,642 @@
         }
       }
     },
+    "/auth/enroll-owner": {
+      "post": {
+        "operationId": "enrollOwner",
+        "summary": "Emails a registration link to the first account; 404 once an account exists or the code is not the configured one",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 254,
+                    "format": "email"
+                  }
+                },
+                "required": [
+                  "code",
+                  "email"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Link sent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/registration/options": {
+      "post": {
+        "operationId": "registrationOptions",
+        "summary": "Options for registering a link's passkey, with a single-use challenge in a cookie",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$"
+                  },
+                  "code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                  }
+                },
+                "required": [
+                  "token"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Creation options",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "challenge": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9_-]*$"
+                    },
+                    "rp": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name"
+                      ]
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9_-]*$"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "displayName": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "displayName"
+                      ]
+                    },
+                    "pubKeyCredParams": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "public-key"
+                            ]
+                          },
+                          "alg": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "alg"
+                        ]
+                      }
+                    },
+                    "timeout": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    },
+                    "excludeCredentials": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]*$"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "public-key"
+                            ]
+                          },
+                          "transports": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "type"
+                        ]
+                      }
+                    },
+                    "authenticatorSelection": {
+                      "type": "object",
+                      "properties": {
+                        "authenticatorAttachment": {
+                          "type": "string",
+                          "enum": [
+                            "platform",
+                            "cross-platform"
+                          ]
+                        },
+                        "residentKey": {
+                          "type": "string",
+                          "enum": [
+                            "required"
+                          ]
+                        },
+                        "requireResidentKey": {
+                          "type": "boolean",
+                          "enum": [
+                            true
+                          ]
+                        },
+                        "userVerification": {
+                          "type": "string",
+                          "enum": [
+                            "required"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "residentKey",
+                        "requireResidentKey",
+                        "userVerification"
+                      ]
+                    },
+                    "attestation": {
+                      "type": "string",
+                      "enum": [
+                        "none"
+                      ]
+                    },
+                    "extensions": {
+                      "type": "object",
+                      "properties": {
+                        "prf": {
+                          "type": "object",
+                          "properties": {},
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "prf"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "challenge",
+                    "rp",
+                    "user",
+                    "pubKeyCredParams",
+                    "authenticatorSelection",
+                    "extensions"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/registration/verify": {
+      "post": {
+        "operationId": "registrationVerify",
+        "summary": "Registers the link's passkey, creating its account and signing it in",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$"
+                  },
+                  "code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                  },
+                  "response": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_-]*$"
+                      },
+                      "rawId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_-]*$"
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "public-key"
+                        ]
+                      },
+                      "response": {
+                        "type": "object",
+                        "properties": {
+                          "clientDataJSON": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]*$"
+                          },
+                          "attestationObject": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]*$"
+                          },
+                          "authenticatorData": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]*$"
+                          },
+                          "transports": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "publicKeyAlgorithm": {
+                            "type": "integer"
+                          },
+                          "publicKey": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]*$"
+                          }
+                        },
+                        "required": [
+                          "clientDataJSON",
+                          "attestationObject"
+                        ]
+                      },
+                      "authenticatorAttachment": {
+                        "type": "string",
+                        "enum": [
+                          "platform",
+                          "cross-platform"
+                        ]
+                      },
+                      "clientExtensionResults": {
+                        "type": "object",
+                        "properties": {
+                          "prf": {
+                            "type": "object",
+                            "properties": {
+                              "enabled": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "enabled"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "rawId",
+                      "type",
+                      "response",
+                      "clientExtensionResults"
+                    ]
+                  }
+                },
+                "required": [
+                  "token",
+                  "response"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Registered and signed in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/account/recovery-kit": {
+      "get": {
+        "operationId": "recoveryKitStatus",
+        "summary": "Whether the account's recovery kit exists and was saved; never the code",
+        "responses": {
+          "200": {
+            "description": "Recovery kit status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "unsaved",
+                        "saved"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "regenerateRecoveryKit",
+        "summary": "Issues the account part of a new recovery kit; the previous code stops working",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The new recovery code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+                    }
+                  },
+                  "required": [
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/account/recovery-kit/confirm": {
+      "post": {
+        "operationId": "confirmRecoveryKit",
+        "summary": "Records that the person saved the recovery kit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/audit/events": {
       "get": {
         "operationId": "listAuditEvents",

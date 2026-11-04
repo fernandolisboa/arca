@@ -5,6 +5,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createI18n } from '@arca/i18n';
 import { createApp, type App } from '../../src/app.js';
 import { createAuth, credentialStore, type Auth } from '../../src/auth/auth.js';
+import { ownerCode } from '../../src/auth/enrollment.js';
+import { registrationHooks, type RegistrationHooks } from '../../src/auth/registration.js';
 import { createStepUp } from '../../src/auth/step-up.js';
 import { authService } from '../../src/auth/service.js';
 import { auditLog, auditReader } from '../../src/audit/log.js';
@@ -14,6 +16,7 @@ import { noticeNewSignIn, recordPasskeyClient } from '../../src/auth/sign-in-not
 import { createNotices, type Notice, type Notices } from '../../src/email/notices.js';
 import { outboxSender, readOutbox } from '../../src/email/outbox.js';
 import type { Database } from '@arca/db';
+import { cookiesFrom } from '../cookies.js';
 import { allowAll } from '../limits.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
 import { softwarePasskey, type SoftwarePasskey } from '../software-passkey.js';
@@ -32,6 +35,7 @@ let auditDb: Database;
 let notices: Notices;
 let limiter: RateLimiter;
 let app: App;
+let registration: RegistrationHooks;
 
 beforeAll(async () => {
   testDatabase = await authTestDatabase();
@@ -42,8 +46,14 @@ beforeAll(async () => {
     origin,
   });
   limiter = rateLimiter({ db: authDb, key: randomBytes(32).toString('base64url') });
+  registration = registrationHooks({
+    db: authDb,
+    audit: auditLog(auditDb),
+    ownerCode: ownerCode(null),
+  });
   auth = createAuth({
     db: authDb,
+    registration,
     secret,
     origin,
     logger,
@@ -80,16 +90,6 @@ afterAll(async () => {
 const firefoxOnLinux = 'Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0';
 const chromeOnAndroid =
   'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36';
-
-/** The cookies a response set, as a browser would send them back; cleared ones are left out. */
-function cookiesFrom(...responses: Response[]): string {
-  return responses
-    .flatMap((response) => response.headers.getSetCookie())
-    .filter((cookie) => !/max-age=0/i.test(cookie))
-    .map((cookie) => cookie.split(';')[0] ?? '')
-    .filter((pair) => !pair.endsWith('='))
-    .join('; ');
-}
 
 /** A synthetic account with one passkey held by a software authenticator. */
 async function account(email: string): Promise<{ userId: string; passkey: SoftwarePasskey }> {
@@ -429,6 +429,7 @@ describe('Better Auth on the app_auth pool', () => {
     const { userId, passkey } = await signedIn('unrecorded@example.com');
     const failing = createAuth({
       db: authDb,
+      registration,
       secret,
       origin,
       logger,
@@ -536,6 +537,7 @@ describe('new-sign-in notices (spec 0003, R7)', () => {
     const lines: unknown[] = [];
     const failing = createAuth({
       db: authDb,
+      registration,
       secret,
       origin,
       logger: { info: () => undefined, error: (line) => lines.push(line) },
@@ -556,6 +558,7 @@ describe('new-sign-in notices (spec 0003, R7)', () => {
     const email = 'retried@example.com';
     const failing = createAuth({
       db: authDb,
+      registration,
       secret,
       origin,
       logger,
@@ -730,6 +733,7 @@ describe('the auth rate limits (spec 0003, R10)', () => {
     const lines: unknown[] = [];
     const failing = createAuth({
       db: authDb,
+      registration,
       secret,
       origin,
       logger: { info: () => undefined, error: (line) => lines.push(line) },

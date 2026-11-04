@@ -232,6 +232,164 @@ export const stepUpVerify = {
   response: { description: 'Step-up verified', schema: StepUpVerifyResponse },
 } as const satisfies RouteDefinition<typeof StepUpVerifyResponse>;
 
+/** A link token (enrollment, invite, recovery): 256 random bits, base64url without padding. */
+const LinkToken = z.string().regex(/^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$/);
+
+export const EnrollOwnerRequest = z.strictObject({
+  /** Typed by the owner; checked against the committed hash (spec 0003, R2). */
+  code: z.string().min(1).max(64),
+  email: z.email().max(254),
+});
+export type EnrollOwnerRequest = z.infer<typeof EnrollOwnerRequest>;
+
+export const EnrollOwnerResponse = z.object({});
+export type EnrollOwnerResponse = z.infer<typeof EnrollOwnerResponse>;
+
+export const enrollOwner = {
+  method: 'post',
+  path: '/auth/enroll-owner',
+  operationId: 'enrollOwner',
+  summary:
+    'Emails a registration link to the first account; 404 once an account exists or the code is not the configured one',
+  body: EnrollOwnerRequest,
+  response: { description: 'Link sent', schema: EnrollOwnerResponse },
+} as const satisfies RouteDefinition<typeof EnrollOwnerResponse>;
+
+/**
+ * WebAuthn creation options as JSON (spec 0003, R3): a resident key and user verification are
+ * required, and PRF is requested empty, only to learn whether the authenticator supports it.
+ */
+export const PasskeyCreationOptions = z.object({
+  challenge: base64url,
+  rp: z.object({ id: z.string().optional(), name: z.string() }),
+  user: z.object({ id: base64url, name: z.string(), displayName: z.string() }),
+  pubKeyCredParams: z.array(z.object({ type: z.literal('public-key'), alg: z.number().int() })),
+  timeout: z.number().int().positive().optional(),
+  excludeCredentials: z
+    .array(
+      z.object({
+        id: base64url,
+        type: z.literal('public-key'),
+        transports: z.array(z.string()).optional(),
+      }),
+    )
+    .optional(),
+  authenticatorSelection: z.object({
+    authenticatorAttachment: z.enum(['platform', 'cross-platform']).optional(),
+    residentKey: z.literal('required'),
+    requireResidentKey: z.literal(true),
+    userVerification: z.literal('required'),
+  }),
+  attestation: z.literal('none').optional(),
+  extensions: z.strictObject({ prf: z.strictObject({}) }),
+});
+export type PasskeyCreationOptions = z.infer<typeof PasskeyCreationOptions>;
+
+export const RegistrationOptionsRequest = z.strictObject({
+  token: LinkToken,
+  /** The enrollment code, checked before the ceremony so a typo costs no passkey. */
+  code: z.string().min(1).max(64).optional(),
+});
+export type RegistrationOptionsRequest = z.infer<typeof RegistrationOptionsRequest>;
+
+export const registrationOptions = {
+  method: 'post',
+  path: '/auth/registration/options',
+  operationId: 'registrationOptions',
+  summary: "Options for registering a link's passkey, with a single-use challenge in a cookie",
+  body: RegistrationOptionsRequest,
+  response: { description: 'Creation options', schema: PasskeyCreationOptions },
+} as const satisfies RouteDefinition<typeof PasskeyCreationOptions>;
+
+/**
+ * A WebAuthn attestation as JSON, as the Passkeys port returns it: among the extension results
+ * only `prf.enabled`, never a PRF output (ADR-0018).
+ */
+export const PasskeyAttestation = z.object({
+  id: base64url,
+  rawId: base64url,
+  type: z.literal('public-key'),
+  response: z.object({
+    clientDataJSON: base64url,
+    attestationObject: base64url,
+    authenticatorData: base64url.optional(),
+    transports: z.array(z.string()).optional(),
+    publicKeyAlgorithm: z.number().int().optional(),
+    publicKey: base64url.optional(),
+  }),
+  authenticatorAttachment: z.enum(['platform', 'cross-platform']).optional(),
+  clientExtensionResults: z.strictObject({
+    prf: z.strictObject({ enabled: z.boolean() }).optional(),
+  }),
+});
+export type PasskeyAttestation = z.infer<typeof PasskeyAttestation>;
+
+export const RegistrationVerifyRequest = z.strictObject({
+  token: LinkToken,
+  code: z.string().min(1).max(64).optional(),
+  response: PasskeyAttestation,
+});
+export type RegistrationVerifyRequest = z.infer<typeof RegistrationVerifyRequest>;
+
+/** Nothing but success: the session travels only in its cookie. */
+export const RegistrationVerifyResponse = z.object({});
+export type RegistrationVerifyResponse = z.infer<typeof RegistrationVerifyResponse>;
+
+export const registrationVerify = {
+  method: 'post',
+  path: '/auth/registration/verify',
+  operationId: 'registrationVerify',
+  summary: "Registers the link's passkey, creating its account and signing it in",
+  body: RegistrationVerifyRequest,
+  response: { description: 'Registered and signed in', schema: RegistrationVerifyResponse },
+} as const satisfies RouteDefinition<typeof RegistrationVerifyResponse>;
+
+export const RecoveryKitStatus = z.object({
+  /** `unsaved` until the person confirms the kit was saved; it is never shown again after. */
+  status: z.enum(['none', 'unsaved', 'saved']),
+});
+export type RecoveryKitStatus = z.infer<typeof RecoveryKitStatus>;
+
+export const recoveryKitStatus = {
+  method: 'get',
+  path: '/account/recovery-kit',
+  operationId: 'recoveryKitStatus',
+  summary: "Whether the account's recovery kit exists and was saved; never the code",
+  response: { description: 'Recovery kit status', schema: RecoveryKitStatus },
+} as const satisfies RouteDefinition<typeof RecoveryKitStatus>;
+
+export const RecoveryKit = z.object({
+  /** 128 random bits in Crockford base32, shown once. */
+  code: z.string().regex(/^[0-9A-HJKMNP-TV-Z]{26}$/),
+});
+export type RecoveryKit = z.infer<typeof RecoveryKit>;
+
+/**
+ * The account's first kit needs nothing more than the session within a day of its creation;
+ * replacing one needs a `sensitive_settings` step-up for this action with no targets, its nonce
+ * in the `arca-step-up-nonce` header (spec 0003, R6).
+ */
+export const regenerateRecoveryKit = {
+  method: 'post',
+  path: '/account/recovery-kit',
+  operationId: 'regenerateRecoveryKit',
+  summary: 'Issues the account part of a new recovery kit; the previous code stops working',
+  body: z.strictObject({}),
+  response: { description: 'The new recovery code', schema: RecoveryKit },
+} as const satisfies RouteDefinition<typeof RecoveryKit>;
+
+export const RecoveryKitConfirmResponse = z.object({});
+export type RecoveryKitConfirmResponse = z.infer<typeof RecoveryKitConfirmResponse>;
+
+export const confirmRecoveryKit = {
+  method: 'post',
+  path: '/account/recovery-kit/confirm',
+  operationId: 'confirmRecoveryKit',
+  summary: 'Records that the person saved the recovery kit',
+  body: z.strictObject({}),
+  response: { description: 'Recorded', schema: RecoveryKitConfirmResponse },
+} as const satisfies RouteDefinition<typeof RecoveryKitConfirmResponse>;
+
 const passkeyEvent = z.strictObject({ passkeyId: z.uuid() });
 const inviteEvent = z.strictObject({ inviteId: z.uuid() });
 const noDetails = z.strictObject({});
@@ -314,6 +472,12 @@ export const routes = {
   passkeySignIn,
   stepUpOptions,
   stepUpVerify,
+  enrollOwner,
+  registrationOptions,
+  registrationVerify,
+  recoveryKitStatus,
+  regenerateRecoveryKit,
+  confirmRecoveryKit,
   auditEvents,
 } as const;
 

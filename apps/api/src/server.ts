@@ -5,6 +5,9 @@ import { auditLog, auditReader } from './audit/log.js';
 import { createAuth, credentialStore } from './auth/auth.js';
 import { rateLimiter, type RateLimiter } from './auth/rate-limit.js';
 import { clientAddressFor } from './client-address.js';
+import { createEnrollment, ownerCode, type Enrollment } from './auth/enrollment.js';
+import { recoveryKits, type RecoveryKits } from './auth/recovery-kit.js';
+import { registration, registrationHooks, type Registration } from './auth/registration.js';
 import { authService, type AuthService } from './auth/service.js';
 import { createStepUp, type StepUpService } from './auth/step-up.js';
 import {
@@ -15,6 +18,7 @@ import {
   readAuthSecrets,
   readCronSecret,
   readDeploymentEnvironment,
+  readEnrollmentCodeHash,
   readRateLimitKey,
 } from './config.js';
 import { apiDatabase, auditDatabase, authDatabase } from './database.js';
@@ -74,35 +78,41 @@ function built(): RateLimiter {
 interface AuthParts {
   readonly auth: AuthService;
   readonly stepUp: StepUpService;
+  readonly enrollment: Enrollment;
+  readonly registration: Registration;
+  readonly recoveryKits: RecoveryKits;
 }
 
 let parts: Promise<AuthParts> | undefined;
 
-/** Better Auth and step-up on the app_auth pool, built on the first auth request. */
+/** Better Auth and the routes beside it on the app_auth pool, built on the first auth request. */
 function authParts(): Promise<AuthParts> {
   parts ??= (async () => {
     const target = databaseTargetFrom(useRuntimeConfig()['database']);
     const audit = auditLog(auditDatabase(target, readAuditDatabasePassword(), logger).db);
     const origin = readAuthOrigin();
-    const notices = createNotices({
-      email: emailSenderFor(environment, authConnection),
-      i18n: await createI18n(),
-      origin,
-    });
+    const email = emailSenderFor(environment, authConnection);
+    const i18n = await createI18n();
+    const notices = createNotices({ email, i18n, origin });
     const db = authConnection();
+    const enrollmentCode = ownerCode(readEnrollmentCodeHash(environment));
+    const hooks = registrationHooks({ db, audit, ownerCode: enrollmentCode });
+    const auth = createAuth({
+      db,
+      secret: readAuthSecrets().secret,
+      origin,
+      logger,
+      audit,
+      notices,
+      limiter,
+      registration: hooks,
+    });
     return {
-      auth: authService(
-        createAuth({
-          db,
-          secret: readAuthSecrets().secret,
-          origin,
-          logger,
-          audit,
-          notices,
-          limiter,
-        }),
-      ),
+      auth: authService(auth),
       stepUp: createStepUp({ db, credentials: credentialStore(db), audit, origin, logger }),
+      enrollment: createEnrollment({ db, email, i18n, origin, ownerCode: enrollmentCode }),
+      registration: registration(auth, hooks, enrollmentCode, logger),
+      recoveryKits: recoveryKits({ db, audit, notices, logger }),
     };
   })();
   // A failed build is retried on the next request instead of being cached.
@@ -149,6 +159,19 @@ const app = createApp({
     consume: async (signedIn, purpose, action) =>
       (await authParts()).stepUp.consume(signedIn, purpose, action),
     vaultUnlocked: async (signedIn) => (await authParts()).stepUp.vaultUnlocked(signedIn),
+  },
+  enrollment: {
+    enrollOwner: async (request) => (await authParts()).enrollment.enrollOwner(request),
+  },
+  registration: {
+    options: async (headers, request) => (await authParts()).registration.options(headers, request),
+    verify: async (headers, request) => (await authParts()).registration.verify(headers, request),
+  },
+  recoveryKits: {
+    status: async (accountId) => (await authParts()).recoveryKits.status(accountId),
+    issueFirst: async (accountId) => (await authParts()).recoveryKits.issueFirst(accountId),
+    regenerate: async (accountId) => (await authParts()).recoveryKits.regenerate(accountId),
+    confirm: async (accountId) => (await authParts()).recoveryKits.confirm(accountId),
   },
   authLimits: {
     limiter,

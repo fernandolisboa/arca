@@ -38,6 +38,12 @@ export const openApiRoutes = {
   passkeySignIn: toOpenApiRoute(routes.passkeySignIn),
   stepUpOptions: toOpenApiRoute(routes.stepUpOptions),
   stepUpVerify: toOpenApiRoute(routes.stepUpVerify),
+  enrollOwner: toOpenApiRoute(routes.enrollOwner),
+  registrationOptions: toOpenApiRoute(routes.registrationOptions),
+  registrationVerify: toOpenApiRoute(routes.registrationVerify),
+  recoveryKitStatus: toOpenApiRoute(routes.recoveryKitStatus),
+  regenerateRecoveryKit: toOpenApiRoute(routes.regenerateRecoveryKit),
+  confirmRecoveryKit: toOpenApiRoute(routes.confirmRecoveryKit),
   auditEvents: toOpenApiRoute(routes.auditEvents),
 } as const;
 

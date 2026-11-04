@@ -10,6 +10,7 @@ export default defineConfig({
     './src/notice-schema.ts',
     './src/rate-limit-schema.ts',
     './src/step-up-schema.ts',
+    './src/enrollment-schema.ts',
     './src/audit-schema.ts',
   ],
   out: './migrations',

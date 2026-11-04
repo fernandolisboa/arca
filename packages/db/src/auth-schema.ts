@@ -33,6 +33,8 @@ export const user = auth.table('user', {
   updatedAt: updatedAt(),
   /** For the inactivity rule in RETENTION.md. */
   lastSignInAt: timestamp('last_sign_in_at', { withTimezone: true }),
+  /** Set at owner enrollment, or when the inviter confirms the account; restricted while null. */
+  confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
 });
 
 export const session = auth.table(

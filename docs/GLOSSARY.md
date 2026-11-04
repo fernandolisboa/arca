@@ -91,6 +91,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Vault | Cofre | Client-side encrypted document storage |
 | Account | Conta | A person's sign-in identity: an email address, passkeys and sessions. A case person may have no account |
 | Invite | Convite | A single-use link, sent by email, that lets someone create an account |
+| Enrollment code | Código de cadastro | The one-time secret the owner generates on their own computer to create the first account; only its hash is in the repository |
 | Recovery kit | Kit de recuperação | The printable page (or, behind a warning, a text file) in two parts, each shown once: the account recovery code at enrollment and the vault recovery secret when the vault is created |
 | Step-up | Confirmação com chave de acesso | A fresh passkey verification for one purpose, bound to the action it approves (or, for vault unlock, opening a short window) |
 | Security notice | Aviso de segurança | A message sent to every channel the account has (email first; devices once notifications exist) when something security-relevant happens to an account |

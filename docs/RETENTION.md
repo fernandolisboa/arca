@@ -19,7 +19,10 @@ As of 2026-11-04. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md).
 | Recovery-activated passkey awaiting activation | 24 hours, then active or cancelled | Activation check |
 | Recovery links | 30 minutes, single use | Expiry check plus the daily cleanup job |
 | Recovery lockout after five wrong codes | 24 hours | Expiry check plus the daily cleanup job |
-| Owner-enrollment and invite registration contexts | 30 minutes, single use | Expiry check plus the daily cleanup job |
+| Owner-enrollment and invite registration contexts (`auth.registration_context`, with the address the link went to) | 30 minutes, single use | Expiry check; deleted when a registration spends it; a new owner link deletes earlier ones and expired ones; the daily cleanup job; never backed up |
+| Spent enrollment codes (`auth.setup`, a hash, no personal data) | Forever, so an emptied user table never revives a code | Never erased; on the no-personal-data list; backed up |
+| Account recovery code (`auth.recovery_code`, a salted hash) | While the account exists; replaced by each new kit | Replaced in place; cascade on account erasure; backed up |
+| What a passkey's authenticator reported at registration (`auth.passkey_capability`) | While the passkey exists | Deleted with the passkey (foreign key cascade) |
 | Notification channels (push subscriptions) | Until revoked, reported gone by the push service, or the account is deleted | Delivery step and registry |
 | Notification messages and their deliveries | 90 days | Daily cleanup job |
 | Vault envelopes, recipients, sharing state and document rows | While the account exists; a rotated identity's envelopes until every sharing owner re-encrypts, or 90 days | Registry; daily cleanup job for rotated envelopes |
