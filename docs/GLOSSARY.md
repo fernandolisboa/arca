@@ -108,7 +108,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Account link | Conexão entre contas | The confirmed connection between an inviter and the account they invited, which lets them share documents |
 | Sharing state | Lista de compartilhamento | Shown when the owner confirms a change to it. The owner's own record of which recipients each document is encrypted to and which fingerprint is pinned for each person, tagged with the share key so the server cannot change it |
 | Share key | (technical only) | A secret kept only inside a person's vault envelopes that tags their sharing state; replaced when the vault identity rotates |
-| Personal-data registry | (technical only) | The list of every table with personal data and how each is erased and exported |
+| Personal-data registry | (technical only) | Every table's lifecycle decision: who owns its rows and how they are erased and exported, or why no account owns them |
 | Erasure tombstone | (technical only) | A record of an erased account kept with the backups so a restore does not bring it back |
 | Account deletion | Exclusão da conta | Erasing an account and its data after a 7-day window the person can cancel |
 | Pending deletion | Exclusão pendente | The 7-day state after a deletion request, when sign-in only offers to cancel it |

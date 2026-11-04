@@ -398,6 +398,26 @@ export const ptBR = {
       },
     },
   },
+  /** Section names in the account's data export (spec 0004 R8), one per registry entry. */
+  dataExport: {
+    tables: {
+      account: 'Conta',
+      signInMethods: 'Formas de entrar',
+      sessions: 'Sessões',
+      passkeys: 'Chaves de acesso',
+      passkeyWaits: 'Chaves de acesso em espera',
+      passkeyCapabilities: 'Recursos das chaves de acesso',
+      devices: 'Dispositivos',
+      passkeyChallenges: 'Pedidos para adicionar chave de acesso',
+      recoveryCode: 'Código de recuperação',
+      recoveryLinks: 'Links de recuperação',
+      recoveryAttempts: 'Tentativas de recuperação',
+      stepUps: 'Confirmações com chave de acesso',
+      stepUpChallenges: 'Pedidos de confirmação com chave de acesso',
+      invites: 'Convites enviados',
+      securityHistory: 'Histórico de segurança',
+    },
+  },
   /**
    * Former states (ISO 3166-3), which Intl.DisplayNames does not name. Current countries are
    * named by Intl.DisplayNames, never here.

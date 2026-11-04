@@ -31,6 +31,10 @@
     "./step-up-schema": {
       "types": "./dist/step-up-schema.d.ts",
       "default": "./dist/step-up-schema.js"
+    },
+    "./registry": {
+      "types": "./dist/registry.d.ts",
+      "default": "./dist/registry.js"
     }
   },
   "scripts": {
