@@ -41,7 +41,7 @@ beforeAll(async () => {
       );
       await client.query(
         `INSERT INTO vault.envelope (account_id, recipient_id, kind, credential_id, ciphertext)
-         VALUES ($1, $1, 'passkey_prf', 'Y3JlZGVudGlhbC1zeW50aGV0aWM', $2), ($1, $1, 'recovery', NULL, $2)`,
+         VALUES ($1, $1, 'passkey_prf', 'synthetic-credential-one', $2), ($1, $1, 'recovery', NULL, $2)`,
         [id, sealed],
       );
       await client.query(
@@ -237,7 +237,7 @@ describe('the vault schema access matrix (spec 0005, R2)', () => {
       as('app_api', owner, (client) =>
         client.query(
           `INSERT INTO vault.envelope (account_id, recipient_id, kind, credential_id, ciphertext)
-           VALUES ($1, $2, 'passkey_prf', 'YW5vdGhlci1zeW50aGV0aWM', $3)`,
+           VALUES ($1, $2, 'passkey_prf', 'synthetic-credential-two', $3)`,
           [owner, other, sealed],
         ),
       ),
@@ -273,7 +273,7 @@ describe('the vault schema access matrix (spec 0005, R2)', () => {
     );
     await duplicate(
       `INSERT INTO vault.envelope (account_id, recipient_id, kind, credential_id, ciphertext)
-       VALUES ($1, $1, 'passkey_prf', 'Y3JlZGVudGlhbC1zeW50aGV0aWM', $2)`,
+       VALUES ($1, $1, 'passkey_prf', 'synthetic-credential-one', $2)`,
       [owner, sealed],
     );
   });
