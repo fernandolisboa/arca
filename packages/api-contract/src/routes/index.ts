@@ -759,6 +759,7 @@ export const auditEventDetails = {
   deletion_requested: z.strictObject({ reason: z.enum(deletionReasons) }),
   deletion_cancelled: z.strictObject({ reason: z.enum(['owner_cancel', 'sign_in']) }),
   account_erased: noDetails,
+  vault_envelopes_fetched: noDetails,
 } as const;
 
 export type AuditEventCode = keyof typeof auditEventDetails;
@@ -864,6 +865,102 @@ export const cancelAccountDeletion = {
   response: { description: 'Deletion cancelled', schema: CancelAccountDeletionResponse },
 } as const satisfies RouteDefinition<typeof CancelAccountDeletionResponse>;
 
+/** An age file as the vault stores it, base64url in JSON: 64 to 16384 bytes (spec 0005, R2). */
+export const VaultCiphertext = z.base64url().min(86).max(21846);
+
+/** A WebAuthn credential ID, base64url, as the passkey plugin stores it. */
+export const CredentialId = z.string().regex(/^[A-Za-z0-9_-]{16,1366}$/);
+
+/** A hybrid post-quantum age recipient (ADR-0018). */
+export const VaultRecipient = z
+  .string()
+  .max(2100)
+  .regex(/^age1pq1[02-9ac-hj-np-z]+$/);
+
+export const VaultStatusResponse = z.object({
+  /** The account's current public recipient; null until the vault is set up. */
+  recipient: VaultRecipient.nullable(),
+});
+export type VaultStatusResponse = z.infer<typeof VaultStatusResponse>;
+
+export const vaultStatus = {
+  method: 'get',
+  path: '/vault',
+  operationId: 'getVaultStatus',
+  summary:
+    "Whether the account's vault is set up, and its current public recipient; 401 without a session",
+  response: { description: 'The vault status', schema: VaultStatusResponse },
+} as const satisfies RouteDefinition<typeof VaultStatusResponse>;
+
+/** One passkey's envelope: the identity sealed to that passkey's PRF output. */
+export const PasskeyEnvelope = z.strictObject({
+  credentialId: CredentialId,
+  ciphertext: VaultCiphertext,
+});
+export type PasskeyEnvelope = z.infer<typeof PasskeyEnvelope>;
+
+export const SetUpVaultRequest = z.strictObject({
+  recipient: VaultRecipient,
+  /** Empty when no passkey of the account supports PRF; one per passkey. */
+  passkeyEnvelopes: z
+    .array(PasskeyEnvelope)
+    .max(16)
+    .refine((list) => new Set(list.map(({ credentialId }) => credentialId)).size === list.length),
+  /** The identity sealed to the vault recovery secret, opened once on the device first. */
+  recoveryEnvelope: VaultCiphertext,
+});
+export type SetUpVaultRequest = z.infer<typeof SetUpVaultRequest>;
+
+export const SetUpVaultResponse = z.object({});
+
+export const setUpVault = {
+  method: 'post',
+  path: '/vault',
+  operationId: 'setUpVault',
+  summary:
+    "Stores a new vault's recipient and envelopes, within a vault_unlock window; 403 step_up_required, 409 vault_exists, 400 invalid_request for a credential that is not an active passkey of the account",
+  body: SetUpVaultRequest,
+  response: { description: 'Vault set up', schema: SetUpVaultResponse },
+} as const satisfies RouteDefinition<typeof SetUpVaultResponse>;
+
+export const VaultEnvelope = z.object({
+  recipientId: z.uuid(),
+  kind: z.enum(['passkey_prf', 'recovery']),
+  /** The passkey's credential ID for `passkey_prf`; null for `recovery`. */
+  credentialId: CredentialId.nullable(),
+  ciphertext: VaultCiphertext,
+});
+export type VaultEnvelope = z.infer<typeof VaultEnvelope>;
+
+export const VaultEnvelopesResponse = z.object({
+  /** The current recipient and any rotated one still kept. */
+  recipients: z.array(z.object({ id: z.uuid(), recipient: VaultRecipient, current: z.boolean() })),
+  /** The recovery envelopes and the envelopes of the account's active passkeys only. */
+  envelopes: z.array(VaultEnvelope),
+});
+export type VaultEnvelopesResponse = z.infer<typeof VaultEnvelopesResponse>;
+
+export const vaultEnvelopes = {
+  method: 'get',
+  path: '/vault/envelopes',
+  operationId: 'getVaultEnvelopes',
+  summary:
+    "The vault's envelopes, within a vault_unlock window, recorded as fetched; 403 step_up_required, 404 not_found before the vault is set up",
+  response: { description: 'The envelopes', schema: VaultEnvelopesResponse },
+} as const satisfies RouteDefinition<typeof VaultEnvelopesResponse>;
+
+export const AddVaultEnvelopeResponse = z.object({});
+
+export const addVaultEnvelope = {
+  method: 'post',
+  path: '/vault/envelopes',
+  operationId: 'addVaultEnvelope',
+  summary:
+    "Adds a passkey's envelope for the current recipient, within a vault_unlock window, keeping one already there; 403 step_up_required, 404 not_found before the vault is set up, 400 invalid_request for a credential that is not an active passkey of the account",
+  body: PasskeyEnvelope,
+  response: { description: 'Envelope stored', schema: AddVaultEnvelopeResponse },
+} as const satisfies RouteDefinition<typeof AddVaultEnvelopeResponse>;
+
 export const routes = {
   health,
   session,
@@ -897,6 +994,10 @@ export const routes = {
   exportAccountData,
   requestAccountDeletion,
   cancelAccountDeletion,
+  vaultStatus,
+  setUpVault,
+  vaultEnvelopes,
+  addVaultEnvelope,
 } as const;
 
 /** The Better Auth endpoints the API lets through; every other path under /v1/auth is a 404. */

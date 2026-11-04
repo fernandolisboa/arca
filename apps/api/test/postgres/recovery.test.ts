@@ -15,6 +15,8 @@ import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-da
 // data only.
 const origin = 'http://localhost:3000';
 const rpId = 'localhost';
+/** No vault in these tests: nothing to delete before a revocation. */
+const noVault = () => Promise.resolve();
 const device = { browser: 'firefox', os: 'linux' } as const;
 
 let testDatabase: AuthTestDatabase;
@@ -483,7 +485,7 @@ describe('the wait of a recovery passkey (spec 0003, R6)', () => {
   it('lets a session change nothing else meanwhile, not even another passkey', async () => {
     const { account, signedIn } = await recovered();
     const [kept] = account.keys;
-    expect(await devices.revokePasskey(signedIn, kept.id)).toBe('recovery_pending');
+    expect(await devices.revokePasskey(signedIn, kept.id, noVault)).toBe('recovery_pending');
     expect(await fixtures.events(account, ['passkey_revoked'])).toEqual([]);
   });
 
@@ -500,7 +502,7 @@ describe('the wait of a recovery passkey (spec 0003, R6)', () => {
   it('cancelling it deletes the recovery code, which closes recovery', async () => {
     const { account, signedIn } = await recovered();
     const [pending] = await fixtures.pendingOf(account);
-    expect(await devices.revokePasskey(signedIn, pending?.id ?? '')).toBe('revoked');
+    expect(await devices.revokePasskey(signedIn, pending?.id ?? '', noVault)).toBe('revoked');
     expect(await devices.status(account.accountId)).toMatchObject({ recoveryPending: false });
     expect(await kits.status(account.accountId)).toBe('none');
     expect(await fixtures.events(account, ['recovery_cancelled'])).toEqual([

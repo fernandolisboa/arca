@@ -28,8 +28,15 @@ export interface Devices {
   readonly list: (signedIn: SignedIn) => Promise<DevicesResponse>;
   /** False when the session is not the account's. */
   readonly revokeSession: (signedIn: SignedIn, sessionId: string) => Promise<boolean>;
-  /** Revokes an active passkey, or cancels a pending one. */
-  readonly revokePasskey: (signedIn: SignedIn, passkeyId: string) => Promise<PasskeyRevocation>;
+  /**
+   * Revokes an active passkey, or cancels a pending one. `beforeRevoke` runs first, once the
+   * revocation is allowed, and a failure in it keeps the passkey (spec 0005, R2).
+   */
+  readonly revokePasskey: (
+    signedIn: SignedIn,
+    passkeyId: string,
+    beforeRevoke: (credentialId: string) => Promise<void>,
+  ) => Promise<PasskeyRevocation>;
   readonly revokeOtherSessions: (signedIn: SignedIn) => Promise<void>;
   readonly addOptions: (signedIn: SignedIn) => Promise<AddPasskeyOptionsResponse>;
   /** False for every refusal alike, so a caller learns nothing about why. */
@@ -146,9 +153,9 @@ export function createDevices({
         return true;
       }),
 
-    revokePasskey: async ({ accountId }, passkeyId) => {
+    revokePasskey: async ({ accountId }, passkeyId, beforeRevoke) => {
       const outcome = await db.transaction(async (tx) => {
-        const revoked = await devices.revokePasskey(tx, accountId, passkeyId);
+        const revoked = await devices.revokePasskey(tx, accountId, passkeyId, beforeRevoke);
         if (typeof revoked === 'string') return revoked;
         await forgetUnspent(tx, accountId, revoked.credentialId);
         await audit.record({

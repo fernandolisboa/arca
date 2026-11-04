@@ -680,8 +680,14 @@ export const devices = {
   /**
    * Deletes one of the account's passkeys, whose sessions and recorded clients go with it by
    * their cascades, unless it is the account's last. Its credential ID when it was deleted.
+   * `beforeDelete` runs once the revocation is allowed, while the rows are still locked.
    */
-  revokePasskey: async (tx: Transaction, accountId: string, passkeyId: string) => {
+  revokePasskey: async (
+    tx: Transaction,
+    accountId: string,
+    passkeyId: string,
+    beforeDelete: (credentialId: string) => Promise<void>,
+  ) => {
     // The passkey rows are locked in one order, so two revocations at once cannot each leave the
     // other as the last passkey, and a step-up still recording (its counter update holds the row)
     // commits first. Not the account row: the step-up's insert checks its key against it.
@@ -707,6 +713,7 @@ export const devices = {
     if (!target.pending && !owned.some((other) => other !== target && !other.pending)) {
       return 'last_active' as const;
     }
+    await beforeDelete(target.credentialId);
     await tx.delete(passkeyTable).where(eq(passkeyTable.id, passkeyId));
     return {
       credentialId: target.credentialId,
