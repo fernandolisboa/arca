@@ -33,6 +33,7 @@ import {
 } from '@arca/api-contract/routes';
 import { openApiRoutes } from '@arca/api-contract/server';
 import type { Context, Hono, MiddlewareHandler } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
 import { HTTPException } from 'hono/http-exception';
 import { createMiddleware } from 'hono/factory';
 import { routePath } from 'hono/route';
@@ -48,13 +49,14 @@ import {
   authRouteLimits,
   deviceLimits,
   inviteLimits,
+  monitoringLimits,
   recoveryLimits,
   registrationLimits,
   stepUpLimits,
 } from './auth/limits.js';
 import type { RateLimiter, RateLimitRule } from './auth/rate-limit.js';
 import type { RecoveryKits } from './auth/recovery-kit.js';
-import type { Recovery } from './auth/recovery.js';
+import type { BehindAnswer, Recovery } from './auth/recovery.js';
 import { behindAnswerOf } from './behind-answer.js';
 import type { Registration, RegistrationOutcome } from './auth/registration.js';
 import type { AuthService, SignedIn } from './auth/service.js';
@@ -63,8 +65,10 @@ import type { ActionPurpose, StepUpService } from './auth/step-up.js';
 import type { OutboxEntry } from './email/outbox.js';
 import { bearerMatches } from './cron-auth.js';
 import { cachedDatabaseCheck, type CheckDatabase } from './database-health.js';
+import type { Tunnel } from './monitoring-tunnel.js';
 import { securityTxt } from './security-txt.js';
-import type { Logger } from '@arca/telemetry';
+import { cspReportPath } from '@arca/security-policy';
+import { tunnelPath, type Logger } from '@arca/telemetry';
 import { utcDate, type IsoDate } from './workflows/workflow-arguments.js';
 
 /** What the cron routes need; absent in tests that do not exercise them. */
@@ -141,6 +145,11 @@ export interface AppDependencies {
    * personal data, to show that monitoring receives none of it (spec 0004, R4).
    */
   readonly syntheticError?: boolean;
+  /**
+   * The browser's way to Sentry, given where the deployment reports (spec 0004, R5); absent, the
+   * tunnel and the CSP report path are 404s. Needs `authLimits` for its per-IP limits.
+   */
+  readonly tunnel?: Tunnel;
 }
 
 /** Synthetic values only, shaped like what a family's case holds. */
@@ -173,6 +182,7 @@ export type ErrorCode =
   | 'recovery_pending'
   | 'deletion_pending'
   | 'accounts_closed'
+  | 'too_large'
   | 'request_failed'
   | 'internal_error';
 
@@ -190,6 +200,8 @@ export interface AppEnv {
     session?: Promise<RequestSession>;
     /** Class name of a thrown error; never its message, which may carry data. */
     errorName?: string;
+    /** The platform's `waitUntil`, kept before a body limit replaces the request. */
+    behind?: BehindAnswer;
   };
 }
 
@@ -293,10 +305,14 @@ export function createApp({
   outbox,
   monitor,
   syntheticError = false,
+  tunnel,
 }: AppDependencies) {
   // An auth route without its limit would be the gap the limits exist to close.
   if (auth !== undefined && authLimits === undefined) {
     throw new Error('the auth routes need their rate limits');
+  }
+  if (tunnel !== undefined && authLimits === undefined) {
+    throw new Error('the monitoring tunnel needs its rate limits');
   }
   const app = createRouter();
   if (monitor !== undefined) app.use('*', ...monitor(app));
@@ -879,6 +895,66 @@ export function createApp({
     app.get('/internal/monitoring-check', () => {
       throw new SyntheticPersonalDataError();
     });
+  }
+
+  if (tunnel !== undefined && authLimits !== undefined) {
+    const limited = (rule: RateLimitRule) =>
+      createMiddleware<AppEnv>(async (c, next) => {
+        const refused = await overAddressLimit(c, authLimits, rule);
+        if (refused !== undefined) return refused;
+        return next();
+      });
+    /** Hono's body limit replaces a streamed request, and with it the platform's `waitUntil`. */
+    const capped = (maxSize: number) => [
+      createMiddleware<AppEnv>(async (c, next) => {
+        c.set(
+          'behind',
+          behindAnswerOf(c.req.raw, () => {
+            logger.error({ errorName: 'BehindAnswerUnavailable' });
+          }),
+        );
+        return next();
+      }),
+      bodyLimit({ maxSize, onError: (c: Context<AppEnv>) => reject(c, 'too_large', 413) }),
+    ];
+    /** Answers at once and forwards behind the answer; a failure is logged by class only. */
+    const forwarded = (c: Context<AppEnv>, work: Promise<void> | null) => {
+      if (work === null) return reject(c, 'invalid_request', 400);
+      const route = routePath(c);
+      c.get('behind')?.(
+        work.catch((error: unknown) => {
+          logger.error({
+            route,
+            errorName: error instanceof Error ? error.name : 'NonErrorThrown',
+          });
+        }),
+      );
+      return c.body(null, 204);
+    };
+
+    app.post(
+      tunnelPath,
+      sameOrigin(origin),
+      limited(monitoringLimits.envelope),
+      ...capped(200 * 1024),
+      async (c) => forwarded(c, tunnel.envelope(await c.req.text())),
+    );
+    // The Reporting API sends from the browser itself, with no Origin to check.
+    app.post(
+      cspReportPath,
+      limited(monitoringLimits.cspReports),
+      ...capped(64 * 1024),
+      async (c) => {
+        const body = await c.req.text();
+        let payload: unknown;
+        try {
+          payload = JSON.parse(body);
+        } catch {
+          return reject(c, 'invalid_request', 400);
+        }
+        return forwarded(c, tunnel.cspReports(payload));
+      },
+    );
   }
 
   // Vercel cron sends GET with `Authorization: Bearer <CRON_SECRET>` (spec 0001, R6). Not part of

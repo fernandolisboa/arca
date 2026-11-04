@@ -1,8 +1,13 @@
 /**
  * The response header policy and the SPA fallback exclusions, as data (spec 0001, R4). The Nitro
  * config applies them to every response; native builds will inject the same CSP as a meta tag
- * with the API origin added to connect-src, since a wrapped bundle gets no response headers.
+ * with the API origin added to connect-src and without `report-to`, which a meta tag cannot carry,
+ * since a wrapped bundle gets no response headers.
  */
+
+/** Where browsers send CSP and Trusted Types violation reports (spec 0004, R5). */
+export const cspReportPath = '/internal/monitoring/csp';
+const cspReportGroup = 'csp';
 
 const contentSecurityPolicyDirectives = {
   'default-src': ["'self'"],
@@ -15,6 +20,7 @@ const contentSecurityPolicyDirectives = {
   'frame-ancestors': ["'none'"],
   'require-trusted-types-for': ["'script'"],
   'trusted-types': ['arca'],
+  'report-to': [cspReportGroup],
 } as const satisfies Record<string, readonly string[]>;
 
 export const contentSecurityPolicy = Object.entries(contentSecurityPolicyDirectives)
@@ -30,6 +36,7 @@ export const securityHeaders: Readonly<Record<string, string>> = {
   'x-content-type-options': 'nosniff',
   'referrer-policy': 'no-referrer',
   'permissions-policy': deniedFeatures.map((feature) => `${feature}=()`).join(', '),
+  'reporting-endpoints': `${cspReportGroup}="${cspReportPath}"`,
 };
 
 /**

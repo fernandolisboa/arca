@@ -4,6 +4,7 @@ import type { z } from 'zod';
 import { apiBasePath, ErrorResponse, type RouteDefinition } from '../routes/index.js';
 
 export {
+  apiPathSegments,
   deletionWaitDays,
   inviteLifetimeHours,
   maxOpenInvites,
@@ -11,6 +12,7 @@ export {
   recoveryLinkMinutes,
   routes,
   stepUpNonceHeader,
+  webPathSegments,
 } from '../routes/index.js';
 export type {
   AuditEvent,

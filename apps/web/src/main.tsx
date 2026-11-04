@@ -6,9 +6,12 @@ import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import { startAppearance } from './appearance/store.js';
 import { Failure, NotFound } from './fallbacks.js';
+import { reportCaught, reportUncaught, startMonitoring } from './monitoring.js';
 import { registerServiceWorker } from './pwa/register.js';
 import { routeTree } from './routeTree.gen.js';
 import './styles.css';
+
+startMonitoring();
 
 const i18n = await createI18n({
   // The e2e suite fails on any console error, so a missing message fails a test.
@@ -21,6 +24,7 @@ const router = createRouter({
   routeTree,
   defaultNotFoundComponent: NotFound,
   defaultErrorComponent: Failure,
+  defaultOnCatch: reportCaught,
   // Page changes cross-fade; motion off zeroes the animations in CSS (spec 0006, R6). The first load
   // and same-page updates skip the transition, which would block input while it runs. Browsers
   // without view-transition types transition every load instead.
@@ -45,7 +49,7 @@ document.title = i18n.t('app.name');
 const container = document.getElementById('root');
 if (container === null) throw new Error('the #root element is missing from index.html');
 
-createRoot(container).render(
+createRoot(container, { onUncaughtError: reportUncaught }).render(
   <StrictMode>
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={queryClient}>

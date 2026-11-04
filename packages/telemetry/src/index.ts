@@ -4,9 +4,11 @@ export { createLogger, type LogEntry, type LogField, type Logger } from './logge
 export type { Scrubbed } from './rules.js';
 export { sentryScrubbers } from './sentry.js';
 export {
+  sentryDataCollection,
   sentryEnvironments,
   sentryProject,
   type SentryEnvironment,
+  tunnelPath,
   type SentryProject,
 } from './sentry-project.js';
 export { urlReducer, type UrlReducer } from './urls.js';
