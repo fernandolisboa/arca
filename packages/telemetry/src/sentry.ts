@@ -78,7 +78,7 @@ export function sentryScrubbers({ reduce, tables }: KnownSentryParts) {
    */
   const fileName: Rule = (value) => {
     if (typeof value !== 'string') return undefined;
-    if (value.startsWith('/')) return pathLike(value) && codeFile.test(value) ? value : undefined;
+    if (/^\/(?!\/)/.test(value)) return pathLike(value) && codeFile.test(value) ? value : undefined;
     if (!/^https?:\/\//i.test(value)) return undefined;
     const route = reduce(value);
     if (route === undefined) return undefined;

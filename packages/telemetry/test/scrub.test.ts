@@ -456,6 +456,7 @@ describe('an adversarial envelope (spec 0004, R3)', () => {
       'https://arca.example/recover/:param',
     );
     expect(kept(`webpack://${personal.email}/src/x.ts`)).toBeUndefined();
+    expect(kept(`//attacker.example/${personal.email}.js`)).toBeUndefined();
     expect(kept(personal.cpf)).toBeUndefined();
     expect(kept('/cases/3f2a9c1e-0b7d-4c55-9e1a-7d2f4b6a8c90')).toBeUndefined();
   });
