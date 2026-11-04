@@ -8,6 +8,14 @@ export const ptBR = {
   },
   shell: {
     skipToContent: 'Pular para o conteúdo',
+    navigation: 'Navegação principal',
+    openMenu: 'Abrir menu',
+    closeMenu: 'Fechar menu',
+    navigationGroup: 'Navegar',
+    accountGroup: 'Sua conta',
+    nav: {
+      home: 'Início',
+    },
   },
   notFound: {
     title: 'Página não encontrada',
