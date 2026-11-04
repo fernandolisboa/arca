@@ -5,17 +5,15 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createAccountDeletion, type AccountDeletion } from '../../src/account/deletion.js';
 import { createErasure, eraseAccountNow, type Erasure } from '../../src/account/erasure.js';
 import { accounts } from '../../src/auth/auth.js';
-import type { Tombstones } from '../../src/account/tombstones.js';
-import { auditLog } from '../../src/audit/log.js';
+import { auditLog, type AuditLog } from '../../src/audit/log.js';
 import type { Notice, Notices } from '../../src/email/notices.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
-import { ownedCountQuery, ownedCounts, seeded } from './every-table.js';
+import { ownedCounts, seeded } from './every-table.js';
 
 // Account deletion and erasure on the real migrations, through the runtime roles' pools (spec
 // 0004, R9). Synthetic data only.
 let testDatabase: AuthTestDatabase;
 let sent: Notice[];
-let tombstones: string[];
 let deletion: AccountDeletion;
 
 const notices: Notices = {
@@ -24,23 +22,16 @@ const notices: Notices = {
     return Promise.resolve();
   },
 };
-const tombstoneLog: Tombstones = {
-  write: (accountId) => {
-    tombstones.push(accountId);
-    return Promise.resolve();
-  },
-};
 
 const erasureWith = (
   checked: Registry = registry,
-  tombstones: Tombstones = tombstoneLog,
+  audit: AuditLog = auditLog(testDatabase.auditDb),
 ): Erasure =>
   createErasure({
     authDb: testDatabase.authDb,
     jobsDb: testDatabase.jobsDb,
-    audit: auditLog(testDatabase.auditDb),
+    audit,
     notices,
-    tombstones,
     registry: checked,
   });
 
@@ -58,7 +49,6 @@ beforeAll(async () => {
 
 beforeEach(() => {
   sent = [];
-  tombstones = [];
 });
 
 afterAll(async () => {
@@ -87,29 +77,6 @@ const makeDue = (accountId: string) =>
             deletion_reason = coalesce(deletion_reason, 'owner_request') WHERE id = $1`,
     [accountId],
   );
-
-/**
- * The account's rows per registry table, each counted by a role that sees them honestly: app_auth
- * for the auth schema, which has no row-level security, and app_backup for the rest, whose read
- * policy is the one counter that row-level security does not hide rows from.
- */
-async function remaining(accountId: string): Promise<Record<string, number>> {
-  const counts: Record<string, number> = {};
-  for (const entry of registry.entries) {
-    const query = ownedCountQuery(entry);
-    if (entry.table.startsWith('auth.')) {
-      const result = await testDatabase.authDb.execute<{ n: number }>(
-        sql.raw(query.replace('$1', `'${accountId}'`)),
-      );
-      counts[entry.table] = result.rows[0]?.n ?? 0;
-    } else {
-      counts[entry.table] = await testDatabase.asBackup(
-        async (client) => (await client.query<{ n: number }>(query, [accountId])).rows[0]?.n ?? 0,
-      );
-    }
-  }
-  return counts;
-}
 
 describe('deletion request and cancel (spec 0004, R9)', () => {
   it('ends every session, marks the account due in 7 days, records it and sends the notice', async () => {
@@ -186,7 +153,7 @@ describe('eraseAccount (spec 0004, R9)', () => {
 
     expect(await eraseAccountNow(erasureWith(), a.accountId)).toBe(true);
 
-    const counts = await remaining(a.accountId);
+    const counts = await ownedCounts(testDatabase, a.accountId);
     const retained = registry.entries.filter(({ strategy }) => strategy === 'retain');
     for (const entry of registry.entries) {
       if (entry.strategy === 'delete') expect(counts[entry.table], entry.table).toBe(0);
@@ -199,7 +166,6 @@ describe('eraseAccount (spec 0004, R9)', () => {
     expect(sent.map(({ kind, to }) => ({ kind, to }))).toEqual([
       { kind: 'account_erased', to: a.email },
     ]);
-    expect(tombstones).toEqual([a.accountId]);
   });
 
   it('sweeps the expired rows of the tables kept until expiry, and only those', async () => {
@@ -217,7 +183,7 @@ describe('eraseAccount (spec 0004, R9)', () => {
     expect(left.rows).toEqual([{ recipient: `${live}@example.com` }]);
   });
 
-  it('is harmless when run again, also after the tombstone was written', async () => {
+  it('is harmless when run again, also after the event was recorded', async () => {
     const a = await seeded(testDatabase);
     await makeDue(a.accountId);
     await eraseAccountNow(erasureWith(), a.accountId);
@@ -225,27 +191,28 @@ describe('eraseAccount (spec 0004, R9)', () => {
     sent = [];
     expect(await eraseAccountNow(erasureWith(), a.accountId)).toBe(true);
     expect(sent).toEqual([]);
-    expect(tombstones).toEqual([a.accountId]);
     const erased = (await events(a.accountId)).filter(({ code }) => code === 'account_erased');
     expect(erased).toHaveLength(1);
-    for (const [table, count] of Object.entries(await remaining(a.accountId))) {
+    for (const [table, count] of Object.entries(await ownedCounts(testDatabase, a.accountId))) {
       if (table !== 'audit.event') expect(count, table).toBe(0);
     }
   });
 
-  it('keeps an erased account in the scan until its tombstone is written, recording it once', async () => {
+  it('keeps an erased account in the scan until its event is recorded, recording it once', async () => {
     const a = await seeded(testDatabase);
     expect(await due()).not.toContain(a.accountId);
     await makeDue(a.accountId);
     expect(await due()).toContain(a.accountId);
-    const failing: Tombstones = { write: () => Promise.reject(new Error('unavailable')) };
+    const failing: AuditLog = {
+      ...auditLog(testDatabase.auditDb),
+      record: () => Promise.reject(new Error('unavailable')),
+    };
     await expect(eraseAccountNow(erasureWith(registry, failing), a.accountId)).rejects.toThrow();
     expect(await dueAtOf(a.accountId)).toBeUndefined();
     expect(await due()).toContain(a.accountId);
     await expect(eraseAccountNow(erasureWith(registry, failing), a.accountId)).rejects.toThrow();
 
     expect(await eraseAccountNow(erasureWith(), a.accountId)).toBe(true);
-    expect(tombstones).toEqual([a.accountId]);
     expect(await due()).not.toContain(a.accountId);
     const erased = (await events(a.accountId)).filter(({ code }) => code === 'account_erased');
     expect(erased).toHaveLength(1);
@@ -260,7 +227,6 @@ describe('eraseAccount (spec 0004, R9)', () => {
     const after = await ownedCounts(testDatabase, a.accountId);
     expect(after['auth.user']).toBe(before['auth.user']);
     expect(after['auth.passkey']).toBe(before['auth.passkey']);
-    expect(tombstones).toEqual([]);
   });
 
   describe('app_jobs entries, under row-level security', () => {

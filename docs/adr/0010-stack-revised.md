@@ -1,6 +1,6 @@
 # ADR-0010: Application stack, revised
 
-- Status: Accepted; preview databases and deploys amended by [ADR-0012](0012-automation-first-setup.md) (Vercel–Neon integration, linked Vercel project, one Neon project); errors, traces and LLM tracing amended by [ADR-0016](0016-observability-and-scrubbing.md); vault inputs answered by [ADR-0018](0018-vault-encryption.md), which also adds the environment's storage bucket origin to `connect-src`; native bearer tokens moved to Phase 4 by [ADR-0015](0015-identity-enrollment-step-up-and-recovery.md); S3 also holds the off-vendor database backups, encrypted at rest with a backup-account KMS key, per [ADR-0017](0017-data-lifecycle-and-backups.md); code review amended by [ADR-0019](0019-reviewers-in-the-authoring-session.md) (reviewers no longer run in CI); fast-check for property tests added by [ADR-0014](0014-knowledge-base-as-reviewed-data.md); themes, self-hosted fonts, Lucide icons, CSS motion and axe tests added by [ADR-0020](0020-themeable-ui.md)
+- Status: Accepted; preview databases and deploys amended by [ADR-0012](0012-automation-first-setup.md) (Vercel–Neon integration, linked Vercel project, one Neon project); errors, traces and LLM tracing amended by [ADR-0016](0016-observability-and-scrubbing.md); vault inputs answered by [ADR-0018](0018-vault-encryption.md), which also adds the environment's storage bucket origin to `connect-src`; native bearer tokens moved to Phase 4 by [ADR-0015](0015-identity-enrollment-step-up-and-recovery.md); S3 also holds the off-vendor database backups, encrypted at rest with a backup-account KMS key, per [ADR-0017](0017-data-lifecycle-and-backups.md); code review amended by [ADR-0019](0019-reviewers-in-the-authoring-session.md) (reviewers no longer run in CI); fast-check for property tests added by [ADR-0014](0014-knowledge-base-as-reviewed-data.md); themes, self-hosted fonts, Lucide icons, CSS motion and axe tests added by [ADR-0020](0020-themeable-ui.md); AWS S3 and KMS replaced by Vercel Blob and the vault, with no AWS, by [ADR-0021](0021-stay-on-vercel-and-neon.md)
 - Date: 2026-11-01
 - Supersedes: [ADR-0003](0003-stack.md)
 
@@ -49,7 +49,7 @@ TypeScript end to end, in a pnpm + Turborepo monorepo.
 | Data access | Drizzle ORM and migrations; forced row-level security; least-privilege roles created with SQL ([ADR-0008](0008-database-security-and-environments.md)) |
 | Vector search | pgvector in the same Postgres; embeddings only for the public knowledge base |
 | Auth | Better Auth, self-hosted: passkeys, native passkey APIs on mobile, bearer tokens for native apps ([ADR-0006](0006-auth.md)) |
-| Object storage and keys | AWS S3 and AWS KMS in São Paulo (`sa-east-1`): S3 holds client-side ciphertext only; KMS wraps field-encryption keys; accessed through OIDC federation, no static keys |
+| Object storage | A private Vercel Blob store in São Paulo per environment, holding client-side ciphertext only, reached through OIDC; no AWS and no server-side field keys ([ADR-0021](0021-stay-on-vercel-and-neon.md)) |
 | Transactional email | Resend |
 | AI | Adapters behind ports ([ADR-0004](0004-ai-providers-behind-ports.md)): Vercel AI SDK for LLM calls and structured output (Anthropic Claude by default); TypeSafe Jev for the `Classifier` port when it wins on evaluation; embedding and speech vendors chosen by ADR when those features are built |
 | LLM tracing | Langfuse, with a masking function so case content never leaves Brazil; only metadata, scores and redacted text are exported |
@@ -72,7 +72,7 @@ The vault's encryption scheme gets its own ADR before the vault is built: standa
 | NestJS instead of Hono | More built-in structure, but heavier; Arca's structure comes from its own layering (domain, ports, adapters) |
 | Managed auth (Auth0, Clerk, WorkOS) | Strong option; rejected to keep identity data in our own database in Brazil, with passkeys as the only first-class login |
 | Supabase (database + auth + storage) | Fewer vendors, but couples auth, data and storage to one platform and its client patterns |
-| Cloudflare R2 for documents | No location in South America; S3 in `sa-east-1` keeps ciphertext in Brazil next to KMS |
+| Cloudflare R2 for documents | No location in South America; Vercel Blob in São Paulo keeps ciphertext in Brazil on the platform we already use ([ADR-0021](0021-stay-on-vercel-and-neon.md)) |
 
 ## Consequences
 

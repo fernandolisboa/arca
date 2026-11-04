@@ -30,8 +30,3 @@ export async function recordErased(accountId: EntityId): Promise<void> {
   'use step';
   await run('database_unavailable', accountId, 'recordErased');
 }
-
-export async function writeTombstone(accountId: EntityId): Promise<void> {
-  'use step';
-  await run('tombstone_unavailable', accountId, 'writeTombstone');
-}

@@ -1,0 +1,78 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "08f56099-ff69-4fef-96c5-ba70a474d0d5",
+  "prevIds": [
+    "c82f40be-611a-49ba-8d2e-ff5f97e12731"
+  ],
+  "footprints": [
+    {
+      "statementType": "drop_policy",
+      "statementTarget": [
+        "table",
+        "audit",
+        "event"
+      ],
+      "writes": [
+        "s|pol|audit.event.event_read_by_backup",
+        "n|pol|audit.event.event_read_by_backup",
+        "e|pol|audit.event.event_read_by_backup"
+      ],
+      "reads": [
+        "n|tbl|audit.event",
+        "n|sch|audit"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "auth",
+        "erased_account",
+        "erased_at"
+      ],
+      "writes": [
+        "s|col|auth.erased_account.erased_at",
+        "n|col|auth.erased_account.erased_at",
+        "e|col|auth.erased_account.erased_at"
+      ],
+      "reads": [
+        "n|tbl|auth.erased_account",
+        "n|sch|auth"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "auth",
+        "erased_account",
+        "recorded_at"
+      ],
+      "writes": [
+        "s|col|auth.erased_account.recorded_at",
+        "n|col|auth.erased_account.recorded_at",
+        "e|col|auth.erased_account.recorded_at"
+      ],
+      "reads": [
+        "n|tbl|auth.erased_account",
+        "n|sch|auth"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"auth\",\"erased_account\",\"erased_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"auth\",\"erased_account\",\"recorded_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "policies\u0000[\"audit\",\"event\",\"event_read_by_backup\"]"
+    }
+  ]
+}

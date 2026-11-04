@@ -59,8 +59,6 @@ tooling/        shared ESLint and TypeScript configs, security header policy, re
                 (dependency-source, boundary and bundle checks, CI policy scripts, migration runner)
 eval/           evaluation corpora: the synthetic families in families/ (spec 0002), later the synthetic AI
                 evaluation suite
-infra/aws/      CloudFormation templates the owner launches once: the backup account and the
-                application account (ADR-0017, spec 0005)
 ```
 
 Rules that keep every platform possible:
@@ -150,7 +148,7 @@ The suite runs on every change to a prompt, model, adapter or rule version, and 
 - Client-side encryption for documents in the age format: each person has a hybrid post-quantum identity, kept on the server only inside envelopes their passkeys or recovery kit open; each document is encrypted to its owner and the people it is shared with; storage holds ciphertext ([ADR-0018](adr/0018-vault-encryption.md)). Trade-off: AI extraction runs only when the user opens a document and authorizes it.
 - Two-person approval to change bank or exchange details.
 - Append-only audit log of who viewed and changed what.
-- No personal data in logs, URLs or error tracking; encrypted off-vendor backups with tested restores ([ADR-0017](adr/0017-data-lifecycle-and-backups.md)); retention per data type in [RETENTION.md](RETENTION.md).
+- No personal data in logs, URLs or error tracking; Neon's point-in-time restore as the backup ([ADR-0021](adr/0021-stay-on-vercel-and-neon.md)); retention per data type in [RETENTION.md](RETENTION.md).
 - Data minimization in every third-party AI adapter.
 
 ## Data flows
@@ -162,9 +160,7 @@ Every service that touches Arca's data, and what it may receive. A new processor
 | GitHub (public repository) | Source, docs and knowledge data | Code and public rules ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)); no case data | Public |
 | Neon (Postgres) | Primary database | All case data, under forced row-level security | São Paulo (`sa-east-1`) |
 | Vercel | Client hosting, API functions, Workflows | All case data in processing; the database owner connection string (used by the build, readable by running functions) and the runtime role passwords ([ADR-0012](adr/0012-automation-first-setup.md)); workflow run payloads holding identifiers only, with zero retention ([ADR-0009](adr/0009-background-jobs-guarantees.md)) | São Paulo (`gru1`) for functions, run payloads and queues; run metadata (names, statuses, timestamps, no personal data) is processed outside Brazil and kept up to one year |
-| AWS S3 (application account) | Document storage | Client-side ciphertext only, under random object keys | São Paulo (`sa-east-1`) |
-| AWS S3 and KMS (backup account) | Off-vendor backups ([ADR-0017](adr/0017-data-lifecycle-and-backups.md)) | A daily copy of every backed-up table and erasure tombstones, written by the production Vercel role (no read, decrypt or delete); a replica of the document bucket, written by S3 replication; all encrypted at rest with a customer-managed key and read only by the owner's MFA-gated restore role in a CodeBuild job in the same account, which holds a per-run, branch-scoped Neon owner password in Secrets Manager and connects out to Neon to load a restore branch; the job's logs (status only, no row contents) stay 35 days in a KMS-encrypted CloudWatch log group | São Paulo (`sa-east-1`) |
-| AWS KMS | Field-encryption key wrapping | Data keys, never data | São Paulo (`sa-east-1`) |
+| Vercel Blob (private store) | Document storage ([ADR-0021](adr/0021-stay-on-vercel-and-neon.md)) | Client-side ciphertext only, under random pathnames | São Paulo |
 | Anthropic (Claude) | LLM calls | Minimal fields per call; no names, document numbers or account numbers | Vendor cloud, outside Brazil |
 | Document-reading vendor (`DocumentReader`) | OCR and document review | Full content of a document, only when its owner authorizes that document | Chosen by ADR; vendor cloud |
 | Embedding vendor (`Embedder`) | Knowledge-base retrieval | Public knowledge-base text only | Chosen by ADR |

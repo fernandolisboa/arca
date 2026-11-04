@@ -1,6 +1,6 @@
 # ADR-0017: Data lifecycle: personal-data registry, deletion, export, retention and off-vendor backups
 
-- Status: Accepted
+- Status: Accepted; off-vendor backups, erasure tombstones and `app_backup` superseded by [ADR-0021](0021-stay-on-vercel-and-neon.md): backups are Neon's own
 - Date: 2026-11-02
 - Amends: [ADR-0008](0008-database-security-and-environments.md) (backups and deletion), [ADR-0012](0012-automation-first-setup.md) (how previews are proven not to fork from production), [ADR-0010](0010-stack-revised.md) (S3 also holds database backups, encrypted at rest only, and the restore runs on AWS CodeBuild)
 - Spec: [0004 real-data readiness](../specs/0004-real-data-readiness.md)
@@ -31,14 +31,14 @@ Facts checked on 2026-11-02:
 ### Account deletion
 
 - Requested in the app after an `account_deletion` step-up ([ADR-0015](0015-identity-enrollment-step-up-and-recovery.md)). The account is locked at once: every session is revoked, and signing in shows only "cancel deletion".
-- After **7 days**, a workflow (`eraseAccount`, identifiers only) first removes its vault objects once the vault exists (while the document rows still hold the object keys; deleting a missing object counts as success, so a retry is idempotent), then erases every registry entry the account owns as `app_jobs` under the account's identity, then its auth rows as `app_auth`, and finally writes an erasure tombstone (account ID and time, nothing else) to the backup account. A security notice goes out when the deletion is requested and when it completes.
+- After **7 days**, a workflow (`eraseAccount`, identifiers only) first removes its vault objects once the vault exists (while the document rows still hold the object keys; deleting a missing object counts as success, so a retry is idempotent), then erases every registry entry the account owns as `app_jobs` under the account's identity, then its auth rows as `app_auth`. (It first also wrote an erasure tombstone to the backup account; removed with the backups by [ADR-0021](0021-stay-on-vercel-and-neon.md).) A security notice goes out when the deletion is requested and when it completes.
 - The audit log keeps its records, which hold identifiers and event codes only and point at nothing after erasure. Workflow run payloads and metadata expire on Vercel's schedule ([ADR-0009](0009-background-jobs-guarantees.md)). Telemetry never holds account identifiers ([ADR-0016](0016-observability-and-scrubbing.md)), so there is nothing to delete there.
 - Data about a person written by someone else in a shared case follows the case model's rules, which slice 3 of the consultancy core records in the registry.
 
 ### Export
 
 - After a `data_export` step-up, the API returns one JSON document, versioned by a schema in `packages/api-contract`, with every registry entry the account owns, served as a download with `Cache-Control: no-store`. It is built on request and never stored. Vault documents are added as ciphertext plus the person's own decryption path once the vault exists.
-- Field-encrypted values (bank account and document numbers) are masked in the export and shown only in the app, so a downloaded file never carries them in full; this narrows portability for those fields on purpose.
+- Bank account and document numbers are vault items since [ADR-0021](0021-stay-on-vercel-and-neon.md), so the export carries them as ciphertext with the person's decryption path, like documents.
 
 ### Retention
 
@@ -52,6 +52,8 @@ Facts checked on 2026-11-02:
 - Seed data is synthetic, written in previews and CI after migrations through the runtime roles with identities set, so row-level security applies to it. Production builds never seed.
 
 ### Off-vendor backups
+
+> Superseded by [ADR-0021](0021-stay-on-vercel-and-neon.md) on 2026-11-04: nothing in this section is built. Kept for the record.
 
 - A role `app_backup`, created by `bootstrap.sql`, `NOBYPASSRLS` like every other, with `SELECT` only. Every table with row-level security has a permissive `FOR SELECT TO app_backup USING (true)` policy, every table without it has a `SELECT` grant, and a new guard checks both shapes against the catalog (with an explicit not-backed-up list, whose tables it also checks `app_backup` cannot read), so a table cannot silently drop out of the backup or slip into it. Preview builds give `app_backup` a throwaway password generated per build. `app_backup` has no other privilege and appears in no other policy. On the `auth` tables, which are outside row-level security, it reads only what is worth restoring; sessions, challenges, link tokens and rate-limit counters are never backed up.
 - A daily Vercel cron starts a workflow (production only) whose step opens a `REPEATABLE READ, READ ONLY` transaction as `app_backup`, streams `COPY … TO STDOUT` of every table into S3 in a **separate AWS account** in São Paulo, into the dumps bucket as objects of at most 64 MB each sent with single conditional `PutObject` calls (no multipart upload, which would need `kms:Decrypt`), and writes a manifest (migration journal head, table list, row counts, SHA-256 per object). It authenticates to AWS through Vercel's OIDC federation; the trusted role accepts only the production environment of project `arca`.
@@ -82,11 +84,9 @@ Facts checked on 2026-11-02:
 
 ## Consequences
 
-- Every slice that adds a table adds a registry entry and an `app_backup` read policy in the same migration, or its guards fail.
-- The owner creates an AWS account and launches one template; the restore drill needs the owner each quarter.
-- The backup runs with a role that can read every row; its password is a Sensitive Vercel variable like the others, readable by running functions, which ADR-0012 already accepts for the owner string.
-- A deleted account's rows survive in the backups for up to 36 days and in Neon history for up to 6 hours; RETENTION.md says so.
-- RPO is under 15 minutes inside Neon's history window and up to 24 hours beyond it or after losing the Neon or Vercel account.
+- Every slice that adds a table adds a registry entry in the same migration, or its guards fail.
+- A deleted account's rows survive in Neon history for up to its restore window (6 hours on Free); RETENTION.md says so.
+- The backup consequences first listed here (an `app_backup` policy per table, the AWS account, drills, a 24-hour RPO beyond the history window) went with [ADR-0021](0021-stay-on-vercel-and-neon.md).
 
 ## Sources
 

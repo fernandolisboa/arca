@@ -10,7 +10,6 @@ const passwords: RolePasswords = {
   app_jobs: 'j'.repeat(32),
   app_auth: 'u'.repeat(32),
   app_audit: 'l'.repeat(32),
-  app_backup: 'b'.repeat(32),
 };
 const template = [
   "ALTER ROLE app_migrator PASSWORD '{{app_migrator}}';",
@@ -18,7 +17,6 @@ const template = [
   "ALTER ROLE app_jobs PASSWORD '{{app_jobs}}';",
   "ALTER ROLE app_auth PASSWORD '{{app_auth}}';",
   "ALTER ROLE app_audit PASSWORD '{{app_audit}}';",
-  "ALTER ROLE app_backup PASSWORD '{{app_backup}}';",
 ].join('\n');
 
 describe('renderBootstrap', () => {
@@ -30,7 +28,6 @@ describe('renderBootstrap', () => {
         `ALTER ROLE app_jobs PASSWORD '${passwords.app_jobs}';`,
         `ALTER ROLE app_auth PASSWORD '${passwords.app_auth}';`,
         `ALTER ROLE app_audit PASSWORD '${passwords.app_audit}';`,
-        `ALTER ROLE app_backup PASSWORD '${passwords.app_backup}';`,
       ].join('\n'),
     );
   });

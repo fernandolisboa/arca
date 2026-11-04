@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { forEachAccount } from '../src/account/each-account.js';
 import { eraseAccountNow, type Erasure } from '../src/account/erasure.js';
-import { tombstonesFor, TombstonesUnavailableError } from '../src/account/tombstones.js';
 import { eraseAccount } from '../src/workflows/erase-account.js';
 import { entityId } from '../src/workflows/workflow-arguments.js';
 
@@ -18,7 +17,6 @@ vi.mock('../src/workflows/erasure-steps.js', () => {
     sendCompletionNotice: step('sendCompletionNotice'),
     eraseAuthRows: step('eraseAuthRows'),
     recordErased: step('recordErased'),
-    writeTombstone: step('writeTombstone'),
   };
 });
 
@@ -41,7 +39,6 @@ function recordingErasure(): { erasure: Erasure; calls: string[] } {
       sendCompletionNotice: step('sendCompletionNotice'),
       eraseAuthRows: step('eraseAuthRows'),
       recordErased: step('recordErased'),
-      writeTombstone: step('writeTombstone'),
     },
   };
 }
@@ -56,7 +53,7 @@ describe('eraseAccount (spec 0004, R9)', () => {
       const { erasure, calls } = recordingErasure();
       await eraseAccountNow(erasure, accountId);
       expect(order).toEqual(calls);
-      expect(calls.at(-1)).toBe(isDue ? 'writeTombstone' : 'erasable');
+      expect(calls.at(-1)).toBe(isDue ? 'recordErased' : 'erasable');
     },
   );
 });
@@ -71,17 +68,5 @@ describe('forEachAccount', () => {
     });
     await expect(run).rejects.toBe(failure);
     expect(started).toEqual(['a', 'b', 'c']);
-  });
-});
-
-describe('tombstonesFor', () => {
-  it('fails every production write until the backup account adapter exists', async () => {
-    await expect(tombstonesFor('production').write(accountId, new Date())).rejects.toBeInstanceOf(
-      TombstonesUnavailableError,
-    );
-  });
-
-  it('accepts writes elsewhere', async () => {
-    await expect(tombstonesFor('preview').write(accountId, new Date())).resolves.toBeUndefined();
   });
 });

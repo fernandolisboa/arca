@@ -4,7 +4,6 @@ import {
   eraseOwnedEntries,
   recordErased,
   sendCompletionNotice,
-  writeTombstone,
 } from './erasure-steps.js';
 import type { EntityId } from './workflow-arguments.js';
 
@@ -20,5 +19,4 @@ export async function eraseAccount(accountId: EntityId): Promise<void> {
   await sendCompletionNotice(accountId);
   await eraseAuthRows(accountId);
   await recordErased(accountId);
-  await writeTombstone(accountId);
 }

@@ -10,7 +10,7 @@ DO $$
 DECLARE
   role_name text;
 BEGIN
-  FOREACH role_name IN ARRAY ARRAY['app_migrator', 'app_api', 'app_jobs', 'app_auth', 'app_audit', 'app_backup'] LOOP
+  FOREACH role_name IN ARRAY ARRAY['app_migrator', 'app_api', 'app_jobs', 'app_auth', 'app_audit'] LOOP
     IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = role_name) THEN
       EXECUTE pg_catalog.format('CREATE ROLE %I', role_name);
     END IF;
@@ -22,12 +22,22 @@ BEGIN
 END
 $$;
 
+-- app_backup is retired (ADR-0021). It stays, unable to log in, only so the migrations that once
+-- granted to it replay on a new database; a later migration revokes everything it held.
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'app_backup') THEN
+    CREATE ROLE app_backup;
+  END IF;
+  ALTER ROLE app_backup NOLOGIN INHERIT NOBYPASSRLS NOREPLICATION NOCREATEROLE NOCREATEDB;
+END
+$$;
+
 ALTER ROLE app_migrator PASSWORD '{{app_migrator}}';
 ALTER ROLE app_api PASSWORD '{{app_api}}';
 ALTER ROLE app_jobs PASSWORD '{{app_jobs}}';
 ALTER ROLE app_auth PASSWORD '{{app_auth}}';
 ALTER ROLE app_audit PASSWORD '{{app_audit}}';
-ALTER ROLE app_backup PASSWORD '{{app_backup}}';
 
 -- The migrator creates the application schema and the migration journal.
 DO $$

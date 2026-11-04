@@ -4,7 +4,6 @@ import { sql, type SQL } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import { accounts, erasedAccounts } from '../auth/auth.js';
 import type { Notices } from '../email/notices.js';
-import type { Tombstones } from './tombstones.js';
 
 /**
  * The steps of `eraseAccount` (spec 0004, R9), in their order. Each is idempotent, takes the
@@ -19,13 +18,11 @@ export interface Erasure {
   sendCompletionNotice(accountId: string): Promise<void>;
   /**
    * Erases the auth rows, then the expired rows of the unowned tables kept until expiry, and notes
-   * the account until its event and tombstone are written, so the daily scan still finds it.
+   * the account until its event is written, so the daily scan still finds it.
    */
   eraseAuthRows(accountId: string): Promise<void>;
-  /** Once per noted account. */
+  /** Last, once per noted account; the note goes with it. */
   recordErased(accountId: string): Promise<void>;
-  /** Last, so a tombstone always means the rest is done; then the note goes. */
-  writeTombstone(accountId: string): Promise<void>;
 }
 
 export interface ErasureDependencies {
@@ -35,7 +32,6 @@ export interface ErasureDependencies {
   readonly jobsDb: Database;
   readonly audit: AuditLog;
   readonly notices: Notices;
-  readonly tombstones: Tombstones;
   readonly registry?: Registry;
   readonly clock?: () => Date;
 }
@@ -60,7 +56,6 @@ export function createErasure({
   jobsDb,
   audit,
   notices,
-  tombstones,
   registry = fullRegistry,
   clock = () => new Date(),
 }: ErasureDependencies): Erasure {
@@ -99,7 +94,7 @@ export function createErasure({
 
     recordErased: (accountId) =>
       authDb.transaction(async (tx) => {
-        if (!(await erasedAccounts.markRecorded(tx, accountId))) return;
+        if (!(await erasedAccounts.take(tx, accountId))) return;
         // Recorded before the commit, like every security event.
         await audit.record({
           code: 'account_erased',
@@ -108,14 +103,6 @@ export function createErasure({
           details: {},
         });
       }),
-
-    async writeTombstone(accountId) {
-      // The erasure's own time, however long the tombstone was owed.
-      const erasedAt = await erasedAccounts.erasedAt(authDb, accountId);
-      if (erasedAt === undefined) return;
-      await tombstones.write(accountId, erasedAt);
-      await erasedAccounts.clear(authDb, accountId);
-    },
   };
 }
 
@@ -126,6 +113,5 @@ export async function eraseAccountNow(erasure: Erasure, accountId: string): Prom
   await erasure.sendCompletionNotice(accountId);
   await erasure.eraseAuthRows(accountId);
   await erasure.recordErased(accountId);
-  await erasure.writeTombstone(accountId);
   return true;
 }

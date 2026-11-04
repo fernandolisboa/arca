@@ -497,7 +497,7 @@ export const accounts = {
       ?.dueAt ?? null,
   /**
    * The accounts the daily erasure starts a run for, identifiers only: those whose deletion is due,
-   * and those erased whose event or tombstone is still owed.
+   * and those erased whose event is still owed.
    */
   dueForErasure: async (db: Database | Transaction) =>
     (
@@ -570,7 +570,7 @@ export type AddedBy =
   | { readonly accountId: string; readonly sessionId: string }
   | { readonly accountId: string; readonly device: DeviceDescription };
 
-/** The notes of erased accounts whose event or tombstone is still owed (spec 0004, R9). */
+/** The notes of erased accounts whose event is still owed (spec 0004, R9). */
 export const erasedAccounts = {
   /** Notes the account while its row still exists, so a later run notes nothing. */
   note: async (db: Database | Transaction, accountId: string) => {
@@ -579,26 +579,14 @@ export const erasedAccounts = {
       .select(db.select({ accountId: user.id }).from(user).where(eq(user.id, accountId)))
       .onConflictDoNothing();
   },
-  /** True once only: the caller records the event before its transaction commits. */
-  markRecorded: async (db: Database | Transaction, accountId: string) =>
+  /** Removes the note; true once only, so the caller records the event before it commits. */
+  take: async (db: Database | Transaction, accountId: string) =>
     (
       await db
-        .update(erasedAccount)
-        .set({ recordedAt: sql`now()` })
-        .where(and(eq(erasedAccount.accountId, accountId), isNull(erasedAccount.recordedAt)))
+        .delete(erasedAccount)
+        .where(eq(erasedAccount.accountId, accountId))
         .returning({ id: erasedAccount.accountId })
     ).length === 1,
-  /** When the noted account was erased, or undefined when it is not noted. */
-  erasedAt: async (db: Database | Transaction, accountId: string) =>
-    (
-      await db
-        .select({ at: erasedAccount.erasedAt })
-        .from(erasedAccount)
-        .where(eq(erasedAccount.accountId, accountId))
-    )[0]?.at,
-  clear: async (db: Database | Transaction, accountId: string) => {
-    await db.delete(erasedAccount).where(eq(erasedAccount.accountId, accountId));
-  },
 };
 
 /** A passkey to store for the account, as a verified registration describes it. */
