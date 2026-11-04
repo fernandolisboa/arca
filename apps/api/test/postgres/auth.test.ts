@@ -189,6 +189,7 @@ describe('Better Auth on the app_auth pool', () => {
       confirmed: false,
       device: { browser: 'other', os: 'other' },
       pendingPasskeyUntil: null,
+      recoveryPending: false,
     });
     const stored = await asAdmin(async (client) => {
       const sessions = await client.query(

@@ -35,6 +35,8 @@ const authTables = [
   'passkey_client',
   'rate_limit',
   'recovery_code',
+  'recovery_link',
+  'recovery_lock',
   'registration_context',
   'session',
   'setup',
@@ -104,7 +106,9 @@ describe('the auth schema access matrix', () => {
       passkey_capability: ['SELECT', 'INSERT'],
       passkey_challenge: ['SELECT', 'INSERT', 'DELETE'],
       passkey_client: ['SELECT', 'INSERT', 'DELETE'],
-      recovery_code: ['SELECT', 'INSERT'],
+      recovery_code: ['SELECT', 'INSERT', 'DELETE'],
+      recovery_link: ['SELECT', 'INSERT', 'DELETE'],
+      recovery_lock: ['SELECT', 'INSERT'],
       registration_context: ['SELECT', 'INSERT', 'DELETE'],
       setup: ['SELECT', 'INSERT'],
       step_up: ['SELECT', 'INSERT', 'DELETE'],
@@ -114,7 +118,9 @@ describe('the auth schema access matrix', () => {
 
   it.each([
     ['step_up', ['consumed_at']],
-    ['recovery_code', ['salt', 'code_hash', 'created_at', 'confirmed_at']],
+    ['recovery_code', ['salt', 'code_hash', 'created_at', 'confirmed_at', 'provisional_until']],
+    ['recovery_link', ['token_hash', 'redeemed_at', 'challenge', 'challenge_expires_at']],
+    ['recovery_lock', ['failures', 'locked_until']],
     ['invite', ['accepted_at', 'accepted_account_id']],
   ])('lets app_auth update only the columns it must on auth.%s', async (table, columns) => {
     const updatable = await withClient(adminTarget(database), async (client) => {

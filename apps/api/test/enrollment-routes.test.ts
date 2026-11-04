@@ -9,6 +9,7 @@ import type { SignedIn } from '../src/auth/service.js';
 import type { CanonicalAction } from '../src/auth/step-up-encoding.js';
 import type { StepUpService } from '../src/auth/step-up.js';
 import type { Logger } from '../src/logger.js';
+import { attestation, creationOptions } from './passkey-fixtures.js';
 
 const silentLogger: Logger = { info: () => undefined, error: () => undefined };
 const origin = 'http://arca.test';
@@ -18,25 +19,6 @@ const owner: SignedIn = {
 };
 const token = 'A'.repeat(43);
 const nonce = 'MzMzMzMzMzMzMzMzMzMzMw';
-const attestation = {
-  id: 'Y3JlZA',
-  rawId: 'Y3JlZA',
-  type: 'public-key',
-  response: { clientDataJSON: 'e30', attestationObject: 'oA' },
-  clientExtensionResults: { prf: { enabled: true } },
-};
-const creation = {
-  challenge: 'Y2hhbGxlbmdl',
-  rp: { id: 'arca.test', name: 'Arca' },
-  user: { id: 'dXNlcg', name: 'owner@example.com', displayName: 'owner@example.com' },
-  pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
-  authenticatorSelection: {
-    residentKey: 'required',
-    requireResidentKey: true,
-    userVerification: 'required',
-  },
-  extensions: { prf: {} },
-};
 
 interface Setup {
   readonly signedIn?: SignedIn | null;
@@ -77,7 +59,7 @@ function setup({
   const registration: Registration = {
     options: (_, request) => {
       calls.push(`options ${request.code ?? '-'}`);
-      return Promise.resolve(outcome(creation as never));
+      return Promise.resolve(outcome(creationOptions as never));
     },
     verify: (_, request) => {
       calls.push(`verify ${request.code ?? '-'}`);
@@ -196,7 +178,7 @@ describe('registration from a link (spec 0003, R2 and R3)', () => {
     const { post, hits } = setup({ signedIn: null });
     const response = await post('/auth/registration/options', { token, code: 'c' });
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual(creation);
+    expect(await response.json()).toEqual(creationOptions);
     expect(response.headers.getSetCookie()).toHaveLength(1);
     expect(hits).toEqual(['registration_options_ip 198.51.100.7']);
   });

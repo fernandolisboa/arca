@@ -29,6 +29,14 @@
       "reason": "Arca's record of what each passkey's authenticator reported at registration; only app_auth has privileges on the auth schema, and it is written during registration, before any per-request identity exists, so row-level security would not narrow anything."
     },
     {
+      "table": "auth.recovery_link",
+      "reason": "Arca's recovery links, stored as token hashes; only app_auth has privileges on the auth schema, and they are read before any session exists, by the token or, before a link is issued, by the account, so row-level security would not narrow anything."
+    },
+    {
+      "table": "auth.recovery_lock",
+      "reason": "Arca's count of wrong recovery codes per account; only app_auth has privileges on the auth schema, and it is read before any session exists, so row-level security would not narrow anything."
+    },
+    {
       "table": "auth.passkey_challenge",
       "reason": "Arca's open challenges for adding a passkey; only app_auth has privileges on the auth schema, they live 2 minutes, and every query names the session and account they are bound to, so row-level security would not narrow anything."
     },

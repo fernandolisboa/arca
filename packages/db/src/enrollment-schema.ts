@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { bytea, boolean, check, index, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { bytea, boolean, check, index, integer, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { auth, passkey, session, user } from './auth-schema.js';
 
 /**
@@ -50,6 +50,11 @@ export const recoveryCode = auth.table(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     /** Set when the person confirms the kit was saved; it is never shown again. */
     confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+    /**
+     * Set on a code a recovery issued, to the end of its link (spec 0003, R6): past it, the code
+     * counts as no code unless the recovery registered its passkey, which clears it.
+     */
+    provisionalUntil: timestamp('provisional_until', { withTimezone: true }),
   },
   (table) => [
     check('recovery_code_salt_length', sql`octet_length(${table.salt}) = 16`),
@@ -79,6 +84,8 @@ export const passkeyActivation = auth.table(
       .primaryKey()
       .references(() => passkey.credentialID, { onDelete: 'cascade' }),
     activeFrom: timestamp('active_from', { withTimezone: true }).notNull(),
+    /** Registered by a recovery (spec 0003, R6): until it activates, every session is restricted. */
+    recovery: boolean('recovery').notNull().default(false),
   },
   (table) => [index('passkey_activation_active_from_idx').on(table.activeFrom)],
 );
@@ -107,6 +114,50 @@ export const passkeyChallenge = auth.table(
     check('passkey_challenge_length', sql`octet_length(${table.challenge}) = 32`),
   ],
 );
+
+/**
+ * Recovery links (spec 0003, R6): the token is 256 random bits and only its SHA-256 hash is
+ * stored; one per account, valid for `recoveryLinkMinutes` (the insert sets it; the default only
+ * matches it). Accepting the recovery code marks it redeemed and replaces the hash with the
+ * registration token's, which makes it the registration context for the rest of its time; registering the
+ * recovery passkey deletes it, so it is single use. Never backed up.
+ */
+export const recoveryLink = auth.table(
+  'recovery_link',
+  {
+    tokenHash: bytea('token_hash').primaryKey(),
+    accountId: uuid('account_id')
+      .notNull()
+      .unique()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    expiresAt: timestamp('expires_at', { withTimezone: true })
+      .notNull()
+      .default(sql`now() + interval '30 minutes'`),
+    redeemedAt: timestamp('redeemed_at', { withTimezone: true }),
+    /** The open passkey ceremony's challenge, single use, for 2 minutes at most. */
+    challenge: bytea('challenge'),
+    challengeExpiresAt: timestamp('challenge_expires_at', { withTimezone: true }),
+  },
+  (table) => [
+    index('recovery_link_expires_at_idx').on(table.expiresAt),
+    check('recovery_link_token_length', sql`octet_length(${table.tokenHash}) = 32`),
+    check(
+      'recovery_link_challenge',
+      sql`(${table.challenge} IS NULL) = (${table.challengeExpiresAt} IS NULL)
+          AND (${table.challenge} IS NULL OR octet_length(${table.challenge}) = 32)
+          AND (${table.challenge} IS NULL OR ${table.redeemedAt} IS NOT NULL)`,
+    ),
+  ],
+);
+
+/** Wrong recovery codes per account (spec 0003, R6): the fifth locks recovery for 24 hours. */
+export const recoveryLock = auth.table('recovery_lock', {
+  accountId: uuid('account_id')
+    .primaryKey()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  failures: integer('failures').notNull().default(0),
+  lockedUntil: timestamp('locked_until', { withTimezone: true }),
+});
 
 /**
  * Invites (spec 0003, R2): the link token is 256 random bits and only its SHA-256 hash is stored;

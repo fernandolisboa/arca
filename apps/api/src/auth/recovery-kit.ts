@@ -2,10 +2,11 @@ import { createHash, randomBytes } from 'node:crypto';
 import type { RecoveryKitStatus } from '@arca/api-contract/routes';
 import type { Database } from '@arca/db';
 import { recoveryCode } from '@arca/db/enrollment-schema';
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, gt, isNull, or, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import type { Notices } from '../email/notices.js';
 import type { Logger } from '../logger.js';
+import { accountNotice } from './account-notices.js';
 import { accounts } from './auth.js';
 
 const crockford = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
@@ -30,6 +31,12 @@ export function crockfordBase32(bytes: Uint8Array): string {
 /** SHA-256 over the account's 128-bit salt and the code (spec 0003, R6); the code is never stored. */
 export const recoveryCodeHash = (salt: Uint8Array, code: string): Buffer =>
   createHash('sha256').update(salt).update(code, 'utf8').digest();
+
+/** A code counts unless a recovery issued it and its link ended before its passkey registered. */
+export const codeCounts = or(
+  isNull(recoveryCode.provisionalUntil),
+  gt(recoveryCode.provisionalUntil, sql`now()`),
+);
 
 export interface RecoveryKits {
   readonly status: (accountId: string) => Promise<RecoveryKitStatus['status']>;
@@ -60,6 +67,12 @@ export function recoveryKits({
   logger,
   random = randomBytes,
 }: RecoveryKitSettings): RecoveryKits {
+  const notify = accountNotice<'recovery_kit_regenerated'>({
+    db,
+    notices,
+    logger,
+    label: 'RecoveryKitNotice',
+  });
   const draw = () => {
     const code = crockfordBase32(random(16));
     const salt = random(16);
@@ -70,7 +83,7 @@ export function recoveryKits({
       const [kit] = await db
         .select({ confirmedAt: recoveryCode.confirmedAt })
         .from(recoveryCode)
-        .where(eq(recoveryCode.accountId, accountId));
+        .where(and(eq(recoveryCode.accountId, accountId), codeCounts));
       if (kit === undefined) return 'none';
       return kit.confirmedAt === null ? 'unsaved' : 'saved';
     },
@@ -98,26 +111,16 @@ export function recoveryKits({
         .values({ accountId, ...row })
         .onConflictDoUpdate({
           target: recoveryCode.accountId,
-          set: { ...row, createdAt: sql`now()`, confirmedAt: null },
+          set: { ...row, createdAt: sql`now()`, confirmedAt: null, provisionalUntil: null },
         });
-      // A notice that fails to send never undoes the new kit; the failure is logged.
-      try {
-        const to = await accounts.emailOf(db, accountId);
-        if (to !== undefined) {
-          await notices.send({ kind: 'recovery_kit_regenerated', to, at: new Date() });
-        }
-      } catch (error) {
-        logger.error({
-          errorName: `RecoveryKitNotice:${error instanceof Error ? error.name : 'NonErrorThrown'}`,
-        });
-      }
+      await notify(accountId, 'recovery_kit_regenerated');
       return code;
     },
     confirm: async (accountId) => {
       const [kit] = await db
         .update(recoveryCode)
         .set({ confirmedAt: sql`coalesce(${recoveryCode.confirmedAt}, now())` })
-        .where(eq(recoveryCode.accountId, accountId))
+        .where(and(eq(recoveryCode.accountId, accountId), codeCounts))
         .returning({ accountId: recoveryCode.accountId });
       return kit !== undefined;
     },

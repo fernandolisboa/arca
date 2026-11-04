@@ -1,29 +1,24 @@
 import { randomBytes } from 'node:crypto';
 import {
   DeviceDescription,
-  PasskeyCreationOptions,
   type AddPasskeyOptionsResponse,
   type DevicePasskey,
   type DevicesResponse,
   type PasskeyAttestation,
 } from '@arca/api-contract/routes';
 import type { Database } from '@arca/db';
-import { passkeyChallenge as challenge } from '@arca/db/enrollment-schema';
-import {
-  generateRegistrationOptions,
-  verifyRegistrationResponse,
-  type AuthenticatorTransportFuture,
-  type RegistrationResponseJSON,
-} from '@simplewebauthn/server';
+import { passkeyChallenge as challenge, recoveryCode } from '@arca/db/enrollment-schema';
 import { and, eq, lte, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
-import type { NoticeKind, Notices } from '../email/notices.js';
+import type { Notices } from '../email/notices.js';
 import type { Logger } from '../logger.js';
-import { accounts, devices, passkeyRegistration } from './auth.js';
+import { accountNotice } from './account-notices.js';
+import { devices } from './auth.js';
+import { passkeyCreation } from './passkey-creation.js';
 import { absoluteSessionLifetimeMs, type SignedIn } from './service.js';
 import { forgetUnspent } from './step-up.js';
 
-export type PasskeyRevocation = 'revoked' | 'not_found' | 'last_active';
+export type PasskeyRevocation = 'revoked' | 'not_found' | 'last_active' | 'recovery_pending';
 
 /**
  * The device list, its revocations and adding a passkey (spec 0003, R4); each route that needs a
@@ -44,10 +39,19 @@ export interface Devices {
     response: PasskeyAttestation,
   ) => Promise<boolean>;
   /**
-   * When the account's newest pending passkey becomes active, or null; a wait that is over is
-   * recorded as the passkey's activation first.
+   * What every session of the account shows (spec 0003, R4, R6), once the waits that are over
+   * are recorded as activations: when the newest pending passkey becomes active, and whether a
+   * recovery passkey is pending, which restricts every session. With a session, also whether it
+   * outlived them, since a recovery passkey's activation ends the sessions it restricted.
    */
-  readonly pendingUntil: (accountId: string) => Promise<Date | null>;
+  readonly status: (accountId: string, sessionId?: string) => Promise<AccountStatus>;
+}
+
+export interface AccountStatus {
+  readonly pendingUntil: Date | null;
+  readonly recoveryPending: boolean;
+  /** The session asked about no longer exists, maybe ended by a recovery passkey's activation. */
+  readonly sessionEnded: boolean;
 }
 
 export interface DeviceSettings {
@@ -61,8 +65,6 @@ export interface DeviceSettings {
   readonly clock?: () => Date;
 }
 
-const challengeTimeoutMs = 2 * 60 * 1000;
-
 export function createDevices({
   db,
   audit,
@@ -71,25 +73,11 @@ export function createDevices({
   origin,
   clock = () => new Date(),
 }: DeviceSettings): Devices {
-  const rpId = new URL(origin).hostname;
+  const creation = passkeyCreation({ db, origin });
 
-  /** A notice that fails to send never undoes the change; the failure is logged. */
-  async function notify(
-    accountId: string,
-    kind: Extract<
-      NoticeKind,
-      'passkey_added' | 'passkey_revoked' | 'pending_passkey_cancelled' | 'sessions_revoked'
-    >,
-  ) {
-    try {
-      const to = await accounts.emailOf(db, accountId);
-      if (to !== undefined) await notices.send({ kind, to, at: clock() });
-    } catch (error) {
-      logger.error({
-        errorName: `DeviceNotice:${error instanceof Error ? error.name : 'NonErrorThrown'}`,
-      });
-    }
-  }
+  const notify = accountNotice<
+    'passkey_added' | 'passkey_revoked' | 'pending_passkey_cancelled' | 'sessions_revoked'
+  >({ db, notices, logger, label: 'DeviceNotice', clock });
 
   /** Sessions created before this are past their absolute lifetime (spec 0003, R4). */
   const liveSince = () => new Date(clock().getTime() - absoluteSessionLifetimeMs);
@@ -105,7 +93,8 @@ export function createDevices({
   /** Each wait that is over becomes a `passkey activated` event, recorded before the commit. */
   const activateDue = (accountId: string) =>
     db.transaction(async (tx) => {
-      for (const passkeyId of await devices.activateDue(tx, accountId)) {
+      const activated = await devices.activateDue(tx, accountId);
+      for (const passkeyId of activated) {
         await audit.record({
           code: 'passkey_activated',
           subjectAccountId: accountId,
@@ -120,27 +109,30 @@ export function createDevices({
       await activateDue(accountId);
       const { passkeys, sessions } = await devices.of(db, accountId, liveSince());
       return {
-        passkeys: passkeys.map(({ id, credentialId, createdAt, pendingUntil }): DevicePasskey => {
-          const signed = sessions
-            .filter((session) => session.credentialId === credentialId)
-            .map((session) => ({
-              id: session.id,
-              // Parsed, so a stored value outside the enums fails loudly instead of reaching a
-              // client.
-              device: DeviceDescription.parse({ browser: session.browser, os: session.os }),
-              createdAt: session.createdAt.toISOString(),
-              lastUsedAt: session.updatedAt.toISOString(),
-              current: session.id === sessionId,
-            }));
-          return {
-            id,
-            createdAt: createdAt?.toISOString() ?? null,
-            current: signed.some(({ current }) => current),
-            state: pendingUntil === null ? 'active' : 'pending',
-            activeFrom: pendingUntil?.toISOString() ?? null,
-            sessions: signed,
-          };
-        }),
+        passkeys: passkeys.map(
+          ({ id, credentialId, createdAt, recovery, pendingUntil }): DevicePasskey => {
+            const signed = sessions
+              .filter((session) => session.credentialId === credentialId)
+              .map((session) => ({
+                id: session.id,
+                // Parsed, so a stored value outside the enums fails loudly instead of reaching a
+                // client.
+                device: DeviceDescription.parse({ browser: session.browser, os: session.os }),
+                createdAt: session.createdAt.toISOString(),
+                lastUsedAt: session.updatedAt.toISOString(),
+                current: session.id === sessionId,
+              }));
+            return {
+              id,
+              createdAt: createdAt?.toISOString() ?? null,
+              current: signed.some(({ current }) => current),
+              state: pendingUntil === null ? 'active' : 'pending',
+              activeFrom: pendingUntil?.toISOString() ?? null,
+              recovery,
+              sessions: signed,
+            };
+          },
+        ),
       };
     },
 
@@ -163,6 +155,16 @@ export function createDevices({
           actorAccountId: accountId,
           details: { passkeyId },
         });
+        if (revoked.recovery) {
+          // The code that recovery issued goes too, which closes recovery until a new kit (R6).
+          await tx.delete(recoveryCode).where(eq(recoveryCode.accountId, accountId));
+          await audit.record({
+            code: 'recovery_cancelled',
+            subjectAccountId: accountId,
+            actorAccountId: accountId,
+            details: {},
+          });
+        }
         return revoked.pending ? 'cancelled' : 'revoked';
       });
       if (outcome === 'cancelled') {
@@ -185,39 +187,13 @@ export function createDevices({
     addOptions: async ({ accountId, sessionId }) => {
       // Expired challenges are swept here, so the table stays bounded by one lifetime's worth.
       await db.delete(challenge).where(lte(challenge.expiresAt, sql`now()`));
-      const email = await accounts.emailOf(db, accountId);
-      if (email === undefined) throw new Error('the signed-in account is gone');
       const value = randomBytes(32);
       const [issued] = await db
         .insert(challenge)
         .values({ accountId, sessionId, challenge: value })
         .returning({ id: challenge.id });
       if (issued === undefined) throw new Error('the challenge was not stored');
-      const options = await generateRegistrationOptions({
-        rpName: passkeyRegistration.rpName,
-        rpID: rpId,
-        userName: email,
-        userDisplayName: email,
-        // A fresh handle, like the passkey plugin's: nothing about the account goes in it.
-        userID: new Uint8Array(randomBytes(32)),
-        challenge: new Uint8Array(value),
-        timeout: challengeTimeoutMs,
-        attestationType: 'none',
-        // The browser ignores the transports it does not know.
-        excludeCredentials: (await devices.credentialsOf(db, accountId)).map(
-          ({ id, transports }) => ({
-            id,
-            transports: transports as AuthenticatorTransportFuture[],
-          }),
-        ),
-        authenticatorSelection: passkeyRegistration.authenticatorSelection,
-        extensions: passkeyRegistration.extensions,
-      });
-      // SimpleWebAuthn adds credProps, which Arca never reads; only the empty PRF request stays.
-      return {
-        challengeId: issued.id,
-        options: PasskeyCreationOptions.parse({ ...options, extensions: { prf: {} } }),
-      };
+      return { challengeId: issued.id, options: await creation.options(accountId, value) };
     },
 
     add: async ({ accountId, sessionId }, challengeId, response) => {
@@ -236,35 +212,10 @@ export function createDevices({
           live: sql<boolean>`${challenge.expiresAt} > now()`,
         });
       if (issued?.live !== true) return false;
-      let registered;
-      try {
-        const verification = await verifyRegistrationResponse({
-          response: response as RegistrationResponseJSON,
-          expectedChallenge: Buffer.from(issued.challenge).toString('base64url'),
-          expectedOrigin: origin,
-          expectedRPID: rpId,
-          requireUserVerification: true,
-        });
-        if (!verification.verified) return false;
-        registered = verification.registrationInfo;
-      } catch {
-        return false;
-      }
+      const added = await creation.verify(response, issued.challenge);
+      if (added === null) return false;
       const passkeyId = await db.transaction(async (tx) => {
-        const stored = await devices.addPending(
-          tx,
-          { accountId, sessionId },
-          {
-            credentialId: registered.credential.id,
-            publicKey: Buffer.from(registered.credential.publicKey).toString('base64'),
-            counter: registered.credential.counter,
-            deviceType: registered.credentialDeviceType,
-            backedUp: registered.credentialBackedUp,
-            transports: response.response.transports ?? [],
-            aaguid: registered.aaguid,
-            prfEnabled: response.clientExtensionResults.prf?.enabled === true,
-          },
-        );
+        const stored = await devices.addPending(tx, { accountId, sessionId }, added);
         if (stored === undefined) return undefined;
         await audit.record({
           code: 'passkey_added',
@@ -279,8 +230,10 @@ export function createDevices({
       return true;
     },
 
-    // Every check compares the wait with the time, so a failed record never changes an answer.
-    pendingUntil: async (accountId) => {
+    // A failed record changes no answer: an added passkey's checks compare its wait with the
+    // time, and a recovery passkey keeps every session restricted until its activation is
+    // recorded with the revocation of those sessions.
+    status: async (accountId, sessionId) => {
       try {
         await activateDue(accountId);
       } catch (error) {
@@ -288,7 +241,12 @@ export function createDevices({
           errorName: `PasskeyActivation:${error instanceof Error ? error.name : 'NonErrorThrown'}`,
         });
       }
-      return devices.pendingUntil(db, accountId);
+      return {
+        pendingUntil: await devices.pendingUntil(db, accountId),
+        recoveryPending: await devices.recoveryPending(db, accountId),
+        // Read after the activation, whichever request ran it, so no ended session slips by.
+        sessionEnded: sessionId !== undefined && !(await devices.sessionExists(db, sessionId)),
+      };
     },
   };
 }

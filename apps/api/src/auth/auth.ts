@@ -395,6 +395,8 @@ export const accounts = {
         .where(and(eq(user.id, accountId), isNull(user.confirmedAt)))
         .returning({ id: user.id })
     ).length === 1,
+  idOf: async (db: Database | Transaction, email: string) =>
+    (await db.select({ id: user.id }).from(user).where(eq(user.email, email)))[0]?.id,
   withEmail: async (db: Database | Transaction, email: string) =>
     (await db.select({ id: user.id }).from(user).where(eq(user.email, email))).length > 0,
   emailOf: async (db: Database | Transaction, accountId: string) =>
@@ -416,6 +418,17 @@ const pending = (credentialId: typeof passkeyTable.credentialID) =>
             AND ${passkeyActivation.activeFrom} > now())`,
   );
 
+/**
+ * A passkey a recovery registered and still waiting (spec 0003, R6). Its row stays until its
+ * activation is recorded, which revokes the sessions it restricted, so it counts until then.
+ */
+const pendingRecovery = (credentialId: typeof passkeyTable.credentialID) =>
+  exists(
+    sql`(SELECT 1 FROM ${passkeyActivation}
+          WHERE ${passkeyActivation.credentialID} = ${credentialId}
+            AND ${passkeyActivation.recovery})`,
+  ).mapWith(Boolean);
+
 async function isPending(db: Database | Transaction, credentialId: string) {
   const [found] = await db
     .select({ id: passkeyTable.id })
@@ -423,6 +436,14 @@ async function isPending(db: Database | Transaction, credentialId: string) {
     .where(and(eq(passkeyTable.credentialID, credentialId), pending(passkeyTable.credentialID)));
   return found !== undefined;
 }
+
+/**
+ * Who adds a passkey: a signed-in session of the account, whose families it starts with, or a
+ * recovery, from the device that ran it (spec 0003, R4, R6, R7).
+ */
+export type AddedBy =
+  | { readonly accountId: string; readonly sessionId: string }
+  | { readonly accountId: string; readonly device: DeviceDescription };
 
 /** A passkey to store for the account, as a verified registration describes it. */
 export interface NewPasskey {
@@ -446,6 +467,7 @@ export const devices = {
         id: passkeyTable.id,
         credentialId: passkeyTable.credentialID,
         createdAt: passkeyTable.createdAt,
+        recovery: pendingRecovery(passkeyTable.credentialID),
         pendingUntil:
           sql<Date | null>`(SELECT ${passkeyActivation.activeFrom} FROM ${passkeyActivation}
           WHERE ${passkeyActivation.credentialID} = ${passkeyTable.credentialID}
@@ -516,6 +538,7 @@ export const devices = {
         id: passkeyTable.id,
         credentialId: passkeyTable.credentialID,
         pending: pending(passkeyTable.credentialID),
+        recovery: pendingRecovery(passkeyTable.credentialID),
       })
       .from(passkeyTable)
       .where(eq(passkeyTable.userId, accountId))
@@ -523,13 +546,21 @@ export const devices = {
       .for('update', { of: passkeyTable });
     const target = owned.find(({ id }) => id === passkeyId);
     if (target === undefined) return 'not_found' as const;
+    // While a recovery passkey waits, cancelling it is the only change a session may make (R6).
+    if (!target.recovery && owned.some(({ recovery }) => recovery)) {
+      return 'recovery_pending' as const;
+    }
     // A pending passkey can always be cancelled; the last active one stays, and a pending one
     // does not count as another.
     if (!target.pending && !owned.some((other) => other !== target && !other.pending)) {
       return 'last_active' as const;
     }
     await tx.delete(passkeyTable).where(eq(passkeyTable.id, passkeyId));
-    return { credentialId: target.credentialId, pending: target.pending };
+    return {
+      credentialId: target.credentialId,
+      pending: target.pending,
+      recovery: target.recovery,
+    };
   },
   /** The account's credentials, for the authenticator to refuse registering one again. */
   credentialsOf: async (db: Database | Transaction, accountId: string) =>
@@ -547,11 +578,8 @@ export const devices = {
    * reported and the families of the session that added it, as registration seeds them (R7);
    * its ID, or undefined when the credential is already stored.
    */
-  addPending: async (
-    tx: Transaction,
-    { accountId, sessionId }: { readonly accountId: string; readonly sessionId: string },
-    added: NewPasskey,
-  ) => {
+  addPending: async (tx: Transaction, by: AddedBy, added: NewPasskey) => {
+    const { accountId } = by;
     const [stored] = await tx
       .insert(passkeyTable)
       .values({
@@ -570,15 +598,22 @@ export const devices = {
     await tx.insert(passkeyActivation).values({
       credentialID: added.credentialId,
       activeFrom: sql`now() + make_interval(hours => ${pendingPasskeyHours})`,
+      recovery: 'device' in by,
     });
     await tx
       .insert(passkeyCapability)
       .values({ credentialID: added.credentialId, prfEnabled: added.prfEnabled });
-    await tx.execute(sql`
-      INSERT INTO ${passkeyClient} (credential_id, browser, os)
-      SELECT ${added.credentialId}, device_browser, device_os FROM ${sessionTable}
-       WHERE id = ${sessionId} AND user_id = ${accountId}
-      ON CONFLICT DO NOTHING`);
+    await ('device' in by
+      ? tx.insert(passkeyClient).values({
+          credentialID: added.credentialId,
+          browser: by.device.browser,
+          os: by.device.os,
+        })
+      : tx.execute(sql`
+            INSERT INTO ${passkeyClient} (credential_id, browser, os)
+            SELECT ${added.credentialId}, device_browser, device_os FROM ${sessionTable}
+             WHERE id = ${by.sessionId} AND user_id = ${accountId}
+            ON CONFLICT DO NOTHING`));
     return stored.id;
   },
   /** When the account's newest pending passkey becomes active, or null when none is pending. */
@@ -590,6 +625,23 @@ export const devices = {
       .where(and(eq(passkeyTable.userId, accountId), gt(passkeyActivation.activeFrom, sql`now()`)));
     return found?.until ?? null;
   },
+  sessionExists: async (db: Database | Transaction, sessionId: string) =>
+    (
+      await db
+        .select({ id: sessionTable.id })
+        .from(sessionTable)
+        .where(eq(sessionTable.id, sessionId))
+        .limit(1)
+    ).length === 1,
+  /** Whether a passkey a recovery registered is still waiting (spec 0003, R6). */
+  recoveryPending: async (db: Database | Transaction, accountId: string) =>
+    (
+      await db
+        .select({ id: passkeyTable.id })
+        .from(passkeyTable)
+        .where(and(eq(passkeyTable.userId, accountId), pendingRecovery(passkeyTable.credentialID)))
+        .limit(1)
+    ).length === 1,
   /** Forgets the waits that are over; the IDs of the passkeys that became active. */
   activateDue: async (tx: Transaction, accountId: string) => {
     const due = await tx
@@ -606,8 +658,26 @@ export const devices = {
           ),
         ),
       )
-      .returning({ credentialId: passkeyActivation.credentialID });
+      .returning({
+        credentialId: passkeyActivation.credentialID,
+        recovery: passkeyActivation.recovery,
+        activeFrom: passkeyActivation.activeFrom,
+      });
     if (due.length === 0) return [];
+    // A recovery passkey's activation ends every session it restricted (spec 0003, R6): all
+    // those signed in before it became active, which it could not have signed in itself.
+    const recovered = due.filter(({ recovery }) => recovery);
+    for (const { activeFrom } of recovered) {
+      // A JavaScript date drops the microseconds, so the cut-off is rounded up to the next one.
+      await tx
+        .delete(sessionTable)
+        .where(
+          and(
+            eq(sessionTable.userId, accountId),
+            lt(sessionTable.createdAt, sql`${activeFrom}::timestamptz + interval '1 millisecond'`),
+          ),
+        );
+    }
     return (
       await tx
         .select({ id: passkeyTable.id })

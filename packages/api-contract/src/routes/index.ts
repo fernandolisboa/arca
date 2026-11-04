@@ -80,6 +80,11 @@ export const SessionResponse = z.object({
    * session shows it (spec 0003, R4). Null otherwise.
    */
   pendingPasskeyUntil: z.iso.datetime({ offset: true }).nullable(),
+  /**
+   * A recovery passkey is pending: until it activates, this session may only show so and cancel
+   * it from the device list (spec 0003, R6); every other route answers 403 recovery_pending.
+   */
+  recoveryPending: z.boolean(),
 });
 export type SessionResponse = z.infer<typeof SessionResponse>;
 
@@ -398,6 +403,91 @@ export const confirmRecoveryKit = {
   response: { description: 'Recorded', schema: RecoveryKitConfirmResponse },
 } as const satisfies RouteDefinition<typeof RecoveryKitConfirmResponse>;
 
+export const RecoveryStartRequest = z.strictObject({ email: z.email().max(254) });
+export type RecoveryStartRequest = z.infer<typeof RecoveryStartRequest>;
+
+export const RecoveryStartResponse = z.object({});
+export type RecoveryStartResponse = z.infer<typeof RecoveryStartResponse>;
+
+/** How long a recovery link and the registration context it becomes stay valid (spec 0003, R6). */
+export const recoveryLinkMinutes = 30;
+
+/**
+ * Recovery (spec 0003, R6): the same answer whether or not the address has an account, so it
+ * says nothing about who uses Arca; a link is emailed only when recovery is open for the account.
+ */
+export const recoveryStart = {
+  method: 'post',
+  path: '/auth/recovery/start',
+  operationId: 'recoveryStart',
+  summary:
+    'Emails a recovery link when the address has an account open to recovery; the same answer either way; 503 email_unavailable without a sending domain',
+  body: RecoveryStartRequest,
+  response: { description: 'Accepted', schema: RecoveryStartResponse },
+} as const satisfies RouteDefinition<typeof RecoveryStartResponse>;
+
+export const RecoveryRedeemRequest = z.strictObject({
+  token: LinkToken,
+  /** As typed: spaces, hyphens and case are normalized on the server. */
+  code: z.string().min(1).max(64),
+});
+export type RecoveryRedeemRequest = z.infer<typeof RecoveryRedeemRequest>;
+
+export const RecoveryRedeemResponse = RecoveryKit.extend({
+  /** The registration's own token, which replaces the emailed link's: the link no longer works. */
+  token: LinkToken,
+});
+export type RecoveryRedeemResponse = z.infer<typeof RecoveryRedeemResponse>;
+
+/**
+ * Spends the recovery code and answers the new one at once, before the passkey ceremony, with
+ * the registration token that replaces the link's until the link expires.
+ */
+export const recoveryRedeem = {
+  method: 'post',
+  path: '/auth/recovery/redeem',
+  operationId: 'recoveryRedeem',
+  summary:
+    'Exchanges the recovery code for a new one and opens the registration; 404 to a dead link, 403 invalid_code or recovery_locked',
+  body: RecoveryRedeemRequest,
+  response: {
+    description: 'The new recovery code and the registration token',
+    schema: RecoveryRedeemResponse,
+  },
+} as const satisfies RouteDefinition<typeof RecoveryRedeemResponse>;
+
+export const RecoveryOptionsRequest = z.strictObject({ token: LinkToken });
+export type RecoveryOptionsRequest = z.infer<typeof RecoveryOptionsRequest>;
+
+export const recoveryOptions = {
+  method: 'post',
+  path: '/auth/recovery/options',
+  operationId: 'recoveryOptions',
+  summary:
+    'Creation options for the recovery passkey of a redeemed link, with a 2-minute challenge; 404 to a link that is not redeemed or is dead',
+  body: RecoveryOptionsRequest,
+  response: { description: 'Creation options', schema: PasskeyCreationOptions },
+} as const satisfies RouteDefinition<typeof PasskeyCreationOptions>;
+
+export const RecoveryVerifyRequest = z.strictObject({
+  token: LinkToken,
+  response: PasskeyAttestation,
+});
+export type RecoveryVerifyRequest = z.infer<typeof RecoveryVerifyRequest>;
+
+export const RecoveryVerifyResponse = z.object({});
+export type RecoveryVerifyResponse = z.infer<typeof RecoveryVerifyResponse>;
+
+export const recoveryVerify = {
+  method: 'post',
+  path: '/auth/recovery/verify',
+  operationId: 'recoveryVerify',
+  summary:
+    'Stores the recovery passkey, pending for 24 hours, and restricts every session of the account meanwhile; no session comes from it; 403 passkey_refused, 404 to a dead link',
+  body: RecoveryVerifyRequest,
+  response: { description: 'Registered', schema: RecoveryVerifyResponse },
+} as const satisfies RouteDefinition<typeof RecoveryVerifyResponse>;
+
 export const CreateInviteRequest = z.strictObject({ email: z.email().max(254) });
 export type CreateInviteRequest = z.infer<typeof CreateInviteRequest>;
 
@@ -507,6 +597,8 @@ export const DevicePasskey = z.object({
   state: z.enum(['active', 'pending']),
   /** When a pending passkey becomes active; null once it is. */
   activeFrom: z.iso.datetime({ offset: true }).nullable(),
+  /** A recovery's passkey, waiting: while it does, cancelling it is all a session may do (R6). */
+  recovery: z.boolean(),
   sessions: z.array(DeviceSession),
 });
 export type DevicePasskey = z.infer<typeof DevicePasskey>;
@@ -551,7 +643,7 @@ export const revokePasskey = {
   path: '/devices/passkeys/revoke',
   operationId: 'revokePasskey',
   summary:
-    "Removes one of the account's passkeys, or cancels a pending one, and ends every session it signed in, after a step-up; 403 step_up_required, 404 not_found, 409 last_active_passkey",
+    "Removes one of the account's passkeys, or cancels a pending one, and ends every session it signed in, after a step-up; 403 step_up_required, 403 recovery_pending to any other passkey while a recovery passkey waits, 404 not_found, 409 last_active_passkey",
   body: RevokePasskeyRequest,
   response: { description: 'Revoked', schema: RevokeResponse },
 } as const satisfies RouteDefinition<typeof RevokeResponse>;
@@ -707,6 +799,10 @@ export const routes = {
   revokeOtherSessions,
   addPasskeyOptions,
   addPasskey,
+  recoveryStart,
+  recoveryRedeem,
+  recoveryOptions,
+  recoveryVerify,
   auditEvents,
 } as const;
 

@@ -7,6 +7,7 @@ export {
   inviteLifetimeHours,
   maxOpenInvites,
   pendingPasskeyHours,
+  recoveryLinkMinutes,
   routes,
   stepUpNonceHeader,
 } from '../routes/index.js';
