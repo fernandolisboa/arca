@@ -10,6 +10,7 @@ import {
   createInvite,
   declineInvite,
   enrollOwner,
+  exportAccountData,
   inviteDetails,
   recoveryOptions,
   recoveryRedeem,
@@ -34,6 +35,7 @@ import { HTTPException } from 'hono/http-exception';
 import { createMiddleware } from 'hono/factory';
 import { routePath } from 'hono/route';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
+import type { DataExports } from './account/data-export.js';
 import type { AuditReader } from './audit/log.js';
 import { describeDevice } from './auth/device.js';
 import type { AccountStatus, Devices } from './auth/devices.js';
@@ -116,6 +118,8 @@ export interface AppDependencies {
   readonly recovery?: Recovery;
   /** The signed-in account's audit events; absent, the route answers 401. */
   readonly audit?: AuditReader;
+  /** The account's data export (spec 0004, R8); absent, the route answers 401. */
+  readonly dataExports?: DataExports;
   /**
    * The outbox's messages, given only on preview deployments, which Vercel Deployment
    * Protection keeps private (spec 0003, R8); absent, `/internal/outbox` is a 404.
@@ -257,6 +261,7 @@ export function createApp({
   devices,
   recovery,
   audit,
+  dataExports,
   outbox,
 }: AppDependencies) {
   // An auth route without its limit would be the gap the limits exist to close.
@@ -726,6 +731,23 @@ export function createApp({
     // The router has already answered 400 to an invalid query; parsed again for its type.
     const query = AuditEventsQuery.parse(c.req.query());
     return c.json(await audit.events(current.accountId, query), 200);
+  });
+
+  v1.openapi(openApiRoutes.exportAccountData, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || dataExports === undefined) return unauthorized(c);
+    const approved = await stepUpGranted(c, current, 'data_export', {
+      action: exportAccountData.operationId,
+      targets: [],
+    });
+    if (!approved) return fail(c, 'step_up_required', 403);
+    const document = await dataExports.build(current.accountId);
+    // The name carries the date only, never anything of the account.
+    c.header(
+      'Content-Disposition',
+      `attachment; filename="arca-export-${document.exportedAt.slice(0, 10)}.json"`,
+    );
+    return c.json(document, 200);
   });
 
   app.route(apiBasePath, v1);

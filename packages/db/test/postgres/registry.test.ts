@@ -186,7 +186,24 @@ describe('personal-data registry (spec 0004, R7)', () => {
         'ALTER TABLE auth.passkey_capability DROP CONSTRAINT passkey_capability_credential_id_passkey_credential_id_fkey',
       ),
     ).toEqual([
-      'auth.passkey_capability has no ON DELETE CASCADE foreign key (credential_id) to auth.passkey',
+      'auth.passkey_capability has no ON DELETE CASCADE foreign key (credential_id) to auth.passkey (credential_id)',
+    ]);
+  });
+
+  it('fails on a child entry naming the wrong parent columns, which the export joins on', async () => {
+    expect(
+      await problemsAfter('SELECT 1', {
+        ...registry,
+        entries: registry.entries.map((entry) =>
+          entry.table === 'auth.passkey_capability' &&
+          entry.strategy === 'delete' &&
+          'parent' in entry.owner
+            ? { ...entry, owner: { ...entry.owner, parentColumns: ['id'] } }
+            : entry,
+        ),
+      }),
+    ).toEqual([
+      'auth.passkey_capability has no ON DELETE CASCADE foreign key (credential_id) to auth.passkey (id)',
     ]);
   });
 
@@ -198,7 +215,14 @@ describe('personal-data registry (spec 0004, R7)', () => {
             entry.table === 'public.probe' && entry.strategy === 'delete'
               ? { ...entry, pool: 'app_auth' as const }
               : entry.table === 'auth.passkey_client' && entry.strategy === 'delete'
-                ? { ...entry, owner: { parent: 'auth.passkey_client', columns: ['credential_id'] } }
+                ? {
+                    ...entry,
+                    owner: {
+                      parent: 'auth.passkey_client',
+                      columns: ['credential_id'],
+                      parentColumns: ['credential_id'],
+                    },
+                  }
                 : entry,
           ),
         ],
@@ -209,7 +233,7 @@ describe('personal-data registry (spec 0004, R7)', () => {
       }),
     ).toEqual([
       'auth.passkey_client hangs off auth.passkey_client, which is not a deleted entry owned by a column',
-      'auth.passkey_client has no ON DELETE CASCADE foreign key (credential_id) to auth.passkey_client',
+      'auth.passkey_client has no ON DELETE CASCADE foreign key (credential_id) to auth.passkey_client (credential_id)',
       'auth.setup is listed more than once',
       'public.probe is outside auth but is not deleted by app_jobs',
     ]);
@@ -226,7 +250,7 @@ describe('personal-data registry (spec 0004, R7)', () => {
           {
             table: 'public.audit_note',
             strategy: 'delete',
-            owner: { parent: 'audit.event', columns: ['event_id'] },
+            owner: { parent: 'audit.event', columns: ['event_id'], parentColumns: ['id'] },
             pool: 'app_jobs',
             export: [],
             label: 'dataExport.tables.auditNote',

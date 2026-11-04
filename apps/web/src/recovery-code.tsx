@@ -1,22 +1,10 @@
 import { Button } from '@arca/ui';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { download } from './download.js';
 import { groupCode } from './enrollment.js';
 import { textLinkClass } from './forms/text-link.js';
 import { commonFailure, type CommonFailure } from './requests.js';
-
-/** Starts a download of the text in the browser; the file never passes through the server. */
-function download(fileName: string, text: string) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = fileName;
-  anchor.click();
-  // Some browsers start reading the file only after the click returns.
-  setTimeout(() => {
-    URL.revokeObjectURL(url);
-  }, 60_000);
-}
 
 /**
  * The account recovery code, shown once (spec 0003, R6): print, a text file behind its warning,

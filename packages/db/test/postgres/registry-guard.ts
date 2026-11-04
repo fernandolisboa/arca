@@ -24,6 +24,8 @@ export interface ForeignKey {
   /** The referencing columns, in key order. */
   readonly columns: readonly string[];
   readonly references: string;
+  /** The referenced columns, in key order. */
+  readonly referencedColumns: readonly string[];
   /** `pg_constraint.confdeltype`: `c` cascade, `n` set null, `d` set default, `a`/`r` none. */
   readonly onDelete: string;
 }
@@ -61,6 +63,9 @@ export async function readCatalog(client: Pick<ClientBase, 'query'>): Promise<Ca
             ARRAY(SELECT a.attname::text FROM pg_catalog.unnest(k.conkey) WITH ORDINALITY AS key(attnum, position)
                     JOIN pg_catalog.pg_attribute a ON a.attrelid = k.conrelid AND a.attnum = key.attnum
                    ORDER BY key.position) AS columns,
+            ARRAY(SELECT a.attname::text FROM pg_catalog.unnest(k.confkey) WITH ORDINALITY AS key(attnum, position)
+                    JOIN pg_catalog.pg_attribute a ON a.attrelid = k.confrelid AND a.attnum = key.attnum
+                   ORDER BY key.position) AS "referencedColumns",
             rn.nspname || '.' || r.relname AS "references", k.confdeltype AS "onDelete"
        FROM pg_catalog.pg_constraint k
        JOIN pg_catalog.pg_class c ON c.oid = k.conrelid
@@ -164,11 +169,12 @@ function entryProblems(entry: RegistryEntry, catalog: Catalog, registry: Registr
         key.table === table &&
         key.references === owner.parent &&
         key.onDelete === 'c' &&
-        sameColumns(key.columns, owner.columns),
+        sameColumns(key.columns, owner.columns) &&
+        sameColumns(key.referencedColumns, owner.parentColumns),
     );
     if (!cascades) {
       problems.push(
-        `${table} has no ON DELETE CASCADE foreign key (${owner.columns.join(', ')}) to ${owner.parent}`,
+        `${table} has no ON DELETE CASCADE foreign key (${owner.columns.join(', ')}) to ${owner.parent} (${owner.parentColumns.join(', ')})`,
       );
     }
   } else if (entry.strategy === 'delete' && entry.pool === 'app_jobs') {

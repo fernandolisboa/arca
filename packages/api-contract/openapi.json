@@ -3135,7 +3135,8 @@
                               "recovery_failed",
                               "recovery_completed",
                               "recovery_cancelled",
-                              "recovery_kit_regenerated"
+                              "recovery_kit_regenerated",
+                              "data_exported"
                             ]
                           },
                           "actorAccountId": {
@@ -3182,6 +3183,121 @@
                   "required": [
                     "events",
                     "next"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/account/export": {
+      "post": {
+        "operationId": "exportAccountData",
+        "summary": "Downloads everything the account owns as one JSON document, after a data_export step-up; 403 step_up_required",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The export, as an attachment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "schemaVersion": {
+                      "type": "number",
+                      "enum": [
+                        1
+                      ]
+                    },
+                    "exportedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "tables": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "table": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "rows": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "boolean"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        },
+                        "required": [
+                          "table",
+                          "label",
+                          "rows"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "schemaVersion",
+                    "exportedAt",
+                    "tables"
                   ]
                 }
               }

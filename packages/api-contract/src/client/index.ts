@@ -16,6 +16,7 @@ export type {
   AuditEventCode,
   AuditEventsQuery,
   AuditEventsResponse,
+  DataExport,
   DeviceDescription,
   DevicePasskey,
   DeviceSession,
@@ -30,6 +31,7 @@ export type {
   RecoveryKitStatus,
   SessionResponse,
   StepUpAction,
+  StepUpPurpose,
   SignOutResponse,
 } from '../routes/index.js';
 

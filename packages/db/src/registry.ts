@@ -9,11 +9,17 @@ export type ErasingPool = 'app_auth' | 'app_jobs';
 
 /**
  * Whose rows these are: a non-null column holding the account ID, or the entry the rows hang off,
- * whose erasure removes them through the `ON DELETE CASCADE` foreign key on `columns`. The parent
- * is owned by a column, and the export joins through the same foreign key.
+ * whose erasure removes them through the `ON DELETE CASCADE` foreign key from `columns` to the
+ * parent's `parentColumns`. The parent is owned by a column, and the export joins through the same
+ * foreign key.
  */
 export type Owner =
-  { readonly column: string } | { readonly parent: string; readonly columns: readonly string[] };
+  | { readonly column: string }
+  | {
+      readonly parent: string;
+      readonly columns: readonly string[];
+      readonly parentColumns: readonly string[];
+    };
 
 interface Exported {
   /** `schema.table`. */
@@ -100,7 +106,11 @@ export const registry: Registry = {
     {
       table: 'auth.passkey_activation',
       strategy: 'delete',
-      owner: { parent: 'auth.passkey', columns: ['credential_id'] },
+      owner: {
+        parent: 'auth.passkey',
+        columns: ['credential_id'],
+        parentColumns: ['credential_id'],
+      },
       pool: 'app_auth',
       export: ['active_from', 'recovery'],
       label: 'dataExport.tables.passkeyWaits',
@@ -108,7 +118,11 @@ export const registry: Registry = {
     {
       table: 'auth.passkey_capability',
       strategy: 'delete',
-      owner: { parent: 'auth.passkey', columns: ['credential_id'] },
+      owner: {
+        parent: 'auth.passkey',
+        columns: ['credential_id'],
+        parentColumns: ['credential_id'],
+      },
       pool: 'app_auth',
       export: ['prf_enabled'],
       label: 'dataExport.tables.passkeyCapabilities',
@@ -116,7 +130,11 @@ export const registry: Registry = {
     {
       table: 'auth.passkey_client',
       strategy: 'delete',
-      owner: { parent: 'auth.passkey', columns: ['credential_id'] },
+      owner: {
+        parent: 'auth.passkey',
+        columns: ['credential_id'],
+        parentColumns: ['credential_id'],
+      },
       pool: 'app_auth',
       export: ['browser', 'os', 'first_seen_at'],
       label: 'dataExport.tables.devices',
