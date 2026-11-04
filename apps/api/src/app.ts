@@ -9,6 +9,7 @@ import {
   confirmInvite,
   createInvite,
   declineInvite,
+  cancelAccountDeletion,
   enrollOwner,
   exportAccountData,
   inviteDetails,
@@ -19,6 +20,7 @@ import {
   regenerateRecoveryKit,
   registrationOptions,
   registrationVerify,
+  requestAccountDeletion,
   revokeOtherSessions,
   revokePasskey,
   revokeSession,
@@ -36,6 +38,7 @@ import { createMiddleware } from 'hono/factory';
 import { routePath } from 'hono/route';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import type { DataExports } from './account/data-export.js';
+import type { AccountDeletion } from './account/deletion.js';
 import type { AuditReader } from './audit/log.js';
 import { describeDevice } from './auth/device.js';
 import type { AccountStatus, Devices } from './auth/devices.js';
@@ -69,6 +72,8 @@ export interface CronDependencies {
   /** Throws when `CRON_SECRET` is not set, which answers 500. */
   readonly readSecret: () => string;
   readonly startHeartbeat: (runDate: IsoDate) => Promise<unknown>;
+  /** Starts `eraseAccount` for every account whose deletion is due (spec 0004, R9). */
+  readonly startDueErasures: () => Promise<unknown>;
   /** Deletes the rate-limit windows that have ended (spec 0003, R10). */
   readonly sweepRateLimits: () => Promise<number>;
   readonly clock?: () => Date;
@@ -120,6 +125,8 @@ export interface AppDependencies {
   readonly audit?: AuditReader;
   /** The account's data export (spec 0004, R8); absent, the route answers 401. */
   readonly dataExports?: DataExports;
+  /** The account's deletion and its cancellation (spec 0004, R9); absent, the routes answer 401. */
+  readonly accountDeletion?: AccountDeletion;
   /**
    * The outbox's messages, given only on preview deployments, which Vercel Deployment
    * Protection keeps private (spec 0003, R8); absent, `/internal/outbox` is a 404.
@@ -145,6 +152,7 @@ export type ErrorCode =
   | 'passkey_refused'
   | 'recovery_locked'
   | 'recovery_pending'
+  | 'deletion_pending'
   | 'accounts_closed'
   | 'request_failed'
   | 'internal_error';
@@ -262,6 +270,7 @@ export function createApp({
   recovery,
   audit,
   dataExports,
+  accountDeletion,
   outbox,
 }: AppDependencies) {
   // An auth route without its limit would be the gap the limits exist to close.
@@ -439,17 +448,35 @@ export function createApp({
       ...authRoutes,
     ].map(routeKey),
   );
-  const restrictWhileRecoveryPending = createMiddleware<AppEnv>(async (c, next) => {
+  /**
+   * While the account's deletion waits, a session may only show so and cancel it (spec 0004,
+   * R9); every other route answers 403 `deletion_pending`.
+   */
+  const whileDeletionPending = new Set(
+    [
+      openApiRoutes.session,
+      openApiRoutes.stepUpOptions,
+      openApiRoutes.stepUpVerify,
+      openApiRoutes.cancelAccountDeletion,
+      ...authRoutes,
+    ].map(routeKey),
+  );
+  const restrictWhilePending = createMiddleware<AppEnv>(async (c, next) => {
     // Only a cookie carries a session, so a request without one has nothing to restrict.
     if (c.req.header('cookie') === undefined) return next();
-    if (whileRecoveryPending.has(requestKey(c))) return next();
+    const key = requestKey(c);
+    if (whileRecoveryPending.has(key) && whileDeletionPending.has(key)) return next();
     const { current, status } = await sessionOf(c);
-    if (current !== null && status?.recoveryPending === true) {
+    if (current === null || status === null) return next();
+    if (status.recoveryPending && !whileRecoveryPending.has(key)) {
       return reject(c, 'recovery_pending', 403);
+    }
+    if (status.deletionDueAt !== null && !whileDeletionPending.has(key)) {
+      return reject(c, 'deletion_pending', 403);
     }
     return next();
   });
-  v1.use('*', restrictWhileRecoveryPending);
+  v1.use('*', restrictWhilePending);
 
   v1.openapi(openApiRoutes.session, async (c) => {
     if (auth === undefined) return unauthorized(c);
@@ -463,6 +490,7 @@ export function createApp({
         ...session,
         pendingPasskeyUntil: status?.pendingUntil?.toISOString() ?? null,
         recoveryPending: status?.recoveryPending ?? false,
+        deletionDueAt: status?.deletionDueAt?.toISOString() ?? null,
       },
       200,
     );
@@ -750,6 +778,31 @@ export function createApp({
     return c.json(document, 200);
   });
 
+  v1.openapi(openApiRoutes.requestAccountDeletion, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || accountDeletion === undefined) return unauthorized(c);
+    const approved = await stepUpGranted(c, current, 'account_deletion', {
+      action: requestAccountDeletion.operationId,
+      targets: [],
+    });
+    if (!approved) return fail(c, 'step_up_required', 403);
+    const dueAt = await accountDeletion.request(current.accountId);
+    if (dueAt === undefined) return unauthorized(c);
+    return c.json({ dueAt: dueAt.toISOString() }, 200);
+  });
+
+  v1.openapi(openApiRoutes.cancelAccountDeletion, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || accountDeletion === undefined) return unauthorized(c);
+    const approved = await stepUpGranted(c, current, 'account_deletion', {
+      action: cancelAccountDeletion.operationId,
+      targets: [],
+    });
+    if (!approved) return fail(c, 'step_up_required', 403);
+    if (!(await accountDeletion.cancel(current.accountId))) return fail(c, 'not_found', 404);
+    return c.json({}, 200);
+  });
+
   app.route(apiBasePath, v1);
 
   // Only allow-listed Better Auth endpoints reach it (spec 0003, R1). The match is on the exact
@@ -793,9 +846,15 @@ export function createApp({
   }
 
   // Vercel cron sends GET with `Authorization: Bearer <CRON_SECRET>` (spec 0001, R6). Not part of
-  // the OpenAPI document, and the only route that starts a workflow.
+  // the OpenAPI document, and the only routes that start workflows.
   if (cron !== undefined) {
-    const { readSecret, startHeartbeat, sweepRateLimits, clock = () => new Date() } = cron;
+    const {
+      readSecret,
+      startHeartbeat,
+      startDueErasures,
+      sweepRateLimits,
+      clock = () => new Date(),
+    } = cron;
     const fromCron = createMiddleware<AppEnv>(async (c, next) => {
       if (!bearerMatches(c.req.header('authorization'), readSecret())) {
         return reject(c, 'unauthorized', 401);
@@ -804,6 +863,10 @@ export function createApp({
     });
     app.get('/internal/cron/heartbeat', fromCron, async (c) => {
       await startHeartbeat(utcDate(clock()));
+      return c.body(null, 202);
+    });
+    app.get('/internal/cron/account-erasure', fromCron, async (c) => {
+      await startDueErasures();
       return c.body(null, 202);
     });
     // A single idempotent delete, so it runs inline instead of as a workflow.

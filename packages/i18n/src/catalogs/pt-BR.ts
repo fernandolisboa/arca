@@ -36,6 +36,20 @@ export const ptBR = {
         '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
       fileName: 'arca-meus-dados-{date}.json',
     },
+    accountDeletion: {
+      title: 'Excluir conta',
+      intro:
+        'A conta e os dados dela são apagados 7 dias depois do pedido. Nesse meio-tempo, dá para cancelar.',
+      start: 'Excluir minha conta',
+      confirmLead:
+        'Todos os aparelhos serão desconectados agora. Daqui a 7 dias, a conta e os dados dela serão apagados de vez, sem volta. Se quiser guardar uma cópia, baixe seus dados antes. Para continuar, confirme com sua chave de acesso.',
+      confirm: 'Confirmar exclusão',
+      cancel: 'Agora não',
+      waiting: 'Confirme no seu dispositivo para continuar.',
+      done: 'Pedido recebido. A conta será apagada em {dueAt}. Até lá, é só entrar de novo para cancelar.',
+      failure:
+        '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+    },
     appearance: {
       title: 'Aparência',
       intro: 'As mudanças valem na hora e ficam salvas neste aparelho.',
@@ -156,6 +170,9 @@ export const ptBR = {
     pendingPasskey:
       'Uma chave de acesso nova foi criada na sua conta. Ela passa a valer em {activeFrom}. Se não foi você, cancele agora.',
     pendingLink: 'Ver a chave nova',
+    deletionPending:
+      'Sua conta será apagada em {dueAt}. Enquanto isso, só dá para cancelar a exclusão.',
+    deletionCancel: 'Cancelar a exclusão',
     recoveryPending:
       'Alguém pediu a recuperação da sua conta e criou uma chave de acesso nova. Quando ela passar a valer, este dispositivo é desconectado. Até lá, você só pode ver este aviso e cancelar a recuperação. Se não foi você, cancele agora.',
     recoveryLink: 'Cancelar a recuperação',
@@ -390,6 +407,18 @@ export const ptBR = {
       invite_accepted: {
         subject: 'Seu convite foi aceito',
         body: 'Uma pessoa aceitou o seu convite para o Arca em {when} (horário de Brasília). A conta dela fica limitada até você confirmar. Entre no Arca, confira o email da conta em Convites e confirme só se for mesmo quem você convidou.',
+      },
+      deletion_requested: {
+        subject: 'Pedido para excluir sua conta',
+        body: 'Recebemos em {when} (horário de Brasília) o pedido para excluir sua conta Arca. Todos os aparelhos foram desconectados. Daqui a 7 dias, a conta e os dados dela serão apagados. Se mudar de ideia, entre no Arca com sua chave de acesso e cancele antes disso. Se não foi você, entre e cancele agora.',
+      },
+      deletion_cancelled: {
+        subject: 'Exclusão da conta cancelada',
+        body: 'O pedido para excluir sua conta Arca foi cancelado em {when} (horário de Brasília). A conta continua como estava. Se não foi você, entre no Arca e confira seus dispositivos.',
+      },
+      account_erased: {
+        subject: 'Sua conta foi excluída',
+        body: 'Como você pediu, sua conta Arca e os dados dela foram apagados em {when} (horário de Brasília). Este é o último email que mandamos para este endereço.',
       },
       recovery_kit_regenerated: {
         subject: 'Novo kit de recuperação',

@@ -4,6 +4,7 @@ import type { z } from 'zod';
 import { apiBasePath, ErrorResponse, type RouteDefinition } from '../routes/index.js';
 
 export {
+  deletionWaitDays,
   inviteLifetimeHours,
   maxOpenInvites,
   pendingPasskeyHours,

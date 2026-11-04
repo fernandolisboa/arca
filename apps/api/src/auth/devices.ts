@@ -13,7 +13,7 @@ import type { AuditLog } from '../audit/log.js';
 import type { Notices } from '../email/notices.js';
 import type { Logger } from '@arca/telemetry';
 import { accountNotice } from './account-notices.js';
-import { devices } from './auth.js';
+import { accounts, devices } from './auth.js';
 import { passkeyCreation } from './passkey-creation.js';
 import { absoluteSessionLifetimeMs, type SignedIn } from './service.js';
 import { forgetUnspent } from './step-up.js';
@@ -50,6 +50,8 @@ export interface Devices {
 export interface AccountStatus {
   readonly pendingUntil: Date | null;
   readonly recoveryPending: boolean;
+  /** When the account is erased, while its deletion waits (spec 0004, R9). */
+  readonly deletionDueAt: Date | null;
   /** The session asked about no longer exists, maybe ended by a recovery passkey's activation. */
   readonly sessionEnded: boolean;
 }
@@ -244,6 +246,7 @@ export function createDevices({
       return {
         pendingUntil: await devices.pendingUntil(db, accountId),
         recoveryPending: await devices.recoveryPending(db, accountId),
+        deletionDueAt: await accounts.deletionDueAt(db, accountId),
         // Read after the activation, whichever request ran it, so no ended session slips by.
         sessionEnded: sessionId !== undefined && !(await devices.sessionExists(db, sessionId)),
       };

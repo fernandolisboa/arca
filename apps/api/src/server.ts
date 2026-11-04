@@ -1,6 +1,8 @@
 import { createI18n, type I18n } from '@arca/i18n';
 import { useRuntimeConfig } from 'nitro/runtime-config';
 import { createDataExports } from './account/data-export.js';
+import { createAccountDeletion, type AccountDeletion } from './account/deletion.js';
+import { accounts } from './auth/auth.js';
 import { createApp } from './app.js';
 import { auditLog, auditReader, type AuditLog } from './audit/log.js';
 import { createAuth, credentialStore } from './auth/auth.js';
@@ -34,8 +36,10 @@ import {
 } from './email/environment.js';
 import { createNotices } from './email/notices.js';
 import { stdoutLogger } from './logger.js';
+import { eraseAccount } from './workflows/erase-account.js';
 import { heartbeat } from './workflows/heartbeat.js';
 import { startWorkflow } from './workflows/start-workflow.js';
+import { entityId } from './workflows/workflow-arguments.js';
 
 const logger = stdoutLogger();
 
@@ -97,6 +101,7 @@ interface AuthParts {
   readonly recovery: Recovery;
   readonly audit: AuditLog;
   readonly i18n: I18n;
+  readonly accountDeletion: AccountDeletion;
 }
 
 let parts: Promise<AuthParts> | undefined;
@@ -146,6 +151,7 @@ function authParts(): Promise<AuthParts> {
       }),
       audit,
       i18n,
+      accountDeletion: createAccountDeletion({ db, audit, notices, logger }),
     };
   })();
   // A failed build is retried on the next request instead of being cached.
@@ -177,6 +183,13 @@ const app = createApp({
   cron: {
     readSecret: readCronSecret,
     startHeartbeat: (runDate) => startWorkflow(heartbeat, [runDate]),
+    // A run per due account, each from this server-side scan; a failed run is started again the
+    // next day, since every step is idempotent.
+    startDueErasures: async () => {
+      for (const id of await accounts.dueForErasure(authConnection())) {
+        await startWorkflow(eraseAccount, [entityId(id)]);
+      }
+    },
     sweepRateLimits: () => limiter.sweep(),
   },
   ...withOrigin(ownOrigin()),
@@ -244,6 +257,10 @@ const app = createApp({
     }),
   },
   audit: { events: (accountId, query) => auditReader(connected().db).events(accountId, query) },
+  accountDeletion: {
+    request: async (accountId) => (await authParts()).accountDeletion.request(accountId),
+    cancel: async (accountId) => (await authParts()).accountDeletion.cancel(accountId),
+  },
   dataExports: {
     // Built per export, so a broken app_api setting fails only this route.
     build: async (accountId) => {

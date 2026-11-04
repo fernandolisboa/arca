@@ -395,6 +395,51 @@ export const accounts = {
         .where(and(eq(user.id, accountId), isNull(user.confirmedAt)))
         .returning({ id: user.id })
     ).length === 1,
+  /**
+   * Marks the account for erasure `waitDays` from now (spec 0004, R9), keeping a mark already
+   * there; the due time, or undefined when the account is gone.
+   */
+  requestDeletion: async (db: Database | Transaction, accountId: string, waitDays: number) =>
+    (
+      await db
+        .update(user)
+        .set({
+          deletionDueAt: sql`coalesce(${user.deletionDueAt}, now() + make_interval(days => ${waitDays}))`,
+        })
+        .where(eq(user.id, accountId))
+        .returning({ dueAt: user.deletionDueAt })
+    )[0]?.dueAt ?? undefined,
+  /** False when no deletion waits, or its time has come and the erasure owns the account. */
+  cancelDeletion: async (db: Database | Transaction, accountId: string) =>
+    (
+      await db
+        .update(user)
+        .set({ deletionDueAt: null })
+        .where(and(eq(user.id, accountId), gt(user.deletionDueAt, sql`now()`)))
+        .returning({ id: user.id })
+    ).length === 1,
+  deletionDueAt: async (db: Database | Transaction, accountId: string) =>
+    (await db.select({ dueAt: user.deletionDueAt }).from(user).where(eq(user.id, accountId)))[0]
+      ?.dueAt ?? null,
+  /** The accounts whose deletion is due, for the daily erasure; identifiers only. */
+  dueForErasure: async (db: Database | Transaction) =>
+    (
+      await db
+        .select({ id: user.id })
+        .from(user)
+        .where(lte(user.deletionDueAt, sql`now()`))
+    ).map(({ id }) => id),
+  /**
+   * Whether an erasure may go on: the account's deletion is due, or the account is already gone,
+   * as on a retry after its auth rows were erased. A cancelled deletion is never due again.
+   */
+  erasable: async (db: Database | Transaction, accountId: string) => {
+    const [found] = await db
+      .select({ due: sql<boolean>`coalesce(${user.deletionDueAt} <= now(), false)` })
+      .from(user)
+      .where(eq(user.id, accountId));
+    return found === undefined || found.due;
+  },
   idOf: async (db: Database | Transaction, email: string) =>
     (await db.select({ id: user.id }).from(user).where(eq(user.email, email)))[0]?.id,
   withEmail: async (db: Database | Transaction, email: string) =>
@@ -504,6 +549,14 @@ export const devices = {
         .where(and(eq(sessionTable.id, sessionId), eq(sessionTable.userId, accountId)))
         .returning({ id: sessionTable.id })
     ).length === 1,
+  /** Every session of the account; the IDs of those it ended. */
+  revokeAllSessions: async (db: Database | Transaction, accountId: string) =>
+    (
+      await db
+        .delete(sessionTable)
+        .where(eq(sessionTable.userId, accountId))
+        .returning({ id: sessionTable.id })
+    ).map(({ id }) => id),
   /**
    * Every session of the account but the one kept; the IDs of those it ended that were still
    * live, as `of` lists them. Dead ones go too, unrecorded, since nobody could see or use them.

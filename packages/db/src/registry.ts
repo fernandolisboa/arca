@@ -76,7 +76,15 @@ export const registry: Registry = {
       strategy: 'delete',
       owner: ownedByAccount('id'),
       pool: 'app_auth',
-      export: ['name', 'email', 'email_verified', 'created_at', 'last_sign_in_at', 'confirmed_at'],
+      export: [
+        'name',
+        'email',
+        'email_verified',
+        'created_at',
+        'last_sign_in_at',
+        'confirmed_at',
+        'deletion_due_at',
+      ],
       label: 'dataExport.tables.account',
     },
     {

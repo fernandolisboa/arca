@@ -109,7 +109,7 @@ describe('the auth schema access matrix', () => {
       passkey_client: ['SELECT', 'INSERT', 'DELETE'],
       recovery_code: ['SELECT', 'INSERT', 'DELETE'],
       recovery_link: ['SELECT', 'INSERT', 'DELETE'],
-      recovery_lock: ['SELECT', 'INSERT'],
+      recovery_lock: ['SELECT', 'INSERT', 'DELETE'],
       registration_context: ['SELECT', 'INSERT', 'DELETE'],
       setup: ['SELECT', 'INSERT'],
       step_up: ['SELECT', 'INSERT', 'DELETE'],

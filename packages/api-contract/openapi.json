@@ -162,6 +162,13 @@
                     },
                     "recoveryPending": {
                       "type": "boolean"
+                    },
+                    "deletionDueAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time"
                     }
                   },
                   "required": [
@@ -170,7 +177,8 @@
                     "confirmed",
                     "device",
                     "pendingPasskeyUntil",
-                    "recoveryPending"
+                    "recoveryPending",
+                    "deletionDueAt"
                   ]
                 }
               }
@@ -3136,7 +3144,10 @@
                               "recovery_completed",
                               "recovery_cancelled",
                               "recovery_kit_regenerated",
-                              "data_exported"
+                              "data_exported",
+                              "deletion_requested",
+                              "deletion_cancelled",
+                              "account_erased"
                             ]
                           },
                           "actorAccountId": {
@@ -3299,6 +3310,128 @@
                     "exportedAt",
                     "tables"
                   ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/account/deletion": {
+      "post": {
+        "operationId": "requestAccountDeletion",
+        "summary": "Ends every session and erases the account after the wait, after an account_deletion step-up; 403 step_up_required",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Deletion requested",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "dueAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "dueAt"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "cancelAccountDeletion",
+        "summary": "Keeps the account whose deletion waits, after an account_deletion step-up; 403 step_up_required, 404 not_found",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Deletion cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
                 }
               }
             }

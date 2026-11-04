@@ -14,6 +14,9 @@ export const noticeKinds = [
   'recovery_completed',
   'recovery_locked',
   'sessions_revoked',
+  'deletion_requested',
+  'deletion_cancelled',
+  'account_erased',
 ] as const;
 export type NoticeKind = (typeof noticeKinds)[number];
 

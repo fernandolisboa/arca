@@ -33,7 +33,10 @@ export function DataExportSection() {
   const session = useQuery(sessionQuery);
   const [state, setState] = useState<State>('idle');
   const statusRef = useRef<HTMLParagraphElement>(null);
-  if (!session.isSuccess) return null;
+  // A session restricted by a pending recovery or deletion may not export.
+  if (!session.isSuccess || session.data.recoveryPending || session.data.deletionDueAt !== null) {
+    return null;
+  }
 
   const start = () => {
     setState('waiting');

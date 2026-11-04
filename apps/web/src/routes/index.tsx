@@ -4,6 +4,7 @@ import { Link, createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { healthQuery, recoveryKitQuery, sessionQuery } from '../api.js';
 import { textLinkClass } from '../forms/text-link.js';
+import { DeletionPendingNotice } from '../account-deletion.js';
 import { useDateFormat } from '../use-date-format.js';
 
 export const Route = createFileRoute('/')({ component: Home });
@@ -61,6 +62,14 @@ function SessionLine() {
   const { t } = useTranslation();
   const session = useQuery(sessionQuery);
   if (session.isPending) return null;
+  if (session.isSuccess && session.data.deletionDueAt !== null) {
+    return (
+      <>
+        <p>{t('session.signedIn', { email: session.data.email })}</p>
+        <DeletionPendingNotice dueAt={session.data.deletionDueAt} />
+      </>
+    );
+  }
   if (session.isSuccess && session.data.recoveryPending) {
     return (
       <>

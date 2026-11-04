@@ -1,24 +1,8 @@
 import { readServerTime } from '@arca/db';
-import { useRuntimeConfig } from 'nitro/runtime-config';
-import { databaseTargetFrom, readJobsDatabasePassword } from '../config.js';
-import { roleDatabase } from '../database.js';
-import { stdoutLogger } from '../logger.js';
 import { withStepError } from './step-error.js';
-
-const logger = stdoutLogger();
-let jobs: ReturnType<typeof roleDatabase> | undefined;
-
-function jobsDatabase() {
-  jobs ??= roleDatabase(
-    'app_jobs',
-    databaseTargetFrom(useRuntimeConfig()['database']),
-    readJobsDatabasePassword(),
-    logger,
-  );
-  return jobs.db;
-}
+import { jobsDatabase, stepLogger } from './step-context.js';
 
 export async function readDatabaseTime(): Promise<void> {
   'use step';
-  await withStepError('database_unavailable', logger, () => readServerTime(jobsDatabase()));
+  await withStepError('database_unavailable', stepLogger, () => readServerTime(jobsDatabase()));
 }

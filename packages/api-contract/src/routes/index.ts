@@ -91,6 +91,11 @@ export const SessionResponse = z.object({
    * it from the device list (spec 0003, R6); every other route answers 403 recovery_pending.
    */
   recoveryPending: z.boolean(),
+  /**
+   * When the account is erased, while its deletion waits (spec 0004, R9): until then this session
+   * may only show so and cancel it; every other route answers 403 deletion_pending. Null otherwise.
+   */
+  deletionDueAt: z.iso.datetime({ offset: true }).nullable(),
 });
 export type SessionResponse = z.infer<typeof SessionResponse>;
 
@@ -739,6 +744,9 @@ export const auditEventDetails = {
   recovery_cancelled: noDetails,
   recovery_kit_regenerated: noDetails,
   data_exported: noDetails,
+  deletion_requested: z.strictObject({ reason: z.enum(['owner_request']) }),
+  deletion_cancelled: z.strictObject({ reason: z.enum(['owner_cancel']) }),
+  account_erased: noDetails,
 } as const;
 
 export type AuditEventCode = keyof typeof auditEventDetails;
@@ -814,6 +822,36 @@ export const exportAccountData = {
   response: { description: 'The export, as an attachment', schema: DataExport },
 } as const satisfies RouteDefinition<typeof DataExport>;
 
+/** Days between a deletion request and the erasure, while it can be cancelled (spec 0004, R9). */
+export const deletionWaitDays = 7;
+
+export const AccountDeletionResponse = z.object({
+  dueAt: z.iso.datetime({ offset: true }),
+});
+export type AccountDeletionResponse = z.infer<typeof AccountDeletionResponse>;
+
+export const requestAccountDeletion = {
+  method: 'post',
+  path: '/account/deletion',
+  operationId: 'requestAccountDeletion',
+  summary:
+    'Ends every session and erases the account after the wait, after an account_deletion step-up; 403 step_up_required',
+  body: z.strictObject({}),
+  response: { description: 'Deletion requested', schema: AccountDeletionResponse },
+} as const satisfies RouteDefinition<typeof AccountDeletionResponse>;
+
+export const CancelAccountDeletionResponse = z.object({});
+
+export const cancelAccountDeletion = {
+  method: 'delete',
+  path: '/account/deletion',
+  operationId: 'cancelAccountDeletion',
+  summary:
+    'Keeps the account whose deletion waits, after an account_deletion step-up; 403 step_up_required, 404 not_found',
+  body: z.strictObject({}),
+  response: { description: 'Deletion cancelled', schema: CancelAccountDeletionResponse },
+} as const satisfies RouteDefinition<typeof CancelAccountDeletionResponse>;
+
 export const routes = {
   health,
   session,
@@ -845,6 +883,8 @@ export const routes = {
   recoveryVerify,
   auditEvents,
   exportAccountData,
+  requestAccountDeletion,
+  cancelAccountDeletion,
 } as const;
 
 /** The Better Auth endpoints the API lets through; every other path under /v1/auth is a 404. */

@@ -3,7 +3,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import pg from 'pg';
 import type { Database } from '@arca/db';
-import { apiDatabase, auditDatabase, authDatabase } from '../../src/database.js';
+import { apiDatabase, auditDatabase, authDatabase, roleDatabase } from '../../src/database.js';
 import type { Logger } from '@arca/telemetry';
 
 // The real migrations on a disposable database, reached through the runtime roles' own pools
@@ -37,6 +37,9 @@ export interface AuthTestDatabase {
   readonly authDb: Database;
   readonly auditDb: Database;
   readonly apiDb: Database;
+  readonly jobsDb: Database;
+  /** Runs as app_backup, whose read policies make it the honest counter under row-level security. */
+  readonly asBackup: <T>(use: (client: pg.Client) => Promise<T>) => Promise<T>;
   /** Runs as the server's admin on the test database, for setup and checks the roles may not do. */
   readonly asAdmin: <T>(use: (client: pg.Client) => Promise<T>) => Promise<T>;
   /** Closes the pools and drops the database. */
@@ -50,7 +53,7 @@ export async function authTestDatabase(): Promise<AuthTestDatabase> {
     app_auth: randomBytes(24).toString('base64url'),
     app_audit: randomBytes(24).toString('base64url'),
     app_api: randomBytes(24).toString('base64url'),
-    // Not connected here; the migrations grant it reads, so it must exist.
+    app_jobs: randomBytes(24).toString('base64url'),
     app_backup: randomBytes(24).toString('base64url'),
   };
   await asAdminOn('postgres', async (client) => {
@@ -80,13 +83,28 @@ export async function authTestDatabase(): Promise<AuthTestDatabase> {
     authDatabase(target, passwords.app_auth, silentLogger),
     auditDatabase(target, passwords.app_audit, silentLogger),
     apiDatabase(target, passwords.app_api, silentLogger),
+    roleDatabase('app_jobs', target, passwords.app_jobs, silentLogger),
   ] as const;
   await Promise.all(pools.map((pool) => pool.ready()));
-  const [authPool, auditPool, apiPool] = pools;
+  const [authPool, auditPool, apiPool, jobsPool] = pools;
   return {
     authDb: authPool.db,
     auditDb: auditPool.db,
     apiDb: apiPool.db,
+    jobsDb: jobsPool.db,
+    asBackup: async (use) => {
+      const client = new pg.Client({
+        ...target,
+        user: 'app_backup',
+        password: passwords.app_backup,
+      });
+      await client.connect();
+      try {
+        return await use(client);
+      } finally {
+        await client.end();
+      }
+    },
     asAdmin: (use) => asAdminOn(database, use),
     drop: async () => {
       await Promise.all(pools.map((pool) => pool.close()));

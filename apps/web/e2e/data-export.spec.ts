@@ -30,7 +30,7 @@ async function exportOnce(page: Page) {
   await page.getByRole('button', { name: 'Baixar meus dados' }).click();
   await page.getByRole('button', { name: 'Confirmar e baixar' }).click();
   const download = await downloaded;
-  await expect(page.getByRole('status').last()).toHaveText(
+  await expect(page.getByRole('region', { name: 'Seus dados' }).getByRole('status')).toHaveText(
     'Pronto. O arquivo está nos seus downloads.',
   );
   return {

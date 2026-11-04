@@ -61,6 +61,8 @@ export const openApiRoutes = {
   recoveryVerify: toOpenApiRoute(routes.recoveryVerify),
   auditEvents: toOpenApiRoute(routes.auditEvents),
   exportAccountData: toOpenApiRoute(routes.exportAccountData),
+  requestAccountDeletion: toOpenApiRoute(routes.requestAccountDeletion),
+  cancelAccountDeletion: toOpenApiRoute(routes.cancelAccountDeletion),
 } as const;
 
 export const openApiInfo = { title: 'Arca API', version: '1.0.0' } as const;
