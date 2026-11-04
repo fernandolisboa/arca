@@ -56,9 +56,12 @@ function SignIn() {
     if (ceremony === 'autofill' && !support.autofill) return;
     const controller = new AbortController();
     let restart: ReturnType<typeof setTimeout> | undefined;
-    const restartAutofill = (delayMs: number) => {
+    // Only quick retries after failed picks back off; a refresh or a button press starts over.
+    if (ceremony === 'button') autofillRetries.current = 0;
+    const restartAutofill = (delayMs: number, { retry = false } = {}) => {
       clearTimeout(restart);
       restart = setTimeout(() => {
+        if (!retry) autofillRetries.current = 0;
         setAutofillRun((run) => run + 1);
       }, delayMs);
     };
@@ -81,7 +84,7 @@ function SignIn() {
             autofillRetryMaxMs,
           );
           autofillRetries.current += 1;
-          restartAutofill(delayMs);
+          restartAutofill(delayMs, { retry: true });
         }
       });
     return () => {
