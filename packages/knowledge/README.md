@@ -86,6 +86,10 @@ Every route version ships with `<n>.cases.json` beside it, and `test/cases` runs
 - Coverage, from the results: every requirement is true, false and unknown at least once; every dependent rule includes someone and, on its own, excludes someone; an open version reaches `eligible` (`needs_assessment` when it has assessments), `not_eligible` and `missing_information`; a closed one, `unavailable`.
 - Cases in `data` are append-only (fixture cases are test code and change with the engine in review). When a change to `packages/domain/src` changes a result, add a case with `supersedes` and `reason` that differs only in `expected`; the runner skips the case it replaces.
 
+## Staleness
+
+A source is stale when it was verified more than 90 days before the context's `today` (spec 0002, R9), which the evaluation records. An evaluation lists the stale sources it cites, its pinned country sets' included, and `evaluateRoute` sets `stale` only on the version in effect today, never on a superseded one reached through a past `rulesAsOf`. `pnpm --filter @arca/knowledge staleness-report [date]` prints the stale sources of the version each route selects, every version treated as active, as identifiers only. Re-verifying a source is a new version.
+
 ## Runtime entry points
 
 - `@arca/knowledge` exports `routeCatalog`, the `RouteCatalog` the engine reads: every version's identity, and a full entry only for an exact identity (route, number and content hash) whose decision state is active.

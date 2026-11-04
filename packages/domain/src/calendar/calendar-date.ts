@@ -127,6 +127,11 @@ export function wholeMonthsBetween(from: CalendarDate, to: CalendarDate): number
   return compareDates(addMonths(from, months), to) > 0 ? months - 1 : months;
 }
 
+/** Days from `from` to `to`, negative when `to` is earlier. */
+export function daysBetween(from: CalendarDate, to: CalendarDate): number {
+  return toDayNumber(dateParts(to)) - toDayNumber(dateParts(from));
+}
+
 /** Whole years from `from` to `to`: the largest `n` with `addMonths(from, 12n) <= to`. */
 export function wholeYearsBetween(from: CalendarDate, to: CalendarDate): number {
   return Math.floor(wholeMonthsBetween(from, to) / 12);

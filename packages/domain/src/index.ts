@@ -9,6 +9,7 @@ export {
   calendarDateSchema,
   compareDates,
   dateParts,
+  daysBetween,
   daysInMonth,
   elapsedSince,
   firstDate,
@@ -153,6 +154,7 @@ export {
   evaluateVersion,
   evaluateVersionTraced,
 } from './rules/engine.js';
+export { type StaleSource, staleAfterDays, staleSources } from './rules/staleness.js';
 export { type Trace } from './rules/evaluate.js';
 export { type MissingFact } from './rules/missing.js';
 export {

@@ -8,6 +8,7 @@ import {
   calendarDateSchema,
   compareDates,
   dateParts,
+  daysBetween,
   durationUnits,
   elapsedSince,
   isCalendarDate,
@@ -162,6 +163,28 @@ describe('whole months and years between dates', () => {
 
   it('rejects a reversed range', () => {
     expect(() => wholeMonthsBetween(date('2026-11-03'), date('2026-11-02'))).toThrow(RangeError);
+  });
+});
+
+describe('daysBetween', () => {
+  it.each([
+    ['2026-01-01', '2026-01-01', 0],
+    ['2026-01-01', '2026-04-01', 90],
+    ['2024-02-28', '2024-03-01', 2],
+    ['2023-02-28', '2023-03-01', 1],
+    ['2026-04-01', '2026-01-01', -90],
+    ['0001-01-01', '9999-12-31', 3652058],
+  ])('counts from %s to %s as %i days', (from, to, days) => {
+    expect(daysBetween(parseCalendarDate(from), parseCalendarDate(to))).toBe(days);
+  });
+
+  it('agrees with addDays', () => {
+    fc.assert(
+      fc.property(fc.integer({ min: -100_000, max: 100_000 }), (days) => {
+        const from = parseCalendarDate('2000-01-01');
+        expect(daysBetween(from, addDays(from, days))).toBe(days);
+      }),
+    );
   });
 });
 
