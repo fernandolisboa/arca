@@ -1,11 +1,17 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
-import { apiBasePath, type ErrorResponse } from '@arca/api-contract/routes';
+import {
+  apiBasePath,
+  authBasePath,
+  authRoutes,
+  type ErrorResponse,
+} from '@arca/api-contract/routes';
 import { openApiRoutes } from '@arca/api-contract/server';
 import type { Context } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { createMiddleware } from 'hono/factory';
 import { routePath } from 'hono/route';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
+import type { AuthService } from './auth/service.js';
 import { bearerMatches } from './cron-auth.js';
 import { cachedDatabaseCheck, type CheckDatabase } from './database-health.js';
 import type { Logger } from './logger.js';
@@ -26,6 +32,8 @@ export interface AppDependencies {
   readonly now?: () => number;
   readonly newRequestId?: () => string;
   readonly cron?: CronDependencies;
+  /** Better Auth behind the allow-list; absent, every auth path is a 404. */
+  readonly auth?: AuthService;
 }
 
 export type ErrorCode =
@@ -74,6 +82,7 @@ export function createApp({
   now = () => performance.now(),
   newRequestId = () => crypto.randomUUID(),
   cron,
+  auth,
 }: AppDependencies) {
   const app = createRouter();
 
@@ -120,7 +129,27 @@ export function createApp({
     return c.json({ status: database === 'ok' ? 'ok' : 'degraded', checks: { database } }, 200);
   });
 
+  v1.openapi(openApiRoutes.session, async (c) => {
+    const current = auth === undefined ? null : await auth.session(c.req.raw.headers);
+    if (current === null) {
+      c.set('errorCode', 'unauthorized');
+      return c.json({ error: { code: 'unauthorized' } } satisfies ErrorResponse, 401);
+    }
+    return c.json(current, 200);
+  });
+
   app.route(apiBasePath, v1);
+
+  // Only allow-listed Better Auth endpoints reach it (spec 0003, R1). The match is on the exact
+  // method and the raw path Better Auth will route on, so no encoding or extra segment slips by.
+  const allowed = new Set(
+    authRoutes.map((route) => `${route.method.toUpperCase()} ${apiBasePath}${route.path}`),
+  );
+  app.all(`${authBasePath}/*`, async (c) => {
+    const key = `${c.req.method} ${new URL(c.req.url).pathname}`;
+    if (auth === undefined || !allowed.has(key)) return reject(c, 'not_found', 404);
+    return auth.handle(c.req.raw);
+  });
 
   // Vercel cron sends GET with `Authorization: Bearer <CRON_SECRET>` (spec 0001, R6). Not part of
   // the OpenAPI document, and the only route that starts a workflow.

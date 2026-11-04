@@ -72,11 +72,26 @@ export function parseEnvironmentPolicy(value: unknown, where: string): Environme
   };
 }
 
+/** A list of `{ table, reason }` entries, so every table left without row-level security says why. */
+function tablesWithReasons(value: unknown, where: string): string[] {
+  if (!Array.isArray(value)) throw new Error(`${where} must be a list`);
+  return value.map((entry, index) => {
+    const { table, reason } = isRecord(entry) ? entry : {};
+    if (typeof table !== 'string' || table === '' || typeof reason !== 'string' || reason === '') {
+      throw new Error(`${where}[${String(index)}] must have a table and a reason`);
+    }
+    return table;
+  });
+}
+
 export function parseGuardPolicy(value: unknown): GuardPolicy {
   if (!isRecord(value)) throw new Error('guards.json must be an object');
   const list = (key: keyof GuardPolicy) => stringList(value[key], `guards.json ${key}`);
   return {
-    tablesWithoutRowLevelSecurity: list('tablesWithoutRowLevelSecurity'),
+    tablesWithoutRowLevelSecurity: tablesWithReasons(
+      value['tablesWithoutRowLevelSecurity'],
+      'guards.json tablesWithoutRowLevelSecurity',
+    ),
     materializedViews: list('materializedViews'),
     foreignTables: list('foreignTables'),
     securityDefinerFunctions: list('securityDefinerFunctions'),

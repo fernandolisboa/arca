@@ -29,6 +29,45 @@ export function readJobsDatabasePassword(): string {
   return required('ARCA_DB_JOBS_PASSWORD', process.env['ARCA_DB_JOBS_PASSWORD']);
 }
 
+export interface AuthSecrets {
+  /** The app_auth role's password, for Better Auth's own pool (spec 0003, R1). */
+  readonly databasePassword: string;
+  /** Signs Better Auth's cookies; distinct per environment. */
+  readonly secret: string;
+}
+
+export function readAuthSecrets(): AuthSecrets {
+  const secret = required('BETTER_AUTH_SECRET', process.env['BETTER_AUTH_SECRET']);
+  if (secret.length < 32) {
+    throw new MissingConfigError('BETTER_AUTH_SECRET is shorter than 32 characters');
+  }
+  return {
+    databasePassword: required('ARCA_DB_AUTH_PASSWORD', process.env['ARCA_DB_AUTH_PASSWORD']),
+    secret,
+  };
+}
+
+const originHostPattern = /^[a-z0-9](?:[a-z0-9.-]{0,251}[a-z0-9])?$/;
+
+/**
+ * The origin the auth routes run on, from Vercel's system variables: a preview's branch URL, so
+ * the per-deployment URL is not trusted, and the production domain. Until spec 0003 R9 moves
+ * production to a reviewed file, the production host is Vercel's. Locally, Nitro's dev server.
+ */
+export function readAuthOrigin(): string {
+  const environment = process.env['VERCEL_ENV'];
+  if (environment === undefined || environment === '' || environment === 'development') {
+    return 'http://localhost:3000';
+  }
+  const [name, value] =
+    environment === 'production'
+      ? ['VERCEL_PROJECT_PRODUCTION_URL', process.env['VERCEL_PROJECT_PRODUCTION_URL']]
+      : ['VERCEL_BRANCH_URL', process.env['VERCEL_BRANCH_URL']];
+  const host = required(name, value).toLowerCase();
+  if (!originHostPattern.test(host)) throw new MissingConfigError(`${name} is not a host name`);
+  return `https://${host}`;
+}
+
 /** Vercel sends it as a bearer token on cron requests; production only. */
 export function readCronSecret(): string {
   const secret = required('CRON_SECRET', process.env['CRON_SECRET']);

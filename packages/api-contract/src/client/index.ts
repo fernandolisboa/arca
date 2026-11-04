@@ -4,7 +4,12 @@ import type { z } from 'zod';
 import { apiBasePath, ErrorResponse, type RouteDefinition } from '../routes/index.js';
 
 export { routes } from '../routes/index.js';
-export type { HealthResponse } from '../routes/index.js';
+export type {
+  DeviceDescription,
+  HealthResponse,
+  SessionResponse,
+  SignOutResponse,
+} from '../routes/index.js';
 
 export type Fetch = (input: string, init?: RequestInit) => Promise<Response>;
 
@@ -38,18 +43,31 @@ export class ContractViolationError extends Error {
   }
 }
 
+/** The body a route takes, when it takes one. */
+type BodyOf<Route extends RouteDefinition> = Route['body'] extends z.ZodType
+  ? [body: z.input<Route['body']>]
+  : [];
+
 export interface ApiClient {
-  call<Route extends RouteDefinition>(route: Route): Promise<z.infer<Route['response']['schema']>>;
+  call<Route extends RouteDefinition>(
+    route: Route,
+    ...body: BodyOf<Route>
+  ): Promise<z.infer<Route['response']['schema']>>;
 }
 
 export function createApiClient({ origin, fetch = globalThis.fetch }: ApiClientOptions): ApiClient {
   return {
     async call<Route extends RouteDefinition>(
       route: Route,
+      ...[input]: BodyOf<Route>
     ): Promise<z.infer<Route['response']['schema']>> {
       const response = await fetch(`${origin}${apiBasePath}${route.path}`, {
         method: route.method.toUpperCase(),
-        headers: { accept: 'application/json' },
+        headers:
+          route.body === undefined
+            ? { accept: 'application/json' }
+            : { accept: 'application/json', 'content-type': 'application/json' },
+        ...(route.body === undefined ? {} : { body: JSON.stringify(route.body.parse(input)) }),
       });
       const body: unknown = await response.json().catch(() => undefined);
       if (!response.ok) {

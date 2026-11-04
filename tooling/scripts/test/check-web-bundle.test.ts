@@ -29,6 +29,9 @@ describe('web bundle check', () => {
   it.each([
     '../../../../node_modules/.pnpm/hono@4.13.14/node_modules/hono/dist/hono.js',
     '../../../../node_modules/.pnpm/@hono+zod-openapi@1.6.3/node_modules/@hono/zod-openapi/dist/index.js',
+    '../../../../node_modules/.pnpm/better-auth@1.7.14/node_modules/better-auth/dist/client/index.mjs',
+    '../../../../node_modules/.pnpm/@better-auth+passkey@1.7.14/node_modules/@better-auth/passkey/dist/client.mjs',
+    '../../../../node_modules/.pnpm/@simplewebauthn+server@13.3.3/node_modules/@simplewebauthn/server/esm/index.js',
   ])('fails when the bundle includes %s', async (source) => {
     const dir = await dist({ 'index.js.map': { sources: ['../../src/main.tsx', source] } });
     expect(await checkWebBundle(dir)).toHaveLength(1);

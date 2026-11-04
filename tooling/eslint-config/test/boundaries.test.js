@@ -104,6 +104,21 @@ describe('api', () => {
       'no-restricted-imports',
     );
   });
+
+  it('forbids the auth schema outside the auth module', async () => {
+    expect(await ruleIds('api', ['api'], 'src/credential-rows.ts')).toContain(
+      'no-restricted-imports',
+    );
+    expect(await ruleIds('api', ['api'], 'src/dynamic-credential-rows.ts')).toContain(
+      'no-restricted-syntax',
+    );
+  });
+
+  it('allows the auth schema in the auth module', async () => {
+    expect(await ruleIds('api', ['api'], 'src/auth/auth.ts')).not.toContain(
+      'no-restricted-imports',
+    );
+  });
 });
 
 describe('knowledge', () => {

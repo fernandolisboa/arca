@@ -3,7 +3,9 @@ import { join } from 'node:path';
 import { reportViolations, type Violation } from './report.ts';
 
 /** Server-only modules that must never reach the client bundle (spec 0001, R2). */
-const forbiddenModule = /(?:^|\/)node_modules\/(hono|@hono\/zod-openapi)\//;
+// Hono stays on the server; the web client never imports a Better Auth client (spec 0003, R1).
+const forbiddenModule =
+  /(?:^|\/)node_modules\/(hono|@hono\/zod-openapi|better-auth|@better-auth\/[^/]+|@simplewebauthn\/server)\//;
 
 /**
  * Reads the source maps Vite writes next to the bundle and lists every bundled module from a

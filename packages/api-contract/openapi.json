@@ -87,6 +87,164 @@
           }
         }
       }
+    },
+    "/session": {
+      "get": {
+        "operationId": "getSession",
+        "summary": "The signed-in account and the device of this session; 401 without a session",
+        "responses": {
+          "200": {
+            "description": "The current session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accountId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email"
+                    },
+                    "device": {
+                      "type": "object",
+                      "properties": {
+                        "browser": {
+                          "type": "string",
+                          "enum": [
+                            "edge",
+                            "samsung_internet",
+                            "opera",
+                            "firefox",
+                            "chrome",
+                            "safari",
+                            "other"
+                          ]
+                        },
+                        "os": {
+                          "type": "string",
+                          "enum": [
+                            "ios",
+                            "ipados",
+                            "android",
+                            "chromeos",
+                            "windows",
+                            "macos",
+                            "linux",
+                            "other"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "browser",
+                        "os"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "accountId",
+                    "email",
+                    "device"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/sign-out": {
+      "post": {
+        "operationId": "signOut",
+        "summary": "Ends this session and clears its cookies",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed out",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "success"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "webhooks": {}

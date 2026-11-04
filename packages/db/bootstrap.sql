@@ -25,6 +25,7 @@ $$;
 ALTER ROLE app_migrator PASSWORD '{{app_migrator}}';
 ALTER ROLE app_api PASSWORD '{{app_api}}';
 ALTER ROLE app_jobs PASSWORD '{{app_jobs}}';
+ALTER ROLE app_auth PASSWORD '{{app_auth}}';
 
 -- The migrator creates the application schema and the migration journal.
 DO $$
