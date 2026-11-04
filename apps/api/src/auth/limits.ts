@@ -49,3 +49,15 @@ export const inviteLimits = {
 export const deviceLimits = {
   addPasskey: { name: 'add_passkey_session', limit: 10, windowSeconds: hour },
 } as const satisfies Record<string, RateLimitRule>;
+
+/**
+ * Limits on recovery (spec 0003, R10): starting is per email HMAC and per IP; the link's token is
+ * 256 random bits and five wrong codes lock the account's recovery, so the rest bound load.
+ */
+export const recoveryLimits = {
+  startEmail: { name: 'recovery_start_email', limit: 3, windowSeconds: hour },
+  startIp: { name: 'recovery_start_ip', limit: 10, windowSeconds: hour },
+  redeem: { name: 'recovery_redeem_ip', limit: 30, windowSeconds: hour },
+  options: { name: 'recovery_options_ip', limit: 30, windowSeconds: hour },
+  verify: { name: 'recovery_verify_ip', limit: 30, windowSeconds: hour },
+} as const satisfies Record<string, RateLimitRule>;

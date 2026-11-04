@@ -53,6 +53,7 @@ function setup({
   passkey = 'revoked',
   accepted = true,
   pendingUntil = null,
+  recoveryPending = false,
   allowed = true,
 }: {
   signedIn?: SignedIn | null;
@@ -61,9 +62,11 @@ function setup({
   passkey?: PasskeyRevocation;
   accepted?: boolean;
   pendingUntil?: Date | null;
+  recoveryPending?: boolean;
   allowed?: boolean;
 } = {}) {
   const calls: string[] = [];
+  const checked: string[] = [];
   const spent: { purpose: string; action: CanonicalAction }[] = [];
   const stepUp: StepUpService = {
     options: () => Promise.reject(new Error('unused')),
@@ -99,9 +102,9 @@ function setup({
       calls.push(`add ${current.sessionId} ${challengeId}`);
       return Promise.resolve(accepted);
     },
-    pendingUntil: (accountId) => {
-      calls.push(`pendingUntil ${accountId}`);
-      return Promise.resolve(pendingUntil);
+    status: (accountId) => {
+      checked.push(accountId);
+      return Promise.resolve({ pendingUntil, recoveryPending, sessionsEnded: false });
     },
   };
   const app = createApp({
@@ -131,7 +134,7 @@ function setup({
       headers: { origin, 'content-type': 'application/json', 'arca-step-up-nonce': nonce },
       body: JSON.stringify(body),
     });
-  return { app, post, calls, spent };
+  return { app, post, calls, checked, spent };
 }
 
 const revocations = [
@@ -199,6 +202,14 @@ describe('the device routes (spec 0003, R4)', () => {
     expect(await response.json()).toEqual({ error: { code: 'last_active_passkey' } });
   });
 
+  it('answers 403 to removing another passkey while a recovery passkey waits', async () => {
+    const response = await setup({ passkey: 'recovery_pending' }).post('passkeys/revoke', {
+      passkeyId: targetId,
+    });
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: { code: 'recovery_pending' } });
+  });
+
   it('answers 400 to a target that is not an ID', async () => {
     const { post, calls, spent } = setup();
     expect((await post('sessions/revoke', { sessionId: 'not-an-id' })).status).toBe(400);
@@ -240,9 +251,31 @@ describe('the device routes (spec 0003, R4)', () => {
     expect(await response.json()).toEqual({
       ...session,
       pendingPasskeyUntil: activeFrom.toISOString(),
+      recoveryPending: false,
     });
-    expect(pending.calls).toEqual([`pendingUntil ${owner.accountId}`]);
+    expect(pending.checked).toEqual([owner.accountId]);
     const none = await setup().app.request('/v1/session');
-    expect(await none.json()).toEqual({ ...session, pendingPasskeyUntil: null });
+    expect(await none.json()).toEqual({
+      ...session,
+      pendingPasskeyUntil: null,
+      recoveryPending: false,
+    });
+  });
+
+  it('restricts a session while a recovery passkey waits (spec 0003, R6)', async () => {
+    const restricted = setup({ recoveryPending: true });
+    const headers = { origin, cookie: 'session=1', 'content-type': 'application/json' };
+    const shown = await restricted.app.request('/v1/session', { headers });
+    expect(shown.status).toBe(200);
+    expect(await shown.json()).toMatchObject({ recoveryPending: true });
+    expect((await restricted.app.request('/v1/devices', { headers })).status).toBe(200);
+    const refused = await restricted.app.request('/v1/devices/sessions/revoke-others', {
+      method: 'POST',
+      headers,
+      body: '{}',
+    });
+    expect(refused.status).toBe(403);
+    expect(await refused.json()).toEqual({ error: { code: 'recovery_pending' } });
+    expect(restricted.calls).toEqual([`list ${owner.sessionId}`]);
   });
 });

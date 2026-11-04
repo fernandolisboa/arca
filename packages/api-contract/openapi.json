@@ -151,6 +151,9 @@
                         "null"
                       ],
                       "format": "date-time"
+                    },
+                    "recoveryPending": {
+                      "type": "boolean"
                     }
                   },
                   "required": [
@@ -158,7 +161,8 @@
                     "email",
                     "confirmed",
                     "device",
-                    "pendingPasskeyUntil"
+                    "pendingPasskeyUntil",
+                    "recoveryPending"
                   ]
                 }
               }
@@ -2029,7 +2033,7 @@
     "/devices/passkeys/revoke": {
       "post": {
         "operationId": "revokePasskey",
-        "summary": "Removes one of the account's passkeys, or cancels a pending one, and ends every session it signed in, after a step-up; 403 step_up_required, 404 not_found, 409 last_active_passkey",
+        "summary": "Removes one of the account's passkeys, or cancels a pending one, and ends every session it signed in, after a step-up; 403 step_up_required, 403 recovery_pending to any other passkey while a recovery passkey waits, 404 not_found, 409 last_active_passkey",
         "requestBody": {
           "required": true,
           "content": {
@@ -2489,6 +2493,526 @@
         "responses": {
           "200": {
             "description": "Added",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/recovery/start": {
+      "post": {
+        "operationId": "recoveryStart",
+        "summary": "Emails a recovery link when the address has an account open to recovery; the same answer either way; 503 email_unavailable without a sending domain",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "maxLength": 254,
+                    "format": "email"
+                  }
+                },
+                "required": [
+                  "email"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/recovery/redeem": {
+      "post": {
+        "operationId": "recoveryRedeem",
+        "summary": "Exchanges the recovery code for a new one and opens the registration; 404 to a dead link, 403 invalid_code or recovery_locked",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$"
+                  },
+                  "code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                  }
+                },
+                "required": [
+                  "token",
+                  "code"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The new recovery code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+                    }
+                  },
+                  "required": [
+                    "code"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/recovery/options": {
+      "post": {
+        "operationId": "recoveryOptions",
+        "summary": "Creation options for the recovery passkey of a redeemed link, with a 2-minute challenge; 404 to a link that is not redeemed or is dead",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$"
+                  }
+                },
+                "required": [
+                  "token"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Creation options",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "challenge": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9_-]*$"
+                    },
+                    "rp": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name"
+                      ]
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9_-]*$"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "displayName": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "displayName"
+                      ]
+                    },
+                    "pubKeyCredParams": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "public-key"
+                            ]
+                          },
+                          "alg": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "alg"
+                        ]
+                      }
+                    },
+                    "timeout": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    },
+                    "excludeCredentials": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]*$"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "public-key"
+                            ]
+                          },
+                          "transports": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "type"
+                        ]
+                      }
+                    },
+                    "authenticatorSelection": {
+                      "type": "object",
+                      "properties": {
+                        "authenticatorAttachment": {
+                          "type": "string",
+                          "enum": [
+                            "platform",
+                            "cross-platform"
+                          ]
+                        },
+                        "residentKey": {
+                          "type": "string",
+                          "enum": [
+                            "required"
+                          ]
+                        },
+                        "requireResidentKey": {
+                          "type": "boolean",
+                          "enum": [
+                            true
+                          ]
+                        },
+                        "userVerification": {
+                          "type": "string",
+                          "enum": [
+                            "required"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "residentKey",
+                        "requireResidentKey",
+                        "userVerification"
+                      ]
+                    },
+                    "attestation": {
+                      "type": "string",
+                      "enum": [
+                        "none"
+                      ]
+                    },
+                    "extensions": {
+                      "type": "object",
+                      "properties": {
+                        "prf": {
+                          "type": "object",
+                          "properties": {},
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "prf"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "challenge",
+                    "rp",
+                    "user",
+                    "pubKeyCredParams",
+                    "authenticatorSelection",
+                    "extensions"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/recovery/verify": {
+      "post": {
+        "operationId": "recoveryVerify",
+        "summary": "Stores the recovery passkey, pending for 24 hours, and restricts every session of the account meanwhile; no session comes from it; 403 passkey_refused, 404 to a dead link",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$"
+                  },
+                  "response": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_-]*$"
+                      },
+                      "rawId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_-]*$"
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "public-key"
+                        ]
+                      },
+                      "response": {
+                        "type": "object",
+                        "properties": {
+                          "clientDataJSON": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]*$"
+                          },
+                          "attestationObject": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]*$"
+                          },
+                          "authenticatorData": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]*$"
+                          },
+                          "transports": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "publicKeyAlgorithm": {
+                            "type": "integer"
+                          },
+                          "publicKey": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]*$"
+                          }
+                        },
+                        "required": [
+                          "clientDataJSON",
+                          "attestationObject"
+                        ]
+                      },
+                      "authenticatorAttachment": {
+                        "type": "string",
+                        "enum": [
+                          "platform",
+                          "cross-platform"
+                        ]
+                      },
+                      "clientExtensionResults": {
+                        "type": "object",
+                        "properties": {
+                          "prf": {
+                            "type": "object",
+                            "properties": {
+                              "enabled": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "enabled"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "rawId",
+                      "type",
+                      "response",
+                      "clientExtensionResults"
+                    ]
+                  }
+                },
+                "required": [
+                  "token",
+                  "response"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Registered",
             "content": {
               "application/json": {
                 "schema": {

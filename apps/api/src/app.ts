@@ -11,6 +11,10 @@ import {
   declineInvite,
   enrollOwner,
   inviteDetails,
+  recoveryOptions,
+  recoveryRedeem,
+  recoveryStart,
+  recoveryVerify,
   regenerateRecoveryKit,
   registrationOptions,
   registrationVerify,
@@ -31,18 +35,21 @@ import { createMiddleware } from 'hono/factory';
 import { routePath } from 'hono/route';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import type { AuditReader } from './audit/log.js';
-import type { Devices } from './auth/devices.js';
+import { describeDevice } from './auth/device.js';
+import type { AccountStatus, Devices } from './auth/devices.js';
 import type { Enrollment } from './auth/enrollment.js';
 import type { Invites } from './auth/invites.js';
 import {
   authRouteLimits,
   deviceLimits,
   inviteLimits,
+  recoveryLimits,
   registrationLimits,
   stepUpLimits,
 } from './auth/limits.js';
 import type { RateLimiter, RateLimitRule } from './auth/rate-limit.js';
 import type { RecoveryKits } from './auth/recovery-kit.js';
+import type { Recovery } from './auth/recovery.js';
 import type { Registration, RegistrationOutcome } from './auth/registration.js';
 import type { AuthService, SignedIn } from './auth/service.js';
 import type { CanonicalAction } from './auth/step-up-encoding.js';
@@ -97,6 +104,8 @@ export interface AppDependencies {
   readonly invites?: Invites;
   /** The device list and its revocations (spec 0003, R4); absent, their routes answer 401. */
   readonly devices?: Devices;
+  /** Recovery by email link and recovery code (spec 0003, R6); absent, its routes are a 404. */
+  readonly recovery?: Recovery;
   /** The signed-in account's audit events; absent, the route answers 401. */
   readonly audit?: AuditReader;
   /**
@@ -122,13 +131,23 @@ export type ErrorCode =
   | 'signed_in'
   | 'last_active_passkey'
   | 'passkey_refused'
+  | 'recovery_locked'
+  | 'recovery_pending'
   | 'request_failed'
   | 'internal_error';
+
+/** The session a request is signed in with, and what its account's passkeys say about it. */
+interface RequestSession {
+  readonly current: SignedIn | null;
+  readonly status: AccountStatus | null;
+}
 
 export interface AppEnv {
   Variables: {
     requestId: string;
     errorCode?: ErrorCode;
+    /** The request's session and its account's status, looked up once per request. */
+    session?: Promise<RequestSession>;
     /** Class name of a thrown error; never its message, which may carry data. */
     errorName?: string;
   };
@@ -221,6 +240,7 @@ export function createApp({
   recoveryKits,
   invites,
   devices,
+  recovery,
   audit,
   outbox,
 }: AppDependencies) {
@@ -274,8 +294,23 @@ export function createApp({
     return c.json({ status: database === 'ok' ? 'ok' : 'degraded', checks: { database } }, 200);
   });
 
-  const signedIn = (c: Context<AppEnv>) =>
-    auth === undefined ? Promise.resolve(null) : auth.signedIn(c.req.raw.headers);
+  const lookUp = async (headers: Headers): Promise<RequestSession> => {
+    if (auth === undefined) return { current: null, status: null };
+    const current = await auth.signedIn(headers);
+    if (current === null || devices === undefined) return { current, status: null };
+    const status = await devices.status(current.accountId);
+    // A recovery passkey's activation ends the sessions it restricted, maybe this one.
+    return { current: status.sessionsEnded ? await auth.signedIn(headers) : current, status };
+  };
+  const sessionOf = (c: Context<AppEnv>) => {
+    let found = c.get('session');
+    if (found === undefined) {
+      found = lookUp(c.req.raw.headers);
+      c.set('session', found);
+    }
+    return found;
+  };
+  const signedIn = async (c: Context<AppEnv>) => (await sessionOf(c)).current;
   /** Counts the request; over the limit, the 429 to answer with. */
   const overLimit = async (
     c: Context<AppEnv>,
@@ -334,14 +369,51 @@ export function createApp({
     return c.json(outcome.body, 200);
   };
 
+  /**
+   * While a recovery passkey waits, a session of its account may only show so and cancel it
+   * from the device list (spec 0003, R6); every other route answers 403 `recovery_pending`.
+   * The recovery routes never read a session, so a cookie this browser still holds is no matter.
+   */
+  const whileRecoveryPending = new Set(
+    [
+      openApiRoutes.session,
+      openApiRoutes.listDevices,
+      openApiRoutes.revokePasskey,
+      openApiRoutes.stepUpOptions,
+      openApiRoutes.stepUpVerify,
+      openApiRoutes.recoveryStart,
+      openApiRoutes.recoveryRedeem,
+      openApiRoutes.recoveryOptions,
+      openApiRoutes.recoveryVerify,
+    ].map(({ method, path }) => `${method.toUpperCase()} ${apiBasePath}${path}`),
+  );
+  const restrictWhileRecoveryPending = createMiddleware<AppEnv>(async (c, next) => {
+    // Only a cookie carries a session, so a request without one has nothing to restrict.
+    if (c.req.header('cookie') === undefined) return next();
+    if (whileRecoveryPending.has(`${c.req.method} ${c.req.path}`)) return next();
+    const { current, status } = await sessionOf(c);
+    if (current !== null && status?.recoveryPending === true) {
+      return reject(c, 'recovery_pending', 403);
+    }
+    return next();
+  });
+  v1.use('*', restrictWhileRecoveryPending);
+
   v1.openapi(openApiRoutes.session, async (c) => {
     if (auth === undefined) return unauthorized(c);
+    // Looked up first, so a recovery activation that ends this session is seen before it slides.
+    const { status } = await sessionOf(c);
     const { session, setCookies } = await auth.refresh(c.req.raw.headers);
     for (const cookie of setCookies) c.header('set-cookie', cookie, { append: true });
     if (session === null) return unauthorized(c);
-    const pendingUntil =
-      devices === undefined ? null : await devices.pendingUntil(session.accountId);
-    return c.json({ ...session, pendingPasskeyUntil: pendingUntil?.toISOString() ?? null }, 200);
+    return c.json(
+      {
+        ...session,
+        pendingPasskeyUntil: status?.pendingUntil?.toISOString() ?? null,
+        recoveryPending: status?.recoveryPending ?? false,
+      },
+      200,
+    );
   });
 
   v1.openapi(openApiRoutes.stepUpOptions, async (c) => {
@@ -507,6 +579,7 @@ export function createApp({
     const outcome = await devices.revokePasskey(current, passkeyId);
     if (outcome === 'not_found') return fail(c, 'not_found', 404);
     if (outcome === 'last_active') return fail(c, 'last_active_passkey', 409);
+    if (outcome === 'recovery_pending') return fail(c, 'recovery_pending', 403);
     return c.json({}, 200);
   });
 
@@ -544,6 +617,52 @@ export function createApp({
     if (!(await devices.add(current, challengeId, response))) {
       return fail(c, 'passkey_refused', 403);
     }
+    return c.json({}, 200);
+  });
+
+  // Recovery comes before any session (spec 0003, R6), so its routes are limited per address.
+  v1.openapi(openApiRoutes.recoveryStart, async (c) => {
+    if (recovery === undefined || authLimits === undefined) return fail(c, 'not_found', 404);
+    const limited = await overAddressLimit(c, authLimits, recoveryLimits.startIp);
+    if (limited !== undefined) return limited;
+    const { email } = recoveryStart.body.parse(await c.req.json());
+    const perEmail = await overLimit(c, authLimits, recoveryLimits.startEmail, email.toLowerCase());
+    if (perEmail !== undefined) return perEmail;
+    if ((await recovery.start(email)) === 'email_unavailable') {
+      return fail(c, 'email_unavailable', 503);
+    }
+    return c.json({}, 200);
+  });
+
+  v1.openapi(openApiRoutes.recoveryRedeem, async (c) => {
+    if (recovery === undefined || authLimits === undefined) return fail(c, 'not_found', 404);
+    const limited = await overAddressLimit(c, authLimits, recoveryLimits.redeem);
+    if (limited !== undefined) return limited;
+    const { token, code } = recoveryRedeem.body.parse(await c.req.json());
+    const outcome = await recovery.redeem(token, code);
+    if (outcome.ok) return c.json({ code: outcome.code }, 200);
+    if (outcome.reason === 'not_found') return fail(c, 'not_found', 404);
+    return fail(c, outcome.reason === 'locked' ? 'recovery_locked' : 'invalid_code', 403);
+  });
+
+  v1.openapi(openApiRoutes.recoveryOptions, async (c) => {
+    if (recovery === undefined || authLimits === undefined) return fail(c, 'not_found', 404);
+    const limited = await overAddressLimit(c, authLimits, recoveryLimits.options);
+    if (limited !== undefined) return limited;
+    const { token } = recoveryOptions.body.parse(await c.req.json());
+    const options = await recovery.options(token);
+    return options === null ? fail(c, 'not_found', 404) : c.json(options, 200);
+  });
+
+  v1.openapi(openApiRoutes.recoveryVerify, async (c) => {
+    if (recovery === undefined || authLimits === undefined) return fail(c, 'not_found', 404);
+    const limited = await overAddressLimit(c, authLimits, recoveryLimits.verify);
+    if (limited !== undefined) return limited;
+    const { token, response } = recoveryVerify.body.parse(await c.req.json());
+    const device = describeDevice(c.req.header('user-agent'));
+    const outcome = await recovery.verify(token, response, device);
+    if (outcome === 'not_found') return fail(c, 'not_found', 404);
+    if (outcome === 'refused') return fail(c, 'passkey_refused', 403);
     return c.json({}, 200);
   });
 

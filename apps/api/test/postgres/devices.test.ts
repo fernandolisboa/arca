@@ -8,6 +8,7 @@ import type { SignedIn } from '../../src/auth/service.js';
 import { createStepUp, type StepUpService } from '../../src/auth/step-up.js';
 import type { Notice } from '../../src/email/notices.js';
 import { softwarePasskey, type SoftwarePasskey } from '../software-passkey.js';
+import { accountFixtures, type Account, type Key } from './accounts.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
 
 // The device list and its revocations on the real migrations and the app_auth pool (spec 0003,
@@ -57,102 +58,16 @@ afterAll(async () => {
   await testDatabase.drop();
 });
 
-interface Key {
-  readonly id: string;
-  readonly passkey: SoftwarePasskey;
-}
-
-interface Account {
-  readonly accountId: string;
-  readonly email: string;
-  readonly keys: readonly [Key, ...Key[]];
-}
-
-/** An account with this many passkeys, stored as the passkey plugin stores them, oldest first. */
-async function account(passkeys = 2): Promise<Account> {
-  const accountId = randomUUID();
-  const email = `${accountId}@example.com`;
-  const keys: Key[] = [];
-  await testDatabase.asAdmin(async (client) => {
-    await client.query(`INSERT INTO auth.user (id, name, email) VALUES ($1, '', $2)`, [
-      accountId,
-      email,
-    ]);
-    for (let index = 0; index < passkeys; index += 1) {
-      const passkey = softwarePasskey(rpId);
-      const id = randomUUID();
-      await client.query(
-        `INSERT INTO auth.passkey
-           (id, public_key, user_id, credential_id, counter, device_type, backed_up, created_at)
-         VALUES ($1, $2, $3, $4, 0, 'multiDevice', true, now() - make_interval(days => $5))`,
-        [id, passkey.publicKey, accountId, passkey.credentialId, passkeys - index],
-      );
-      await client.query(
-        `INSERT INTO auth.passkey_client (credential_id, browser, os) VALUES ($1, 'firefox', 'linux')`,
-        [passkey.credentialId],
-      );
-      keys.push({ id, passkey });
-    }
-  });
-  return { accountId, email, keys: keys as [Key, ...Key[]] };
-}
-
-/** A session the key signed in, `age` old and last slid `idle` ago. */
-async function session(
-  owner: Account,
-  key: Key,
-  { age = '1 hour', idle = '1 minute', expiresIn = '1 day' } = {},
-): Promise<SignedIn> {
-  const sessionId = randomUUID();
-  await testDatabase.asAdmin((client) =>
-    client.query(
-      `INSERT INTO auth.session
-         (id, expires_at, token, user_id, device_browser, device_os, credential_id, created_at, updated_at)
-       VALUES ($1, now() + $2::interval, $3, $4, 'chrome', 'android', $5,
-               now() - $6::interval, now() - $7::interval)`,
-      [
-        sessionId,
-        expiresIn,
-        randomBytes(16).toString('hex'),
-        owner.accountId,
-        key.passkey.credentialId,
-        age,
-        idle,
-      ],
-    ),
-  );
-  return { accountId: owner.accountId, sessionId };
-}
-
-async function count(sql: string, values: readonly unknown[]): Promise<number> {
-  return testDatabase.asAdmin(
-    async (client) =>
-      (await client.query<{ n: number }>(sql, [...values])).rows[0]?.n ?? Number.NaN,
-  );
-}
-
-const sessionsOf = (owner: Account) =>
-  testDatabase.asAdmin(async (client) =>
-    (
-      await client.query<{ id: string }>(
-        'SELECT id FROM auth.session WHERE user_id = $1 ORDER BY id',
-        [owner.accountId],
-      )
-    ).rows.map(({ id }) => id),
-  );
-
+const fixtures = () => accountFixtures(testDatabase, rpId);
+const account = (passkeys?: number) => fixtures().account(passkeys);
+const session = (...args: Parameters<ReturnType<typeof fixtures>['session']>) =>
+  fixtures().session(...args);
+const count = (sql: string, values: readonly unknown[]) => fixtures().count(sql, values);
+const sessionsOf = (owner: Account) => fixtures().sessionsOf(owner);
 const events = (owner: Account, codes = ['passkey_revoked', 'session_revoked']) =>
-  testDatabase.asAdmin(
-    async (client) =>
-      (
-        await client.query<{ code: string; actor: string | null; details: unknown }>(
-          `SELECT code, actor_account_id AS actor, details FROM audit.event
-            WHERE subject_account_id = $1 AND code = ANY($2)
-            ORDER BY time, id`,
-          [owner.accountId, codes],
-        )
-      ).rows,
-  );
+  fixtures().events(owner, codes);
+const pendingOf = (owner: Account) => fixtures().pendingOf(owner);
+const waitOver = (owner: Account) => fixtures().waitOver(owner);
 
 const noticesTo = (owner: Account) =>
   sent.filter(({ to }) => to === owner.email).map(({ kind }) => kind);
@@ -486,29 +401,6 @@ async function added(signedIn: SignedIn) {
   return passkey;
 }
 
-const pendingOf = (owner: Account) =>
-  testDatabase.asAdmin(
-    async (client) =>
-      (
-        await client.query<{ id: string; credentialId: string }>(
-          `SELECT p.id, p.credential_id AS "credentialId" FROM auth.passkey p
-             JOIN auth.passkey_activation a ON a.credential_id = p.credential_id
-            WHERE p.user_id = $1`,
-          [owner.accountId],
-        )
-      ).rows,
-  );
-
-/** Ends the 24-hour wait of every pending passkey of the account. */
-const waitOver = (owner: Account) =>
-  testDatabase.asAdmin((client) =>
-    client.query(
-      `UPDATE auth.passkey_activation SET active_from = now() - interval '1 second'
-        WHERE credential_id IN (SELECT credential_id FROM auth.passkey WHERE user_id = $1)`,
-      [owner.accountId],
-    ),
-  );
-
 /** Whether a step-up signed by this key is accepted for the session. */
 async function stepsUp(signedIn: SignedIn, passkey: SoftwarePasskey) {
   const { challengeId, options } = await stepUp.options(signedIn, { purpose: 'vault_unlock' });
@@ -537,7 +429,7 @@ describe('adding a passkey (spec 0003, R4)', () => {
     const activeFrom = Date.parse(shown?.activeFrom ?? '');
     expect(activeFrom - before).toBeGreaterThan(24 * 60 * 60 * 1000 - 60_000);
     expect(activeFrom - before).toBeLessThan(24 * 60 * 60 * 1000 + 60_000);
-    expect((await devices.pendingUntil(owner.accountId))?.getTime()).toBe(activeFrom);
+    expect((await devices.status(owner.accountId)).pendingUntil?.getTime()).toBe(activeFrom);
     expect(
       await count(
         'SELECT count(*)::int AS n FROM auth.passkey_capability WHERE credential_id = $1 AND prf_enabled',
@@ -671,7 +563,7 @@ describe('adding a passkey (spec 0003, R4)', () => {
     await added(current);
     const [pending] = await pendingOf(owner);
     await waitOver(owner);
-    expect(await devices.pendingUntil(owner.accountId)).toBeNull();
+    expect((await devices.status(owner.accountId)).pendingUntil).toBeNull();
     const listed = await devices.list(current);
     expect(listed.passkeys.find(({ id }) => id === pending?.id)).toMatchObject({
       state: 'active',
@@ -690,7 +582,7 @@ describe('adding a passkey (spec 0003, R4)', () => {
     await waitOver(owner);
     await Promise.all([
       devices.list(current),
-      devices.pendingUntil(owner.accountId),
+      devices.status(owner.accountId),
       devices.list(current),
     ]);
     expect(await events(owner, ['passkey_activated'])).toHaveLength(1);
@@ -704,7 +596,7 @@ describe('adding a passkey (spec 0003, R4)', () => {
     expect(await devices.revokePasskey(current, owner.keys[0].id)).toBe('last_active');
     expect(await devices.revokePasskey(current, pending?.id ?? '')).toBe('revoked');
     expect(noticesTo(owner)).toEqual(['passkey_added', 'pending_passkey_cancelled']);
-    expect(await devices.pendingUntil(owner.accountId)).toBeNull();
+    expect((await devices.status(owner.accountId)).pendingUntil).toBeNull();
     expect((await devices.list(current)).passkeys.map(({ id }) => id)).toEqual([owner.keys[0].id]);
   });
 });

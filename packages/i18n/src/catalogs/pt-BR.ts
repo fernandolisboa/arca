@@ -292,6 +292,12 @@ export const ptBR = {
       body: 'Use o link abaixo para criar sua conta no Arca com uma chave de acesso. Ele vale por 30 minutos e funciona uma vez só. Na página, digite o código de cadastro que você guardou. Se não foi você que pediu, pode ignorar este email.',
       link: 'Criar a conta: {url}',
     },
+    /** The link that opens a recovery; it carries a one-time token and is useless without the code. */
+    recovery: {
+      subject: 'Seu link para recuperar a conta no Arca',
+      body: 'Use o link abaixo para recuperar sua conta no Arca. Ele vale por {minutes} minutos e funciona uma vez só. Na página, digite o código de recuperação que você guardou. Se não foi você que pediu, pode ignorar este email: sem o código, o link não abre a sua conta.',
+      link: 'Recuperar a conta: {url}',
+    },
     /** The link that opens an invite; it carries a one-time token and never names the inviter. */
     invite: {
       subject: 'Você recebeu um convite para o Arca',

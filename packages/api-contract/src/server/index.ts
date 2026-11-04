@@ -55,6 +55,10 @@ export const openApiRoutes = {
   revokeOtherSessions: toOpenApiRoute(routes.revokeOtherSessions),
   addPasskeyOptions: toOpenApiRoute(routes.addPasskeyOptions),
   addPasskey: toOpenApiRoute(routes.addPasskey),
+  recoveryStart: toOpenApiRoute(routes.recoveryStart),
+  recoveryRedeem: toOpenApiRoute(routes.recoveryRedeem),
+  recoveryOptions: toOpenApiRoute(routes.recoveryOptions),
+  recoveryVerify: toOpenApiRoute(routes.recoveryVerify),
   auditEvents: toOpenApiRoute(routes.auditEvents),
 } as const;
 

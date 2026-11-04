@@ -9,6 +9,7 @@ import { createEnrollment, ownerCode, type Enrollment } from './auth/enrollment.
 import { createDevices, type Devices } from './auth/devices.js';
 import { createInvites, type Invites } from './auth/invites.js';
 import { recoveryKits, type RecoveryKits } from './auth/recovery-kit.js';
+import { createRecovery, type Recovery } from './auth/recovery.js';
 import { registration, registrationHooks, type Registration } from './auth/registration.js';
 import { authService, type AuthService } from './auth/service.js';
 import { createStepUp, type StepUpService } from './auth/step-up.js';
@@ -85,6 +86,7 @@ interface AuthParts {
   readonly recoveryKits: RecoveryKits;
   readonly invites: Invites;
   readonly devices: Devices;
+  readonly recovery: Recovery;
 }
 
 let parts: Promise<AuthParts> | undefined;
@@ -112,6 +114,7 @@ function authParts(): Promise<AuthParts> {
       registration: hooks,
     });
     const invites = createInvites({ db, audit, email, notices, i18n, origin, logger });
+    const devices = createDevices({ db, audit, notices, logger, origin });
     return {
       auth: authService(auth),
       stepUp: createStepUp({ db, credentials: credentialStore(db), audit, origin, logger }),
@@ -119,7 +122,19 @@ function authParts(): Promise<AuthParts> {
       registration: registration(auth, hooks, enrollmentCode, logger, invites.accepted),
       recoveryKits: recoveryKits({ db, audit, notices, logger }),
       invites,
-      devices: createDevices({ db, audit, notices, logger, origin }),
+      devices,
+      recovery: createRecovery({
+        db,
+        audit,
+        email,
+        notices,
+        i18n,
+        origin,
+        logger,
+        // Production has no sending domain yet (spec 0003, R9), whoever asks.
+        emailAvailable: environment !== 'production',
+        status: devices.status,
+      }),
     };
   })();
   // A failed build is retried on the next request instead of being cached.
@@ -201,7 +216,14 @@ const app = createApp({
     addOptions: async (signedIn) => (await authParts()).devices.addOptions(signedIn),
     add: async (signedIn, challengeId, response) =>
       (await authParts()).devices.add(signedIn, challengeId, response),
-    pendingUntil: async (accountId) => (await authParts()).devices.pendingUntil(accountId),
+    status: async (accountId) => (await authParts()).devices.status(accountId),
+  },
+  recovery: {
+    start: async (email) => (await authParts()).recovery.start(email),
+    redeem: async (token, code) => (await authParts()).recovery.redeem(token, code),
+    options: async (token) => (await authParts()).recovery.options(token),
+    verify: async (token, response, device) =>
+      (await authParts()).recovery.verify(token, response, device),
   },
   authLimits: {
     limiter,
