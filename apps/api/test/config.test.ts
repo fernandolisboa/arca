@@ -1,8 +1,10 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   databaseTargetFrom,
   MissingConfigError,
   readApiSecrets,
+  readAuthOrigin,
+  readAuthSecrets,
   readCronSecret,
   readJobsDatabasePassword,
 } from '../src/config.js';
@@ -73,6 +75,73 @@ describe('databaseTargetFrom', () => {
     'fails on %j',
     (value) => {
       expect(() => databaseTargetFrom(value)).toThrow(MissingConfigError);
+    },
+  );
+});
+
+describe('readAuthSecrets', () => {
+  it('reads the app_auth password and the Better Auth secret by name', () => {
+    vi.stubEnv('ARCA_DB_AUTH_PASSWORD', 'test-only-password');
+    vi.stubEnv('BETTER_AUTH_SECRET', 's'.repeat(32));
+    expect(readAuthSecrets()).toEqual({
+      databasePassword: 'test-only-password',
+      secret: 's'.repeat(32),
+    });
+  });
+
+  it.each([undefined, '', 's'.repeat(31)])('fails closed on a secret of %j', (value) => {
+    vi.stubEnv('ARCA_DB_AUTH_PASSWORD', 'test-only-password');
+    vi.stubEnv('BETTER_AUTH_SECRET', value);
+    expect(() => readAuthSecrets()).toThrow(MissingConfigError);
+  });
+
+  it('fails without the app_auth password', () => {
+    vi.stubEnv('ARCA_DB_AUTH_PASSWORD', undefined);
+    vi.stubEnv('BETTER_AUTH_SECRET', 's'.repeat(32));
+    expect(() => readAuthSecrets()).toThrow('ARCA_DB_AUTH_PASSWORD is not set');
+  });
+});
+
+describe('readAuthOrigin', () => {
+  beforeEach(() => {
+    vi.stubEnv('VERCEL', '1');
+  });
+
+  it('uses the branch URL on a preview, never the deployment URL', () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    vi.stubEnv('VERCEL_BRANCH_URL', 'arca-git-feature-team.vercel.app');
+    vi.stubEnv('VERCEL_URL', 'arca-abc123-team.vercel.app');
+    expect(readAuthOrigin()).toBe('https://arca-git-feature-team.vercel.app');
+  });
+
+  it('uses the production domain in production', () => {
+    vi.stubEnv('VERCEL_ENV', 'production');
+    vi.stubEnv('VERCEL_PROJECT_PRODUCTION_URL', 'arca.example.com');
+    expect(readAuthOrigin()).toBe('https://arca.example.com');
+  });
+
+  it('uses the local dev server outside Vercel', () => {
+    vi.stubEnv('VERCEL', undefined);
+    vi.stubEnv('VERCEL_ENV', 'production');
+    expect(readAuthOrigin()).toBe('http://localhost:3000');
+  });
+
+  it('uses the local dev server under vercel dev', () => {
+    vi.stubEnv('VERCEL_ENV', 'development');
+    expect(readAuthOrigin()).toBe('http://localhost:3000');
+  });
+
+  it.each([undefined, '', 'staging'])('fails closed on Vercel with VERCEL_ENV %j', (value) => {
+    vi.stubEnv('VERCEL_ENV', value);
+    expect(() => readAuthOrigin()).toThrow(MissingConfigError);
+  });
+
+  it.each([undefined, '', 'evil.example.com/path', 'user@host.example.com', 'host:8443'])(
+    'fails closed on a preview host of %j',
+    (value) => {
+      vi.stubEnv('VERCEL_ENV', 'preview');
+      vi.stubEnv('VERCEL_BRANCH_URL', value);
+      expect(() => readAuthOrigin()).toThrow(MissingConfigError);
     },
   );
 });

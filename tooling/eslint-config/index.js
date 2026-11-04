@@ -8,6 +8,8 @@ import {
   client,
   contractSurface,
   contractSurfaceFiles,
+  credentialReader,
+  credentialRows,
   databaseDriverFiles,
   databaseDrivers,
   databaseTestFiles,
@@ -72,6 +74,7 @@ export function arcaConfig({ rootDir, kinds = [] }) {
   const restrictions = [
     ...kinds.flatMap((kind) => restrictionsByKind[kind]),
     ...(isScripts ? [] : [databaseDrivers]),
+    ...(kinds.includes('db') ? [] : [credentialRows]),
     reproductionLookup,
   ];
   /** @typedef {import('./boundaries.js').Restrictions} Restrictions */
@@ -128,6 +131,7 @@ export function arcaConfig({ rootDir, kinds = [] }) {
     restrictions.includes(workflowStart)
       ? { files: [workflowStartHelper], rules: scoped([workflowStart]) }
       : [],
+    kinds.includes('api') ? { files: [credentialReader], rules: scoped([credentialRows]) } : [],
     restrictions.includes(databaseDrivers)
       ? {
           files: kinds.includes('db') ? databaseDriverFiles : databaseTestFiles,

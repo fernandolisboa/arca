@@ -7,6 +7,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./auth-schema": {
+      "types": "./dist/auth-schema.d.ts",
+      "default": "./dist/auth-schema.js"
     }
   },
   "scripts": {

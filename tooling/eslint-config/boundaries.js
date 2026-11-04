@@ -236,6 +236,23 @@ export const contractSurface = {
   patterns: [{ group: ['hono', 'hono/*', '@hono/*'], message: contractWithoutHono }],
 };
 
+/** The one apps/api module that reads the auth schema, credential rows included (spec 0003, R1). */
+export const credentialReader = 'src/auth/auth.ts';
+
+/**
+ * Every package except packages/db: the auth schema only in the module that mounts Better Auth.
+ *
+ * @type {Restrictions}
+ */
+export const credentialRows = {
+  paths: [
+    {
+      name: '@arca/db/auth-schema',
+      message: `Only ${credentialReader} in apps/api reads the auth schema (spec 0003, R1).`,
+    },
+  ],
+};
+
 /** The one file allowed to call start() from workflow/api (spec 0001, R6). */
 export const workflowStartHelper = 'src/workflows/start-workflow.ts';
 

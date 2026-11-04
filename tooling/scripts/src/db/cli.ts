@@ -30,6 +30,7 @@ async function main(command: string | undefined): Promise<void> {
         app_migrator: requiredVariable(env, 'ARCA_DB_MIGRATOR_PASSWORD'),
         app_api: requiredVariable(env, 'ARCA_DB_API_PASSWORD'),
         app_jobs: requiredVariable(env, 'ARCA_DB_JOBS_PASSWORD'),
+        app_auth: requiredVariable(env, 'ARCA_DB_AUTH_PASSWORD'),
       }),
       deployment,
     );

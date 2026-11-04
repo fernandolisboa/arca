@@ -9,6 +9,13 @@ export function toOpenApiRoute<Schema extends z.ZodType>(route: RouteDefinition<
     path: route.path,
     operationId: route.operationId,
     summary: route.summary,
+    ...(route.body === undefined
+      ? {}
+      : {
+          request: {
+            body: { required: true, content: { 'application/json': { schema: route.body } } },
+          },
+        }),
     responses: {
       200: {
         description: route.response.description,
@@ -26,6 +33,8 @@ export function toOpenApiRoute<Schema extends z.ZodType>(route: RouteDefinition<
 
 export const openApiRoutes = {
   health: toOpenApiRoute(routes.health),
+  session: toOpenApiRoute(routes.session),
+  signOut: toOpenApiRoute(routes.signOut),
 } as const;
 
 export const openApiInfo = { title: 'Arca API', version: '1.0.0' } as const;

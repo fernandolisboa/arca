@@ -1,5 +1,30 @@
 {
-  "tablesWithoutRowLevelSecurity": ["arca_migrations.journal"],
+  "tablesWithoutRowLevelSecurity": [
+    {
+      "table": "arca_migrations.journal",
+      "reason": "The migration runner's journal; only app_migrator touches it."
+    },
+    {
+      "table": "auth.account",
+      "reason": "Better Auth table; only app_auth has privileges on the auth schema, and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
+    },
+    {
+      "table": "auth.passkey",
+      "reason": "Better Auth table; only app_auth has privileges on the auth schema, and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
+    },
+    {
+      "table": "auth.session",
+      "reason": "Better Auth table; only app_auth has privileges on the auth schema, and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
+    },
+    {
+      "table": "auth.user",
+      "reason": "Better Auth table; only app_auth has privileges on the auth schema, and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
+    },
+    {
+      "table": "auth.verification",
+      "reason": "Better Auth table; only app_auth has privileges on the auth schema, and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
+    }
+  ],
   "materializedViews": [],
   "foreignTables": [],
   "securityDefinerFunctions": [],

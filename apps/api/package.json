@@ -26,7 +26,11 @@
     "@arca/api-contract": "workspace:*",
     "@arca/db": "workspace:*",
     "@arca/knowledge": "workspace:*",
+    "@better-auth/passkey": "catalog:",
     "@hono/zod-openapi": "catalog:",
+    "@simplewebauthn/server": "catalog:",
+    "better-auth": "catalog:",
+    "drizzle-orm": "catalog:",
     "hono": "catalog:",
     "workflow": "catalog:",
     "zod": "catalog:"
