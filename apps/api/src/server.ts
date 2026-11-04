@@ -197,7 +197,7 @@ const app = createApp({
     startHeartbeat: (runDate) => startWorkflow(heartbeat, [runDate]),
     startRetention: (runDate) => startWorkflow(enforceRetention, [runDate]),
     // A run per account from this server-side scan; a failed run is started again the next day,
-    // since every step is idempotent and an erased account stays noted until its tombstone.
+    // since every step is idempotent and an erased account stays noted until its event is recorded.
     startDueErasures: async () =>
       forEachAccount(await accounts.dueForErasure(authConnection()), (id) =>
         startWorkflow(eraseAccount, [entityId(id)]),

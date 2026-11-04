@@ -1,6 +1,6 @@
 # ADR-0008: Database roles, row-level security, field encryption, backups and environments
 
-- Status: Accepted; workflow run deletion amended by [ADR-0009](0009-background-jobs-guarantees.md); environments (one Neon project created through Vercel; previews fork from a synthetic `development` branch before any family data exists) amended by [ADR-0012](0012-automation-first-setup.md); backups and deletion amended by [ADR-0017](0017-data-lifecycle-and-backups.md) (backup role with explicit read policies, backup account and drills, account deletion); document encryption and crypto-shredding specified by [ADR-0018](0018-vault-encryption.md)
+- Status: Accepted; workflow run deletion amended by [ADR-0009](0009-background-jobs-guarantees.md); environments (one Neon project created through Vercel; previews fork from a synthetic `development` branch before any family data exists) amended by [ADR-0012](0012-automation-first-setup.md); backups and deletion amended by [ADR-0017](0017-data-lifecycle-and-backups.md) (backup role with explicit read policies, backup account and drills, account deletion); document encryption and crypto-shredding specified by [ADR-0018](0018-vault-encryption.md); field encryption, the off-vendor backup and AWS removed by [ADR-0021](0021-stay-on-vercel-and-neon.md)
 - Date: 2026-11-01
 
 ## Context
@@ -17,7 +17,7 @@
 - **Separate Neon projects** for production and non-production (amended by [ADR-0012](0012-automation-first-setup.md): one project; previews fork from a synthetic `development` branch before any family data exists). Non-production branches start from a synthetic seed, never from production.
 - Production data never leaves production: no copies to preview, CI or local machines.
 - Preview deployments sit behind Vercel Deployment Protection and use non-production secrets only.
-- Each environment has its own secrets, held in the platform's environment-variable store and scoped per environment. Access from Vercel to AWS uses OIDC federation, so no long-lived AWS keys exist.
+- Each environment has its own secrets, held in the platform's environment-variable store and scoped per environment. Vercel services that support it (Vercel Blob) are reached through OIDC, so no long-lived keys exist for them; there is no AWS ([ADR-0021](0021-stay-on-vercel-and-neon.md)).
 
 ### Roles (created with SQL, never in the console)
 
@@ -27,7 +27,6 @@
 | `app_jobs` | Workflow steps | `NOBYPASSRLS`; only the tables its jobs need |
 | `app_auth` | Better Auth | Only the auth tables (users, sessions, passkeys), which are not under per-person RLS |
 | `app_audit` | Audit writer | `INSERT` only on the audit log; no `UPDATE` or `DELETE` for anyone but the migrator |
-| `app_backup` | Daily off-vendor backup ([ADR-0017](0017-data-lifecycle-and-backups.md)) | `NOBYPASSRLS`; `SELECT` only, through one guarded read policy per table; Production-only password |
 | `app_migrator` | Schema migrations in the Vercel build ([ADR-0012](0012-automation-first-setup.md)) | DDL; never used by running services |
 
 ### Row-level security
@@ -39,21 +38,19 @@
 
 ### Field-level encryption
 
-- Bank account numbers and identity document numbers are encrypted per field with envelope encryption: data keys generated and wrapped by AWS KMS in São Paulo (`sa-east-1`), decrypted only in the API when a feature needs them.
-- Documents themselves are encrypted on the client ([ADR-0018](0018-vault-encryption.md)) and stored as ciphertext in S3 in `sa-east-1`.
+- Bank account numbers and identity document numbers are kept in the person's vault, encrypted on the device like documents; the server stores ciphertext only (amended by [ADR-0021](0021-stay-on-vercel-and-neon.md), which replaced KMS envelope encryption).
+- Documents themselves are encrypted on the client ([ADR-0018](0018-vault-encryption.md)) and stored as ciphertext in a private Vercel Blob store in São Paulo ([ADR-0021](0021-stay-on-vercel-and-neon.md)).
 
 ### Backups and deletion
 
 - Initial targets: RPO 15 minutes, RTO 4 hours.
-- Neon point-in-time restore, plus a daily encrypted logical backup to S3 in a separate AWS account.
-- Restore drills every quarter, with results recorded.
+- Neon point-in-time restore within the plan's history window, and a manual Neon snapshot when the project owner wants one; no off-vendor copy and no drills ([ADR-0021](0021-stay-on-vercel-and-neon.md)), so the RPO above holds only inside that window.
 - Deleting a case removes its rows and related data in workflow runs and object storage; telemetry holds no case data to delete ([ADR-0016](0016-observability-and-scrubbing.md)). Documents belong to their owner's account and are shared per account, so deleting a case removes no one's documents. A person's vault identity and envelopes belong to their account and are destroyed (crypto-shredding, [ADR-0018](0018-vault-encryption.md)) only when the account is erased. Point-in-time history keeps deleted rows until the restore window expires; the window is documented and kept as short as the RPO allows.
 
 ## Consequences
 
 - A forgotten policy fails closed (no rows), not open.
 - Migrations and runtime use different credentials; a compromised API cannot alter the schema or rewrite the audit log.
-- Field encryption adds a KMS call path; data keys are cached briefly in memory to keep latency low.
 
 ## Sources
 

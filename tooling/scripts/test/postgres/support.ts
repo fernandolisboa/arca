@@ -24,7 +24,6 @@ export const passwords: RolePasswords = {
   app_jobs: generated(),
   app_auth: generated(),
   app_audit: generated(),
-  app_backup: generated(),
 };
 
 const dbPackage = join(import.meta.dirname, '../../../../packages/db');

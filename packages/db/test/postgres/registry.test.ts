@@ -20,7 +20,9 @@ const migrationsDir = join(import.meta.dirname, '../../migrations');
 
 const database = `arca_registry_${randomBytes(6).toString('hex')}`;
 const jobsPassword = randomBytes(24).toString('base64url');
-const runtimeRoles = ['app_api', 'app_jobs', 'app_auth', 'app_audit', 'app_backup'] as const;
+const runtimeRoles = ['app_api', 'app_jobs', 'app_auth', 'app_audit'] as const;
+// Retired (ADR-0021): kept without login only so the migrations that once granted to it replay.
+const retiredRoles = ['app_backup'] as const;
 const createdRoles: string[] = [];
 
 const accountA = '0b9c3d6e-1f2a-4b5c-8d7e-9f0a1b2c3d4e';
@@ -46,14 +48,18 @@ const asAdmin = <T>(name: string, use: (client: pg.Client) => Promise<T>) =>
 beforeAll(async () => {
   await asAdmin('postgres', async (client) => {
     await client.query(`CREATE DATABASE ${database}`);
-    for (const role of runtimeRoles) {
+    for (const role of [...runtimeRoles, ...retiredRoles]) {
       const exists = await client.query('SELECT FROM pg_catalog.pg_roles WHERE rolname = $1', [
         role,
       ]);
       if (exists.rowCount === 0) createdRoles.push(role);
       const password = role === 'app_jobs' ? jobsPassword : randomBytes(24).toString('base64url');
       await client.query(
-        `${exists.rowCount === 0 ? 'CREATE' : 'ALTER'} ROLE ${role} LOGIN PASSWORD '${password}'`,
+        `${exists.rowCount === 0 ? 'CREATE' : 'ALTER'} ROLE ${role} ${
+          (retiredRoles as readonly string[]).includes(role)
+            ? 'NOLOGIN'
+            : `LOGIN PASSWORD '${password}'`
+        }`,
       );
     }
   });

@@ -39,13 +39,11 @@ As of 2026-11-04. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md).
 | --- | --- | --- | --- |
 | Neon | Deleted rows in history | 6 hours (Free plan history window) | Neon project setting |
 | Neon | Incident evidence branches (`incident-YYYYMMDD`) and the backup branch a point-in-time restore leaves: full copies of the database | Until the investigation and any ANPD process close | Deleted by the owner as the [incident runbook](runbooks/incident-response.md#take-an-evidence-branch) says; their app roles are set to `NOLOGIN` when taken |
-| AWS S3 (backup account) | Daily backups and erasure tombstones | 35 days under Object Lock in compliance mode, removed by day 36 | Bucket lifecycle (current and noncurrent versions) and Object Lock |
-| AWS S3 (backup account) | Replica of document ciphertext, including replaced versions | While the document exists; a replaced or deleted version 35 days more | Replication with delete markers; noncurrent-version lifecycle |
-| AWS S3 (application account) | Document ciphertext | While the document exists; noncurrent versions 1 day | Bucket lifecycle rule |
+| Neon | A manual snapshot the owner took | Until the owner deletes it | Neon console |
+| Vercel Blob (São Paulo) | Document ciphertext | While the document exists; a replaced or deleted blob may be served from the CDN for up to 60 seconds | Deleted with the document ([ADR-0021](adr/0021-stay-on-vercel-and-neon.md)) |
 | Vercel | Runtime logs (allow-listed fields only) | 1 day | Vercel Pro policy |
 | Vercel Workflows | Run payloads (identifiers only) | Unreadable at run end, deleted within 36 days | `experimental_retention: 0` ([ADR-0009](adr/0009-background-jobs-guarantees.md)) |
 | Vercel Workflows | Run metadata (no personal data) | Up to 1 year | Vercel policy |
 | Sentry (United States) | Scrubbed errors and traces | 30 days | Developer plan policy |
-| AWS CloudWatch Logs (backup account, São Paulo) | Restore job status: table names, counts and error codes, never row contents | 35 days | Log group retention in the template |
 | Resend | Recipient address, message content and metadata (United States) | 30 days on the Free, Pro and Scale plans ([Resend pricing](https://resend.com/pricing), checked 2026-11-04) | Vendor policy |
 | Langfuse (EU) | Model-call metadata: no prompt or completion text, no account, case or document IDs, so nothing to erase per person | Set when Langfuse is adopted ([ADR-0016](adr/0016-observability-and-scrubbing.md)) | — |

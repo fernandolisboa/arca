@@ -1,6 +1,6 @@
 # ADR-0015: Identity: invite-only enrollment, purpose-bound step-up and recovery
 
-- Status: Accepted
+- Status: Accepted; the `app_backup` grant removed by [ADR-0021](0021-stay-on-vercel-and-neon.md)
 - Date: 2026-11-02
 - Amends: [ADR-0006](0006-auth.md) (enrollment, step-up mechanics, recovery details, session transport timing, and the production relying-party ID), [ADR-0005](0005-platform-strategy.md) (the production relying-party host; native bearer tokens move to Phase 4) and [ADR-0010](0010-stack-revised.md) (native bearer tokens move to Phase 4)
 - Spec: [0003 identity and access](../specs/0003-identity-and-access.md)

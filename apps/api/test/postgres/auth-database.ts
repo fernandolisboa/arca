@@ -38,8 +38,6 @@ export interface AuthTestDatabase {
   readonly auditDb: Database;
   readonly apiDb: Database;
   readonly jobsDb: Database;
-  /** Runs as app_backup, whose read policies make it the honest counter under row-level security. */
-  readonly asBackup: <T>(use: (client: pg.Client) => Promise<T>) => Promise<T>;
   /** Runs as the server's admin on the test database, for setup and checks the roles may not do. */
   readonly asAdmin: <T>(use: (client: pg.Client) => Promise<T>) => Promise<T>;
   /** Closes the pools and drops the database. */
@@ -54,7 +52,6 @@ export async function authTestDatabase(): Promise<AuthTestDatabase> {
     app_audit: randomBytes(24).toString('base64url'),
     app_api: randomBytes(24).toString('base64url'),
     app_jobs: randomBytes(24).toString('base64url'),
-    app_backup: randomBytes(24).toString('base64url'),
   };
   await asAdminOn('postgres', async (client) => {
     await client.query(`CREATE DATABASE ${database}`);
@@ -66,6 +63,15 @@ export async function authTestDatabase(): Promise<AuthTestDatabase> {
         `${exists.rowCount === 0 ? 'CREATE' : 'ALTER'} ROLE ${role} LOGIN PASSWORD '${password}'`,
       );
     }
+    // Retired (ADR-0021): kept without login only so the migrations that once granted to it replay.
+    await client.query(
+      `DO $$ BEGIN
+         IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'app_backup') THEN
+           CREATE ROLE app_backup;
+         END IF;
+         ALTER ROLE app_backup NOLOGIN;
+       END $$`,
+    );
   });
   // The runner's checks are tested in tooling/scripts; here the migrations only need to exist.
   await asAdminOn(database, async (client) => {
@@ -92,19 +98,6 @@ export async function authTestDatabase(): Promise<AuthTestDatabase> {
     auditDb: auditPool.db,
     apiDb: apiPool.db,
     jobsDb: jobsPool.db,
-    asBackup: async (use) => {
-      const client = new pg.Client({
-        ...target,
-        user: 'app_backup',
-        password: passwords.app_backup,
-      });
-      await client.connect();
-      try {
-        return await use(client);
-      } finally {
-        await client.end();
-      }
-    },
     asAdmin: (use) => asAdminOn(database, use),
     drop: async () => {
       await Promise.all(pools.map((pool) => pool.close()));

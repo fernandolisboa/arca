@@ -118,20 +118,18 @@ Rotate every secret the incident may have reached; when in doubt, all of them. G
 | Secret | Where it lives | How to rotate |
 | --- | --- | --- |
 | `BETTER_AUTH_SECRET` | Vercel | [Revoke every session](#revoke-every-session-and-sign-in-path) |
-| `ARCA_DB_MIGRATOR_PASSWORD`, `ARCA_DB_API_PASSWORD`, `ARCA_DB_AUTH_PASSWORD`, `ARCA_DB_AUDIT_PASSWORD`, `ARCA_DB_JOBS_PASSWORD`, `ARCA_DB_BACKUP_PASSWORD` (production only) | Vercel | New value for each, then redeploy. The build's bootstrap commits the new passwords first, so the serving deployment loses the database from then until the new one is promoted, and stays down if a later build step fails: block the API before rotating, and fix forward |
+| `ARCA_DB_MIGRATOR_PASSWORD`, `ARCA_DB_API_PASSWORD`, `ARCA_DB_AUTH_PASSWORD`, `ARCA_DB_AUDIT_PASSWORD`, `ARCA_DB_JOBS_PASSWORD` | Vercel | New value for each, then redeploy. The build's bootstrap commits the new passwords first, so the serving deployment loses the database from then until the new one is promoted, and stays down if a later build step fails: block the API before rotating, and fix forward |
 | The Neon owner password and the connection variables the Neon integration set (`DATABASE_URL`, `PGPASSWORD` and the other `PG*` and `POSTGRES_*` variables) | Neon and Vercel | Neon console › Roles › the owner role › Reset password, on `production` ([roles](https://neon.com/docs/manage/roles)). Roles are per branch, so other branches keep the old password: reset it there too, or delete those branches, unless they hold only synthetic data. Then check in Vercel that the integration's variables carry the new password, update them if not, and redeploy |
 | `ARCA_RATE_LIMIT_KEY` | Vercel | New value, redeploy. Current rate-limit windows start over |
 | `CRON_SECRET` | Vercel | New value, redeploy; Vercel sends the new one with each cron call |
 | `RESEND_API_KEY` | Resend and Vercel | Resend › API Keys › create a new key. Set it in Vercel, redeploy, then delete the old key in Resend |
-| Sentry, Langfuse and AWS credentials | Their consoles and Vercel | As each lands (spec 0004 R4–R6, R12): revoke and reissue in the vendor's console, update Vercel, redeploy. AWS roles use Vercel OIDC, so there are no static keys to rotate |
+| Sentry and Langfuse credentials | Their consoles and Vercel | As each lands (spec 0004 R4–R6): revoke and reissue in the vendor's console, update Vercel, redeploy. The Vercel Blob store (spec 0005 R3) is reached through Vercel OIDC; if it holds a read-write token, rotate it in Vercel › Storage |
 | Tokens handed to agents (the Vercel token, `NEON_API_KEY`, the fine-grained GitHub token, the Claude subscription token) | The owner's Vercel, Neon, GitHub and Claude account settings, and the cloud environment that holds them | Revoke each token in its account settings and remove it from the environment. Issue a new one only when needed |
 | GitHub sign-in, sessions and Actions secrets | GitHub | Change the password and review Settings › Sessions and the Security log. Revoke unknown sessions, OAuth apps and tokens. In the repository, check Settings › Secrets and variables › Actions and delete anything left over: the workflows use only the built-in `GITHUB_TOKEN` |
 
 ### Stop the crons and running workflows
 
-In Vercel: project `arca` › Settings › Cron Jobs › Disable Cron Jobs ([managing cron jobs](https://vercel.com/docs/cron-jobs/manage-cron-jobs)). That stops the daily heartbeat, the rate-limit sweep and, once they land, the retention jobs and the backup. Cancel any workflow run still in progress from the project's workflow runs in the Vercel dashboard. **Undo:** Enable Cron Jobs.
-
-Stopping the backup cron keeps a compromised writer from adding backups, but also stops new ones: turn it back on as soon as the production writer is trusted again.
+In Vercel: project `arca` › Settings › Cron Jobs › Disable Cron Jobs ([managing cron jobs](https://vercel.com/docs/cron-jobs/manage-cron-jobs)). That stops the daily heartbeat, the rate-limit sweep and, once they land, the retention and erasure jobs. Cancel any workflow run still in progress from the project's workflow runs in the Vercel dashboard. **Undo:** Enable Cron Jobs.
 
 ### Restore the database
 
@@ -140,11 +138,11 @@ Keep the API blocked and the crons stopped from the start of a restore until its
 - **Neon point-in-time restore**, for damage within Neon's history window (6 hours on the current plan, so act fast): Neon console › Branches › `production` › Restore, pick a time before the damage ([branch restore](https://neon.com/docs/introduction/branch-restore)).
   - Neon keeps the replaced state as a backup branch. That branch is evidence: lock it down like an [evidence branch](#take-an-evidence-branch).
   - The restore also undoes the security events after the restore point: passkeys revoked or cancelled, recovery codes regenerated, accounts erased.
-  - Before lifting the block, [read the backup branch's audit log](#read-the-audit-log) after the restore point. Reapply those events as [spec 0004 R12](../specs/0004-real-data-readiness.md#r12-off-vendor-backups) steps 3 and 4 do: revocations and cancellations, regenerated codes, and erasures only from the erasure list the project owner confirms.
+  - Before lifting the block, [read the backup branch's audit log](#read-the-audit-log) after the restore point. Reapply those events ([spec 0004 R12](../specs/0004-real-data-readiness.md#r12-backups)): revocations and cancellations, regenerated codes, and erasures only from the erasure list the project owner confirms.
   - Then redeploy, so the build's guards check the restored branch.
-- **The off-vendor backup**, when the damage is older than that window or the Neon account itself is lost: run the restore job in [spec 0004 R12](../specs/0004-real-data-readiness.md#r12-off-vendor-backups), in its fixed order. Pick a backup from before any suspected compromise of the production writer. **Not available yet:** the backups land with [#75](https://github.com/fernandolisboa/arca/issues/75); until then, the point-in-time restore is the only path, and this step gets its exact actions when they land.
+- **A manual Neon snapshot**, when the damage is older than that window and the project owner took one before it: restore from it in Neon's console, and reapply the events after it as above. Without a snapshot, damage older than the window cannot be undone; nor can the loss of the Neon account ([ADR-0021](../adr/0021-stay-on-vercel-and-neon.md)).
 
-Either way, credentials come back as they were at the restore point. Afterwards:
+Credentials come back as they were at the restore point. Afterwards:
 
 - [revoke every session](#revoke-every-session-and-sign-in-path);
 - [remove the attacker's credentials](#remove-the-attackers-credentials);
@@ -168,7 +166,7 @@ A copy of the database at the moment you learned of the incident.
 
 1. **Create it.** Vercel › Storage › `arca` › Open in Neon › Branches › New branch, from `production` at the current time, named `incident-YYYYMMDD`.
 2. **Lock it right away.** Roles are per branch, so this copy still accepts the passwords that may have leaked.
-   - In its SQL Editor, as the branch owner, run `ALTER ROLE app_migrator NOLOGIN; ALTER ROLE app_api NOLOGIN; ALTER ROLE app_auth NOLOGIN; ALTER ROLE app_audit NOLOGIN; ALTER ROLE app_jobs NOLOGIN; ALTER ROLE app_backup NOLOGIN;`. On a copy of production `app_backup` still has production's password, and it reads every backed-up row and the whole audit log.
+   - In its SQL Editor, as the branch owner, run `ALTER ROLE app_migrator NOLOGIN; ALTER ROLE app_api NOLOGIN; ALTER ROLE app_auth NOLOGIN; ALTER ROLE app_audit NOLOGIN; ALTER ROLE app_jobs NOLOGIN;`.
    - Then reset the owner role's password on this branch (Roles › the owner role › Reset password) and do not store the new one; Neon shows a fresh one whenever you need to read the branch again.
    - Both change this branch only.
 3. **Keep only what you need.** The branch holds every person's data, and an erased person would live on in it. Copy only the evidence you need into the incident record. Delete the branch, and any backup branch a point-in-time restore left, when the investigation and any ANPD process close. That limit is in [RETENTION.md](../RETENTION.md).

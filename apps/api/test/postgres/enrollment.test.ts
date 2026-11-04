@@ -3,7 +3,6 @@ import { inviteLifetimeHours, type PasskeyCreationOptions } from '@arca/api-cont
 import { createI18n } from '@arca/i18n';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createErasure, eraseAccountNow } from '../../src/account/erasure.js';
-import { noTombstones } from '../../src/account/tombstones.js';
 import { createApp, type App } from '../../src/app.js';
 import { auditLog, auditReader } from '../../src/audit/log.js';
 import { createAuth, credentialStore } from '../../src/auth/auth.js';
@@ -672,7 +671,6 @@ describe('invites (spec 0003, R2)', () => {
         jobsDb: testDatabase.jobsDb,
         audit: auditLog(testDatabase.auditDb),
         notices: { send: () => Promise.resolve() },
-        tombstones: noTombstones,
       }),
       accountId,
     );

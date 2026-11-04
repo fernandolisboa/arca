@@ -3,7 +3,6 @@ import { useRuntimeConfig } from 'nitro/runtime-config';
 import { auditLog } from '../audit/log.js';
 import { createErasure, type Erasure } from '../account/erasure.js';
 import { createRetention, type Retention } from '../account/retention.js';
-import { tombstonesFor } from '../account/tombstones.js';
 import {
   databaseTargetFrom,
   readAuditDatabasePassword,
@@ -83,7 +82,6 @@ export const erasureSteps = once(async (): Promise<Erasure> =>
     jobsDb: jobsDatabase(),
     audit: auditLog(auditDatabase()),
     notices: await notices(),
-    tombstones: tombstonesFor(readDeploymentEnvironment()),
   }),
 );
 

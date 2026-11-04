@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { bootstrap } from '../../src/db/bootstrap.ts';
-import { appRoles } from '../../src/db/policy.ts';
+import { appRoles, retiredRoles } from '../../src/db/policy.ts';
 import {
   adminTarget,
   bootstrapSql,
@@ -50,20 +50,20 @@ async function roleSnapshot(): Promise<unknown> {
 }
 
 describe('bootstrap', () => {
-  it('creates the six app roles as plain login roles, and only app_migrator may create', async () => {
+  it('creates the app roles as plain login roles, the retired ones without login, and only app_migrator may create', async () => {
     const snapshot = (await roleSnapshot()) as {
       roles: { rolname: string }[];
       memberships: unknown[];
       databaseCreate: unknown[];
     };
     expect(snapshot.roles).toEqual(
-      [...appRoles].sort().map((rolname) => ({
+      [...appRoles, ...retiredRoles].sort().map((rolname) => ({
         rolname,
         rolsuper: false,
         rolinherit: true,
         rolcreaterole: false,
         rolcreatedb: false,
-        rolcanlogin: true,
+        rolcanlogin: !(retiredRoles as readonly string[]).includes(rolname),
         rolreplication: false,
         rolbypassrls: false,
         rolconnlimit: -1,

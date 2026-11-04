@@ -52,7 +52,7 @@ Revisited at the start of every epic. New features list the assets they touch an
 **Identity and access**
 - Better Auth with passkeys only ([ADR-0006](adr/0006-auth.md), [ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)); invite-only enrollment until Phase 3; native passkey APIs on mobile; purpose-bound step-up for sensitive actions, its assertion stored and re-verifiable, including knowledge-base activation, rejection and veto ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)); device list with remote sign-out; recovery that needs the email link and the recovery code, with a 24-hour inactive period and notices.
 - Forced row-level security on every table with case data, identity set per transaction, plus API-level checks; deny-by-default policies ([ADR-0008](adr/0008-database-security-and-environments.md)).
-- Separate SQL-created roles for API, jobs, auth, audit, backup ([ADR-0017](adr/0017-data-lifecycle-and-backups.md)) and migrations, none able to bypass row-level security.
+- Separate SQL-created roles for API, jobs, auth, audit and migrations, none able to bypass row-level security.
 - Access-matrix tests in CI for every role, person and table.
 
 **Web and API**
@@ -65,10 +65,10 @@ Revisited at the start of every epic. New features list the assets they touch an
 
 **Data**
 - Vault encryption on the client in the age format with hybrid post-quantum recipients, passkey (PRF) and recovery-kit envelopes, rotation, and plaintext reaching an authorized processing session only in one request's memory ([ADR-0018](adr/0018-vault-encryption.md)).
-- Bank account and document numbers encrypted per field with KMS-wrapped keys ([ADR-0008](adr/0008-database-security-and-environments.md)).
+- Bank account and document numbers kept as encrypted items in the person's vault, sealed on the device; the server never holds them in clear ([ADR-0021](adr/0021-stay-on-vercel-and-neon.md)).
 - Deleting an account destroys its vault envelopes (crypto-shredding, [ADR-0018](adr/0018-vault-encryption.md)) and its rows, and deletes its stored objects; traces and error reports never carry account identifiers, so they need no deletion ([ADR-0016](adr/0016-observability-and-scrubbing.md), [ADR-0017](adr/0017-data-lifecycle-and-backups.md)); workflow runs hold identifiers only with zero retention and have their payloads purged by Vercel within 36 days, and their metadata (no personal data) within one year ([ADR-0009](adr/0009-background-jobs-guarantees.md)); in-app account deletion and data export from Phase 1.
 - Retention periods per data type, each with its enforcement: [RETENTION.md](RETENTION.md). Every table is in the personal-data registry or on its list of unowned tables, enforced by a guard ([ADR-0017](adr/0017-data-lifecycle-and-backups.md)).
-- Backups per ADR-0008 and [ADR-0017](adr/0017-data-lifecycle-and-backups.md): RPO 15 minutes inside Neon's history window and up to 24 hours beyond it or after losing the Neon or Vercel account, RTO 4 hours, a daily off-vendor copy in a separate AWS account under Object Lock, written by a role that cannot read it back, quarterly restore drills.
+- Backups are Neon's own point-in-time restore inside the plan's history window, plus an optional manual snapshot ([ADR-0021](adr/0021-stay-on-vercel-and-neon.md)). Losing the Neon or Vercel account loses the data, a risk the project owner accepted.
 
 **AI**
 - Every adapter enforces data minimization ([ADR-0004](adr/0004-ai-providers-behind-ports.md)); prefer vendor settings that disable training on and retention of our data, recorded in the data-flow register.
@@ -77,7 +77,7 @@ Revisited at the start of every epic. New features list the assets they touch an
 
 **Environments and secrets**
 - Development, preview and production are separate: production is its own Neon branch; before the first case-data table, previews are switched to fork from a `development` branch that never held production data ([ADR-0012](adr/0012-automation-first-setup.md)). Developer machines are never connected to the hosted database. Production data never leaves production: preview and CI databases start from a synthetic seed. Previews sit behind deployment protection.
-- Secrets live in the platform's environment-variable store, never in the repository; scoped per environment and rotated. Cloud access uses OIDC federation (Vercel and GitHub Actions to AWS), so no long-lived cloud keys exist.
+- Secrets live in the platform's environment-variable store, never in the repository; scoped per environment and rotated. The Vercel Blob store is reached through Vercel OIDC where it allows, so long-lived storage keys are kept to the one client uploads need ([ADR-0021](adr/0021-stay-on-vercel-and-neon.md)).
 - Every vendor and store account is owned by the organization, uses phishing-resistant MFA (passkeys or security keys), named accounts and least-privilege roles.
 
 **Software delivery**

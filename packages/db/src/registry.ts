@@ -218,7 +218,7 @@ export const registry: Registry = {
       table: 'auth.erased_account',
       personalData: 'none',
       reason:
-        'IDs of erased accounts whose audit event or tombstone is still owed; the audit trail keeps the same IDs.',
+        'IDs of erased accounts whose audit event is still owed; the audit trail keeps the same IDs.',
     },
     {
       table: 'auth.setup',

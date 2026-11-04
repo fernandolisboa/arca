@@ -1,4 +1,3 @@
-import { randomBytes } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { bootstrap, renderBootstrap } from './bootstrap.ts';
@@ -33,12 +32,6 @@ async function main(command: string | undefined): Promise<void> {
         app_jobs: requiredVariable(env, 'ARCA_DB_JOBS_PASSWORD'),
         app_auth: requiredVariable(env, 'ARCA_DB_AUTH_PASSWORD'),
         app_audit: requiredVariable(env, 'ARCA_DB_AUDIT_PASSWORD'),
-        // Only production's backup job logs in as app_backup. Every other build sets a password
-        // it never stores, so a branch forked from production never keeps its verifier (spec 0004, R12).
-        app_backup:
-          deployment === 'production'
-            ? requiredVariable(env, 'ARCA_DB_BACKUP_PASSWORD')
-            : randomBytes(32).toString('hex'),
       }),
       deployment,
     );
