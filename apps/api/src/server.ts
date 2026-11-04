@@ -119,7 +119,7 @@ function authParts(): Promise<AuthParts> {
       registration: registration(auth, hooks, enrollmentCode, logger, invites.accepted),
       recoveryKits: recoveryKits({ db, audit, notices, logger }),
       invites,
-      devices: createDevices({ db, audit, notices, logger }),
+      devices: createDevices({ db, audit, notices, logger, origin }),
     };
   })();
   // A failed build is retried on the next request instead of being cached.
@@ -198,6 +198,10 @@ const app = createApp({
       (await authParts()).devices.revokePasskey(signedIn, passkeyId),
     revokeOtherSessions: async (signedIn) =>
       (await authParts()).devices.revokeOtherSessions(signedIn),
+    addOptions: async (signedIn) => (await authParts()).devices.addOptions(signedIn),
+    add: async (signedIn, challengeId, response) =>
+      (await authParts()).devices.add(signedIn, challengeId, response),
+    pendingUntil: async (accountId) => (await authParts()).devices.pendingUntil(accountId),
   },
   authLimits: {
     limiter,

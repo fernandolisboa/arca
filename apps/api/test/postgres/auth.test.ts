@@ -188,6 +188,7 @@ describe('Better Auth on the app_auth pool', () => {
       email: 'owner@example.com',
       confirmed: false,
       device: { browser: 'other', os: 'other' },
+      pendingPasskeyUntil: null,
     });
     const stored = await asAdmin(async (client) => {
       const sessions = await client.query(
@@ -313,6 +314,26 @@ describe('Better Auth on the app_auth pool', () => {
     expect(await verified.json()).toEqual({ error: { code: 'unauthorized' } });
     expect(setsSession(verified)).toBe(false);
     expect(await sessionsOf(userId)).toEqual([]);
+  });
+
+  it('refuses a sign-in with a pending passkey, and accepts it once the wait is over', async () => {
+    const { userId, passkey } = await account('pending@example.com');
+    const pending = (activeFrom: string) =>
+      asAdmin((client) =>
+        client.query(
+          `INSERT INTO auth.passkey_activation (credential_id, active_from)
+           VALUES ($1, now() + $2::interval)
+           ON CONFLICT (credential_id) DO UPDATE SET active_from = excluded.active_from`,
+          [passkey.credentialId, activeFrom],
+        ),
+      );
+    await pending('24 hours');
+    const { verified } = await passkeySignIn(passkey);
+    expect(verified.status).toBe(401);
+    expect(setsSession(verified)).toBe(false);
+    expect(await sessionsOf(userId)).toEqual([]);
+    await pending('-1 second');
+    expect((await passkeySignIn(passkey)).verified.status).toBe(200);
   });
 
   it('sets only __Host- cookies, with the session cookie locked down', async () => {

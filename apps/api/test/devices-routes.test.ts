@@ -15,17 +15,53 @@ const owner: SignedIn = {
 };
 const targetId = '5d4c3b2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a';
 const nonce = 'MzMzMzMzMzMzMzMzMzMzMw';
+const challengeId = '7b6a5f4e-3d2c-4b1a-9f8e-7d6c5b4a3f2e';
+const creationOptions = {
+  challengeId,
+  options: {
+    challenge: 'Y2hhbGxlbmdl',
+    rp: { id: 'arca.test', name: 'Arca' },
+    user: { id: 'dXNlcg', name: 'owner@example.com', displayName: 'owner@example.com' },
+    pubKeyCredParams: [{ type: 'public-key' as const, alg: -7 }],
+    authenticatorSelection: {
+      residentKey: 'required' as const,
+      requireResidentKey: true as const,
+      userVerification: 'required' as const,
+    },
+    extensions: { prf: {} },
+  },
+};
+const attestation = {
+  id: 'Y3JlZA',
+  rawId: 'Y3JlZA',
+  type: 'public-key',
+  response: { clientDataJSON: 'e30', attestationObject: 'oA' },
+  clientExtensionResults: { prf: { enabled: true } },
+};
+const activeFrom = new Date('2026-11-05T09:00:00.000Z');
+const session = {
+  accountId: owner.accountId,
+  email: 'owner@example.com',
+  confirmed: true,
+  device: { browser: 'firefox' as const, os: 'linux' as const },
+};
 
 function setup({
   signedIn = owner,
   approved = true,
   found = true,
   passkey = 'revoked',
+  accepted = true,
+  pendingUntil = null,
+  allowed = true,
 }: {
   signedIn?: SignedIn | null;
   approved?: boolean;
   found?: boolean;
   passkey?: PasskeyRevocation;
+  accepted?: boolean;
+  pendingUntil?: Date | null;
+  allowed?: boolean;
 } = {}) {
   const calls: string[] = [];
   const spent: { purpose: string; action: CanonicalAction }[] = [];
@@ -55,6 +91,18 @@ function setup({
       calls.push(`revokeOtherSessions ${current.sessionId}`);
       return Promise.resolve();
     },
+    addOptions: (current) => {
+      calls.push(`addOptions ${current.sessionId}`);
+      return Promise.resolve(creationOptions);
+    },
+    add: (current, challengeId) => {
+      calls.push(`add ${current.sessionId} ${challengeId}`);
+      return Promise.resolve(accepted);
+    },
+    pendingUntil: (accountId) => {
+      calls.push(`pendingUntil ${accountId}`);
+      return Promise.resolve(pendingUntil);
+    },
   };
   const app = createApp({
     checkDatabase: () => Promise.resolve('ok'),
@@ -63,9 +111,17 @@ function setup({
     auth: {
       handle: () => Promise.resolve(Response.json({})),
       signedIn: () => Promise.resolve(signedIn),
-      refresh: () => Promise.resolve({ session: null, setCookies: [] }),
+      refresh: () =>
+        Promise.resolve({ session: signedIn === null ? null : session, setCookies: [] }),
     },
-    authLimits: noLimits,
+    authLimits: allowed
+      ? noLimits
+      : {
+          ...noLimits,
+          limiter: {
+            hit: () => Promise.resolve({ allowed: false, retryAfterSeconds: 60 }),
+          },
+        },
     stepUp,
     devices,
   });
@@ -83,6 +139,7 @@ const revocations = [
   ['passkeys/revoke', 'revokePasskey', { passkeyId: targetId }, [targetId]],
   ['sessions/revoke-others', 'revokeOtherSessions', {}, []],
 ] as const;
+const stepUpRoutes = [...revocations, ['passkeys/options', 'addPasskeyOptions', {}, []]] as const;
 
 describe('the device routes (spec 0003, R4)', () => {
   it('lists the devices of the signed-in session', async () => {
@@ -96,17 +153,18 @@ describe('the device routes (spec 0003, R4)', () => {
   it('answers 401 without a session', async () => {
     const { app, post, calls } = setup({ signedIn: null });
     expect((await app.request('/v1/devices')).status).toBe(401);
-    for (const [path, , body] of revocations) expect((await post(path, body)).status).toBe(401);
+    for (const [path, , body] of stepUpRoutes) expect((await post(path, body)).status).toBe(401);
+    expect((await post('passkeys/add', { challengeId, response: attestation })).status).toBe(401);
     expect(calls).toEqual([]);
   });
 
-  it.each(revocations)(
-    'spends a step-up bound to %s and its target before revoking',
+  it.each(stepUpRoutes)(
+    'spends a step-up bound to %s and its target before acting',
     async (path, action, body, targets) => {
       const { post, calls, spent } = setup();
       const response = await post(path, body);
       expect(response.status).toBe(200);
-      expect(await response.json()).toEqual({});
+      expect(await response.json()).toEqual(path === 'passkeys/options' ? creationOptions : {});
       expect(spent).toHaveLength(1);
       expect(spent[0]?.purpose).toBe('sensitive_settings');
       expect(spent[0]?.action).toMatchObject({ action, targets });
@@ -115,7 +173,7 @@ describe('the device routes (spec 0003, R4)', () => {
     },
   );
 
-  it.each(revocations)('answers 403 to %s without a step-up for it', async (path, _, body) => {
+  it.each(stepUpRoutes)('answers 403 to %s without a step-up for it', async (path, _, body) => {
     const { post, calls } = setup({ approved: false });
     const response = await post(path, body);
     expect(response.status).toBe(403);
@@ -147,5 +205,44 @@ describe('the device routes (spec 0003, R4)', () => {
     expect((await post('sessions/revoke-others', { sessionId: targetId })).status).toBe(400);
     expect(calls).toEqual([]);
     expect(spent).toEqual([]);
+  });
+
+  it('stores a new passkey for the challenge of this session', async () => {
+    const { post, calls, spent } = setup();
+    const response = await post('passkeys/add', { challengeId, response: attestation });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({});
+    expect(calls).toEqual([`add ${owner.sessionId} ${challengeId}`]);
+    expect(spent).toEqual([]);
+  });
+
+  it('answers 429 to a new passkey over the session limit', async () => {
+    const { post, calls } = setup({ allowed: false });
+    const response = await post('passkeys/add', { challengeId, response: attestation });
+    expect(response.status).toBe(429);
+    expect(response.headers.get('retry-after')).toBe('60');
+    expect(calls).toEqual([]);
+  });
+
+  it('answers 403 passkey_refused to a passkey it does not store', async () => {
+    const response = await setup({ accepted: false }).post('passkeys/add', {
+      challengeId,
+      response: attestation,
+    });
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: { code: 'passkey_refused' } });
+  });
+
+  it('shows every session when a pending passkey becomes active', async () => {
+    const pending = setup({ pendingUntil: activeFrom });
+    const response = await pending.app.request('/v1/session');
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      ...session,
+      pendingPasskeyUntil: activeFrom.toISOString(),
+    });
+    expect(pending.calls).toEqual([`pendingUntil ${owner.accountId}`]);
+    const none = await setup().app.request('/v1/session');
+    expect(await none.json()).toEqual({ ...session, pendingPasskeyUntil: null });
   });
 });

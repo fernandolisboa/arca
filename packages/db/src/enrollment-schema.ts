@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { bytea, boolean, check, index, text, timestamp, uuid } from 'drizzle-orm/pg-core';
-import { auth, passkey, user } from './auth-schema.js';
+import { auth, passkey, session, user } from './auth-schema.js';
 
 /**
  * Enrollment codes already spent (spec 0003, R2). The primary key makes two concurrent
@@ -65,6 +65,48 @@ export const passkeyCapability = auth.table('passkey_capability', {
   /** Whether the authenticator reported the PRF extension enabled (ADR-0018). */
   prfEnabled: boolean('prf_enabled').notNull(),
 });
+
+/**
+ * A passkey added to an account that already had one (spec 0003, R4): it can neither sign in nor
+ * approve a step-up before `active_from`, 24 hours after it was added. A passkey without a row is
+ * active; the row is written in the transaction that stores the passkey, and goes with it, so
+ * cancelling a pending passkey is revoking it.
+ */
+export const passkeyActivation = auth.table(
+  'passkey_activation',
+  {
+    credentialID: text('credential_id')
+      .primaryKey()
+      .references(() => passkey.credentialID, { onDelete: 'cascade' }),
+    activeFrom: timestamp('active_from', { withTimezone: true }).notNull(),
+  },
+  (table) => [index('passkey_activation_active_from_idx').on(table.activeFrom)],
+);
+
+/**
+ * Open challenges for adding a passkey from a signed-in session (spec 0003, R4): bound to the
+ * session and account that asked, single use (deleted when verified) and valid for 2 minutes.
+ */
+export const passkeyChallenge = auth.table(
+  'passkey_challenge',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    accountId: uuid('account_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => session.id, { onDelete: 'cascade' }),
+    challenge: bytea('challenge').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true })
+      .notNull()
+      .default(sql`now() + interval '2 minutes'`),
+  },
+  (table) => [
+    index('passkey_challenge_expires_at_idx').on(table.expiresAt),
+    check('passkey_challenge_length', sql`octet_length(${table.challenge}) = 32`),
+  ],
+);
 
 /**
  * Invites (spec 0003, R2): the link token is 256 random bits and only its SHA-256 hash is stored;

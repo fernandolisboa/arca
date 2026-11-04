@@ -3,7 +3,13 @@ import './jitless.js';
 import type { z } from 'zod';
 import { apiBasePath, ErrorResponse, type RouteDefinition } from '../routes/index.js';
 
-export { inviteLifetimeHours, maxOpenInvites, routes, stepUpNonceHeader } from '../routes/index.js';
+export {
+  inviteLifetimeHours,
+  maxOpenInvites,
+  pendingPasskeyHours,
+  routes,
+  stepUpNonceHeader,
+} from '../routes/index.js';
 export type {
   AuditEvent,
   AuditEventCode,

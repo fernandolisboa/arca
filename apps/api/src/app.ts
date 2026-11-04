@@ -1,5 +1,7 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
 import {
+  addPasskey,
+  addPasskeyOptions,
   apiBasePath,
   AuditEventsQuery,
   authBasePath,
@@ -32,7 +34,13 @@ import type { AuditReader } from './audit/log.js';
 import type { Devices } from './auth/devices.js';
 import type { Enrollment } from './auth/enrollment.js';
 import type { Invites } from './auth/invites.js';
-import { authRouteLimits, inviteLimits, registrationLimits, stepUpLimits } from './auth/limits.js';
+import {
+  authRouteLimits,
+  deviceLimits,
+  inviteLimits,
+  registrationLimits,
+  stepUpLimits,
+} from './auth/limits.js';
 import type { RateLimiter, RateLimitRule } from './auth/rate-limit.js';
 import type { RecoveryKits } from './auth/recovery-kit.js';
 import type { Registration, RegistrationOutcome } from './auth/registration.js';
@@ -113,6 +121,7 @@ export type ErrorCode =
   | 'too_many_invites'
   | 'signed_in'
   | 'last_active_passkey'
+  | 'passkey_refused'
   | 'request_failed'
   | 'internal_error';
 
@@ -329,7 +338,10 @@ export function createApp({
     if (auth === undefined) return unauthorized(c);
     const { session, setCookies } = await auth.refresh(c.req.raw.headers);
     for (const cookie of setCookies) c.header('set-cookie', cookie, { append: true });
-    return session === null ? unauthorized(c) : c.json(session, 200);
+    if (session === null) return unauthorized(c);
+    const pendingUntil =
+      devices === undefined ? null : await devices.pendingUntil(session.accountId);
+    return c.json({ ...session, pendingPasskeyUntil: pendingUntil?.toISOString() ?? null }, 200);
   });
 
   v1.openapi(openApiRoutes.stepUpOptions, async (c) => {
@@ -507,6 +519,31 @@ export function createApp({
     });
     if (!approved) return fail(c, 'step_up_required', 403);
     await devices.revokeOtherSessions(current);
+    return c.json({}, 200);
+  });
+
+  v1.openapi(openApiRoutes.addPasskeyOptions, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || devices === undefined) return unauthorized(c);
+    const approved = await stepUpGranted(c, current, 'sensitive_settings', {
+      action: addPasskeyOptions.operationId,
+      targets: [],
+    });
+    if (!approved) return fail(c, 'step_up_required', 403);
+    return c.json(await devices.addOptions(current), 200);
+  });
+
+  v1.openapi(openApiRoutes.addPasskey, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || devices === undefined || authLimits === undefined) {
+      return unauthorized(c);
+    }
+    const limited = await overLimit(c, authLimits, deviceLimits.addPasskey, current.sessionId);
+    if (limited !== undefined) return limited;
+    const { challengeId, response } = addPasskey.body.parse(await c.req.json());
+    if (!(await devices.add(current, challengeId, response))) {
+      return fail(c, 'passkey_refused', 403);
+    }
     return c.json({}, 200);
   });
 

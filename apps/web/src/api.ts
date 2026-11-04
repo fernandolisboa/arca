@@ -36,8 +36,16 @@ export const invitesQuery = queryOptions({
   retry: false,
 });
 
+/** The account's passkeys, each with its sessions (spec 0003, R4). */
+export const devicesQuery = queryOptions({
+  queryKey: ['devices'],
+  queryFn: () => api.call(routes.listDevices),
+  networkMode: 'always',
+  retry: false,
+});
+
 /** Everything cached for one account; a new query that is the account's own joins this list. */
-const accountQueries = [sessionQuery, recoveryKitQuery, invitesQuery];
+const accountQueries = [sessionQuery, recoveryKitQuery, invitesQuery, devicesQuery];
 
 /**
  * After a sign-in, a registration or a sign-out, nothing cached for the previous account may

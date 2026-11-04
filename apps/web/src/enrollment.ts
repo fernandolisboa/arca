@@ -1,15 +1,7 @@
-import {
-  ApiError,
-  routes,
-  type PasskeyAttestation,
-  type PasskeyCreationOptions,
-} from '@arca/api-contract/client';
-import type {
-  Passkeys,
-  PublicKeyCredentialCreationOptionsJSON,
-  RegistrationResponseJSON,
-} from '@arca/platform';
+import { ApiError, routes } from '@arca/api-contract/client';
+import type { Passkeys } from '@arca/platform';
 import { api } from './api.js';
+import { toAttestation, toCreationOptions } from './passkey-json.js';
 import { commonFailure, reach, type CommonFailure } from './requests.js';
 import { stepUpFor } from './step-up.js';
 
@@ -43,21 +35,6 @@ export function linkRequestFailure(error: unknown): LinkRequestFailure {
 
 export type RegistrationFailure =
   CommonFailure | 'expired' | 'invalid_code' | 'refused' | 'signed_in';
-
-function toCreationOptions(
-  options: PasskeyCreationOptions,
-): PublicKeyCredentialCreationOptionsJSON {
-  return options as PublicKeyCredentialCreationOptionsJSON;
-}
-
-/** The Passkeys port keeps only `prf.enabled` among the results, which the contract checks. */
-function toAttestation(response: RegistrationResponseJSON): PasskeyAttestation {
-  return {
-    ...response,
-    clientExtensionResults:
-      response.clientExtensionResults as PasskeyAttestation['clientExtensionResults'],
-  };
-}
 
 /**
  * Passkey-first registration from a link (spec 0003, R2 and R3): an owner's code is checked with
