@@ -312,20 +312,20 @@ describe('redeeming the code (spec 0003, R6)', () => {
     for (let attempt = 0; attempt < recoveryAttempts; attempt += 1) {
       await recovery.redeem(stolen, 'WRONG');
     }
-    const lasts = await fixtures.count(
-      `SELECT round(extract(epoch FROM provisional_until - locked_until) / 60)::int AS n
-         FROM auth.recovery_code JOIN auth.recovery_lock USING (account_id)
-        WHERE account_id = $1`,
-      [account.accountId],
-    );
-    expect(lasts).toBe(recoveryLinkMinutes);
+    // The owner comes back long after the lock ended.
     await testDatabase.asAdmin((client) =>
       client.query(
-        `UPDATE auth.recovery_lock SET locked_until = now() - interval '1 second'
+        `UPDATE auth.recovery_lock SET locked_until = now() - interval '30 days'
           WHERE account_id = $1`,
         [account.accountId],
       ),
     );
+    expect(
+      await fixtures.count(
+        'SELECT count(*)::int AS n FROM auth.recovery_code WHERE account_id = $1 AND provisional_until IS NULL',
+        [account.accountId],
+      ),
+    ).toBe(1);
     expect(await kits.status(account.accountId)).toBe('unsaved');
     const resumed = await recovery.redeem(await linkFor(account), issued);
     expect(resumed.ok).toBe(true);

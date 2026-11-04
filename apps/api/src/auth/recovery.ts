@@ -217,12 +217,10 @@ export function createRecovery({
       .where(eq(recoveryLock.accountId, accountId));
     await tx.delete(recoveryLink).where(eq(recoveryLink.tokenHash, tokenHash));
     // Someone holding only the inbox can lock a recovery the owner has under way; the new code it
-    // issued must outlive the lock, or the account would be left with no code at all.
+    // issued stops lapsing, or the account would be left with no code at all.
     await tx
       .update(recoveryCode)
-      .set({
-        provisionalUntil: sql`now() + make_interval(hours => ${lockHours}, mins => ${recoveryLinkMinutes})`,
-      })
+      .set({ provisionalUntil: null })
       .where(
         and(
           eq(recoveryCode.accountId, accountId),
