@@ -28,8 +28,9 @@ function setup({
   const calls: unknown[][] = [];
   const hits: { rule: string; subject: string }[] = [];
   const recovery: Recovery = {
-    start: (email) => {
+    start: (email, behind) => {
       calls.push(['start', email]);
+      behind(Promise.resolve());
       return Promise.resolve(started);
     },
     redeem: (...args) => {
@@ -80,7 +81,7 @@ function setup({
       },
       body: JSON.stringify(body),
     });
-  return { post, calls, hits };
+  return { app, post, calls, hits };
 }
 
 describe('the recovery routes (spec 0003, R6)', () => {
@@ -94,6 +95,21 @@ describe('the recovery routes (spec 0003, R6)', () => {
       { rule: 'recovery_start_ip', subject: '192.0.2.1' },
       { rule: 'recovery_start_email', subject: 'owner@example.com' },
     ]);
+  });
+
+  it("hands the work behind the answer to the request's waitUntil", async () => {
+    const { app } = setup();
+    const kept: Promise<void>[] = [];
+    const request = Object.assign(
+      new Request(`${origin}/v1/auth/recovery/start`, {
+        method: 'POST',
+        headers: { origin, 'content-type': 'application/json' },
+        body: JSON.stringify({ email: 'owner@example.com' }),
+      }),
+      { waitUntil: (work: Promise<void>) => kept.push(work) },
+    );
+    expect((await app.request(request)).status).toBe(200);
+    expect(kept).toHaveLength(1);
   });
 
   it('answers 429 over the email limit without starting', async () => {

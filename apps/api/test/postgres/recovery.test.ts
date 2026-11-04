@@ -172,15 +172,39 @@ describe('starting recovery (spec 0003, R6)', () => {
     expect((await recovery.redeem(second, code)).ok).toBe(true);
   });
 
-  it('answers before the send has run, and sends it behind the answer', async () => {
+  it('answers without waiting for the send, which runs behind the answer', async () => {
     const { account } = await owner();
     const held: Promise<void>[] = [];
+    let release = (): void => undefined;
+    const stalled = createRecovery({
+      db: testDatabase.authDb,
+      audit: auditLog(testDatabase.auditDb),
+      email: {
+        send: (message) =>
+          new Promise<void>((resolve) => {
+            release = () => {
+              mail.push(message);
+              resolve();
+            };
+          }),
+      },
+      notices: { send: () => Promise.resolve() },
+      i18n: await createI18n(),
+      origin,
+      logger: silentLogger,
+      emailAvailable: true,
+      status: devices.status,
+      sleep: () => Promise.resolve(),
+    });
     expect(
-      await recovery.start(account.email, (work) => {
+      await stalled.start(account.email, (work) => {
         held.push(work);
       }),
     ).toBe('accepted');
     expect(held).toHaveLength(1);
+    expect(mailTo(account)).toEqual([]);
+    await expect.poll(() => linksOf(account)).toBe(1);
+    release();
     await Promise.all(held);
     expect(mailTo(account)).toHaveLength(1);
   });

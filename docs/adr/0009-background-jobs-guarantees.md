@@ -33,7 +33,10 @@ The reasons for choosing Vercel Workflows in ADR-0007 still hold: no extra vendo
 - Results that change the knowledge base enter as proposals awaiting human approval ([ADR-0002](0002-rules-as-versioned-data.md)).
 - No job handles document plaintext: [ADR-0018](0018-vault-encryption.md) allows plaintext only in the memory of one request the owner authorized.
 - No public, unauthenticated route starts a workflow.
-- Finishing a request after its answer, in the same function invocation through the platform's `waitUntil`, is not background work under this ADR. It keeps nothing outside that invocation's memory, is never retried, and is used only where losing the work is harmless because the person can simply ask again. The first use is recovery's link email (spec 0003 R6): its route is public, so it may not start a workflow, and the address and token it needs would not belong in a run's payload anyway.
+
+### Amendment, 2026-11-04: work behind an answer
+
+Finishing a request after its answer, in the same function invocation through the platform's `waitUntil`, is not background work under this ADR, and is allowed only where losing the work is harmless because the person can simply ask again. Nothing is queued or stored on the platform: its inputs live only in that invocation's memory. It is never retried, catches and logs its own errors by code only (nothing else observes it), stays well within the function's maximum duration, and never changes the answer or its timing. The first use is recovery's link email (spec 0003 R6): its route is public, so it may not start a workflow, and the address and token it needs would not belong in a run's payload anyway.
 
 ### Amendment to ADR-0008
 

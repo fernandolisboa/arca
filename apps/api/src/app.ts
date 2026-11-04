@@ -675,7 +675,14 @@ export function createApp({
     const { email } = recoveryStart.body.parse(await c.req.json());
     const perEmail = await overLimit(c, authLimits, recoveryLimits.startEmail, email.toLowerCase());
     if (perEmail !== undefined) return perEmail;
-    if ((await recovery.start(email, behindAnswerOf(c.req.raw))) === 'email_unavailable') {
+    if (
+      (await recovery.start(
+        email,
+        behindAnswerOf(c.req.raw, () => {
+          logger.error({ errorName: 'BehindAnswerUnavailable' });
+        }),
+      )) === 'email_unavailable'
+    ) {
       return fail(c, 'email_unavailable', 503);
     }
     return c.json({}, 200);
