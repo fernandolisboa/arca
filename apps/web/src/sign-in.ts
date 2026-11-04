@@ -45,3 +45,8 @@ export async function signInWithPasskey(
 export function failureOf(error: unknown): SignInFailure {
   return commonFailure(error, (api) => (api.status === 401 ? 'refused' : undefined));
 }
+
+/** Ends this browser's session; the server clears its cookies. */
+export async function signOut(): Promise<void> {
+  await reach(api.call(routes.signOut, {}));
+}

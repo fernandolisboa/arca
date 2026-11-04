@@ -184,8 +184,16 @@ describe('owner enrollment (spec 0003, R2)', () => {
 });
 
 describe('registration from a link (spec 0003, R2 and R3)', () => {
+  it('answers 409 signed_in to options while a session exists, before any ceremony', async () => {
+    const { post, calls } = setup();
+    const response = await post('/auth/registration/options', { token, code: 'c' });
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: { code: 'signed_in' } });
+    expect(calls).toEqual([]);
+  });
+
   it('passes the options and the challenge cookie through', async () => {
-    const { post, hits } = setup();
+    const { post, hits } = setup({ signedIn: null });
     const response = await post('/auth/registration/options', { token, code: 'c' });
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual(creation);
@@ -194,7 +202,7 @@ describe('registration from a link (spec 0003, R2 and R3)', () => {
   });
 
   it('signs in on a verified registration and answers with nothing else', async () => {
-    const { post, calls } = setup();
+    const { post, calls } = setup({ signedIn: null });
     const response = await post('/auth/registration/verify', {
       token,
       code: 'c',
@@ -211,7 +219,10 @@ describe('registration from a link (spec 0003, R2 and R3)', () => {
     ['invalid_code', 403, 'invalid_code'],
     ['refused', 403, 'registration_refused'],
   ] as const)('answers %s with %i', async (registered, status, code) => {
-    const response = await setup({ registered }).post('/auth/registration/options', { token });
+    const response = await setup({ registered, signedIn: null }).post(
+      '/auth/registration/options',
+      { token },
+    );
     expect(response.status).toBe(status);
     expect(await response.json()).toEqual({ error: { code } });
     expect(response.headers.getSetCookie()).toEqual([]);
@@ -221,7 +232,7 @@ describe('registration from a link (spec 0003, R2 and R3)', () => {
     ['a token in another shape', { token: 'short' }],
     ['a PRF output among the extension results', null],
   ])('answers 400 to %s', async (_, request) => {
-    const { post, calls } = setup();
+    const { post, calls } = setup({ signedIn: null });
     const body = request ?? {
       token,
       response: {

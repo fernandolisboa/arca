@@ -1,4 +1,4 @@
-import type { Invite } from '@arca/api-contract/client';
+import { inviteLifetimeHours, maxOpenInvites, type Invite } from '@arca/api-contract/client';
 import { Button } from '@arca/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
@@ -47,7 +47,7 @@ function Invites() {
     );
   }
   return (
-    <Page title={t('invites.title')} lead={t('invites.lead')}>
+    <Page title={t('invites.title')} lead={t('invites.lead', { hours: inviteLifetimeHours })}>
       <SendInvite />
       <InviteList />
     </Page>
@@ -87,7 +87,7 @@ function SendInvite() {
       ? t('invites.sent', { email: sent })
       : failure === undefined
         ? ''
-        : t('invites.sendFailure', { reason: failure });
+        : t('invites.sendFailure', { reason: failure, max: maxOpenInvites });
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">
@@ -127,6 +127,18 @@ function InviteList() {
               email: decided.email,
             })}
       </p>
+      {invites.isError && (
+        <div className="flex flex-col items-start gap-3">
+          <p className="text-ink">{t('invites.listFailure')}</p>
+          <Button
+            disabled={invites.isFetching}
+            aria-busy={invites.isFetching}
+            onClick={() => void invites.refetch()}
+          >
+            {t('invites.retry')}
+          </Button>
+        </div>
+      )}
       {invites.isSuccess && invites.data.invites.length === 0 && (
         <p className="text-muted">{t('invites.empty')}</p>
       )}

@@ -105,6 +105,7 @@ export type ErrorCode =
   | 'email_unavailable'
   | 'account_unconfirmed'
   | 'too_many_invites'
+  | 'signed_in'
   | 'request_failed'
   | 'internal_error';
 
@@ -364,6 +365,9 @@ export function createApp({
     if (registration === undefined || authLimits === undefined) return fail(c, 'not_found', 404);
     const limited = await overAddressLimit(c, authLimits, registrationLimits.options);
     if (limited !== undefined) return limited;
+    // The passkey plugin would build the options for the session's own account, so the device
+    // would store a passkey that verify then refuses; a link registers a new account only.
+    if ((await signedIn(c)) !== null) return fail(c, 'signed_in', 409);
     const request = registrationOptions.body.parse(await c.req.json());
     return registered(c, await registration.options(c.req.raw.headers, request));
   });

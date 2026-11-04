@@ -41,7 +41,8 @@ export function linkRequestFailure(error: unknown): LinkRequestFailure {
   );
 }
 
-export type RegistrationFailure = CommonFailure | 'expired' | 'invalid_code' | 'refused';
+export type RegistrationFailure =
+  CommonFailure | 'expired' | 'invalid_code' | 'refused' | 'signed_in';
 
 function toCreationOptions(
   options: PasskeyCreationOptions,
@@ -78,7 +79,7 @@ export async function registerFromLink(
 export function registrationFailure(error: unknown): RegistrationFailure {
   return commonFailure(error, ({ code }) => {
     if (code === 'not_found') return 'expired';
-    if (code === 'invalid_code') return code;
+    if (code === 'invalid_code' || code === 'signed_in') return code;
     return code === 'registration_refused' ? 'refused' : undefined;
   });
 }

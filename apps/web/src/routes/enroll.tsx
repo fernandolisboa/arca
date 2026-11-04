@@ -1,9 +1,9 @@
 import { Button } from '@arca/ui';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect, useState, type SubmitEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { recoveryKitQuery, sessionQuery } from '../api.js';
+import { resetAccount, sessionQuery } from '../api.js';
 import {
   linkRequestFailure,
   registerFromLink,
@@ -17,7 +17,9 @@ import { TextField } from '../forms/text-field.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { Page } from '../page.js';
 import { passkeys } from '../platform.js';
+import { SignedInNotice } from '../signed-in-notice.js';
 import { useLinkToken } from '../use-link-token.js';
+import { usePasskeyAvailable } from '../use-passkey-available.js';
 
 export const Route = createFileRoute('/enroll')({ component: Enroll });
 
@@ -119,20 +121,11 @@ function Register({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const session = useQuery(sessionQuery);
+  const available = usePasskeyAvailable();
   const [code, setCode] = useState('');
-  const [available, setAvailable] = useState<boolean>();
   const [waiting, setWaiting] = useState(false);
   const [failure, setFailure] = useState<RegistrationFailure | 'unavailable'>();
-
-  useEffect(() => {
-    let current = true;
-    void passkeys.isAvailable().then((supported) => {
-      if (current) setAvailable(supported);
-    });
-    return () => {
-      current = false;
-    };
-  }, []);
 
   const submit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -140,14 +133,15 @@ function Register({
     setWaiting(true);
     registerFromLink(passkeys, { token, code })
       .then(async () => {
-        // The new session replaces whatever the signed-out pages cached.
-        await queryClient.resetQueries({ queryKey: sessionQuery.queryKey });
-        await queryClient.resetQueries({ queryKey: recoveryKitQuery.queryKey });
+        await resetAccount(queryClient);
         await navigate({ to: '/recovery-kit' });
       })
-      .catch((error: unknown) => {
-        setFailure(registrationFailure(error));
+      .catch(async (error: unknown) => {
+        const reason = registrationFailure(error);
         setWaiting(false);
+        // Signed in from another tab meanwhile: the notice takes over once the session refetches.
+        if (reason === 'signed_in') await queryClient.invalidateQueries(sessionQuery);
+        else setFailure(reason);
       });
   };
 
@@ -157,6 +151,15 @@ function Register({
     : reason === undefined
       ? ''
       : t('enroll.register.failure', { reason });
+
+  // While waiting, a session that appears is this registration's own, on its way to the kit.
+  if (session.isSuccess && !waiting) {
+    return (
+      <Page title={t('enroll.register.title')}>
+        <SignedInNotice email={session.data.email} />
+      </Page>
+    );
+  }
 
   return (
     <Page title={t('enroll.register.title')} lead={t('enroll.register.lead')}>
@@ -169,7 +172,11 @@ function Register({
             setCode(event.currentTarget.value);
           }}
         />
-        <Button type="submit" disabled={available !== true || waiting} aria-busy={waiting}>
+        <Button
+          type="submit"
+          disabled={available !== true || session.isPending || waiting}
+          aria-busy={waiting}
+        >
           {t('enroll.register.submit')}
         </Button>
       </form>

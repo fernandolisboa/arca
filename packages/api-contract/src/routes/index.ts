@@ -298,7 +298,8 @@ export const registrationOptions = {
   method: 'post',
   path: '/auth/registration/options',
   operationId: 'registrationOptions',
-  summary: "Options for registering a link's passkey, with a single-use challenge in a cookie",
+  summary:
+    "Options for registering a link's passkey, with a single-use challenge in a cookie; 409 signed_in while a session exists",
   body: RegistrationOptionsRequest,
   response: { description: 'Creation options', schema: PasskeyCreationOptions },
 } as const satisfies RouteDefinition<typeof PasskeyCreationOptions>;
@@ -400,6 +401,8 @@ export type CreateInviteResponse = z.infer<typeof CreateInviteResponse>;
 
 /** At most this many open invites per account (spec 0003, R2). */
 export const maxOpenInvites = 10;
+/** How long an invite can be accepted; the database default on `auth.invite` matches it. */
+export const inviteLifetimeHours = 48;
 
 export const createInvite = {
   method: 'post',

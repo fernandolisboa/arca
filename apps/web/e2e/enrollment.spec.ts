@@ -152,7 +152,22 @@ test('creates the first account from the emailed link, and shows its recovery ki
   )?.[0];
   expect(inviteLink).toBeDefined();
 
-  const guestContext = await browser.newContext();
+  // A browser signed in to another account offers to sign out instead of creating a passkey.
+  await page.goto(String(inviteLink));
+  await expect(page.getByText(`${owner} convidou você para usar o Arca.`)).toBeVisible();
+  await expect(
+    page.getByText(`Este navegador já entrou no Arca como ${owner}.`, { exact: false }),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Sair desta conta' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Criar chave de acesso' })).toHaveCount(0);
+  expect(await scan(page)).toEqual([]);
+
+  // Invitees mostly open the link on a phone.
+  const guestContext = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+  });
   const guest = await guestContext.newPage();
   const guestProblems = watchProblems(guest);
   await reportViolations(guest);
@@ -163,11 +178,15 @@ test('creates the first account from the emailed link, and shows its recovery ki
   expect(await scan(guest)).toEqual([]);
   await guest.getByRole('button', { name: 'Criar chave de acesso' }).click();
   await expect(guest).toHaveURL(`${databaseServer.origin}/recovery-kit`);
+  await guest.getByRole('button', { name: 'Mostrar meu código' }).click();
+  await expect(
+    guest.getByRole('group', { name: 'Código de recuperação' }).getByText(groupedCode),
+  ).toHaveText(groupedCode);
   await guest.goto(`${databaseServer.origin}/`);
   await expect(guest.getByText(`Você entrou como ${invitee}.`)).toBeVisible();
-  await expect(guest.getByText(/^Sua conta ainda espera a confirmação/)).toBeVisible();
+  await expect(guest.getByText(/^Sua conta está aguardando a confirmação/)).toBeVisible();
 
-  await page.reload();
+  await page.goto(`${databaseServer.origin}/invites`);
   await expect(page.getByText(`Confirme a conta de ${invitee}`)).toBeVisible();
   expect(await scan(page)).toEqual([]);
   const confirm = page.waitForRequest((request) =>

@@ -1,5 +1,6 @@
 import { ApiError, createApiClient } from '@arca/api-contract/client';
 import type { Passkeys } from '@arca/platform';
+import { QueryClient, type QueryKey } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   clearFragment,
@@ -17,6 +18,7 @@ import {
   sendFailure,
 } from '../src/invites.js';
 import { UnreachableError } from '../src/requests.js';
+import { signOut } from '../src/sign-in.js';
 import { base64url } from '../src/step-up.js';
 
 interface Sent {
@@ -94,6 +96,7 @@ describe('the failures the enrollment screens word', () => {
     [new ApiError(404, 'not_found'), 'expired'],
     [new ApiError(403, 'invalid_code'), 'invalid_code'],
     [new ApiError(403, 'registration_refused'), 'refused'],
+    [new ApiError(409, 'signed_in'), 'signed_in'],
     [new ApiError(429, 'rate_limited'), 'limited'],
     [new UnreachableError('offline'), 'unreachable'],
     [new DOMException('dismissed', 'NotAllowedError'), 'cancelled'],
@@ -226,5 +229,32 @@ describe('invites (spec 0003, R2)', () => {
     [acceptFailure, new ApiError(403, 'invalid_code'), 'other'],
   ] as const)('words %o', (map, error, failure) => {
     expect(map(error)).toBe(failure);
+  });
+});
+
+describe('a change of account', () => {
+  it('signs out with an empty body', async () => {
+    answers = [Response.json({ success: true })];
+    await signOut();
+    expect(sent.map(({ path, body }) => ({ path, body }))).toEqual([
+      { path: '/v1/auth/sign-out', body: {} },
+    ]);
+  });
+
+  it("drops every query that is the previous account's own, and only those", async () => {
+    const { resetAccount, healthQuery, invitesQuery, recoveryKitQuery, sessionQuery } =
+      await vi.importActual<typeof import('../src/api.js')>('../src/api.js');
+    const queryClient = new QueryClient();
+    const keys: QueryKey[] = [sessionQuery, recoveryKitQuery, invitesQuery, healthQuery].map(
+      ({ queryKey }) => queryKey,
+    );
+    for (const key of keys) queryClient.setQueryData(key, { cached: true });
+    await resetAccount(queryClient);
+    expect(keys.map((key) => queryClient.getQueryData(key))).toEqual([
+      undefined,
+      undefined,
+      undefined,
+      { cached: true },
+    ]);
   });
 });
