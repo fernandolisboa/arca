@@ -1,8 +1,8 @@
 import { Button } from '@arca/ui';
 import { useQuery } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
+import { Link, createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { healthQuery } from '../api.js';
+import { healthQuery, sessionQuery } from '../api.js';
 
 export const Route = createFileRoute('/')({ component: Home });
 
@@ -11,6 +11,7 @@ function Home() {
   return (
     <div className="flex flex-col gap-6">
       <p className="max-w-prose text-muted">{t('app.description')}</p>
+      <SessionLine />
       <section
         aria-labelledby="health-title"
         className="rounded-card border border-line bg-surface p-4"
@@ -51,5 +52,20 @@ function HealthStatus() {
         </Button>
       )}
     </div>
+  );
+}
+
+function SessionLine() {
+  const { t } = useTranslation();
+  const session = useQuery(sessionQuery);
+  if (session.isPending) return null;
+  if (session.isSuccess) return <p>{t('session.signedIn', { email: session.data.email })}</p>;
+  return (
+    <Link
+      to="/sign-in"
+      className="inline-flex min-h-touch items-center self-start font-medium text-ink underline decoration-primary decoration-2 underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+    >
+      {t('session.signIn')}
+    </Link>
   );
 }

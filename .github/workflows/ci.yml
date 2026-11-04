@@ -38,6 +38,26 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
+    services:
+      postgres:
+        # The same pinned Postgres 18 as the db job, for the sign-in tests (spec 0003, R3).
+        image: postgres:18@sha256:3a4264520e121176619f54ff867d12774bc81e95e7b84db58d63bccdb6144b81
+        env:
+          # A throwaway server that lives only for this job.
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: arca_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 30
+    env:
+      ARCA_E2E_DATABASE: arca_e2e
+      ARCA_TEST_DB_HOST: 127.0.0.1
+      ARCA_TEST_DB_PORT: '5432'
+      ARCA_TEST_DB_ADMIN_PASSWORD: postgres
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -46,7 +66,24 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Chromium for the installed Playwright version
         run: pnpm --filter @arca/web exec playwright install --with-deps --only-shell chromium
-      - name: The built app at phone and desktop sizes (spec 0001, R8)
+      - name: Role passwords and an auth secret that live only for this job
+        run: |
+          for name in ARCA_DB_MIGRATOR_PASSWORD ARCA_DB_API_PASSWORD ARCA_DB_JOBS_PASSWORD \
+            ARCA_DB_AUTH_PASSWORD ARCA_DB_AUDIT_PASSWORD BETTER_AUTH_SECRET; do
+            value="$(openssl rand -hex 32)"
+            echo "::add-mask::$value"
+            echo "$name=$value" >> "$GITHUB_ENV"
+          done
+      - name: Roles and migrations, as a deployment's build runs them (spec 0001, R9)
+        env:
+          PGHOST_UNPOOLED: 127.0.0.1
+          PGDATABASE: arca_e2e
+          PGUSER: postgres
+          PGPASSWORD: postgres
+        run: |
+          pnpm --filter @arca/scripts db:bootstrap
+          pnpm --filter @arca/scripts db:migrate
+      - name: The built app at phone and desktop sizes (spec 0001, R8), and passkey sign-in
         run: pnpm turbo run e2e
 
   db:

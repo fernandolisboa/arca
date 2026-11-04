@@ -74,6 +74,21 @@ export function readDeploymentEnvironment(): DeploymentEnvironment {
   return environment;
 }
 
+const localOriginPattern = /^http:\/\/localhost:[0-9]{2,5}$/;
+
+/**
+ * Off Vercel, Nitro's dev server, or `ARCA_LOCAL_ORIGIN` for another local port (the end-to-end
+ * server). Only a localhost origin is accepted, since WebAuthn needs a host name, not an address.
+ */
+function readLocalOrigin(): string {
+  const origin = process.env['ARCA_LOCAL_ORIGIN'];
+  if (origin === undefined || origin === '') return 'http://localhost:3000';
+  if (!localOriginPattern.test(origin)) {
+    throw new MissingConfigError('ARCA_LOCAL_ORIGIN is not a localhost origin');
+  }
+  return origin;
+}
+
 /**
  * The origin the auth routes run on, from Vercel's system variables: a preview's branch URL, so
  * the per-deployment URL is not trusted, and the production domain. Until spec 0003 R9 moves
@@ -82,7 +97,7 @@ export function readDeploymentEnvironment(): DeploymentEnvironment {
  */
 export function readAuthOrigin(): string {
   const environment = readDeploymentEnvironment();
-  if (environment === 'development') return 'http://localhost:3000';
+  if (environment === 'development') return readLocalOrigin();
   const [name, value] =
     environment === 'production'
       ? ['VERCEL_PROJECT_PRODUCTION_URL', process.env['VERCEL_PROJECT_PRODUCTION_URL']]
