@@ -50,9 +50,13 @@ const accountQueries = [sessionQuery, recoveryKitQuery, invitesQuery, devicesQue
 
 /**
  * After a sign-in, a registration or a sign-out, nothing cached for the previous account may
- * show, and its vault closes and is forgotten on this device: reset, not invalidated, so no screen renders the old data while the new one loads.
+ * show: reset, not invalidated, so no screen renders the old data while the new one loads. Its
+ * vault closes and is forgotten on this device too.
  */
 export async function resetAccount(queryClient: QueryClient): Promise<void> {
-  await forgetVault();
-  await Promise.all(accountQueries.map(({ queryKey }) => queryClient.resetQueries({ queryKey })));
+  try {
+    await forgetVault();
+  } finally {
+    await Promise.all(accountQueries.map(({ queryKey }) => queryClient.resetQueries({ queryKey })));
+  }
 }
