@@ -1,4 +1,4 @@
-import { test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { signedOutOrigin } from './servers.js';
 
 /**
@@ -25,15 +25,13 @@ export function watchProblems(page: Page): string[] {
   return problems;
 }
 
-/** Reports CSP and Trusted Types violations as console errors, so `watchProblems` sees them. */
-export function reportViolations(): void {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      document.addEventListener('securitypolicyviolation', (event) => {
-        console.error(
-          `CSP violation: ${event.violatedDirective} ${event.blockedURI} ${event.sourceFile}:${String(event.lineNumber)}:${String(event.columnNumber)} ${event.sample}`,
-        );
-      });
+/** Logs every CSP violation as a console error, so `watchProblems` sees it. */
+export async function reportViolations(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    document.addEventListener('securitypolicyviolation', (event) => {
+      console.error(
+        `CSP violation: ${event.violatedDirective} ${event.blockedURI} ${event.sourceFile}:${String(event.lineNumber)}:${String(event.columnNumber)} ${event.sample}`,
+      );
     });
   });
 }

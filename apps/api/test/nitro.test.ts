@@ -55,7 +55,7 @@ describe('one origin (spec 0001, R4)', () => {
     const response = await get('/');
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toMatch(/^text\/html/);
-    expect(await response.text()).toContain('<html lang="pt-BR">');
+    expect(await response.text()).toMatch(/<html\s+lang="pt-BR"/);
     expectSecurityHeaders(response);
   });
 
@@ -75,7 +75,7 @@ describe('one origin (spec 0001, R4)', () => {
     async (path) => {
       const response = await get(path);
       expect(response.status).toBe(200);
-      expect(await response.text()).toContain('<html lang="pt-BR">');
+      expect(await response.text()).toMatch(/<html\s+lang="pt-BR"/);
       expectSecurityHeaders(response);
     },
   );

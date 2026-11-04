@@ -40,9 +40,9 @@ This needs four things ADR-0010 does not settle: how themes are applied, where f
 
 ## Versions
 
-| Package | Version (2026-11-03) | License |
+| Package | Version (checked 2026-11-03, lucide-react 2026-11-04) | License |
 | --- | --- | --- |
-| `lucide-react` | 1.67 (cooldown applies) | ISC |
+| `lucide-react` | 1.62.0 (newest past the seven-day cooldown) | ISC |
 | `@fontsource-variable/bricolage-grotesque`, `dm-sans`, `fraunces`, `inter`, `ibm-plex-sans`, `instrument-sans`, `space-grotesk`, `manrope`, `work-sans`, `nunito`, `atkinson-hyperlegible-next` | 5.3.0 | OFL-1.1 |
 | `@fontsource-variable/source-sans-3` | 5.3.1 | OFL-1.1 |
 | `@fontsource/ibm-plex-mono`, `instrument-serif`, `young-serif` | 5.3.0 | OFL-1.1 |

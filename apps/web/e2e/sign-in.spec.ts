@@ -5,7 +5,9 @@ import { reportViolations, watchProblems } from './problems.js';
 import { databaseServer } from './servers.js';
 
 test.skip(!databaseServer.enabled, 'needs ARCA_E2E_DATABASE and a Postgres (see README)');
-reportViolations();
+test.beforeEach(async ({ page }) => {
+  await reportViolations(page);
+});
 
 /** A COSE EC2 P-256 ES256 public key in CBOR, as the passkey plugin stores it. */
 function coseKey(x: Buffer, y: Buffer): string {

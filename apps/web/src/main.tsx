@@ -4,6 +4,7 @@ import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
+import { startAppearance } from './appearance/store.js';
 import { Failure, NotFound } from './fallbacks.js';
 import { registerServiceWorker } from './pwa/register.js';
 import { routeTree } from './routeTree.gen.js';
@@ -20,6 +21,13 @@ const router = createRouter({
   routeTree,
   defaultNotFoundComponent: NotFound,
   defaultErrorComponent: Failure,
+  // Page changes cross-fade; motion off zeroes the animations in CSS (spec 0006, R6). The first load
+  // and same-page updates skip the transition, which would block input while it runs. Browsers
+  // without view-transition types transition every load instead.
+  defaultViewTransition: {
+    types: ({ fromLocation, pathChanged }) =>
+      fromLocation !== undefined && pathChanged ? [] : false,
+  },
 });
 
 declare module '@tanstack/react-router' {
@@ -30,6 +38,7 @@ declare module '@tanstack/react-router' {
 
 const queryClient = new QueryClient();
 
+startAppearance();
 document.documentElement.lang = defaultLocale;
 document.title = i18n.t('app.name');
 

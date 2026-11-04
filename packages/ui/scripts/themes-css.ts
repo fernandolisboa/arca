@@ -1,8 +1,21 @@
-import { type FontRole, fontPairs } from './fonts.js';
-import { axes, type ResolvedMode, type ThemeId } from './ids.js';
-import { motion } from './motion.js';
-import { type Palette, highContrast, mark, palettes, withHighContrast } from './palettes.js';
-import { radii, textSizes } from './shape.js';
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import {
+  type FontRole,
+  type Palette,
+  type ResolvedMode,
+  type ThemeId,
+  axes,
+  fontFamilies,
+  fontPairs,
+  highContrast,
+  mark,
+  motion,
+  palettes,
+  radii,
+  textSizes,
+  withHighContrast,
+} from '../src/theme/index.js';
 
 /** Custom properties are prefixed so Tailwind's `@theme` names can point at them. */
 const prefix = '--arca-';
@@ -59,6 +72,49 @@ const motionOff = prefixed({
   staggerStep: '0ms',
 });
 
+const require = createRequire(import.meta.url);
+const subsets = ['latin', 'latin-ext'] as const;
+
+function packageJson(name: string, file: string): unknown {
+  return JSON.parse(readFileSync(require.resolve(`${name}/${file}`), 'utf8'));
+}
+
+/**
+ * The `@font-face` rules of every family (spec 0006, R2 and R4): latin and latin-ext only, each
+ * with the `unicode-range` its package's unicode.json gives, so a browser fetches latin-ext only
+ * for a page that needs it. Vite emits the files as hashed assets.
+ */
+function fontFaces(): string[] {
+  return fontFamilies().flatMap(({ family, source, weight }) => {
+    const ranges = packageJson(source.package, 'unicode.json') as Record<string, string>;
+    const metadata = packageJson(source.package, 'metadata.json') as {
+      variable?: { wght?: { min: string; max: string } };
+    };
+    const wght = metadata.variable?.wght;
+    if (source.kind === 'variable' && wght === undefined) {
+      throw new Error(`${source.package} has no wght axis`);
+    }
+    return subsets.map((subset) => {
+      const range = ranges[subset];
+      if (range === undefined) throw new Error(`${source.package} has no ${subset} subset`);
+      const file =
+        source.kind === 'variable'
+          ? `${source.id}-${subset}-wght-normal.woff2`
+          : `${source.id}-${subset}-${String(weight)}-normal.woff2`;
+      require.resolve(`${source.package}/files/${file}`);
+      return block('@font-face', {
+        'font-family': `'${family}'`,
+        'font-style': 'normal',
+        'font-display': 'swap',
+        'font-weight': wght === undefined ? String(weight) : `${wght.min} ${wght.max}`,
+        // Relative to src/themes.css: Vite resolves relative url() paths, not package names.
+        src: `url('../node_modules/${source.package}/files/${file}') format('woff2')`,
+        'unicode-range': range,
+      });
+    });
+  });
+}
+
 const attr = (axis: keyof typeof axes, value: string) => `[${axes[axis].attribute}="${value}"]`;
 
 /**
@@ -74,6 +130,7 @@ export function renderThemesCss(): string {
   };
   const parts: string[] = [
     '/* Generated from packages/ui/src/theme by `pnpm --filter @arca/ui themes`. Do not edit. */',
+    ...fontFaces(),
     block(':root', {
       ...paletteDeclarations(palettes[defaults.theme][defaults.mode], defaults.mode),
       ...fontDeclarations(defaults.font),

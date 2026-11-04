@@ -3,7 +3,9 @@ import type { AddressInfo } from 'node:net';
 import { expect, test, type Page } from '@playwright/test';
 import { reportViolations, watchProblems } from './problems.js';
 
-reportViolations();
+test.beforeEach(async ({ page }) => {
+  await reportViolations(page);
+});
 
 async function activeServiceWorker(page: Page) {
   return page.evaluate(async () => {
@@ -126,6 +128,8 @@ test('serves pages from the network, so a header change reaches installed client
     expect(response?.headers()['content-security-policy']).toMatch(/upgrade-insecure-requests$/);
   } finally {
     await page.close();
+    // The service worker can hold a keep-alive connection open, which would stall close().
+    proxy.closeAllConnections();
     await new Promise((resolve) => proxy.close(resolve));
   }
 });
