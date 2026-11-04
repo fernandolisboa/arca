@@ -23,7 +23,8 @@ export const ptBR = {
     title: 'Configurações',
     dataExport: {
       title: 'Seus dados',
-      intro: 'Baixe um arquivo com tudo o que o Arca guarda sobre a sua conta.',
+      intro:
+        'A exportação dos dados gera um arquivo com tudo o que o Arca guarda sobre a sua conta.',
       start: 'Baixar meus dados',
       confirmLead:
         'O arquivo traz seu email, suas chaves de acesso, seus dispositivos e o histórico de segurança da conta. Guarde em um lugar seguro e não mande para ninguém. Para baixar, confirme com sua chave de acesso.',

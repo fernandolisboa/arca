@@ -16,6 +16,8 @@ export interface Catalog {
 export interface Column {
   readonly quoted: string;
   readonly notNull: boolean;
+  /** `pg_type.typname`, so a domain or an array shows as itself, not as its base type. */
+  readonly type: string;
 }
 
 export interface ForeignKey {
@@ -52,8 +54,9 @@ export async function readCatalog(client: Pick<ClientBase, 'query'>): Promise<Ca
   );
   const columns = await client.query<{ name: string; column: string } & Column>(
     `SELECT ${qualified} AS name, a.attname AS column, pg_catalog.quote_ident(a.attname) AS quoted,
-            a.attnotnull AS "notNull"
+            a.attnotnull AS "notNull", t.typname AS type
        FROM pg_catalog.pg_attribute a
+       JOIN pg_catalog.pg_type t ON t.oid = a.atttypid
        JOIN pg_catalog.pg_class c ON c.oid = a.attrelid
        JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
       WHERE c.relkind IN ('r', 'p') AND ${userSchemas} AND a.attnum > 0 AND NOT a.attisdropped`,
@@ -86,9 +89,9 @@ export async function readCatalog(client: Pick<ClientBase, 'query'>): Promise<Ca
        JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace`,
   );
   const byTable = new Map<string, Map<string, Column>>();
-  for (const { name, column, quoted, notNull } of columns.rows) {
+  for (const { name, column, quoted, notNull, type } of columns.rows) {
     const known = byTable.get(name) ?? new Map<string, Column>();
-    known.set(column, { quoted, notNull });
+    known.set(column, { quoted, notNull, type });
     byTable.set(name, known);
   }
   return {
@@ -99,6 +102,23 @@ export async function readCatalog(client: Pick<ClientBase, 'query'>): Promise<Ca
     policies: policies.rows,
   };
 }
+
+/**
+ * The types an export projection may carry: scalars the contract's values hold, plus `bytea`,
+ * which the export always masks. A domain, an array or JSON would slip past the mask or the
+ * contract, so it fails here instead of in an export.
+ */
+const exportableTypes = new Set([
+  'text',
+  'varchar',
+  'bool',
+  'int2',
+  'int4',
+  'uuid',
+  'date',
+  'timestamptz',
+  'bytea',
+]);
 
 const schemaOf = (table: string) => table.slice(0, table.indexOf('.'));
 const sameColumns = (a: readonly string[], b: readonly string[]) =>
@@ -145,6 +165,12 @@ function entryProblems(entry: RegistryEntry, catalog: Catalog, registry: Registr
   const ownerColumns = 'column' in owner ? [owner.column] : owner.columns;
   for (const column of [...ownerColumns, ...entry.export]) {
     if (!columns.has(column)) problems.push(`${table} has no column ${column}`);
+  }
+  for (const column of entry.export) {
+    const type = columns.get(column)?.type;
+    if (type !== undefined && !exportableTypes.has(type)) {
+      problems.push(`${table}.${column} has type ${type}, which the export cannot carry`);
+    }
   }
   for (const column of ownerColumns) {
     // A row with no owner belongs to nobody, so no erasure would ever reach it.

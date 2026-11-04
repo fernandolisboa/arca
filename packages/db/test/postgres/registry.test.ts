@@ -262,6 +262,22 @@ describe('personal-data registry (spec 0004, R7)', () => {
     ]);
   });
 
+  it.each([
+    ['JSON', 'jsonb'],
+    ['an array of bytes', 'bytea[]'],
+    ['a 64-bit integer', 'bigint'],
+  ])('fails on an exported column holding %s', async (_kind, type) => {
+    expect(
+      await problemsAfter(
+        `ALTER TABLE auth.recovery_lock ALTER COLUMN locked_until TYPE ${type} USING NULL`,
+      ),
+    ).toEqual([
+      expect.stringMatching(
+        /^auth\.recovery_lock\.locked_until has type \S+, which the export cannot carry$/,
+      ),
+    ]);
+  });
+
   it('fails on an owner column that can be null', async () => {
     expect(
       await problemsAfter('ALTER TABLE auth.step_up ALTER COLUMN account_id DROP NOT NULL'),
