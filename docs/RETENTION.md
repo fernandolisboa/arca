@@ -10,7 +10,7 @@ As of 2026-11-02. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md).
 | Account after a deletion request | 7 days locked, then erased | `eraseAccount` workflow |
 | Sessions | 3 days idle, 30 days at most | Better Auth expiry plus a daily cleanup job |
 | Pending document uploads (never confirmed) | 24 hours, with their objects | Daily cleanup job |
-| Browser and system families seen per passkey | While the passkey exists | Deleted with the passkey; erased with the account |
+| Browser and system families seen per passkey (`auth.passkey_client`) | While the passkey exists | Deleted with the passkey (foreign key cascade); erased with the account |
 | Invites | 48 hours unaccepted; once accepted, until the inviter confirms or declines the link, or 30 days | Daily cleanup job |
 | Unconfirmed invited accounts | Erased when the inviter declines them, or when `confirmed_at` is still empty 30 days after creation | Daily cleanup job starts `eraseAccount` |
 | Account links (inviter and invitee) | While both accounts exist | Registry |
@@ -24,7 +24,7 @@ As of 2026-11-02. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md).
 | Notification messages and their deliveries | 90 days | Daily cleanup job |
 | Vault envelopes, recipients, sharing state and document rows | While the account exists; a rotated identity's envelopes until every sharing owner re-encrypts, or 90 days | Registry; daily cleanup job for rotated envelopes |
 | Rate-limit counters | Their window (minutes) | Daily cleanup job |
-| Non-production email outbox | 7 days | Daily cleanup job (non-production only) |
+| Non-production email outbox (`auth.outbox`) | 7 days | Each outbox write deletes expired rows, and the preview page shows only unexpired ones; a daily cleanup job joins with the other cleanups |
 | Audit log | 5 years; records hold identifiers and event codes only | Purge job, specified before the first record turns 5 (2031) |
 | Data exports | Not stored; built per request | — |
 
@@ -41,5 +41,5 @@ As of 2026-11-02. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md).
 | Vercel Workflows | Run metadata (no personal data) | Up to 1 year | Vercel policy |
 | Sentry (Germany) | Scrubbed errors and traces | 30 days | Developer plan policy |
 | AWS CloudWatch Logs (backup account, São Paulo) | Restore job status: table names, counts and error codes, never row contents | 35 days | Log group retention in the template |
-| Resend | Recipient address and message metadata (United States) | Resend's log retention for the plan; checked and recorded by the email ticket | Vendor policy |
+| Resend | Recipient address, message content and metadata (United States) | 30 days on the Free, Pro and Scale plans ([Resend pricing](https://resend.com/pricing), checked 2026-11-04) | Vendor policy |
 | Langfuse (EU) | Model-call metadata: no prompt or completion text, no account, case or document IDs, so nothing to erase per person | Set when Langfuse is adopted ([ADR-0016](adr/0016-observability-and-scrubbing.md)) | — |

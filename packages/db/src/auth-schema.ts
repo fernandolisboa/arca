@@ -124,4 +124,5 @@ export const passkey = auth.table(
   (table) => [index('passkey_user_id_idx').on(table.userId)],
 );
 
+/** The tables Better Auth's adapter maps; the others are read by Arca's own modules. */
 export const authSchema = { user, session, account, verification, passkey } as const;

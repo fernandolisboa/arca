@@ -10,8 +10,10 @@ import {
   readAuthOrigin,
   readAuthSecrets,
   readCronSecret,
+  readDeploymentEnvironment,
 } from './config.js';
 import { apiDatabase, auditDatabase, authDatabase } from './database.js';
+import { readOutbox } from './email/outbox.js';
 import { createLogger } from './logger.js';
 import { heartbeat } from './workflows/heartbeat.js';
 import { startWorkflow } from './workflows/start-workflow.js';
@@ -33,21 +35,39 @@ function connected() {
   return database;
 }
 
+let authPool: ReturnType<typeof authDatabase> | undefined;
+
+/** The app_auth pool, shared by Better Auth and the outbox. */
+function authConnection() {
+  authPool ??= authDatabase(
+    databaseTargetFrom(useRuntimeConfig()['database']),
+    readAuthSecrets().databasePassword,
+    logger,
+  );
+  return authPool.db;
+}
+
 let auth: AuthService | undefined;
 
 /** Better Auth on its own app_auth pool, built on the first auth request. */
 function authenticator(): AuthService {
   if (auth === undefined) {
-    const secrets = readAuthSecrets();
     const target = databaseTargetFrom(useRuntimeConfig()['database']);
-    const { db } = authDatabase(target, secrets.databasePassword, logger);
     const audit = auditLog(auditDatabase(target, readAuditDatabasePassword(), logger).db);
     auth = authService(
-      createAuth({ db, secret: secrets.secret, origin: readAuthOrigin(), logger, audit }),
+      createAuth({
+        db: authConnection(),
+        secret: readAuthSecrets().secret,
+        origin: readAuthOrigin(),
+        logger,
+        audit,
+      }),
     );
   }
   return auth;
 }
+
+const environment = readDeploymentEnvironment();
 
 const app = createApp({
   checkDatabase: () => connected().checkDatabase(),
@@ -61,6 +81,7 @@ const app = createApp({
     session: (headers) => authenticator().session(headers),
   },
   audit: { events: (accountId, query) => auditReader(connected().db).events(accountId, query) },
+  ...(environment === 'preview' ? { outbox: () => readOutbox(authConnection(), environment) } : {}),
 });
 
 /**

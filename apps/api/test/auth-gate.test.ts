@@ -150,3 +150,26 @@ describe('GET /v1/audit/events', () => {
     },
   );
 });
+
+describe('/internal/outbox', () => {
+  const messages = [
+    { to: 'owner@example.com', subject: 's', text: 't', sentAt: '2026-11-04T01:00:00.000Z' },
+  ];
+
+  it('lists the outbox when the deployment gives it one', async () => {
+    const app = createApp({
+      checkDatabase: () => Promise.resolve('ok'),
+      logger: silentLogger,
+      outbox: () => Promise.resolve(messages),
+    });
+    const response = await app.request('/internal/outbox');
+    expect(response.status).toBe(200);
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(await response.json()).toEqual({ messages });
+  });
+
+  it('answers 404 everywhere else', async () => {
+    const app = createApp({ checkDatabase: () => Promise.resolve('ok'), logger: silentLogger });
+    expect((await app.request('/internal/outbox')).status).toBe(404);
+  });
+});

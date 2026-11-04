@@ -4,6 +4,7 @@ import {
   MissingConfigError,
   readApiSecrets,
   readAuthOrigin,
+  readDeploymentEnvironment,
   readAuthSecrets,
   readCronSecret,
   readJobsDatabasePassword,
@@ -144,4 +145,24 @@ describe('readAuthOrigin', () => {
       expect(() => readAuthOrigin()).toThrow(MissingConfigError);
     },
   );
+});
+
+describe('readDeploymentEnvironment', () => {
+  it('is development off Vercel, whatever VERCEL_ENV says', () => {
+    vi.stubEnv('VERCEL', undefined);
+    vi.stubEnv('VERCEL_ENV', 'production');
+    expect(readDeploymentEnvironment()).toBe('development');
+  });
+
+  it.each(['production', 'preview', 'development'])('reads %s on Vercel', (value) => {
+    vi.stubEnv('VERCEL', '1');
+    vi.stubEnv('VERCEL_ENV', value);
+    expect(readDeploymentEnvironment()).toBe(value);
+  });
+
+  it.each([undefined, '', 'staging'])('fails closed on Vercel with VERCEL_ENV %j', (value) => {
+    vi.stubEnv('VERCEL', '1');
+    vi.stubEnv('VERCEL_ENV', value);
+    expect(() => readDeploymentEnvironment()).toThrow(MissingConfigError);
+  });
 });

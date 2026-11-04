@@ -24,7 +24,15 @@ afterAll(async () => {
   await dropDatabase(database);
 });
 
-const authTables = ['account', 'passkey', 'session', 'user', 'verification'];
+const authTables = [
+  'account',
+  'outbox',
+  'passkey',
+  'passkey_client',
+  'session',
+  'user',
+  'verification',
+];
 const tablePrivileges = [
   'SELECT',
   'INSERT',

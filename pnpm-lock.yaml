@@ -336,6 +336,9 @@ importers:
       '@arca/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@arca/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
       '@arca/knowledge':
         specifier: workspace:*
         version: link:../../packages/knowledge

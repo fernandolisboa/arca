@@ -1,0 +1,344 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "347fc570-ff0b-4b4b-93e7-899d920f3407",
+  "prevIds": [
+    "ce817583-119d-4b28-ac04-0cb3ada6d216"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "auth",
+        "outbox"
+      ],
+      "writes": [
+        "s|tbl|auth.outbox",
+        "n|tbl|auth.outbox",
+        "e|tbl|auth.outbox",
+        "n|rel|auth.outbox",
+        "n|type|auth.outbox",
+        "n|rel|auth.outbox_pkey"
+      ],
+      "reads": [
+        "n|sch|auth"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "auth",
+        "passkey_client"
+      ],
+      "writes": [
+        "s|tbl|auth.passkey_client",
+        "n|tbl|auth.passkey_client",
+        "e|tbl|auth.passkey_client",
+        "n|rel|auth.passkey_client",
+        "n|type|auth.passkey_client",
+        "n|rel|auth.passkey_client_pkey"
+      ],
+      "reads": [
+        "n|sch|auth"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "auth",
+        "outbox",
+        "outbox_created_at_idx"
+      ],
+      "writes": [
+        "s|idx|auth.outbox_created_at_idx",
+        "n|idx|auth.outbox_created_at_idx",
+        "e|idx|auth.outbox_created_at_idx",
+        "n|rel|auth.outbox_created_at_idx"
+      ],
+      "reads": [
+        "n|tbl|auth.outbox",
+        "n|sch|auth",
+        "n|col|auth.outbox.created_at"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "auth",
+        "passkey_client"
+      ],
+      "writes": [
+        "s|fk|auth.passkey_client.passkey_client_credential_id_passkey_credential_id_fkey",
+        "n|fk|auth.passkey_client.passkey_client_credential_id_passkey_credential_id_fkey",
+        "e|fk|auth.passkey_client.passkey_client_credential_id_passkey_credential_id_fkey",
+        "n|con|auth.passkey_client.passkey_client_credential_id_passkey_credential_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|auth.passkey_client",
+        "n|sch|auth",
+        "n|tbl|auth.passkey",
+        "n|sch|auth",
+        "n|col|auth.passkey_client.credential_id",
+        "n|col|auth.passkey.credential_id",
+        "e|uniqueness|auth.passkey.credential_id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "name": "outbox",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "name": "passkey_client",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "outbox",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "outbox",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "outbox",
+        "name": "expires_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now() + interval '7 days'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "outbox",
+        "name": "recipient",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "outbox",
+        "name": "subject",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "outbox",
+        "name": "body",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "passkey_client",
+        "name": "credential_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "passkey_client",
+        "name": "browser",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "passkey_client",
+        "name": "os",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "passkey_client",
+        "name": "first_seen_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "outbox",
+        "name": "outbox_created_at_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "created_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "passkey_client",
+        "name": "passkey_client_credential_id_passkey_credential_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "credential_id"
+        ],
+        "schemaTo": "auth",
+        "tableTo": "passkey",
+        "columnsTo": [
+          "credential_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "passkey_client",
+        "name": "passkey_client_pkey",
+        "columns": [
+          "credential_id",
+          "browser",
+          "os"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "outbox",
+        "name": "outbox_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    }
+  ]
+}
