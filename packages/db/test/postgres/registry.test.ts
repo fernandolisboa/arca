@@ -185,7 +185,46 @@ describe('personal-data registry (spec 0004, R7)', () => {
       await problemsAfter(
         'ALTER TABLE auth.passkey_capability DROP CONSTRAINT passkey_capability_credential_id_passkey_credential_id_fkey',
       ),
-    ).toEqual(['auth.passkey_capability has no ON DELETE CASCADE foreign key to auth.passkey']);
+    ).toEqual([
+      'auth.passkey_capability has no ON DELETE CASCADE foreign key (credential_id) to auth.passkey',
+    ]);
+  });
+
+  it('fails on a table listed twice, a parent that is not owned by a column, and a wrong pool outside auth', async () => {
+    expect(
+      await problemsAfter(`${probe} ${erasePolicy} ${readPolicy}`, {
+        entries: [
+          ...withProbe.entries.map((entry) =>
+            entry.table === 'public.probe' && entry.strategy === 'delete'
+              ? { ...entry, pool: 'app_auth' as const }
+              : entry.table === 'auth.passkey_client' && entry.strategy === 'delete'
+                ? { ...entry, owner: { parent: 'auth.passkey_client', columns: ['credential_id'] } }
+                : entry,
+          ),
+        ],
+        unowned: [
+          ...registry.unowned,
+          { table: 'auth.setup', personalData: 'none', reason: 'again' },
+        ],
+      }),
+    ).toEqual([
+      'auth.passkey_client hangs off auth.passkey_client, which is not an entry owned by a column',
+      'auth.passkey_client has no ON DELETE CASCADE foreign key (credential_id) to auth.passkey_client',
+      'auth.setup is listed more than once',
+      'public.probe is outside auth but is not deleted by app_jobs',
+    ]);
+  });
+
+  it('fails on an owner column that can be null', async () => {
+    expect(
+      await problemsAfter('ALTER TABLE auth.step_up ALTER COLUMN account_id DROP NOT NULL'),
+    ).toEqual(['auth.step_up.account_id can be null']);
+  });
+
+  it('fails on a table kept until expiry with no expiry column', async () => {
+    expect(await problemsAfter('ALTER TABLE auth.outbox DROP COLUMN expires_at')).toEqual([
+      'auth.outbox has no column expires_at',
+    ]);
   });
 
   describe('app_jobs erase policies', () => {
@@ -206,6 +245,16 @@ describe('personal-data registry (spec 0004, R7)', () => {
         'public.probe policy probe_erase lets app_jobs delete beyond the identity',
       ],
       [
+        'a SELECT policy of true and none on the identity',
+        `${erasePolicy} CREATE POLICY probe_read ON public.probe FOR SELECT TO app_jobs USING (true);`,
+        'public.probe has no app_jobs SELECT policy on the identity',
+      ],
+      [
+        'a restrictive policy',
+        `${erasePolicy} ${readPolicy} CREATE POLICY probe_open ON public.probe AS RESTRICTIVE FOR DELETE TO app_jobs USING (note IS NULL)`,
+        'public.probe policy probe_open is restrictive and narrows the erasure',
+      ],
+      [
         'a second, wider policy for every command',
         `${erasePolicy} ${readPolicy} CREATE POLICY probe_all ON public.probe USING (note IS NOT NULL)`,
         'public.probe policy probe_all lets app_jobs delete beyond the identity',
@@ -213,9 +262,18 @@ describe('personal-data registry (spec 0004, R7)', () => {
     ])('fails with %s', async (_case, policies, problem) => {
       expect(await problemsAfter(`${probe} ${policies}`, withProbe)).toEqual([problem]);
     });
+
+    it('fails when row-level security is not forced', async () => {
+      expect(
+        await problemsAfter(
+          `${probe} ${erasePolicy} ${readPolicy} ALTER TABLE public.probe NO FORCE ROW LEVEL SECURITY`,
+          withProbe,
+        ),
+      ).toEqual(['public.probe does not have row-level security enabled and forced']);
+    });
   });
 
-  it('lets app_jobs under one identity delete nothing another account owns', async () => {
+  it('lets app_jobs delete nothing with no identity, and nothing another account owns under one', async () => {
     await asAdmin(database, (client) =>
       client.query(`${probe} ${erasePolicy} ${readPolicy}
         GRANT USAGE ON SCHEMA public TO app_jobs;
@@ -223,14 +281,18 @@ describe('personal-data registry (spec 0004, R7)', () => {
         INSERT INTO public.probe VALUES ('${accountA}', 'a'), ('${accountB}', 'b');`),
     );
     try {
-      const deleted = await connected(database, 'app_jobs', jobsPassword, async (client) => {
-        await client.query('BEGIN');
-        await client.query(`SELECT set_config('app.account_id', $1, true)`, [accountA]);
-        const result = await client.query('DELETE FROM public.probe');
-        await client.query('COMMIT');
-        return result.rowCount;
-      });
-      expect(deleted).toBe(1);
+      const deleteAs = (account: string | null) =>
+        connected(database, 'app_jobs', jobsPassword, async (client) => {
+          await client.query('BEGIN');
+          if (account !== null) {
+            await client.query(`SELECT set_config('app.account_id', $1, true)`, [account]);
+          }
+          const result = await client.query('DELETE FROM public.probe');
+          await client.query('COMMIT');
+          return result.rowCount;
+        });
+      expect(await deleteAs(null)).toBe(0);
+      expect(await deleteAs(accountA)).toBe(1);
       const left = await asAdmin(database, (client) =>
         client.query<{ account_id: string }>('SELECT account_id FROM public.probe'),
       );

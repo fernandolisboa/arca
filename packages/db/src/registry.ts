@@ -8,10 +8,12 @@
 export type ErasingPool = 'app_auth' | 'app_jobs';
 
 /**
- * Whose rows these are: a column holding the account ID, or the entry the rows hang off, whose
- * erasure removes them through an `ON DELETE CASCADE` foreign key.
+ * Whose rows these are: a non-null column holding the account ID, or the entry the rows hang off,
+ * whose erasure removes them through the `ON DELETE CASCADE` foreign key on `columns`. The parent
+ * is owned by a column, and the export joins through the same foreign key.
  */
-export type Owner = { readonly column: string } | { readonly parent: string };
+export type Owner =
+  { readonly column: string } | { readonly parent: string; readonly columns: readonly string[] };
 
 interface Exported {
   /** `schema.table`. */
@@ -40,15 +42,19 @@ export interface RetainedEntry extends Exported {
 export type RegistryEntry = DeletedEntry | RetainedEntry;
 
 /**
- * A table whose rows no account owns. `none` holds no personal data. `until-expiry` holds some
- * only during a short ceremony, before an account exists or without naming one; account deletion
- * sweeps its expired rows (spec 0004 R9), so nothing outlives the erasure.
+ * A table whose rows no account owns: `none` holds no personal data; `until-expiry` holds some,
+ * or pseudonyms of it, only for a short time, in rows that name no owner column. Its rows end at
+ * `expiresAt`, and account deletion sweeps the expired ones (spec 0004 R9), so they outlive an
+ * erasure by at most their own lifetime.
  */
-export interface UnownedTable {
-  readonly table: string;
-  readonly personalData: 'none' | 'until-expiry';
-  readonly reason: string;
-}
+export type UnownedTable =
+  | { readonly table: string; readonly personalData: 'none'; readonly reason: string }
+  | {
+      readonly table: string;
+      readonly personalData: 'until-expiry';
+      readonly expiresAt: string;
+      readonly reason: string;
+    };
 
 export interface Registry {
   readonly entries: readonly RegistryEntry[];
@@ -94,7 +100,7 @@ export const registry: Registry = {
     {
       table: 'auth.passkey_activation',
       strategy: 'delete',
-      owner: { parent: 'auth.passkey' },
+      owner: { parent: 'auth.passkey', columns: ['credential_id'] },
       pool: 'app_auth',
       export: ['active_from', 'recovery'],
       label: 'dataExport.tables.passkeyWaits',
@@ -102,7 +108,7 @@ export const registry: Registry = {
     {
       table: 'auth.passkey_capability',
       strategy: 'delete',
-      owner: { parent: 'auth.passkey' },
+      owner: { parent: 'auth.passkey', columns: ['credential_id'] },
       pool: 'app_auth',
       export: ['prf_enabled'],
       label: 'dataExport.tables.passkeyCapabilities',
@@ -110,7 +116,7 @@ export const registry: Registry = {
     {
       table: 'auth.passkey_client',
       strategy: 'delete',
-      owner: { parent: 'auth.passkey' },
+      owner: { parent: 'auth.passkey', columns: ['credential_id'] },
       pool: 'app_auth',
       export: ['browser', 'os', 'first_seen_at'],
       label: 'dataExport.tables.devices',
@@ -191,32 +197,37 @@ export const registry: Registry = {
       reason: "The migration runner's journal of applied migrations.",
     },
     {
-      table: 'auth.rate_limit',
-      personalData: 'none',
-      reason: 'Request counters keyed by HMACs.',
-    },
-    {
       table: 'auth.setup',
       personalData: 'none',
       reason: 'Hashes of spent enrollment codes, kept so an emptied user table never revives one.',
     },
     {
+      table: 'auth.rate_limit',
+      personalData: 'until-expiry',
+      expiresAt: 'expires_at',
+      reason:
+        "Request counters keyed by the server's HMACs of addresses or account IDs; windows of a day at most.",
+    },
+    {
       table: 'auth.outbox',
       personalData: 'until-expiry',
+      expiresAt: 'expires_at',
       reason:
-        'Non-production email outbox, by recipient address, never written in production; rows expire after 7 days.',
+        'Non-production email outbox, by recipient address, never written in production; 7 days.',
     },
     {
       table: 'auth.registration_context',
       personalData: 'until-expiry',
+      expiresAt: 'expires_at',
       reason:
         'Single-use registration contexts with the address a link went to, read before any account exists; 30 minutes.',
     },
     {
       table: 'auth.verification',
       personalData: 'until-expiry',
+      expiresAt: 'expires_at',
       reason:
-        "Better Auth's passkey ceremony state, whose value can hold the account's ID and name; minutes.",
+        "Better Auth's passkey ceremony state, whose value holds a registration context's ID and address, or a signed-in account's ID; minutes.",
     },
   ],
 };

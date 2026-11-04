@@ -5,15 +5,24 @@ import type { Registry, RegistryEntry } from '../../src/registry.js';
 export interface Catalog {
   /** `schema.table` for every table in a user schema. */
   readonly tables: readonly string[];
-  /** Per table, each column's name and its quoted form, as policies are deparsed with it. */
-  readonly columns: ReadonlyMap<string, ReadonlyMap<string, string>>;
+  /** Tables with row-level security enabled and forced. */
+  readonly forcedRls: ReadonlySet<string>;
+  /** Per table, each column's quoted form (as policies are deparsed with it) and nullability. */
+  readonly columns: ReadonlyMap<string, ReadonlyMap<string, Column>>;
   readonly foreignKeys: readonly ForeignKey[];
   readonly policies: readonly Policy[];
+}
+
+export interface Column {
+  readonly quoted: string;
+  readonly notNull: boolean;
 }
 
 export interface ForeignKey {
   readonly name: string;
   readonly table: string;
+  /** The referencing columns, in key order. */
+  readonly columns: readonly string[];
   readonly references: string;
   /** `pg_constraint.confdeltype`: `c` cascade, `n` set null, `d` set default, `a`/`r` none. */
   readonly onDelete: string;
@@ -25,7 +34,7 @@ export interface Policy {
   /** `pg_policy.polcmd`: `r` select, `d` delete, `*` all, and so on. */
   readonly command: string;
   readonly permissive: boolean;
-  /** Whether the policy applies to `app_jobs`, directly or through PUBLIC. */
+  /** Whether the policy names `app_jobs` or PUBLIC. */
   readonly forJobs: boolean;
   readonly qualifier: string | null;
 }
@@ -34,13 +43,14 @@ const userSchemas = `n.nspname <> 'information_schema' AND n.nspname !~ '^pg_'`;
 const qualified = `n.nspname || '.' || c.relname`;
 
 export async function readCatalog(client: Pick<ClientBase, 'query'>): Promise<Catalog> {
-  const tables = await client.query<{ name: string }>(
-    `SELECT ${qualified} AS name
+  const tables = await client.query<{ name: string; forced: boolean }>(
+    `SELECT ${qualified} AS name, c.relrowsecurity AND c.relforcerowsecurity AS forced
        FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
       WHERE c.relkind IN ('r', 'p') AND ${userSchemas}`,
   );
-  const columns = await client.query<{ name: string; column: string; quoted: string }>(
-    `SELECT ${qualified} AS name, a.attname AS column, pg_catalog.quote_ident(a.attname) AS quoted
+  const columns = await client.query<{ name: string; column: string } & Column>(
+    `SELECT ${qualified} AS name, a.attname AS column, pg_catalog.quote_ident(a.attname) AS quoted,
+            a.attnotnull AS "notNull"
        FROM pg_catalog.pg_attribute a
        JOIN pg_catalog.pg_class c ON c.oid = a.attrelid
        JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
@@ -48,6 +58,9 @@ export async function readCatalog(client: Pick<ClientBase, 'query'>): Promise<Ca
   );
   const foreignKeys = await client.query<ForeignKey>(
     `SELECT k.conname AS name, ${qualified} AS table,
+            ARRAY(SELECT a.attname::text FROM pg_catalog.unnest(k.conkey) WITH ORDINALITY AS key(attnum, position)
+                    JOIN pg_catalog.pg_attribute a ON a.attrelid = k.conrelid AND a.attnum = key.attnum
+                   ORDER BY key.position) AS columns,
             rn.nspname || '.' || r.relname AS "references", k.confdeltype AS "onDelete"
        FROM pg_catalog.pg_constraint k
        JOIN pg_catalog.pg_class c ON c.oid = k.conrelid
@@ -67,14 +80,15 @@ export async function readCatalog(client: Pick<ClientBase, 'query'>): Promise<Ca
        JOIN pg_catalog.pg_class c ON c.oid = p.polrelid
        JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace`,
   );
-  const byTable = new Map<string, Map<string, string>>();
-  for (const { name, column, quoted } of columns.rows) {
-    const known = byTable.get(name) ?? new Map<string, string>();
-    known.set(column, quoted);
+  const byTable = new Map<string, Map<string, Column>>();
+  for (const { name, column, quoted, notNull } of columns.rows) {
+    const known = byTable.get(name) ?? new Map<string, Column>();
+    known.set(column, { quoted, notNull });
     byTable.set(name, known);
   }
   return {
     tables: tables.rows.map((row) => row.name),
+    forcedRls: new Set(tables.rows.filter((row) => row.forced).map((row) => row.name)),
     columns: byTable,
     foreignKeys: foreignKeys.rows,
     policies: policies.rows,
@@ -82,19 +96,54 @@ export async function readCatalog(client: Pick<ClientBase, 'query'>): Promise<Ca
 }
 
 const schemaOf = (table: string) => table.slice(0, table.indexOf('.'));
+const sameColumns = (a: readonly string[], b: readonly string[]) =>
+  a.length === b.length && a.every((column, index) => column === b[index]);
 
-/** The only qualifier an `app_jobs` erase policy may have (spec 0001 R7, ADR-0017). */
+/**
+ * The only qualifier an `app_jobs` erase policy may have (spec 0001 R7, ADR-0017). Compared as
+ * Postgres deparses it, so a change in that form fails the guard rather than passing it.
+ */
 export const identityQualifier = (quotedColumn: string) =>
   `(${quotedColumn} = (NULLIF(current_setting('app.account_id'::text, true), ''::text))::uuid)`;
 
-function entryProblems(entry: RegistryEntry, catalog: Catalog, entries: Set<string>): string[] {
-  const { table } = entry;
+function jobsErasureProblems(table: string, ownerColumn: Column, catalog: Catalog): string[] {
+  const problems: string[] = [];
+  if (!catalog.forcedRls.has(table)) {
+    problems.push(`${table} does not have row-level security enabled and forced`);
+  }
+  const expected = identityQualifier(ownerColumn.quoted);
+  const jobs = catalog.policies.filter(
+    (policy) => policy.table === table && policy.forJobs && 'rd*'.includes(policy.command),
+  );
+  const permissive = (commands: string) =>
+    jobs.filter((policy) => policy.permissive && commands.includes(policy.command));
+  const deletes = permissive('d*');
+  if (deletes.length === 0) problems.push(`${table} has no app_jobs DELETE policy`);
+  for (const policy of deletes.filter((policy) => policy.qualifier !== expected)) {
+    problems.push(`${table} policy ${policy.name} lets app_jobs delete beyond the identity`);
+  }
+  if (!permissive('r*').some((policy) => policy.qualifier === expected)) {
+    problems.push(`${table} has no app_jobs SELECT policy on the identity`);
+  }
+  // A restrictive policy narrows the erasure, which then leaves rows behind without an error.
+  for (const policy of jobs.filter((policy) => !policy.permissive)) {
+    problems.push(`${table} policy ${policy.name} is restrictive and narrows the erasure`);
+  }
+  return problems;
+}
+
+function entryProblems(entry: RegistryEntry, catalog: Catalog, registry: Registry): string[] {
+  const { table, owner } = entry;
   const columns = catalog.columns.get(table);
   if (columns === undefined) return [];
   const problems: string[] = [];
-  const ownerColumn = 'column' in entry.owner ? entry.owner.column : undefined;
-  for (const column of [...(ownerColumn === undefined ? [] : [ownerColumn]), ...entry.export]) {
+  const ownerColumns = 'column' in owner ? [owner.column] : owner.columns;
+  for (const column of [...ownerColumns, ...entry.export]) {
     if (!columns.has(column)) problems.push(`${table} has no column ${column}`);
+  }
+  for (const column of ownerColumns) {
+    // A row with no owner belongs to nobody, so no erasure would ever reach it.
+    if (columns.get(column)?.notNull === false) problems.push(`${table}.${column} can be null`);
   }
   const inAuth = schemaOf(table) === 'auth';
   if (inAuth && !(entry.strategy === 'delete' && entry.pool === 'app_auth')) {
@@ -103,32 +152,27 @@ function entryProblems(entry: RegistryEntry, catalog: Catalog, entries: Set<stri
   if (!inAuth && entry.strategy === 'delete' && entry.pool !== 'app_jobs') {
     problems.push(`${table} is outside auth but is not deleted by app_jobs`);
   }
-  if ('parent' in entry.owner) {
-    const { parent } = entry.owner;
-    if (!entries.has(parent)) problems.push(`${table} hangs off ${parent}, which is not an entry`);
+  if ('parent' in owner) {
+    const parent = registry.entries.find((candidate) => candidate.table === owner.parent);
+    if (parent === undefined || !('column' in parent.owner)) {
+      problems.push(`${table} hangs off ${owner.parent}, which is not an entry owned by a column`);
+    }
     const cascades = catalog.foreignKeys.some(
-      (key) => key.table === table && key.references === parent && key.onDelete === 'c',
+      (key) =>
+        key.table === table &&
+        key.references === owner.parent &&
+        key.onDelete === 'c' &&
+        sameColumns(key.columns, owner.columns),
     );
-    if (!cascades) problems.push(`${table} has no ON DELETE CASCADE foreign key to ${parent}`);
-  }
-  if (entry.strategy === 'delete' && entry.pool === 'app_jobs' && ownerColumn !== undefined) {
-    const expected = identityQualifier(columns.get(ownerColumn) ?? ownerColumn);
-    const jobs = (commands: string) =>
-      catalog.policies.filter(
-        (policy) =>
-          policy.table === table &&
-          policy.permissive &&
-          policy.forJobs &&
-          commands.includes(policy.command),
+    if (!cascades) {
+      problems.push(
+        `${table} has no ON DELETE CASCADE foreign key (${owner.columns.join(', ')}) to ${owner.parent}`,
       );
-    const deletes = jobs('d*');
-    if (deletes.length === 0) problems.push(`${table} has no app_jobs DELETE policy`);
-    for (const policy of deletes.filter((policy) => policy.qualifier !== expected)) {
-      problems.push(`${table} policy ${policy.name} lets app_jobs delete beyond the identity`);
     }
-    if (!jobs('r*').some((policy) => policy.qualifier === expected)) {
-      problems.push(`${table} has no app_jobs SELECT policy on the identity`);
-    }
+  } else if (entry.strategy === 'delete' && entry.pool === 'app_jobs') {
+    const ownerColumn = columns.get(owner.column);
+    if (ownerColumn !== undefined)
+      problems.push(...jobsErasureProblems(table, ownerColumn, catalog));
   }
   return problems;
 }
@@ -139,7 +183,6 @@ function entryProblems(entry: RegistryEntry, catalog: Catalog, entries: Set<stri
  */
 export function checkRegistry(catalog: Catalog, registry: Registry): string[] {
   const listed = [...registry.entries, ...registry.unowned].map((item) => item.table);
-  const entries = new Set(registry.entries.map((entry) => entry.table));
   const tables = new Set(catalog.tables);
   const problems = [
     ...catalog.tables
@@ -151,6 +194,13 @@ export function checkRegistry(catalog: Catalog, registry: Registry): string[] {
     ...listed
       .filter((table) => !tables.has(table))
       .map((table) => `${table} is in the registry but does not exist`),
+    ...registry.unowned.flatMap((item) =>
+      item.personalData === 'until-expiry' &&
+      tables.has(item.table) &&
+      catalog.columns.get(item.table)?.has(item.expiresAt) !== true
+        ? [`${item.table} has no column ${item.expiresAt}`]
+        : [],
+    ),
     ...catalog.foreignKeys
       .filter((key) => schemaOf(key.table) === 'audit')
       .map((key) => `foreign key ${key.name} on ${key.table} leaves audit`),
@@ -161,7 +211,7 @@ export function checkRegistry(catalog: Catalog, registry: Registry): string[] {
           'cnd'.includes(key.onDelete),
       )
       .map((key) => `foreign key ${key.name} on ${key.table} cascades across the auth schema`),
-    ...registry.entries.flatMap((entry) => entryProblems(entry, catalog, entries)),
+    ...registry.entries.flatMap((entry) => entryProblems(entry, catalog, registry)),
   ];
   return [...new Set(problems)].sort();
 }
