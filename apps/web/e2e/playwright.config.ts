@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { databaseServer, signedOutOrigin } from './servers.js';
+import { databaseServer, e2eEnrollmentCodeHash, signedOutOrigin } from './servers.js';
 
 const ci = process.env['CI'] !== undefined;
 /** Optional: a local Chromium when the installed one does not match Playwright's revision. */
@@ -16,7 +16,8 @@ const server = 'node ../../api/.output/server/index.mjs';
  * this app's static build, at phone and desktop sizes (spec 0001, R8); the shell and accessibility
  * suites set their own widths, tablet included (spec 0006, R11). One server runs with no
  * database, so the API reports itself degraded. When ARCA_E2E_DATABASE names a database on the
- * ARCA_TEST_DB_* server, a second one reaches it, for the sign-in tests (spec 0003, R3).
+ * ARCA_TEST_DB_* server, a second one reaches it, for the enrollment and sign-in tests (spec 0003,
+ * R2 and R3); enrollment runs first, while the database holds no account.
  */
 export default defineConfig({
   testDir: '.',
@@ -28,11 +29,20 @@ export default defineConfig({
     launchOptions: executablePath === undefined ? {} : { executablePath },
   },
   projects: [
+    // The first account is created once per database, before any other test seeds an account.
+    { name: 'enrollment', testMatch: 'enrollment.spec.ts' },
     {
       name: 'phone',
       use: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
+      testIgnore: 'enrollment.spec.ts',
+      dependencies: ['enrollment'],
     },
-    { name: 'desktop', use: { viewport: { width: 1280, height: 800 } } },
+    {
+      name: 'desktop',
+      use: { viewport: { width: 1280, height: 800 } },
+      testIgnore: 'enrollment.spec.ts',
+      dependencies: ['enrollment'],
+    },
   ],
   webServer: [
     {
@@ -53,6 +63,7 @@ export default defineConfig({
               // Nitro overrides the built runtime config from NITRO_* variables at start.
               NITRO_DATABASE_HOST: databaseServer.database.host,
               NITRO_DATABASE_NAME: databaseServer.database.name,
+              ARCA_ENROLLMENT_CODE_HASH: e2eEnrollmentCodeHash,
             },
             reuseExistingServer: false,
           },

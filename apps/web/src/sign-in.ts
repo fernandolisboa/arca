@@ -1,5 +1,4 @@
 import {
-  ApiError,
   routes,
   type PasskeyAssertion,
   type PasskeyRequestOptions,
@@ -10,6 +9,7 @@ import type {
   PublicKeyCredentialRequestOptionsJSON,
 } from '@arca/platform';
 import { api } from './api.js';
+import { commonFailure, reach } from './requests.js';
 
 export type SignInFailure =
   'cancelled' | 'refused' | 'limited' | 'unavailable' | 'unreachable' | 'other';
@@ -21,22 +21,6 @@ function toRequestOptions(options: PasskeyRequestOptions): PublicKeyCredentialRe
 
 function toAssertion(response: AuthenticationResponseJSON): PasskeyAssertion {
   return { ...response, clientExtensionResults: { ...response.clientExtensionResults } };
-}
-
-/** The API could not be reached: fetch rejected before any response arrived. */
-class UnreachableError extends Error {
-  override name = 'UnreachableError';
-}
-
-/** Tells a failed fetch apart from any other TypeError, such as malformed ceremony options. */
-async function reach<T>(call: Promise<T>): Promise<T> {
-  try {
-    return await call;
-  } catch (error) {
-    throw error instanceof TypeError
-      ? new UnreachableError(error.message, { cause: error })
-      : error;
-  }
 }
 
 /** The last options request, so a new one starts only after it settled. */
@@ -75,14 +59,5 @@ export async function signInWithPasskey(
 }
 
 export function failureOf(error: unknown): SignInFailure {
-  if (error instanceof ApiError) {
-    if (error.status === 401) return 'refused';
-    return error.status === 429 ? 'limited' : 'other';
-  }
-  if (error instanceof UnreachableError) return 'unreachable';
-  // Browsers report a dismissed prompt, a timeout and a failed verification alike.
-  if (error instanceof Error && (error.name === 'NotAllowedError' || error.name === 'AbortError')) {
-    return 'cancelled';
-  }
-  return 'other';
+  return commonFailure(error, (api) => (api.status === 401 ? 'refused' : undefined));
 }

@@ -15,11 +15,11 @@ function adminClient(): pg.Client {
   });
 }
 
-async function asAdmin(work: (client: pg.Client) => Promise<void>): Promise<void> {
+async function asAdmin<T>(work: (client: pg.Client) => Promise<T>): Promise<T> {
   const client = adminClient();
   await client.connect();
   try {
-    await work(client);
+    return await work(client);
   } finally {
     await client.end();
   }
@@ -56,5 +56,58 @@ export async function seedAccount({
 export async function resetRateLimits(): Promise<void> {
   await asAdmin(async (client) => {
     await client.query('DELETE FROM auth.rate_limit');
+  });
+}
+
+/**
+ * The first account is created once per database, so the enrollment tests start from one with no
+ * account, no spent enrollment code and no pending link, and run before any test seeds an account.
+ */
+export async function resetEnrollment(): Promise<void> {
+  await asAdmin(async (client) => {
+    await client.query('DELETE FROM auth."user"');
+    await client.query('DELETE FROM auth.setup');
+    await client.query('DELETE FROM auth.registration_context');
+    await client.query('DELETE FROM auth.outbox');
+    await client.query('DELETE FROM auth.rate_limit');
+  });
+}
+
+/** The newest message the outbox holds for an address. */
+export async function latestEmailTo(recipient: string): Promise<string | undefined> {
+  return asAdmin(async (client) => {
+    const { rows } = await client.query<{ body: string }>(
+      'SELECT body FROM auth.outbox WHERE recipient = $1 ORDER BY created_at DESC LIMIT 1',
+      [recipient],
+    );
+    return rows[0]?.body;
+  });
+}
+
+/** What the database recorded about an account's passkeys and recovery kit. */
+export async function enrolledAccount(email: string) {
+  return asAdmin(async (client) => {
+    const { rows } = await client.query<{
+      confirmed: boolean;
+      prf_enabled: boolean | null;
+      kit_saved: boolean | null;
+    }>(
+      `SELECT u.confirmed_at IS NOT NULL AS confirmed, c.prf_enabled,
+              k.confirmed_at IS NOT NULL AS kit_saved
+         FROM auth."user" u
+         LEFT JOIN auth.passkey p ON p.user_id = u.id
+         LEFT JOIN auth.passkey_capability c ON c.credential_id = p.credential_id
+         LEFT JOIN auth.recovery_code k ON k.account_id = u.id
+        WHERE u.email = $1`,
+      [email],
+    );
+    return rows;
+  });
+}
+
+/** Erases every account, as an erasure would (spec 0004). */
+export async function deleteAccounts(): Promise<void> {
+  await asAdmin(async (client) => {
+    await client.query('DELETE FROM auth."user"');
   });
 }

@@ -128,6 +128,60 @@ export const ptBR = {
   session: {
     signedIn: 'Você entrou como {email}.',
     signIn: 'Entrar',
+    kitPending:
+      'Falta guardar o seu kit de recuperação. Sem ele, perder todas as chaves de acesso deixa você fora da conta.',
+    kitLink: 'Guardar o kit agora',
+  },
+  /** Creating the first account (spec 0003, R2): the owner's link request, then the passkey. */
+  enroll: {
+    request: {
+      title: 'Criar a primeira conta',
+      lead: 'Esta página é para quem instalou o Arca. Digite o código de cadastro que você gerou e o seu email. Vamos mandar um link para você criar a sua chave de acesso.',
+      code: 'Código de cadastro',
+      email: 'Email',
+      submit: 'Enviar o link',
+      sending: 'Enviando…',
+      sent: 'Pronto. Abra o email que mandamos e siga o link. Ele vale por 30 minutos.',
+      failure:
+        '{reason, select, not_found {Esse código não serve. Ou ele está errado, ou o Arca já tem uma conta.} email_unavailable {O Arca ainda não consegue mandar emails. Tente de novo mais tarde.} limited {Muitas tentativas por esta conexão. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+    },
+    register: {
+      title: 'Criar sua chave de acesso',
+      lead: 'Digite de novo o código de cadastro. Depois, o seu celular ou computador vai pedir para salvar uma chave de acesso para o Arca.',
+      code: 'Código de cadastro',
+      submit: 'Criar chave de acesso',
+      waiting: 'Confirme no seu dispositivo para continuar.',
+      failure:
+        '{reason, select, expired {Este link não vale mais. Peça um novo.} invalid_code {Esse código não confere. Confira e tente de novo.} cancelled {Não deu para criar a chave de acesso. Tente de novo quando quiser.} refused {Não deu para criar a conta com esta chave de acesso. Se a conta já existe, entre com a sua chave.} unavailable {Este navegador não aceita chaves de acesso. Abra o link em um navegador atualizado, como Chrome, Safari, Edge ou Firefox.} limited {Muitas tentativas por esta conexão. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+      newLink: 'Pedir um novo link',
+      signIn: 'Entrar',
+    },
+  },
+  /** The account part of the recovery kit (spec 0003, R6): shown once, printed or written down. */
+  recoveryKit: {
+    title: 'Seu kit de recuperação',
+    lead: 'Se um dia você perder todas as suas chaves de acesso, este código, junto com um link que mandamos por email, devolve o acesso à sua conta. Ele aparece uma vez só.',
+    show: 'Mostrar meu código',
+    replace: 'Gerar um novo código',
+    replaceLead:
+      'O código aparece uma vez só, então não dá para mostrar o mesmo de novo. Gerar um novo faz o anterior parar de valer. Para isso, confirme com a sua chave de acesso.',
+    savedLead: 'Seu código de recuperação está guardado. Por segurança, ele não aparece de novo.',
+    codeLabel: 'Código de recuperação',
+    keep: 'Imprima esta página ou anote o código à mão, e guarde num lugar seguro, fora do computador.',
+    print: 'Imprimir',
+    download: 'Baixar como arquivo de texto',
+    downloadWarning:
+      'Um arquivo de texto pode parar numa pasta sincronizada, como iCloud, Google Drive ou OneDrive, e aí o código fica guardado na nuvem. Se puder, prefira imprimir ou anotar.',
+    downloadAnyway: 'Baixar mesmo assim',
+    fileName: 'arca-codigo-de-recuperacao.txt',
+    fileText:
+      'Código de recuperação do Arca\n\n{code}\n\nUse este código junto com o link de recuperação que o Arca manda por email. Quem tiver o código e o seu email consegue entrar na sua conta, então guarde num lugar seguro.',
+    saved: 'Guardei o código num lugar seguro',
+    finish: 'Continuar',
+    waiting: 'Confirme no seu dispositivo para continuar.',
+    signIn: 'Entre para ver o seu kit de recuperação.',
+    failure:
+      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
   },
   /** Coarse device families, as sessions record them (spec 0003, R4). */
   device: {

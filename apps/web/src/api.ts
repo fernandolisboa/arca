@@ -19,3 +19,11 @@ export const sessionQuery = queryOptions({
   networkMode: 'always',
   retry: false,
 });
+
+/** Whether the signed-in account has a recovery kit, and whether it was saved (spec 0003, R6). */
+export const recoveryKitQuery = queryOptions({
+  queryKey: ['recovery-kit'],
+  queryFn: () => api.call(routes.recoveryKitStatus),
+  networkMode: 'always',
+  retry: false,
+});

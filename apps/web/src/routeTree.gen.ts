@@ -10,12 +10,24 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as EnrollRouteImport } from './routes/enroll'
+import { Route as RecoveryKitRouteImport } from './routes/recovery-kit'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SignInRouteImport } from './routes/sign-in'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnrollRoute = EnrollRouteImport.update({
+  id: '/enroll',
+  path: '/enroll',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecoveryKitRoute = RecoveryKitRouteImport.update({
+  id: '/recovery-kit',
+  path: '/recovery-kit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -31,30 +43,38 @@ const SignInRoute = SignInRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/enroll': typeof EnrollRoute
+  '/recovery-kit': typeof RecoveryKitRoute
   '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/enroll': typeof EnrollRoute
+  '/recovery-kit': typeof RecoveryKitRoute
   '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/enroll': typeof EnrollRoute
+  '/recovery-kit': typeof RecoveryKitRoute
   '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/settings' | '/sign-in'
+  fullPaths: '/' | '/enroll' | '/recovery-kit' | '/settings' | '/sign-in'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/settings' | '/sign-in'
-  id: '__root__' | '/' | '/settings' | '/sign-in'
+  to: '/' | '/enroll' | '/recovery-kit' | '/settings' | '/sign-in'
+  id: '__root__' | '/' | '/enroll' | '/recovery-kit' | '/settings' | '/sign-in'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  EnrollRoute: typeof EnrollRoute
+  RecoveryKitRoute: typeof RecoveryKitRoute
   SettingsRoute: typeof SettingsRoute
   SignInRoute: typeof SignInRoute
 }
@@ -66,6 +86,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/enroll': {
+      id: '/enroll'
+      path: '/enroll'
+      fullPath: '/enroll'
+      preLoaderRoute: typeof EnrollRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recovery-kit': {
+      id: '/recovery-kit'
+      path: '/recovery-kit'
+      fullPath: '/recovery-kit'
+      preLoaderRoute: typeof RecoveryKitRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -87,6 +121,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  EnrollRoute: EnrollRoute,
+  RecoveryKitRoute: RecoveryKitRoute,
   SettingsRoute: SettingsRoute,
   SignInRoute: SignInRoute,
 }
