@@ -41,7 +41,7 @@ These ten axes are the whole preference set. Each is one attribute on `<html>`: 
 
 ### Color
 
-Every palette defines the same keys. `second` is the fill for non-leading bars; `logoRoof` is the roof of the ark mark.
+Every palette defines the same keys. `second` is the fill for non-leading bars.
 
 | Key | notebook light | notebook dark | serene light | serene dark | panel light | panel dark |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -55,7 +55,6 @@ Every palette defines the same keys. `second` is the fill for non-leading bars; 
 | `soft` | `#F1E8DA` | `#352D27` | `#E6EDEE` | `#1D3338` | `#E9ECF1` | `#222831` |
 | `track` | `#EADFCD` | `#3D352E` | `#E6EDEE` | `#2A3F44` | `#E9ECF1` | `#2C323A` |
 | `second` | `#8C7F73` | `#9C8F82` | `#8FA3A8` | `#6F878C` | `#9AA4B0` | `#5D6672` |
-| `logoRoof` | `#F1C58E` | `#F1C58E` | `#F2C14E` | `#F2C14E` | `#FF9A5C` | `#FF9A5C` |
 | `okBg` / `okInk` | `#E3EBD9` / `#34491F` | `#2C3A22` / `#BFD8A5` | `#DDF1E6` / `#145C36` | `#173A2A` / `#A6E2C1` | `#EAF6EF` / `#17603A` | `#173326` / `#9FDDB9` |
 | `warnBg` / `warnInk` | `#F6DDCB` / `#7E3315` | `#45281A` / `#F4BE9F` | `#FCEFCF` / `#6B4A00` | `#3D3115` / `#F5D58A` | `#FDF0E6` / `#8A3A07` | `#3A2414` / `#FFC49E` |
 
@@ -102,6 +101,20 @@ Spacing follows Tailwind's 4 px scale; `spacing-touch` stays 44 px and every con
 
 Motion: `duration-fast` 150 ms (hover, press), `duration-base` 250 ms (theme change, toggles), `duration-slow` 450 ms (cards entering), `ease-out` `cubic-bezier(0.2, 0.8, 0.2, 1)`. Bars grow from zero on first paint with a 90 ms stagger per row, for the first six rows only; later rows start with the sixth. With motion off, every duration is 0 and looping animations do not render.
 
+### Mark
+
+The mark is a house on a straight hull with a ramp down from an arched door, chosen by the owner on 2026-11-04. Its sources are [docs/brand/arca-mark.svg](../brand/arca-mark.svg) (light backgrounds) and [docs/brand/arca-mark-dark.svg](../brand/arca-mark-dark.svg) (dark backgrounds). It keeps its own wood palette in every color theme, because it must stay recognizable when the theme changes:
+
+| Part | Light | Dark |
+| --- | --- | --- |
+| Hull | `#805840` | `#A67C63` |
+| House | `#AE8546` | `#E9CB88` |
+| Roof | `#5B4033` | `#C7845F` |
+| Ramp | `#AD7853` | `#C59770` |
+| Windows | `#F1DCA9` | `#F5E2B8` |
+
+The door is a hole, so the background shows through. At 32 px and below the windows are dropped, as in `apps/web/public/favicon.svg`, which carries the light palette as fill attributes and switches to the dark one with a `prefers-color-scheme` style, so it still shows the light mark where that style is blocked. The PWA icons in `apps/web/public/icons/` put the light mark on a `#F7F1E8` tile; the maskable icon keeps it inside the safe zone, a centered circle 80% of the icon's width across. The mark palette lives in `packages/ui/src/theme/` as a fixed `mark` entry outside the per-palette keys. The shell renders the mark with a `Mark` component in `packages/ui` (R8), picking the light or dark palette from the resolved mode, `aria-hidden` because the name "Arca" sits beside it in the display font. Native icons and splash screens stay out of scope (Phase 4).
+
 ## Shell and navigation
 
 - Four navigation items: home, countries, plan and documents. Their labels and icons are defined once and every layout renders the same list.
@@ -147,7 +160,7 @@ When the authoring session has the `/super-copy` skill, it runs its pass that re
 - **R5 Icons.** `lucide-react` wrapped by an `Icon` component in `packages/ui` that takes a name from a fixed union, sets `aria-hidden` unless given a label, and uses `currentColor` at 2 px stroke. A lint rule blocks importing `lucide-react` outside `packages/ui`. The menu toggle is its own `MenuToggle` component in `packages/ui`, three lines animated with CSS, not an `Icon`.
 - **R6 Motion.** Duration and easing tokens; a `data-motion` attribute; a global rule that zeroes durations under `[data-motion="off"]` and under `prefers-reduced-motion: reduce`; page navigation uses `document.startViewTransition` when present and motion is on, and an instant swap otherwise; `::view-transition-*` animations are zeroed by the same rule.
 - **R7 Preferences.** An `appearance` module in `apps/web` reads and writes only the axes the person has set, including a value equal to the current default, to `localStorage` under one versioned key (clearing an axis removes it), validated with Zod enums built from the identifier lists `@arca/ui` exports; unknown values fall back to defaults. Before first paint, a classic same-origin script (`/appearance-boot.js`, loaded in `<head>` without `defer` or `type=module`) applies them. It is built by the existing plugin in `apps/web/vite.config.ts` as an IIFE from a TypeScript source, as `sw.ts` is, so it stays under strict types, lint and tests. The source imports only `@arca/ui/theme/ids` and is built before the plugin computes the precache list; tests check that the file is in the precache list and contains no React. The plugin injects its tag only into the production `index.html`, and in development the `appearance` module applies the preferences on load. It accepts only allow-listed values, calls `setAttribute` only for the fixed `data-*` names and the `theme-color` meta tag (in `system` mode, from `matchMedia`; the `appearance` module updates it on every change), uses no HTML sinks, and applies the defaults on any exception. A test feeds it tampered and unknown stored values and expects the defaults. No inline script, so the CSP is unchanged. `index.html` carries the default attributes statically, and the web manifest's `theme_color` and `background_color` use the default palette's `bg`.
-- **R8 AppShell.** `AppShell` takes the navigation items and the layout preferences (wide, narrow, dock edge), including dragging the floating dock with snap and the menu panel, and renders the layouts in [Shell and navigation](#shell-and-navigation), switching at 768 px with CSS only. It shows only the items whose page exists, so until the features land it shows home alone and grows as pages are added; no placeholder pages.
+- **R8 AppShell.** `AppShell` takes the navigation items and the layout preferences (wide, narrow, dock edge), including dragging the floating dock with snap and the menu panel, and renders the layouts in [Shell and navigation](#shell-and-navigation), switching at 768 px with CSS only. Its bars show the `Mark` described in [Mark](#mark); a test checks that the component's paths match `docs/brand/arca-mark.svg`. It shows only the items whose page exists, so until the features land it shows home alone and grows as pages are added; no placeholder pages.
 - **R9 Settings screen.** Creates the Settings page, reached from the Settings entry in every layout, with an appearance section: one control group per axis with a live preview and a "use default" option that clears the person's choice for that axis, plus one action that clears them all; the narrow-screen group offers the docks and the menu, and the dock-edge group appears with the floating dock. Strings in the pt-BR catalog.
 - **R10 Patterns.** `NextActionCard`, `RankingRow`, `ProgressBar`, `SourceLine`, `StatusChip` and `CoachMark` in `packages/ui`, each with one Vitest render test that checks its content, keyboard reachability and screen-reader labels. Themes are covered by R3 and R11, not per component.
 - **R11 End-to-end.** Playwright opens the home screen at 390, 820 and 1280 px in each navigation layout and dock edge, and at text size 150%, and checks: every navigation item, the Settings entry and the menu reachable by keyboard, the menu closing from its button by keyboard and on Escape, with focus returned, no horizontal scroll, nothing behind the dock, and `@axe-core/playwright` reports no violations in the default theme and in one light theme.
