@@ -50,9 +50,14 @@ export const session = auth.table(
     /** Closed enums derived on the server from the user agent (spec 0003, R4). */
     deviceBrowser: text('device_browser').notNull(),
     deviceOs: text('device_os').notNull(),
+    /** The passkey that signed this session in; revoking it ends the session (spec 0003, R4). */
+    credentialId: text('credential_id')
+      .notNull()
+      .references(() => passkey.credentialID, { onDelete: 'cascade' }),
   },
   (table) => [
     index('session_user_id_idx').on(table.userId),
+    index('session_credential_id_idx').on(table.credentialId),
     // Neither the IP address nor the raw user agent is ever stored (spec 0003, R4).
     check(
       'session_no_network_details',

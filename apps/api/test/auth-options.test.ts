@@ -13,6 +13,7 @@ const auth = createAuth({
   origin: 'https://preview.example.com',
   logger,
   audit: { record: () => Promise.resolve() },
+  notices: { send: () => Promise.resolve() },
 });
 
 describe('the Better Auth configuration (spec 0003, R1)', () => {
@@ -41,18 +42,20 @@ describe('the Better Auth configuration (spec 0003, R1)', () => {
     expect(lines).toEqual([{ errorName: 'BetterAuthError' }, { errorName: 'BetterAuthWarning' }]);
   });
 
+  const before = auth.options.databaseHooks.session.create.before as unknown as (
+    session: Record<string, unknown>,
+    context: { path?: string; body?: unknown; headers: Headers } | null,
+  ) => Promise<{ data: Record<string, unknown> }>;
+  const signIn = { path: '/passkey/verify-authentication', body: { response: { id: 'cred-1' } } };
+
   it('stores no network details and derives the device from the user agent', async () => {
-    const before = auth.options.databaseHooks.session.create.before as unknown as (
-      session: Record<string, unknown>,
-      context: { headers: Headers },
-    ) => Promise<{ data: Record<string, unknown> }>;
     const headers = new Headers({
       'user-agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0',
       'x-forwarded-for': '192.0.2.10',
     });
     const { data } = await before(
       { userId: 'u', ipAddress: '192.0.2.10', userAgent: 'raw agent' },
-      { headers },
+      { ...signIn, headers },
     );
     expect(data).toEqual({
       userId: 'u',
@@ -60,6 +63,33 @@ describe('the Better Auth configuration (spec 0003, R1)', () => {
       userAgent: null,
       deviceBrowser: 'firefox',
       deviceOs: 'linux',
+      credentialId: 'cred-1',
     });
+  });
+
+  it.each([
+    ['no endpoint at all', null],
+    ['another endpoint', { path: '/sign-in/email', body: {}, headers: new Headers() }],
+    [
+      'a sign-in without a credential',
+      { path: '/passkey/verify-authentication', body: {}, headers: new Headers() },
+    ],
+  ])('refuses a session from %s', async (_label, context) => {
+    await expect(before({ userId: 'u' }, context)).rejects.toThrow();
+  });
+});
+
+describe('cookies and session lifetimes (spec 0003, R4)', () => {
+  it('names every cookie __Host- and sets its attributes', () => {
+    expect(auth.options.advanced).toMatchObject({
+      useSecureCookies: false,
+      cookiePrefix: '__Host-arca',
+      defaultCookieAttributes: { secure: true, httpOnly: true, sameSite: 'lax', path: '/' },
+    });
+    expect(auth.options.advanced).not.toHaveProperty('crossSubDomainCookies');
+  });
+
+  it('expires a session after 3 idle days, slid at most daily', () => {
+    expect(auth.options.session).toMatchObject({ expiresIn: 259_200, updateAge: 86_400 });
   });
 });

@@ -1,0 +1,134 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "283aee27-35de-4cf0-aef0-d2d7fac750f9",
+  "prevIds": [
+    "da56dc67-60f3-4458-bb58-d2c3f3c33050"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "auth",
+        "session",
+        "credential_id"
+      ],
+      "writes": [
+        "s|col|auth.session.credential_id",
+        "n|col|auth.session.credential_id",
+        "e|col|auth.session.credential_id"
+      ],
+      "reads": [
+        "n|tbl|auth.session",
+        "n|sch|auth"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "auth",
+        "session",
+        "session_credential_id_idx"
+      ],
+      "writes": [
+        "s|idx|auth.session_credential_id_idx",
+        "n|idx|auth.session_credential_id_idx",
+        "e|idx|auth.session_credential_id_idx",
+        "n|rel|auth.session_credential_id_idx"
+      ],
+      "reads": [
+        "n|tbl|auth.session",
+        "n|sch|auth",
+        "n|col|auth.session.credential_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "auth",
+        "session"
+      ],
+      "writes": [
+        "s|fk|auth.session.session_credential_id_passkey_credential_id_fkey",
+        "n|fk|auth.session.session_credential_id_passkey_credential_id_fkey",
+        "e|fk|auth.session.session_credential_id_passkey_credential_id_fkey",
+        "n|con|auth.session.session_credential_id_passkey_credential_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|auth.session",
+        "n|sch|auth",
+        "n|tbl|auth.passkey",
+        "n|sch|auth",
+        "n|col|auth.session.credential_id",
+        "n|col|auth.passkey.credential_id",
+        "e|uniqueness|auth.passkey.credential_id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "session",
+        "name": "credential_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "session",
+        "name": "session_credential_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "credential_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "session",
+        "name": "session_credential_id_passkey_credential_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "credential_id"
+        ],
+        "schemaTo": "auth",
+        "tableTo": "passkey",
+        "columnsTo": [
+          "credential_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    }
+  ]
+}
