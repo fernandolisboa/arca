@@ -37,8 +37,15 @@ interface Sent {
 const sent: Sent[] = [];
 let answers: Response[] = [];
 
-const { forgetKey } = vi.hoisted(() => ({ forgetKey: vi.fn(() => Promise.resolve()) }));
-vi.mock('../src/platform.js', () => ({ keyStorage: { forget: forgetKey } }));
+const { forgetKey, unsubscribe } = vi.hoisted(() => ({
+  forgetKey: vi.fn(() => Promise.resolve()),
+  unsubscribe: vi.fn(() => Promise.resolve()),
+}));
+vi.mock('../src/platform.js', () => ({
+  keyStorage: { forget: forgetKey },
+  notifications: { unsubscribe },
+  notificationsUnavailable: undefined,
+}));
 
 vi.mock('../src/api.js', () => ({
   api: createApiClient({
@@ -377,12 +384,27 @@ describe('a change of account', () => {
     expect(forgetKey).toHaveBeenCalledOnce();
   });
 
+  it("ends this browser's push subscription before signing out (spec 0005, R7)", async () => {
+    unsubscribe.mockClear();
+    answers = [Response.json({ success: true })];
+    await signOut();
+    expect(unsubscribe).toHaveBeenCalledOnce();
+  });
+
+  it('still signs out when ending the push subscription fails', async () => {
+    unsubscribe.mockImplementationOnce(() => Promise.reject(new Error('push service down')));
+    answers = [Response.json({ success: true })];
+    await signOut();
+    expect(sent.at(-1)?.path).toBe('/v1/auth/sign-out');
+  });
+
   it("drops every query that is the previous account's own, and only those", async () => {
     const {
       resetAccount,
       devicesQuery,
       healthQuery,
       invitesQuery,
+      notificationChannelsQuery,
       recoveryKitQuery,
       sessionQuery,
     } = await vi.importActual<typeof import('../src/api.js')>('../src/api.js');
@@ -392,11 +414,13 @@ describe('a change of account', () => {
       recoveryKitQuery,
       invitesQuery,
       devicesQuery,
+      notificationChannelsQuery,
       healthQuery,
     ].map(({ queryKey }) => queryKey);
     for (const key of keys) queryClient.setQueryData(key, { cached: true });
     await resetAccount(queryClient);
     expect(keys.map((key) => queryClient.getQueryData(key))).toEqual([
+      undefined,
       undefined,
       undefined,
       undefined,

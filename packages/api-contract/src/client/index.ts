@@ -27,6 +27,8 @@ export type {
   HealthResponse,
   Invite,
   InviteDetails,
+  NotificationChannel,
+  NotificationChannelsResponse,
   PasskeyAssertion,
   PasskeyAttestation,
   PasskeyCreationOptions,

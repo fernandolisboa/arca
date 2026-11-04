@@ -21,6 +21,28 @@ export const ptBR = {
   /** The Settings page (spec 0006, R9). Option labels follow the axis identifiers. */
   settings: {
     title: 'Configurações',
+    /** The account's notification channels (spec 0005, R7). */
+    notifications: {
+      title: 'Avisos de segurança',
+      intro:
+        'O Arca avisa quando algo muda na segurança da sua conta, como uma entrada nova ou uma chave de acesso removida. Os avisos sempre chegam por email e também podem aparecer nos seus dispositivos.',
+      email: 'Email da conta',
+      emailNote: 'Sempre ligado. Os avisos de segurança não podem ser desligados.',
+      device: '{browser} · {os}',
+      thisDevice: 'Este dispositivo',
+      lastSuccess: 'Último aviso entregue em {date}',
+      noneYet: 'Nenhum aviso entregue ainda',
+      enable: 'Receber avisos neste dispositivo',
+      remove: 'Parar os avisos',
+      enabling: 'Permita as notificações na janela do navegador.',
+      waiting: 'Confirme no seu dispositivo para continuar.',
+      done: '{done, select, enabled {Pronto. Os avisos vão aparecer neste dispositivo.} removed {Pronto. Esse dispositivo não recebe mais avisos.} other {}}',
+      unavailable:
+        '{reason, select, install {Para receber avisos aqui, adicione o Arca à tela de início e abra o app por lá.} unsupported {Este navegador não mostra avisos do Arca. Eles continuam chegando por email.} not_set_up {Os avisos nos dispositivos ainda não estão disponíveis. Por enquanto, eles chegam por email.} denied {As notificações do Arca estão bloqueadas neste navegador. Para receber avisos aqui, libere as notificações do site nas configurações do navegador.} other {}}',
+      failure:
+        '{reason, select, denied {As notificações não foram liberadas, então este dispositivo não vai receber avisos.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} too_many {Sua conta já recebe avisos em 10 dispositivos. Pare os avisos em um deles antes de ligar outro.} not_found {Isso não está mais na sua lista. Atualize a página.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+      listFailure: 'Não conseguimos carregar seus avisos agora.',
+    },
     dataExport: {
       title: 'Seus dados',
       intro:
@@ -481,6 +503,65 @@ export const ptBR = {
         subject: 'Suas outras sessões foram encerradas',
         body: 'Todas as outras sessões da sua conta Arca foram encerradas em {when} (horário de Brasília). Só o dispositivo que fez isso continua conectado. Se não foi você, entre no Arca e confira seus dispositivos.',
       },
+    },
+  },
+  /**
+   * Security notices on a device (spec 0005, R7): the push carries only the code, and the service
+   * worker shows this text, so nothing here may depend on details.
+   */
+  push: {
+    fallback: { title: 'Aviso da sua conta Arca', body: 'Abra o Arca para ver o que mudou.' },
+    passkey_added: {
+      title: 'Nova chave de acesso na sua conta',
+      body: 'Ela só começa a funcionar daqui a 24 horas. Se não foi você, cancele em Dispositivos.',
+    },
+    new_sign_in: {
+      title: 'Nova entrada na sua conta',
+      body: 'Alguém entrou na sua conta por um navegador ou sistema novo. Se não foi você, confira seus dispositivos.',
+    },
+    passkey_revoked: {
+      title: 'Uma chave de acesso foi removida',
+      body: 'As sessões abertas com ela foram encerradas. Se não foi você, confira seus dispositivos.',
+    },
+    pending_passkey_cancelled: {
+      title: 'Chave de acesso pendente cancelada',
+      body: 'A chave nova que esperava as 24 horas não vai funcionar na sua conta.',
+    },
+    invite_accepted: {
+      title: 'Seu convite foi aceito',
+      body: 'Confira o email da conta em Convites e confirme só se for mesmo quem você convidou.',
+    },
+    deletion_requested: {
+      title: 'Pedido para excluir sua conta',
+      body: 'Daqui a 7 dias, a conta e os dados dela serão apagados. Se não foi você, entre no Arca e cancele agora.',
+    },
+    deletion_cancelled: {
+      title: 'Exclusão da conta cancelada',
+      body: 'A conta continua como estava. Se não foi você, confira seus dispositivos.',
+    },
+    inactivity_warning: {
+      title: 'Sua conta Arca vai ser apagada por falta de uso',
+      body: 'Para manter a conta, entre no Arca com sua chave de acesso. A data está no email que mandamos.',
+    },
+    recovery_kit_regenerated: {
+      title: 'Novo kit de recuperação',
+      body: 'O código de recuperação antigo deixou de valer. Se não foi você, confira seus dispositivos.',
+    },
+    recovery_started: {
+      title: 'Pedido de recuperação da sua conta',
+      body: 'Sem o seu código de recuperação, o pedido não abre a conta. Se foi você, siga o link do email.',
+    },
+    recovery_completed: {
+      title: 'Nova chave de acesso criada por recuperação',
+      body: 'Ela começa a funcionar daqui a 24 horas. Se não foi você, cancele a recuperação no Arca.',
+    },
+    recovery_locked: {
+      title: 'Recuperação bloqueada por 24 horas',
+      body: 'O código de recuperação da sua conta foi digitado errado várias vezes.',
+    },
+    sessions_revoked: {
+      title: 'Suas outras sessões foram encerradas',
+      body: 'Só o dispositivo que fez isso continua conectado. Se não foi você, confira seus dispositivos.',
     },
   },
   /** Section names in the account's data export (spec 0004 R8), one per registry entry. */

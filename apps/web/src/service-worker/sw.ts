@@ -3,6 +3,7 @@ import { clientsClaim } from 'workbox-core';
 import { cleanupOutdatedCaches, matchPrecache, precacheAndRoute } from 'workbox-precaching';
 import type { PrecacheEntry } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
+import { pushNotice, pushPayload } from './push-notice.js';
 
 declare const self: ServiceWorkerGlobalScope;
 /** Every built static file with its content hash, written in by vite.config.ts. */
@@ -39,3 +40,24 @@ registerRoute(
 // responses always come from the network and are never stored (spec 0001, R5).
 precacheAndRoute(precacheManifest);
 cleanupOutdatedCaches();
+
+// A security notice (spec 0005, R7): worded here from its code, with no link and no remote image.
+self.addEventListener('push', (event) => {
+  const { title, body, tag } = pushNotice(pushPayload(event.data));
+  event.waitUntil(
+    self.registration.showNotification(title, { body, tag, icon: '/icons/icon-192.png' }),
+  );
+});
+
+// Opens the app itself, whatever the notice: an open tab is focused, or a new one starts at home.
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    (async () => {
+      const open = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      const own = open.find((client) => new URL(client.url).origin === self.location.origin);
+      if (own !== undefined) await own.focus();
+      else await self.clients.openWindow('/');
+    })(),
+  );
+});

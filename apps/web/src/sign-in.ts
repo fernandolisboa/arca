@@ -3,6 +3,7 @@ import type { Passkeys } from '@arca/platform';
 import { api } from './api.js';
 import { toAssertion, toRequestOptions } from './passkey-json.js';
 import { commonFailure, reach } from './requests.js';
+import { forgetPush } from './push-device.js';
 import { forgetVault } from './vault-guard.js';
 
 export type SignInFailure =
@@ -49,11 +50,11 @@ export function failureOf(error: unknown): SignInFailure {
 
 /**
  * Ends this browser's session; the server clears its cookies. The vault closes first and the
- * identity wrapped on this device is deleted (spec 0005, R2).
+ * identity wrapped on this device is deleted (spec 0005, R2), and its push subscription ends (R7).
  */
 export async function signOut(): Promise<void> {
   try {
-    await forgetVault();
+    await Promise.all([forgetVault(), forgetPush()]);
   } finally {
     await reach(api.call(routes.signOut, {}));
   }

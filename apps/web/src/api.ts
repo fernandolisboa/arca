@@ -1,5 +1,6 @@
 import { createApiClient, routes } from '@arca/api-contract/client';
 import { queryOptions, type QueryClient } from '@tanstack/react-query';
+import { forgetPush } from './push-device.js';
 import { forgetVault } from './vault-guard.js';
 
 /** The web build talks to the API on its own origin (spec 0001, R4). */
@@ -53,24 +54,39 @@ export const vaultStatusQuery = queryOptions({
   retry: false,
 });
 
-/** Everything cached for one account; a new query that is the account's own joins this list. */
+/** The account's notification channels and the environment's push key (spec 0005, R7). */
+export const notificationChannelsQuery = queryOptions({
+  queryKey: ['notification-channels'],
+  queryFn: () => api.call(routes.notificationChannels),
+  networkMode: 'always',
+  retry: false,
+});
+
+/**
+ * Everything cached for one account, the session first; a new query that is the account's own
+ * joins this list.
+ */
 const accountQueries = [
   sessionQuery,
   recoveryKitQuery,
   invitesQuery,
   devicesQuery,
   vaultStatusQuery,
+  notificationChannelsQuery,
 ];
 
 /**
  * After a sign-in, a registration or a sign-out, nothing cached for the previous account may
  * show: reset, not invalidated, so no screen renders the old data while the new one loads. Its
- * vault closes and is forgotten on this device too.
+ * vault closes and is forgotten on this device, and its push subscription ends.
  */
 export async function resetAccount(queryClient: QueryClient): Promise<void> {
   try {
-    await forgetVault();
+    await Promise.all([forgetVault(), forgetPush()]);
   } finally {
-    await Promise.all(accountQueries.map(({ queryKey }) => queryClient.resetQueries({ queryKey })));
+    // Only the session is fetched again; the rest goes, so a screen still open fetches its own
+    // list after the session answers, never with the old one's cookie gone.
+    for (const { queryKey } of accountQueries.slice(1)) queryClient.removeQueries({ queryKey });
+    await queryClient.resetQueries({ queryKey: sessionQuery.queryKey });
   }
 }

@@ -24,8 +24,9 @@ const subscription = {
   endpoint: 'https://fcm.googleapis.com/fcm/send/synthetic-subscription',
   p256dh: browserKey(),
   auth: 'D'.repeat(22),
-  device: { browser: 'chrome', os: 'android' },
 };
+const androidChrome =
+  'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36';
 
 function browserKey() {
   const ecdh = createECDH('prime256v1');
@@ -72,8 +73,8 @@ function setup({
       calls.push(['list', accountId]);
       return Promise.resolve([channel]);
     },
-    addPush: (accountId, request) => {
-      calls.push(['addPush', accountId, request]);
+    addPush: (accountId, request, device) => {
+      calls.push(['addPush', accountId, request, device]);
       return Promise.resolve(full ? 'too_many' : { channelId });
     },
     removePush: (accountId, id) => {
@@ -102,6 +103,7 @@ function setup({
         cookie: 'session=1',
         'content-type': 'application/json',
         'arca-step-up-nonce': nonceHeader,
+        'user-agent': androidChrome,
       },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     });
@@ -144,7 +146,9 @@ describe('notification channel routes (spec 0005, R7)', () => {
     const response = await call('POST', '/notifications/channels', subscription);
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ channelId });
-    expect(calls).toEqual([['addPush', owner.accountId, subscription]]);
+    expect(calls).toEqual([
+      ['addPush', owner.accountId, subscription, { browser: 'chrome', os: 'android' }],
+    ]);
   });
 
   it('refuses a key that is no point on P-256, which no push could ever use', async () => {

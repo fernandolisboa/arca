@@ -11,6 +11,12 @@ const permissions: Record<globalThis.NotificationPermission, NotificationPermiss
   granted: 'granted',
 };
 
+function sameKey(current: ArrayBuffer | null, wanted: Uint8Array): boolean {
+  if (current?.byteLength !== wanted.length) return false;
+  const bytes = new Uint8Array(current);
+  return bytes.every((byte, index) => byte === wanted[index]);
+}
+
 /** Web push through the app's service worker (spec 0005, R7). */
 export function createWebNotifications(
   capabilities: Capabilities,
@@ -28,6 +34,14 @@ export function createWebNotifications(
         throw new NotificationsDeniedError('notifications were not allowed');
       }
       const registration = await scope.navigator.serviceWorker.ready;
+      // A subscription made for another key (a rotated one) would make subscribe throw.
+      const existing = await registration.pushManager.getSubscription();
+      if (
+        existing !== null &&
+        !sameKey(existing.options.applicationServerKey, applicationServerKey)
+      ) {
+        await existing.unsubscribe();
+      }
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: new Uint8Array(applicationServerKey),

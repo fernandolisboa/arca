@@ -148,3 +148,34 @@ export async function deleteAccounts(): Promise<void> {
     await client.query('DELETE FROM auth."user"');
   });
 }
+
+/** A push channel for the account, as a browser on Android would add it; its ID is returned. */
+export async function seedPushChannel(userId: string): Promise<string> {
+  const result = await asAdmin((client) =>
+    client.query<{ id: string }>(
+      `INSERT INTO notification.channel
+              (account_id, kind, endpoint, p256dh, auth_secret, browser, os)
+       VALUES ($1, 'web_push', $2, $3, $4, 'chrome', 'android') RETURNING id`,
+      [
+        userId,
+        `https://fcm.googleapis.com/fcm/send/e2e-${randomUUID()}`,
+        `B${'C'.repeat(86)}`,
+        'D'.repeat(22),
+      ],
+    ),
+  );
+  const [row] = result.rows;
+  if (row === undefined) throw new Error('no push channel seeded');
+  return row.id;
+}
+
+/** The kinds of the account's notification channels, in creation order. */
+export async function channelKinds(userId: string): Promise<string[]> {
+  const result = await asAdmin((client) =>
+    client.query<{ kind: string }>(
+      `SELECT kind FROM notification.channel WHERE account_id = $1 ORDER BY created_at, id`,
+      [userId],
+    ),
+  );
+  return result.rows.map(({ kind }) => kind);
+}

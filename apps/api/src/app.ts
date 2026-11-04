@@ -988,7 +988,11 @@ export function createApp({
     const subscription = addPushChannel.body.parse(await c.req.json());
     if (!isP256PublicKey(subscription.p256dh)) return fail(c, 'invalid_request', 400);
     if (notifications.pushKey === null) return fail(c, 'push_unavailable', 503);
-    const outcome = await notifications.channels.addPush(current.accountId, subscription);
+    const outcome = await notifications.channels.addPush(
+      current.accountId,
+      subscription,
+      describeDevice(c.req.header('user-agent')),
+    );
     if (outcome === 'too_many') return fail(c, 'too_many_push_channels', 409);
     return c.json(outcome, 200);
   });
