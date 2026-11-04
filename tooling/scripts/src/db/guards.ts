@@ -235,12 +235,16 @@ function backupCoverage(client: Query, policy: DatabasePolicy) {
               n.nspname || '.' || c.relname = ANY ($1::text[]) AS left_out,
               -- Missing, the role is guard 3's problem; the privilege functions would fail on it.
               CASE WHEN EXISTS (SELECT FROM backup)
-                THEN pg_catalog.has_table_privilege('app_backup', c.oid, 'SELECT') END AS reads_all,
+                THEN pg_catalog.has_table_privilege('app_backup', c.oid, 'SELECT')
+                 AND pg_catalog.has_schema_privilege('app_backup', n.oid, 'USAGE') END AS reads_all,
               CASE WHEN EXISTS (SELECT FROM backup)
                 THEN pg_catalog.has_any_column_privilege('app_backup', c.oid, 'SELECT') END AS reads_any,
               CASE WHEN EXISTS (SELECT FROM backup)
                 THEN pg_catalog.has_table_privilege('app_backup', c.oid,
                        'INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER')
+                  -- MAINTAIN (Postgres 17 and later) takes ACCESS EXCLUSIVE locks.
+                  OR CASE WHEN pg_catalog.current_setting('server_version_num')::int >= 170000
+                       THEN pg_catalog.has_table_privilege('app_backup', c.oid, 'MAINTAIN') ELSE false END
                   OR pg_catalog.has_any_column_privilege('app_backup', c.oid, 'INSERT, UPDATE, REFERENCES')
               END AS writes
          FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
@@ -279,6 +283,24 @@ function backupCoverage(client: Query, policy: DatabasePolicy) {
        SELECT pg_catalog.format('policy %I on %s reaches PUBLIC or app_backup with another shape', p.polname, t.name)
          FROM policies p JOIN tables t ON t.oid = p.polrelid
         WHERE p.for_public OR (p.for_backup AND NOT p.backup_shape)
+       UNION ALL
+       -- Reading a parent reads its children's rows under the parent's grants and policies.
+       SELECT pg_catalog.format('table %s inherits from %s, and only one of them is backed up', child.name, parent.name)
+         FROM pg_catalog.pg_inherits h
+         JOIN tables child ON child.oid = h.inhrelid JOIN tables parent ON parent.oid = h.inhparent
+        WHERE child.left_out <> parent.left_out
+       UNION ALL
+       -- A restore loads only what was backed up, so a backed-up row may not need a missing one.
+       SELECT pg_catalog.format('constraint %I on %s references %s, which is not backed up', k.conname, t.name, r.name)
+         FROM pg_catalog.pg_constraint k
+         JOIN tables t ON t.oid = k.conrelid JOIN tables r ON r.oid = k.confrelid
+        WHERE k.contype = 'f' AND NOT t.left_out AND r.left_out
+       UNION ALL
+       SELECT pg_catalog.format('app_backup may use or update sequence %s', n.nspname || '.' || c.relname)
+         FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+        WHERE ${userSchemas}
+          AND CASE WHEN c.relkind = 'S' AND EXISTS (SELECT FROM backup)
+                THEN pg_catalog.has_sequence_privilege('app_backup', c.oid, 'USAGE, UPDATE') END
      ) found ORDER BY 1`,
     [policy.guards.notBackedUp],
   );

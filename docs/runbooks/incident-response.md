@@ -168,7 +168,7 @@ A copy of the database at the moment you learned of the incident.
 
 1. **Create it.** Vercel › Storage › `arca` › Open in Neon › Branches › New branch, from `production` at the current time, named `incident-YYYYMMDD`.
 2. **Lock it right away.** Roles are per branch, so this copy still accepts the passwords that may have leaked.
-   - In its SQL Editor, as the branch owner, run `ALTER ROLE app_migrator NOLOGIN; ALTER ROLE app_api NOLOGIN; ALTER ROLE app_auth NOLOGIN; ALTER ROLE app_audit NOLOGIN; ALTER ROLE app_jobs NOLOGIN;`.
+   - In its SQL Editor, as the branch owner, run `ALTER ROLE app_migrator NOLOGIN; ALTER ROLE app_api NOLOGIN; ALTER ROLE app_auth NOLOGIN; ALTER ROLE app_audit NOLOGIN; ALTER ROLE app_jobs NOLOGIN; ALTER ROLE app_backup NOLOGIN;`. On a copy of production `app_backup` still has production's password, and it reads every backed-up row and the whole audit log.
    - Then reset the owner role's password on this branch (Roles › the owner role › Reset password) and do not store the new one; Neon shows a fresh one whenever you need to read the branch again.
    - Both change this branch only.
 3. **Keep only what you need.** The branch holds every person's data, and an erased person would live on in it. Copy only the evidence you need into the incident record. Delete the branch, and any backup branch a point-in-time restore left, when the investigation and any ANPD process close. That limit is in [RETENTION.md](../RETENTION.md).

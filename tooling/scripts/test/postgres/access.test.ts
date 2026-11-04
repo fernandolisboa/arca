@@ -140,6 +140,7 @@ describe('the auth schema access matrix', () => {
 
   it('lets app_backup only read the tables a restore needs (spec 0004, R12)', async () => {
     const backedUp = [
+      'invite',
       'passkey',
       'passkey_activation',
       'passkey_capability',

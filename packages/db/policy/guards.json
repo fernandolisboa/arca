@@ -6,11 +6,11 @@
     },
     {
       "table": "auth.account",
-      "reason": "Better Auth table; only app_auth and the read-only app_backup have privileges on the auth schema, and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
+      "reason": "Better Auth table; only app_auth uses the auth schema (app_backup only reads the backed-up tables), and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
     },
     {
       "table": "auth.invite",
-      "reason": "Arca's invites in the auth schema; only app_auth and the read-only app_backup have privileges on the auth schema, they are read before the invitee has an account, and every inviter query names the inviter's own account, so row-level security would not narrow anything."
+      "reason": "Arca's invites in the auth schema; only app_auth uses the auth schema (app_backup only reads the backed-up tables), they are read before the invitee has an account, and every inviter query names the inviter's own account, so row-level security would not narrow anything."
     },
     {
       "table": "auth.outbox",
@@ -18,67 +18,67 @@
     },
     {
       "table": "auth.passkey",
-      "reason": "Better Auth table; only app_auth and the read-only app_backup have privileges on the auth schema, and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
+      "reason": "Better Auth table; only app_auth uses the auth schema (app_backup only reads the backed-up tables), and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
     },
     {
       "table": "auth.passkey_activation",
-      "reason": "Arca's record of when an added passkey becomes active; only app_auth and the read-only app_backup have privileges on the auth schema, and it is read during sign-in, before any per-request identity exists, so row-level security would not narrow anything."
+      "reason": "Arca's record of when an added passkey becomes active; only app_auth uses the auth schema (app_backup only reads the backed-up tables), and it is read during sign-in, before any per-request identity exists, so row-level security would not narrow anything."
     },
     {
       "table": "auth.passkey_capability",
-      "reason": "Arca's record of what each passkey's authenticator reported at registration; only app_auth and the read-only app_backup have privileges on the auth schema, and it is written during registration, before any per-request identity exists, so row-level security would not narrow anything."
+      "reason": "Arca's record of what each passkey's authenticator reported at registration; only app_auth uses the auth schema (app_backup only reads the backed-up tables), and it is written during registration, before any per-request identity exists, so row-level security would not narrow anything."
     },
     {
       "table": "auth.recovery_link",
-      "reason": "Arca's recovery links, stored as token hashes; only app_auth and the read-only app_backup have privileges on the auth schema, and they are read before any session exists, by the token or, before a link is issued, by the account, so row-level security would not narrow anything."
+      "reason": "Arca's recovery links, stored as token hashes; only app_auth uses the auth schema (app_backup only reads the backed-up tables), and they are read before any session exists, by the token or, before a link is issued, by the account, so row-level security would not narrow anything."
     },
     {
       "table": "auth.recovery_lock",
-      "reason": "Arca's count of wrong recovery codes per account; only app_auth and the read-only app_backup have privileges on the auth schema, and it is read before any session exists, so row-level security would not narrow anything."
+      "reason": "Arca's count of wrong recovery codes per account; only app_auth uses the auth schema (app_backup only reads the backed-up tables), and it is read before any session exists, so row-level security would not narrow anything."
     },
     {
       "table": "auth.passkey_challenge",
-      "reason": "Arca's open challenges for adding a passkey; only app_auth and the read-only app_backup have privileges on the auth schema, they live 2 minutes, and every query names the session and account they are bound to, so row-level security would not narrow anything."
+      "reason": "Arca's open challenges for adding a passkey; only app_auth uses the auth schema (app_backup only reads the backed-up tables), they live 2 minutes, and every query names the session and account they are bound to, so row-level security would not narrow anything."
     },
     {
       "table": "auth.passkey_client",
-      "reason": "Arca's table in the auth schema; only app_auth and the read-only app_backup have privileges on the auth schema, and it is read and written during sign-in, before any per-request identity exists, so row-level security would not narrow anything."
+      "reason": "Arca's table in the auth schema; only app_auth uses the auth schema (app_backup only reads the backed-up tables), and it is read and written during sign-in, before any per-request identity exists, so row-level security would not narrow anything."
     },
     {
       "table": "auth.rate_limit",
-      "reason": "Arca's request counters in the auth schema; only app_auth and the read-only app_backup have privileges on the auth schema, the rows hold no personal data (keys are HMACs), and they are written before any per-request identity exists, so row-level security would not narrow anything."
+      "reason": "Arca's request counters in the auth schema; only app_auth uses the auth schema (app_backup only reads the backed-up tables), the rows hold no personal data (keys are HMACs), and they are written before any per-request identity exists, so row-level security would not narrow anything."
     },
     {
       "table": "auth.recovery_code",
-      "reason": "Arca's salted recovery-code hashes in the auth schema; only app_auth and the read-only app_backup have privileges on the auth schema, and recovery reads them before anyone is signed in, so row-level security would not narrow anything."
+      "reason": "Arca's salted recovery-code hashes in the auth schema; only app_auth uses the auth schema (app_backup only reads the backed-up tables), and recovery reads them before anyone is signed in, so row-level security would not narrow anything."
     },
     {
       "table": "auth.registration_context",
-      "reason": "Arca's single-use registration contexts in the auth schema; only app_auth and the read-only app_backup have privileges on the auth schema, and they are read before any account exists, so row-level security would not narrow anything."
+      "reason": "Arca's single-use registration contexts in the auth schema; only app_auth uses the auth schema (app_backup only reads the backed-up tables), and they are read before any account exists, so row-level security would not narrow anything."
     },
     {
       "table": "auth.session",
-      "reason": "Better Auth table; only app_auth and the read-only app_backup have privileges on the auth schema, and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
+      "reason": "Better Auth table; only app_auth uses the auth schema (app_backup only reads the backed-up tables), and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
     },
     {
       "table": "auth.setup",
-      "reason": "Arca's spent enrollment codes in the auth schema; only app_auth and the read-only app_backup have privileges on the auth schema, the rows hold only code hashes and are read before any account exists, so row-level security would not narrow anything."
+      "reason": "Arca's spent enrollment codes in the auth schema; only app_auth uses the auth schema (app_backup only reads the backed-up tables), the rows hold only code hashes and are read before any account exists, so row-level security would not narrow anything."
     },
     {
       "table": "auth.step_up",
-      "reason": "Arca's stored step-up assertions in the auth schema; only app_auth and the read-only app_backup have privileges on the auth schema, and they are read and written by the step-up ceremony and its guard under the session's own account, which every query names, so row-level security would not narrow anything."
+      "reason": "Arca's stored step-up assertions in the auth schema; only app_auth uses the auth schema (app_backup only reads the backed-up tables), and they are read and written by the step-up ceremony and its guard under the session's own account, which every query names, so row-level security would not narrow anything."
     },
     {
       "table": "auth.step_up_challenge",
-      "reason": "Arca's open step-up challenges in the auth schema; only app_auth and the read-only app_backup have privileges on the auth schema, they live 2 minutes, and every query names the session and account they are bound to, so row-level security would not narrow anything."
+      "reason": "Arca's open step-up challenges in the auth schema; only app_auth uses the auth schema (app_backup only reads the backed-up tables), they live 2 minutes, and every query names the session and account they are bound to, so row-level security would not narrow anything."
     },
     {
       "table": "auth.user",
-      "reason": "Better Auth table; only app_auth and the read-only app_backup have privileges on the auth schema, and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
+      "reason": "Better Auth table; only app_auth uses the auth schema (app_backup only reads the backed-up tables), and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
     },
     {
       "table": "auth.verification",
-      "reason": "Better Auth table; only app_auth and the read-only app_backup have privileges on the auth schema, and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
+      "reason": "Better Auth table; only app_auth uses the auth schema (app_backup only reads the backed-up tables), and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
     }
   ],
   "materializedViews": [],
@@ -88,12 +88,8 @@
   "deferrableConstraints": [],
   "notBackedUp": [
     {
-      "table": "arca_migrations.journal",
-      "reason": "The restore never loads it: it prepares the target's own journal and checks its head against the backup's manifest (spec 0004 R12)."
-    },
-    {
       "table": "auth.account",
-      "reason": "Better Auth's sign-in provider links, which can hold provider tokens; passkey-only accounts have none."
+      "reason": "Better Auth's sign-in provider links, unused by passkey-only accounts and kept free of secrets by a check constraint; nothing to restore."
     },
     {
       "table": "auth.session",
@@ -118,10 +114,6 @@
     {
       "table": "auth.registration_context",
       "reason": "Registration link token hashes that live 30 minutes."
-    },
-    {
-      "table": "auth.invite",
-      "reason": "Invite token hashes that live 48 hours unaccepted; an inviter sends a new one."
     },
     {
       "table": "auth.rate_limit",
