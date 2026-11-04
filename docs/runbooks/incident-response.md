@@ -54,7 +54,7 @@ The web app still loads and `/.well-known` stays open, so `security.txt` keeps a
 In Vercel: project `arca` › Deployments › the last good production deployment › ⋯ › Instant Rollback ([Instant Rollback](https://vercel.com/docs/instant-rollback)). The previous build serves again within seconds.
 
 - **New deployments stop going live.** While a rollback is active, Vercel no longer promotes new production deployments by itself. Every "redeploy" below therefore ends with **Promote to Production** on the new deployment. Then check in Deployments that the one serving production was built after the change.
-- **Never roll back past a rotation.** A deployment built before a secret rotation still holds the old secrets, and its build reset the database passwords to the old values. After a rotation, roll forward instead: redeploy the last good commit.
+- **Never roll back past a rotation.** A deployment built before a secret rotation still holds the old auth secret and the old database passwords, which no longer match the database, so it fails closed. After a rotation, roll forward instead: redeploy the last good commit.
 - **Migrations stay.** A rollback does not undo database migrations. A migration that was itself the problem needs a restore ([Restore the database](#restore-the-database)) or a new, reviewed migration.
 
 ### Revoke every session and sign-in path
@@ -90,11 +90,21 @@ Signs everyone out, including any attacker holding a session cookie, and voids e
 
 ### Remove the attacker's credentials
 
-For each affected account, on the `production` branch with the API blocked, using the same one-transaction membership:
+For each affected account, on the `production` branch with the API blocked. Run every statement below inside the one-transaction membership, never on its own: a `GRANT` run alone commits and stays, and guard 5 then fails the redeploys the incident needs.
+
+```sql
+BEGIN;
+GRANT app_migrator TO CURRENT_USER;
+SET ROLE app_migrator;
+-- the statement from the step
+RESET ROLE;
+REVOKE app_migrator FROM CURRENT_USER;
+COMMIT; -- ROLLBACK for a step that only reads
+```
 
 1. **Find the suspect passkeys.** List the passkeys added in the incident window: `SELECT id, user_id, name, created_at FROM auth.passkey WHERE created_at >= '<window start>' ORDER BY created_at;`. Check `auth.passkey_activation` too: a passkey there becomes active after 24 hours.
-2. **Delete each confirmed rogue passkey.** Use `DELETE FROM auth.passkey WHERE id = '<id>';`. The passkey's wait and its capability rows go with it.
-3. **Make the affected accounts regenerate their kits.** Delete their recovery codes with `DELETE FROM auth.recovery_code WHERE account_id IN ('<id>', …);`, so each one must generate a new kit.
+2. **Delete each confirmed rogue passkey.** Use `DELETE FROM auth.passkey WHERE id = '<id>';`. The passkey's wait, sessions and capability rows go with it.
+3. **Replace the recovery codes the attacker may know.** Only for accounts whose kit may have been seen, delete the codes with `DELETE FROM auth.recovery_code WHERE account_id IN ('<id>', …);`, so each one must generate a new kit. First check that the account keeps a passkey of its own: an account left with no passkey and no code cannot sign in again. Record any such account; bringing it back is a manual re-enrollment the project owner decides.
 4. **Write it down.** These statements write no audit record, so record each deletion in the incident record: which row, when, and why.
 
 ### Rotate secrets
@@ -178,7 +188,7 @@ SELECT * FROM audit.event WHERE time >= '<window start>' ORDER BY time;
 ROLLBACK;
 ```
 
-The `ROLLBACK` undoes both the grant and the change to row-level security. An empty result means the query is wrong, not that nothing happened: the log holds at least the sign-ins of the window.
+The `ROLLBACK` undoes both the grant and the change to row-level security. Run `SELECT count(*) FROM audit.event;` in the same transaction first: zero means row-level security still hides the rows, not that the log is empty. An empty window then means no audited event happened in it.
 
 ## Notification
 

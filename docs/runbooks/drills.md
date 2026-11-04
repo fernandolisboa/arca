@@ -14,6 +14,8 @@ A real restore of a recent backup into a throwaway Neon branch, following R12. E
 
 A walk through one realistic scenario with the runbook open, without touching production: who notices, what severity, which containment steps in which order, whether the ANPD and the affected people must be told and by when. Each gap found becomes a ticket and a runbook change.
 
+At each exercise, also check in the repository's Actions tab that the weekly smoke run has run in the last week. GitHub turns off scheduled workflows in a public repository after 60 days without activity, and the run is what warns that `security.txt` is about to expire.
+
 | Date | Scenario | Participants | Gaps found | Tickets and changes |
 | --- | --- | --- | --- | --- |
 | _the first exercise is recorded before the real-data gate_ | | | | |
