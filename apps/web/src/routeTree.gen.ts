@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DevicesRouteImport } from './routes/devices'
 import { Route as EnrollRouteImport } from './routes/enroll'
 import { Route as InviteRouteImport } from './routes/invite'
 import { Route as InvitesRouteImport } from './routes/invites'
@@ -20,6 +21,11 @@ import { Route as SignInRouteImport } from './routes/sign-in'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevicesRoute = DevicesRouteImport.update({
+  id: '/devices',
+  path: '/devices',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EnrollRoute = EnrollRouteImport.update({
@@ -55,6 +61,7 @@ const SignInRoute = SignInRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/devices': typeof DevicesRoute
   '/enroll': typeof EnrollRoute
   '/invite': typeof InviteRoute
   '/invites': typeof InvitesRoute
@@ -64,6 +71,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/devices': typeof DevicesRoute
   '/enroll': typeof EnrollRoute
   '/invite': typeof InviteRoute
   '/invites': typeof InvitesRoute
@@ -74,6 +82,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/devices': typeof DevicesRoute
   '/enroll': typeof EnrollRoute
   '/invite': typeof InviteRoute
   '/invites': typeof InvitesRoute
@@ -85,6 +94,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/devices'
     | '/enroll'
     | '/invite'
     | '/invites'
@@ -94,6 +104,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/devices'
     | '/enroll'
     | '/invite'
     | '/invites'
@@ -103,6 +114,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/devices'
     | '/enroll'
     | '/invite'
     | '/invites'
@@ -113,6 +125,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DevicesRoute: typeof DevicesRoute
   EnrollRoute: typeof EnrollRoute
   InviteRoute: typeof InviteRoute
   InvitesRoute: typeof InvitesRoute
@@ -128,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/devices': {
+      id: '/devices'
+      path: '/devices'
+      fullPath: '/devices'
+      preLoaderRoute: typeof DevicesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/enroll': {
@@ -177,6 +197,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DevicesRoute: DevicesRoute,
   EnrollRoute: EnrollRoute,
   InviteRoute: InviteRoute,
   InvitesRoute: InvitesRoute,

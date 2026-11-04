@@ -64,7 +64,13 @@ function SessionLine() {
     return (
       <>
         <p>{t('session.signedIn', { email: session.data.email })}</p>
+        {session.data.pendingPasskeyUntil !== null && (
+          <PendingPasskeyNotice activeFrom={session.data.pendingPasskeyUntil} />
+        )}
         <KitNotice />
+        <Link to="/devices" className={textLinkClass}>
+          {t('session.devices')}
+        </Link>
         {session.data.confirmed ? (
           <Link to="/invites" className={textLinkClass}>
             {t('session.invites')}
@@ -97,6 +103,25 @@ function KitNotice() {
       </p>
       <Link to="/recovery-kit" className={textLinkClass}>
         {t('session.kitLink')}
+      </Link>
+    </section>
+  );
+}
+
+/** Every session of the account sees a passkey added while it waits (spec 0003, R4). */
+function PendingPasskeyNotice({ activeFrom }: { readonly activeFrom: string }) {
+  const { t, i18n } = useTranslation();
+  const when = new Intl.DateTimeFormat(i18n.language, { dateStyle: 'short', timeStyle: 'short' });
+  return (
+    <section
+      aria-labelledby="pending-passkey-title"
+      className="flex flex-col gap-2 rounded-card border border-line bg-surface p-4"
+    >
+      <p id="pending-passkey-title" className="text-warn-ink">
+        {t('session.pendingPasskey', { activeFrom: when.format(new Date(activeFrom)) })}
+      </p>
+      <Link to="/devices" className={textLinkClass}>
+        {t('session.pendingLink')}
       </Link>
     </section>
   );

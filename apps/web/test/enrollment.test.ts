@@ -1,5 +1,5 @@
 import { ApiError, createApiClient } from '@arca/api-contract/client';
-import type { Passkeys } from '@arca/platform';
+import type { Passkeys, RegistrationResponseJSON } from '@arca/platform';
 import { QueryClient, type QueryKey } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -17,6 +17,13 @@ import {
   inviteFrom,
   sendFailure,
 } from '../src/invites.js';
+import {
+  addPasskey,
+  deviceFailure,
+  revokeOtherSessions,
+  revokePasskey,
+  revokeSession,
+} from '../src/devices.js';
 import { UnreachableError } from '../src/requests.js';
 import { signOut } from '../src/sign-in.js';
 import { base64url } from '../src/step-up.js';
@@ -232,6 +239,118 @@ describe('invites (spec 0003, R2)', () => {
   });
 });
 
+describe('the device list (spec 0003, R4)', () => {
+  const targetId = '7b1c2d3e-4f50-4617-8a9b-0c1d2e3f4a5b';
+  const stepUpAnswers = () => [
+    Response.json({
+      challengeId: '6a1c2d3e-4f50-4617-8a9b-0c1d2e3f4a5b',
+      options: { challenge: 'Y2hhbGxlbmdl', userVerification: 'required' },
+    }),
+    Response.json({}),
+  ];
+
+  it.each([
+    [
+      'a session',
+      () => revokeSession(passkeysThatSign(), targetId),
+      'revokeSession',
+      [targetId],
+      '/v1/devices/sessions/revoke',
+      { sessionId: targetId },
+    ],
+    [
+      'a passkey',
+      () => revokePasskey(passkeysThatSign(), targetId),
+      'revokePasskey',
+      [targetId],
+      '/v1/devices/passkeys/revoke',
+      { passkeyId: targetId },
+    ],
+    [
+      'the other sessions',
+      () => revokeOtherSessions(passkeysThatSign()),
+      'revokeOtherSessions',
+      [],
+      '/v1/devices/sessions/revoke-others',
+      {},
+    ],
+  ] as const)(
+    'revokes %s after a step-up bound to it',
+    async (_, revoke, action, targets, path, body) => {
+      answers = [...stepUpAnswers(), Response.json({})];
+      await revoke();
+      const options = sent[0]?.body as { target: { nonce: string } };
+      expect(options.target).toEqual({ action, targets, nonce: options.target.nonce });
+      expect(sent[2]?.path).toBe(path);
+      expect(sent[2]?.body).toEqual(body);
+      expect(sent[2]?.headers.get('arca-step-up-nonce')).toBe(options.target.nonce);
+    },
+  );
+
+  it('adds a passkey after a step-up, and sends the nonce only with the options', async () => {
+    const creation = {
+      challenge: 'Y2hhbGxlbmdl',
+      rp: { id: 'arca.test', name: 'Arca' },
+      user: { id: 'dXNlcg', name: 'owner@example.com', displayName: 'owner@example.com' },
+      pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
+      authenticatorSelection: {
+        residentKey: 'required',
+        requireResidentKey: true,
+        userVerification: 'required',
+      },
+      extensions: { prf: {} },
+    };
+    const attestation: RegistrationResponseJSON = {
+      id: 'Y3JlZA',
+      rawId: 'Y3JlZA',
+      type: 'public-key',
+      response: { clientDataJSON: 'e30', attestationObject: 'oA' },
+      clientExtensionResults: {},
+    };
+    const created: unknown[] = [];
+    const passkeys: Passkeys = {
+      ...passkeysThatSign(),
+      create: (options) => {
+        created.push(options);
+        return Promise.resolve(attestation);
+      },
+    };
+    const challengeId = '8c1c2d3e-4f50-4617-8a9b-0c1d2e3f4a5b';
+    answers = [
+      ...stepUpAnswers(),
+      Response.json({ challengeId, options: creation }),
+      Response.json({}),
+    ];
+    await addPasskey(passkeys);
+    expect(sent.map(({ path }) => path)).toEqual([
+      '/v1/auth/step-up/options',
+      '/v1/auth/step-up/verify',
+      '/v1/devices/passkeys/options',
+      '/v1/devices/passkeys/add',
+    ]);
+    const options = sent[0]?.body as { target: { nonce: string } };
+    expect(options.target).toEqual({
+      action: 'addPasskeyOptions',
+      targets: [],
+      nonce: options.target.nonce,
+    });
+    expect(sent[2]?.headers.get('arca-step-up-nonce')).toBe(options.target.nonce);
+    expect(sent[3]?.headers.has('arca-step-up-nonce')).toBe(false);
+    expect(created).toEqual([creation]);
+    expect(sent[3]?.body).toEqual({ challengeId, response: attestation });
+  });
+
+  it.each([
+    [new ApiError(404, 'not_found'), 'not_found'],
+    [new ApiError(409, 'last_active_passkey'), 'last_active'],
+    [new ApiError(403, 'passkey_refused'), 'refused'],
+    [new ApiError(403, 'step_up_refused'), 'other'],
+    [new ApiError(429, 'rate_limited'), 'limited'],
+  ] as const)('words %o', (error, failure) => {
+    expect(deviceFailure(error)).toBe(failure);
+  });
+});
+
 describe('a change of account', () => {
   it('signs out with an empty body', async () => {
     answers = [Response.json({ success: true })];
@@ -242,15 +361,26 @@ describe('a change of account', () => {
   });
 
   it("drops every query that is the previous account's own, and only those", async () => {
-    const { resetAccount, healthQuery, invitesQuery, recoveryKitQuery, sessionQuery } =
-      await vi.importActual<typeof import('../src/api.js')>('../src/api.js');
+    const {
+      resetAccount,
+      devicesQuery,
+      healthQuery,
+      invitesQuery,
+      recoveryKitQuery,
+      sessionQuery,
+    } = await vi.importActual<typeof import('../src/api.js')>('../src/api.js');
     const queryClient = new QueryClient();
-    const keys: QueryKey[] = [sessionQuery, recoveryKitQuery, invitesQuery, healthQuery].map(
-      ({ queryKey }) => queryKey,
-    );
+    const keys: QueryKey[] = [
+      sessionQuery,
+      recoveryKitQuery,
+      invitesQuery,
+      devicesQuery,
+      healthQuery,
+    ].map(({ queryKey }) => queryKey);
     for (const key of keys) queryClient.setQueryData(key, { cached: true });
     await resetAccount(queryClient);
     expect(keys.map((key) => queryClient.getQueryData(key))).toEqual([
+      undefined,
       undefined,
       undefined,
       undefined,
