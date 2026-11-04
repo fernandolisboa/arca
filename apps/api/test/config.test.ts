@@ -127,6 +127,30 @@ describe('readAuthOrigin', () => {
     expect(readAuthOrigin()).toBe('http://localhost:3000');
   });
 
+  it('takes another local port from ARCA_LOCAL_ORIGIN', () => {
+    vi.stubEnv('VERCEL', undefined);
+    vi.stubEnv('ARCA_LOCAL_ORIGIN', 'http://localhost:4174');
+    expect(readAuthOrigin()).toBe('http://localhost:4174');
+  });
+
+  it.each([
+    'http://127.0.0.1:4174',
+    'https://localhost:4174',
+    'http://evil.example:80',
+    'http://localhost',
+  ])('refuses ARCA_LOCAL_ORIGIN %s', (value) => {
+    vi.stubEnv('VERCEL', undefined);
+    vi.stubEnv('ARCA_LOCAL_ORIGIN', value);
+    expect(() => readAuthOrigin()).toThrow(MissingConfigError);
+  });
+
+  it('ignores ARCA_LOCAL_ORIGIN on a preview', () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    vi.stubEnv('VERCEL_BRANCH_URL', 'arca-git-feature-team.vercel.app');
+    vi.stubEnv('ARCA_LOCAL_ORIGIN', 'http://localhost:4174');
+    expect(readAuthOrigin()).toBe('https://arca-git-feature-team.vercel.app');
+  });
+
   it('uses the local dev server under vercel dev', () => {
     vi.stubEnv('VERCEL_ENV', 'development');
     expect(readAuthOrigin()).toBe('http://localhost:3000');

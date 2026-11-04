@@ -42,9 +42,9 @@ Members of the family sign in with passkeys, invited by someone already in, on e
 
 ### R3. Passkeys in the client
 
-- `packages/platform` gains a `Passkeys` port: `create(optionsJSON)` and `get(optionsJSON)`, with WebAuthn JSON in and out, plus `isAvailable()`. The web adapter uses `@simplewebauthn/browser`. UI code calls only the port.
+- `packages/platform` gains a `Passkeys` port: `create(optionsJSON)` and `get(optionsJSON, { autofill })`, with WebAuthn JSON in and out, plus `isAvailable()`, `supportsAutofill()` and `cancel()` for a ceremony still waiting. The web adapter uses `@simplewebauthn/browser`. UI code calls only the port.
 - Registration asks for a resident key, user verification required, and the PRF extension enabled; the server records whether the authenticator reported PRF support. The `Passkeys` port refuses options carrying `prf.eval`, `prf.evalByCredential` or any extension outside its allow-list, and sends only `prf.enabled` among the extension results (ADR-0018); tests: an options fixture with `prf.eval` is refused, and a captured verify request never contains PRF results.
-- Sign-in uses discoverable credentials (no email typed) and conditional UI where the browser supports it. Authentication options require user verification, and the server rejects any assertion without the UV flag, with a test.
+- Sign-in uses discoverable credentials (no email typed) and conditional UI where the browser supports it: the account field offers saved passkeys, and the button starts a ceremony of its own, ending the waiting autofill one. Each ceremony fetches fresh options, since a challenge is single use. Authentication options require user verification, and the server rejects any assertion without the UV flag, with a test. Playwright signs in through Chromium's virtual authenticator against a server with a Postgres database, at phone and desktop sizes, by button and by autofill.
 - Screens, all through i18n in pt-BR: sign in, accept invite, owner enrollment, recovery kit, device list, add a passkey, recovery. Touch targets and layouts follow spec 0001 R5.
 
 ### R4. Sessions and devices

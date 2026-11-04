@@ -11,6 +11,8 @@ export type {
   AuditEventsResponse,
   DeviceDescription,
   HealthResponse,
+  PasskeyAssertion,
+  PasskeyRequestOptions,
   SessionResponse,
   SignOutResponse,
 } from '../routes/index.js';

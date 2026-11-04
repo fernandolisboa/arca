@@ -24,6 +24,22 @@ export const ptBR = {
     unreachable: 'Não conseguimos falar com o serviço agora. Tente de novo em instantes.',
     retry: 'Tentar de novo',
   },
+  /** Passkey sign-in (spec 0003, R3). Arca has no passwords; accounts come only from invites. */
+  signIn: {
+    title: 'Entrar',
+    lead: 'Use a chave de acesso salva no seu celular ou computador. Não tem senha para lembrar.',
+    account: 'Conta',
+    accountHint: 'Toque no campo para ver as chaves de acesso salvas neste aparelho.',
+    button: 'Entrar com chave de acesso',
+    waiting: 'Confirme no seu aparelho para continuar.',
+    failure:
+      '{reason, select, cancelled {Entrada cancelada. Tente de novo quando quiser.} refused {Essa chave de acesso não abriu nenhuma conta. Tente com outra.} unavailable {Este navegador não usa chaves de acesso. Abra o Arca em um navegador atualizado, como Chrome, Safari, Edge ou Firefox.} other {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.}}',
+    inviteOnly: 'Ainda não tem conta? O Arca só aceita convites. Peça um a quem já usa.',
+  },
+  session: {
+    signedIn: 'Você entrou como {email}.',
+    signIn: 'Entrar',
+  },
   /** Coarse device families, as sessions record them (spec 0003, R4). */
   device: {
     browser:

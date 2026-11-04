@@ -10,11 +10,13 @@ const webDist = fileURLToPath(new URL('../web/dist/', import.meta.url));
 
 // The pooled host and database name, written at build time by `pnpm --filter @arca/scripts
 // db:runtime-config` from the owner's variables, which runtime code may not read (spec 0001, R7).
-// Absent locally, so the health check reports the database as unavailable.
+// Absent locally, so the health check reports the database as unavailable. The empty keys let
+// NITRO_DATABASE_HOST and NITRO_DATABASE_NAME point a local server at a test database (the
+// end-to-end sign-in tests), since Nitro overrides only the keys the built config has.
 const databaseFile = new URL('./generated/database.json', import.meta.url);
 const database: unknown = existsSync(databaseFile)
   ? JSON.parse(readFileSync(databaseFile, 'utf8'))
-  : {};
+  : { host: '', name: '' };
 
 // The API answers every path under the excluded prefixes, with a 404 for unknown ones; every other
 // path that is not a static file gets the SPA's index.html (spec 0001, R4). These are routes, not
