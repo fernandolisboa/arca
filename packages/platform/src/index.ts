@@ -27,6 +27,8 @@ export {
 export type { ShareContent, SharedFiles, Sharing } from './sharing.js';
 export {
   EnvelopeNotOpenedError,
+  EnvelopeNotSealedError,
+  type EnvelopeFailure,
   type VaultEnvelope,
   type VaultEnvelopes,
 } from './vault-envelopes.js';

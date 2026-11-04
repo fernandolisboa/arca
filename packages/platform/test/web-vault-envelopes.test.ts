@@ -2,21 +2,23 @@ import type { VaultIdentity } from '@arca/vault';
 import { armor } from 'age-encryption';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { runConformance, vaultEnvelopesConformance } from '../src/conformance/index.js';
-import { EnvelopeNotOpenedError } from '../src/vault-envelopes.js';
+import { EnvelopeNotOpenedError, EnvelopeNotSealedError } from '../src/vault-envelopes.js';
 import { createWebVaultEnvelopes, fido2prfIdentity } from '../src/web-vault-envelopes.js';
 import { fakePrfAuthenticator } from './fake-prf-authenticator.js';
 import { fido2prfVector as vector } from './fixtures/fido2prf-vector.js';
 
 const utf8 = new TextEncoder();
 const otherCredential = 'synthetic-credential-two';
+const credentialWithoutPrf = 'synthetic-credential-without';
 
 beforeEach(() => {
   vi.stubGlobal('navigator', {
     credentials: fakePrfAuthenticator(
       vector.relyingPartyId,
-      new Map([
+      new Map<string, Uint8Array<ArrayBuffer> | 'no-prf'>([
         [vector.credentialId, utf8.encode(vector.authenticatorSecret)],
         [otherCredential, utf8.encode('another synthetic credRandom!!!!')],
+        [credentialWithoutPrf, 'no-prf'],
       ]),
     ),
   });
@@ -60,16 +62,30 @@ describe('the web VaultEnvelopes adapter (spec 0005, R5)', () => {
         credentialId: vector.credentialId,
         bytes: armor.decode(vector.envelope),
       }),
-    ).rejects.toBeInstanceOf(EnvelopeNotOpenedError);
+    ).rejects.toMatchObject({ name: 'EnvelopeNotOpenedError', reason: 'not_opened' });
   });
 
-  it('does not open when the ceremony is refused', async () => {
-    const envelope = await envelopes().seal(
-      utf8.encode('synthetic') as VaultIdentity,
-      otherCredential,
+  it('reports a refused ceremony as cancelled', async () => {
+    const identity = utf8.encode('synthetic') as VaultIdentity;
+    const envelope = await envelopes().seal(identity, otherCredential);
+    const gone = 'synthetic-credential-unknown';
+    await expect(envelopes().open({ ...envelope, credentialId: gone })).rejects.toMatchObject(
+      new EnvelopeNotOpenedError('cancelled'),
     );
+    await expect(envelopes().seal(identity, gone)).rejects.toMatchObject(
+      new EnvelopeNotSealedError('cancelled'),
+    );
+  });
+
+  it('reports a passkey without PRF as prf_unavailable', async () => {
+    const identity = utf8.encode('synthetic') as VaultIdentity;
+    await expect(envelopes().seal(identity, credentialWithoutPrf)).rejects.toMatchObject({
+      name: 'EnvelopeNotSealedError',
+      reason: 'prf_unavailable',
+    });
+    const envelope = await envelopes().seal(identity, otherCredential);
     await expect(
-      envelopes().open({ ...envelope, credentialId: 'synthetic-credential-gone' }),
-    ).rejects.toBeInstanceOf(EnvelopeNotOpenedError);
+      envelopes().open({ ...envelope, credentialId: credentialWithoutPrf }),
+    ).rejects.toMatchObject({ name: 'EnvelopeNotOpenedError', reason: 'prf_unavailable' });
   });
 });

@@ -131,7 +131,7 @@ export function fakeVaultEnvelopes(): VaultEnvelopes {
         );
         return new Uint8Array(opened) as VaultIdentity;
       } catch {
-        throw new EnvelopeNotOpenedError('not opened');
+        throw new EnvelopeNotOpenedError('not_opened');
       }
     },
   };

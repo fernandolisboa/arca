@@ -31,7 +31,7 @@ async function evaluate(secret: Uint8Array<ArrayBuffer>, input: BufferSource): P
  */
 export function fakePrfAuthenticator(
   relyingPartyId: string,
-  secrets: ReadonlyMap<string, Uint8Array<ArrayBuffer>>,
+  secrets: ReadonlyMap<string, Uint8Array<ArrayBuffer> | 'no-prf'>,
 ): Pick<CredentialsContainer, 'get'> {
   return {
     get: async (options) => {
@@ -49,6 +49,9 @@ export function fakePrfAuthenticator(
       const [credential] = allowed;
       const secret = credential && secrets.get(base64urlnopad.encode(bytesOf(credential.id)));
       if (secret === undefined) throw new DOMException('no such credential', 'NotAllowedError');
+      if (secret === 'no-prf') {
+        return { getClientExtensionResults: () => ({}) } as unknown as Credential;
+      }
       const results = {
         first: await evaluate(secret, prf.first),
         second: await evaluate(secret, prf.second),

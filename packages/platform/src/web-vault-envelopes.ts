@@ -3,6 +3,8 @@ import { base64urlnopad, bech32 } from '@scure/base';
 import { Decrypter, Encrypter, webauthn } from 'age-encryption';
 import {
   EnvelopeNotOpenedError,
+  EnvelopeNotSealedError,
+  type EnvelopeFailure,
   type VaultEnvelope,
   type VaultEnvelopes,
 } from './vault-envelopes.js';
@@ -42,6 +44,18 @@ export function fido2prfIdentity(credentialId: string, relyingPartyId: string): 
   return bech32.encode(identityPrefix, bech32.toWords(data), false).toUpperCase();
 }
 
+// age-encryption 0.3.1 reports a missing or malformed PRF result only by these messages; the
+// tests pin them, so a library bump that rewords them fails CI instead of misleading the UI.
+const prfUnavailable = /^(PRF extension not available|Missing second PRF result|PRF result is not)/;
+
+function ceremonyFailure(error: unknown): Exclude<EnvelopeFailure, 'not_opened'> | undefined {
+  if (error instanceof DOMException && ['NotAllowedError', 'AbortError'].includes(error.name)) {
+    return 'cancelled';
+  }
+  if (error instanceof Error && prfUnavailable.test(error.message)) return 'prf_unavailable';
+  return undefined;
+}
+
 /**
  * The web adapter: `age-encryption`'s WebAuthn recipient and identity run the PRF ceremony,
  * with user verification required, and the PRF output never leaves the library (ADR-0018).
@@ -54,7 +68,13 @@ export function createWebVaultEnvelopes(relyingPartyId: string): VaultEnvelopes 
     async seal(identity: VaultIdentity, credentialId: string): Promise<VaultEnvelope> {
       const encrypter = new Encrypter();
       encrypter.addRecipient(new webauthn.WebAuthnRecipient(identityOf(credentialId)));
-      return { credentialId, bytes: await encrypter.encrypt(identity) };
+      try {
+        return { credentialId, bytes: await encrypter.encrypt(identity) };
+      } catch (error) {
+        const reason = ceremonyFailure(error);
+        if (reason === undefined) throw error;
+        throw new EnvelopeNotSealedError(reason, { cause: error });
+      }
     },
     async open(envelope: VaultEnvelope): Promise<VaultIdentity> {
       try {
@@ -62,7 +82,7 @@ export function createWebVaultEnvelopes(relyingPartyId: string): VaultEnvelopes 
         decrypter.addIdentity(new webauthn.WebAuthnIdentity(identityOf(envelope.credentialId)));
         return (await decrypter.decrypt(envelope.bytes)) as VaultIdentity;
       } catch (error) {
-        throw new EnvelopeNotOpenedError('the envelope did not open', { cause: error });
+        throw new EnvelopeNotOpenedError(ceremonyFailure(error) ?? 'not_opened', { cause: error });
       }
     },
   };
