@@ -41,6 +41,7 @@ function toResponse(found: Found | null, now: Date): SessionResponse | null {
   return SessionResponse.parse({
     accountId: found.user.id,
     email: found.user.email,
+    confirmed: found.user.confirmedAt !== null && found.user.confirmedAt !== undefined,
     device: { browser: found.session.deviceBrowser, os: found.session.deviceOs },
   });
 }

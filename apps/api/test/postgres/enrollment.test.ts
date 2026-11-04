@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { PasskeyCreationOptions } from '@arca/api-contract/routes';
 import { createI18n } from '@arca/i18n';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -6,6 +6,7 @@ import { createApp, type App } from '../../src/app.js';
 import { auditLog, auditReader } from '../../src/audit/log.js';
 import { createAuth, credentialStore } from '../../src/auth/auth.js';
 import { createEnrollment, ownerCode } from '../../src/auth/enrollment.js';
+import { createInvites } from '../../src/auth/invites.js';
 import { recoveryCodeHash, recoveryKits } from '../../src/auth/recovery-kit.js';
 import { registration, registrationHooks } from '../../src/auth/registration.js';
 import { authService } from '../../src/auth/service.js';
@@ -37,6 +38,15 @@ beforeAll(async () => {
   const notices = createNotices({ email, i18n, origin });
   const audit = auditLog(auditDb);
   const matching = ownerCode(codeHash);
+  const invites = createInvites({
+    db: authDb,
+    audit,
+    email,
+    notices,
+    i18n,
+    origin,
+    logger: silentLogger,
+  });
   const hooks = registrationHooks({ db: authDb, audit, ownerCode: matching });
   const auth = createAuth({
     db: authDb,
@@ -62,8 +72,9 @@ beforeAll(async () => {
       logger: silentLogger,
     }),
     enrollment: createEnrollment({ db: authDb, email, i18n, origin, ownerCode: matching }),
-    registration: registration(auth, hooks, matching, silentLogger),
+    registration: registration(auth, hooks, matching, silentLogger, invites.accepted),
     recoveryKits: recoveryKits({ db: authDb, audit, notices, logger: silentLogger }),
+    invites,
     audit: auditReader(apiDb),
   });
 });
@@ -84,11 +95,11 @@ const enrollOwner = (typed = code, email = ownerEmail) =>
 
 const outbox = () => readOutbox(testDatabase.authDb, 'preview');
 
-/** The token of the newest enrollment link, read from the fragment as the web app would. */
-async function latestToken(): Promise<string> {
-  const [message] = (await outbox()).filter((entry) => entry.text.includes('/enroll#'));
-  const token = /\/enroll#([A-Za-z0-9_-]+)/.exec(message?.text ?? '')?.[1];
-  if (token === undefined) throw new Error('no enrollment link in the outbox');
+/** The token of the newest link to a page, read from the fragment as the web app would. */
+async function latestToken(page: 'enroll' | 'invite' = 'enroll'): Promise<string> {
+  const [message] = (await outbox()).filter((entry) => entry.text.includes(`/${page}#`));
+  const token = new RegExp(`/${page}#([A-Za-z0-9_-]+)`).exec(message?.text ?? '')?.[1];
+  if (token === undefined) throw new Error(`no ${page} link in the outbox`);
   return token;
 }
 
@@ -98,7 +109,8 @@ const options = (token: string, typed: string | null = code) =>
 
 interface Completion {
   readonly passkey?: SoftwarePasskey;
-  readonly typed?: string;
+  /** Null sends no code, as an invite's page does. */
+  readonly typed?: string | null;
   readonly userVerified?: boolean;
   readonly prfEnabled?: boolean;
 }
@@ -108,7 +120,7 @@ async function register(
   token: string,
   { passkey = softwarePasskey(rpId), typed = code, userVerified, prfEnabled }: Completion = {},
 ) {
-  const offered = await options(token);
+  const offered = await options(token, typed === null ? null : code);
   expect(offered.status).toBe(200);
   const creation = (await offered.json()) as PasskeyCreationOptions;
   const response = passkey.attest({
@@ -119,10 +131,35 @@ async function register(
   });
   const verified = await post(
     '/v1/auth/registration/verify',
-    { token, code: typed, response },
+    typed === null ? { token, response } : { token, code: typed, response },
     { cookie: cookiesFrom(offered) },
   );
   return { creation, passkey, verified };
+}
+
+/** A verified `sensitive_settings` step-up for one action; returns its nonce. */
+async function stepUp(
+  signedIn: { readonly cookie: string; readonly passkey: SoftwarePasskey },
+  action: string,
+  targets: readonly string[],
+): Promise<string> {
+  const nonce = randomBytes(16).toString('base64url');
+  const challenge = await post(
+    '/v1/auth/step-up/options',
+    { purpose: 'sensitive_settings', target: { action, targets, nonce } },
+    { cookie: signedIn.cookie },
+  );
+  const { challengeId, options: request } = (await challenge.json()) as {
+    challengeId: string;
+    options: { challenge: string };
+  };
+  const verified = await post(
+    '/v1/auth/step-up/verify',
+    { challengeId, response: signedIn.passkey.assert({ challenge: request.challenge, origin }) },
+    { cookie: signedIn.cookie },
+  );
+  expect(verified.status).toBe(200);
+  return nonce;
 }
 
 const accountCount = () =>
@@ -401,25 +438,7 @@ describe('the recovery kit (spec 0003, R6)', () => {
   });
 
   it('replaces the kit after a step-up for that action, and only for its nonce', async () => {
-    const nonce = randomBytes(16).toString('base64url');
-    const challenge = await post(
-      '/v1/auth/step-up/options',
-      {
-        purpose: 'sensitive_settings',
-        target: { action: 'regenerateRecoveryKit', targets: [], nonce },
-      },
-      { cookie: owner.cookie },
-    );
-    const { challengeId, options: request } = (await challenge.json()) as {
-      challengeId: string;
-      options: { challenge: string };
-    };
-    const verified = await post(
-      '/v1/auth/step-up/verify',
-      { challengeId, response: owner.passkey.assert({ challenge: request.challenge, origin }) },
-      { cookie: owner.cookie },
-    );
-    expect(verified.status).toBe(200);
+    const nonce = await stepUp(owner, 'regenerateRecoveryKit', []);
     const otherNonce = randomBytes(16).toString('base64url');
     expect((await kit({ 'arca-step-up-nonce': otherNonce })).status).toBe(403);
     const replaced = await kit({ 'arca-step-up-nonce': nonce });
@@ -437,6 +456,157 @@ describe('the recovery kit (spec 0003, R6)', () => {
     const events = await app.request('/v1/audit/events', { headers: { cookie: owner.cookie } });
     const { events: recorded } = (await events.json()) as { events: { code: string }[] };
     expect(recorded.map((event) => event.code)).toContain('recovery_kit_regenerated');
+  });
+});
+
+describe('invites (spec 0003, R2)', () => {
+  const invitee = 'invitee@example.org';
+  let guest: { cookie: string; passkey: SoftwarePasskey };
+  let inviteId: string;
+
+  const invite = (cookie: string, email = invitee) => post('/v1/invites', { email }, { cookie });
+  const listed = async (cookie: string) =>
+    (
+      (await (await app.request('/v1/invites', { headers: { cookie } })).json()) as {
+        invites: { id: string; email: string; status: string }[];
+      }
+    ).invites;
+  const details = (token: string) => post('/v1/invites/details', { token });
+  const decide = (
+    decision: 'confirm' | 'decline',
+    id: string,
+    headers: Record<string, string> = {},
+  ) => post(`/v1/invites/${decision}`, { inviteId: id }, { cookie: owner.cookie, ...headers });
+  const eventCodes = async (cookie: string) =>
+    (
+      (await (await app.request('/v1/audit/events', { headers: { cookie } })).json()) as {
+        events: { code: string }[];
+      }
+    ).events.map((event) => event.code);
+
+  it('emails a link that carries the token only in its fragment and never names the inviter', async () => {
+    const sent = await invite(owner.cookie, 'Invitee@Example.org');
+    expect(sent.status).toBe(200);
+    const [message] = await outbox();
+    expect(message?.to).toBe(invitee);
+    expect(message?.text).toContain(`${origin}/invite#`);
+    expect(message?.text).not.toContain(ownerEmail);
+    const token = await latestToken('invite');
+    const stored = await testDatabase.asAdmin(
+      async (client) =>
+        (await client.query<{ token_hash: Buffer }>('SELECT token_hash FROM auth.invite')).rows,
+    );
+    expect(stored).toEqual([{ token_hash: createHash('sha256').update(token).digest() }]);
+    const [open] = await listed(owner.cookie);
+    expect(open).toMatchObject({ email: invitee, status: 'open' });
+    inviteId = open?.id ?? '';
+    expect(await eventCodes(owner.cookie)).toContain('invite_created');
+  });
+
+  it('shows who sent a live link, and nothing for a forged one', async () => {
+    const shown = await details(await latestToken('invite'));
+    expect(await shown.json()).toEqual({ inviterEmail: ownerEmail });
+    expect((await details(randomBytes(32).toString('base64url'))).status).toBe(404);
+  });
+
+  it('registers the invitee with no code, unconfirmed, and tells the inviter', async () => {
+    const token = await latestToken('invite');
+    const { passkey, verified } = await register(token, { typed: null });
+    expect(verified.status).toBe(200);
+    guest = { cookie: cookiesFrom(verified), passkey };
+    const session = await app.request('/v1/session', { headers: { cookie: guest.cookie } });
+    expect(await session.json()).toMatchObject({ email: invitee, confirmed: false });
+    expect((await listed(owner.cookie))[0]).toMatchObject({ id: inviteId, status: 'accepted' });
+    const [notice] = await outbox();
+    expect(notice).toMatchObject({ to: ownerEmail, subject: 'Seu convite foi aceito' });
+    expect(notice?.text).not.toContain(invitee);
+    expect(await eventCodes(guest.cookie)).toContain('invite_accepted');
+  });
+
+  it('spends the invite', async () => {
+    const token = await latestToken('invite');
+    expect((await options(token, null)).status).toBe(404);
+    expect((await details(token)).status).toBe(404);
+  });
+
+  it('refuses invites from an account not yet confirmed', async () => {
+    const refused = await invite(guest.cookie, 'someone@example.org');
+    expect(refused.status).toBe(403);
+    expect(await refused.json()).toEqual({ error: { code: 'account_unconfirmed' } });
+  });
+
+  it('confirms the account only after a step-up for that invite', async () => {
+    expect((await decide('confirm', inviteId)).status).toBe(403);
+    const elsewhere = await stepUp(owner, 'confirmInvite', [randomUUID()]);
+    expect((await decide('confirm', inviteId, { 'arca-step-up-nonce': elsewhere })).status).toBe(
+      403,
+    );
+    const declineNonce = await stepUp(owner, 'declineInvite', [inviteId]);
+    expect((await decide('confirm', inviteId, { 'arca-step-up-nonce': declineNonce })).status).toBe(
+      403,
+    );
+    const nonce = await stepUp(owner, 'confirmInvite', [inviteId]);
+    expect((await decide('confirm', inviteId, { 'arca-step-up-nonce': nonce })).status).toBe(200);
+    const session = await app.request('/v1/session', { headers: { cookie: guest.cookie } });
+    expect(await session.json()).toMatchObject({ confirmed: true });
+    expect((await listed(owner.cookie))[0]).toMatchObject({ status: 'confirmed' });
+    expect(await eventCodes(owner.cookie)).toContain('invite_confirmed');
+    // A confirmed account cannot be confirmed or declined again.
+    const again = await stepUp(owner, 'declineInvite', [inviteId]);
+    expect((await decide('decline', inviteId, { 'arca-step-up-nonce': again })).status).toBe(404);
+  });
+
+  it('lets a confirmed invitee invite in turn', async () => {
+    expect((await invite(guest.cookie, 'cousin@example.org')).status).toBe(200);
+  });
+
+  it('erases a declined account and frees its address', async () => {
+    const declined = 'declined@example.org';
+    expect((await invite(owner.cookie, declined)).status).toBe(200);
+    const { verified } = await register(await latestToken('invite'), { typed: null });
+    expect(verified.status).toBe(200);
+    const pending = (await listed(owner.cookie)).find((entry) => entry.email === declined);
+    const id = pending?.id ?? '';
+    const nonce = await stepUp(owner, 'declineInvite', [id]);
+    expect((await decide('decline', id, { 'arca-step-up-nonce': nonce })).status).toBe(200);
+    const left = await testDatabase.asAdmin(
+      async (client) =>
+        (
+          await client.query<{ users: number; invites: number }>(
+            `SELECT (SELECT count(*)::int FROM auth.user WHERE email = $1) AS users,
+                    (SELECT count(*)::int FROM auth.invite WHERE email = $1) AS invites`,
+            [declined],
+          )
+        ).rows[0],
+    );
+    expect(left).toEqual({ users: 0, invites: 0 });
+    expect(await eventCodes(owner.cookie)).toContain('invite_declined');
+    expect((await invite(owner.cookie, declined)).status).toBe(200);
+  });
+
+  it('keeps at most 10 open invites per account, a new one to an address replacing the last', async () => {
+    const before = (await listed(owner.cookie)).filter((entry) => entry.status === 'open').length;
+    for (let index = before; index < 10; index += 1) {
+      expect((await invite(owner.cookie, `family-${String(index)}@example.org`)).status).toBe(200);
+    }
+    const over = await invite(owner.cookie, 'one-too-many@example.org');
+    expect(over.status).toBe(409);
+    expect(await over.json()).toEqual({ error: { code: 'too_many_invites' } });
+    expect((await invite(owner.cookie, 'family-9@example.org')).status).toBe(200);
+  });
+
+  it('expires an invite after 48 hours, with an event', async () => {
+    const token = await latestToken('invite');
+    await testDatabase.asAdmin((client) =>
+      client.query(
+        "UPDATE auth.invite SET expires_at = now() - interval '1 second' WHERE accepted_at IS NULL",
+      ),
+    );
+    expect((await details(token)).status).toBe(404);
+    expect((await invite(owner.cookie, 'later@example.org')).status).toBe(200);
+    const open = (await listed(owner.cookie)).filter((entry) => entry.status === 'open');
+    expect(open.map((entry) => entry.email)).toEqual(['later@example.org']);
+    expect(await eventCodes(owner.cookie)).toContain('invite_expired');
   });
 });
 

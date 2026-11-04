@@ -26,6 +26,7 @@ afterAll(async () => {
 
 const authTables = [
   'account',
+  'invite',
   'outbox',
   'passkey',
   'passkey_capability',
@@ -95,6 +96,7 @@ describe('the auth schema access matrix', () => {
     expect(await privileges('app_auth')).toEqual({
       schema: ['USAGE'],
       ...Object.fromEntries(authTables.map((table) => [table, dml])),
+      invite: ['SELECT', 'INSERT', 'DELETE'],
       outbox: ['SELECT', 'INSERT', 'DELETE'],
       passkey_capability: ['SELECT', 'INSERT'],
       passkey_client: ['SELECT', 'INSERT', 'DELETE'],
@@ -109,6 +111,7 @@ describe('the auth schema access matrix', () => {
   it.each([
     ['step_up', ['consumed_at']],
     ['recovery_code', ['salt', 'code_hash', 'created_at', 'confirmed_at']],
+    ['invite', ['accepted_at', 'accepted_account_id']],
   ])('lets app_auth update only the columns it must on auth.%s', async (table, columns) => {
     const updatable = await withClient(adminTarget(database), async (client) => {
       const result = await client.query<{ name: string }>(

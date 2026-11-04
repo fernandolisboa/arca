@@ -72,6 +72,8 @@ export type DeviceDescription = z.infer<typeof DeviceDescription>;
 export const SessionResponse = z.object({
   accountId: z.uuid(),
   email: z.email(),
+  /** False until the inviter confirms the account, which stays restricted until then (spec 0003, R2). */
+  confirmed: z.boolean(),
   device: DeviceDescription,
 });
 export type SessionResponse = z.infer<typeof SessionResponse>;
@@ -287,7 +289,7 @@ export type PasskeyCreationOptions = z.infer<typeof PasskeyCreationOptions>;
 
 export const RegistrationOptionsRequest = z.strictObject({
   token: LinkToken,
-  /** The enrollment code, checked before the ceremony so a typo costs no passkey. */
+  /** The enrollment code, for an owner link only; checked before the ceremony so a typo costs no passkey. */
   code: z.string().min(1).max(64).optional(),
 });
 export type RegistrationOptionsRequest = z.infer<typeof RegistrationOptionsRequest>;
@@ -390,6 +392,89 @@ export const confirmRecoveryKit = {
   response: { description: 'Recorded', schema: RecoveryKitConfirmResponse },
 } as const satisfies RouteDefinition<typeof RecoveryKitConfirmResponse>;
 
+export const CreateInviteRequest = z.strictObject({ email: z.email().max(254) });
+export type CreateInviteRequest = z.infer<typeof CreateInviteRequest>;
+
+export const CreateInviteResponse = z.object({});
+export type CreateInviteResponse = z.infer<typeof CreateInviteResponse>;
+
+/** At most this many open invites per account (spec 0003, R2). */
+export const maxOpenInvites = 10;
+
+export const createInvite = {
+  method: 'post',
+  path: '/invites',
+  operationId: 'createInvite',
+  summary:
+    'Emails an invite valid for 48 hours; 403 account_unconfirmed until the account is confirmed, 409 too_many_invites past 10 open',
+  body: CreateInviteRequest,
+  response: { description: 'Invite sent', schema: CreateInviteResponse },
+} as const satisfies RouteDefinition<typeof CreateInviteResponse>;
+
+export const Invite = z.object({
+  id: z.uuid(),
+  email: z.email(),
+  /** `accepted` waits for the inviter to confirm or decline the new account. */
+  status: z.enum(['open', 'accepted', 'confirmed']),
+  createdAt: z.iso.datetime({ offset: true }),
+  expiresAt: z.iso.datetime({ offset: true }),
+});
+export type Invite = z.infer<typeof Invite>;
+
+export const InvitesResponse = z.object({ invites: z.array(Invite) });
+export type InvitesResponse = z.infer<typeof InvitesResponse>;
+
+export const listInvites = {
+  method: 'get',
+  path: '/invites',
+  operationId: 'listInvites',
+  summary: "The signed-in account's invites that have not expired, newest first",
+  response: { description: 'Invites', schema: InvitesResponse },
+} as const satisfies RouteDefinition<typeof InvitesResponse>;
+
+export const InviteDetailsRequest = z.strictObject({ token: LinkToken });
+export type InviteDetailsRequest = z.infer<typeof InviteDetailsRequest>;
+
+export const InviteDetails = z.object({ inviterEmail: z.email() });
+export type InviteDetails = z.infer<typeof InviteDetails>;
+
+export const inviteDetails = {
+  method: 'post',
+  path: '/invites/details',
+  operationId: 'inviteDetails',
+  summary: 'Who sent an invite link, while it can still be accepted; 404 otherwise',
+  body: InviteDetailsRequest,
+  response: { description: 'The invite', schema: InviteDetails },
+} as const satisfies RouteDefinition<typeof InviteDetails>;
+
+export const InviteDecisionRequest = z.strictObject({ inviteId: z.uuid() });
+export type InviteDecisionRequest = z.infer<typeof InviteDecisionRequest>;
+
+export const InviteDecisionResponse = z.object({});
+export type InviteDecisionResponse = z.infer<typeof InviteDecisionResponse>;
+
+/**
+ * Both decisions need a `sensitive_settings` step-up for their action with the invite as the only
+ * target (spec 0003, R2); 404 unless the invite is the caller's and waits for a decision.
+ */
+export const confirmInvite = {
+  method: 'post',
+  path: '/invites/confirm',
+  operationId: 'confirmInvite',
+  summary: 'Confirms the account that accepted an invite, after a step-up',
+  body: InviteDecisionRequest,
+  response: { description: 'Confirmed', schema: InviteDecisionResponse },
+} as const satisfies RouteDefinition<typeof InviteDecisionResponse>;
+
+export const declineInvite = {
+  method: 'post',
+  path: '/invites/decline',
+  operationId: 'declineInvite',
+  summary: 'Erases the account that accepted an invite, after a step-up',
+  body: InviteDecisionRequest,
+  response: { description: 'Declined', schema: InviteDecisionResponse },
+} as const satisfies RouteDefinition<typeof InviteDecisionResponse>;
+
 const passkeyEvent = z.strictObject({ passkeyId: z.uuid() });
 const inviteEvent = z.strictObject({ inviteId: z.uuid() });
 const noDetails = z.strictObject({});
@@ -478,6 +563,11 @@ export const routes = {
   recoveryKitStatus,
   regenerateRecoveryKit,
   confirmRecoveryKit,
+  createInvite,
+  listInvites,
+  inviteDetails,
+  confirmInvite,
+  declineInvite,
   auditEvents,
 } as const;
 

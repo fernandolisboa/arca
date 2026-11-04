@@ -10,7 +10,7 @@ import type { Database, Transaction } from '@arca/db';
 import type { AuthenticationExtensionsClientInputs } from '@simplewebauthn/server';
 import { betterAuth } from 'better-auth';
 import { APIError, createAuthMiddleware, isAPIError } from 'better-auth/api';
-import { and, eq, gt, lt, lte, sql } from 'drizzle-orm';
+import { and, eq, gt, inArray, isNotNull, isNull, lt, lte, sql } from 'drizzle-orm';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { authBasePath, DeviceDescription } from '@arca/api-contract/routes';
 import type { AuditLog } from '../audit/log.js';
@@ -104,6 +104,7 @@ export function createAuth({
       changeEmail: { enabled: false },
       additionalFields: {
         lastSignInAt: { type: 'date', required: false, input: false },
+        confirmedAt: { type: 'date', required: false, input: false },
       },
     },
     // A 3-day idle timeout, slid at most daily by GET /v1/session; the 30-day absolute lifetime
@@ -315,6 +316,58 @@ export const accounts = {
       .returning({ id: user.id });
     return created?.id;
   },
+  /** An invited account, restricted until its inviter confirms it (spec 0003, R2). */
+  createUnconfirmed: async (db: Database | Transaction, email: string) => {
+    const [created] = await db
+      .insert(user)
+      .values({ name: '', email, emailVerified: true })
+      .returning({ id: user.id });
+    return created?.id;
+  },
+  /** Holds the account's row until the transaction ends, so its writes run one at a time. */
+  lock: async (tx: Transaction, accountId: string) =>
+    (await tx.select({ id: user.id }).from(user).where(eq(user.id, accountId)).for('update'))
+      .length === 1,
+  /** The accounts among these that are confirmed. */
+  confirmedAmong: async (db: Database | Transaction, accountIds: readonly string[]) =>
+    new Set(
+      accountIds.length === 0
+        ? []
+        : (
+            await db
+              .select({ id: user.id })
+              .from(user)
+              .where(and(inArray(user.id, [...accountIds]), isNotNull(user.confirmedAt)))
+          ).map(({ id }) => id),
+    ),
+  isConfirmed: async (db: Database | Transaction, accountId: string) =>
+    (
+      await db
+        .select({ id: user.id })
+        .from(user)
+        .where(and(eq(user.id, accountId), isNotNull(user.confirmedAt)))
+    ).length === 1,
+  /** False when the account is gone or already confirmed. */
+  confirm: async (db: Database | Transaction, accountId: string) =>
+    (
+      await db
+        .update(user)
+        .set({ confirmedAt: sql`now()` })
+        .where(and(eq(user.id, accountId), isNull(user.confirmedAt)))
+        .returning({ id: user.id })
+    ).length === 1,
+  /**
+   * Erases an account that was never confirmed, with every auth row through the cascades. An
+   * unconfirmed account can hold nothing outside the auth schema yet; the full erasure (spec 0004,
+   * R9) takes over once it can.
+   */
+  eraseUnconfirmed: async (db: Database | Transaction, accountId: string) =>
+    (
+      await db
+        .delete(user)
+        .where(and(eq(user.id, accountId), isNull(user.confirmedAt)))
+        .returning({ id: user.id })
+    ).length === 1,
   emailOf: async (db: Database | Transaction, accountId: string) =>
     (await db.select({ email: user.email }).from(user).where(eq(user.id, accountId)))[0]?.email,
   createdWithinDay: async (db: Database | Transaction, accountId: string) =>

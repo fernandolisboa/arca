@@ -65,3 +65,38 @@ export const passkeyCapability = auth.table('passkey_capability', {
   /** Whether the authenticator reported the PRF extension enabled (ADR-0018). */
   prfEnabled: boolean('prf_enabled').notNull(),
 });
+
+/**
+ * Invites (spec 0003, R2): the link token is 256 random bits and only its SHA-256 hash is stored;
+ * single use through `accepted_at`, expiring after 48 hours. An accepted invite stays until the
+ * inviter confirms or declines the new account; erasing either account erases the invite with
+ * the invitee's address. Never backed up.
+ */
+export const invite = auth.table(
+  'invite',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    inviterId: uuid('inviter_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    email: text('email').notNull(),
+    tokenHash: bytea('token_hash').notNull().unique(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    expiresAt: timestamp('expires_at', { withTimezone: true })
+      .notNull()
+      .default(sql`now() + interval '48 hours'`),
+    acceptedAt: timestamp('accepted_at', { withTimezone: true }),
+    acceptedAccountId: uuid('accepted_account_id')
+      .unique()
+      .references(() => user.id, { onDelete: 'cascade' }),
+  },
+  (table) => [
+    index('invite_inviter_id_idx').on(table.inviterId),
+    index('invite_expires_at_idx').on(table.expiresAt),
+    check('invite_token_length', sql`octet_length(${table.tokenHash}) = 32`),
+    check(
+      'invite_accepted_together',
+      sql`(${table.acceptedAt} IS NULL) = (${table.acceptedAccountId} IS NULL)`,
+    ),
+  ],
+);

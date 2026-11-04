@@ -186,6 +186,7 @@ describe('Better Auth on the app_auth pool', () => {
     expect(await response.json()).toEqual({
       accountId: userId,
       email: 'owner@example.com',
+      confirmed: false,
       device: { browser: 'other', os: 'other' },
     });
     const stored = await asAdmin(async (client) => {

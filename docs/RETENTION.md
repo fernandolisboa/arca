@@ -19,7 +19,8 @@ As of 2026-11-04. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md).
 | Recovery-activated passkey awaiting activation | 24 hours, then active or cancelled | Activation check |
 | Recovery links | 30 minutes, single use | Expiry check plus the daily cleanup job |
 | Recovery lockout after five wrong codes | 24 hours | Expiry check plus the daily cleanup job |
-| Owner-enrollment and invite registration contexts (`auth.registration_context`, with the address the link went to) | 30 minutes, single use | Expiry check; deleted when a registration spends it; a new owner link deletes earlier ones and expired ones; the daily cleanup job; never backed up |
+| Owner-enrollment registration contexts (`auth.registration_context`, with the address the link went to) | 30 minutes, single use | Expiry check; deleted when a registration spends it; a new owner link deletes earlier ones and expired ones; the daily cleanup job; never backed up |
+| Invites (`auth.invite`, with the invitee's address and the token's hash) | 48 hours unless accepted; an accepted one until the inviter's decision, then with the accounts | Expiry check; an expired invite never accepted is deleted, with an `invite expired` event, whenever any account sends an invite, and by the daily cleanup job; a new invite to the same address replaces the open one; erased with the inviter's or the invitee's account; never backed up |
 | Spent enrollment codes (`auth.setup`, a hash, no personal data) | Forever, so an emptied user table never revives a code | Never erased; on the no-personal-data list; backed up |
 | Account recovery code (`auth.recovery_code`, a salted hash) | While the account exists; replaced by each new kit | Replaced in place; cascade on account erasure; backed up |
 | What a passkey's authenticator reported at registration (`auth.passkey_capability`) | While the passkey exists | Deleted with the passkey (foreign key cascade) |

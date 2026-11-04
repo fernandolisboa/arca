@@ -44,6 +44,11 @@ export const openApiRoutes = {
   recoveryKitStatus: toOpenApiRoute(routes.recoveryKitStatus),
   regenerateRecoveryKit: toOpenApiRoute(routes.regenerateRecoveryKit),
   confirmRecoveryKit: toOpenApiRoute(routes.confirmRecoveryKit),
+  createInvite: toOpenApiRoute(routes.createInvite),
+  listInvites: toOpenApiRoute(routes.listInvites),
+  inviteDetails: toOpenApiRoute(routes.inviteDetails),
+  confirmInvite: toOpenApiRoute(routes.confirmInvite),
+  declineInvite: toOpenApiRoute(routes.declineInvite),
   auditEvents: toOpenApiRoute(routes.auditEvents),
 } as const;
 
