@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "routeId": "qm-correction-before-correction",
+  "number": 1,
+  "title": "Fixture: version history",
+  "country": "QM",
+  "tags": ["fixture", "work"],
+  "effectiveFrom": "2024-01-01",
+  "status": "open",
+  "currency": "EUR",
+  "sources": [
+    {
+      "id": "law",
+      "url": "https://www.gov.example/fixture-act",
+      "title": "Fixture residence act",
+      "kind": "official",
+      "verifiedAt": "2026-09-01"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "fixture-gov",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "resident",
+      "title": "The principal lives in the country",
+      "expression": {
+        "op": "eq",
+        "left": {
+          "op": "fact",
+          "key": "principal.residenceCountry"
+        },
+        "right": {
+          "op": "token",
+          "value": "QM"
+        }
+      },
+      "sources": ["law"]
+    }
+  ],
+  "assessments": [],
+  "dependents": [],
+  "costs": [],
+  "durations": []
+}

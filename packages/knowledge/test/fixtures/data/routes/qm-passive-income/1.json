@@ -138,7 +138,43 @@
       "sources": ["law"]
     }
   ],
-  "costs": [],
+  "costs": [
+    {
+      "id": "application-fee",
+      "title": "Application fee",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 9000,
+        "currency": "EUR"
+      },
+      "appliesTo": "principal",
+      "sources": ["law"]
+    },
+    {
+      "id": "residence-card",
+      "title": "Residence card for adult dependents",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 7000,
+        "currency": "EUR"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "gte",
+        "left": {
+          "op": "fact",
+          "key": "person.ageYears"
+        },
+        "right": {
+          "op": "int",
+          "value": 18
+        }
+      },
+      "sources": ["law"]
+    }
+  ],
   "durations": [],
   "leapDayBirthday": "feb-28",
   "leapDayBirthdaySources": ["law"]

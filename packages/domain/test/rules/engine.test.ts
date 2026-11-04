@@ -9,10 +9,7 @@ import {
   stateOf,
 } from '../../src/rules/catalog.js';
 import { evaluateRoute, evaluateVersion } from '../../src/rules/engine.js';
-import type { Trace } from '../../src/rules/evaluate.js';
-import { nodeCount } from '../../src/rules/expression.js';
-import { prepare } from '../../src/rules/context.js';
-import { computeUnit, unitOf } from '../../src/rules/unit.js';
+import { computeUnit } from '../../src/rules/unit.js';
 import { snapshot } from '../case/builders.js';
 import { context, entry, sampleVersion } from './fixtures.js';
 
@@ -745,43 +742,7 @@ describe('evaluateVersion', () => {
   ])('refuses %s', (_label, run) => {
     expect(run).toThrow(RangeError);
   });
-
-  it('stays linear in expressions times people on a 12-person snapshot', () => {
-    const parents = ['p2', 'p3', 'p4', 'p5'];
-    const children = ['p6', 'p7', 'p8', 'p9', 'p10', 'p11', 'p12'];
-    const value = snapshot({
-      members: ['p1', ...parents, ...children],
-      people: [
-        known('p1', '1980-01-01'),
-        ...parents.map((id, index) => known(id, `${String(1950 + index)}-01-01`)),
-        ...children.map((id, index) => known(id, `${String(2000 + index * 3)}-01-01`)),
-      ],
-      relationships: [
-        ...parents.map((parent) => ({ kind: 'parent', parent, child: 'p1' })),
-        ...children.map((child) => ({ kind: 'parent', parent: 'p1', child })),
-      ],
-      assets: [cash('p1', 5000_00)],
-    });
-    const version = entry();
-    const evaluation = evaluateVersion(value, version, 'p1', context());
-    const traces = [
-      ...unitOf(prepare(value, version, 'p1', context())).traces,
-      ...evaluation.requirements.map((requirement) => requirement.trace),
-    ];
-    const expressions = [
-      ...version.version.requirements.map((requirement) => requirement.expression),
-      ...version.version.dependents.map((rule) => rule.condition),
-    ];
-    // Items grow with people, and dependent conditions with the edges people are reached by.
-    const scale = value.people.length + value.relationships.length;
-    const bound = expressions.reduce((total, each) => total + nodeCount(each), 0) * scale;
-    expect(traces.reduce((total, trace) => total + traceSize(trace), 0)).toBeLessThanOrEqual(bound);
-  });
 });
-
-function traceSize(trace: Trace): number {
-  return 1 + trace.children.reduce((total, child) => total + traceSize(child), 0);
-}
 
 describe('evaluateRoute', () => {
   const v1 = entry();

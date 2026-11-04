@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "closed",
+      "family": {
+        "id": "single-person",
+        "number": 1,
+        "sha256": "7a45d6696cb09589b8904d27134b8858cfc4b62855da90cbab4352419f2f36d8"
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "unavailable",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    }
+  ]
+}

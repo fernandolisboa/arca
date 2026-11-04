@@ -18,6 +18,8 @@ src/                                        the runtime entry; pure, no I/O
 src/generated/catalog.ts                    written by the build, not checked in
 test/fixtures/data/                         fixture routes on user-assigned codes, with cases (R8)
 test/cases/                                 the cases runner
+test/history.test.ts                        selection over the fixture version histories, with decision states (R5, R8)
+test/performance.test.ts                    the engine's trace-size bound over every fixture route (R5)
 ```
 
 Every file in `data` is immutable once on `main`. A change is a new numbered file; `hashes.json` and cases files only gain entries. The required check `knowledge-immutable` enforces this from `main` on every pull request (`tooling/scripts/src/check-knowledge-immutable.ts`, which reads hosts with the same `hostOf` the build uses, from `@arca/scripts/host`; run it locally with `pnpm check:knowledge-immutable`). It also keeps official-domain lists in pull requests of their own and admits a file under `vendor` only once `.github/policy/vendored.json` on `main` approves it.
