@@ -245,6 +245,25 @@ export const contractSurface = {
   patterns: [{ group: ['hono', 'hono/*', '@hono/*'], message: contractWithoutHono }],
 };
 
+const vaultTypes =
+  'packages/platform imports @arca/vault for types only: the vault decrypts, the platform carries opaque values (spec 0005, R1).';
+const vaultModule = `/${selectorRegex('^@arca/vault(/|$)')}/`;
+
+/**
+ * packages/platform: only `import type` and `export type` from @arca/vault. With
+ * verbatimModuleSyntax, `import { type X }` still compiles to `import {}`, which loads the module.
+ *
+ * @type {Restrictions}
+ */
+export const vaultTypesOnly = {
+  syntax: [
+    `ImportDeclaration[source.value=${vaultModule}][importKind!='type']`,
+    `ExportNamedDeclaration[source.value=${vaultModule}][exportKind!='type']`,
+    `ExportAllDeclaration[source.value=${vaultModule}][exportKind!='type']`,
+    `ImportExpression[source.value=${vaultModule}]`,
+  ].map((selector) => ({ selector, message: vaultTypes })),
+};
+
 /** The one apps/api module that reads the auth schema, credential rows included (spec 0003, R1). */
 export const credentialReader = 'src/auth/auth.ts';
 
