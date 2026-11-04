@@ -21,7 +21,7 @@ Made by agents, tracked here so they are not lost.
 - [ ] Rotate `ARCA_RATE_LIMIT_KEY` monthly in Production and Preview ([spec 0003, R10](specs/0003-identity-and-access.md#r10-rate-limits)). Created by an agent on 2026-11-04; rotation is not automated yet: an agent writes a new value through the Vercel API, which resets the counters.
 - [ ] Audit-log purge: an ADR before the first `audit.event` record turns 5 years old (2031), since it changes ADR-0008's insert-only log ([ADR-0017](adr/0017-data-lifecycle-and-backups.md)).
 - [x] Resend's log and body retention for the plan: 30 days on the Free, Pro and Scale plans, recorded in [RETENTION.md](RETENTION.md) (checked 2026-11-04).
-- [ ] License exception for Sentry's build tooling (`@sentry/vite-plugin`, through `@sentry/bundler-plugin-core` and `@sentry/cli`, FSL-1.1-Apache-2.0), or keeping it out, decided by the server Sentry ticket.
+- [x] License exception for Sentry's build tooling (FSL-1.1-Apache-2.0), or keeping it out: kept out by a pnpm override, with no source-map upload (#67, [ADR-0016](adr/0016-observability-and-scrubbing.md)).
 - [ ] `@noble/post-quantum` audit: the vault's residual ends when one is published ([ADR-0018](adr/0018-vault-encryption.md)).
 - [ ] Web push library (spec 0005 R7): a maintained WebCrypto-based one with provenance, or `web-push` with an MPL-2.0 license exception, decided by the notifications ticket.
 - [ ] One active passkey controls the account (ADR-0015 residual): decide before the real-data gate whether revoking passkeys, regenerating the kit and cancelling recovery need the designated adult or a 24-hour cancellable delay.

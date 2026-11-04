@@ -50,6 +50,16 @@ Facts checked on 2026-11-02:
 - Langfuse arrives with the first model call (consultancy core, intake), not before. Requirements fixed now: Langfuse Cloud in its EU region; the masking function from `packages/telemetry`, which exports no prompt or completion text at all: prompt version and hash, input and output lengths, token counts, model, latency, scores and error codes, plus only allow-listed, shape-checked fields; traces carry an ID generated per call on a new root trace that inherits no active (Sentry) trace context, never the request ID and never account, case or document IDs, so nothing in Langfuse links to a person, even through the audit log, and deletion needs no step there; a retention period is set at adoption and recorded in RETENTION.md; the data-flow register updated in the same change.
 - The Sentry Node SDK's AI integrations are off, by an explicit integration list asserted by a test (not by a record-inputs option whose name can change), and span attributes are allow-listed in `beforeSendTransaction`, so the first model call cannot leak prompts through traces before Langfuse exists. The scrubber suite gets a model-call span case.
 
+### Amendment, 2026-11-04: a smaller server setup
+
+Made with the server ticket (#67), to keep the owner's part to one visit to Sentry's site.
+
+- The owner creates the organization and its one project in Sentry's interface, keeps the default alert (email on a new issue), and hands over the public DSN. No setup token, so no agent holds write access to Sentry.
+- No source maps are uploaded: the API's stack frames name its bundled server file, which is enough for a one-family app. There is no upload token, and Sentry's build tooling (`@sentry/bundler-plugins` and the Sentry CLI under FSL-1.1-Apache-2.0) is removed from the dependency tree by a pnpm override, since only the SDK's bundler entry points use it.
+- No agent tooling reads Sentry issues yet; the owner reads them. The read-only token, the delimited untrusted wrapping and the evaluation case come with that tooling, if it is ever built.
+- SDK 11 replaced `sendDefaultPii` with `dataCollection`, whose defaults collect headers, cookies, bodies and query strings; every field is turned off. Transactions are sent whole (`traceLifecycle: 'static'`) so `beforeSendTransaction` scrubs every span, and the SDK's load-time module rewriting is off. Database spans are not recorded, since no database integration is listed, and neither are the OpenTelemetry spans of other libraries (Better Auth, the Workflow SDK), since no tracer provider is registered.
+- Workflow steps report their errors (class, frames and the step's error code). The server module starts Sentry when an instance loads it, so step requests are traced under the workflow routes' generic paths; a failing step also starts it, with tracing off, in case it runs where the server module has not loaded. Every report waits for its send, behind the answer for a 5xx and before a failing step rethrows, so a frozen instance does not lose it.
+
 ## Alternatives
 
 | Option | Why not |
@@ -62,7 +72,7 @@ Facts checked on 2026-11-02:
 
 ## Consequences
 
-- The owner creates the Sentry organization once, choosing the German region at creation; an agent does the rest.
+- The owner creates the Sentry organization and project once, choosing the German region at creation, and hands over the DSN; an agent does the rest.
 - Errors and traces leave Brazil, scrubbed, and are kept 30 days.
 - The tunnel is a public endpoint that relays to a third party; its DSN allow-list, size cap, rate limit and scrub are security-critical.
 - Every new data shape that could reach telemetry needs a scrubber case.

@@ -231,6 +231,7 @@ The latest stable release of each, checked on the npm registry on 2026-11-01, un
 | `pg` | 8.x | Latest; driver for Drizzle, the migration runner and the guard tests |
 | `better-auth`, `@better-auth/passkey` | 1.7.14 | Added by [spec 0003](0003-identity-and-access.md): the newest release at least 7 days old; passkeys are the only sign-in |
 | `@simplewebauthn/server` | 13.3.3 | Added by spec 0003: the 13.x the passkey plugin resolves, as a direct dependency so there is one copy of the verifier; `@simplewebauthn/browser` joins with the web passkey port. Move to 14 when the plugin does |
+| `@sentry/node`, `@sentry/hono` | 11.10.0 | Added by [spec 0004](0004-real-data-readiness.md#r4-sentry-on-the-server): the newest release at least 7 days old, MIT, no install scripts, eight packages in all. `@sentry/node`'s build plugins (and the FSL-licensed Sentry CLI under them) are removed by a pnpm override, since the API never imports the SDK's bundler entry points |
 | `libpg-query` | 18.x | The Postgres parser compiled to WebAssembly, matching Postgres 18; the migration runner uses it to split and vet statements. 18.2.1 ships only JavaScript and a `.wasm` file, with no install script, so `allowBuilds` stays empty (checked 2026-11-02) |
 | Vitest | 5.0 | Latest stable; 5.1 is a beta with nothing we need |
 | Playwright | 1.64+ | Latest |

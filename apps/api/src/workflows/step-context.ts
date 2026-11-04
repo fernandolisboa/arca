@@ -11,14 +11,33 @@ import {
   readAuthSecrets,
   readDeploymentEnvironment,
   readJobsDatabasePassword,
+  readOwnOrigin,
 } from '../config.js';
 import { roleDatabase } from '../database.js';
 import { emailRouteFor, emailSenderFor } from '../email/environment.js';
 import { createNotices } from '../email/notices.js';
 import { stdoutLogger } from '../logger.js';
+import { reportError, startMonitoring } from '../monitoring.js';
+import type { StepTelemetry } from './step-error.js';
 
 /** What workflow steps run with: each pool built once per instance, on first use. */
-export const stepLogger = stdoutLogger();
+const stepLogger = stdoutLogger();
+
+/**
+ * The server module starts Sentry when the instance loads it; a failing step starts it too, with
+ * tracing off, in case the step runs where the server module has not loaded.
+ */
+export const stepTelemetry: StepTelemetry = {
+  logger: stepLogger,
+  report: async (error, errorCode) => {
+    startMonitoring({
+      environment: readDeploymentEnvironment(),
+      origin: readOwnOrigin(),
+      traced: false,
+    });
+    await reportError(error, errorCode);
+  },
+};
 
 const target = () => databaseTargetFrom(useRuntimeConfig()['database']);
 let jobs: ReturnType<typeof roleDatabase> | undefined;

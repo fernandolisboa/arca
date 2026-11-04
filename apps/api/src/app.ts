@@ -32,7 +32,7 @@ import {
   type RouteDefinition,
 } from '@arca/api-contract/routes';
 import { openApiRoutes } from '@arca/api-contract/server';
-import type { Context } from 'hono';
+import type { Context, Hono, MiddlewareHandler } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { createMiddleware } from 'hono/factory';
 import { routePath } from 'hono/route';
@@ -134,6 +134,23 @@ export interface AppDependencies {
    * Protection keeps private (spec 0003, R8); absent, `/internal/outbox` is a 404.
    */
   readonly outbox?: () => Promise<readonly OutboxEntry[]>;
+  /** Error monitoring's middleware, run in order before every other one (spec 0004, R4). */
+  readonly monitor?: (app: Hono<AppEnv>) => readonly MiddlewareHandler[];
+  /**
+   * True only on previews: `/internal/monitoring-check` then throws an error carrying synthetic
+   * personal data, to show that monitoring receives none of it (spec 0004, R4).
+   */
+  readonly syntheticError?: boolean;
+}
+
+/** Synthetic values only, shaped like what a family's case holds. */
+export class SyntheticPersonalDataError extends Error {
+  override name = 'SyntheticPersonalDataError';
+  constructor() {
+    super('Maria Aparecida da Silva <maria.silva@example.com>, CPF 123.456.789-09', {
+      cause: new Error('passaporte FZ123456, telefone +55 11 91234-5678'),
+    });
+  }
 }
 
 export type ErrorCode =
@@ -274,12 +291,15 @@ export function createApp({
   dataExports,
   accountDeletion,
   outbox,
+  monitor,
+  syntheticError = false,
 }: AppDependencies) {
   // An auth route without its limit would be the gap the limits exist to close.
   if (auth !== undefined && authLimits === undefined) {
     throw new Error('the auth routes need their rate limits');
   }
   const app = createRouter();
+  if (monitor !== undefined) app.use('*', ...monitor(app));
 
   const observe = createMiddleware<AppEnv>(async (c, next) => {
     const started = now();
@@ -853,6 +873,12 @@ export function createApp({
 
   if (outbox !== undefined) {
     app.get('/internal/outbox', async (c) => c.json({ messages: await outbox() }, 200));
+  }
+
+  if (syntheticError) {
+    app.get('/internal/monitoring-check', () => {
+      throw new SyntheticPersonalDataError();
+    });
   }
 
   // Vercel cron sends GET with `Authorization: Bearer <CRON_SECRET>` (spec 0001, R6). Not part of

@@ -26,6 +26,7 @@ import {
   readCronSecret,
   readDeploymentEnvironment,
   readEnrollmentCodeHash,
+  readOwnOrigin,
   readRateLimitKey,
 } from './config.js';
 import { apiDatabase, auditDatabase, authDatabase } from './database.js';
@@ -37,6 +38,7 @@ import {
 } from './email/environment.js';
 import { createNotices } from './email/notices.js';
 import { stdoutLogger } from './logger.js';
+import { monitorRequests, startMonitoring } from './monitoring.js';
 import { enforceRetention } from './workflows/enforce-retention.js';
 import { eraseAccount } from './workflows/erase-account.js';
 import { heartbeat } from './workflows/heartbeat.js';
@@ -176,21 +178,19 @@ function authParts(): Promise<AuthParts> {
  * Read once at load, but a missing setting only refuses state-changing requests (the auth routes
  * then fail and log it), so `GET /v1/health` and the static shell keep answering.
  */
-function ownOrigin(): string | undefined {
-  try {
-    return readAuthOrigin();
-  } catch {
-    return undefined;
-  }
-}
+const ownOrigin = readOwnOrigin();
 
 const withOrigin = (origin: string | undefined) => (origin === undefined ? {} : { origin });
 
 const outbox = outboxReaderFor(environment, authConnection);
 
+startMonitoring({ environment, origin: ownOrigin });
+
 const app = createApp({
   checkDatabase: () => connected().checkDatabase(),
   logger,
+  monitor: monitorRequests,
+  syntheticError: environment === 'preview',
   cron: {
     readSecret: readCronSecret,
     startHeartbeat: (runDate) => startWorkflow(heartbeat, [runDate]),
@@ -203,7 +203,7 @@ const app = createApp({
       ),
     sweepRateLimits: () => limiter.sweep(),
   },
-  ...withOrigin(ownOrigin()),
+  ...withOrigin(ownOrigin),
   accountsOpen,
   auth: {
     handle: async (request) => (await authParts()).auth.handle(request),

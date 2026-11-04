@@ -62,6 +62,7 @@ describe('pnpm-workspace.yaml', () => {
       '    typescript: "6.0.3"',
       'overrides:',
       "  semver: '7.7.3'",
+      "  'a>b': '-'",
     );
     expect(config.packageRoots).toEqual(['apps', 'tooling']);
     expect([...config.catalogs]).toEqual([
@@ -69,7 +70,10 @@ describe('pnpm-workspace.yaml', () => {
       ['default/zod', '4.6.7'],
       ['lint/typescript', '6.0.3'],
     ]);
-    expect([...config.overrides]).toEqual([['semver', '7.7.3']]);
+    expect([...config.overrides]).toEqual([
+      ['semver', '7.7.3'],
+      ['a>b', '-'],
+    ]);
     expect(checkWorkspaceConfig(config)).toEqual([]);
   });
 

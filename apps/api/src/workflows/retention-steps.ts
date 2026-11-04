@@ -1,10 +1,10 @@
 import type { Retention } from '../account/retention.js';
 import { withStepError, type StepErrorCode } from './step-error.js';
-import { retentionSteps, stepLogger } from './step-context.js';
+import { retentionSteps, stepTelemetry } from './step-context.js';
 
 // Each step counts from its own clock, read when it runs.
 const run = (step: keyof Retention, code: StepErrorCode = 'database_unavailable') =>
-  withStepError(code, stepLogger, async () => (await retentionSteps())[step](new Date()));
+  withStepError(code, stepTelemetry, async () => (await retentionSteps())[step](new Date()));
 
 export async function sweepExpiredRows(): Promise<void> {
   'use step';

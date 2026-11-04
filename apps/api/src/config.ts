@@ -111,6 +111,15 @@ export function readAuthOrigin(site: ProductionSite = productionSite): string {
   return `https://${host}`;
 }
 
+/** The auth origin, or undefined while its setting is missing, for callers that can do without. */
+export function readOwnOrigin(): string | undefined {
+  try {
+    return readAuthOrigin();
+  } catch {
+    return undefined;
+  }
+}
+
 const resendKeyPattern = /^re_[A-Za-z0-9_-]+$/;
 
 /**
