@@ -1,0 +1,1 @@
+CREATE POLICY "event_read_by_backup" ON "audit"."event" AS PERMISSIVE FOR SELECT TO "app_backup" USING (true);

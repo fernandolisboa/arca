@@ -165,7 +165,7 @@ async function identityChecks(client: pg.Client, transactionId: string): Promise
 
 /**
  * Applies pending migrations as app_migrator in one transaction that commits only if the
- * transaction checks and guards 1 to 9 pass (spec 0001, R7). Throws MigrationRejected otherwise,
+ * transaction checks and guards 1 to 10 pass (spec 0001 R7, spec 0004 R12). Throws MigrationRejected otherwise,
  * after rolling everything back.
  */
 export async function migrate(

@@ -38,6 +38,8 @@ export const event = audit.table(
     check('event_details_object', sql`jsonb_typeof(${table.details}) = 'object'`),
     index('event_subject_time_idx').on(table.subjectAccountId, table.time.desc(), table.id.desc()),
     pgPolicy('event_insert_by_audit', { for: 'insert', to: 'app_audit', withCheck: sql`true` }),
+    // The daily backup reads every row (spec 0004, R12); app_backup can only read.
+    pgPolicy('event_read_by_backup', { for: 'select', to: 'app_backup', using: sql`true` }),
     pgPolicy('event_read_own', {
       for: 'select',
       to: 'app_api',

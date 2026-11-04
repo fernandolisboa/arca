@@ -78,6 +78,52 @@ const fixtures: [number, string, string][] = [
     'constraint b_a_fkey on app.b is deferrable and not allow-listed',
   ],
   [8, 'DROP EXTENSION plpgsql', 'extension plpgsql is expected but not installed'],
+  [
+    10,
+    'CREATE TABLE app.cases (id uuid)',
+    'table app.cases is neither readable by app_backup nor on the not-backed-up list',
+  ],
+  [
+    10,
+    'GRANT SELECT (id) ON auth.session TO app_backup',
+    'table auth.session is on the not-backed-up list but app_backup can read it',
+  ],
+  [
+    10,
+    'GRANT UPDATE ON auth.user TO app_backup',
+    'app_backup may write to or reference table auth.user',
+  ],
+  [
+    10,
+    'GRANT REFERENCES (id) ON auth.user TO app_backup',
+    'app_backup may write to or reference table auth.user',
+  ],
+  [10, 'DROP TABLE auth.outbox', 'the not-backed-up list names auth.outbox, which does not exist'],
+  [
+    10,
+    'DROP POLICY event_read_by_backup ON audit.event',
+    'table audit.event has row-level security but no backup policy',
+  ],
+  [
+    10,
+    'CREATE POLICY b ON auth.session FOR SELECT TO app_backup USING (true)',
+    'policy b on auth.session is for app_backup on a table that is not backed up',
+  ],
+  [
+    10,
+    'CREATE POLICY wide ON audit.event FOR SELECT USING (true)',
+    'policy wide on audit.event reaches PUBLIC or app_backup with another shape',
+  ],
+  [
+    10,
+    'CREATE POLICY wide ON audit.event FOR ALL TO app_backup USING (true)',
+    'policy wide on audit.event reaches PUBLIC or app_backup with another shape',
+  ],
+  [
+    10,
+    "CREATE POLICY narrow ON audit.event FOR SELECT TO app_backup USING (code <> 'x')",
+    'policy narrow on audit.event reaches PUBLIC or app_backup with another shape',
+  ],
 ];
 
 describe('guards', () => {

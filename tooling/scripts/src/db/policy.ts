@@ -31,6 +31,8 @@ export interface GuardPolicy {
    * COMMIT, after the guards, so each entry needs a review of what code its check can reach.
    */
   readonly deferrableConstraints: readonly string[];
+  /** Qualified names of the tables the daily backup leaves out, each with a reason (spec 0004, R12). */
+  readonly notBackedUp: readonly string[];
 }
 
 export interface DatabasePolicy {
@@ -39,7 +41,14 @@ export interface DatabasePolicy {
   readonly guards: GuardPolicy;
 }
 
-export const appRoles = ['app_migrator', 'app_api', 'app_jobs', 'app_auth', 'app_audit'] as const;
+export const appRoles = [
+  'app_migrator',
+  'app_api',
+  'app_jobs',
+  'app_auth',
+  'app_audit',
+  'app_backup',
+] as const;
 export const migratorRole = 'app_migrator';
 export const runtimeRoles = appRoles.filter((role) => role !== migratorRole);
 
@@ -97,6 +106,7 @@ export function parseGuardPolicy(value: unknown): GuardPolicy {
     securityDefinerFunctions: list('securityDefinerFunctions'),
     migrationExtensions: list('migrationExtensions'),
     deferrableConstraints: list('deferrableConstraints'),
+    notBackedUp: tablesWithReasons(value['notBackedUp'], 'guards.json notBackedUp'),
   };
 }
 

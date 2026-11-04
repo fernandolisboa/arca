@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { bootstrap } from '../../src/db/bootstrap.ts';
+import { appRoles } from '../../src/db/policy.ts';
 import {
   adminTarget,
   bootstrapSql,
@@ -49,14 +50,14 @@ async function roleSnapshot(): Promise<unknown> {
 }
 
 describe('bootstrap', () => {
-  it('creates the five app roles as plain login roles, and only app_migrator may create', async () => {
+  it('creates the six app roles as plain login roles, and only app_migrator may create', async () => {
     const snapshot = (await roleSnapshot()) as {
       roles: { rolname: string }[];
       memberships: unknown[];
       databaseCreate: unknown[];
     };
     expect(snapshot.roles).toEqual(
-      ['app_api', 'app_audit', 'app_auth', 'app_jobs', 'app_migrator'].map((rolname) => ({
+      [...appRoles].sort().map((rolname) => ({
         rolname,
         rolsuper: false,
         rolinherit: true,
@@ -88,14 +89,15 @@ describe('bootstrap', () => {
     await withClient(adminTarget(database), async (client) => {
       const stored = await client.query<{ rolname: string; rolpassword: string | null }>(
         `SELECT rolname, rolpassword FROM pg_catalog.pg_authid
-          WHERE rolname IN ('app_migrator', 'app_api', 'app_jobs', 'app_auth', 'app_audit') ORDER BY 1`,
+          WHERE rolname = ANY ($1::text[]) ORDER BY 1`,
+        [appRoles],
       );
       for (const { rolpassword } of stored.rows) {
         expect(rolpassword).toMatch(/^SCRAM-SHA-256\$4096:/);
       }
-      expect(stored.rows).toHaveLength(5);
+      expect(stored.rows).toHaveLength(appRoles.length);
     });
-    for (const role of ['app_migrator', 'app_api', 'app_jobs', 'app_auth', 'app_audit'] as const) {
+    for (const role of appRoles) {
       const identity = await withClient(roleTarget(database, role), async (client) => {
         const result = await client.query<{ user: string }>('SELECT current_user AS user');
         return result.rows[0]?.user;

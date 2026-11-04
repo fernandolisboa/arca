@@ -50,6 +50,8 @@ export async function authTestDatabase(): Promise<AuthTestDatabase> {
     app_auth: randomBytes(24).toString('base64url'),
     app_audit: randomBytes(24).toString('base64url'),
     app_api: randomBytes(24).toString('base64url'),
+    // Not connected here; the migrations grant it reads, so it must exist.
+    app_backup: randomBytes(24).toString('base64url'),
   };
   await asAdminOn('postgres', async (client) => {
     await client.query(`CREATE DATABASE ${database}`);
