@@ -16,6 +16,8 @@ export interface Catalog {
 export interface Column {
   readonly quoted: string;
   readonly notNull: boolean;
+  /** `pg_type.typname`, so a domain or an array shows as itself, not as its base type. */
+  readonly type: string;
 }
 
 export interface ForeignKey {
@@ -24,6 +26,8 @@ export interface ForeignKey {
   /** The referencing columns, in key order. */
   readonly columns: readonly string[];
   readonly references: string;
+  /** The referenced columns, in key order. */
+  readonly referencedColumns: readonly string[];
   /** `pg_constraint.confdeltype`: `c` cascade, `n` set null, `d` set default, `a`/`r` none. */
   readonly onDelete: string;
 }
@@ -50,8 +54,9 @@ export async function readCatalog(client: Pick<ClientBase, 'query'>): Promise<Ca
   );
   const columns = await client.query<{ name: string; column: string } & Column>(
     `SELECT ${qualified} AS name, a.attname AS column, pg_catalog.quote_ident(a.attname) AS quoted,
-            a.attnotnull AS "notNull"
+            a.attnotnull AS "notNull", t.typname AS type
        FROM pg_catalog.pg_attribute a
+       JOIN pg_catalog.pg_type t ON t.oid = a.atttypid
        JOIN pg_catalog.pg_class c ON c.oid = a.attrelid
        JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
       WHERE c.relkind IN ('r', 'p') AND ${userSchemas} AND a.attnum > 0 AND NOT a.attisdropped`,
@@ -61,6 +66,9 @@ export async function readCatalog(client: Pick<ClientBase, 'query'>): Promise<Ca
             ARRAY(SELECT a.attname::text FROM pg_catalog.unnest(k.conkey) WITH ORDINALITY AS key(attnum, position)
                     JOIN pg_catalog.pg_attribute a ON a.attrelid = k.conrelid AND a.attnum = key.attnum
                    ORDER BY key.position) AS columns,
+            ARRAY(SELECT a.attname::text FROM pg_catalog.unnest(k.confkey) WITH ORDINALITY AS key(attnum, position)
+                    JOIN pg_catalog.pg_attribute a ON a.attrelid = k.confrelid AND a.attnum = key.attnum
+                   ORDER BY key.position) AS "referencedColumns",
             rn.nspname || '.' || r.relname AS "references", k.confdeltype AS "onDelete"
        FROM pg_catalog.pg_constraint k
        JOIN pg_catalog.pg_class c ON c.oid = k.conrelid
@@ -81,9 +89,9 @@ export async function readCatalog(client: Pick<ClientBase, 'query'>): Promise<Ca
        JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace`,
   );
   const byTable = new Map<string, Map<string, Column>>();
-  for (const { name, column, quoted, notNull } of columns.rows) {
+  for (const { name, column, quoted, notNull, type } of columns.rows) {
     const known = byTable.get(name) ?? new Map<string, Column>();
-    known.set(column, { quoted, notNull });
+    known.set(column, { quoted, notNull, type });
     byTable.set(name, known);
   }
   return {
@@ -94,6 +102,23 @@ export async function readCatalog(client: Pick<ClientBase, 'query'>): Promise<Ca
     policies: policies.rows,
   };
 }
+
+/**
+ * The types an export projection may carry: scalars the contract's values hold, plus `bytea`,
+ * which the export always masks. A domain, an array or JSON would slip past the mask or the
+ * contract, so it fails here instead of in an export. No `uuid`: identifiers stay out of exports
+ * until a projection needs one and says why.
+ */
+const exportableTypes = new Set([
+  'text',
+  'varchar',
+  'bool',
+  'int2',
+  'int4',
+  'date',
+  'timestamptz',
+  'bytea',
+]);
 
 const schemaOf = (table: string) => table.slice(0, table.indexOf('.'));
 const sameColumns = (a: readonly string[], b: readonly string[]) =>
@@ -141,6 +166,12 @@ function entryProblems(entry: RegistryEntry, catalog: Catalog, registry: Registr
   for (const column of [...ownerColumns, ...entry.export]) {
     if (!columns.has(column)) problems.push(`${table} has no column ${column}`);
   }
+  for (const column of entry.export) {
+    const type = columns.get(column)?.type;
+    if (type !== undefined && !exportableTypes.has(type)) {
+      problems.push(`${table}.${column} has type ${type}, which the export cannot carry`);
+    }
+  }
   for (const column of ownerColumns) {
     // A row with no owner belongs to nobody, so no erasure would ever reach it.
     if (columns.get(column)?.notNull === false) problems.push(`${table}.${column} can be null`);
@@ -164,11 +195,12 @@ function entryProblems(entry: RegistryEntry, catalog: Catalog, registry: Registr
         key.table === table &&
         key.references === owner.parent &&
         key.onDelete === 'c' &&
-        sameColumns(key.columns, owner.columns),
+        sameColumns(key.columns, owner.columns) &&
+        sameColumns(key.referencedColumns, owner.parentColumns),
     );
     if (!cascades) {
       problems.push(
-        `${table} has no ON DELETE CASCADE foreign key (${owner.columns.join(', ')}) to ${owner.parent}`,
+        `${table} has no ON DELETE CASCADE foreign key (${owner.columns.join(', ')}) to ${owner.parent} (${owner.parentColumns.join(', ')})`,
       );
     }
   } else if (entry.strategy === 'delete' && entry.pool === 'app_jobs') {

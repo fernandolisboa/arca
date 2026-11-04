@@ -738,6 +738,7 @@ export const auditEventDetails = {
   recovery_completed: noDetails,
   recovery_cancelled: noDetails,
   recovery_kit_regenerated: noDetails,
+  data_exported: noDetails,
 } as const;
 
 export type AuditEventCode = keyof typeof auditEventDetails;
@@ -780,6 +781,39 @@ export const auditEvents = {
   response: { description: 'A page of audit events', schema: AuditEventsResponse },
 } as const satisfies RouteDefinition<typeof AuditEventsResponse>;
 
+/** The export's own format; a change that is not additive moves it to the next version. */
+export const dataExportSchemaVersion = 1;
+
+/** A value as the database holds it, or a fixed placeholder where the export masks one. */
+const ExportedValue = z.union([z.string(), z.number(), z.boolean(), z.null()]);
+
+/**
+ * Everything the account owns, one entry per registry table (spec 0004, R8): its rows through the
+ * registry's projection, keyed by column name, and a label in the account's language.
+ */
+export const DataExport = z.object({
+  schemaVersion: z.literal(dataExportSchemaVersion),
+  exportedAt: z.iso.datetime({ offset: true }),
+  tables: z.array(
+    z.object({
+      table: z.string(),
+      label: z.string(),
+      rows: z.array(z.record(z.string(), ExportedValue)),
+    }),
+  ),
+});
+export type DataExport = z.infer<typeof DataExport>;
+
+export const exportAccountData = {
+  method: 'post',
+  path: '/account/export',
+  operationId: 'exportAccountData',
+  summary:
+    'Downloads everything the account owns as one JSON document, after a data_export step-up; 403 step_up_required',
+  body: z.strictObject({}),
+  response: { description: 'The export, as an attachment', schema: DataExport },
+} as const satisfies RouteDefinition<typeof DataExport>;
+
 export const routes = {
   health,
   session,
@@ -810,6 +844,7 @@ export const routes = {
   recoveryOptions,
   recoveryVerify,
   auditEvents,
+  exportAccountData,
 } as const;
 
 /** The Better Auth endpoints the API lets through; every other path under /v1/auth is a 404. */

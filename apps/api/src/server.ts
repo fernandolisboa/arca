@@ -1,7 +1,8 @@
-import { createI18n } from '@arca/i18n';
+import { createI18n, type I18n } from '@arca/i18n';
 import { useRuntimeConfig } from 'nitro/runtime-config';
+import { createDataExports } from './account/data-export.js';
 import { createApp } from './app.js';
-import { auditLog, auditReader } from './audit/log.js';
+import { auditLog, auditReader, type AuditLog } from './audit/log.js';
 import { createAuth, credentialStore } from './auth/auth.js';
 import { rateLimiter, type RateLimiter } from './auth/rate-limit.js';
 import { clientAddressFor } from './client-address.js';
@@ -94,6 +95,8 @@ interface AuthParts {
   readonly invites: Invites;
   readonly devices: Devices;
   readonly recovery: Recovery;
+  readonly audit: AuditLog;
+  readonly i18n: I18n;
 }
 
 let parts: Promise<AuthParts> | undefined;
@@ -141,6 +144,8 @@ function authParts(): Promise<AuthParts> {
         emailAvailable: accountsOpen,
         status: devices.status,
       }),
+      audit,
+      i18n,
     };
   })();
   // A failed build is retried on the next request instead of being cached.
@@ -239,6 +244,18 @@ const app = createApp({
     }),
   },
   audit: { events: (accountId, query) => auditReader(connected().db).events(accountId, query) },
+  dataExports: {
+    // Built per export, so a broken app_api setting fails only this route.
+    build: async (accountId) => {
+      const { audit, i18n } = await authParts();
+      return createDataExports({
+        authDb: authConnection(),
+        apiDb: connected().db,
+        audit,
+        i18n,
+      }).build(accountId);
+    },
+  },
   ...(outbox === undefined ? {} : { outbox }),
 });
 

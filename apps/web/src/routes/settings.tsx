@@ -4,6 +4,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useCallback, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { appearance, useAppearance } from '../appearance/store.js';
+import { DataExportSection } from '../data-export.js';
 
 export const Route = createFileRoute('/settings')({ component: Settings });
 
@@ -145,6 +146,7 @@ function Settings() {
           </p>
         </div>
       </section>
+      <DataExportSection />
     </div>
   );
 }

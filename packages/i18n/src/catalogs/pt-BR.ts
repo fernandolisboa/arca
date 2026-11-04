@@ -21,6 +21,21 @@ export const ptBR = {
   /** The Settings page (spec 0006, R9). Option labels follow the axis identifiers. */
   settings: {
     title: 'Configurações',
+    dataExport: {
+      title: 'Seus dados',
+      intro:
+        'A exportação dos dados gera um arquivo com tudo o que o Arca guarda sobre a sua conta.',
+      start: 'Baixar meus dados',
+      confirmLead:
+        'O arquivo traz seu email, suas chaves de acesso, seus dispositivos e o histórico de segurança da conta. Guarde em um lugar seguro e não mande para ninguém. Para baixar, confirme com sua chave de acesso.',
+      confirm: 'Confirmar e baixar',
+      cancel: 'Agora não',
+      waiting: 'Confirme no seu dispositivo para continuar.',
+      done: 'Pronto. O arquivo está nos seus downloads.',
+      failure:
+        '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+      fileName: 'arca-meus-dados-{date}.json',
+    },
     appearance: {
       title: 'Aparência',
       intro: 'As mudanças valem na hora e ficam salvas neste aparelho.',
@@ -400,6 +415,7 @@ export const ptBR = {
   },
   /** Section names in the account's data export (spec 0004 R8), one per registry entry. */
   dataExport: {
+    masked: 'Protegido. Veja no Arca.',
     tables: {
       account: 'Conta',
       signInMethods: 'Formas de entrar',
