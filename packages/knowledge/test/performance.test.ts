@@ -16,12 +16,16 @@ const entries = [...(await fixtureEntries()).values()];
 const date = parseCalendarDate('2026-11-03');
 
 /**
- * Synthetic only: a principal, a spouse, four parents and step-parents, and `count` children born
- * three years apart from 2000, so some are adults and some minors.
+ * Synthetic only: a principal and a spouse, `n / 3` parents of the principal with one parent each,
+ * and `n` children born from 2000 to 2010 in a repeating pattern, all before the record date. Every
+ * group grows with `n` and keeps its mix of adults and minors, so doubling `n` doubles the work.
  */
-function family(count: number): CaseSnapshot {
-  const parents = ['p2', 'p3', 'p4', 'p5'];
-  const children = Array.from({ length: count }, (_, index) => `p${String(index + 7)}`);
+function family(n: number): CaseSnapshot {
+  const ids = (start: number, count: number) =>
+    Array.from({ length: count }, (_, index) => `p${String(start + index)}`);
+  const parents = ids(100, n / 3);
+  const grandparents = ids(200, n / 3);
+  const children = ids(300, n);
   const person = (id: string, birthDate: string): object => ({
     id,
     birthDate,
@@ -30,16 +34,22 @@ function family(count: number): CaseSnapshot {
   });
   return caseSnapshotSchema.parse({
     recordedOn: '2026-11-03',
-    members: ['p1', 'p6', ...parents, ...children],
+    members: ['p1', 'p2', ...parents, ...children],
     people: [
       person('p1', '1980-01-01'),
-      person('p6', '1982-01-01'),
+      person('p2', '1982-01-01'),
       ...parents.map((id, index) => person(id, `${String(1950 + index)}-01-01`)),
-      ...children.map((id, index) => person(id, `${String(2000 + index * 3)}-01-01`)),
+      ...grandparents.map((id, index) => person(id, `${String(1920 + index)}-01-01`)),
+      ...children.map((id, index) => person(id, `${String(2000 + (index % 6) * 2)}-01-01`)),
     ],
     relationships: [
-      { kind: 'spouse', people: ['p1', 'p6'], start: '2000-01-01', end: 'none' },
+      { kind: 'spouse', people: ['p1', 'p2'], start: '2000-01-01', end: 'none' },
       ...parents.map((parent) => ({ kind: 'parent', parent, child: 'p1' })),
+      ...grandparents.map((grandparent, index) => ({
+        kind: 'parent',
+        parent: grandparent,
+        child: parents[index],
+      })),
       ...children.map((child) => ({ kind: 'parent', parent: 'p1', child })),
     ],
     assets: [],
@@ -91,7 +101,8 @@ describe('engine performance (spec 0002, R5)', () => {
   });
 
   it.each(named)('grows at most linearly with the family: %s', (_, entry) => {
-    // Linear growth a + b·n at most doubles when n doubles; anything faster does more.
+    // Linear growth a + b·n at most doubles when n doubles. A faster term shows once it outweighs
+    // the constant part, which the routes with dependents and ancestor lines reach here.
     expect(sizeOf(family(12), entry)).toBeLessThanOrEqual(2 * sizeOf(family(6), entry));
   });
 });
@@ -105,13 +116,8 @@ describe('fixture costs', () => {
       costs.map(({ costId, personId, applies, amount }) => ({ costId, personId, applies, amount })),
     ).toEqual([
       { costId: 'application-fee', personId: 'p1', applies: true, amount: euros(90_00) },
-      { costId: 'residence-card', personId: 'p6', applies: true, amount: euros(70_00) },
-      ...['p10', 'p11', 'p12'].map((personId) => ({
-        costId: 'residence-card',
-        personId,
-        applies: false,
-        amount: euros(70_00),
-      })),
+      { costId: 'residence-card', personId: 'p2', applies: true, amount: euros(70_00) },
+      { costId: 'residence-card', personId: 'p305', applies: false, amount: euros(70_00) },
     ]);
     // The family is not recorded in full, so unrecorded dependents may owe a card: no upper bound.
     expect(totals).toEqual([
