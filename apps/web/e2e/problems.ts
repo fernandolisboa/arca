@@ -1,11 +1,14 @@
 import { test, type Page } from '@playwright/test';
+import { signedOutOrigin } from './servers.js';
 
 /**
- * The one expected failed request: the session check, which answers 401 when signed out and an
- * error on the server with no database.
+ * The one expected failed request: the session check, which answers 401 when signed out, and
+ * fails on the server with no database.
  */
-function isSignedOutSessionCheck(text: string, url: string): boolean {
-  return text.startsWith('Failed to load resource') && new URL(url).pathname === '/v1/session';
+function isExpectedSessionFailure(text: string, url: string): boolean {
+  const { origin, pathname } = new URL(url);
+  if (!text.startsWith('Failed to load resource') || pathname !== '/v1/session') return false;
+  return text.includes('status of 401') || origin === signedOutOrigin;
 }
 
 /** Console errors, uncaught errors and CSP or Trusted Types violations seen by the page. */
@@ -13,7 +16,7 @@ export function watchProblems(page: Page): string[] {
   const problems: string[] = [];
   page.on('console', (message) => {
     if (message.type() !== 'error') return;
-    if (isSignedOutSessionCheck(message.text(), message.location().url)) return;
+    if (isExpectedSessionFailure(message.text(), message.location().url)) return;
     problems.push(message.text());
   });
   page.on('pageerror', (error) => problems.push(error.message));

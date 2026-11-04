@@ -14,8 +14,8 @@ const server = 'node ../../api/.output/server/index.mjs';
 /**
  * End-to-end tests against the built app served locally: the Nitro server from apps/api with
  * this app's static build, at phone and desktop sizes (spec 0001, R8). One server runs with no
- * database, so the API reports itself degraded; with ARCA_E2E_DATABASE=1, a second one reaches
- * the Postgres the PG* variables name, for the sign-in tests (spec 0003, R3).
+ * database, so the API reports itself degraded. When ARCA_E2E_DATABASE names a database on the
+ * ARCA_TEST_DB_* server, a second one reaches it, for the sign-in tests (spec 0003, R3).
  */
 export default defineConfig({
   testDir: '.',

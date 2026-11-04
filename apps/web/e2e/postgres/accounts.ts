@@ -14,7 +14,7 @@ export async function seedAccount({
   if (password === '') throw new Error('ARCA_TEST_DB_ADMIN_PASSWORD is not set');
   const client = new pg.Client({
     host: databaseServer.database.host,
-    port: Number(process.env['ARCA_TEST_DB_PORT'] ?? '5432'),
+    port: databaseServer.database.port,
     database: databaseServer.database.name,
     user: process.env['ARCA_TEST_DB_ADMIN_USER'] ?? 'postgres',
     password,

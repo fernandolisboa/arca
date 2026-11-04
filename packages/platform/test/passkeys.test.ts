@@ -90,6 +90,16 @@ describe('the Passkeys port (spec 0003, R3)', () => {
     expect(calls).toEqual([]);
   });
 
+  it('refuses PRF in a sign-in, even empty', async () => {
+    const { browser, calls } = fakeBrowser();
+    const options = {
+      ...requestOptions,
+      extensions: { prf: {} },
+    } as PublicKeyCredentialRequestOptionsJSON;
+    await expect(createPasskeys(browser).get(options)).rejects.toThrow(PasskeyOptionsRefusedError);
+    expect(calls).toEqual([]);
+  });
+
   it('lets registration ask whether PRF is supported', async () => {
     const { browser, calls } = fakeBrowser();
     const options = {

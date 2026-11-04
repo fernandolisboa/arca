@@ -37,16 +37,18 @@ export class PasskeyOptionsRefusedError extends Error {
 }
 
 /**
- * The only extension a ceremony may ask for is PRF, and only to learn whether it is supported:
+ * The only extension allowed is PRF at registration, and only to learn whether it is supported:
  * evaluating it would derive the vault key in a ceremony meant for something else (ADR-0018).
  */
-function checkExtensions(extensions: unknown): void {
+function checkExtensions(extensions: unknown, { prf }: { readonly prf: boolean }): void {
   if (extensions === undefined) return;
   if (typeof extensions !== 'object' || extensions === null) {
     throw new PasskeyOptionsRefusedError('extensions must be an object');
   }
   for (const [name, value] of Object.entries(extensions as Record<string, unknown>)) {
-    if (name !== 'prf') throw new PasskeyOptionsRefusedError(`extension ${name} is not allowed`);
+    if (name !== 'prf' || !prf) {
+      throw new PasskeyOptionsRefusedError(`extension ${name} is not allowed`);
+    }
     if (typeof value !== 'object' || value === null || Object.keys(value).length > 0) {
       throw new PasskeyOptionsRefusedError('prf may only be requested empty');
     }
@@ -79,7 +81,7 @@ export function createPasskeys(browser: WebAuthnBrowser): Passkeys {
     supportsAutofill: () =>
       browser.supported() ? browser.autofillSupported() : Promise.resolve(false),
     async create(options) {
-      checkExtensions(options.extensions);
+      checkExtensions(options.extensions, { prf: true });
       const response = await browser.startRegistration({ optionsJSON: options });
       return {
         ...response,
@@ -87,7 +89,7 @@ export function createPasskeys(browser: WebAuthnBrowser): Passkeys {
       };
     },
     async get(options, { autofill = false } = {}) {
-      checkExtensions(options.extensions);
+      checkExtensions(options.extensions, { prf: false });
       const response = await browser.startAuthentication({
         optionsJSON: options,
         useBrowserAutofill: autofill,

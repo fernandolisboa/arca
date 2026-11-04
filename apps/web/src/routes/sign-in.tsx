@@ -5,7 +5,7 @@ import { useEffect, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { sessionQuery } from '../api.js';
 import { passkeys } from '../platform.js';
-import { failureOf, signInWithPasskey, wasAborted, type SignInFailure } from '../sign-in.js';
+import { failureOf, signInWithPasskey, type SignInFailure } from '../sign-in.js';
 
 export const Route = createFileRoute('/sign-in')({ component: SignIn });
 
@@ -17,6 +17,13 @@ interface Support {
 /** Autofill waits on the account field; a press of the button replaces it until it ends. */
 type Ceremony = 'autofill' | 'button';
 
+/**
+ * Browsers never time out an autofill request, but its challenge expires after five minutes on
+ * the server, so a waiting one is replaced before that.
+ */
+const autofillRefreshMs = 4 * 60 * 1000;
+const autofillRetryMs = 1000;
+
 function SignIn() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -26,10 +33,12 @@ function SignIn() {
   const [support, setSupport] = useState<Support>();
   const [ceremony, setCeremony] = useState<Ceremony>('autofill');
   const [failure, setFailure] = useState<SignInFailure>();
+  // Bumped to start a new autofill ceremony while the ceremony state stays 'autofill'.
+  const [autofillRun, setAutofillRun] = useState(0);
 
   useEffect(() => {
     let current = true;
-    void Promise.all([passkeys.isAvailable(), passkeys.supportsAutofill()]).then(
+    void Promise.all([passkeys.isAvailable(), passkeys.supportsAutofill().catch(() => false)]).then(
       ([available, autofill]) => {
         if (current) setSupport({ available, autofill });
       },
@@ -43,21 +52,34 @@ function SignIn() {
     if (support?.available !== true) return;
     if (ceremony === 'autofill' && !support.autofill) return;
     const controller = new AbortController();
+    let restart: ReturnType<typeof setTimeout> | undefined;
+    const restartAutofill = (delayMs: number) => {
+      clearTimeout(restart);
+      restart = setTimeout(() => {
+        setAutofillRun((run) => run + 1);
+      }, delayMs);
+    };
+    if (ceremony === 'autofill') restartAutofill(autofillRefreshMs);
     signInWithPasskey(passkeys, { autofill: ceremony === 'autofill', signal: controller.signal })
       .then(async () => {
-        await queryClient.invalidateQueries({ queryKey: sessionQuery.queryKey });
+        // Reset, not invalidated: the home page must not show the signed-out state it cached.
+        await queryClient.resetQueries({ queryKey: sessionQuery.queryKey });
         await navigate({ to: '/' });
       })
       .catch((error: unknown) => {
-        if (controller.signal.aborted || wasAborted(error)) return;
-        setFailure(failureOf(error));
-        setCeremony('autofill');
+        if (controller.signal.aborted) return;
+        const reason = failureOf(error);
+        setFailure(reason);
+        if (ceremony === 'button') setCeremony('autofill');
+        // A pick that failed offers the field again soon; a server that failed waits longer.
+        else if (reason === 'cancelled' || reason === 'refused') restartAutofill(autofillRetryMs);
       });
     return () => {
+      clearTimeout(restart);
       controller.abort();
       passkeys.cancel();
     };
-  }, [support, ceremony, queryClient, navigate]);
+  }, [support, ceremony, autofillRun, queryClient, navigate]);
 
   const waiting = ceremony === 'button';
   const message =
