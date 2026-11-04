@@ -57,6 +57,7 @@ import type { ActionPurpose, StepUpService } from './auth/step-up.js';
 import type { OutboxEntry } from './email/outbox.js';
 import { bearerMatches } from './cron-auth.js';
 import { cachedDatabaseCheck, type CheckDatabase } from './database-health.js';
+import { securityTxt } from './security-txt.js';
 import type { Logger } from '@arca/telemetry';
 import { utcDate, type IsoDate } from './workflows/workflow-arguments.js';
 
@@ -752,6 +753,10 @@ export function createApp({
     }
     return throughContract(c, route, await auth.handle(c.req.raw));
   });
+
+  app.get('/.well-known/security.txt', (c) =>
+    c.text(securityTxt(), 200, { 'Cache-Control': 'public, max-age=86400' }),
+  );
 
   if (outbox !== undefined) {
     app.get('/internal/outbox', async (c) => c.json({ messages: await outbox() }, 200));
