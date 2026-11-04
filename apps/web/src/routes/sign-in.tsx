@@ -1,3 +1,4 @@
+import { pendingPasskeyHours } from '@arca/api-contract/client';
 import { Button } from '@arca/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
@@ -103,7 +104,7 @@ function SignIn() {
         ? t('signIn.waiting')
         : failure === undefined
           ? ''
-          : t('signIn.failure', { reason: failure });
+          : t('signIn.failure', { reason: failure, hours: pendingPasskeyHours });
 
   return (
     <section aria-labelledby="sign-in-title" className="mx-auto flex max-w-md flex-col gap-5">

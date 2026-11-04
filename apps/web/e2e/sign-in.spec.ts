@@ -84,7 +84,7 @@ test('offers the account field again after a refused pick', async ({ page }) => 
   const authenticator = await virtualAuthenticator(page, newCredential(), { userId: randomUUID() });
   await page.goto(`${databaseServer.origin}/sign-in`);
   await expect(page.getByRole('status')).toHaveText(
-    'Essa chave de acesso não está ligada a nenhuma conta do Arca. Tente com outra.',
+    'Essa chave de acesso não abriu nenhuma conta. Se você criou essa chave há menos de 24 horas, espere ela passar a valer, ou tente com outra.',
   );
   await authenticator.hold(credential, userId);
   await expectSignedInAs(page, email);
@@ -123,7 +123,7 @@ test('says so when the passkey opens no account', async ({ page }) => {
   await page.goto(`${databaseServer.origin}/sign-in`);
   await signInButton(page).click();
   await expect(page.getByRole('status')).toHaveText(
-    'Essa chave de acesso não está ligada a nenhuma conta do Arca. Tente com outra.',
+    'Essa chave de acesso não abriu nenhuma conta. Se você criou essa chave há menos de 24 horas, espere ela passar a valer, ou tente com outra.',
   );
   await expect(signInButton(page)).toBeEnabled();
 });

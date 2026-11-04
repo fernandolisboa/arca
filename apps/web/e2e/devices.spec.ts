@@ -23,8 +23,8 @@ async function signIn(page: Page, email: string) {
 
 async function openDevices(page: Page) {
   await page.goto(`${databaseServer.origin}/`);
-  await page.getByRole('link', { name: 'Seus aparelhos' }).click();
-  await expect(page.getByRole('heading', { level: 2, name: 'Seus aparelhos' })).toBeVisible();
+  await page.getByRole('link', { name: 'Dispositivos' }).click();
+  await expect(page.getByRole('heading', { level: 2, name: 'Dispositivos' })).toBeVisible();
 }
 
 const passkeyCards = (page: Page) =>
@@ -52,8 +52,8 @@ test('adds a passkey that waits 24 hours, shows it to every session, and cancels
   await signIn(page, email);
   await openDevices(page);
   await expect(passkeyCards(page)).toHaveCount(1);
-  await expect(page.getByText('Você entrou neste aparelho com esta chave.')).toBeVisible();
-  await expect(page.getByText('Este aparelho', { exact: true })).toBeVisible();
+  await expect(page.getByText('Você entrou neste dispositivo com esta chave.')).toBeVisible();
+  await expect(page.getByText('Este dispositivo', { exact: true })).toBeVisible();
 
   // The step-up signs with the held passkey; the browser then creates a new one, which an
   // authenticator already holding an excluded credential would refuse, so it is emptied between.
@@ -106,10 +106,10 @@ test('disconnects another device, whose cookie then gets no session', async ({ p
     await signIn(page, email);
 
     await openDevices(page);
-    const elsewhere = page.getByRole('button', { name: 'Desconectar este aparelho' });
+    const elsewhere = page.getByRole('button', { name: 'Desconectar este dispositivo' });
     await expect(elsewhere).toHaveCount(1);
     await elsewhere.click();
-    await expect(page.getByRole('status').first()).toHaveText('Aparelho desconectado.');
+    await expect(page.getByRole('status').first()).toHaveText('Dispositivo desconectado.');
     await expect(elsewhere).toHaveCount(0);
     await expectNoOverflow(page);
 

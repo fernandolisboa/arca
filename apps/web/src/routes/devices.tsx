@@ -6,7 +6,7 @@ import {
 import { Button } from '@arca/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { devicesQuery, resetAccount, sessionQuery } from '../api.js';
 import {
@@ -39,6 +39,7 @@ function Devices() {
   const queryClient = useQueryClient();
   const [waiting, setWaiting] = useState(false);
   const [outcome, setOutcome] = useState<{ done: Done } | { failure: DeviceFailure }>();
+  const statusRef = useRef<HTMLParagraphElement>(null);
 
   if (session.isError) {
     return (
@@ -57,6 +58,8 @@ function Devices() {
     run()
       .then(async () => {
         setOutcome({ done });
+        // The control that had focus may leave with its card, so focus moves to the result.
+        statusRef.current?.focus();
         await (endsThisSession
           ? resetAccount(queryClient)
           : Promise.all([
@@ -84,7 +87,9 @@ function Devices() {
     <Page title={t('devices.title')} lead={t('devices.lead')}>
       {/* One live region whose text changes, so each new state is announced. */}
       <p
+        ref={statusRef}
         role="status"
+        tabIndex={-1}
         className={outcome !== undefined && 'done' in outcome ? 'text-ok-ink' : 'text-ink'}
       >
         {message}
