@@ -41,7 +41,7 @@ These ten axes are the whole preference set. Each is one attribute on `<html>`: 
 
 ### Color
 
-Every palette defines the same keys. `second` is the fill for non-leading bars; `logoRoof` is the roof of the ark mark.
+Every palette defines the same keys. `second` is the fill for non-leading bars.
 
 | Key | notebook light | notebook dark | serene light | serene dark | panel light | panel dark |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -55,7 +55,6 @@ Every palette defines the same keys. `second` is the fill for non-leading bars; 
 | `soft` | `#F1E8DA` | `#352D27` | `#E6EDEE` | `#1D3338` | `#E9ECF1` | `#222831` |
 | `track` | `#EADFCD` | `#3D352E` | `#E6EDEE` | `#2A3F44` | `#E9ECF1` | `#2C323A` |
 | `second` | `#8C7F73` | `#9C8F82` | `#8FA3A8` | `#6F878C` | `#9AA4B0` | `#5D6672` |
-| `logoRoof` | `#F1C58E` | `#F1C58E` | `#F2C14E` | `#F2C14E` | `#FF9A5C` | `#FF9A5C` |
 | `okBg` / `okInk` | `#E3EBD9` / `#34491F` | `#2C3A22` / `#BFD8A5` | `#DDF1E6` / `#145C36` | `#173A2A` / `#A6E2C1` | `#EAF6EF` / `#17603A` | `#173326` / `#9FDDB9` |
 | `warnBg` / `warnInk` | `#F6DDCB` / `#7E3315` | `#45281A` / `#F4BE9F` | `#FCEFCF` / `#6B4A00` | `#3D3115` / `#F5D58A` | `#FDF0E6` / `#8A3A07` | `#3A2414` / `#FFC49E` |
 
@@ -101,6 +100,20 @@ Scale (rem at 16 px): 0.75 caption, 0.875 small, 1 body, 1.125 lead, 1.375 title
 Spacing follows Tailwind's 4 px scale; `spacing-touch` stays 44 px and every control meets it.
 
 Motion: `duration-fast` 150 ms (hover, press), `duration-base` 250 ms (theme change, toggles), `duration-slow` 450 ms (cards entering), `ease-out` `cubic-bezier(0.2, 0.8, 0.2, 1)`. Bars grow from zero on first paint with a 90 ms stagger per row, for the first six rows only; later rows start with the sixth. With motion off, every duration is 0 and looping animations do not render.
+
+### Mark
+
+The mark is a house on a straight hull with a ramp down from an arched door, chosen by the owner on 2026-11-04. Its sources are [docs/brand/arca-mark.svg](../brand/arca-mark.svg) (light backgrounds) and [docs/brand/arca-mark-dark.svg](../brand/arca-mark-dark.svg) (dark backgrounds). It keeps its own wood palette in every color theme, because it must stay recognizable when the theme changes:
+
+| Part | Light | Dark |
+| --- | --- | --- |
+| Hull | `#805840` | `#A67C63` |
+| House | `#AE8546` | `#E9CB88` |
+| Roof | `#5B4033` | `#C7845F` |
+| Ramp | `#AD7853` | `#C59770` |
+| Windows | `#F1DCA9` | `#F5E2B8` |
+
+The door is a hole, so the background shows through. At 32 px and below the windows are dropped, as in `apps/web/public/favicon.svg`, which switches palettes with `prefers-color-scheme`. The PWA icons in `apps/web/public/icons/` put the light mark on a `#F7F1E8` tile; the maskable icon keeps it inside the central 80% safe zone. The shell renders the mark as a `Mark` component in `packages/ui` built from the same paths, picking the light or dark palette from the resolved mode, with the name "Arca" beside it in the display font. Native icons and splash screens stay out of scope (Phase 4).
 
 ## Shell and navigation
 
