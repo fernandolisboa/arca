@@ -179,7 +179,7 @@ export const ptBR = {
   /** A link that creates an account, opened in a browser already signed in (spec 0003, R2). */
   linkSession: {
     signedIn:
-      'Este navegador já entrou no Arca como {email}. Este link cria outra conta, então saia dessa primeiro.',
+      'Este navegador já entrou no Arca como {email}. Este link cria outra conta, então saia desta conta primeiro.',
     signOut: 'Sair desta conta',
     signingOut: 'Saindo…',
     failure: 'Não deu para sair agora. Tente de novo.',
@@ -193,7 +193,7 @@ export const ptBR = {
     sending: 'Enviando…',
     sent: 'Convite enviado para {email}.',
     sendFailure:
-      '{reason, select, account_unconfirmed {Sua conta ainda espera confirmação, então você não pode convidar ninguém por enquanto.} too_many_invites {Você já tem {max} convites abertos. Espere alguém aceitar ou um convite vencer.} email_unavailable {O Arca ainda não consegue mandar emails. Tente de novo mais tarde.} limited {Você mandou muitos convites hoje. Tente de novo amanhã.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+      '{reason, select, account_unconfirmed {Sua conta está aguardando a confirmação de quem convidou você, então você não pode convidar ninguém por enquanto.} too_many_invites {Você já tem {max} convites abertos. Espere alguém aceitar ou um convite vencer.} email_unavailable {O Arca ainda não consegue mandar emails. Tente de novo mais tarde.} limited {Você mandou muitos convites hoje. Tente de novo amanhã.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
     listTitle: 'Seus convites',
     empty: 'Você ainda não mandou nenhum convite.',
     listFailure: 'Não conseguimos carregar seus convites agora.',

@@ -204,6 +204,21 @@ test('creates the first account from the emailed link, and shows its recovery ki
   await expect(guest.getByRole('link', { name: 'Convidar alguém' })).toBeVisible();
   await guestContext.close();
   expect(unexpected(guestProblems)).toEqual([]);
+
+  // Signing out from an invite's link turns the notice into the passkey prompt.
+  const signOutInvitee = 'e2e-sign-out@example.org';
+  await page.getByLabel('Email de quem você quer convidar').fill(signOutInvitee);
+  await page.getByRole('button', { name: 'Enviar convite' }).click();
+  await expect(page.getByText(`Convite enviado para ${signOutInvitee}.`)).toBeVisible();
+  const signOutLink = (await latestEmailTo(signOutInvitee))?.match(
+    /http:\/\/\S+\/invite#[A-Za-z0-9_-]{43}/,
+  )?.[0];
+  expect(signOutLink).toBeDefined();
+  await page.goto(String(signOutLink));
+  await page.getByRole('button', { name: 'Sair desta conta' }).click();
+  await expect(page.getByRole('button', { name: 'Criar chave de acesso' })).toBeEnabled();
+  await page.goto(`${databaseServer.origin}/`);
+  await expect(page.getByRole('link', { name: 'Entrar' })).toBeVisible();
   expect(unexpected(problems)).toEqual([]);
 });
 

@@ -251,6 +251,22 @@ export interface Registration {
   ) => Promise<RegistrationOutcome<Record<string, never>>>;
 }
 
+/** The request's cookies without the ones that carry a session (a cache may span chunks). */
+function withoutSession(headers: Headers, sessionCookies: readonly string[]): Headers {
+  const kept = new Headers(headers);
+  const cookies = (headers.get('cookie') ?? '')
+    .split(';')
+    .map((pair) => pair.trim())
+    .filter(
+      (pair) =>
+        pair !== '' &&
+        !sessionCookies.some((name) => pair.startsWith(`${name}=`) || pair.startsWith(`${name}.`)),
+    );
+  if (cookies.length === 0) kept.delete('cookie');
+  else kept.set('cookie', cookies.join('; '));
+  return kept;
+}
+
 export function registration(
   auth: Auth,
   hooks: RegistrationHooks,
@@ -259,6 +275,14 @@ export function registration(
   /** Runs after a registration from an invite commits; it must not throw. */
   inviteAccepted: (inviteId: string) => Promise<void>,
 ): Registration {
+  // A session the plugin sees would stand in for the link's context (its own account would get
+  // the passkey, which afterVerification then refuses), so it never sees one. A live session is
+  // answered 409 before this; this covers one that Arca no longer counts, or one signed in from
+  // another tab between options and verify.
+  const sessionCookies = auth.$context.then(({ authCookies }) =>
+    Object.values(authCookies).map(({ name }) => name),
+  );
+  const pluginHeaders = async (headers: Headers) => withoutSession(headers, await sessionCookies);
   return {
     // The code is checked before the ceremony too, so a typo costs no passkey on the device.
     options: async (headers, { token, code }) => {
@@ -268,9 +292,10 @@ export function registration(
       if (context.kind === 'owner' && ownerCode(code) === null) {
         return { ok: false, reason: 'invalid_code' };
       }
+      const plugin = await pluginHeaders(headers);
       const { headers: answered, response } = await hooks.within({ tokenHash, code }, () =>
         auth.api.generatePasskeyRegistrationOptions({
-          headers,
+          headers: plugin,
           query: { context: context.id },
           returnHeaders: true,
         }),
@@ -285,9 +310,10 @@ export function registration(
         code,
       };
       try {
+        const plugin = await pluginHeaders(headers);
         const { headers: answered } = await hooks.within(ceremony, () =>
           auth.api.verifyPasskeyRegistration({
-            headers,
+            headers: plugin,
             body: { response, createSession: true },
             returnHeaders: true,
           }),

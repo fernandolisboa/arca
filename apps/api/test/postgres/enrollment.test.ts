@@ -562,6 +562,25 @@ describe('invites (spec 0003, R2)', () => {
     expect((await options(await latestToken('invite'), null)).status).toBe(200);
   });
 
+  it("registers the link's own account when a session appears before verify", async () => {
+    const otherTab = 'other-tab@example.org';
+    expect((await invite(owner.cookie, otherTab)).status).toBe(200);
+    const token = await latestToken('invite');
+    const offered = await options(token, null);
+    expect(offered.status).toBe(200);
+    const creation = (await offered.json()) as PasskeyCreationOptions;
+    const verified = await post(
+      '/v1/auth/registration/verify',
+      { token, response: softwarePasskey(rpId).attest({ challenge: creation.challenge, origin }) },
+      { cookie: `${cookiesFrom(offered)}; ${owner.cookie}` },
+    );
+    expect(verified.status).toBe(200);
+    const session = await app.request('/v1/session', {
+      headers: { cookie: cookiesFrom(verified) },
+    });
+    expect(await session.json()).toMatchObject({ email: otherTab, confirmed: false });
+  });
+
   it('opens no registration for an address that already has an account', async () => {
     expect((await invite(owner.cookie, ownerEmail)).status).toBe(200);
     const token = await latestToken('invite');
