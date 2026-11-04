@@ -127,10 +127,10 @@ export const databaseDrivers = {
 export const databaseDriverFiles = ['src/pool.ts', 'src/database.ts', 'test/**'];
 
 /**
- * In any package, the tests against a disposable Postgres server, which set up databases and roles
- * as its admin. They pass every connection field explicitly.
+ * In any package, the tests against a disposable Postgres server, which set up databases, roles
+ * and synthetic accounts as its admin. They pass every connection field explicitly.
  */
-export const databaseTestFiles = ['test/postgres/**'];
+export const databaseTestFiles = ['test/postgres/**', 'e2e/postgres/**'];
 
 /** The knowledge runtime entry: pure like the domain; scripts and tests read files (spec 0002, R1). */
 export const knowledgeRuntimeFiles = ['src/**'];

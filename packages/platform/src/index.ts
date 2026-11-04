@@ -18,3 +18,15 @@ export interface Capabilities {
 export function createWebCapabilities(): Capabilities {
   return { has: () => false };
 }
+
+export {
+  createPasskeys,
+  PasskeyOptionsRefusedError,
+  type AuthenticationResponseJSON,
+  type Passkeys,
+  type PublicKeyCredentialCreationOptionsJSON,
+  type PublicKeyCredentialRequestOptionsJSON,
+  type RegistrationResponseJSON,
+  type WebAuthnBrowser,
+} from './passkeys.js';
+export { createWebPasskeys } from './web-passkeys.js';
