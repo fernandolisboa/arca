@@ -45,7 +45,7 @@ Instant, no deploy. In Vercel: project `arca` › Firewall › Configure › New
 
 The web app still loads and `/.well-known` stays open, so `security.txt` keeps answering. The API's routes and the cron endpoints are blocked: no sign-in, no data. Workflows run under `/.well-known/workflow` and stop with the crons ([Stop the crons](#stop-the-crons-and-running-workflows)).
 
-**Check it works** from your own computer: `curl -si https://arca.filx.app/v1/health` must answer 403. `curl -si https://arca.filx.app/%761/health` must answer 403, or the web app's page, never a JSON health answer. If it does answer JSON, the rule misses encoded paths: change the expression to deny every path except `/`, `/assets/` and `/.well-known/security.txt`, and check again.
+**Check it works** from your own computer: `curl -si https://arca.filx.app/v1/health` must answer 403. `curl -si https://arca.filx.app/%761/health` must answer 403, or the web app's page, never a JSON health answer. If it does answer JSON, the rule misses encoded paths: change the expression to deny every path except `/.well-known/security.txt`, and check again. The web app goes down too while that rule is on.
 
 **Undo:** disable or delete the rule and publish.
 
@@ -184,11 +184,12 @@ BEGIN;
 GRANT app_migrator TO CURRENT_USER;
 SET ROLE app_migrator;
 ALTER TABLE audit.event NO FORCE ROW LEVEL SECURITY;
+SELECT count(*) FROM audit.event;
 SELECT * FROM audit.event WHERE time >= '<window start>' ORDER BY time;
 ROLLBACK;
 ```
 
-The `ROLLBACK` undoes both the grant and the change to row-level security. Run `SELECT count(*) FROM audit.event;` in the same transaction first: zero means row-level security still hides the rows, not that the log is empty. An empty window then means no audited event happened in it.
+The `ROLLBACK` undoes both the grant and the change to row-level security. A count of zero means row-level security still hides the rows, not that the log is empty. An empty window then means no audited event happened in it.
 
 ## Notification
 
