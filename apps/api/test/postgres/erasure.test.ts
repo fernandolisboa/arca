@@ -7,6 +7,7 @@ import { createErasure, eraseAccountNow, type Erasure } from '../../src/account/
 import { accounts } from '../../src/auth/auth.js';
 import { auditLog, type AuditLog } from '../../src/audit/log.js';
 import type { Notice, Notices } from '../../src/email/notices.js';
+import { recordingNotifier } from '../notifications.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
 import { ownedCounts, seeded } from './every-table.js';
 
@@ -15,6 +16,7 @@ import { ownedCounts, seeded } from './every-table.js';
 let testDatabase: AuthTestDatabase;
 let sent: Notice[];
 let deletion: AccountDeletion;
+const notified = recordingNotifier();
 
 const notices: Notices = {
   send: (notice) => {
@@ -42,13 +44,14 @@ beforeAll(async () => {
   deletion = createAccountDeletion({
     db: testDatabase.authDb,
     audit: auditLog(testDatabase.auditDb),
-    notices,
+    notifier: notified.notifier,
     logger: silentLogger,
   });
 });
 
 beforeEach(() => {
   sent = [];
+  notified.sent.length = 0;
 });
 
 afterAll(async () => {
@@ -96,9 +99,7 @@ describe('deletion request and cancel (spec 0004, R9)', () => {
       actor: a.accountId,
       details: { reason: 'owner_request' },
     });
-    expect(sent.map(({ kind, to }) => ({ kind, to }))).toEqual([
-      { kind: 'deletion_requested', to: a.email },
-    ]);
+    expect(notified.to(a.accountId)).toEqual(['deletion_requested']);
   });
 
   it('keeps the first due time on a second request, without a second event or notice', async () => {
@@ -110,7 +111,7 @@ describe('deletion request and cancel (spec 0004, R9)', () => {
       ({ code }) => code === 'deletion_requested',
     );
     expect(requested).toHaveLength(1);
-    expect(sent).toHaveLength(1);
+    expect(notified.sent).toHaveLength(1);
   });
 
   it('cancels inside the window and keeps everything', async () => {

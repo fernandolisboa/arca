@@ -6,6 +6,7 @@ import { credentialStore } from '../../src/auth/auth.js';
 import { createDevices, type Devices } from '../../src/auth/devices.js';
 import { createVault, type Vault } from '../../src/vault/vault.js';
 import { accountFixtures, type Account } from './accounts.js';
+import { quietNotifier } from '../notifications.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
 
 // The vault's server side on the real migrations: app_api under the account's identity, the
@@ -34,7 +35,7 @@ beforeAll(async () => {
   devices = createDevices({
     db: authDb,
     audit,
-    notices: { send: () => Promise.resolve() },
+    notifier: quietNotifier,
     logger: silentLogger,
     origin,
   });

@@ -3,10 +3,10 @@ import { sql, type SQL } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import { accounts } from '../auth/auth.js';
 import { sweepExpiredInvites } from '../auth/invites.js';
-import type { Notices } from '../email/notices.js';
 import { markForRetentionErasure } from './deletion.js';
 import { qualified } from './erasure.js';
 import { forEachAccount } from './each-account.js';
+import type { Notifier } from '../notification/notifier.js';
 
 /** The periods of RETENTION.md that the daily jobs count (spec 0004, R10). */
 export const inactivityYears = 3;
@@ -105,7 +105,7 @@ export interface RetentionDependencies {
   /** The app_jobs pool, whose erase policies hold only under the account's identity. */
   readonly jobsDb: Database;
   readonly audit: AuditLog;
-  readonly notices: Notices;
+  readonly notifier: Notifier;
   readonly ownedRules?: readonly OwnedExpiryRule[];
 }
 
@@ -113,7 +113,7 @@ export function createRetention({
   authDb,
   jobsDb,
   audit,
-  notices,
+  notifier,
   ownedRules = ownedExpiryRules,
 }: RetentionDependencies): Retention {
   return {
@@ -150,13 +150,8 @@ export function createRetention({
             dueAt,
             cutoff,
             actorAccountId: null,
-            // Sent inside the transaction: an account is never marked without its warning.
-            announce: async () => {
-              const to = await accounts.emailOf(tx, accountId);
-              if (to !== undefined) {
-                await notices.send({ kind: 'inactivity_warning', to, at: now, dueAt });
-              }
-            },
+            // Produced inside the transaction: an account is never marked without its warning.
+            announce: () => notifier.notify(accountId, { kind: 'inactivity_warning', dueAt }),
           }),
         ),
       );

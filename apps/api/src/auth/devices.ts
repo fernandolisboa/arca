@@ -10,7 +10,7 @@ import type { Database } from '@arca/db';
 import { passkeyChallenge as challenge, recoveryCode } from '@arca/db/enrollment-schema';
 import { and, eq, lte, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
-import type { Notices } from '../email/notices.js';
+import type { Notifier } from '../notification/notifier.js';
 import type { Logger } from '@arca/telemetry';
 import { accountNotice } from './account-notices.js';
 import { accounts, devices } from './auth.js';
@@ -67,7 +67,7 @@ export interface DeviceSettings {
   /** A database on the app_auth pool. */
   readonly db: Database;
   readonly audit: AuditLog;
-  readonly notices: Notices;
+  readonly notifier: Notifier;
   readonly logger: Logger;
   /** The environment's own origin; its host is the relying-party ID (spec 0003, R9). */
   readonly origin: string;
@@ -77,7 +77,7 @@ export interface DeviceSettings {
 export function createDevices({
   db,
   audit,
-  notices,
+  notifier,
   logger,
   origin,
   clock = () => new Date(),
@@ -86,7 +86,7 @@ export function createDevices({
 
   const notify = accountNotice<
     'passkey_added' | 'passkey_revoked' | 'pending_passkey_cancelled' | 'sessions_revoked'
-  >({ db, notices, logger, label: 'DeviceNotice', clock });
+  >({ notifier, logger, label: 'DeviceNotice' });
 
   /** Sessions created before this are past their absolute lifetime (spec 0003, R4). */
   const liveSince = () => new Date(clock().getTime() - absoluteSessionLifetimeMs);

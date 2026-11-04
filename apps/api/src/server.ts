@@ -37,12 +37,13 @@ import {
   emailSenderFor,
   outboxReaderFor,
 } from './email/environment.js';
-import { createNotices } from './email/notices.js';
 import { stdoutLogger } from './logger.js';
+import { createNotifier } from './notification/notifier.js';
 import { monitorRequests, sendToSentry, startMonitoring, tunnelFor } from './monitoring.js';
 import { enforceRetention } from './workflows/enforce-retention.js';
 import { eraseAccount } from './workflows/erase-account.js';
 import { heartbeat } from './workflows/heartbeat.js';
+import { startDelivery } from './workflows/start-delivery.js';
 import { startWorkflow } from './workflows/start-workflow.js';
 import { entityId } from './workflows/workflow-arguments.js';
 
@@ -119,7 +120,8 @@ function authParts(): Promise<AuthParts> {
     const origin = readAuthOrigin();
     const email = emailSenderFor(emailRoute, environment, authConnection);
     const i18n = await createI18n();
-    const notices = createNotices({ email, i18n, origin });
+    // Notifications are recorded on the app_api pool, under the notified account's identity.
+    const notifier = createNotifier({ db: connected().db, startDelivery });
     const db = authConnection();
     const enrollmentCode = ownerCode(readEnrollmentCodeHash(environment));
     const hooks = registrationHooks({ db, audit, ownerCode: enrollmentCode });
@@ -129,7 +131,7 @@ function authParts(): Promise<AuthParts> {
       origin,
       logger,
       audit,
-      notices,
+      notifier,
       limiter,
       registration: hooks,
     });
@@ -137,26 +139,26 @@ function authParts(): Promise<AuthParts> {
       db,
       audit,
       email,
-      notices,
+      notifier,
       i18n,
       origin,
       logger,
       startErasure: (id) => startWorkflow(eraseAccount, [entityId(id)]),
     });
-    const devices = createDevices({ db, audit, notices, logger, origin });
+    const devices = createDevices({ db, audit, notifier, logger, origin });
     return {
       auth: authService(auth),
       stepUp: createStepUp({ db, credentials: credentialStore(db), audit, origin, logger }),
       enrollment: createEnrollment({ db, email, i18n, origin, ownerCode: enrollmentCode }),
       registration: registration(auth, hooks, enrollmentCode, logger, invites.accepted),
-      recoveryKits: recoveryKits({ db, audit, notices, logger }),
+      recoveryKits: recoveryKits({ db, audit, notifier, logger }),
       invites,
       devices,
       recovery: createRecovery({
         db,
         audit,
         email,
-        notices,
+        notifier,
         i18n,
         origin,
         logger,
@@ -165,7 +167,7 @@ function authParts(): Promise<AuthParts> {
       }),
       audit,
       i18n,
-      accountDeletion: createAccountDeletion({ db, audit, notices, logger }),
+      accountDeletion: createAccountDeletion({ db, audit, notifier, logger }),
     };
   })();
   // A failed build is retried on the next request instead of being cached.

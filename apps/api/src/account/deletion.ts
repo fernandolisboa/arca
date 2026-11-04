@@ -4,7 +4,7 @@ import type { Logger } from '@arca/telemetry';
 import type { AuditLog } from '../audit/log.js';
 import { accountNotice } from '../auth/account-notices.js';
 import { accounts, devices } from '../auth/auth.js';
-import type { Notices } from '../email/notices.js';
+import type { Notifier } from '../notification/notifier.js';
 
 export interface AccountDeletion {
   /**
@@ -20,24 +20,20 @@ export interface AccountDeletionSettings {
   /** A database on the app_auth pool. */
   readonly db: Database;
   readonly audit: AuditLog;
-  readonly notices: Notices;
+  readonly notifier: Notifier;
   readonly logger: Logger;
-  readonly clock?: () => Date;
 }
 
 export function createAccountDeletion({
   db,
   audit,
-  notices,
+  notifier,
   logger,
-  clock,
 }: AccountDeletionSettings): AccountDeletion {
   const notify = accountNotice<'deletion_requested' | 'deletion_cancelled'>({
-    db,
-    notices,
+    notifier,
     logger,
     label: 'DeletionNotice',
-    ...(clock === undefined ? {} : { clock }),
   });
 
   return {

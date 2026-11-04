@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -13,12 +13,15 @@ import { auditLog, auditReader } from '../../src/audit/log.js';
 import { signInFailedLog } from '../../src/auth/limits.js';
 import { rateLimiter, type RateLimiter } from '../../src/auth/rate-limit.js';
 import { noticeNewSignIn, recordPasskeyClient } from '../../src/auth/sign-in-notice.js';
-import { createNotices, type Notice, type Notices } from '../../src/email/notices.js';
+import { createNotices } from '../../src/email/notices.js';
+import type { Notifier } from '../../src/notification/notifier.js';
 import { outboxSender, readOutbox } from '../../src/email/outbox.js';
 import type { Database } from '@arca/db';
 import { cookiesFrom } from '../cookies.js';
 import { allowAll } from '../limits.js';
+import { recordingNotifier } from '../notifications.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
+import { deliveringNotifier } from './notification-delivery.js';
 import { softwarePasskey, type SoftwarePasskey } from '../software-passkey.js';
 
 // Better Auth on the real auth migrations and the app_auth pool, against a disposable Postgres
@@ -32,7 +35,7 @@ const asAdmin = <T>(use: (client: pg.Client) => Promise<T>) => testDatabase.asAd
 let auth: Auth;
 let authDb: Database;
 let auditDb: Database;
-let notices: Notices;
+let notifier: Notifier;
 let limiter: RateLimiter;
 let app: App;
 let registration: RegistrationHooks;
@@ -40,11 +43,10 @@ let registration: RegistrationHooks;
 beforeAll(async () => {
   testDatabase = await authTestDatabase();
   ({ authDb, auditDb } = testDatabase);
-  notices = createNotices({
-    email: outboxSender(authDb, 'preview'),
-    i18n: await createI18n(),
-    origin,
-  });
+  notifier = deliveringNotifier(
+    testDatabase,
+    createNotices({ email: outboxSender(authDb, 'preview'), i18n: await createI18n(), origin }),
+  );
   limiter = rateLimiter({ db: authDb, key: randomBytes(32).toString('base64url') });
   registration = registrationHooks({
     db: authDb,
@@ -58,7 +60,7 @@ beforeAll(async () => {
     origin,
     logger,
     audit: auditLog(auditDb),
-    notices,
+    notifier,
     limiter,
   });
   app = appFor(auth, auditReader(testDatabase.apiDb));
@@ -497,7 +499,7 @@ describe('Better Auth on the app_auth pool', () => {
       origin,
       logger,
       audit: { record: () => Promise.reject(new Error('audit unavailable')) },
-      notices,
+      notifier,
       limiter,
     });
     const { verified } = await passkeySignIn(passkey, { via: appFor(failing) });
@@ -559,21 +561,19 @@ describe('step-up through the API (spec 0003, R5)', () => {
   });
 });
 
+/** The notices of these tests, with an email sender that is down. */
+const undeliverable = () =>
+  deliveringNotifier(testDatabase, { send: () => Promise.reject(new Error('email unavailable')) });
+
 describe('new-sign-in notices (spec 0003, R7)', () => {
   it('sends one notice for a family not seen before for that passkey, and none for a repeat', async () => {
     const credentialId = await withPasskey('notices@example.com');
-    const sent: Notice[] = [];
-    const deps = {
-      db: authDb,
-      notices: { send: (notice: Notice) => Promise.resolve(void sent.push(notice)) },
-    };
+    const { sent, notifier: recording } = recordingNotifier();
     const signIn = (browser: 'firefox' | 'chrome', os: 'linux' | 'android') =>
-      noticeNewSignIn(deps, {
-        credentialId,
-        device: { browser, os },
-        email: 'notices@example.com',
-        at: new Date(),
-      });
+      noticeNewSignIn(
+        { db: authDb, notifier: recording },
+        { accountId: randomUUID(), credentialId, device: { browser, os } },
+      );
     await signIn('firefox', 'linux'); // the registration's families: no notice
     await signIn('firefox', 'linux');
     expect(sent).toEqual([]);
@@ -605,7 +605,7 @@ describe('new-sign-in notices (spec 0003, R7)', () => {
       origin,
       logger: { info: () => undefined, error: (line) => lines.push(line) },
       audit: auditLog(auditDb),
-      notices: { send: () => Promise.reject(new Error('email unavailable')) },
+      notifier: undeliverable(),
       limiter,
     });
     const { passkey } = await signedIn('unnoticed@example.org', { userAgent: firefoxOnLinux });
@@ -626,7 +626,7 @@ describe('new-sign-in notices (spec 0003, R7)', () => {
       origin,
       logger,
       audit: auditLog(auditDb),
-      notices: { send: () => Promise.reject(new Error('email unavailable')) },
+      notifier: undeliverable(),
       limiter,
     });
     const { passkey } = await signedIn(email, { userAgent: firefoxOnLinux });
@@ -801,7 +801,7 @@ describe('the auth rate limits (spec 0003, R10)', () => {
       origin,
       logger: { info: () => undefined, error: (line) => lines.push(line) },
       audit: auditLog(auditDb),
-      notices,
+      notifier,
       limiter: {
         hit: () => Promise.reject(new Error('counter unavailable')),
       },

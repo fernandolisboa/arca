@@ -11,7 +11,7 @@ import type { I18n } from '@arca/i18n';
 import { and, eq, gt, isNotNull, lte, or, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import type { EmailMessage, EmailSender } from '../email/email.js';
-import type { Notices } from '../email/notices.js';
+import type { Notifier } from '../notification/notifier.js';
 import type { Logger } from '@arca/telemetry';
 import { accountNotice } from './account-notices.js';
 import { accounts, devices } from './auth.js';
@@ -82,7 +82,7 @@ export interface RecoverySettings {
   readonly db: Database;
   readonly audit: AuditLog;
   readonly email: EmailSender;
-  readonly notices: Notices;
+  readonly notifier: Notifier;
   readonly i18n: I18n;
   readonly origin: string;
   readonly logger: Logger;
@@ -114,7 +114,7 @@ export function createRecovery({
   db,
   audit,
   email,
-  notices,
+  notifier,
   i18n,
   origin,
   logger,
@@ -136,8 +136,7 @@ export function createRecovery({
   };
 
   const notify = accountNotice<'recovery_started' | 'recovery_completed' | 'recovery_locked'>({
-    db,
-    notices,
+    notifier,
     logger,
     label: 'RecoveryNotice',
   });

@@ -2,7 +2,7 @@ import type { DeviceDescription } from '@arca/api-contract/routes';
 import type { I18n } from '@arca/i18n';
 import type { EmailMessage, EmailSender } from './email.js';
 
-/** The security notices sent by email (spec 0003, R7); spec 0005 later adds every device. */
+/** The security notices (spec 0003, R7), worded for email; spec 0005 R7 delivers all but `account_erased`. */
 export const noticeKinds = [
   'passkey_added',
   'new_sign_in',

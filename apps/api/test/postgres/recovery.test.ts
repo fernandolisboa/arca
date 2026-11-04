@@ -6,9 +6,9 @@ import { createDevices, type Devices } from '../../src/auth/devices.js';
 import { recoveryKits, type RecoveryKits } from '../../src/auth/recovery-kit.js';
 import { createRecovery, recoveryAttempts, type Recovery } from '../../src/auth/recovery.js';
 import type { EmailMessage } from '../../src/email/email.js';
-import type { Notice } from '../../src/email/notices.js';
 import { softwarePasskey } from '../software-passkey.js';
 import { accountFixtures, type Account } from './accounts.js';
+import { quietNotifier, recordingNotifier } from '../notifications.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
 
 // Account recovery on the real migrations and the app_auth pool (spec 0003, R6). Synthetic
@@ -25,7 +25,7 @@ let devices: Devices;
 let kits: RecoveryKits;
 let recovery: Recovery;
 const mail: EmailMessage[] = [];
-const sent: Notice[] = [];
+const notified = recordingNotifier();
 const floors: number[] = [];
 
 beforeAll(async () => {
@@ -33,14 +33,9 @@ beforeAll(async () => {
   fixtures = accountFixtures(testDatabase, rpId);
   const { authDb: db, auditDb } = testDatabase;
   const audit = auditLog(auditDb);
-  const notices = {
-    send: (notice: Notice) => {
-      sent.push(notice);
-      return Promise.resolve();
-    },
-  };
-  devices = createDevices({ db, audit, notices, logger: silentLogger, origin });
-  kits = recoveryKits({ db, audit, notices, logger: silentLogger });
+  const { notifier } = notified;
+  devices = createDevices({ db, audit, notifier, logger: silentLogger, origin });
+  kits = recoveryKits({ db, audit, notifier, logger: silentLogger });
   recovery = createRecovery({
     db,
     audit,
@@ -50,7 +45,7 @@ beforeAll(async () => {
         return Promise.resolve();
       },
     },
-    notices,
+    notifier,
     i18n: await createI18n(),
     origin,
     logger: silentLogger,
@@ -80,8 +75,7 @@ async function owner() {
 }
 
 const mailTo = (account: Account) => mail.filter(({ to }) => to === account.email);
-const noticesTo = (account: Account) =>
-  sent.filter(({ to }) => to === account.email).map(({ kind }) => kind);
+const noticesTo = (account: Account) => notified.to(account.accountId);
 
 const behind: Promise<void>[] = [];
 
@@ -190,7 +184,7 @@ describe('starting recovery (spec 0003, R6)', () => {
             };
           }),
       },
-      notices: { send: () => Promise.resolve() },
+      notifier: quietNotifier,
       i18n: await createI18n(),
       origin,
       logger: silentLogger,
@@ -222,7 +216,7 @@ describe('starting recovery (spec 0003, R6)', () => {
       db: testDatabase.authDb,
       audit: auditLog(testDatabase.auditDb),
       email: { send: () => Promise.reject(new Error('unused')) },
-      notices: { send: () => Promise.reject(new Error('unused')) },
+      notifier: quietNotifier,
       i18n: await createI18n(),
       origin,
       logger: silentLogger,
