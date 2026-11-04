@@ -10,7 +10,7 @@ import type { Database, Transaction } from '@arca/db';
 import type { AuthenticationExtensionsClientInputs } from '@simplewebauthn/server';
 import { betterAuth } from 'better-auth';
 import { APIError, createAuthMiddleware, isAPIError } from 'better-auth/api';
-import { and, eq, gt, inArray, isNotNull, isNull, lt, lte, sql } from 'drizzle-orm';
+import { and, desc, eq, gt, inArray, isNotNull, isNull, lt, lte, ne, sql } from 'drizzle-orm';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { authBasePath, DeviceDescription } from '@arca/api-contract/routes';
 import type { AuditLog } from '../audit/log.js';
@@ -381,6 +381,90 @@ export const accounts = {
     ).length === 1,
 };
 
+/** The passkey and session rows the device list reads and revokes (spec 0003, R4). */
+export const devices = {
+  /** The account's passkeys, oldest first, and its sessions created after `since` and unexpired. */
+  of: async (db: Database | Transaction, accountId: string, since: Date) => {
+    const passkeys = await db
+      .select({
+        id: passkeyTable.id,
+        credentialId: passkeyTable.credentialID,
+        createdAt: passkeyTable.createdAt,
+      })
+      .from(passkeyTable)
+      .where(eq(passkeyTable.userId, accountId))
+      .orderBy(passkeyTable.createdAt, passkeyTable.id);
+    const sessions = await db
+      .select({
+        id: sessionTable.id,
+        credentialId: sessionTable.credentialId,
+        browser: sessionTable.deviceBrowser,
+        os: sessionTable.deviceOs,
+        createdAt: sessionTable.createdAt,
+        updatedAt: sessionTable.updatedAt,
+      })
+      .from(sessionTable)
+      .where(
+        and(
+          eq(sessionTable.userId, accountId),
+          gt(sessionTable.expiresAt, sql`now()`),
+          gt(sessionTable.createdAt, since),
+        ),
+      )
+      .orderBy(desc(sessionTable.updatedAt), sessionTable.id);
+    return { passkeys, sessions };
+  },
+  /** False when the session is not the account's. */
+  revokeSession: async (db: Database | Transaction, accountId: string, sessionId: string) =>
+    (
+      await db
+        .delete(sessionTable)
+        .where(and(eq(sessionTable.id, sessionId), eq(sessionTable.userId, accountId)))
+        .returning({ id: sessionTable.id })
+    ).length === 1,
+  /**
+   * Every session of the account but the one kept; the IDs of those it ended that were still
+   * live, as `of` lists them. Dead ones go too, unrecorded, since nobody could see or use them.
+   */
+  revokeOtherSessions: async (
+    db: Database | Transaction,
+    accountId: string,
+    kept: string,
+    since: Date,
+  ) =>
+    (
+      await db
+        .delete(sessionTable)
+        .where(and(eq(sessionTable.userId, accountId), ne(sessionTable.id, kept)))
+        .returning({
+          id: sessionTable.id,
+          live: sql<boolean>`${sessionTable.expiresAt} > now() AND ${sessionTable.createdAt} > ${since}`,
+        })
+    )
+      .filter(({ live }) => live)
+      .map(({ id }) => id),
+  /**
+   * Deletes one of the account's passkeys, whose sessions and recorded clients go with it by
+   * their cascades, unless it is the account's last. Its credential ID when it was deleted.
+   */
+  revokePasskey: async (tx: Transaction, accountId: string, passkeyId: string) => {
+    // The passkey rows are locked in one order, so two revocations at once cannot each leave the
+    // other as the last passkey, and a step-up still recording (its counter update holds the row)
+    // commits first. Not the account row: the step-up's insert checks its key against it.
+    const owned = await tx
+      .select({ id: passkeyTable.id, credentialId: passkeyTable.credentialID })
+      .from(passkeyTable)
+      .where(eq(passkeyTable.userId, accountId))
+      .orderBy(passkeyTable.id)
+      .for('update');
+    const target = owned.find(({ id }) => id === passkeyId);
+    if (target === undefined) return 'not_found' as const;
+    if (owned.length === 1) return 'last_active' as const;
+    await tx.delete(passkeyTable).where(eq(passkeyTable.id, passkeyId));
+    return { credentialId: target.credentialId };
+  },
+};
+
 /** A passkey as a step-up verifies against it. */
 export interface StoredCredential {
   readonly credentialId: string;
@@ -396,10 +480,17 @@ export interface CredentialStore {
   readonly activeOf: (accountId: string) => Promise<readonly StoredCredential[]>;
   readonly active: (accountId: string, credentialId: string) => Promise<StoredCredential | null>;
   /**
-   * Records a verified signature counter. False when another verification moved it first, so two
-   * assertions with one counter value never both pass.
+   * Records a verified signature counter and, in the same transaction, what the verification
+   * approved. False when another verification moved the counter first, so two assertions with one
+   * counter value never both pass, or when the passkey is gone: the counter's row lock makes a
+   * revocation wait for this commit, so it also ends what was recorded (spec 0003, R4).
    */
-  readonly advanceCounter: (credentialId: string, counter: number) => Promise<boolean>;
+  readonly advanceCounter: (
+    accountId: string,
+    credentialId: string,
+    counter: number,
+    record: (tx: Transaction) => Promise<void>,
+  ) => Promise<boolean>;
 }
 
 /**
@@ -442,21 +533,33 @@ export function credentialStore(db: Database): CredentialStore {
         );
       return row === undefined ? null : toCredential(row);
     },
-    advanceCounter: async (credentialId, counter) => {
-      const moved = await db
-        .update(passkeyTable)
-        .set({ counter })
-        .where(
-          and(
-            eq(passkeyTable.credentialID, credentialId),
-            // Authenticators without a counter always send 0, which verification only lets
-            // through while the stored counter is 0 too.
-            counter === 0 ? eq(passkeyTable.counter, 0) : lt(passkeyTable.counter, counter),
-          ),
-        )
-        .returning({ credentialId: passkeyTable.credentialID });
-      return moved.length === 1;
-    },
+    advanceCounter: (accountId, credentialId, counter, record) =>
+      db.transaction(async (tx) => {
+        // The account row first, as every erasure locks it before its passkeys, so a step-up
+        // recording while the account is erased cannot deadlock with it.
+        const [held] = await tx
+          .select({ id: user.id })
+          .from(user)
+          .where(eq(user.id, accountId))
+          .for('key share');
+        if (held === undefined) return false;
+        const moved = await tx
+          .update(passkeyTable)
+          .set({ counter })
+          .where(
+            and(
+              eq(passkeyTable.credentialID, credentialId),
+              eq(passkeyTable.userId, accountId),
+              // Authenticators without a counter always send 0, which verification only lets
+              // through while the stored counter is 0 too.
+              counter === 0 ? eq(passkeyTable.counter, 0) : lt(passkeyTable.counter, counter),
+            ),
+          )
+          .returning({ credentialId: passkeyTable.credentialID });
+        if (moved.length !== 1) return false;
+        await record(tx);
+        return true;
+      }),
   };
 }
 

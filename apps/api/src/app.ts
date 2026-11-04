@@ -12,6 +12,9 @@ import {
   regenerateRecoveryKit,
   registrationOptions,
   registrationVerify,
+  revokeOtherSessions,
+  revokePasskey,
+  revokeSession,
   StepUpAction,
   stepUpNonceHeader,
   StepUpOptionsRequest,
@@ -26,6 +29,7 @@ import { createMiddleware } from 'hono/factory';
 import { routePath } from 'hono/route';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import type { AuditReader } from './audit/log.js';
+import type { Devices } from './auth/devices.js';
 import type { Enrollment } from './auth/enrollment.js';
 import type { Invites } from './auth/invites.js';
 import { authRouteLimits, inviteLimits, registrationLimits, stepUpLimits } from './auth/limits.js';
@@ -83,6 +87,8 @@ export interface AppDependencies {
   readonly recoveryKits?: RecoveryKits;
   /** Invites and their confirmation (spec 0003, R2); absent, their routes answer 401 or 404. */
   readonly invites?: Invites;
+  /** The device list and its revocations (spec 0003, R4); absent, their routes answer 401. */
+  readonly devices?: Devices;
   /** The signed-in account's audit events; absent, the route answers 401. */
   readonly audit?: AuditReader;
   /**
@@ -106,6 +112,7 @@ export type ErrorCode =
   | 'account_unconfirmed'
   | 'too_many_invites'
   | 'signed_in'
+  | 'last_active_passkey'
   | 'request_failed'
   | 'internal_error';
 
@@ -204,6 +211,7 @@ export function createApp({
   registration,
   recoveryKits,
   invites,
+  devices,
   audit,
   outbox,
 }: AppDependencies) {
@@ -454,6 +462,53 @@ export function createApp({
       return c.json({}, 200);
     });
   }
+
+  v1.openapi(openApiRoutes.listDevices, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || devices === undefined) return unauthorized(c);
+    return c.json(await devices.list(current), 200);
+  });
+
+  // Each revocation is bound to its target by a step-up (spec 0003, R4).
+  v1.openapi(openApiRoutes.revokeSession, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || devices === undefined) return unauthorized(c);
+    const { sessionId } = revokeSession.body.parse(await c.req.json());
+    const approved = await stepUpGranted(c, current, 'sensitive_settings', {
+      action: revokeSession.operationId,
+      targets: [sessionId],
+    });
+    if (!approved) return fail(c, 'step_up_required', 403);
+    if (!(await devices.revokeSession(current, sessionId))) return fail(c, 'not_found', 404);
+    return c.json({}, 200);
+  });
+
+  v1.openapi(openApiRoutes.revokePasskey, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || devices === undefined) return unauthorized(c);
+    const { passkeyId } = revokePasskey.body.parse(await c.req.json());
+    const approved = await stepUpGranted(c, current, 'sensitive_settings', {
+      action: revokePasskey.operationId,
+      targets: [passkeyId],
+    });
+    if (!approved) return fail(c, 'step_up_required', 403);
+    const outcome = await devices.revokePasskey(current, passkeyId);
+    if (outcome === 'not_found') return fail(c, 'not_found', 404);
+    if (outcome === 'last_active') return fail(c, 'last_active_passkey', 409);
+    return c.json({}, 200);
+  });
+
+  v1.openapi(openApiRoutes.revokeOtherSessions, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || devices === undefined) return unauthorized(c);
+    const approved = await stepUpGranted(c, current, 'sensitive_settings', {
+      action: revokeOtherSessions.operationId,
+      targets: [],
+    });
+    if (!approved) return fail(c, 'step_up_required', 403);
+    await devices.revokeOtherSessions(current);
+    return c.json({}, 200);
+  });
 
   v1.openapi(openApiRoutes.auditEvents, async (c) => {
     const current = await signedIn(c);

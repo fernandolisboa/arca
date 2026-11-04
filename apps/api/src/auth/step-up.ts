@@ -5,7 +5,7 @@ import type {
   StepUpOptionsResponse,
   StepUpPurpose,
 } from '@arca/api-contract/routes';
-import type { Database } from '@arca/db';
+import type { Database, Transaction } from '@arca/db';
 import { stepUp, stepUpChallenge as challenge } from '@arca/db/step-up-schema';
 import {
   verifyAuthenticationResponse,
@@ -20,6 +20,26 @@ import type { SignedIn } from './service.js';
 import { stepUpChallenge, subjectHash, type CanonicalAction } from './step-up-encoding.js';
 
 export type ActionPurpose = Exclude<StepUpPurpose, 'vault_unlock'>;
+
+/**
+ * Ends what a revoked passkey approved and nothing spent yet, an open `vault_unlock` window
+ * included, in whichever session it was verified; spent ones stay for re-verification (R4, R5).
+ */
+export async function forgetUnspent(
+  tx: Transaction,
+  accountId: string,
+  credentialId: string,
+): Promise<void> {
+  await tx
+    .delete(stepUp)
+    .where(
+      and(
+        eq(stepUp.accountId, accountId),
+        eq(stepUp.credentialId, credentialId),
+        isNull(stepUp.consumedAt),
+      ),
+    );
+}
 
 export interface StepUpService {
   readonly options: (
@@ -173,26 +193,31 @@ export function createStepUp({
       } catch {
         return false;
       }
-      if (!(await credentials.advanceCounter(credential.credentialId, newCounter))) return false;
-      // Recorded first: a step-up no event records must never be stored, let alone spent (R7).
-      await audit.record({
-        code: 'step_up_verified',
-        subjectAccountId: accountId,
-        actorAccountId: accountId,
-        details: { purpose },
-      });
-      await db.insert(stepUp).values({
+      return credentials.advanceCounter(
         accountId,
-        sessionId,
-        credentialId: credential.credentialId,
-        purpose,
-        subjectHash: issued.subjectHash,
-        nonce: issued.nonce,
-        authenticatorData: Buffer.from(response.response.authenticatorData, 'base64url'),
-        clientDataJson: Buffer.from(response.response.clientDataJSON, 'base64url'),
-        signature: Buffer.from(response.response.signature, 'base64url'),
-      });
-      return true;
+        credential.credentialId,
+        newCounter,
+        async (tx) => {
+          // Recorded first: a step-up no event records must never be stored, let alone spent (R7).
+          await audit.record({
+            code: 'step_up_verified',
+            subjectAccountId: accountId,
+            actorAccountId: accountId,
+            details: { purpose },
+          });
+          await tx.insert(stepUp).values({
+            accountId,
+            sessionId,
+            credentialId: credential.credentialId,
+            purpose,
+            subjectHash: issued.subjectHash,
+            nonce: issued.nonce,
+            authenticatorData: Buffer.from(response.response.authenticatorData, 'base64url'),
+            clientDataJson: Buffer.from(response.response.clientDataJSON, 'base64url'),
+            signature: Buffer.from(response.response.signature, 'base64url'),
+          });
+        },
+      );
     },
 
     consume: async ({ accountId, sessionId }, purpose, action) => {
