@@ -11,11 +11,12 @@ import type {
   VerifiedRegistrationResponse,
 } from '@simplewebauthn/server';
 import { APIError, isAPIError } from 'better-auth/api';
-import { and, eq, gt, isNull, sql } from 'drizzle-orm';
+import { and, eq, gt, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import type { Logger } from '../logger.js';
 import { accounts, type Auth } from './auth.js';
 import { sha256, type OwnerCode } from './enrollment.js';
+import { liveInvite } from './invites.js';
 
 /** What the registration routes hand the passkey plugin for one ceremony. */
 interface Ceremony {
@@ -50,14 +51,6 @@ const live = (tokenHash: Buffer, contextId?: string) =>
     gt(registrationContext.expiresAt, sql`now()`),
   );
 
-const liveInvite = (tokenHash: Buffer, inviteId?: string) =>
-  and(
-    inviteId === undefined ? undefined : eq(invite.id, inviteId),
-    eq(invite.tokenHash, tokenHash),
-    isNull(invite.acceptedAt),
-    gt(invite.expiresAt, sql`now()`),
-  );
-
 export interface RegistrationSettings {
   /** A database on the app_auth pool. */
   readonly db: Database;
@@ -87,7 +80,10 @@ export function registrationHooks({ db, audit, ownerCode }: RegistrationSettings
       .select({ id: invite.id, email: invite.email })
       .from(invite)
       .where(liveInvite(tokenHash));
-    return invited === undefined ? undefined : { ...invited, kind: 'invite' as const };
+    // An address that already has an account cannot register again, so its link opens nothing
+    // and the device stores no passkey for it. Sending the invite told the inviter nothing.
+    if (invited === undefined || (await accounts.withEmail(db, invited.email))) return undefined;
+    return { ...invited, kind: 'invite' as const };
   };
 
   /**
@@ -129,7 +125,7 @@ export function registrationHooks({ db, audit, ownerCode }: RegistrationSettings
    */
   const invitedAccount = async (tx: Transaction, ceremony: Ceremony, context: string) => {
     const [found] = await tx
-      .select({ email: invite.email })
+      .select({ email: invite.email, inviterId: invite.inviterId })
       .from(invite)
       .where(liveInvite(ceremony.tokenHash, context));
     if (found === undefined) return undefined;
@@ -141,9 +137,10 @@ export function registrationHooks({ db, audit, ownerCode }: RegistrationSettings
       .where(liveInvite(ceremony.tokenHash, context))
       .returning({ id: invite.id });
     if (accepted === undefined) throw refused();
+    // The inviter's trail shows the link was used, and outlives a declined account.
     await audit.record({
       code: 'invite_accepted',
-      subjectAccountId: accountId,
+      subjectAccountId: found.inviterId,
       actorAccountId: accountId,
       details: { inviteId: accepted.id },
     });

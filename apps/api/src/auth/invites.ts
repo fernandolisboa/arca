@@ -51,7 +51,16 @@ export interface InviteSettings {
   readonly random?: (size: number) => Buffer;
 }
 
-const open = and(isNull(invite.acceptedAt), gt(invite.expiresAt, sql`now()`));
+/** An invite that can still be accepted; registration narrows it to one token and invite. */
+export const liveInvite = (tokenHash?: Buffer, inviteId?: string) =>
+  and(
+    inviteId === undefined ? undefined : eq(invite.id, inviteId),
+    tokenHash === undefined ? undefined : eq(invite.tokenHash, tokenHash),
+    isNull(invite.acceptedAt),
+    gt(invite.expiresAt, sql`now()`),
+  );
+
+const open = liveInvite();
 
 /** Invites never accepted that have expired go, each with its `invite expired` event. */
 async function sweepExpired(tx: Transaction, audit: AuditLog) {
@@ -126,9 +135,10 @@ export function createInvites({
       try {
         await email.send(inviteMessage(i18n, origin, to, token));
       } catch (error) {
-        // Production has no sending domain yet (spec 0003, R9); the address is not kept.
-        if (!(error instanceof EmailNotConfiguredError)) throw error;
+        // An invite that never left takes no open slot and keeps no address. Production has no
+        // sending domain yet (spec 0003, R9).
         await db.delete(invite).where(eq(invite.tokenHash, sha256(token)));
+        if (!(error instanceof EmailNotConfiguredError)) throw error;
         return 'email_unavailable';
       }
       return 'sent';
@@ -172,7 +182,7 @@ export function createInvites({
       const [found] = await db
         .select({ inviterId: invite.inviterId })
         .from(invite)
-        .where(and(eq(invite.tokenHash, sha256(token)), open));
+        .where(liveInvite(sha256(token)));
       if (found === undefined) return undefined;
       const inviterEmail = await accounts.emailOf(db, found.inviterId);
       return inviterEmail === undefined ? undefined : { inviterEmail };

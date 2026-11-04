@@ -1502,7 +1502,7 @@
       },
       "get": {
         "operationId": "listInvites",
-        "summary": "The signed-in account's invites that have not expired, newest first",
+        "summary": "The signed-in account's open, accepted or confirmed invites, newest first",
         "responses": {
           "200": {
             "description": "Invites",

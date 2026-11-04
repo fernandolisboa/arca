@@ -368,6 +368,8 @@ export const accounts = {
         .where(and(eq(user.id, accountId), isNull(user.confirmedAt)))
         .returning({ id: user.id })
     ).length === 1,
+  withEmail: async (db: Database | Transaction, email: string) =>
+    (await db.select({ id: user.id }).from(user).where(eq(user.email, email))).length > 0,
   emailOf: async (db: Database | Transaction, accountId: string) =>
     (await db.select({ email: user.email }).from(user).where(eq(user.id, accountId)))[0]?.email,
   createdWithinDay: async (db: Database | Transaction, accountId: string) =>

@@ -520,7 +520,7 @@ describe('invites (spec 0003, R2)', () => {
     const [notice] = await outbox();
     expect(notice).toMatchObject({ to: ownerEmail, subject: 'Seu convite foi aceito' });
     expect(notice?.text).not.toContain(invitee);
-    expect(await eventCodes(guest.cookie)).toContain('invite_accepted');
+    expect(await eventCodes(owner.cookie)).toContain('invite_accepted');
   });
 
   it('spends the invite', async () => {
@@ -533,6 +533,26 @@ describe('invites (spec 0003, R2)', () => {
     const refused = await invite(guest.cookie, 'someone@example.org');
     expect(refused.status).toBe(403);
     expect(await refused.json()).toEqual({ error: { code: 'account_unconfirmed' } });
+  });
+
+  it('never lets the invited account decide on itself', async () => {
+    for (const decision of ['confirm', 'decline'] as const) {
+      const nonce = await stepUp(guest, `${decision}Invite`, [inviteId]);
+      const own = await post(
+        `/v1/invites/${decision}`,
+        { inviteId },
+        { cookie: guest.cookie, 'arca-step-up-nonce': nonce },
+      );
+      expect(own.status).toBe(404);
+    }
+    const session = await app.request('/v1/session', { headers: { cookie: guest.cookie } });
+    expect(await session.json()).toMatchObject({ confirmed: false });
+    expect(await accountCount()).toBe(2);
+  });
+
+  it('opens no registration for an address that already has an account', async () => {
+    expect((await invite(owner.cookie, ownerEmail)).status).toBe(200);
+    expect((await options(await latestToken('invite'), null)).status).toBe(404);
   });
 
   it('confirms the account only after a step-up for that invite', async () => {
@@ -549,7 +569,8 @@ describe('invites (spec 0003, R2)', () => {
     expect((await decide('confirm', inviteId, { 'arca-step-up-nonce': nonce })).status).toBe(200);
     const session = await app.request('/v1/session', { headers: { cookie: guest.cookie } });
     expect(await session.json()).toMatchObject({ confirmed: true });
-    expect((await listed(owner.cookie))[0]).toMatchObject({ status: 'confirmed' });
+    const decided = (await listed(owner.cookie)).find((entry) => entry.id === inviteId);
+    expect(decided).toMatchObject({ status: 'confirmed' });
     expect(await eventCodes(owner.cookie)).toContain('invite_confirmed');
     // A confirmed account cannot be confirmed or declined again.
     const again = await stepUp(owner, 'declineInvite', [inviteId]);

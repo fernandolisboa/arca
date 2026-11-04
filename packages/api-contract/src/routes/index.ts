@@ -428,7 +428,7 @@ export const listInvites = {
   method: 'get',
   path: '/invites',
   operationId: 'listInvites',
-  summary: "The signed-in account's invites that have not expired, newest first",
+  summary: "The signed-in account's open, accepted or confirmed invites, newest first",
   response: { description: 'Invites', schema: InvitesResponse },
 } as const satisfies RouteDefinition<typeof InvitesResponse>;
 
