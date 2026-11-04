@@ -8,6 +8,7 @@ export const rolesWithPasswords = [
   'app_jobs',
   'app_auth',
   'app_audit',
+  'app_backup',
 ] as const;
 export type RoleWithPassword = (typeof rolesWithPasswords)[number];
 export type RolePasswords = Readonly<Record<RoleWithPassword, string>>;

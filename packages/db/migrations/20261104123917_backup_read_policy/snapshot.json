@@ -1,0 +1,48 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "fe886542-2840-4322-a2fa-eff25e01e748",
+  "prevIds": [
+    "55b48884-cd50-4ac0-9c0d-733e7c7872ba"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "audit",
+        "event"
+      ],
+      "writes": [
+        "s|pol|audit.event.event_read_by_backup",
+        "n|pol|audit.event.event_read_by_backup",
+        "e|pol|audit.event.event_read_by_backup"
+      ],
+      "reads": [
+        "n|tbl|audit.event",
+        "n|sch|audit",
+        "n|role|app_backup",
+        "e|rls|audit.event"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "audit",
+        "table": "event",
+        "name": "event_read_by_backup",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_backup"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    }
+  ]
+}

@@ -7,6 +7,7 @@ const empty = {
   securityDefinerFunctions: [],
   migrationExtensions: [],
   deferrableConstraints: [],
+  notBackedUp: [],
 };
 
 describe('the guard policy', () => {
@@ -28,5 +29,22 @@ describe('the guard policy', () => {
     expect(() => parseGuardPolicy({ ...empty, tablesWithoutRowLevelSecurity: [entry] })).toThrow(
       'tablesWithoutRowLevelSecurity[0] must have a table and a reason',
     );
+  });
+
+  it('reads the tables the backup leaves out, and refuses one without a reason', () => {
+    expect(
+      parseGuardPolicy({
+        ...empty,
+        tablesWithoutRowLevelSecurity: [],
+        notBackedUp: [{ table: 'auth.session', reason: 'Live tokens.' }],
+      }).notBackedUp,
+    ).toEqual(['auth.session']);
+    expect(() =>
+      parseGuardPolicy({
+        ...empty,
+        tablesWithoutRowLevelSecurity: [],
+        notBackedUp: [{ table: 'auth.session' }],
+      }),
+    ).toThrow('notBackedUp[0] must have a table and a reason');
   });
 });

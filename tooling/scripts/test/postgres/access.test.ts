@@ -1,3 +1,4 @@
+import type { QueryResultRow } from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { migrate } from '../../src/db/runner.ts';
 import { runtimeRoles } from '../../src/db/policy.ts';
@@ -137,7 +138,28 @@ describe('the auth schema access matrix', () => {
     expect(updatable).toEqual(columns);
   });
 
-  it.each(runtimeRoles.filter((role) => role !== 'app_auth'))(
+  it('lets app_backup only read the tables a restore needs (spec 0004, R12)', async () => {
+    const backedUp = [
+      'invite',
+      'passkey',
+      'passkey_activation',
+      'passkey_capability',
+      'passkey_client',
+      'recovery_code',
+      'recovery_lock',
+      'setup',
+      'step_up',
+      'user',
+    ];
+    expect(await privileges('app_backup')).toEqual({
+      schema: ['USAGE'],
+      ...Object.fromEntries(
+        authTables.map((table) => [table, backedUp.includes(table) ? ['SELECT'] : []]),
+      ),
+    });
+  });
+
+  it.each(runtimeRoles.filter((role) => role !== 'app_auth' && role !== 'app_backup'))(
     'gives %s no access to the auth schema',
     async (role) => {
       expect(await privileges(role)).toEqual({
@@ -222,15 +244,15 @@ describe('the audit schema access matrix (spec 0003, R7)', () => {
     });
   });
 
-  it('lets app_api only read', async () => {
-    expect(await auditPrivileges('app_api')).toEqual({
+  it.each(['app_api', 'app_backup'])('lets %s only read', async (role) => {
+    expect(await auditPrivileges(role)).toEqual({
       usage: true,
       columns: onEveryColumn(['SELECT']),
       table: [],
     });
   });
 
-  it.each(runtimeRoles.filter((role) => role !== 'app_audit' && role !== 'app_api'))(
+  it.each(runtimeRoles.filter((role) => !['app_audit', 'app_api', 'app_backup'].includes(role)))(
     'gives %s no access to the audit schema',
     async (role) => {
       expect(await auditPrivileges(role)).toEqual({
@@ -240,4 +262,44 @@ describe('the audit schema access matrix (spec 0003, R7)', () => {
       });
     },
   );
+});
+
+describe('app_backup at run time (spec 0004, R12)', () => {
+  const asBackup = <T>(sql: string) =>
+    withClient(adminTarget(database), async (client) => {
+      await client.query('BEGIN');
+      try {
+        await client.query(
+          `INSERT INTO audit.event (subject_account_id, code)
+             VALUES ('0b9c3d6e-1f2a-4b5c-8d7e-9f0a1b2c3d4e', 'sign_in')`,
+        );
+        await client.query('SET LOCAL ROLE app_backup');
+        return await client.query<T & QueryResultRow>(sql);
+      } finally {
+        await client.query('ROLLBACK');
+      }
+    });
+
+  it('reads every audit record without a request identity', async () => {
+    const counted = await asBackup<{ total: number }>(
+      'SELECT count(*)::int AS total FROM audit.event',
+    );
+    expect(counted.rows[0]?.total).toBe(1);
+  });
+
+  it.each(['SELECT name FROM arca_migrations.journal', 'SELECT email FROM auth.invite'])(
+    'reads what a backup needs: %s',
+    async (sql) => {
+      await expect(asBackup(sql)).resolves.toBeDefined();
+    },
+  );
+
+  it.each([
+    'SELECT FROM auth.session',
+    'SELECT FROM auth.recovery_link',
+    "UPDATE auth.user SET name = 'x'",
+    'DELETE FROM audit.event',
+  ])('is denied: %s', async (sql) => {
+    await expect(asBackup(sql)).rejects.toThrow(/permission denied/);
+  });
 });

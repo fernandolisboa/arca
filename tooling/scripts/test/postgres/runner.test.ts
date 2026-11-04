@@ -247,7 +247,9 @@ describe('migrate', () => {
       `CREATE TABLE app.queue (id int);
        ALTER TABLE app.queue ENABLE ROW LEVEL SECURITY;
        ALTER TABLE app.queue FORCE ROW LEVEL SECURITY;
-       CREATE POLICY open ON app.queue USING (true) WITH CHECK (true);
+       CREATE POLICY open ON app.queue TO app_migrator USING (true) WITH CHECK (true);
+       GRANT SELECT ON app.queue TO app_backup;
+       CREATE POLICY backup ON app.queue FOR SELECT TO app_backup USING (true);
        CREATE FUNCTION app.late() RETURNS trigger LANGUAGE plpgsql AS $$
          BEGIN EXECUTE 'CREATE TABLE app.leak (id int)'; RETURN NULL; END $$;
        CREATE CONSTRAINT TRIGGER late AFTER INSERT ON app.queue
@@ -280,7 +282,9 @@ describe('migrate', () => {
       `CREATE TABLE app.ticks (id int, n int);
        ALTER TABLE app.ticks ENABLE ROW LEVEL SECURITY;
        ALTER TABLE app.ticks FORCE ROW LEVEL SECURITY;
-       CREATE POLICY open ON app.ticks USING (true) WITH CHECK (true);
+       CREATE POLICY open ON app.ticks TO app_migrator USING (true) WITH CHECK (true);
+       GRANT SELECT ON app.ticks TO app_backup;
+       CREATE POLICY backup ON app.ticks FOR SELECT TO app_backup USING (true);
        CREATE FUNCTION app.noop() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NULL; END $$;
        CREATE CONSTRAINT TRIGGER t AFTER INSERT ON app.ticks
          DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION app.noop()`,
@@ -291,7 +295,9 @@ describe('migrate', () => {
       `CREATE TABLE app.ticks (id int, n int);
        ALTER TABLE app.ticks ENABLE ROW LEVEL SECURITY;
        ALTER TABLE app.ticks FORCE ROW LEVEL SECURITY;
-       CREATE POLICY open ON app.ticks USING (true) WITH CHECK (true);
+       CREATE POLICY open ON app.ticks TO app_migrator USING (true) WITH CHECK (true);
+       GRANT SELECT ON app.ticks TO app_backup;
+       CREATE POLICY backup ON app.ticks FOR SELECT TO app_backup USING (true);
        CREATE FUNCTION app.k(n int) RETURNS int LANGUAGE sql IMMUTABLE AS 'SELECT n';
        ALTER TABLE app.ticks ADD CONSTRAINT x EXCLUDE USING btree ((app.k(n)) WITH =)
          DEFERRABLE INITIALLY DEFERRED;
@@ -338,11 +344,15 @@ describe('migrate', () => {
       `CREATE TABLE app.p (id int PRIMARY KEY);
        ALTER TABLE app.p ENABLE ROW LEVEL SECURITY;
        ALTER TABLE app.p FORCE ROW LEVEL SECURITY;
-       CREATE POLICY open ON app.p USING (true) WITH CHECK (true);
+       CREATE POLICY open ON app.p TO app_migrator USING (true) WITH CHECK (true);
+       GRANT SELECT ON app.p TO app_backup;
+       CREATE POLICY backup ON app.p FOR SELECT TO app_backup USING (true);
        CREATE TABLE app.f (id int CONSTRAINT f_fk REFERENCES app.p);
        ALTER TABLE app.f ENABLE ROW LEVEL SECURITY;
        ALTER TABLE app.f FORCE ROW LEVEL SECURITY;
-       CREATE POLICY open ON app.f USING (true) WITH CHECK (true);
+       CREATE POLICY open ON app.f TO app_migrator USING (true) WITH CHECK (true);
+       GRANT SELECT ON app.f TO app_backup;
+       CREATE POLICY backup ON app.f FOR SELECT TO app_backup USING (true);
        INSERT INTO app.p VALUES (1), (2);
        INSERT INTO app.f VALUES (1);
        ALTER TABLE app.f ALTER CONSTRAINT f_fk DEFERRABLE INITIALLY DEFERRED;
@@ -355,15 +365,21 @@ describe('migrate', () => {
       `CREATE TABLE app.p (id int PRIMARY KEY);
        ALTER TABLE app.p ENABLE ROW LEVEL SECURITY;
        ALTER TABLE app.p FORCE ROW LEVEL SECURITY;
-       CREATE POLICY open ON app.p USING (true) WITH CHECK (true);
+       CREATE POLICY open ON app.p TO app_migrator USING (true) WITH CHECK (true);
+       GRANT SELECT ON app.p TO app_backup;
+       CREATE POLICY backup ON app.p FOR SELECT TO app_backup USING (true);
        CREATE TABLE app.f (id int CONSTRAINT f_fk REFERENCES app.p) PARTITION BY RANGE (id);
        ALTER TABLE app.f ENABLE ROW LEVEL SECURITY;
        ALTER TABLE app.f FORCE ROW LEVEL SECURITY;
-       CREATE POLICY open ON app.f USING (true) WITH CHECK (true);
+       CREATE POLICY open ON app.f TO app_migrator USING (true) WITH CHECK (true);
+       GRANT SELECT ON app.f TO app_backup;
+       CREATE POLICY backup ON app.f FOR SELECT TO app_backup USING (true);
        CREATE TABLE app.f1 PARTITION OF app.f FOR VALUES FROM (0) TO (100);
        ALTER TABLE app.f1 ENABLE ROW LEVEL SECURITY;
        ALTER TABLE app.f1 FORCE ROW LEVEL SECURITY;
-       CREATE POLICY open ON app.f1 USING (true) WITH CHECK (true);
+       CREATE POLICY open ON app.f1 TO app_migrator USING (true) WITH CHECK (true);
+       GRANT SELECT ON app.f1 TO app_backup;
+       CREATE POLICY backup ON app.f1 FOR SELECT TO app_backup USING (true);
        INSERT INTO app.p VALUES (1);
        ALTER TABLE app.f ALTER CONSTRAINT f_fk DEFERRABLE INITIALLY DEFERRED;
        INSERT INTO app.f VALUES (1);
@@ -375,19 +391,27 @@ describe('migrate', () => {
       `CREATE TABLE app.p (id int PRIMARY KEY) PARTITION BY RANGE (id);
        ALTER TABLE app.p ENABLE ROW LEVEL SECURITY;
        ALTER TABLE app.p FORCE ROW LEVEL SECURITY;
-       CREATE POLICY open ON app.p USING (true) WITH CHECK (true);
+       CREATE POLICY open ON app.p TO app_migrator USING (true) WITH CHECK (true);
+       GRANT SELECT ON app.p TO app_backup;
+       CREATE POLICY backup ON app.p FOR SELECT TO app_backup USING (true);
        CREATE TABLE app.p1 PARTITION OF app.p FOR VALUES FROM (0) TO (10);
        ALTER TABLE app.p1 ENABLE ROW LEVEL SECURITY;
        ALTER TABLE app.p1 FORCE ROW LEVEL SECURITY;
-       CREATE POLICY open ON app.p1 USING (true) WITH CHECK (true);
+       CREATE POLICY open ON app.p1 TO app_migrator USING (true) WITH CHECK (true);
+       GRANT SELECT ON app.p1 TO app_backup;
+       CREATE POLICY backup ON app.p1 FOR SELECT TO app_backup USING (true);
        CREATE TABLE app.p2 PARTITION OF app.p FOR VALUES FROM (10) TO (20);
        ALTER TABLE app.p2 ENABLE ROW LEVEL SECURITY;
        ALTER TABLE app.p2 FORCE ROW LEVEL SECURITY;
-       CREATE POLICY open ON app.p2 USING (true) WITH CHECK (true);
+       CREATE POLICY open ON app.p2 TO app_migrator USING (true) WITH CHECK (true);
+       GRANT SELECT ON app.p2 TO app_backup;
+       CREATE POLICY backup ON app.p2 FOR SELECT TO app_backup USING (true);
        CREATE TABLE app.f (id int CONSTRAINT f_fk REFERENCES app.p);
        ALTER TABLE app.f ENABLE ROW LEVEL SECURITY;
        ALTER TABLE app.f FORCE ROW LEVEL SECURITY;
-       CREATE POLICY open ON app.f USING (true) WITH CHECK (true);
+       CREATE POLICY open ON app.f TO app_migrator USING (true) WITH CHECK (true);
+       GRANT SELECT ON app.f TO app_backup;
+       CREATE POLICY backup ON app.f FOR SELECT TO app_backup USING (true);
        INSERT INTO app.p VALUES (1), (2);
        INSERT INTO app.f VALUES (1);
        ALTER TABLE app.f ALTER CONSTRAINT f_fk DEFERRABLE INITIALLY DEFERRED;
@@ -431,11 +455,15 @@ describe('migrate', () => {
     const sql = `CREATE TABLE app.p (id int PRIMARY KEY);
       ALTER TABLE app.p ENABLE ROW LEVEL SECURITY;
        ALTER TABLE app.p FORCE ROW LEVEL SECURITY;
-       CREATE POLICY open ON app.p USING (true) WITH CHECK (true);
+       CREATE POLICY open ON app.p TO app_migrator USING (true) WITH CHECK (true);
+       GRANT SELECT ON app.p TO app_backup;
+       CREATE POLICY backup ON app.p FOR SELECT TO app_backup USING (true);
       CREATE TABLE app.f (id int REFERENCES app.p ON DELETE CASCADE);
       ALTER TABLE app.f ENABLE ROW LEVEL SECURITY;
        ALTER TABLE app.f FORCE ROW LEVEL SECURITY;
-       CREATE POLICY open ON app.f USING (true) WITH CHECK (true);
+       CREATE POLICY open ON app.f TO app_migrator USING (true) WITH CHECK (true);
+       GRANT SELECT ON app.f TO app_backup;
+       CREATE POLICY backup ON app.f FOR SELECT TO app_backup USING (true);
       INSERT INTO app.p VALUES (1), (2);
       INSERT INTO app.f VALUES (1), (2);
       DELETE FROM app.p WHERE id = 2;
@@ -457,7 +485,9 @@ describe('migrate', () => {
     const sql = `CREATE TABLE app.ticks (id int);
       ALTER TABLE app.ticks ENABLE ROW LEVEL SECURITY;
       ALTER TABLE app.ticks FORCE ROW LEVEL SECURITY;
-      CREATE POLICY open ON app.ticks USING (true) WITH CHECK (true);
+      CREATE POLICY open ON app.ticks TO app_migrator USING (true) WITH CHECK (true);
+       GRANT SELECT ON app.ticks TO app_backup;
+       CREATE POLICY backup ON app.ticks FOR SELECT TO app_backup USING (true);
       CREATE FUNCTION app.late() RETURNS trigger LANGUAGE plpgsql AS $$
         BEGIN EXECUTE 'CREATE TABLE app.leak (id int)'; RETURN NULL; END $$;
       CREATE CONSTRAINT TRIGGER late AFTER INSERT ON app.ticks

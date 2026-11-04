@@ -50,6 +50,8 @@ export async function authTestDatabase(): Promise<AuthTestDatabase> {
     app_auth: randomBytes(24).toString('base64url'),
     app_audit: randomBytes(24).toString('base64url'),
     app_api: randomBytes(24).toString('base64url'),
+    // Not connected here; the migrations grant it reads, so it must exist.
+    app_backup: randomBytes(24).toString('base64url'),
   };
   await asAdminOn('postgres', async (client) => {
     await client.query(`CREATE DATABASE ${database}`);
@@ -64,6 +66,10 @@ export async function authTestDatabase(): Promise<AuthTestDatabase> {
   });
   // The runner's checks are tested in tooling/scripts; here the migrations only need to exist.
   await asAdminOn(database, async (client) => {
+    // The runner creates its journal before the first migration; a stand-in is enough here.
+    await client.query(
+      'CREATE SCHEMA arca_migrations; CREATE TABLE arca_migrations.journal (name text)',
+    );
     for (const name of (await readdir(migrationsDir)).sort()) {
       const sql = await readFile(join(migrationsDir, name, 'migration.sql'), 'utf8');
       for (const statement of sql.split('--> statement-breakpoint')) await client.query(statement);

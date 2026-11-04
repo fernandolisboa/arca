@@ -220,6 +220,92 @@ function deferrableConstraints(client: Query, policy: DatabasePolicy) {
   );
 }
 
+/**
+ * Guard 10 (spec 0004, R12): app_backup reads every table in a user schema but the not-backed-up
+ * list, and only reads. A row-level-security table needs exactly one shape of backup policy, and no
+ * policy may reach app_backup or PUBLIC (a policy without `TO`) with any other shape, so every
+ * other policy names its roles.
+ */
+function backupCoverage(client: Query, policy: DatabasePolicy) {
+  return rows(
+    client,
+    `WITH backup AS (SELECT oid FROM pg_catalog.pg_roles WHERE rolname = 'app_backup'),
+     tables AS (
+       SELECT c.oid, n.nspname || '.' || c.relname AS name, c.relrowsecurity AS rls,
+              n.nspname || '.' || c.relname = ANY ($1::text[]) AS left_out,
+              -- Missing, the role is guard 3's problem; the privilege functions would fail on it.
+              CASE WHEN EXISTS (SELECT FROM backup)
+                THEN pg_catalog.has_table_privilege('app_backup', c.oid, 'SELECT')
+                 AND pg_catalog.has_schema_privilege('app_backup', n.oid, 'USAGE') END AS reads_all,
+              CASE WHEN EXISTS (SELECT FROM backup)
+                THEN pg_catalog.has_any_column_privilege('app_backup', c.oid, 'SELECT') END AS reads_any,
+              CASE WHEN EXISTS (SELECT FROM backup)
+                THEN pg_catalog.has_table_privilege('app_backup', c.oid,
+                       'INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER')
+                  -- MAINTAIN (Postgres 17 and later) takes ACCESS EXCLUSIVE locks.
+                  OR CASE WHEN pg_catalog.current_setting('server_version_num')::int >= 170000
+                       THEN pg_catalog.has_table_privilege('app_backup', c.oid, 'MAINTAIN') ELSE false END
+                  OR pg_catalog.has_any_column_privilege('app_backup', c.oid, 'INSERT, UPDATE, REFERENCES')
+              END AS writes
+         FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+        WHERE c.relkind IN ('r', 'p') AND ${userSchemas}),
+     policies AS (
+       SELECT p.polrelid, p.polname,
+              p.polpermissive AND p.polcmd = 'r' AND p.polroles = ARRAY[(SELECT oid FROM backup)]
+                AND pg_catalog.pg_get_expr(p.polqual, p.polrelid) = 'true' AND p.polwithcheck IS NULL
+                AS backup_shape,
+              0::oid = ANY (p.polroles) AS for_public,
+              coalesce((SELECT oid FROM backup) = ANY (p.polroles), false) AS for_backup
+         FROM pg_catalog.pg_policy p)
+     SELECT problem FROM (
+       SELECT pg_catalog.format('table %s is neither readable by app_backup nor on the not-backed-up list', t.name) AS problem
+         FROM tables t WHERE NOT t.left_out AND t.reads_all IS FALSE
+       UNION ALL
+       SELECT pg_catalog.format('table %s is on the not-backed-up list but app_backup can read it', t.name)
+         FROM tables t WHERE t.left_out AND t.reads_any
+       UNION ALL
+       SELECT pg_catalog.format('app_backup may write to or reference table %s', t.name)
+         FROM tables t WHERE t.writes
+       UNION ALL
+       SELECT pg_catalog.format('the not-backed-up list names %s, which does not exist', listed)
+         FROM pg_catalog.unnest($1::text[]) AS listed
+        WHERE NOT EXISTS (SELECT FROM tables t WHERE t.name = listed)
+       UNION ALL
+       SELECT pg_catalog.format('table %s has row-level security but no backup policy', t.name)
+         FROM tables t
+        WHERE t.rls AND NOT t.left_out
+          AND NOT EXISTS (SELECT FROM policies p WHERE p.polrelid = t.oid AND p.backup_shape)
+       UNION ALL
+       SELECT pg_catalog.format('policy %I on %s is for app_backup on a table that is not backed up', p.polname, t.name)
+         FROM policies p JOIN tables t ON t.oid = p.polrelid
+        WHERE t.left_out AND p.for_backup
+       UNION ALL
+       SELECT pg_catalog.format('policy %I on %s reaches PUBLIC or app_backup with another shape', p.polname, t.name)
+         FROM policies p JOIN tables t ON t.oid = p.polrelid
+        WHERE p.for_public OR (p.for_backup AND NOT p.backup_shape)
+       UNION ALL
+       -- Reading a parent reads its children's rows under the parent's grants and policies.
+       SELECT pg_catalog.format('table %s inherits from %s, and only one of them is backed up', child.name, parent.name)
+         FROM pg_catalog.pg_inherits h
+         JOIN tables child ON child.oid = h.inhrelid JOIN tables parent ON parent.oid = h.inhparent
+        WHERE child.left_out <> parent.left_out
+       UNION ALL
+       -- A restore loads only what was backed up, so a backed-up row may not need a missing one.
+       SELECT pg_catalog.format('constraint %I on %s references %s, which is not backed up', k.conname, t.name, r.name)
+         FROM pg_catalog.pg_constraint k
+         JOIN tables t ON t.oid = k.conrelid JOIN tables r ON r.oid = k.confrelid
+        WHERE k.contype = 'f' AND NOT t.left_out AND r.left_out
+       UNION ALL
+       SELECT pg_catalog.format('app_backup may use or update sequence %s', n.nspname || '.' || c.relname)
+         FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+        WHERE ${userSchemas}
+          AND CASE WHEN c.relkind = 'S' AND EXISTS (SELECT FROM backup)
+                THEN pg_catalog.has_sequence_privilege('app_backup', c.oid, 'USAGE, UPDATE') END
+     ) found ORDER BY 1`,
+    [policy.guards.notBackedUp],
+  );
+}
+
 const guards = [
   tablesWithoutForcedRls,
   unsafeViewsAndFunctions,
@@ -230,9 +316,10 @@ const guards = [
   roleSettings,
   extensions,
   deferrableConstraints,
+  backupCoverage,
 ] as const;
 
-/** Runs guards 1 to 9 (spec 0001, R7) and returns every violation, numbered by guard. */
+/** Runs guards 1 to 10 (spec 0001 R7, spec 0004 R12) and returns every violation, numbered by guard. */
 export async function runGuards(client: Query, policy: DatabasePolicy): Promise<GuardViolation[]> {
   const violations: GuardViolation[] = [];
   for (const [index, guard] of guards.entries()) {

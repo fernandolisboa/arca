@@ -118,7 +118,7 @@ Rotate every secret the incident may have reached; when in doubt, all of them. G
 | Secret | Where it lives | How to rotate |
 | --- | --- | --- |
 | `BETTER_AUTH_SECRET` | Vercel | [Revoke every session](#revoke-every-session-and-sign-in-path) |
-| `ARCA_DB_MIGRATOR_PASSWORD`, `ARCA_DB_API_PASSWORD`, `ARCA_DB_AUTH_PASSWORD`, `ARCA_DB_AUDIT_PASSWORD`, `ARCA_DB_JOBS_PASSWORD` | Vercel | New value for each, then redeploy. The build's bootstrap commits the new passwords first, so the serving deployment loses the database from then until the new one is promoted, and stays down if a later build step fails: block the API before rotating, and fix forward |
+| `ARCA_DB_MIGRATOR_PASSWORD`, `ARCA_DB_API_PASSWORD`, `ARCA_DB_AUTH_PASSWORD`, `ARCA_DB_AUDIT_PASSWORD`, `ARCA_DB_JOBS_PASSWORD`, `ARCA_DB_BACKUP_PASSWORD` (production only) | Vercel | New value for each, then redeploy. The build's bootstrap commits the new passwords first, so the serving deployment loses the database from then until the new one is promoted, and stays down if a later build step fails: block the API before rotating, and fix forward |
 | The Neon owner password and the connection variables the Neon integration set (`DATABASE_URL`, `PGPASSWORD` and the other `PG*` and `POSTGRES_*` variables) | Neon and Vercel | Neon console › Roles › the owner role › Reset password, on `production` ([roles](https://neon.com/docs/manage/roles)). Roles are per branch, so other branches keep the old password: reset it there too, or delete those branches, unless they hold only synthetic data. Then check in Vercel that the integration's variables carry the new password, update them if not, and redeploy |
 | `ARCA_RATE_LIMIT_KEY` | Vercel | New value, redeploy. Current rate-limit windows start over |
 | `CRON_SECRET` | Vercel | New value, redeploy; Vercel sends the new one with each cron call |
@@ -168,7 +168,7 @@ A copy of the database at the moment you learned of the incident.
 
 1. **Create it.** Vercel › Storage › `arca` › Open in Neon › Branches › New branch, from `production` at the current time, named `incident-YYYYMMDD`.
 2. **Lock it right away.** Roles are per branch, so this copy still accepts the passwords that may have leaked.
-   - In its SQL Editor, as the branch owner, run `ALTER ROLE app_migrator NOLOGIN; ALTER ROLE app_api NOLOGIN; ALTER ROLE app_auth NOLOGIN; ALTER ROLE app_audit NOLOGIN; ALTER ROLE app_jobs NOLOGIN;`.
+   - In its SQL Editor, as the branch owner, run `ALTER ROLE app_migrator NOLOGIN; ALTER ROLE app_api NOLOGIN; ALTER ROLE app_auth NOLOGIN; ALTER ROLE app_audit NOLOGIN; ALTER ROLE app_jobs NOLOGIN; ALTER ROLE app_backup NOLOGIN;`. On a copy of production `app_backup` still has production's password, and it reads every backed-up row and the whole audit log.
    - Then reset the owner role's password on this branch (Roles › the owner role › Reset password) and do not store the new one; Neon shows a fresh one whenever you need to read the branch again.
    - Both change this branch only.
 3. **Keep only what you need.** The branch holds every person's data, and an erased person would live on in it. Copy only the evidence you need into the incident record. Delete the branch, and any backup branch a point-in-time restore left, when the investigation and any ANPD process close. That limit is in [RETENTION.md](../RETENTION.md).

@@ -20,7 +20,7 @@ const migrationsDir = join(import.meta.dirname, '../../migrations');
 
 const database = `arca_registry_${randomBytes(6).toString('hex')}`;
 const jobsPassword = randomBytes(24).toString('base64url');
-const runtimeRoles = ['app_api', 'app_jobs', 'app_auth', 'app_audit'] as const;
+const runtimeRoles = ['app_api', 'app_jobs', 'app_auth', 'app_audit', 'app_backup'] as const;
 const createdRoles: string[] = [];
 
 const accountA = '0b9c3d6e-1f2a-4b5c-8d7e-9f0a1b2c3d4e';
