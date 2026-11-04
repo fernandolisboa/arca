@@ -6,9 +6,29 @@ export interface VaultEnvelope {
   readonly bytes: Uint8Array;
 }
 
-/** The envelope did not open: another passkey, a changed envelope, or a cancelled ceremony. */
+/**
+ * Why a passkey ceremony gave no envelope or identity: the person cancelled or the browser
+ * refused (`cancelled`, worth a retry), the passkey or browser has no PRF (`prf_unavailable`, the
+ * recovery kit instead), or the envelope did not open with this passkey (`not_opened`).
+ */
+export type EnvelopeFailure = 'cancelled' | 'prf_unavailable' | 'not_opened';
+
 export class EnvelopeNotOpenedError extends Error {
   override name = 'EnvelopeNotOpenedError';
+  readonly reason: EnvelopeFailure;
+  constructor(reason: EnvelopeFailure, options?: ErrorOptions) {
+    super(`the envelope did not open: ${reason}`, options);
+    this.reason = reason;
+  }
+}
+
+export class EnvelopeNotSealedError extends Error {
+  override name = 'EnvelopeNotSealedError';
+  readonly reason: Exclude<EnvelopeFailure, 'not_opened'>;
+  constructor(reason: Exclude<EnvelopeFailure, 'not_opened'>, options?: ErrorOptions) {
+    super(`the envelope was not sealed: ${reason}`, options);
+    this.reason = reason;
+  }
 }
 
 /**

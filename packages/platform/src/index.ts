@@ -27,6 +27,8 @@ export {
 export type { ShareContent, SharedFiles, Sharing } from './sharing.js';
 export {
   EnvelopeNotOpenedError,
+  EnvelopeNotSealedError,
+  type EnvelopeFailure,
   type VaultEnvelope,
   type VaultEnvelopes,
 } from './vault-envelopes.js';
@@ -34,3 +36,4 @@ export { detectWebFeatures, webCapabilities, type WebFeatures } from './web-capa
 export { createWebDeepLinks } from './web-deep-links.js';
 export { createWebPasskeys } from './web-passkeys.js';
 export { createWebPlatform, type Platform } from './web-platform.js';
+export { createWebVaultEnvelopes } from './web-vault-envelopes.js';

@@ -22,7 +22,9 @@
   },
   "dependencies": {
     "@arca/vault": "workspace:*",
-    "@simplewebauthn/browser": "catalog:"
+    "@scure/base": "catalog:",
+    "@simplewebauthn/browser": "catalog:",
+    "age-encryption": "catalog:"
   },
   "devDependencies": {
     "@arca/eslint-config": "workspace:*",
