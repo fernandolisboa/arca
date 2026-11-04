@@ -1,2 +1,5 @@
 # Findings gitleaks may ignore, by fingerprint, read from main. Adding one is its own pull request.
 328c7cfe1dfd5bfd302457ba698c9c83f6933ab4:apps/api/test/audit-log.test.ts:generic-api-key:6
+380a04f05a4877803f1f600ec4dbe65147485c91:tooling/scripts/test/postgres/vault-access.test.ts:generic-api-key:44
+380a04f05a4877803f1f600ec4dbe65147485c91:tooling/scripts/test/postgres/vault-access.test.ts:generic-api-key:240
+380a04f05a4877803f1f600ec4dbe65147485c91:tooling/scripts/test/postgres/vault-access.test.ts:generic-api-key:276
