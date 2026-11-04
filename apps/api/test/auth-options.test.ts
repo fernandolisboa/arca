@@ -2,6 +2,7 @@ import type { Database } from '@arca/db';
 import { describe, expect, it } from 'vitest';
 import { createAuth } from '../src/auth/auth.js';
 import type { Logger } from '../src/logger.js';
+import { allowAll } from './limits.js';
 
 const lines: unknown[] = [];
 const logger: Logger = { info: (entry) => lines.push(entry), error: (entry) => lines.push(entry) };
@@ -14,6 +15,7 @@ const auth = createAuth({
   logger,
   audit: { record: () => Promise.resolve() },
   notices: { send: () => Promise.resolve() },
+  limiter: allowAll,
 });
 
 describe('the Better Auth configuration (spec 0003, R1)', () => {

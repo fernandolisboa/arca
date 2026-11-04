@@ -1,10 +1,14 @@
 import { generateKeyPairSync, randomBytes, randomUUID } from 'node:crypto';
 import { expect, test, type Page } from '@playwright/test';
-import { seedAccount } from './postgres/accounts.js';
+import { resetRateLimits, seedAccount } from './postgres/accounts.js';
 import { reportViolations, watchProblems } from './problems.js';
 import { databaseServer } from './servers.js';
 
 test.skip(!databaseServer.enabled, 'needs ARCA_E2E_DATABASE and a Postgres (see README)');
+test.beforeAll(async () => {
+  await resetRateLimits();
+});
+
 test.beforeEach(async ({ page }) => {
   await reportViolations(page);
 });

@@ -107,6 +107,18 @@ export function readAuthOrigin(): string {
   return `https://${host}`;
 }
 
+/**
+ * Keys the HMACs of the rate-limit counters (spec 0003, R10). Only the environment holds it, so
+ * the database never holds anything that recovers an address; rotating it resets the counters.
+ */
+export function readRateLimitKey(): string {
+  const key = required('ARCA_RATE_LIMIT_KEY', process.env['ARCA_RATE_LIMIT_KEY']);
+  if (key.length < 32) {
+    throw new MissingConfigError('ARCA_RATE_LIMIT_KEY is shorter than 32 characters');
+  }
+  return key;
+}
+
 /** Vercel sends it as a bearer token on cron requests; production only. */
 export function readCronSecret(): string {
   const secret = required('CRON_SECRET', process.env['CRON_SECRET']);

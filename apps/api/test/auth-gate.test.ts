@@ -1,8 +1,12 @@
 import { createApiClient, routes, type SessionResponse } from '@arca/api-contract/client';
 import { describe, expect, it } from 'vitest';
+import { apiBasePath, authRoutes } from '@arca/api-contract/routes';
 import { createApp } from '../src/app.js';
+import { authRouteLimits } from '../src/auth/limits.js';
 import type { AuthService } from '../src/auth/service.js';
 import type { Logger } from '../src/logger.js';
+import type { RateLimitRule } from '../src/auth/rate-limit.js';
+import { noLimits } from './limits.js';
 
 const silentLogger: Logger = { info: () => undefined, error: () => undefined };
 
@@ -52,6 +56,7 @@ function setup(
     logger: silentLogger,
     origin,
     auth,
+    authLimits: noLimits,
   });
   // A browser sends Origin on every state-changing request.
   const client = createApiClient({
@@ -256,6 +261,7 @@ describe('GET /v1/audit/events', () => {
         session: () => Promise.resolve(session),
         refresh: () => Promise.resolve({ session, setCookies: [] }),
       },
+      authLimits: noLimits,
       audit: {
         events: (accountId, query) => {
           asked.push({ accountId, query });
@@ -312,5 +318,95 @@ describe('/internal/outbox', () => {
   it('answers 404 everywhere else', async () => {
     const app = createApp({ checkDatabase: () => Promise.resolve('ok'), logger: silentLogger });
     expect((await app.request('/internal/outbox')).status).toBe(404);
+  });
+});
+
+describe('the auth rate limits (spec 0003, R10)', () => {
+  function limited(allowed: boolean) {
+    const hits: { rule: RateLimitRule; subject: string }[] = [];
+    const handled: string[] = [];
+    const app = createApp({
+      checkDatabase: () => Promise.resolve('ok'),
+      logger: silentLogger,
+      origin,
+      auth: {
+        handle: (request) => {
+          handled.push(new URL(request.url).pathname);
+          return Promise.resolve(Response.json({}));
+        },
+        session: () => Promise.resolve(null),
+        refresh: () => Promise.resolve({ session: null, setCookies: [] }),
+      },
+      authLimits: {
+        limiter: {
+          hit: (rule, subject) => {
+            hits.push({ rule, subject });
+            return Promise.resolve(allowed ? { allowed } : { allowed, retryAfterSeconds: 120 });
+          },
+        },
+        clientAddress: (headers) => headers.get('x-test-address') ?? 'none',
+      },
+    });
+    return { app, hits, handled };
+  }
+
+  it('counts each allow-listed request against its route limit, by client address', async () => {
+    const { app, hits } = limited(true);
+    await app.request('/v1/auth/passkey/generate-authenticate-options', {
+      headers: { 'x-test-address': '198.51.100.7' },
+    });
+    await verify(app);
+    expect(hits.map(({ rule, subject }) => [rule.name, subject])).toEqual([
+      ['sign_in_options_ip', '198.51.100.7'],
+      ['sign_in_ip', 'none'],
+    ]);
+  });
+
+  it.each(authRoutes)(
+    'answers 429 with Retry-After over the $operationId limit, before Better Auth or body checks',
+    async (route) => {
+      const { app, hits, handled } = limited(false);
+      const response = await app.request(`${apiBasePath}${route.path}`, {
+        method: route.method.toUpperCase(),
+        headers: { origin, 'content-type': 'application/json' },
+        ...(route.method === 'get' ? {} : { body: '{}' }),
+      });
+      expect(response.status).toBe(429);
+      expect(response.headers.get('retry-after')).toBe('120');
+      expect(await response.json()).toEqual({ error: { code: 'rate_limited' } });
+      expect(handled).toEqual([]);
+      expect(hits.map(({ rule }) => rule)).toEqual([authRouteLimits[route.operationId]]);
+    },
+  );
+
+  it('refuses a cross-site request without counting it', async () => {
+    const { app, hits, handled } = limited(true);
+    const response = await app.request('/v1/auth/passkey/generate-authenticate-options', {
+      headers: { 'sec-fetch-site': 'cross-site' },
+    });
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: { code: 'cross_origin' } });
+    expect(hits).toEqual([]);
+    expect(handled).toEqual([]);
+  });
+
+  it('counts nothing for a path outside the allow-list', async () => {
+    const { app, hits } = limited(true);
+    await app.request('/v1/auth/sign-in/email', { method: 'POST', headers: { origin } });
+    expect(hits).toEqual([]);
+  });
+
+  it('refuses to build the app with auth routes but no limits', () => {
+    expect(() =>
+      createApp({
+        checkDatabase: () => Promise.resolve('ok'),
+        logger: silentLogger,
+        auth: {
+          handle: () => Promise.resolve(Response.json({})),
+          session: () => Promise.resolve(null),
+          refresh: () => Promise.resolve({ session: null, setCookies: [] }),
+        },
+      }),
+    ).toThrow('the auth routes need their rate limits');
   });
 });

@@ -192,13 +192,15 @@ describe('GET /internal/cron/heartbeat (spec 0001, R6)', () => {
           started.push(runDate);
           return Promise.resolve('wrun_test');
         },
+        sweepRateLimits: () => {
+          started.push('sweep');
+          return Promise.resolve(0);
+        },
         clock: () => new Date('2026-11-02T23:30:00.000-03:00'),
       },
     });
-    const call = (authorization?: string) =>
-      app.request('/internal/cron/heartbeat', {
-        headers: authorization === undefined ? {} : { authorization },
-      });
+    const call = (authorization?: string, path = '/internal/cron/heartbeat') =>
+      app.request(path, { headers: authorization === undefined ? {} : { authorization } });
     return { app, call, started };
   }
 
@@ -229,6 +231,15 @@ describe('GET /internal/cron/heartbeat (spec 0001, R6)', () => {
     const response = await call(`Bearer ${secret}`);
     expect(response.status).toBe(500);
     expect(started).toEqual([]);
+  });
+
+  it('sweeps the ended rate-limit windows daily, behind the same token (spec 0003, R10)', async () => {
+    const { call, started } = cronSetup();
+    expect((await call(undefined, '/internal/cron/rate-limit-sweep')).status).toBe(401);
+    expect(started).toEqual([]);
+    const response = await call(`Bearer ${secret}`, '/internal/cron/rate-limit-sweep');
+    expect(response.status).toBe(204);
+    expect(started).toEqual(['sweep']);
   });
 
   it('is not served without the cron dependencies', async () => {

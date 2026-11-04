@@ -1,7 +1,7 @@
 import { Button } from '@arca/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { sessionQuery } from '../api.js';
 import { passkeys } from '../platform.js';
@@ -22,7 +22,9 @@ type Ceremony = 'autofill' | 'button';
  * the server, so a waiting one is replaced before that.
  */
 const autofillRefreshMs = 4 * 60 * 1000;
+/** A pick that failed offers the field again soon, then less often, up to once a minute. */
 const autofillRetryMs = 1000;
+const autofillRetryMaxMs = 60 * 1000;
 
 function SignIn() {
   const { t } = useTranslation();
@@ -35,6 +37,7 @@ function SignIn() {
   const [failure, setFailure] = useState<SignInFailure>();
   // Bumped to start a new autofill ceremony while the ceremony state stays 'autofill'.
   const [autofillRun, setAutofillRun] = useState(0);
+  const autofillRetries = useRef(0);
 
   useEffect(() => {
     let current = true;
@@ -53,9 +56,12 @@ function SignIn() {
     if (ceremony === 'autofill' && !support.autofill) return;
     const controller = new AbortController();
     let restart: ReturnType<typeof setTimeout> | undefined;
-    const restartAutofill = (delayMs: number) => {
+    // Only quick retries after failed picks back off; a refresh or a button press starts over.
+    if (ceremony === 'button') autofillRetries.current = 0;
+    const restartAutofill = (delayMs: number, { retry = false } = {}) => {
       clearTimeout(restart);
       restart = setTimeout(() => {
+        if (!retry) autofillRetries.current = 0;
         setAutofillRun((run) => run + 1);
       }, delayMs);
     };
@@ -71,8 +77,15 @@ function SignIn() {
         const reason = failureOf(error);
         setFailure(reason);
         if (ceremony === 'button') setCeremony('autofill');
-        // A pick that failed offers the field again soon; a server that failed waits longer.
-        else if (reason === 'cancelled' || reason === 'refused') restartAutofill(autofillRetryMs);
+        // A server that failed waits for the refresh instead.
+        else if (reason === 'cancelled' || reason === 'refused') {
+          const delayMs = Math.min(
+            autofillRetryMs * 2 ** autofillRetries.current,
+            autofillRetryMaxMs,
+          );
+          autofillRetries.current += 1;
+          restartAutofill(delayMs, { retry: true });
+        }
       });
     return () => {
       clearTimeout(restart);

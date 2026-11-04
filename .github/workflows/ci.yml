@@ -66,10 +66,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Chromium for the installed Playwright version
         run: pnpm --filter @arca/web exec playwright install --with-deps --only-shell chromium
-      - name: Role passwords and an auth secret that live only for this job
+      - name: Role passwords and auth secrets that live only for this job
         run: |
           for name in ARCA_DB_MIGRATOR_PASSWORD ARCA_DB_API_PASSWORD ARCA_DB_JOBS_PASSWORD \
-            ARCA_DB_AUTH_PASSWORD ARCA_DB_AUDIT_PASSWORD BETTER_AUTH_SECRET; do
+            ARCA_DB_AUTH_PASSWORD ARCA_DB_AUDIT_PASSWORD BETTER_AUTH_SECRET ARCA_RATE_LIMIT_KEY; do
             value="$(openssl rand -hex 32)"
             echo "::add-mask::$value"
             echo "$name=$value" >> "$GITHUB_ENV"

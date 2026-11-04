@@ -11,7 +11,8 @@ import type {
 } from '@arca/platform';
 import { api } from './api.js';
 
-export type SignInFailure = 'cancelled' | 'refused' | 'unavailable' | 'unreachable' | 'other';
+export type SignInFailure =
+  'cancelled' | 'refused' | 'limited' | 'unavailable' | 'unreachable' | 'other';
 
 /** The contract keeps transports open-ended; the browser ignores the ones it does not know. */
 function toRequestOptions(options: PasskeyRequestOptions): PublicKeyCredentialRequestOptionsJSON {
@@ -74,7 +75,10 @@ export async function signInWithPasskey(
 }
 
 export function failureOf(error: unknown): SignInFailure {
-  if (error instanceof ApiError) return error.status === 401 ? 'refused' : 'other';
+  if (error instanceof ApiError) {
+    if (error.status === 401) return 'refused';
+    return error.status === 429 ? 'limited' : 'other';
+  }
   if (error instanceof UnreachableError) return 'unreachable';
   // Browsers report a dismissed prompt, a timeout and a failed verification alike.
   if (error instanceof Error && (error.name === 'NotAllowedError' || error.name === 'AbortError')) {

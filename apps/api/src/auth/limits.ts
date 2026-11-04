@@ -1,0 +1,24 @@
+import type { authRoutes } from '@arca/api-contract/routes';
+import type { RateLimitRule } from './rate-limit.js';
+
+const hour = 60 * 60;
+
+/**
+ * Per-IP limits on every allow-listed auth route (spec 0003, R10), keyed by operation so a route
+ * added to the allow-list does not compile without one. Generous for a family behind one
+ * address: an open sign-in screen refreshes its autofill options every 4 minutes.
+ */
+export const authRouteLimits: Readonly<
+  Record<(typeof authRoutes)[number]['operationId'], RateLimitRule>
+> = {
+  passkeySignInOptions: { name: 'sign_in_options_ip', limit: 120, windowSeconds: hour },
+  passkeySignIn: { name: 'sign_in_ip', limit: 30, windowSeconds: hour },
+  signOut: { name: 'sign_out_ip', limit: 60, windowSeconds: hour },
+};
+
+/** At most one `sign_in_failed` event per credential per hour (spec 0003, R7). */
+export const signInFailedLog: RateLimitRule = {
+  name: 'sign_in_failed_log',
+  limit: 1,
+  windowSeconds: hour,
+};

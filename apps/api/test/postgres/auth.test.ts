@@ -9,12 +9,15 @@ import { createApp, type App } from '../../src/app.js';
 import { createAuth, type Auth } from '../../src/auth/auth.js';
 import { authService } from '../../src/auth/service.js';
 import { auditLog, auditReader } from '../../src/audit/log.js';
+import { signInFailedLog } from '../../src/auth/limits.js';
+import { rateLimiter, type RateLimiter } from '../../src/auth/rate-limit.js';
 import { noticeNewSignIn, recordPasskeyClient } from '../../src/auth/sign-in-notice.js';
 import { createNotices, type Notice, type Notices } from '../../src/email/notices.js';
 import { outboxSender, readOutbox } from '../../src/email/outbox.js';
 import { apiDatabase, auditDatabase, authDatabase } from '../../src/database.js';
 import type { Database } from '@arca/db';
 import type { Logger } from '../../src/logger.js';
+import { allowAll } from '../limits.js';
 import { softwarePasskey, type SoftwarePasskey } from './software-passkey.js';
 
 // Better Auth on the real auth migrations and the app_auth pool, against a disposable Postgres
@@ -57,6 +60,7 @@ let auth: Auth;
 let authDb: Database;
 let auditDb: Database;
 let notices: Notices;
+let limiter: RateLimiter;
 let close: () => Promise<void>;
 let app: App;
 
@@ -97,7 +101,16 @@ beforeAll(async () => {
     i18n: await createI18n(),
     origin,
   });
-  auth = createAuth({ db: authDb, secret, origin, logger, audit: auditLog(auditDb), notices });
+  limiter = rateLimiter({ db: authDb, key: randomBytes(32).toString('base64url') });
+  auth = createAuth({
+    db: authDb,
+    secret,
+    origin,
+    logger,
+    audit: auditLog(auditDb),
+    notices,
+    limiter,
+  });
   app = appFor(auth, auditReader(apiPool.db));
 });
 
@@ -107,6 +120,8 @@ function appFor(target: Auth, audit?: ReturnType<typeof auditReader>): App {
     logger,
     origin,
     auth: authService(target),
+    // The limits have their own tests below; these sign in far more often than one address may.
+    authLimits: { limiter: allowAll, clientAddress: () => '192.0.2.10' },
     ...(audit === undefined ? {} : { audit }),
   });
 }
@@ -137,15 +152,20 @@ async function account(email: string): Promise<{ userId: string; passkey: Softwa
     { email, name: '', emailVerified: true },
     { method: 'test' },
   );
+  return { userId: user.id, passkey: await addPasskey(user.id) };
+}
+
+/** Another software passkey for an account; returns it once its row is stored. */
+async function addPasskey(userId: string): Promise<SoftwarePasskey> {
   const passkey = softwarePasskey(new URL(origin).hostname);
   await asAdmin(database, (client) =>
     client.query(
       `INSERT INTO auth.passkey (public_key, user_id, credential_id, counter, device_type, backed_up)
        VALUES ($1, $2, $3, 0, 'multiDevice', true)`,
-      [passkey.publicKey, user.id, passkey.credentialId],
+      [passkey.publicKey, userId, passkey.credentialId],
     ),
   );
-  return { userId: user.id, passkey };
+  return passkey;
 }
 
 interface SignInOptions {
@@ -468,6 +488,7 @@ describe('Better Auth on the app_auth pool', () => {
       logger,
       audit: { record: () => Promise.reject(new Error('audit unavailable')) },
       notices,
+      limiter,
     });
     const { verified } = await passkeySignIn(passkey, { via: appFor(failing) });
     // The passkey plugin turns any error after verification into a failed sign-in.
@@ -548,6 +569,7 @@ describe('new-sign-in notices (spec 0003, R7)', () => {
       logger: { info: () => undefined, error: (line) => lines.push(line) },
       audit: auditLog(auditDb),
       notices: { send: () => Promise.reject(new Error('email unavailable')) },
+      limiter,
     });
     const { passkey } = await signedIn('unnoticed@example.org', { userAgent: firefoxOnLinux });
     const { verified } = await passkeySignIn(passkey, {
@@ -567,6 +589,7 @@ describe('new-sign-in notices (spec 0003, R7)', () => {
       logger,
       audit: auditLog(auditDb),
       notices: { send: () => Promise.reject(new Error('email unavailable')) },
+      limiter,
     });
     const { passkey } = await signedIn(email, { userAgent: firefoxOnLinux });
     await passkeySignIn(passkey, { userAgent: chromeOnAndroid, via: appFor(failing) });
@@ -603,5 +626,167 @@ describe('the outbox (spec 0003, R8)', () => {
       ),
     );
     expect(stored.rows).toEqual([{ recipient: 'new@example.com', days: 7 }]);
+  });
+});
+
+describe('the auth rate limits (spec 0003, R10)', () => {
+  const address = '198.51.100.23';
+  const limitedApp = () =>
+    createApp({
+      checkDatabase: () => Promise.resolve('ok'),
+      logger,
+      origin,
+      auth: authService(auth),
+      authLimits: { limiter, clientAddress: () => address },
+    });
+
+  async function counterKeys() {
+    return asAdmin(database, async (client) => {
+      const result = await client.query<{ key: string }>('SELECT key FROM auth.rate_limit');
+      return result.rows.map((row) => row.key);
+    });
+  }
+
+  it('answers 429 past the per-IP sign-in limit, with Retry-After', async () => {
+    const limited = limitedApp();
+    const attempt = () =>
+      limited.request('/v1/auth/passkey/verify-authentication', {
+        method: 'POST',
+        headers: { origin, 'content-type': 'application/json' },
+        body: '{}',
+      });
+    for (let count = 0; count < 30; count += 1) expect((await attempt()).status).toBe(400);
+    const refused = await attempt();
+    expect(refused.status).toBe(429);
+    expect(await refused.json()).toEqual({ error: { code: 'rate_limited' } });
+    const retryAfter = Number(refused.headers.get('retry-after'));
+    expect(retryAfter).toBeGreaterThan(0);
+    expect(retryAfter).toBeLessThanOrEqual(3600);
+  });
+
+  it('stores only the limit name and an HMAC, never the address', async () => {
+    await limitedApp().request('/v1/auth/passkey/generate-authenticate-options');
+    const keys = await counterKeys();
+    expect(keys.length).toBeGreaterThan(0);
+    for (const key of keys) {
+      expect(key).toMatch(/^[a-z_]+:[A-Za-z0-9_-]{43}$/);
+      expect(key).not.toContain(address);
+    }
+  });
+
+  it('starts fresh counters under a rotated key', async () => {
+    const rule = { name: 'rotation_test', limit: 1, windowSeconds: 3600 };
+    const before = rateLimiter({ db: authDb, key: randomBytes(32).toString('base64url') });
+    expect((await before.hit(rule, address)).allowed).toBe(true);
+    expect((await before.hit(rule, address)).allowed).toBe(false);
+    const rotated = rateLimiter({ db: authDb, key: randomBytes(32).toString('base64url') });
+    expect((await rotated.hit(rule, address)).allowed).toBe(true);
+  });
+
+  it('opens a new window once the old one ends, and the sweep deletes ended windows', async () => {
+    const rule = { name: 'window_test', limit: 1, windowSeconds: 3600 };
+    expect((await limiter.hit(rule, address)).allowed).toBe(true);
+    expect((await limiter.hit(rule, address)).allowed).toBe(false);
+    await asAdmin(database, (client) =>
+      client.query(
+        "UPDATE auth.rate_limit SET expires_at = now() - interval '1 second' WHERE key LIKE 'window_test:%'",
+      ),
+    );
+    expect((await limiter.hit(rule, address)).allowed).toBe(true);
+    await asAdmin(database, (client) =>
+      client.query(
+        "UPDATE auth.rate_limit SET expires_at = now() - interval '1 second' WHERE key LIKE 'window_test:%'",
+      ),
+    );
+    expect(await limiter.sweep()).toBeGreaterThanOrEqual(1);
+    expect((await counterKeys()).filter((key) => key.startsWith('window_test:'))).toEqual([]);
+  });
+
+  async function failedSignIns(userId: string) {
+    return asAdmin(database, async (client) => {
+      const result = await client.query<{ actor: string | null; details: unknown }>(
+        `SELECT actor_account_id AS actor, details FROM audit.event
+         WHERE subject_account_id = $1 AND code = 'sign_in_failed'`,
+        [userId],
+      );
+      return result.rows;
+    });
+  }
+
+  async function passkeyIdOf(credentialId: string) {
+    return asAdmin(database, async (client) => {
+      const result = await client.query<{ id: string }>(
+        'SELECT id FROM auth.passkey WHERE credential_id = $1',
+        [credentialId],
+      );
+      return result.rows[0]?.id;
+    });
+  }
+
+  async function failedTwice(passkey: SoftwarePasskey, via: App = app) {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const { verified } = await passkeySignIn(passkey, { userVerified: false, via });
+      expect(verified.status).toBe(401);
+    }
+  }
+
+  it('records one sign_in_failed event per credential per window', async () => {
+    const { userId, passkey } = await account('failing@example.com');
+    await failedTwice(passkey);
+    expect(await failedSignIns(userId)).toEqual([
+      { actor: null, details: { passkeyId: await passkeyIdOf(passkey.credentialId) } },
+    ]);
+    expect(signInFailedLog).toEqual({ name: 'sign_in_failed_log', limit: 1, windowSeconds: 3600 });
+  });
+
+  it('counts the failure log per credential, not per account', async () => {
+    const { userId, passkey } = await account('two-keys@example.org');
+    const other = await addPasskey(userId);
+    await failedTwice(passkey);
+    await failedTwice(other);
+    const recorded = (await failedSignIns(userId)).map(({ details }) => details);
+    expect(recorded).toHaveLength(2);
+    expect(recorded).toEqual(
+      expect.arrayContaining([
+        { passkeyId: await passkeyIdOf(passkey.credentialId) },
+        { passkeyId: await passkeyIdOf(other.credentialId) },
+      ]),
+    );
+  });
+
+  it('still refuses the sign-in when the failure log cannot be counted', async () => {
+    const lines: unknown[] = [];
+    const failing = createAuth({
+      db: authDb,
+      secret,
+      origin,
+      logger: { info: () => undefined, error: (line) => lines.push(line) },
+      audit: auditLog(auditDb),
+      notices,
+      limiter: {
+        hit: () => Promise.reject(new Error('counter unavailable')),
+      },
+    });
+    const { userId, passkey } = await account('uncounted@example.com');
+    await failedTwice(passkey, appFor(failing));
+    expect(await failedSignIns(userId)).toEqual([]);
+    expect(lines).toEqual([
+      { errorName: 'SignInFailedLog:Error' },
+      { errorName: 'SignInFailedLog:Error' },
+    ]);
+  });
+
+  it('records nothing for a credential no account holds', async () => {
+    const recorded = () =>
+      asAdmin(database, async (client) => {
+        const result = await client.query<{ count: string }>(
+          "SELECT count(*) AS count FROM audit.event WHERE code = 'sign_in_failed'",
+        );
+        return result.rows[0]?.count;
+      });
+    const before = await recorded();
+    const { verified } = await passkeySignIn(softwarePasskey(new URL(origin).hostname));
+    expect(verified.status).toBe(401);
+    expect(await recorded()).toBe(before);
   });
 });
