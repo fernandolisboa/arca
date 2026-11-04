@@ -8,7 +8,7 @@ import type { Registration, RegistrationOutcome } from '../src/auth/registration
 import type { SignedIn } from '../src/auth/service.js';
 import type { CanonicalAction } from '../src/auth/step-up-encoding.js';
 import type { StepUpService } from '../src/auth/step-up.js';
-import type { Logger } from '../src/logger.js';
+import type { Logger } from '@arca/telemetry';
 import { attestation, creationOptions } from './passkey-fixtures.js';
 
 const silentLogger: Logger = { info: () => undefined, error: () => undefined };

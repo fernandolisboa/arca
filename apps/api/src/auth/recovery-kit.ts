@@ -5,7 +5,7 @@ import { recoveryCode } from '@arca/db/enrollment-schema';
 import { and, eq, gt, isNull, or, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import type { Notices } from '../email/notices.js';
-import type { Logger } from '../logger.js';
+import type { Logger } from '@arca/telemetry';
 import { accountNotice } from './account-notices.js';
 import { accounts } from './auth.js';
 

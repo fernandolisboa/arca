@@ -22,14 +22,14 @@ const nodeBuiltins = builtinModules.filter((name) => !name.startsWith('_'));
  */
 
 const pureIo =
-  'packages/domain and the knowledge runtime are pure: no I/O. Pass data in from the API layer.';
+  'The pure packages (domain, the knowledge runtime, telemetry) do no I/O. Pass data in from the app.';
 const pureTime =
-  'packages/domain and the knowledge runtime take time as an argument; do not read the clock.';
+  'The pure packages (domain, the knowledge runtime, telemetry) take time as an argument; do not read the clock.';
 const pureLogging =
-  'packages/domain and the knowledge runtime never log: snapshots and evaluations are personal data (spec 0002, R5).';
+  'The pure packages (domain, the knowledge runtime, telemetry) never log: snapshots and evaluations are personal data (spec 0002, R5).';
 
 /**
- * Pure code: packages/domain and the knowledge runtime entry.
+ * Pure code: packages/domain, the knowledge runtime entry and packages/telemetry.
  *
  * @type {Restrictions}
  */

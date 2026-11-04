@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { apiDatabase } from '../src/database.js';
-import type { Logger } from '../src/logger.js';
+import type { Logger } from '@arca/telemetry';
 
 const silentLogger: Logger = { info: () => undefined, error: () => undefined };
 

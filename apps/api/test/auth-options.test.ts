@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { createAuth } from '../src/auth/auth.js';
 import { ownerCode } from '../src/auth/enrollment.js';
 import { registrationHooks } from '../src/auth/registration.js';
-import type { Logger } from '../src/logger.js';
+import type { Logger } from '@arca/telemetry';
 import { allowAll } from './limits.js';
 
 const lines: unknown[] = [];

@@ -59,11 +59,11 @@ tooling/
 
 | Package | May depend on |
 | --- | --- |
-| `apps/web` | `api-contract`, `ui`, `i18n`, `platform` |
-| `apps/api` | `domain`, `api-contract`, `db`, `knowledge` (added by [spec 0002](0002-rules-engine-and-knowledge-base.md)), `i18n` (added by [spec 0003](0003-identity-and-access.md), for email) |
+| `apps/web` | `api-contract`, `ui`, `i18n`, `platform`, `telemetry` (added by [spec 0004](0004-real-data-readiness.md)) |
+| `apps/api` | `domain`, `api-contract`, `db`, `knowledge` (added by [spec 0002](0002-rules-engine-and-knowledge-base.md)), `i18n` (added by [spec 0003](0003-identity-and-access.md), for email), `telemetry` (added by spec 0004) |
 | `packages/ui` | `i18n` |
 | `packages/knowledge` | `domain` (added by spec 0002) |
-| `packages/domain`, `packages/api-contract`, `packages/platform`, `packages/i18n`, `packages/db` | nothing in the workspace |
+| `packages/domain`, `packages/api-contract`, `packages/platform`, `packages/i18n`, `packages/db`, `packages/telemetry` | nothing in the workspace |
 
 - ESLint, scoped by package:
   - `packages/domain`: no imports of `node:*`, database clients, HTTP clients or `fetch`; no `Date.now()` or `new Date()` without arguments (time is passed in).
@@ -86,7 +86,7 @@ tooling/
 - `apps/api` implements the contract on a plain Hono app that is importable and testable without Nitro.
 - `packages/api-contract/scripts/write-openapi.ts` writes `openapi.json`; a test in that package fails while the committed file differs from the generated one, so `pnpm check` catches drift.
 - Errors: one handler returns `{ error: { code } }` with a generic status; the structured log records the code and the error's class name, never its message, which may carry data. Full error reports wait for the observability slice.
-- Structured JSON logs through a small logger in `apps/api` that writes only fields on an allow-list (request ID, method, route pattern, status, duration, error code, error class name), each checked for the shape it expects; anything else is dropped. A test proves an unknown field is dropped.
+- Structured JSON logs through a small logger in `apps/api` (moved to `packages/telemetry` by spec 0004 R3) that writes only fields on an allow-list (request ID, method, route pattern, status, duration, error code, error class name), each checked for the shape it expects; anything else is dropped. A test proves an unknown field is dropped.
 - Every response from `/v1` and `/internal` sets `Cache-Control: no-store`.
 - `/v1/health` caches its database result for 10 seconds per instance, so repeated calls do not each open a connection. Edge rate limiting comes with the auth slice.
 

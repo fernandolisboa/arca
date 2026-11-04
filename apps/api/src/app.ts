@@ -57,7 +57,7 @@ import type { ActionPurpose, StepUpService } from './auth/step-up.js';
 import type { OutboxEntry } from './email/outbox.js';
 import { bearerMatches } from './cron-auth.js';
 import { cachedDatabaseCheck, type CheckDatabase } from './database-health.js';
-import type { Logger } from './logger.js';
+import type { Logger } from '@arca/telemetry';
 import { utcDate, type IsoDate } from './workflows/workflow-arguments.js';
 
 /** What the cron routes need; absent in tests that do not exercise them. */

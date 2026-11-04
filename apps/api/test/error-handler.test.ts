@@ -1,7 +1,7 @@
 import { securityHeaders } from '@arca/security-policy';
 import { describe, expect, it } from 'vitest';
 import { createErrorHandler } from '../src/error-handler.js';
-import type { LogEntry } from '../src/logger.js';
+import type { LogEntry } from '@arca/telemetry';
 
 function handlerWithLog() {
   const entries: { level: string; entry: LogEntry }[] = [];

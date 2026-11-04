@@ -4,7 +4,7 @@ import type { Devices, PasskeyRevocation } from '../src/auth/devices.js';
 import type { SignedIn } from '../src/auth/service.js';
 import type { CanonicalAction } from '../src/auth/step-up-encoding.js';
 import type { StepUpService } from '../src/auth/step-up.js';
-import type { Logger } from '../src/logger.js';
+import type { Logger } from '@arca/telemetry';
 import { noLimits } from './limits.js';
 import { attestation, creationOptions } from './passkey-fixtures.js';
 

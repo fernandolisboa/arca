@@ -3,7 +3,7 @@ import { createApp } from '../src/app.js';
 import type { RateLimitRule } from '../src/auth/rate-limit.js';
 import type { SignedIn } from '../src/auth/service.js';
 import type { StepUpService } from '../src/auth/step-up.js';
-import type { Logger } from '../src/logger.js';
+import type { Logger } from '@arca/telemetry';
 
 const silentLogger: Logger = { info: () => undefined, error: () => undefined };
 const origin = 'http://arca.test';

@@ -4,7 +4,7 @@ import { apiBasePath, authRoutes } from '@arca/api-contract/routes';
 import { createApp } from '../src/app.js';
 import { authRouteLimits } from '../src/auth/limits.js';
 import type { AuthService } from '../src/auth/service.js';
-import type { Logger } from '../src/logger.js';
+import type { Logger } from '@arca/telemetry';
 import type { RateLimitRule } from '../src/auth/rate-limit.js';
 import { noLimits } from './limits.js';
 

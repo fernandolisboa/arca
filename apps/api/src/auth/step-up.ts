@@ -14,7 +14,7 @@ import {
 } from '@simplewebauthn/server';
 import { and, eq, gt, isNull, lt, lte, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
-import type { Logger } from '../logger.js';
+import type { Logger } from '@arca/telemetry';
 import type { CredentialStore } from './auth.js';
 import type { SignedIn } from './service.js';
 import { stepUpChallenge, subjectHash, type CanonicalAction } from './step-up-encoding.js';

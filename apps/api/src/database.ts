@@ -7,7 +7,7 @@ import {
   type RuntimeRole,
 } from '@arca/db';
 import type { CheckDatabase } from './database-health.js';
-import type { Logger } from './logger.js';
+import type { Logger } from '@arca/telemetry';
 
 /**
  * A service's database: a pool that logs in as `role` with explicit fields and rejects any

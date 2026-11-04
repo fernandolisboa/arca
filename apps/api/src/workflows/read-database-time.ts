@@ -2,10 +2,10 @@ import { readServerTime } from '@arca/db';
 import { useRuntimeConfig } from 'nitro/runtime-config';
 import { databaseTargetFrom, readJobsDatabasePassword } from '../config.js';
 import { roleDatabase } from '../database.js';
-import { createLogger } from '../logger.js';
+import { stdoutLogger } from '../logger.js';
 import { withStepError } from './step-error.js';
 
-const logger = createLogger();
+const logger = stdoutLogger();
 let jobs: ReturnType<typeof roleDatabase> | undefined;
 
 function jobsDatabase() {

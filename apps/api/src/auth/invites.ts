@@ -12,7 +12,7 @@ import { and, count, desc, eq, gt, isNotNull, isNull, lte, or, sql } from 'drizz
 import type { AuditLog } from '../audit/log.js';
 import { EmailNotConfiguredError, type EmailMessage, type EmailSender } from '../email/email.js';
 import type { Notices } from '../email/notices.js';
-import type { Logger } from '../logger.js';
+import type { Logger } from '@arca/telemetry';
 import { accounts } from './auth.js';
 import { sha256 } from './enrollment.js';
 

@@ -10,8 +10,21 @@ import { reportViolations } from './report.ts';
 
 /** Which workspace packages each package may depend on (spec 0001, R2). */
 export const allowedDependencies: Readonly<Record<string, readonly string[]>> = {
-  '@arca/web': ['@arca/api-contract', '@arca/ui', '@arca/i18n', '@arca/platform'],
-  '@arca/api': ['@arca/domain', '@arca/api-contract', '@arca/db', '@arca/knowledge', '@arca/i18n'],
+  '@arca/web': [
+    '@arca/api-contract',
+    '@arca/ui',
+    '@arca/i18n',
+    '@arca/platform',
+    '@arca/telemetry',
+  ],
+  '@arca/api': [
+    '@arca/domain',
+    '@arca/api-contract',
+    '@arca/db',
+    '@arca/knowledge',
+    '@arca/i18n',
+    '@arca/telemetry',
+  ],
   '@arca/ui': ['@arca/i18n'],
   '@arca/domain': [],
   '@arca/knowledge': ['@arca/domain'],
@@ -19,6 +32,7 @@ export const allowedDependencies: Readonly<Record<string, readonly string[]>> = 
   '@arca/platform': [],
   '@arca/i18n': [],
   '@arca/db': [],
+  '@arca/telemetry': [],
 };
 
 export function checkBoundaries(manifests: readonly Manifest[], rootDir: string): Violation[] {

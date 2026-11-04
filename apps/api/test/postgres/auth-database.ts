@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import pg from 'pg';
 import type { Database } from '@arca/db';
 import { apiDatabase, auditDatabase, authDatabase } from '../../src/database.js';
-import type { Logger } from '../../src/logger.js';
+import type { Logger } from '@arca/telemetry';
 
 // The real migrations on a disposable database, reached through the runtime roles' own pools
 // (spec 0003, R1). Synthetic data only.

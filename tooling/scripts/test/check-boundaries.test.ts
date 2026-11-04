@@ -16,6 +16,7 @@ const workspace: Manifest[] = [
   manifest('packages/i18n', '@arca/i18n'),
   manifest('packages/platform', '@arca/platform'),
   manifest('packages/db', '@arca/db'),
+  manifest('packages/telemetry', '@arca/telemetry'),
   manifest('tooling/tsconfig', '@arca/tsconfig'),
   manifest('tooling/eslint-config', '@arca/eslint-config'),
 ];
@@ -34,6 +35,7 @@ describe('boundary matrix', () => {
             '@arca/ui': 'workspace:*',
             '@arca/i18n': 'workspace:*',
             '@arca/platform': 'workspace:*',
+            '@arca/telemetry': 'workspace:*',
             react: 'catalog:',
           },
           devDependencies: { '@arca/tsconfig': 'workspace:*' },
@@ -49,6 +51,7 @@ describe('boundary matrix', () => {
     ['packages/ui', '@arca/ui', 'optionalDependencies', '@arca/platform'],
     ['packages/domain', '@arca/domain', 'dependencies', '@arca/db'],
     ['packages/db', '@arca/db', 'devDependencies', '@arca/domain'],
+    ['packages/telemetry', '@arca/telemetry', 'dependencies', '@arca/domain'],
   ])('rejects %s %s.%s on %s', (dir, name, field, dependency) => {
     expect(check(manifest(dir, name, { [field]: { [dependency]: 'workspace:*' } }))).toEqual([
       { where: `${name} ${field}.${dependency}`, problem: 'is not allowed by the boundary matrix' },
