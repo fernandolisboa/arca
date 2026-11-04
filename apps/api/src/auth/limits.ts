@@ -38,3 +38,9 @@ export const registrationLimits = {
   options: { name: 'registration_options_ip', limit: 30, windowSeconds: hour },
   verify: { name: 'registration_verify_ip', limit: 30, windowSeconds: hour },
 } as const satisfies Record<string, RateLimitRule>;
+
+/** Limits on invites (spec 0003, R10): sending is per account per day, reading a link per IP. */
+export const inviteLimits = {
+  create: { name: 'invite_create_account', limit: 20, windowSeconds: 24 * hour },
+  details: { name: 'invite_details_ip', limit: 30, windowSeconds: hour },
+} as const satisfies Record<string, RateLimitRule>;

@@ -202,6 +202,12 @@ export const ptBR = {
       body: 'Use o link abaixo para criar sua conta no Arca com uma chave de acesso. Ele vale por 30 minutos e funciona uma vez só. Na página, digite o código de cadastro que você guardou. Se não foi você que pediu, pode ignorar este email.',
       link: 'Criar a conta: {url}',
     },
+    /** The link that opens an invite; it carries a one-time token and never names the inviter. */
+    invite: {
+      subject: 'Você recebeu um convite para o Arca',
+      body: 'Uma pessoa que já usa o Arca convidou você para entrar. Use o link abaixo para criar sua conta com uma chave de acesso. Ele vale por 48 horas e funciona uma vez só. Na página, você vê quem mandou o convite. Se não esperava por isso, pode ignorar este email.',
+      link: 'Aceitar o convite: {url}',
+    },
     notice: {
       passkey_added: {
         subject: 'Nova chave de acesso na sua conta',
@@ -218,6 +224,10 @@ export const ptBR = {
       pending_passkey_cancelled: {
         subject: 'Chave de acesso pendente cancelada',
         body: 'A chave de acesso que ainda esperava as 24 horas para funcionar foi cancelada em {when} (horário de Brasília). Ela não vai funcionar na sua conta.',
+      },
+      invite_accepted: {
+        subject: 'Seu convite foi aceito',
+        body: 'Uma pessoa aceitou o seu convite para o Arca em {when} (horário de Brasília). A conta dela fica limitada até você confirmar. Entre no Arca, confira o email da conta em Convites e confirme só se for mesmo quem você convidou.',
       },
       recovery_kit_regenerated: {
         subject: 'Novo kit de recuperação',

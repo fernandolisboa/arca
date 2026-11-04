@@ -14,8 +14,12 @@ describe('link tokens (spec 0003, R2)', () => {
     },
   );
 
-  it('carries the registration token in a POST body', () => {
-    for (const route of [routes.registrationOptions, routes.registrationVerify]) {
+  it('carries the registration and invite tokens in a POST body', () => {
+    for (const route of [
+      routes.registrationOptions,
+      routes.registrationVerify,
+      routes.inviteDetails,
+    ]) {
       expect(route.method).toBe('post');
       expect(route.body.shape.token.safeParse('A'.repeat(43)).success).toBe(true);
       expect(route.body.shape.token.safeParse('A'.repeat(42).concat('B')).success).toBe(false);

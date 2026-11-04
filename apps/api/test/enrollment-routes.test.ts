@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import type { Enrollment, EnrollOwnerOutcome } from '../src/auth/enrollment.js';
+import type { CreateInviteOutcome, Invites } from '../src/auth/invites.js';
 import type { RateLimitRule } from '../src/auth/rate-limit.js';
 import type { RecoveryKits } from '../src/auth/recovery-kit.js';
 import type { Registration, RegistrationOutcome } from '../src/auth/registration.js';
@@ -45,6 +46,8 @@ interface Setup {
   readonly firstKit?: string | null;
   readonly approved?: boolean;
   readonly kitExists?: boolean;
+  readonly invited?: CreateInviteOutcome;
+  readonly decided?: boolean;
 }
 
 function setup({
@@ -55,6 +58,8 @@ function setup({
   firstKit = null,
   approved = true,
   kitExists = true,
+  invited = 'sent',
+  decided = true,
 }: Setup = {}) {
   const calls: string[] = [];
   const hits: string[] = [];
@@ -100,6 +105,23 @@ function setup({
     },
     vaultUnlocked: () => Promise.resolve(false),
   };
+  const invites: Invites = {
+    create: (inviterId, email) => {
+      calls.push(`invite ${inviterId} ${email}`);
+      return Promise.resolve(invited);
+    },
+    list: () => Promise.resolve([]),
+    details: () => Promise.resolve({ inviterEmail: 'owner@example.com' }),
+    confirm: (_, inviteId) => {
+      calls.push(`confirm ${inviteId}`);
+      return Promise.resolve(decided);
+    },
+    decline: (_, inviteId) => {
+      calls.push(`decline ${inviteId}`);
+      return Promise.resolve(decided);
+    },
+    accepted: () => Promise.resolve(),
+  };
   const app = createApp({
     checkDatabase: () => Promise.resolve('ok'),
     logger: silentLogger,
@@ -122,6 +144,7 @@ function setup({
     enrollment,
     registration,
     recoveryKits,
+    invites,
   });
   const post = (path: string, body: unknown, headers: Record<string, string> = {}) =>
     app.request(`/v1${path}`, {
@@ -261,6 +284,82 @@ describe('the recovery kit routes (spec 0003, R6)', () => {
   it('confirms a kit, and answers 404 when there is none', async () => {
     expect((await setup().post('/account/recovery-kit/confirm', {})).status).toBe(200);
     const missing = await setup({ kitExists: false }).post('/account/recovery-kit/confirm', {});
+    expect(missing.status).toBe(404);
+  });
+});
+
+describe('the invite routes (spec 0003, R2)', () => {
+  const inviteId = '7b1c2d3e-4f50-4617-8a9b-0c1d2e3f4a5b';
+
+  it('answers 401 without a session', async () => {
+    const { app, post, calls } = setup({ signedIn: null });
+    expect((await post('/invites', { email: 'invitee@example.org' })).status).toBe(401);
+    expect((await app.request('/v1/invites')).status).toBe(401);
+    expect((await post('/invites/confirm', { inviteId })).status).toBe(401);
+    expect(calls).toEqual([]);
+  });
+
+  it('sends an invite from the session account, counted per account', async () => {
+    const { post, calls, hits } = setup();
+    const response = await post('/invites', { email: 'invitee@example.org' });
+    expect(response.status).toBe(200);
+    expect(calls).toEqual([`invite ${owner.accountId} invitee@example.org`]);
+    expect(hits).toEqual([`invite_create_account ${owner.accountId}`]);
+  });
+
+  it.each([
+    ['unconfirmed', 403, 'account_unconfirmed'],
+    ['too_many', 409, 'too_many_invites'],
+    ['email_unavailable', 503, 'email_unavailable'],
+  ] as const)('answers %s with %i', async (invited, status, code) => {
+    const response = await setup({ invited }).post('/invites', { email: 'invitee@example.org' });
+    expect(response.status).toBe(status);
+    expect(await response.json()).toEqual({ error: { code } });
+  });
+
+  it('shows who sent a link, counted per address, with no session needed', async () => {
+    const { post, hits } = setup({ signedIn: null });
+    const response = await post('/invites/details', { token });
+    expect(await response.json()).toEqual({ inviterEmail: 'owner@example.com' });
+    expect(hits).toEqual(['invite_details_ip 198.51.100.7']);
+  });
+
+  it.each(['confirm', 'decline'] as const)(
+    '%ss only with a sensitive_settings step-up bound to that invite',
+    async (decision) => {
+      const { post, calls, consumed } = setup();
+      const response = await post(
+        `/invites/${decision}`,
+        { inviteId },
+        { 'arca-step-up-nonce': nonce },
+      );
+      expect(response.status).toBe(200);
+      expect(calls).toEqual([`${decision} ${inviteId}`]);
+      expect(consumed).toEqual([
+        {
+          purpose: 'sensitive_settings',
+          action: {
+            action: `${decision}Invite`,
+            targets: [inviteId],
+            nonce: new Uint8Array(Buffer.from(nonce, 'base64url')),
+          },
+        },
+      ]);
+    },
+  );
+
+  it('answers 403 step_up_required without a step-up, and 404 to an invite with no decision due', async () => {
+    const refused = await setup({ approved: false }).post(
+      '/invites/confirm',
+      { inviteId },
+      { 'arca-step-up-nonce': nonce },
+    );
+    expect(await refused.json()).toEqual({ error: { code: 'step_up_required' } });
+    const missing = await setup({ decided: false }).post(
+      '/invites/decline',
+      { inviteId },
+      { 'arca-step-up-nonce': nonce },
+    );
     expect(missing.status).toBe(404);
   });
 });

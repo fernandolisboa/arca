@@ -11,7 +11,6 @@ As of 2026-11-04. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md).
 | Sessions | 3 days idle, 30 days at most | Better Auth expiry (slid only while the session is under 30 days old, so it ends by day 33 at the latest) plus a daily cleanup job |
 | Pending document uploads (never confirmed) | 24 hours, with their objects | Daily cleanup job |
 | Browser and system families seen per passkey (`auth.passkey_client`) | While the passkey exists | Deleted with the passkey (foreign key cascade); erased with the account |
-| Invites | 48 hours unaccepted; once accepted, until the inviter confirms or declines the link, or 30 days | Daily cleanup job |
 | Unconfirmed invited accounts | Erased when the inviter declines them, or when `confirmed_at` is still empty 30 days after creation | Daily cleanup job starts `eraseAccount` |
 | Account links (inviter and invitee) | While both accounts exist | Registry |
 | Step-up challenges (`auth.step_up_challenge`) | 2 minutes, single use | Expiry check; deleted when verified; expired ones are swept on every new challenge; erased with the session or account; never backed up |
@@ -19,7 +18,8 @@ As of 2026-11-04. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md).
 | Recovery-activated passkey awaiting activation | 24 hours, then active or cancelled | Activation check |
 | Recovery links | 30 minutes, single use | Expiry check plus the daily cleanup job |
 | Recovery lockout after five wrong codes | 24 hours | Expiry check plus the daily cleanup job |
-| Owner-enrollment and invite registration contexts (`auth.registration_context`, with the address the link went to) | 30 minutes, single use | Expiry check; deleted when a registration spends it; a new owner link deletes earlier ones and expired ones; the daily cleanup job; never backed up |
+| Owner-enrollment registration contexts (`auth.registration_context`, with the address the link went to) | 30 minutes, single use | Expiry check; deleted when a registration spends it; a new owner link deletes earlier ones and expired ones; the daily cleanup job; never backed up |
+| Invites (`auth.invite`, with the invitee's address and the token's hash) | 48 hours unaccepted; once accepted, until the inviter confirms or declines the account, or 30 days, then with the accounts | Expiry check; an expired invite never accepted is deleted, with an `invite expired` event, whenever any account sends an invite, and by the daily cleanup job; a new invite to the same address replaces the open one; erased with the inviter's or the invitee's account; never backed up. Until the daily jobs exist (spec 0004 R10), expired invites wait for the next invite anyone sends, and an accepted, undecided one stays until the decision |
 | Spent enrollment codes (`auth.setup`, a hash, no personal data) | Forever, so an emptied user table never revives a code | Never erased; on the no-personal-data list; backed up |
 | Account recovery code (`auth.recovery_code`, a salted hash) | While the account exists; replaced by each new kit | Replaced in place; cascade on account erasure; backed up |
 | What a passkey's authenticator reported at registration (`auth.passkey_capability`) | While the passkey exists | Deleted with the passkey (foreign key cascade) |

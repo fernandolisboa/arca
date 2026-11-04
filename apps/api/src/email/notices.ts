@@ -6,6 +6,7 @@ import type { EmailMessage, EmailSender } from './email.js';
 export const noticeKinds = [
   'passkey_added',
   'new_sign_in',
+  'invite_accepted',
   'passkey_revoked',
   'pending_passkey_cancelled',
   'recovery_kit_regenerated',

@@ -5,7 +5,7 @@ import {
   type RegistrationVerifyRequest,
 } from '@arca/api-contract/routes';
 import type { Database, Transaction } from '@arca/db';
-import { passkeyCapability, registrationContext, setup } from '@arca/db/enrollment-schema';
+import { invite, passkeyCapability, registrationContext, setup } from '@arca/db/enrollment-schema';
 import type {
   RegistrationResponseJSON,
   VerifiedRegistrationResponse,
@@ -16,13 +16,25 @@ import type { AuditLog } from '../audit/log.js';
 import type { Logger } from '../logger.js';
 import { accounts, type Auth } from './auth.js';
 import { sha256, type OwnerCode } from './enrollment.js';
+import { liveInvite } from './invites.js';
 
 /** What the registration routes hand the passkey plugin for one ceremony. */
 interface Ceremony {
   readonly tokenHash: Buffer;
   readonly code: string | undefined;
   /** Set once the attestation is verified and its account created. */
-  registered?: { readonly credentialId: string; readonly prfEnabled: boolean };
+  registered?: {
+    readonly credentialId: string;
+    readonly prfEnabled: boolean;
+    /** The invite the registration accepted, whose inviter is told once it commits. */
+    readonly inviteId?: string;
+  };
+}
+
+/** What a link opens: the owner's enrollment or an invite (spec 0003, R2). */
+export interface LinkContext {
+  readonly id: string;
+  readonly kind: 'owner' | 'invite';
 }
 
 /** SimpleWebAuthn's types predate PRF; the contract lets only `prf.enabled` through. */
@@ -58,6 +70,83 @@ export function registrationHooks({ db, audit, ownerCode }: RegistrationSettings
   const ceremonies = new AsyncLocalStorage<Ceremony>();
   const transactions = new AsyncLocalStorage<Transaction>();
 
+  const liveContext = async (tokenHash: Buffer) => {
+    const [owner] = await db
+      .select({ id: registrationContext.id, email: registrationContext.email })
+      .from(registrationContext)
+      .where(live(tokenHash));
+    if (owner !== undefined) return { ...owner, kind: 'owner' as const };
+    const [invited] = await db
+      .select({ id: invite.id, email: invite.email })
+      .from(invite)
+      .where(liveInvite(tokenHash));
+    // An address that already has an account cannot register again, so its link opens nothing
+    // and the device stores no passkey for it. Sending the invite told the inviter nothing.
+    if (invited === undefined || (await accounts.withEmail(db, invited.email))) return undefined;
+    return { ...invited, kind: 'invite' as const };
+  };
+
+  /**
+   * Spends the owner context, records the code as used (its primary key makes a concurrent
+   * enrollment conflict), re-checks that no account exists and creates the confirmed account.
+   * Undefined when the context is not the owner's.
+   */
+  const ownerAccount = async (tx: Transaction, ceremony: Ceremony, context: string) => {
+    const [claimed] = await tx
+      .delete(registrationContext)
+      .where(live(ceremony.tokenHash, context))
+      .returning({ email: registrationContext.email });
+    if (claimed === undefined) return undefined;
+    const codeHash = ownerCode(ceremony.code);
+    if (codeHash === null) throw refused();
+    const [spent] = await tx
+      .insert(setup)
+      .values({ codeHash })
+      .onConflictDoNothing()
+      .returning({ codeHash: setup.codeHash });
+    if (spent === undefined || (await accounts.anyExists(tx))) throw refused();
+    const accountId = await accounts.createConfirmed(tx, claimed.email);
+    if (accountId === undefined) throw refused();
+    // Any other owner link, such as one from a racing request, can no longer register.
+    await tx.delete(registrationContext).where(eq(registrationContext.kind, 'owner'));
+    // Recorded before the commit, like every security event: a failed write fails the ceremony.
+    await audit.record({
+      code: 'owner_enrolled',
+      subjectAccountId: accountId,
+      actorAccountId: accountId,
+      details: {},
+    });
+    return { accountId, inviteId: undefined };
+  };
+
+  /**
+   * Creates the invited account, unconfirmed, and marks the invite accepted by it; the update's
+   * conditions make it single use under concurrency. Undefined when the context is no live invite.
+   */
+  const invitedAccount = async (tx: Transaction, ceremony: Ceremony, context: string) => {
+    const [found] = await tx
+      .select({ email: invite.email, inviterId: invite.inviterId })
+      .from(invite)
+      .where(liveInvite(ceremony.tokenHash, context));
+    if (found === undefined) return undefined;
+    const accountId = await accounts.createUnconfirmed(tx, found.email);
+    if (accountId === undefined) throw refused();
+    const [accepted] = await tx
+      .update(invite)
+      .set({ acceptedAt: sql`now()`, acceptedAccountId: accountId })
+      .where(liveInvite(ceremony.tokenHash, context))
+      .returning({ id: invite.id });
+    if (accepted === undefined) throw refused();
+    // The inviter's trail shows the link was used, and outlives a declined account.
+    await audit.record({
+      code: 'invite_accepted',
+      subjectAccountId: found.inviterId,
+      actorAccountId: accountId,
+      details: { inviteId: accepted.id },
+    });
+    return { accountId, inviteId: accepted.id };
+  };
+
   return {
     /** The database Better Auth's adapter gets: its transactions are shared with the callbacks. */
     adapterDb: new Proxy(db, {
@@ -69,27 +158,22 @@ export function registrationHooks({ db, audit, ownerCode }: RegistrationSettings
       },
     }),
 
-    /** Runs one call of the plugin for this link and code. */
-    within: <T>(tokenHash: Buffer, code: string | undefined, run: () => Promise<T>) =>
-      ceremonies.run({ tokenHash, code }, run),
+    /** Runs one call of the plugin for this ceremony. */
+    within: <T>(ceremony: Ceremony, run: () => Promise<T>) => ceremonies.run(ceremony, run),
 
     /** Only a live context names the account to create; there is no other way to sign up. */
     resolveUser: async ({ context }: { context?: string | null | undefined }) => {
       const ceremony = ceremonies.getStore();
       if (ceremony === undefined || typeof context !== 'string') throw refused();
-      const [found] = await db
-        .select({ id: registrationContext.id, email: registrationContext.email })
-        .from(registrationContext)
-        .where(live(ceremony.tokenHash, context));
-      if (found === undefined) throw refused();
+      const found = await liveContext(ceremony.tokenHash);
+      if (found?.id !== context) throw refused();
       // The context stands in for the account until afterVerification creates it.
       return { id: found.id, name: found.email, displayName: found.email };
     },
 
     /**
-     * In the ceremony's transaction: spends the context, then for the owner records the code as
-     * used (its primary key makes a concurrent enrollment conflict), re-checks that no account
-     * exists and creates the confirmed account.
+     * In the ceremony's transaction: spends the owner context or the invite and creates the
+     * account (see ownerAccount and invitedAccount).
      */
     afterVerification: async ({
       verification,
@@ -115,34 +199,16 @@ export function registrationHooks({ db, audit, ownerCode }: RegistrationSettings
       ) {
         throw refused();
       }
-      const [claimed] = await tx
-        .delete(registrationContext)
-        .where(live(ceremony.tokenHash, context))
-        .returning({ email: registrationContext.email });
-      const codeHash = ownerCode(ceremony.code);
-      if (claimed === undefined || codeHash === null) throw refused();
-      const [spent] = await tx
-        .insert(setup)
-        .values({ codeHash })
-        .onConflictDoNothing()
-        .returning({ codeHash: setup.codeHash });
-      if (spent === undefined || (await accounts.anyExists(tx))) throw refused();
-      const accountId = await accounts.createConfirmed(tx, claimed.email);
-      if (accountId === undefined) throw refused();
-      // Any other owner link, such as one from a racing request, can no longer register.
-      await tx.delete(registrationContext).where(eq(registrationContext.kind, 'owner'));
-      // Recorded before the commit, like every security event: a failed write fails the ceremony.
-      await audit.record({
-        code: 'owner_enrolled',
-        subjectAccountId: accountId,
-        actorAccountId: accountId,
-        details: {},
-      });
+      const created =
+        (await ownerAccount(tx, ceremony, context)) ??
+        (await invitedAccount(tx, ceremony, context));
+      if (created === undefined) throw refused();
       ceremony.registered = {
         credentialId: info.credential.id,
         prfEnabled: prfEnabled(clientData),
+        ...(created.inviteId === undefined ? {} : { inviteId: created.inviteId }),
       };
-      return { userId: accountId };
+      return { userId: created.accountId };
     },
 
     /**
@@ -161,12 +227,9 @@ export function registrationHooks({ db, audit, ownerCode }: RegistrationSettings
     },
 
     /** The context a link token opens, while it can still register. */
-    liveContext: async (tokenHash: Buffer) => {
-      const [found] = await db
-        .select({ id: registrationContext.id, kind: registrationContext.kind })
-        .from(registrationContext)
-        .where(live(tokenHash));
-      return found;
+    liveContext: async (tokenHash: Buffer): Promise<LinkContext | undefined> => {
+      const found = await liveContext(tokenHash);
+      return found === undefined ? undefined : { id: found.id, kind: found.kind };
     },
   };
 }
@@ -193,6 +256,8 @@ export function registration(
   hooks: RegistrationHooks,
   ownerCode: OwnerCode,
   logger: Logger,
+  /** Runs after a registration from an invite commits; it must not throw. */
+  inviteAccepted: (inviteId: string) => Promise<void>,
 ): Registration {
   return {
     // The code is checked before the ceremony too, so a typo costs no passkey on the device.
@@ -203,7 +268,7 @@ export function registration(
       if (context.kind === 'owner' && ownerCode(code) === null) {
         return { ok: false, reason: 'invalid_code' };
       }
-      const { headers: answered, response } = await hooks.within(tokenHash, code, () =>
+      const { headers: answered, response } = await hooks.within({ tokenHash, code }, () =>
         auth.api.generatePasskeyRegistrationOptions({
           headers,
           query: { context: context.id },
@@ -215,14 +280,20 @@ export function registration(
       return { ok: true, body, setCookies: answered.getSetCookie() };
     },
     verify: async (headers, { token, code, response }) => {
+      const ceremony: Parameters<RegistrationHooks['within']>[0] = {
+        tokenHash: sha256(token),
+        code,
+      };
       try {
-        const { headers: answered } = await hooks.within(sha256(token), code, () =>
+        const { headers: answered } = await hooks.within(ceremony, () =>
           auth.api.verifyPasskeyRegistration({
             headers,
             body: { response, createSession: true },
             returnHeaders: true,
           }),
         );
+        const inviteId = ceremony.registered?.inviteId;
+        if (inviteId !== undefined) await inviteAccepted(inviteId);
         return { ok: true, body: {}, setCookies: answered.getSetCookie() };
       } catch (error) {
         // The plugin turns every failure inside it into an APIError: a 500 for an attestation

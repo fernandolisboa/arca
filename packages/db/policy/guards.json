@@ -9,6 +9,10 @@
       "reason": "Better Auth table; only app_auth has privileges on the auth schema, and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
     },
     {
+      "table": "auth.invite",
+      "reason": "Arca's invites in the auth schema; only app_auth has privileges on the auth schema, they are read before the invitee has an account, and every inviter query names the inviter's own account, so row-level security would not narrow anything."
+    },
+    {
       "table": "auth.outbox",
       "reason": "Non-production outbox written and read by app_auth only; no per-request identity, so row-level security would not narrow anything."
     },

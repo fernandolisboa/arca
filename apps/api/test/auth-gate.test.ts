@@ -14,6 +14,7 @@ const silentLogger: Logger = { info: () => undefined, error: () => undefined };
 const signedIn: SessionResponse = {
   accountId: '3f2b8a4e-6c1d-4e5f-9a7b-0c1d2e3f4a5b',
   email: 'owner@example.com',
+  confirmed: true,
   device: { browser: 'firefox', os: 'linux' },
 };
 

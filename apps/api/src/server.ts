@@ -6,6 +6,7 @@ import { createAuth, credentialStore } from './auth/auth.js';
 import { rateLimiter, type RateLimiter } from './auth/rate-limit.js';
 import { clientAddressFor } from './client-address.js';
 import { createEnrollment, ownerCode, type Enrollment } from './auth/enrollment.js';
+import { createInvites, type Invites } from './auth/invites.js';
 import { recoveryKits, type RecoveryKits } from './auth/recovery-kit.js';
 import { registration, registrationHooks, type Registration } from './auth/registration.js';
 import { authService, type AuthService } from './auth/service.js';
@@ -81,6 +82,7 @@ interface AuthParts {
   readonly enrollment: Enrollment;
   readonly registration: Registration;
   readonly recoveryKits: RecoveryKits;
+  readonly invites: Invites;
 }
 
 let parts: Promise<AuthParts> | undefined;
@@ -107,12 +109,14 @@ function authParts(): Promise<AuthParts> {
       limiter,
       registration: hooks,
     });
+    const invites = createInvites({ db, audit, email, notices, i18n, origin, logger });
     return {
       auth: authService(auth),
       stepUp: createStepUp({ db, credentials: credentialStore(db), audit, origin, logger }),
       enrollment: createEnrollment({ db, email, i18n, origin, ownerCode: enrollmentCode }),
-      registration: registration(auth, hooks, enrollmentCode, logger),
+      registration: registration(auth, hooks, enrollmentCode, logger, invites.accepted),
       recoveryKits: recoveryKits({ db, audit, notices, logger }),
+      invites,
     };
   })();
   // A failed build is retried on the next request instead of being cached.
@@ -172,6 +176,16 @@ const app = createApp({
     issueFirst: async (accountId) => (await authParts()).recoveryKits.issueFirst(accountId),
     regenerate: async (accountId) => (await authParts()).recoveryKits.regenerate(accountId),
     confirm: async (accountId) => (await authParts()).recoveryKits.confirm(accountId),
+  },
+  invites: {
+    create: async (inviterId, email) => (await authParts()).invites.create(inviterId, email),
+    list: async (inviterId) => (await authParts()).invites.list(inviterId),
+    details: async (token) => (await authParts()).invites.details(token),
+    confirm: async (inviterId, inviteId) =>
+      (await authParts()).invites.confirm(inviterId, inviteId),
+    decline: async (inviterId, inviteId) =>
+      (await authParts()).invites.decline(inviterId, inviteId),
+    accepted: async (inviteId) => (await authParts()).invites.accepted(inviteId),
   },
   authLimits: {
     limiter,

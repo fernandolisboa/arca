@@ -4,7 +4,11 @@ import {
   AuditEventsQuery,
   authBasePath,
   authRoutes,
+  confirmInvite,
+  createInvite,
+  declineInvite,
   enrollOwner,
+  inviteDetails,
   regenerateRecoveryKit,
   registrationOptions,
   registrationVerify,
@@ -23,7 +27,8 @@ import { routePath } from 'hono/route';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import type { AuditReader } from './audit/log.js';
 import type { Enrollment } from './auth/enrollment.js';
-import { authRouteLimits, registrationLimits, stepUpLimits } from './auth/limits.js';
+import type { Invites } from './auth/invites.js';
+import { authRouteLimits, inviteLimits, registrationLimits, stepUpLimits } from './auth/limits.js';
 import type { RateLimiter, RateLimitRule } from './auth/rate-limit.js';
 import type { RecoveryKits } from './auth/recovery-kit.js';
 import type { Registration, RegistrationOutcome } from './auth/registration.js';
@@ -76,6 +81,8 @@ export interface AppDependencies {
   readonly registration?: Registration;
   /** The account part of the recovery kit (spec 0003, R6); absent, its routes answer 401. */
   readonly recoveryKits?: RecoveryKits;
+  /** Invites and their confirmation (spec 0003, R2); absent, their routes answer 401 or 404. */
+  readonly invites?: Invites;
   /** The signed-in account's audit events; absent, the route answers 401. */
   readonly audit?: AuditReader;
   /**
@@ -96,6 +103,8 @@ export type ErrorCode =
   | 'invalid_code'
   | 'registration_refused'
   | 'email_unavailable'
+  | 'account_unconfirmed'
+  | 'too_many_invites'
   | 'request_failed'
   | 'internal_error';
 
@@ -193,6 +202,7 @@ export function createApp({
   enrollment,
   registration,
   recoveryKits,
+  invites,
   audit,
   outbox,
 }: AppDependencies) {
@@ -261,7 +271,7 @@ export function createApp({
     c.set('errorCode', 'rate_limited');
     return c.json({ error: { code: 'rate_limited' } } satisfies ErrorResponse, 429);
   };
-  const fail = <Status extends 401 | 403 | 404 | 503>(
+  const fail = <Status extends 401 | 403 | 404 | 409 | 503>(
     c: Context<AppEnv>,
     code: ErrorCode,
     status: Status,
@@ -392,6 +402,54 @@ export function createApp({
     if (!(await recoveryKits.confirm(current.accountId))) return fail(c, 'not_found', 404);
     return c.json({}, 200);
   });
+
+  v1.openapi(openApiRoutes.createInvite, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || invites === undefined || authLimits === undefined) {
+      return unauthorized(c);
+    }
+    const limited = await overLimit(c, authLimits, inviteLimits.create, current.accountId);
+    if (limited !== undefined) return limited;
+    const { email } = createInvite.body.parse(await c.req.json());
+    const outcome = await invites.create(current.accountId, email);
+    if (outcome === 'unconfirmed') return fail(c, 'account_unconfirmed', 403);
+    if (outcome === 'too_many') return fail(c, 'too_many_invites', 409);
+    if (outcome === 'email_unavailable') return fail(c, 'email_unavailable', 503);
+    return c.json({}, 200);
+  });
+
+  v1.openapi(openApiRoutes.listInvites, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || invites === undefined) return unauthorized(c);
+    return c.json({ invites: [...(await invites.list(current.accountId))] }, 200);
+  });
+
+  v1.openapi(openApiRoutes.inviteDetails, async (c) => {
+    if (invites === undefined || authLimits === undefined) return fail(c, 'not_found', 404);
+    const limited = await overAddressLimit(c, authLimits, inviteLimits.details);
+    if (limited !== undefined) return limited;
+    const details = await invites.details(inviteDetails.body.parse(await c.req.json()).token);
+    return details === undefined ? fail(c, 'not_found', 404) : c.json(details, 200);
+  });
+
+  // Both decisions are bound to the invite by a step-up (spec 0003, R2).
+  for (const [route, decide] of [
+    [confirmInvite, 'confirm'],
+    [declineInvite, 'decline'],
+  ] as const) {
+    v1.openapi(openApiRoutes[route.operationId], async (c) => {
+      const current = await signedIn(c);
+      if (current === null || invites === undefined) return unauthorized(c);
+      const { inviteId } = route.body.parse(await c.req.json());
+      const approved = await stepUpGranted(c, current, 'sensitive_settings', {
+        action: route.operationId,
+        targets: [inviteId],
+      });
+      if (!approved) return fail(c, 'step_up_required', 403);
+      if (!(await invites[decide](current.accountId, inviteId))) return fail(c, 'not_found', 404);
+      return c.json({}, 200);
+    });
+  }
 
   v1.openapi(openApiRoutes.auditEvents, async (c) => {
     const current = await signedIn(c);
