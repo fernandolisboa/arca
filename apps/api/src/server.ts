@@ -56,8 +56,16 @@ const environment = readDeploymentEnvironment();
 
 let limiterInstance: RateLimiter | undefined;
 
-/** The auth routes' counters, on the app_auth pool, keyed by the environment's HMAC key. */
-function limiter(): RateLimiter {
+/**
+ * The auth routes' counters, on the app_auth pool, keyed by the environment's HMAC key; built on
+ * first use, so a missing key fails the auth routes, not the whole server.
+ */
+const limiter: RateLimiter = {
+  hit: (rule, subject) => built().hit(rule, subject),
+  sweep: () => built().sweep(),
+};
+
+function built(): RateLimiter {
   limiterInstance ??= rateLimiter({ db: authConnection(), key: readRateLimitKey() });
   return limiterInstance;
 }
@@ -83,7 +91,7 @@ function authenticator(): Promise<AuthService> {
         logger,
         audit,
         notices,
-        limiter: limiter(),
+        limiter,
       }),
     );
   })();
@@ -116,7 +124,7 @@ const app = createApp({
   cron: {
     readSecret: readCronSecret,
     startHeartbeat: (runDate) => startWorkflow(heartbeat, [runDate]),
-    sweepRateLimits: () => limiter().sweep(),
+    sweepRateLimits: () => limiter.sweep(),
   },
   ...withOrigin(ownOrigin()),
   auth: {
@@ -125,11 +133,10 @@ const app = createApp({
     refresh: async (headers) => (await authenticator()).refresh(headers),
   },
   authLimits: {
-    limiter: {
-      hit: (rule, subject) => limiter().hit(rule, subject),
-      sweep: () => limiter().sweep(),
-    },
-    clientAddress: clientAddressFor(environment),
+    limiter,
+    clientAddress: clientAddressFor(environment, () => {
+      logger.error({ errorName: 'ClientAddressUnknown' });
+    }),
   },
   audit: { events: (accountId, query) => auditReader(connected().db).events(accountId, query) },
   ...(outbox === undefined ? {} : { outbox }),

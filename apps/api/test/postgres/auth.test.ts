@@ -152,15 +152,20 @@ async function account(email: string): Promise<{ userId: string; passkey: Softwa
     { email, name: '', emailVerified: true },
     { method: 'test' },
   );
+  return { userId: user.id, passkey: await addPasskey(user.id) };
+}
+
+/** Another software passkey for an account; returns it once its row is stored. */
+async function addPasskey(userId: string): Promise<SoftwarePasskey> {
   const passkey = softwarePasskey(new URL(origin).hostname);
   await asAdmin(database, (client) =>
     client.query(
       `INSERT INTO auth.passkey (public_key, user_id, credential_id, counter, device_type, backed_up)
        VALUES ($1, $2, $3, 0, 'multiDevice', true)`,
-      [passkey.publicKey, user.id, passkey.credentialId],
+      [passkey.publicKey, userId, passkey.credentialId],
     ),
   );
-  return { userId: user.id, passkey };
+  return passkey;
 }
 
 interface SignInOptions {
@@ -708,21 +713,67 @@ describe('the auth rate limits (spec 0003, R10)', () => {
     });
   }
 
-  it('records one sign_in_failed event per credential per window', async () => {
-    const { userId, passkey } = await account('failing@example.com');
-    const [stored] = await asAdmin(database, async (client) => {
+  async function passkeyIdOf(credentialId: string) {
+    return asAdmin(database, async (client) => {
       const result = await client.query<{ id: string }>(
         'SELECT id FROM auth.passkey WHERE credential_id = $1',
-        [passkey.credentialId],
+        [credentialId],
       );
-      return result.rows;
+      return result.rows[0]?.id;
     });
-    await passkeySignIn(passkey, { userVerified: false });
-    await passkeySignIn(passkey, { userVerified: false });
+  }
+
+  async function failedTwice(passkey: SoftwarePasskey, via: App = app) {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const { verified } = await passkeySignIn(passkey, { userVerified: false, via });
+      expect(verified.status).toBe(401);
+    }
+  }
+
+  it('records one sign_in_failed event per credential per window', async () => {
+    const { userId, passkey } = await account('failing@example.com');
+    await failedTwice(passkey);
     expect(await failedSignIns(userId)).toEqual([
-      { actor: null, details: { passkeyId: stored?.id } },
+      { actor: null, details: { passkeyId: await passkeyIdOf(passkey.credentialId) } },
     ]);
     expect(signInFailedLog).toEqual({ name: 'sign_in_failed_log', limit: 1, windowSeconds: 3600 });
+  });
+
+  it('counts the failure log per credential, not per account', async () => {
+    const { userId, passkey } = await account('two-keys@example.org');
+    const other = await addPasskey(userId);
+    await failedTwice(passkey);
+    await failedTwice(other);
+    const recorded = (await failedSignIns(userId)).map(({ details }) => details);
+    expect(recorded).toHaveLength(2);
+    expect(recorded).toEqual(
+      expect.arrayContaining([
+        { passkeyId: await passkeyIdOf(passkey.credentialId) },
+        { passkeyId: await passkeyIdOf(other.credentialId) },
+      ]),
+    );
+  });
+
+  it('still refuses the sign-in when the failure log cannot be counted', async () => {
+    const lines: unknown[] = [];
+    const failing = createAuth({
+      db: authDb,
+      secret,
+      origin,
+      logger: { info: () => undefined, error: (line) => lines.push(line) },
+      audit: auditLog(auditDb),
+      notices,
+      limiter: {
+        hit: () => Promise.reject(new Error('counter unavailable')),
+      },
+    });
+    const { userId, passkey } = await account('uncounted@example.com');
+    await failedTwice(passkey, appFor(failing));
+    expect(await failedSignIns(userId)).toEqual([]);
+    expect(lines).toEqual([
+      { errorName: 'SignInFailedLog:Error' },
+      { errorName: 'SignInFailedLog:Error' },
+    ]);
   });
 
   it('records nothing for a credential no account holds', async () => {

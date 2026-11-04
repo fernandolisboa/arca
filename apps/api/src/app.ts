@@ -35,7 +35,7 @@ export interface CronDependencies {
 
 /** Limits on the auth routes (spec 0003, R10); required whenever `auth` is given. */
 export interface AuthLimits {
-  readonly limiter: RateLimiter;
+  readonly limiter: Pick<RateLimiter, 'hit'>;
   /** The client's IP address, which the limiter HMACs before storing anything. */
   readonly clientAddress: (headers: Headers) => string;
 }
@@ -253,6 +253,11 @@ export function createApp({
     if (auth === undefined || authLimits === undefined || match === undefined) {
       return reject(c, 'not_found', 404);
     }
+    // Counted only for this site's own pages: a cross-site page loading the options URL (an
+    // image tag needs no Origin) would otherwise spend the budget of everyone behind its NAT.
+    // Clients that send no Sec-Fetch-Site, such as native apps, are counted as usual.
+    const site = c.req.header('sec-fetch-site');
+    if (site !== undefined && site !== 'same-origin') return reject(c, 'cross_origin', 403);
     const { route, limit } = match;
     const outcome = await authLimits.limiter.hit(
       limit,

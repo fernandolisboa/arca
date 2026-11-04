@@ -1,6 +1,6 @@
 # Retention schedule
 
-As of 2026-11-02. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md). Every row names how the period is enforced. A new kind of data, or a new processor, adds a row here in the same change, together with its entry in the personal-data registry and the data-flow table in [ARCHITECTURE.md](ARCHITECTURE.md#data-flows).
+As of 2026-11-04. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md). Every row names how the period is enforced. A new kind of data, or a new processor, adds a row here in the same change, together with its entry in the personal-data registry and the data-flow table in [ARCHITECTURE.md](ARCHITECTURE.md#data-flows).
 
 ## In our systems
 
@@ -23,7 +23,7 @@ As of 2026-11-02. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md).
 | Notification channels (push subscriptions) | Until revoked, reported gone by the push service, or the account is deleted | Delivery step and registry |
 | Notification messages and their deliveries | 90 days | Daily cleanup job |
 | Vault envelopes, recipients, sharing state and document rows | While the account exists; a rotated identity's envelopes until every sharing owner re-encrypts, or 90 days | Registry; daily cleanup job for rotated envelopes |
-| Rate-limit counters (`auth.rate_limit`, HMAC keys only) | Their window (up to an hour; a day for invites) | A hit after the window starts a new one; the daily `/internal/cron/rate-limit-sweep` deletes ended windows; never backed up |
+| Rate-limit counters (`auth.rate_limit`, HMAC keys only) | Their window (up to an hour; a day for invites) | A hit after the window starts a new one; the daily `/internal/cron/rate-limit-sweep` deletes ended windows in production; previews run no cron, so their ended windows stay until the next hit on the same key, bounded by the routes and addresses that reached them; never backed up |
 | Non-production email outbox (`auth.outbox`) | 7 days | Each outbox write deletes expired rows, and the preview page shows only unexpired ones; a daily cleanup job joins with the other cleanups |
 | Audit log | 5 years; records hold identifiers and event codes only | Purge job, specified before the first record turns 5 (2031) |
 | Data exports | Not stored; built per request | — |

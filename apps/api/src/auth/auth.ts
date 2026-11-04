@@ -8,7 +8,7 @@ import {
 } from '@arca/db/auth-schema';
 import type { Database } from '@arca/db';
 import { betterAuth } from 'better-auth';
-import { APIError, createAuthMiddleware } from 'better-auth/api';
+import { APIError, createAuthMiddleware, isAPIError } from 'better-auth/api';
 import { eq, lte, sql } from 'drizzle-orm';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { authBasePath, DeviceDescription } from '@arca/api-contract/routes';
@@ -32,7 +32,7 @@ export interface AuthSettings {
   /** Security notices by email, such as a sign-in from a new browser (spec 0003, R7). */
   readonly notices: Notices;
   /** Spaces out the failed sign-in events of one credential (spec 0003, R7 and R10). */
-  readonly limiter: RateLimiter;
+  readonly limiter: Pick<RateLimiter, 'hit'>;
 }
 
 const daySeconds = 24 * 60 * 60;
@@ -120,7 +120,7 @@ export function createAuth({ db, secret, origin, logger, audit, notices, limiter
       // A refused sign-in with a known passkey is recorded; the refusal itself stands.
       after: createAuthMiddleware(async (ctx): Promise<unknown> => {
         const returned: unknown = ctx.context.returned;
-        if (ctx.path === signInPath && returned instanceof APIError) {
+        if (ctx.path === signInPath && isAPIError(returned)) {
           await recordFailedSignIn(ctx.body);
           return undefined;
         }
@@ -224,7 +224,8 @@ export function createAuth({ db, secret, origin, logger, audit, notices, limiter
   /**
    * One `sign_in_failed` event per credential per window, and only for a passkey that exists
    * (spec 0003, R7): the person who holds it sees the attempts without the log filling up. A
-   * failure here is logged and never changes the refusal.
+   * failure here is logged and never changes the refusal. The counter is spent before the write,
+   * so a failed write leaves that credential without an event until the window ends.
    */
   async function recordFailedSignIn(body: unknown) {
     try {

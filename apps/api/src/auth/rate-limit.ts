@@ -53,11 +53,8 @@ export function rateLimiter({ db, key }: { db: Database; key: string }): RateLim
         : { allowed: false, retryAfterSeconds: Math.max(1, row.retry_after) };
     },
     async sweep() {
-      const deleted = await db
-        .delete(rateLimit)
-        .where(lte(rateLimit.expiresAt, sql`now()`))
-        .returning({ key: rateLimit.key });
-      return deleted.length;
+      const result = await db.delete(rateLimit).where(lte(rateLimit.expiresAt, sql`now()`));
+      return result.rowCount ?? 0;
     },
   };
 }

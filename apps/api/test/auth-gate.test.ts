@@ -1,6 +1,8 @@
 import { createApiClient, routes, type SessionResponse } from '@arca/api-contract/client';
 import { describe, expect, it } from 'vitest';
+import { apiBasePath, authRoutes } from '@arca/api-contract/routes';
 import { createApp } from '../src/app.js';
+import { authRouteLimits } from '../src/auth/limits.js';
 import type { AuthService } from '../src/auth/service.js';
 import type { Logger } from '../src/logger.js';
 import type { RateLimitRule } from '../src/auth/rate-limit.js';
@@ -341,7 +343,6 @@ describe('the auth rate limits (spec 0003, R10)', () => {
             hits.push({ rule, subject });
             return Promise.resolve(allowed ? { allowed } : { allowed, retryAfterSeconds: 120 });
           },
-          sweep: () => Promise.resolve(0),
         },
         clientAddress: (headers) => headers.get('x-test-address') ?? 'none',
       },
@@ -361,12 +362,31 @@ describe('the auth rate limits (spec 0003, R10)', () => {
     ]);
   });
 
-  it('answers 429 with Retry-After over the limit, before Better Auth or body checks', async () => {
-    const { app, handled } = limited(false);
-    const response = await verify(app, '{}');
-    expect(response.status).toBe(429);
-    expect(response.headers.get('retry-after')).toBe('120');
-    expect(await response.json()).toEqual({ error: { code: 'rate_limited' } });
+  it.each(authRoutes)(
+    'answers 429 with Retry-After over the $operationId limit, before Better Auth or body checks',
+    async (route) => {
+      const { app, hits, handled } = limited(false);
+      const response = await app.request(`${apiBasePath}${route.path}`, {
+        method: route.method.toUpperCase(),
+        headers: { origin, 'content-type': 'application/json' },
+        ...(route.method === 'get' ? {} : { body: '{}' }),
+      });
+      expect(response.status).toBe(429);
+      expect(response.headers.get('retry-after')).toBe('120');
+      expect(await response.json()).toEqual({ error: { code: 'rate_limited' } });
+      expect(handled).toEqual([]);
+      expect(hits.map(({ rule }) => rule)).toEqual([authRouteLimits[route.operationId]]);
+    },
+  );
+
+  it('refuses a cross-site request without counting it', async () => {
+    const { app, hits, handled } = limited(true);
+    const response = await app.request('/v1/auth/passkey/generate-authenticate-options', {
+      headers: { 'sec-fetch-site': 'cross-site' },
+    });
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: { code: 'cross_origin' } });
+    expect(hits).toEqual([]);
     expect(handled).toEqual([]);
   });
 
