@@ -4,7 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { auditLog } from '../../src/audit/log.js';
 import { createDevices, type Devices } from '../../src/auth/devices.js';
 import { recoveryKits, type RecoveryKits } from '../../src/auth/recovery-kit.js';
-import { createRecovery, recoveryAttempts, type Recovery } from '../../src/auth/recovery.js';
+import { createRecovery, recoveryAttempts, type RecoveryService } from '../../src/auth/recovery.js';
 import type { EmailMessage } from '../../src/email/email.js';
 import type { Notice } from '../../src/email/notices.js';
 import { softwarePasskey } from '../software-passkey.js';
@@ -21,7 +21,7 @@ let testDatabase: AuthTestDatabase;
 let fixtures: ReturnType<typeof accountFixtures>;
 let devices: Devices;
 let kits: RecoveryKits;
-let recovery: Recovery;
+let recovery: RecoveryService;
 const mail: EmailMessage[] = [];
 const sent: Notice[] = [];
 const floors: number[] = [];
@@ -54,6 +54,8 @@ beforeAll(async () => {
     logger: silentLogger,
     emailAvailable: true,
     status: devices.status,
+    // In the deployment a workflow step runs it; here it runs inline, so the tests see its mail.
+    deliver: (accountId) => recovery.issueLink(accountId),
     sleep: (ms) => {
       floors.push(ms);
       return Promise.resolve();
@@ -161,6 +163,47 @@ describe('starting recovery (spec 0003, R6)', () => {
     expect((await recovery.redeem(second, code)).ok).toBe(true);
   });
 
+  it('hands only an open account, by its ID, to the run behind the answer', async () => {
+    const handed: string[] = [];
+    const behind = createRecovery({
+      db: testDatabase.authDb,
+      audit: auditLog(testDatabase.auditDb),
+      email: { send: () => Promise.reject(new Error('the start never sends')) },
+      notices: { send: () => Promise.reject(new Error('the start never notifies')) },
+      i18n: await createI18n(),
+      origin,
+      logger: silentLogger,
+      emailAvailable: true,
+      status: devices.status,
+      deliver: (accountId) => {
+        handed.push(accountId);
+        return Promise.resolve();
+      },
+      sleep: () => Promise.resolve(),
+    });
+    const { account } = await owner();
+    const withoutKit = await fixtures.account(1);
+    for (const address of [account.email, withoutKit.email, 'nobody@example.com']) {
+      expect(await behind.start(address)).toBe('accepted');
+    }
+    expect(handed).toEqual([account.accountId]);
+    expect(await linksOf(account)).toBe(0);
+  });
+
+  it('sends nothing when recovery closed after the start was answered', async () => {
+    const { account } = await owner();
+    await testDatabase.asAdmin((client) =>
+      client.query(
+        `INSERT INTO auth.recovery_lock (account_id, failures, locked_until)
+           VALUES ($1, 0, now() + interval '1 hour')`,
+        [account.accountId],
+      ),
+    );
+    await recovery.issueLink(account.accountId);
+    expect(mailTo(account)).toEqual([]);
+    expect(await linksOf(account)).toBe(0);
+  });
+
   it('sends nothing to an account without a recovery code', async () => {
     const account = await fixtures.account(1);
     await recovery.start(account.email);
@@ -178,6 +221,7 @@ describe('starting recovery (spec 0003, R6)', () => {
       logger: silentLogger,
       emailAvailable: false,
       status: devices.status,
+      deliver: () => Promise.reject(new Error('unused')),
     });
     expect(await closed.start('nobody@example.com')).toBe('email_unavailable');
   });

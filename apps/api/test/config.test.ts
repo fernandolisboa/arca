@@ -205,12 +205,6 @@ describe('readAuthOrigin', () => {
 });
 
 describe('the production site file (spec 0003, R9)', () => {
-  // Remove with the change that moves recovery's send behind its answer (spec 0003, R6): until
-  // then a slow send would show that an address has an account.
-  it('names no sending domain while recovery still waits for its send', () => {
-    expect(productionSite.senderDomain).toBeNull();
-  });
-
   it('names host names only', () => {
     for (const name of [productionSite.host, productionSite.senderDomain]) {
       if (name !== null) expect(name).toMatch(hostNamePattern);
