@@ -10,6 +10,7 @@
     "CC0-1.0",
     "CC-BY-4.0",
     "Unlicense",
+    "OFL-1.1",
     "Python-2.0"
   ],
   "exceptions": [
@@ -22,6 +23,16 @@
       "package": "lightningcss-*@1.33.0",
       "license": "MPL-2.0",
       "reason": "Platform binaries of lightningcss 1.33.0; same reason. Pinned to the version, so an update is judged again."
+    },
+    {
+      "package": "@axe-core/playwright@4.14.0",
+      "license": "MPL-2.0",
+      "reason": "Accessibility checks in the Playwright suite (ADR-0020, spec 0006 R11). Dev only and never bundled; MPL-2.0 is file-level copyleft, as for lightningcss. Pinned to the version, so an update is judged again."
+    },
+    {
+      "package": "axe-core@4.14.0",
+      "license": "MPL-2.0",
+      "reason": "The engine @axe-core/playwright 4.14.0 runs in the page under test; same reason."
     },
     {
       "package": "@vercel/cli-auth@0.0.1",
