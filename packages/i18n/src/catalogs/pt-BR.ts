@@ -131,6 +131,9 @@ export const ptBR = {
     kitPending:
       'Falta guardar o seu kit de recuperação. Sem ele, perder todas as chaves de acesso deixa você fora da conta.',
     kitLink: 'Guardar o kit agora',
+    unconfirmed:
+      'Sua conta está aguardando a confirmação de quem convidou você. Até lá, você não consegue convidar ninguém nem enviar documentos.',
+    invites: 'Convidar alguém',
   },
   /** Creating the first account (spec 0003, R2): the owner's link request, then the passkey. */
   enroll: {
@@ -156,6 +159,60 @@ export const ptBR = {
       newLink: 'Pedir um novo link',
       signIn: 'Entrar',
     },
+  },
+  /** Accepting an invite (spec 0003, R2): who sent it, then the passkey. */
+  acceptInvite: {
+    title: 'Aceitar o convite',
+    from: '{email} convidou você para usar o Arca.',
+    lead: 'Para entrar, o seu celular ou computador vai salvar uma chave de acesso para o Arca. Não precisa de senha.',
+    checking: 'Conferindo o convite…',
+    submit: 'Criar chave de acesso',
+    waiting: 'Confirme no seu dispositivo para continuar.',
+    failure:
+      '{reason, select, expired {Este convite não vale mais. Peça um novo a quem convidou você.} cancelled {Não deu para criar a chave de acesso. Tente de novo quando quiser.} refused {Não deu para criar a conta com esta chave de acesso. Se você já tem conta, entre com a sua chave.} unavailable {Este navegador não aceita chaves de acesso. Abra o link em um navegador atualizado, como Chrome, Safari, Edge ou Firefox.} limited {Muitas tentativas por esta conexão. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+    noLink: 'Abra o link do email de convite para criar sua conta.',
+    checkFailure:
+      '{reason, select, limited {Muitas tentativas por esta conexão. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não conseguimos conferir o convite agora. Tente de novo.}}',
+    retry: 'Tentar de novo',
+    signIn: 'Entrar',
+  },
+  /** A link that creates an account, opened in a browser already signed in (spec 0003, R2). */
+  linkSession: {
+    signedIn:
+      'Este navegador já entrou no Arca como {email}. Este link cria outra conta, então saia desta conta primeiro.',
+    signOut: 'Sair desta conta',
+    signingOut: 'Saindo…',
+    failure: 'Não deu para sair agora. Tente de novo.',
+  },
+  /** Sending invites and deciding on the accounts that accepted them (spec 0003, R2). */
+  invites: {
+    title: 'Convites',
+    lead: 'Convide quem vai planejar a mudança com você. O convite vale por {hours} horas. Quando a pessoa aceitar, você confirma a conta dela aqui.',
+    email: 'Email de quem você quer convidar',
+    submit: 'Enviar convite',
+    sending: 'Enviando…',
+    sent: 'Convite enviado para {email}.',
+    sendFailure:
+      '{reason, select, account_unconfirmed {Sua conta está aguardando a confirmação de quem convidou você, então você não pode convidar ninguém por enquanto.} too_many_invites {Você já tem {max} convites abertos. Espere alguém aceitar ou um convite vencer.} email_unavailable {O Arca ainda não consegue mandar emails. Tente de novo mais tarde.} limited {Você mandou muitos convites hoje. Tente de novo amanhã.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+    listTitle: 'Seus convites',
+    empty: 'Você ainda não mandou nenhum convite.',
+    listFailure: 'Não conseguimos carregar seus convites agora.',
+    retry: 'Tentar de novo',
+    status:
+      '{status, select, open {Esperando a pessoa aceitar, até {expires}} accepted {Aceito. Falta você confirmar} confirmed {Confirmado} other {}}',
+    reviewTitle: 'Confirme a conta de {email}',
+    reviewLead:
+      'Confirme só se este email for mesmo de quem você convidou. Se não reconhecer, recuse: a conta é apagada.',
+    noVault:
+      'Essa pessoa ainda não criou a chave do cofre. Quando vocês compartilharem um documento pela primeira vez, o Arca pede para vocês conferirem juntos a impressão digital da chave dela.',
+    confirm: 'Confirmar conta',
+    decline: 'Recusar e apagar a conta',
+    waiting: 'Confirme no seu dispositivo para continuar.',
+    confirmed: 'Conta de {email} confirmada.',
+    declined: 'Conta de {email} apagada.',
+    decisionFailure:
+      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} not_found {Esse convite não espera mais uma decisão. Atualize a página.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+    signIn: 'Entre para ver seus convites.',
   },
   /** The account part of the recovery kit (spec 0003, R6): shown once, printed or written down. */
   recoveryKit: {
@@ -205,7 +262,7 @@ export const ptBR = {
     /** The link that opens an invite; it carries a one-time token and never names the inviter. */
     invite: {
       subject: 'Você recebeu um convite para o Arca',
-      body: 'Uma pessoa que já usa o Arca convidou você para entrar. Use o link abaixo para criar sua conta com uma chave de acesso. Ele vale por 48 horas e funciona uma vez só. Na página, você vê quem mandou o convite. Se não esperava por isso, pode ignorar este email.',
+      body: 'Uma pessoa que já usa o Arca convidou você para entrar. Use o link abaixo para criar sua conta com uma chave de acesso. Ele vale por {hours} horas e funciona uma vez só. Na página, você vê quem mandou o convite. Se não esperava por isso, pode ignorar este email.',
       link: 'Aceitar o convite: {url}',
     },
     notice: {

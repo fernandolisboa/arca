@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EnrollRouteImport } from './routes/enroll'
+import { Route as InviteRouteImport } from './routes/invite'
+import { Route as InvitesRouteImport } from './routes/invites'
 import { Route as RecoveryKitRouteImport } from './routes/recovery-kit'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SignInRouteImport } from './routes/sign-in'
@@ -23,6 +25,16 @@ const IndexRoute = IndexRouteImport.update({
 const EnrollRoute = EnrollRouteImport.update({
   id: '/enroll',
   path: '/enroll',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InviteRoute = InviteRouteImport.update({
+  id: '/invite',
+  path: '/invite',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvitesRoute = InvitesRouteImport.update({
+  id: '/invites',
+  path: '/invites',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RecoveryKitRoute = RecoveryKitRouteImport.update({
@@ -44,6 +56,8 @@ const SignInRoute = SignInRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/enroll': typeof EnrollRoute
+  '/invite': typeof InviteRoute
+  '/invites': typeof InvitesRoute
   '/recovery-kit': typeof RecoveryKitRoute
   '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
@@ -51,6 +65,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/enroll': typeof EnrollRoute
+  '/invite': typeof InviteRoute
+  '/invites': typeof InvitesRoute
   '/recovery-kit': typeof RecoveryKitRoute
   '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
@@ -59,21 +75,47 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/enroll': typeof EnrollRoute
+  '/invite': typeof InviteRoute
+  '/invites': typeof InvitesRoute
   '/recovery-kit': typeof RecoveryKitRoute
   '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/enroll' | '/recovery-kit' | '/settings' | '/sign-in'
+  fullPaths:
+    | '/'
+    | '/enroll'
+    | '/invite'
+    | '/invites'
+    | '/recovery-kit'
+    | '/settings'
+    | '/sign-in'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/enroll' | '/recovery-kit' | '/settings' | '/sign-in'
-  id: '__root__' | '/' | '/enroll' | '/recovery-kit' | '/settings' | '/sign-in'
+  to:
+    | '/'
+    | '/enroll'
+    | '/invite'
+    | '/invites'
+    | '/recovery-kit'
+    | '/settings'
+    | '/sign-in'
+  id:
+    | '__root__'
+    | '/'
+    | '/enroll'
+    | '/invite'
+    | '/invites'
+    | '/recovery-kit'
+    | '/settings'
+    | '/sign-in'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   EnrollRoute: typeof EnrollRoute
+  InviteRoute: typeof InviteRoute
+  InvitesRoute: typeof InvitesRoute
   RecoveryKitRoute: typeof RecoveryKitRoute
   SettingsRoute: typeof SettingsRoute
   SignInRoute: typeof SignInRoute
@@ -93,6 +135,20 @@ declare module '@tanstack/react-router' {
       path: '/enroll'
       fullPath: '/enroll'
       preLoaderRoute: typeof EnrollRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invite': {
+      id: '/invite'
+      path: '/invite'
+      fullPath: '/invite'
+      preLoaderRoute: typeof InviteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invites': {
+      id: '/invites'
+      path: '/invites'
+      fullPath: '/invites'
+      preLoaderRoute: typeof InvitesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/recovery-kit': {
@@ -122,6 +178,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EnrollRoute: EnrollRoute,
+  InviteRoute: InviteRoute,
+  InvitesRoute: InvitesRoute,
   RecoveryKitRoute: RecoveryKitRoute,
   SettingsRoute: SettingsRoute,
   SignInRoute: SignInRoute,

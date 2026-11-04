@@ -41,7 +41,8 @@ export function linkRequestFailure(error: unknown): LinkRequestFailure {
   );
 }
 
-export type RegistrationFailure = CommonFailure | 'expired' | 'invalid_code' | 'refused';
+export type RegistrationFailure =
+  CommonFailure | 'expired' | 'invalid_code' | 'refused' | 'signed_in';
 
 function toCreationOptions(
   options: PasskeyCreationOptions,
@@ -59,24 +60,26 @@ function toAttestation(response: RegistrationResponseJSON): PasskeyAttestation {
 }
 
 /**
- * Passkey-first registration from a link (spec 0003, R2 and R3): the code is checked with the
- * options, before the device creates anything; a successful verify signs the new account in.
+ * Passkey-first registration from a link (spec 0003, R2 and R3): an owner's code is checked with
+ * the options, before the device creates anything; a successful verify signs the new account in.
  */
 export async function registerFromLink(
   passkeys: Passkeys,
-  { token, code }: { readonly token: string; readonly code: string },
+  { token, code }: { readonly token: string; readonly code?: string },
 ): Promise<void> {
-  const options = await reach(api.call(routes.registrationOptions, { token, code }));
+  // An invite's link carries no code; an owner's needs it.
+  const typed = code === undefined ? {} : { code };
+  const options = await reach(api.call(routes.registrationOptions, { token, ...typed }));
   const response = await passkeys.create(toCreationOptions(options));
   await reach(
-    api.call(routes.registrationVerify, { token, code, response: toAttestation(response) }),
+    api.call(routes.registrationVerify, { token, ...typed, response: toAttestation(response) }),
   );
 }
 
 export function registrationFailure(error: unknown): RegistrationFailure {
   return commonFailure(error, ({ code }) => {
     if (code === 'not_found') return 'expired';
-    if (code === 'invalid_code') return code;
+    if (code === 'invalid_code' || code === 'signed_in') return code;
     return code === 'registration_refused' ? 'refused' : undefined;
   });
 }

@@ -874,7 +874,7 @@
     "/auth/registration/options": {
       "post": {
         "operationId": "registrationOptions",
-        "summary": "Options for registering a link's passkey, with a single-use challenge in a cookie",
+        "summary": "Options for registering a link's passkey, with a single-use challenge in a cookie; 409 signed_in while a session exists",
         "requestBody": {
           "required": true,
           "content": {

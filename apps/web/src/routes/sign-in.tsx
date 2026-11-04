@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { sessionQuery } from '../api.js';
+import { resetAccount } from '../api.js';
 import { TextField } from '../forms/text-field.js';
 import { passkeys } from '../platform.js';
 import { failureOf, signInWithPasskey, type SignInFailure } from '../sign-in.js';
@@ -70,8 +70,7 @@ function SignIn() {
     if (ceremony === 'autofill') restartAutofill(autofillRefreshMs);
     signInWithPasskey(passkeys, { autofill: ceremony === 'autofill', signal: controller.signal })
       .then(async () => {
-        // Reset, not invalidated: the home page must not show the signed-out state it cached.
-        await queryClient.resetQueries({ queryKey: sessionQuery.queryKey });
+        await resetAccount(queryClient);
         await navigate({ to: '/' });
       })
       .catch((error: unknown) => {

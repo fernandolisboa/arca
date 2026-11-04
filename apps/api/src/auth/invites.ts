@@ -1,5 +1,10 @@
 import { randomBytes } from 'node:crypto';
-import { maxOpenInvites, type Invite, type InviteDetails } from '@arca/api-contract/routes';
+import {
+  inviteLifetimeHours,
+  maxOpenInvites,
+  type Invite,
+  type InviteDetails,
+} from '@arca/api-contract/routes';
 import type { Database, Transaction } from '@arca/db';
 import { invite } from '@arca/db/enrollment-schema';
 import type { I18n } from '@arca/i18n';
@@ -17,7 +22,7 @@ export function inviteMessage(i18n: I18n, origin: string, to: string, token: str
     to,
     subject: i18n.t('email.invite.subject'),
     text: [
-      i18n.t('email.invite.body'),
+      i18n.t('email.invite.body', { hours: inviteLifetimeHours }),
       i18n.t('email.invite.link', { url: `${origin}/invite#${token}` }),
       i18n.t('email.signature'),
     ].join('\n\n'),

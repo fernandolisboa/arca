@@ -1,5 +1,6 @@
 import { ApiError, createApiClient } from '@arca/api-contract/client';
 import type { Passkeys } from '@arca/platform';
+import { QueryClient, type QueryKey } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   clearFragment,
@@ -9,7 +10,15 @@ import {
   newRecoveryCode,
   registrationFailure,
 } from '../src/enrollment.js';
+import {
+  acceptFailure,
+  decideInvite,
+  decisionFailure,
+  inviteFrom,
+  sendFailure,
+} from '../src/invites.js';
 import { UnreachableError } from '../src/requests.js';
+import { signOut } from '../src/sign-in.js';
 import { base64url } from '../src/step-up.js';
 
 interface Sent {
@@ -87,6 +96,7 @@ describe('the failures the enrollment screens word', () => {
     [new ApiError(404, 'not_found'), 'expired'],
     [new ApiError(403, 'invalid_code'), 'invalid_code'],
     [new ApiError(403, 'registration_refused'), 'refused'],
+    [new ApiError(409, 'signed_in'), 'signed_in'],
     [new ApiError(429, 'rate_limited'), 'limited'],
     [new UnreachableError('offline'), 'unreachable'],
     [new DOMException('dismissed', 'NotAllowedError'), 'cancelled'],
@@ -165,5 +175,86 @@ describe('formatting', () => {
   it('writes bytes as base64url without padding', () => {
     expect(base64url(new Uint8Array([0xfb, 0xff, 0xfe]))).toBe('-__-');
     expect(base64url(new Uint8Array(16))).toBe('AAAAAAAAAAAAAAAAAAAAAA');
+  });
+});
+
+describe('invites (spec 0003, R2)', () => {
+  const inviteId = '7b1c2d3e-4f50-4617-8a9b-0c1d2e3f4a5b';
+  const stepUpAnswers = () => [
+    Response.json({
+      challengeId: '6a1c2d3e-4f50-4617-8a9b-0c1d2e3f4a5b',
+      options: { challenge: 'Y2hhbGxlbmdl', userVerification: 'required' },
+    }),
+    Response.json({}),
+  ];
+
+  it('reads who sent a link, and null for one that opens nothing', async () => {
+    answers = [
+      Response.json({ inviterEmail: 'owner@example.com' }),
+      Response.json({ error: { code: 'not_found' } }, { status: 404 }),
+    ];
+    expect(await inviteFrom(token)).toEqual({ inviterEmail: 'owner@example.com' });
+    expect(await inviteFrom(token)).toBeNull();
+    expect(sent.map(({ body }) => body)).toEqual([{ token }, { token }]);
+  });
+
+  it.each(['confirm', 'decline'] as const)(
+    '%ss after a step-up bound to the invite, sending its nonce',
+    async (decision) => {
+      answers = [...stepUpAnswers(), Response.json({})];
+      await decideInvite(passkeysThatSign(), decision, inviteId);
+      expect(sent.map(({ path }) => path)).toEqual([
+        '/v1/auth/step-up/options',
+        '/v1/auth/step-up/verify',
+        `/v1/invites/${decision}`,
+      ]);
+      const options = sent[0]?.body as { target: { nonce: string } };
+      expect(options.target).toEqual({
+        action: `${decision}Invite`,
+        targets: [inviteId],
+        nonce: options.target.nonce,
+      });
+      expect(sent[2]?.headers.get('arca-step-up-nonce')).toBe(options.target.nonce);
+      expect(sent[2]?.body).toEqual({ inviteId });
+    },
+  );
+
+  it.each([
+    [sendFailure, new ApiError(403, 'account_unconfirmed'), 'account_unconfirmed'],
+    [sendFailure, new ApiError(409, 'too_many_invites'), 'too_many_invites'],
+    [sendFailure, new ApiError(503, 'email_unavailable'), 'email_unavailable'],
+    [decisionFailure, new ApiError(404, 'not_found'), 'not_found'],
+    [decisionFailure, new ApiError(403, 'step_up_refused'), 'other'],
+    [acceptFailure, new ApiError(404, 'not_found'), 'expired'],
+    [acceptFailure, new ApiError(403, 'invalid_code'), 'other'],
+  ] as const)('words %o', (map, error, failure) => {
+    expect(map(error)).toBe(failure);
+  });
+});
+
+describe('a change of account', () => {
+  it('signs out with an empty body', async () => {
+    answers = [Response.json({ success: true })];
+    await signOut();
+    expect(sent.map(({ path, body }) => ({ path, body }))).toEqual([
+      { path: '/v1/auth/sign-out', body: {} },
+    ]);
+  });
+
+  it("drops every query that is the previous account's own, and only those", async () => {
+    const { resetAccount, healthQuery, invitesQuery, recoveryKitQuery, sessionQuery } =
+      await vi.importActual<typeof import('../src/api.js')>('../src/api.js');
+    const queryClient = new QueryClient();
+    const keys: QueryKey[] = [sessionQuery, recoveryKitQuery, invitesQuery, healthQuery].map(
+      ({ queryKey }) => queryKey,
+    );
+    for (const key of keys) queryClient.setQueryData(key, { cached: true });
+    await resetAccount(queryClient);
+    expect(keys.map((key) => queryClient.getQueryData(key))).toEqual([
+      undefined,
+      undefined,
+      undefined,
+      { cached: true },
+    ]);
   });
 });

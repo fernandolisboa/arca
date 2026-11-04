@@ -65,6 +65,7 @@ async function requestLink(page: Page, code: string) {
 
 test('creates the first account from the emailed link, and shows its recovery kit once', async ({
   page,
+  browser,
 }) => {
   const problems = watchProblems(page);
   await virtualAuthenticator(page);
@@ -137,6 +138,87 @@ test('creates the first account from the emailed link, and shows its recovery ki
   expect(await enrolledAccount(owner)).toEqual([
     { confirmed: true, prf_enabled: true, kit_saved: false },
   ]);
+
+  // The owner invites someone, who registers unconfirmed until the owner confirms them (R2).
+  const invitee = 'e2e-invitee@example.org';
+  await page.goto(`${databaseServer.origin}/invites`);
+  await page.getByLabel('Email de quem você quer convidar').fill(invitee);
+  await page.getByRole('button', { name: 'Enviar convite' }).click();
+  await expect(page.getByText(`Convite enviado para ${invitee}.`)).toBeVisible();
+  await expect(page.getByText(/^Esperando a pessoa aceitar, até /)).toBeVisible();
+  expect(await scan(page)).toEqual([]);
+  const inviteLink = (await latestEmailTo(invitee))?.match(
+    /http:\/\/\S+\/invite#[A-Za-z0-9_-]{43}/,
+  )?.[0];
+  expect(inviteLink).toBeDefined();
+
+  // A browser signed in to another account offers to sign out instead of creating a passkey.
+  await page.goto(String(inviteLink));
+  await expect(page.getByText(`${owner} convidou você para usar o Arca.`)).toBeVisible();
+  await expect(
+    page.getByText(`Este navegador já entrou no Arca como ${owner}.`, { exact: false }),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Sair desta conta' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Criar chave de acesso' })).toHaveCount(0);
+  expect(await scan(page)).toEqual([]);
+
+  // Invitees mostly open the link on a phone.
+  const guestContext = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+  });
+  const guest = await guestContext.newPage();
+  const guestProblems = watchProblems(guest);
+  await reportViolations(guest);
+  await virtualAuthenticator(guest);
+  await guest.goto(String(inviteLink));
+  await expect(guest.getByText(`${owner} convidou você para usar o Arca.`)).toBeVisible();
+  await expect.poll(() => new URL(guest.url()).hash).toBe('');
+  expect(await scan(guest)).toEqual([]);
+  await guest.getByRole('button', { name: 'Criar chave de acesso' }).click();
+  await expect(guest).toHaveURL(`${databaseServer.origin}/recovery-kit`);
+  await guest.getByRole('button', { name: 'Mostrar meu código' }).click();
+  await expect(
+    guest.getByRole('group', { name: 'Código de recuperação' }).getByText(groupedCode),
+  ).toHaveText(groupedCode);
+  await guest.goto(`${databaseServer.origin}/`);
+  await expect(guest.getByText(`Você entrou como ${invitee}.`)).toBeVisible();
+  await expect(guest.getByText(/^Sua conta está aguardando a confirmação/)).toBeVisible();
+
+  await page.goto(`${databaseServer.origin}/invites`);
+  await expect(page.getByText(`Confirme a conta de ${invitee}`)).toBeVisible();
+  expect(await scan(page)).toEqual([]);
+  const confirm = page.waitForRequest((request) =>
+    request.url().endsWith('/v1/auth/step-up/options'),
+  );
+  await page.getByRole('button', { name: 'Confirmar conta' }).click();
+  await expect(page.getByText(`Conta de ${invitee} confirmada.`)).toBeVisible();
+  await expect(page.getByText('Confirmado', { exact: true })).toBeVisible();
+  expect((await confirm).postDataJSON()).toMatchObject({
+    purpose: 'sensitive_settings',
+    target: { action: 'confirmInvite' },
+  });
+
+  await guest.reload();
+  await expect(guest.getByRole('link', { name: 'Convidar alguém' })).toBeVisible();
+  await guestContext.close();
+  expect(unexpected(guestProblems)).toEqual([]);
+
+  // Signing out from an invite's link turns the notice into the passkey prompt.
+  const signOutInvitee = 'e2e-sign-out@example.org';
+  await page.getByLabel('Email de quem você quer convidar').fill(signOutInvitee);
+  await page.getByRole('button', { name: 'Enviar convite' }).click();
+  await expect(page.getByText(`Convite enviado para ${signOutInvitee}.`)).toBeVisible();
+  const signOutLink = (await latestEmailTo(signOutInvitee))?.match(
+    /http:\/\/\S+\/invite#[A-Za-z0-9_-]{43}/,
+  )?.[0];
+  expect(signOutLink).toBeDefined();
+  await page.goto(String(signOutLink));
+  await page.getByRole('button', { name: 'Sair desta conta' }).click();
+  await expect(page.getByRole('button', { name: 'Criar chave de acesso' })).toBeEnabled();
+  await page.goto(`${databaseServer.origin}/`);
+  await expect(page.getByRole('link', { name: 'Entrar' })).toBeVisible();
   expect(unexpected(problems)).toEqual([]);
 });
 

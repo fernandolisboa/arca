@@ -1,5 +1,5 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import type { PasskeyCreationOptions } from '@arca/api-contract/routes';
+import { inviteLifetimeHours, type PasskeyCreationOptions } from '@arca/api-contract/routes';
 import { createI18n } from '@arca/i18n';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp, type App } from '../../src/app.js';
@@ -550,6 +550,37 @@ describe('invites (spec 0003, R2)', () => {
     expect(await accountCount()).toBe(2);
   });
 
+  it('starts no registration in a browser that is signed in', async () => {
+    expect((await invite(owner.cookie, 'shared-laptop@example.org')).status).toBe(200);
+    const signedIn = await post(
+      '/v1/auth/registration/options',
+      { token: await latestToken('invite') },
+      { cookie: owner.cookie },
+    );
+    expect(signedIn.status).toBe(409);
+    expect(await signedIn.json()).toEqual({ error: { code: 'signed_in' } });
+    expect((await options(await latestToken('invite'), null)).status).toBe(200);
+  });
+
+  it("registers the link's own account when a session appears before verify", async () => {
+    const otherTab = 'other-tab@example.org';
+    expect((await invite(owner.cookie, otherTab)).status).toBe(200);
+    const token = await latestToken('invite');
+    const offered = await options(token, null);
+    expect(offered.status).toBe(200);
+    const creation = (await offered.json()) as PasskeyCreationOptions;
+    const verified = await post(
+      '/v1/auth/registration/verify',
+      { token, response: softwarePasskey(rpId).attest({ challenge: creation.challenge, origin }) },
+      { cookie: `${cookiesFrom(offered)}; ${owner.cookie}` },
+    );
+    expect(verified.status).toBe(200);
+    const session = await app.request('/v1/session', {
+      headers: { cookie: cookiesFrom(verified) },
+    });
+    expect(await session.json()).toMatchObject({ email: otherTab, confirmed: false });
+  });
+
   it('opens no registration for an address that already has an account', async () => {
     expect((await invite(owner.cookie, ownerEmail)).status).toBe(200);
     const token = await latestToken('invite');
@@ -618,8 +649,20 @@ describe('invites (spec 0003, R2)', () => {
     expect((await invite(owner.cookie, 'family-9@example.org')).status).toBe(200);
   });
 
-  it('expires an invite after 48 hours, with an event', async () => {
+  it('expires an invite after the lifetime the screens and emails state, with an event', async () => {
     const token = await latestToken('invite');
+    const lifetimes = await testDatabase.asAdmin(
+      async (client) =>
+        (
+          await client.query<{ matches: boolean }>(
+            `SELECT expires_at - created_at = make_interval(hours => $1) AS matches
+               FROM auth.invite WHERE accepted_at IS NULL`,
+            [inviteLifetimeHours],
+          )
+        ).rows,
+    );
+    expect(lifetimes.length).toBeGreaterThan(0);
+    expect(lifetimes.every(({ matches }) => matches)).toBe(true);
     await testDatabase.asAdmin((client) =>
       client.query(
         "UPDATE auth.invite SET expires_at = now() - interval '1 second' WHERE accepted_at IS NULL",
