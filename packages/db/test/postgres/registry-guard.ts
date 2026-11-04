@@ -154,8 +154,10 @@ function entryProblems(entry: RegistryEntry, catalog: Catalog, registry: Registr
   }
   if ('parent' in owner) {
     const parent = registry.entries.find((candidate) => candidate.table === owner.parent);
-    if (parent === undefined || !('column' in parent.owner)) {
-      problems.push(`${table} hangs off ${owner.parent}, which is not an entry owned by a column`);
+    if (parent?.strategy !== 'delete' || !('column' in parent.owner)) {
+      problems.push(
+        `${table} hangs off ${owner.parent}, which is not a deleted entry owned by a column`,
+      );
     }
     const cascades = catalog.foreignKeys.some(
       (key) =>

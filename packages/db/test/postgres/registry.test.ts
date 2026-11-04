@@ -208,10 +208,33 @@ describe('personal-data registry (spec 0004, R7)', () => {
         ],
       }),
     ).toEqual([
-      'auth.passkey_client hangs off auth.passkey_client, which is not an entry owned by a column',
+      'auth.passkey_client hangs off auth.passkey_client, which is not a deleted entry owned by a column',
       'auth.passkey_client has no ON DELETE CASCADE foreign key (credential_id) to auth.passkey_client',
       'auth.setup is listed more than once',
       'public.probe is outside auth but is not deleted by app_jobs',
+    ]);
+  });
+
+  it('fails on a child of a retained entry, whose rows would never be erased', async () => {
+    const child =
+      'CREATE TABLE public.audit_note (event_id uuid NOT NULL REFERENCES audit.event (id) ON DELETE CASCADE)';
+    expect(
+      await problemsAfter(child, {
+        ...registry,
+        entries: [
+          ...registry.entries,
+          {
+            table: 'public.audit_note',
+            strategy: 'delete',
+            owner: { parent: 'audit.event', columns: ['event_id'] },
+            pool: 'app_jobs',
+            export: [],
+            label: 'dataExport.tables.auditNote',
+          },
+        ],
+      }),
+    ).toEqual([
+      'public.audit_note hangs off audit.event, which is not a deleted entry owned by a column',
     ]);
   });
 
