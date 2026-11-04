@@ -363,7 +363,7 @@ export const ptBR = {
       'O cofre está aberto neste dispositivo. Ele fecha sozinho depois de {minutes} minutos sem uso.',
     lock: 'Fechar o cofre',
     failure:
-      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} wrong_secret {Esse segredo não abre o cofre. Confira e tente de novo.} wrong_identity {A chave aberta não é a do seu cofre atual. Atualize a página e tente de novo.} exists {O seu cofre já foi criado em outro dispositivo. Atualize a página.} changed {O cofre mudou em outro dispositivo. Atualize a página e tente de novo.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} wrong_secret {Esse segredo não abre o cofre. Confira e tente de novo.} wrong_identity {A chave aberta não é a do seu cofre atual. Atualize a página e tente de novo.} exists {O seu cofre já foi criado em outro dispositivo. Atualize a página.} changed {O cofre mudou em outro dispositivo. Atualize a página e tente de novo.} has_documents {Não dá para recomeçar o cofre, porque ele já tem documentos que só a chave do cofre atual abre.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
     /** The vault part of the recovery kit (spec 0003, R6): shown once, after the check. */
     kit: {
       lead: 'Este é o segundo item do seu kit de recuperação. Ele aparece uma vez só.',
@@ -583,6 +583,9 @@ export const ptBR = {
       stepUpChallenges: 'Pedidos de confirmação com chave de acesso',
       invites: 'Convites enviados',
       securityHistory: 'Histórico de segurança',
+      accountLinks: 'Conexões entre contas',
+      vaultDocuments: 'Documentos do cofre',
+      vaultDocumentsSharedWithYou: 'Documentos compartilhados com você',
       vaultEnvelopes: 'Envelopes do cofre',
       vaultSharingState: 'Lista de compartilhamento do cofre',
       vaultRecipients: 'Destinatários do cofre',

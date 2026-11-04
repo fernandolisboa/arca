@@ -202,6 +202,7 @@ export type ErrorCode =
   | 'deletion_pending'
   | 'vault_exists'
   | 'vault_changed'
+  | 'vault_has_documents'
   | 'push_unavailable'
   | 'too_many_push_channels'
   | 'accounts_closed'
@@ -962,7 +963,9 @@ export function createApp({
       targets: [],
     });
     if (!approved) return fail(c, 'step_up_required', 403);
-    if (!(await vault.reset(current.accountId))) return fail(c, 'not_found', 404);
+    const outcome = await vault.reset(current.accountId);
+    if (outcome === 'no_vault') return fail(c, 'not_found', 404);
+    if (outcome === 'has_documents') return fail(c, 'vault_has_documents', 409);
     return c.json({}, 200);
   });
 

@@ -8,7 +8,7 @@ import type {
   VaultStatusResponse,
 } from '@arca/api-contract/routes';
 import { withIdentity, type Database, type Transaction } from '@arca/db';
-import { envelope, recipient, sharingState } from '@arca/db/vault-schema';
+import { document, envelope, recipient, sharingState } from '@arca/db/vault-schema';
 import { and, asc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 
@@ -54,11 +54,13 @@ export interface Vault {
   ) => Promise<RecoveryResealed>;
   /**
    * Deletes the recipients, their envelopes and the sharing state, for a vault whose secret was
-   * lost before anything was stored in it. Refusing it while the account owns documents comes
-   * with the documents table (R4). False when there was nothing to delete.
+   * lost before anything was stored in it: refused while the account owns a document, which only
+   * the lost identity opens.
    */
-  readonly reset: (accountId: string) => Promise<boolean>;
+  readonly reset: (accountId: string) => Promise<VaultReset>;
 }
+
+export type VaultReset = 'reset' | 'no_vault' | 'has_documents';
 
 export interface VaultSettings {
   /** A database on the app_api pool. */
@@ -349,14 +351,20 @@ export function createVault({ db, activeCredentials, audit }: VaultSettings): Va
 
     reset: (accountId) =>
       asAccount(accountId, async (tx) => {
+        const owned = await tx
+          .select({ id: document.id })
+          .from(document)
+          .where(eq(document.ownerId, accountId))
+          .limit(1);
+        if (owned.length > 0) return 'has_documents';
         const recipients = await tx
           .delete(recipient)
           .where(isRecipientOf(accountId))
           .returning({ id: recipient.id });
         await tx.delete(sharingState).where(eq(sharingState.accountId, accountId));
-        if (recipients.length === 0) return false;
+        if (recipients.length === 0) return 'no_vault';
         await record(accountId, 'vault_reset');
-        return true;
+        return 'reset';
       }),
   };
 }

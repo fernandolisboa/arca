@@ -4,6 +4,7 @@ import { registry as fullRegistry, type Registry, type RegistryEntry } from '@ar
 import type { I18n } from '@arca/i18n';
 import { sql, type SQL } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
+import { namesAccount } from './erasure.js';
 
 export interface DataExports {
   /** Everything the account owns, built on request and never stored (spec 0004, R8). */
@@ -50,7 +51,7 @@ function projection(entry: RegistryEntry, placeholder: string): SQL {
 function owned(entry: RegistryEntry, registry: Registry, accountId: string): SQL {
   const { owner } = entry;
   const from = sql`FROM ${qualified(entry.table)} t`;
-  if ('column' in owner) return sql`${from} WHERE ${column('t', owner.column)} = ${accountId}`;
+  if (!('parent' in owner)) return sql`${from} WHERE ${namesAccount(entry, accountId, 't')}`;
   const parent = registry.entries.find((candidate) => candidate.table === owner.parent);
   if (parent === undefined || !('column' in parent.owner)) {
     throw new Error(`${entry.table} hangs off an entry not owned by a column`);

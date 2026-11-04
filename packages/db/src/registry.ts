@@ -8,13 +8,15 @@
 export type ErasingPool = 'app_auth' | 'app_jobs';
 
 /**
- * Whose rows these are: a non-null column holding the account ID, or the entry the rows hang off,
- * whose erasure removes them through the `ON DELETE CASCADE` foreign key from `columns` to the
- * parent's `parentColumns`. The parent is owned by a column, and the export joins through the same
- * foreign key.
+ * Whose rows these are: a non-null column holding the account ID; several such columns, when a
+ * row belongs to each account it names (a link between two accounts); or the entry the rows hang
+ * off, whose erasure removes them through the `ON DELETE CASCADE` foreign key from `columns` to
+ * the parent's `parentColumns`. The parent is owned by a column, and the export joins through the
+ * same foreign key.
  */
 export type Owner =
   | { readonly column: string }
+  | { readonly anyColumn: readonly [string, ...string[]] }
   | {
       readonly parent: string;
       readonly columns: readonly string[];
@@ -65,6 +67,12 @@ export type UnownedTable =
 export interface Registry {
   readonly entries: readonly RegistryEntry[];
   readonly unowned: readonly UnownedTable[];
+}
+
+/** The columns that name the rows' accounts; none for rows that hang off a parent. */
+export function ownerColumns(owner: Owner): readonly string[] {
+  if ('column' in owner) return [owner.column];
+  return 'anyColumn' in owner ? owner.anyColumn : [];
 }
 
 const ownedByAccount = (column: string) => ({ column });
@@ -196,6 +204,30 @@ export const registry: Registry = {
       pool: 'app_auth',
       export: ['email', 'created_at', 'expires_at', 'accepted_at'],
       label: 'dataExport.tables.invites',
+    },
+    {
+      table: 'account.link',
+      strategy: 'delete',
+      owner: { anyColumn: ['inviter_id', 'invitee_id'] },
+      pool: 'app_jobs',
+      export: ['created_at'],
+      label: 'dataExport.tables.accountLinks',
+    },
+    {
+      table: 'vault.document',
+      strategy: 'delete',
+      owner: ownedByAccount('owner_id'),
+      pool: 'app_jobs',
+      export: ['type_key', 'size', 'created_at', 'confirmed_at'],
+      label: 'dataExport.tables.vaultDocuments',
+    },
+    {
+      table: 'vault.document_recipient',
+      strategy: 'delete',
+      owner: ownedByAccount('recipient_id'),
+      pool: 'app_jobs',
+      export: ['created_at'],
+      label: 'dataExport.tables.vaultDocumentsSharedWithYou',
     },
     {
       table: 'vault.envelope',

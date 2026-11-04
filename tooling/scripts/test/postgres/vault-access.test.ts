@@ -130,7 +130,7 @@ const accounts = (client: pg.Client, table: Table) =>
     .then((result) => result.rows.map((row) => row.account_id));
 
 describe('the vault schema access matrix (spec 0005, R2)', () => {
-  it('forces row-level security on exactly the three tables', async () => {
+  it('forces row-level security on every vault table', async () => {
     const shape = await withClient(adminTarget(database), async (client) => {
       const result = await client.query<{ name: string; forced: boolean }>(
         `SELECT c.relname AS name, c.relrowsecurity AND c.relforcerowsecurity AS forced
@@ -139,7 +139,9 @@ describe('the vault schema access matrix (spec 0005, R2)', () => {
       );
       return result.rows;
     });
-    expect(shape).toEqual(Object.keys(tables).map((name) => ({ name, forced: true })));
+    // The document tables' own matrix is in document-access.test.ts.
+    const names = [...Object.keys(tables), 'document', 'document_recipient'].sort();
+    expect(shape).toEqual(names.map((name) => ({ name, forced: true })));
   });
 
   it('gives app_api reads, inserts and the few updates and deletes the vault needs', async () => {
