@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json && tsc -p src/service-worker/tsconfig.json && tsc -p e2e/tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json && tsc -p src/service-worker/tsconfig.json && tsc -p e2e/tsconfig.json && tsc -p test/tsconfig.json",
     "lint": "eslint .",
+    "test": "vitest run",
     "e2e": "playwright test -c e2e"
   },
   "devDependencies": {
@@ -25,6 +26,7 @@
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
+    "vitest": "catalog:",
     "workbox-core": "catalog:",
     "workbox-precaching": "catalog:",
     "workbox-routing": "catalog:"

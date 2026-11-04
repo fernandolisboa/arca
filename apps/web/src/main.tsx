@@ -4,6 +4,7 @@ import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
+import { startAppearance } from './appearance/store.js';
 import { Failure, NotFound } from './fallbacks.js';
 import { registerServiceWorker } from './pwa/register.js';
 import { routeTree } from './routeTree.gen.js';
@@ -37,6 +38,7 @@ declare module '@tanstack/react-router' {
 
 const queryClient = new QueryClient();
 
+startAppearance();
 document.documentElement.lang = defaultLocale;
 document.title = i18n.t('app.name');
 

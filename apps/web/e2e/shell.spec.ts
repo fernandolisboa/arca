@@ -11,26 +11,11 @@ interface Layout {
   readonly edge: string;
 }
 
-/** Sets the layout attributes before the app reads them, as the appearance boot script will. */
+/** Stores the layout as the person's choice, so the boot script applies it before first paint. */
 async function open(page: Page, layout: Layout) {
   await page.addInitScript((chosen) => {
-    // Init scripts can run before <html> exists; wait for it.
-    const apply = (root: HTMLElement) => {
-      root.setAttribute('data-nav-narrow', chosen.narrow);
-      root.setAttribute('data-nav-wide', chosen.wide);
-      root.setAttribute('data-dock-edge', chosen.edge);
-    };
-    const root = () => document.documentElement as HTMLElement | null;
-    const observer = new MutationObserver(() => {
-      const element = root();
-      if (element !== null) {
-        observer.disconnect();
-        apply(element);
-      }
-    });
-    const element = root();
-    if (element === null) observer.observe(document, { childList: true });
-    else apply(element);
+    const axes = { navNarrow: chosen.narrow, navWide: chosen.wide, dockEdge: chosen.edge };
+    localStorage.setItem('arca.appearance', JSON.stringify({ v: 1, axes }));
   }, layout);
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1, name: 'Arca' })).toBeVisible();
@@ -184,6 +169,8 @@ test.describe('floating dock', () => {
     await page.mouse.up();
     await expect(dock).toHaveAttribute('data-edge', 'right');
     await expect(page.locator('html')).toHaveAttribute('data-dock-edge', 'right');
+    const stored = await page.evaluate(() => localStorage.getItem('arca.appearance'));
+    expect(JSON.parse(stored ?? '{}')).toMatchObject({ v: 1, axes: { dockEdge: 'right' } });
   });
 });
 

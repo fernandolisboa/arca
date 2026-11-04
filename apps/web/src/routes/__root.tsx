@@ -1,9 +1,7 @@
 import { AppShell, type DockEdge, type NavItem, type ShellLinkProps } from '@arca/ui';
-import { axes } from '@arca/ui/theme/ids';
 import { Link, Outlet, createRootRoute, useLocation } from '@tanstack/react-router';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { layoutFromDocument } from '../shell/layout.js';
+import { appearance, useAppearance } from '../appearance/store.js';
 
 export const Route = createRootRoute({ component: Root });
 
@@ -17,7 +15,7 @@ function ShellLink({ href, ...props }: ShellLinkProps) {
 function Root() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
-  const [layout, setLayout] = useState(layoutFromDocument);
+  const { resolved } = useAppearance();
 
   const items: NavItem[] = destinations.map((destination) => ({
     id: destination.id,
@@ -28,8 +26,7 @@ function Root() {
   }));
 
   function onDockEdgeChange(dockEdge: DockEdge) {
-    document.documentElement.setAttribute(axes.dockEdge.attribute, dockEdge);
-    setLayout((current) => ({ ...current, dockEdge }));
+    appearance.set('dockEdge', dockEdge);
   }
 
   return (
@@ -37,7 +34,7 @@ function Root() {
       title={<h1 className="truncate font-display text-title">{t('app.name')}</h1>}
       skipToContentLabel={t('shell.skipToContent')}
       items={items}
-      layout={layout}
+      layout={{ wide: resolved.navWide, narrow: resolved.navNarrow, dockEdge: resolved.dockEdge }}
       onDockEdgeChange={onDockEdgeChange}
       labels={{
         navigation: t('shell.navigation'),
