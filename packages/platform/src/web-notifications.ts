@@ -11,6 +11,29 @@ const permissions: Record<globalThis.NotificationPermission, NotificationPermiss
   granted: 'granted',
 };
 
+const workerWaitMs = 10_000;
+
+/** The app's service worker, or a failure: `ready` never settles where none registered. */
+async function workerReady(scope: typeof globalThis): Promise<ServiceWorkerRegistration> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      reject(new Error('no service worker is active'));
+    }, workerWaitMs);
+  });
+  try {
+    return await Promise.race([scope.navigator.serviceWorker.ready, timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function sameKey(current: ArrayBuffer | null, wanted: Uint8Array): boolean {
+  if (current?.byteLength !== wanted.length) return false;
+  const bytes = new Uint8Array(current);
+  return bytes.every((byte, index) => byte === wanted[index]);
+}
+
 /** Web push through the app's service worker (spec 0005, R7). */
 export function createWebNotifications(
   capabilities: Capabilities,
@@ -22,12 +45,20 @@ export function createWebNotifications(
       'notifications',
       () => permissions[scope.Notification.permission],
     ),
-    async subscribe(applicationServerKey) {
+    async subscribe(applicationServerKey, { fresh = false } = {}) {
       requireCapability(capabilities, 'notifications');
       if ((await scope.Notification.requestPermission()) !== 'granted') {
         throw new NotificationsDeniedError('notifications were not allowed');
       }
-      const registration = await scope.navigator.serviceWorker.ready;
+      const registration = await workerReady(scope);
+      // A subscription made for another key (a rotated one) would make subscribe throw.
+      const existing = await registration.pushManager.getSubscription();
+      if (
+        existing !== null &&
+        (fresh || !sameKey(existing.options.applicationServerKey, applicationServerKey))
+      ) {
+        await existing.unsubscribe();
+      }
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: new Uint8Array(applicationServerKey),

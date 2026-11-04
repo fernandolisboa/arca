@@ -1,3 +1,4 @@
+import { ptBR } from '@arca/i18n/catalog';
 import { describe, expect, it } from 'vitest';
 import { noticeKinds } from '../src/email/notices.js';
 import { noticeOf, storedMessage, type Notification } from '../src/notification/notification.js';
@@ -41,5 +42,12 @@ describe('stored notification messages (spec 0005, R7)', () => {
     { code: 'inactivity_warning', details: { dueAt: 'soon' } },
   ])('refuses $code with details outside its closed list', (message) => {
     expect(() => noticeOf(message, to, at)).toThrow();
+  });
+});
+
+describe('push text (spec 0005, R7)', () => {
+  it('has a title and a body for every notification a device can receive', () => {
+    const pushed = Object.keys(ptBR.push).filter((key) => key !== 'fallback');
+    expect(pushed.sort()).toEqual(notifications.map(({ kind }) => kind).sort());
   });
 });

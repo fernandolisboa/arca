@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { appearance, useAppearance } from '../appearance/store.js';
 import { AccountDeletionSection } from '../account-deletion.js';
 import { DataExportSection } from '../data-export.js';
+import { NotificationsSection } from '../notifications-section.js';
 
 export const Route = createFileRoute('/settings')({ component: Settings });
 
@@ -147,6 +148,7 @@ function Settings() {
           </p>
         </div>
       </section>
+      <NotificationsSection />
       <DataExportSection />
       <AccountDeletionSection />
     </div>

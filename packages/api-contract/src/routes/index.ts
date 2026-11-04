@@ -1081,12 +1081,14 @@ export function isPushServiceEndpoint(endpoint: string): boolean {
   );
 }
 
+/** Each push channel costs a step and a request per notice, so an account keeps a few. */
+export const maxPushChannels = 10;
+
 /** A browser's push subscription, as `PushSubscription.toJSON()` gives it, keys unpadded. */
 export const AddPushChannelRequest = z.strictObject({
   endpoint: z.string().max(2048).refine(isPushServiceEndpoint),
   p256dh: z.string().regex(/^[A-Za-z0-9_-]{87}$/),
   auth: z.string().regex(/^[A-Za-z0-9_-]{22}$/),
-  device: DeviceDescription,
 });
 export type AddPushChannelRequest = z.infer<typeof AddPushChannelRequest>;
 
@@ -1098,7 +1100,7 @@ export const addPushChannel = {
   path: '/notifications/channels',
   operationId: 'addPushChannel',
   summary:
-    "Adds this browser's push subscription, or returns the channel it already has; 409 too_many_push_channels past 10, 503 push_unavailable where push is not set up",
+    "Adds this browser's push subscription, described from its User-Agent like a session, or returns the channel it already has; 409 too_many_push_channels past 10, 503 push_unavailable where push is not set up",
   body: AddPushChannelRequest,
   response: { description: 'The channel', schema: AddPushChannelResponse },
 } as const satisfies RouteDefinition<typeof AddPushChannelResponse>;

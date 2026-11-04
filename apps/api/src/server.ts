@@ -328,8 +328,10 @@ const app = createApp({
   notifications: {
     channels: {
       list: (accountId) => notificationChannels().then((channels) => channels.list(accountId)),
-      addPush: (accountId, subscription) =>
-        notificationChannels().then((channels) => channels.addPush(accountId, subscription)),
+      addPush: (accountId, subscription, device) =>
+        notificationChannels().then((channels) =>
+          channels.addPush(accountId, subscription, device),
+        ),
       removePush: (accountId, channelId) =>
         notificationChannels().then((channels) => channels.removePush(accountId, channelId)),
     },

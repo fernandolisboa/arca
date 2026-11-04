@@ -1,6 +1,7 @@
 import { ApiError } from '@arca/api-contract/client';
 import type { QueryClient, QueryKey } from '@tanstack/react-query';
 import { keyStorage } from './platform.js';
+import { forgetPush } from './push-device.js';
 import { lockVault, watchVaultActivity } from './vault-session.js';
 
 /**
@@ -14,7 +15,8 @@ export async function forgetVault(): Promise<void> {
 
 /**
  * Wires the vault's closing rules into the page: activity and visibility restart its 15 minutes,
- * leaving the page closes it, and a signed-in session that turns into a 401 forgets it.
+ * leaving the page closes it, and a signed-in session that turns into a 401 forgets it, with this
+ * browser's push subscription.
  */
 export function guardVault(page: Window, queryClient: QueryClient, sessionKey: QueryKey): void {
   watchVaultActivity(page);
@@ -29,6 +31,7 @@ export function guardVault(page: Window, queryClient: QueryClient, sessionKey: Q
     } else if (signedIn && error instanceof ApiError && error.status === 401) {
       signedIn = false;
       void forgetVault();
+      void forgetPush();
     }
   });
 }

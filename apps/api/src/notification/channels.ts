@@ -1,4 +1,9 @@
-import type { AddPushChannelRequest, NotificationChannel } from '@arca/api-contract/routes';
+import {
+  maxPushChannels,
+  type AddPushChannelRequest,
+  type DeviceDescription,
+  type NotificationChannel,
+} from '@arca/api-contract/routes';
 import { withIdentity, type Database } from '@arca/db';
 import { sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
@@ -7,16 +12,17 @@ import type { AuditLog } from '../audit/log.js';
 export interface NotificationChannels {
   list(accountId: string): Promise<NotificationChannel[]>;
   /** The channel of this subscription, added unless the account has it already. */
-  addPush(accountId: string, subscription: AddPushChannelRequest): Promise<AddPushOutcome>;
+  addPush(
+    accountId: string,
+    subscription: AddPushChannelRequest,
+    device: DeviceDescription,
+  ): Promise<AddPushOutcome>;
   /** False for an unknown channel or the email channel, which every account keeps. */
   removePush(accountId: string, channelId: string): Promise<boolean>;
 }
 
 /** `too_many`: the account already has `maxPushChannels` other push channels. */
 export type AddPushOutcome = { readonly channelId: string } | 'too_many';
-
-/** Each channel costs a step and a request per notice, so an account keeps a few. */
-export const maxPushChannels = 10;
 
 interface ChannelRow {
   id: string;
@@ -66,7 +72,7 @@ export function createNotificationChannels({
         }));
       }),
 
-    addPush: (accountId, { endpoint, p256dh, auth, device }) =>
+    addPush: (accountId, { endpoint, p256dh, auth }, device) =>
       withIdentity(db, { accountId }, async (tx) => {
         // A browser that renewed its keys for the same endpoint replaces its channel.
         const replaced = await tx.execute<{ id: string }>(sql`

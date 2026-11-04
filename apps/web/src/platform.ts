@@ -7,3 +7,7 @@ const web = createWebPlatform();
 
 /** Undefined where the device cannot keep a wrapped vault identity. */
 export const keyStorage = web.capabilities.has('keyStorage') ? web.keyStorage : undefined;
+
+/** Push for this device, and why it is missing where it is (spec 0005, R7). */
+export const notifications = web.notifications;
+export const notificationsUnavailable = web.capabilities.whyUnavailable('notifications');

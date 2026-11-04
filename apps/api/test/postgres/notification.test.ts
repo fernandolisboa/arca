@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
+import { maxPushChannels } from '@arca/api-contract/routes';
 import type { Logger } from '@arca/telemetry';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { Notice, Notices } from '../../src/email/notices.js';
 import { auditLog } from '../../src/audit/log.js';
 import {
   createNotificationChannels,
-  maxPushChannels,
   type AddPushOutcome,
   type NotificationChannels,
 } from '../../src/notification/channels.js';
@@ -183,8 +183,8 @@ const subscription = (n: number) => ({
   endpoint: `https://fcm.googleapis.com/fcm/send/synthetic-${String(n)}`,
   p256dh: `B${'C'.repeat(86)}`,
   auth: 'D'.repeat(22),
-  device: { browser: 'chrome' as const, os: 'android' as const },
 });
+const device = { browser: 'chrome', os: 'android' } as const;
 
 const logged: string[] = [];
 const recordingLogger: Logger = {
@@ -217,8 +217,8 @@ describe('push channels (spec 0005, R7)', () => {
 
   it('adds a subscription once, as app_api under the identity, and audits it', async () => {
     const { accountId } = await account();
-    const channelId = added(await channels.addPush(accountId, subscription(1)));
-    expect(await channels.addPush(accountId, subscription(1))).toEqual({ channelId });
+    const channelId = added(await channels.addPush(accountId, subscription(1), device));
+    expect(await channels.addPush(accountId, subscription(1), device)).toEqual({ channelId });
     expect(await channels.list(accountId)).toEqual([
       {
         id: channelId,
@@ -236,9 +236,9 @@ describe('push channels (spec 0005, R7)', () => {
 
   it('replaces the channel of an endpoint whose keys were renewed', async () => {
     const { accountId } = await account();
-    const first = added(await channels.addPush(accountId, subscription(2)));
+    const first = added(await channels.addPush(accountId, subscription(2), device));
     const renewed = added(
-      await channels.addPush(accountId, { ...subscription(2), auth: 'E'.repeat(22) }),
+      await channels.addPush(accountId, { ...subscription(2), auth: 'E'.repeat(22) }, device),
     );
     expect(renewed).not.toBe(first);
     expect((await channels.list(accountId)).map(({ id }) => id)).toEqual([renewed]);
@@ -253,17 +253,19 @@ describe('push channels (spec 0005, R7)', () => {
     const { accountId } = await account();
     const ids = [];
     for (let n = 0; n < maxPushChannels; n += 1) {
-      ids.push(added(await channels.addPush(accountId, subscription(100 + n))));
+      ids.push(added(await channels.addPush(accountId, subscription(100 + n), device)));
     }
-    expect(await channels.addPush(accountId, subscription(200))).toBe('too_many');
-    expect(await channels.addPush(accountId, subscription(100))).toEqual({ channelId: ids[0] });
+    expect(await channels.addPush(accountId, subscription(200), device)).toBe('too_many');
+    expect(await channels.addPush(accountId, subscription(100), device)).toEqual({
+      channelId: ids[0],
+    });
     expect(await channels.list(accountId)).toHaveLength(maxPushChannels);
   });
 
   it("removes the account's push channel with its deliveries, never the email channel or another's", async () => {
     const owner = await account();
     const other = await account();
-    const channelId = added(await channels.addPush(owner.accountId, subscription(3)));
+    const channelId = added(await channels.addPush(owner.accountId, subscription(3), device));
     const messageId = await notified(owner.accountId, { kind: 'passkey_added' });
     await deliverAll(
       createDelivery({ ...pools(), push: answering('delivered') }),
@@ -310,7 +312,7 @@ describe('push delivery (spec 0005, R7)', () => {
       db: testDatabase.apiDb,
       audit: auditLog(testDatabase.auditDb),
     })
-      .addPush(accountId, subscription(n))
+      .addPush(accountId, subscription(n), device)
       .then(added);
 
   it('pushes the code and the message ID, and email gets its notice too', async () => {

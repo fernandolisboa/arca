@@ -7,8 +7,10 @@ import type { DeploymentEnvironment } from '../config.js';
  * The matching private keys are Sensitive Vercel variables; null leaves push off there.
  */
 export const vapidPublicKeys: Readonly<Record<DeploymentEnvironment, string | null>> = {
-  production: null,
-  preview: null,
+  production:
+    'BEu3zrlFpJIAKeoANg_DJZULtODnsTp0_qMvcblsq0uXcsSf0zqWcflwF3NN2dDGQf6r_pl8WxHuBH1UrxQpNLk',
+  preview:
+    'BG17XvafZFxGVmOdR16boHv8ube82_5zKEmCSn5xnLq2crR9vFjlm7Xq5xn90mhINvhAGM-JqkQp4XE3IpFsYcc',
   development: null,
 };
 
