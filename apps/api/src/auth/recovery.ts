@@ -55,9 +55,18 @@ export type RedeemOutcome =
 
 export type RecoveryRegistration = 'registered' | 'refused' | 'not_found';
 
+/** Keeps work running after the answer has gone (the platform's `waitUntil`). */
+export type BehindAnswer = (work: Promise<void>) => void;
+
 export interface Recovery {
-  /** The same outcome whether or not the address has an account. */
-  readonly start: (email: string) => Promise<'accepted' | 'email_unavailable'>;
+  /**
+   * The same outcome, at the same time, whether or not the address has an account: the lookup
+   * and the send run behind the answer.
+   */
+  readonly start: (
+    email: string,
+    behind: BehindAnswer,
+  ) => Promise<'accepted' | 'email_unavailable'>;
   readonly redeem: (token: string, code: string) => Promise<RedeemOutcome>;
   /** Null to a link that is dead or not redeemed. */
   readonly options: (token: string) => Promise<PasskeyCreationOptions | null>;
@@ -66,14 +75,6 @@ export interface Recovery {
     response: PasskeyAttestation,
     device: DeviceDescription,
   ) => Promise<RecoveryRegistration>;
-}
-
-export interface RecoveryService extends Recovery {
-  /**
-   * Issues and sends a link to the account, if its recovery is open. Runs behind the start's
-   * answer, in a workflow step that receives the account ID only.
-   */
-  readonly issueLink: (accountId: string) => Promise<void>;
 }
 
 export interface RecoverySettings {
@@ -92,12 +93,7 @@ export interface RecoverySettings {
   readonly emailAvailable: boolean;
   /** Records the waits that are over first, so a pending recovery passkey is seen as it stands. */
   readonly status: (accountId: string) => Promise<AccountStatus>;
-  /**
-   * Hands an open account's link to `issueLink` behind the answer, so the answer never waits for
-   * an email send (spec 0003, R6).
-   */
-  readonly deliver: (accountId: string) => Promise<void>;
-  /** Every start takes at least this long, so the lookup's duration says nothing about the address. */
+  /** Every start answers after this long, which also slows guessing. */
   readonly startFloorMs?: number;
   readonly sleep?: (ms: number) => Promise<void>;
   readonly random?: (size: number) => Buffer;
@@ -124,14 +120,13 @@ export function createRecovery({
   logger,
   emailAvailable,
   status,
-  deliver,
   startFloorMs = 1500,
   sleep = (ms) =>
     new Promise((resolve) => {
       setTimeout(resolve, ms);
     }),
   random = randomBytes,
-}: RecoverySettings): RecoveryService {
+}: RecoverySettings): Recovery {
   const creation = passkeyCreation({ db, origin });
 
   const logged = (name: string) => (error: unknown) => {
@@ -165,16 +160,9 @@ export function createRecovery({
     return !(await status(accountId)).recoveryPending;
   }
 
-  async function handOff(address: string) {
+  async function sendLink(address: string) {
     const accountId = await accounts.idOf(db, address);
-    if (accountId !== undefined && (await open(accountId))) await deliver(accountId);
-  }
-
-  /** Checked again here: the account may have changed since its start was answered. */
-  async function issueLink(accountId: string) {
-    if (!(await open(accountId))) return;
-    const address = await accounts.emailOf(db, accountId);
-    if (address === undefined) return;
+    if (accountId === undefined || !(await open(accountId))) return;
     const token = random(32).toString('base64url');
     const issued = await db.transaction(async (tx) => {
       // One link per account: a new one replaces the earlier link or open context, and expired
@@ -256,17 +244,13 @@ export function createRecovery({
   }
 
   return {
-    start: async (address) => {
+    start: async (address, behind) => {
       if (!emailAvailable) return 'email_unavailable';
-      // Whatever happens, the answer and its timing class are the same for every address.
-      await Promise.all([
-        handOff(address.toLowerCase()).catch(logged('RecoveryStart')),
-        sleep(startFloorMs),
-      ]);
+      // Nothing about the address is awaited, so the answer and its time are the same for all.
+      behind(sendLink(address.toLowerCase()).catch(logged('RecoveryStart')));
+      await sleep(startFloorMs);
       return 'accepted';
     },
-
-    issueLink,
 
     redeem: async (token, typed) => {
       const tokenHash = sha256(token);

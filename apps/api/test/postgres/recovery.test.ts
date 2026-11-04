@@ -4,7 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { auditLog } from '../../src/audit/log.js';
 import { createDevices, type Devices } from '../../src/auth/devices.js';
 import { recoveryKits, type RecoveryKits } from '../../src/auth/recovery-kit.js';
-import { createRecovery, recoveryAttempts, type RecoveryService } from '../../src/auth/recovery.js';
+import { createRecovery, recoveryAttempts, type Recovery } from '../../src/auth/recovery.js';
 import type { EmailMessage } from '../../src/email/email.js';
 import type { Notice } from '../../src/email/notices.js';
 import { softwarePasskey } from '../software-passkey.js';
@@ -21,7 +21,7 @@ let testDatabase: AuthTestDatabase;
 let fixtures: ReturnType<typeof accountFixtures>;
 let devices: Devices;
 let kits: RecoveryKits;
-let recovery: RecoveryService;
+let recovery: Recovery;
 const mail: EmailMessage[] = [];
 const sent: Notice[] = [];
 const floors: number[] = [];
@@ -54,8 +54,6 @@ beforeAll(async () => {
     logger: silentLogger,
     emailAvailable: true,
     status: devices.status,
-    // In the deployment a workflow step runs it; here it runs inline, so the tests see its mail.
-    deliver: (accountId) => recovery.issueLink(accountId),
     sleep: (ms) => {
       floors.push(ms);
       return Promise.resolve();
@@ -83,9 +81,20 @@ const mailTo = (account: Account) => mail.filter(({ to }) => to === account.emai
 const noticesTo = (account: Account) =>
   sent.filter(({ to }) => to === account.email).map(({ kind }) => kind);
 
+const behind: Promise<void>[] = [];
+
+/** Starts recovery and waits for what ran behind the answer, as the platform does. */
+async function started(email: string) {
+  const answer = await recovery.start(email, (work) => {
+    behind.push(work);
+  });
+  await Promise.all(behind.splice(0));
+  return answer;
+}
+
 /** Starts recovery and reads the token from the fragment of the emailed link. */
 async function linkFor(account: Account) {
-  expect(await recovery.start(account.email)).toBe('accepted');
+  expect(await started(account.email)).toBe('accepted');
   const text = mailTo(account).at(-1)?.text ?? '';
   const token = /\/recover#([\w-]+)/.exec(text)?.[1];
   expect(token).toBeDefined();
@@ -131,8 +140,8 @@ const linkExpired = (account: Account) =>
 describe('starting recovery (spec 0003, R6)', () => {
   it('emails a link to an account and answers the same for an unknown address', async () => {
     const { account } = await owner();
-    expect(await recovery.start(account.email.toUpperCase())).toBe('accepted');
-    expect(await recovery.start('nobody@example.com')).toBe('accepted');
+    expect(await started(account.email.toUpperCase())).toBe('accepted');
+    expect(await started('nobody@example.com')).toBe('accepted');
     expect(floors).toEqual([1500, 1500]);
     expect(mail.filter(({ to }) => to === 'nobody@example.com')).toEqual([]);
     const [message] = mailTo(account);
@@ -163,50 +172,22 @@ describe('starting recovery (spec 0003, R6)', () => {
     expect((await recovery.redeem(second, code)).ok).toBe(true);
   });
 
-  it('hands only an open account, by its ID, to the run behind the answer', async () => {
-    const handed: string[] = [];
-    const behind = createRecovery({
-      db: testDatabase.authDb,
-      audit: auditLog(testDatabase.auditDb),
-      email: { send: () => Promise.reject(new Error('the start never sends')) },
-      notices: { send: () => Promise.reject(new Error('the start never notifies')) },
-      i18n: await createI18n(),
-      origin,
-      logger: silentLogger,
-      emailAvailable: true,
-      status: devices.status,
-      deliver: (accountId) => {
-        handed.push(accountId);
-        return Promise.resolve();
-      },
-      sleep: () => Promise.resolve(),
-    });
+  it('answers before the send has run, and sends it behind the answer', async () => {
     const { account } = await owner();
-    const withoutKit = await fixtures.account(1);
-    for (const address of [account.email, withoutKit.email, 'nobody@example.com']) {
-      expect(await behind.start(address)).toBe('accepted');
-    }
-    expect(handed).toEqual([account.accountId]);
-    expect(await linksOf(account)).toBe(0);
-  });
-
-  it('sends nothing when recovery closed after the start was answered', async () => {
-    const { account } = await owner();
-    await testDatabase.asAdmin((client) =>
-      client.query(
-        `INSERT INTO auth.recovery_lock (account_id, failures, locked_until)
-           VALUES ($1, 0, now() + interval '1 hour')`,
-        [account.accountId],
-      ),
-    );
-    await recovery.issueLink(account.accountId);
-    expect(mailTo(account)).toEqual([]);
-    expect(await linksOf(account)).toBe(0);
+    const held: Promise<void>[] = [];
+    expect(
+      await recovery.start(account.email, (work) => {
+        held.push(work);
+      }),
+    ).toBe('accepted');
+    expect(held).toHaveLength(1);
+    await Promise.all(held);
+    expect(mailTo(account)).toHaveLength(1);
   });
 
   it('sends nothing to an account without a recovery code', async () => {
     const account = await fixtures.account(1);
-    await recovery.start(account.email);
+    await started(account.email);
     expect(mailTo(account)).toEqual([]);
   });
 
@@ -221,9 +202,8 @@ describe('starting recovery (spec 0003, R6)', () => {
       logger: silentLogger,
       emailAvailable: false,
       status: devices.status,
-      deliver: () => Promise.reject(new Error('unused')),
     });
-    expect(await closed.start('nobody@example.com')).toBe('email_unavailable');
+    expect(await closed.start('nobody@example.com', () => undefined)).toBe('email_unavailable');
   });
 
   it('replaces an open context, which only the new code it issued resumes', async () => {
@@ -269,7 +249,7 @@ describe('redeeming the code (spec 0003, R6)', () => {
     expect(await fixtures.events(account, ['recovery_failed'])).toHaveLength(recoveryAttempts);
     expect(await recovery.redeem(token, code)).toEqual({ ok: false, reason: 'not_found' });
     const before = mailTo(account).length;
-    await recovery.start(account.email);
+    await started(account.email);
     expect(mailTo(account)).toHaveLength(before);
     const lockedUntil = await testDatabase.asAdmin(
       async (client) =>
@@ -308,7 +288,7 @@ describe('redeeming the code (spec 0003, R6)', () => {
     expect(await kits.status(account.accountId)).toBe('none');
     // Neither code opens recovery any more: the old one was spent, the new one lapsed.
     const before = mailTo(account).length;
-    await recovery.start(account.email);
+    await started(account.email);
     expect(mailTo(account)).toHaveLength(before);
     expect(outcome.ok).toBe(true);
   });
@@ -457,7 +437,7 @@ describe('the wait of a recovery passkey (spec 0003, R6)', () => {
     const { account } = await recovered();
     expect(await devices.status(account.accountId)).toMatchObject({ recoveryPending: true });
     const before = mailTo(account).length;
-    await recovery.start(account.email);
+    await started(account.email);
     expect(mailTo(account)).toHaveLength(before);
   });
 
@@ -503,7 +483,7 @@ describe('the wait of a recovery passkey (spec 0003, R6)', () => {
       { code: 'recovery_cancelled', actor: account.accountId, details: {} },
     ]);
     const before = mailTo(account).length;
-    await recovery.start(account.email);
+    await started(account.email);
     expect(mailTo(account)).toHaveLength(before);
   });
 
