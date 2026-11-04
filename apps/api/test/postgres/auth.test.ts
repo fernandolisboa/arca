@@ -118,6 +118,38 @@ describe('Better Auth on the app_auth pool', () => {
     });
   });
 
+  it('reads the session without sliding its stored expiry', async () => {
+    const { cookie, userId } = await signedIn('reader@example.com');
+    // Five days left of seven: past Better Auth's one-day update age, so a refresh would move it.
+    const aged = await asAdmin(database, async (client) => {
+      const result = await client.query<{ expiresAt: Date }>(
+        `UPDATE auth.session SET expires_at = now() + interval '5 days' WHERE user_id = $1
+         RETURNING expires_at AS "expiresAt"`,
+        [userId],
+      );
+      return result.rows[0]?.expiresAt;
+    });
+    expect((await app.request('/v1/session', { headers: { cookie } })).status).toBe(200);
+    const after = await asAdmin(database, (client) =>
+      client.query<{ expiresAt: Date }>(
+        'SELECT expires_at AS "expiresAt" FROM auth.session WHERE user_id = $1',
+        [userId],
+      ),
+    );
+    expect(after.rows[0]?.expiresAt).toEqual(aged);
+  });
+
+  it('refuses an expired session', async () => {
+    const { cookie, userId } = await signedIn('expired@example.org');
+    await asAdmin(database, (client) =>
+      client.query(
+        "UPDATE auth.session SET expires_at = now() - interval '1 minute' WHERE user_id = $1",
+        [userId],
+      ),
+    );
+    expect((await app.request('/v1/session', { headers: { cookie } })).status).toBe(401);
+  });
+
   it('signs out through the allow-listed endpoint', async () => {
     const { cookie, userId } = await signedIn('member@example.org');
     const signOut = await app.request('/v1/auth/sign-out', {

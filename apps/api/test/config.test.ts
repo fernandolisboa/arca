@@ -126,6 +126,11 @@ describe('readAuthOrigin', () => {
     expect(readAuthOrigin()).toBe('http://localhost:3000');
   });
 
+  it('uses the local dev server under vercel dev', () => {
+    vi.stubEnv('VERCEL_ENV', 'development');
+    expect(readAuthOrigin()).toBe('http://localhost:3000');
+  });
+
   it.each([undefined, '', 'staging'])('fails closed on Vercel with VERCEL_ENV %j', (value) => {
     vi.stubEnv('VERCEL_ENV', value);
     expect(() => readAuthOrigin()).toThrow(MissingConfigError);
