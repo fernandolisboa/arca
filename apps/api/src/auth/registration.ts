@@ -50,7 +50,9 @@ export interface RegistrationSettings {
  * Passkey-first registration through the passkey plugin (spec 0003, R2 and R3): the plugin
  * verifies the attestation and stores the passkey and the session; Arca's callbacks claim the
  * registration context and create the account. Better Auth's adapter runs the ceremony in one
- * transaction, which the callbacks join, so a failure anywhere leaves no account behind.
+ * transaction, which the callbacks join, so a failure anywhere leaves no account behind. This
+ * relies on the Drizzle adapter (1.7.14) opening that transaction with `db.transaction`; if an
+ * upgrade stops doing so, the callbacks find no transaction and refuse every registration.
  */
 export function registrationHooks({ db, audit, ownerCode }: RegistrationSettings) {
   const ceremonies = new AsyncLocalStorage<Ceremony>();
@@ -127,6 +129,8 @@ export function registrationHooks({ db, audit, ownerCode }: RegistrationSettings
       if (spent === undefined || (await accounts.anyExists(tx))) throw refused();
       const accountId = await accounts.createConfirmed(tx, claimed.email);
       if (accountId === undefined) throw refused();
+      // Any other owner link, such as one from a racing request, can no longer register.
+      await tx.delete(registrationContext).where(eq(registrationContext.kind, 'owner'));
       // Recorded before the commit, like every security event: a failed write fails the ceremony.
       await audit.record({
         code: 'owner_enrolled',
@@ -221,10 +225,11 @@ export function registration(
         );
         return { ok: true, body: {}, setCookies: answered.getSetCookie() };
       } catch (error) {
-        // The plugin answers 500 to an attestation that fails verification, so every refusal
-        // of its own is one answer; anything else is a fault.
+        // The plugin turns every failure inside it into an APIError: a 500 for an attestation
+        // that fails verification and for a database fault alike, so all answer as a refusal and
+        // a 500 is logged as an error.
         if (!isAPIError(error)) throw error;
-        logger.info({ errorName: 'RegistrationRefused' });
+        logger[error.statusCode >= 500 ? 'error' : 'info']({ errorName: 'RegistrationRefused' });
         return { ok: false, reason: 'refused' };
       }
     },

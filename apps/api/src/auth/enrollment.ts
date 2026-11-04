@@ -97,9 +97,12 @@ export function createEnrollment({
       try {
         await email.send(enrollmentMessage(i18n, origin, to, token));
       } catch (error) {
-        // Production has no sending domain yet (spec 0003, R9).
-        if (error instanceof EmailNotConfiguredError) return 'email_unavailable';
-        throw error;
+        // Production has no sending domain yet (spec 0003, R9); the address is not kept.
+        if (!(error instanceof EmailNotConfiguredError)) throw error;
+        await db
+          .delete(registrationContext)
+          .where(eq(registrationContext.tokenHash, sha256(token)));
+        return 'email_unavailable';
       }
       return 'sent';
     },

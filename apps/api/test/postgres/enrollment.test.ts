@@ -10,6 +10,7 @@ import { recoveryCodeHash, recoveryKits } from '../../src/auth/recovery-kit.js';
 import { registration, registrationHooks } from '../../src/auth/registration.js';
 import { authService } from '../../src/auth/service.js';
 import { createStepUp } from '../../src/auth/step-up.js';
+import { unconfiguredSender } from '../../src/email/email.js';
 import { createNotices } from '../../src/email/notices.js';
 import { outboxSender, readOutbox } from '../../src/email/outbox.js';
 import { cookiesFrom } from '../cookies.js';
@@ -138,6 +139,21 @@ describe('owner enrollment (spec 0003, R2)', () => {
     expect(await outbox()).toEqual([]);
   });
 
+  it('keeps no address when there is no sending domain', async () => {
+    const withoutEmail = createEnrollment({
+      db: testDatabase.authDb,
+      email: unconfiguredSender,
+      i18n: await createI18n(),
+      origin,
+      ownerCode: ownerCode(codeHash),
+    });
+    expect(await withoutEmail.enrollOwner({ code, email: ownerEmail })).toBe('email_unavailable');
+    const contexts = await testDatabase.asAdmin(
+      async (client) => (await client.query('SELECT FROM auth.registration_context')).rowCount,
+    );
+    expect(contexts).toBe(0);
+  });
+
   it('emails a link whose token is only in the fragment and stored only as a hash', async () => {
     const response = await enrollOwner(code, 'Owner@Example.com');
     expect(response.status).toBe(200);
@@ -226,6 +242,12 @@ describe('owner enrollment (spec 0003, R2)', () => {
         UNION ALL SELECT 'context', count(*)::int FROM auth.registration_context`);
       return result.rows;
     });
+    // Recorded before the commit, so the event outlives the rolled-back account.
+    const events = await testDatabase.asAdmin(async (client) => {
+      const result = await client.query<{ code: string }>('SELECT code FROM audit.event');
+      return result.rows;
+    });
+    expect(events).toEqual([{ code: 'owner_enrolled' }]);
     expect(left).toEqual([
       { table: 'user', n: 0 },
       { table: 'passkey', n: 0 },
