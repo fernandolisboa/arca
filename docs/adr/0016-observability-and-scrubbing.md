@@ -55,6 +55,7 @@ Facts checked on 2026-11-02:
 Made with the server ticket (#67), to keep the owner's part to one visit to Sentry's site.
 
 - The owner creates the organization and its one project in Sentry's interface, keeps the default alert (email on a new issue), and hands over the public DSN. No setup token, so no agent holds write access to Sentry.
+- The project lives in the owner's existing organization, whose data region is the **United States**, not Germany: the owner chose not to run a second organization. Since every event is scrubbed of personal data and identifiers before it leaves (above), the region holds no family data either way; the data-flow register and RETENTION.md say United States.
 - No source maps are uploaded: the API's stack frames name its bundled server file, which is enough for a one-family app. There is no upload token, and Sentry's build tooling (`@sentry/bundler-plugins` and the Sentry CLI under FSL-1.1-Apache-2.0) is removed from the dependency tree by a pnpm override, since only the SDK's bundler entry points use it.
 - No agent tooling reads Sentry issues yet; the owner reads them. The read-only token, the delimited untrusted wrapping and the evaluation case come with that tooling, if it is ever built.
 - SDK 11 replaced `sendDefaultPii` with `dataCollection`, whose defaults collect headers, cookies, bodies and query strings; every field is turned off. Transactions are sent whole (`traceLifecycle: 'static'`) so `beforeSendTransaction` scrubs every span, and the SDK's load-time module rewriting is off. Database spans are not recorded, since no database integration is listed, and neither are the OpenTelemetry spans of other libraries (Better Auth, the Workflow SDK), since no tracer provider is registered.
@@ -72,7 +73,7 @@ Made with the server ticket (#67), to keep the owner's part to one visit to Sent
 
 ## Consequences
 
-- The owner creates the Sentry organization and project once, choosing the German region at creation, and hands over the DSN; an agent does the rest.
+- The owner creates the Sentry project once in an existing organization and hands over the DSN; an agent does the rest.
 - Errors and traces leave Brazil, scrubbed, and are kept 30 days.
 - The tunnel is a public endpoint that relays to a third party; its DSN allow-list, size cap, rate limit and scrub are security-critical.
 - Every new data shape that could reach telemetry needs a scrubber case.

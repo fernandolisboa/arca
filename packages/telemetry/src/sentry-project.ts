@@ -9,7 +9,7 @@ export interface SentryProject {
 }
 
 export const sentryProject: SentryProject = {
-  dsn: null,
+  dsn: 'https://194e482c567260d542e3d01929877db7@o4511552692748288.ingest.us.sentry.io/4512374606921729',
   tracesSampleRate: { production: 0.1, preview: 1 },
 };
 
