@@ -2,7 +2,7 @@
   "extends": "@arca/tsconfig/library.json",
   "compilerOptions": {
     "lib": ["es2024", "dom"],
-    "types": ["node"],
+    "types": ["node", "vite/client"],
     "noEmit": true,
     "composite": false,
     "rootDir": "${configDir}/..",

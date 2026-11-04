@@ -1,4 +1,4 @@
-import { apiPathSegments, webPathSegments } from '@arca/api-contract/client';
+import { ApiError, apiPathSegments, webPathSegments } from '@arca/api-contract/client';
 import {
   sentryDataCollection,
   sentryProject,
@@ -7,6 +7,14 @@ import {
   urlReducer,
 } from '@arca/telemetry';
 import * as Sentry from '@sentry/react';
+import { UnreachableError } from './requests.js';
+
+/**
+ * Failures the app expects and shows on its own: a refusal from the API and a lost connection.
+ * Reporting them would spend the per-IP tunnel budget a family shares, and tell us nothing.
+ */
+export const isExpectedFailure = (error: unknown): boolean =>
+  (error instanceof ApiError && error.status < 500) || error instanceof UnreachableError;
 
 /**
  * Errors only, sent to our own origin, which scrubs them again before Sentry sees them (spec 0004,
@@ -42,7 +50,8 @@ export function startMonitoring(): void {
     ],
     dataCollection: sentryDataCollection,
     sendClientReports: false,
-    beforeSend: (event) => scrub.event(event) as typeof event | null,
+    beforeSend: (event, { originalException }) =>
+      isExpectedFailure(originalException) ? null : (scrub.event(event) as typeof event | null),
     beforeBreadcrumb: (breadcrumb) => scrub.breadcrumb(breadcrumb),
   });
 }
