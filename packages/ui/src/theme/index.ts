@@ -1,5 +1,4 @@
-export { renderThemesCss } from './css.js';
-export { type FontPair, type FontRole, fontPairs } from './fonts.js';
+export { type FontPair, type FontRole, type FontSource, fontFamilies, fontPairs } from './fonts.js';
 export * from './ids.js';
 export { motion, staggeredRows } from './motion.js';
 export {

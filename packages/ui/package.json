@@ -8,6 +8,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./theme": {
+      "types": "./dist/theme/index.d.ts",
+      "default": "./dist/theme/index.js"
+    },
     "./theme/ids": {
       "types": "./dist/theme/ids.d.ts",
       "default": "./dist/theme/ids.js"
@@ -33,5 +37,22 @@
   },
   "peerDependencies": {
     "react": "catalog:"
+  },
+  "dependencies": {
+    "@fontsource-variable/atkinson-hyperlegible-next": "catalog:",
+    "@fontsource-variable/bricolage-grotesque": "catalog:",
+    "@fontsource-variable/dm-sans": "catalog:",
+    "@fontsource-variable/fraunces": "catalog:",
+    "@fontsource-variable/ibm-plex-sans": "catalog:",
+    "@fontsource-variable/instrument-sans": "catalog:",
+    "@fontsource-variable/inter": "catalog:",
+    "@fontsource-variable/manrope": "catalog:",
+    "@fontsource-variable/nunito": "catalog:",
+    "@fontsource-variable/source-sans-3": "catalog:",
+    "@fontsource-variable/space-grotesk": "catalog:",
+    "@fontsource-variable/work-sans": "catalog:",
+    "@fontsource/ibm-plex-mono": "catalog:",
+    "@fontsource/instrument-serif": "catalog:",
+    "@fontsource/young-serif": "catalog:"
   }
 }

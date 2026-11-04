@@ -24,3 +24,16 @@ describe('@arca/ui/theme/ids', () => {
     expect(Object.keys(radii).sort()).toEqual([...axes.corners.values].sort());
   });
 });
+
+describe('font sources', () => {
+  it('use each static family at one weight, since only that file is generated', () => {
+    const weights = new Map<string, Set<number>>();
+    for (const pair of Object.values(fontPairs)) {
+      for (const role of [pair.display, pair.body, pair.numeric]) {
+        if (role.source.kind !== 'static') continue;
+        weights.set(role.family, (weights.get(role.family) ?? new Set()).add(role.weight));
+      }
+    }
+    for (const [family, used] of weights) expect([...used], family).toHaveLength(1);
+  });
+});
