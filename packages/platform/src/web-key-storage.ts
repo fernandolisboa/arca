@@ -91,6 +91,10 @@ export function createWebKeyStorage(
         await withStore(indexedDB, 'readwrite', (store) => store.put(record, slot));
         return 'stored';
       } catch {
+        // A failed replace must not leave the previous secret, such as a rotated identity, loadable.
+        await withStore(indexedDB, 'readwrite', (store) => store.delete(slot)).catch(
+          () => undefined,
+        );
         return 'not stored';
       }
     },

@@ -188,6 +188,17 @@ test.describe('web key storage (spec 0005, R5)', () => {
     expect(second.iv).not.toEqual(first.iv);
   });
 
+  test('a secret stored on one origin is not stored on another', async ({ page }) => {
+    await open(page, origins[0]);
+    await storeAndInspect(page);
+    await open(page, origins[1]);
+    const status = await page.evaluate(async (keyContext) => {
+      const { createWebPlatform } = (globalThis as unknown as Loaded).arca.platform;
+      return (await createWebPlatform().keyStorage.load(keyContext)).status;
+    }, context);
+    expect(status).toBe('not stored');
+  });
+
   test('a blob moved to another origin does not open there', async ({ page }) => {
     await open(page, origins[0]);
     const moved = await storeAndInspect(page);

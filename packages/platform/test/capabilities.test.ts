@@ -3,6 +3,7 @@ import { capabilities, webCapabilities, type WebFeatures } from '../src/index.js
 
 const everything: WebFeatures = {
   pushApi: true,
+  serviceWorker: true,
   standalone: false,
   keyStorage: true,
   webShare: true,
@@ -20,6 +21,7 @@ describe('web capabilities (spec 0005, R5)', () => {
   it.each([
     ['needs-install', { pushApi: false, standalone: false }],
     ['unsupported', { pushApi: false, standalone: true }],
+    ['unsupported', { pushApi: false, serviceWorker: false, standalone: false }],
     [undefined, { pushApi: true, standalone: false }],
   ] as const)('reports notifications as %s for %o', (reason, features) => {
     expect(webCapabilities({ ...everything, ...features }).whyUnavailable('notifications')).toBe(

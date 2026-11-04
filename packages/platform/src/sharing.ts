@@ -7,7 +7,10 @@ export interface ShareContent {
 
 /** Handing content to another app through the system's share sheet. */
 export interface Sharing {
-  /** `cancelled` when the person closes the share sheet. Must start from a user gesture. */
+  /**
+   * `cancelled` when the person closes the share sheet. Must start from a user gesture. Rejects
+   * with `CapabilityUnavailableError` when these files cannot be shared, even where links can.
+   */
   share(content: ShareContent): Promise<'shared' | 'cancelled'>;
 }
 

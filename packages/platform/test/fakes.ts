@@ -98,14 +98,11 @@ export function fakePlatform(capabilities: Capabilities) {
 
 /** Envelopes under one random AES-GCM key per passkey, standing in for its PRF output. */
 export function fakeVaultEnvelopes(): VaultEnvelopes {
-  const keys = new Map<string, CryptoKey>();
-  const keyFor = async (credentialId: string) => {
+  const keys = new Map<string, Promise<CryptoKey>>();
+  const keyFor = (credentialId: string) => {
     const key =
       keys.get(credentialId) ??
-      (await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, [
-        'encrypt',
-        'decrypt',
-      ]));
+      crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
     keys.set(credentialId, key);
     return key;
   };

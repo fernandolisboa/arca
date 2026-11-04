@@ -20,7 +20,9 @@ export function createWebSharing(
         ...(content.url === undefined ? {} : { url: content.url }),
         ...(content.files === undefined ? {} : { files: [...content.files] }),
       };
-      if (content.files !== undefined && !scope.navigator.canShare(data)) {
+      // Some browsers offer share() without canShare(); they cannot be trusted with files.
+      const navigator: Partial<Navigator> = scope.navigator;
+      if (content.files !== undefined && navigator.canShare?.(data) !== true) {
         throw new CapabilityUnavailableError('sharing', 'unsupported');
       }
       try {

@@ -3,6 +3,7 @@ import { capabilitiesFrom, type Capabilities } from './capabilities.js';
 /** What the browser offers, found by feature detection only, never from the user agent. */
 export interface WebFeatures {
   readonly pushApi: boolean;
+  readonly serviceWorker: boolean;
   /** Running as an installed app (display mode `standalone`). */
   readonly standalone: boolean;
   readonly keyStorage: boolean;
@@ -13,6 +14,7 @@ export function detectWebFeatures(scope: typeof globalThis = globalThis): WebFea
   const navigator = scope.navigator as Navigator & { readonly standalone?: boolean };
   return {
     pushApi: 'PushManager' in scope && 'Notification' in scope && 'serviceWorker' in navigator,
+    serviceWorker: 'serviceWorker' in navigator,
     standalone:
       scope.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true,
     keyStorage: 'indexedDB' in scope && scope.isSecureContext && 'subtle' in scope.crypto,
@@ -22,16 +24,16 @@ export function detectWebFeatures(scope: typeof globalThis = globalThis): WebFea
 
 /**
  * Receiving shared files stays unavailable until the manifest declares a share target. Without the
- * Push API, an app not yet installed may gain it by installing, as on iOS.
+ * Push API, a browser with service workers may gain it once the app is installed, as on iOS.
  */
 export function webCapabilities(features: WebFeatures): Capabilities {
   return capabilitiesFrom({
     keyStorage: features.keyStorage ? undefined : 'unsupported',
     notifications: features.pushApi
       ? undefined
-      : features.standalone
-        ? 'unsupported'
-        : 'needs-install',
+      : features.serviceWorker && !features.standalone
+        ? 'needs-install'
+        : 'unsupported',
     receiveSharedFiles: 'unsupported',
     sharing: features.webShare ? undefined : 'unsupported',
   });
