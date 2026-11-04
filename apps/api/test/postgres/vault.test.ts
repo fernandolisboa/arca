@@ -132,6 +132,16 @@ describe('a new vault recovery secret due (spec 0003, R6)', () => {
     ['after a new recovery kit', ['recovery_kit_regenerated'], true],
     ['after an account recovery', ['recovery_completed'], true],
     ['after a recovery that was cancelled', ['recovery_completed', 'recovery_cancelled'], false],
+    [
+      'after a new kit, even if a later recovery was cancelled',
+      ['recovery_kit_regenerated', 'recovery_completed', 'recovery_cancelled'],
+      true,
+    ],
+    [
+      'after a recovery that followed a cancelled one',
+      ['recovery_completed', 'recovery_cancelled', 'recovery_completed'],
+      true,
+    ],
     ['once re-sealed', ['recovery_kit_regenerated', 'vault_recovery_resealed'], false],
     [
       'after a kit newer than the re-seal',

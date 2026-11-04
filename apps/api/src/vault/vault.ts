@@ -8,9 +8,8 @@ import type {
   VaultStatusResponse,
 } from '@arca/api-contract/routes';
 import { withIdentity, type Database, type Transaction } from '@arca/db';
-import { event } from '@arca/db/audit-schema';
 import { envelope, recipient, sharingState } from '@arca/db/vault-schema';
-import { and, asc, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 
 export type VaultSetUp = 'created' | 'exists' | 'unknown_passkey';
@@ -116,33 +115,42 @@ const anyRecipient = (tx: Transaction, accountId: string) =>
     .then(([found]) => found);
 
 /**
- * The events that change whether the vault recovery secret is still the kit's: a recovery that
- * activated a passkey, or a new kit, makes it due; sealing it, or a cancelled recovery, settles it.
+ * Whether the vault recovery secret is no longer the kit's (spec 0003, R6): a new kit, or a
+ * recovery that was not cancelled, came after the secret was last sealed. Read from the account's
+ * own audit trail, which row-level security lets app_api read.
  */
-const secretDueAfter: readonly AuditEventCode[] = [
-  'recovery_completed',
-  'recovery_kit_regenerated',
-];
-const secretSettledBy: readonly AuditEventCode[] = [
-  'recovery_cancelled',
-  'vault_created',
-  'vault_recovery_resealed',
-];
-
-/** Read from the account's own audit trail, which row-level security lets app_api read. */
 const resealDue = async (tx: Transaction, accountId: string) => {
-  const [latest] = await tx
-    .select({ code: event.code })
-    .from(event)
-    .where(
-      and(
-        eq(event.subjectAccountId, accountId),
-        inArray(event.code, [...secretDueAfter, ...secretSettledBy]),
-      ),
-    )
-    .orderBy(desc(event.time), desc(event.id))
-    .limit(1);
-  return secretDueAfter.some((code) => code === latest?.code);
+  const codes: readonly AuditEventCode[] = [
+    'recovery_kit_regenerated',
+    'recovery_completed',
+    'recovery_cancelled',
+    'vault_created',
+    'vault_recovery_resealed',
+  ];
+  const latest = (...of: readonly AuditEventCode[]) =>
+    sql`max(time) FILTER (WHERE code IN (${sql.join(
+      of.map((code) => sql`${code}`),
+      sql`, `,
+    )}))`;
+  const [row] = (
+    await tx.execute<{ due: boolean }>(sql`
+      WITH latest AS (
+        SELECT ${latest('recovery_kit_regenerated')} AS kit,
+               ${latest('recovery_completed')} AS recovered,
+               ${latest('recovery_cancelled')} AS cancelled,
+               coalesce(${latest('vault_created', 'vault_recovery_resealed')}, '-infinity') AS sealed
+          FROM audit.event
+         WHERE subject_account_id = ${accountId}
+           AND code IN (${sql.join(
+             codes.map((code) => sql`${code}`),
+             sql`, `,
+           )}))
+      SELECT coalesce(kit > sealed, false)
+          OR coalesce(recovered > sealed AND recovered > coalesce(cancelled, '-infinity'), false)
+          AS due
+        FROM latest`)
+  ).rows;
+  return row?.due === true;
 };
 
 const current = (tx: Transaction, accountId: string) =>
