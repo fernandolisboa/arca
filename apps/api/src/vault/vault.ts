@@ -351,6 +351,12 @@ export function createVault({ db, activeCredentials, audit }: VaultSettings): Va
 
     reset: (accountId) =>
       asAccount(accountId, async (tx) => {
+        // Locked first: a document created meanwhile then commits before the check below sees it.
+        await tx
+          .select({ id: recipient.id })
+          .from(recipient)
+          .where(isRecipientOf(accountId))
+          .for('update');
         const owned = await tx
           .select({ id: document.id })
           .from(document)
