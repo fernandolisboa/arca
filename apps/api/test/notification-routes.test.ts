@@ -6,6 +6,7 @@ import type { SignedIn } from '../src/auth/service.js';
 import type { StepUpService } from '../src/auth/step-up.js';
 import type { CanonicalAction } from '../src/auth/step-up-encoding.js';
 import type { NotificationChannels } from '../src/notification/channels.js';
+import type { RateLimitRule } from '../src/auth/rate-limit.js';
 import { noLimits } from './limits.js';
 
 const silentLogger: Logger = { info: () => undefined, error: () => undefined };
@@ -38,8 +39,18 @@ function setup({
   approved = true,
   removed = true,
   signedIn = true,
-}: { key?: string | null; approved?: boolean; removed?: boolean; signedIn?: boolean } = {}) {
+  full = false,
+  limited = false,
+}: {
+  key?: string | null;
+  approved?: boolean;
+  removed?: boolean;
+  signedIn?: boolean;
+  full?: boolean;
+  limited?: boolean;
+} = {}) {
   const calls: unknown[] = [];
+  const hits: { rule: string; subject: string }[] = [];
   const spent: { purpose: string; action: CanonicalAction }[] = [];
   const stepUp: StepUpService = {
     options: () => Promise.reject(new Error('unused')),
@@ -57,7 +68,7 @@ function setup({
     },
     addPush: (accountId, request) => {
       calls.push(['addPush', accountId, request]);
-      return Promise.resolve(channelId);
+      return Promise.resolve(full ? 'too_many' : { channelId });
     },
     removePush: (accountId, id) => {
       calls.push(['removePush', accountId, id]);
@@ -73,7 +84,7 @@ function setup({
       signedIn: () => Promise.resolve(signedIn ? owner : null),
       refresh: () => Promise.reject(new Error('unused')),
     },
-    authLimits: noLimits,
+    authLimits: limited ? { ...noLimits, limiter: refuseAll(hits) } : noLimits,
     stepUp,
     notifications: { channels, pushKey: key },
   });
@@ -88,7 +99,16 @@ function setup({
       },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     });
-  return { call, calls, spent };
+  return { call, calls, spent, hits };
+}
+
+function refuseAll(hits: { rule: string; subject: string }[]) {
+  return {
+    hit: (rule: RateLimitRule, subject: string) => {
+      hits.push({ rule: rule.name, subject });
+      return Promise.resolve({ allowed: false as const, retryAfterSeconds: 60 });
+    },
+  };
 }
 
 const errorOf = async (response: Response) =>
@@ -119,6 +139,21 @@ describe('notification channel routes (spec 0005, R7)', () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ channelId });
     expect(calls).toEqual([['addPush', owner.accountId, subscription]]);
+  });
+
+  it('answers 409 too_many_push_channels once the account has its maximum', async () => {
+    const { call } = setup({ full: true });
+    const response = await call('POST', '/notifications/channels', subscription);
+    expect(response.status).toBe(409);
+    expect(await errorOf(response)).toBe('too_many_push_channels');
+  });
+
+  it('limits adding per account', async () => {
+    const { call, calls, hits } = setup({ limited: true });
+    const response = await call('POST', '/notifications/channels', subscription);
+    expect(response.status).toBe(429);
+    expect(hits).toEqual([{ rule: 'add_push_channel_account', subject: owner.accountId }]);
+    expect(calls).toEqual([]);
   });
 
   it('answers 503 push_unavailable where push is not set up', async () => {

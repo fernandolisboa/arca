@@ -1,12 +1,11 @@
 import { createECDH, createDecipheriv, createHmac, randomBytes, webcrypto } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import {
-  NotPushServiceError,
   PushRejectedError,
   vapidPushSender,
   type PushSubscriptionKeys,
 } from '../src/notification/push.js';
-import { vapidKeysFor, type VapidKeys } from '../src/notification/vapid.js';
+import { configuredVapidKeys, vapidKeysFor, type VapidKeys } from '../src/notification/vapid.js';
 
 const contact = 'https://preview.example.com';
 const endpoint = 'https://fcm.googleapis.com/fcm/send/synthetic-subscription';
@@ -125,6 +124,9 @@ describe('the VAPID push sender (spec 0005, R7)', () => {
   });
 
   it.each([
+    [400, 'gone'],
+    [401, 'gone'],
+    [403, 'gone'],
     [404, 'gone'],
     [410, 'gone'],
     [201, 'delivered'],
@@ -136,22 +138,20 @@ describe('the VAPID push sender (spec 0005, R7)', () => {
     );
   });
 
-  it('throws on any other answer, so the step retries', async () => {
+  it.each([413, 429, 500, 503])('throws on %i, so the step retries', async (status) => {
     const keys = vapidKeyPair();
-    const sender = vapidPushSender({ keys, contact, fetch: recordingFetch(429).fetch });
+    const sender = vapidPushSender({ keys, contact, fetch: recordingFetch(status).fetch });
     await expect(
       sender.send(browser().subscription, { code: 'passkey_added', id: 'x' }),
     ).rejects.toBeInstanceOf(PushRejectedError);
   });
 
-  it('never reaches a host that is no push service', async () => {
+  it('never reaches a host that is no push service, and drops its channel', async () => {
     const keys = vapidKeyPair();
     const { requests, fetch } = recordingFetch(201);
     const sender = vapidPushSender({ keys, contact, fetch });
     const subscription = { ...browser().subscription, endpoint: 'https://169.254.169.254/x' };
-    await expect(
-      sender.send(subscription, { code: 'passkey_added', id: 'x' }),
-    ).rejects.toBeInstanceOf(NotPushServiceError);
+    expect(await sender.send(subscription, { code: 'passkey_added', id: 'x' })).toBe('gone');
     expect(requests).toEqual([]);
   });
 });
@@ -171,5 +171,15 @@ describe("an environment's VAPID keys", () => {
     expect(vapidKeysFor('preview', vapidKeyPair().privateKey, keys)).toBeUndefined();
     expect(vapidKeysFor('preview', 'not a key', keys)).toBeUndefined();
     expect(vapidKeysFor('preview', 'A'.repeat(43), keys)).toBeUndefined();
+  });
+
+  it('logs a private key that is set but refused, never its value', () => {
+    const { privateKey } = vapidKeyPair();
+    const errors: unknown[] = [];
+    const logger = { info: () => undefined, error: (entry: unknown) => errors.push(entry) };
+    expect(configuredVapidKeys('preview', undefined, logger)).toBeUndefined();
+    expect(errors).toEqual([]);
+    expect(configuredVapidKeys('preview', privateKey, logger)).toBeUndefined();
+    expect(errors).toEqual([{ errorName: 'vapid_key_rejected' }]);
   });
 });

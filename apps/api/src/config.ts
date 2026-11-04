@@ -131,9 +131,13 @@ export function readResendKey(): string | undefined {
   return key !== undefined && resendKeyPattern.test(key) ? key : undefined;
 }
 
-/** The environment's VAPID private key as a JWK, a Sensitive variable (spec 0005, R7). */
+/**
+ * The environment's VAPID private key, a Sensitive variable (spec 0005, R7): the P-256 private
+ * scalar alone, 43 characters of base64url, never a JWK or PEM.
+ */
 export function readVapidPrivateKey(): string | undefined {
-  return process.env['ARCA_VAPID_PRIVATE_KEY']?.trim();
+  const key = process.env['ARCA_VAPID_PRIVATE_KEY']?.trim();
+  return key === '' ? undefined : key;
 }
 
 /**

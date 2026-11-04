@@ -1,4 +1,5 @@
 import { withIdentity, type Database, type Transaction } from '@arca/db';
+import type { Logger } from '@arca/telemetry';
 import { sql } from 'drizzle-orm';
 import { accounts } from '../auth/auth.js';
 import type { Notices } from '../email/notices.js';
@@ -7,7 +8,7 @@ import type { PushSender } from './push.js';
 
 /** The steps of `deliverNotification` (spec 0005, R7), each under the account's identity. */
 export interface Delivery {
-  /** The account's channels the message has not reached, its email channel created first. */
+  /** The account's channels the message has not reached, its email channel created and first. */
   pendingChannels(accountId: string, messageId: string): Promise<string[]>;
   /** Sends the message on the channel and records the delivery; a channel reached is skipped. */
   deliver(accountId: string, messageId: string, channelId: string): Promise<void>;
@@ -21,6 +22,11 @@ export interface DeliveryDependencies {
   readonly notices: Notices;
   /** Absent where the environment has no VAPID key: push channels then wait, undelivered. */
   readonly push?: PushSender;
+}
+
+/** A push that failed for a reason that may pass, such as a slow or busy push service. */
+export class PushFailedError extends Error {
+  override name = 'PushFailedError';
 }
 
 interface PendingRow {
@@ -53,7 +59,7 @@ export function createDelivery({ jobsDb, authDb, notices, push }: DeliveryDepend
              AND NOT EXISTS (
                SELECT FROM notification.delivery d
                 WHERE d.message_id = ${messageId} AND d.channel_id = c.id)
-           ORDER BY c.created_at, c.id`);
+           ORDER BY c.kind <> 'email', c.created_at, c.id`);
         return result.rows.map(({ id }) => id);
       }),
 
@@ -79,10 +85,12 @@ export function createDelivery({ jobsDb, authDb, notices, push }: DeliveryDepend
         if (push === undefined) return;
         const { endpoint, p256dh, auth_secret: authSecret } = pending;
         if (endpoint === null || p256dh === null || authSecret === null) return;
-        const outcome = await push.send(
-          { endpoint, p256dh, authSecret },
-          { code: checkedCode(pending), id: messageId },
-        );
+        const payload = { code: checkedCode(pending), id: messageId };
+        const outcome = await push
+          .send({ endpoint, p256dh, authSecret }, payload)
+          .catch((error: unknown) => {
+            throw new PushFailedError('push failed', { cause: error });
+          });
         if (outcome === 'gone') {
           await asAccount(accountId, (tx) =>
             tx.execute(sql`DELETE FROM notification.channel WHERE id = ${channelId}`),
@@ -103,13 +111,24 @@ export function createDelivery({ jobsDb, authDb, notices, push }: DeliveryDepend
   };
 }
 
-/** Runs every step in the workflow's order, in one call; the database tests use it. */
+/**
+ * Runs every step in one call, for the inactivity warning, which must reach the email channel
+ * before its account is marked. A push that fails is logged and left undelivered: the email is
+ * the guarantee (spec 0004, R10), and a push service must never hold back an erasure.
+ */
 export async function deliverNow(
   delivery: Delivery,
   accountId: string,
   messageId: string,
+  logger: Logger,
 ): Promise<void> {
   for (const channelId of await delivery.pendingChannels(accountId, messageId)) {
-    await delivery.deliver(accountId, messageId, channelId);
+    try {
+      await delivery.deliver(accountId, messageId, channelId);
+    } catch (error) {
+      if (!(error instanceof PushFailedError)) throw error;
+      const cause = error.cause instanceof Error ? error.cause.name : 'NonErrorThrown';
+      logger.error({ errorName: `notification_push_failed:${cause}` });
+    }
   }
 }

@@ -1098,7 +1098,7 @@ export const addPushChannel = {
   path: '/notifications/channels',
   operationId: 'addPushChannel',
   summary:
-    "Adds this browser's push subscription, or returns the channel it already has; 503 push_unavailable where push is not set up",
+    "Adds this browser's push subscription, or returns the channel it already has; 409 too_many_push_channels past 10, 503 push_unavailable where push is not set up",
   body: AddPushChannelRequest,
   response: { description: 'The channel', schema: AddPushChannelResponse },
 } as const satisfies RouteDefinition<typeof AddPushChannelResponse>;

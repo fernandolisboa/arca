@@ -1,4 +1,5 @@
 import { createECDH } from 'node:crypto';
+import type { Logger } from '@arca/telemetry';
 import type { DeploymentEnvironment } from '../config.js';
 
 /**
@@ -38,4 +39,17 @@ export function vapidKeysFor(
     return undefined;
   }
   return { publicKey, privateKey };
+}
+
+/** The key pair, logging a set private key that was refused, never its value. */
+export function configuredVapidKeys(
+  environment: DeploymentEnvironment,
+  privateKey: string | undefined,
+  logger: Logger,
+): VapidKeys | undefined {
+  const keys = vapidKeysFor(environment, privateKey);
+  if (keys === undefined && privateKey !== undefined) {
+    logger.error({ errorName: 'vapid_key_rejected' });
+  }
+  return keys;
 }

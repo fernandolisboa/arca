@@ -4194,7 +4194,7 @@
       },
       "post": {
         "operationId": "addPushChannel",
-        "summary": "Adds this browser's push subscription, or returns the channel it already has; 503 push_unavailable where push is not set up",
+        "summary": "Adds this browser's push subscription, or returns the channel it already has; 409 too_many_push_channels past 10, 503 push_unavailable where push is not set up",
         "requestBody": {
           "required": true,
           "content": {

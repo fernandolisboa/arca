@@ -7,10 +7,16 @@ import type { AuditLog } from '../audit/log.js';
 export interface NotificationChannels {
   list(accountId: string): Promise<NotificationChannel[]>;
   /** The channel of this subscription, added unless the account has it already. */
-  addPush(accountId: string, subscription: AddPushChannelRequest): Promise<string>;
+  addPush(accountId: string, subscription: AddPushChannelRequest): Promise<AddPushOutcome>;
   /** False for an unknown channel or the email channel, which every account keeps. */
   removePush(accountId: string, channelId: string): Promise<boolean>;
 }
+
+/** `too_many`: the account already has `maxPushChannels` other push channels. */
+export type AddPushOutcome = { readonly channelId: string } | 'too_many';
+
+/** Each channel costs a step and a request per notice, so an account keeps a few. */
+export const maxPushChannels = 10;
 
 interface ChannelRow {
   id: string;
@@ -63,10 +69,23 @@ export function createNotificationChannels({
     addPush: (accountId, { endpoint, p256dh, auth, device }) =>
       withIdentity(db, { accountId }, async (tx) => {
         // A browser that renewed its keys for the same endpoint replaces its channel.
-        await tx.execute(sql`
+        const replaced = await tx.execute<{ id: string }>(sql`
           DELETE FROM notification.channel
            WHERE account_id = ${accountId} AND endpoint = ${endpoint}
-             AND (p256dh <> ${p256dh} OR auth_secret <> ${auth})`);
+             AND (p256dh <> ${p256dh} OR auth_secret <> ${auth})
+          RETURNING id`);
+        for (const { id } of replaced.rows) {
+          await record(accountId, 'notification_channel_removed', id);
+        }
+        const existing = await tx.execute<{ id: string }>(sql`
+          SELECT id FROM notification.channel
+           WHERE account_id = ${accountId} AND endpoint = ${endpoint}`);
+        const [found] = existing.rows;
+        if (found !== undefined) return { channelId: found.id };
+        const others = await tx.execute<{ total: number }>(sql`
+          SELECT count(*)::int AS total FROM notification.channel
+           WHERE account_id = ${accountId} AND kind = 'web_push'`);
+        if ((others.rows[0]?.total ?? 0) >= maxPushChannels) return 'too_many';
         const added = await tx.execute<{ id: string }>(sql`
           INSERT INTO notification.channel
                  (account_id, kind, endpoint, p256dh, auth_secret, browser, os)
@@ -77,14 +96,15 @@ export function createNotificationChannels({
         const [inserted] = added.rows;
         if (inserted !== undefined) {
           await record(accountId, 'notification_channel_added', inserted.id);
-          return inserted.id;
+          return { channelId: inserted.id };
         }
-        const existing = await tx.execute<{ id: string }>(sql`
+        // A concurrent request added the same endpoint first.
+        const raced = await tx.execute<{ id: string }>(sql`
           SELECT id FROM notification.channel
            WHERE account_id = ${accountId} AND endpoint = ${endpoint}`);
-        const [found] = existing.rows;
-        if (found === undefined) throw new Error('push channel neither added nor found');
-        return found.id;
+        const [winner] = raced.rows;
+        if (winner === undefined) throw new Error('push channel neither added nor found');
+        return { channelId: winner.id };
       }),
 
     removePush: (accountId, channelId) =>

@@ -15,14 +15,17 @@ export interface PushPayload {
   readonly id: string;
 }
 
-/** `gone`: the push service no longer knows the subscription, so its channel goes. */
+/**
+ * `gone`: the push service will never take this subscription again (it expired, belongs to a
+ * rotated VAPID key, or is malformed), so its channel goes.
+ */
 export type PushOutcome = 'delivered' | 'gone';
 
 export interface PushSender {
   send(subscription: PushSubscriptionKeys, payload: PushPayload): Promise<PushOutcome>;
 }
 
-/** The push service refused for another reason; retried by the step. */
+/** The push service refused for a reason that may pass, such as load; retried by the step. */
 export class PushRejectedError extends Error {
   override name = 'PushRejectedError';
   readonly status: number;
@@ -32,11 +35,10 @@ export class PushRejectedError extends Error {
   }
 }
 
-export class NotPushServiceError extends Error {
-  override name = 'NotPushServiceError';
-}
-
 const sendTimeoutMs = 10_000;
+
+/** Bad request, unauthorized for this key, forbidden, unknown, expired. */
+const permanentRefusals = new Set([400, 401, 403, 404, 410]);
 
 /** How long a push service keeps a notice for a device that is offline. */
 const timeToLiveSeconds = 24 * 60 * 60;
@@ -58,7 +60,7 @@ export function vapidPushSender({
 }): PushSender {
   return {
     async send({ endpoint, p256dh, authSecret }, payload) {
-      if (!isPushServiceEndpoint(endpoint)) throw new NotPushServiceError('not a push service');
+      if (!isPushServiceEndpoint(endpoint)) return 'gone';
       const request = await buildPushPayload(
         {
           data: { code: payload.code, id: payload.id },
@@ -75,7 +77,7 @@ export function vapidPushSender({
         signal: AbortSignal.timeout(sendTimeoutMs),
       });
       await response.body?.cancel();
-      if (response.status === 404 || response.status === 410) return 'gone';
+      if (permanentRefusals.has(response.status)) return 'gone';
       if (response.status >= 200 && response.status < 300) return 'delivered';
       throw new PushRejectedError(response.status);
     },

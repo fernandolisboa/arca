@@ -57,6 +57,7 @@ import {
   deviceLimits,
   inviteLimits,
   monitoringLimits,
+  notificationLimits,
   recoveryLimits,
   registrationLimits,
   stepUpLimits,
@@ -201,6 +202,7 @@ export type ErrorCode =
   | 'vault_exists'
   | 'vault_changed'
   | 'push_unavailable'
+  | 'too_many_push_channels'
   | 'accounts_closed'
   | 'too_large'
   | 'request_failed'
@@ -972,11 +974,21 @@ export function createApp({
 
   v1.openapi(openApiRoutes.addPushChannel, async (c) => {
     const current = await signedIn(c);
-    if (current === null || notifications === undefined) return unauthorized(c);
+    if (current === null || notifications === undefined || authLimits === undefined) {
+      return unauthorized(c);
+    }
+    const limited = await overLimit(
+      c,
+      authLimits,
+      notificationLimits.addPushChannel,
+      current.accountId,
+    );
+    if (limited !== undefined) return limited;
     const subscription = addPushChannel.body.parse(await c.req.json());
     if (notifications.pushKey === null) return fail(c, 'push_unavailable', 503);
-    const channelId = await notifications.channels.addPush(current.accountId, subscription);
-    return c.json({ channelId }, 200);
+    const outcome = await notifications.channels.addPush(current.accountId, subscription);
+    if (outcome === 'too_many') return fail(c, 'too_many_push_channels', 409);
+    return c.json(outcome, 200);
   });
 
   // A stolen session must not silence a channel (spec 0005, R7).

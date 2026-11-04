@@ -1,13 +1,21 @@
 import { randomUUID } from 'node:crypto';
+import type { Logger } from '@arca/telemetry';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { Notice, Notices } from '../../src/email/notices.js';
 import { auditLog } from '../../src/audit/log.js';
 import {
   createNotificationChannels,
+  maxPushChannels,
+  type AddPushOutcome,
   type NotificationChannels,
 } from '../../src/notification/channels.js';
 import { createDelivery, deliverNow, type Delivery } from '../../src/notification/delivery.js';
-import type { PushOutcome, PushPayload, PushSender } from '../../src/notification/push.js';
+import {
+  PushRejectedError,
+  type PushOutcome,
+  type PushPayload,
+  type PushSender,
+} from '../../src/notification/push.js';
 import { createNotifier, type Notifier } from '../../src/notification/notifier.js';
 import { authTestDatabase, type AuthTestDatabase } from './auth-database.js';
 
@@ -109,7 +117,7 @@ describe('notifications (spec 0005, R7)', () => {
       [messageId],
     );
 
-    await deliverNow(delivery, accountId, messageId);
+    await deliverAll(delivery, accountId, messageId);
 
     expect(sent).toEqual([{ kind: 'inactivity_warning', to: email, at: created?.at, dueAt }]);
     const [channel] = await channelsOf(accountId);
@@ -120,11 +128,11 @@ describe('notifications (spec 0005, R7)', () => {
 
     // A second run, as a retried workflow: nothing left to reach, nothing sent again.
     expect(await delivery.pendingChannels(accountId, messageId)).toEqual([]);
-    await deliverNow(delivery, accountId, messageId);
+    await deliverAll(delivery, accountId, messageId);
     expect(sent).toHaveLength(1);
 
     // The next message reuses the one email channel.
-    await deliverNow(delivery, accountId, await notified(accountId, { kind: 'passkey_added' }));
+    await deliverAll(delivery, accountId, await notified(accountId, { kind: 'passkey_added' }));
     expect(sent.map(({ kind }) => kind)).toEqual(['inactivity_warning', 'passkey_added']);
     expect(await channelsOf(accountId)).toHaveLength(1);
   });
@@ -133,10 +141,10 @@ describe('notifications (spec 0005, R7)', () => {
     const { accountId } = await account();
     const messageId = await notified(accountId, { kind: 'sessions_revoked' });
     failing = true;
-    await expect(deliverNow(delivery, accountId, messageId)).rejects.toThrow('email unavailable');
+    await expect(deliverAll(delivery, accountId, messageId)).rejects.toThrow('email unavailable');
     expect(await deliveriesOf(messageId)).toEqual([]);
     failing = false;
-    await deliverNow(delivery, accountId, messageId);
+    await deliverAll(delivery, accountId, messageId);
     expect(sent.map(({ kind }) => kind)).toEqual(['sessions_revoked']);
     expect(await deliveriesOf(messageId)).toHaveLength(1);
   });
@@ -146,7 +154,7 @@ describe('notifications (spec 0005, R7)', () => {
     const other = await account();
     const messageId = await notified(owner.accountId, { kind: 'recovery_started' });
     expect(await delivery.pendingChannels(other.accountId, messageId)).toEqual([]);
-    await deliverNow(delivery, owner.accountId, messageId);
+    await deliverAll(delivery, owner.accountId, messageId);
     const [channel] = await admin<{ id: string }>(
       `SELECT id FROM notification.channel WHERE account_id = $1`,
       [owner.accountId],
@@ -160,7 +168,7 @@ describe('notifications (spec 0005, R7)', () => {
     const { accountId } = await account();
     const messageId = await notified(accountId, { kind: 'deletion_requested' });
     await admin(`DELETE FROM notification.message WHERE id = $1`, [messageId]);
-    await deliverNow(delivery, accountId, messageId);
+    await deliverAll(delivery, accountId, messageId);
     expect(sent).toEqual([]);
     expect(await channelsOf(accountId)).toEqual([]);
   });
@@ -177,6 +185,20 @@ const subscription = (n: number) => ({
   auth: 'D'.repeat(22),
   device: { browser: 'chrome' as const, os: 'android' as const },
 });
+
+const logged: string[] = [];
+const recordingLogger: Logger = {
+  info: () => undefined,
+  error: (entry) => logged.push(String(entry.errorName)),
+};
+const deliverAll = (delivery: Delivery, accountId: string, messageId: string) =>
+  deliverNow(delivery, accountId, messageId, recordingLogger);
+
+/** The channel the subscription was added as, which every test here expects. */
+const added = (outcome: AddPushOutcome) => {
+  if (outcome === 'too_many') throw new Error('unexpected cap');
+  return outcome.channelId;
+};
 
 const auditOf = (accountId: string) =>
   admin<{ code: string; details: object }>(
@@ -195,8 +217,8 @@ describe('push channels (spec 0005, R7)', () => {
 
   it('adds a subscription once, as app_api under the identity, and audits it', async () => {
     const { accountId } = await account();
-    const channelId = await channels.addPush(accountId, subscription(1));
-    expect(await channels.addPush(accountId, subscription(1))).toBe(channelId);
+    const channelId = added(await channels.addPush(accountId, subscription(1)));
+    expect(await channels.addPush(accountId, subscription(1))).toEqual({ channelId });
     expect(await channels.list(accountId)).toEqual([
       {
         id: channelId,
@@ -214,18 +236,36 @@ describe('push channels (spec 0005, R7)', () => {
 
   it('replaces the channel of an endpoint whose keys were renewed', async () => {
     const { accountId } = await account();
-    const first = await channels.addPush(accountId, subscription(2));
-    const renewed = await channels.addPush(accountId, { ...subscription(2), auth: 'E'.repeat(22) });
+    const first = added(await channels.addPush(accountId, subscription(2)));
+    const renewed = added(
+      await channels.addPush(accountId, { ...subscription(2), auth: 'E'.repeat(22) }),
+    );
     expect(renewed).not.toBe(first);
     expect((await channels.list(accountId)).map(({ id }) => id)).toEqual([renewed]);
+    expect(await auditOf(accountId)).toEqual([
+      { code: 'notification_channel_added', details: { channelId: first } },
+      { code: 'notification_channel_removed', details: { channelId: first } },
+      { code: 'notification_channel_added', details: { channelId: renewed } },
+    ]);
+  });
+
+  it(`keeps at most ${String(maxPushChannels)} push channels, while a known one is still found`, async () => {
+    const { accountId } = await account();
+    const ids = [];
+    for (let n = 0; n < maxPushChannels; n += 1) {
+      ids.push(added(await channels.addPush(accountId, subscription(100 + n))));
+    }
+    expect(await channels.addPush(accountId, subscription(200))).toBe('too_many');
+    expect(await channels.addPush(accountId, subscription(100))).toEqual({ channelId: ids[0] });
+    expect(await channels.list(accountId)).toHaveLength(maxPushChannels);
   });
 
   it("removes the account's push channel with its deliveries, never the email channel or another's", async () => {
     const owner = await account();
     const other = await account();
-    const channelId = await channels.addPush(owner.accountId, subscription(3));
+    const channelId = added(await channels.addPush(owner.accountId, subscription(3)));
     const messageId = await notified(owner.accountId, { kind: 'passkey_added' });
-    await deliverNow(
+    await deliverAll(
       createDelivery({ ...pools(), push: answering('delivered') }),
       owner.accountId,
       messageId,
@@ -264,14 +304,16 @@ describe('push delivery (spec 0005, R7)', () => {
     createNotificationChannels({
       db: testDatabase.apiDb,
       audit: auditLog(testDatabase.auditDb),
-    }).addPush(accountId, subscription(n));
+    })
+      .addPush(accountId, subscription(n))
+      .then(added);
 
   it('pushes the code and the message ID, and email gets its notice too', async () => {
     const { accountId } = await account();
     const channelId = await pushChannel(accountId, 10);
     const messageId = await notified(accountId, { kind: 'recovery_completed' });
     const push = answering('delivered');
-    await deliverNow(createDelivery({ ...pools(), push }), accountId, messageId);
+    await deliverAll(createDelivery({ ...pools(), push }), accountId, messageId);
     expect(push.pushed).toEqual([{ code: 'recovery_completed', id: messageId }]);
     expect(sent.map(({ kind }) => kind)).toEqual(['recovery_completed']);
     expect(await deliveriesOf(messageId)).toHaveLength(2);
@@ -286,16 +328,28 @@ describe('push delivery (spec 0005, R7)', () => {
     const { accountId } = await account();
     const channelId = await pushChannel(accountId, 11);
     const messageId = await notified(accountId, { kind: 'passkey_revoked' });
-    await deliverNow(createDelivery({ ...pools(), push: answering('gone') }), accountId, messageId);
+    await deliverAll(createDelivery({ ...pools(), push: answering('gone') }), accountId, messageId);
     expect(await admin(`SELECT FROM notification.channel WHERE id = $1`, [channelId])).toEqual([]);
     expect(await deliveriesOf(messageId)).toHaveLength(1);
+  });
+
+  it('emails first, and a push that keeps failing is logged without holding the email back', async () => {
+    const { accountId } = await account();
+    const channelId = await pushChannel(accountId, 13);
+    const messageId = await notified(accountId, { kind: 'inactivity_warning', dueAt: new Date() });
+    const push: PushSender = { send: () => Promise.reject(new PushRejectedError(503)) };
+    logged.length = 0;
+    await deliverAll(createDelivery({ ...pools(), push }), accountId, messageId);
+    expect(sent.map(({ kind }) => kind)).toEqual(['inactivity_warning']);
+    expect(logged).toEqual(['notification_push_failed:PushRejectedError']);
+    expect(await delivery.pendingChannels(accountId, messageId)).toEqual([channelId]);
   });
 
   it('leaves push channels pending where the environment has no VAPID key', async () => {
     const { accountId } = await account();
     const channelId = await pushChannel(accountId, 12);
     const messageId = await notified(accountId, { kind: 'passkey_revoked' });
-    await deliverNow(createDelivery(pools()), accountId, messageId);
+    await deliverAll(createDelivery(pools()), accountId, messageId);
     expect(await delivery.pendingChannels(accountId, messageId)).toEqual([channelId]);
   });
 });

@@ -41,7 +41,7 @@ import {
 import { stdoutLogger } from './logger.js';
 import { createNotificationChannels } from './notification/channels.js';
 import { createNotifier } from './notification/notifier.js';
-import { vapidKeysFor } from './notification/vapid.js';
+import { configuredVapidKeys } from './notification/vapid.js';
 import { monitorRequests, sendToSentry, startMonitoring, tunnelFor } from './monitoring.js';
 import { enforceRetention } from './workflows/enforce-retention.js';
 import { eraseAccount } from './workflows/erase-account.js';
@@ -198,7 +198,7 @@ async function notificationChannels() {
   return createNotificationChannels({ db: connected().db, audit });
 }
 
-const pushKey = vapidKeysFor(environment, readVapidPrivateKey())?.publicKey ?? null;
+const pushKey = configuredVapidKeys(environment, readVapidPrivateKey(), logger)?.publicKey ?? null;
 
 /**
  * Read once at load, but a missing setting only refuses state-changing requests (the auth routes
