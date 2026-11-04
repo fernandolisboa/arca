@@ -88,14 +88,14 @@ describe('bootstrap', () => {
     await withClient(adminTarget(database), async (client) => {
       const stored = await client.query<{ rolname: string; rolpassword: string | null }>(
         `SELECT rolname, rolpassword FROM pg_catalog.pg_authid
-          WHERE rolname IN ('app_migrator', 'app_api', 'app_jobs', 'app_auth') ORDER BY 1`,
+          WHERE rolname IN ('app_migrator', 'app_api', 'app_jobs', 'app_auth', 'app_audit') ORDER BY 1`,
       );
       for (const { rolpassword } of stored.rows) {
         expect(rolpassword).toMatch(/^SCRAM-SHA-256\$4096:/);
       }
-      expect(stored.rows).toHaveLength(4);
+      expect(stored.rows).toHaveLength(5);
     });
-    for (const role of ['app_migrator', 'app_api', 'app_jobs', 'app_auth'] as const) {
+    for (const role of ['app_migrator', 'app_api', 'app_jobs', 'app_auth', 'app_audit'] as const) {
       const identity = await withClient(roleTarget(database, role), async (client) => {
         const result = await client.query<{ user: string }>('SELECT current_user AS user');
         return result.rows[0]?.user;

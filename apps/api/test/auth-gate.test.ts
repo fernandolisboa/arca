@@ -91,3 +91,62 @@ describe('GET /v1/session', () => {
     expect((await app.request('/v1/session')).status).toBe(401);
   });
 });
+
+describe('GET /v1/audit/events', () => {
+  const page = {
+    events: [
+      {
+        id: '0e1d2c3b-4a59-4687-9a6b-5c4d3e2f1a0b',
+        time: '2026-11-04T01:00:00.000Z',
+        code: 'sign_in' as const,
+        actorAccountId: signedIn.accountId,
+        details: { browser: 'firefox', os: 'linux' },
+      },
+    ],
+    next: null,
+  };
+
+  function withAudit(session: SessionResponse | null) {
+    const asked: unknown[] = [];
+    const app = createApp({
+      checkDatabase: () => Promise.resolve('ok'),
+      logger: silentLogger,
+      auth: {
+        handle: () => Promise.resolve(new Response(null, { status: 500 })),
+        session: () => Promise.resolve(session),
+      },
+      audit: {
+        events: (accountId, query) => {
+          asked.push({ accountId, query });
+          return Promise.resolve(page);
+        },
+      },
+    });
+    const client = createApiClient({
+      origin: 'http://arca.test',
+      fetch: (input, init) => Promise.resolve(app.request(input, init)),
+    });
+    return { app, client, asked };
+  }
+
+  it("reads the signed-in account's events, matching the contract", async () => {
+    const { client, asked } = withAudit(signedIn);
+    await expect(client.call(routes.auditEvents, { limit: 10 })).resolves.toEqual(page);
+    expect(asked).toEqual([{ accountId: signedIn.accountId, query: { limit: 10 } }]);
+  });
+
+  it('answers 401 without a session', async () => {
+    const { app, asked } = withAudit(null);
+    expect((await app.request('/v1/audit/events')).status).toBe(401);
+    expect(asked).toEqual([]);
+  });
+
+  it.each(['?limit=0', '?limit=101', '?limit=x', '?before=not-a-uuid'])(
+    'answers 400 to the query %s',
+    async (query) => {
+      const { app, asked } = withAudit(signedIn);
+      expect((await app.request(`/v1/audit/events${query}`)).status).toBe(400);
+      expect(asked).toEqual([]);
+    },
+  );
+});

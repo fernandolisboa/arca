@@ -5,6 +5,10 @@ import { apiBasePath, ErrorResponse, type RouteDefinition } from '../routes/inde
 
 export { routes } from '../routes/index.js';
 export type {
+  AuditEvent,
+  AuditEventCode,
+  AuditEventsQuery,
+  AuditEventsResponse,
   DeviceDescription,
   HealthResponse,
   SessionResponse,
@@ -43,15 +47,27 @@ export class ContractViolationError extends Error {
   }
 }
 
-/** The body a route takes, when it takes one. */
-type BodyOf<Route extends RouteDefinition> = Route['body'] extends z.ZodType
+/** The body a route takes, when it takes one, or else its optional query parameters. */
+type InputOf<Route extends RouteDefinition> = Route['body'] extends z.ZodType
   ? [body: z.input<Route['body']>]
-  : [];
+  : Route['query'] extends z.ZodObject
+    ? [query?: z.input<Route['query']>]
+    : [];
+
+function queryString(route: RouteDefinition, input: unknown): string {
+  if (route.query === undefined || input === undefined) return '';
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(route.query.parse(input))) {
+    if (typeof value === 'string' || typeof value === 'number') search.set(key, String(value));
+  }
+  const text = search.toString();
+  return text === '' ? '' : `?${text}`;
+}
 
 export interface ApiClient {
   call<Route extends RouteDefinition>(
     route: Route,
-    ...body: BodyOf<Route>
+    ...input: InputOf<Route>
   ): Promise<z.infer<Route['response']['schema']>>;
 }
 
@@ -59,16 +75,19 @@ export function createApiClient({ origin, fetch = globalThis.fetch }: ApiClientO
   return {
     async call<Route extends RouteDefinition>(
       route: Route,
-      ...[input]: BodyOf<Route>
+      ...[input]: InputOf<Route>
     ): Promise<z.infer<Route['response']['schema']>> {
-      const response = await fetch(`${origin}${apiBasePath}${route.path}`, {
-        method: route.method.toUpperCase(),
-        headers:
-          route.body === undefined
-            ? { accept: 'application/json' }
-            : { accept: 'application/json', 'content-type': 'application/json' },
-        ...(route.body === undefined ? {} : { body: JSON.stringify(route.body.parse(input)) }),
-      });
+      const response = await fetch(
+        `${origin}${apiBasePath}${route.path}${queryString(route, input)}`,
+        {
+          method: route.method.toUpperCase(),
+          headers:
+            route.body === undefined
+              ? { accept: 'application/json' }
+              : { accept: 'application/json', 'content-type': 'application/json' },
+          ...(route.body === undefined ? {} : { body: JSON.stringify(route.body.parse(input)) }),
+        },
+      );
       const body: unknown = await response.json().catch(() => undefined);
       if (!response.ok) {
         const parsed = ErrorResponse.safeParse(body);

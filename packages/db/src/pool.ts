@@ -1,9 +1,14 @@
 import pg from 'pg';
 
 /** The roles the running services connect as (spec 0001, R7). */
-export type RuntimeRole = 'app_api' | 'app_jobs' | 'app_auth';
+export type RuntimeRole = 'app_api' | 'app_jobs' | 'app_auth' | 'app_audit';
 
-const runtimeRoles: ReadonlySet<string> = new Set<RuntimeRole>(['app_api', 'app_jobs', 'app_auth']);
+const runtimeRoles: ReadonlySet<string> = new Set<RuntimeRole>([
+  'app_api',
+  'app_jobs',
+  'app_auth',
+  'app_audit',
+]);
 
 const loopbackHosts: ReadonlySet<string> = new Set(['localhost', '127.0.0.1', '::1']);
 

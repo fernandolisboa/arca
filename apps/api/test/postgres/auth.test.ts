@@ -7,7 +7,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
 import { createAuth, type Auth } from '../../src/auth/auth.js';
 import { authService } from '../../src/auth/service.js';
-import { authDatabase } from '../../src/database.js';
+import { auditLog, auditReader } from '../../src/audit/log.js';
+import { apiDatabase, auditDatabase, authDatabase } from '../../src/database.js';
+import type { Database } from '@arca/db';
 import type { Logger } from '../../src/logger.js';
 
 // Better Auth on the real auth migrations and the app_auth pool, against a disposable Postgres
@@ -19,7 +21,11 @@ const adminPassword = process.env['ARCA_TEST_DB_ADMIN_PASSWORD'] ?? '';
 if (adminPassword === '') throw new Error('ARCA_TEST_DB_ADMIN_PASSWORD is not set');
 
 const database = `arca_auth_${randomBytes(6).toString('hex')}`;
-const authPassword = randomBytes(24).toString('base64url');
+const passwords = {
+  app_auth: randomBytes(24).toString('base64url'),
+  app_audit: randomBytes(24).toString('base64url'),
+  app_api: randomBytes(24).toString('base64url'),
+};
 const secret = randomBytes(32).toString('base64url');
 const origin = 'http://localhost:3000';
 const migrationsDir = join(import.meta.dirname, '../../../../packages/db/migrations');
@@ -43,16 +49,21 @@ async function asAdmin<T>(name: string, use: (client: pg.Client) => Promise<T>):
 }
 
 let auth: Auth;
+let authDb: Database;
 let close: () => Promise<void>;
 let app: ReturnType<typeof createApp>;
 
 beforeAll(async () => {
   await asAdmin('postgres', async (client) => {
     await client.query(`CREATE DATABASE ${database}`);
-    const exists = await client.query("SELECT FROM pg_catalog.pg_roles WHERE rolname = 'app_auth'");
-    await client.query(
-      `${exists.rowCount === 0 ? 'CREATE' : 'ALTER'} ROLE app_auth LOGIN PASSWORD '${authPassword}'`,
-    );
+    for (const [role, password] of Object.entries(passwords)) {
+      const exists = await client.query('SELECT FROM pg_catalog.pg_roles WHERE rolname = $1', [
+        role,
+      ]);
+      await client.query(
+        `${exists.rowCount === 0 ? 'CREATE' : 'ALTER'} ROLE ${role} LOGIN PASSWORD '${password}'`,
+      );
+    }
   });
   // The runner's checks are tested in tooling/scripts; here the migrations only need to exist.
   await asAdmin(database, async (client) => {
@@ -61,14 +72,24 @@ beforeAll(async () => {
       for (const statement of sql.split('--> statement-breakpoint')) await client.query(statement);
     }
   });
-  const pool = authDatabase({ host, port, database, ssl: false }, authPassword, logger);
-  await pool.ready();
-  close = pool.close;
-  auth = createAuth({ db: pool.db, secret, origin, logger });
+  const target = { host, port, database, ssl: false };
+  const pools = [
+    authDatabase(target, passwords.app_auth, logger),
+    auditDatabase(target, passwords.app_audit, logger),
+    apiDatabase(target, passwords.app_api, logger),
+  ] as const;
+  await Promise.all(pools.map((pool) => pool.ready()));
+  close = async () => {
+    await Promise.all(pools.map((pool) => pool.close()));
+  };
+  const [authPool, auditPool, apiPool] = pools;
+  authDb = authPool.db;
+  auth = createAuth({ db: authPool.db, secret, origin, logger, audit: auditLog(auditPool.db) });
   app = createApp({
     checkDatabase: () => Promise.resolve('ok'),
     logger,
     auth: authService(auth),
+    audit: auditReader(apiPool.db),
   });
 });
 
@@ -164,6 +185,67 @@ describe('Better Auth on the app_auth pool', () => {
       client.query('SELECT FROM auth.session WHERE user_id = $1', [userId]),
     );
     expect(remaining.rowCount).toBe(0);
+  });
+
+  it('records the sign-in and shows the account only its own events', async () => {
+    const { cookie, userId } = await signedIn('audited@example.com');
+    await signedIn('stranger@example.org');
+    const response = await app.request('/v1/audit/events', { headers: { cookie } });
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as { events: { code: string }[]; next: unknown };
+    expect(body).toMatchObject({
+      events: [
+        {
+          code: 'sign_in',
+          actorAccountId: userId,
+          details: { browser: 'other', os: 'other' },
+        },
+      ],
+      next: null,
+    });
+  });
+
+  it('pages through the events with a cursor', async () => {
+    const { cookie, userId } = await signedIn('pager@example.com');
+    const context = await auth.$context;
+    await context.internalAdapter.createSession(userId);
+    await context.internalAdapter.createSession(userId);
+    const page = async (query: string) =>
+      (await (await app.request(`/v1/audit/events${query}`, { headers: { cookie } })).json()) as {
+        events: { id: string }[];
+        next: string | null;
+      };
+    const first = await page('?limit=2');
+    expect(first.events).toHaveLength(2);
+    expect(first.next).toBe(first.events[1]?.id);
+    const second = await page(`?limit=2&before=${String(first.next)}`);
+    expect(second.events).toHaveLength(1);
+    expect(second.next).toBeNull();
+    const ids = [...first.events, ...second.events].map((event) => event.id);
+    expect(new Set(ids).size).toBe(3);
+  });
+
+  it('fails the sign-in and leaves no session when the event cannot be recorded', async () => {
+    const { userId } = await signedIn('unrecorded@example.com');
+    const failing = createAuth({
+      db: authDb,
+      secret,
+      origin,
+      logger,
+      audit: { record: () => Promise.reject(new Error('audit unavailable')) },
+    });
+    const context = await failing.$context;
+    await expect(context.internalAdapter.createSession(userId)).rejects.toThrow(
+      'audit unavailable',
+    );
+    const sessions = await asAdmin(database, (client) =>
+      client.query('SELECT FROM auth.session WHERE user_id = $1', [userId]),
+    );
+    expect(sessions.rowCount).toBe(1);
+  });
+
+  it('answers 401 to the audit events without a session', async () => {
+    expect((await app.request('/v1/audit/events')).status).toBe(401);
   });
 
   it('refuses a session cookie with a bad signature', async () => {

@@ -12,6 +12,7 @@ const auth = createAuth({
   secret: 'test-only-secret-'.padEnd(32, 'x'),
   origin: 'https://preview.example.com',
   logger,
+  audit: { record: () => Promise.resolve() },
 });
 
 describe('the Better Auth configuration (spec 0003, R1)', () => {

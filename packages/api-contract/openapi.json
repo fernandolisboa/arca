@@ -245,6 +245,154 @@
           }
         }
       }
+    },
+    "/audit/events": {
+      "get": {
+        "operationId": "listAuditEvents",
+        "summary": "The signed-in account's audit events, newest first; 401 without a session",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": false,
+            "name": "before",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of audit events",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "events": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "time": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "sign_in",
+                              "sign_in_failed",
+                              "passkey_added",
+                              "passkey_activated",
+                              "passkey_revoked",
+                              "session_revoked",
+                              "step_up_verified",
+                              "invite_created",
+                              "invite_accepted",
+                              "invite_confirmed",
+                              "invite_declined",
+                              "invite_expired",
+                              "owner_enrolled",
+                              "recovery_started",
+                              "recovery_failed",
+                              "recovery_completed",
+                              "recovery_cancelled",
+                              "recovery_kit_regenerated"
+                            ]
+                          },
+                          "actorAccountId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "uuid"
+                          },
+                          "details": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "boolean"
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "time",
+                          "code",
+                          "actorAccountId",
+                          "details"
+                        ]
+                      }
+                    },
+                    "next": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "events",
+                    "next"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "webhooks": {}

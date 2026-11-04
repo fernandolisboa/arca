@@ -9,12 +9,14 @@ const passwords: RolePasswords = {
   app_api: 'a'.repeat(32),
   app_jobs: 'j'.repeat(32),
   app_auth: 'u'.repeat(32),
+  app_audit: 'l'.repeat(32),
 };
 const template = [
   "ALTER ROLE app_migrator PASSWORD '{{app_migrator}}';",
   "ALTER ROLE app_api PASSWORD '{{app_api}}';",
   "ALTER ROLE app_jobs PASSWORD '{{app_jobs}}';",
   "ALTER ROLE app_auth PASSWORD '{{app_auth}}';",
+  "ALTER ROLE app_audit PASSWORD '{{app_audit}}';",
 ].join('\n');
 
 describe('renderBootstrap', () => {
@@ -25,6 +27,7 @@ describe('renderBootstrap', () => {
         `ALTER ROLE app_api PASSWORD '${passwords.app_api}';`,
         `ALTER ROLE app_jobs PASSWORD '${passwords.app_jobs}';`,
         `ALTER ROLE app_auth PASSWORD '${passwords.app_auth}';`,
+        `ALTER ROLE app_audit PASSWORD '${passwords.app_audit}';`,
       ].join('\n'),
     );
   });
@@ -53,14 +56,14 @@ describe('renderBootstrap', () => {
   it.each([
     [
       'a missing role',
-      template.split('\n').slice(0, 3).join('\n'),
-      'does not set the password of app_auth',
+      template.split('\n').slice(0, 4).join('\n'),
+      'does not set the password of app_audit',
     ],
     ['a repeated role', `${template}\n${template}`, 'sets the password of app_migrator twice'],
     [
       'an unknown role',
-      `${template}\nALTER ROLE app_audit PASSWORD '{{app_audit}}';`,
-      'app_audit, which has no password',
+      `${template}\nALTER ROLE app_backup PASSWORD '{{app_backup}}';`,
+      'app_backup, which has no password',
     ],
     ['a malformed placeholder', `${template}\nSELECT '{{ app_api }}';`, 'malformed placeholder'],
   ])('refuses %s', (_case, sql, message) => {

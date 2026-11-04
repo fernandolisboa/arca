@@ -1,6 +1,7 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
 import {
   apiBasePath,
+  AuditEventsQuery,
   authBasePath,
   authRoutes,
   type ErrorResponse,
@@ -11,6 +12,7 @@ import { HTTPException } from 'hono/http-exception';
 import { createMiddleware } from 'hono/factory';
 import { routePath } from 'hono/route';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
+import type { AuditReader } from './audit/log.js';
 import type { AuthService } from './auth/service.js';
 import { bearerMatches } from './cron-auth.js';
 import { cachedDatabaseCheck, type CheckDatabase } from './database-health.js';
@@ -34,6 +36,8 @@ export interface AppDependencies {
   readonly cron?: CronDependencies;
   /** Better Auth behind the allow-list; absent, every auth path is a 404. */
   readonly auth?: AuthService;
+  /** The signed-in account's audit events; absent, the route answers 401. */
+  readonly audit?: AuditReader;
 }
 
 export type ErrorCode =
@@ -83,6 +87,7 @@ export function createApp({
   newRequestId = () => crypto.randomUUID(),
   cron,
   auth,
+  audit,
 }: AppDependencies) {
   const app = createRouter();
 
@@ -129,13 +134,24 @@ export function createApp({
     return c.json({ status: database === 'ok' ? 'ok' : 'degraded', checks: { database } }, 200);
   });
 
+  const signedIn = (c: Context<AppEnv>) =>
+    auth === undefined ? Promise.resolve(null) : auth.session(c.req.raw.headers);
+  const unauthorized = (c: Context<AppEnv>) => {
+    c.set('errorCode', 'unauthorized');
+    return c.json({ error: { code: 'unauthorized' } } satisfies ErrorResponse, 401);
+  };
+
   v1.openapi(openApiRoutes.session, async (c) => {
-    const current = auth === undefined ? null : await auth.session(c.req.raw.headers);
-    if (current === null) {
-      c.set('errorCode', 'unauthorized');
-      return c.json({ error: { code: 'unauthorized' } } satisfies ErrorResponse, 401);
-    }
-    return c.json(current, 200);
+    const current = await signedIn(c);
+    return current === null ? unauthorized(c) : c.json(current, 200);
+  });
+
+  v1.openapi(openApiRoutes.auditEvents, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || audit === undefined) return unauthorized(c);
+    // The router has already answered 400 to an invalid query; parsed again for its type.
+    const query = AuditEventsQuery.parse(c.req.query());
+    return c.json(await audit.events(current.accountId, query), 200);
   });
 
   app.route(apiBasePath, v1);
