@@ -126,8 +126,17 @@ export function createAuth({ db, secret, origin, logger, audit, notices }: AuthS
       // table stays bounded by what one challenge lifetime can hold.
       verification: {
         create: {
+          // A failed sweep only delays the cleanup; it never fails the ceremony.
           after: async () => {
-            await db.delete(verificationTable).where(lte(verificationTable.expiresAt, sql`now()`));
+            try {
+              await db
+                .delete(verificationTable)
+                .where(lte(verificationTable.expiresAt, sql`now()`));
+            } catch (error) {
+              logger.error({
+                errorName: `ChallengeSweep:${error instanceof Error ? error.name : 'NonErrorThrown'}`,
+              });
+            }
           },
         },
       },

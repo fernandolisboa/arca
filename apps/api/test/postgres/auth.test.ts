@@ -396,7 +396,14 @@ describe('Better Auth on the app_auth pool', () => {
         [userId],
       ),
     );
-    expect((await app.request('/v1/session', { headers: { cookie } })).status).toBe(401);
+    const response = await app.request('/v1/session', { headers: { cookie } });
+    expect(response.status).toBe(401);
+    // Better Auth's clearing cookie reaches the browser, so it drops the dead one.
+    expect(
+      response.headers
+        .getSetCookie()
+        .some((c) => c.startsWith('__Host-arca.session_token=') && /max-age=0/i.test(c)),
+    ).toBe(true);
   });
 
   it('signs out through the allow-listed endpoint', async () => {
