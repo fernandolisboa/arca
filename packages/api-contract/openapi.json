@@ -3490,10 +3490,14 @@
                       ],
                       "maxLength": 2100,
                       "pattern": "^age1pq1[02-9ac-hj-np-z]+$"
+                    },
+                    "resealDue": {
+                      "type": "boolean"
                     }
                   },
                   "required": [
-                    "recipient"
+                    "recipient",
+                    "resealDue"
                   ]
                 }
               }

@@ -114,6 +114,45 @@ const anyRecipient = (tx: Transaction, accountId: string) =>
     .limit(1)
     .then(([found]) => found);
 
+/**
+ * Whether the vault recovery secret is no longer the kit's (spec 0003, R6): a new kit, or a
+ * recovery that was not cancelled, came after the secret was last sealed. Read from the account's
+ * own audit trail, which row-level security lets app_api read.
+ */
+const resealDue = async (tx: Transaction, accountId: string) => {
+  const codes: readonly AuditEventCode[] = [
+    'recovery_kit_regenerated',
+    'recovery_completed',
+    'recovery_cancelled',
+    'vault_created',
+    'vault_recovery_resealed',
+  ];
+  const latest = (...of: readonly AuditEventCode[]) =>
+    sql`max(time) FILTER (WHERE code IN (${sql.join(
+      of.map((code) => sql`${code}`),
+      sql`, `,
+    )}))`;
+  const [row] = (
+    await tx.execute<{ due: boolean }>(sql`
+      WITH latest AS (
+        SELECT ${latest('recovery_kit_regenerated')} AS kit,
+               ${latest('recovery_completed')} AS recovered,
+               ${latest('recovery_cancelled')} AS cancelled,
+               coalesce(${latest('vault_created', 'vault_recovery_resealed')}, '-infinity') AS sealed
+          FROM audit.event
+         WHERE subject_account_id = ${accountId}
+           AND code IN (${sql.join(
+             codes.map((code) => sql`${code}`),
+             sql`, `,
+           )}))
+      SELECT coalesce(kit > sealed, false)
+          OR coalesce(recovered > sealed AND recovered > coalesce(cancelled, '-infinity'), false)
+          AS due
+        FROM latest`)
+  ).rows;
+  return row?.due === true;
+};
+
 const current = (tx: Transaction, accountId: string) =>
   tx
     .select({ id: recipient.id, recipient: recipient.recipient })
@@ -156,9 +195,12 @@ export function createVault({ db, activeCredentials, audit }: VaultSettings): Va
     );
 
   return {
-    status: async (accountId) => ({
-      recipient: (await asAccount(accountId, (tx) => current(tx, accountId)))?.recipient ?? null,
-    }),
+    status: (accountId) =>
+      asAccount(accountId, async (tx) => {
+        const found = await current(tx, accountId);
+        if (found === undefined) return { recipient: null, resealDue: false };
+        return { recipient: found.recipient, resealDue: await resealDue(tx, accountId) };
+      }),
 
     setUp: async (accountId, request) => {
       if (!(await passkeysActive(accountId, request))) return 'unknown_passkey';

@@ -1,4 +1,4 @@
-import { routes, type VaultEnvelopesResponse } from '@arca/api-contract/client';
+import { ApiError, routes, type VaultEnvelopesResponse } from '@arca/api-contract/client';
 import {
   EnvelopeNotOpenedError,
   EnvelopeNotSealedError,
@@ -18,8 +18,8 @@ import {
 import { api } from './api.js';
 import { base64url, fromBase64url } from './base64url.js';
 import { reach } from './requests.js';
-import { openVaultWindow } from './step-up.js';
-import { holdVault } from './vault-session.js';
+import { openVaultWindow, stepUpFor } from './step-up.js';
+import { holdVault, type UnlockedVault } from './vault-session.js';
 
 /** What the vault screens need from the platform, so a native build can supply its own. */
 export interface VaultDevice {
@@ -33,6 +33,14 @@ export interface VaultDevice {
 /** The opened identity is not the recipient the server says is current. */
 export class WrongVaultIdentity extends Error {
   override name = 'WrongVaultIdentity';
+}
+
+/**
+ * The account keeps a rotated identity whose recovery envelope needs the new secret too; that
+ * comes with the rotation screens (spec 0005, R4), so until then nothing is re-sealed.
+ */
+export class RotatedVaultIdentity extends Error {
+  override name = 'RotatedVaultIdentity';
 }
 
 const keyContext = (device: VaultDevice, accountId: string): KeyContext => ({
@@ -173,4 +181,43 @@ export async function unlockVault(
       }
     },
   };
+}
+
+/** The kept envelopes, opening the `vault_unlock` window again if the unlock's has closed. */
+async function keptEnvelopes(device: VaultDevice): Promise<VaultEnvelopesResponse> {
+  try {
+    return await reach(api.call(routes.vaultEnvelopes));
+  } catch (error) {
+    if (!(error instanceof ApiError && error.code === 'step_up_required')) throw error;
+    await openVaultWindow(device.passkeys);
+    return reach(api.call(routes.vaultEnvelopes));
+  }
+}
+
+/**
+ * A new vault recovery secret, after an account recovery or a new recovery kit (spec 0003, R6):
+ * the open identity sealed to it and opened once, then a `sensitive_settings` step-up replaces
+ * every recovery envelope, so the old secret opens none. Returns the secret to show once.
+ */
+export async function replaceVaultSecret(
+  device: VaultDevice,
+  vault: UnlockedVault,
+): Promise<string> {
+  const kept = await keptEnvelopes(device);
+  const sealedToSecret = kept.recipients.filter(({ id }) =>
+    kept.envelopes.some(({ recipientId, kind }) => recipientId === id && kind === 'recovery'),
+  );
+  const current = sealedToSecret.find((candidate) => candidate.current);
+  if (current?.recipient !== vault.recipient) throw new WrongVaultIdentity();
+  if (sealedToSecret.length > 1) throw new RotatedVaultIdentity();
+  const secret = generateRecoverySecret();
+  const recoveryEnvelope = await sealRecoveryEnvelope(vault.identity, secret);
+  await openRecoveryEnvelope(recoveryEnvelope, secret);
+  const envelopes = [{ recipientId: current.id, ciphertext: base64url(recoveryEnvelope) }];
+  const approved = await stepUpFor(device.passkeys, {
+    action: routes.resealVaultRecovery.operationId,
+    targets: envelopes.map(({ recipientId }) => recipientId),
+  });
+  await reach(approved.call(routes.resealVaultRecovery, { envelopes }));
+  return secret;
 }

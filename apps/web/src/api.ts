@@ -45,8 +45,22 @@ export const devicesQuery = queryOptions({
   retry: false,
 });
 
+/** Whether the account's vault is set up, and whether it needs a new recovery secret (spec 0005, R2). */
+export const vaultStatusQuery = queryOptions({
+  queryKey: ['vault'],
+  queryFn: () => api.call(routes.vaultStatus),
+  networkMode: 'always',
+  retry: false,
+});
+
 /** Everything cached for one account; a new query that is the account's own joins this list. */
-const accountQueries = [sessionQuery, recoveryKitQuery, invitesQuery, devicesQuery];
+const accountQueries = [
+  sessionQuery,
+  recoveryKitQuery,
+  invitesQuery,
+  devicesQuery,
+  vaultStatusQuery,
+];
 
 /**
  * After a sign-in, a registration or a sign-out, nothing cached for the previous account may
