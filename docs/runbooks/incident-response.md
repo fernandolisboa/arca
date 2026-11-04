@@ -45,7 +45,7 @@ Instant, no deploy. In Vercel: project `arca` › Firewall › Configure › New
 
 The web app still loads and `/.well-known` stays open, so `security.txt` keeps answering. The API's routes and the cron endpoints are blocked: no sign-in, no data. Workflows run under `/.well-known/workflow` and stop with the crons ([Stop the crons](#stop-the-crons-and-running-workflows)).
 
-**Check it works** from your own computer: `curl -si https://arca.filx.app/v1/health` must answer 403. `curl -si https://arca.filx.app/%761/health` must answer 403, or the web app's page, never a JSON health answer.
+**Check it works** from your own computer: `curl -si https://arca.filx.app/v1/health` must answer 403. `curl -si https://arca.filx.app/%761/health` must answer 403, or the web app's page, never a JSON health answer. If it does answer JSON, the rule misses encoded paths: change the expression to deny every path except `/`, `/assets/` and `/.well-known/security.txt`, and check again.
 
 **Undo:** disable or delete the rule and publish.
 
@@ -54,7 +54,7 @@ The web app still loads and `/.well-known` stays open, so `security.txt` keeps a
 In Vercel: project `arca` › Deployments › the last good production deployment › ⋯ › Instant Rollback ([Instant Rollback](https://vercel.com/docs/instant-rollback)). The previous build serves again within seconds.
 
 - **New deployments stop going live.** While a rollback is active, Vercel no longer promotes new production deployments by itself. Every "redeploy" below therefore ends with **Promote to Production** on the new deployment. Then check in Deployments that the one serving production was built after the change.
-- **Never roll back past a rotation.** A deployment built before a secret rotation still holds the old auth secret and the old database passwords, which no longer match the database, so it fails closed. After a rotation, roll forward instead: redeploy the last good commit.
+- **Never roll back past a rotation.** A deployment built before a secret rotation still holds the old auth secret and the old database passwords, which no longer match the database, so it fails closed. After a rotation, roll forward instead, from a commit at or after the latest migration: a build of an older commit fails at the migration step after its bootstrap has committed the passwords. If the last good commit predates a migration, revert the bad change on `main` and deploy that.
 - **Migrations stay.** A rollback does not undo database migrations. A migration that was itself the problem needs a restore ([Restore the database](#restore-the-database)) or a new, reviewed migration.
 
 ### Revoke every session and sign-in path
@@ -82,7 +82,7 @@ Signs everyone out, including any attacker holding a session cookie, and voids e
 
    - **The membership lasts one transaction.** If a statement fails, the whole transaction, grant included, rolls back. A build whose guard 5 finds the membership left over fails, and that is the signal to revoke it.
    - **Step-up assertions die with their session.** They are matched to the session they were made in, so a deleted session's assertions can no longer be used.
-   - **Recoveries in progress end.** Deleting the recovery links makes the provisional code of any open recovery lapse; that person starts the recovery again.
+   - **Recoveries in progress pause.** With the links gone, an open recovery cannot continue. Its provisional code lapses at its own time unless a new recovery resumes it; if the attacker may know it, [remove the attacker's credentials](#remove-the-attackers-credentials).
    - **Invites need resending.** Unaccepted invites are gone, and the inviter sends them again.
 3. **Redeploy production.** In Deployments, open the current production deployment › ⋯ › Redeploy, and Promote to Production if a rollback is active. Every function then reads the new secret.
 
@@ -102,7 +102,7 @@ REVOKE app_migrator FROM CURRENT_USER;
 COMMIT; -- ROLLBACK for a step that only reads
 ```
 
-1. **Find the suspect passkeys.** List the passkeys added in the incident window: `SELECT id, user_id, name, created_at FROM auth.passkey WHERE created_at >= '<window start>' ORDER BY created_at;`. Check `auth.passkey_activation` too: a passkey there becomes active after 24 hours.
+1. **Find the suspect passkeys.** The audit log's `passkey_added` and `recovery_completed` events in the window point to them ([Read the audit log](#read-the-audit-log)). List the passkeys added in the window: `SELECT id, user_id, name, created_at FROM auth.passkey WHERE created_at >= '<window start>' ORDER BY created_at;`. Check `auth.passkey_activation` too: a passkey there becomes active after 24 hours.
 2. **Delete each confirmed rogue passkey.** Use `DELETE FROM auth.passkey WHERE id = '<id>';`. The passkey's wait, sessions and capability rows go with it.
 3. **Replace the recovery codes the attacker may know.** Only for accounts whose kit may have been seen, delete the codes with `DELETE FROM auth.recovery_code WHERE account_id IN ('<id>', …);`, so each one must generate a new kit. First check that the account keeps a passkey of its own: an account left with no passkey and no code cannot sign in again. Record any such account; bringing it back is a manual re-enrollment the project owner decides.
 4. **Write it down.** These statements write no audit record, so record each deletion in the incident record: which row, when, and why.
@@ -119,7 +119,7 @@ Rotate every secret the incident may have reached; when in doubt, all of them. G
 | --- | --- | --- |
 | `BETTER_AUTH_SECRET` | Vercel | [Revoke every session](#revoke-every-session-and-sign-in-path) |
 | `ARCA_DB_MIGRATOR_PASSWORD`, `ARCA_DB_API_PASSWORD`, `ARCA_DB_AUTH_PASSWORD`, `ARCA_DB_AUDIT_PASSWORD`, `ARCA_DB_JOBS_PASSWORD` | Vercel | New value for each, then redeploy. The build's bootstrap commits the new passwords first, so the serving deployment loses the database from then until the new one is promoted, and stays down if a later build step fails: block the API before rotating, and fix forward |
-| The Neon owner password and the connection variables the Neon integration set (`DATABASE_URL`, `PGPASSWORD` and the other `PG*` and `POSTGRES_*` variables) | Neon and Vercel | Neon console › Roles › the owner role › Reset password, on `production` ([roles](https://neon.com/docs/manage/roles)). Then check in Vercel that the integration's variables carry the new password, update them if not, and redeploy |
+| The Neon owner password and the connection variables the Neon integration set (`DATABASE_URL`, `PGPASSWORD` and the other `PG*` and `POSTGRES_*` variables) | Neon and Vercel | Neon console › Roles › the owner role › Reset password, on `production` ([roles](https://neon.com/docs/manage/roles)). Roles are per branch, so other branches keep the old password: reset it there too, or delete those branches, unless they hold only synthetic data. Then check in Vercel that the integration's variables carry the new password, update them if not, and redeploy |
 | `ARCA_RATE_LIMIT_KEY` | Vercel | New value, redeploy. Current rate-limit windows start over |
 | `CRON_SECRET` | Vercel | New value, redeploy; Vercel sends the new one with each cron call |
 | `RESEND_API_KEY` | Resend and Vercel | Resend › API Keys › create a new key. Set it in Vercel, redeploy, then delete the old key in Resend |

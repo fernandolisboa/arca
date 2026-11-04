@@ -63,6 +63,12 @@ describe('docs link check', () => {
     expect(check({ path: 'docs/a.md', text: '````md\n```\n[gone](gone.md)\n````\n' })).toEqual([]);
   });
 
+  it('closes a fence indented deeper than its opener, as in a list item', () => {
+    expect(
+      check({ path: 'docs/a.md', text: '1. Run:\n\n   ```sh\n   x\n    ```\n\n[gone](gone.md)\n' }),
+    ).toEqual([{ where: 'docs/a.md', problem: 'gone.md does not exist' }]);
+  });
+
   it('keeps checking after inline code that starts a line with backticks', () => {
     expect(check({ path: 'docs/a.md', text: '```x``` is code\n\n[gone](gone.md)\n' })).toEqual([
       { where: 'docs/a.md', problem: 'gone.md does not exist' },

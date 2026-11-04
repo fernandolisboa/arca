@@ -37,7 +37,7 @@ const external = /^[a-z][a-z0-9+.-]*:/i;
 /**
  * The anchor GitHub gives a heading: lowercased, punctuation dropped, spaces as hyphens. An
  * approximation of github-slugger without the dependency; where it differs (HTML tags in a
- * heading, emphasis marks), a valid link is reported, never a broken one passed.
+ * heading, emphasis marks), it usually reports a valid link rather than passing a broken one.
  */
 export function headingAnchor(heading: string): string {
   return heading
@@ -68,13 +68,16 @@ function proseLines(text: string): string[] {
         continue;
       }
       lines.push(line);
-    } else if (
-      run !== undefined &&
-      run.startsWith(open.charAt(0)) &&
-      run.length >= open.length &&
-      line.trim() === run
-    ) {
-      open = undefined;
+    } else {
+      // A closer may sit deeper than the opener, as inside a list item, so any indent counts.
+      const closer = line.trim();
+      if (
+        /^(`{3,}|~{3,})$/.test(closer) &&
+        closer.startsWith(open.charAt(0)) &&
+        closer.length >= open.length
+      ) {
+        open = undefined;
+      }
     }
   }
   return lines;

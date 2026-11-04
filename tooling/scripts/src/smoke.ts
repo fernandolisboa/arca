@@ -109,7 +109,12 @@ async function securityTxtProblem(
   if (response.status !== 200) return `answered ${String(response.status)}`;
   const text = await response.text();
   if (!/^Contact: https:\/\/\S+$/m.test(text)) return 'names no https Contact';
-  const expires = Date.parse(/^Expires: (\S+)$/m.exec(text)?.[1] ?? '');
+  // RFC 9116 asks for an RFC 3339 timestamp; Date.parse alone would also take `2027` or `Nov 4 2027`.
+  const value =
+    /^Expires: (\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2}))$/m.exec(
+      text,
+    )?.[1];
+  const expires = value === undefined ? Number.NaN : Date.parse(value);
   if (Number.isNaN(expires)) return 'has no valid Expires';
   const days = Math.floor((expires - now.getTime()) / dayMs);
   return days > renewalDays ? undefined : `expires in ${String(days)} days; renew Expires`;

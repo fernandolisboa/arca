@@ -162,6 +162,7 @@ describe('production smoke test (spec 0001, R9)', () => {
       'expires in -4 days; renew Expires',
     ],
     ['has no Expires', { raw: 'Contact: https://example.com/report\n' }, 'has no valid Expires'],
+    ['has a loose Expires', { raw: securityTxt('Nov 4 2027') }, 'has no valid Expires'],
     [
       'has no https Contact',
       { raw: 'Contact: mailto:x@example.com\nExpires: 2027-11-04T00:00:00Z\n' },
