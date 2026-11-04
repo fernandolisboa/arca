@@ -34,3 +34,4 @@ export { detectWebFeatures, webCapabilities, type WebFeatures } from './web-capa
 export { createWebDeepLinks } from './web-deep-links.js';
 export { createWebPasskeys } from './web-passkeys.js';
 export { createWebPlatform, type Platform } from './web-platform.js';
+export { createWebVaultEnvelopes } from './web-vault-envelopes.js';
