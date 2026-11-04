@@ -14,7 +14,7 @@ export const spanId = matching(/^[0-9a-f]{16}$/);
 /** The release is the commit SHA (ADR-0016). */
 export const release = matching(/^[0-9a-f]{7,40}$/);
 /** A version number, such as an SDK's `10.2.0` or Node's `v26.1.0`. */
-export const version = matching(/^v?[0-9]{1,5}\.[0-9]{1,5}\.[0-9]{1,5}(?:-[a-z][a-z0-9.]{0,31})?$/);
+export const version = matching(/^v?[0-9]{1,5}\.[0-9]{1,5}\.[0-9]{1,5}$/);
 /** An error code from the API contract, such as `internal_error`. */
 export const errorCode = matching(/^[a-z][a-z0-9_]{0,63}$/);
 export const uuid = matching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
@@ -27,7 +27,6 @@ export const functionName = matching(/^[A-Za-z_$<][\w$.<>]{0,99}$/);
 /** A Sentry operation or origin, such as `http.server` or `auto.db.otel.postgres`. */
 export const operation = matching(/^[a-z][a-z0-9_.]{0,63}$/);
 export const httpMethod = matching(/^(?:GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS)$/);
-export const sdkName = matching(/^sentry\.[a-z.]{1,56}$/);
 export const contentType = matching(
   /^[a-z]+\/[a-z0-9.+-]{1,64}(?:; ?charset=[A-Za-z0-9-]{1,32})?$/,
 );

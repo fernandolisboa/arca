@@ -451,6 +451,11 @@ describe('an adversarial envelope (spec 0004, R3)', () => {
       'https://arca.example/assets/index-B4x9Qe1z.js',
     );
     expect(kept('/var/task/server/index.mjs')).toBe('/var/task/server/index.mjs');
+    expect(kept('HTTPS://12345678909.attacker.example/x.js')).toBe('https://:host/:param');
+    expect(kept(`https://arca.example/recover/${personal.passport}.js`)).toBe(
+      'https://arca.example/recover/:param',
+    );
+    expect(kept(`webpack://${personal.email}/src/x.ts`)).toBeUndefined();
     expect(kept(personal.cpf)).toBeUndefined();
     expect(kept('/cases/3f2a9c1e-0b7d-4c55-9e1a-7d2f4b6a8c90')).toBeUndefined();
   });

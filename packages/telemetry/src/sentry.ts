@@ -12,15 +12,14 @@ import {
   operation,
   pathLike,
   release,
-  uuid,
-  sdkName,
   spanId,
   traceId,
+  uuid,
   version,
 } from './shapes.js';
 import { nameReducer, type UrlReducer } from './urls.js';
 
-export interface SentryKnowns {
+export interface KnownSentryParts {
   readonly reduce: UrlReducer;
   /** The database tables a span may name, as `schema.table`; any other name is dropped. */
   readonly tables: Iterable<string>;
@@ -50,32 +49,43 @@ const spanStatus = oneOf([
 /** Breadcrumbs that only ever carry a method, a URL and a status; every other kind is dropped. */
 const breadcrumbCategory = oneOf(['fetch', 'xhr', 'http', 'navigation']);
 /** The SDK that sent an event; the tunnel keeps it from an envelope header too. */
+const sdkName = oneOf([
+  'sentry.javascript.browser',
+  'sentry.javascript.react',
+  'sentry.javascript.node',
+  'sentry.javascript.hono',
+]);
 export const sdk = object({ name: keep(sdkName), version: keep(version) });
 const className = keep((value) => functionName(value) && !String(value).includes('<'));
 /** A source file on the server, or a built asset's file name in the browser. */
 const codeFile = /\.[cm]?[jt]sx?$/;
-const assetName = /^[A-Za-z0-9_-]{1,100}\.[cm]?js$/;
+/** A Vite build asset, `name-hash.js`, as served from the assets directory. */
+const assetName = /^[A-Za-z0-9_]{1,64}-[A-Za-z0-9_-]{8}\.[cm]?js$/;
 
 const stringLiteral = /'(?:[^']|'')*'/g;
 const sqlStatement = /^\s*(select|insert|update|delete|with)\b/i;
 const sqlTable =
   /\b(?:from|into|update)\s+("?[a-z_][a-z0-9_]{0,62}"?(?:\."?[a-z_][a-z0-9_]{0,62}"?)?)/i;
 
-export function sentryScrubbers({ reduce, tables }: SentryKnowns) {
+export function sentryScrubbers({ reduce, tables }: KnownSentryParts) {
   const name = nameReducer(reduce);
   const knownTables = new Set(tables);
 
   /**
-   * In the browser a frame's file name may be the page's own URL, so a URL is reduced like any
-   * other, keeping only a built asset's name; a server path must name a source file.
+   * In the browser a frame's file name may be the page's own URL, so an http(s) URL is reduced
+   * like any other, keeping only a built asset's name; a server path must name a source file.
+   * Any other scheme is dropped.
    */
   const fileName: Rule = (value) => {
     if (typeof value !== 'string') return undefined;
-    if (!/^https?:/.test(value)) return pathLike(value) && codeFile.test(value) ? value : undefined;
+    if (value.startsWith('/')) return pathLike(value) && codeFile.test(value) ? value : undefined;
+    if (!/^https?:\/\//i.test(value)) return undefined;
     const route = reduce(value);
     if (route === undefined) return undefined;
-    const last = new URL(value).pathname.split('/').at(-1) ?? '';
-    return assetName.test(last) ? route.replace(/:param$/, last) : route;
+    const last = value.split(/[?#]/)[0]?.split('/').at(-1) ?? '';
+    return route.endsWith('/assets/:param') && assetName.test(last)
+      ? route.replace(/:param$/, last)
+      : route;
   };
 
   /** A database span keeps its operation and a known table only, never the statement. */
