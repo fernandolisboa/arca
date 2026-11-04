@@ -1,0 +1,1 @@
+ALTER TABLE "auth"."user" ADD COLUMN "deletion_due_at" timestamp with time zone;

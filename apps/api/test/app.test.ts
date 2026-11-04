@@ -262,6 +262,10 @@ describe('GET /internal/cron/heartbeat (spec 0001, R6)', () => {
           started.push(runDate);
           return Promise.resolve('wrun_test');
         },
+        startDueErasures: () => {
+          started.push('erasures');
+          return Promise.resolve();
+        },
         sweepRateLimits: () => {
           started.push('sweep');
           return Promise.resolve(0);
@@ -310,6 +314,15 @@ describe('GET /internal/cron/heartbeat (spec 0001, R6)', () => {
     const response = await call(`Bearer ${secret}`, '/internal/cron/rate-limit-sweep');
     expect(response.status).toBe(204);
     expect(started).toEqual(['sweep']);
+  });
+
+  it('starts the erasures that are due daily, behind the same token (spec 0004, R9)', async () => {
+    const { call, started } = cronSetup();
+    expect((await call(undefined, '/internal/cron/account-erasure')).status).toBe(401);
+    expect(started).toEqual([]);
+    const response = await call(`Bearer ${secret}`, '/internal/cron/account-erasure');
+    expect(response.status).toBe(202);
+    expect(started).toEqual(['erasures']);
   });
 
   it('is not served without the cron dependencies', async () => {

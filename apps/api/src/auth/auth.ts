@@ -7,7 +7,7 @@ import {
   verification as verificationTable,
 } from '@arca/db/auth-schema';
 import type { Database, Transaction } from '@arca/db';
-import { passkeyActivation, passkeyCapability } from '@arca/db/enrollment-schema';
+import { erasedAccount, passkeyActivation, passkeyCapability } from '@arca/db/enrollment-schema';
 import { passkeyClient } from '@arca/db/notice-schema';
 import type { AuthenticationExtensionsClientInputs } from '@simplewebauthn/server';
 import { betterAuth } from 'better-auth';
@@ -395,6 +395,58 @@ export const accounts = {
         .where(and(eq(user.id, accountId), isNull(user.confirmedAt)))
         .returning({ id: user.id })
     ).length === 1,
+  /**
+   * Marks the account for erasure `waitDays` from now (spec 0004, R9), keeping a mark already
+   * there; the due time, or undefined when the account is gone.
+   */
+  requestDeletion: async (db: Database | Transaction, accountId: string, waitDays: number) =>
+    (
+      await db
+        .update(user)
+        .set({
+          deletionDueAt: sql`coalesce(${user.deletionDueAt}, now() + make_interval(days => ${waitDays}))`,
+        })
+        .where(eq(user.id, accountId))
+        .returning({ dueAt: user.deletionDueAt })
+    )[0]?.dueAt ?? undefined,
+  /** False when no deletion waits, or its time has come and the erasure owns the account. */
+  cancelDeletion: async (db: Database | Transaction, accountId: string) =>
+    (
+      await db
+        .update(user)
+        .set({ deletionDueAt: null })
+        // The statement's own time, not the transaction's, so a cancel never lands after the due time.
+        .where(and(eq(user.id, accountId), gt(user.deletionDueAt, sql`statement_timestamp()`)))
+        .returning({ id: user.id })
+    ).length === 1,
+  deletionDueAt: async (db: Database | Transaction, accountId: string) =>
+    (await db.select({ dueAt: user.deletionDueAt }).from(user).where(eq(user.id, accountId)))[0]
+      ?.dueAt ?? null,
+  /**
+   * The accounts the daily erasure starts a run for, identifiers only: those whose deletion is due,
+   * and those erased whose event or tombstone is still owed.
+   */
+  dueForErasure: async (db: Database | Transaction) =>
+    (
+      await db
+        .select({ id: user.id })
+        .from(user)
+        .where(lte(user.deletionDueAt, sql`now()`))
+        .union(db.select({ id: erasedAccount.accountId }).from(erasedAccount))
+    ).map(({ id }) => id),
+  /**
+   * Whether an erasure may go on: the account's deletion is due, or the account is already gone,
+   * as on a retry after its auth rows were erased. A cancelled deletion is never due again.
+   */
+  erasable: async (db: Database | Transaction, accountId: string) => {
+    // Locked, so a cancel still in flight is seen once it commits.
+    const [found] = await db
+      .select({ due: sql<boolean>`coalesce(${user.deletionDueAt} <= now(), false)` })
+      .from(user)
+      .where(eq(user.id, accountId))
+      .for('update');
+    return found === undefined || found.due;
+  },
   idOf: async (db: Database | Transaction, email: string) =>
     (await db.select({ id: user.id }).from(user).where(eq(user.email, email)))[0]?.id,
   withEmail: async (db: Database | Transaction, email: string) =>
@@ -444,6 +496,37 @@ async function isPending(db: Database | Transaction, credentialId: string) {
 export type AddedBy =
   | { readonly accountId: string; readonly sessionId: string }
   | { readonly accountId: string; readonly device: DeviceDescription };
+
+/** The notes of erased accounts whose event or tombstone is still owed (spec 0004, R9). */
+export const erasedAccounts = {
+  /** Notes the account while its row still exists, so a later run notes nothing. */
+  note: async (db: Database | Transaction, accountId: string) => {
+    await db
+      .insert(erasedAccount)
+      .select(db.select({ accountId: user.id }).from(user).where(eq(user.id, accountId)))
+      .onConflictDoNothing();
+  },
+  /** True once only: the caller records the event before its transaction commits. */
+  markRecorded: async (db: Database | Transaction, accountId: string) =>
+    (
+      await db
+        .update(erasedAccount)
+        .set({ recordedAt: sql`now()` })
+        .where(and(eq(erasedAccount.accountId, accountId), isNull(erasedAccount.recordedAt)))
+        .returning({ id: erasedAccount.accountId })
+    ).length === 1,
+  /** When the noted account was erased, or undefined when it is not noted. */
+  erasedAt: async (db: Database | Transaction, accountId: string) =>
+    (
+      await db
+        .select({ at: erasedAccount.erasedAt })
+        .from(erasedAccount)
+        .where(eq(erasedAccount.accountId, accountId))
+    )[0]?.at,
+  clear: async (db: Database | Transaction, accountId: string) => {
+    await db.delete(erasedAccount).where(eq(erasedAccount.accountId, accountId));
+  },
+};
 
 /** A passkey to store for the account, as a verified registration describes it. */
 export interface NewPasskey {
@@ -504,6 +587,14 @@ export const devices = {
         .where(and(eq(sessionTable.id, sessionId), eq(sessionTable.userId, accountId)))
         .returning({ id: sessionTable.id })
     ).length === 1,
+  /** Every session of the account; the IDs of those it ended. */
+  revokeAllSessions: async (db: Database | Transaction, accountId: string) =>
+    (
+      await db
+        .delete(sessionTable)
+        .where(eq(sessionTable.userId, accountId))
+        .returning({ id: sessionTable.id })
+    ).map(({ id }) => id),
   /**
    * Every session of the account but the one kept; the IDs of those it ended that were still
    * live, as `of` lists them. Dead ones go too, unrecorded, since nobody could see or use them.

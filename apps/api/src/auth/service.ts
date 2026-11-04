@@ -6,8 +6,15 @@ import type { Auth } from './auth.js';
 export const absoluteSessionLifetimeMs = 30 * 24 * 60 * 60 * 1000;
 
 /** The session as Better Auth knows it; the API adds what the account's passkeys say. */
-const SessionOfAuth = SessionResponse.omit({ pendingPasskeyUntil: true, recoveryPending: true });
-export type SessionOfAuth = Omit<SessionResponse, 'pendingPasskeyUntil' | 'recoveryPending'>;
+const SessionOfAuth = SessionResponse.omit({
+  pendingPasskeyUntil: true,
+  recoveryPending: true,
+  deletionDueAt: true,
+});
+export type SessionOfAuth = Omit<
+  SessionResponse,
+  'pendingPasskeyUntil' | 'recoveryPending' | 'deletionDueAt'
+>;
 
 export interface RefreshedSession {
   readonly session: SessionOfAuth | null;

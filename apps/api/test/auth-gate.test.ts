@@ -18,6 +18,7 @@ const signedIn: SessionResponse = {
   device: { browser: 'firefox', os: 'linux' },
   pendingPasskeyUntil: null,
   recoveryPending: false,
+  deletionDueAt: null,
 };
 
 const origin = 'http://arca.test';

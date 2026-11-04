@@ -193,3 +193,16 @@ export const invite = auth.table(
     ),
   ],
 );
+
+/**
+ * Erased accounts whose `account erased` event or tombstone is still owed (spec 0004, R9): written
+ * with the erasure of the auth rows, so a run that fails after them is started again, and deleted
+ * once the tombstone is written. The account ID only, which the audit trail keeps anyway; no
+ * foreign key, since the account is gone. Never backed up: a restore takes its erasures from the
+ * audit trail and the tombstones.
+ */
+export const erasedAccount = auth.table('erased_account', {
+  accountId: uuid('account_id').primaryKey(),
+  erasedAt: timestamp('erased_at', { withTimezone: true }).notNull().defaultNow(),
+  recordedAt: timestamp('recorded_at', { withTimezone: true }),
+});

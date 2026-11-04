@@ -121,7 +121,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Project owner | (technical only) | The person who runs Arca and approves owner-only steps (setup, restores, knowledge-base changes) |
 | Owner | Dono | The account that owns a document or row; in product and data docs, "owner" alone means this; in operational steps (setup, deploys, backups, restores, incidents) "the owner" means the project owner, and security decisions always say "project owner" |
 | Fingerprint | Impressão digital da chave | A short code derived from a person's vault recipient, compared in person before trusting it for sharing |
-| Restricted session | Sessão restrita | A session that can only show the pending-recovery warning and cancel the recovery, until the recovery passkey activates |
+| Restricted session | Sessão restrita | A session that can only show a pending warning and cancel what waits: a recovery, until the recovery passkey activates, or a deletion, until it is due; with both pending, the recovery's restriction applies and the deletion's cancel stays open |
 | Data export | Exportação dos dados | A file with all of an account's data, built on request |
 | Notification channel | Canal de notificação | A place an account receives notices: email or one device's push subscription |
 | Real-data gate | (technical only) | The checklist that must be complete before production accepts family data |

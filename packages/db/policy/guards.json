@@ -9,6 +9,10 @@
       "reason": "Better Auth table; only app_auth uses the auth schema (app_backup only reads the backed-up tables), and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
     },
     {
+      "table": "auth.erased_account",
+      "reason": "Arca's notes of erased accounts whose event or tombstone is still owed; only app_auth uses the auth schema (app_backup only reads the backed-up tables), and the daily erasure writes them without a per-request identity, so row-level security would not narrow anything."
+    },
+    {
       "table": "auth.invite",
       "reason": "Arca's invites in the auth schema; only app_auth uses the auth schema (app_backup only reads the backed-up tables), they are read before the invitee has an account, and every inviter query names the inviter's own account, so row-level security would not narrow anything."
     },
@@ -122,6 +126,10 @@
     {
       "table": "auth.outbox",
       "reason": "The non-production email outbox; production never writes it."
+    },
+    {
+      "table": "auth.erased_account",
+      "reason": "Bookkeeping for erasures in progress; a restore takes its erasures from the audit trail and the tombstones."
     }
   ]
 }

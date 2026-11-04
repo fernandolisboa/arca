@@ -215,6 +215,12 @@ export const registry: Registry = {
       reason: "The migration runner's journal of applied migrations.",
     },
     {
+      table: 'auth.erased_account',
+      personalData: 'none',
+      reason:
+        'IDs of erased accounts whose audit event or tombstone is still owed; the audit trail keeps the same IDs.',
+    },
+    {
       table: 'auth.setup',
       personalData: 'none',
       reason: 'Hashes of spent enrollment codes, kept so an emptied user table never revives one.',

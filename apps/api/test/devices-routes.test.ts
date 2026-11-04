@@ -86,7 +86,7 @@ function setup({
     },
     status: (accountId) => {
       checked.push(accountId);
-      return Promise.resolve({ pendingUntil, recoveryPending, sessionEnded });
+      return Promise.resolve({ pendingUntil, recoveryPending, deletionDueAt: null, sessionEnded });
     },
   };
   const app = createApp({
@@ -237,6 +237,7 @@ describe('the device routes (spec 0003, R4)', () => {
       ...session,
       pendingPasskeyUntil: activeFrom.toISOString(),
       recoveryPending: false,
+      deletionDueAt: null,
     });
     expect(pending.checked).toEqual([owner.accountId]);
     const none = await setup().app.request('/v1/session');
@@ -244,6 +245,7 @@ describe('the device routes (spec 0003, R4)', () => {
       ...session,
       pendingPasskeyUntil: null,
       recoveryPending: false,
+      deletionDueAt: null,
     });
   });
 

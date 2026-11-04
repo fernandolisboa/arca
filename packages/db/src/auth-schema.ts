@@ -35,6 +35,8 @@ export const user = auth.table('user', {
   lastSignInAt: timestamp('last_sign_in_at', { withTimezone: true }),
   /** Set at owner enrollment, or when the inviter confirms the account; restricted while null. */
   confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+  /** While set, the account waits for erasure and may only cancel it (spec 0004, R9). */
+  deletionDueAt: timestamp('deletion_due_at', { withTimezone: true }),
 });
 
 export const session = auth.table(

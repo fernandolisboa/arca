@@ -1,0 +1,47 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "969079e3-ff9e-4e9d-ba99-9a4293a4a2eb",
+  "prevIds": [
+    "5211d50f-7d27-4924-8115-962ea4d0f4dd"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "auth",
+        "user",
+        "deletion_due_at"
+      ],
+      "writes": [
+        "s|col|auth.user.deletion_due_at",
+        "n|col|auth.user.deletion_due_at",
+        "e|col|auth.user.deletion_due_at"
+      ],
+      "reads": [
+        "n|tbl|auth.user",
+        "n|sch|auth"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "auth",
+        "table": "user",
+        "name": "deletion_due_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

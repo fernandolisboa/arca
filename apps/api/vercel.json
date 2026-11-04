@@ -8,6 +8,10 @@
       "schedule": "0 6 * * *"
     },
     {
+      "path": "/internal/cron/account-erasure",
+      "schedule": "0 7 * * *"
+    },
+    {
       "path": "/internal/cron/rate-limit-sweep",
       "schedule": "30 6 * * *"
     }

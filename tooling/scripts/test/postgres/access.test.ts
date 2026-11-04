@@ -27,6 +27,7 @@ afterAll(async () => {
 
 const authTables = [
   'account',
+  'erased_account',
   'invite',
   'outbox',
   'passkey',
@@ -101,6 +102,7 @@ describe('the auth schema access matrix', () => {
     expect(await privileges('app_auth')).toEqual({
       schema: ['USAGE'],
       ...Object.fromEntries(authTables.map((table) => [table, dml])),
+      erased_account: ['SELECT', 'INSERT', 'DELETE'],
       invite: ['SELECT', 'INSERT', 'DELETE'],
       outbox: ['SELECT', 'INSERT', 'DELETE'],
       passkey_activation: ['SELECT', 'INSERT', 'DELETE'],
@@ -109,7 +111,7 @@ describe('the auth schema access matrix', () => {
       passkey_client: ['SELECT', 'INSERT', 'DELETE'],
       recovery_code: ['SELECT', 'INSERT', 'DELETE'],
       recovery_link: ['SELECT', 'INSERT', 'DELETE'],
-      recovery_lock: ['SELECT', 'INSERT'],
+      recovery_lock: ['SELECT', 'INSERT', 'DELETE'],
       registration_context: ['SELECT', 'INSERT', 'DELETE'],
       setup: ['SELECT', 'INSERT'],
       step_up: ['SELECT', 'INSERT', 'DELETE'],
@@ -123,6 +125,7 @@ describe('the auth schema access matrix', () => {
     ['recovery_link', ['token_hash', 'redeemed_at', 'challenge', 'challenge_expires_at']],
     ['recovery_lock', ['failures', 'locked_until']],
     ['invite', ['accepted_at', 'accepted_account_id']],
+    ['erased_account', ['recorded_at']],
   ])('lets app_auth update only the columns it must on auth.%s', async (table, columns) => {
     const updatable = await withClient(adminTarget(database), async (client) => {
       const result = await client.query<{ name: string }>(
