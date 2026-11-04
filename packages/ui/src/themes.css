@@ -1,0 +1,509 @@
+/* Generated from packages/ui/src/theme by `pnpm --filter @arca/ui themes`. Do not edit. */
+
+:root {
+  color-scheme: dark;
+  --arca-bg: #1E1A17;
+  --arca-surface: #29231F;
+  --arca-ink: #F3EDE4;
+  --arca-muted: #C2B6A8;
+  --arca-line: #3D352E;
+  --arca-primary: #E58A60;
+  --arca-on-primary: #1E1A17;
+  --arca-soft: #352D27;
+  --arca-track: #3D352E;
+  --arca-second: #9C8F82;
+  --arca-ok-bg: #2C3A22;
+  --arca-ok-ink: #BFD8A5;
+  --arca-warn-bg: #45281A;
+  --arca-warn-ink: #F4BE9F;
+  --arca-danger-bg: #3E1A19;
+  --arca-danger-ink: #FFB4A8;
+  --arca-mark-hull: #A67C63;
+  --arca-mark-house: #E9CB88;
+  --arca-mark-roof: #C7845F;
+  --arca-mark-ramp: #C59770;
+  --arca-mark-windows: #F5E2B8;
+  --arca-font-display: 'Young Serif', serif;
+  --arca-font-display-weight: 400;
+  --arca-font-body: 'Work Sans', sans-serif;
+  --arca-font-body-weight: 400;
+  --arca-font-numeric: 'Work Sans', sans-serif;
+  --arca-font-numeric-weight: 500;
+  --arca-radius-card: 4px;
+  --arca-radius-control: 4px;
+  --arca-radius-chip: 4px;
+  --arca-radius-dock: 6px;
+  --arca-duration-fast: 150ms;
+  --arca-duration-base: 250ms;
+  --arca-duration-slow: 450ms;
+  --arca-stagger-step: 90ms;
+  --arca-ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+[data-theme="notebook"][data-mode="light"],
+[data-theme="notebook"][data-mode="system"] {
+  color-scheme: light;
+  --arca-bg: #FAF6EF;
+  --arca-surface: #FFFDF8;
+  --arca-ink: #2B2622;
+  --arca-muted: #6B5F55;
+  --arca-line: #E6DCCB;
+  --arca-primary: #A8461F;
+  --arca-on-primary: #FFFFFF;
+  --arca-soft: #F1E8DA;
+  --arca-track: #EADFCD;
+  --arca-second: #8C7F73;
+  --arca-ok-bg: #E3EBD9;
+  --arca-ok-ink: #34491F;
+  --arca-warn-bg: #F6DDCB;
+  --arca-warn-ink: #7E3315;
+  --arca-danger-bg: #FBE3E0;
+  --arca-danger-ink: #9B1C1C;
+  --arca-mark-hull: #805840;
+  --arca-mark-house: #AE8546;
+  --arca-mark-roof: #5B4033;
+  --arca-mark-ramp: #AD7853;
+  --arca-mark-windows: #F1DCA9;
+}
+
+[data-theme="notebook"][data-mode="dark"] {
+  color-scheme: dark;
+  --arca-bg: #1E1A17;
+  --arca-surface: #29231F;
+  --arca-ink: #F3EDE4;
+  --arca-muted: #C2B6A8;
+  --arca-line: #3D352E;
+  --arca-primary: #E58A60;
+  --arca-on-primary: #1E1A17;
+  --arca-soft: #352D27;
+  --arca-track: #3D352E;
+  --arca-second: #9C8F82;
+  --arca-ok-bg: #2C3A22;
+  --arca-ok-ink: #BFD8A5;
+  --arca-warn-bg: #45281A;
+  --arca-warn-ink: #F4BE9F;
+  --arca-danger-bg: #3E1A19;
+  --arca-danger-ink: #FFB4A8;
+  --arca-mark-hull: #A67C63;
+  --arca-mark-house: #E9CB88;
+  --arca-mark-roof: #C7845F;
+  --arca-mark-ramp: #C59770;
+  --arca-mark-windows: #F5E2B8;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="notebook"][data-mode="system"] {
+    color-scheme: dark;
+    --arca-bg: #1E1A17;
+    --arca-surface: #29231F;
+    --arca-ink: #F3EDE4;
+    --arca-muted: #C2B6A8;
+    --arca-line: #3D352E;
+    --arca-primary: #E58A60;
+    --arca-on-primary: #1E1A17;
+    --arca-soft: #352D27;
+    --arca-track: #3D352E;
+    --arca-second: #9C8F82;
+    --arca-ok-bg: #2C3A22;
+    --arca-ok-ink: #BFD8A5;
+    --arca-warn-bg: #45281A;
+    --arca-warn-ink: #F4BE9F;
+    --arca-danger-bg: #3E1A19;
+    --arca-danger-ink: #FFB4A8;
+    --arca-mark-hull: #A67C63;
+    --arca-mark-house: #E9CB88;
+    --arca-mark-roof: #C7845F;
+    --arca-mark-ramp: #C59770;
+    --arca-mark-windows: #F5E2B8;
+  }
+}
+
+[data-theme="notebook"][data-mode="light"][data-contrast="high"],
+[data-theme="notebook"][data-mode="system"][data-contrast="high"] {
+  --arca-muted: #2B2622;
+  --arca-line: #968E81;
+  --arca-second: #8C7F73;
+  --arca-primary: #882F04;
+  --arca-ok-ink: #34491F;
+  --arca-warn-ink: #7B3113;
+  --arca-danger-ink: #961819;
+}
+
+[data-theme="notebook"][data-mode="dark"][data-contrast="high"] {
+  --arca-muted: #F3EDE4;
+  --arca-line: #746C66;
+  --arca-second: #9C8F82;
+  --arca-primary: #FEA67E;
+  --arca-ok-ink: #BFD8A5;
+  --arca-warn-ink: #F4BE9F;
+  --arca-danger-ink: #FFB4A8;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="notebook"][data-mode="system"][data-contrast="high"] {
+    --arca-muted: #F3EDE4;
+    --arca-line: #746C66;
+    --arca-second: #9C8F82;
+    --arca-primary: #FEA67E;
+    --arca-ok-ink: #BFD8A5;
+    --arca-warn-ink: #F4BE9F;
+    --arca-danger-ink: #FFB4A8;
+  }
+}
+
+[data-theme="serene"][data-mode="light"],
+[data-theme="serene"][data-mode="system"] {
+  color-scheme: light;
+  --arca-bg: #F6F8F8;
+  --arca-surface: #FFFFFF;
+  --arca-ink: #14262B;
+  --arca-muted: #4A5F65;
+  --arca-line: #D9E2E4;
+  --arca-primary: #1D5B69;
+  --arca-on-primary: #FFFFFF;
+  --arca-soft: #E6EDEE;
+  --arca-track: #E6EDEE;
+  --arca-second: #8FA3A8;
+  --arca-ok-bg: #DDF1E6;
+  --arca-ok-ink: #145C36;
+  --arca-warn-bg: #FCEFCF;
+  --arca-warn-ink: #6B4A00;
+  --arca-danger-bg: #FBE3E0;
+  --arca-danger-ink: #9B1C1C;
+  --arca-mark-hull: #805840;
+  --arca-mark-house: #AE8546;
+  --arca-mark-roof: #5B4033;
+  --arca-mark-ramp: #AD7853;
+  --arca-mark-windows: #F1DCA9;
+}
+
+[data-theme="serene"][data-mode="dark"] {
+  color-scheme: dark;
+  --arca-bg: #0F1C20;
+  --arca-surface: #16272C;
+  --arca-ink: #E8F0F1;
+  --arca-muted: #A3B6BA;
+  --arca-line: #2A3F44;
+  --arca-primary: #6CC0D0;
+  --arca-on-primary: #0F1C20;
+  --arca-soft: #1D3338;
+  --arca-track: #2A3F44;
+  --arca-second: #6F878C;
+  --arca-ok-bg: #173A2A;
+  --arca-ok-ink: #A6E2C1;
+  --arca-warn-bg: #3D3115;
+  --arca-warn-ink: #F5D58A;
+  --arca-danger-bg: #3E1A19;
+  --arca-danger-ink: #FFB4A8;
+  --arca-mark-hull: #A67C63;
+  --arca-mark-house: #E9CB88;
+  --arca-mark-roof: #C7845F;
+  --arca-mark-ramp: #C59770;
+  --arca-mark-windows: #F5E2B8;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="serene"][data-mode="system"] {
+    color-scheme: dark;
+    --arca-bg: #0F1C20;
+    --arca-surface: #16272C;
+    --arca-ink: #E8F0F1;
+    --arca-muted: #A3B6BA;
+    --arca-line: #2A3F44;
+    --arca-primary: #6CC0D0;
+    --arca-on-primary: #0F1C20;
+    --arca-soft: #1D3338;
+    --arca-track: #2A3F44;
+    --arca-second: #6F878C;
+    --arca-ok-bg: #173A2A;
+    --arca-ok-ink: #A6E2C1;
+    --arca-warn-bg: #3D3115;
+    --arca-warn-ink: #F5D58A;
+    --arca-danger-bg: #3E1A19;
+    --arca-danger-ink: #FFB4A8;
+    --arca-mark-hull: #A67C63;
+    --arca-mark-house: #E9CB88;
+    --arca-mark-roof: #C7845F;
+    --arca-mark-ramp: #C59770;
+    --arca-mark-windows: #F5E2B8;
+  }
+}
+
+[data-theme="serene"][data-mode="light"][data-contrast="high"],
+[data-theme="serene"][data-mode="system"][data-contrast="high"] {
+  --arca-muted: #14262B;
+  --arca-line: #8A9193;
+  --arca-second: #809398;
+  --arca-primary: #175563;
+  --arca-ok-ink: #125A34;
+  --arca-warn-ink: #6B4A00;
+  --arca-danger-ink: #961819;
+}
+
+[data-theme="serene"][data-mode="dark"][data-contrast="high"] {
+  --arca-muted: #E8F0F1;
+  --arca-line: #5D7176;
+  --arca-second: #6F878C;
+  --arca-primary: #77C9D8;
+  --arca-ok-ink: #A6E2C1;
+  --arca-warn-ink: #F5D58A;
+  --arca-danger-ink: #FFB4A8;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="serene"][data-mode="system"][data-contrast="high"] {
+    --arca-muted: #E8F0F1;
+    --arca-line: #5D7176;
+    --arca-second: #6F878C;
+    --arca-primary: #77C9D8;
+    --arca-ok-ink: #A6E2C1;
+    --arca-warn-ink: #F5D58A;
+    --arca-danger-ink: #FFB4A8;
+  }
+}
+
+[data-theme="panel"][data-mode="light"],
+[data-theme="panel"][data-mode="system"] {
+  color-scheme: light;
+  --arca-bg: #F4F5F7;
+  --arca-surface: #FFFFFF;
+  --arca-ink: #1B1F24;
+  --arca-muted: #5A6470;
+  --arca-line: #DDE1E6;
+  --arca-primary: #2457D6;
+  --arca-on-primary: #FFFFFF;
+  --arca-soft: #E9ECF1;
+  --arca-track: #E9ECF1;
+  --arca-second: #9AA4B0;
+  --arca-ok-bg: #EAF6EF;
+  --arca-ok-ink: #17603A;
+  --arca-warn-bg: #FDF0E6;
+  --arca-warn-ink: #8A3A07;
+  --arca-danger-bg: #FBE3E0;
+  --arca-danger-ink: #9B1C1C;
+  --arca-mark-hull: #805840;
+  --arca-mark-house: #AE8546;
+  --arca-mark-roof: #5B4033;
+  --arca-mark-ramp: #AD7853;
+  --arca-mark-windows: #F1DCA9;
+}
+
+[data-theme="panel"][data-mode="dark"] {
+  color-scheme: dark;
+  --arca-bg: #111418;
+  --arca-surface: #1A1E24;
+  --arca-ink: #E9ECF0;
+  --arca-muted: #9AA4B0;
+  --arca-line: #2C323A;
+  --arca-primary: #7AA2FF;
+  --arca-on-primary: #111418;
+  --arca-soft: #222831;
+  --arca-track: #2C323A;
+  --arca-second: #5D6672;
+  --arca-ok-bg: #173326;
+  --arca-ok-ink: #9FDDB9;
+  --arca-warn-bg: #3A2414;
+  --arca-warn-ink: #FFC49E;
+  --arca-danger-bg: #3E1A19;
+  --arca-danger-ink: #FFB4A8;
+  --arca-mark-hull: #A67C63;
+  --arca-mark-house: #E9CB88;
+  --arca-mark-roof: #C7845F;
+  --arca-mark-ramp: #C59770;
+  --arca-mark-windows: #F5E2B8;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="panel"][data-mode="system"] {
+    color-scheme: dark;
+    --arca-bg: #111418;
+    --arca-surface: #1A1E24;
+    --arca-ink: #E9ECF0;
+    --arca-muted: #9AA4B0;
+    --arca-line: #2C323A;
+    --arca-primary: #7AA2FF;
+    --arca-on-primary: #111418;
+    --arca-soft: #222831;
+    --arca-track: #2C323A;
+    --arca-second: #5D6672;
+    --arca-ok-bg: #173326;
+    --arca-ok-ink: #9FDDB9;
+    --arca-warn-bg: #3A2414;
+    --arca-warn-ink: #FFC49E;
+    --arca-danger-bg: #3E1A19;
+    --arca-danger-ink: #FFB4A8;
+    --arca-mark-hull: #A67C63;
+    --arca-mark-house: #E9CB88;
+    --arca-mark-roof: #C7845F;
+    --arca-mark-ramp: #C59770;
+    --arca-mark-windows: #F5E2B8;
+  }
+}
+
+[data-theme="panel"][data-mode="light"][data-contrast="high"],
+[data-theme="panel"][data-mode="system"][data-contrast="high"] {
+  --arca-muted: #1B1F24;
+  --arca-line: #8B8E92;
+  --arca-second: #868F9A;
+  --arca-primary: #1542B9;
+  --arca-ok-ink: #155E38;
+  --arca-warn-ink: #893906;
+  --arca-danger-ink: #961819;
+}
+
+[data-theme="panel"][data-mode="dark"][data-contrast="high"] {
+  --arca-muted: #E9ECF0;
+  --arca-line: #636971;
+  --arca-second: #606975;
+  --arca-primary: #8BB3FF;
+  --arca-ok-ink: #9FDDB9;
+  --arca-warn-ink: #FFC49E;
+  --arca-danger-ink: #FFB4A8;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="panel"][data-mode="system"][data-contrast="high"] {
+    --arca-muted: #E9ECF0;
+    --arca-line: #636971;
+    --arca-second: #606975;
+    --arca-primary: #8BB3FF;
+    --arca-ok-ink: #9FDDB9;
+    --arca-warn-ink: #FFC49E;
+    --arca-danger-ink: #FFB4A8;
+  }
+}
+
+[data-font="retro"] {
+  --arca-font-display: 'Young Serif', serif;
+  --arca-font-display-weight: 400;
+  --arca-font-body: 'Work Sans', sans-serif;
+  --arca-font-body-weight: 400;
+  --arca-font-numeric: 'Work Sans', sans-serif;
+  --arca-font-numeric-weight: 500;
+}
+
+[data-font="expressive"] {
+  --arca-font-display: 'Bricolage Grotesque', sans-serif;
+  --arca-font-display-weight: 700;
+  --arca-font-body: 'DM Sans', sans-serif;
+  --arca-font-body-weight: 400;
+  --arca-font-numeric: 'DM Sans', sans-serif;
+  --arca-font-numeric-weight: 500;
+}
+
+[data-font="editorial"] {
+  --arca-font-display: 'Fraunces', serif;
+  --arca-font-display-weight: 600;
+  --arca-font-body: 'Source Sans 3', sans-serif;
+  --arca-font-body-weight: 400;
+  --arca-font-numeric: 'Source Sans 3', sans-serif;
+  --arca-font-numeric-weight: 500;
+}
+
+[data-font="elegant"] {
+  --arca-font-display: 'Instrument Serif', serif;
+  --arca-font-display-weight: 400;
+  --arca-font-body: 'Instrument Sans', sans-serif;
+  --arca-font-body-weight: 400;
+  --arca-font-numeric: 'Instrument Sans', sans-serif;
+  --arca-font-numeric-weight: 500;
+}
+
+[data-font="geometric"] {
+  --arca-font-display: 'Space Grotesk', sans-serif;
+  --arca-font-display-weight: 700;
+  --arca-font-body: 'Manrope', sans-serif;
+  --arca-font-body-weight: 400;
+  --arca-font-numeric: 'Space Grotesk', sans-serif;
+  --arca-font-numeric-weight: 500;
+}
+
+[data-font="friendly"] {
+  --arca-font-display: 'Nunito', sans-serif;
+  --arca-font-display-weight: 800;
+  --arca-font-body: 'Nunito', sans-serif;
+  --arca-font-body-weight: 400;
+  --arca-font-numeric: 'Nunito', sans-serif;
+  --arca-font-numeric-weight: 600;
+}
+
+[data-font="readable"] {
+  --arca-font-display: 'Atkinson Hyperlegible Next', sans-serif;
+  --arca-font-display-weight: 700;
+  --arca-font-body: 'Atkinson Hyperlegible Next', sans-serif;
+  --arca-font-body-weight: 400;
+  --arca-font-numeric: 'Atkinson Hyperlegible Next', sans-serif;
+  --arca-font-numeric-weight: 400;
+}
+
+[data-font="clean"] {
+  --arca-font-display: 'Inter', sans-serif;
+  --arca-font-display-weight: 700;
+  --arca-font-body: 'Inter', sans-serif;
+  --arca-font-body-weight: 400;
+  --arca-font-numeric: 'Inter', sans-serif;
+  --arca-font-numeric-weight: 500;
+}
+
+[data-font="technical"] {
+  --arca-font-display: 'IBM Plex Sans', sans-serif;
+  --arca-font-display-weight: 600;
+  --arca-font-body: 'IBM Plex Sans', sans-serif;
+  --arca-font-body-weight: 400;
+  --arca-font-numeric: 'IBM Plex Mono', monospace;
+  --arca-font-numeric-weight: 500;
+}
+
+[data-corners="square"] {
+  --arca-radius-card: 4px;
+  --arca-radius-control: 4px;
+  --arca-radius-chip: 4px;
+  --arca-radius-dock: 6px;
+}
+
+[data-corners="soft"] {
+  --arca-radius-card: 16px;
+  --arca-radius-control: 12px;
+  --arca-radius-chip: 999px;
+  --arca-radius-dock: 18px;
+}
+
+[data-corners="round"] {
+  --arca-radius-card: 28px;
+  --arca-radius-control: 999px;
+  --arca-radius-chip: 999px;
+  --arca-radius-dock: 999px;
+}
+
+[data-text-size="100"] {
+  font-size: 100%;
+}
+
+[data-text-size="112"] {
+  font-size: 112%;
+}
+
+[data-text-size="125"] {
+  font-size: 125%;
+}
+
+[data-text-size="150"] {
+  font-size: 150%;
+}
+
+[data-motion="off"] {
+  --arca-duration-fast: 0ms;
+  --arca-duration-base: 0ms;
+  --arca-duration-slow: 0ms;
+  --arca-stagger-step: 0ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  [data-motion] {
+    --arca-duration-fast: 0ms;
+    --arca-duration-base: 0ms;
+    --arca-duration-slow: 0ms;
+    --arca-stagger-step: 0ms;
+  }
+}

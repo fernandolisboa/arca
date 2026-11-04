@@ -9,7 +9,7 @@ export function NotFound() {
       <h2 className="font-semibold">{t('notFound.title')}</h2>
       <Link
         to="/"
-        className="inline-flex min-h-touch items-center text-brand underline underline-offset-4"
+        className="inline-flex min-h-touch items-center text-primary underline underline-offset-4"
       >
         {t('notFound.home')}
       </Link>
@@ -21,7 +21,7 @@ export function NotFound() {
 export function Failure() {
   const { t } = useTranslation();
   return (
-    <p role="alert" className="text-danger">
+    <p role="alert" className="text-danger-ink">
       {t('failure.title')}
     </p>
   );
