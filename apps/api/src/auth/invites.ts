@@ -180,10 +180,11 @@ export function createInvites({
 
     details: async (token) => {
       const [found] = await db
-        .select({ inviterId: invite.inviterId })
+        .select({ inviterId: invite.inviterId, email: invite.email })
         .from(invite)
         .where(liveInvite(sha256(token)));
-      if (found === undefined) return undefined;
+      // Like registration, a link to an address that already has an account opens nothing.
+      if (found === undefined || (await accounts.withEmail(db, found.email))) return undefined;
       const inviterEmail = await accounts.emailOf(db, found.inviterId);
       return inviterEmail === undefined ? undefined : { inviterEmail };
     },

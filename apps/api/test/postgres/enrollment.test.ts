@@ -552,7 +552,9 @@ describe('invites (spec 0003, R2)', () => {
 
   it('opens no registration for an address that already has an account', async () => {
     expect((await invite(owner.cookie, ownerEmail)).status).toBe(200);
-    expect((await options(await latestToken('invite'), null)).status).toBe(404);
+    const token = await latestToken('invite');
+    expect((await options(token, null)).status).toBe(404);
+    expect((await details(token)).status).toBe(404);
   });
 
   it('confirms the account only after a step-up for that invite', async () => {
