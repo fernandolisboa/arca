@@ -20,6 +20,8 @@ const router = createRouter({
   routeTree,
   defaultNotFoundComponent: NotFound,
   defaultErrorComponent: Failure,
+  // Motion off zeroes the view-transition animations in CSS, so the swap is instant (spec 0006, R6).
+  defaultViewTransition: true,
 });
 
 declare module '@tanstack/react-router' {

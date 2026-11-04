@@ -219,10 +219,19 @@ export const client = {
 
 const contractEntry = 'apps/web imports the API contract only through @arca/api-contract/client.';
 
+const iconsInUi =
+  'Icons come from the Icon component in @arca/ui, the only place lucide-react is imported (spec 0006, R5).';
+
 /** @type {Restrictions} */
 export const web = {
-  paths: [{ name: '@arca/api-contract', message: contractEntry }],
-  patterns: [{ regex: '^@arca/api-contract/(?!client$)', message: contractEntry }],
+  paths: [
+    { name: '@arca/api-contract', message: contractEntry },
+    { name: 'lucide-react', message: iconsInUi },
+  ],
+  patterns: [
+    { regex: '^@arca/api-contract/(?!client$)', message: contractEntry },
+    { regex: '^lucide-react/', message: iconsInUi },
+  ],
 };
 
 const contractWithoutHono =
