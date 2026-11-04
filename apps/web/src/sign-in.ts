@@ -22,18 +22,38 @@ function toAssertion(response: AuthenticationResponseJSON): PasskeyAssertion {
   return { ...response, clientExtensionResults: { ...response.clientExtensionResults } };
 }
 
+/** The API could not be reached: fetch rejected before any response arrived. */
+class UnreachableError extends Error {
+  override name = 'UnreachableError';
+}
+
+/** Tells a failed fetch apart from any other TypeError, such as malformed ceremony options. */
+async function reach<T>(call: Promise<T>): Promise<T> {
+  try {
+    return await call;
+  } catch (error) {
+    throw error instanceof TypeError
+      ? new UnreachableError(error.message, { cause: error })
+      : error;
+  }
+}
+
 /** The last options request, so a new one starts only after it settled. */
 let lastOptions: Promise<unknown> = Promise.resolve();
+
+/** A stalled request delays the next one by at most this long. */
+const optionsQueueLimitMs = 10_000;
 
 /**
  * Each options response sets the single-use challenge cookie, and the last one wins. Fetching
  * them one after another keeps an earlier, slower response from replacing a newer challenge.
  */
 function nextOptions(): Promise<PasskeyRequestOptions> {
-  const options = lastOptions.then(
-    () => api.call(routes.passkeySignInOptions),
-    () => api.call(routes.passkeySignInOptions),
-  );
+  const previous = Promise.race([
+    lastOptions,
+    new Promise((resolve) => setTimeout(resolve, optionsQueueLimitMs)),
+  ]);
+  const options = previous.then(() => reach(api.call(routes.passkeySignInOptions)));
   lastOptions = options.catch(() => undefined);
   return options;
 }
@@ -50,13 +70,12 @@ export async function signInWithPasskey(
   // A screen that went away while the options loaded starts no ceremony.
   signal?.throwIfAborted();
   const response = await passkeys.get(toRequestOptions(options), { autofill });
-  await api.call(routes.passkeySignIn, { response: toAssertion(response) });
+  await reach(api.call(routes.passkeySignIn, { response: toAssertion(response) }));
 }
 
 export function failureOf(error: unknown): SignInFailure {
   if (error instanceof ApiError) return error.status === 401 ? 'refused' : 'other';
-  // fetch rejects with a TypeError when the network or the server cannot be reached.
-  if (error instanceof TypeError) return 'unreachable';
+  if (error instanceof UnreachableError) return 'unreachable';
   // Browsers report a dismissed prompt, a timeout and a failed verification alike.
   if (error instanceof Error && (error.name === 'NotAllowedError' || error.name === 'AbortError')) {
     return 'cancelled';

@@ -6,8 +6,10 @@ import { signedOutOrigin } from './servers.js';
  * fails on the server with no database.
  */
 function isExpectedSessionFailure(text: string, url: string): boolean {
+  // Errors logged by scripts, such as the violation reporter, carry no URL.
+  if (!text.startsWith('Failed to load resource') || !URL.canParse(url)) return false;
   const { origin, pathname } = new URL(url);
-  if (!text.startsWith('Failed to load resource') || pathname !== '/v1/session') return false;
+  if (pathname !== '/v1/session') return false;
   return text.includes('status of 401') || origin === signedOutOrigin;
 }
 
