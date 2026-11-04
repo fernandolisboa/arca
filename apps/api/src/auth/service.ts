@@ -11,22 +11,33 @@ export interface RefreshedSession {
   readonly setCookies: readonly string[];
 }
 
+/** The account and session a request is signed in with. */
+export interface SignedIn {
+  readonly accountId: string;
+  readonly sessionId: string;
+}
+
 /** What the API needs from Better Auth; tests give a fake. */
 export interface AuthService {
   /** Hands an allow-listed request to Better Auth unchanged. */
   readonly handle: (request: Request) => Promise<Response>;
-  /** The signed-in session for these request headers, or null when there is none. */
-  readonly session: (headers: Headers) => Promise<SessionResponse | null>;
+  /** The account and session signed in with these request headers, or null when none is. */
+  readonly signedIn: (headers: Headers) => Promise<SignedIn | null>;
   /** The same, sliding the idle expiry; only GET /v1/session calls it, and forwards the cookies. */
   readonly refresh: (headers: Headers) => Promise<RefreshedSession>;
 }
 
 type Found = NonNullable<Awaited<ReturnType<Auth['api']['getSession']>>>;
 
+function live(found: Found | null, now: Date): found is Found {
+  return (
+    found !== null && now.getTime() - found.session.createdAt.getTime() < absoluteSessionLifetimeMs
+  );
+}
+
 /** Parsed, so a stored device value outside the enums fails loudly instead of reaching a client. */
 function toResponse(found: Found | null, now: Date): SessionResponse | null {
-  if (found === null) return null;
-  if (now.getTime() - found.session.createdAt.getTime() >= absoluteSessionLifetimeMs) return null;
+  if (!live(found, now)) return null;
   return SessionResponse.parse({
     accountId: found.user.id,
     email: found.user.email,
@@ -53,7 +64,12 @@ export function authService(auth: Auth, clock: () => Date = () => new Date()): A
   return {
     handle: (request) => auth.handler(request),
     // No sliding refresh here: it would move the stored expiry without the cookie that carries it.
-    session: async (headers) => toResponse((await read(headers)).response, clock()),
+    signedIn: async (headers) => {
+      const found = (await read(headers)).response;
+      return live(found, clock())
+        ? { accountId: found.user.id, sessionId: found.session.id }
+        : null;
+    },
     // The absolute lifetime is checked before sliding, so a session past it is never extended.
     refresh: async (headers) => {
       const current = await read(headers);

@@ -31,6 +31,8 @@ const authTables = [
   'passkey_client',
   'rate_limit',
   'session',
+  'step_up',
+  'step_up_challenge',
   'user',
   'verification',
 ];
@@ -91,7 +93,21 @@ describe('the auth schema access matrix', () => {
       ...Object.fromEntries(authTables.map((table) => [table, dml])),
       outbox: ['SELECT', 'INSERT', 'DELETE'],
       passkey_client: ['SELECT', 'INSERT', 'DELETE'],
+      step_up: ['SELECT', 'INSERT', 'DELETE'],
+      step_up_challenge: ['SELECT', 'INSERT', 'DELETE'],
     });
+  });
+
+  it('lets app_auth update only when a step-up was spent', async () => {
+    const updatable = await withClient(adminTarget(database), async (client) => {
+      const result = await client.query<{ name: string }>(
+        `SELECT attname AS name FROM pg_catalog.pg_attribute
+          WHERE attrelid = 'auth.step_up'::regclass AND attnum > 0 AND NOT attisdropped
+            AND pg_catalog.has_column_privilege('app_auth', attrelid, attnum, 'UPDATE')`,
+      );
+      return result.rows.map((row) => row.name);
+    });
+    expect(updatable).toEqual(['consumed_at']);
   });
 
   it.each(runtimeRoles.filter((role) => role !== 'app_auth'))(

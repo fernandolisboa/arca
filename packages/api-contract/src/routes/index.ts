@@ -168,6 +168,70 @@ export const stepUpPurposes = [
   'vault_write',
 ] as const;
 
+export const StepUpPurpose = z.enum(stepUpPurposes);
+export type StepUpPurpose = z.infer<typeof StepUpPurpose>;
+
+const identifierPattern = /^[a-z][A-Za-z0-9]{0,63}$/;
+const maxActionFields = 16;
+
+/**
+ * The action a step-up approves (spec 0003, R5), from which the server computes the subject
+ * hash: the route's operation ID, the IDs it acts on in order, its security-relevant body fields
+ * (such as new bank details or an amount) as strings, and a 128-bit nonce the client draws and
+ * sends again with the action itself. Each guarded route defines its own in this contract.
+ */
+export const StepUpAction = z.strictObject({
+  action: z.string().regex(identifierPattern),
+  targets: z.array(z.string().min(1).max(128)).max(32),
+  fields: z
+    .record(z.string().regex(identifierPattern), z.string().max(4096))
+    .refine((fields) => Object.keys(fields).length <= maxActionFields)
+    .optional(),
+  /** 16 random bytes, base64url without padding. */
+  nonce: z.string().regex(/^[A-Za-z0-9_-]{21}[AQgw]$/),
+});
+export type StepUpAction = z.infer<typeof StepUpAction>;
+
+/** The header a guarded route reads the action's nonce from. */
+export const stepUpNonceHeader = 'arca-step-up-nonce';
+
+/** `vault_unlock` approves a window, not an action, so it alone carries no target. */
+export const StepUpOptionsRequest = z.union([
+  z.strictObject({ purpose: z.literal('vault_unlock') }),
+  z.strictObject({
+    purpose: StepUpPurpose.exclude(['vault_unlock']),
+    target: StepUpAction,
+  }),
+]);
+export type StepUpOptionsRequest = z.infer<typeof StepUpOptionsRequest>;
+
+export const StepUpOptionsResponse = z.object({
+  challengeId: z.uuid(),
+  options: PasskeyRequestOptions,
+});
+export type StepUpOptionsResponse = z.infer<typeof StepUpOptionsResponse>;
+
+export const stepUpOptions = {
+  method: 'post',
+  path: '/auth/step-up/options',
+  operationId: 'stepUpOptions',
+  summary: 'Options for a step-up bound to a purpose and an action, valid for 2 minutes',
+  body: StepUpOptionsRequest,
+  response: { description: 'Request options and their challenge', schema: StepUpOptionsResponse },
+} as const satisfies RouteDefinition<typeof StepUpOptionsResponse>;
+
+export const StepUpVerifyResponse = z.object({});
+export type StepUpVerifyResponse = z.infer<typeof StepUpVerifyResponse>;
+
+export const stepUpVerify = {
+  method: 'post',
+  path: '/auth/step-up/verify',
+  operationId: 'stepUpVerify',
+  summary: 'Verifies a step-up assertion; the approved action may then run once',
+  body: z.strictObject({ challengeId: z.uuid(), response: PasskeyAssertion }),
+  response: { description: 'Step-up verified', schema: StepUpVerifyResponse },
+} as const satisfies RouteDefinition<typeof StepUpVerifyResponse>;
+
 const passkeyEvent = z.strictObject({ passkeyId: z.uuid() });
 const inviteEvent = z.strictObject({ inviteId: z.uuid() });
 const noDetails = z.strictObject({});
@@ -248,6 +312,8 @@ export const routes = {
   signOut,
   passkeySignInOptions,
   passkeySignIn,
+  stepUpOptions,
+  stepUpVerify,
   auditEvents,
 } as const;
 

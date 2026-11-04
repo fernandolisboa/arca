@@ -29,6 +29,14 @@
       "reason": "Better Auth table; only app_auth has privileges on the auth schema, and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
     },
     {
+      "table": "auth.step_up",
+      "reason": "Arca's stored step-up assertions in the auth schema; only app_auth has privileges on the auth schema, and they are read and written by the step-up ceremony and its guard under the session's own account, which every query names, so row-level security would not narrow anything."
+    },
+    {
+      "table": "auth.step_up_challenge",
+      "reason": "Arca's open step-up challenges in the auth schema; only app_auth has privileges on the auth schema, they live 2 minutes, and every query names the session and account they are bound to, so row-level security would not narrow anything."
+    },
+    {
       "table": "auth.user",
       "reason": "Better Auth table; only app_auth has privileges on the auth schema, and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
     },

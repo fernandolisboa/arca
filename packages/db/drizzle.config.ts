@@ -9,6 +9,7 @@ export default defineConfig({
     './src/auth-schema.ts',
     './src/notice-schema.ts',
     './src/rate-limit-schema.ts',
+    './src/step-up-schema.ts',
     './src/audit-schema.ts',
   ],
   out: './migrations',

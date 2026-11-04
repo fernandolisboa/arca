@@ -23,6 +23,10 @@
     "./rate-limit-schema": {
       "types": "./dist/rate-limit-schema.d.ts",
       "default": "./dist/rate-limit-schema.js"
+    },
+    "./step-up-schema": {
+      "types": "./dist/step-up-schema.d.ts",
+      "default": "./dist/step-up-schema.js"
     }
   },
   "scripts": {

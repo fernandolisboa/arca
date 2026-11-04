@@ -22,3 +22,9 @@ export const signInFailedLog: RateLimitRule = {
   limit: 1,
   windowSeconds: hour,
 };
+
+/** Per-session limits on the step-up routes, which only a signed-in session reaches (spec 0003, R10). */
+export const stepUpLimits = {
+  options: { name: 'step_up_options_session', limit: 20, windowSeconds: hour },
+  verify: { name: 'step_up_verify_session', limit: 20, windowSeconds: hour },
+} as const satisfies Record<string, RateLimitRule>;
