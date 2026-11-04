@@ -36,6 +36,8 @@
   --radius-dock: var(--arca-radius-dock);
 
   --ease-out: var(--arca-ease-out);
+  --default-transition-duration: var(--arca-duration-fast);
+  --default-transition-timing-function: var(--arca-ease-out);
 }
 
 @theme {
@@ -62,6 +64,48 @@
     font-family: var(--arca-font-body);
     font-weight: var(--arca-font-body-weight);
     line-height: 1.5;
+  }
+
+  /*
+   * Motion off (spec 0006, R6): the attribute or the system setting stops every transition and
+   * animation, including the page view transition, so changes land instantly. A separate rule
+   * holds the view-transition selectors, since an unsupported pseudo-element would drop the list.
+   */
+  [data-motion='off'],
+  [data-motion='off'] *,
+  [data-motion='off'] *::before,
+  [data-motion='off'] *::after {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+
+  [data-motion='off']::view-transition-group(*),
+  [data-motion='off']::view-transition-old(*),
+  [data-motion='off']::view-transition-new(*) {
+    animation: none !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0s !important;
+      animation-delay: 0s !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0s !important;
+      transition-delay: 0s !important;
+      scroll-behavior: auto !important;
+    }
+
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+      animation: none !important;
+    }
   }
 }
 

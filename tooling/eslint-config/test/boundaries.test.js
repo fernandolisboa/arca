@@ -77,6 +77,8 @@ describe('web', () => {
     ['contract-root.ts', 'no-restricted-imports'],
     ['contract-server.ts', 'no-restricted-imports'],
     ['dynamic-contract-server.ts', 'no-restricted-syntax'],
+    ['icon-library.ts', 'no-restricted-imports'],
+    ['icon-library-subpath.ts', 'no-restricted-imports'],
   ])('%s fails with %s', async (file, rule) => {
     expect(await ruleIds('web', ['client', 'web'], file)).toContain(rule);
   });
