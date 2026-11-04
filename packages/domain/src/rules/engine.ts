@@ -27,6 +27,7 @@ import {
 import { type Frame, type Trace, evaluate, numberOf, truthOf } from './evaluate.js';
 import { type MissingFact, type UnitGaps, decisiveFacts, distinct, traceGaps } from './missing.js';
 import type { Cost, DurationStage, Source } from './route-version.js';
+import { type StaleSource, staleSources } from './staleness.js';
 import { type Unit, unitEnvironment, unitOf } from './unit.js';
 
 export type EvaluationStatus =
@@ -106,6 +107,8 @@ export interface Evaluation {
   readonly totals: readonly CostTotal[];
   readonly durations: readonly DurationResult[];
   readonly rates: readonly FxRate[];
+  /** The sources it cites that are stale at the context's `today` (R9). */
+  readonly staleSources: readonly StaleSource[];
 }
 
 /**
@@ -199,6 +202,7 @@ export function evaluateVersionTraced(
     totals: totals(costs.priced, unit, version.costs, version.currency),
     durations: version.durations.map((stage) => ({ ...stage, sources: cite(stage.sources) })),
     rates: gaps.rates,
+    staleSources: staleSources(version, context.today),
   };
   return {
     evaluation,
@@ -224,6 +228,11 @@ export type RouteEvaluation =
       readonly kind: 'evaluated';
       readonly status: EvaluationStatus;
       readonly evaluation: Evaluation;
+      /**
+       * It cites stale sources and is the version in effect today, so the rule needs re-checking;
+       * a superseded version reached through a past `rulesAsOf` records the rule as it was (R9).
+       */
+      readonly stale: boolean;
       /** A version not yet active that will be in effect from `from` instead of this one. */
       readonly newerProposedVersion?: {
         readonly identity: VersionIdentity;
@@ -262,10 +271,15 @@ export function evaluateRoute(
     context.rulesAsOf,
     context.states,
   );
+  const current = selectVersion(identities, context.today, context.states);
   return {
     kind: 'evaluated',
     status: evaluation.status,
     evaluation,
+    stale:
+      evaluation.staleSources.length > 0 &&
+      current !== undefined &&
+      sameIdentity(current.identity, selection.identity),
     ...(newer === undefined ? {} : { newerProposedVersion: newer }),
   };
 }

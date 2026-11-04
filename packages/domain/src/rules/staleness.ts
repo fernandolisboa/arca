@@ -1,0 +1,32 @@
+import { type CalendarDate, daysBetween } from '../calendar/calendar-date.js';
+import type { RouteVersion, Source } from './route-version.js';
+
+/** A source is stale when it was verified more than this many days before `today` (spec 0002, R9). */
+export const staleAfterDays = 90;
+
+export interface StaleSource {
+  readonly source: Source;
+  readonly daysSinceVerified: number;
+}
+
+/**
+ * The sources a version cites, from any rule, assessment, cost, duration, closure or leap-day
+ * choice, that are stale at `today`, in the version's source order.
+ */
+export function staleSources(version: RouteVersion, today: CalendarDate): StaleSource[] {
+  const cited = new Set([
+    ...version.requirements.flatMap((each) => each.sources),
+    ...version.assessments.flatMap((each) => each.sources),
+    ...version.dependents.flatMap((each) => each.sources),
+    ...version.costs.flatMap((each) => each.sources),
+    ...version.durations.flatMap((each) => each.sources),
+    ...(version.closureSources ?? []),
+    ...(version.leapDayBirthdaySources ?? []),
+  ]);
+  return version.sources.flatMap((source) => {
+    const daysSinceVerified = daysBetween(source.verifiedAt, today);
+    return cited.has(source.id) && daysSinceVerified > staleAfterDays
+      ? [{ source, daysSinceVerified }]
+      : [];
+  });
+}
