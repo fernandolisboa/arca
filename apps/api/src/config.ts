@@ -58,13 +58,18 @@ export type DeploymentEnvironment = 'production' | 'preview' | 'development';
 
 /**
  * Which deployment this is, from Vercel's system variables. Off Vercel it is development; on
- * Vercel a missing or unknown VERCEL_ENV fails instead of falling back to it.
+ * Vercel a missing or unknown VERCEL_ENV fails instead of falling back to it, and so does a custom
+ * environment, which Vercel reports as a preview.
  */
 export function readDeploymentEnvironment(): DeploymentEnvironment {
   if (process.env['VERCEL'] !== '1') return 'development';
   const environment = required('VERCEL_ENV', process.env['VERCEL_ENV']);
   if (environment !== 'production' && environment !== 'preview' && environment !== 'development') {
     throw new MissingConfigError('VERCEL_ENV is not a known environment');
+  }
+  const target = process.env['VERCEL_TARGET_ENV'];
+  if (target !== undefined && target !== environment) {
+    throw new MissingConfigError('custom Vercel environments are not supported');
   }
   return environment;
 }

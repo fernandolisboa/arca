@@ -6,8 +6,8 @@ import type { Notices } from '../email/notices.js';
 /**
  * Records the families a passkey signed in from and reports whether this sign-in is from a
  * browser or a system not seen before for it (spec 0003, R7). Synced passkeys sign in anywhere,
- * so the passkey alone says nothing about the device. The first families recorded for a passkey
- * are its registration's, covered by the new-passkey notice.
+ * so the passkey alone says nothing about the device. Registration calls this first, with the
+ * registering device, so the families a passkey starts with are covered by the new-passkey notice.
  */
 export async function recordPasskeyClient(
   db: Database,

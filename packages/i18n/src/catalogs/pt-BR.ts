@@ -43,7 +43,7 @@ export const ptBR = {
         body: 'Uma nova chave de acesso foi adicionada à sua conta Arca em {when} (horário de Brasília). Ela só começa a funcionar daqui a 24 horas. Se não foi você, cancele essa chave em Dispositivos antes disso.',
       },
       new_sign_in: {
-        subject: 'Entrada na sua conta por um navegador novo',
+        subject: 'Nova entrada na sua conta',
         body: 'Alguém entrou na sua conta Arca em {when} (horário de Brasília). Navegador: {browser}. Sistema: {os}. É a primeira vez que essa chave de acesso entra por esse navegador ou sistema. Se foi você, não precisa fazer nada. Se não foi, encerre a sessão e remova a chave em Dispositivos.',
       },
       passkey_revoked: {
@@ -52,7 +52,7 @@ export const ptBR = {
       },
       pending_passkey_cancelled: {
         subject: 'Chave de acesso pendente cancelada',
-        body: 'A chave de acesso que ainda esperava as 24 horas para funcionar foi cancelada em {when} (horário de Brasília). Ela não vai entrar na sua conta.',
+        body: 'A chave de acesso que ainda esperava as 24 horas para funcionar foi cancelada em {when} (horário de Brasília). Ela não vai funcionar na sua conta.',
       },
       recovery_kit_regenerated: {
         subject: 'Novo kit de recuperação',
@@ -60,11 +60,11 @@ export const ptBR = {
       },
       recovery_started: {
         subject: 'Pedido de recuperação da sua conta',
-        body: 'Alguém pediu para recuperar sua conta Arca em {when} (horário de Brasília). Se foi você, siga o link do outro email que mandamos. Se não foi, sua conta continua segura, porque o pedido sozinho não dá acesso sem o seu código de recuperação.',
+        body: 'Alguém pediu para recuperar sua conta Arca em {when} (horário de Brasília). Se foi você, siga o link do outro email que mandamos. Se não foi, sua conta continua segura, porque o pedido não dá acesso sem o seu código de recuperação.',
       },
       recovery_completed: {
         subject: 'Nova chave de acesso criada por recuperação',
-        body: 'Uma chave de acesso foi criada pela recuperação da sua conta Arca em {when} (horário de Brasília). Ela começa a funcionar daqui a 24 horas e, até lá, suas sessões abertas só mostram este aviso. Se não foi você, cancele a recuperação no Arca com uma chave de acesso sua.',
+        body: 'Uma chave de acesso foi criada pela recuperação da sua conta Arca em {when} (horário de Brasília). Ela começa a funcionar daqui a 24 horas e, até lá, suas sessões abertas só mostram um aviso sobre a recuperação. Se não foi você, cancele a recuperação no Arca com uma chave de acesso sua.',
       },
       recovery_locked: {
         subject: 'Recuperação bloqueada por 24 horas',

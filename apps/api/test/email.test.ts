@@ -1,3 +1,4 @@
+import { browserFamilies, osFamilies, type DeviceDescription } from '@arca/api-contract/routes';
 import { createI18n } from '@arca/i18n';
 import type { Database } from '@arca/db';
 import { describe, expect, it } from 'vitest';
@@ -6,6 +7,7 @@ import {
   EmailRejectedError,
   unconfiguredSender,
 } from '../src/email/email.js';
+import { emailSenderFor, outboxReaderFor } from '../src/email/environment.js';
 import { createNotices, noticeKinds, noticeMessage, type Notice } from '../src/email/notices.js';
 import { OutboxInProductionError, outboxSender, readOutbox } from '../src/email/outbox.js';
 import { resendSender } from '../src/email/resend.js';
@@ -36,6 +38,21 @@ describe('security notices (spec 0003, R7 and R8)', () => {
   it('names only the device families in the new-sign-in notice', async () => {
     const message = noticeMessage(await createI18n(), origin, notice('new_sign_in'));
     expect(message.text).toContain('Navegador: Firefox. Sistema: Linux.');
+  });
+
+  const devices: DeviceDescription[] = browserFamilies.flatMap((browser) =>
+    osFamilies.map((os) => ({ browser, os })),
+  );
+
+  it.each(devices)('names $browser on $os from the catalog', async (device) => {
+    const message = noticeMessage(await createI18n(), origin, {
+      kind: 'new_sign_in',
+      to: 'owner@example.com',
+      at,
+      device,
+    });
+    const generic = (message.text.match(/não identificado/g) ?? []).length;
+    expect(generic).toBe(Number(device.browser === 'other') + Number(device.os === 'other'));
   });
 
   it('names an unknown family generically', async () => {
@@ -81,6 +98,7 @@ describe('the Resend adapter', () => {
     expect(calls[0]?.url).toBe('https://api.resend.com/emails');
     expect(calls[0]?.init.method).toBe('POST');
     expect(new Headers(calls[0]?.init.headers).get('authorization')).toBe('Bearer re_test_only');
+    expect(calls[0]?.init.signal).toBeInstanceOf(AbortSignal);
     expect(JSON.parse(calls[0]?.init.body as string)).toEqual({
       from: 'Arca <avisos@example.com>',
       to: ['owner@example.com'],
@@ -105,6 +123,44 @@ describe('choosing a sender', () => {
   it('refuses the outbox in production', async () => {
     expect(() => outboxSender(db, 'production')).toThrow(OutboxInProductionError);
     await expect(readOutbox(db, 'production')).rejects.toThrow(OutboxInProductionError);
+  });
+
+  it('sends nothing in production until the sending domain is configured', async () => {
+    const sending = emailSenderFor('production', () => db).send({
+      to: 'owner@example.com',
+      subject: 's',
+      text: 't',
+    });
+    await expect(sending).rejects.toThrow(EmailNotConfiguredError);
+  });
+
+  it.each(['preview', 'development'] as const)(
+    'writes to the outbox on %s',
+    async (environment) => {
+      const sent: string[] = [];
+      const fake = {
+        transaction: (run: (tx: unknown) => Promise<void>) =>
+          run({
+            delete: () => ({ where: () => Promise.resolve() }),
+            insert: () => ({
+              values: (row: { recipient: string }) =>
+                Promise.resolve(void sent.push(row.recipient)),
+            }),
+          }),
+      } as unknown as Database;
+      await emailSenderFor(environment, () => fake).send({
+        to: 'owner@example.com',
+        subject: 's',
+        text: 't',
+      });
+      expect(sent).toEqual(['owner@example.com']);
+    },
+  );
+
+  it('shows the outbox on previews only', () => {
+    expect(outboxReaderFor('preview', () => db)).toBeTypeOf('function');
+    expect(outboxReaderFor('production', () => db)).toBeUndefined();
+    expect(outboxReaderFor('development', () => db)).toBeUndefined();
   });
 
   it('refuses to send while no sending domain is configured', async () => {

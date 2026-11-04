@@ -165,4 +165,18 @@ describe('readDeploymentEnvironment', () => {
     vi.stubEnv('VERCEL_ENV', value);
     expect(() => readDeploymentEnvironment()).toThrow(MissingConfigError);
   });
+
+  it('accepts a VERCEL_TARGET_ENV that matches VERCEL_ENV', () => {
+    vi.stubEnv('VERCEL', '1');
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    vi.stubEnv('VERCEL_TARGET_ENV', 'preview');
+    expect(readDeploymentEnvironment()).toBe('preview');
+  });
+
+  it('fails closed on a custom environment, which Vercel reports as a preview', () => {
+    vi.stubEnv('VERCEL', '1');
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    vi.stubEnv('VERCEL_TARGET_ENV', 'staging');
+    expect(() => readDeploymentEnvironment()).toThrow(MissingConfigError);
+  });
 });

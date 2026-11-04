@@ -1,11 +1,10 @@
 import { sql } from 'drizzle-orm';
 import { index, primaryKey, text, timestamp, uuid } from 'drizzle-orm/pg-core';
-import { auth, passkey } from './auth-schema.js';
+import { auth, createdAt, passkey } from './auth-schema.js';
 
 // Arca's own tables in the auth schema, kept apart from Better Auth's so the modules that send
-// notices never import the credential rows (spec 0003, R1). Only app_auth may touch them.
-
-const createdAt = () => timestamp('created_at', { withTimezone: true }).notNull().defaultNow();
+// notices never hold a binding to the credential tables, which only src/auth/auth.ts may import
+// (spec 0003, R1). Only app_auth may touch them.
 
 /**
  * The browser and system families each passkey has signed in from, so a sign-in from a new one

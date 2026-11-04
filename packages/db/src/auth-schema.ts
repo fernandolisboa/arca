@@ -17,7 +17,8 @@ import {
  */
 export const auth = pgSchema('auth');
 
-const createdAt = () => timestamp('created_at', { withTimezone: true }).notNull().defaultNow();
+export const createdAt = () =>
+  timestamp('created_at', { withTimezone: true }).notNull().defaultNow();
 const updatedAt = () => timestamp('updated_at', { withTimezone: true }).notNull().defaultNow();
 
 export const user = auth.table('user', {

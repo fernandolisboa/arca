@@ -13,7 +13,7 @@ import {
   readDeploymentEnvironment,
 } from './config.js';
 import { apiDatabase, auditDatabase, authDatabase } from './database.js';
-import { readOutbox } from './email/outbox.js';
+import { outboxReaderFor } from './email/environment.js';
 import { createLogger } from './logger.js';
 import { heartbeat } from './workflows/heartbeat.js';
 import { startWorkflow } from './workflows/start-workflow.js';
@@ -67,7 +67,7 @@ function authenticator(): AuthService {
   return auth;
 }
 
-const environment = readDeploymentEnvironment();
+const outbox = outboxReaderFor(readDeploymentEnvironment(), authConnection);
 
 const app = createApp({
   checkDatabase: () => connected().checkDatabase(),
@@ -81,7 +81,7 @@ const app = createApp({
     session: (headers) => authenticator().session(headers),
   },
   audit: { events: (accountId, query) => auditReader(connected().db).events(accountId, query) },
-  ...(environment === 'preview' ? { outbox: () => readOutbox(authConnection(), environment) } : {}),
+  ...(outbox === undefined ? {} : { outbox }),
 });
 
 /**

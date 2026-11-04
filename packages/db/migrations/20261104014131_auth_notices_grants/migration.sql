@@ -1,2 +1,5 @@
--- The new auth tables, like the others, are read and written only by app_auth (spec 0003, R7 and R8).
-GRANT SELECT, INSERT, UPDATE, DELETE ON "auth"."passkey_client", "auth"."outbox" TO app_auth;
+-- Only app_auth reads and writes the new auth tables, and only as much as the notice code needs
+-- (spec 0003, R7 and R8): families are recorded, never edited, and leave with their passkey's
+-- cascade; outbox rows are deleted when they expire.
+GRANT SELECT, INSERT ON "auth"."passkey_client" TO app_auth;
+GRANT SELECT, INSERT, DELETE ON "auth"."outbox" TO app_auth;

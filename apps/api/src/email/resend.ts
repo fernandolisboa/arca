@@ -8,6 +8,7 @@ export interface ResendSettings {
 }
 
 const endpoint = 'https://api.resend.com/emails';
+const timeoutMs = 10_000;
 
 /** Resend through its REST API, with no SDK (ADR-0015). Production only. */
 export function resendSender({
@@ -21,6 +22,7 @@ export function resendSender({
         method: 'POST',
         headers: { authorization: `Bearer ${apiKey}`, 'content-type': 'application/json' },
         body: JSON.stringify({ from, to: [to], subject, text }),
+        signal: AbortSignal.timeout(timeoutMs),
       });
       // The body is discarded unread: an error from the provider may echo the address.
       await response.body?.cancel();

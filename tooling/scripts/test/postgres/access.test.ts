@@ -88,6 +88,8 @@ describe('the auth schema access matrix', () => {
     expect(await privileges('app_auth')).toEqual({
       schema: ['USAGE'],
       ...Object.fromEntries(authTables.map((table) => [table, dml])),
+      outbox: ['SELECT', 'INSERT', 'DELETE'],
+      passkey_client: ['SELECT', 'INSERT'],
     });
   });
 

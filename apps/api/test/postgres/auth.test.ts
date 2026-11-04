@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto';
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { makeSignature } from 'better-auth/crypto';
+import { sql } from 'drizzle-orm';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
@@ -299,15 +300,13 @@ describe('new-sign-in notices (spec 0003, R7)', () => {
     ]);
   });
 
-  it('forgets the families when the passkey is deleted', async () => {
+  it('forgets the families when app_auth deletes the passkey', async () => {
     const credentialId = await withPasskey('forget@example.org');
     await recordPasskeyClient(authDb, credentialId, { browser: 'safari', os: 'ios' });
-    const remaining = await asAdmin(database, async (client) => {
-      await client.query('DELETE FROM auth.passkey WHERE credential_id = $1', [credentialId]);
-      return client.query('SELECT FROM auth.passkey_client WHERE credential_id = $1', [
-        credentialId,
-      ]);
-    });
+    await authDb.execute(sql`DELETE FROM auth.passkey WHERE credential_id = ${credentialId}`);
+    const remaining = await asAdmin(database, (client) =>
+      client.query('SELECT FROM auth.passkey_client WHERE credential_id = $1', [credentialId]),
+    );
     expect(remaining.rowCount).toBe(0);
   });
 });

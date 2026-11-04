@@ -18,7 +18,7 @@
     },
     {
       "table": "auth.passkey_client",
-      "reason": "Arca's table in the auth schema; only app_auth has privileges on the auth schema, and Better Auth queries without a per-request identity, so row-level security would not narrow anything."
+      "reason": "Arca's table in the auth schema; only app_auth has privileges on the auth schema, and it is read and written during sign-in, before any per-request identity exists, so row-level security would not narrow anything."
     },
     {
       "table": "auth.session",
