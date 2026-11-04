@@ -9,6 +9,7 @@ import { createAuth, type Auth } from '../../src/auth/auth.js';
 import { authService } from '../../src/auth/service.js';
 import { auditLog, auditReader } from '../../src/audit/log.js';
 import { apiDatabase, auditDatabase, authDatabase } from '../../src/database.js';
+import type { Database } from '@arca/db';
 import type { Logger } from '../../src/logger.js';
 
 // Better Auth on the real auth migrations and the app_auth pool, against a disposable Postgres
@@ -48,6 +49,7 @@ async function asAdmin<T>(name: string, use: (client: pg.Client) => Promise<T>):
 }
 
 let auth: Auth;
+let authDb: Database;
 let close: () => Promise<void>;
 let app: ReturnType<typeof createApp>;
 
@@ -81,6 +83,7 @@ beforeAll(async () => {
     await Promise.all(pools.map((pool) => pool.close()));
   };
   const [authPool, auditPool, apiPool] = pools;
+  authDb = authPool.db;
   auth = createAuth({ db: authPool.db, secret, origin, logger, audit: auditLog(auditPool.db) });
   app = createApp({
     checkDatabase: () => Promise.resolve('ok'),
@@ -220,6 +223,25 @@ describe('Better Auth on the app_auth pool', () => {
     expect(second.next).toBeNull();
     const ids = [...first.events, ...second.events].map((event) => event.id);
     expect(new Set(ids).size).toBe(3);
+  });
+
+  it('fails the sign-in and leaves no session when the event cannot be recorded', async () => {
+    const { userId } = await signedIn('unrecorded@example.com');
+    const failing = createAuth({
+      db: authDb,
+      secret,
+      origin,
+      logger,
+      audit: { record: () => Promise.reject(new Error('audit unavailable')) },
+    });
+    const context = await failing.$context;
+    await expect(context.internalAdapter.createSession(userId)).rejects.toThrow(
+      'audit unavailable',
+    );
+    const sessions = await asAdmin(database, (client) =>
+      client.query('SELECT FROM auth.session WHERE user_id = $1', [userId]),
+    );
+    expect(sessions.rowCount).toBe(1);
   });
 
   it('answers 401 to the audit events without a session', async () => {

@@ -1,5 +1,5 @@
 import { passkey } from '@better-auth/passkey';
-import { authSchema, user } from '@arca/db/auth-schema';
+import { authSchema, session as sessionTable, user } from '@arca/db/auth-schema';
 import type { Database } from '@arca/db';
 import { betterAuth } from 'better-auth';
 import { eq } from 'drizzle-orm';
@@ -76,19 +76,25 @@ export function createAuth({ db, secret, origin, logger, audit }: AuthSettings) 
               },
             });
           },
-          // Every new session is a sign-in, whichever endpoint created it. If either write fails
-          // the sign-in fails, so no session goes unrecorded.
+          // Every new session is a sign-in, whichever endpoint created it. The session row is
+          // already committed here, so if the event cannot be recorded the session is deleted
+          // and the sign-in fails: no usable session goes unrecorded.
           after: async (session) => {
+            try {
+              await audit.record({
+                code: 'sign_in',
+                subjectAccountId: session.userId,
+                actorAccountId: session.userId,
+                details: describeSession(session),
+              });
+            } catch (error) {
+              await db.delete(sessionTable).where(eq(sessionTable.id, session.id));
+              throw error;
+            }
             await db
               .update(user)
               .set({ lastSignInAt: new Date() })
               .where(eq(user.id, session.userId));
-            await audit.record({
-              code: 'sign_in',
-              subjectAccountId: session.userId,
-              actorAccountId: session.userId,
-              details: describeSession(session),
-            });
           },
         },
       },

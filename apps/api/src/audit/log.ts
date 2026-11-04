@@ -8,7 +8,7 @@ import {
 } from '@arca/api-contract/routes';
 import { withIdentity, type Database } from '@arca/db';
 import { event } from '@arca/db/audit-schema';
-import { desc, sql } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 
 /** An event to record; the database sets its ID and time (spec 0003, R7). */
@@ -34,17 +34,18 @@ const requestId = z.uuid().optional();
 
 /** Checks an event against the closed list before anything reaches the database. */
 export function validateAuditRecord(entry: AuditRecord): AuditRecord {
-  const details = Object.hasOwn(auditEventDetails, entry.code)
-    ? auditEventDetails[entry.code].safeParse(entry.details)
-    : undefined;
+  const known = Object.hasOwn(auditEventDetails, entry.code);
+  const details = known ? auditEventDetails[entry.code].safeParse(entry.details) : undefined;
   const ids = [
     accountId.safeParse(entry.subjectAccountId),
     entry.actorAccountId === null ? { success: true } : accountId.safeParse(entry.actorAccountId),
     requestId.safeParse(entry.requestId),
   ];
-  // The message names the code only: a rejected value may be the personal data it keeps out.
+  // The message names a known code only: a rejected value may be the personal data it keeps out.
   if (details?.success !== true || ids.some((result) => !result.success)) {
-    throw new InvalidAuditEventError(`audit event ${entry.code} is not allowed`);
+    throw new InvalidAuditEventError(
+      known ? `audit event ${entry.code} is not allowed` : 'unknown audit event code',
+    );
   }
   return { ...entry, details: details.data };
 }
@@ -83,10 +84,11 @@ export function auditReader(db: Database): AuditReader {
           before === undefined
             ? undefined
             : sql`(${event.time}, ${event.id}) < (SELECT c.time, c.id FROM audit.event c WHERE c.id = ${before})`;
+        // Row-level security already limits the rows; the filter states it and uses the index.
         const rows = await tx
           .select()
           .from(event)
-          .where(after)
+          .where(and(eq(event.subjectAccountId, account), after))
           .orderBy(desc(event.time), desc(event.id))
           .limit(limit + 1);
         const page = rows.slice(0, limit);

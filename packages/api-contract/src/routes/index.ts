@@ -161,7 +161,7 @@ export type AuditEvent = z.infer<typeof AuditEvent>;
 export const AuditEventsQuery = z.object({
   /** The last event of the previous page. */
   before: z.uuid().optional(),
-  limit: z.coerce.number().int().min(1).max(100).optional(),
+  limit: z.coerce.number<number>().int().min(1).max(100).optional(),
 });
 export type AuditEventsQuery = z.infer<typeof AuditEventsQuery>;
 

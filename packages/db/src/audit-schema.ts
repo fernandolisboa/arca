@@ -12,8 +12,10 @@ import {
 
 /**
  * The append-only audit log (spec 0003, R7). Only `app_audit` inserts, and it has no privilege on
- * `time` or `id`, so the database sets both; only `app_migrator` may update or delete. An account
- * reads, through `app_api`, the events whose subject it is. No foreign keys leave this schema, so
+ * `time` or `id`, so the database sets both. No runtime role may update or delete, and with no
+ * update or delete policy under forced row-level security even the owner's changes match no row;
+ * the retention purge (spec 0004) will need its own policy. An account reads, through `app_api`,
+ * the events whose subject it is. No foreign keys leave this schema, so
  * erasing an account never touches its audit trail (spec 0004).
  */
 export const audit = pgSchema('audit');
