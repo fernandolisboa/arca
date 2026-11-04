@@ -9,6 +9,8 @@ import { Failure, NotFound } from './fallbacks.js';
 import { reportCaught, reportUncaught, startMonitoring } from './monitoring.js';
 import { registerServiceWorker } from './pwa/register.js';
 import { routeTree } from './routeTree.gen.js';
+import { sessionQuery } from './api.js';
+import { guardVault } from './vault-guard.js';
 import './styles.css';
 
 startMonitoring();
@@ -41,6 +43,7 @@ declare module '@tanstack/react-router' {
 }
 
 const queryClient = new QueryClient();
+guardVault(window, queryClient, sessionQuery.queryKey);
 
 startAppearance();
 document.documentElement.lang = defaultLocale;

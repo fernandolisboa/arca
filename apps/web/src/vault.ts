@@ -127,7 +127,10 @@ export async function unlockVault(
       hold(await check(await device.envelopes.open({ credentialId, bytes }), current.recipient));
       return undefined;
     } catch (error) {
-      if (!(error instanceof EnvelopeNotOpenedError) || error.reason === 'cancelled') throw error;
+      const unusable =
+        error instanceof WrongVaultIdentity ||
+        (error instanceof EnvelopeNotOpenedError && error.reason !== 'cancelled');
+      if (!unusable) throw error;
       sealHere = false;
     }
   }

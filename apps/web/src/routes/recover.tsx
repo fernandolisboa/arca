@@ -21,6 +21,7 @@ import {
   type RedeemFailure,
 } from '../recovery.js';
 import { useLinkToken } from '../use-link-token.js';
+import { forgetVault } from '../vault-guard.js';
 import { usePasskeyAvailable } from '../use-passkey-available.js';
 
 export const Route = createFileRoute('/recover')({ component: Recover });
@@ -208,6 +209,8 @@ function CreatePasskey({ token }: { readonly token: string }) {
     setFailure(undefined);
     setState('waiting');
     createRecoveryPasskey(passkeys, token)
+      // A recovery forgets the vault identity wrapped on this device (ADR-0018), best effort.
+      .then(() => forgetVault().catch(() => undefined))
       .then(() => {
         setState('done');
       })

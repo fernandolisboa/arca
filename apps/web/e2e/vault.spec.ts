@@ -125,3 +125,23 @@ test('without PRF, the recovery secret opens the vault and the device keeps it w
   await expect(opened(page)).toBeVisible();
   expect(problems).toEqual([]);
 });
+
+test('closes after 15 minutes without activity, and activity keeps it open', async ({ page }) => {
+  const problems = watchProblems(page);
+  await page.clock.install();
+  const credential = newCredential();
+  const { userId, email } = await seedAccount(credential);
+  await virtualAuthenticator(page, credential, { userId });
+  await signIn(page, email);
+  await openVaultPage(page);
+  await setUp(page);
+
+  await page.clock.fastForward('10:00');
+  await page.getByRole('heading', { level: 2, name: 'Cofre' }).click();
+  await page.clock.fastForward('10:00');
+  await expect(opened(page)).toBeVisible();
+
+  await page.clock.fastForward('15:01');
+  await expect(page.getByRole('button', { name: 'Abrir o cofre' })).toBeVisible();
+  expect(problems).toEqual([]);
+});

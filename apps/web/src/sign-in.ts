@@ -2,9 +2,8 @@ import { routes, type PasskeyRequestOptions } from '@arca/api-contract/client';
 import type { Passkeys } from '@arca/platform';
 import { api } from './api.js';
 import { toAssertion, toRequestOptions } from './passkey-json.js';
-import { keyStorage } from './platform.js';
 import { commonFailure, reach } from './requests.js';
-import { lockVault } from './vault-session.js';
+import { forgetVault } from './vault-guard.js';
 
 export type SignInFailure =
   'cancelled' | 'closed' | 'refused' | 'limited' | 'unavailable' | 'unreachable' | 'other';
@@ -53,7 +52,9 @@ export function failureOf(error: unknown): SignInFailure {
  * identity wrapped on this device is deleted (spec 0005, R2).
  */
 export async function signOut(): Promise<void> {
-  lockVault();
-  await keyStorage?.forget();
-  await reach(api.call(routes.signOut, {}));
+  try {
+    await forgetVault();
+  } finally {
+    await reach(api.call(routes.signOut, {}));
+  }
 }
