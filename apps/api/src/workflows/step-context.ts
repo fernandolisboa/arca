@@ -23,12 +23,19 @@ import type { StepTelemetry } from './step-error.js';
 /** What workflow steps run with: each pool built once per instance, on first use. */
 const stepLogger = stdoutLogger();
 
-/** Sentry starts with the first failure to report, so a step that succeeds never loads it. */
+/**
+ * The server module starts Sentry when the instance loads it; a failing step starts it too, with
+ * tracing off, in case the step runs where the server module has not loaded.
+ */
 export const stepTelemetry: StepTelemetry = {
   logger: stepLogger,
-  report: (error, errorCode) => {
-    startMonitoring({ environment: readDeploymentEnvironment(), origin: readOwnOrigin() });
-    reportError(error, errorCode);
+  report: async (error, errorCode) => {
+    startMonitoring({
+      environment: readDeploymentEnvironment(),
+      origin: readOwnOrigin(),
+      traced: false,
+    });
+    await reportError(error, errorCode);
   },
 };
 

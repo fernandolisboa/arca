@@ -10,6 +10,7 @@ import {
 } from '@arca/telemetry';
 import * as Sentry from '@sentry/hono/node';
 import type { Env, Hono, MiddlewareHandler } from 'hono';
+import { behindAnswerOf } from './behind-answer.js';
 import type { DeploymentEnvironment } from './config.js';
 
 /** The static segments of the paths the API serves outside the contract. */
@@ -69,6 +70,8 @@ export interface MonitoringSettings {
   /** The deployment's own origin, the only host a reported URL keeps. */
   readonly origin: string | undefined;
   readonly project?: SentryProject;
+  /** False samples no traces; errors are still reported. */
+  readonly traced?: boolean;
 }
 
 /** Sentry's options for this deployment, or undefined where nothing is reported. */
@@ -76,6 +79,7 @@ export function sentryOptions({
   environment,
   origin,
   project = sentryProject,
+  traced = true,
 }: MonitoringSettings): Sentry.NodeOptions | undefined {
   if (project.dsn === null || !reportsFrom(environment)) return undefined;
   const scrub = sentryScrubbers({
@@ -88,7 +92,7 @@ export function sentryOptions({
   return {
     dsn: project.dsn,
     environment,
-    tracesSampleRate: project.tracesSampleRate[environment],
+    tracesSampleRate: traced ? project.tracesSampleRate[environment] : 0,
     // Whole transactions, so `beforeSendTransaction` scrubs every span before anything leaves.
     traceLifecycle: 'static',
     defaultIntegrations: false,
@@ -110,11 +114,30 @@ export function startMonitoring(settings: MonitoringSettings): void {
   if (options !== undefined) Sentry.init(options);
 }
 
-/** Reports an error the app handled itself; a no-op while Sentry is not started. */
-export function reportError(error: unknown, errorCode: string): void {
+const flushMs = 2000;
+
+/**
+ * Reports an error the app handled itself and waits for it to be sent, since a serverless
+ * instance may freeze once the caller returns; a no-op while Sentry is not started.
+ */
+export async function reportError(error: unknown, errorCode: string): Promise<void> {
   Sentry.captureException(error, { tags: { errorCode } });
+  await Sentry.flush(flushMs);
 }
 
-/** The Hono middleware that names each trace by its route pattern and reports 5xx errors. */
-export const monitorRequests = <E extends Env>(app: Hono<E>): MiddlewareHandler =>
-  Sentry.sentry(app);
+/**
+ * After a 5xx, sends what Sentry holds behind the answer, so the instance does not freeze with
+ * the error still queued. It runs outside Sentry's middleware, which reports the error on its way
+ * out.
+ */
+const flushAfterServerError: MiddlewareHandler = async (c, next) => {
+  await next();
+  if (c.res.status < 500) return;
+  behindAnswerOf(c.req.raw, () => undefined)(Sentry.flush(flushMs).then(() => undefined));
+};
+
+/** Names each trace by its route pattern and reports 5xx errors, in the order they must run. */
+export const monitorRequests = <E extends Env>(app: Hono<E>): readonly MiddlewareHandler[] => [
+  flushAfterServerError,
+  Sentry.sentry(app),
+];

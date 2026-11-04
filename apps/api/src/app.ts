@@ -134,8 +134,8 @@ export interface AppDependencies {
    * Protection keeps private (spec 0003, R8); absent, `/internal/outbox` is a 404.
    */
   readonly outbox?: () => Promise<readonly OutboxEntry[]>;
-  /** Error monitoring's middleware, run before every other one (spec 0004, R4). */
-  readonly monitor?: (app: Hono<AppEnv>) => MiddlewareHandler;
+  /** Error monitoring's middleware, run in order before every other one (spec 0004, R4). */
+  readonly monitor?: (app: Hono<AppEnv>) => readonly MiddlewareHandler[];
   /**
    * True only on previews: `/internal/monitoring-check` then throws an error carrying synthetic
    * personal data, to show that monitoring receives none of it (spec 0004, R4).
@@ -299,7 +299,7 @@ export function createApp({
     throw new Error('the auth routes need their rate limits');
   }
   const app = createRouter();
-  if (monitor !== undefined) app.use('*', monitor(app));
+  if (monitor !== undefined) app.use('*', ...monitor(app));
 
   const observe = createMiddleware<AppEnv>(async (c, next) => {
     const started = now();

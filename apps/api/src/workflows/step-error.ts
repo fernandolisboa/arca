@@ -15,7 +15,7 @@ export class StepError extends Error {
 export interface StepTelemetry {
   readonly logger: Logger;
   /** Sends the cause to error monitoring, which keeps its class and frames, never its message. */
-  readonly report: (error: unknown, errorCode: StepErrorCode) => void;
+  readonly report: (error: unknown, errorCode: StepErrorCode) => Promise<void>;
 }
 
 /**
@@ -34,7 +34,8 @@ export async function withStepError<T>(
       errorCode: code,
       errorName: error instanceof Error ? error.name : typeof error,
     });
-    report(error, code);
+    // A report that fails must not replace the step's own error.
+    await report(error, code).catch(() => undefined);
     throw new StepError(code);
   }
 }

@@ -44,6 +44,13 @@ describe('Sentry options (spec 0004, R4)', () => {
     });
   });
 
+  it('samples no traces when started from a failing step', () => {
+    expect(
+      sentryOptions({ environment: 'production', origin, project, traced: false })
+        ?.tracesSampleRate,
+    ).toBe(0);
+  });
+
   it('collects no personal data of its own', () => {
     expect(sentryOptions({ environment: 'production', origin, project })?.dataCollection).toEqual({
       userInfo: false,
@@ -119,9 +126,18 @@ describe('Sentry on the server (spec 0004, R4)', () => {
 });
 
 describe('the preview-only monitoring check (spec 0004, R4)', () => {
-  it('is a 404 unless the deployment is a preview', async () => {
-    const app = createApp({ checkDatabase: () => Promise.resolve('ok'), logger: silentLogger });
-    expect((await app.request('/internal/monitoring-check')).status).toBe(404);
+  it('is a 404 unless the deployment is a preview, and only a 5xx waits for a flush', async () => {
+    const app = createApp({
+      checkDatabase: () => Promise.resolve('ok'),
+      logger: silentLogger,
+      monitor: monitorRequests,
+    });
+    const behind: Promise<void>[] = [];
+    const request = Object.assign(new Request('http://arca.example/internal/monitoring-check'), {
+      waitUntil: (work: Promise<void>) => behind.push(work),
+    });
+    expect((await app.request(request)).status).toBe(404);
+    expect(behind).toEqual([]);
   });
 
   it('reports the synthetic error by class and frames, without its personal data', async () => {
@@ -132,8 +148,14 @@ describe('the preview-only monitoring check (spec 0004, R4)', () => {
       syntheticError: true,
     });
 
-    const response = await app.request('/internal/monitoring-check?cpf=123.456.789-09');
-    await Sentry.flush(1000);
+    const behind: Promise<void>[] = [];
+    const request = Object.assign(
+      new Request('http://arca.example/internal/monitoring-check?cpf=123.456.789-09'),
+      { waitUntil: (work: Promise<void>) => behind.push(work) },
+    );
+    const response = await app.request(request);
+    expect(behind).toHaveLength(1);
+    await Promise.all(behind);
 
     expect(response.status).toBe(500);
     expect(await response.json()).toEqual({ error: { code: 'internal_error' } });

@@ -6,7 +6,10 @@ function recordingLogger() {
   const errors: LogEntry[] = [];
   const reported: [unknown, string][] = [];
   const logger: Logger = { info: () => undefined, error: (entry) => errors.push(entry) };
-  const report = (error: unknown, code: string) => reported.push([error, code]);
+  const report = (error: unknown, code: string) => {
+    reported.push([error, code]);
+    return Promise.resolve();
+  };
   return { errors, reported, logger, report };
 }
 
@@ -44,5 +47,15 @@ describe('withStepError (spec 0001, R6)', () => {
     ).rejects.toBeInstanceOf(StepError);
     expect(errors).toEqual([{ errorCode: 'database_unavailable', errorName: 'string' }]);
     expect(reported).toEqual([['secret detail', 'database_unavailable']]);
+  });
+
+  it('still throws the step error when reporting fails', async () => {
+    const { logger } = recordingLogger();
+    const report = () => Promise.reject(new Error('monitoring unavailable'));
+    await expect(
+      withStepError('database_unavailable', { logger, report }, () =>
+        Promise.reject(new Error('boom')),
+      ),
+    ).rejects.toMatchObject({ code: 'database_unavailable' });
   });
 });
