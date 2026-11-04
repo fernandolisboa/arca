@@ -2,7 +2,7 @@
   "type": "diff",
   "version": "9",
   "dialect": "postgres",
-  "id": "f6177c98-97c1-46b6-9f86-7f0384c41deb",
+  "id": "970fc1a5-12d5-4116-875f-c5daaa74d9f0",
   "prevIds": [
     "de004c4f-c7ea-43c1-8452-fe7a78379586"
   ],
@@ -1161,6 +1161,16 @@
         "table": "message",
         "name": "message_details_object",
         "value": "jsonb_typeof(\"details\") = 'object'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "message",
+        "name": "message_details_size",
+        "value": "octet_length(\"details\"::text) <= 1024",
         "entityType": "checks"
       }
     },

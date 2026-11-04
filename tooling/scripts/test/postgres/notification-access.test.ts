@@ -318,6 +318,17 @@ describe('the notification schema access matrix (spec 0005, R7)', () => {
     );
   });
 
+  it('refuses message details over 1 KB', async () => {
+    await expect(
+      as('app_api', owner, (client) =>
+        client.query(
+          `INSERT INTO notification.message (account_id, code, details) VALUES ($1, 'passkey_added', $2)`,
+          [owner, JSON.stringify({ note: 'x'.repeat(1024) })],
+        ),
+      ),
+    ).rejects.toThrow(/message_details_size/);
+  });
+
   it('deletes a channel’s and a message’s deliveries with them', async () => {
     const left = await as('app_jobs', owner, async (client) => {
       await client.query(`DELETE FROM notification.channel WHERE account_id = $1`, [owner]);

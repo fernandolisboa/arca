@@ -41,7 +41,8 @@ CREATE TABLE "notification"."message" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "message_id_account_id_key" UNIQUE("id","account_id"),
 	CONSTRAINT "message_code_format" CHECK ("code" ~ '^[a-z_]{1,64}$'),
-	CONSTRAINT "message_details_object" CHECK (jsonb_typeof("details") = 'object')
+	CONSTRAINT "message_details_object" CHECK (jsonb_typeof("details") = 'object'),
+	CONSTRAINT "message_details_size" CHECK (octet_length("details"::text) <= 1024)
 );
 --> statement-breakpoint
 ALTER TABLE "notification"."message" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint

@@ -117,6 +117,7 @@ export const message = notification.table(
   (table) => [
     check('message_code_format', sql`${table.code} ~ '^[a-z_]{1,64}$'`),
     check('message_details_object', sql`jsonb_typeof(${table.details}) = 'object'`),
+    check('message_details_size', sql`octet_length(${table.details}::text) <= 1024`),
     unique('message_id_account_id_key').on(table.id, table.accountId),
     index('message_account_created_idx').on(table.accountId, table.createdAt),
     ...ownRowPolicies('message', table.accountId, {
