@@ -37,6 +37,7 @@ As of 2026-11-04. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md).
 | Processor | Data | Kept for | Enforced by |
 | --- | --- | --- | --- |
 | Neon | Deleted rows in history | 6 hours (Free plan history window) | Neon project setting |
+| Neon | Incident evidence branches (`incident-YYYYMMDD`) and the backup branch a point-in-time restore leaves: full copies of the database | Until the investigation and any ANPD process close | Deleted by the owner as the [incident runbook](runbooks/incident-response.md#take-an-evidence-branch) says; their app roles are set to `NOLOGIN` when taken |
 | AWS S3 (backup account) | Daily backups and erasure tombstones | 35 days under Object Lock in compliance mode, removed by day 36 | Bucket lifecycle (current and noncurrent versions) and Object Lock |
 | AWS S3 (backup account) | Replica of document ciphertext, including replaced versions | While the document exists; a replaced or deleted version 35 days more | Replication with delete markers; noncurrent-version lifecycle |
 | AWS S3 (application account) | Document ciphertext | While the document exists; noncurrent versions 1 day | Bucket lifecycle rule |

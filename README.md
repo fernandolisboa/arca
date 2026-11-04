@@ -14,7 +14,7 @@ Requirements: Node.js at the version in [.nvmrc](.nvmrc) and pnpm at the exact v
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm check    # format check, dependency sources, boundaries, web bundle, lint, typecheck, tests and build, through Turborepo
+pnpm check    # format check, dependency sources, boundaries, docs links, web bundle, lint, typecheck, tests and build, through Turborepo
 ```
 
 Set `TURBO_TELEMETRY_DISABLED=1` in your shell to turn off Turborepo's anonymous usage telemetry; CI sets it.
@@ -57,6 +57,7 @@ The first case is the founder's own family. The app goes to other families only 
 | [docs/RETENTION.md](docs/RETENTION.md) | How long each kind of data is kept, and what enforces it |
 | [docs/adr/](docs/adr/) | Architecture decision records: language, rules as data, stack, AI ports, platforms, auth, background jobs, database security, automation-first setup, the knowledge base as reviewed data, reviewers in the authoring session, identity, observability, data lifecycle and backups, vault encryption |
 | [docs/specs/](docs/specs/) | Feature specs, written before tickets and code |
+| [docs/runbooks/](docs/runbooks/) | Incident response, and the log of restore drills and tabletop exercises |
 | [docs/research/](docs/research/) | Sourced research notes that seed the knowledge base |
 
 ## Language

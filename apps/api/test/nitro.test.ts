@@ -71,6 +71,13 @@ describe('one origin (spec 0001, R4)', () => {
     expectSecurityHeaders(response);
   });
 
+  it('serves security.txt from the API, not the web fallback (spec 0004, R11)', async () => {
+    const response = await get('/.well-known/security.txt');
+    expect(response.status).toBe(200);
+    expect(await response.text()).toMatch(/^Contact: https:\/\/github\.com\//);
+    expectSecurityHeaders(response);
+  });
+
   it.each(['/casos', '/casos/123/documentos', '/v10', '/internals', '/.well-knownx'])(
     'falls back to index.html for %s',
     async (path) => {
