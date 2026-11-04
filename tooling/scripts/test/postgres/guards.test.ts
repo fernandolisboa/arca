@@ -68,8 +68,8 @@ const fixtures: [number, string, string][] = [
   ],
   [
     7,
-    "ALTER ROLE app_api SET app.person_id = '00000000-0000-4000-8000-000000000000'",
-    'role default */app_api/app.person_id=00000000-0000-4000-8000-000000000000 is not allow-listed',
+    "ALTER ROLE app_api SET app.account_id = '00000000-0000-4000-8000-000000000000'",
+    'role default */app_api/app.account_id=00000000-0000-4000-8000-000000000000 is not allow-listed',
   ],
   [8, 'CREATE EXTENSION pgcrypto', 'extension pgcrypto is not allow-listed'],
   [

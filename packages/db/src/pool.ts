@@ -91,7 +91,7 @@ function validated(target: DatabaseTarget, credentials: RoleCredentials) {
 async function verifyConnection(client: pg.ClientBase, role: RuntimeRole): Promise<void> {
   const result = await client.query<{ current: string; session: string; identity: string }>(
     `SELECT current_user AS current, session_user AS session,
-            coalesce(pg_catalog.current_setting('app.person_id', true), '') ||
+            coalesce(pg_catalog.current_setting('app.account_id', true), '') ||
             coalesce(pg_catalog.current_setting('app.case_id', true), '') AS identity`,
   );
   const row = result.rows[0];

@@ -138,7 +138,7 @@ describe('migrate', () => {
     ],
     [
       'a role default',
-      "ALTER ROLE app_migrator SET app.person_id = '00000000-0000-4000-8000-000000000000'",
+      "ALTER ROLE app_migrator SET app.account_id = '00000000-0000-4000-8000-000000000000'",
       'changes roles or role settings',
     ],
     [
