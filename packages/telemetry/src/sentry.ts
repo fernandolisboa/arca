@@ -17,6 +17,7 @@ import {
   uuid,
   version,
 } from './shapes.js';
+import { sentryEnvironments } from './sentry-project.js';
 import { nameReducer, type UrlReducer } from './urls.js';
 
 export interface KnownSentryParts {
@@ -172,7 +173,7 @@ export function sentryScrubbers({ reduce, tables }: KnownSentryParts) {
     level: keep(level),
     platform: keep(oneOf(['javascript', 'node'])),
     release: keep(release),
-    environment: keep(oneOf(['production', 'preview'])),
+    environment: keep(oneOf(sentryEnvironments)),
     transaction: name,
     transaction_info: object({
       source: keep(oneOf(['custom', 'url', 'route', 'view', 'component', 'task'])),

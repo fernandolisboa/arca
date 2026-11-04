@@ -30,6 +30,8 @@
     "@arca/telemetry": "workspace:*",
     "@better-auth/passkey": "catalog:",
     "@hono/zod-openapi": "catalog:",
+    "@sentry/hono": "catalog:",
+    "@sentry/node": "catalog:",
     "@simplewebauthn/server": "catalog:",
     "better-auth": "catalog:",
     "drizzle-orm": "catalog:",

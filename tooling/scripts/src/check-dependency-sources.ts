@@ -46,7 +46,10 @@ export function checkWorkspaceConfig(config: WorkspaceConfig): Violation[] {
   return [
     ...config.problems,
     ...[...config.catalogs].flatMap(([name, version]) => notExact(`catalog ${name}`, version)),
-    ...[...config.overrides].flatMap(([name, version]) => notExact(`override ${name}`, version)),
+    // pnpm's `-` removes a dependency from the tree, which can only take code out.
+    ...[...config.overrides]
+      .filter(([, version]) => version !== '-')
+      .flatMap(([name, version]) => notExact(`override ${name}`, version)),
   ];
 }
 

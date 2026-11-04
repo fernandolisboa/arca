@@ -4,23 +4,26 @@ import { StepError, withStepError } from '../src/workflows/step-error.js';
 
 function recordingLogger() {
   const errors: LogEntry[] = [];
+  const reported: [unknown, string][] = [];
   const logger: Logger = { info: () => undefined, error: (entry) => errors.push(entry) };
-  return { errors, logger };
+  const report = (error: unknown, code: string) => reported.push([error, code]);
+  return { errors, reported, logger, report };
 }
 
 describe('withStepError (spec 0001, R6)', () => {
   it('returns the work result', async () => {
-    const { errors, logger } = recordingLogger();
+    const { errors, reported, logger, report } = recordingLogger();
     await expect(
-      withStepError('database_unavailable', logger, () => Promise.resolve(42)),
+      withStepError('database_unavailable', { logger, report }, () => Promise.resolve(42)),
     ).resolves.toBe(42);
     expect(errors).toEqual([]);
+    expect(reported).toEqual([]);
   });
 
   it('rethrows any failure as a code, and logs only the cause class', async () => {
-    const { errors, logger } = recordingLogger();
+    const { errors, reported, logger, report } = recordingLogger();
     const cause = new Error('password authentication failed for user "app_jobs" at db.example');
-    const thrown = await withStepError('database_unavailable', logger, () =>
+    const thrown = await withStepError('database_unavailable', { logger, report }, () =>
       Promise.reject(cause),
     ).catch((error: unknown) => error);
 
@@ -28,16 +31,18 @@ describe('withStepError (spec 0001, R6)', () => {
     expect(thrown).toMatchObject({ code: 'database_unavailable', message: 'database_unavailable' });
     expect(thrown).not.toHaveProperty('cause');
     expect(errors).toEqual([{ errorCode: 'database_unavailable', errorName: 'Error' }]);
+    expect(reported).toEqual([[cause, 'database_unavailable']]);
   });
 
   it('names a thrown value that is not an Error by its type', async () => {
-    const { errors, logger } = recordingLogger();
+    const { errors, reported, logger, report } = recordingLogger();
     await expect(
-      withStepError('database_unavailable', logger, () =>
+      withStepError('database_unavailable', { logger, report }, () =>
         // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- the case under test
         Promise.reject('secret detail'),
       ),
     ).rejects.toBeInstanceOf(StepError);
     expect(errors).toEqual([{ errorCode: 'database_unavailable', errorName: 'string' }]);
+    expect(reported).toEqual([['secret detail', 'database_unavailable']]);
   });
 });

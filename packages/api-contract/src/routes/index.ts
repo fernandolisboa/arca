@@ -901,3 +901,15 @@ export const routes = {
 
 /** The Better Auth endpoints the API lets through; every other path under /v1/auth is a 404. */
 export const authRoutes = [signOut, passkeySignInOptions, passkeySignIn] as const;
+
+/**
+ * Every static segment of the API's paths. Telemetry keeps these in a URL and reduces any other
+ * segment, which may be an ID or a token, to `:param` (spec 0004 R3).
+ */
+export const apiPathSegments: readonly string[] = [
+  ...new Set(
+    Object.values(routes).flatMap(({ path }) =>
+      `${apiBasePath}${path}`.split('/').filter((segment) => segment !== ''),
+    ),
+  ),
+];
