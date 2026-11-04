@@ -2,6 +2,7 @@ import { createI18n, type I18n } from '@arca/i18n';
 import { useRuntimeConfig } from 'nitro/runtime-config';
 import { createDataExports } from './account/data-export.js';
 import { createAccountDeletion, type AccountDeletion } from './account/deletion.js';
+import { startEach } from './account/erasure.js';
 import { accounts } from './auth/auth.js';
 import { createApp } from './app.js';
 import { auditLog, auditReader, type AuditLog } from './audit/log.js';
@@ -183,13 +184,12 @@ const app = createApp({
   cron: {
     readSecret: readCronSecret,
     startHeartbeat: (runDate) => startWorkflow(heartbeat, [runDate]),
-    // A run per due account, each from this server-side scan; a failed run is started again the
-    // next day, since every step is idempotent.
-    startDueErasures: async () => {
-      for (const id of await accounts.dueForErasure(authConnection())) {
-        await startWorkflow(eraseAccount, [entityId(id)]);
-      }
-    },
+    // A run per account from this server-side scan; a failed run is started again the next day,
+    // since every step is idempotent and an erased account stays noted until its tombstone.
+    startDueErasures: async () =>
+      startEach(await accounts.dueForErasure(authConnection()), (id) =>
+        startWorkflow(eraseAccount, [entityId(id)]),
+      ),
     sweepRateLimits: () => limiter.sweep(),
   },
   ...withOrigin(ownOrigin()),

@@ -27,7 +27,13 @@ function setup({
   approved = true,
   pending = null,
   cancelled = true,
-}: { approved?: boolean; pending?: Date | null; cancelled?: boolean } = {}) {
+  recoveryPending = false,
+}: {
+  approved?: boolean;
+  pending?: Date | null;
+  cancelled?: boolean;
+  recoveryPending?: boolean;
+} = {}) {
   const calls: string[] = [];
   const spent: { purpose: string; action: CanonicalAction }[] = [];
   const stepUp: StepUpService = {
@@ -57,7 +63,7 @@ function setup({
     status: () =>
       Promise.resolve({
         pendingUntil: null,
-        recoveryPending: false,
+        recoveryPending,
         deletionDueAt: pending,
         sessionEnded: false,
       }),
@@ -144,6 +150,16 @@ describe('account deletion routes (spec 0004, R9)', () => {
     expect((await call('POST', '/account/deletion')).status).toBe(403);
     expect((await call('DELETE', '/account/deletion')).status).toBe(200);
     expect(calls).toEqual([`cancel ${owner.accountId}`]);
+  });
+
+  it('keeps the recovery cancel and the deletion cancel open while both wait', async () => {
+    const { call, calls } = setup({ pending: dueAt, recoveryPending: true });
+    expect((await call('GET', '/devices')).status).toBe(200);
+    expect((await call('DELETE', '/account/deletion')).status).toBe(200);
+    const requested = await call('POST', '/account/deletion');
+    expect(requested.status).toBe(403);
+    expect(await requested.json()).toEqual({ error: { code: 'recovery_pending' } });
+    expect(calls).toEqual(['list', `cancel ${owner.accountId}`]);
   });
 
   it('shows no deletion when none waits', async () => {

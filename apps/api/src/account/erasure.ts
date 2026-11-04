@@ -2,7 +2,7 @@ import { withIdentity, type Database } from '@arca/db';
 import { registry as fullRegistry, type Registry, type RegistryEntry } from '@arca/db/registry';
 import { sql, type SQL } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
-import { accounts } from '../auth/auth.js';
+import { accounts, erasedAccounts } from '../auth/auth.js';
 import type { Notices } from '../email/notices.js';
 import type { Tombstones } from './tombstones.js';
 
@@ -17,10 +17,14 @@ export interface Erasure {
   eraseOwnedEntries(accountId: string): Promise<void>;
   /** Reads the address and sends the completion notice in one step; nothing once it is gone. */
   sendCompletionNotice(accountId: string): Promise<void>;
-  /** Erases the auth rows, then the expired rows of the unowned tables kept until expiry. */
+  /**
+   * Erases the auth rows, then the expired rows of the unowned tables kept until expiry, and notes
+   * the account until its event and tombstone are written, so the daily scan still finds it.
+   */
   eraseAuthRows(accountId: string): Promise<void>;
+  /** Once per noted account. */
   recordErased(accountId: string): Promise<void>;
-  /** Last, so a tombstone always means the rest is done. */
+  /** Last, so a tombstone always means the rest is done; then the note goes. */
   writeTombstone(accountId: string): Promise<void>;
 }
 
@@ -83,6 +87,7 @@ export function createErasure({
 
     eraseAuthRows: (accountId) =>
       authDb.transaction(async (tx) => {
+        await erasedAccounts.note(tx, accountId);
         for (const entry of authEntries) await tx.execute(eraseOwned(entry, accountId));
         for (const { table, expiresAt } of expiring) {
           await tx.execute(
@@ -92,14 +97,24 @@ export function createErasure({
       }),
 
     recordErased: (accountId) =>
-      audit.record({
-        code: 'account_erased',
-        subjectAccountId: accountId,
-        actorAccountId: null,
-        details: {},
+      authDb.transaction(async (tx) => {
+        if (!(await erasedAccounts.markRecorded(tx, accountId))) return;
+        // Recorded before the commit, like every security event.
+        await audit.record({
+          code: 'account_erased',
+          subjectAccountId: accountId,
+          actorAccountId: null,
+          details: {},
+        });
       }),
 
-    writeTombstone: (accountId) => tombstones.write(accountId, clock()),
+    async writeTombstone(accountId) {
+      // The erasure's own time, however long the tombstone was owed.
+      const erasedAt = await erasedAccounts.erasedAt(authDb, accountId);
+      if (erasedAt === undefined) return;
+      await tombstones.write(accountId, erasedAt);
+      await erasedAccounts.clear(authDb, accountId);
+    },
   };
 }
 
@@ -112,4 +127,23 @@ export async function eraseAccountNow(erasure: Erasure, accountId: string): Prom
   await erasure.recordErased(accountId);
   await erasure.writeTombstone(accountId);
   return true;
+}
+
+/**
+ * Starts a run for each account. A start that fails does not hold back the others; the first
+ * failure is thrown once all were tried, so the cron call reports it.
+ */
+export async function startEach(
+  accountIds: readonly string[],
+  start: (accountId: string) => Promise<unknown>,
+): Promise<void> {
+  const failures: unknown[] = [];
+  for (const accountId of accountIds) {
+    try {
+      await start(accountId);
+    } catch (error) {
+      failures.push(error);
+    }
+  }
+  if (failures.length > 0) throw failures[0];
 }

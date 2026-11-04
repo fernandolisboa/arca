@@ -34,7 +34,7 @@ test('requests the deletion, then a new sign-in can only cancel it', async ({ pa
   await page.getByRole('button', { name: 'Excluir minha conta' }).click();
   await page.getByRole('button', { name: 'Confirmar exclusão' }).click();
   await expect(page.getByRole('region', { name: 'Excluir conta' }).getByRole('status')).toHaveText(
-    /^Pedido recebido\. A conta será apagada em /,
+    /^Pedido recebido\. A conta será apagada a partir de /,
   );
   expect((await stepUp).postDataJSON()).toMatchObject({
     purpose: 'account_deletion',
@@ -44,13 +44,13 @@ test('requests the deletion, then a new sign-in can only cancel it', async ({ pa
   // Every session ended, this one too: signing in again shows only the cancel.
   await signIn(page, email);
   await page.goto(`${databaseServer.origin}/`);
-  await expect(page.getByText(/^Sua conta será apagada em /)).toBeVisible();
+  await expect(page.getByText(/^Sua conta será apagada a partir de /)).toBeVisible();
   await expect(page.getByRole('link', { name: 'Dispositivos' })).toHaveCount(0);
   const devices = await page.request.get(`${databaseServer.origin}/v1/devices`);
   expect(devices.status()).toBe(403);
 
   await page.getByRole('button', { name: 'Cancelar a exclusão' }).click();
   await expect(page.getByRole('link', { name: 'Dispositivos' })).toBeVisible();
-  await expect(page.getByText(/^Sua conta será apagada em /)).toHaveCount(0);
+  await expect(page.getByText(/^Sua conta será apagada a partir de /)).toHaveCount(0);
   expect(problems).toEqual([]);
 });

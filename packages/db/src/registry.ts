@@ -76,15 +76,7 @@ export const registry: Registry = {
       strategy: 'delete',
       owner: ownedByAccount('id'),
       pool: 'app_auth',
-      export: [
-        'name',
-        'email',
-        'email_verified',
-        'created_at',
-        'last_sign_in_at',
-        'confirmed_at',
-        'deletion_due_at',
-      ],
+      export: ['name', 'email', 'email_verified', 'created_at', 'last_sign_in_at', 'confirmed_at'],
       label: 'dataExport.tables.account',
     },
     {
@@ -221,6 +213,12 @@ export const registry: Registry = {
       table: 'arca_migrations.journal',
       personalData: 'none',
       reason: "The migration runner's journal of applied migrations.",
+    },
+    {
+      table: 'auth.erased_account',
+      personalData: 'none',
+      reason:
+        'IDs of erased accounts whose audit event or tombstone is still owed; the audit trail keeps the same IDs.',
     },
     {
       table: 'auth.setup',

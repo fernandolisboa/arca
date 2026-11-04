@@ -123,14 +123,17 @@ export function DeletionPendingNotice({ dueAt }: { readonly dueAt: string }) {
   const when = useDateFormat();
   const queryClient = useQueryClient();
   const [waiting, setWaiting] = useState(false);
-  const [failure, setFailure] = useState<CommonFailure>();
+  const [failure, setFailure] = useState<CommonFailure | 'tooLate'>();
   const cancel = () => {
     setFailure(undefined);
     setWaiting(true);
     cancelDeletion()
       .then(() => queryClient.invalidateQueries({ queryKey: sessionQuery.queryKey }))
       .catch((error: unknown) => {
-        setFailure(commonFailure(error));
+        // Once due, the erasure owns the account and the cancel finds nothing to cancel.
+        setFailure(
+          commonFailure(error, ({ code }) => (code === 'not_found' ? 'tooLate' : undefined)),
+        );
       })
       .finally(() => {
         setWaiting(false);

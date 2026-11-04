@@ -7,7 +7,7 @@ import {
   verification as verificationTable,
 } from '@arca/db/auth-schema';
 import type { Database, Transaction } from '@arca/db';
-import { passkeyActivation, passkeyCapability } from '@arca/db/enrollment-schema';
+import { erasedAccount, passkeyActivation, passkeyCapability } from '@arca/db/enrollment-schema';
 import { passkeyClient } from '@arca/db/notice-schema';
 import type { AuthenticationExtensionsClientInputs } from '@simplewebauthn/server';
 import { betterAuth } from 'better-auth';
@@ -415,29 +415,36 @@ export const accounts = {
       await db
         .update(user)
         .set({ deletionDueAt: null })
-        .where(and(eq(user.id, accountId), gt(user.deletionDueAt, sql`now()`)))
+        // The statement's own time, not the transaction's, so a cancel never lands after the due time.
+        .where(and(eq(user.id, accountId), gt(user.deletionDueAt, sql`statement_timestamp()`)))
         .returning({ id: user.id })
     ).length === 1,
   deletionDueAt: async (db: Database | Transaction, accountId: string) =>
     (await db.select({ dueAt: user.deletionDueAt }).from(user).where(eq(user.id, accountId)))[0]
       ?.dueAt ?? null,
-  /** The accounts whose deletion is due, for the daily erasure; identifiers only. */
+  /**
+   * The accounts the daily erasure starts a run for, identifiers only: those whose deletion is due,
+   * and those erased whose event or tombstone is still owed.
+   */
   dueForErasure: async (db: Database | Transaction) =>
     (
       await db
         .select({ id: user.id })
         .from(user)
         .where(lte(user.deletionDueAt, sql`now()`))
+        .union(db.select({ id: erasedAccount.accountId }).from(erasedAccount))
     ).map(({ id }) => id),
   /**
    * Whether an erasure may go on: the account's deletion is due, or the account is already gone,
    * as on a retry after its auth rows were erased. A cancelled deletion is never due again.
    */
   erasable: async (db: Database | Transaction, accountId: string) => {
+    // Locked, so a cancel still in flight is seen once it commits.
     const [found] = await db
       .select({ due: sql<boolean>`coalesce(${user.deletionDueAt} <= now(), false)` })
       .from(user)
-      .where(eq(user.id, accountId));
+      .where(eq(user.id, accountId))
+      .for('update');
     return found === undefined || found.due;
   },
   idOf: async (db: Database | Transaction, email: string) =>
@@ -489,6 +496,37 @@ async function isPending(db: Database | Transaction, credentialId: string) {
 export type AddedBy =
   | { readonly accountId: string; readonly sessionId: string }
   | { readonly accountId: string; readonly device: DeviceDescription };
+
+/** The notes of erased accounts whose event or tombstone is still owed (spec 0004, R9). */
+export const erasedAccounts = {
+  /** Notes the account while its row still exists, so a later run notes nothing. */
+  note: async (db: Database | Transaction, accountId: string) => {
+    await db
+      .insert(erasedAccount)
+      .select(db.select({ accountId: user.id }).from(user).where(eq(user.id, accountId)))
+      .onConflictDoNothing();
+  },
+  /** True once only: the caller records the event before its transaction commits. */
+  markRecorded: async (db: Database | Transaction, accountId: string) =>
+    (
+      await db
+        .update(erasedAccount)
+        .set({ recordedAt: sql`now()` })
+        .where(and(eq(erasedAccount.accountId, accountId), isNull(erasedAccount.recordedAt)))
+        .returning({ id: erasedAccount.accountId })
+    ).length === 1,
+  /** When the noted account was erased, or undefined when it is not noted. */
+  erasedAt: async (db: Database | Transaction, accountId: string) =>
+    (
+      await db
+        .select({ at: erasedAccount.erasedAt })
+        .from(erasedAccount)
+        .where(eq(erasedAccount.accountId, accountId))
+    )[0]?.at,
+  clear: async (db: Database | Transaction, accountId: string) => {
+    await db.delete(erasedAccount).where(eq(erasedAccount.accountId, accountId));
+  },
+};
 
 /** A passkey to store for the account, as a verified registration describes it. */
 export interface NewPasskey {

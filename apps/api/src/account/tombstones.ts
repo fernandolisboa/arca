@@ -17,10 +17,14 @@ export const noTombstones: Tombstones = { write: () => Promise.resolve() };
 
 /**
  * Production needs the S3 adapter in the backup account, which comes with that account (spec 0004,
- * R12); until then an erasure stops before its last step, and its run fails, rather than end
- * without a tombstone. Production cannot select the no-op adapter.
+ * R12). Until then its writes fail, so a production erasure ends with the tombstone still owed and
+ * the account noted; the daily run writes it once the adapter lands. Production cannot select the
+ * no-op adapter.
  */
+const unavailable: Tombstones = {
+  write: () => Promise.reject(new TombstonesUnavailableError()),
+};
+
 export function tombstonesFor(environment: DeploymentEnvironment): Tombstones {
-  if (environment === 'production') throw new TombstonesUnavailableError();
-  return noTombstones;
+  return environment === 'production' ? unavailable : noTombstones;
 }

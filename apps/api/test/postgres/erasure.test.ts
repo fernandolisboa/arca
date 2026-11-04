@@ -4,6 +4,7 @@ import { sql } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createAccountDeletion, type AccountDeletion } from '../../src/account/deletion.js';
 import { createErasure, eraseAccountNow, type Erasure } from '../../src/account/erasure.js';
+import { accounts } from '../../src/auth/auth.js';
 import type { Tombstones } from '../../src/account/tombstones.js';
 import { auditLog } from '../../src/audit/log.js';
 import type { Notice, Notices } from '../../src/email/notices.js';
@@ -30,15 +31,20 @@ const tombstoneLog: Tombstones = {
   },
 };
 
-const erasureWith = (checked: Registry = registry): Erasure =>
+const erasureWith = (
+  checked: Registry = registry,
+  tombstones: Tombstones = tombstoneLog,
+): Erasure =>
   createErasure({
     authDb: testDatabase.authDb,
     jobsDb: testDatabase.jobsDb,
     audit: auditLog(testDatabase.auditDb),
     notices,
-    tombstones: tombstoneLog,
+    tombstones,
     registry: checked,
   });
+
+const due = () => accounts.dueForErasure(testDatabase.authDb);
 
 beforeAll(async () => {
   testDatabase = await authTestDatabase();
@@ -213,13 +219,34 @@ describe('eraseAccount (spec 0004, R9)', () => {
     const a = await seeded(testDatabase);
     await makeDue(a.accountId);
     await eraseAccountNow(erasureWith(), a.accountId);
+    expect(await due()).not.toContain(a.accountId);
     sent = [];
     expect(await eraseAccountNow(erasureWith(), a.accountId)).toBe(true);
     expect(sent).toEqual([]);
-    expect(tombstones).toEqual([a.accountId, a.accountId]);
+    expect(tombstones).toEqual([a.accountId]);
+    const erased = (await events(a.accountId)).filter(({ code }) => code === 'account_erased');
+    expect(erased).toHaveLength(1);
     for (const [table, count] of Object.entries(await remaining(a.accountId))) {
       if (table !== 'audit.event') expect(count, table).toBe(0);
     }
+  });
+
+  it('keeps an erased account in the scan until its tombstone is written, recording it once', async () => {
+    const a = await seeded(testDatabase);
+    expect(await due()).not.toContain(a.accountId);
+    await makeDue(a.accountId);
+    expect(await due()).toContain(a.accountId);
+    const failing: Tombstones = { write: () => Promise.reject(new Error('unavailable')) };
+    await expect(eraseAccountNow(erasureWith(registry, failing), a.accountId)).rejects.toThrow();
+    expect(await dueAtOf(a.accountId)).toBeUndefined();
+    expect(await due()).toContain(a.accountId);
+    await expect(eraseAccountNow(erasureWith(registry, failing), a.accountId)).rejects.toThrow();
+
+    expect(await eraseAccountNow(erasureWith(), a.accountId)).toBe(true);
+    expect(tombstones).toEqual([a.accountId]);
+    expect(await due()).not.toContain(a.accountId);
+    const erased = (await events(a.accountId)).filter(({ code }) => code === 'account_erased');
+    expect(erased).toHaveLength(1);
   });
 
   it('erases nothing of an account whose deletion is not due', async () => {

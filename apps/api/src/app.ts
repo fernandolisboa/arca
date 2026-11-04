@@ -450,7 +450,8 @@ export function createApp({
   );
   /**
    * While the account's deletion waits, a session may only show so and cancel it (spec 0004,
-   * R9); every other route answers 403 `deletion_pending`.
+   * R9); every other route answers 403 `deletion_pending`. A recovery waiting too takes
+   * precedence, with the cancel added.
    */
   const whileDeletionPending = new Set(
     [
@@ -461,6 +462,7 @@ export function createApp({
       ...authRoutes,
     ].map(routeKey),
   );
+  const cancelDeletionKey = routeKey(openApiRoutes.cancelAccountDeletion);
   const restrictWhilePending = createMiddleware<AppEnv>(async (c, next) => {
     // Only a cookie carries a session, so a request without one has nothing to restrict.
     if (c.req.header('cookie') === undefined) return next();
@@ -468,10 +470,16 @@ export function createApp({
     if (whileRecoveryPending.has(key) && whileDeletionPending.has(key)) return next();
     const { current, status } = await sessionOf(c);
     if (current === null || status === null) return next();
-    if (status.recoveryPending && !whileRecoveryPending.has(key)) {
+    const deletionPending = status.deletionDueAt !== null;
+    // With both pending, the recovery's routes stay open, so the owner can still stop it, and so
+    // does the deletion's cancel.
+    if (status.recoveryPending) {
+      if (whileRecoveryPending.has(key) || (deletionPending && key === cancelDeletionKey)) {
+        return next();
+      }
       return reject(c, 'recovery_pending', 403);
     }
-    if (status.deletionDueAt !== null && !whileDeletionPending.has(key)) {
+    if (deletionPending && !whileDeletionPending.has(key)) {
       return reject(c, 'deletion_pending', 403);
     }
     return next();

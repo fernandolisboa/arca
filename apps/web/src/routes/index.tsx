@@ -66,6 +66,7 @@ function SessionLine() {
     return (
       <>
         <p>{t('session.signedIn', { email: session.data.email })}</p>
+        {session.data.recoveryPending && <RecoveryPendingNotice />}
         <DeletionPendingNotice dueAt={session.data.deletionDueAt} />
       </>
     );
