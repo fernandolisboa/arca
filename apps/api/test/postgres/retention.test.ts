@@ -12,6 +12,8 @@ import {
 } from '../../src/account/retention.js';
 import { auditLog } from '../../src/audit/log.js';
 import { accounts } from '../../src/auth/auth.js';
+import type { Notice, Notices } from '../../src/email/notices.js';
+import { createDelivery, deliverNow } from '../../src/notification/delivery.js';
 import { createNotifier } from '../../src/notification/notifier.js';
 import { authTestDatabase, type AuthTestDatabase } from './auth-database.js';
 import { seeded } from './every-table.js';
@@ -20,13 +22,15 @@ import { seeded } from './every-table.js';
 // R10). Synthetic data only. Each test counts from its own `now`, an hour ahead of the database,
 // so every row it places on either side of a boundary is its own.
 let testDatabase: AuthTestDatabase;
-let started: string[];
+let sent: Notice[];
 let failing: boolean;
 
-const startDelivery = (_accountId: string, messageId: string) => {
-  if (failing) return Promise.reject(new Error('unavailable'));
-  started.push(messageId);
-  return Promise.resolve();
+const notices: Notices = {
+  send: (notice) => {
+    if (failing) return Promise.reject(new Error('unavailable'));
+    sent.push(notice);
+    return Promise.resolve();
+  },
 };
 
 const retentionWith = (ownedRules?: readonly OwnedExpiryRule[]): Retention =>
@@ -34,7 +38,16 @@ const retentionWith = (ownedRules?: readonly OwnedExpiryRule[]): Retention =>
     authDb: testDatabase.authDb,
     jobsDb: testDatabase.jobsDb,
     audit: auditLog(testDatabase.auditDb),
-    notifier: createNotifier({ db: testDatabase.jobsDb, startDelivery }),
+    // As the daily job runs it: the warning delivered in the step, before the marking commits.
+    notifier: createNotifier({
+      db: testDatabase.jobsDb,
+      startDelivery: (accountId, messageId) =>
+        deliverNow(
+          createDelivery({ jobsDb: testDatabase.jobsDb, authDb: testDatabase.authDb, notices }),
+          accountId,
+          messageId,
+        ),
+    }),
     ...(ownedRules === undefined ? {} : { ownedRules }),
   });
 
@@ -43,7 +56,7 @@ beforeAll(async () => {
 });
 
 beforeEach(() => {
-  started = [];
+  sent = [];
   failing = false;
 });
 
@@ -69,9 +82,11 @@ async function events(accountId: string, code: string) {
 
 /** The warnings produced for these accounts, as app_jobs recorded them. */
 const warningsTo = (owners: readonly { accountId: string }[]) =>
-  admin<{ id: string; account: string; code: string; details: object }>(
-    `SELECT id, account_id AS account, code, details FROM notification.message
-      WHERE account_id = ANY ($1) AND code = 'inactivity_warning'`,
+  admin<{ account: string; details: object; delivered: boolean }>(
+    `SELECT m.account_id AS account, m.details,
+            EXISTS (SELECT FROM notification.delivery d WHERE d.message_id = m.id) AS delivered
+       FROM notification.message m
+      WHERE m.account_id = ANY ($1) AND m.code = 'inactivity_warning'`,
     [owners.map(({ accountId }) => accountId)],
   );
 
@@ -274,19 +289,23 @@ describe('the inactivity job (spec 0004, R10)', () => {
       [atCutoff.accountId, neverSignedIn.accountId].sort(),
     );
     for (const message of warned) {
-      expect(message).toMatchObject({
-        code: 'inactivity_warning',
-        details: { dueAt: dueAt.toISOString() },
-      });
-      expect(started).toContain(message.id);
+      expect(message).toMatchObject({ details: { dueAt: dueAt.toISOString() }, delivered: true });
     }
+    const emailed = sent.filter(({ to }) =>
+      [atCutoff.email, neverSignedIn.email, recent.email].includes(to),
+    );
+    expect(emailed.map(({ to }) => to).sort()).toEqual(
+      [atCutoff.email, neverSignedIn.email].sort(),
+    );
+    expect(emailed.every((notice) => notice.kind === 'inactivity_warning')).toBe(true);
+    expect(emailed[0]).toMatchObject({ dueAt });
 
     await retentionWith().warnInactiveAccounts(now);
     expect(await warningsTo([atCutoff])).toHaveLength(1);
     expect(await events(atCutoff.accountId, 'deletion_requested')).toHaveLength(1);
   });
 
-  it('marks nothing and records nothing when the warning cannot be delivered', async () => {
+  it('marks nothing and records nothing when the warning cannot be sent', async () => {
     const now = later();
     const a = await seeded(testDatabase);
     await admin('UPDATE auth.user SET last_sign_in_at = $2 WHERE id = $1', [

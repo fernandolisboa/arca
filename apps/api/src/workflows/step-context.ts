@@ -15,12 +15,11 @@ import {
 import { roleDatabase } from '../database.js';
 import { emailRouteFor, emailSenderFor } from '../email/environment.js';
 import { createNotices } from '../email/notices.js';
-import { createDelivery, type Delivery } from '../notification/delivery.js';
+import { createDelivery, deliverNow, type Delivery } from '../notification/delivery.js';
 import { createNotifier } from '../notification/notifier.js';
 import { stdoutLogger } from '../logger.js';
 import { reportError, startMonitoring } from '../monitoring.js';
 import type { StepTelemetry } from './step-error.js';
-import { startDelivery } from './start-delivery.js';
 
 /** What workflow steps run with: each pool built once per instance, on first use. */
 const stepLogger = stdoutLogger();
@@ -88,17 +87,23 @@ export const erasureSteps = once(async (): Promise<Erasure> =>
   }),
 );
 
-export const retentionSteps = once((): Promise<Retention> =>
-  Promise.resolve(
-    createRetention({
-      authDb: authDatabase(),
-      jobsDb: jobsDatabase(),
-      audit: auditLog(auditDatabase()),
-      notifier: createNotifier({ db: jobsDatabase(), startDelivery }),
-    }),
-  ),
-);
-
 export const deliverySteps = once(async (): Promise<Delivery> =>
   createDelivery({ jobsDb: jobsDatabase(), authDb: authDatabase(), notices: await notices() }),
 );
+
+/**
+ * The inactivity warning is delivered in the job's own step, before the account is marked, so no
+ * account is marked, and later erased, without its warning sent (spec 0004, R10).
+ */
+export const retentionSteps = once(async (): Promise<Retention> => {
+  const delivery = await deliverySteps();
+  return createRetention({
+    authDb: authDatabase(),
+    jobsDb: jobsDatabase(),
+    audit: auditLog(auditDatabase()),
+    notifier: createNotifier({
+      db: jobsDatabase(),
+      startDelivery: (accountId, messageId) => deliverNow(delivery, accountId, messageId),
+    }),
+  });
+});

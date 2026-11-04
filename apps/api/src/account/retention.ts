@@ -150,7 +150,7 @@ export function createRetention({
             dueAt,
             cutoff,
             actorAccountId: null,
-            // Produced inside the transaction: an account is never marked without its warning.
+            // Delivered inside the transaction: an account is never marked without its warning.
             announce: () => notifier.notify(accountId, { kind: 'inactivity_warning', dueAt }),
           }),
         ),
