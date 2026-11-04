@@ -58,8 +58,17 @@ export const expiryRules: readonly ExpiryRule[] = [
   },
 ];
 
-/** None yet: notification messages, uploads and vault envelopes join with spec 0005. */
-export const ownedExpiryRules: readonly OwnedExpiryRule[] = [];
+/** Notification messages expire with their deliveries; uploads and vault envelopes join later. */
+export const notificationDays = 90;
+
+export const ownedExpiryRules: readonly OwnedExpiryRule[] = [
+  {
+    row: 'Notification messages and their deliveries',
+    table: 'notification.message',
+    owner: 'account_id',
+    expired: (now) => atOrBefore('created_at', daysFrom(now, -notificationDays)),
+  },
+];
 
 /** The RETENTION.md rows the daily jobs enforce, for the docs test. */
 export const enforcedRows = [

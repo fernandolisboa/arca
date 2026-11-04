@@ -95,6 +95,21 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
       `INSERT INTO vault.sharing_state (account_id, version, state, tag) VALUES ($1, 1, $2, $3)`,
       [accountId, Buffer.from('{}'), bytes(32)],
     );
+    const channelId = randomUUID();
+    const messageId = randomUUID();
+    await insert(
+      `INSERT INTO notification.channel (id, account_id, kind, endpoint, p256dh, auth_secret, browser, os)
+       VALUES ($1, $2, 'web_push', 'https://push.example.com/send/1', $3, $4, 'firefox', 'linux')`,
+      [channelId, accountId, bytes(65).toString('base64url'), bytes(16).toString('base64url')],
+    );
+    await insert(
+      `INSERT INTO notification.message (id, account_id, code) VALUES ($1, $2, 'passkey_added')`,
+      [messageId, accountId],
+    );
+    await insert(
+      `INSERT INTO notification.delivery (account_id, message_id, channel_id) VALUES ($1, $2, $3)`,
+      [accountId, messageId, channelId],
+    );
     await insert(
       `INSERT INTO audit.event (subject_account_id, actor_account_id, code) VALUES ($1, $2, 'sign_in')`,
       [accountId, accountId],

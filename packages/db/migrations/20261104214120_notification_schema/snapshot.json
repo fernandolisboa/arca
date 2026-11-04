@@ -1,0 +1,1424 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "f6177c98-97c1-46b6-9f86-7f0384c41deb",
+  "prevIds": [
+    "de004c4f-c7ea-43c1-8452-fe7a78379586"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_schema",
+      "statementTarget": [
+        "schema",
+        "notification"
+      ],
+      "writes": [
+        "s|sch|notification",
+        "n|sch|notification",
+        "e|sch|notification"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "notification",
+        "channel"
+      ],
+      "writes": [
+        "s|tbl|notification.channel",
+        "n|tbl|notification.channel",
+        "e|tbl|notification.channel",
+        "n|rel|notification.channel",
+        "n|type|notification.channel",
+        "n|rel|notification.channel_pkey",
+        "n|rel|notification.channel_id_account_id_key"
+      ],
+      "reads": [
+        "n|sch|notification"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "notification",
+        "delivery"
+      ],
+      "writes": [
+        "s|tbl|notification.delivery",
+        "n|tbl|notification.delivery",
+        "e|tbl|notification.delivery",
+        "n|rel|notification.delivery",
+        "n|type|notification.delivery",
+        "n|rel|notification.delivery_pkey"
+      ],
+      "reads": [
+        "n|sch|notification"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "notification",
+        "message"
+      ],
+      "writes": [
+        "s|tbl|notification.message",
+        "n|tbl|notification.message",
+        "e|tbl|notification.message",
+        "n|rel|notification.message",
+        "n|type|notification.message",
+        "n|rel|notification.message_pkey",
+        "n|rel|notification.message_id_account_id_key"
+      ],
+      "reads": [
+        "n|sch|notification"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "notification",
+        "channel",
+        "channel_email_idx"
+      ],
+      "writes": [
+        "s|idx|notification.channel_email_idx",
+        "n|idx|notification.channel_email_idx",
+        "e|idx|notification.channel_email_idx",
+        "n|rel|notification.channel_email_idx"
+      ],
+      "reads": [
+        "n|tbl|notification.channel",
+        "n|sch|notification",
+        "n|col|notification.channel.account_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "notification",
+        "channel",
+        "channel_endpoint_idx"
+      ],
+      "writes": [
+        "s|idx|notification.channel_endpoint_idx",
+        "n|idx|notification.channel_endpoint_idx",
+        "e|idx|notification.channel_endpoint_idx",
+        "n|rel|notification.channel_endpoint_idx"
+      ],
+      "reads": [
+        "n|tbl|notification.channel",
+        "n|sch|notification",
+        "n|col|notification.channel.account_id",
+        "n|col|notification.channel.endpoint"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "notification",
+        "delivery",
+        "delivery_channel_idx"
+      ],
+      "writes": [
+        "s|idx|notification.delivery_channel_idx",
+        "n|idx|notification.delivery_channel_idx",
+        "e|idx|notification.delivery_channel_idx",
+        "n|rel|notification.delivery_channel_idx"
+      ],
+      "reads": [
+        "n|tbl|notification.delivery",
+        "n|sch|notification",
+        "n|col|notification.delivery.channel_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "notification",
+        "message",
+        "message_account_created_idx"
+      ],
+      "writes": [
+        "s|idx|notification.message_account_created_idx",
+        "n|idx|notification.message_account_created_idx",
+        "e|idx|notification.message_account_created_idx",
+        "n|rel|notification.message_account_created_idx"
+      ],
+      "reads": [
+        "n|tbl|notification.message",
+        "n|sch|notification",
+        "n|col|notification.message.account_id",
+        "n|col|notification.message.created_at"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "notification",
+        "delivery"
+      ],
+      "writes": [
+        "s|fk|notification.delivery.delivery_message_fkey",
+        "n|fk|notification.delivery.delivery_message_fkey",
+        "e|fk|notification.delivery.delivery_message_fkey",
+        "n|con|notification.delivery.delivery_message_fkey"
+      ],
+      "reads": [
+        "n|tbl|notification.delivery",
+        "n|sch|notification",
+        "n|tbl|notification.message",
+        "n|sch|notification",
+        "n|col|notification.delivery.message_id",
+        "n|col|notification.delivery.account_id",
+        "n|col|notification.message.id",
+        "n|col|notification.message.account_id",
+        "e|uniqueness|notification.message.account_id.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "notification",
+        "delivery"
+      ],
+      "writes": [
+        "s|fk|notification.delivery.delivery_channel_fkey",
+        "n|fk|notification.delivery.delivery_channel_fkey",
+        "e|fk|notification.delivery.delivery_channel_fkey",
+        "n|con|notification.delivery.delivery_channel_fkey"
+      ],
+      "reads": [
+        "n|tbl|notification.delivery",
+        "n|sch|notification",
+        "n|tbl|notification.channel",
+        "n|sch|notification",
+        "n|col|notification.delivery.channel_id",
+        "n|col|notification.delivery.account_id",
+        "n|col|notification.channel.id",
+        "n|col|notification.channel.account_id",
+        "e|uniqueness|notification.channel.account_id.id"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "notification",
+        "channel"
+      ],
+      "writes": [
+        "s|pol|notification.channel.channel_select_own",
+        "n|pol|notification.channel.channel_select_own",
+        "e|pol|notification.channel.channel_select_own"
+      ],
+      "reads": [
+        "n|tbl|notification.channel",
+        "n|sch|notification",
+        "n|role|app_api",
+        "e|rls|notification.channel"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "notification",
+        "channel"
+      ],
+      "writes": [
+        "s|pol|notification.channel.channel_insert_own",
+        "n|pol|notification.channel.channel_insert_own",
+        "e|pol|notification.channel.channel_insert_own"
+      ],
+      "reads": [
+        "n|tbl|notification.channel",
+        "n|sch|notification",
+        "n|role|app_api",
+        "e|rls|notification.channel"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "notification",
+        "channel"
+      ],
+      "writes": [
+        "s|pol|notification.channel.channel_delete_own",
+        "n|pol|notification.channel.channel_delete_own",
+        "e|pol|notification.channel.channel_delete_own"
+      ],
+      "reads": [
+        "n|tbl|notification.channel",
+        "n|sch|notification",
+        "n|role|app_api",
+        "e|rls|notification.channel"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "notification",
+        "channel"
+      ],
+      "writes": [
+        "s|pol|notification.channel.channel_select_own_by_jobs",
+        "n|pol|notification.channel.channel_select_own_by_jobs",
+        "e|pol|notification.channel.channel_select_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|notification.channel",
+        "n|sch|notification",
+        "n|role|app_jobs",
+        "e|rls|notification.channel"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "notification",
+        "channel"
+      ],
+      "writes": [
+        "s|pol|notification.channel.channel_insert_own_by_jobs",
+        "n|pol|notification.channel.channel_insert_own_by_jobs",
+        "e|pol|notification.channel.channel_insert_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|notification.channel",
+        "n|sch|notification",
+        "n|role|app_jobs",
+        "e|rls|notification.channel"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "notification",
+        "channel"
+      ],
+      "writes": [
+        "s|pol|notification.channel.channel_update_own_by_jobs",
+        "n|pol|notification.channel.channel_update_own_by_jobs",
+        "e|pol|notification.channel.channel_update_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|notification.channel",
+        "n|sch|notification",
+        "n|role|app_jobs",
+        "e|rls|notification.channel"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "notification",
+        "channel"
+      ],
+      "writes": [
+        "s|pol|notification.channel.channel_delete_own_by_jobs",
+        "n|pol|notification.channel.channel_delete_own_by_jobs",
+        "e|pol|notification.channel.channel_delete_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|notification.channel",
+        "n|sch|notification",
+        "n|role|app_jobs",
+        "e|rls|notification.channel"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "notification",
+        "delivery"
+      ],
+      "writes": [
+        "s|pol|notification.delivery.delivery_select_own",
+        "n|pol|notification.delivery.delivery_select_own",
+        "e|pol|notification.delivery.delivery_select_own"
+      ],
+      "reads": [
+        "n|tbl|notification.delivery",
+        "n|sch|notification",
+        "n|role|app_api",
+        "e|rls|notification.delivery"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "notification",
+        "delivery"
+      ],
+      "writes": [
+        "s|pol|notification.delivery.delivery_select_own_by_jobs",
+        "n|pol|notification.delivery.delivery_select_own_by_jobs",
+        "e|pol|notification.delivery.delivery_select_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|notification.delivery",
+        "n|sch|notification",
+        "n|role|app_jobs",
+        "e|rls|notification.delivery"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "notification",
+        "delivery"
+      ],
+      "writes": [
+        "s|pol|notification.delivery.delivery_insert_own_by_jobs",
+        "n|pol|notification.delivery.delivery_insert_own_by_jobs",
+        "e|pol|notification.delivery.delivery_insert_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|notification.delivery",
+        "n|sch|notification",
+        "n|role|app_jobs",
+        "e|rls|notification.delivery"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "notification",
+        "delivery"
+      ],
+      "writes": [
+        "s|pol|notification.delivery.delivery_delete_own_by_jobs",
+        "n|pol|notification.delivery.delivery_delete_own_by_jobs",
+        "e|pol|notification.delivery.delivery_delete_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|notification.delivery",
+        "n|sch|notification",
+        "n|role|app_jobs",
+        "e|rls|notification.delivery"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "notification",
+        "message"
+      ],
+      "writes": [
+        "s|pol|notification.message.message_select_own",
+        "n|pol|notification.message.message_select_own",
+        "e|pol|notification.message.message_select_own"
+      ],
+      "reads": [
+        "n|tbl|notification.message",
+        "n|sch|notification",
+        "n|role|app_api",
+        "e|rls|notification.message"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "notification",
+        "message"
+      ],
+      "writes": [
+        "s|pol|notification.message.message_insert_own",
+        "n|pol|notification.message.message_insert_own",
+        "e|pol|notification.message.message_insert_own"
+      ],
+      "reads": [
+        "n|tbl|notification.message",
+        "n|sch|notification",
+        "n|role|app_api",
+        "e|rls|notification.message"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "notification",
+        "message"
+      ],
+      "writes": [
+        "s|pol|notification.message.message_select_own_by_jobs",
+        "n|pol|notification.message.message_select_own_by_jobs",
+        "e|pol|notification.message.message_select_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|notification.message",
+        "n|sch|notification",
+        "n|role|app_jobs",
+        "e|rls|notification.message"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "notification",
+        "message"
+      ],
+      "writes": [
+        "s|pol|notification.message.message_insert_own_by_jobs",
+        "n|pol|notification.message.message_insert_own_by_jobs",
+        "e|pol|notification.message.message_insert_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|notification.message",
+        "n|sch|notification",
+        "n|role|app_jobs",
+        "e|rls|notification.message"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "notification",
+        "message"
+      ],
+      "writes": [
+        "s|pol|notification.message.message_delete_own_by_jobs",
+        "n|pol|notification.message.message_delete_own_by_jobs",
+        "e|pol|notification.message.message_delete_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|notification.message",
+        "n|sch|notification",
+        "n|role|app_jobs",
+        "e|rls|notification.message"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "name": "notification",
+        "entityType": "schemas"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "name": "channel",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "name": "delivery",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "name": "message",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "account_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "endpoint",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "p256dh",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "auth_secret",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "browser",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "os",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "last_success_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "delivery",
+        "name": "account_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "delivery",
+        "name": "message_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "delivery",
+        "name": "channel_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "delivery",
+        "name": "delivered_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "message",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "message",
+        "name": "account_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "message",
+        "name": "code",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "message",
+        "name": "entity_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "message",
+        "name": "details",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "message",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "channel_email_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "account_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"kind\" = 'email'",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "channel_endpoint_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "account_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "endpoint",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "delivery",
+        "name": "delivery_channel_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "channel_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "message",
+        "name": "message_account_created_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "account_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "created_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "delivery",
+        "name": "delivery_message_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "message_id",
+          "account_id"
+        ],
+        "schemaTo": "notification",
+        "tableTo": "message",
+        "columnsTo": [
+          "id",
+          "account_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "delivery",
+        "name": "delivery_channel_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "channel_id",
+          "account_id"
+        ],
+        "schemaTo": "notification",
+        "tableTo": "channel",
+        "columnsTo": [
+          "id",
+          "account_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "delivery",
+        "name": "delivery_pkey",
+        "columns": [
+          "message_id",
+          "channel_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "channel_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "message",
+        "name": "message_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "channel_id_account_id_key",
+        "nameExplicit": true,
+        "columns": [
+          "id",
+          "account_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "message",
+        "name": "message_id_account_id_key",
+        "nameExplicit": true,
+        "columns": [
+          "id",
+          "account_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "channel_fields_by_kind",
+        "value": "(\"kind\" = 'web_push' AND \"endpoint\" IS NOT NULL AND \"p256dh\" IS NOT NULL\n            AND \"auth_secret\" IS NOT NULL AND \"browser\" IS NOT NULL AND \"os\" IS NOT NULL)\n        OR (\"kind\" = 'email' AND \"endpoint\" IS NULL AND \"p256dh\" IS NULL\n            AND \"auth_secret\" IS NULL AND \"browser\" IS NULL AND \"os\" IS NULL)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "channel_endpoint_https",
+        "value": "\"endpoint\" ~ '^https://' AND char_length(\"endpoint\") <= 2048",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "channel_p256dh_format",
+        "value": "\"p256dh\" ~ '^[A-Za-z0-9_-]{87}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "channel_auth_secret_format",
+        "value": "\"auth_secret\" ~ '^[A-Za-z0-9_-]{22}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "channel_device_format",
+        "value": "\"browser\" ~ '^[a-z_]{1,32}$' AND \"os\" ~ '^[a-z_]{1,32}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "message",
+        "name": "message_code_format",
+        "value": "\"code\" ~ '^[a-z_]{1,64}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "message",
+        "name": "message_details_object",
+        "value": "jsonb_typeof(\"details\") = 'object'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "channel_select_own",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"notification\".\"channel\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "channel_insert_own",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "\"notification\".\"channel\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "channel_delete_own",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"notification\".\"channel\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "channel_select_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"notification\".\"channel\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "channel_insert_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": null,
+        "withCheck": "\"notification\".\"channel\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "channel_update_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "UPDATE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"notification\".\"channel\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": "\"notification\".\"channel\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "channel",
+        "name": "channel_delete_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"notification\".\"channel\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "delivery",
+        "name": "delivery_select_own",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"notification\".\"delivery\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "delivery",
+        "name": "delivery_select_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"notification\".\"delivery\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "delivery",
+        "name": "delivery_insert_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": null,
+        "withCheck": "\"notification\".\"delivery\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "delivery",
+        "name": "delivery_delete_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"notification\".\"delivery\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "message",
+        "name": "message_select_own",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"notification\".\"message\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "message",
+        "name": "message_insert_own",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "\"notification\".\"message\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "message",
+        "name": "message_select_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"notification\".\"message\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "message",
+        "name": "message_insert_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": null,
+        "withCheck": "\"notification\".\"message\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "notification",
+        "table": "message",
+        "name": "message_delete_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"notification\".\"message\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    }
+  ]
+}

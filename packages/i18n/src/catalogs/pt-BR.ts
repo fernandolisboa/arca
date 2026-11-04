@@ -505,6 +505,9 @@ export const ptBR = {
       vaultEnvelopes: 'Envelopes do cofre',
       vaultSharingState: 'Lista de compartilhamento do cofre',
       vaultRecipients: 'Destinatários do cofre',
+      notificationChannels: 'Onde você recebe avisos',
+      notificationMessages: 'Avisos enviados',
+      notificationDeliveries: 'Entregas dos avisos',
     },
   },
   /**

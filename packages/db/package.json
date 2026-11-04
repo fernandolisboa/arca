@@ -12,6 +12,10 @@
       "types": "./dist/audit-schema.d.ts",
       "default": "./dist/audit-schema.js"
     },
+    "./notification-schema": {
+      "types": "./dist/notification-schema.d.ts",
+      "default": "./dist/notification-schema.js"
+    },
     "./notice-schema": {
       "types": "./dist/notice-schema.d.ts",
       "default": "./dist/notice-schema.js"
