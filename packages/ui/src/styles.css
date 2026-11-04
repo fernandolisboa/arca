@@ -57,6 +57,27 @@
   --text-page-title--line-height: 1.2;
   --text-hero: 2.25rem;
   --text-hero--line-height: 1.15;
+
+  /* The next action card's dot travelling the route; the motion axis stops it at the start. */
+  --animate-route-dot: arca-route-dot 2.4s ease-in-out infinite;
+
+  /* Bars grow from zero on first paint (spec 0006, Motion). */
+  --animate-bar-grow: arca-bar-grow var(--arca-duration-slow) var(--arca-ease-out) both;
+
+  @keyframes arca-bar-grow {
+    from {
+      transform: scaleX(0);
+    }
+  }
+
+  @keyframes arca-route-dot {
+    from {
+      left: 0;
+    }
+    to {
+      left: calc(100% - 0.5rem);
+    }
+  }
 }
 
 @layer base {

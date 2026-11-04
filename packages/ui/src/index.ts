@@ -1,8 +1,14 @@
 export { AppShell, type AppShellLabels, type AppShellProps } from './app-shell.js';
 export { Button, type ButtonProps } from './button.js';
 export { ChoiceGroup, type Choice, type ChoiceGroupProps } from './choice-group.js';
+export { CoachMark, type CoachMarkLabels, type CoachMarkProps } from './patterns/coach-mark.js';
+export type { DockEdge, NavItem, ShellLayout, ShellLink, ShellLinkProps } from './shell/nav.js';
+export { formatCalendarDate, SourceLine, type SourceLineProps } from './patterns/source-line.js';
 export { Icon, iconNames, type IconName, type IconProps } from './icon.js';
 export { Mark, type MarkProps } from './mark.js';
 export { MenuToggle, type MenuToggleProps } from './menu-toggle.js';
+export { NextActionCard, type NextActionCardProps } from './patterns/next-action-card.js';
+export { ProgressBar, type ProgressBarProps } from './patterns/progress-bar.js';
+export { RankingRow, type RankingRowProps } from './patterns/ranking-row.js';
 export type { SignOut } from './shell/menu-panel.js';
-export type { DockEdge, NavItem, ShellLayout, ShellLink, ShellLinkProps } from './shell/nav.js';
+export { StatusChip, type StatusChipProps, type StatusTone } from './patterns/status-chip.js';
