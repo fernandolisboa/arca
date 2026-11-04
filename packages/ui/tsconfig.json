@@ -1,5 +1,10 @@
 {
-  "extends": "@arca/tsconfig/bundler.json",
-  "compilerOptions": { "jsx": "react-jsx" },
-  "include": ["src"]
+  "extends": "./tsconfig.build.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "composite": false,
+    "rootDir": "${configDir}",
+    "types": ["node"]
+  },
+  "include": ["src", "test"]
 }

@@ -8,7 +8,7 @@ function Root() {
   const { t } = useTranslation();
   return (
     <AppShell
-      title={<h1 className="text-lg font-semibold">{t('app.name')}</h1>}
+      title={<h1 className="font-display text-title">{t('app.name')}</h1>}
       skipToContentLabel={t('shell.skipToContent')}
     >
       <Outlet />

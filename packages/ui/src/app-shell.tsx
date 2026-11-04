@@ -15,14 +15,14 @@ const mainId = 'main-content';
  */
 export function AppShell({ title, skipToContentLabel, children }: AppShellProps) {
   return (
-    <div className="flex min-h-dvh flex-col bg-surface pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] font-sans text-ink">
+    <div className="flex min-h-dvh flex-col bg-bg pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] font-sans text-ink">
       <a
         href={`#${mainId}`}
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-10 focus:inline-flex focus:min-h-touch focus:items-center focus:rounded-md focus:bg-brand focus:px-4 focus:text-on-brand"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-10 focus:inline-flex focus:min-h-touch focus:items-center focus:rounded-control focus:bg-primary focus:px-4 focus:text-on-primary"
       >
         {skipToContentLabel}
       </a>
-      <header className="border-b border-line bg-surface-raised">
+      <header className="border-b border-line bg-surface">
         <div className="mx-auto flex min-h-touch w-full max-w-5xl items-center px-4 py-2 sm:px-6">
           {title}
         </div>
