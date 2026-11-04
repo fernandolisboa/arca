@@ -31,6 +31,8 @@ const authTables = [
   'passkey_client',
   'rate_limit',
   'session',
+  'step_up',
+  'step_up_challenge',
   'user',
   'verification',
 ];
@@ -91,6 +93,7 @@ describe('the auth schema access matrix', () => {
       ...Object.fromEntries(authTables.map((table) => [table, dml])),
       outbox: ['SELECT', 'INSERT', 'DELETE'],
       passkey_client: ['SELECT', 'INSERT', 'DELETE'],
+      step_up_challenge: ['SELECT', 'INSERT', 'DELETE'],
     });
   });
 

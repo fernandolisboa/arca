@@ -470,6 +470,330 @@
         }
       }
     },
+    "/auth/step-up/options": {
+      "post": {
+        "operationId": "stepUpOptions",
+        "summary": "Options for a step-up bound to a purpose and an action, valid for 2 minutes",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "purpose": {
+                        "type": "string",
+                        "enum": [
+                          "vault_unlock"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "purpose"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "purpose": {
+                        "type": "string",
+                        "enum": [
+                          "sensitive_settings",
+                          "account_deletion",
+                          "data_export",
+                          "financial_action",
+                          "vault_write"
+                        ]
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "action": {
+                            "type": "string",
+                            "pattern": "^[a-z][A-Za-z0-9]{0,63}$"
+                          },
+                          "targets": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "maxItems": 32
+                          },
+                          "fields": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "type": "string",
+                              "maxLength": 4096
+                            }
+                          },
+                          "nonce": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]{21}[AQgw]$"
+                          }
+                        },
+                        "required": [
+                          "action",
+                          "targets",
+                          "nonce"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "purpose",
+                      "target"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Request options and their challenge",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "challengeId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "options": {
+                      "type": "object",
+                      "properties": {
+                        "challenge": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9_-]*$"
+                        },
+                        "timeout": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
+                        },
+                        "rpId": {
+                          "type": "string"
+                        },
+                        "allowCredentials": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "pattern": "^[A-Za-z0-9_-]*$"
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "public-key"
+                                ]
+                              },
+                              "transports": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type"
+                            ]
+                          }
+                        },
+                        "userVerification": {
+                          "type": "string",
+                          "enum": [
+                            "required"
+                          ]
+                        },
+                        "extensions": {
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": [
+                        "challenge",
+                        "userVerification"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "challengeId",
+                    "options"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/step-up/verify": {
+      "post": {
+        "operationId": "stepUpVerify",
+        "summary": "Verifies a step-up assertion; the approved action may then run once",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "challengeId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "response": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_-]*$"
+                      },
+                      "rawId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_-]*$"
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "public-key"
+                        ]
+                      },
+                      "response": {
+                        "type": "object",
+                        "properties": {
+                          "clientDataJSON": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]*$"
+                          },
+                          "authenticatorData": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]*$"
+                          },
+                          "signature": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]*$"
+                          },
+                          "userHandle": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]*$"
+                          }
+                        },
+                        "required": [
+                          "clientDataJSON",
+                          "authenticatorData",
+                          "signature"
+                        ]
+                      },
+                      "authenticatorAttachment": {
+                        "type": "string",
+                        "enum": [
+                          "platform",
+                          "cross-platform"
+                        ]
+                      },
+                      "clientExtensionResults": {
+                        "type": "object",
+                        "additionalProperties": {}
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "rawId",
+                      "type",
+                      "response",
+                      "clientExtensionResults"
+                    ]
+                  }
+                },
+                "required": [
+                  "challengeId",
+                  "response"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Step-up verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/audit/events": {
       "get": {
         "operationId": "listAuditEvents",

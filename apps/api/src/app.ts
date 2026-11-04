@@ -4,6 +4,8 @@ import {
   AuditEventsQuery,
   authBasePath,
   authRoutes,
+  StepUpOptionsRequest,
+  stepUpVerify,
   type ErrorResponse,
   type RouteDefinition,
 } from '@arca/api-contract/routes';
@@ -14,9 +16,10 @@ import { createMiddleware } from 'hono/factory';
 import { routePath } from 'hono/route';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import type { AuditReader } from './audit/log.js';
-import { authRouteLimits } from './auth/limits.js';
+import { authRouteLimits, stepUpLimits } from './auth/limits.js';
 import type { RateLimiter, RateLimitRule } from './auth/rate-limit.js';
 import type { AuthService } from './auth/service.js';
+import type { StepUpService } from './auth/step-up.js';
 import type { OutboxEntry } from './email/outbox.js';
 import { bearerMatches } from './cron-auth.js';
 import { cachedDatabaseCheck, type CheckDatabase } from './database-health.js';
@@ -55,6 +58,8 @@ export interface AppDependencies {
   /** Better Auth behind the allow-list; absent, every auth path is a 404. */
   readonly auth?: AuthService;
   readonly authLimits?: AuthLimits;
+  /** Purpose-bound step-up (spec 0003, R5); absent, its routes answer 401. */
+  readonly stepUp?: StepUpService;
   /** The signed-in account's audit events; absent, the route answers 401. */
   readonly audit?: AuditReader;
   /**
@@ -163,6 +168,7 @@ export function createApp({
   origin,
   auth,
   authLimits,
+  stepUp,
   audit,
   outbox,
 }: AppDependencies) {
@@ -217,7 +223,20 @@ export function createApp({
   });
 
   const signedIn = (c: Context<AppEnv>) =>
-    auth === undefined ? Promise.resolve(null) : auth.session(c.req.raw.headers);
+    auth === undefined ? Promise.resolve(null) : auth.signedIn(c.req.raw.headers);
+  /** Counts the request; over the limit, the 429 to answer with. */
+  const overLimit = async (
+    c: Context<AppEnv>,
+    limits: AuthLimits,
+    rule: RateLimitRule,
+    subject: string,
+  ) => {
+    const outcome = await limits.limiter.hit(rule, subject);
+    if (outcome.allowed) return undefined;
+    c.header('Retry-After', String(outcome.retryAfterSeconds));
+    c.set('errorCode', 'rate_limited');
+    return c.json({ error: { code: 'rate_limited' } } satisfies ErrorResponse, 429);
+  };
   const unauthorized = (c: Context<AppEnv>) => {
     c.set('errorCode', 'unauthorized');
     return c.json({ error: { code: 'unauthorized' } } satisfies ErrorResponse, 401);
@@ -228,6 +247,30 @@ export function createApp({
     const { session, setCookies } = await auth.refresh(c.req.raw.headers);
     for (const cookie of setCookies) c.header('set-cookie', cookie, { append: true });
     return session === null ? unauthorized(c) : c.json(session, 200);
+  });
+
+  v1.openapi(openApiRoutes.stepUpOptions, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || stepUp === undefined || authLimits === undefined) {
+      return unauthorized(c);
+    }
+    const limited = await overLimit(c, authLimits, stepUpLimits.options, current.sessionId);
+    if (limited !== undefined) return limited;
+    // The router has already answered 400 to an invalid body; parsed again for its type.
+    const request = StepUpOptionsRequest.parse(await c.req.json());
+    return c.json(await stepUp.options(current, request), 200);
+  });
+
+  v1.openapi(openApiRoutes.stepUpVerify, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || stepUp === undefined || authLimits === undefined) {
+      return unauthorized(c);
+    }
+    const limited = await overLimit(c, authLimits, stepUpLimits.verify, current.sessionId);
+    if (limited !== undefined) return limited;
+    const { challengeId, response } = stepUpVerify.body.parse(await c.req.json());
+    if (!(await stepUp.verify(current, challengeId, response))) return unauthorized(c);
+    return c.json({}, 200);
   });
 
   v1.openapi(openApiRoutes.auditEvents, async (c) => {
@@ -259,14 +302,13 @@ export function createApp({
     const site = c.req.header('sec-fetch-site');
     if (site !== undefined && site !== 'same-origin') return reject(c, 'cross_origin', 403);
     const { route, limit } = match;
-    const outcome = await authLimits.limiter.hit(
+    const limited = await overLimit(
+      c,
+      authLimits,
       limit,
       authLimits.clientAddress(c.req.raw.headers),
     );
-    if (!outcome.allowed) {
-      c.header('Retry-After', String(outcome.retryAfterSeconds));
-      return reject(c, 'rate_limited', 429);
-    }
+    if (limited !== undefined) return limited;
     if (route.body !== undefined && !route.body.safeParse(await bodyOf(c.req.raw)).success) {
       return reject(c, 'invalid_request', 400);
     }

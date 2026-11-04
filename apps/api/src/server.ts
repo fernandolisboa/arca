@@ -2,10 +2,11 @@ import { createI18n } from '@arca/i18n';
 import { useRuntimeConfig } from 'nitro/runtime-config';
 import { createApp } from './app.js';
 import { auditLog, auditReader } from './audit/log.js';
-import { createAuth } from './auth/auth.js';
+import { createAuth, credentialStore } from './auth/auth.js';
 import { rateLimiter, type RateLimiter } from './auth/rate-limit.js';
 import { clientAddressFor } from './client-address.js';
 import { authService, type AuthService } from './auth/service.js';
+import { createStepUp, type StepUpService } from './auth/step-up.js';
 import {
   databaseTargetFrom,
   readApiSecrets,
@@ -70,11 +71,16 @@ function built(): RateLimiter {
   return limiterInstance;
 }
 
-let auth: Promise<AuthService> | undefined;
+interface AuthParts {
+  readonly auth: AuthService;
+  readonly stepUp: StepUpService;
+}
 
-/** Better Auth on its own app_auth pool, built on the first auth request. */
-function authenticator(): Promise<AuthService> {
-  auth ??= (async () => {
+let parts: Promise<AuthParts> | undefined;
+
+/** Better Auth and step-up on the app_auth pool, built on the first auth request. */
+function authParts(): Promise<AuthParts> {
+  parts ??= (async () => {
     const target = databaseTargetFrom(useRuntimeConfig()['database']);
     const audit = auditLog(auditDatabase(target, readAuditDatabasePassword(), logger).db);
     const origin = readAuthOrigin();
@@ -83,23 +89,27 @@ function authenticator(): Promise<AuthService> {
       i18n: await createI18n(),
       origin,
     });
-    return authService(
-      createAuth({
-        db: authConnection(),
-        secret: readAuthSecrets().secret,
-        origin,
-        logger,
-        audit,
-        notices,
-        limiter,
-      }),
-    );
+    const db = authConnection();
+    return {
+      auth: authService(
+        createAuth({
+          db,
+          secret: readAuthSecrets().secret,
+          origin,
+          logger,
+          audit,
+          notices,
+          limiter,
+        }),
+      ),
+      stepUp: createStepUp({ db, credentials: credentialStore(db), audit, origin, logger }),
+    };
   })();
   // A failed build is retried on the next request instead of being cached.
-  auth.catch(() => {
-    auth = undefined;
+  parts.catch(() => {
+    parts = undefined;
   });
-  return auth;
+  return parts;
 }
 
 /**
@@ -128,9 +138,17 @@ const app = createApp({
   },
   ...withOrigin(ownOrigin()),
   auth: {
-    handle: async (request) => (await authenticator()).handle(request),
-    session: async (headers) => (await authenticator()).session(headers),
-    refresh: async (headers) => (await authenticator()).refresh(headers),
+    handle: async (request) => (await authParts()).auth.handle(request),
+    signedIn: async (headers) => (await authParts()).auth.signedIn(headers),
+    refresh: async (headers) => (await authParts()).auth.refresh(headers),
+  },
+  stepUp: {
+    options: async (signedIn, request) => (await authParts()).stepUp.options(signedIn, request),
+    verify: async (signedIn, challengeId, response) =>
+      (await authParts()).stepUp.verify(signedIn, challengeId, response),
+    consume: async (signedIn, purpose, action) =>
+      (await authParts()).stepUp.consume(signedIn, purpose, action),
+    vaultUnlocked: async (signedIn) => (await authParts()).stepUp.vaultUnlocked(signedIn),
   },
   authLimits: {
     limiter,

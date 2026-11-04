@@ -14,8 +14,8 @@ As of 2026-11-04. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md).
 | Invites | 48 hours unaccepted; once accepted, until the inviter confirms or declines the link, or 30 days | Daily cleanup job |
 | Unconfirmed invited accounts | Erased when the inviter declines them, or when `confirmed_at` is still empty 30 days after creation | Daily cleanup job starts `eraseAccount` |
 | Account links (inviter and invitee) | While both accounts exist | Registry |
-| Step-up challenges | 2 minutes, single use | Expiry check plus a daily cleanup job |
-| Stored step-up assertions | As long as the record they prove (for example, an account deletion request), and erased with the account | Registry |
+| Step-up challenges (`auth.step_up_challenge`) | 2 minutes, single use | Expiry check; deleted when verified; expired ones are swept on every new challenge; erased with the session or account; never backed up |
+| Stored step-up assertions (`auth.step_up`) | As long as the record they prove (for example, an account deletion request), and erased with the account; one never spent is deleted after 15 minutes, when no action can spend it | Swept on every new challenge; cascade on account erasure; registry |
 | Recovery-activated passkey awaiting activation | 24 hours, then active or cancelled | Activation check |
 | Recovery links | 30 minutes, single use | Expiry check plus the daily cleanup job |
 | Recovery lockout after five wrong codes | 24 hours | Expiry check plus the daily cleanup job |

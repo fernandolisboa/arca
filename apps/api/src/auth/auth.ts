@@ -9,7 +9,7 @@ import {
 import type { Database } from '@arca/db';
 import { betterAuth } from 'better-auth';
 import { APIError, createAuthMiddleware, isAPIError } from 'better-auth/api';
-import { eq, lte, sql } from 'drizzle-orm';
+import { and, eq, lt, lte, sql } from 'drizzle-orm';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { authBasePath, DeviceDescription } from '@arca/api-contract/routes';
 import type { AuditLog } from '../audit/log.js';
@@ -269,6 +269,85 @@ export function createAuth({ db, secret, origin, logger, audit, notices, limiter
 }
 
 export type Auth = ReturnType<typeof createAuth>;
+
+/** A passkey as a step-up verifies against it. */
+export interface StoredCredential {
+  readonly credentialId: string;
+  /** COSE, as the passkey plugin stores it. */
+  readonly publicKey: Uint8Array<ArrayBuffer>;
+  readonly counter: number;
+  readonly transports: readonly string[];
+}
+
+/** The credential reads and writes the rest of the API needs; nothing else reads the rows. */
+export interface CredentialStore {
+  /** The account's passkeys that may approve a step-up. */
+  readonly activeOf: (accountId: string) => Promise<readonly StoredCredential[]>;
+  readonly active: (accountId: string, credentialId: string) => Promise<StoredCredential | null>;
+  /**
+   * Records a verified signature counter. False when another verification moved it first, so two
+   * assertions with one counter value never both pass.
+   */
+  readonly advanceCounter: (credentialId: string, counter: number) => Promise<boolean>;
+}
+
+/**
+ * Every stored passkey of the account counts as active until pending passkeys exist (spec 0003,
+ * R4); a revoked one is deleted, so it is never found.
+ */
+export function credentialStore(db: Database): CredentialStore {
+  const columns = {
+    credentialId: passkeyTable.credentialID,
+    publicKey: passkeyTable.publicKey,
+    counter: passkeyTable.counter,
+    transports: passkeyTable.transports,
+  };
+  const toCredential = (row: {
+    credentialId: string;
+    publicKey: string;
+    counter: number;
+    transports: string | null;
+  }): StoredCredential => ({
+    credentialId: row.credentialId,
+    publicKey: new Uint8Array(Buffer.from(row.publicKey, 'base64')),
+    counter: row.counter,
+    transports: (row.transports ?? '').split(',').filter((transport) => transport !== ''),
+  });
+  return {
+    activeOf: async (accountId) =>
+      (
+        await db
+          .select(columns)
+          .from(passkeyTable)
+          .where(eq(passkeyTable.userId, accountId))
+          .orderBy(passkeyTable.createdAt)
+      ).map(toCredential),
+    active: async (accountId, credentialId) => {
+      const [row] = await db
+        .select(columns)
+        .from(passkeyTable)
+        .where(
+          and(eq(passkeyTable.userId, accountId), eq(passkeyTable.credentialID, credentialId)),
+        );
+      return row === undefined ? null : toCredential(row);
+    },
+    advanceCounter: async (credentialId, counter) => {
+      const moved = await db
+        .update(passkeyTable)
+        .set({ counter })
+        .where(
+          and(
+            eq(passkeyTable.credentialID, credentialId),
+            // Authenticators without a counter always send 0, which verification only lets
+            // through while the stored counter is 0 too.
+            counter === 0 ? eq(passkeyTable.counter, 0) : lt(passkeyTable.counter, counter),
+          ),
+        )
+        .returning({ credentialId: passkeyTable.credentialID });
+      return moved.length === 1;
+    },
+  };
+}
 
 /** The device enums the create hook stored; parsed again by the audit log. */
 function describeSession(session: Record<string, unknown>) {

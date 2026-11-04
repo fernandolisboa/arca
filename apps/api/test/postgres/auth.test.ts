@@ -1,12 +1,11 @@
 import { randomBytes } from 'node:crypto';
-import { readdir, readFile } from 'node:fs/promises';
-import { join } from 'node:path';
 import { sql } from 'drizzle-orm';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createI18n } from '@arca/i18n';
 import { createApp, type App } from '../../src/app.js';
-import { createAuth, type Auth } from '../../src/auth/auth.js';
+import { createAuth, credentialStore, type Auth } from '../../src/auth/auth.js';
+import { createStepUp } from '../../src/auth/step-up.js';
 import { authService } from '../../src/auth/service.js';
 import { auditLog, auditReader } from '../../src/audit/log.js';
 import { signInFailedLog } from '../../src/auth/limits.js';
@@ -14,88 +13,29 @@ import { rateLimiter, type RateLimiter } from '../../src/auth/rate-limit.js';
 import { noticeNewSignIn, recordPasskeyClient } from '../../src/auth/sign-in-notice.js';
 import { createNotices, type Notice, type Notices } from '../../src/email/notices.js';
 import { outboxSender, readOutbox } from '../../src/email/outbox.js';
-import { apiDatabase, auditDatabase, authDatabase } from '../../src/database.js';
 import type { Database } from '@arca/db';
-import type { Logger } from '../../src/logger.js';
 import { allowAll } from '../limits.js';
-import { softwarePasskey, type SoftwarePasskey } from './software-passkey.js';
+import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
+import { softwarePasskey, type SoftwarePasskey } from '../software-passkey.js';
 
 // Better Auth on the real auth migrations and the app_auth pool, against a disposable Postgres
 // server (spec 0003, R1). Synthetic addresses on reserved domains only.
-const host = process.env['ARCA_TEST_DB_HOST'] ?? '127.0.0.1';
-const port = Number(process.env['ARCA_TEST_DB_PORT'] ?? '5432');
-const adminUser = process.env['ARCA_TEST_DB_ADMIN_USER'] ?? 'postgres';
-const adminPassword = process.env['ARCA_TEST_DB_ADMIN_PASSWORD'] ?? '';
-if (adminPassword === '') throw new Error('ARCA_TEST_DB_ADMIN_PASSWORD is not set');
-
-const database = `arca_auth_${randomBytes(6).toString('hex')}`;
-const passwords = {
-  app_auth: randomBytes(24).toString('base64url'),
-  app_audit: randomBytes(24).toString('base64url'),
-  app_api: randomBytes(24).toString('base64url'),
-};
 const secret = randomBytes(32).toString('base64url');
 const origin = 'http://localhost:3000';
-const migrationsDir = join(import.meta.dirname, '../../../../packages/db/migrations');
-const logger: Logger = { info: () => undefined, error: () => undefined };
+const logger = silentLogger;
 
-async function asAdmin<T>(name: string, use: (client: pg.Client) => Promise<T>): Promise<T> {
-  const client = new pg.Client({
-    host,
-    port,
-    database: name,
-    user: adminUser,
-    password: adminPassword,
-    ssl: false,
-  });
-  await client.connect();
-  try {
-    return await use(client);
-  } finally {
-    await client.end();
-  }
-}
-
+let testDatabase: AuthTestDatabase;
+const asAdmin = <T>(use: (client: pg.Client) => Promise<T>) => testDatabase.asAdmin(use);
 let auth: Auth;
 let authDb: Database;
 let auditDb: Database;
 let notices: Notices;
 let limiter: RateLimiter;
-let close: () => Promise<void>;
 let app: App;
 
 beforeAll(async () => {
-  await asAdmin('postgres', async (client) => {
-    await client.query(`CREATE DATABASE ${database}`);
-    for (const [role, password] of Object.entries(passwords)) {
-      const exists = await client.query('SELECT FROM pg_catalog.pg_roles WHERE rolname = $1', [
-        role,
-      ]);
-      await client.query(
-        `${exists.rowCount === 0 ? 'CREATE' : 'ALTER'} ROLE ${role} LOGIN PASSWORD '${password}'`,
-      );
-    }
-  });
-  // The runner's checks are tested in tooling/scripts; here the migrations only need to exist.
-  await asAdmin(database, async (client) => {
-    for (const name of (await readdir(migrationsDir)).sort()) {
-      const sql = await readFile(join(migrationsDir, name, 'migration.sql'), 'utf8');
-      for (const statement of sql.split('--> statement-breakpoint')) await client.query(statement);
-    }
-  });
-  const target = { host, port, database, ssl: false };
-  const pools = [
-    authDatabase(target, passwords.app_auth, logger),
-    auditDatabase(target, passwords.app_audit, logger),
-    apiDatabase(target, passwords.app_api, logger),
-  ] as const;
-  await Promise.all(pools.map((pool) => pool.ready()));
-  close = async () => {
-    await Promise.all(pools.map((pool) => pool.close()));
-  };
-  const [authPool, auditPool, apiPool] = pools;
-  authDb = authPool.db;
-  auditDb = auditPool.db;
+  testDatabase = await authTestDatabase();
+  ({ authDb, auditDb } = testDatabase);
   notices = createNotices({
     email: outboxSender(authDb, 'preview'),
     i18n: await createI18n(),
@@ -111,7 +51,7 @@ beforeAll(async () => {
     notices,
     limiter,
   });
-  app = appFor(auth, auditReader(apiPool.db));
+  app = appFor(auth, auditReader(testDatabase.apiDb));
 });
 
 function appFor(target: Auth, audit?: ReturnType<typeof auditReader>): App {
@@ -122,13 +62,19 @@ function appFor(target: Auth, audit?: ReturnType<typeof auditReader>): App {
     auth: authService(target),
     // The limits have their own tests below; these sign in far more often than one address may.
     authLimits: { limiter: allowAll, clientAddress: () => '192.0.2.10' },
+    stepUp: createStepUp({
+      db: authDb,
+      credentials: credentialStore(authDb),
+      audit: auditLog(auditDb),
+      origin,
+      logger,
+    }),
     ...(audit === undefined ? {} : { audit }),
   });
 }
 
 afterAll(async () => {
-  await close();
-  await asAdmin('postgres', (client) => client.query(`DROP DATABASE ${database} WITH (FORCE)`));
+  await testDatabase.drop();
 });
 
 const firefoxOnLinux = 'Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0';
@@ -158,7 +104,7 @@ async function account(email: string): Promise<{ userId: string; passkey: Softwa
 /** Another software passkey for an account; returns it once its row is stored. */
 async function addPasskey(userId: string): Promise<SoftwarePasskey> {
   const passkey = softwarePasskey(new URL(origin).hostname);
-  await asAdmin(database, (client) =>
+  await asAdmin((client) =>
     client.query(
       `INSERT INTO auth.passkey (public_key, user_id, credential_id, counter, device_type, backed_up)
        VALUES ($1, $2, $3, 0, 'multiDevice', true)`,
@@ -223,7 +169,7 @@ function setsSession(response: Response): boolean {
 }
 
 async function sessionsOf(userId: string) {
-  return asAdmin(database, async (client) => {
+  return asAdmin(async (client) => {
     const result = await client.query<{ credentialId: string }>(
       'SELECT credential_id AS "credentialId" FROM auth.session WHERE user_id = $1',
       [userId],
@@ -242,7 +188,7 @@ describe('Better Auth on the app_auth pool', () => {
       email: 'owner@example.com',
       device: { browser: 'other', os: 'other' },
     });
-    const stored = await asAdmin(database, async (client) => {
+    const stored = await asAdmin(async (client) => {
       const sessions = await client.query(
         'SELECT ip_address, user_agent FROM auth.session WHERE user_id = $1',
         [userId],
@@ -268,7 +214,7 @@ describe('Better Auth on the app_auth pool', () => {
     const { cookie, userId } = await signedIn('reader@example.com');
     // One day left of three: past the one-day update age, so a refresh moves it.
     const expiry = async () =>
-      asAdmin(database, async (client) => {
+      asAdmin(async (client) => {
         const result = await client.query<{ hoursLeft: number }>(
           `SELECT extract(epoch FROM expires_at - now()) / 3600 AS "hoursLeft"
              FROM auth.session WHERE user_id = $1`,
@@ -276,7 +222,7 @@ describe('Better Auth on the app_auth pool', () => {
         );
         return Number(result.rows[0]?.hoursLeft);
       });
-    await asAdmin(database, (client) =>
+    await asAdmin((client) =>
       client.query(
         "UPDATE auth.session SET expires_at = now() + interval '1 day' WHERE user_id = $1",
         [userId],
@@ -292,7 +238,7 @@ describe('Better Auth on the app_auth pool', () => {
 
   it('refuses a session older than 30 days, even an active one', async () => {
     const { cookie, userId } = await signedIn('old@example.org');
-    await asAdmin(database, (client) =>
+    await asAdmin((client) =>
       client.query(
         `UPDATE auth.session SET created_at = now() - interval '30 days 1 minute',
                 expires_at = now() + interval '2 days' WHERE user_id = $1`,
@@ -307,7 +253,7 @@ describe('Better Auth on the app_auth pool', () => {
 
   it('never slides a session from the sign-in options, even one past 30 days', async () => {
     const { cookie, userId } = await signedIn('lingering@example.org');
-    await asAdmin(database, (client) =>
+    await asAdmin((client) =>
       client.query(
         `UPDATE auth.session SET created_at = now() - interval '31 days',
                 expires_at = now() + interval '1 day' WHERE user_id = $1`,
@@ -320,7 +266,7 @@ describe('Better Auth on the app_auth pool', () => {
     expect(options.status).toBe(200);
     expect(setsSession(options)).toBe(false);
     expect(setsSession(await app.request('/v1/session', { headers: { cookie } }))).toBe(false);
-    const left = await asAdmin(database, async (client) => {
+    const left = await asAdmin(async (client) => {
       const result = await client.query<{ hours: number }>(
         `SELECT extract(epoch FROM expires_at - now()) / 3600 AS hours
            FROM auth.session WHERE user_id = $1`,
@@ -332,14 +278,14 @@ describe('Better Auth on the app_auth pool', () => {
   });
 
   it('sweeps abandoned challenges whenever a new one is issued', async () => {
-    await asAdmin(database, (client) =>
+    await asAdmin((client) =>
       client.query(
         `INSERT INTO auth.verification (identifier, value, expires_at)
          VALUES ('abandoned', '{}', now() - interval '1 minute')`,
       ),
     );
     await app.request('/v1/auth/passkey/generate-authenticate-options');
-    const left = await asAdmin(database, (client) =>
+    const left = await asAdmin((client) =>
       client.query("SELECT FROM auth.verification WHERE identifier = 'abandoned'"),
     );
     expect(left.rowCount).toBe(0);
@@ -349,7 +295,7 @@ describe('Better Auth on the app_auth pool', () => {
     const { userId } = await signedIn('first@example.com');
     const { passkey } = await account('second@example.com');
     await expect(
-      asAdmin(database, (client) =>
+      asAdmin((client) =>
         client.query(
           `INSERT INTO auth.session (expires_at, token, user_id, device_browser, device_os, credential_id)
            VALUES (now() + interval '1 day', 'test-only-token', $1, 'other', 'other', $2)`,
@@ -372,7 +318,7 @@ describe('Better Auth on the app_auth pool', () => {
     const { userId, passkey } = await account('cookies@example.com');
     const { options, verified } = await passkeySignIn(passkey);
     const cookie = cookiesFrom(verified);
-    await asAdmin(database, (client) =>
+    await asAdmin((client) =>
       client.query(
         "UPDATE auth.session SET expires_at = now() + interval '1 day' WHERE user_id = $1",
         [userId],
@@ -410,7 +356,7 @@ describe('Better Auth on the app_auth pool', () => {
 
   it('refuses an expired session', async () => {
     const { cookie, userId } = await signedIn('expired@example.org');
-    await asAdmin(database, (client) =>
+    await asAdmin((client) =>
       client.query(
         "UPDATE auth.session SET expires_at = now() - interval '1 minute' WHERE user_id = $1",
         [userId],
@@ -436,7 +382,7 @@ describe('Better Auth on the app_auth pool', () => {
     expect(signOut.status).toBe(200);
     expect(await signOut.json()).toEqual({ success: true });
     expect((await app.request('/v1/session', { headers: { cookie } })).status).toBe(401);
-    const remaining = await asAdmin(database, (client) =>
+    const remaining = await asAdmin((client) =>
       client.query('SELECT FROM auth.session WHERE user_id = $1', [userId]),
     );
     expect(remaining.rowCount).toBe(0);
@@ -514,7 +460,7 @@ async function withPasskey(email: string): Promise<string> {
 }
 
 async function outboxFor(recipient: string) {
-  return asAdmin(database, async (client) => {
+  return asAdmin(async (client) => {
     const result = await client.query<{ subject: string }>(
       'SELECT subject FROM auth.outbox WHERE recipient = $1',
       [recipient],
@@ -522,6 +468,32 @@ async function outboxFor(recipient: string) {
     return result.rows;
   });
 }
+
+describe('step-up through the API (spec 0003, R5)', () => {
+  const stepUp = (path: string, cookie: string, body: unknown) =>
+    app.request(`/v1/auth/step-up/${path}`, {
+      method: 'POST',
+      headers: { origin, cookie, 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+  it('verifies a step-up for the session in the cookie', async () => {
+    const { cookie, passkey } = await signedIn('step-up@example.com');
+    const options = await stepUp('options', cookie, { purpose: 'vault_unlock' });
+    expect(options.status).toBe(200);
+    const { challengeId, options: request } = (await options.json()) as {
+      challengeId: string;
+      options: { challenge: string };
+    };
+    const response = passkey.assert({ challenge: request.challenge, origin });
+    expect((await stepUp('verify', cookie, { challengeId, response })).status).toBe(200);
+    expect((await stepUp('verify', cookie, { challengeId, response })).status).toBe(401);
+  });
+
+  it('refuses a step-up without a session', async () => {
+    expect((await stepUp('options', '', { purpose: 'vault_unlock' })).status).toBe(401);
+  });
+});
 
 describe('new-sign-in notices (spec 0003, R7)', () => {
   it('sends one notice for a family not seen before for that passkey, and none for a repeat', async () => {
@@ -602,7 +574,7 @@ describe('new-sign-in notices (spec 0003, R7)', () => {
     const credentialId = await withPasskey('forget@example.org');
     await recordPasskeyClient(authDb, credentialId, { browser: 'safari', os: 'ios' });
     await authDb.execute(sql`DELETE FROM auth.passkey WHERE credential_id = ${credentialId}`);
-    const remaining = await asAdmin(database, (client) =>
+    const remaining = await asAdmin((client) =>
       client.query('SELECT FROM auth.passkey_client WHERE credential_id = $1', [credentialId]),
     );
     expect(remaining.rowCount).toBe(0);
@@ -613,14 +585,14 @@ describe('the outbox (spec 0003, R8)', () => {
   it('keeps sent messages for the preview page and drops them after 7 days', async () => {
     const outbox = outboxSender(authDb, 'preview');
     await outbox.send({ to: 'old@example.com', subject: 'Antigo', text: 'Texto' });
-    await asAdmin(database, (client) =>
+    await asAdmin((client) =>
       client.query("UPDATE auth.outbox SET expires_at = now() - interval '1 second'"),
     );
     await outbox.send({ to: 'new@example.com', subject: 'Novo', text: 'Texto' });
     expect(await readOutbox(authDb, 'preview')).toEqual([
       expect.objectContaining({ to: 'new@example.com', subject: 'Novo', text: 'Texto' }),
     ]);
-    const stored = await asAdmin(database, (client) =>
+    const stored = await asAdmin((client) =>
       client.query<{ recipient: string; days: number }>(
         `SELECT recipient, extract(day FROM expires_at - created_at)::int AS days FROM auth.outbox`,
       ),
@@ -641,7 +613,7 @@ describe('the auth rate limits (spec 0003, R10)', () => {
     });
 
   async function counterKeys() {
-    return asAdmin(database, async (client) => {
+    return asAdmin(async (client) => {
       const result = await client.query<{ key: string }>('SELECT key FROM auth.rate_limit');
       return result.rows.map((row) => row.key);
     });
@@ -687,13 +659,13 @@ describe('the auth rate limits (spec 0003, R10)', () => {
     const rule = { name: 'window_test', limit: 1, windowSeconds: 3600 };
     expect((await limiter.hit(rule, address)).allowed).toBe(true);
     expect((await limiter.hit(rule, address)).allowed).toBe(false);
-    await asAdmin(database, (client) =>
+    await asAdmin((client) =>
       client.query(
         "UPDATE auth.rate_limit SET expires_at = now() - interval '1 second' WHERE key LIKE 'window_test:%'",
       ),
     );
     expect((await limiter.hit(rule, address)).allowed).toBe(true);
-    await asAdmin(database, (client) =>
+    await asAdmin((client) =>
       client.query(
         "UPDATE auth.rate_limit SET expires_at = now() - interval '1 second' WHERE key LIKE 'window_test:%'",
       ),
@@ -703,7 +675,7 @@ describe('the auth rate limits (spec 0003, R10)', () => {
   });
 
   async function failedSignIns(userId: string) {
-    return asAdmin(database, async (client) => {
+    return asAdmin(async (client) => {
       const result = await client.query<{ actor: string | null; details: unknown }>(
         `SELECT actor_account_id AS actor, details FROM audit.event
          WHERE subject_account_id = $1 AND code = 'sign_in_failed'`,
@@ -714,7 +686,7 @@ describe('the auth rate limits (spec 0003, R10)', () => {
   }
 
   async function passkeyIdOf(credentialId: string) {
-    return asAdmin(database, async (client) => {
+    return asAdmin(async (client) => {
       const result = await client.query<{ id: string }>(
         'SELECT id FROM auth.passkey WHERE credential_id = $1',
         [credentialId],
@@ -778,7 +750,7 @@ describe('the auth rate limits (spec 0003, R10)', () => {
 
   it('records nothing for a credential no account holds', async () => {
     const recorded = () =>
-      asAdmin(database, async (client) => {
+      asAdmin(async (client) => {
         const result = await client.query<{ count: string }>(
           "SELECT count(*) AS count FROM audit.event WHERE code = 'sign_in_failed'",
         );

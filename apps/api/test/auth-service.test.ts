@@ -13,7 +13,7 @@ describe('reading a session that disappears meanwhile', () => {
   const service = authService(deletedMidRead);
 
   it('treats it as no session', async () => {
-    await expect(service.session(new Headers())).resolves.toBeNull();
+    await expect(service.signedIn(new Headers())).resolves.toBeNull();
   });
 
   it('refreshes nothing and sets no cookie', async () => {
@@ -27,6 +27,6 @@ describe('reading a session that disappears meanwhile', () => {
     const broken = {
       api: { getSession: () => Promise.reject(new Error('database down')) },
     } as unknown as Auth;
-    await expect(authService(broken).session(new Headers())).rejects.toThrow('database down');
+    await expect(authService(broken).signedIn(new Headers())).rejects.toThrow('database down');
   });
 });

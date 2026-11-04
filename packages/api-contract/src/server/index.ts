@@ -36,6 +36,8 @@ export const openApiRoutes = {
   signOut: toOpenApiRoute(routes.signOut),
   passkeySignInOptions: toOpenApiRoute(routes.passkeySignInOptions),
   passkeySignIn: toOpenApiRoute(routes.passkeySignIn),
+  stepUpOptions: toOpenApiRoute(routes.stepUpOptions),
+  stepUpVerify: toOpenApiRoute(routes.stepUpVerify),
   auditEvents: toOpenApiRoute(routes.auditEvents),
 } as const;
 

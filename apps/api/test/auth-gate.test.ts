@@ -19,6 +19,10 @@ const signedIn: SessionResponse = {
 
 const origin = 'http://arca.test';
 
+const sessionId = '6a1c2d3e-4f50-4617-8a9b-0c1d2e3f4a5b';
+const identityOf = (current: SessionResponse | null) =>
+  current === null ? null : { accountId: current.accountId, sessionId };
+
 /** A well-formed assertion; the fake Better Auth never verifies it. */
 const assertion = JSON.stringify({
   response: {
@@ -47,7 +51,7 @@ function setup(
       handled.push(`${request.method} ${new URL(request.url).pathname}`);
       return Promise.resolve(answer());
     },
-    session: () => Promise.resolve(session),
+    signedIn: () => Promise.resolve(identityOf(session)),
     refresh: () =>
       Promise.resolve({ session, setCookies: session === null ? [] : ['__Host-arca.slid=1'] }),
   };
@@ -258,7 +262,7 @@ describe('GET /v1/audit/events', () => {
       logger: silentLogger,
       auth: {
         handle: () => Promise.resolve(new Response(null, { status: 500 })),
-        session: () => Promise.resolve(session),
+        signedIn: () => Promise.resolve(identityOf(session)),
         refresh: () => Promise.resolve({ session, setCookies: [] }),
       },
       authLimits: noLimits,
@@ -334,7 +338,7 @@ describe('the auth rate limits (spec 0003, R10)', () => {
           handled.push(new URL(request.url).pathname);
           return Promise.resolve(Response.json({}));
         },
-        session: () => Promise.resolve(null),
+        signedIn: () => Promise.resolve(null),
         refresh: () => Promise.resolve({ session: null, setCookies: [] }),
       },
       authLimits: {
@@ -403,7 +407,7 @@ describe('the auth rate limits (spec 0003, R10)', () => {
         logger: silentLogger,
         auth: {
           handle: () => Promise.resolve(Response.json({})),
-          session: () => Promise.resolve(null),
+          signedIn: () => Promise.resolve(null),
           refresh: () => Promise.resolve({ session: null, setCookies: [] }),
         },
       }),
