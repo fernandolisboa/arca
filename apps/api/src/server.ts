@@ -38,7 +38,7 @@ import {
 } from './email/environment.js';
 import { createNotices } from './email/notices.js';
 import { stdoutLogger } from './logger.js';
-import { monitorRequests, startMonitoring } from './monitoring.js';
+import { monitorRequests, sendToSentry, startMonitoring, tunnelFor } from './monitoring.js';
 import { enforceRetention } from './workflows/enforce-retention.js';
 import { eraseAccount } from './workflows/erase-account.js';
 import { heartbeat } from './workflows/heartbeat.js';
@@ -184,12 +184,13 @@ const withOrigin = (origin: string | undefined) => (origin === undefined ? {} : 
 
 const outbox = outboxReaderFor(environment, authConnection);
 
-startMonitoring({ environment, origin: ownOrigin });
+const monitored = startMonitoring({ environment, origin: ownOrigin });
+const tunnel = tunnelFor({ environment, origin: ownOrigin, send: sendToSentry });
 
 const app = createApp({
   checkDatabase: () => connected().checkDatabase(),
   logger,
-  monitor: monitorRequests,
+  ...(monitored ? { monitor: monitorRequests } : {}),
   syntheticError: environment === 'preview',
   cron: {
     readSecret: readCronSecret,
@@ -285,6 +286,7 @@ const app = createApp({
     },
   },
   ...(outbox === undefined ? {} : { outbox }),
+  ...(tunnel === undefined ? {} : { tunnel }),
 });
 
 /**

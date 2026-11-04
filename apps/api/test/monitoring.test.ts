@@ -3,7 +3,12 @@ import { sentryProject, type Logger, type SentryProject } from '@arca/telemetry'
 import * as Sentry from '@sentry/hono/node';
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
-import { internalPathSegments, monitorRequests, sentryOptions } from '../src/monitoring.js';
+import {
+  internalPathSegments,
+  monitorRequests,
+  sentryOptions,
+  startMonitoring,
+} from '../src/monitoring.js';
 
 const silentLogger: Logger = { info: () => undefined, error: () => undefined };
 const project: SentryProject = {
@@ -127,6 +132,13 @@ describe('Sentry on the server (spec 0004, R4)', () => {
       'OnUnhandledRejection',
       'Http',
     ]);
+  });
+
+  it('starts once per instance: a failing step keeps the running client and its tracing', () => {
+    const running = Sentry.getClient();
+    expect(startMonitoring({ environment: 'preview', origin, project, traced: false })).toBe(true);
+    expect(Sentry.getClient()).toBe(running);
+    expect(Sentry.getClient()?.getOptions().tracesSampleRate).toBe(1);
   });
 });
 

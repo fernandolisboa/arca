@@ -913,3 +913,19 @@ export const apiPathSegments: readonly string[] = [
     ),
   ),
 ];
+
+/**
+ * The static segments of the web app's own paths, its pages and its built files, which the API
+ * links to and the browser reports from; the web app's typecheck holds this to its routes.
+ */
+export const webPathSegments = [
+  'assets',
+  'devices',
+  'enroll',
+  'invite',
+  'invites',
+  'recover',
+  'recovery-kit',
+  'settings',
+  'sign-in',
+] as const;

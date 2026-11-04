@@ -17,7 +17,7 @@ ADR-0010 chose Sentry for errors and OpenTelemetry traces, structured JSON logs,
 Facts checked on 2026-11-02:
 
 - Sentry's German data storage location is generally available to every organization, the free Developer plan included, at the same price ([Sentry changelog](https://sentry.io/changelog/data-storage-location-in-germany-is-generally-available/)).
-- Sentry's JavaScript SDK 11.10.0 adds a managed tunnel: `tunnel: true` in the browser SDK and a server handler (`serveTunnelIntegration()` for Nitro, or `handleTunnelRequestIfMatched`), with an `allowedDsns` option ([Sentry changelog](https://sentry.io/changelog/javascript-sdk-11100-managed-tunnel-clairic/)). `@sentry/node`, `@sentry/react` and `@sentry/hono` are at 11.10.0 (npm registry).
+- Sentry's JavaScript SDK 11.10.0 adds a managed tunnel (not used: see the browser amendment): `tunnel: true` in the browser SDK and a server handler (`serveTunnelIntegration()` for Nitro, or `handleTunnelRequestIfMatched`), with an `allowedDsns` option ([Sentry changelog](https://sentry.io/changelog/javascript-sdk-11100-managed-tunnel-clairic/)). `@sentry/node`, `@sentry/react` and `@sentry/hono` are at 11.10.0 (npm registry).
 - The Developer plan keeps errors, spans and logs for 30 days ([Sentry: data retention periods](https://docs.sentry.io/security-legal-pii/security/data-retention-periods)).
 
 ## Decision
@@ -60,6 +60,16 @@ Made with the server ticket (#67), to keep the owner's part to one visit to Sent
 - No agent tooling reads Sentry issues yet; the owner reads them. The read-only token, the delimited untrusted wrapping and the evaluation case come with that tooling, if it is ever built.
 - SDK 11 replaced `sendDefaultPii` with `dataCollection`, whose defaults collect headers, cookies, bodies and query strings; every field is turned off. Transactions are sent whole (`traceLifecycle: 'static'`) so `beforeSendTransaction` scrubs every span, and the SDK's load-time module rewriting is off. Database spans are not recorded, since no database integration is listed, and neither are the OpenTelemetry spans of other libraries (Better Auth, the Workflow SDK), since no tracer provider is registered.
 - Workflow steps report their errors (class, frames and the step's error code). The server module starts Sentry when an instance loads it, so step requests are traced under the workflow routes' generic paths; a failing step also starts it, with tracing off, in case it runs where the server module has not loaded. Every report waits for its send, behind the answer for a 5xx and before a failing step rethrows, so a frozen instance does not lose it.
+
+### Amendment, 2026-11-04: our own tunnel in the browser ticket
+
+Made with the browser ticket (#68).
+
+- The tunnel is our own Hono route at `/internal/monitoring/envelope`, not the SDK's managed tunnel: `serveTunnelIntegration` forwards envelopes as they come, and ours must scrub them again. The browser SDK's `tunnel` option names that fixed path. The route forwards only envelopes whose header names our DSN (the role `allowedDsns` plays in the managed tunnel), only their error events, each scrubbed again and stamped with the server's own environment, since the browser's claim is not trusted. It refuses another site's `Origin`, answers 413 over 200 KB, counts 60 envelopes an hour per IP, and forwards behind the answer.
+- CSP and Trusted Types reports arrive at `/internal/monitoring/csp` through `Reporting-Endpoints` and `report-to`, capped at 64 KB and 60 an hour per IP, and are forwarded to the project's security endpoint scrubbed by their own allow-list. The Reporting API sends no `Origin`, so this path has no origin check. A meta-tag CSP cannot carry `report-to`, so native builds will report no violations until they get a reporting path of their own.
+- Both paths exist only where the deployment reports (production and previews), so local and test servers forward nothing.
+- The browser's integrations are listed like the server's: event filters, linked errors, dedupe, global error handlers and breadcrumbs for fetch and page changes only (no DOM, XHR or console breadcrumbs). Errors caught by a route's error boundary and errors no boundary caught are reported too. No tracing, no replay, no feedback widget.
+- The web app's page segments live beside the API's in the contract (`webPathSegments`), held to the router's routes by the web typecheck, so a page URL keeps its page through both scrubs.
 
 ## Alternatives
 

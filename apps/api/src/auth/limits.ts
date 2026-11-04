@@ -61,3 +61,12 @@ export const recoveryLimits = {
   options: { name: 'recovery_options_ip', limit: 30, windowSeconds: hour },
   verify: { name: 'recovery_verify_ip', limit: 30, windowSeconds: hour },
 } as const satisfies Record<string, RateLimitRule>;
+
+/**
+ * Per-IP limits on the monitoring tunnel (spec 0004, R5), so it cannot be used as a relay. The
+ * browser SDK backs off on a 429, and a page reports each error once.
+ */
+export const monitoringLimits = {
+  envelope: { name: 'monitoring_envelope_ip', limit: 60, windowSeconds: hour },
+  cspReports: { name: 'monitoring_csp_ip', limit: 60, windowSeconds: hour },
+} as const satisfies Record<string, RateLimitRule>;

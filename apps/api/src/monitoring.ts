@@ -1,7 +1,8 @@
-import { apiPathSegments } from '@arca/api-contract/routes';
+import { apiPathSegments, webPathSegments } from '@arca/api-contract/routes';
 import { registry } from '@arca/db/registry';
 import { fallbackExclusions } from '@arca/security-policy';
 import {
+  sentryDataCollection,
   sentryProject,
   sentryScrubbers,
   urlReducer,
@@ -12,6 +13,7 @@ import * as Sentry from '@sentry/hono/node';
 import type { Env, Hono, MiddlewareHandler } from 'hono';
 import { behindAnswerOf } from './behind-answer.js';
 import type { DeploymentEnvironment } from './config.js';
+import { createTunnel, type SendToSentry, type Tunnel } from './monitoring-tunnel.js';
 
 /** The static segments of the paths the API serves outside the contract. */
 export const internalPathSegments = [
@@ -23,6 +25,9 @@ export const internalPathSegments = [
   'rate-limit-sweep',
   'outbox',
   'monitoring-check',
+  'monitoring',
+  'envelope',
+  'csp',
   'security.txt',
   // The Workflow SDK's routes.
   'workflow',
@@ -46,24 +51,20 @@ const integrations = () => [
   Sentry.httpIntegration(),
 ];
 
-/** SDK 11 collects these by default; every one is off, and the scrubber drops them anyway. */
-const noDataCollection: NonNullable<Sentry.NodeOptions['dataCollection']> = {
-  userInfo: false,
-  cookies: false,
-  httpHeaders: false,
-  httpBodies: [],
-  urlQueryParams: false,
-  graphQL: { document: false, variables: false },
-  genAI: { inputs: false, outputs: false },
-  mcp: { inputs: false, outputs: false },
-  databaseQueryData: false,
-  queues: false,
-  stackFrameVariables: false,
-  frameContextLines: 0,
-};
-
 const reportsFrom = (environment: DeploymentEnvironment): environment is SentryEnvironment =>
   Object.hasOwn(sentryProject.tracesSampleRate, environment);
+
+/**
+ * The path segments and the one host a reported URL may keep; the rest become `:param`. The web
+ * app's segments are here too, since its events come through the tunnel.
+ */
+const urlsFor = (origin: string | undefined) =>
+  urlReducer({
+    segments: [...apiPathSegments, ...webPathSegments, ...internalPathSegments],
+    hosts: origin === undefined ? [] : [new URL(origin).host],
+  });
+
+const tables = [...registry.entries, ...registry.unowned].map(({ table }) => table);
 
 export interface MonitoringSettings {
   readonly environment: DeploymentEnvironment;
@@ -82,13 +83,7 @@ export function sentryOptions({
   traced = true,
 }: MonitoringSettings): Sentry.NodeOptions | undefined {
   if (project.dsn === null || !reportsFrom(environment)) return undefined;
-  const scrub = sentryScrubbers({
-    reduce: urlReducer({
-      segments: [...apiPathSegments, ...internalPathSegments],
-      hosts: origin === undefined ? [] : [new URL(origin).host],
-    }),
-    tables: [...registry.entries, ...registry.unowned].map(({ table }) => table),
-  });
+  const scrub = sentryScrubbers({ reduce: urlsFor(origin), tables });
   return {
     dsn: project.dsn,
     environment,
@@ -101,7 +96,7 @@ export function sentryOptions({
     enableRuntimeChannelInjection: false,
     // No tracer provider, so other libraries' OpenTelemetry spans are never recorded.
     enableOpenTelemetrySetup: false,
-    dataCollection: noDataCollection,
+    dataCollection: sentryDataCollection,
     sendClientReports: false,
     // The scrubbers rebuild each payload from allow-listed fields only, in Sentry's own shapes.
     beforeSend: (event) => scrub.event(event) as typeof event | null,
@@ -110,11 +105,47 @@ export function sentryOptions({
   };
 }
 
-/** Starts Sentry once per instance, before the app is built; a no-op where nothing reports. */
-export function startMonitoring(settings: MonitoringSettings): void {
+/**
+ * Starts Sentry once per instance, before the app is built; a no-op where nothing reports.
+ * True when Sentry was started.
+ */
+export function startMonitoring(settings: MonitoringSettings): boolean {
+  // A failing step starts it too, and must not replace the server's client.
+  if (Sentry.isInitialized()) return true;
   const options = sentryOptions(settings);
-  if (options !== undefined) Sentry.init(options);
+  if (options === undefined) return false;
+  Sentry.init(options);
+  return true;
 }
+
+/** The browser's tunnel to Sentry, where this deployment reports; undefined elsewhere. */
+export function tunnelFor({
+  environment,
+  origin,
+  project = sentryProject,
+  send,
+}: Omit<MonitoringSettings, 'traced'> & { readonly send: SendToSentry }): Tunnel | undefined {
+  if (project.dsn === null || !reportsFrom(environment)) return undefined;
+  return createTunnel({ dsn: project.dsn, environment, reduce: urlsFor(origin), tables, send });
+}
+
+/** Thrown when Sentry does not take a forwarded payload; only its status is kept. */
+export class SentryRefused extends Error {
+  override name = 'SentryRefused';
+}
+
+const forwardTimeoutMs = 5000;
+
+export const sendToSentry: SendToSentry = async (url, body, contentType) => {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'content-type': contentType },
+    body,
+    signal: AbortSignal.timeout(forwardTimeoutMs),
+  });
+  await response.body?.cancel();
+  if (!response.ok) throw new SentryRefused(String(response.status));
+};
 
 const flushMs = 2000;
 

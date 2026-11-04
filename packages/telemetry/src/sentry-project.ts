@@ -18,3 +18,25 @@ export type SentryEnvironment = keyof SentryProject['tracesSampleRate'];
 export const sentryEnvironments = Object.keys(
   sentryProject.tracesSampleRate,
 ) as readonly SentryEnvironment[];
+
+/** Where the web app sends its Sentry envelopes: our own origin, never Sentry's (spec 0004, R5). */
+export const tunnelPath = '/internal/monitoring/envelope';
+
+/**
+ * What Sentry's SDKs may collect on their own: nothing. SDK 11 collects most of it by default;
+ * the scrubbers would drop it anyway (spec 0004, R4, R5).
+ */
+export const sentryDataCollection = {
+  userInfo: false,
+  cookies: false,
+  httpHeaders: false,
+  httpBodies: [] as never[],
+  urlQueryParams: false,
+  graphQL: { document: false, variables: false },
+  genAI: { inputs: false, outputs: false },
+  mcp: { inputs: false, outputs: false },
+  databaseQueryData: false,
+  queues: false,
+  stackFrameVariables: false,
+  frameContextLines: 0,
+};
