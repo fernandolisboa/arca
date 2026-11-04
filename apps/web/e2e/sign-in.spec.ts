@@ -140,3 +140,19 @@ test('treats a ceremony without user verification as cancelled', async ({ page }
     'Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.',
   );
 });
+
+test('says sign-in is not available yet where the deployment takes no accounts', async ({
+  page,
+}) => {
+  await page.route('**/v1/health', async (route) => {
+    const response = await route.fetch();
+    const health = (await response.json()) as Record<string, unknown>;
+    await route.fulfill({ response, json: { ...health, accounts: 'closed' } });
+  });
+  await page.goto(`${databaseServer.origin}/sign-in`);
+  await expect(
+    page.getByText('O Arca ainda não abriu, então ainda não dá para entrar.'),
+  ).toBeVisible();
+  await expect(signInButton(page)).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Recuperar a conta' })).toHaveCount(0);
+});

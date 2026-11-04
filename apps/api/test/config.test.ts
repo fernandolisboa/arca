@@ -129,10 +129,26 @@ describe('readAuthOrigin', () => {
     expect(readAuthOrigin()).toBe('https://arca-git-feature-team.vercel.app');
   });
 
-  it('uses the production domain in production', () => {
+  it('uses the host the site file names in production (spec 0003, R9)', () => {
+    vi.stubEnv('VERCEL_ENV', 'production');
+    vi.stubEnv('VERCEL_PROJECT_PRODUCTION_URL', 'arca-team.vercel.app');
+    expect(readAuthOrigin({ host: 'arca.example.com', senderDomain: null })).toBe(
+      'https://arca.example.com',
+    );
+    expect(readAuthOrigin()).toBe('https://arca.filx.app');
+  });
+
+  it('falls back to the production URL while the site file names no host', () => {
     vi.stubEnv('VERCEL_ENV', 'production');
     vi.stubEnv('VERCEL_PROJECT_PRODUCTION_URL', 'arca.example.com');
-    expect(readAuthOrigin()).toBe('https://arca.example.com');
+    expect(readAuthOrigin({ host: null, senderDomain: null })).toBe('https://arca.example.com');
+  });
+
+  it('refuses a site host that is not a host name', () => {
+    vi.stubEnv('VERCEL_ENV', 'production');
+    expect(() => readAuthOrigin({ host: 'arca.example.com/x', senderDomain: null })).toThrow(
+      MissingConfigError,
+    );
   });
 
   it('uses the local dev server outside Vercel', () => {

@@ -17,7 +17,7 @@
     "/health": {
       "get": {
         "operationId": "getHealth",
-        "summary": "Service health, including the database connection and its role",
+        "summary": "Service health, including the database connection and its role, and whether new accounts can be made",
         "responses": {
           "200": {
             "description": "Current health",
@@ -48,11 +48,19 @@
                       "required": [
                         "database"
                       ]
+                    },
+                    "accounts": {
+                      "type": "string",
+                      "enum": [
+                        "open",
+                        "closed"
+                      ]
                     }
                   },
                   "required": [
                     "status",
-                    "checks"
+                    "checks",
+                    "accounts"
                   ]
                 }
               }

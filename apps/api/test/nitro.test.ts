@@ -65,6 +65,7 @@ describe('one origin (spec 0001, R4)', () => {
     expect(await response.json()).toEqual({
       status: 'degraded',
       checks: { database: 'unavailable' },
+      accounts: 'open',
     });
     expect(response.headers.get('cache-control')).toBe('no-store');
     expectSecurityHeaders(response);

@@ -122,8 +122,9 @@ export const ptBR = {
     button: 'Entrar com chave de acesso',
     waiting: 'Confirme no seu dispositivo para continuar.',
     failure:
-      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} refused {Essa chave de acesso não abriu nenhuma conta. Se você criou essa chave há menos de {hours} horas, espere ela passar a valer, ou tente com outra.} limited {Muitas tentativas de entrar por esta conexão. Espere um pouco e tente de novo.} unavailable {Este navegador não aceita chaves de acesso. Abra o Arca em um navegador atualizado, como Chrome, Safari, Edge ou Firefox.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} refused {Essa chave de acesso não abriu nenhuma conta. Se você criou essa chave há menos de {hours} horas, espere ela passar a valer, ou tente com outra.} limited {Muitas tentativas de entrar por esta conexão. Espere um pouco e tente de novo.} unavailable {Este navegador não aceita chaves de acesso. Abra o Arca em um navegador atualizado, como Chrome, Safari, Edge ou Firefox.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} closed {O Arca ainda não abriu, então ainda não dá para entrar.} other {Não deu certo desta vez. Tente de novo.}}',
     inviteOnly: 'Ainda não tem conta? O Arca funciona só por convite. Peça um a quem já usa.',
+    closed: 'O Arca ainda não abriu, então ainda não dá para entrar.',
     lostAccess: 'Perdeu todas as suas chaves de acesso?',
     recover: 'Recuperar a conta',
   },
@@ -155,7 +156,7 @@ export const ptBR = {
       sending: 'Enviando…',
       sent: 'Pronto. Abra o email que mandamos e siga o link. Ele vale por 30 minutos.',
       failure:
-        '{reason, select, not_found {Esse código não serve. Ou ele está errado, ou o Arca já tem uma conta.} email_unavailable {O Arca ainda não consegue mandar emails. Tente de novo mais tarde.} limited {Muitas tentativas por esta conexão. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+        '{reason, select, not_found {Esse código não serve. Ou ele está errado, ou o Arca já tem uma conta.} email_unavailable {O Arca ainda não consegue mandar emails. Tente de novo mais tarde.} limited {Muitas tentativas por esta conexão. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} closed {O Arca ainda não abriu. Tente de novo mais tarde.} other {Não deu certo desta vez. Tente de novo.}}',
     },
     register: {
       title: 'Criar sua chave de acesso',
@@ -164,7 +165,7 @@ export const ptBR = {
       submit: 'Criar chave de acesso',
       waiting: 'Confirme no seu dispositivo para continuar.',
       failure:
-        '{reason, select, expired {Este link não vale mais. Peça um novo.} invalid_code {Esse código não confere. Confira e tente de novo.} cancelled {Não deu para criar a chave de acesso. Tente de novo quando quiser.} refused {Não deu para criar a conta com esta chave de acesso. Se a conta já existe, entre com a sua chave.} unavailable {Este navegador não aceita chaves de acesso. Abra o link em um navegador atualizado, como Chrome, Safari, Edge ou Firefox.} limited {Muitas tentativas por esta conexão. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+        '{reason, select, expired {Este link não vale mais. Peça um novo.} invalid_code {Esse código não confere. Confira e tente de novo.} cancelled {Não deu para criar a chave de acesso. Tente de novo quando quiser.} refused {Não deu para criar a conta com esta chave de acesso. Se a conta já existe, entre com a sua chave.} unavailable {Este navegador não aceita chaves de acesso. Abra o link em um navegador atualizado, como Chrome, Safari, Edge ou Firefox.} limited {Muitas tentativas por esta conexão. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} closed {O Arca ainda não abriu. Tente de novo mais tarde.} other {Não deu certo desta vez. Tente de novo.}}',
       newLink: 'Pedir um novo link',
       signIn: 'Entrar',
     },
@@ -178,10 +179,10 @@ export const ptBR = {
     submit: 'Criar chave de acesso',
     waiting: 'Confirme no seu dispositivo para continuar.',
     failure:
-      '{reason, select, expired {Este convite não vale mais. Peça um novo a quem convidou você.} cancelled {Não deu para criar a chave de acesso. Tente de novo quando quiser.} refused {Não deu para criar a conta com esta chave de acesso. Se você já tem conta, entre com a sua chave.} unavailable {Este navegador não aceita chaves de acesso. Abra o link em um navegador atualizado, como Chrome, Safari, Edge ou Firefox.} limited {Muitas tentativas por esta conexão. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+      '{reason, select, expired {Este convite não vale mais. Peça um novo a quem convidou você.} cancelled {Não deu para criar a chave de acesso. Tente de novo quando quiser.} refused {Não deu para criar a conta com esta chave de acesso. Se você já tem conta, entre com a sua chave.} unavailable {Este navegador não aceita chaves de acesso. Abra o link em um navegador atualizado, como Chrome, Safari, Edge ou Firefox.} limited {Muitas tentativas por esta conexão. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} closed {O Arca ainda não abriu. Tente de novo mais tarde.} other {Não deu certo desta vez. Tente de novo.}}',
     noLink: 'Abra o link do email de convite para criar sua conta.',
     checkFailure:
-      '{reason, select, limited {Muitas tentativas por esta conexão. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não conseguimos conferir o convite agora. Tente de novo.}}',
+      '{reason, select, limited {Muitas tentativas por esta conexão. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} closed {O Arca ainda não abriu. Tente de novo mais tarde.} other {Não conseguimos conferir o convite agora. Tente de novo.}}',
     retry: 'Tentar de novo',
     signIn: 'Entrar',
   },
@@ -202,7 +203,7 @@ export const ptBR = {
     sending: 'Enviando…',
     sent: 'Convite enviado para {email}.',
     sendFailure:
-      '{reason, select, account_unconfirmed {Sua conta está aguardando a confirmação de quem convidou você, então você não pode convidar ninguém por enquanto.} too_many_invites {Você já tem {max} convites abertos. Espere alguém aceitar ou um convite vencer.} email_unavailable {O Arca ainda não consegue mandar emails. Tente de novo mais tarde.} limited {Você mandou muitos convites hoje. Tente de novo amanhã.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+      '{reason, select, account_unconfirmed {Sua conta está aguardando a confirmação de quem convidou você, então você não pode convidar ninguém por enquanto.} too_many_invites {Você já tem {max} convites abertos. Espere alguém aceitar ou um convite vencer.} email_unavailable {O Arca ainda não consegue mandar emails. Tente de novo mais tarde.} limited {Você mandou muitos convites hoje. Tente de novo amanhã.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} closed {O Arca ainda não abriu. Tente de novo mais tarde.} other {Não deu certo desta vez. Tente de novo.}}',
     listTitle: 'Seus convites',
     empty: 'Você ainda não mandou nenhum convite.',
     listFailure: 'Não conseguimos carregar seus convites agora.',
@@ -293,7 +294,7 @@ export const ptBR = {
       sending: 'Enviando…',
       sent: 'Se esse email tiver uma conta no Arca, o link já está a caminho. Ele vale por {minutes} minutos.',
       failure:
-        '{reason, select, email_unavailable {O Arca ainda não consegue mandar emails. Tente de novo mais tarde.} limited {Muitas tentativas por esta conexão. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+        '{reason, select, email_unavailable {O Arca ainda não consegue mandar emails. Tente de novo mais tarde.} limited {Muitas tentativas por esta conexão. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} closed {O Arca ainda não abriu. Tente de novo mais tarde.} other {Não deu certo desta vez. Tente de novo.}}',
     },
     code: {
       title: 'Digite o seu código de recuperação',
@@ -302,7 +303,7 @@ export const ptBR = {
       submit: 'Continuar',
       checking: 'Conferindo o código…',
       failure:
-        '{reason, select, expired {Este link não vale mais. Peça um novo.} invalid_code {Esse código não confere. Confira e tente de novo. Depois de alguns erros, a recuperação fica bloqueada por 24 horas.} locked {Muitos códigos errados. A recuperação desta conta ficou bloqueada por 24 horas.} limited {Muitas tentativas por esta conexão. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+        '{reason, select, expired {Este link não vale mais. Peça um novo.} invalid_code {Esse código não confere. Confira e tente de novo. Depois de alguns erros, a recuperação fica bloqueada por 24 horas.} locked {Muitos códigos errados. A recuperação desta conta ficou bloqueada por 24 horas.} limited {Muitas tentativas por esta conexão. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} closed {O Arca ainda não abriu. Tente de novo mais tarde.} other {Não deu certo desta vez. Tente de novo.}}',
     },
     newLink: 'Pedir um novo link',
     newCode: {
@@ -315,7 +316,7 @@ export const ptBR = {
       submit: 'Criar chave de acesso',
       waiting: 'Confirme no seu dispositivo para continuar.',
       failure:
-        '{reason, select, expired {O tempo para criar a chave acabou, e o código novo deixou de valer. Se ainda tiver a conta aberta em algum dispositivo, gere um novo kit de recuperação por lá.} cancelled {Não deu para criar a chave de acesso. Tente de novo quando quiser.} refused {Não deu para salvar a chave nova. Tente de novo.} unavailable {Este navegador não aceita chaves de acesso. Abra o link em um navegador atualizado, como Chrome, Safari, Edge ou Firefox.} limited {Muitas tentativas por esta conexão. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+        '{reason, select, expired {O tempo para criar a chave acabou, e o código novo deixou de valer. Se ainda tiver a conta aberta em algum dispositivo, gere um novo kit de recuperação por lá.} cancelled {Não deu para criar a chave de acesso. Tente de novo quando quiser.} refused {Não deu para salvar a chave nova. Tente de novo.} unavailable {Este navegador não aceita chaves de acesso. Abra o link em um navegador atualizado, como Chrome, Safari, Edge ou Firefox.} limited {Muitas tentativas por esta conexão. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} closed {O Arca ainda não abriu. Tente de novo mais tarde.} other {Não deu certo desta vez. Tente de novo.}}',
     },
     done: {
       title: 'Chave nova criada',

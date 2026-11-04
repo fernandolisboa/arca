@@ -7,7 +7,12 @@ import {
   EmailRejectedError,
   unconfiguredSender,
 } from '../src/email/email.js';
-import { emailSenderFor, outboxReaderFor } from '../src/email/environment.js';
+import {
+  accountsOpenWith,
+  emailRouteFor,
+  emailSenderFor,
+  outboxReaderFor,
+} from '../src/email/environment.js';
 import { createNotices, noticeKinds, noticeMessage, type Notice } from '../src/email/notices.js';
 import { OutboxInProductionError, outboxSender, readOutbox } from '../src/email/outbox.js';
 import { resendSender } from '../src/email/resend.js';
@@ -125,8 +130,39 @@ describe('choosing a sender', () => {
     await expect(readOutbox(db, 'production')).rejects.toThrow(OutboxInProductionError);
   });
 
+  const site = { host: 'arca.example.com', senderDomain: 'arca.example.com' } as const;
+
+  it.each([
+    ['no host', { ...site, host: null }, 're_key'],
+    ['no sending domain', { ...site, senderDomain: null }, 're_key'],
+    ['no key', site, undefined],
+  ] as const)('closes production to new accounts with %s (spec 0003, R9)', (_, given, key) => {
+    const route = emailRouteFor('production', given, key);
+    expect(route).toEqual({ via: 'none' });
+    expect(accountsOpenWith(route)).toBe(false);
+  });
+
+  it('sends through Resend from the sending domain once production has all three', () => {
+    const route = emailRouteFor('production', site, 're_key');
+    expect(route).toEqual({
+      via: 'resend',
+      apiKey: 're_key',
+      from: 'Arca <no-reply@arca.example.com>',
+    });
+    expect(accountsOpenWith(route)).toBe(true);
+  });
+
+  it.each(['preview', 'development'] as const)(
+    'keeps %s on the outbox, open to new accounts, whatever the key',
+    (environment) => {
+      const route = emailRouteFor(environment, { host: null, senderDomain: null }, 're_key');
+      expect(route).toEqual({ via: 'outbox' });
+      expect(accountsOpenWith(route)).toBe(true);
+    },
+  );
+
   it('sends nothing in production until the sending domain is configured', async () => {
-    const sending = emailSenderFor('production', () => db).send({
+    const sending = emailSenderFor({ via: 'none' }, 'production', () => db).send({
       to: 'owner@example.com',
       subject: 's',
       text: 't',
@@ -148,7 +184,7 @@ describe('choosing a sender', () => {
             }),
           }),
       } as unknown as Database;
-      await emailSenderFor(environment, () => fake).send({
+      await emailSenderFor({ via: 'outbox' }, environment, () => fake).send({
         to: 'owner@example.com',
         subject: 's',
         text: 't',

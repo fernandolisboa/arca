@@ -1,16 +1,16 @@
 import { pendingPasskeyHours } from '@arca/api-contract/client';
 import { Button } from '@arca/ui';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { resetAccount } from '../api.js';
+import { healthQuery, resetAccount } from '../api.js';
 import { TextField } from '../forms/text-field.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { passkeys } from '../platform.js';
 import { failureOf, signInWithPasskey, type SignInFailure } from '../sign-in.js';
 
-export const Route = createFileRoute('/sign-in')({ component: SignIn });
+export const Route = createFileRoute('/sign-in')({ component: SignInPage });
 
 interface Support {
   readonly available: boolean;
@@ -31,6 +31,21 @@ const autofillRetryMaxMs = 60 * 1000;
 
 /** The account field that offers the device's saved passkeys. */
 const accountInput = { name: 'username', type: 'text', autoComplete: 'username webauthn' } as const;
+
+/** A deployment that takes no accounts yet has nobody to sign in (spec 0003, R9). */
+function SignInPage() {
+  const { t } = useTranslation();
+  const health = useQuery(healthQuery);
+  if (health.data?.accounts !== 'closed') return <SignIn />;
+  return (
+    <section aria-labelledby="sign-in-title" className="mx-auto flex max-w-md flex-col gap-5">
+      <h2 id="sign-in-title" className="font-display text-title">
+        {t('signIn.title')}
+      </h2>
+      <p>{t('signIn.closed')}</p>
+    </section>
+  );
+}
 
 function SignIn() {
   const { t } = useTranslation();

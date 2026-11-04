@@ -89,6 +89,11 @@ export interface AppDependencies {
    * (spec 0003, R4); absent, every such request is refused.
    */
   readonly origin?: string;
+  /**
+   * False where new accounts cannot be made yet, a production with no sending domain (spec 0003,
+   * R9): enrollment, invites, registration and recovery then answer 503 `accounts_closed`.
+   */
+  readonly accountsOpen?: boolean;
   /** Better Auth behind the allow-list; absent, every auth path is a 404. */
   readonly auth?: AuthService;
   readonly authLimits?: AuthLimits;
@@ -133,6 +138,7 @@ export type ErrorCode =
   | 'passkey_refused'
   | 'recovery_locked'
   | 'recovery_pending'
+  | 'accounts_closed'
   | 'request_failed'
   | 'internal_error';
 
@@ -232,6 +238,7 @@ export function createApp({
   newRequestId = () => crypto.randomUUID(),
   cron,
   origin,
+  accountsOpen = true,
   auth,
   authLimits,
   stepUp,
@@ -291,7 +298,14 @@ export function createApp({
 
   v1.openapi(openApiRoutes.health, async (c) => {
     const database = await databaseStatus();
-    return c.json({ status: database === 'ok' ? 'ok' : 'degraded', checks: { database } }, 200);
+    return c.json(
+      {
+        status: database === 'ok' ? 'ok' : 'degraded',
+        checks: { database },
+        accounts: accountsOpen ? 'open' : 'closed',
+      },
+      200,
+    );
   });
 
   const lookUp = async (headers: Headers): Promise<RequestSession> => {
@@ -399,6 +413,30 @@ export function createApp({
     return next();
   });
   v1.use('*', restrictWhileRecoveryPending);
+
+  /** Every route that makes, or proves the address of, an account (spec 0003, R9). */
+  const makingAccounts = new Set(
+    [
+      openApiRoutes.enrollOwner,
+      openApiRoutes.registrationOptions,
+      openApiRoutes.registrationVerify,
+      openApiRoutes.createInvite,
+      openApiRoutes.inviteDetails,
+      openApiRoutes.recoveryStart,
+      openApiRoutes.recoveryRedeem,
+      openApiRoutes.recoveryOptions,
+      openApiRoutes.recoveryVerify,
+    ].map(({ method, path }) => `${method.toUpperCase()} ${apiBasePath}${path}`),
+  );
+  v1.use(
+    '*',
+    createMiddleware<AppEnv>(async (c, next) => {
+      if (!accountsOpen && makingAccounts.has(`${c.req.method} ${c.req.path}`)) {
+        return reject(c, 'accounts_closed', 503);
+      }
+      return next();
+    }),
+  );
 
   v1.openapi(openApiRoutes.session, async (c) => {
     if (auth === undefined) return unauthorized(c);

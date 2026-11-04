@@ -5,7 +5,7 @@ import { toAssertion, toRequestOptions } from './passkey-json.js';
 import { commonFailure, reach } from './requests.js';
 
 export type SignInFailure =
-  'cancelled' | 'refused' | 'limited' | 'unavailable' | 'unreachable' | 'other';
+  'cancelled' | 'closed' | 'refused' | 'limited' | 'unavailable' | 'unreachable' | 'other';
 
 /** The last options request, so a new one starts only after it settled. */
 let lastOptions: Promise<unknown> = Promise.resolve();

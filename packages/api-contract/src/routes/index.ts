@@ -31,6 +31,11 @@ export const HealthResponse = z.object({
   checks: z.object({
     database: z.enum(['ok', 'unavailable', 'wrong_role']),
   }),
+  /**
+   * Whether new accounts can be made here: closed in a production with no sending domain yet,
+   * where enrollment, invites, registration and recovery answer 503 accounts_closed (spec 0003, R9).
+   */
+  accounts: z.enum(['open', 'closed']),
 });
 export type HealthResponse = z.infer<typeof HealthResponse>;
 
@@ -38,7 +43,8 @@ export const health = {
   method: 'get',
   path: '/health',
   operationId: 'getHealth',
-  summary: 'Service health, including the database connection and its role',
+  summary:
+    'Service health, including the database connection and its role, and whether new accounts can be made',
   response: { description: 'Current health', schema: HealthResponse },
 } as const satisfies RouteDefinition<typeof HealthResponse>;
 

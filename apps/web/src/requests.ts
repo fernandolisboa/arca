@@ -17,7 +17,7 @@ export async function reach<T>(call: Promise<T>): Promise<T> {
 }
 
 /** What went wrong around a passkey ceremony, as the screens word it. */
-export type CommonFailure = 'cancelled' | 'limited' | 'unreachable' | 'other';
+export type CommonFailure = 'cancelled' | 'closed' | 'limited' | 'unreachable' | 'other';
 
 /**
  * The failures every passkey screen shares; an API error a screen words itself is left to the
@@ -33,6 +33,8 @@ export function commonFailure(
   apiCode: (error: ApiError) => string | undefined = () => undefined,
 ): string {
   if (error instanceof ApiError) {
+    // A deployment that takes no accounts yet answers so on every route that makes one (R9).
+    if (error.code === 'accounts_closed') return 'closed';
     return apiCode(error) ?? (error.status === 429 ? 'limited' : 'other');
   }
   if (error instanceof UnreachableError) return 'unreachable';

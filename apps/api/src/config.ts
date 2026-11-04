@@ -1,5 +1,6 @@
 import type { DatabaseTarget } from '@arca/db';
 import { enrollmentCodeHash } from './auth/enrollment-code-hash.js';
+import { productionSite, type ProductionSite } from './production-site.js';
 
 /**
  * The one place the API reads its configuration (spec 0001, R7): environment variables, each by
@@ -91,21 +92,29 @@ function readLocalOrigin(): string {
 }
 
 /**
- * The origin the auth routes run on, from Vercel's system variables: a preview's branch URL, so
- * the per-deployment URL is not trusted, and the production domain. Until spec 0003 R9 moves
- * production to a reviewed file, the production host is Vercel's. In development, Nitro's dev
+ * The origin the auth routes run on: in production the host the reviewed site file names (spec
+ * 0003, R9), or Vercel's production URL while it names none, when production takes no accounts;
+ * a preview's branch URL, so the per-deployment URL is never trusted; in development, Nitro's dev
  * server.
  */
-export function readAuthOrigin(): string {
+export function readAuthOrigin(site: ProductionSite = productionSite): string {
   const environment = readDeploymentEnvironment();
   if (environment === 'development') return readLocalOrigin();
   const [name, value] =
     environment === 'production'
-      ? ['VERCEL_PROJECT_PRODUCTION_URL', process.env['VERCEL_PROJECT_PRODUCTION_URL']]
+      ? site.host === null
+        ? ['VERCEL_PROJECT_PRODUCTION_URL', process.env['VERCEL_PROJECT_PRODUCTION_URL']]
+        : ['the production site host', site.host]
       : ['VERCEL_BRANCH_URL', process.env['VERCEL_BRANCH_URL']];
   const host = required(name, value).toLowerCase();
   if (!originHostPattern.test(host)) throw new MissingConfigError(`${name} is not a host name`);
   return `https://${host}`;
+}
+
+/** Resend's API key, a Sensitive Production variable (spec 0003, R8); absent until it is set. */
+export function readResendKey(): string | undefined {
+  const key = process.env['RESEND_API_KEY'];
+  return key === undefined || key === '' ? undefined : key;
 }
 
 /**

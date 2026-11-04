@@ -24,7 +24,11 @@ describe('GET /v1/health', () => {
     ['wrong_role', 'degraded'],
   ] as const)('reports database %s as %s, matching the contract', async (database, status) => {
     const { client, app } = setup(() => Promise.resolve(database));
-    await expect(client.call(routes.health)).resolves.toEqual({ status, checks: { database } });
+    await expect(client.call(routes.health)).resolves.toEqual({
+      status,
+      checks: { database },
+      accounts: 'open',
+    });
     const response = await app.request('/v1/health');
     expect(HealthResponse.safeParse(await response.json()).success).toBe(true);
   });
@@ -42,6 +46,7 @@ describe('GET /v1/health', () => {
     await expect(client.call(routes.health)).resolves.toEqual({
       status: 'degraded',
       checks: { database: 'unavailable' },
+      accounts: 'open',
     });
   });
 
@@ -54,6 +59,7 @@ describe('GET /v1/health', () => {
       await expect(result).resolves.toEqual({
         status: 'degraded',
         checks: { database: 'unavailable' },
+        accounts: 'open',
       });
     } finally {
       vi.useRealTimers();
@@ -80,6 +86,46 @@ describe('GET /v1/health', () => {
   });
 });
 
+describe('a deployment closed to new accounts (spec 0003, R9)', () => {
+  const origin = 'https://arca.test';
+  const closed = createApp({
+    checkDatabase: () => Promise.resolve('ok'),
+    logger: silentLogger,
+    origin,
+    accountsOpen: false,
+  });
+
+  it('says so in its health', async () => {
+    const response = await closed.request('/v1/health');
+    expect(await response.json()).toMatchObject({ accounts: 'closed' });
+  });
+
+  it.each([
+    routes.enrollOwner,
+    routes.registrationOptions,
+    routes.registrationVerify,
+    routes.createInvite,
+    routes.inviteDetails,
+    routes.recoveryStart,
+    routes.recoveryRedeem,
+    routes.recoveryOptions,
+    routes.recoveryVerify,
+  ])('answers $operationId with 503 accounts_closed', async ({ method, path }) => {
+    const response = await closed.request(`/v1${path}`, {
+      method: method.toUpperCase(),
+      headers: { origin, 'content-type': 'application/json' },
+      body: '{}',
+    });
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: { code: 'accounts_closed' } });
+  });
+
+  it('leaves every other route as it is', async () => {
+    const response = await closed.request('/v1/session');
+    expect(response.status).toBe(401);
+  });
+});
+
 describe('client', () => {
   it('rejects a response that drifts from the contract', async () => {
     const client = createApiClient({
@@ -91,7 +137,9 @@ describe('client', () => {
 
   it('calls the versioned path on the configured origin', async () => {
     const fetch = vi.fn(() =>
-      Promise.resolve(Response.json({ status: 'ok', checks: { database: 'ok' } })),
+      Promise.resolve(
+        Response.json({ status: 'ok', checks: { database: 'ok' }, accounts: 'open' }),
+      ),
     );
     await createApiClient({ origin: 'https://api.arca.test', fetch }).call(routes.health);
     expect(fetch).toHaveBeenCalledWith('https://api.arca.test/v1/health', expect.anything());

@@ -115,6 +115,7 @@ describe('the failures the enrollment screens word', () => {
   it.each([
     [new ApiError(404, 'not_found'), 'not_found'],
     [new ApiError(503, 'email_unavailable'), 'email_unavailable'],
+    [new ApiError(503, 'accounts_closed'), 'closed'],
     [new ApiError(403, 'invalid_code'), 'other'],
   ])('maps %o to %s on a link request', (error, failure) => {
     expect(linkRequestFailure(error)).toBe(failure);
