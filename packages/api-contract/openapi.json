@@ -17,7 +17,7 @@
     "/health": {
       "get": {
         "operationId": "getHealth",
-        "summary": "Service health, including the database connection and its role",
+        "summary": "Service health, including the database connection and its role, and whether new accounts can be made",
         "responses": {
           "200": {
             "description": "Current health",
@@ -48,11 +48,19 @@
                       "required": [
                         "database"
                       ]
+                    },
+                    "accounts": {
+                      "type": "string",
+                      "enum": [
+                        "open",
+                        "closed"
+                      ]
                     }
                   },
                   "required": [
                     "status",
-                    "checks"
+                    "checks",
+                    "accounts"
                   ]
                 }
               }
@@ -2539,7 +2547,7 @@
     "/auth/recovery/start": {
       "post": {
         "operationId": "recoveryStart",
-        "summary": "Emails a recovery link when the address has an account open to recovery; the same answer either way; 503 email_unavailable without a sending domain",
+        "summary": "Emails a recovery link when the address has an account open to recovery; the same answer either way; 503 accounts_closed where no email can be sent",
         "requestBody": {
           "required": true,
           "content": {

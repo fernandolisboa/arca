@@ -1,10 +1,10 @@
 import { pendingPasskeyHours } from '@arca/api-contract/client';
 import { Button } from '@arca/ui';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { resetAccount } from '../api.js';
+import { healthQuery, resetAccount } from '../api.js';
 import { TextField } from '../forms/text-field.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { passkeys } from '../platform.js';
@@ -34,6 +34,7 @@ const accountInput = { name: 'username', type: 'text', autoComplete: 'username w
 
 function SignIn() {
   const { t } = useTranslation();
+  const closed = useQuery(healthQuery).data?.accounts === 'closed';
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [support, setSupport] = useState<Support>();
@@ -132,13 +133,20 @@ function SignIn() {
       <p role="status" className={failure === undefined && !waiting ? 'text-muted' : 'text-ink'}>
         {message}
       </p>
-      <p className="text-small text-muted">{t('signIn.inviteOnly')}</p>
-      <div className="flex flex-col gap-1">
-        <p className="text-small text-muted">{t('signIn.lostAccess')}</p>
-        <Link to="/recover" className={textLinkClass}>
-          {t('signIn.recover')}
-        </Link>
-      </div>
+      {/* A deployment that takes no accounts yet offers neither invites nor recovery (R9). */}
+      {closed ? (
+        <p className="text-small text-muted">{t('signIn.closed')}</p>
+      ) : (
+        <>
+          <p className="text-small text-muted">{t('signIn.inviteOnly')}</p>
+          <div className="flex flex-col gap-1">
+            <p className="text-small text-muted">{t('signIn.lostAccess')}</p>
+            <Link to="/recover" className={textLinkClass}>
+              {t('signIn.recover')}
+            </Link>
+          </div>
+        </>
+      )}
     </section>
   );
 }

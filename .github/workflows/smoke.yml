@@ -13,8 +13,8 @@ permissions: {}
 env:
   TURBO_TELEMETRY_DISABLED: '1'
   DO_NOT_TRACK: '1'
-  # Vercel's assigned production alias until the production domain is chosen (docs/OPEN-QUESTIONS.md).
-  PRODUCTION_ORIGIN: https://arca-ruddy-five.vercel.app
+  # The host the production site file names (spec 0003, R9).
+  PRODUCTION_ORIGIN: https://arca.filx.app
 
 jobs:
   production:

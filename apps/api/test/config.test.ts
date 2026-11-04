@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   databaseTargetFrom,
+  hostNamePattern,
   MissingConfigError,
   readApiSecrets,
   readAuthOrigin,
@@ -10,7 +11,9 @@ import {
   readEnrollmentCodeHash,
   readJobsDatabasePassword,
   readRateLimitKey,
+  readResendKey,
 } from '../src/config.js';
+import { productionSite } from '../src/production-site.js';
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -129,10 +132,26 @@ describe('readAuthOrigin', () => {
     expect(readAuthOrigin()).toBe('https://arca-git-feature-team.vercel.app');
   });
 
-  it('uses the production domain in production', () => {
+  it('uses the host the site file names in production (spec 0003, R9)', () => {
+    vi.stubEnv('VERCEL_ENV', 'production');
+    vi.stubEnv('VERCEL_PROJECT_PRODUCTION_URL', 'arca-team.vercel.app');
+    expect(readAuthOrigin({ host: 'arca.example.com', senderDomain: null })).toBe(
+      'https://arca.example.com',
+    );
+    expect(readAuthOrigin()).toBe('https://arca.filx.app');
+  });
+
+  it('falls back to the production URL while the site file names no host', () => {
     vi.stubEnv('VERCEL_ENV', 'production');
     vi.stubEnv('VERCEL_PROJECT_PRODUCTION_URL', 'arca.example.com');
-    expect(readAuthOrigin()).toBe('https://arca.example.com');
+    expect(readAuthOrigin({ host: null, senderDomain: null })).toBe('https://arca.example.com');
+  });
+
+  it('refuses a site host that is not a host name', () => {
+    vi.stubEnv('VERCEL_ENV', 'production');
+    expect(() => readAuthOrigin({ host: 'arca.example.com/x', senderDomain: null })).toThrow(
+      MissingConfigError,
+    );
   });
 
   it('uses the local dev server outside Vercel', () => {
@@ -183,6 +202,33 @@ describe('readAuthOrigin', () => {
       expect(() => readAuthOrigin()).toThrow(MissingConfigError);
     },
   );
+});
+
+describe('the production site file (spec 0003, R9)', () => {
+  // Remove with the change that moves recovery's send behind its answer (spec 0003, R6): until
+  // then a slow send would show that an address has an account.
+  it('names no sending domain while recovery still waits for its send', () => {
+    expect(productionSite.senderDomain).toBeNull();
+  });
+
+  it('names host names only', () => {
+    for (const name of [productionSite.host, productionSite.senderDomain]) {
+      if (name !== null) expect(name).toMatch(hostNamePattern);
+    }
+  });
+});
+
+describe('readResendKey', () => {
+  it.each([
+    [undefined, undefined],
+    ['', undefined],
+    ['not-a-key', undefined],
+    ['re_abc DEF', undefined],
+    [' re_abc_DEF-1\n', 're_abc_DEF-1'],
+  ])('reads %j as %j', (value, expected) => {
+    vi.stubEnv('RESEND_API_KEY', value);
+    expect(readResendKey()).toBe(expected);
+  });
 });
 
 describe('readDeploymentEnvironment', () => {

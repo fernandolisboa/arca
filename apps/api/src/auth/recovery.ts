@@ -77,7 +77,10 @@ export interface RecoverySettings {
   readonly i18n: I18n;
   readonly origin: string;
   readonly logger: Logger;
-  /** False where no sending domain exists yet (spec 0003, R9): every start answers so. */
+  /**
+   * False where no email can be sent (spec 0003, R9), behind the closed gate: every start
+   * answers so.
+   */
   readonly emailAvailable: boolean;
   /** Records the waits that are over first, so a pending recovery passkey is seen as it stands. */
   readonly status: (accountId: string) => Promise<AccountStatus>;

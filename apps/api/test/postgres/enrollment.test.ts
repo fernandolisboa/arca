@@ -59,6 +59,7 @@ beforeAll(async () => {
     registration: hooks,
   });
   app = createApp({
+    accountsOpen: true,
     checkDatabase: () => Promise.resolve('ok'),
     logger: silentLogger,
     origin,

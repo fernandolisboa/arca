@@ -9,7 +9,7 @@ export interface EmailSender {
   send(message: EmailMessage): Promise<void>;
 }
 
-/** Production has no sending domain yet (spec 0003, R9), so nothing may be sent. */
+/** Where production has no sending domain or key (spec 0003, R9), nothing may be sent. */
 export class EmailNotConfiguredError extends Error {
   override name = 'EmailNotConfiguredError';
 }

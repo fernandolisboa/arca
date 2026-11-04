@@ -9,8 +9,12 @@ describe('client entry', () => {
     const probe = vi.spyOn(globalThis, 'Function');
     const { routes } = await import('../src/client/index.js');
     expect(
-      routes.health.response.schema.parse({ status: 'ok', checks: { database: 'ok' } }),
-    ).toEqual({ status: 'ok', checks: { database: 'ok' } });
+      routes.health.response.schema.parse({
+        status: 'ok',
+        checks: { database: 'ok' },
+        accounts: 'open',
+      }),
+    ).toEqual({ status: 'ok', checks: { database: 'ok' }, accounts: 'open' });
     expect(probe).not.toHaveBeenCalled();
   });
 });

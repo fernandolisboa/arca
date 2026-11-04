@@ -25,7 +25,12 @@ import {
   readRateLimitKey,
 } from './config.js';
 import { apiDatabase, auditDatabase, authDatabase } from './database.js';
-import { emailAvailableIn, emailSenderFor, outboxReaderFor } from './email/environment.js';
+import {
+  accountsOpenWith,
+  emailRouteFor,
+  emailSenderFor,
+  outboxReaderFor,
+} from './email/environment.js';
 import { createNotices } from './email/notices.js';
 import { createLogger } from './logger.js';
 import { heartbeat } from './workflows/heartbeat.js';
@@ -61,6 +66,8 @@ function authConnection() {
 }
 
 const environment = readDeploymentEnvironment();
+const emailRoute = emailRouteFor(environment);
+const accountsOpen = accountsOpenWith(emailRoute);
 
 let limiterInstance: RateLimiter | undefined;
 
@@ -97,7 +104,7 @@ function authParts(): Promise<AuthParts> {
     const target = databaseTargetFrom(useRuntimeConfig()['database']);
     const audit = auditLog(auditDatabase(target, readAuditDatabasePassword(), logger).db);
     const origin = readAuthOrigin();
-    const email = emailSenderFor(environment, authConnection);
+    const email = emailSenderFor(emailRoute, environment, authConnection);
     const i18n = await createI18n();
     const notices = createNotices({ email, i18n, origin });
     const db = authConnection();
@@ -131,7 +138,7 @@ function authParts(): Promise<AuthParts> {
         i18n,
         origin,
         logger,
-        emailAvailable: emailAvailableIn(environment),
+        emailAvailable: accountsOpen,
         status: devices.status,
       }),
     };
@@ -168,6 +175,7 @@ const app = createApp({
     sweepRateLimits: () => limiter.sweep(),
   },
   ...withOrigin(ownOrigin()),
+  accountsOpen,
   auth: {
     handle: async (request) => (await authParts()).auth.handle(request),
     signedIn: async (headers) => (await authParts()).auth.signedIn(headers),

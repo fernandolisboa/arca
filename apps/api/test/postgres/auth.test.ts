@@ -66,6 +66,7 @@ beforeAll(async () => {
 
 function appFor(target: Auth, audit?: ReturnType<typeof auditReader>): App {
   return createApp({
+    accountsOpen: true,
     checkDatabase: () => Promise.resolve('ok'),
     logger,
     origin,

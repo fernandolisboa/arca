@@ -89,6 +89,12 @@ export interface AppDependencies {
    * (spec 0003, R4); absent, every such request is refused.
    */
   readonly origin?: string;
+  /**
+   * True where new accounts can be made; absent or false, as in a production with no sending
+   * domain (spec 0003, R9), enrollment, invites, registration and recovery answer 503
+   * `accounts_closed`.
+   */
+  readonly accountsOpen?: boolean;
   /** Better Auth behind the allow-list; absent, every auth path is a 404. */
   readonly auth?: AuthService;
   readonly authLimits?: AuthLimits;
@@ -133,6 +139,7 @@ export type ErrorCode =
   | 'passkey_refused'
   | 'recovery_locked'
   | 'recovery_pending'
+  | 'accounts_closed'
   | 'request_failed'
   | 'internal_error';
 
@@ -224,6 +231,11 @@ export function createRouter() {
   });
 }
 
+/** A route and a request matched by exact method and path. */
+const routeKey = ({ method, path }: Pick<RouteDefinition, 'method' | 'path'>) =>
+  `${method.toUpperCase()} ${apiBasePath}${path}`;
+const requestKey = (c: Context) => `${c.req.method} ${c.req.path}`;
+
 /** The API as a plain Hono app, importable and testable without the Nitro shell. */
 export function createApp({
   checkDatabase,
@@ -232,6 +244,7 @@ export function createApp({
   newRequestId = () => crypto.randomUUID(),
   cron,
   origin,
+  accountsOpen = false,
   auth,
   authLimits,
   stepUp,
@@ -291,7 +304,14 @@ export function createApp({
 
   v1.openapi(openApiRoutes.health, async (c) => {
     const database = await databaseStatus();
-    return c.json({ status: database === 'ok' ? 'ok' : 'degraded', checks: { database } }, 200);
+    return c.json(
+      {
+        status: database === 'ok' ? 'ok' : 'degraded',
+        checks: { database },
+        accounts: accountsOpen ? 'open' : 'closed',
+      },
+      200,
+    );
   });
 
   const lookUp = async (headers: Headers): Promise<RequestSession> => {
@@ -368,6 +388,30 @@ export function createApp({
     return c.json(outcome.body, 200);
   };
 
+  /** Every route that makes, or proves the address of, an account (spec 0003, R9). */
+  const makingAccounts = new Set(
+    [
+      openApiRoutes.enrollOwner,
+      openApiRoutes.registrationOptions,
+      openApiRoutes.registrationVerify,
+      openApiRoutes.createInvite,
+      openApiRoutes.inviteDetails,
+      openApiRoutes.recoveryStart,
+      openApiRoutes.recoveryRedeem,
+      openApiRoutes.recoveryOptions,
+      openApiRoutes.recoveryVerify,
+    ].map(routeKey),
+  );
+  v1.use(
+    '*',
+    createMiddleware<AppEnv>(async (c, next) => {
+      if (!accountsOpen && makingAccounts.has(requestKey(c))) {
+        return reject(c, 'accounts_closed', 503);
+      }
+      return next();
+    }),
+  );
+
   /**
    * While a recovery passkey waits, a session of its account may only show so and cancel it
    * from the device list (spec 0003, R6); every other route answers 403 `recovery_pending`.
@@ -386,12 +430,12 @@ export function createApp({
       openApiRoutes.recoveryOptions,
       openApiRoutes.recoveryVerify,
       ...authRoutes,
-    ].map(({ method, path }) => `${method.toUpperCase()} ${apiBasePath}${path}`),
+    ].map(routeKey),
   );
   const restrictWhileRecoveryPending = createMiddleware<AppEnv>(async (c, next) => {
     // Only a cookie carries a session, so a request without one has nothing to restrict.
     if (c.req.header('cookie') === undefined) return next();
-    if (whileRecoveryPending.has(`${c.req.method} ${c.req.path}`)) return next();
+    if (whileRecoveryPending.has(requestKey(c))) return next();
     const { current, status } = await sessionOf(c);
     if (current !== null && status?.recoveryPending === true) {
       return reject(c, 'recovery_pending', 403);
@@ -681,7 +725,7 @@ export function createApp({
   // method and the raw path Better Auth will route on, so no encoding or extra segment slips by.
   const allowed = new Map<string, { route: RouteDefinition; limit: RateLimitRule }>(
     authRoutes.map((route) => [
-      `${route.method.toUpperCase()} ${apiBasePath}${route.path}`,
+      routeKey(route),
       { route, limit: authRouteLimits[route.operationId] },
     ]),
   );

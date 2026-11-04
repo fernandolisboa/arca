@@ -105,6 +105,7 @@ function setup({
     accepted: () => Promise.resolve(),
   };
   const app = createApp({
+    accountsOpen: true,
     checkDatabase: () => Promise.resolve('ok'),
     logger: silentLogger,
     origin,
