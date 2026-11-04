@@ -32,6 +32,8 @@ import { noRelativeImportOutsidePackage } from './rules/no-relative-import-outsi
 const restrictionsByKind = {
   /** packages/domain: pure code, no I/O and no clock. */
   domain: [pureRuntime],
+  /** packages/telemetry: runs in the API and in the browser, so no I/O and no host globals. */
+  telemetry: [pureRuntime],
   /** packages/platform: browser globals; native APIs are allowed here and nowhere else. */
   browser: [],
   /** apps/web and packages/ui: no OS sniffing or native imports; React and i18n rules. */
@@ -110,7 +112,7 @@ export function arcaConfig({ rootDir, kinds = [] }) {
     tseslint.configs.stylisticTypeChecked,
     {
       languageOptions: {
-        globals: kinds.includes('domain')
+        globals: kinds.some((kind) => kind === 'domain' || kind === 'telemetry')
           ? globals.es2025
           : inBrowser
             ? globals.browser

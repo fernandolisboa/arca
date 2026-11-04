@@ -22,8 +22,11 @@ const values = Object.values(personal);
 const leaked = (output: unknown) =>
   values.filter((value) => JSON.stringify(output).includes(value));
 
-const reduce = urlReducer(['v1', 'auth', 'recovery', 'start', 'invites', 'details', 'recover']);
-const sentry = sentryScrubbers(reduce);
+const reduce = urlReducer({
+  segments: ['v1', 'auth', 'recovery', 'start', 'invites', 'details', 'recover', 'assets'],
+  hosts: ['arca.example'],
+});
+const sentry = sentryScrubbers({ reduce, tables: ['auth.user'] });
 const csp = cspScrubber(reduce);
 const dsn = 'https://public@o1.ingest.de.sentry.io/2';
 
@@ -35,7 +38,7 @@ const event = {
   timestamp: 1_767_000_000,
   level: 'error',
   platform: 'node',
-  release: 'arca@1.2.3',
+  release: '0123abc',
   environment: 'production',
   message: pii,
   logentry: { message: pii },
@@ -45,7 +48,11 @@ const event = {
       {
         type: 'TypeError',
         value: `Cannot read ${personal.cpf} of ${personal.name}`,
-        mechanism: { type: 'onerror', handled: false, data: { note: personal.freeText } },
+        mechanism: {
+          type: 'auto.browser.global_handlers.onerror',
+          handled: false,
+          data: { note: personal.freeText },
+        },
         stacktrace: {
           frames: [
             {
@@ -194,14 +201,14 @@ describe('the scrubber, on every exporter path (spec 0004, R3)', () => {
       timestamp: event.timestamp,
       level: 'error',
       platform: 'node',
-      release: 'arca@1.2.3',
+      release: '0123abc',
       environment: 'production',
       transaction: 'POST /v1/invites/:param',
       exception: {
         values: [
           {
             type: 'TypeError',
-            mechanism: { type: 'onerror', handled: false },
+            mechanism: { type: 'auto.browser.global_handlers.onerror', handled: false },
             stacktrace: {
               frames: [
                 {
@@ -265,7 +272,7 @@ describe('the scrubber, on every exporter path (spec 0004, R3)', () => {
         url: 'https://arca.example/v1/invites/:param',
         body: {
           documentURL: 'https://arca.example/v1/invites/:param',
-          blockedURL: 'https://evil.example/:param',
+          blockedURL: 'https://:host/:param',
           effectiveDirective: 'script-src-elem',
           disposition: 'enforce',
           sourceFile: 'https://arca.example/v1/invites/:param',
@@ -290,6 +297,62 @@ describe('the scrubber, on every exporter path (spec 0004, R3)', () => {
     const other = envelope.replace(dsn, 'https://public@o9.ingest.sentry.io/9');
     expect(scrubEnvelope(other, { dsn, event: sentry.event })).toBeNull();
     expect(scrubEnvelope('not json', { dsn, event: sentry.event })).toBeNull();
+  });
+
+  it('forwards no transaction from the browser, whatever its item says', () => {
+    const head = JSON.stringify({ dsn });
+    const forward = (type: string, payload: object) =>
+      scrubEnvelope([head, JSON.stringify({ type }), JSON.stringify(payload)].join('\n'), {
+        dsn,
+        event: sentry.event,
+      });
+    expect(forward('transaction', transaction)).toBeNull();
+    expect(forward('event', transaction)).toBeNull();
+  });
+
+  it('keeps what matches a frame to its source map, and the method of a Node breadcrumb', () => {
+    const debugId = '3f2a9c1e-0b7d-4c55-9e1a-7d2f4b6a8c90';
+    expect(
+      sentry.event({
+        debug_meta: {
+          images: [
+            {
+              type: 'sourcemap',
+              code_file: 'https://arca.example/assets/index-B4x9Qe1z.js',
+              debug_id: debugId,
+            },
+          ],
+        },
+      }),
+    ).toEqual({
+      debug_meta: {
+        images: [
+          {
+            type: 'sourcemap',
+            code_file: 'https://arca.example/assets/index-B4x9Qe1z.js',
+            debug_id: debugId,
+          },
+        ],
+      },
+    });
+    expect(
+      sentry.breadcrumb({ category: 'http', data: { 'http.request.method': 'POST', url: piiUrl } }),
+    ).toEqual({
+      category: 'http',
+      data: { 'http.request.method': 'POST', url: 'https://arca.example/v1/invites/:param' },
+    });
+  });
+
+  it('picks the violations out of a mixed report batch, and keeps a bare scheme', () => {
+    const violation = { type: 'csp-violation', body: { blockedURL: 'chrome-extension' } };
+    expect(
+      csp([violation, ...Array.from({ length: 30 }, () => ({ type: 'deprecation' }))]),
+    ).toEqual([violation]);
+  });
+
+  it('drops a name that is neither a path nor an http(s) URL', () => {
+    expect(reduce('readDatabaseTime')).toBeUndefined();
+    expect(reduce('wss://arca.example/x')).toBeUndefined();
   });
 
   it('drops a field it does not know, at every level', () => {
@@ -332,7 +395,6 @@ describe('an adversarial envelope (spec 0004, R3)', () => {
     expect(JSON.stringify(scrubbed)).not.toContain('Ignore');
     expect(scrubbed).toEqual({
       level: 'error',
-      transaction: '/:param',
       exception: { values: [{ stacktrace: { frames: [{ lineno: 1 }, { lineno: 2 }] } }] },
       tags: {},
       contexts: { trace: {} },
@@ -344,5 +406,63 @@ describe('an adversarial envelope (spec 0004, R3)', () => {
       },
     ]);
     expect(JSON.stringify(report)).not.toContain('Ignore');
+  });
+
+  it.each([
+    ['joined by underscores', instruction.replaceAll(' ', '_')],
+    ['joined by hyphens', instruction.replaceAll(' ', '-').toLowerCase()],
+    ['shaped like a passport number', personal.passport],
+    ['shaped like a CPF', personal.cpf],
+  ])('drops a value %s from fields shaped like identifiers', (_, text) => {
+    const scrubbed = sentry.event({
+      platform: text,
+      release: text,
+      environment: text,
+      tags: { errorCode: text },
+      exception: { values: [{ mechanism: { type: text } }] },
+      contexts: { trace: { status: text }, runtime: { name: text, version: text } },
+      sdk: { name: text, version: text },
+    });
+    expect(JSON.stringify(scrubbed)).not.toContain(text);
+    expect(
+      JSON.stringify(csp([{ type: 'csp-violation', body: { effectiveDirective: text } }])),
+    ).not.toContain(text);
+  });
+
+  it('turns a host it does not know into a placeholder, whatever the host carries', () => {
+    const exfiltrate = `https://12345678909.${instruction.replaceAll(' ', '-')}.attacker.example/x`;
+    expect(reduce(exfiltrate)).toBe('https://:host/:param');
+    expect(reduce('https://123.456.789-09/x')).toBe('https://:host/:param');
+    expect(reduce('https://0x7f.1/v1')).toBe('https://:host/v1');
+    expect(reduce('https://arca.example/v1/invites/x')).toBe(
+      'https://arca.example/v1/invites/:param',
+    );
+  });
+
+  it('reduces a frame file name that is a page URL, keeping only a built asset name', () => {
+    const frames = (filename: string) =>
+      sentry.event({ exception: { values: [{ stacktrace: { frames: [{ filename }] } }] } });
+    const kept = (filename: string) =>
+      /"filename":"([^"]*)"/.exec(JSON.stringify(frames(filename)))?.[1];
+    expect(kept(`https://arca.example/recover/${personal.email}`)).toBe(
+      'https://arca.example/recover/:param',
+    );
+    expect(kept('https://arca.example/assets/index-B4x9Qe1z.js')).toBe(
+      'https://arca.example/assets/index-B4x9Qe1z.js',
+    );
+    expect(kept('/var/task/server/index.mjs')).toBe('/var/task/server/index.mjs');
+    expect(kept(personal.cpf)).toBeUndefined();
+    expect(kept('/cases/3f2a9c1e-0b7d-4c55-9e1a-7d2f4b6a8c90')).toBeUndefined();
+  });
+
+  it('names a database span by a table it knows, or by its operation alone', () => {
+    const named = (statement: string) =>
+      (
+        sentry.event({ spans: [{ op: 'db', data: { 'db.statement': statement } }] })?.['spans'] as
+          { description?: string }[] | undefined
+      )?.[0]?.description;
+    expect(named(`select 'x' from ${instruction.replaceAll(' ', '_')}`)).toBe('SELECT');
+    expect(named('with t as (select 1) select * from cpf_12345678909')).toBe('WITH');
+    expect(named('update "auth"."user" set name = $1')).toBe('UPDATE auth.user');
   });
 });

@@ -23,6 +23,9 @@
       "path": "packages/platform/tsconfig.build.json"
     },
     {
+      "path": "packages/telemetry/tsconfig.build.json"
+    },
+    {
       "path": "packages/ui"
     },
     {

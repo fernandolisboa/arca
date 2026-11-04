@@ -1,5 +1,8 @@
 import type { Shape } from './shapes.js';
 
+/** The exported shape of a Sentry event, breadcrumb or CSP report: plain JSON, nothing more. */
+export type Scrubbed = Readonly<Record<string, unknown>>;
+
 /** Turns an untrusted value into what may be exported, or undefined to drop it. */
 export type Rule = (value: unknown) => unknown;
 

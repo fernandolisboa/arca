@@ -1,10 +1,11 @@
 import {
+  errorCode,
   errorName,
   finite,
-  identifier,
+  httpMethod,
   routePattern,
-  token,
   traceId,
+  uuid,
   type Shape,
 } from './shapes.js';
 
@@ -13,14 +14,14 @@ import {
  * 0004, R3). Anything else is dropped, so a careless caller cannot put personal data in a log line.
  */
 const allowedFields = {
-  requestId: token,
+  requestId: uuid,
   traceId,
-  method: identifier,
+  method: httpMethod,
   /** The matched route pattern, never the request path. */
   route: routePattern,
   status: finite,
   durationMs: finite,
-  errorCode: identifier,
+  errorCode,
   errorName,
 } as const satisfies Readonly<Record<string, Shape>>;
 

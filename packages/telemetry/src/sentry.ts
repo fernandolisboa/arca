@@ -1,85 +1,134 @@
-import { isRecord, keep, list, object, type Rule } from './rules.js';
+import { isRecord, keep, list, object, type Rule, type Scrubbed } from './rules.js';
 import {
   boolean,
   contentType,
+  errorCode,
+  eventId,
   finite,
   functionName,
   httpMethod,
-  identifier,
   integer,
   oneOf,
   operation,
   pathLike,
   release,
+  uuid,
   sdkName,
   spanId,
   traceId,
+  version,
 } from './shapes.js';
 import { nameReducer, type UrlReducer } from './urls.js';
 
-/** The exported shape of a Sentry event, transaction or breadcrumb: plain JSON, nothing more. */
-export type Scrubbed = Readonly<Record<string, unknown>>;
+export interface SentryKnowns {
+  readonly reduce: UrlReducer;
+  /** The database tables a span may name, as `schema.table`; any other name is dropped. */
+  readonly tables: Iterable<string>;
+}
 
 const level = oneOf(['fatal', 'error', 'warning', 'log', 'info', 'debug']);
+/** Sentry's span statuses, the only values a trace or span status takes. */
+const spanStatus = oneOf([
+  'ok',
+  'cancelled',
+  'unknown_error',
+  'invalid_argument',
+  'deadline_exceeded',
+  'not_found',
+  'already_exists',
+  'permission_denied',
+  'resource_exhausted',
+  'failed_precondition',
+  'aborted',
+  'out_of_range',
+  'unimplemented',
+  'internal_error',
+  'unavailable',
+  'data_loss',
+  'unauthenticated',
+]);
 /** Breadcrumbs that only ever carry a method, a URL and a status; every other kind is dropped. */
 const breadcrumbCategory = oneOf(['fetch', 'xhr', 'http', 'navigation']);
+/** The SDK that sent an event; the tunnel keeps it from an envelope header too. */
+export const sdk = object({ name: keep(sdkName), version: keep(version) });
 const className = keep((value) => functionName(value) && !String(value).includes('<'));
+/** A source file on the server, or a built asset's file name in the browser. */
+const codeFile = /\.[cm]?[jt]sx?$/;
+const assetName = /^[A-Za-z0-9_-]{1,100}\.[cm]?js$/;
 
-const frame = object({
-  filename: keep(pathLike),
-  function: keep(functionName),
-  lineno: keep(integer),
-  colno: keep(integer),
-  in_app: keep(boolean),
-});
-
-/** The exception's class and where it was thrown; its message is always dropped. */
-const exception = object({
-  type: className,
-  mechanism: object({ type: keep(identifier), handled: keep(boolean) }),
-  stacktrace: object({ frames: list(frame, 50) }),
-});
-
+const stringLiteral = /'(?:[^']|'')*'/g;
 const sqlStatement = /^\s*(select|insert|update|delete|with)\b/i;
 const sqlTable =
   /\b(?:from|into|update)\s+("?[a-z_][a-z0-9_]{0,62}"?(?:\."?[a-z_][a-z0-9_]{0,62}"?)?)/i;
 
-/** A database span keeps its operation and table only, never the statement or its values. */
-function databaseName(data: Readonly<Record<string, unknown>>): string | undefined {
-  const statement = data['db.statement'] ?? data['db.query.text'];
-  if (typeof statement !== 'string') return undefined;
-  const verb = sqlStatement.exec(statement)?.[1];
-  if (verb === undefined) return undefined;
-  const table = sqlTable.exec(statement)?.[1]?.replaceAll('"', '');
-  return table === undefined ? verb.toUpperCase() : `${verb.toUpperCase()} ${table}`;
-}
+export function sentryScrubbers({ reduce, tables }: SentryKnowns) {
+  const name = nameReducer(reduce);
+  const knownTables = new Set(tables);
 
-export function sentryScrubbers(reduce: UrlReducer) {
-  const route: Rule = (value) => reduce(value);
-  const name: Rule = (value) => nameReducer(reduce)(value);
+  /**
+   * In the browser a frame's file name may be the page's own URL, so a URL is reduced like any
+   * other, keeping only a built asset's name; a server path must name a source file.
+   */
+  const fileName: Rule = (value) => {
+    if (typeof value !== 'string') return undefined;
+    if (!/^https?:/.test(value)) return pathLike(value) && codeFile.test(value) ? value : undefined;
+    const route = reduce(value);
+    if (route === undefined) return undefined;
+    const last = new URL(value).pathname.split('/').at(-1) ?? '';
+    return assetName.test(last) ? route.replace(/:param$/, last) : route;
+  };
+
+  /** A database span keeps its operation and a known table only, never the statement. */
+  const databaseName = (data: Readonly<Record<string, unknown>>): string | undefined => {
+    const statement = data['db.statement'] ?? data['db.query.text'];
+    if (typeof statement !== 'string') return undefined;
+    const verb = sqlStatement.exec(statement)?.[1]?.toUpperCase();
+    if (verb === undefined) return undefined;
+    const table = sqlTable
+      .exec(statement.replaceAll(stringLiteral, "''"))?.[1]
+      ?.replaceAll('"', '');
+    return table !== undefined && knownTables.has(table) ? `${verb} ${table}` : verb;
+  };
+
+  const frame = object({
+    filename: fileName,
+    function: keep(functionName),
+    lineno: keep(integer),
+    colno: keep(integer),
+    in_app: keep(boolean),
+  });
+
+  /** The exception's class and where it was thrown; its message is always dropped. */
+  const exception = object({
+    type: className,
+    mechanism: object({ type: keep(operation), handled: keep(boolean) }),
+    stacktrace: object({ frames: list(frame, 50) }),
+  });
 
   const breadcrumb: Rule = (value) => {
     if (!isRecord(value) || !breadcrumbCategory(value['category'])) return undefined;
     return object({
-      type: keep(identifier),
+      type: keep(oneOf(['default', 'http', 'navigation'])),
       category: keep(breadcrumbCategory),
       level: keep(level),
       timestamp: keep(finite),
       data: object({
         method: keep(httpMethod),
-        url: route,
+        'http.request.method': keep(httpMethod),
+        url: reduce,
         status_code: keep(integer),
-        from: route,
-        to: route,
+        from: reduce,
+        to: reduce,
       }),
     })(value);
   };
 
   const spanData = object({
-    'db.system': keep(identifier),
+    'db.system': keep(oneOf(['postgresql'])),
+    'db.system.name': keep(oneOf(['postgresql'])),
     'http.request.method': keep(httpMethod),
     'http.response.status_code': keep(integer),
-    'http.route': route,
+    'http.route': reduce,
   });
 
   const span: Rule = (value) => {
@@ -90,7 +139,7 @@ export function sentryScrubbers(reduce: UrlReducer) {
       trace_id: keep(traceId),
       op: keep(operation),
       origin: keep(operation),
-      status: keep(identifier),
+      status: keep(spanStatus),
       start_timestamp: keep(finite),
       timestamp: keep(finite),
       data: spanData,
@@ -106,21 +155,23 @@ export function sentryScrubbers(reduce: UrlReducer) {
   };
 
   const event = object({
-    event_id: keep((value) => typeof value === 'string' && /^[0-9a-f]{32}$/.test(value)),
+    event_id: keep(eventId),
     type: keep(oneOf(['transaction'])),
     timestamp: keep(finite),
     start_timestamp: keep(finite),
     level: keep(level),
-    platform: keep(identifier),
+    platform: keep(oneOf(['javascript', 'node'])),
     release: keep(release),
-    environment: keep(identifier),
+    environment: keep(oneOf(['production', 'preview'])),
     transaction: name,
-    transaction_info: object({ source: keep(identifier) }),
+    transaction_info: object({
+      source: keep(oneOf(['custom', 'url', 'route', 'view', 'component', 'task'])),
+    }),
     exception: object({ values: list(exception, 10) }),
-    tags: object({ errorCode: keep(identifier) }),
+    tags: object({ errorCode: keep(errorCode) }),
     request: object({
       method: keep(httpMethod),
-      url: route,
+      url: reduce,
       headers: object({ 'content-type': keep(contentType) }),
     }),
     contexts: object({
@@ -129,13 +180,24 @@ export function sentryScrubbers(reduce: UrlReducer) {
         span_id: keep(spanId),
         parent_span_id: keep(spanId),
         op: keep(operation),
-        status: keep(identifier),
+        status: keep(spanStatus),
       }),
-      runtime: object({ name: keep(identifier), version: keep(release) }),
+      runtime: object({ name: keep(oneOf(['node'])), version: keep(version) }),
     }),
     breadcrumbs: list(breadcrumb, 50),
     spans: list(span, 1000),
-    sdk: object({ name: keep(sdkName), version: keep(release) }),
+    /** Where the SDK matches each frame to its uploaded source map. */
+    debug_meta: object({
+      images: list(
+        object({
+          type: keep(oneOf(['sourcemap'])),
+          code_file: fileName,
+          debug_id: keep(uuid),
+        }),
+        100,
+      ),
+    }),
+    sdk,
   });
 
   return {

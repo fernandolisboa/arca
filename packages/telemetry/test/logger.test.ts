@@ -6,7 +6,7 @@ describe('logger', () => {
     const lines: string[] = [];
     const logger = createLogger((line) => lines.push(line));
     logger.info({
-      requestId: 'r-1',
+      requestId: '0f8fad5b-d9cb-469f-a165-70867728950e',
       route: '/v1/health',
       status: 200,
       durationMs: 3,
@@ -14,7 +14,13 @@ describe('logger', () => {
       ...({ email: 'someone@example.test', body: { name: 'x' } } as object),
     });
     expect(lines.map((line) => JSON.parse(line) as unknown)).toEqual([
-      { level: 'info', requestId: 'r-1', route: '/v1/health', status: 200, durationMs: 3 },
+      {
+        level: 'info',
+        requestId: '0f8fad5b-d9cb-469f-a165-70867728950e',
+        route: '/v1/health',
+        status: 200,
+        durationMs: 3,
+      },
     ]);
   });
 
@@ -33,7 +39,7 @@ describe('logger', () => {
       errorCode: 'case 123 of someone@example.test',
       errorName: 'TypeError',
       status: Number.NaN,
-      route: 'x'.repeat(257),
+      route: `/${'x'.repeat(200)}`,
     });
     expect(JSON.parse(lines[0] ?? '')).toEqual({ level: 'error', errorName: 'TypeError' });
   });
