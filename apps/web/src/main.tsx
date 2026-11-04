@@ -20,8 +20,13 @@ const router = createRouter({
   routeTree,
   defaultNotFoundComponent: NotFound,
   defaultErrorComponent: Failure,
-  // Motion off zeroes the view-transition animations in CSS, so the swap is instant (spec 0006, R6).
-  defaultViewTransition: true,
+  // Page changes cross-fade; motion off zeroes the animations in CSS (spec 0006, R6). The first load
+  // and same-page updates skip the transition, which would block input while it runs. Browsers
+  // without view-transition types transition every load instead.
+  defaultViewTransition: {
+    types: ({ fromLocation, pathChanged }) =>
+      fromLocation !== undefined && pathChanged ? [] : false,
+  },
 });
 
 declare module '@tanstack/react-router' {

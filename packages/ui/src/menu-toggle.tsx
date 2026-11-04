@@ -1,4 +1,7 @@
+import type { Ref } from 'react';
+
 export interface MenuToggleProps {
+  readonly ref?: Ref<HTMLButtonElement>;
   readonly open: boolean;
   readonly onToggle: () => void;
   /** The id of the panel this button opens. */
@@ -15,9 +18,17 @@ const line =
  * The menu button (spec 0006, Navigation): three lines that morph into an X while the panel is
  * open, so the same button closes it. The top and bottom lines rotate 45° to meet; the middle fades.
  */
-export function MenuToggle({ open, onToggle, controls, openLabel, closeLabel }: MenuToggleProps) {
+export function MenuToggle({
+  ref,
+  open,
+  onToggle,
+  controls,
+  openLabel,
+  closeLabel,
+}: MenuToggleProps) {
   return (
     <button
+      ref={ref}
       type="button"
       aria-expanded={open}
       aria-controls={controls}
