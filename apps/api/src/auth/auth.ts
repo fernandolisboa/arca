@@ -8,6 +8,7 @@ import {
 } from '@arca/db/auth-schema';
 import type { Database, Transaction } from '@arca/db';
 import { passkeyActivation, passkeyCapability } from '@arca/db/enrollment-schema';
+import { passkeyClient } from '@arca/db/notice-schema';
 import type { AuthenticationExtensionsClientInputs } from '@simplewebauthn/server';
 import { betterAuth } from 'better-auth';
 import { APIError, createAuthMiddleware, isAPIError } from 'better-auth/api';
@@ -28,7 +29,7 @@ import {
   sql,
 } from 'drizzle-orm';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { authBasePath, DeviceDescription } from '@arca/api-contract/routes';
+import { authBasePath, DeviceDescription, pendingPasskeyHours } from '@arca/api-contract/routes';
 import type { AuditLog } from '../audit/log.js';
 import type { Notices } from '../email/notices.js';
 import type { Logger } from '../logger.js';
@@ -59,8 +60,16 @@ const daySeconds = 24 * 60 * 60;
 const signInPath = '/passkey/verify-authentication';
 const signInOptionsPath = '/passkey/generate-authenticate-options';
 const registrationPath = '/passkey/verify-registration';
-/** SimpleWebAuthn's types predate PRF; an empty request only asks whether it is supported. */
-const prfSupportProbe = { prf: {} } as AuthenticationExtensionsClientInputs;
+/**
+ * What every passkey registration asks for, the first one and every one added later: a
+ * discoverable credential with user verification, and PRF asked only to learn whether the
+ * authenticator supports it (spec 0003, R3; ADR-0018). SimpleWebAuthn's types predate PRF.
+ */
+export const passkeyRegistration = {
+  rpName: 'Arca',
+  authenticatorSelection: { residentKey: 'required', userVerification: 'required' },
+  extensions: { prf: {} } as AuthenticationExtensionsClientInputs,
+} as const;
 
 /** The credential ID a sign-in's assertion names, if any. */
 function assertedCredential(body: unknown) {
@@ -250,14 +259,12 @@ export function createAuth({
     plugins: [
       passkey({
         rpID: new URL(origin).hostname,
-        rpName: 'Arca',
+        rpName: passkeyRegistration.rpName,
         origin,
-        // A discoverable credential with user verification, and PRF asked only to learn whether
-        // the authenticator supports it (spec 0003, R3; ADR-0018).
-        authenticatorSelection: { residentKey: 'required', userVerification: 'required' },
+        authenticatorSelection: passkeyRegistration.authenticatorSelection,
         registration: {
           requireSession: false,
-          extensions: prfSupportProbe,
+          extensions: passkeyRegistration.extensions,
           resolveUser: registration.resolveUser,
           afterVerification: registration.afterVerification,
         },
@@ -411,19 +418,11 @@ const pending = (credentialId: typeof passkeyTable.credentialID) =>
 
 async function isPending(db: Database | Transaction, credentialId: string) {
   const [found] = await db
-    .select({ activeFrom: passkeyActivation.activeFrom })
-    .from(passkeyActivation)
-    .where(
-      and(
-        eq(passkeyActivation.credentialID, credentialId),
-        gt(passkeyActivation.activeFrom, sql`now()`),
-      ),
-    );
+    .select({ id: passkeyTable.id })
+    .from(passkeyTable)
+    .where(and(eq(passkeyTable.credentialID, credentialId), pending(passkeyTable.credentialID)));
   return found !== undefined;
 }
-
-/** How long an added passkey waits before it can sign in or approve a step-up (spec 0003, R4). */
-export const pendingPasskeyHours = 24;
 
 /** A passkey to store for the account, as a verified registration describes it. */
 export interface NewPasskey {
@@ -545,9 +544,14 @@ export const devices = {
     })),
   /**
    * Stores another passkey for the account, pending for 24 hours, with what its authenticator
-   * reported; its ID, or undefined when the credential is already stored.
+   * reported and the families of the session that added it, as registration seeds them (R7);
+   * its ID, or undefined when the credential is already stored.
    */
-  addPending: async (tx: Transaction, accountId: string, added: NewPasskey) => {
+  addPending: async (
+    tx: Transaction,
+    { accountId, sessionId }: { readonly accountId: string; readonly sessionId: string },
+    added: NewPasskey,
+  ) => {
     const [stored] = await tx
       .insert(passkeyTable)
       .values({
@@ -570,6 +574,11 @@ export const devices = {
     await tx
       .insert(passkeyCapability)
       .values({ credentialID: added.credentialId, prfEnabled: added.prfEnabled });
+    await tx.execute(sql`
+      INSERT INTO ${passkeyClient} (credential_id, browser, os)
+      SELECT ${added.credentialId}, device_browser, device_os FROM ${sessionTable}
+       WHERE id = ${sessionId} AND user_id = ${accountId}
+      ON CONFLICT DO NOTHING`);
     return stored.id;
   },
   /** When the account's newest pending passkey becomes active, or null when none is pending. */

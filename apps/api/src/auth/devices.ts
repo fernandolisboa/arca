@@ -12,7 +12,6 @@ import { passkeyChallenge as challenge } from '@arca/db/enrollment-schema';
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
-  type AuthenticationExtensionsClientInputs,
   type AuthenticatorTransportFuture,
   type RegistrationResponseJSON,
 } from '@simplewebauthn/server';
@@ -20,7 +19,7 @@ import { and, eq, lte, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import type { NoticeKind, Notices } from '../email/notices.js';
 import type { Logger } from '../logger.js';
-import { accounts, devices } from './auth.js';
+import { accounts, devices, passkeyRegistration } from './auth.js';
 import { absoluteSessionLifetimeMs, type SignedIn } from './service.js';
 import { forgetUnspent } from './step-up.js';
 
@@ -63,8 +62,6 @@ export interface DeviceSettings {
 }
 
 const challengeTimeoutMs = 2 * 60 * 1000;
-/** SimpleWebAuthn's types predate PRF; an empty request only asks whether it is supported. */
-const prfSupportProbe = { prf: {} } as AuthenticationExtensionsClientInputs;
 
 export function createDevices({
   db,
@@ -197,7 +194,7 @@ export function createDevices({
         .returning({ id: challenge.id });
       if (issued === undefined) throw new Error('the challenge was not stored');
       const options = await generateRegistrationOptions({
-        rpName: 'Arca',
+        rpName: passkeyRegistration.rpName,
         rpID: rpId,
         userName: email,
         userDisplayName: email,
@@ -213,8 +210,8 @@ export function createDevices({
             transports: transports as AuthenticatorTransportFuture[],
           }),
         ),
-        authenticatorSelection: { residentKey: 'required', userVerification: 'required' },
-        extensions: prfSupportProbe,
+        authenticatorSelection: passkeyRegistration.authenticatorSelection,
+        extensions: passkeyRegistration.extensions,
       });
       // SimpleWebAuthn adds credProps, which Arca never reads; only the empty PRF request stays.
       return {
@@ -254,16 +251,20 @@ export function createDevices({
         return false;
       }
       const passkeyId = await db.transaction(async (tx) => {
-        const stored = await devices.addPending(tx, accountId, {
-          credentialId: registered.credential.id,
-          publicKey: Buffer.from(registered.credential.publicKey).toString('base64'),
-          counter: registered.credential.counter,
-          deviceType: registered.credentialDeviceType,
-          backedUp: registered.credentialBackedUp,
-          transports: response.response.transports ?? [],
-          aaguid: registered.aaguid,
-          prfEnabled: response.clientExtensionResults.prf?.enabled === true,
-        });
+        const stored = await devices.addPending(
+          tx,
+          { accountId, sessionId },
+          {
+            credentialId: registered.credential.id,
+            publicKey: Buffer.from(registered.credential.publicKey).toString('base64'),
+            counter: registered.credential.counter,
+            deviceType: registered.credentialDeviceType,
+            backedUp: registered.credentialBackedUp,
+            transports: response.response.transports ?? [],
+            aaguid: registered.aaguid,
+            prfEnabled: response.clientExtensionResults.prf?.enabled === true,
+          },
+        );
         if (stored === undefined) return undefined;
         await audit.record({
           code: 'passkey_added',
@@ -278,8 +279,15 @@ export function createDevices({
       return true;
     },
 
+    // Every check compares the wait with the time, so a failed record never changes an answer.
     pendingUntil: async (accountId) => {
-      await activateDue(accountId);
+      try {
+        await activateDue(accountId);
+      } catch (error) {
+        logger.error({
+          errorName: `PasskeyActivation:${error instanceof Error ? error.name : 'NonErrorThrown'}`,
+        });
+      }
       return devices.pendingUntil(db, accountId);
     },
   };

@@ -408,6 +408,8 @@ export type CreateInviteResponse = z.infer<typeof CreateInviteResponse>;
 export const maxOpenInvites = 10;
 /** How long an invite can be accepted; the database default on `auth.invite` matches it. */
 export const inviteLifetimeHours = 48;
+/** How long an added passkey waits before it can sign in or approve a step-up (spec 0003, R4). */
+export const pendingPasskeyHours = 24;
 
 export const createInvite = {
   method: 'post',

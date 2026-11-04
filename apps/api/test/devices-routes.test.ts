@@ -53,6 +53,7 @@ function setup({
   passkey = 'revoked',
   accepted = true,
   pendingUntil = null,
+  allowed = true,
 }: {
   signedIn?: SignedIn | null;
   approved?: boolean;
@@ -60,6 +61,7 @@ function setup({
   passkey?: PasskeyRevocation;
   accepted?: boolean;
   pendingUntil?: Date | null;
+  allowed?: boolean;
 } = {}) {
   const calls: string[] = [];
   const spent: { purpose: string; action: CanonicalAction }[] = [];
@@ -112,7 +114,14 @@ function setup({
       refresh: () =>
         Promise.resolve({ session: signedIn === null ? null : session, setCookies: [] }),
     },
-    authLimits: noLimits,
+    authLimits: allowed
+      ? noLimits
+      : {
+          ...noLimits,
+          limiter: {
+            hit: () => Promise.resolve({ allowed: false, retryAfterSeconds: 60 }),
+          },
+        },
     stepUp,
     devices,
   });
@@ -205,6 +214,14 @@ describe('the device routes (spec 0003, R4)', () => {
     expect(await response.json()).toEqual({});
     expect(calls).toEqual([`add ${owner.sessionId} ${challengeId}`]);
     expect(spent).toEqual([]);
+  });
+
+  it('answers 429 to a new passkey over the session limit', async () => {
+    const { post, calls } = setup({ allowed: false });
+    const response = await post('passkeys/add', { challengeId, response: attestation });
+    expect(response.status).toBe(429);
+    expect(response.headers.get('retry-after')).toBe('60');
+    expect(calls).toEqual([]);
   });
 
   it('answers 403 passkey_refused to a passkey it does not store', async () => {

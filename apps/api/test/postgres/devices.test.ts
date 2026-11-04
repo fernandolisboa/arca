@@ -544,6 +544,69 @@ describe('adding a passkey (spec 0003, R4)', () => {
         [pending?.credentialId],
       ),
     ).toBe(1);
+    // Seeded with the adding session's families, so a sign-in from any other one is announced.
+    const families = await testDatabase.asAdmin(
+      async (client) =>
+        (
+          await client.query<{ browser: string; os: string }>(
+            'SELECT browser, os FROM auth.passkey_client WHERE credential_id = $1',
+            [pending?.credentialId],
+          )
+        ).rows,
+    );
+    expect(families).toEqual([{ browser: 'chrome', os: 'android' }]);
+  });
+
+  it('refuses an expired challenge, and one of another account', async () => {
+    const owner = await account(1);
+    const current = await session(owner, owner.keys[0]);
+    const stranger = await account(1);
+    const theirs = await session(stranger, stranger.keys[0]);
+    const expired = await devices.addOptions(current);
+    await testDatabase.asAdmin((client) =>
+      client.query(
+        `UPDATE auth.passkey_challenge SET expires_at = now() - interval '1 second' WHERE id = $1`,
+        [expired.challengeId],
+      ),
+    );
+    const late = softwarePasskey(rpId).attest({ challenge: expired.options.challenge, origin });
+    expect(await devices.add(current, expired.challengeId, late)).toBe(false);
+    const issued = await devices.addOptions(current);
+    const borrowed = softwarePasskey(rpId).attest({ challenge: issued.options.challenge, origin });
+    expect(await devices.add(theirs, issued.challengeId, borrowed)).toBe(false);
+    expect(await pendingOf(owner)).toEqual([]);
+    expect(await pendingOf(stranger)).toEqual([]);
+  });
+
+  it('refuses a passkey for another relying party', async () => {
+    const owner = await account(1);
+    const current = await session(owner, owner.keys[0]);
+    const { challengeId, options } = await devices.addOptions(current);
+    const response = softwarePasskey('elsewhere.example.org').attest({
+      challenge: options.challenge,
+      origin,
+    });
+    expect(await devices.add(current, challengeId, response)).toBe(false);
+    expect(await pendingOf(owner)).toEqual([]);
+  });
+
+  it('refuses a credential already stored, for this account or another, with no event', async () => {
+    const owner = await account(1);
+    const current = await session(owner, owner.keys[0]);
+    const stranger = await account(1);
+    for (const held of [owner.keys[0], stranger.keys[0]]) {
+      const { challengeId, options } = await devices.addOptions(current);
+      const response = held.passkey.attest({ challenge: options.challenge, origin });
+      expect(await devices.add(current, challengeId, response)).toBe(false);
+    }
+    expect(await pendingOf(owner)).toEqual([]);
+    expect(await events(owner, ['passkey_added'])).toEqual([]);
+    expect(noticesTo(owner)).toEqual([]);
+    expect(
+      await count('SELECT count(*)::int AS n FROM auth.passkey WHERE user_id = $1', [
+        stranger.accountId,
+      ]),
+    ).toBe(1);
   });
 
   it('asks the browser not to register a passkey the account already has', async () => {
@@ -618,6 +681,19 @@ describe('adding a passkey (spec 0003, R4)', () => {
       { code: 'passkey_activated', actor: null, details: { passkeyId: pending?.id } },
     ]);
     expect(await pendingOf(owner)).toEqual([]);
+  });
+
+  it('records an activation once when two reads find it due at once', async () => {
+    const owner = await account(1);
+    const current = await session(owner, owner.keys[0]);
+    await added(current);
+    await waitOver(owner);
+    await Promise.all([
+      devices.list(current),
+      devices.pendingUntil(owner.accountId),
+      devices.list(current),
+    ]);
+    expect(await events(owner, ['passkey_activated'])).toHaveLength(1);
   });
 
   it('cancels a pending passkey with its own notice, and never counts it as the last active one', async () => {

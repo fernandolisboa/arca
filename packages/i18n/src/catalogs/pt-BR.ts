@@ -134,6 +134,10 @@ export const ptBR = {
     unconfirmed:
       'Sua conta está aguardando a confirmação de quem convidou você. Até lá, você não consegue convidar ninguém nem enviar documentos.',
     invites: 'Convidar alguém',
+    devices: 'Seus aparelhos',
+    pendingPasskey:
+      'Uma chave de acesso nova foi criada na sua conta. Ela passa a valer em {activeFrom}. Se não foi você, cancele agora.',
+    pendingLink: 'Ver a chave nova',
   },
   /** Creating the first account (spec 0003, R2): the owner's link request, then the passkey. */
   enroll: {
@@ -213,6 +217,35 @@ export const ptBR = {
     decisionFailure:
       '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} not_found {Esse convite não espera mais uma decisão. Atualize a página.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
     signIn: 'Entre para ver seus convites.',
+  },
+  /** The account's passkeys and the sessions each signed in (spec 0003, R4). */
+  devices: {
+    title: 'Seus aparelhos',
+    lead: 'Aqui estão as chaves de acesso da sua conta e os aparelhos que entraram com cada uma. Se não reconhecer algum, desconecte.',
+    signIn: 'Entre para ver seus aparelhos.',
+    addTitle: 'Nova chave de acesso',
+    addLead:
+      'Crie uma para entrar por outro celular ou computador. Ela só passa a valer {hours} horas depois: se alguém criar uma sem você saber, dá tempo de cancelar.',
+    add: 'Adicionar chave de acesso',
+    waiting: 'Confirme no seu dispositivo para continuar.',
+    done: '{done, select, added {Chave criada. Ela passa a valer daqui a {hours} horas.} sessionRevoked {Aparelho desconectado.} passkeyRevoked {Chave removida. Os aparelhos que entraram com ela foram desconectados.} pendingCancelled {Chave nova cancelada.} othersRevoked {Os outros aparelhos foram desconectados.} other {}}',
+    failure:
+      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} not_found {Isso não está mais na sua lista. Atualize a página.} last_active {Esta é a única chave que já vale na sua conta. Crie outra e espere ela valer antes de remover esta.} refused {Não deu para salvar a chave nova. Tente de novo.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+    listTitle: 'Suas chaves de acesso',
+    listFailure: 'Não conseguimos carregar seus aparelhos agora.',
+    retry: 'Tentar de novo',
+    passkey: 'Chave de acesso',
+    passkeyCreated: 'Chave de acesso criada em {created}',
+    thisPasskey: 'Você entrou neste aparelho com esta chave.',
+    pending: 'Chave nova. Passa a valer em {activeFrom}. Se não foi você que criou, cancele agora.',
+    sessionsOf: 'Aparelhos que entraram com esta chave',
+    sessionDevice: '{browser} · {os}',
+    sessionTimes: 'Entrou em {created}. Último uso em {lastUsed}.',
+    thisDevice: 'Este aparelho',
+    revokeSession: 'Desconectar este aparelho',
+    revokePasskey: 'Remover esta chave',
+    cancelPending: 'Cancelar esta chave',
+    revokeOthers: 'Desconectar todos os outros aparelhos',
   },
   /** The account part of the recovery kit (spec 0003, R6): shown once, printed or written down. */
   recoveryKit: {
