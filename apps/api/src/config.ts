@@ -54,7 +54,7 @@ export function readAuthSecrets(): AuthSecrets {
   };
 }
 
-const originHostPattern = /^[a-z0-9](?:[a-z0-9.-]{0,251}[a-z0-9])?$/;
+export const hostNamePattern = /^[a-z0-9](?:[a-z0-9.-]{0,251}[a-z0-9])?$/;
 
 export type DeploymentEnvironment = 'production' | 'preview' | 'development';
 
@@ -107,14 +107,19 @@ export function readAuthOrigin(site: ProductionSite = productionSite): string {
         : ['the production site host', site.host]
       : ['VERCEL_BRANCH_URL', process.env['VERCEL_BRANCH_URL']];
   const host = required(name, value).toLowerCase();
-  if (!originHostPattern.test(host)) throw new MissingConfigError(`${name} is not a host name`);
+  if (!hostNamePattern.test(host)) throw new MissingConfigError(`${name} is not a host name`);
   return `https://${host}`;
 }
 
-/** Resend's API key, a Sensitive Production variable (spec 0003, R8); absent until it is set. */
+const resendKeyPattern = /^re_[A-Za-z0-9_-]+$/;
+
+/**
+ * Resend's API key, a Sensitive Production variable (spec 0003, R8). A missing or malformed one
+ * counts as absent, so production stays closed instead of opening with every send failing.
+ */
 export function readResendKey(): string | undefined {
-  const key = process.env['RESEND_API_KEY'];
-  return key === undefined || key === '' ? undefined : key;
+  const key = process.env['RESEND_API_KEY']?.trim();
+  return key !== undefined && resendKeyPattern.test(key) ? key : undefined;
 }
 
 /**

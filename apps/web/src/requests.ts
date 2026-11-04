@@ -33,7 +33,6 @@ export function commonFailure(
   apiCode: (error: ApiError) => string | undefined = () => undefined,
 ): string {
   if (error instanceof ApiError) {
-    // A deployment that takes no accounts yet answers so on every route that makes one (R9).
     if (error.code === 'accounts_closed') return 'closed';
     return apiCode(error) ?? (error.status === 429 ? 'limited' : 'other');
   }

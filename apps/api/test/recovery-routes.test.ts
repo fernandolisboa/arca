@@ -46,6 +46,7 @@ function setup({
     },
   };
   const app = createApp({
+    accountsOpen: true,
     checkDatabase: () => Promise.resolve('ok'),
     logger: silentLogger,
     origin,

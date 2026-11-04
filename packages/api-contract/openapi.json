@@ -2547,7 +2547,7 @@
     "/auth/recovery/start": {
       "post": {
         "operationId": "recoveryStart",
-        "summary": "Emails a recovery link when the address has an account open to recovery; the same answer either way; 503 email_unavailable without a sending domain",
+        "summary": "Emails a recovery link when the address has an account open to recovery; the same answer either way; 503 accounts_closed where no email can be sent",
         "requestBody": {
           "required": true,
           "content": {

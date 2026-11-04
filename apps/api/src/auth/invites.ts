@@ -140,8 +140,8 @@ export function createInvites({
       try {
         await email.send(inviteMessage(i18n, origin, to, token));
       } catch (error) {
-        // An invite that never left takes no open slot and keeps no address. Production has no
-        // sending domain yet (spec 0003, R9).
+        // An invite that never left takes no open slot and keeps no address. Without a way to
+        // send, the closed gate answers first (spec 0003, R9).
         await db.delete(invite).where(eq(invite.tokenHash, sha256(token)));
         if (!(error instanceof EmailNotConfiguredError)) throw error;
         return 'email_unavailable';

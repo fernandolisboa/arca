@@ -4,12 +4,19 @@ import { createRoute, z } from '@hono/zod-openapi';
 import { describe, expect, it, vi } from 'vitest';
 import { createApp, createRouter } from '../src/app.js';
 import type { CheckDatabase } from '../src/database-health.js';
+import type { AuthService } from '../src/auth/service.js';
 import { createLogger, type Logger } from '../src/logger.js';
+import { noLimits } from './limits.js';
 
 const silentLogger: Logger = { info: () => undefined, error: () => undefined };
 
 function setup(checkDatabase: CheckDatabase, clock = { ms: 0 }) {
-  const app = createApp({ checkDatabase, logger: silentLogger, now: () => clock.ms });
+  const app = createApp({
+    checkDatabase,
+    logger: silentLogger,
+    now: () => clock.ms,
+    accountsOpen: true,
+  });
   const client = createApiClient({
     origin: 'http://arca.test',
     fetch: (input, init) => Promise.resolve(app.request(input, init)),
@@ -88,11 +95,23 @@ describe('GET /v1/health', () => {
 
 describe('a deployment closed to new accounts (spec 0003, R9)', () => {
   const origin = 'https://arca.test';
+  const handled: string[] = [];
+  const signedIn = vi.fn(() => Promise.resolve(null));
+  const auth: AuthService = {
+    handle: (request) => {
+      handled.push(new URL(request.url).pathname);
+      return Promise.resolve(Response.json({ challenge: 'abc', userVerification: 'required' }));
+    },
+    signedIn,
+    refresh: () => Promise.resolve({ session: null, setCookies: [] }),
+  };
+  // Closed is the default: only an app built as open takes new accounts.
   const closed = createApp({
     checkDatabase: () => Promise.resolve('ok'),
     logger: silentLogger,
     origin,
-    accountsOpen: false,
+    auth,
+    authLimits: noLimits,
   });
 
   it('says so in its health', async () => {
@@ -110,19 +129,22 @@ describe('a deployment closed to new accounts (spec 0003, R9)', () => {
     routes.recoveryRedeem,
     routes.recoveryOptions,
     routes.recoveryVerify,
-  ])('answers $operationId with 503 accounts_closed', async ({ method, path }) => {
-    const response = await closed.request(`/v1${path}`, {
-      method: method.toUpperCase(),
-      headers: { origin, 'content-type': 'application/json' },
+  ])('answers $operationId with 503 accounts_closed before reading a session', async (route) => {
+    const response = await closed.request(`/v1${route.path}`, {
+      method: route.method.toUpperCase(),
+      headers: { origin, cookie: '__Host-arca.session=x', 'content-type': 'application/json' },
       body: '{}',
     });
     expect(response.status).toBe(503);
     expect(await response.json()).toEqual({ error: { code: 'accounts_closed' } });
+    expect(signedIn).not.toHaveBeenCalled();
   });
 
-  it('leaves every other route as it is', async () => {
-    const response = await closed.request('/v1/session');
-    expect(response.status).toBe(401);
+  it('leaves signing in and every other route as they are', async () => {
+    expect((await closed.request('/v1/session')).status).toBe(401);
+    const options = await closed.request('/v1/auth/passkey/generate-authenticate-options');
+    expect(options.status).toBe(200);
+    expect(handled).toEqual(['/v1/auth/passkey/generate-authenticate-options']);
   });
 });
 

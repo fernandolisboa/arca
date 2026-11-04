@@ -122,9 +122,9 @@ export const ptBR = {
     button: 'Entrar com chave de acesso',
     waiting: 'Confirme no seu dispositivo para continuar.',
     failure:
-      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} refused {Essa chave de acesso não abriu nenhuma conta. Se você criou essa chave há menos de {hours} horas, espere ela passar a valer, ou tente com outra.} limited {Muitas tentativas de entrar por esta conexão. Espere um pouco e tente de novo.} unavailable {Este navegador não aceita chaves de acesso. Abra o Arca em um navegador atualizado, como Chrome, Safari, Edge ou Firefox.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} closed {O Arca ainda não abriu, então ainda não dá para entrar.} other {Não deu certo desta vez. Tente de novo.}}',
+      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} refused {Essa chave de acesso não abriu nenhuma conta. Se você criou essa chave há menos de {hours} horas, espere ela passar a valer, ou tente com outra.} limited {Muitas tentativas de entrar por esta conexão. Espere um pouco e tente de novo.} unavailable {Este navegador não aceita chaves de acesso. Abra o Arca em um navegador atualizado, como Chrome, Safari, Edge ou Firefox.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} closed {O Arca ainda não abriu. Tente de novo mais tarde.} other {Não deu certo desta vez. Tente de novo.}}',
     inviteOnly: 'Ainda não tem conta? O Arca funciona só por convite. Peça um a quem já usa.',
-    closed: 'O Arca ainda não abriu, então ainda não dá para entrar.',
+    closed: 'Por enquanto, o Arca não aceita contas novas nem recuperação de conta.',
     lostAccess: 'Perdeu todas as suas chaves de acesso?',
     recover: 'Recuperar a conta',
   },

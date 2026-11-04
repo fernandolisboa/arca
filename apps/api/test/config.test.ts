@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   databaseTargetFrom,
+  hostNamePattern,
   MissingConfigError,
   readApiSecrets,
   readAuthOrigin,
@@ -10,7 +11,9 @@ import {
   readEnrollmentCodeHash,
   readJobsDatabasePassword,
   readRateLimitKey,
+  readResendKey,
 } from '../src/config.js';
+import { productionSite } from '../src/production-site.js';
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -199,6 +202,27 @@ describe('readAuthOrigin', () => {
       expect(() => readAuthOrigin()).toThrow(MissingConfigError);
     },
   );
+});
+
+describe('the production site file (spec 0003, R9)', () => {
+  it('names host names only', () => {
+    for (const name of [productionSite.host, productionSite.senderDomain]) {
+      if (name !== null) expect(name).toMatch(hostNamePattern);
+    }
+  });
+});
+
+describe('readResendKey', () => {
+  it.each([
+    [undefined, undefined],
+    ['', undefined],
+    ['not-a-key', undefined],
+    ['re_abc DEF', undefined],
+    [' re_abc_DEF-1\n', 're_abc_DEF-1'],
+  ])('reads %j as %j', (value, expected) => {
+    vi.stubEnv('RESEND_API_KEY', value);
+    expect(readResendKey()).toBe(expected);
+  });
 });
 
 describe('readDeploymentEnvironment', () => {

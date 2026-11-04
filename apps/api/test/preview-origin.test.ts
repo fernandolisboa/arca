@@ -38,12 +38,17 @@ describe('a preview', () => {
       logger: { info: () => undefined, error: () => undefined },
       origin: readAuthOrigin(),
     });
-    const response = await app.request('/v1/auth/recovery/start', {
-      method: 'POST',
-      headers: { origin: deployment, 'content-type': 'application/json' },
-      body: '{}',
-    });
-    expect(response.status).toBe(403);
-    expect(await response.json()).toEqual({ error: { code: 'cross_origin' } });
+    const start = (from: string) =>
+      app.request('/v1/auth/recovery/start', {
+        method: 'POST',
+        headers: { origin: from, 'content-type': 'application/json' },
+        body: '{}',
+      });
+    const refused = await start(deployment);
+    expect(refused.status).toBe(403);
+    expect(await refused.json()).toEqual({ error: { code: 'cross_origin' } });
+    // From the branch URL the origin check passes; this app takes no accounts, so it says that.
+    const passed = await start(`https://${branch}`);
+    expect(await passed.json()).toEqual({ error: { code: 'accounts_closed' } });
   });
 });

@@ -427,7 +427,7 @@ export const recoveryStart = {
   path: '/auth/recovery/start',
   operationId: 'recoveryStart',
   summary:
-    'Emails a recovery link when the address has an account open to recovery; the same answer either way; 503 email_unavailable without a sending domain',
+    'Emails a recovery link when the address has an account open to recovery; the same answer either way; 503 accounts_closed where no email can be sent',
   body: RecoveryStartRequest,
   response: { description: 'Accepted', schema: RecoveryStartResponse },
 } as const satisfies RouteDefinition<typeof RecoveryStartResponse>;

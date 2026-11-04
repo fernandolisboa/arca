@@ -1,5 +1,5 @@
 import type { Database } from '@arca/db';
-import { readResendKey, type DeploymentEnvironment } from '../config.js';
+import { hostNamePattern, readResendKey, type DeploymentEnvironment } from '../config.js';
 import { productionSite, type ProductionSite } from '../production-site.js';
 import { unconfiguredSender, type EmailSender } from './email.js';
 import { outboxSender, readOutbox, type OutboxEntry } from './outbox.js';
@@ -22,10 +22,10 @@ export function emailRouteFor(
   apiKey: string | undefined = readResendKey(),
 ): EmailRoute {
   if (environment !== 'production') return { via: 'outbox' };
-  if (site.host === null || site.senderDomain === null || apiKey === undefined) {
-    return { via: 'none' };
-  }
-  return { via: 'resend', apiKey, from: `Arca <no-reply@${site.senderDomain}>` };
+  const { host, senderDomain } = site;
+  if (host === null || senderDomain === null || apiKey === undefined) return { via: 'none' };
+  if (!hostNamePattern.test(senderDomain)) return { via: 'none' };
+  return { via: 'resend', apiKey, from: `Arca <no-reply@${senderDomain}>` };
 }
 
 /**

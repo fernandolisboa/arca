@@ -141,9 +141,7 @@ test('treats a ceremony without user verification as cancelled', async ({ page }
   );
 });
 
-test('says sign-in is not available yet where the deployment takes no accounts', async ({
-  page,
-}) => {
+test('offers no invite or recovery where the deployment takes no accounts', async ({ page }) => {
   await page.route('**/v1/health', async (route) => {
     const response = await route.fetch();
     const health = (await response.json()) as Record<string, unknown>;
@@ -151,8 +149,8 @@ test('says sign-in is not available yet where the deployment takes no accounts',
   });
   await page.goto(`${databaseServer.origin}/sign-in`);
   await expect(
-    page.getByText('O Arca ainda não abriu, então ainda não dá para entrar.'),
+    page.getByText('Por enquanto, o Arca não aceita contas novas nem recuperação de conta.'),
   ).toBeVisible();
-  await expect(signInButton(page)).toHaveCount(0);
+  await expect(signInButton(page)).toBeVisible();
   await expect(page.getByRole('link', { name: 'Recuperar a conta' })).toHaveCount(0);
 });
