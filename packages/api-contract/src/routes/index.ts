@@ -97,6 +97,67 @@ export const signOut = {
   response: { description: 'Signed out', schema: SignOutResponse },
 } as const satisfies RouteDefinition<typeof SignOutResponse>;
 
+const base64url = z.string().regex(/^[A-Za-z0-9_-]*$/);
+
+/**
+ * WebAuthn request options as JSON (spec 0003, R3): discoverable credentials, so usually no
+ * `allowCredentials`, and user verification always required.
+ */
+export const PasskeyRequestOptions = z.object({
+  challenge: base64url,
+  timeout: z.number().int().positive().optional(),
+  rpId: z.string().optional(),
+  allowCredentials: z
+    .array(
+      z.object({
+        id: base64url,
+        type: z.literal('public-key'),
+        transports: z.array(z.string()).optional(),
+      }),
+    )
+    .optional(),
+  userVerification: z.literal('required'),
+  extensions: z.record(z.string(), z.unknown()).optional(),
+});
+export type PasskeyRequestOptions = z.infer<typeof PasskeyRequestOptions>;
+
+export const passkeySignInOptions = {
+  method: 'get',
+  path: '/auth/passkey/generate-authenticate-options',
+  operationId: 'passkeySignInOptions',
+  summary: 'Options for a passkey sign-in, with a single-use challenge in a cookie',
+  response: { description: 'Request options', schema: PasskeyRequestOptions },
+} as const satisfies RouteDefinition<typeof PasskeyRequestOptions>;
+
+/** A WebAuthn assertion as JSON, as the Passkeys port returns it. */
+export const PasskeyAssertion = z.object({
+  id: base64url,
+  rawId: base64url,
+  type: z.literal('public-key'),
+  response: z.object({
+    clientDataJSON: base64url,
+    authenticatorData: base64url,
+    signature: base64url,
+    userHandle: base64url.optional(),
+  }),
+  authenticatorAttachment: z.enum(['platform', 'cross-platform']).optional(),
+  clientExtensionResults: z.record(z.string(), z.unknown()),
+});
+export type PasskeyAssertion = z.infer<typeof PasskeyAssertion>;
+
+/** Nothing but success: the session travels only in its cookie, never in a body. */
+export const PasskeySignInResponse = z.object({});
+export type PasskeySignInResponse = z.infer<typeof PasskeySignInResponse>;
+
+export const passkeySignIn = {
+  method: 'post',
+  path: '/auth/passkey/verify-authentication',
+  operationId: 'passkeySignIn',
+  summary: 'Signs in with a passkey assertion and sets the session cookie',
+  body: z.object({ response: PasskeyAssertion }),
+  response: { description: 'Signed in', schema: PasskeySignInResponse },
+} as const satisfies RouteDefinition<typeof PasskeySignInResponse>;
+
 /** Closed purpose enum of a step-up (spec 0003, R5). */
 export const stepUpPurposes = [
   'sensitive_settings',
@@ -181,7 +242,14 @@ export const auditEvents = {
   response: { description: 'A page of audit events', schema: AuditEventsResponse },
 } as const satisfies RouteDefinition<typeof AuditEventsResponse>;
 
-export const routes = { health, session, signOut, auditEvents } as const;
+export const routes = {
+  health,
+  session,
+  signOut,
+  passkeySignInOptions,
+  passkeySignIn,
+  auditEvents,
+} as const;
 
 /** The Better Auth endpoints the API lets through; every other path under /v1/auth is a 404. */
-export const authRoutes = [signOut] as const;
+export const authRoutes = [signOut, passkeySignInOptions, passkeySignIn] as const;

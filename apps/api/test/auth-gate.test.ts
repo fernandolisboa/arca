@@ -13,23 +13,54 @@ const signedIn: SessionResponse = {
   device: { browser: 'firefox', os: 'linux' },
 };
 
-function setup(session: SessionResponse | null = null) {
+const origin = 'http://arca.test';
+
+/** A well-formed assertion; the fake Better Auth never verifies it. */
+const assertion = JSON.stringify({
+  response: {
+    id: 'Y3JlZA',
+    rawId: 'Y3JlZA',
+    type: 'public-key',
+    response: { clientDataJSON: 'e30', authenticatorData: 'AA', signature: 'AA' },
+    clientExtensionResults: {},
+  },
+});
+
+const verify = (app: ReturnType<typeof setup>['app'], body: string = assertion) =>
+  app.request('/v1/auth/passkey/verify-authentication', {
+    method: 'POST',
+    headers: { origin, 'content-type': 'application/json' },
+    body,
+  });
+
+function setup(
+  session: SessionResponse | null = null,
+  answer: () => Response = () => Response.json({ success: true }),
+) {
   const handled: string[] = [];
   const auth: AuthService = {
     handle: (request) => {
       handled.push(`${request.method} ${new URL(request.url).pathname}`);
-      return Promise.resolve(Response.json({ success: true }));
+      return Promise.resolve(answer());
     },
     session: () => Promise.resolve(session),
+    refresh: () =>
+      Promise.resolve({ session, setCookies: session === null ? [] : ['__Host-arca.slid=1'] }),
   };
   const app = createApp({
     checkDatabase: () => Promise.resolve('ok'),
     logger: silentLogger,
+    origin,
     auth,
   });
+  // A browser sends Origin on every state-changing request.
   const client = createApiClient({
-    origin: 'http://arca.test',
-    fetch: (input, init) => Promise.resolve(app.request(input, init)),
+    origin,
+    fetch: (input, init) => {
+      const request = new Request(input, init);
+      request.headers.set('origin', origin);
+      return Promise.resolve(app.request(request));
+    },
   });
   return { app, client, handled };
 }
@@ -55,7 +86,7 @@ describe('the Better Auth allow-list (spec 0003, R1)', () => {
     ['sign-out in another case', 'POST', '/v1/auth/Sign-Out'],
   ])('answers 404 to %s before Better Auth sees it', async (_label, method, path) => {
     const { app, handled } = setup();
-    const response = await app.request(path, { method });
+    const response = await app.request(path, { method, headers: { origin } });
     expect(response.status).toBe(404);
     expect(await response.json()).toEqual({ error: { code: 'not_found' } });
     expect(handled).toEqual([]);
@@ -68,8 +99,112 @@ describe('the Better Auth allow-list (spec 0003, R1)', () => {
   });
 
   it('answers 404 to every auth path when Better Auth is not configured', async () => {
+    const app = createApp({
+      checkDatabase: () => Promise.resolve('ok'),
+      logger: silentLogger,
+      origin,
+    });
+    const response = await app.request('/v1/auth/sign-out', {
+      method: 'POST',
+      headers: { origin },
+    });
+    expect(response.status).toBe(404);
+  });
+
+  it('lets through the passkey sign-in endpoints', async () => {
+    const { app, handled } = setup(null, () => Response.json({}));
+    await app.request('/v1/auth/passkey/generate-authenticate-options');
+    await verify(app);
+    expect(handled).toEqual([
+      'GET /v1/auth/passkey/generate-authenticate-options',
+      'POST /v1/auth/passkey/verify-authentication',
+    ]);
+  });
+});
+
+describe("Better Auth's answers, re-encoded through the contract", () => {
+  it('drops every field outside the contract, so no session token reaches a body', async () => {
+    const { app } = setup(null, () => {
+      const response = Response.json({
+        session: { token: 'test-only-token', userId: signedIn.accountId },
+        user: { email: 'owner@example.com' },
+      });
+      response.headers.append('set-cookie', '__Host-arca.session_token=x; Path=/; Secure');
+      return response;
+    });
+    const response = await verify(app);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({});
+    expect(response.headers.getSetCookie()).toEqual([
+      '__Host-arca.session_token=x; Path=/; Secure',
+    ]);
+  });
+
+  it.each([
+    ['an unknown passkey', 401, 'PASSKEY_NOT_FOUND'],
+    ['a failed verification', 400, 'AUTHENTICATION_FAILED'],
+  ])("answers the same 401 to %s, never Better Auth's message", async (_label, status, code) => {
+    const { app } = setup(null, () => Response.json({ code, message: 'details' }, { status }));
+    const response = await verify(app);
+    expect(response.status).toBe(401);
+    expect(await response.json()).toEqual({ error: { code: 'unauthorized' } });
+  });
+
+  it.each([
+    ['no body', ''],
+    ['a body outside the contract', JSON.stringify({ response: { id: 1 } })],
+  ])('answers 400 to %s before Better Auth sees it', async (_label, body) => {
+    const { app, handled } = setup();
+    const response = await verify(app, body);
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: { code: 'invalid_request' } });
+    expect(handled).toEqual([]);
+  });
+
+  it('fails closed on sign-in options that do not require user verification', async () => {
+    const { app } = setup(null, () =>
+      Response.json({ challenge: 'abc', rpId: 'arca.test', userVerification: 'preferred' }),
+    );
+    const response = await app.request('/v1/auth/passkey/generate-authenticate-options');
+    expect(response.status).toBe(500);
+  });
+});
+
+describe('the origin check on state-changing /v1 routes (spec 0003, R4)', () => {
+  const signOut = (headers: Record<string, string>) =>
+    setup().app.request('/v1/auth/sign-out', { method: 'POST', headers, body: '{}' });
+
+  it.each([
+    ['a sibling filx.app origin', { origin: 'https://other.filx.app' }],
+    ['another scheme', { origin: 'https://arca.test' }],
+    ['a null origin', { origin: 'null' }],
+    ['a cross-site fetch', { 'sec-fetch-site': 'cross-site' }],
+    ['a same-site fetch from a sibling subdomain', { 'sec-fetch-site': 'same-site' }],
+    ['neither header', {}],
+  ])('refuses %s', async (_label, headers) => {
+    const response = await signOut(headers);
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: { code: 'cross_origin' } });
+  });
+
+  it.each([
+    ['the exact origin', { origin }],
+    ['a same-origin fetch without Origin', { 'sec-fetch-site': 'same-origin' }],
+  ])('allows %s', async (_label, headers) => {
+    expect((await signOut(headers)).status).toBe(200);
+  });
+
+  it('refuses even the exact origin when the app has no origin configured', async () => {
     const app = createApp({ checkDatabase: () => Promise.resolve('ok'), logger: silentLogger });
-    expect((await app.request('/v1/auth/sign-out', { method: 'POST' })).status).toBe(404);
+    const response = await app.request('/v1/auth/sign-out', {
+      method: 'POST',
+      headers: { origin },
+    });
+    expect(response.status).toBe(403);
+  });
+
+  it('leaves reads alone', async () => {
+    expect((await setup().app.request('/v1/session')).status).toBe(401);
   });
 });
 
@@ -77,6 +212,11 @@ describe('GET /v1/session', () => {
   it('returns the account and device of the session, matching the contract', async () => {
     const { client } = setup(signedIn);
     await expect(client.call(routes.session)).resolves.toEqual(signedIn);
+  });
+
+  it('passes on the cookies of the slid expiry', async () => {
+    const response = await setup(signedIn).app.request('/v1/session');
+    expect(response.headers.getSetCookie()).toEqual(['__Host-arca.slid=1']);
   });
 
   it('answers 401 without a session', async () => {
@@ -114,6 +254,7 @@ describe('GET /v1/audit/events', () => {
       auth: {
         handle: () => Promise.resolve(new Response(null, { status: 500 })),
         session: () => Promise.resolve(session),
+        refresh: () => Promise.resolve({ session, setCookies: [] }),
       },
       audit: {
         events: (accountId, query) => {

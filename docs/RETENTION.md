@@ -8,7 +8,7 @@ As of 2026-11-02. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md).
 | --- | --- | --- |
 | Case data and account data | While the account exists; after 3 years without a sign-in, an email notice, then deletion 60 days later | Inactivity job (workflow, daily) |
 | Account after a deletion request | 7 days locked, then erased | `eraseAccount` workflow |
-| Sessions | 3 days idle, 30 days at most | Better Auth expiry plus a daily cleanup job |
+| Sessions | 3 days idle, 30 days at most | Better Auth expiry (slid only while the session is under 30 days old, so it ends by day 33 at the latest) plus a daily cleanup job |
 | Pending document uploads (never confirmed) | 24 hours, with their objects | Daily cleanup job |
 | Browser and system families seen per passkey (`auth.passkey_client`) | While the passkey exists | Deleted with the passkey (foreign key cascade); erased with the account |
 | Invites | 48 hours unaccepted; once accepted, until the inviter confirms or declines the link, or 30 days | Daily cleanup job |

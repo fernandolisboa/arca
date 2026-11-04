@@ -38,7 +38,15 @@ export async function noticeNewSignIn(
     readonly at: Date;
   },
 ): Promise<void> {
-  if (await recordPasskeyClient(db, sign.credentialId, sign.device)) {
+  if (!(await recordPasskeyClient(db, sign.credentialId, sign.device))) return;
+  try {
     await notices.send({ kind: 'new_sign_in', to: sign.email, at: sign.at, device: sign.device });
+  } catch (error) {
+    // Forgotten again, so the next sign-in from this family retries the notice.
+    await db.execute(sql`
+      DELETE FROM auth.passkey_client
+       WHERE credential_id = ${sign.credentialId}
+         AND browser = ${sign.device.browser} AND os = ${sign.device.os}`);
+    throw error;
   }
 }

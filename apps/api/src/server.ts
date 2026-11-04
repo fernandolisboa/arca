@@ -1,3 +1,4 @@
+import { createI18n } from '@arca/i18n';
 import { useRuntimeConfig } from 'nitro/runtime-config';
 import { createApp } from './app.js';
 import { auditLog, auditReader } from './audit/log.js';
@@ -13,7 +14,8 @@ import {
   readDeploymentEnvironment,
 } from './config.js';
 import { apiDatabase, auditDatabase, authDatabase } from './database.js';
-import { outboxReaderFor } from './email/environment.js';
+import { emailSenderFor, outboxReaderFor } from './email/environment.js';
+import { createNotices } from './email/notices.js';
 import { createLogger } from './logger.js';
 import { heartbeat } from './workflows/heartbeat.js';
 import { startWorkflow } from './workflows/start-workflow.js';
@@ -47,27 +49,54 @@ function authConnection() {
   return authPool.db;
 }
 
-let auth: AuthService | undefined;
+const environment = readDeploymentEnvironment();
+
+let auth: Promise<AuthService> | undefined;
 
 /** Better Auth on its own app_auth pool, built on the first auth request. */
-function authenticator(): AuthService {
-  if (auth === undefined) {
+function authenticator(): Promise<AuthService> {
+  auth ??= (async () => {
     const target = databaseTargetFrom(useRuntimeConfig()['database']);
     const audit = auditLog(auditDatabase(target, readAuditDatabasePassword(), logger).db);
-    auth = authService(
+    const origin = readAuthOrigin();
+    const notices = createNotices({
+      email: emailSenderFor(environment, authConnection),
+      i18n: await createI18n(),
+      origin,
+    });
+    return authService(
       createAuth({
         db: authConnection(),
         secret: readAuthSecrets().secret,
-        origin: readAuthOrigin(),
+        origin,
         logger,
         audit,
+        notices,
       }),
     );
-  }
+  })();
+  // A failed build is retried on the next request instead of being cached.
+  auth.catch(() => {
+    auth = undefined;
+  });
   return auth;
 }
 
-const outbox = outboxReaderFor(readDeploymentEnvironment(), authConnection);
+/**
+ * Read once at load, but a missing setting only refuses state-changing requests (the auth routes
+ * then fail and log it), so `GET /v1/health` and the static shell keep answering.
+ */
+function ownOrigin(): string | undefined {
+  try {
+    return readAuthOrigin();
+  } catch {
+    return undefined;
+  }
+}
+
+const withOrigin = (origin: string | undefined) => (origin === undefined ? {} : { origin });
+
+const outbox = outboxReaderFor(environment, authConnection);
 
 const app = createApp({
   checkDatabase: () => connected().checkDatabase(),
@@ -76,9 +105,11 @@ const app = createApp({
     readSecret: readCronSecret,
     startHeartbeat: (runDate) => startWorkflow(heartbeat, [runDate]),
   },
+  ...withOrigin(ownOrigin()),
   auth: {
-    handle: (request) => authenticator().handle(request),
-    session: (headers) => authenticator().session(headers),
+    handle: async (request) => (await authenticator()).handle(request),
+    session: async (headers) => (await authenticator()).session(headers),
+    refresh: async (headers) => (await authenticator()).refresh(headers),
   },
   audit: { events: (accountId, query) => auditReader(connected().db).events(accountId, query) },
   ...(outbox === undefined ? {} : { outbox }),

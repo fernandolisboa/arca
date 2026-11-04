@@ -5,6 +5,7 @@ import {
   authBasePath,
   authRoutes,
   type ErrorResponse,
+  type RouteDefinition,
 } from '@arca/api-contract/routes';
 import { openApiRoutes } from '@arca/api-contract/server';
 import type { Context } from 'hono';
@@ -35,6 +36,11 @@ export interface AppDependencies {
   readonly now?: () => number;
   readonly newRequestId?: () => string;
   readonly cron?: CronDependencies;
+  /**
+   * The environment's own origin, the only one a state-changing `/v1` request may come from
+   * (spec 0003, R4); absent, every such request is refused.
+   */
+  readonly origin?: string;
   /** Better Auth behind the allow-list; absent, every auth path is a 404. */
   readonly auth?: AuthService;
   /** The signed-in account's audit events; absent, the route answers 401. */
@@ -47,7 +53,12 @@ export interface AppDependencies {
 }
 
 export type ErrorCode =
-  'invalid_request' | 'unauthorized' | 'not_found' | 'request_failed' | 'internal_error';
+  | 'invalid_request'
+  | 'unauthorized'
+  | 'cross_origin'
+  | 'not_found'
+  | 'request_failed'
+  | 'internal_error';
 
 export interface AppEnv {
   Variables: {
@@ -78,6 +89,50 @@ function handleError(error: Error, c: Context<AppEnv>) {
   return reject(c, status >= 500 ? 'internal_error' : 'request_failed', status);
 }
 
+const safeMethods: ReadonlySet<string> = new Set(['GET', 'HEAD', 'OPTIONS']);
+
+/**
+ * Refuses a state-changing request from anywhere but the environment's own origin: `Origin` must
+ * match exactly, or, without it, `Sec-Fetch-Site` must say `same-origin`, so a sibling `filx.app`
+ * subdomain counts as another site (spec 0003, R4). `SameSite=Lax` is not the only guard.
+ */
+function sameOrigin(origin: string | undefined) {
+  return createMiddleware<AppEnv>(async (c, next) => {
+    if (safeMethods.has(c.req.method)) return next();
+    const sent = c.req.header('origin');
+    const allowed =
+      sent === undefined ? c.req.header('sec-fetch-site') === 'same-origin' : sent === origin;
+    if (origin === undefined || !allowed) return reject(c, 'cross_origin', 403);
+    return next();
+  });
+}
+
+/**
+ * Better Auth's answer re-encoded through the contract: only the schema's fields reach the
+ * client, so no session token leaves in a body; errors carry our codes, never its messages. The
+ * cookies it set pass through.
+ */
+async function throughContract(c: Context<AppEnv>, route: RouteDefinition, response: Response) {
+  for (const cookie of response.headers.getSetCookie())
+    c.header('set-cookie', cookie, { append: true });
+  const status = response.status as ContentfulStatusCode;
+  if (!response.ok) {
+    await response.body?.cancel();
+    // One answer for every refusal, so a sign-in never tells whether a credential exists.
+    return status >= 500 ? reject(c, 'internal_error', status) : reject(c, 'unauthorized', 401);
+  }
+  return c.json(route.response.schema.parse(await response.json()), status);
+}
+
+/** The JSON body, read from a clone so the request still reaches Better Auth intact. */
+async function bodyOf(request: Request): Promise<unknown> {
+  try {
+    return await request.clone().json();
+  } catch {
+    return undefined;
+  }
+}
+
 /** A router whose validation failures answer `invalid_request` without the validator's details. */
 export function createRouter() {
   return new OpenAPIHono<AppEnv>({
@@ -92,6 +147,7 @@ export function createApp({
   now = () => performance.now(),
   newRequestId = () => crypto.randomUUID(),
   cron,
+  origin,
   auth,
   audit,
   outbox,
@@ -126,6 +182,7 @@ export function createApp({
     });
   });
   app.use('*', observe);
+  app.use(`${apiBasePath}/*`, sameOrigin(origin));
   app.onError(handleError);
   app.notFound((c) => reject(c, 'not_found', 404));
 
@@ -149,8 +206,10 @@ export function createApp({
   };
 
   v1.openapi(openApiRoutes.session, async (c) => {
-    const current = await signedIn(c);
-    return current === null ? unauthorized(c) : c.json(current, 200);
+    if (auth === undefined) return unauthorized(c);
+    const { session, setCookies } = await auth.refresh(c.req.raw.headers);
+    for (const cookie of setCookies) c.header('set-cookie', cookie, { append: true });
+    return session === null ? unauthorized(c) : c.json(session, 200);
   });
 
   v1.openapi(openApiRoutes.auditEvents, async (c) => {
@@ -165,13 +224,16 @@ export function createApp({
 
   // Only allow-listed Better Auth endpoints reach it (spec 0003, R1). The match is on the exact
   // method and the raw path Better Auth will route on, so no encoding or extra segment slips by.
-  const allowed = new Set(
-    authRoutes.map((route) => `${route.method.toUpperCase()} ${apiBasePath}${route.path}`),
+  const allowed = new Map<string, RouteDefinition>(
+    authRoutes.map((route) => [`${route.method.toUpperCase()} ${apiBasePath}${route.path}`, route]),
   );
   app.all(`${authBasePath}/*`, async (c) => {
-    const key = `${c.req.method} ${new URL(c.req.url).pathname}`;
-    if (auth === undefined || !allowed.has(key)) return reject(c, 'not_found', 404);
-    return auth.handle(c.req.raw);
+    const route = allowed.get(`${c.req.method} ${new URL(c.req.url).pathname}`);
+    if (auth === undefined || route === undefined) return reject(c, 'not_found', 404);
+    if (route.body !== undefined && !route.body.safeParse(await bodyOf(c.req.raw)).success) {
+      return reject(c, 'invalid_request', 400);
+    }
+    return throughContract(c, route, await auth.handle(c.req.raw));
   });
 
   if (outbox !== undefined) {

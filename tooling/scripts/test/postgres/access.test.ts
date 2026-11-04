@@ -89,7 +89,7 @@ describe('the auth schema access matrix', () => {
       schema: ['USAGE'],
       ...Object.fromEntries(authTables.map((table) => [table, dml])),
       outbox: ['SELECT', 'INSERT', 'DELETE'],
-      passkey_client: ['SELECT', 'INSERT'],
+      passkey_client: ['SELECT', 'INSERT', 'DELETE'],
     });
   });
 

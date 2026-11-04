@@ -1,20 +1,21 @@
 import { randomBytes } from 'node:crypto';
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { makeSignature } from 'better-auth/crypto';
 import { sql } from 'drizzle-orm';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { createApp } from '../../src/app.js';
+import { createI18n } from '@arca/i18n';
+import { createApp, type App } from '../../src/app.js';
 import { createAuth, type Auth } from '../../src/auth/auth.js';
 import { authService } from '../../src/auth/service.js';
 import { auditLog, auditReader } from '../../src/audit/log.js';
 import { noticeNewSignIn, recordPasskeyClient } from '../../src/auth/sign-in-notice.js';
-import type { Notice } from '../../src/email/notices.js';
+import { createNotices, type Notice, type Notices } from '../../src/email/notices.js';
 import { outboxSender, readOutbox } from '../../src/email/outbox.js';
 import { apiDatabase, auditDatabase, authDatabase } from '../../src/database.js';
 import type { Database } from '@arca/db';
 import type { Logger } from '../../src/logger.js';
+import { softwarePasskey, type SoftwarePasskey } from './software-passkey.js';
 
 // Better Auth on the real auth migrations and the app_auth pool, against a disposable Postgres
 // server (spec 0003, R1). Synthetic addresses on reserved domains only.
@@ -54,8 +55,10 @@ async function asAdmin<T>(name: string, use: (client: pg.Client) => Promise<T>):
 
 let auth: Auth;
 let authDb: Database;
+let auditDb: Database;
+let notices: Notices;
 let close: () => Promise<void>;
-let app: ReturnType<typeof createApp>;
+let app: App;
 
 beforeAll(async () => {
   await asAdmin('postgres', async (client) => {
@@ -88,32 +91,125 @@ beforeAll(async () => {
   };
   const [authPool, auditPool, apiPool] = pools;
   authDb = authPool.db;
-  auth = createAuth({ db: authPool.db, secret, origin, logger, audit: auditLog(auditPool.db) });
-  app = createApp({
+  auditDb = auditPool.db;
+  notices = createNotices({
+    email: outboxSender(authDb, 'preview'),
+    i18n: await createI18n(),
+    origin,
+  });
+  auth = createAuth({ db: authDb, secret, origin, logger, audit: auditLog(auditDb), notices });
+  app = appFor(auth, auditReader(apiPool.db));
+});
+
+function appFor(target: Auth, audit?: ReturnType<typeof auditReader>): App {
+  return createApp({
     checkDatabase: () => Promise.resolve('ok'),
     logger,
-    auth: authService(auth),
-    audit: auditReader(apiPool.db),
+    origin,
+    auth: authService(target),
+    ...(audit === undefined ? {} : { audit }),
   });
-});
+}
 
 afterAll(async () => {
   await close();
   await asAdmin('postgres', (client) => client.query(`DROP DATABASE ${database} WITH (FORCE)`));
 });
 
-/** A signed session cookie, as Better Auth sets it after a passkey sign-in. */
-async function signedIn(email: string): Promise<{ cookie: string; userId: string }> {
+const firefoxOnLinux = 'Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0';
+const chromeOnAndroid =
+  'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36';
+
+/** The cookies a response set, as a browser would send them back; cleared ones are left out. */
+function cookiesFrom(...responses: Response[]): string {
+  return responses
+    .flatMap((response) => response.headers.getSetCookie())
+    .filter((cookie) => !/max-age=0/i.test(cookie))
+    .map((cookie) => cookie.split(';')[0] ?? '')
+    .filter((pair) => !pair.endsWith('='))
+    .join('; ');
+}
+
+/** A synthetic account with one passkey held by a software authenticator. */
+async function account(email: string): Promise<{ userId: string; passkey: SoftwarePasskey }> {
   const context = await auth.$context;
   const user = await context.internalAdapter.createUser(
     { email, name: '', emailVerified: true },
     { method: 'test' },
   );
-  const session = await context.internalAdapter.createSession(user.id);
-  const value = encodeURIComponent(
-    `${session.token}.${await makeSignature(session.token, secret)}`,
+  const passkey = softwarePasskey(new URL(origin).hostname);
+  await asAdmin(database, (client) =>
+    client.query(
+      `INSERT INTO auth.passkey (public_key, user_id, credential_id, counter, device_type, backed_up)
+       VALUES ($1, $2, $3, 0, 'multiDevice', true)`,
+      [passkey.publicKey, user.id, passkey.credentialId],
+    ),
   );
-  return { cookie: `${context.authCookies.sessionToken.name}=${value}`, userId: user.id };
+  return { userId: user.id, passkey };
+}
+
+interface SignInOptions {
+  readonly userAgent?: string;
+  readonly userVerified?: boolean;
+  readonly via?: App;
+}
+
+/** The two requests of a passkey sign-in, through the allow-list, as the web app makes them. */
+async function passkeySignIn(
+  passkey: SoftwarePasskey,
+  { userAgent, userVerified, via = app }: SignInOptions = {},
+) {
+  const agent: Record<string, string> = userAgent === undefined ? {} : { 'user-agent': userAgent };
+  const options = await via.request('/v1/auth/passkey/generate-authenticate-options', {
+    headers: agent,
+  });
+  const { challenge, userVerification } = (await options.json()) as {
+    challenge: string;
+    userVerification: string;
+  };
+  expect(userVerification).toBe('required');
+  const verified = await via.request('/v1/auth/passkey/verify-authentication', {
+    method: 'POST',
+    headers: {
+      ...agent,
+      origin,
+      cookie: cookiesFrom(options),
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      response: passkey.assert({
+        challenge,
+        origin,
+        ...(userVerified === undefined ? {} : { userVerified }),
+      }),
+    }),
+  });
+  return { options, verified };
+}
+
+async function signedIn(email: string, signIn: SignInOptions = {}) {
+  const { userId, passkey } = await account(email);
+  const { verified } = await passkeySignIn(passkey, signIn);
+  expect(verified.status).toBe(200);
+  return { cookie: cookiesFrom(verified), userId, passkey };
+}
+
+function setsSession(response: Response): boolean {
+  return response.headers
+    .getSetCookie()
+    .some(
+      (cookie) => cookie.startsWith('__Host-arca.session_token=') && !/max-age=0/i.test(cookie),
+    );
+}
+
+async function sessionsOf(userId: string) {
+  return asAdmin(database, async (client) => {
+    const result = await client.query<{ credentialId: string }>(
+      'SELECT credential_id AS "credentialId" FROM auth.session WHERE user_id = $1',
+      [userId],
+    );
+    return result.rows;
+  });
 }
 
 describe('Better Auth on the app_auth pool', () => {
@@ -143,25 +239,153 @@ describe('Better Auth on the app_auth pool', () => {
     });
   });
 
-  it('reads the session without sliding its stored expiry', async () => {
+  it('records the passkey that signed the session in', async () => {
+    const { userId, passkey } = await signedIn('credential@example.com');
+    expect(await sessionsOf(userId)).toEqual([{ credentialId: passkey.credentialId }]);
+  });
+
+  it('slides the idle expiry on GET /v1/session and passes the cookie on', async () => {
     const { cookie, userId } = await signedIn('reader@example.com');
-    // Five days left of seven: past Better Auth's one-day update age, so a refresh would move it.
-    const aged = await asAdmin(database, async (client) => {
-      const result = await client.query<{ expiresAt: Date }>(
-        `UPDATE auth.session SET expires_at = now() + interval '5 days' WHERE user_id = $1
-         RETURNING expires_at AS "expiresAt"`,
-        [userId],
-      );
-      return result.rows[0]?.expiresAt;
-    });
-    expect((await app.request('/v1/session', { headers: { cookie } })).status).toBe(200);
-    const after = await asAdmin(database, (client) =>
-      client.query<{ expiresAt: Date }>(
-        'SELECT expires_at AS "expiresAt" FROM auth.session WHERE user_id = $1',
+    // One day left of three: past the one-day update age, so a refresh moves it.
+    const expiry = async () =>
+      asAdmin(database, async (client) => {
+        const result = await client.query<{ hoursLeft: number }>(
+          `SELECT extract(epoch FROM expires_at - now()) / 3600 AS "hoursLeft"
+             FROM auth.session WHERE user_id = $1`,
+          [userId],
+        );
+        return Number(result.rows[0]?.hoursLeft);
+      });
+    await asAdmin(database, (client) =>
+      client.query(
+        "UPDATE auth.session SET expires_at = now() + interval '1 day' WHERE user_id = $1",
         [userId],
       ),
     );
-    expect(after.rows[0]?.expiresAt).toEqual(aged);
+    expect((await app.request('/v1/audit/events', { headers: { cookie } })).status).toBe(200);
+    expect(await expiry()).toBeLessThan(25);
+    const response = await app.request('/v1/session', { headers: { cookie } });
+    expect(response.status).toBe(200);
+    expect(await expiry()).toBeGreaterThan(71);
+    expect(setsSession(response)).toBe(true);
+  });
+
+  it('refuses a session older than 30 days, even an active one', async () => {
+    const { cookie, userId } = await signedIn('old@example.org');
+    await asAdmin(database, (client) =>
+      client.query(
+        `UPDATE auth.session SET created_at = now() - interval '30 days 1 minute',
+                expires_at = now() + interval '2 days' WHERE user_id = $1`,
+        [userId],
+      ),
+    );
+    const response = await app.request('/v1/session', { headers: { cookie } });
+    expect(response.status).toBe(401);
+    expect(response.headers.getSetCookie()).toEqual([]);
+    expect((await app.request('/v1/audit/events', { headers: { cookie } })).status).toBe(401);
+  });
+
+  it('never slides a session from the sign-in options, even one past 30 days', async () => {
+    const { cookie, userId } = await signedIn('lingering@example.org');
+    await asAdmin(database, (client) =>
+      client.query(
+        `UPDATE auth.session SET created_at = now() - interval '31 days',
+                expires_at = now() + interval '1 day' WHERE user_id = $1`,
+        [userId],
+      ),
+    );
+    const options = await app.request('/v1/auth/passkey/generate-authenticate-options', {
+      headers: { cookie },
+    });
+    expect(options.status).toBe(200);
+    expect(setsSession(options)).toBe(false);
+    expect(setsSession(await app.request('/v1/session', { headers: { cookie } }))).toBe(false);
+    const left = await asAdmin(database, async (client) => {
+      const result = await client.query<{ hours: number }>(
+        `SELECT extract(epoch FROM expires_at - now()) / 3600 AS hours
+           FROM auth.session WHERE user_id = $1`,
+        [userId],
+      );
+      return Number(result.rows[0]?.hours);
+    });
+    expect(left).toBeLessThan(25);
+  });
+
+  it('sweeps abandoned challenges whenever a new one is issued', async () => {
+    await asAdmin(database, (client) =>
+      client.query(
+        `INSERT INTO auth.verification (identifier, value, expires_at)
+         VALUES ('abandoned', '{}', now() - interval '1 minute')`,
+      ),
+    );
+    await app.request('/v1/auth/passkey/generate-authenticate-options');
+    const left = await asAdmin(database, (client) =>
+      client.query("SELECT FROM auth.verification WHERE identifier = 'abandoned'"),
+    );
+    expect(left.rowCount).toBe(0);
+  });
+
+  it("refuses a session tied to another account's passkey", async () => {
+    const { userId } = await signedIn('first@example.com');
+    const { passkey } = await account('second@example.com');
+    await expect(
+      asAdmin(database, (client) =>
+        client.query(
+          `INSERT INTO auth.session (expires_at, token, user_id, device_browser, device_os, credential_id)
+           VALUES (now() + interval '1 day', 'test-only-token', $1, 'other', 'other', $2)`,
+          [userId, passkey.credentialId],
+        ),
+      ),
+    ).rejects.toThrow(/session_credential_fkey/);
+  });
+
+  it('refuses an assertion made without user verification, and opens no session', async () => {
+    const { userId, passkey } = await account('unverified@example.com');
+    const { verified } = await passkeySignIn(passkey, { userVerified: false });
+    expect(verified.status).toBe(401);
+    expect(await verified.json()).toEqual({ error: { code: 'unauthorized' } });
+    expect(setsSession(verified)).toBe(false);
+    expect(await sessionsOf(userId)).toEqual([]);
+  });
+
+  it('sets only __Host- cookies, with the session cookie locked down', async () => {
+    const { userId, passkey } = await account('cookies@example.com');
+    const { options, verified } = await passkeySignIn(passkey);
+    const cookie = cookiesFrom(verified);
+    await asAdmin(database, (client) =>
+      client.query(
+        "UPDATE auth.session SET expires_at = now() + interval '1 day' WHERE user_id = $1",
+        [userId],
+      ),
+    );
+    const refreshed = await app.request('/v1/session', { headers: { cookie } });
+    const signOut = await app.request('/v1/auth/sign-out', {
+      method: 'POST',
+      headers: { cookie, origin, 'content-type': 'application/json' },
+      body: '{}',
+    });
+    const all = [options, verified, refreshed, signOut].flatMap((r) => r.headers.getSetCookie());
+    expect(all.length).toBeGreaterThanOrEqual(4);
+    for (const setCookie of all) {
+      expect(setCookie).toMatch(/^__Host-/);
+      expect(setCookie).toMatch(/; Secure/i);
+      expect(setCookie).toMatch(/; Path=\/(;|$)/i);
+      expect(setCookie).not.toMatch(/; Domain=/i);
+    }
+    const session = all.find(
+      (c) => c.startsWith('__Host-arca.session_token=') && !/max-age=0/i.test(c),
+    );
+    expect(session).toMatch(/; HttpOnly/i);
+    expect(session).toMatch(/; SameSite=Lax/i);
+  });
+
+  it('ends the sessions of a passkey when the passkey is deleted', async () => {
+    const { cookie, userId, passkey } = await signedIn('revoked@example.org');
+    await authDb.execute(
+      sql`DELETE FROM auth.passkey WHERE credential_id = ${passkey.credentialId}`,
+    );
+    expect(await sessionsOf(userId)).toEqual([]);
+    expect((await app.request('/v1/session', { headers: { cookie } })).status).toBe(401);
   });
 
   it('refuses an expired session', async () => {
@@ -172,7 +396,14 @@ describe('Better Auth on the app_auth pool', () => {
         [userId],
       ),
     );
-    expect((await app.request('/v1/session', { headers: { cookie } })).status).toBe(401);
+    const response = await app.request('/v1/session', { headers: { cookie } });
+    expect(response.status).toBe(401);
+    // Better Auth's clearing cookie reaches the browser, so it drops the dead one.
+    expect(
+      response.headers
+        .getSetCookie()
+        .some((c) => c.startsWith('__Host-arca.session_token=') && /max-age=0/i.test(c)),
+    ).toBe(true);
   });
 
   it('signs out through the allow-listed endpoint', async () => {
@@ -210,10 +441,9 @@ describe('Better Auth on the app_auth pool', () => {
   });
 
   it('pages through the events with a cursor', async () => {
-    const { cookie, userId } = await signedIn('pager@example.com');
-    const context = await auth.$context;
-    await context.internalAdapter.createSession(userId);
-    await context.internalAdapter.createSession(userId);
+    const { cookie, passkey } = await signedIn('pager@example.com');
+    await passkeySignIn(passkey);
+    await passkeySignIn(passkey);
     const page = async (query: string) =>
       (await (await app.request(`/v1/audit/events${query}`, { headers: { cookie } })).json()) as {
         events: { id: string }[];
@@ -230,22 +460,20 @@ describe('Better Auth on the app_auth pool', () => {
   });
 
   it('fails the sign-in and leaves no session when the event cannot be recorded', async () => {
-    const { userId } = await signedIn('unrecorded@example.com');
+    const { userId, passkey } = await signedIn('unrecorded@example.com');
     const failing = createAuth({
       db: authDb,
       secret,
       origin,
       logger,
       audit: { record: () => Promise.reject(new Error('audit unavailable')) },
+      notices,
     });
-    const context = await failing.$context;
-    await expect(context.internalAdapter.createSession(userId)).rejects.toThrow(
-      'audit unavailable',
-    );
-    const sessions = await asAdmin(database, (client) =>
-      client.query('SELECT FROM auth.session WHERE user_id = $1', [userId]),
-    );
-    expect(sessions.rowCount).toBe(1);
+    const { verified } = await passkeySignIn(passkey, { via: appFor(failing) });
+    // The passkey plugin turns any error after verification into a failed sign-in.
+    expect(verified.status).toBe(401);
+    expect(setsSession(verified)).toBe(false);
+    expect(await sessionsOf(userId)).toHaveLength(1);
   });
 
   it('answers 401 to the audit events without a session', async () => {
@@ -261,16 +489,17 @@ describe('Better Auth on the app_auth pool', () => {
 
 /** A passkey row for a synthetic account; the credential ID is synthetic too. */
 async function withPasskey(email: string): Promise<string> {
-  const { userId } = await signedIn(email);
-  const credentialId = `credential-${randomBytes(8).toString('hex')}`;
-  await asAdmin(database, (client) =>
-    client.query(
-      `INSERT INTO auth.passkey (public_key, user_id, credential_id, counter, device_type, backed_up)
-       VALUES ('synthetic', $1, $2, 0, 'multiDevice', true)`,
-      [userId, credentialId],
-    ),
-  );
-  return credentialId;
+  return (await account(email)).passkey.credentialId;
+}
+
+async function outboxFor(recipient: string) {
+  return asAdmin(database, async (client) => {
+    const result = await client.query<{ subject: string }>(
+      'SELECT subject FROM auth.outbox WHERE recipient = $1',
+      [recipient],
+    );
+    return result.rows;
+  });
 }
 
 describe('new-sign-in notices (spec 0003, R7)', () => {
@@ -298,6 +527,52 @@ describe('new-sign-in notices (spec 0003, R7)', () => {
       { browser: 'chrome', os: 'linux' },
       { browser: 'firefox', os: 'android' },
     ]);
+  });
+
+  it('emails one notice when a real sign-in comes from a new family, and none on a repeat', async () => {
+    const email = 'traveller@example.com';
+    const { passkey } = await signedIn(email, { userAgent: firefoxOnLinux });
+    await passkeySignIn(passkey, { userAgent: firefoxOnLinux });
+    expect(await outboxFor(email)).toEqual([]);
+    await passkeySignIn(passkey, { userAgent: chromeOnAndroid });
+    await passkeySignIn(passkey, { userAgent: chromeOnAndroid });
+    expect(await outboxFor(email)).toEqual([{ subject: 'Nova entrada na sua conta' }]);
+  });
+
+  it('still signs in when the notice cannot be sent', async () => {
+    const lines: unknown[] = [];
+    const failing = createAuth({
+      db: authDb,
+      secret,
+      origin,
+      logger: { info: () => undefined, error: (line) => lines.push(line) },
+      audit: auditLog(auditDb),
+      notices: { send: () => Promise.reject(new Error('email unavailable')) },
+    });
+    const { passkey } = await signedIn('unnoticed@example.org', { userAgent: firefoxOnLinux });
+    const { verified } = await passkeySignIn(passkey, {
+      userAgent: chromeOnAndroid,
+      via: appFor(failing),
+    });
+    expect(verified.status).toBe(200);
+    expect(lines).toEqual([{ errorName: 'SignInNotice:Error' }]);
+  });
+
+  it('retries the notice on the next sign-in when sending failed', async () => {
+    const email = 'retried@example.com';
+    const failing = createAuth({
+      db: authDb,
+      secret,
+      origin,
+      logger,
+      audit: auditLog(auditDb),
+      notices: { send: () => Promise.reject(new Error('email unavailable')) },
+    });
+    const { passkey } = await signedIn(email, { userAgent: firefoxOnLinux });
+    await passkeySignIn(passkey, { userAgent: chromeOnAndroid, via: appFor(failing) });
+    expect(await outboxFor(email)).toEqual([]);
+    await passkeySignIn(passkey, { userAgent: chromeOnAndroid });
+    expect(await outboxFor(email)).toEqual([{ subject: 'Nova entrada na sua conta' }]);
   });
 
   it('forgets the families when app_auth deletes the passkey', async () => {
