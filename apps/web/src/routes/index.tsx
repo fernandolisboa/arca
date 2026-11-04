@@ -65,6 +65,13 @@ function SessionLine() {
       <>
         <p>{t('session.signedIn', { email: session.data.email })}</p>
         <KitNotice />
+        {session.data.confirmed ? (
+          <Link to="/invites" className={textLinkClass}>
+            {t('session.invites')}
+          </Link>
+        ) : (
+          <p className="text-warn-ink">{t('session.unconfirmed')}</p>
+        )}
       </>
     );
   }

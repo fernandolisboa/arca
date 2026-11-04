@@ -1,22 +1,23 @@
 import { Button } from '@arca/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect, useState, type ReactNode, type SubmitEvent } from 'react';
+import { useEffect, useState, type SubmitEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { recoveryKitQuery, sessionQuery } from '../api.js';
 import {
-  clearFragment,
   linkRequestFailure,
-  linkTokenFrom,
   registerFromLink,
   registrationFailure,
   requestOwnerLink,
   type LinkRequestFailure,
   type RegistrationFailure,
 } from '../enrollment.js';
+import { emailInput } from '../forms/inputs.js';
 import { TextField } from '../forms/text-field.js';
 import { textLinkClass } from '../forms/text-link.js';
+import { Page } from '../page.js';
 import { passkeys } from '../platform.js';
+import { useLinkToken } from '../use-link-token.js';
 
 export const Route = createFileRoute('/enroll')({ component: Enroll });
 
@@ -32,30 +33,9 @@ const codeInput = {
   spellCheck: false,
 } as const;
 
-const emailInput = {
-  name: 'email',
-  type: 'email',
-  required: true,
-  maxLength: 254,
-  autoComplete: 'email',
-} as const;
-
 /** Without a link token, the owner asks for the link; with one, they create the passkey. */
 function Enroll() {
-  const [token, setToken] = useState(() => linkTokenFrom(window.location.hash));
-  useEffect(() => {
-    clearFragment(window.location, window.history);
-    // A link opened in a tab already on this page changes only the fragment.
-    const onHashChange = () => {
-      const linked = linkTokenFrom(window.location.hash);
-      clearFragment(window.location, window.history);
-      if (linked !== undefined) setToken(linked);
-    };
-    window.addEventListener('hashchange', onHashChange);
-    return () => {
-      window.removeEventListener('hashchange', onHashChange);
-    };
-  }, []);
+  const [token, setToken] = useLinkToken();
   return token === undefined ? (
     <RequestLink />
   ) : (
@@ -65,28 +45,6 @@ function Enroll() {
         setToken(undefined);
       }}
     />
-  );
-}
-
-function Page({
-  title,
-  lead,
-  children,
-}: {
-  readonly title: string;
-  readonly lead: string;
-  readonly children: ReactNode;
-}) {
-  return (
-    <section aria-labelledby="enroll-title" className="mx-auto flex max-w-md flex-col gap-5">
-      <div className="flex flex-col gap-2">
-        <h2 id="enroll-title" className="font-display text-title">
-          {title}
-        </h2>
-        <p className="text-muted">{lead}</p>
-      </div>
-      {children}
-    </section>
   );
 }
 

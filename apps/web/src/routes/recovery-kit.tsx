@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { api, recoveryKitQuery, sessionQuery } from '../api.js';
 import { groupCode, newRecoveryCode } from '../enrollment.js';
 import { textLinkClass } from '../forms/text-link.js';
+import { Page } from '../page.js';
 import { passkeys } from '../platform.js';
 import { commonFailure, reach, type CommonFailure } from '../requests.js';
 
@@ -84,15 +85,9 @@ function RecoveryKit() {
 function Section({ children }: { readonly children?: ReactNode }) {
   const { t } = useTranslation();
   return (
-    <section aria-labelledby="kit-title" className="mx-auto flex max-w-md flex-col gap-5">
-      <div className="flex flex-col gap-2">
-        <h2 id="kit-title" className="font-display text-title">
-          {t('recoveryKit.title')}
-        </h2>
-        <p className="text-muted">{t('recoveryKit.lead')}</p>
-      </div>
+    <Page title={t('recoveryKit.title')} lead={t('recoveryKit.lead')}>
       {children}
-    </section>
+    </Page>
   );
 }
 

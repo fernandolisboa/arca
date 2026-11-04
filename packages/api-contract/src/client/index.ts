@@ -11,6 +11,8 @@ export type {
   AuditEventsResponse,
   DeviceDescription,
   HealthResponse,
+  Invite,
+  InviteDetails,
   PasskeyAssertion,
   PasskeyAttestation,
   PasskeyCreationOptions,

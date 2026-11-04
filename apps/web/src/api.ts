@@ -27,3 +27,11 @@ export const recoveryKitQuery = queryOptions({
   networkMode: 'always',
   retry: false,
 });
+
+/** The signed-in account's invites, open, accepted or confirmed (spec 0003, R2). */
+export const invitesQuery = queryOptions({
+  queryKey: ['invites'],
+  queryFn: () => api.call(routes.listInvites),
+  networkMode: 'always',
+  retry: false,
+});
