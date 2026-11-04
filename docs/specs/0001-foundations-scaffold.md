@@ -59,11 +59,12 @@ tooling/
 
 | Package | May depend on |
 | --- | --- |
-| `apps/web` | `api-contract`, `ui`, `i18n`, `platform`, `telemetry` (added by [spec 0004](0004-real-data-readiness.md)) |
+| `apps/web` | `api-contract`, `ui`, `i18n`, `platform`, `telemetry` (added by [spec 0004](0004-real-data-readiness.md)), `vault` (added by [spec 0005](0005-vault-devices-and-notifications.md)) |
 | `apps/api` | `domain`, `api-contract`, `db`, `knowledge` (added by [spec 0002](0002-rules-engine-and-knowledge-base.md)), `i18n` (added by [spec 0003](0003-identity-and-access.md), for email), `telemetry` (added by spec 0004) |
 | `packages/ui` | `i18n` |
 | `packages/knowledge` | `domain` (added by spec 0002) |
-| `packages/domain`, `packages/api-contract`, `packages/platform`, `packages/i18n`, `packages/db`, `packages/telemetry` | nothing in the workspace |
+| `packages/platform` | `vault`, for types only (added by spec 0005; ESLint fails any import that would load it at run time) |
+| `packages/domain`, `packages/api-contract`, `packages/i18n`, `packages/db`, `packages/telemetry`, `packages/vault` | nothing in the workspace |
 
 - ESLint, scoped by package:
   - `packages/domain`: no imports of `node:*`, database clients, HTTP clients or `fetch`; no `Date.now()` or `new Date()` without arguments (time is passed in).
@@ -232,6 +233,9 @@ The latest stable release of each, checked on the npm registry on 2026-11-01, un
 | `@simplewebauthn/server` | 13.3.3 | Added by spec 0003: the 13.x the passkey plugin resolves, as a direct dependency so there is one copy of the verifier; `@simplewebauthn/browser` joins with the web passkey port. Move to 14 when the plugin does |
 | `@sentry/node`, `@sentry/hono` | 11.10.0 | Added by [spec 0004](0004-real-data-readiness.md#r4-sentry-on-the-server): the newest release at least 7 days old, MIT, no install scripts, eight packages in all. `@sentry/node`'s build plugins (and the FSL-licensed Sentry CLI under them) are removed by a pnpm override, since the API never imports the SDK's bundler entry points |
 | `@sentry/react` | 11.10.0 | Added by [spec 0004](0004-real-data-readiness.md#r5-sentry-in-the-browser-through-our-origin): the same release as the server SDK, MIT, no install scripts. It brings `@sentry/browser`, `@sentry/browser-utils`, `@sentry/replay`, `@sentry/replay-canvas`, `@sentry/feedback` (MIT) and `web-vitals` 6.2.3 (Apache-2.0); the bundle keeps only what the listed integrations use, about 34 KB gzipped, with no replay or feedback code |
+| `age-encryption` | 0.3.1 | Added by [spec 0005](0005-vault-devices-and-notifications.md#r1-vault-core): the newest release at least 7 days old, published with provenance, BSD-3-Clause, no install scripts. It brings `@noble/ciphers`, `@noble/curves`, `@noble/hashes` (audited) and `@noble/post-quantum` 0.5.4 (ML-KEM; not audited, the residual [ADR-0018](../adr/0018-vault-encryption.md) accepts) and `@scure/base`, all MIT. `@noble/post-quantum` pins `@noble/curves` and `@noble/hashes` 2.0.1, so the bundle carries two copies of each until it moves to 2.4 |
+| `@scure/base` | 2.4.0 | Added by spec 0005: the copy `age-encryption` already resolves, as a direct dependency for the Crockford base32 of the vault recovery secret |
+| `cctv-age` | 0.2.0 | Added by spec 0005, tests only: the C2SP CCTV age test vectors, hybrid stanza included; 0BSD, CC0-1.0 or Unlicense |
 | `libpg-query` | 18.x | The Postgres parser compiled to WebAssembly, matching Postgres 18; the migration runner uses it to split and vet statements. 18.2.1 ships only JavaScript and a `.wasm` file, with no install script, so `allowBuilds` stays empty (checked 2026-11-02) |
 | Vitest | 5.0 | Latest stable; 5.1 is a beta with nothing we need |
 | Playwright | 1.64+ | Latest |

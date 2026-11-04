@@ -72,6 +72,26 @@ describe('client', () => {
   });
 });
 
+describe('platform', () => {
+  it.each([
+    'vault-value.ts',
+    'vault-mixed.ts',
+    'vault-namespace.ts',
+    'vault-side-effect.ts',
+    'vault-reexport.ts',
+    'vault-export-all.ts',
+    'vault-dynamic.ts',
+    'vault-inline-type.ts',
+    'vault-inline-type-reexport.ts',
+  ])('%s fails: @arca/vault is for types only', async (file) => {
+    expect(await ruleIds('platform', ['browser'], file)).toContain('no-restricted-syntax');
+  });
+
+  it('allows import type and export type from @arca/vault', async () => {
+    expect(await ruleIds('platform', ['browser'], 'allowed.ts')).toEqual([]);
+  });
+});
+
 describe('web', () => {
   it.each([
     ['contract-root.ts', 'no-restricted-imports'],

@@ -21,6 +21,7 @@ import {
   reproductionLookupFiles,
   reproductionReexport,
   restrictionRules,
+  vaultTypesOnly,
   web,
   workflowStart,
   workflowStartHelper,
@@ -34,8 +35,10 @@ const restrictionsByKind = {
   domain: [pureRuntime],
   /** packages/telemetry: runs in the API and in the browser, so no I/O and no host globals. */
   telemetry: [pureRuntime],
-  /** packages/platform: browser globals; native APIs are allowed here and nowhere else. */
-  browser: [],
+  /** packages/vault: encryption on the device, pure like the domain (spec 0005, R1). */
+  vault: [pureRuntime],
+  /** packages/platform: browser globals; native APIs only here; @arca/vault for types only. */
+  browser: [vaultTypesOnly],
   /** apps/web and packages/ui: no OS sniffing or native imports; React and i18n rules. */
   client: [client],
   /** apps/web: the API contract only through its client entry. */

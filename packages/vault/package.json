@@ -1,0 +1,31 @@
+{
+  "name": "@arca/vault",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@scure/base": "catalog:",
+    "age-encryption": "catalog:"
+  },
+  "devDependencies": {
+    "@arca/eslint-config": "workspace:*",
+    "@arca/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "cctv-age": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

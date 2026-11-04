@@ -16,6 +16,7 @@ export const allowedDependencies: Readonly<Record<string, readonly string[]>> = 
     '@arca/i18n',
     '@arca/platform',
     '@arca/telemetry',
+    '@arca/vault',
   ],
   '@arca/api': [
     '@arca/domain',
@@ -29,10 +30,12 @@ export const allowedDependencies: Readonly<Record<string, readonly string[]>> = 
   '@arca/domain': [],
   '@arca/knowledge': ['@arca/domain'],
   '@arca/api-contract': [],
-  '@arca/platform': [],
+  // Types only, enforced by ESLint (spec 0005, R1).
+  '@arca/platform': ['@arca/vault'],
   '@arca/i18n': [],
   '@arca/db': [],
   '@arca/telemetry': [],
+  '@arca/vault': [],
 };
 
 export function checkBoundaries(manifests: readonly Manifest[], rootDir: string): Violation[] {
