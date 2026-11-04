@@ -3,6 +3,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { join, relative, resolve, sep } from 'node:path';
 import { defaultLocale, resources } from '@arca/i18n';
 import { isUnpublishedFile } from '@arca/security-policy';
+import { axes, fontPairs } from '@arca/ui/theme';
 import tailwindcss from '@tailwindcss/vite';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
@@ -37,8 +38,21 @@ const manifest = {
 
 const serviceWorkerFile = 'sw.js';
 
-/** Never precached: what the server does not publish, and the worker itself. */
-const notPrecached = (file: string) => file === serviceWorkerFile || isUnpublishedFile(file);
+const defaultPair = fontPairs[axes.font.default];
+const defaultFontFiles = [defaultPair.display, defaultPair.body, defaultPair.numeric].map(
+  (role) => `assets/${role.source.id}-latin`,
+);
+
+/**
+ * Only the default font pair is precached; other pairs load from the network when chosen and fall
+ * back to the system font offline (spec 0006, R4).
+ */
+const isOptionalFont = (file: string) =>
+  file.endsWith('.woff2') && !defaultFontFiles.some((prefix) => file.startsWith(prefix));
+
+/** Never precached: what the server does not publish, the worker itself and optional fonts. */
+const notPrecached = (file: string) =>
+  file === serviceWorkerFile || isUnpublishedFile(file) || isOptionalFont(file);
 
 async function precacheManifest(outDir: string) {
   const files = (await readdir(outDir, { recursive: true, withFileTypes: true }))
@@ -108,5 +122,7 @@ export default defineConfig({
   build: {
     // Read by the bundle check (tooling/scripts/src/check-web-bundle.ts); never served.
     sourcemap: 'hidden',
+    // `default-src 'self'` blocks data: fonts, so font files always stay files (spec 0006, R4).
+    assetsInlineLimit: (file) => (file.endsWith('.woff2') ? false : undefined),
   },
 });

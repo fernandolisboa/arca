@@ -1,8 +1,21 @@
 import type { FontPairId } from './ids.js';
 
+/**
+ * Where a family's files come from: a Fontsource package and the file stem it uses. Variable
+ * packages ship one `wght` file per subset; static packages one file per weight.
+ */
+export type FontSource =
+  | {
+      readonly kind: 'variable';
+      readonly package: `@fontsource-variable/${string}`;
+      readonly id: string;
+    }
+  | { readonly kind: 'static'; readonly package: `@fontsource/${string}`; readonly id: string };
+
 export interface FontRole {
   /** The family name the generated `@font-face` rules declare. */
   readonly family: string;
+  readonly source: FontSource;
   readonly fallback: 'serif' | 'sans-serif' | 'monospace';
   /** Weight used for this role. */
   readonly weight: number;
@@ -15,16 +28,34 @@ export interface FontPair {
   readonly numeric: FontRole;
 }
 
-const sans = (family: string, weight: number): FontRole => ({
+const slug = (family: string) => family.toLowerCase().replaceAll(' ', '-');
+const variable = (family: string): FontSource => ({
+  kind: 'variable',
+  package: `@fontsource-variable/${slug(family)}`,
+  id: slug(family),
+});
+const fixed = (family: string): FontSource => ({
+  kind: 'static',
+  package: `@fontsource/${slug(family)}`,
+  id: slug(family),
+});
+
+const sans = (family: string, weight: number, source = variable(family)): FontRole => ({
   family,
+  source,
   fallback: 'sans-serif',
   weight,
 });
-const serif = (family: string, weight: number): FontRole => ({ family, fallback: 'serif', weight });
+const serif = (family: string, weight: number, source = variable(family)): FontRole => ({
+  family,
+  source,
+  fallback: 'serif',
+  weight,
+});
 
 export const fontPairs: Readonly<Record<FontPairId, FontPair>> = {
   retro: {
-    display: serif('Young Serif', 400),
+    display: serif('Young Serif', 400, fixed('Young Serif')),
     body: sans('Work Sans', 400),
     numeric: sans('Work Sans', 500),
   },
@@ -39,7 +70,7 @@ export const fontPairs: Readonly<Record<FontPairId, FontPair>> = {
     numeric: sans('Source Sans 3', 500),
   },
   elegant: {
-    display: serif('Instrument Serif', 400),
+    display: serif('Instrument Serif', 400, fixed('Instrument Serif')),
     body: sans('Instrument Sans', 400),
     numeric: sans('Instrument Sans', 500),
   },
@@ -62,6 +93,22 @@ export const fontPairs: Readonly<Record<FontPairId, FontPair>> = {
   technical: {
     display: sans('IBM Plex Sans', 600),
     body: sans('IBM Plex Sans', 400),
-    numeric: { family: 'IBM Plex Mono', fallback: 'monospace', weight: 500 },
+    numeric: {
+      family: 'IBM Plex Mono',
+      source: fixed('IBM Plex Mono'),
+      fallback: 'monospace',
+      weight: 500,
+    },
   },
 };
+
+/** Every family the pairs use, once each. */
+export function fontFamilies(): readonly FontRole[] {
+  const byFamily = new Map<string, FontRole>();
+  for (const pair of Object.values(fontPairs)) {
+    for (const role of [pair.display, pair.body, pair.numeric]) {
+      if (!byFamily.has(role.family)) byFamily.set(role.family, role);
+    }
+  }
+  return [...byFamily.values()];
+}
