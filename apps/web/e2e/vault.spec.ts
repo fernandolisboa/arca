@@ -44,6 +44,12 @@ async function setUp(page: Page): Promise<{ secret: string; upload: Request }> {
     (request) => request.method() === 'POST' && request.url().endsWith('/v1/vault'),
   );
   await page.getByRole('button', { name: 'Criar meu cofre' }).click();
+  const secret = await keepSecret(page);
+  return { secret, upload: await upload };
+}
+
+/** Reads the vault secret shown once, checks the page, and confirms it was kept. */
+async function keepSecret(page: Page): Promise<string> {
   const sheet = page.getByRole('group', { name: 'Segredo de recuperação do cofre' });
   await expect(sheet).toBeVisible();
   const secret = (await sheet.locator('p').nth(1).innerText()).trim();
@@ -52,7 +58,22 @@ async function setUp(page: Page): Promise<{ secret: string; upload: Request }> {
   await page.getByLabel('Guardei o segredo num lugar seguro').check();
   await page.getByRole('button', { name: 'Continuar' }).click();
   await expect(opened(page)).toBeVisible();
-  return { secret, upload: await upload };
+  return secret;
+}
+
+async function signOutAndIn(page: Page, email: string) {
+  await page.goto(`${databaseServer.origin}/enroll#${'A'.repeat(43)}`);
+  await page.getByRole('button', { name: 'Sair desta conta' }).click();
+  await signIn(page, email);
+}
+
+/** The account part of the kit: shown, kept and confirmed. */
+async function keepAccountCode(page: Page, button: string) {
+  await page.goto(`${databaseServer.origin}/recovery-kit`);
+  await page.getByRole('button', { name: button }).click();
+  await expect(page.getByRole('group', { name: 'Código de recuperação' })).toBeVisible();
+  await page.getByLabel('Guardei o código num lugar seguro').check();
+  await page.getByRole('button', { name: 'Continuar' }).click();
 }
 
 test('with PRF, the passkey seals and opens the vault, which stays only in memory', async ({
@@ -108,9 +129,7 @@ test('without PRF, the recovery secret opens the vault and the device keeps it w
   await expect(opened(page)).toBeVisible();
 
   // Signing out deletes it, so the next unlock needs the secret: the recovery envelope opens.
-  await page.goto(`${databaseServer.origin}/enroll#${'A'.repeat(43)}`);
-  await page.getByRole('button', { name: 'Sair desta conta' }).click();
-  await signIn(page, email);
+  await signOutAndIn(page, email);
   await openVaultPage(page);
   await page.getByRole('button', { name: 'Abrir o cofre' }).click();
   const field = page.getByLabel('Segredo de recuperação do cofre');
@@ -121,6 +140,54 @@ test('without PRF, the recovery secret opens the vault and the device keeps it w
     'Esse segredo não abre o cofre. Confira e tente de novo.',
   );
   await field.fill(secret.toLowerCase());
+  await page.getByRole('button', { name: 'Abrir com o segredo' }).click();
+  await expect(opened(page)).toBeVisible();
+  expect(problems).toEqual([]);
+});
+
+test('a new recovery kit gives the vault a new secret at its next opening, and the old one stops', async ({
+  page,
+}) => {
+  const problems = watchProblems(page);
+  const credential = newCredential();
+  const { userId, email } = await seedAccount(credential);
+  await virtualAuthenticator(page, credential, { userId });
+  await signIn(page, email);
+  await keepAccountCode(page, 'Mostrar meu código');
+  await expect(page).toHaveURL(`${databaseServer.origin}/`);
+  await openVaultPage(page);
+  const { secret: old } = await setUp(page);
+
+  // The new account code comes first; the vault's part follows when the vault opens (spec 0003, R6).
+  await keepAccountCode(page, 'Gerar um novo código');
+  await expect(page).toHaveURL(`${databaseServer.origin}/vault`);
+  await expect(page.getByText(/^Seu kit de recuperação mudou/)).toBeVisible();
+  await expectAccessible(page);
+  await page.getByRole('button', { name: 'Abrir o cofre' }).click();
+  const options = page.waitForRequest(
+    (request) =>
+      request.url().endsWith('/v1/auth/step-up/options') &&
+      request.postData()?.includes('sensitive_settings') === true,
+  );
+  await page.getByRole('button', { name: 'Criar o novo segredo' }).click();
+  expect((await options).postDataJSON()).toMatchObject({
+    purpose: 'sensitive_settings',
+    target: { action: 'resealVaultRecovery' },
+  });
+  const secret = await keepSecret(page);
+  expect(secret).not.toBe(old);
+
+  await signOutAndIn(page, email);
+  await openVaultPage(page);
+  await expect(page.getByText(/^Seu kit de recuperação mudou/)).toHaveCount(0);
+  await page.getByRole('button', { name: 'Abrir o cofre' }).click();
+  const field = page.getByLabel('Segredo de recuperação do cofre');
+  await field.fill(old);
+  await page.getByRole('button', { name: 'Abrir com o segredo' }).click();
+  await expect(page.getByRole('status')).toHaveText(
+    'Esse segredo não abre o cofre. Confira e tente de novo.',
+  );
+  await field.fill(secret);
   await page.getByRole('button', { name: 'Abrir com o segredo' }).click();
   await expect(opened(page)).toBeVisible();
   expect(problems).toEqual([]);

@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { api, recoveryKitQuery, sessionQuery } from '../api.js';
+import { api, recoveryKitQuery, sessionQuery, vaultStatusQuery } from '../api.js';
 import { newRecoveryCode } from '../enrollment.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { Page } from '../page.js';
@@ -101,7 +101,9 @@ function ConfirmedCode({ code }: { readonly code: string }) {
       onSaved={async () => {
         await reach(api.call(routes.confirmRecoveryKit, {}));
         await queryClient.invalidateQueries({ queryKey: recoveryKitQuery.queryKey });
-        await navigate({ to: '/' });
+        // A vault's part of the kit follows at its next opening (spec 0003, R6).
+        const vault = await queryClient.query(vaultStatusQuery).catch(() => undefined);
+        await navigate({ to: vault?.resealDue === true ? '/vault' : '/' });
       }}
     />
   );

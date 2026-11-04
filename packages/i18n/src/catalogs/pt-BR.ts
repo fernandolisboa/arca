@@ -332,11 +332,16 @@ export const ptBR = {
     secretLead:
       'Neste dispositivo, a sua chave de acesso ainda não abre o cofre. Digite o segredo de recuperação do cofre, o que está no seu kit de recuperação. Você só precisa fazer isso uma vez aqui.',
     secretSubmit: 'Abrir com o segredo',
+    resealPending:
+      'Seu kit de recuperação mudou e ainda falta um novo segredo de recuperação do cofre. Abra o cofre para criar o novo. Até lá, o segredo antigo continua valendo.',
+    resealLead:
+      'Crie agora o novo segredo de recuperação do cofre. Quando ele estiver pronto, o segredo antigo deixa de abrir o cofre.',
+    reseal: 'Criar o novo segredo',
     opened:
       'O cofre está aberto neste dispositivo. Ele fecha sozinho depois de {minutes} minutos sem uso.',
     lock: 'Fechar o cofre',
     failure:
-      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} wrong_secret {Esse segredo não abre o cofre. Confira e tente de novo.} wrong_identity {A chave aberta não é a do seu cofre atual. Atualize a página e tente de novo.} exists {O seu cofre já foi criado em outro dispositivo. Atualize a página.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} wrong_secret {Esse segredo não abre o cofre. Confira e tente de novo.} wrong_identity {A chave aberta não é a do seu cofre atual. Atualize a página e tente de novo.} exists {O seu cofre já foi criado em outro dispositivo. Atualize a página.} changed {O cofre mudou em outro dispositivo. Atualize a página e tente de novo.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
     /** The vault part of the recovery kit (spec 0003, R6): shown once, after the check. */
     kit: {
       lead: 'Este é o segundo item do seu kit de recuperação. Ele aparece uma vez só.',

@@ -1,3 +1,4 @@
+import type { AuditEventCode } from '@arca/api-contract/routes';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { auditLog } from '../../src/audit/log.js';
@@ -76,13 +77,13 @@ async function setUp(owner: Account, passkeys = [credentialOf(owner)]) {
 describe('vault set-up and status (spec 0005, R2)', () => {
   it('stores the recipient with its recovery and passkey envelopes, once', async () => {
     const owner = await fixtures.account(2);
-    expect(await vault.status(owner.accountId)).toEqual({ recipient: null });
+    expect(await vault.status(owner.accountId)).toEqual({ recipient: null, resealDue: false });
     const { recipient, outcome } = await setUp(owner, [
       credentialOf(owner, 0),
       credentialOf(owner, 1),
     ]);
     expect(outcome).toBe('created');
-    expect(await vault.status(owner.accountId)).toEqual({ recipient });
+    expect(await vault.status(owner.accountId)).toEqual({ recipient, resealDue: false });
     expect(await envelopeRows(owner)).toEqual(
       [
         { kind: 'passkey_prf', credential_id: credentialOf(owner, 0) },
@@ -93,7 +94,7 @@ describe('vault set-up and status (spec 0005, R2)', () => {
       ),
     );
     expect((await setUp(owner)).outcome).toBe('exists');
-    expect(await vault.status(owner.accountId)).toEqual({ recipient });
+    expect(await vault.status(owner.accountId)).toEqual({ recipient, resealDue: false });
   });
 
   it('lets only one of two concurrent set-ups through', async () => {
@@ -107,13 +108,56 @@ describe('vault set-up and status (spec 0005, R2)', () => {
     const owner = await fixtures.account(1);
     const stranger = await fixtures.account(1);
     expect((await setUp(owner, [credentialOf(stranger)])).outcome).toBe('unknown_passkey');
-    expect(await vault.status(owner.accountId)).toEqual({ recipient: null });
+    expect(await vault.status(owner.accountId)).toEqual({ recipient: null, resealDue: false });
   });
 
   it('sets up a vault with the recovery envelope alone, for passkeys without PRF', async () => {
     const owner = await fixtures.account(1);
     expect((await setUp(owner, [])).outcome).toBe('created');
     expect(await envelopeRows(owner)).toEqual([{ kind: 'recovery', credential_id: null }]);
+  });
+});
+
+describe('a new vault recovery secret due (spec 0003, R6)', () => {
+  const record = (owner: Account, code: AuditEventCode) =>
+    auditLog(testDatabase.auditDb).record({
+      code,
+      subjectAccountId: owner.accountId,
+      actorAccountId: owner.accountId,
+      details: {},
+    });
+
+  it.each<[string, AuditEventCode[], boolean]>([
+    ['right after set-up', [], false],
+    ['after a new recovery kit', ['recovery_kit_regenerated'], true],
+    ['after an account recovery', ['recovery_completed'], true],
+    ['after a recovery that was cancelled', ['recovery_completed', 'recovery_cancelled'], false],
+    ['once re-sealed', ['recovery_kit_regenerated', 'vault_recovery_resealed'], false],
+    [
+      'after a kit newer than the re-seal',
+      ['vault_recovery_resealed', 'recovery_kit_regenerated'],
+      true,
+    ],
+    [
+      'after events that do not touch the secret',
+      ['recovery_completed', 'vault_envelopes_fetched'],
+      true,
+    ],
+  ])('%s', async (_, codes, due) => {
+    const owner = await fixtures.account(1);
+    const { recipient } = await setUp(owner);
+    for (const code of codes) await record(owner, code);
+    expect(await vault.status(owner.accountId)).toEqual({ recipient, resealDue: due });
+  });
+
+  it("is never due before set-up, nor from another account's events", async () => {
+    const owner = await fixtures.account(1);
+    const stranger = await fixtures.account(1);
+    await record(owner, 'recovery_kit_regenerated');
+    expect(await vault.status(owner.accountId)).toEqual({ recipient: null, resealDue: false });
+    const { recipient } = await setUp(stranger);
+    await record(owner, 'recovery_completed');
+    expect(await vault.status(stranger.accountId)).toEqual({ recipient, resealDue: false });
   });
 });
 
@@ -291,7 +335,10 @@ describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
       { recipient: old, rotated: true },
       { recipient: next.recipient, rotated: false },
     ]);
-    expect(await vault.status(owner.accountId)).toEqual({ recipient: next.recipient });
+    expect(await vault.status(owner.accountId)).toEqual({
+      recipient: next.recipient,
+      resealDue: false,
+    });
     expect((await envelopeRows(owner)).length).toBe(4);
     const found = await vault.envelopes(owner.accountId);
     expect(found?.recipients.map(({ current }) => current)).toEqual([false, true]);
@@ -333,7 +380,10 @@ describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
     const newer = identity(owner, stale);
     expect(await vault.rotate(owner.accountId, newer)).toBe('rotated');
     expect(await vault.rotate(owner.accountId, identity(owner, stale))).toBe('changed');
-    expect(await vault.status(owner.accountId)).toEqual({ recipient: newer.recipient });
+    expect(await vault.status(owner.accountId)).toEqual({
+      recipient: newer.recipient,
+      resealDue: false,
+    });
   });
 
   it('answers changed when another change left no current recipient to rotate', async () => {

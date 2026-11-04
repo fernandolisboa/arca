@@ -1,12 +1,12 @@
-import { ApiError, routes } from '@arca/api-contract/client';
+import type { ApiError } from '@arca/api-contract/client';
 import { EnvelopeNotOpenedError, EnvelopeNotSealedError } from '@arca/platform';
 import { Button } from '@arca/ui';
 import { WrongRecoverySecret } from '@arca/vault';
-import { queryOptions, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, createLazyFileRoute } from '@tanstack/react-router';
 import { useState, type ReactNode, type SubmitEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { api, sessionQuery } from '../api.js';
+import { sessionQuery, vaultStatusQuery } from '../api.js';
 import { recoveryCodeInput } from '../forms/inputs.js';
 import { TextField } from '../forms/text-field.js';
 import { textLinkClass } from '../forms/text-link.js';
@@ -14,19 +14,28 @@ import { Page } from '../page.js';
 import { vaultDevice } from '../vault-device.js';
 import { RecoveryCodeSheet } from '../recovery-code.js';
 import { commonFailure, type CommonFailure } from '../requests.js';
-import { setUpVault, unlockVault, WrongVaultIdentity, type SecretNeeded } from '../vault.js';
-import { lockVault, useUnlockedVault, vaultIdleMinutes } from '../vault-session.js';
+import {
+  replaceVaultSecret,
+  setUpVault,
+  unlockVault,
+  WrongVaultIdentity,
+  type SecretNeeded,
+} from '../vault.js';
+import {
+  lockVault,
+  useUnlockedVault,
+  vaultIdleMinutes,
+  type UnlockedVault,
+} from '../vault-session.js';
 
 export const Route = createLazyFileRoute('/vault')({ component: Vault });
 
-const vaultStatusQuery = queryOptions({
-  queryKey: ['vault'],
-  queryFn: () => api.call(routes.vaultStatus),
-  networkMode: 'always',
-  retry: false,
-});
+type VaultFailure = CommonFailure | 'wrong_secret' | 'wrong_identity' | 'exists' | 'changed';
 
-type VaultFailure = CommonFailure | 'wrong_secret' | 'wrong_identity' | 'exists';
+const vaultApiFailures: Partial<Record<string, VaultFailure>> = {
+  vault_exists: 'exists',
+  vault_changed: 'changed',
+};
 
 function vaultFailure(error: unknown): VaultFailure {
   if (error instanceof WrongRecoverySecret) return 'wrong_secret';
@@ -34,9 +43,7 @@ function vaultFailure(error: unknown): VaultFailure {
   if (error instanceof EnvelopeNotOpenedError || error instanceof EnvelopeNotSealedError) {
     return 'cancelled';
   }
-  return commonFailure(error, (apiError: ApiError) =>
-    apiError.code === 'vault_exists' ? 'exists' : undefined,
-  );
+  return commonFailure(error, (apiError: ApiError) => vaultApiFailures[apiError.code]);
 }
 
 /** Runs one vault step with its waiting state and failure, as every button here does. */
@@ -101,9 +108,12 @@ function Vault() {
       </Section>
     );
   }
-  if (unlocked !== undefined) return <Opened />;
   if (status.data.recipient === null) return <SetUp accountId={accountId} onSecret={setSecret} />;
-  return <Locked accountId={accountId} />;
+  if (unlocked === undefined) {
+    return <Locked accountId={accountId} resealDue={status.data.resealDue} />;
+  }
+  if (status.data.resealDue) return <NewSecret vault={unlocked} onSecret={setSecret} />;
+  return <Opened />;
 }
 
 function Section({ lead, children }: { readonly lead?: string; readonly children?: ReactNode }) {
@@ -161,13 +171,20 @@ function SetUp({
   );
 }
 
-function Locked({ accountId }: { readonly accountId: string }) {
+function Locked({
+  accountId,
+  resealDue,
+}: {
+  readonly accountId: string;
+  readonly resealDue: boolean;
+}) {
   const { t } = useTranslation();
   const { waiting, failure, run } = useStep();
   const [needed, setNeeded] = useState<SecretNeeded>();
   if (needed !== undefined) return <EnterSecret needed={needed} />;
   return (
     <Section>
+      {resealDue && <p>{t('vault.resealPending')}</p>}
       <p>{t('vault.unlockLead')}</p>
       <Button
         disabled={waiting}
@@ -209,6 +226,40 @@ function EnterSecret({ needed }: { readonly needed: SecretNeeded }) {
           {t('vault.secretSubmit')}
         </Button>
       </form>
+      <StepStatus waiting={waiting} failure={failure} />
+    </Section>
+  );
+}
+
+/**
+ * After an account recovery or a new recovery kit, the vault part of the kit comes next: a new
+ * secret sealed in before it is shown (spec 0003, R6).
+ */
+function NewSecret({
+  vault,
+  onSecret,
+}: {
+  readonly vault: UnlockedVault;
+  readonly onSecret: (secret: string) => void;
+}) {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const { waiting, failure, run } = useStep();
+  return (
+    <Section>
+      <p>{t('vault.resealLead')}</p>
+      <Button
+        disabled={waiting}
+        aria-busy={waiting}
+        onClick={() => {
+          run(async () => {
+            onSecret(await replaceVaultSecret(vaultDevice, vault));
+            await queryClient.invalidateQueries({ queryKey: vaultStatusQuery.queryKey });
+          });
+        }}
+      >
+        {t('vault.reseal')}
+      </Button>
       <StepStatus waiting={waiting} failure={failure} />
     </Section>
   );

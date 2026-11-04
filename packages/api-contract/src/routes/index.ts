@@ -884,6 +884,11 @@ export const VaultRecipient = z
 export const VaultStatusResponse = z.object({
   /** The account's current public recipient; null until the vault is set up. */
   recipient: VaultRecipient.nullable(),
+  /**
+   * An account recovery or a new recovery kit came after the vault recovery secret was last
+   * sealed, so the next unlock gives the vault a new secret before anything else (spec 0003, R6).
+   */
+  resealDue: z.boolean(),
 });
 export type VaultStatusResponse = z.infer<typeof VaultStatusResponse>;
 

@@ -8,8 +8,9 @@ import type {
   VaultStatusResponse,
 } from '@arca/api-contract/routes';
 import { withIdentity, type Database, type Transaction } from '@arca/db';
+import { event } from '@arca/db/audit-schema';
 import { envelope, recipient, sharingState } from '@arca/db/vault-schema';
-import { and, asc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 
 export type VaultSetUp = 'created' | 'exists' | 'unknown_passkey';
@@ -114,6 +115,36 @@ const anyRecipient = (tx: Transaction, accountId: string) =>
     .limit(1)
     .then(([found]) => found);
 
+/**
+ * The events that change whether the vault recovery secret is still the kit's: a recovery that
+ * activated a passkey, or a new kit, makes it due; sealing it, or a cancelled recovery, settles it.
+ */
+const secretDueAfter: readonly AuditEventCode[] = [
+  'recovery_completed',
+  'recovery_kit_regenerated',
+];
+const secretSettledBy: readonly AuditEventCode[] = [
+  'recovery_cancelled',
+  'vault_created',
+  'vault_recovery_resealed',
+];
+
+/** Read from the account's own audit trail, which row-level security lets app_api read. */
+const resealDue = async (tx: Transaction, accountId: string) => {
+  const [latest] = await tx
+    .select({ code: event.code })
+    .from(event)
+    .where(
+      and(
+        eq(event.subjectAccountId, accountId),
+        inArray(event.code, [...secretDueAfter, ...secretSettledBy]),
+      ),
+    )
+    .orderBy(desc(event.time), desc(event.id))
+    .limit(1);
+  return secretDueAfter.some((code) => code === latest?.code);
+};
+
 const current = (tx: Transaction, accountId: string) =>
   tx
     .select({ id: recipient.id, recipient: recipient.recipient })
@@ -156,9 +187,12 @@ export function createVault({ db, activeCredentials, audit }: VaultSettings): Va
     );
 
   return {
-    status: async (accountId) => ({
-      recipient: (await asAccount(accountId, (tx) => current(tx, accountId)))?.recipient ?? null,
-    }),
+    status: (accountId) =>
+      asAccount(accountId, async (tx) => {
+        const found = await current(tx, accountId);
+        if (found === undefined) return { recipient: null, resealDue: false };
+        return { recipient: found.recipient, resealDue: await resealDue(tx, accountId) };
+      }),
 
     setUp: async (accountId, request) => {
       if (!(await passkeysActive(accountId, request))) return 'unknown_passkey';
