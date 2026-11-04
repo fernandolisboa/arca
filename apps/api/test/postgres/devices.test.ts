@@ -19,6 +19,8 @@ let testDatabase: AuthTestDatabase;
 let devices: Devices;
 let stepUp: StepUpService;
 const sent: Notice[] = [];
+let noticesFail = false;
+const logged: string[] = [];
 
 beforeAll(async () => {
   testDatabase = await authTestDatabase();
@@ -29,11 +31,17 @@ beforeAll(async () => {
     audit,
     notices: {
       send: (notice) => {
+        if (noticesFail) return Promise.reject(new Error('the sender is down'));
         sent.push(notice);
         return Promise.resolve();
       },
     },
-    logger: silentLogger,
+    logger: {
+      info: () => undefined,
+      error: ({ errorName }) => {
+        logged.push(String(errorName));
+      },
+    },
   });
   stepUp = createStepUp({
     db: authDb,
@@ -279,6 +287,64 @@ describe('revoking a passkey (spec 0003, R4)', () => {
     ]);
   });
 
+  it("ends the caller's own session when it removes the passkey that signed it in", async () => {
+    const owner = await account();
+    const [older, newer] = owner.keys as [Key, Key];
+    const current = await session(owner, newer);
+    const kept = await session(owner, older);
+    expect(await devices.revokePasskey(current, newer.id)).toBe('revoked');
+    expect(await sessionsOf(owner)).toEqual([kept.sessionId]);
+  });
+
+  it('stands when its notice fails, and logs the failure', async () => {
+    const owner = await account();
+    const [older, newer] = owner.keys as [Key, Key];
+    const current = await session(owner, newer);
+    noticesFail = true;
+    try {
+      expect(await devices.revokePasskey(current, older.id)).toBe('revoked');
+    } finally {
+      noticesFail = false;
+    }
+    expect(
+      await count('SELECT count(*)::int AS n FROM auth.passkey WHERE user_id = $1', [
+        owner.accountId,
+      ]),
+    ).toBe(1);
+    expect(logged).toContain('DeviceNotice:Error');
+  });
+
+  it('refuses a step-up whose passkey is revoked before it is recorded', async () => {
+    const owner = await account();
+    const [older, newer] = owner.keys as [Key, Key];
+    const current = await session(owner, newer);
+    const real = credentialStore(testDatabase.authDb);
+    // The passkey is found, then revoked before the verification records anything.
+    const racing = createStepUp({
+      db: testDatabase.authDb,
+      credentials: {
+        ...real,
+        active: async (accountId, credentialId) => {
+          const found = await real.active(accountId, credentialId);
+          expect(await devices.revokePasskey(current, older.id)).toBe('revoked');
+          return found;
+        },
+      },
+      audit: auditLog(testDatabase.auditDb),
+      origin,
+      logger: silentLogger,
+    });
+    const { challengeId, options } = await racing.options(current, { purpose: 'vault_unlock' });
+    const response = older.passkey.assert({ challenge: options.challenge, origin });
+    expect(await racing.verify(current, challengeId, response)).toBe(false);
+    expect(await racing.vaultUnlocked(current)).toBe(false);
+    expect(
+      await count('SELECT count(*)::int AS n FROM auth.step_up WHERE account_id = $1', [
+        owner.accountId,
+      ]),
+    ).toBe(0);
+  });
+
   it('keeps the last passkey, and says so', async () => {
     const owner = await account(1);
     const key = owner.keys[0];
@@ -320,6 +386,37 @@ describe('revoking a passkey (spec 0003, R4)', () => {
   });
 });
 
+describe('a step-up and a revocation of its passkey at once (spec 0003, R4 and R5)', () => {
+  it('makes the revocation wait for the step-up, then end it', async () => {
+    const owner = await account();
+    const [older, newer] = owner.keys as [Key, Key];
+    const current = await session(owner, newer);
+    const audit = auditLog(testDatabase.auditDb);
+    let revocation: Promise<string> | undefined;
+    // The revocation starts while the verification is recording, inside its transaction.
+    const racing = createStepUp({
+      db: testDatabase.authDb,
+      credentials: credentialStore(testDatabase.authDb),
+      audit: {
+        ...audit,
+        record: async (event) => {
+          if (event.code === 'step_up_verified') {
+            revocation = devices.revokePasskey(current, older.id);
+          }
+          await audit.record(event);
+        },
+      },
+      origin,
+      logger: silentLogger,
+    });
+    const { challengeId, options } = await racing.options(current, { purpose: 'vault_unlock' });
+    const response = older.passkey.assert({ challenge: options.challenge, origin });
+    expect(await racing.verify(current, challengeId, response)).toBe(true);
+    expect(await revocation).toBe('revoked');
+    expect(await racing.vaultUnlocked(current)).toBe(false);
+  });
+});
+
 describe('signing out the other sessions (spec 0003, R4)', () => {
   it('leaves only the current session and sends one notice', async () => {
     const owner = await account();
@@ -335,6 +432,18 @@ describe('signing out the other sessions (spec 0003, R4)', () => {
       expect.arrayContaining(others.map(({ sessionId }) => ({ sessionId }))),
     );
     expect(noticesTo(owner)).toEqual(['sessions_revoked']);
+  });
+
+  it('ends dead sessions without recording or announcing them', async () => {
+    const owner = await account(1);
+    const key = owner.keys[0];
+    const current = await session(owner, key);
+    await session(owner, key, { expiresIn: '-1 second' });
+    await session(owner, key, { age: '30 days 1 minute' });
+    await devices.revokeOtherSessions(current);
+    expect(await sessionsOf(owner)).toEqual([current.sessionId]);
+    expect(await events(owner)).toEqual([]);
+    expect(noticesTo(owner)).toEqual([]);
   });
 
   it('sends nothing when there is no other session', async () => {

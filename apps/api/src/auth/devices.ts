@@ -4,13 +4,12 @@ import {
   type DevicesResponse,
 } from '@arca/api-contract/routes';
 import type { Database } from '@arca/db';
-import { stepUp } from '@arca/db/step-up-schema';
-import { and, eq, isNull } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import type { NoticeKind, Notices } from '../email/notices.js';
 import type { Logger } from '../logger.js';
 import { accounts, devices } from './auth.js';
 import { absoluteSessionLifetimeMs, type SignedIn } from './service.js';
+import { forgetUnspent } from './step-up.js';
 
 export type PasskeyRevocation = 'revoked' | 'not_found' | 'last_active';
 
@@ -54,6 +53,9 @@ export function createDevices({
     }
   }
 
+  /** Sessions created before this are past their absolute lifetime (spec 0003, R4). */
+  const liveSince = () => new Date(clock().getTime() - absoluteSessionLifetimeMs);
+
   const sessionRevoked = (accountId: string, sessionId: string) =>
     audit.record({
       code: 'session_revoked',
@@ -64,8 +66,7 @@ export function createDevices({
 
   return {
     list: async ({ accountId, sessionId }) => {
-      const since = new Date(clock().getTime() - absoluteSessionLifetimeMs);
-      const { passkeys, sessions } = await devices.of(db, accountId, since);
+      const { passkeys, sessions } = await devices.of(db, accountId, liveSince());
       return {
         passkeys: passkeys.map(({ id, credentialId, createdAt }): DevicePasskey => {
           const signed = sessions
@@ -100,17 +101,7 @@ export function createDevices({
       const outcome = await db.transaction(async (tx) => {
         const revoked = await devices.revokePasskey(tx, accountId, passkeyId);
         if (typeof revoked === 'string') return revoked;
-        // What it approved and nothing spent yet, an open vault_unlock window included, ends
-        // with it, in whichever session it was verified (spec 0003, R5).
-        await tx
-          .delete(stepUp)
-          .where(
-            and(
-              eq(stepUp.accountId, accountId),
-              eq(stepUp.credentialId, revoked.credentialId),
-              isNull(stepUp.consumedAt),
-            ),
-          );
+        await forgetUnspent(tx, accountId, revoked.credentialId);
         await audit.record({
           code: 'passkey_revoked',
           subjectAccountId: accountId,
@@ -125,7 +116,7 @@ export function createDevices({
 
     revokeOtherSessions: async ({ accountId, sessionId }) => {
       const ended = await db.transaction(async (tx) => {
-        const ids = await devices.revokeOtherSessions(tx, accountId, sessionId);
+        const ids = await devices.revokeOtherSessions(tx, accountId, sessionId, liveSince());
         for (const id of ids) await sessionRevoked(accountId, id);
         return ids.length;
       });

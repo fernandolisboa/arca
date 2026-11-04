@@ -501,7 +501,6 @@ export function createApp({
   v1.openapi(openApiRoutes.revokeOtherSessions, async (c) => {
     const current = await signedIn(c);
     if (current === null || devices === undefined) return unauthorized(c);
-    revokeOtherSessions.body.parse(await c.req.json());
     const approved = await stepUpGranted(c, current, 'sensitive_settings', {
       action: revokeOtherSessions.operationId,
       targets: [],
