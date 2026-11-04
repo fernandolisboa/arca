@@ -16,6 +16,7 @@ const signedIn: SessionResponse = {
   email: 'owner@example.com',
   confirmed: true,
   device: { browser: 'firefox', os: 'linux' },
+  pendingPasskeyUntil: null,
 };
 
 const origin = 'http://arca.test';

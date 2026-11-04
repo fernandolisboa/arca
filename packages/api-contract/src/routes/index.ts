@@ -75,6 +75,11 @@ export const SessionResponse = z.object({
   /** False until the inviter confirms the account, which stays restricted until then (spec 0003, R2). */
   confirmed: z.boolean(),
   device: DeviceDescription,
+  /**
+   * When the account's newest pending passkey becomes active, while one is pending; every
+   * session shows it (spec 0003, R4). Null otherwise.
+   */
+  pendingPasskeyUntil: z.iso.datetime({ offset: true }).nullable(),
 });
 export type SessionResponse = z.infer<typeof SessionResponse>;
 
@@ -496,6 +501,10 @@ export const DevicePasskey = z.object({
   createdAt: z.iso.datetime({ offset: true }).nullable(),
   /** Whether it signed in the session making this request. */
   current: z.boolean(),
+  /** A passkey added to the account cannot sign in or approve a step-up for 24 hours. */
+  state: z.enum(['active', 'pending']),
+  /** When a pending passkey becomes active; null once it is. */
+  activeFrom: z.iso.datetime({ offset: true }).nullable(),
   sessions: z.array(DeviceSession),
 });
 export type DevicePasskey = z.infer<typeof DevicePasskey>;
@@ -540,7 +549,7 @@ export const revokePasskey = {
   path: '/devices/passkeys/revoke',
   operationId: 'revokePasskey',
   summary:
-    "Removes one of the account's passkeys and ends every session it signed in, after a step-up; 403 step_up_required, 404 not_found, 409 last_active_passkey",
+    "Removes one of the account's passkeys, or cancels a pending one, and ends every session it signed in, after a step-up; 403 step_up_required, 404 not_found, 409 last_active_passkey",
   body: RevokePasskeyRequest,
   response: { description: 'Revoked', schema: RevokeResponse },
 } as const satisfies RouteDefinition<typeof RevokeResponse>;
@@ -553,6 +562,49 @@ export const revokeOtherSessions = {
   body: z.strictObject({}),
   response: { description: 'Revoked', schema: RevokeResponse },
 } as const satisfies RouteDefinition<typeof RevokeResponse>;
+
+export const AddPasskeyOptionsResponse = z.object({
+  challengeId: z.uuid(),
+  options: PasskeyCreationOptions,
+});
+export type AddPasskeyOptionsResponse = z.infer<typeof AddPasskeyOptionsResponse>;
+
+/**
+ * Adding a passkey to the signed-in account (spec 0003, R4): the options need a
+ * `sensitive_settings` step-up for this operation with no target, and the challenge is bound to
+ * the session for 2 minutes.
+ */
+export const addPasskeyOptions = {
+  method: 'post',
+  path: '/devices/passkeys/options',
+  operationId: 'addPasskeyOptions',
+  summary:
+    'Creation options for another passkey of the account, after a step-up; 403 step_up_required',
+  body: z.strictObject({}),
+  response: {
+    description: 'Creation options and their challenge',
+    schema: AddPasskeyOptionsResponse,
+  },
+} as const satisfies RouteDefinition<typeof AddPasskeyOptionsResponse>;
+
+export const AddPasskeyRequest = z.strictObject({
+  challengeId: z.uuid(),
+  response: PasskeyAttestation,
+});
+export type AddPasskeyRequest = z.infer<typeof AddPasskeyRequest>;
+
+export const AddPasskeyResponse = z.object({});
+export type AddPasskeyResponse = z.infer<typeof AddPasskeyResponse>;
+
+export const addPasskey = {
+  method: 'post',
+  path: '/devices/passkeys/add',
+  operationId: 'addPasskey',
+  summary:
+    'Stores the new passkey, pending for 24 hours; no session comes from it; 403 passkey_refused for every refusal',
+  body: AddPasskeyRequest,
+  response: { description: 'Added', schema: AddPasskeyResponse },
+} as const satisfies RouteDefinition<typeof AddPasskeyResponse>;
 
 const passkeyEvent = z.strictObject({ passkeyId: z.uuid() });
 const inviteEvent = z.strictObject({ inviteId: z.uuid() });
@@ -651,6 +703,8 @@ export const routes = {
   revokeSession,
   revokePasskey,
   revokeOtherSessions,
+  addPasskeyOptions,
+  addPasskey,
   auditEvents,
 } as const;
 

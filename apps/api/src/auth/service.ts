@@ -5,8 +5,12 @@ import type { Auth } from './auth.js';
 /** No session lives longer than this, however active it is (spec 0003, R4). */
 export const absoluteSessionLifetimeMs = 30 * 24 * 60 * 60 * 1000;
 
+/** The session as Better Auth knows it; the API adds what the account's passkeys say. */
+const SessionOfAuth = SessionResponse.omit({ pendingPasskeyUntil: true });
+export type SessionOfAuth = Omit<SessionResponse, 'pendingPasskeyUntil'>;
+
 export interface RefreshedSession {
-  readonly session: SessionResponse | null;
+  readonly session: SessionOfAuth | null;
   /** Better Auth's cookies for the slid expiry, to pass on to the client unchanged. */
   readonly setCookies: readonly string[];
 }
@@ -36,9 +40,9 @@ function live(found: Found | null, now: Date): found is Found {
 }
 
 /** Parsed, so a stored device value outside the enums fails loudly instead of reaching a client. */
-function toResponse(found: Found | null, now: Date): SessionResponse | null {
+function toResponse(found: Found | null, now: Date): SessionOfAuth | null {
   if (!live(found, now)) return null;
-  return SessionResponse.parse({
+  return SessionOfAuth.parse({
     accountId: found.user.id,
     email: found.user.email,
     confirmed: found.user.confirmedAt !== null && found.user.confirmedAt !== undefined,

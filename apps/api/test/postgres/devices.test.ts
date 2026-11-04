@@ -42,6 +42,7 @@ beforeAll(async () => {
         logged.push(String(errorName));
       },
     },
+    origin,
   });
   stepUp = createStepUp({
     db: authDb,
@@ -140,15 +141,15 @@ const sessionsOf = (owner: Account) =>
     ).rows.map(({ id }) => id),
   );
 
-const events = (owner: Account) =>
+const events = (owner: Account, codes = ['passkey_revoked', 'session_revoked']) =>
   testDatabase.asAdmin(
     async (client) =>
       (
         await client.query<{ code: string; actor: string | null; details: unknown }>(
           `SELECT code, actor_account_id AS actor, details FROM audit.event
-            WHERE subject_account_id = $1 AND code IN ('passkey_revoked', 'session_revoked')
+            WHERE subject_account_id = $1 AND code = ANY($2)
             ORDER BY time, id`,
-          [owner.accountId],
+          [owner.accountId, codes],
         )
       ).rows,
   );
@@ -473,5 +474,161 @@ describe('signing out the other sessions (spec 0003, R4)', () => {
     await devices.revokeOtherSessions(current);
     expect(await sessionsOf(owner)).toEqual([current.sessionId]);
     expect(noticesTo(owner)).toEqual([]);
+  });
+});
+
+/** Adds a new software passkey through the ceremony, as the device screen does. */
+async function added(signedIn: SignedIn) {
+  const { challengeId, options } = await devices.addOptions(signedIn);
+  const passkey = softwarePasskey(rpId);
+  const response = passkey.attest({ challenge: options.challenge, origin, prfEnabled: true });
+  expect(await devices.add(signedIn, challengeId, response)).toBe(true);
+  return passkey;
+}
+
+const pendingOf = (owner: Account) =>
+  testDatabase.asAdmin(
+    async (client) =>
+      (
+        await client.query<{ id: string; credentialId: string }>(
+          `SELECT p.id, p.credential_id AS "credentialId" FROM auth.passkey p
+             JOIN auth.passkey_activation a ON a.credential_id = p.credential_id
+            WHERE p.user_id = $1`,
+          [owner.accountId],
+        )
+      ).rows,
+  );
+
+/** Ends the 24-hour wait of every pending passkey of the account. */
+const waitOver = (owner: Account) =>
+  testDatabase.asAdmin((client) =>
+    client.query(
+      `UPDATE auth.passkey_activation SET active_from = now() - interval '1 second'
+        WHERE credential_id IN (SELECT credential_id FROM auth.passkey WHERE user_id = $1)`,
+      [owner.accountId],
+    ),
+  );
+
+/** Whether a step-up signed by this key is accepted for the session. */
+async function stepsUp(signedIn: SignedIn, passkey: SoftwarePasskey) {
+  const { challengeId, options } = await stepUp.options(signedIn, { purpose: 'vault_unlock' });
+  return stepUp.verify(
+    signedIn,
+    challengeId,
+    passkey.assert({ challenge: options.challenge, origin }),
+  );
+}
+
+describe('adding a passkey (spec 0003, R4)', () => {
+  it('stores it pending for 24 hours, with an event and a notice, and opens no session', async () => {
+    const owner = await account(1);
+    const current = await session(owner, owner.keys[0]);
+    const before = Date.now();
+    await added(current);
+    expect(await sessionsOf(owner)).toEqual([current.sessionId]);
+    const [pending] = await pendingOf(owner);
+    expect(await events(owner, ['passkey_added'])).toEqual([
+      { code: 'passkey_added', actor: owner.accountId, details: { passkeyId: pending?.id } },
+    ]);
+    expect(noticesTo(owner)).toEqual(['passkey_added']);
+    const listed = await devices.list(current);
+    const shown = listed.passkeys.find(({ id }) => id === pending?.id);
+    expect(shown).toMatchObject({ state: 'pending', current: false, sessions: [] });
+    const activeFrom = Date.parse(shown?.activeFrom ?? '');
+    expect(activeFrom - before).toBeGreaterThan(24 * 60 * 60 * 1000 - 60_000);
+    expect(activeFrom - before).toBeLessThan(24 * 60 * 60 * 1000 + 60_000);
+    expect((await devices.pendingUntil(owner.accountId))?.getTime()).toBe(activeFrom);
+    expect(
+      await count(
+        'SELECT count(*)::int AS n FROM auth.passkey_capability WHERE credential_id = $1 AND prf_enabled',
+        [pending?.credentialId],
+      ),
+    ).toBe(1);
+  });
+
+  it('asks the browser not to register a passkey the account already has', async () => {
+    const owner = await account();
+    const current = await session(owner, owner.keys[0]);
+    const { options } = await devices.addOptions(current);
+    expect(options.excludeCredentials?.map(({ id }) => id).sort()).toEqual(
+      owner.keys.map(({ passkey }) => passkey.credentialId).sort(),
+    );
+    expect(options.authenticatorSelection.userVerification).toBe('required');
+    expect(options.rp.id).toBe(rpId);
+    expect(options.extensions).toEqual({ prf: {} });
+  });
+
+  it('spends a challenge on its first attempt, and only in its own session', async () => {
+    const owner = await account(1);
+    const current = await session(owner, owner.keys[0]);
+    const other = await session(owner, owner.keys[0]);
+    const { challengeId, options } = await devices.addOptions(current);
+    const passkey = softwarePasskey(rpId);
+    const response = passkey.attest({ challenge: options.challenge, origin });
+    expect(await devices.add(other, challengeId, response)).toBe(false);
+    expect(await devices.add(current, challengeId, response)).toBe(true);
+    expect(await devices.add(current, challengeId, response)).toBe(false);
+    expect(await pendingOf(owner)).toHaveLength(1);
+  });
+
+  it('refuses a passkey made without user verification, or for another origin', async () => {
+    const owner = await account(1);
+    const current = await session(owner, owner.keys[0]);
+    for (const attestation of [
+      { userVerified: false, origin },
+      { origin: 'https://elsewhere.example.org' },
+    ]) {
+      const { challengeId, options } = await devices.addOptions(current);
+      const response = softwarePasskey(rpId).attest({
+        challenge: options.challenge,
+        ...attestation,
+      });
+      expect(await devices.add(current, challengeId, response)).toBe(false);
+    }
+    expect(await pendingOf(owner)).toEqual([]);
+    expect(noticesTo(owner)).toEqual([]);
+  });
+
+  it('refuses a step-up from a pending passkey, and accepts it once the wait is over', async () => {
+    const owner = await account(1);
+    const current = await session(owner, owner.keys[0]);
+    const passkey = await added(current);
+    const { options } = await stepUp.options(current, { purpose: 'vault_unlock' });
+    expect(options.allowCredentials?.map(({ id }) => id)).toEqual([
+      owner.keys[0].passkey.credentialId,
+    ]);
+    expect(await stepsUp(current, passkey)).toBe(false);
+    await waitOver(owner);
+    expect(await stepsUp(current, passkey)).toBe(true);
+  });
+
+  it('records the activation once the wait is over, with no actor', async () => {
+    const owner = await account(1);
+    const current = await session(owner, owner.keys[0]);
+    await added(current);
+    const [pending] = await pendingOf(owner);
+    await waitOver(owner);
+    expect(await devices.pendingUntil(owner.accountId)).toBeNull();
+    const listed = await devices.list(current);
+    expect(listed.passkeys.find(({ id }) => id === pending?.id)).toMatchObject({
+      state: 'active',
+      activeFrom: null,
+    });
+    expect(await events(owner, ['passkey_activated'])).toEqual([
+      { code: 'passkey_activated', actor: null, details: { passkeyId: pending?.id } },
+    ]);
+    expect(await pendingOf(owner)).toEqual([]);
+  });
+
+  it('cancels a pending passkey with its own notice, and never counts it as the last active one', async () => {
+    const owner = await account(1);
+    const current = await session(owner, owner.keys[0]);
+    await added(current);
+    const [pending] = await pendingOf(owner);
+    expect(await devices.revokePasskey(current, owner.keys[0].id)).toBe('last_active');
+    expect(await devices.revokePasskey(current, pending?.id ?? '')).toBe('revoked');
+    expect(noticesTo(owner)).toEqual(['passkey_added', 'pending_passkey_cancelled']);
+    expect(await devices.pendingUntil(owner.accountId)).toBeNull();
+    expect((await devices.list(current)).passkeys.map(({ id }) => id)).toEqual([owner.keys[0].id]);
   });
 });

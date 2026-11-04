@@ -7,10 +7,26 @@ import {
   verification as verificationTable,
 } from '@arca/db/auth-schema';
 import type { Database, Transaction } from '@arca/db';
+import { passkeyActivation, passkeyCapability } from '@arca/db/enrollment-schema';
 import type { AuthenticationExtensionsClientInputs } from '@simplewebauthn/server';
 import { betterAuth } from 'better-auth';
 import { APIError, createAuthMiddleware, isAPIError } from 'better-auth/api';
-import { and, desc, eq, gt, inArray, isNotNull, isNull, lt, lte, ne, sql } from 'drizzle-orm';
+import {
+  and,
+  desc,
+  eq,
+  exists,
+  gt,
+  inArray,
+  isNotNull,
+  isNull,
+  lt,
+  lte,
+  max,
+  ne,
+  not,
+  sql,
+} from 'drizzle-orm';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { authBasePath, DeviceDescription } from '@arca/api-contract/routes';
 import type { AuditLog } from '../audit/log.js';
@@ -246,9 +262,13 @@ export function createAuth({
           afterVerification: registration.afterVerification,
         },
         authentication: {
-          afterVerification: ({ verification }) => {
+          // A passkey added to the account signs nothing in for its first 24 hours (spec 0003,
+          // R4); a refusal here is recorded like any other failed sign-in.
+          afterVerification: async ({ verification }) => {
             requireUserVerified(verification.authenticationInfo.userVerified);
-            return Promise.resolve();
+            if (await isPending(db, verification.authenticationInfo.credentialID)) {
+              throw new APIError('UNAUTHORIZED', { code: 'PASSKEY_PENDING' });
+            }
           },
         },
       }),
@@ -381,6 +401,43 @@ export const accounts = {
     ).length === 1,
 };
 
+/** A passkey added to the account that is still in its 24 hours (spec 0003, R4). */
+const pending = (credentialId: typeof passkeyTable.credentialID) =>
+  exists(
+    sql`(SELECT 1 FROM ${passkeyActivation}
+          WHERE ${passkeyActivation.credentialID} = ${credentialId}
+            AND ${passkeyActivation.activeFrom} > now())`,
+  );
+
+async function isPending(db: Database | Transaction, credentialId: string) {
+  const [found] = await db
+    .select({ activeFrom: passkeyActivation.activeFrom })
+    .from(passkeyActivation)
+    .where(
+      and(
+        eq(passkeyActivation.credentialID, credentialId),
+        gt(passkeyActivation.activeFrom, sql`now()`),
+      ),
+    );
+  return found !== undefined;
+}
+
+/** How long an added passkey waits before it can sign in or approve a step-up (spec 0003, R4). */
+export const pendingPasskeyHours = 24;
+
+/** A passkey to store for the account, as a verified registration describes it. */
+export interface NewPasskey {
+  readonly credentialId: string;
+  /** COSE, base64, as the passkey plugin stores it. */
+  readonly publicKey: string;
+  readonly counter: number;
+  readonly deviceType: string;
+  readonly backedUp: boolean;
+  readonly transports: readonly string[];
+  readonly aaguid: string;
+  readonly prfEnabled: boolean;
+}
+
 /** The passkey and session rows the device list reads and revokes (spec 0003, R4). */
 export const devices = {
   /** The account's passkeys, oldest first, and its sessions created after `since` and unexpired. */
@@ -390,6 +447,10 @@ export const devices = {
         id: passkeyTable.id,
         credentialId: passkeyTable.credentialID,
         createdAt: passkeyTable.createdAt,
+        pendingUntil:
+          sql<Date | null>`(SELECT ${passkeyActivation.activeFrom} FROM ${passkeyActivation}
+          WHERE ${passkeyActivation.credentialID} = ${passkeyTable.credentialID}
+            AND ${passkeyActivation.activeFrom} > now())`.mapWith(passkeyActivation.activeFrom),
       })
       .from(passkeyTable)
       .where(eq(passkeyTable.userId, accountId))
@@ -452,16 +513,103 @@ export const devices = {
     // other as the last passkey, and a step-up still recording (its counter update holds the row)
     // commits first. Not the account row: the step-up's insert checks its key against it.
     const owned = await tx
-      .select({ id: passkeyTable.id, credentialId: passkeyTable.credentialID })
+      .select({
+        id: passkeyTable.id,
+        credentialId: passkeyTable.credentialID,
+        pending: pending(passkeyTable.credentialID),
+      })
       .from(passkeyTable)
       .where(eq(passkeyTable.userId, accountId))
       .orderBy(passkeyTable.id)
-      .for('update');
+      .for('update', { of: passkeyTable });
     const target = owned.find(({ id }) => id === passkeyId);
     if (target === undefined) return 'not_found' as const;
-    if (owned.length === 1) return 'last_active' as const;
+    // A pending passkey can always be cancelled; the last active one stays, and a pending one
+    // does not count as another.
+    if (!target.pending && !owned.some((other) => other !== target && !other.pending)) {
+      return 'last_active' as const;
+    }
     await tx.delete(passkeyTable).where(eq(passkeyTable.id, passkeyId));
-    return { credentialId: target.credentialId };
+    return { credentialId: target.credentialId, pending: target.pending };
+  },
+  /** The account's credentials, for the authenticator to refuse registering one again. */
+  credentialsOf: async (db: Database | Transaction, accountId: string) =>
+    (
+      await db
+        .select({ id: passkeyTable.credentialID, transports: passkeyTable.transports })
+        .from(passkeyTable)
+        .where(eq(passkeyTable.userId, accountId))
+    ).map(({ id, transports }) => ({
+      id,
+      transports: (transports ?? '').split(',').filter((transport) => transport !== ''),
+    })),
+  /**
+   * Stores another passkey for the account, pending for 24 hours, with what its authenticator
+   * reported; its ID, or undefined when the credential is already stored.
+   */
+  addPending: async (tx: Transaction, accountId: string, added: NewPasskey) => {
+    const [stored] = await tx
+      .insert(passkeyTable)
+      .values({
+        userId: accountId,
+        credentialID: added.credentialId,
+        publicKey: added.publicKey,
+        counter: added.counter,
+        deviceType: added.deviceType,
+        backedUp: added.backedUp,
+        transports: added.transports.join(','),
+        aaguid: added.aaguid,
+      })
+      .onConflictDoNothing()
+      .returning({ id: passkeyTable.id });
+    if (stored === undefined) return undefined;
+    await tx.insert(passkeyActivation).values({
+      credentialID: added.credentialId,
+      activeFrom: sql`now() + make_interval(hours => ${pendingPasskeyHours})`,
+    });
+    await tx
+      .insert(passkeyCapability)
+      .values({ credentialID: added.credentialId, prfEnabled: added.prfEnabled });
+    return stored.id;
+  },
+  /** When the account's newest pending passkey becomes active, or null when none is pending. */
+  pendingUntil: async (db: Database | Transaction, accountId: string) => {
+    const [found] = await db
+      .select({ until: max(passkeyActivation.activeFrom) })
+      .from(passkeyActivation)
+      .innerJoin(passkeyTable, eq(passkeyTable.credentialID, passkeyActivation.credentialID))
+      .where(and(eq(passkeyTable.userId, accountId), gt(passkeyActivation.activeFrom, sql`now()`)));
+    return found?.until ?? null;
+  },
+  /** Forgets the waits that are over; the IDs of the passkeys that became active. */
+  activateDue: async (tx: Transaction, accountId: string) => {
+    const due = await tx
+      .delete(passkeyActivation)
+      .where(
+        and(
+          lte(passkeyActivation.activeFrom, sql`now()`),
+          inArray(
+            passkeyActivation.credentialID,
+            tx
+              .select({ id: passkeyTable.credentialID })
+              .from(passkeyTable)
+              .where(eq(passkeyTable.userId, accountId)),
+          ),
+        ),
+      )
+      .returning({ credentialId: passkeyActivation.credentialID });
+    if (due.length === 0) return [];
+    return (
+      await tx
+        .select({ id: passkeyTable.id })
+        .from(passkeyTable)
+        .where(
+          inArray(
+            passkeyTable.credentialID,
+            due.map(({ credentialId }) => credentialId),
+          ),
+        )
+    ).map(({ id }) => id);
   },
 };
 
@@ -494,8 +642,8 @@ export interface CredentialStore {
 }
 
 /**
- * Every stored passkey of the account counts as active until pending passkeys exist (spec 0003,
- * R4); a revoked one is deleted, so it is never found.
+ * A passkey still in its 24 hours is never active (spec 0003, R4); a revoked one is deleted, so it
+ * is never found.
  */
 export function credentialStore(db: Database): CredentialStore {
   const columns = {
@@ -521,7 +669,7 @@ export function credentialStore(db: Database): CredentialStore {
         await db
           .select(columns)
           .from(passkeyTable)
-          .where(eq(passkeyTable.userId, accountId))
+          .where(and(eq(passkeyTable.userId, accountId), not(pending(passkeyTable.credentialID))))
           .orderBy(passkeyTable.createdAt)
       ).map(toCredential),
     active: async (accountId, credentialId) => {
@@ -529,7 +677,11 @@ export function credentialStore(db: Database): CredentialStore {
         .select(columns)
         .from(passkeyTable)
         .where(
-          and(eq(passkeyTable.userId, accountId), eq(passkeyTable.credentialID, credentialId)),
+          and(
+            eq(passkeyTable.userId, accountId),
+            eq(passkeyTable.credentialID, credentialId),
+            not(pending(passkeyTable.credentialID)),
+          ),
         );
       return row === undefined ? null : toCredential(row);
     },
