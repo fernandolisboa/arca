@@ -321,12 +321,16 @@ const recipientsOf = (owner: Account) =>
 const currentId = async (owner: Account) =>
   (await recipientsOf(owner)).find(({ rotated }) => !rotated)?.id ?? randomUUID();
 
-const identity = (owner: Account, from: string, passkeys = [credentialOf(owner)]) => ({
+const identity = async (owner: Account, from: string, passkeys = [credentialOf(owner)]) => ({
   from,
   sharingState: null,
   recipient: recipientText(),
   passkeyEnvelopes: passkeys.map((credentialId) => ({ credentialId, ciphertext: sealed() })),
   recoveryEnvelope: sealed(),
+  keptRecoveryEnvelopes: (await recipientsOf(owner)).map(({ id }) => ({
+    recipientId: id,
+    ciphertext: sealed(),
+  })),
 });
 
 describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
@@ -341,7 +345,7 @@ describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
   it('rotates: the new recipient is current and the old one keeps its envelopes', async () => {
     const owner = await fixtures.account(1);
     const { recipient: old } = await setUp(owner);
-    const next = identity(owner, await currentId(owner));
+    const next = await identity(owner, await currentId(owner));
     expect(await vault.rotate(owner.accountId, next)).toBe('rotated');
     expect(
       (await recipientsOf(owner)).map(({ recipient, rotated }) => ({ recipient, rotated })),
@@ -359,13 +363,76 @@ describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
     expect(await fixtures.events(owner, ['vault_identity_rotated'])).toHaveLength(1);
   });
 
+  it('seals every kept recovery envelope to the new secret in the same rotation', async () => {
+    const owner = await fixtures.account(1);
+    await setUp(owner);
+    await vault.rotate(owner.accountId, await identity(owner, await currentId(owner)));
+    const next = await identity(owner, await currentId(owner));
+    expect(next.keptRecoveryEnvelopes).toHaveLength(2);
+    expect(await vault.rotate(owner.accountId, next)).toBe('rotated');
+    const recovery = ((await vault.envelopes(owner.accountId))?.envelopes ?? [])
+      .filter(({ kind }) => kind === 'recovery')
+      .map(({ recipientId, ciphertext }) => ({ recipientId, ciphertext }));
+    const [, , newest] = await recipientsOf(owner);
+    expect(recovery).toEqual(
+      expect.arrayContaining([
+        ...next.keptRecoveryEnvelopes,
+        { recipientId: newest?.id, ciphertext: next.recoveryEnvelope },
+      ]),
+    );
+    expect(recovery).toHaveLength(3);
+    expect(await fixtures.events(owner, ['vault_recovery_resealed'])).toHaveLength(2);
+  });
+
+  it('rotates nothing unless it re-seals exactly the kept recovery envelopes', async () => {
+    const owner = await fixtures.account(1);
+    await setUp(owner);
+    await vault.rotate(owner.accountId, await identity(owner, await currentId(owner)));
+    const before = await vault.envelopes(owner.accountId);
+    const next = await identity(owner, await currentId(owner));
+    for (const keptRecoveryEnvelopes of [
+      next.keptRecoveryEnvelopes.slice(1),
+      [...next.keptRecoveryEnvelopes, { recipientId: randomUUID(), ciphertext: sealed() }],
+    ]) {
+      expect(await vault.rotate(owner.accountId, { ...next, keptRecoveryEnvelopes })).toBe(
+        'changed',
+      );
+    }
+    expect(await recipientsOf(owner)).toHaveLength(2);
+    expect(await vault.envelopes(owner.accountId)).toEqual(before);
+    expect(await fixtures.events(owner, ['vault_identity_rotated'])).toHaveLength(1);
+  });
+
+  it('races a re-seal or a reset against a rotation without a deadlock', async () => {
+    for (let round = 0; round < 4; round += 1) {
+      const owner = await fixtures.account(1);
+      await setUp(owner);
+      await vault.rotate(owner.accountId, await identity(owner, await currentId(owner)));
+      const next = await identity(owner, await currentId(owner));
+      const [rotated, resealed] = await Promise.all([
+        vault.rotate(owner.accountId, next),
+        vault.resealRecovery(owner.accountId, { envelopes: next.keptRecoveryEnvelopes }),
+      ]);
+      expect(rotated).toBe('rotated');
+      expect(['resealed', 'changed']).toContain(resealed);
+
+      const [again, reset] = await Promise.all([
+        vault.rotate(owner.accountId, await identity(owner, await currentId(owner))),
+        vault.reset(owner.accountId),
+      ]);
+      expect(['rotated', 'no_vault']).toContain(again);
+      expect(reset).toBe('reset');
+      expect(await recipientsOf(owner)).toEqual([]);
+    }
+  });
+
   it('lets only one of two rotations from the same recipient through', async () => {
     const owner = await fixtures.account(1);
     await setUp(owner);
     const from = await currentId(owner);
     const outcomes = await Promise.all([
-      vault.rotate(owner.accountId, identity(owner, from)),
-      vault.rotate(owner.accountId, identity(owner, from)),
+      vault.rotate(owner.accountId, await identity(owner, from)),
+      vault.rotate(owner.accountId, await identity(owner, from)),
     ]);
     expect([...outcomes].sort()).toEqual(['changed', 'rotated']);
     expect((await recipientsOf(owner)).filter(({ rotated }) => !rotated)).toHaveLength(1);
@@ -374,14 +441,14 @@ describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
   it('rotates nothing before set-up or with a stranger passkey', async () => {
     const owner = await fixtures.account(1);
     const stranger = await fixtures.account(1);
-    expect(await vault.rotate(owner.accountId, identity(owner, await currentId(owner)))).toBe(
+    expect(await vault.rotate(owner.accountId, await identity(owner, await currentId(owner)))).toBe(
       'no_vault',
     );
     await setUp(owner);
     expect(
       await vault.rotate(
         owner.accountId,
-        identity(owner, await currentId(owner), [credentialOf(stranger)]),
+        await identity(owner, await currentId(owner), [credentialOf(stranger)]),
       ),
     ).toBe('unknown_passkey');
     expect(await recipientsOf(owner)).toHaveLength(1);
@@ -391,9 +458,9 @@ describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
     const owner = await fixtures.account(1);
     await setUp(owner);
     const stale = await currentId(owner);
-    const newer = identity(owner, stale);
+    const newer = await identity(owner, stale);
     expect(await vault.rotate(owner.accountId, newer)).toBe('rotated');
-    expect(await vault.rotate(owner.accountId, identity(owner, stale))).toBe('changed');
+    expect(await vault.rotate(owner.accountId, await identity(owner, stale))).toBe('changed');
     expect(await vault.status(owner.accountId)).toEqual({
       recipient: newer.recipient,
       resealDue: false,
@@ -408,7 +475,7 @@ describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
         owner.accountId,
       ]),
     );
-    expect(await vault.rotate(owner.accountId, identity(owner, await currentId(owner)))).toBe(
+    expect(await vault.rotate(owner.accountId, await identity(owner, await currentId(owner)))).toBe(
       'changed',
     );
     expect(await recipientsOf(owner)).toHaveLength(1);
@@ -417,7 +484,7 @@ describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
   it('re-seals every recovery envelope, a rotated identity included, or none', async () => {
     const owner = await fixtures.account(1);
     await setUp(owner);
-    await vault.rotate(owner.accountId, identity(owner, await currentId(owner)));
+    await vault.rotate(owner.accountId, await identity(owner, await currentId(owner)));
     const [older, newer] = await recipientsOf(owner);
     const recoveryOf = async () =>
       ((await vault.envelopes(owner.accountId))?.envelopes ?? [])
@@ -438,7 +505,8 @@ describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
     expect(
       [...(await recoveryOf())].sort((a, b) => a.recipientId.localeCompare(b.recipientId)),
     ).toEqual([...resealed].sort((a, b) => a.recipientId.localeCompare(b.recipientId)));
-    expect(await fixtures.events(owner, ['vault_recovery_resealed'])).toHaveLength(1);
+    // The rotation re-sealed once already.
+    expect(await fixtures.events(owner, ['vault_recovery_resealed'])).toHaveLength(2);
   });
 
   it('re-seals nothing before set-up', async () => {
@@ -471,7 +539,7 @@ describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
     const stranger = await fixtures.account(1);
     expect(await vault.reset(owner.accountId)).toBe('no_vault');
     await setUp(owner);
-    await vault.rotate(owner.accountId, identity(owner, await currentId(owner)));
+    await vault.rotate(owner.accountId, await identity(owner, await currentId(owner)));
     await setUp(stranger);
     await testDatabase.asAdmin((client) =>
       client.query(
@@ -545,7 +613,7 @@ describe('the sharing state (spec 0005, R4; ADR-0018)', () => {
     expect(await vault.storeSharingState(owner.accountId, request)).toBe('no_vault');
     const { recipient } = await setUp(owner);
     expect(await vault.storeSharingState(owner.accountId, request)).toBe('vault_changed');
-    expect(await vault.rotate(owner.accountId, identity(owner, await currentId(owner)))).toBe(
+    expect(await vault.rotate(owner.accountId, await identity(owner, await currentId(owner)))).toBe(
       'rotated',
     );
     expect(await vault.storeSharingState(owner.accountId, { ...request, recipient })).toBe(
@@ -585,17 +653,20 @@ describe('the sharing state (spec 0005, R4; ADR-0018)', () => {
       sharingState: tagged(1),
     });
     const from = await currentId(owner);
-    expect(await vault.rotate(owner.accountId, identity(owner, from))).toBe(
+    expect(await vault.rotate(owner.accountId, await identity(owner, from))).toBe(
       'sharing_state_changed',
     );
     const stale = { expectedVersion: null, sharingState: tagged(2) };
     expect(
-      await vault.rotate(owner.accountId, { ...identity(owner, from), sharingState: stale }),
+      await vault.rotate(owner.accountId, {
+        ...(await identity(owner, from)),
+        sharingState: stale,
+      }),
     ).toBe('sharing_state_changed');
     expect(await vault.status(owner.accountId)).toEqual({ recipient, resealDue: false });
     const retagged = tagged(2);
     const next = {
-      ...identity(owner, from),
+      ...(await identity(owner, from)),
       sharingState: { expectedVersion: 1, sharingState: retagged },
     };
     expect(await vault.rotate(owner.accountId, next)).toBe('rotated');
@@ -609,7 +680,7 @@ describe('the sharing state (spec 0005, R4; ADR-0018)', () => {
   it('never leaves a state under a rotated identity when a store races a rotation', async () => {
     const owner = await fixtures.account(1);
     const { recipient } = await setUp(owner);
-    const next = identity(owner, await currentId(owner));
+    const next = await identity(owner, await currentId(owner));
     const [stored, rotated] = await Promise.all([
       vault.storeSharingState(owner.accountId, {
         recipient,
@@ -677,9 +748,9 @@ describe('account links (spec 0005, R4)', () => {
     await linkAccounts(owner.accountId, invitee.accountId);
     await linkAccounts(inviter.accountId, owner.accountId);
     await setUp(invitee);
-    expect(await vault.rotate(invitee.accountId, identity(invitee, await currentId(invitee)))).toBe(
-      'rotated',
-    );
+    expect(
+      await vault.rotate(invitee.accountId, await identity(invitee, await currentId(invitee))),
+    ).toBe('rotated');
     const { recipient } = await vault.status(invitee.accountId);
     const expected = [
       { accountId: invitee.accountId, email: invitee.email, recipient },

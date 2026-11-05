@@ -229,6 +229,11 @@ class SharingStateConflict extends Error {
   override name = 'SharingStateConflict';
 }
 
+/** Rolls a rotation back unless it seals every kept recovery envelope to the new secret. */
+class RecoveryConflict extends Error {
+  override name = 'RecoveryConflict';
+}
+
 export function createVault({ db, activeCredentials, emailsOf, audit }: VaultSettings): Vault {
   /**
    * Stores a state over the version it replaces, the caller holding the current recipient's row
@@ -313,6 +318,46 @@ export function createVault({ db, activeCredentials, emailsOf, audit }: VaultSet
       accountId,
       passkeyEnvelopes.map(({ credentialId }) => credentialId),
     );
+
+  /** Locks every recipient of the account, always in the same order. */
+  const lockRecipients = (tx: Transaction, accountId: string) =>
+    tx
+      .select({ id: recipient.id })
+      .from(recipient)
+      .where(isRecipientOf(accountId))
+      .orderBy(recipient.id)
+      .for('update');
+
+  /**
+   * Seals every kept recovery envelope again, or none unless the list names exactly the
+   * recipients that have one. The recipients are locked first, so a rotation adding one with its
+   * own recovery envelope either commits before this reads (and the list no longer matches) or
+   * waits.
+   */
+  const resealKept = async (
+    tx: Transaction,
+    accountId: string,
+    resealed: ResealVaultRecoveryRequest['envelopes'],
+  ): Promise<RecoveryResealed> => {
+    await lockRecipients(tx, accountId);
+    const kept = await tx
+      .select({ recipientId: envelope.recipientId })
+      .from(envelope)
+      .where(and(eq(envelope.accountId, accountId), eq(envelope.kind, 'recovery')))
+      .for('update');
+    if (kept.length === 0) return 'no_vault';
+    const named = new Set(resealed.map(({ recipientId }) => recipientId));
+    if (kept.length !== named.size || !kept.every(({ recipientId }) => named.has(recipientId))) {
+      return 'changed';
+    }
+    for (const { recipientId, ciphertext } of resealed) {
+      await tx.execute(sql`
+        UPDATE vault.envelope SET ciphertext = ${bytes(ciphertext)}
+         WHERE account_id = ${accountId} AND recipient_id = ${recipientId}
+           AND kind = 'recovery'`);
+    }
+    return 'resealed';
+  };
 
   return {
     status: (accountId) =>
@@ -416,8 +461,10 @@ export function createVault({ db, activeCredentials, emailsOf, audit }: VaultSet
       if (!(await passkeysActive(accountId, request))) return 'unknown_passkey';
       // Recorded before the commit, like every security event: a failed write keeps the old state.
       return asAccount(accountId, async (tx) => {
-        // The update locks the row, so a concurrent rotation of the same recipient waits, then
-        // finds it rotated and answers `changed`.
+        // Every recipient is locked first, in the order a re-seal and a reset lock them, so a
+        // concurrent one waits instead of deadlocking; a concurrent rotation of the same
+        // recipient then finds it rotated and answers `changed`.
+        await lockRecipients(tx, accountId);
         const rotated = await tx.execute<{ id: string }>(sql`
           UPDATE vault.recipient SET rotated_at = now()
            WHERE id = ${request.from} AND account_id = ${accountId} AND rotated_at IS NULL
@@ -434,57 +481,34 @@ export function createVault({ db, activeCredentials, emailsOf, audit }: VaultSet
             ? (await storedVersion(tx, accountId)) === undefined
             : (await writeSharingState(tx, accountId, request.sharingState)) === 'stored';
         if (!retagged) throw new SharingStateConflict();
+        // One secret opens every kept identity, so the kit shown after a rotation is the only one.
+        if ((await resealKept(tx, accountId, request.keptRecoveryEnvelopes)) !== 'resealed') {
+          throw new RecoveryConflict();
+        }
         const recipientId = await insertRecipient(tx, accountId, request.recipient);
         if (recipientId === undefined) throw new Error('the rotated recipient is still current');
         await storeIdentity(tx, accountId, recipientId, request);
         await record(accountId, 'vault_identity_rotated');
+        await record(accountId, 'vault_recovery_resealed');
         return 'rotated' as const;
       }).catch((error: unknown) => {
         if (error instanceof SharingStateConflict) return 'sharing_state_changed' as const;
+        if (error instanceof RecoveryConflict) return 'changed' as const;
         throw error;
       });
     },
 
     resealRecovery: async (accountId, { envelopes: resealed }) =>
       asAccount(accountId, async (tx) => {
-        // The recipients are locked first, so a rotation adding one with its own recovery
-        // envelope either commits before this reads (and the list no longer matches) or waits.
-        await tx
-          .select({ id: recipient.id })
-          .from(recipient)
-          .where(isRecipientOf(accountId))
-          .for('update');
-        const kept = await tx
-          .select({ recipientId: envelope.recipientId })
-          .from(envelope)
-          .where(and(eq(envelope.accountId, accountId), eq(envelope.kind, 'recovery')))
-          .for('update');
-        if (kept.length === 0) return 'no_vault' as const;
-        const named = new Set(resealed.map(({ recipientId }) => recipientId));
-        if (
-          kept.length !== named.size ||
-          !kept.every(({ recipientId }) => named.has(recipientId))
-        ) {
-          return 'changed' as const;
-        }
-        for (const { recipientId, ciphertext } of resealed) {
-          await tx.execute(sql`
-            UPDATE vault.envelope SET ciphertext = ${bytes(ciphertext)}
-             WHERE account_id = ${accountId} AND recipient_id = ${recipientId}
-               AND kind = 'recovery'`);
-        }
-        await record(accountId, 'vault_recovery_resealed');
-        return 'resealed' as const;
+        const outcome = await resealKept(tx, accountId, resealed);
+        if (outcome === 'resealed') await record(accountId, 'vault_recovery_resealed');
+        return outcome;
       }),
 
     reset: (accountId) =>
       asAccount(accountId, async (tx) => {
         // Locked first: a document created meanwhile then commits before the check below sees it.
-        await tx
-          .select({ id: recipient.id })
-          .from(recipient)
-          .where(isRecipientOf(accountId))
-          .for('update');
+        await lockRecipients(tx, accountId);
         const owned = await tx
           .select({ id: document.id })
           .from(document)

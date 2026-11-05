@@ -1029,6 +1029,13 @@ const raisesVersionMessage = 'a higher version than the one it replaces, by at m
 export const SharingStateChange = sharingStateChange.refine(raisesVersion, raisesVersionMessage);
 export type SharingStateChange = z.infer<typeof SharingStateChange>;
 
+/** One recovery envelope per kept recipient, each its identity sealed to one new secret. */
+const KeptRecoveryEnvelopes = z
+  .array(z.strictObject({ recipientId: z.uuid(), ciphertext: VaultCiphertext }))
+  .min(1)
+  .max(32)
+  .refine((list) => new Set(list.map(({ recipientId }) => recipientId)).size === list.length);
+
 export const RotateVaultIdentityRequest = SetUpVaultRequest.extend({
   /** The current recipient being rotated, as the device last fetched it. */
   from: z.uuid(),
@@ -1037,6 +1044,11 @@ export const RotateVaultIdentityRequest = SetUpVaultRequest.extend({
    * when none is stored, since no other device could verify one left under the old key.
    */
   sharingState: SharingStateChange.nullable(),
+  /**
+   * Every recipient the account keeps, the rotated one included, sealed again to the new
+   * identity's recovery secret, so one secret opens them all and the old one opens none.
+   */
+  keptRecoveryEnvelopes: KeptRecoveryEnvelopes,
 });
 export type RotateVaultIdentityRequest = z.infer<typeof RotateVaultIdentityRequest>;
 
@@ -1047,18 +1059,14 @@ export const rotateVaultIdentity = {
   path: '/vault/rotate',
   operationId: 'rotateVaultIdentity',
   summary:
-    "Makes a new identity's recipient current, with its envelopes, and marks the old one rotated, keeping its envelopes, after a sensitive_settings step-up whose target is the rotated recipient and whose fields carry the new one; 403 step_up_required, 404 not_found before set-up, 409 vault_changed unless the recipient named is still current, 409 sharing_state_changed unless the request re-tags exactly the stored sharing state's version, 400 invalid_request for a credential that is not an active passkey of the account",
+    "Makes a new identity's recipient current, with its envelopes, and marks the old one rotated, keeping its envelopes, after a sensitive_settings step-up whose target is the rotated recipient and whose fields carry the new one; 403 step_up_required, 404 not_found before set-up, 409 vault_changed unless the recipient named is still current and the kept recovery envelopes name exactly the account's recipients, 409 sharing_state_changed unless the request re-tags exactly the stored sharing state's version, 400 invalid_request for a credential that is not an active passkey of the account",
   body: RotateVaultIdentityRequest,
   response: { description: 'Identity rotated', schema: RotateVaultIdentityResponse },
 } as const satisfies RouteDefinition<typeof RotateVaultIdentityResponse>;
 
 export const ResealVaultRecoveryRequest = z.strictObject({
   /** One per recipient the account keeps, each the identity sealed to the new recovery secret. */
-  envelopes: z
-    .array(z.strictObject({ recipientId: z.uuid(), ciphertext: VaultCiphertext }))
-    .min(1)
-    .max(32)
-    .refine((list) => new Set(list.map(({ recipientId }) => recipientId)).size === list.length),
+  envelopes: KeptRecoveryEnvelopes,
 });
 export type ResealVaultRecoveryRequest = z.infer<typeof ResealVaultRecoveryRequest>;
 
