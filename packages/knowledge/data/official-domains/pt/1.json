@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "pt",
+  "number": 1,
+  "issuer": "Portuguese Republic",
+  "hosts": [
+    {
+      "host": "diariodarepublica.pt",
+      "source": {
+        "id": "incm-diario-da-republica",
+        "url": "https://incm.pt/site/diario-da-republica/",
+        "title": "INCM, the state publisher of the official journal: the Diário da República is available at diariodarepublica.pt",
+        "kind": "official",
+        "verifiedAt": "2026-11-05"
+      }
+    }
+  ]
+}
