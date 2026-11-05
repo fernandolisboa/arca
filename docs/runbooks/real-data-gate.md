@@ -11,7 +11,7 @@ Production accepts family data only when every item below is checked ([spec 0004
 - [ ] **1. Previews fork from `development`, proven by R1.**
   - **Evidence:** the preview build never bootstraps or migrates production ([db-deployment-target.test.ts](../../tooling/scripts/test/db-deployment-target.test.ts), [bootstrap.test.ts](../../tooling/scripts/test/postgres/bootstrap.test.ts)).
   - **Open:** the lineage proof, [#64](https://github.com/fernandolisboa/arca/issues/64), and the synthetic seed, [#65](https://github.com/fernandolisboa/arca/issues/65).
-  - **Owner steps:**
+  - **Owner steps (done 2026-11-05):**
     - before #64 merges, create the Neon `development` branch from `main` (the production branch), with its data, and reset the owner role's password on it;
     - turn off the integration's branch per preview, and give Preview its own `PGHOST`, `PGHOST_UNPOOLED`, `PGDATABASE`, `PGUSER` and `PGPASSWORD` from `development`.
 - [x] **2. Spec 0003 is done in production on `arca.filx.app`, including recovery, which needs the email domain (ADR-0015).**
