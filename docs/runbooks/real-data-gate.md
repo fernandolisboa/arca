@@ -11,7 +11,9 @@ Production accepts family data only when every item below is checked ([spec 0004
 - [ ] **1. Previews fork from `development`, proven by R1.**
   - **Evidence:** the preview build never bootstraps or migrates production ([db-deployment-target.test.ts](../../tooling/scripts/test/db-deployment-target.test.ts), [bootstrap.test.ts](../../tooling/scripts/test/postgres/bootstrap.test.ts)).
   - **Open:** the lineage proof, [#64](https://github.com/fernandolisboa/arca/issues/64), and the synthetic seed, [#65](https://github.com/fernandolisboa/arca/issues/65).
-  - **Owner step:** create the Neon `development` branch from `production` and make it the default.
+  - **Owner steps:**
+    - before #64 merges, create the Neon `development` branch from `main` (the production branch), with its data, and reset the owner role's password on it;
+    - turn off the integration's branch per preview, and give Preview its own `PGHOST`, `PGHOST_UNPOOLED`, `PGDATABASE`, `PGUSER` and `PGPASSWORD` from `development`.
 - [ ] **2. Spec 0003 is done in production on `arca.filx.app`, including recovery, which needs the email domain (ADR-0015).**
   - **Evidence:**
     - the identity tickets #53 to #61 are closed;
@@ -19,7 +21,7 @@ Production accepts family data only when every item below is checked ([spec 0004
     - production stays closed to new accounts until the sending domain and `RESEND_API_KEY` exist.
   - **Open:** [#62](https://github.com/fernandolisboa/arca/issues/62).
   - **Owner steps:**
-    - add `arca.filx.app` in Resend (São Paulo region), its DNS records and `_dmarc.arca` TXT `v=DMARC1; p=reject; adkim=s; aspf=s` in Vercel's DNS for `filx.app`, then `RESEND_API_KEY` as a Sensitive, Production-only Vercel variable;
+    - add `filx.app` in Resend (São Paulo region), its DNS records and `_dmarc` TXT `v=DMARC1; p=reject; adkim=s` in Vercel's DNS for `filx.app`, then an Arca-only key, allowed to send from `filx.app`, as `RESEND_API_KEY`, a Sensitive, Production-only Vercel variable;
     - hand over only the enrollment code's hash, from `pnpm enrollment-code` (or the same two lines of `node:crypto`) on their own computer;
     - enroll on `arca.filx.app` with the code.
 - [x] **3. Sentry reports from server and client, scrubbed (R3 to R5).**
