@@ -1,8 +1,7 @@
-import { routes, type AccountLink } from '@arca/api-contract/client';
+import { routes } from '@arca/api-contract/client';
 import type { Passkeys } from '@arca/platform';
 import {
   nextSharingStateVersion,
-  recipientFingerprint,
   tagSharingState,
   verifySharingState,
   type SharingState,
@@ -12,40 +11,14 @@ import { api } from './api.js';
 import { base64url, fromBase64url } from './base64url.js';
 import { inVaultWindow, replaceDocument, type OpenedDocument } from './documents.js';
 import { reach } from './requests.js';
+import {
+  sharedState,
+  sharePerson,
+  shareRecipients,
+  type Sharing,
+  type SharingView,
+} from './share-recipients.js';
 import type { UnlockedVault } from './vault-session.js';
-
-/**
- * The owner's sharing state as this device checked it (ADR-0018). Only a `verified` state decides
- * whom a document is encrypted to; a `rolled_back` one waits for the owner to confirm it, and an
- * `invalid` one is never used.
- */
-export interface SharingView {
-  readonly status: 'verified' | 'rolled_back' | 'invalid';
-  /** The version stored on the server, which the next change replaces; null when none is. */
-  readonly storedVersion: number | null;
-  /** The highest version this device has seen, if it remembers one. */
-  readonly highestSeen: number | undefined;
-  readonly state: SharingState;
-}
-
-/** A linked account as the share screen shows it, with the recipient a share would use. */
-export interface SharePerson {
-  readonly accountId: string;
-  readonly email: string;
-  /** The pinned recipient, or the server's for a first share or a changed key; null without one. */
-  readonly recipient: string | null;
-  readonly fingerprint: string | null;
-  /**
-   * `pinned`: the recipient the owner already trusts. `new`: a first share, trusting the server's
-   * recipient. `changed`: their key changed since it was pinned. `no_vault`: nothing to share to.
-   */
-  readonly trust: 'pinned' | 'new' | 'changed' | 'no_vault';
-}
-
-export interface Sharing {
-  readonly view: SharingView;
-  readonly people: readonly SharePerson[];
-}
 
 /** The sharing state stored on the server does not verify, so nothing is shared until it does. */
 export class SharingStateInvalid extends Error {
@@ -112,31 +85,6 @@ async function checkedView(vault: UnlockedVault): Promise<SharingView> {
   };
 }
 
-async function person(view: SharingView, link: AccountLink): Promise<SharePerson> {
-  const pinned = Object.hasOwn(view.state.pins, link.accountId)
-    ? view.state.pins[link.accountId]
-    : undefined;
-  const trust =
-    link.recipient === null
-      ? pinned === undefined
-        ? 'no_vault'
-        : 'pinned'
-      : pinned === undefined
-        ? 'new'
-        : pinned === link.recipient
-          ? 'pinned'
-          : 'changed';
-  // A changed key is shown as the new one, which the owner confirms by sharing again.
-  const recipient = trust === 'changed' || trust === 'new' ? link.recipient : (pinned ?? null);
-  return {
-    accountId: link.accountId,
-    email: link.email,
-    recipient,
-    fingerprint: recipient === null ? null : await recipientFingerprint(recipient),
-    trust,
-  };
-}
-
 /**
  * The verified sharing state and the linked accounts to share with, in memory only while the
  * vault is open.
@@ -149,11 +97,13 @@ export function sharingQuery(vault: UnlockedVault) {
         checkedView(vault),
         reach(api.call(routes.listAccountLinks)),
       ]);
-      return { view, people: await Promise.all(links.map((link) => person(view, link))) };
+      return { view, people: await Promise.all(links.map((link) => sharePerson(view, link))) };
     },
     gcTime: 0,
     networkMode: 'always',
     retry: false,
+    // A refetch under an open panel would change what the owner is looking at.
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -195,27 +145,16 @@ export async function shareDocument(
   { view, people }: Sharing,
   opened: OpenedDocument,
   chosen: ReadonlySet<string>,
+  accepted: ReadonlySet<string>,
 ) {
   if (view.status !== 'verified') throw new SharingStateInvalid();
-  const sharedWith = people.flatMap(({ accountId, recipient }) =>
-    chosen.has(accountId) && recipient !== null ? [{ accountId, recipient }] : [],
+  const sharedWith = shareRecipients(people, chosen, accepted);
+  const state = sharedState(
+    view.state,
+    { accountId: vault.accountId, recipient: vault.recipient },
+    opened.document.id,
+    sharedWith,
   );
-  const pins: Record<string, string> = { ...view.state.pins, [vault.accountId]: vault.recipient };
-  for (const { accountId, recipient } of sharedWith) pins[accountId] = recipient;
-  const documentId = opened.document.id;
-  const documents = Object.fromEntries(
-    Object.entries(view.state.documents).filter(([id]) => id !== documentId),
-  );
-  if (sharedWith.length > 0) {
-    documents[documentId] = sharedWith.map(({ accountId }) => accountId).sort();
-  }
-  await storeState(passkeys, vault, view, { pins, documents });
+  await storeState(passkeys, vault, view, state);
   await replaceDocument(passkeys, vault, opened, sharedWith);
-}
-
-/** Whom the verified state shares a document with, by account ID. */
-export function sharedInState(view: SharingView, documentId: string): readonly string[] {
-  return Object.hasOwn(view.state.documents, documentId)
-    ? (view.state.documents[documentId] ?? [])
-    : [];
 }

@@ -5,39 +5,56 @@ import { useId, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { OpenedDocument } from './documents.js';
 import { textLinkClass } from './forms/text-link.js';
-import { sharedInState, type SharePerson, type Sharing } from './sharing.js';
+import {
+  sharedInState,
+  type SharePerson,
+  type Sharing,
+  type SharingView,
+} from './share-recipients.js';
 
 /**
  * Whom one of the owner's documents is shared with (spec 0005, R4): each linked person with the
- * fingerprint of the key a share would use, so the owner can compare it with them first.
+ * fingerprint of their vault key, so the owner can compare it with them first.
  */
 export function SharePanel({
+  id,
   opened,
+  name,
+  names,
   sharing,
   disabled,
   onShare,
   onConfirmState,
   onClose,
 }: {
+  readonly id: string;
   readonly opened: OpenedDocument;
+  /** This document's name, so each open panel says which document it is for. */
+  readonly name: string;
+  /** Every document's name the vault opened, by ID, for the rolled-back list. */
+  readonly names: ReadonlyMap<string, string>;
   readonly sharing: UseQueryResult<Sharing>;
   readonly disabled: boolean;
-  readonly onShare: (chosen: ReadonlySet<string>) => void;
+  readonly onShare: (chosen: ReadonlySet<string>, accepted: ReadonlySet<string>) => void;
   readonly onConfirmState: () => void;
   readonly onClose: () => void;
 }) {
   const { t } = useTranslation();
-  const legendId = useId();
   const close = (
     <button type="button" disabled={disabled} className={textLinkClass} onClick={onClose}>
       {t('vault.documents.share.close')}
     </button>
   );
+  const shell = (children: ReactNode) => (
+    <div id={id} className="flex w-full flex-col items-start gap-3">
+      {children}
+    </div>
+  );
 
-  if (sharing.isPending) return <p className="text-muted">{t('vault.documents.working')}</p>;
+  if (sharing.isPending) return shell(<p className="text-muted">{t('vault.documents.working')}</p>);
   if (sharing.isError) {
-    return (
-      <div className="flex flex-col items-start gap-3">
+    return shell(
+      <>
         <p className="text-ink">{t('vault.documents.share.loadFailure')}</p>
         <Button
           disabled={sharing.isFetching}
@@ -47,90 +64,125 @@ export function SharePanel({
           {t('vault.documents.retry')}
         </Button>
         {close}
-      </div>
+      </>,
     );
   }
   const { view, people } = sharing.data;
   if (view.status === 'invalid') {
-    return (
-      <div className="flex flex-col items-start gap-3">
+    return shell(
+      <>
         <p className="text-ink">{t('vault.documents.share.invalid')}</p>
         {close}
-      </div>
+      </>,
     );
   }
   if (view.status === 'rolled_back') {
-    return (
-      <div className="flex flex-col items-start gap-3">
+    return shell(
+      <>
         <p className="text-ink">{t('vault.documents.share.rolledBack')}</p>
+        <RolledBackList view={view} people={people} names={names} />
         <Button disabled={disabled} aria-busy={disabled} onClick={onConfirmState}>
           {t('vault.documents.share.confirmState')}
         </Button>
         {close}
-      </div>
+      </>,
     );
   }
   if (people.length === 0) {
-    return (
-      <div className="flex flex-col items-start gap-3">
+    return shell(
+      <>
         <p className="text-muted">{t('vault.documents.share.noLinks')}</p>
         <Link to="/invites" className={textLinkClass}>
           {t('vault.documents.share.invite')}
         </Link>
         {close}
-      </div>
+      </>,
     );
   }
-  return (
+  return shell(
     <ShareChoice
       key={view.storedVersion}
-      legendId={legendId}
       opened={opened}
+      name={name}
       people={people}
       inState={sharedInState(view, opened.document.id)}
       disabled={disabled}
       onShare={onShare}
       close={close}
-    />
+    />,
   );
 }
 
+/** What the rolled-back state says, document by document, for the owner to check first. */
+function RolledBackList({
+  view,
+  people,
+  names,
+}: {
+  readonly view: SharingView;
+  readonly people: readonly SharePerson[];
+  readonly names: ReadonlyMap<string, string>;
+}) {
+  const { t } = useTranslation();
+  const emails = new Map(people.map(({ accountId, email }) => [accountId, email]));
+  const shared = Object.entries(view.state.documents).filter(
+    ([, accountIds]) => accountIds.length > 0,
+  );
+  if (shared.length === 0) {
+    return <p className="text-ink">{t('vault.documents.share.rolledBackEmpty')}</p>;
+  }
+  return (
+    <ul aria-label={t('vault.documents.share.rolledBackList')} className="flex flex-col gap-2">
+      {shared.map(([documentId, accountIds]) => (
+        <li key={documentId} className="break-words">
+          {t('vault.documents.share.rolledBackItem', {
+            name: names.get(documentId) ?? t('vault.documents.unnamed'),
+            people: accountIds
+              .map((accountId) => emails.get(accountId) ?? t('vault.documents.share.unlinked'))
+              .join(', '),
+          })}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+const toggled = (set: ReadonlySet<string>, accountId: string, on: boolean) => {
+  const next = new Set(set);
+  if (on) next.add(accountId);
+  else next.delete(accountId);
+  return next;
+};
+
 function ShareChoice({
-  legendId,
   opened: { document },
+  name,
   people,
   inState,
   disabled,
   onShare,
   close,
 }: {
-  readonly legendId: string;
   readonly opened: OpenedDocument;
+  readonly name: string;
   readonly people: readonly SharePerson[];
   readonly inState: readonly string[];
   readonly disabled: boolean;
-  readonly onShare: (chosen: ReadonlySet<string>) => void;
+  readonly onShare: (chosen: ReadonlySet<string>, accepted: ReadonlySet<string>) => void;
   readonly close: ReactNode;
 }) {
   const { t } = useTranslation();
   const [chosen, setChosen] = useState<ReadonlySet<string>>(() => new Set(inState));
+  const [accepted, setAccepted] = useState<ReadonlySet<string>>(() => new Set());
   // Shares the server holds that the owner's own list does not: never encrypted to again.
   const unconfirmed = document.sharedWith.filter((accountId) => !inState.includes(accountId));
-  const toggle = (accountId: string, on: boolean) => {
-    setChosen((current) => {
-      const next = new Set(current);
-      if (on) next.add(accountId);
-      else next.delete(accountId);
-      return next;
-    });
-  };
   const sharing = people.filter(
     ({ accountId, trust }) => chosen.has(accountId) && trust !== 'no_vault',
   ).length;
   return (
-    <fieldset aria-labelledby={legendId} className="flex w-full flex-col items-start gap-3">
-      <legend id={legendId} className="font-medium">
-        {t('vault.documents.share.legend')}
+    <fieldset className="flex w-full flex-col items-start gap-3">
+      <legend className="font-medium break-words">
+        {t('vault.documents.share.legend', { name })}
       </legend>
       <p className="text-small text-muted">{t('vault.documents.share.lead')}</p>
       <ul className="flex w-full flex-col gap-3">
@@ -139,9 +191,13 @@ function ShareChoice({
             key={person.accountId}
             person={person}
             checked={chosen.has(person.accountId)}
+            accepted={accepted.has(person.accountId)}
             disabled={disabled}
-            onChange={(on) => {
-              toggle(person.accountId, on);
+            onCheck={(on) => {
+              setChosen((current) => toggled(current, person.accountId, on));
+            }}
+            onAccept={(on) => {
+              setAccepted((current) => toggled(current, person.accountId, on));
             }}
           />
         ))}
@@ -157,7 +213,7 @@ function ShareChoice({
           disabled={disabled}
           aria-busy={disabled}
           onClick={() => {
-            onShare(chosen);
+            onShare(chosen, accepted);
           }}
         >
           {t('vault.documents.share.save')}
@@ -169,15 +225,19 @@ function ShareChoice({
 }
 
 function PersonChoice({
-  person: { email, fingerprint, trust },
+  person: { email, trust, pinned, offered },
   checked,
+  accepted,
   disabled,
-  onChange,
+  onCheck,
+  onAccept,
 }: {
   readonly person: SharePerson;
   readonly checked: boolean;
+  readonly accepted: boolean;
   readonly disabled: boolean;
-  readonly onChange: (on: boolean) => void;
+  readonly onCheck: (on: boolean) => void;
+  readonly onAccept: (on: boolean) => void;
 }) {
   const { t } = useTranslation();
   const inputId = useId();
@@ -192,7 +252,7 @@ function PersonChoice({
           disabled={disabled || trust === 'no_vault'}
           aria-describedby={detailsId}
           onChange={(event) => {
-            onChange(event.currentTarget.checked);
+            onCheck(event.currentTarget.checked);
           }}
           className="size-5 accent-primary"
         />
@@ -200,10 +260,33 @@ function PersonChoice({
           {email}
         </label>
       </div>
-      <div id={detailsId} className="flex flex-col gap-1 ps-8 text-small text-muted">
-        {fingerprint !== null && <p>{t('vault.documents.share.fingerprint', { fingerprint })}</p>}
-        {trust !== 'pinned' && <p>{t('vault.documents.share.trust', { trust })}</p>}
+      <div id={detailsId} className="flex flex-col items-start gap-1 ps-8 text-small text-muted">
+        {pinned !== null && (
+          <p>{t('vault.documents.share.fingerprint', { fingerprint: pinned.fingerprint })}</p>
+        )}
+        {trust === 'new' && offered !== null && (
+          <p>{t('vault.documents.share.fingerprint', { fingerprint: offered.fingerprint })}</p>
+        )}
+        {trust === 'changed' && offered !== null && (
+          <p>{t('vault.documents.share.newFingerprint', { fingerprint: offered.fingerprint })}</p>
+        )}
+        {trust !== 'pinned' && (
+          <p>{t('vault.documents.share.trust', { trust: accepted ? 'accepted' : trust })}</p>
+        )}
       </div>
+      {trust === 'changed' && (
+        <button
+          type="button"
+          disabled={disabled}
+          aria-describedby={detailsId}
+          className={`${textLinkClass} ms-8 self-start`}
+          onClick={() => {
+            onAccept(!accepted);
+          }}
+        >
+          {t(accepted ? 'vault.documents.share.keepPinned' : 'vault.documents.share.acceptKey')}
+        </button>
+      )}
     </li>
   );
 }

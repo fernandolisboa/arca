@@ -22,8 +22,8 @@ import {
   shareDocument,
   sharingQuery,
   SharingStateInvalid,
-  type Sharing,
 } from './sharing.js';
+import type { Sharing } from './share-recipients.js';
 import { useDateFormat } from './use-date-format.js';
 import type { UnlockedVault } from './vault-session.js';
 
@@ -93,25 +93,26 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
   const change = (run: () => Promise<boolean>, done: Done, refresh: boolean) => {
     setOutcome(undefined);
     setWaiting(true);
-    run()
-      .then(async (changed) => {
-        if (!changed) return;
-        setOutcome({ done });
-        if (refresh) {
-          await Promise.all([
-            queryClient.invalidateQueries({ queryKey: query.queryKey }),
-            queryClient.invalidateQueries({ queryKey: sharingOptions.queryKey }),
-          ]);
-        }
-      })
-      .catch((error: unknown) => {
+    void (async () => {
+      let changed: boolean;
+      try {
+        changed = await run();
+        if (changed) setOutcome({ done });
+      } catch (error) {
+        // A failed step can follow one that stored, so the lists are read again either way.
+        changed = true;
         setOutcome({ failure: documentFailure(error) });
-      })
-      .finally(() => {
-        setWaiting(false);
-        // The control that had focus may leave with its row, so focus moves to the result.
-        statusRef.current?.focus();
-      });
+      }
+      if (refresh && changed) {
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: query.queryKey }),
+          queryClient.invalidateQueries({ queryKey: sharingOptions.queryKey }),
+        ]);
+      }
+      setWaiting(false);
+      // The control that had focus may leave with its row, so focus moves to the result.
+      statusRef.current?.focus();
+    })();
   };
 
   const add = () => {
@@ -141,6 +142,8 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
             maxDocuments: documentQuota.documents,
             maxBytes: size(documentQuota.bytes),
           });
+
+  const documentNames = names(documents.data ?? []);
 
   return (
     <section aria-labelledby="documents-title" className="flex w-full flex-col items-start gap-3">
@@ -183,6 +186,7 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
               <DocumentRow
                 key={opened.document.id}
                 opened={opened}
+                names={documentNames}
                 own={opened.document.ownerId === vault.accountId}
                 disabled={waiting}
                 onSave={() => {
@@ -196,12 +200,12 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
                   );
                 }}
                 sharing={sharing}
-                onShare={(chosen) => {
+                onShare={(chosen, accepted) => {
                   if (sharing.data === undefined) return;
                   const current = sharing.data;
                   change(
                     async () => {
-                      await shareDocument(passkeys, vault, current, opened, chosen);
+                      await shareDocument(passkeys, vault, current, opened, chosen, accepted);
                       return true;
                     },
                     'shared',
@@ -238,8 +242,17 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
   );
 }
 
+/** Each opened document's name by ID, for the rolled-back sharing list. */
+const names = (opened: readonly OpenedDocument[]): ReadonlyMap<string, string> =>
+  new Map(
+    opened.flatMap(({ document, label }) =>
+      label === undefined ? [] : [[document.id, label.name] as const],
+    ),
+  );
+
 function DocumentRow({
   opened,
+  names,
   own,
   disabled,
   sharing,
@@ -249,11 +262,12 @@ function DocumentRow({
   onDelete,
 }: {
   readonly opened: OpenedDocument;
+  readonly names: ReadonlyMap<string, string>;
   readonly own: boolean;
   readonly disabled: boolean;
   readonly sharing: UseQueryResult<Sharing>;
   readonly onSave: () => void;
-  readonly onShare: (chosen: ReadonlySet<string>) => void;
+  readonly onShare: (chosen: ReadonlySet<string>, accepted: ReadonlySet<string>) => void;
   readonly onConfirmState: () => void;
   readonly onDelete: () => void;
 }) {
@@ -262,6 +276,7 @@ function DocumentRow({
   const when = useDateFormat();
   const size = useSize();
   const nameId = useId();
+  const panelId = useId();
   const [sharingOpen, setSharingOpen] = useState(false);
   return (
     <li className="flex flex-col gap-2 rounded-card border border-line bg-surface p-4">
@@ -301,6 +316,7 @@ function DocumentRow({
             disabled={disabled}
             aria-describedby={nameId}
             aria-expanded={sharingOpen}
+            aria-controls={sharingOpen ? panelId : undefined}
             className={textLinkClass}
             onClick={() => {
               setSharingOpen((open) => !open);
@@ -323,12 +339,13 @@ function DocumentRow({
       </div>
       {sharingOpen && (
         <SharePanel
+          id={panelId}
           opened={opened}
+          name={label?.name ?? t('vault.documents.unnamed')}
+          names={names}
           sharing={sharing}
           disabled={disabled}
-          onShare={(chosen) => {
-            onShare(chosen);
-          }}
+          onShare={onShare}
           onConfirmState={onConfirmState}
           onClose={() => {
             setSharingOpen(false);

@@ -387,11 +387,14 @@ export const ptBR = {
       share: {
         open: 'Compartilhar',
         close: 'Fechar',
-        legend: 'Com quem compartilhar',
-        lead: 'Marque quem pode abrir este documento. Desmarcar tira o acesso. Antes de compartilhar com alguém pela primeira vez, confira com a pessoa, ao vivo ou por telefone, se a impressão digital da chave dela é a mesma que aparece aqui.',
+        legend: 'Com quem compartilhar {name}',
+        lead: 'Marque quem pode abrir este documento. Desmarcar tira o acesso. Antes de compartilhar com alguém pela primeira vez, confira com a pessoa, ao vivo ou por telefone, se a impressão digital da chave do cofre dela é a mesma que aparece aqui.',
         fingerprint: 'Impressão digital da chave: {fingerprint}',
+        newFingerprint: 'Impressão digital da chave nova: {fingerprint}',
         trust:
-          '{trust, select, new {Primeiro compartilhamento com esta pessoa. Confira a impressão digital com ela.} changed {A chave desta pessoa mudou desde o último compartilhamento. Confira a impressão digital nova com ela antes de salvar.} no_vault {Esta pessoa ainda não criou o cofre dela.} other {}}',
+          '{trust, select, new {Primeiro compartilhamento com esta pessoa. Confira a impressão digital com ela.} changed {A chave do cofre desta pessoa mudou. Enquanto você não aceitar a chave nova, o compartilhamento continua usando a antiga. Confira a impressão digital nova com ela antes de aceitar.} accepted {Você aceitou a chave nova. Ela passa a valer quando você salvar.} no_vault {Esta pessoa ainda não criou o cofre dela.} other {}}',
+        acceptKey: 'Aceitar a chave nova',
+        keepPinned: 'Manter a chave antiga',
         unconfirmed:
           '{count, plural, one {O servidor diz que 1 pessoa tem acesso a este documento sem que você tenha confirmado. Ao salvar, só fica quem estiver marcado aqui.} other {O servidor diz que # pessoas têm acesso a este documento sem que você tenha confirmado. Ao salvar, só fica quem estiver marcado aqui.}}',
         summary:
@@ -404,7 +407,11 @@ export const ptBR = {
         invalid:
           'A lista de compartilhamento guardada no servidor não confere com o seu cofre. Por segurança, compartilhar fica desligado até isso ser resolvido.',
         rolledBack:
-          'A lista de compartilhamento guardada no servidor é mais antiga do que uma que este dispositivo já viu. Isso pode acontecer depois de uma restauração do servidor. Confira com quem cada documento está compartilhado antes de seguir.',
+          'A lista de compartilhamento guardada no servidor é mais antiga do que uma que este dispositivo já viu. Isso pode acontecer depois de uma restauração do servidor. Confira abaixo com quem cada documento está compartilhado antes de seguir.',
+        rolledBackList: 'Compartilhamentos nesta lista',
+        rolledBackItem: '{name}: {people}',
+        rolledBackEmpty: 'Nesta lista, nenhum documento está compartilhado com ninguém.',
+        unlinked: 'alguém que não está mais conectado a você',
         confirmState: 'Conferi, pode usar esta lista',
       },
       done: '{done, select, added {Documento guardado no cofre.} saved {Documento baixado neste dispositivo.} deleted {Documento apagado.} shared {Compartilhamento salvo.} confirmed {Lista de compartilhamento confirmada.} other {Pronto.}}',
