@@ -1,18 +1,21 @@
-import { routes } from '@arca/api-contract/client';
+import { routes, type SharingStateChange } from '@arca/api-contract/client';
 import type { Passkeys } from '@arca/platform';
 import {
   nextSharingStateVersion,
   tagSharingState,
   verifySharingState,
   type SharingState,
+  type VaultIdentity,
 } from '@arca/vault';
 import { queryOptions } from '@tanstack/react-query';
 import { api } from './api.js';
 import { base64url, fromBase64url } from './base64url.js';
-import { inVaultWindow, replaceDocument, type OpenedDocument } from './documents.js';
+import { inVaultWindow, replaceDocuments, type OpenedDocument } from './documents.js';
 import { reach } from './requests.js';
 import {
+  moveBatches,
   sharedState,
+  withoutUnlinked,
   sharePerson,
   shareRecipients,
   type Sharing,
@@ -39,7 +42,7 @@ function highestSeen(accountId: string): number | undefined {
   }
 }
 
-function rememberVersion(accountId: string, version: number): void {
+export function rememberVersion(accountId: string, version: number): void {
   try {
     if ((highestSeen(accountId) ?? 0) < version) {
       localStorage.setItem(versionKey(accountId), String(version));
@@ -49,7 +52,8 @@ function rememberVersion(accountId: string, version: number): void {
   }
 }
 
-async function checkedView(vault: UnlockedVault): Promise<SharingView> {
+/** The stored sharing state, verified on this device under the current identity's share key. */
+export async function checkedView(vault: UnlockedVault): Promise<SharingView> {
   const seen = highestSeen(vault.accountId);
   const { sharingState: stored } = await reach(api.call(routes.getSharingState));
   if (stored === null) {
@@ -107,6 +111,11 @@ export function sharingQuery(vault: UnlockedVault) {
   });
 }
 
+const nextVersion = (view: SharingView) =>
+  nextSharingStateVersion(
+    ...[view.storedVersion, view.highestSeen].filter((seen) => typeof seen === 'number'),
+  );
+
 /** Tags a state above every version stored or seen, and stores it over the stored one. */
 async function storeState(
   passkeys: Passkeys,
@@ -114,9 +123,7 @@ async function storeState(
   view: SharingView,
   state: SharingState,
 ) {
-  const version = nextSharingStateVersion(
-    ...[view.storedVersion, view.highestSeen].filter((seen) => typeof seen === 'number'),
-  );
+  const version = nextVersion(view);
   const tagged = await tagSharingState(vault.identity, vault.accountId, version, state);
   await inVaultWindow(passkeys, () =>
     api.call(routes.storeSharingState, {
@@ -156,5 +163,51 @@ export async function shareDocument(
     sharedWith,
   );
   await storeState(passkeys, vault, view, state);
-  await replaceDocument(passkeys, vault, opened, sharedWith);
+  await replaceDocuments(passkeys, vault, [opened], sharedWith);
+}
+
+/**
+ * The verified state as a rotation stores it (ADR-0018): the owner's pin moved to the new
+ * recipient and tagged under the new identity's share key, over the stored version; null when
+ * none is stored. A state that is not verified is never carried over.
+ */
+export async function rotatedSharingState(
+  vault: UnlockedVault,
+  view: SharingView,
+  identity: VaultIdentity,
+  recipient: string,
+): Promise<SharingStateChange | null> {
+  if (view.status !== 'verified') throw new SharingStateInvalid();
+  if (view.storedVersion === null) return null;
+  const version = nextVersion(view);
+  const state = { ...view.state, pins: { ...view.state.pins, [vault.accountId]: recipient } };
+  const tagged = await tagSharingState(identity, vault.accountId, version, state);
+  return {
+    expectedVersion: view.storedVersion,
+    sharingState: { version, state: base64url(tagged.state), tag: base64url(tagged.tag) },
+  };
+}
+
+/**
+ * Encrypts the owner's documents still opened only with a replaced identity again, to the
+ * current one and the people the verified state shares each with, in batches.
+ */
+export async function moveDocuments(
+  passkeys: Passkeys,
+  vault: UnlockedVault,
+  { view, people }: Sharing,
+  stale: readonly OpenedDocument[],
+) {
+  if (view.status !== 'verified') throw new SharingStateInvalid();
+  const stricter = withoutUnlinked(
+    view,
+    people,
+    { accountId: vault.accountId, recipient: vault.recipient },
+    stale.map(({ document }) => document.id),
+  );
+  if (stricter !== undefined) await storeState(passkeys, vault, view, stricter);
+  const moving = stricter === undefined ? view : { ...view, state: stricter };
+  for (const { sharedWith, documents } of moveBatches(moving, stale)) {
+    await replaceDocuments(passkeys, vault, documents, sharedWith);
+  }
 }

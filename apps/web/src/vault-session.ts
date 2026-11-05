@@ -9,7 +9,18 @@ export interface UnlockedVault {
   readonly accountId: string;
   readonly recipient: string;
   readonly identity: VaultIdentity;
+  /**
+   * Identities a rotation replaced, opened on this device, so documents still encrypted to them
+   * open until their owners encrypt them again (ADR-0018).
+   */
+  readonly retained: readonly VaultIdentity[];
 }
+
+/** Every identity that may open a document: the current one first. */
+export const identitiesOf = (vault: UnlockedVault): readonly VaultIdentity[] => [
+  vault.identity,
+  ...vault.retained,
+];
 
 /**
  * The unlocked identity lives here, in memory only, and nowhere else in the page (spec 0005, R2):

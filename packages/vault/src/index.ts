@@ -10,6 +10,7 @@ export {
   encryptDocument,
   InvalidRecipients,
   reencryptDocument,
+  type VaultIdentities,
 } from './documents.js';
 export {
   documentMediaType,

@@ -29,9 +29,18 @@ export async function stepUpFor(
   action: Omit<StepUpAction, 'nonce'>,
   purpose: Exclude<StepUpPurpose, 'vault_unlock'> = 'sensitive_settings',
 ): Promise<ReturnType<typeof api.withHeaders>> {
+  return (await approvedWith(passkeys, action, purpose)).client;
+}
+
+/** A step-up as {@link stepUpFor}, also naming the passkey the person approved it with. */
+export async function approvedWith(
+  passkeys: Passkeys,
+  action: Omit<StepUpAction, 'nonce'>,
+  purpose: Exclude<StepUpPurpose, 'vault_unlock'> = 'sensitive_settings',
+): Promise<{ client: ReturnType<typeof api.withHeaders>; credentialId: string }> {
   const nonce = base64url(crypto.getRandomValues(new Uint8Array(16)));
-  await verifyStepUp(passkeys, { purpose, target: { ...action, nonce } });
-  return api.withHeaders({ [stepUpNonceHeader]: nonce });
+  const credentialId = await verifyStepUp(passkeys, { purpose, target: { ...action, nonce } });
+  return { client: api.withHeaders({ [stepUpNonceHeader]: nonce }), credentialId };
 }
 
 /**

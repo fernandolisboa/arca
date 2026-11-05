@@ -1,10 +1,14 @@
 import type { SharingState } from '@arca/vault';
 import { describe, expect, it } from 'vitest';
+import type { OpenedDocument } from '../src/documents.js';
 import {
+  moveBatchBytes,
+  moveBatches,
   sharedInState,
   sharedState,
   sharePerson,
   shareRecipients,
+  withoutUnlinked,
   type SharingView,
 } from '../src/share-recipients.js';
 
@@ -114,5 +118,72 @@ describe('the sharing state after a share', () => {
     expect(next.pins[pinnedId]).toBe('age1pinned');
     expect(sharedInState(viewOf(next), documentId)).toEqual([]);
     expect(sharedInState(viewOf(next), other)).toEqual([otherId]);
+  });
+});
+
+const openedOf = (id: string, size = 1000): OpenedDocument => ({
+  document: {
+    id,
+    typeKey: 'other',
+    size,
+    sha256: '',
+    label: '',
+    createdAt: '2026-01-01T00:00:00Z',
+    ownerId: owner.accountId,
+    sharedWith: [],
+  },
+  label: { name: `${id}.txt`, type: 'text/plain' },
+  stale: true,
+});
+
+const idOf = (index: number) => `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`;
+
+describe('moving documents to a rotated identity', () => {
+  it('groups documents by the people the state shares each with, using their pins', () => {
+    const lone = idOf(900);
+    const batches = moveBatches(view, [openedOf(documentId), openedOf(lone)]);
+    expect(
+      batches.map(({ sharedWith, documents }) => [
+        sharedWith,
+        documents.map(({ document }) => document.id),
+      ]),
+    ).toEqual([
+      [[{ accountId: pinnedId, recipient: 'age1pinned' }], [documentId]],
+      [[], [lone]],
+    ]);
+  });
+
+  it('splits a group at 32 documents and before it holds too much ciphertext', () => {
+    const many = Array.from({ length: 33 }, (_, index) => openedOf(idOf(index)));
+    expect(moveBatches(view, many).map(({ documents }) => documents.length)).toEqual([32, 1]);
+    const large = [0, 1, 2].map((index) => openedOf(idOf(index), moveBatchBytes / 2));
+    expect(moveBatches(view, large).map(({ documents }) => documents.length)).toEqual([2, 1]);
+  });
+
+  it('moves a document alone even when it is larger than a batch', () => {
+    const huge = openedOf(idOf(1), moveBatchBytes + 1);
+    expect(
+      moveBatches(view, [huge, openedOf(idOf(2))]).map(({ documents }) => documents.length),
+    ).toEqual([1, 1]);
+  });
+});
+
+describe('moving documents shared with someone no longer linked', () => {
+  it('takes only the unlinked people off the moving documents', async () => {
+    const other = idOf(901);
+    const state = {
+      pins: { [pinnedId]: 'age1pinned', [otherId]: 'age1other' },
+      documents: { [documentId]: [pinnedId, otherId], [other]: [otherId] },
+    };
+    const people = [await sharePerson(viewOf(state), link(pinnedId, 'age1pinned'))];
+    const stricter = withoutUnlinked(viewOf(state), people, owner, [documentId]);
+    expect(stricter?.documents).toEqual({ [documentId]: [pinnedId], [other]: [otherId] });
+    expect(stricter?.pins[owner.accountId]).toBe(owner.recipient);
+    expect(withoutUnlinked(viewOf(state), [...people], owner, [])).toBeUndefined();
+  });
+
+  it('changes nothing when everyone is still linked', async () => {
+    const people = [await sharePerson(view, link(pinnedId, 'age1pinned'))];
+    expect(withoutUnlinked(view, people, owner, [documentId])).toBeUndefined();
   });
 });

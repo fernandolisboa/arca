@@ -31,6 +31,17 @@ export function encrypterFor(recipients: readonly string[]): Encrypter {
   return encrypter;
 }
 
+/** One identity, or the current one and those a rotation kept, any of which may open a file. */
+export type VaultIdentities = VaultIdentity | readonly VaultIdentity[];
+
+export function decrypterFor(identities: VaultIdentities): Decrypter {
+  const decrypter = new Decrypter();
+  for (const identity of identities instanceof Uint8Array ? [identities] : identities) {
+    decrypter.addIdentity(identityParts(identity).secret);
+  }
+  return decrypter;
+}
+
 /** Encrypts a document as a stream to every recipient, in the plain age format. */
 export async function encryptDocument(
   plaintext: ReadableStream<Uint8Array>,
@@ -45,19 +56,17 @@ export async function encryptDocument(
  */
 export async function decryptDocument(
   ciphertext: ReadableStream<Uint8Array>,
-  identity: VaultIdentity,
+  identities: VaultIdentities,
 ): Promise<ReadableStream<Uint8Array>> {
-  const decrypter = new Decrypter();
-  decrypter.addIdentity(identityParts(identity).secret);
-  return decrypter.decrypt(ciphertext);
+  return decrypterFor(identities).decrypt(ciphertext);
 }
 
 /** Re-encrypts a document to a new recipient set: to share, revoke or rotate. */
 export async function reencryptDocument(
   ciphertext: ReadableStream<Uint8Array>,
-  identity: VaultIdentity,
+  identities: VaultIdentities,
   recipients: readonly string[],
 ): Promise<ReadableStream<Uint8Array>> {
   const encrypter = encrypterFor(recipients);
-  return encrypter.encrypt(await decryptDocument(ciphertext, identity));
+  return encrypter.encrypt(await decryptDocument(ciphertext, identities));
 }

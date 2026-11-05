@@ -13,6 +13,7 @@ const vault = {
   accountId: '7b1c2d3e-4f50-4617-8a9b-0c1d2e3f4a5b',
   recipient: 'age1pq1synthetic',
   identity: new Uint8Array(8) as VaultIdentity,
+  retained: [],
 };
 
 beforeEach(() => {

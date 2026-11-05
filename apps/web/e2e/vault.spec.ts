@@ -39,6 +39,9 @@ async function expectAccessible(page: Page) {
 
 const opened = (page: Page) => page.getByText(/^O cofre está aberto neste dispositivo\./);
 
+/** Each recovery envelope is an scrypt passphrase file: seconds of work on a busy machine. */
+const scrypt = { timeout: 20_000 };
+
 /** Creates the vault and keeps the secret it shows once, as a person writing it down would. */
 async function setUp(page: Page): Promise<{ secret: string; upload: Request }> {
   const upload = page.waitForRequest(
@@ -52,7 +55,7 @@ async function setUp(page: Page): Promise<{ secret: string; upload: Request }> {
 /** Reads the vault secret shown once, checks the page, and confirms it was kept. */
 async function keepSecret(page: Page): Promise<string> {
   const sheet = page.getByRole('group', { name: 'Segredo de recuperação do cofre' });
-  await expect(sheet).toBeVisible();
+  await expect(sheet).toBeVisible(scrypt);
   const secret = (await sheet.locator('p').nth(1).innerText()).trim();
   expect(secret).toMatch(/^[0-9A-Z]{4}( [0-9A-Z]{1,4}){6}$/);
   await expectAccessible(page);
@@ -238,6 +241,162 @@ test('shares a document with a linked account and takes the access back', async 
   await expect(relativePage.getByText(/^Ainda não há documentos no cofre\./)).toBeVisible();
   await relativeContext.close();
   expect(problems).toEqual([]);
+});
+
+/** Adds a synthetic text file to the open vault. */
+async function addFile(page: Page, name: string, contents: string) {
+  const chooser = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: 'Adicionar documento' }).click();
+  await (await chooser).setFiles({ name, mimeType: 'text/plain', buffer: Buffer.from(contents) });
+  await expect(page.getByText('Documento guardado no cofre.')).toBeVisible();
+}
+
+async function downloaded(page: Page, row: ReturnType<Page['getByRole']>) {
+  const download = page.waitForEvent('download');
+  await row.getByRole('button', { name: 'Baixar' }).click();
+  return readFile(await (await download).path(), 'utf8');
+}
+
+test('rotates the vault key: a new kit, the old key still opens shared documents, and each owner moves to the new one', async ({
+  page,
+  browser,
+}) => {
+  // Three devices, two rotations of their documents and several step-ups.
+  test.setTimeout(90_000);
+  const problems = watchProblems(page);
+  const owner = await createdPrfCredential(page);
+  const { email: ownerEmail } = await seedAccount(owner.credential, owner.userId, {
+    confirmed: true,
+  });
+  const relativeContext = await browser.newContext();
+  const relativePage = await relativeContext.newPage();
+  await withoutAutofill(relativePage);
+  const relative = await createdPrfCredential(relativePage);
+  const { email: relativeEmail } = await seedAccount(relative.credential, relative.userId, {
+    confirmed: true,
+  });
+  await linkAccounts(owner.userId, relative.userId);
+
+  await signIn(relativePage, relativeEmail);
+  await openVaultPage(relativePage);
+  await setUp(relativePage);
+  await addFile(relativePage, 'rg-exemplo.txt', 'synthetic identity card');
+
+  // A WebAuthn prompt waits for its page to have focus, so each switch brings it to the front.
+  await page.bringToFront();
+  await signIn(page, ownerEmail);
+  await openVaultPage(page);
+  await setUp(page);
+  await addFile(page, 'passaporte-exemplo.txt', 'synthetic passport scan');
+  const documents = page.getByRole('list', { name: 'Documentos' });
+  await documents.getByRole('button', { name: 'Compartilhar' }).click();
+  const choice = page.getByRole('group', { name: 'Com quem compartilhar' });
+  await choice.getByLabel(relativeEmail).check();
+  await choice.getByRole('button', { name: 'Salvar' }).click();
+  await expect(page.getByText('Compartilhamento salvo.')).toBeVisible();
+
+  // The relative rotates: a new kit straight away, and the replaced key stays open here.
+  await relativePage.bringToFront();
+  await relativePage.reload();
+  await relativePage.getByRole('button', { name: 'Abrir o cofre' }).click();
+  await relativePage.getByRole('button', { name: 'Trocar a chave do cofre' }).click();
+  const secret = await keepSecret(relativePage);
+  const relativeDocuments = relativePage.getByRole('list', { name: 'Documentos' });
+  const sharedRow = relativeDocuments.getByRole('listitem').filter({ hasText: 'passaporte' });
+  expect(await downloaded(relativePage, sharedRow)).toBe('synthetic passport scan');
+  await expect(
+    relativePage.getByText('1 documento seu ainda usa a chave antiga do cofre.'),
+  ).toBeVisible();
+  await expectAccessible(relativePage);
+
+  // The relative moves their own document to the new key.
+  await relativePage.getByRole('button', { name: 'Passar para a chave nova' }).click();
+  await expect(
+    relativePage.getByText('Pronto, seus documentos já usam a chave nova.'),
+  ).toBeVisible();
+
+  // Another device without PRF: the new kit opens the vault and, once more, the replaced key,
+  // for the document its owner has not moved yet. (One credential on two authenticators: this
+  // one's counter starts higher, so the first device signs nothing after it.)
+  const deviceContext = await browser.newContext();
+  const devicePage = await deviceContext.newPage();
+  await devicePage.bringToFront();
+  await withoutAutofill(devicePage);
+  await virtualAuthenticator(devicePage, relative.credential, {
+    userId: relative.userId,
+    signCount: 1000,
+  });
+  await signIn(devicePage, relativeEmail);
+  await openVaultPage(devicePage);
+  await devicePage.getByRole('button', { name: 'Abrir o cofre' }).click();
+  await devicePage.getByLabel('Segredo de recuperação do cofre').fill(secret);
+  await devicePage.getByRole('button', { name: 'Abrir com o segredo' }).click();
+  await expect(opened(devicePage)).toBeVisible(scrypt);
+  await devicePage.getByRole('button', { name: 'Abrir com a chave antiga' }).click();
+  await devicePage.getByLabel('Segredo de recuperação do cofre').fill(secret);
+  await devicePage.getByRole('button', { name: 'Abrir a chave antiga' }).click();
+  await expect(devicePage.getByText('A chave antiga está aberta neste dispositivo.')).toBeVisible(
+    scrypt,
+  );
+  const deviceDocuments = devicePage.getByRole('list', { name: 'Documentos' });
+  expect(
+    await downloaded(
+      devicePage,
+      deviceDocuments.getByRole('listitem').filter({ hasText: 'passaporte' }),
+    ),
+  ).toBe('synthetic passport scan');
+
+  // The owner accepts the new key and saves the share again.
+  await page.bringToFront();
+  await page.reload();
+  await page.getByRole('button', { name: 'Abrir o cofre' }).click();
+  await documents.getByRole('button', { name: 'Compartilhar' }).click();
+  await expect(choice.getByText(/^A chave do cofre desta pessoa mudou\./)).toBeVisible();
+  await expect(choice.getByText(/^Impressão digital da chave nova: /)).toBeVisible();
+  await choice.getByRole('button', { name: 'Aceitar a chave nova' }).click();
+  await choice.getByRole('button', { name: 'Salvar' }).click();
+  await expect(page.getByText('Compartilhamento salvo.')).toBeVisible();
+
+  // Now the new key alone opens both, on the device that keeps it wrapped.
+  await devicePage.bringToFront();
+  await devicePage.reload();
+  await devicePage.getByRole('button', { name: 'Abrir o cofre' }).click();
+  await expect(opened(devicePage)).toBeVisible();
+  await expect(deviceDocuments.getByText('rg-exemplo.txt')).toBeVisible();
+  await expect(deviceDocuments.getByText('passaporte-exemplo.txt')).toBeVisible();
+  await expect(devicePage.getByRole('button', { name: 'Abrir com a chave antiga' })).toHaveCount(0);
+  await deviceContext.close();
+  await relativeContext.close();
+  expect(problems).toEqual([]);
+});
+
+test('finishes a rotation the server stored when its answer never arrived', async ({ page }) => {
+  const problems = watchProblems(page);
+  const { credential, userId } = await createdPrfCredential(page);
+  const { email } = await seedAccount(credential, userId);
+  await signIn(page, email);
+  await openVaultPage(page);
+  await setUp(page);
+
+  // The rotation reaches the server and is stored; the answer is lost on the way back.
+  let lost = false;
+  await page.route('**/v1/vault/rotate', async (route) => {
+    await route.fetch();
+    lost = true;
+    await route.abort('connectionreset');
+  });
+  await page.getByRole('button', { name: 'Trocar a chave do cofre' }).click();
+  const secret = await keepSecret(page);
+  expect(lost).toBe(true);
+
+  await page.getByRole('button', { name: 'Fechar o cofre' }).click();
+  await page.getByRole('button', { name: 'Abrir o cofre' }).click();
+  await expect(opened(page)).toBeVisible();
+  expect(secret).not.toBe('');
+  // Only the cut connection itself, which the browser logs without its URL.
+  expect(
+    problems.filter((problem) => !problem.startsWith('Failed to load resource: net::')),
+  ).toEqual([]);
 });
 
 test('without PRF, the recovery secret opens the vault and the device keeps it wrapped', async ({

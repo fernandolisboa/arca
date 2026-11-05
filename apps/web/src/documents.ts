@@ -17,6 +17,7 @@ import {
   reencryptDocument,
   sealDocumentLabel,
   type DocumentLabel,
+  type VaultIdentity,
 } from '@arca/vault';
 import { queryOptions } from '@tanstack/react-query';
 import { api } from './api.js';
@@ -24,7 +25,7 @@ import { base64url, fromBase64url } from './base64url.js';
 import { saveFile } from './download.js';
 import { reach } from './requests.js';
 import { openVaultWindow, stepUpFor } from './step-up.js';
-import type { UnlockedVault } from './vault-session.js';
+import { identitiesOf, type UnlockedVault } from './vault-session.js';
 
 /** Until the document catalog arrives with the consultancy core, every document is this type. */
 const uncataloguedType = 'other';
@@ -54,6 +55,8 @@ export interface OpenedDocument {
   readonly document: VaultDocument;
   /** Undefined when the label does not open, so the screen names the document itself. */
   readonly label: DocumentLabel | undefined;
+  /** Opened only with an identity a rotation replaced, so its owner encrypts it again. */
+  readonly stale: boolean;
 }
 
 const bytesOf = async (stream: ReadableStream<Uint8Array>) =>
@@ -65,16 +68,25 @@ const sha256Of = async (bytes: Uint8Array<ArrayBuffer>) =>
 const sameBytes = (a: Uint8Array, b: Uint8Array) =>
   a.length === b.length && a.every((byte, index) => byte === b[index]);
 
-async function openLabel(vault: UnlockedVault, document: VaultDocument) {
-  try {
-    return await openDocumentLabel(
-      fromBase64url(document.label),
-      vault.identity,
-      fromBase64url(document.sha256),
-    );
-  } catch {
-    return undefined;
-  }
+async function openLabel(
+  vault: UnlockedVault,
+  document: VaultDocument,
+): Promise<Omit<OpenedDocument, 'document'>> {
+  const open = async (identities: readonly VaultIdentity[]) => {
+    try {
+      return await openDocumentLabel(
+        fromBase64url(document.label),
+        identities,
+        fromBase64url(document.sha256),
+      );
+    } catch {
+      return undefined;
+    }
+  };
+  const label = await open([vault.identity]);
+  if (label !== undefined || vault.retained.length === 0) return { label, stale: false };
+  const kept = await open(vault.retained);
+  return { label: kept, stale: kept !== undefined };
 }
 
 /**
@@ -83,7 +95,7 @@ async function openLabel(vault: UnlockedVault, document: VaultDocument) {
  */
 export function documentsQuery(vault: UnlockedVault) {
   return queryOptions({
-    queryKey: ['documents', vault.accountId, vault.recipient],
+    queryKey: ['documents', vault.accountId, vault.recipient, vault.retained.length],
     queryFn: async (): Promise<OpenedDocument[]> => {
       const documents: VaultDocument[] = [];
       let after: string | undefined;
@@ -95,7 +107,7 @@ export function documentsQuery(vault: UnlockedVault) {
         after = page.next ?? undefined;
       } while (after !== undefined);
       return Promise.all(
-        documents.map(async (document) => ({ document, label: await openLabel(vault, document) })),
+        documents.map(async (document) => ({ document, ...(await openLabel(vault, document)) })),
       );
     },
     gcTime: 0,
@@ -195,7 +207,7 @@ export async function saveDocument(
   let plaintext: Uint8Array<ArrayBuffer>;
   try {
     plaintext = await bytesOf(
-      await decryptDocument(new Blob([ciphertext]).stream(), vault.identity),
+      await decryptDocument(new Blob([ciphertext]).stream(), identitiesOf(vault)),
     );
   } catch {
     throw new DocumentNotOpened();
@@ -213,47 +225,57 @@ export async function deleteDocument(passkeys: Passkeys, documentId: string) {
 }
 
 /**
- * Encrypts one of the owner's documents again, on this device, to the owner and exactly these
- * people, with its label sealed the same way, then swaps it in after a `vault_write` step-up for
- * exactly that ciphertext (spec 0005, R4): sharing and revoking are both this.
+ * Encrypts some of the owner's documents again, on this device, to the owner and exactly these
+ * people, each label sealed the same way, then swaps them in after one `vault_write` step-up for
+ * exactly those ciphertexts (spec 0005, R4): sharing, revoking and moving to a rotated identity.
  */
-export async function replaceDocument(
+export async function replaceDocuments(
   passkeys: Passkeys,
   vault: UnlockedVault,
-  { document, label }: OpenedDocument,
+  opened: readonly OpenedDocument[],
   sharedWith: readonly DocumentRecipient[],
 ) {
-  if (label === undefined) throw new DocumentNotOpened();
-  const ciphertext = await storedCiphertext(passkeys, document);
   const recipients = [vault.recipient, ...sharedWith.map(({ recipient }) => recipient)];
-  let replaced: Uint8Array<ArrayBuffer>;
-  try {
-    replaced = await bytesOf(
-      await reencryptDocument(new Blob([ciphertext]).stream(), vault.identity, recipients),
-    );
-  } catch {
-    throw new DocumentNotOpened();
+  const replaced = [];
+  for (const { document, label } of opened) {
+    if (label === undefined) throw new DocumentNotOpened();
+    const ciphertext = await storedCiphertext(passkeys, document);
+    let bytes: Uint8Array<ArrayBuffer>;
+    try {
+      bytes = await bytesOf(
+        await reencryptDocument(new Blob([ciphertext]).stream(), identitiesOf(vault), recipients),
+      );
+    } catch {
+      throw new DocumentNotOpened();
+    }
+    if (bytes.length > maxDocumentBytes) throw new DocumentTooLarge();
+    const sha256 = await sha256Of(bytes);
+    replaced.push({ document, label, bytes, sha256 });
   }
-  if (replaced.length > maxDocumentBytes) throw new DocumentTooLarge();
-  const sha256 = await sha256Of(replaced);
   const request = {
     recipients: sharedWith.map(({ accountId }) => accountId).sort(),
-    documents: [
-      {
+    documents: await Promise.all(
+      replaced.map(async ({ document, label, bytes, sha256 }) => ({
         documentId: document.id,
-        size: replaced.length,
+        size: bytes.length,
         sha256: base64url(sha256),
         label: base64url(await sealDocumentLabel(label, sha256, recipients)),
-      },
-    ],
+      })),
+    ),
   };
   const client = await stepUpFor(passkeys, await replaceDocumentsAction(request), 'vault_write');
   const { uploads } = await reach(client.call(routes.replaceDocuments, request));
-  const [approved] = uploads;
-  if (approved === undefined) throw new ReplacementRefused();
-  await send(approved.upload, replaced);
-  const { results } = await reach(
-    api.call(routes.confirmReplacements, { documentIds: [document.id] }),
-  );
-  if (results[0]?.outcome !== 'replaced') throw new ReplacementRefused();
+  for (const { document, bytes } of replaced) {
+    const approved = uploads.find(({ documentId }) => documentId === document.id);
+    if (approved === undefined) throw new ReplacementRefused();
+    await send(approved.upload, bytes);
+  }
+  const documentIds = replaced.map(({ document }) => document.id);
+  const { results } = await reach(api.call(routes.confirmReplacements, { documentIds }));
+  if (
+    results.length !== documentIds.length ||
+    results.some(({ outcome }) => outcome !== 'replaced')
+  ) {
+    throw new ReplacementRefused();
+  }
 }

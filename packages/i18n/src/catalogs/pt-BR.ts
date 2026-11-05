@@ -362,8 +362,11 @@ export const ptBR = {
     opened:
       'O cofre está aberto neste dispositivo. Ele fecha sozinho depois de {minutes} minutos sem uso.',
     lock: 'Fechar o cofre',
+    rotateLead:
+      'Se você perdeu um dispositivo ou acha que alguém pode ter a chave do cofre, troque a chave. Você recebe um novo segredo de recuperação do cofre, e o antigo deixa de valer. Os seus documentos passam para a chave nova quando você tocar em “Passar para a chave nova”. Os que outras pessoas compartilham com você continuam abrindo com a chave antiga até elas salvarem de novo com a chave nova.',
+    rotate: 'Trocar a chave do cofre',
     failure:
-      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} wrong_secret {Esse segredo não abre o cofre. Confira e tente de novo.} wrong_identity {A chave aberta não é a do seu cofre atual. Atualize a página e tente de novo.} exists {O seu cofre já foi criado em outro dispositivo. Atualize a página.} changed {O cofre mudou em outro dispositivo. Atualize a página e tente de novo.} has_documents {Não dá para recomeçar o cofre, porque ele já tem documentos que só a chave do cofre atual abre.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} wrong_secret {Esse segredo não abre o cofre. Confira e tente de novo.} wrong_identity {A chave aberta não é a do seu cofre atual. Atualize a página e tente de novo.} exists {O seu cofre já foi criado em outro dispositivo. Atualize a página.} changed {O cofre mudou em outro dispositivo. Atualize a página e tente de novo.} has_documents {Não dá para recomeçar o cofre, porque ele já tem documentos que só a chave do cofre atual abre.} rotated_unopened {Antes de trocar a chave, abra os documentos da chave antiga, na lista abaixo.} sharing_invalid {A lista de compartilhamento não confere com o seu cofre. Resolva isso antes de trocar a chave.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
     /** The open vault's documents (spec 0005, R4); names are sealed and opened on the device. */
     documents: {
       title: 'Documentos',
@@ -380,6 +383,15 @@ export const ptBR = {
       sharedWith:
         '{count, plural, one {Compartilhado com 1 pessoa} other {Compartilhado com # pessoas}}',
       unnamed: 'Documento que este cofre não consegue abrir',
+      stale:
+        '{count, plural, one {1 documento seu ainda usa a chave antiga do cofre.} other {# documentos seus ainda usam a chave antiga do cofre.}}',
+      move: 'Passar para a chave nova',
+      unopened:
+        'Alguns documentos não abriram com a chave atual do cofre. Se a chave foi trocada há pouco, eles ainda abrem com a chave antiga.',
+      openRetained: 'Abrir com a chave antiga',
+      retainedSecretLead:
+        'Neste dispositivo, a sua chave de acesso não abre a chave antiga. Digite o segredo de recuperação do cofre, o do kit mais recente.',
+      retainedSecretSubmit: 'Abrir a chave antiga',
       fallbackName: 'documento',
       save: 'Baixar',
       delete: 'Apagar',
@@ -414,9 +426,9 @@ export const ptBR = {
         unlinked: 'alguém que não está mais conectado a você',
         confirmState: 'Conferi, pode usar esta lista',
       },
-      done: '{done, select, added {Documento guardado no cofre.} saved {Documento baixado neste dispositivo.} deleted {Documento apagado.} shared {Compartilhamento salvo.} confirmed {Lista de compartilhamento confirmada.} other {Pronto.}}',
+      done: '{done, select, added {Documento guardado no cofre.} saved {Documento baixado neste dispositivo.} deleted {Documento apagado.} shared {Compartilhamento salvo.} confirmed {Lista de compartilhamento confirmada.} moved {Pronto, seus documentos já usam a chave nova.} opened {A chave antiga está aberta neste dispositivo.} other {Pronto.}}',
       failure:
-        '{reason, select, too_large {Esse arquivo passa de {maxSize}, o limite de cada documento.} quota {O cofre está cheio. Cabem até {maxDocuments} documentos ou {maxBytes}.} changed {O cofre mudou em outro dispositivo. Atualize a página e tente de novo.} not_opened {Não deu para abrir esse documento. O arquivo guardado não é o que deveria ser.} unconfirmed {Sua conta ainda espera a confirmação de quem convidou você. Depois disso, você pode guardar documentos.} not_shared {O compartilhamento não foi salvo. Alguém pode ter perdido a conexão com você. Atualize a página e tente de novo.} sharing_invalid {Compartilhar está desligado porque a lista de compartilhamento não confere.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+        '{reason, select, too_large {Esse arquivo passa de {maxSize}, o limite de cada documento.} quota {O cofre está cheio. Cabem até {maxDocuments} documentos ou {maxBytes}.} changed {O cofre mudou em outro dispositivo. Atualize a página e tente de novo.} not_opened {Não deu para abrir esse documento. O arquivo guardado não é o que deveria ser.} unconfirmed {Sua conta ainda espera a confirmação de quem convidou você. Depois disso, você pode guardar documentos.} not_shared {O compartilhamento não foi salvo. Alguém pode ter perdido a conexão com você. Atualize a página e tente de novo.} sharing_invalid {Compartilhar está desligado porque a lista de compartilhamento não confere.} nothing_retained {Este cofre não tem chave antiga para abrir.} wrong_secret {Esse segredo não abre a chave antiga. Confira e tente de novo.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
     },
     /** The vault part of the recovery kit (spec 0003, R6): shown once, after the check. */
     kit: {
