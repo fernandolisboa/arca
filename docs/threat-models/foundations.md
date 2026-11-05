@@ -179,4 +179,3 @@ Risks from the OWASP Top 10 for Agentic Applications (2026):
 | Gap | Ticket | Blocks the gate |
 | --- | --- | --- |
 | No check that every action is pinned by SHA (S2) | [#6](https://github.com/fernandolisboa/arca/issues/6) | No: pins are reviewed by hand |
-| The lineage mark's end-to-end proof (D6): the first preview after it merges | [#64](https://github.com/fernandolisboa/arca/issues/64) | Yes, item 1 |
