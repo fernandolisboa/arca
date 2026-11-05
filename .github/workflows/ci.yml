@@ -74,7 +74,7 @@ jobs:
             echo "::add-mask::$value"
             echo "$name=$value" >> "$GITHUB_ENV"
           done
-      - name: Roles and migrations, as a deployment's build runs them (spec 0001, R9)
+      - name: Roles, migrations and the synthetic seed, as a preview's build runs them (spec 0001, R9; spec 0004, R2)
         env:
           PGHOST_UNPOOLED: 127.0.0.1
           PGDATABASE: arca_e2e
@@ -83,6 +83,7 @@ jobs:
         run: |
           pnpm --filter @arca/scripts db:bootstrap
           pnpm --filter @arca/scripts db:migrate
+          pnpm --filter @arca/scripts db:seed
       - name: The built app at phone and desktop sizes (spec 0001, R8), and passkey sign-in
         run: pnpm turbo run e2e
 
