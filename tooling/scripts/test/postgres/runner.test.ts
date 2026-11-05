@@ -92,6 +92,63 @@ describe('migrate', () => {
     expect((await migrate(target, files, policy, 'preview')).applied).toHaveLength(files.length);
   });
 
+  describe('the lineage mark (spec 0004, R1)', () => {
+    const lineage = 'arca lineage: production';
+    const productionMark = (target: { host: string }) =>
+      `arca production endpoint: ${target.host.split('.')[0] ?? ''}`;
+
+    async function schemaComment(): Promise<{ comment: string | null; owner: string } | undefined> {
+      return withClient(adminTarget(database), async (client) => {
+        const result = await client.query<{ comment: string | null; owner: string }>(
+          `SELECT pg_catalog.obj_description(oid, 'pg_namespace') AS comment,
+                  pg_catalog.pg_get_userbyid(nspowner) AS owner
+             FROM pg_catalog.pg_namespace WHERE nspname = 'arca_migrations'`,
+        );
+        return result.rows[0];
+      });
+    }
+
+    it('is written by production, idempotently, on the schema app_migrator owns', async () => {
+      const files = await realMigrations();
+      const policy = await containerPolicy();
+      const target = migratorTarget(database);
+      await setComment(database, productionMark(target));
+      await migrate(target, files, policy, 'production');
+      expect(await schemaComment()).toEqual({ comment: lineage, owner: 'app_migrator' });
+      expect((await migrate(target, files, policy, 'production')).applied).toEqual([]);
+      expect(await schemaComment()).toEqual({ comment: lineage, owner: 'app_migrator' });
+    });
+
+    it('refuses a preview on a fork that carries it, before any migration', async () => {
+      const files = await realMigrations();
+      const policy = await containerPolicy();
+      const target = migratorTarget(database);
+      await setComment(database, productionMark(target));
+      await migrate(target, files.slice(0, 1), policy, 'production');
+      await setComment(database, 'arca production endpoint: ep-production');
+      await expect(migrate(target, files, policy, 'preview')).rejects.toThrow(
+        'preview_forked_from_production',
+      );
+      expect(await journal()).toEqual([files[0]?.name]);
+    });
+
+    it('lets a preview through on an empty schema with the endpoint mark and no lineage mark', async () => {
+      const files = await realMigrations();
+      await setComment(database, 'arca production endpoint: ep-production');
+      await withClient(adminTarget(database), (client) =>
+        client.query('CREATE SCHEMA arca_migrations AUTHORIZATION app_migrator'),
+      );
+      const { applied } = await migrate(
+        migratorTarget(database),
+        files,
+        await containerPolicy(),
+        'preview',
+      );
+      expect(applied).toHaveLength(files.length);
+      expect(await schemaComment()).toEqual({ comment: null, owner: 'app_migrator' });
+    });
+  });
+
   it('applies a migration once when two runs race', async () => {
     const files = [
       ...(await realMigrations()),

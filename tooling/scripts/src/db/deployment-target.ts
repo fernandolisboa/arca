@@ -85,3 +85,36 @@ export async function checkDeploymentTarget(
     );
   }
 }
+
+const lineageMark = 'arca lineage: production';
+
+/** A preview build reached a database forked from production after the lineage mark (spec 0004, R1). */
+export class PreviewForkedFromProduction extends Error {
+  readonly code = 'preview_forked_from_production';
+
+  constructor() {
+    super(
+      'preview_forked_from_production: this preview database carries production rows; point Preview at development or rebuild it (spec 0004 R1)',
+    );
+  }
+}
+
+/**
+ * Production writes the lineage mark on the runner's schema, which every later fork inherits; a
+ * preview that finds it is refused before any migration runs. Called inside the runner's
+ * transaction, after its advisory lock and once the schema exists, as its owner app_migrator.
+ */
+export async function checkLineage(client: pg.Client, deployment: Deployment): Promise<void> {
+  const { rows } = await client.query<{ comment: string | null }>(
+    `SELECT pg_catalog.obj_description(n.oid, 'pg_namespace') AS comment
+       FROM pg_catalog.pg_namespace n WHERE n.nspname = 'arca_migrations'`,
+  );
+  const marked = rows[0]?.comment === lineageMark;
+  if (deployment === 'preview') {
+    if (marked) throw new PreviewForkedFromProduction();
+    return;
+  }
+  if (!marked) {
+    await client.query(`COMMENT ON SCHEMA arca_migrations IS ${client.escapeLiteral(lineageMark)}`);
+  }
+}
