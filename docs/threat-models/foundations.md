@@ -171,7 +171,7 @@ Risks from the OWASP Top 10 for Agentic Applications (2026):
 | R-10 | Revoking only a session offers no rotation; a device offline past the checks loses a stored rotation's new secret; a later cancelled recovery hides an earlier one from the offer | [spec 0005 R4](../specs/0005-vault-devices-and-notifications.md#r4-documents) |
 | R-11 | After an account change or a 401, the old account's push channel stays until the push service answers gone | [spec 0005 R7](../specs/0005-vault-devices-and-notifications.md#r7-notifications) |
 | R-12 | Agents hold the owner's GitHub token and could change the ruleset or settings | [ADR-0012](../adr/0012-automation-first-setup.md) |
-| R-13 | The owner's other apps share the `filx.app` sending domain, so one of them, or its leaked Resend key, can send mail that passes DMARC as Arca's and asks for a recovery link and code; recovery's wait and cancel (I2) limit it | [ADR-0015](../adr/0015-identity-enrollment-step-up-and-recovery.md#email) |
+| R-13 | The owner's other apps share the `filx.app` sending domain, so one of them, or its leaked Resend key, can send mail that passes DMARC as Arca's and asks for a recovery link and code, and with `p=quarantine` an outsider's forgery still lands in spam; recovery's wait and cancel (I2) limit it | [ADR-0015](../adr/0015-identity-enrollment-step-up-and-recovery.md#email) |
 
 ## Open gaps
 

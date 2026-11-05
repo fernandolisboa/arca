@@ -47,4 +47,5 @@ As of 2026-11-04. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md).
 | Vercel Workflows | Run metadata (no personal data) | Up to 1 year | Vercel policy |
 | Sentry (United States) | Scrubbed errors and traces | 30 days | Developer plan policy |
 | Resend | Recipient address, message content and metadata (United States) | 30 days on the Free, Pro and Scale plans ([Resend pricing](https://resend.com/pricing), checked 2026-11-04) | Vendor policy |
+| Proton Mail (the owner's mailbox) | Members' replies to Arca's email (Switzerland) | Until the owner deletes them | Owner |
 | Langfuse (EU) | Model-call metadata: no prompt or completion text, no account, case or document IDs, so nothing to erase per person | Set when Langfuse is adopted ([ADR-0016](adr/0016-observability-and-scrubbing.md)) | — |
