@@ -20,7 +20,7 @@ The family enters its case by answering guided questions, sees it played back in
 - Aspirations, destination choice, comparison and shared analyses (slice 4, #120); checklists, plans and progress (slice 5, #121, #122); the guided tour (#123); FX rates (slice 7).
 - The independent check agent (slice 2's shared tooling): the activation screen shows it as missing.
 
-**Before ticket 1:** the real-data gate ([runbook](../runbooks/real-data-gate.md)) has every item checked. Item 5, the first production run of the retention job, is the only one open on 2026-11-05. Tests, seeds and screenshots use synthetic cases only.
+**Before real data enters:** the real-data gate ([runbook](../runbooks/real-data-gate.md)) has every item checked before the first screen that takes case data (ticket 4) is deployed to production; tickets 1 to 3 add tables and routes that hold nothing until then. Item 5, the first production run of the retention job, is the only one open on 2026-11-05. Tests, seeds and screenshots use synthetic cases only.
 
 ## Requirements
 
