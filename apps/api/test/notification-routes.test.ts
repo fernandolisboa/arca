@@ -81,6 +81,10 @@ function setup({
       calls.push(['removePush', accountId, id]);
       return Promise.resolve(removed);
     },
+    forgetPush: (accountId, request) => {
+      calls.push(['forgetPush', accountId, request]);
+      return Promise.resolve(removed);
+    },
   };
   const app = createApp({
     checkDatabase: () => Promise.resolve('ok'),
@@ -232,5 +236,42 @@ describe('notification channel routes (spec 0005, R7)', () => {
     const { call } = setup({ removed: false });
     const response = await call('POST', '/notifications/channels/remove', { channelId });
     expect(response.status).toBe(404);
+  });
+
+  const held = { endpoint: subscription.endpoint, auth: subscription.auth };
+
+  it("forgets this browser's channel by its subscription, with no step-up", async () => {
+    const { call, calls, spent } = setup({ approved: false });
+    expect((await call('POST', '/notifications/channels/forget', held)).status).toBe(200);
+    expect(spent).toEqual([]);
+    expect(calls).toEqual([['forgetPush', owner.accountId, held]]);
+  });
+
+  it('answers 404 when no channel of the account holds that subscription', async () => {
+    const { call } = setup({ removed: false });
+    const response = await call('POST', '/notifications/channels/forget', held);
+    expect(response.status).toBe(404);
+    expect(await errorOf(response)).toBe('not_found');
+  });
+
+  it('limits forgetting per account, and needs a session', async () => {
+    const limited = setup({ limited: true });
+    expect((await limited.call('POST', '/notifications/channels/forget', held)).status).toBe(429);
+    expect(limited.hits).toEqual([
+      { rule: 'forget_push_channel_account', subject: owner.accountId },
+    ]);
+    const signedOut = setup({ signedIn: false });
+    expect((await signedOut.call('POST', '/notifications/channels/forget', held)).status).toBe(401);
+    expect([...limited.calls, ...signedOut.calls]).toEqual([]);
+  });
+
+  it('refuses a subscription that is not a push service endpoint or has no auth', async () => {
+    const { call, calls } = setup();
+    const otherHost = { ...held, endpoint: 'https://push.example.com/send/x' };
+    expect((await call('POST', '/notifications/channels/forget', otherHost)).status).toBe(400);
+    expect(
+      (await call('POST', '/notifications/channels/forget', { endpoint: held.endpoint })).status,
+    ).toBe(400);
+    expect(calls).toEqual([]);
   });
 });

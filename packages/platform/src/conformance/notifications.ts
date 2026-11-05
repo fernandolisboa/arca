@@ -52,7 +52,7 @@ export function notificationsConformance(harness: NotificationsHarness): Conform
     {
       name: 'unsubscribes when there is no subscription',
       run: async () => {
-        await notifications.unsubscribe();
+        check((await notifications.unsubscribe()) === undefined, 'a subscription was reported');
       },
     },
   ];
@@ -64,7 +64,11 @@ export function notificationsConformance(harness: NotificationsHarness): Conform
         const channel = await notifications.subscribe(applicationServerKey);
         check(new URL(channel.endpoint).protocol === 'https:', 'the endpoint is not https');
         check(channel.p256dh.length > 0 && channel.auth.length > 0, 'a key is missing');
-        await notifications.unsubscribe();
+        const ended = await notifications.unsubscribe();
+        check(
+          ended?.endpoint === channel.endpoint && ended.auth === channel.auth,
+          'the ended subscription is not the one made',
+        );
       },
     });
   }

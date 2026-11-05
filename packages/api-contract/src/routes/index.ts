@@ -777,7 +777,14 @@ export const auditEventDetails = {
   /** The owner's sharing state now pins another recipient for this account. */
   recipient_pin_changed: z.strictObject({ accountId: z.uuid() }),
   notification_channel_added: z.strictObject({ channelId: z.uuid() }),
-  notification_channel_removed: z.strictObject({ channelId: z.uuid() }),
+  /**
+   * `step_up`: removed from the settings; `renewed`: replaced by the same browser's new keys;
+   * `subscription`: the browser gave up its own subscription, as on sign-out.
+   */
+  notification_channel_removed: z.strictObject({
+    channelId: z.uuid(),
+    reason: z.enum(['step_up', 'renewed', 'subscription']),
+  }),
 } as const;
 
 export type AuditEventCode = keyof typeof auditEventDetails;
@@ -1246,6 +1253,22 @@ export const removeNotificationChannel = {
   response: { description: 'Removed', schema: RemoveNotificationChannelResponse },
 } as const satisfies RouteDefinition<typeof RemoveNotificationChannelResponse>;
 
+/** The subscription a browser is giving up: what only that browser holds proves it. */
+export const ForgetPushChannelRequest = AddPushChannelRequest.pick({ endpoint: true, auth: true });
+export type ForgetPushChannelRequest = z.infer<typeof ForgetPushChannelRequest>;
+
+export const ForgetPushChannelResponse = z.object({});
+
+export const forgetPushChannel = {
+  method: 'post',
+  path: '/notifications/channels/forget',
+  operationId: 'forgetPushChannel',
+  summary:
+    "Removes the account's push channel of this subscription without a step-up, as on sign-out: the endpoint and auth secret only the subscribed browser holds stand in for it; 404 not_found when none matches",
+  body: ForgetPushChannelRequest,
+  response: { description: 'Removed', schema: ForgetPushChannelResponse },
+} as const satisfies RouteDefinition<typeof ForgetPushChannelResponse>;
+
 /** The largest document ciphertext the vault stores (spec 0005, R3). */
 export const maxDocumentBytes = 25 * 1024 * 1024;
 
@@ -1579,6 +1602,7 @@ export const routes = {
   notificationChannels,
   addPushChannel,
   removeNotificationChannel,
+  forgetPushChannel,
   createDocument,
   documentUploadUrl,
   confirmDocumentUpload,

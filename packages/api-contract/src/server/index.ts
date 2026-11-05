@@ -76,6 +76,7 @@ export const openApiRoutes = {
   notificationChannels: toOpenApiRoute(routes.notificationChannels),
   addPushChannel: toOpenApiRoute(routes.addPushChannel),
   removeNotificationChannel: toOpenApiRoute(routes.removeNotificationChannel),
+  forgetPushChannel: toOpenApiRoute(routes.forgetPushChannel),
   createDocument: toOpenApiRoute(routes.createDocument),
   documentUploadUrl: toOpenApiRoute(routes.documentUploadUrl),
   confirmDocumentUpload: toOpenApiRoute(routes.confirmDocumentUpload),
