@@ -2,12 +2,14 @@ import { createHash, randomBytes } from 'node:crypto';
 import {
   maxDocumentBatch,
   maxDocumentBytes,
+  maxDocumentLabelBytes,
   maxDocumentRecipients,
   replaceDocumentsAction,
   StepUpAction,
 } from '@arca/api-contract/routes';
 import {
   maxDocumentBytes as storedDocumentBytes,
+  maxDocumentLabelBytes as storedDocumentLabelBytes,
   maxDocumentRecipients as storedDocumentRecipients,
 } from '@arca/db/vault-schema';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -125,16 +127,18 @@ describe('the document limits', () => {
   it('are the same in the contract and in the database checks', () => {
     expect(maxDocumentBytes).toBe(storedDocumentBytes);
     expect(maxDocumentRecipients).toBe(storedDocumentRecipients);
+    expect(maxDocumentLabelBytes).toBe(storedDocumentLabelBytes);
   });
 
-  it("let the largest replace fit the step-up's caps (spec 0003, R5)", () => {
+  it("let the largest replace fit the step-up's caps (spec 0003, R5)", async () => {
     const id = (index: number) => `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`;
-    const action = replaceDocumentsAction({
+    const action = await replaceDocumentsAction({
       recipients: Array.from({ length: maxDocumentRecipients }, (_, index) => id(index)),
       documents: Array.from({ length: maxDocumentBatch }, (_, index) => ({
         documentId: id(100 + index),
         size: maxDocumentBytes,
         sha256: 'A'.repeat(43),
+        label: 'A'.repeat(43_691),
       })),
     });
     expect(StepUpAction.safeParse({ ...action, nonce: 'MzMzMzMzMzMzMzMzMzMzMw' }).success).toBe(

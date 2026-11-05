@@ -282,8 +282,8 @@ describe('pending document uploads (spec 0005, R4)', () => {
     ]);
     const fresh = randomUUID();
     await admin(
-      `INSERT INTO vault.document (id, owner_id, type_key, size, sha256, object_key)
-       VALUES ($1, $2, 'passport', 1, $3, $4)`,
+      `INSERT INTO vault.document (id, owner_id, type_key, size, sha256, object_key, label)
+       VALUES ($1, $2, 'passport', 1, $3, $4, decode('01', 'hex'))`,
       [fresh, a.accountId, randomBytes(32), `documents/${randomUUID()}`],
     );
     expect(await pending(b.accountId)).not.toEqual([]);

@@ -1138,8 +1138,21 @@ export const documentQuota = { bytes: 1024 * 1024 * 1024, documents: 300 } as co
 /** The most documents one page of the list holds. */
 export const documentPageSize = 50;
 
+/** The largest sealed label: a document's file name and media type, encrypted like the file. */
+export const maxDocumentLabelBytes = 32 * 1024;
+
 /** A SHA-256 digest, base64url without padding. */
 const Sha256 = z.string().regex(/^[A-Za-z0-9_-]{43}$/);
+
+/**
+ * A sealed label, base64url without padding: age ciphertext to the document's recipients, so the
+ * server never sees a file name.
+ */
+const SealedLabel = z
+  .string()
+  .max(Math.ceil((maxDocumentLabelBytes * 4) / 3))
+  .regex(/^[A-Za-z0-9_-]+$/)
+  .refine((label) => label.length % 4 !== 1, 'whole bytes');
 
 export const CreateDocumentRequest = z.strictObject({
   /** The document type's catalog key, such as `passport`; never a name or a number. */
@@ -1148,6 +1161,7 @@ export const CreateDocumentRequest = z.strictObject({
   size: z.int().min(1).max(maxDocumentBytes),
   /** The ciphertext's SHA-256, which the upload must match. */
   sha256: Sha256,
+  label: SealedLabel,
 });
 export type CreateDocumentRequest = z.infer<typeof CreateDocumentRequest>;
 
@@ -1223,6 +1237,7 @@ export const VaultDocument = z.object({
   typeKey: z.string(),
   size: z.int(),
   sha256: Sha256,
+  label: SealedLabel,
   createdAt: z.iso.datetime({ offset: true }),
   /** The owner's account; another account's when the document is shared with this one. */
   ownerId: z.uuid(),
@@ -1299,6 +1314,7 @@ export const ReplaceDocumentsRequest = z.strictObject({
         documentId: z.uuid(),
         size: z.int().min(1).max(maxDocumentBytes),
         sha256: Sha256,
+        label: SealedLabel,
       }),
     )
     .min(1)
@@ -1311,19 +1327,33 @@ export const ReplaceDocumentsRequest = z.strictObject({
 });
 export type ReplaceDocumentsRequest = z.infer<typeof ReplaceDocumentsRequest>;
 
+async function labelDigest(label: string): Promise<string> {
+  const padded = label.replaceAll('-', '+').replaceAll('_', '/');
+  const bytes = Uint8Array.from(atob(padded + '='.repeat((4 - (padded.length % 4)) % 4)), (c) =>
+    c.charCodeAt(0),
+  );
+  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
+  return btoa(String.fromCharCode(...digest))
+    .replaceAll('+', '-')
+    .replaceAll('/', '_')
+    .replace(/=+$/, '');
+}
+
 /**
  * The `vault_write` step-up's action for a replace (spec 0003, R5): the documents in order as
- * targets, and the recipients and each new object's size and SHA-256 as fields, so the passkey
- * approves exactly these ciphertexts for exactly these accounts.
+ * targets, and the recipients and each new object's size, SHA-256 and sealed label's SHA-256 as
+ * fields, so the passkey approves exactly these ciphertexts for exactly these accounts.
  */
-export function replaceDocumentsAction({ recipients, documents }: ReplaceDocumentsRequest) {
+export async function replaceDocumentsAction({ recipients, documents }: ReplaceDocumentsRequest) {
+  const objects = await Promise.all(
+    documents.map(
+      async ({ size, sha256, label }) => `${String(size)}:${sha256}:${await labelDigest(label)}`,
+    ),
+  );
   return {
     action: 'replaceDocuments',
     targets: documents.map(({ documentId }) => documentId),
-    fields: {
-      recipients: recipients.join(','),
-      objects: documents.map(({ size, sha256 }) => `${String(size)}:${sha256}`).join(','),
-    },
+    fields: { recipients: recipients.join(','), objects: objects.join(',') },
   };
 }
 
