@@ -196,6 +196,39 @@ describe('eraseAccount (spec 0004, R9)', () => {
     }
   });
 
+  it.each([
+    ['the owner first', 0],
+    ['the recipient first', 1],
+  ] as const)('erases two linked accounts that share documents both ways, %s', async (_, first) => {
+    const pair = [await seeded(testDatabase), await seeded(testDatabase)] as const;
+    const [a, b] = pair;
+    await admin(`INSERT INTO account.link (inviter_id, invitee_id) VALUES ($1, $2)`, [
+      a.accountId,
+      b.accountId,
+    ]);
+    // Each one's own document is shared with the other.
+    await admin(
+      `INSERT INTO vault.document_recipient (document_id, document_owner_id, recipient_id)
+         SELECT id, owner_id, CASE owner_id WHEN $1::uuid THEN $2::uuid ELSE $1::uuid END
+           FROM vault.document WHERE owner_id IN ($1, $2)`,
+      [a.accountId, b.accountId],
+    );
+    const order = first === 0 ? pair : ([b, a] as const);
+    for (const { accountId } of order) {
+      await makeDue(accountId);
+      expect(await eraseAccountNow(erasureWith(), accountId)).toBe(true);
+    }
+    const left = await admin(
+      `SELECT (SELECT count(*) FROM vault.document WHERE owner_id IN ($1, $2))
+              + (SELECT count(*) FROM vault.document_recipient
+                  WHERE recipient_id IN ($1, $2) OR document_owner_id IN ($1, $2))
+              + (SELECT count(*) FROM account.link
+                  WHERE inviter_id IN ($1, $2) OR invitee_id IN ($1, $2)) AS n`,
+      [a.accountId, b.accountId],
+    );
+    expect(left.rows).toEqual([{ n: '0' }]);
+  });
+
   it('keeps the rows that name the objects when the objects cannot be deleted', async () => {
     const a = await seeded(testDatabase);
     await makeDue(a.accountId);
