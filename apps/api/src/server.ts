@@ -3,6 +3,7 @@ import { useRuntimeConfig } from 'nitro/runtime-config';
 import { createDataExports } from './account/data-export.js';
 import { createAccountDeletion, type AccountDeletion } from './account/deletion.js';
 import { forEachAccount } from './account/each-account.js';
+import { linkAccounts } from './account/links.js';
 import { accounts } from './auth/auth.js';
 import { createApp } from './app.js';
 import { auditLog, auditReader, type AuditLog } from './audit/log.js';
@@ -147,6 +148,7 @@ function authParts(): Promise<AuthParts> {
       origin,
       logger,
       startErasure: (id) => startWorkflow(eraseAccount, [entityId(id)]),
+      linkAccounts: linkAccounts(connected().db),
     });
     const devices = createDevices({ db, audit, notifier, logger, origin });
     return {

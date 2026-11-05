@@ -9,6 +9,7 @@ import type {
   EnvelopeAdded,
   RecoveryResealed,
   Vault,
+  VaultReset,
   VaultRotation,
   VaultSetUp,
 } from '../src/vault/vault.js';
@@ -50,6 +51,7 @@ function setup({
   approved = true,
   rotated = 'rotated',
   resealed = 'resealed',
+  reset,
 }: {
   unlocked?: boolean;
   setUp?: VaultSetUp;
@@ -58,6 +60,7 @@ function setup({
   approved?: boolean;
   rotated?: VaultRotation;
   resealed?: RecoveryResealed;
+  reset?: VaultReset;
 } = {}) {
   const calls: unknown[] = [];
   const spent: { purpose: string; action: CanonicalAction }[] = [];
@@ -98,7 +101,7 @@ function setup({
     },
     reset: (accountId) => {
       calls.push(['reset', accountId]);
-      return Promise.resolve(stored);
+      return Promise.resolve(reset ?? (stored ? 'reset' : 'no_vault'));
     },
   };
   const devices = {
@@ -328,5 +331,11 @@ describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
     ]);
     expect(calls).toEqual([['reset', owner.accountId]]);
     expect((await setup({ stored: false }).call('DELETE', '/vault', {})).status).toBe(404);
+  });
+
+  it('refuses a reset with 409 while the account owns a document', async () => {
+    const response = await setup({ reset: 'has_documents' }).call('DELETE', '/vault', {});
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({ error: { code: 'vault_has_documents' } });
   });
 });

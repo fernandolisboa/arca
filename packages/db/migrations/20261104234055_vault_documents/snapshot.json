@@ -1,0 +1,1415 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "93c40e6a-d659-4d41-9cc0-bdf83738708b",
+  "prevIds": [
+    "8a1d088e-148f-425f-905f-b84f4a6eb91e"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_schema",
+      "statementTarget": [
+        "schema",
+        "account"
+      ],
+      "writes": [
+        "s|sch|account",
+        "n|sch|account",
+        "e|sch|account"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "account",
+        "link"
+      ],
+      "writes": [
+        "s|tbl|account.link",
+        "n|tbl|account.link",
+        "e|tbl|account.link",
+        "n|rel|account.link",
+        "n|type|account.link",
+        "n|rel|account.link_pkey"
+      ],
+      "reads": [
+        "n|sch|account"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document"
+      ],
+      "writes": [
+        "s|tbl|vault.document",
+        "n|tbl|vault.document",
+        "e|tbl|vault.document",
+        "n|rel|vault.document",
+        "n|type|vault.document",
+        "n|rel|vault.document_pkey",
+        "n|rel|vault.document_id_owner_id_key"
+      ],
+      "reads": [
+        "n|sch|vault"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_recipient"
+      ],
+      "writes": [
+        "s|tbl|vault.document_recipient",
+        "n|tbl|vault.document_recipient",
+        "e|tbl|vault.document_recipient",
+        "n|rel|vault.document_recipient",
+        "n|type|vault.document_recipient",
+        "n|rel|vault.document_recipient_pkey"
+      ],
+      "reads": [
+        "n|sch|vault"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "account",
+        "link",
+        "link_invitee_id_idx"
+      ],
+      "writes": [
+        "s|idx|account.link_invitee_id_idx",
+        "n|idx|account.link_invitee_id_idx",
+        "e|idx|account.link_invitee_id_idx",
+        "n|rel|account.link_invitee_id_idx"
+      ],
+      "reads": [
+        "n|tbl|account.link",
+        "n|sch|account",
+        "n|col|account.link.invitee_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "vault",
+        "document",
+        "document_object_key_idx"
+      ],
+      "writes": [
+        "s|idx|vault.document_object_key_idx",
+        "n|idx|vault.document_object_key_idx",
+        "e|idx|vault.document_object_key_idx",
+        "n|rel|vault.document_object_key_idx"
+      ],
+      "reads": [
+        "n|tbl|vault.document",
+        "n|sch|vault",
+        "n|col|vault.document.object_key"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "vault",
+        "document",
+        "document_owner_id_idx"
+      ],
+      "writes": [
+        "s|idx|vault.document_owner_id_idx",
+        "n|idx|vault.document_owner_id_idx",
+        "e|idx|vault.document_owner_id_idx",
+        "n|rel|vault.document_owner_id_idx"
+      ],
+      "reads": [
+        "n|tbl|vault.document",
+        "n|sch|vault",
+        "n|col|vault.document.owner_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "vault",
+        "document_recipient",
+        "document_recipient_recipient_id_idx"
+      ],
+      "writes": [
+        "s|idx|vault.document_recipient_recipient_id_idx",
+        "n|idx|vault.document_recipient_recipient_id_idx",
+        "e|idx|vault.document_recipient_recipient_id_idx",
+        "n|rel|vault.document_recipient_recipient_id_idx"
+      ],
+      "reads": [
+        "n|tbl|vault.document_recipient",
+        "n|sch|vault",
+        "n|col|vault.document_recipient.recipient_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "vault",
+        "document_recipient",
+        "document_recipient_owner_id_idx"
+      ],
+      "writes": [
+        "s|idx|vault.document_recipient_owner_id_idx",
+        "n|idx|vault.document_recipient_owner_id_idx",
+        "e|idx|vault.document_recipient_owner_id_idx",
+        "n|rel|vault.document_recipient_owner_id_idx"
+      ],
+      "reads": [
+        "n|tbl|vault.document_recipient",
+        "n|sch|vault",
+        "n|col|vault.document_recipient.document_owner_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_recipient"
+      ],
+      "writes": [
+        "s|fk|vault.document_recipient.document_recipient_document_fkey",
+        "n|fk|vault.document_recipient.document_recipient_document_fkey",
+        "e|fk|vault.document_recipient.document_recipient_document_fkey",
+        "n|con|vault.document_recipient.document_recipient_document_fkey"
+      ],
+      "reads": [
+        "n|tbl|vault.document_recipient",
+        "n|sch|vault",
+        "n|tbl|vault.document",
+        "n|sch|vault",
+        "n|col|vault.document_recipient.document_id",
+        "n|col|vault.document_recipient.document_owner_id",
+        "n|col|vault.document.id",
+        "n|col|vault.document.owner_id",
+        "e|uniqueness|vault.document.id.owner_id"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "account",
+        "link"
+      ],
+      "writes": [
+        "s|pol|account.link.link_select_party",
+        "n|pol|account.link.link_select_party",
+        "e|pol|account.link.link_select_party"
+      ],
+      "reads": [
+        "n|tbl|account.link",
+        "n|sch|account",
+        "n|role|app_api",
+        "e|rls|account.link"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "account",
+        "link"
+      ],
+      "writes": [
+        "s|pol|account.link.link_insert_inviter",
+        "n|pol|account.link.link_insert_inviter",
+        "e|pol|account.link.link_insert_inviter"
+      ],
+      "reads": [
+        "n|tbl|account.link",
+        "n|sch|account",
+        "n|role|app_api",
+        "e|rls|account.link"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "account",
+        "link"
+      ],
+      "writes": [
+        "s|pol|account.link.link_delete_party",
+        "n|pol|account.link.link_delete_party",
+        "e|pol|account.link.link_delete_party"
+      ],
+      "reads": [
+        "n|tbl|account.link",
+        "n|sch|account",
+        "n|role|app_api",
+        "e|rls|account.link"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "account",
+        "link"
+      ],
+      "writes": [
+        "s|pol|account.link.link_select_inviter_by_jobs",
+        "n|pol|account.link.link_select_inviter_by_jobs",
+        "e|pol|account.link.link_select_inviter_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|account.link",
+        "n|sch|account",
+        "n|role|app_jobs",
+        "e|rls|account.link"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "account",
+        "link"
+      ],
+      "writes": [
+        "s|pol|account.link.link_select_invitee_by_jobs",
+        "n|pol|account.link.link_select_invitee_by_jobs",
+        "e|pol|account.link.link_select_invitee_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|account.link",
+        "n|sch|account",
+        "n|role|app_jobs",
+        "e|rls|account.link"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "account",
+        "link"
+      ],
+      "writes": [
+        "s|pol|account.link.link_delete_inviter_by_jobs",
+        "n|pol|account.link.link_delete_inviter_by_jobs",
+        "e|pol|account.link.link_delete_inviter_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|account.link",
+        "n|sch|account",
+        "n|role|app_jobs",
+        "e|rls|account.link"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "account",
+        "link"
+      ],
+      "writes": [
+        "s|pol|account.link.link_delete_invitee_by_jobs",
+        "n|pol|account.link.link_delete_invitee_by_jobs",
+        "e|pol|account.link.link_delete_invitee_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|account.link",
+        "n|sch|account",
+        "n|role|app_jobs",
+        "e|rls|account.link"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document"
+      ],
+      "writes": [
+        "s|pol|vault.document.document_select_owner_or_recipient",
+        "n|pol|vault.document.document_select_owner_or_recipient",
+        "e|pol|vault.document.document_select_owner_or_recipient"
+      ],
+      "reads": [
+        "n|tbl|vault.document",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.document"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document"
+      ],
+      "writes": [
+        "s|pol|vault.document.document_insert_own",
+        "n|pol|vault.document.document_insert_own",
+        "e|pol|vault.document.document_insert_own"
+      ],
+      "reads": [
+        "n|tbl|vault.document",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.document"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document"
+      ],
+      "writes": [
+        "s|pol|vault.document.document_update_own",
+        "n|pol|vault.document.document_update_own",
+        "e|pol|vault.document.document_update_own"
+      ],
+      "reads": [
+        "n|tbl|vault.document",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.document"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document"
+      ],
+      "writes": [
+        "s|pol|vault.document.document_delete_own",
+        "n|pol|vault.document.document_delete_own",
+        "e|pol|vault.document.document_delete_own"
+      ],
+      "reads": [
+        "n|tbl|vault.document",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.document"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document"
+      ],
+      "writes": [
+        "s|pol|vault.document.document_select_own_by_jobs",
+        "n|pol|vault.document.document_select_own_by_jobs",
+        "e|pol|vault.document.document_select_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|vault.document",
+        "n|sch|vault",
+        "n|role|app_jobs",
+        "e|rls|vault.document"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document"
+      ],
+      "writes": [
+        "s|pol|vault.document.document_delete_own_by_jobs",
+        "n|pol|vault.document.document_delete_own_by_jobs",
+        "e|pol|vault.document.document_delete_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|vault.document",
+        "n|sch|vault",
+        "n|role|app_jobs",
+        "e|rls|vault.document"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_recipient"
+      ],
+      "writes": [
+        "s|pol|vault.document_recipient.document_recipient_select_party",
+        "n|pol|vault.document_recipient.document_recipient_select_party",
+        "e|pol|vault.document_recipient.document_recipient_select_party"
+      ],
+      "reads": [
+        "n|tbl|vault.document_recipient",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.document_recipient"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_recipient"
+      ],
+      "writes": [
+        "s|pol|vault.document_recipient.document_recipient_insert_owner",
+        "n|pol|vault.document_recipient.document_recipient_insert_owner",
+        "e|pol|vault.document_recipient.document_recipient_insert_owner"
+      ],
+      "reads": [
+        "n|tbl|vault.document_recipient",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.document_recipient"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_recipient"
+      ],
+      "writes": [
+        "s|pol|vault.document_recipient.document_recipient_delete_owner",
+        "n|pol|vault.document_recipient.document_recipient_delete_owner",
+        "e|pol|vault.document_recipient.document_recipient_delete_owner"
+      ],
+      "reads": [
+        "n|tbl|vault.document_recipient",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.document_recipient"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_recipient"
+      ],
+      "writes": [
+        "s|pol|vault.document_recipient.document_recipient_select_own_by_jobs",
+        "n|pol|vault.document_recipient.document_recipient_select_own_by_jobs",
+        "e|pol|vault.document_recipient.document_recipient_select_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|vault.document_recipient",
+        "n|sch|vault",
+        "n|role|app_jobs",
+        "e|rls|vault.document_recipient"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_recipient"
+      ],
+      "writes": [
+        "s|pol|vault.document_recipient.document_recipient_delete_own_by_jobs",
+        "n|pol|vault.document_recipient.document_recipient_delete_own_by_jobs",
+        "e|pol|vault.document_recipient.document_recipient_delete_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|vault.document_recipient",
+        "n|sch|vault",
+        "n|role|app_jobs",
+        "e|rls|vault.document_recipient"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "recipient"
+      ],
+      "writes": [
+        "s|pol|vault.recipient.recipient_select_linked",
+        "n|pol|vault.recipient.recipient_select_linked",
+        "e|pol|vault.recipient.recipient_select_linked"
+      ],
+      "reads": [
+        "n|tbl|vault.recipient",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.recipient"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "name": "account",
+        "entityType": "schemas"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "account",
+        "name": "link",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "name": "document",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "name": "document_recipient",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "account",
+        "table": "link",
+        "name": "inviter_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "account",
+        "table": "link",
+        "name": "invitee_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "account",
+        "table": "link",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "owner_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "type_key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "size",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "sha256",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "object_key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "confirmed_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_recipient",
+        "name": "document_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_recipient",
+        "name": "document_owner_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_recipient",
+        "name": "recipient_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_recipient",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "account",
+        "table": "link",
+        "name": "link_invitee_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "invitee_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "document_object_key_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "object_key",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "document_owner_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "owner_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_recipient",
+        "name": "document_recipient_recipient_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "recipient_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_recipient",
+        "name": "document_recipient_owner_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "document_owner_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_recipient",
+        "name": "document_recipient_document_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "document_id",
+          "document_owner_id"
+        ],
+        "schemaTo": "vault",
+        "tableTo": "document",
+        "columnsTo": [
+          "id",
+          "owner_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "account",
+        "table": "link",
+        "name": "link_pkey",
+        "columns": [
+          "inviter_id",
+          "invitee_id"
+        ],
+        "nameExplicit": true,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_recipient",
+        "name": "document_recipient_pkey",
+        "columns": [
+          "document_id",
+          "recipient_id"
+        ],
+        "nameExplicit": true,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "document_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "document_id_owner_id_key",
+        "nameExplicit": true,
+        "columns": [
+          "id",
+          "owner_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "account",
+        "table": "link",
+        "name": "link_two_accounts",
+        "value": "\"inviter_id\" <> \"invitee_id\"",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "document_type_key",
+        "value": "\"type_key\" ~ '^[a-z][a-z0-9_.-]{0,63}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "document_size",
+        "value": "\"size\" BETWEEN 1 AND 26214400",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "document_sha256_length",
+        "value": "octet_length(\"sha256\") = 32",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "document_object_key",
+        "value": "\"object_key\" ~ '^documents/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "document_confirmed_after_created",
+        "value": "\"confirmed_at\" IS NULL OR \"confirmed_at\" >= \"created_at\"",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_recipient",
+        "name": "document_recipient_not_owner",
+        "value": "\"recipient_id\" <> \"document_owner_id\"",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "account",
+        "table": "link",
+        "name": "link_select_party",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"account\".\"link\".\"inviter_id\" = nullif(current_setting('app.account_id', true), '')::uuid OR \"account\".\"link\".\"invitee_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "account",
+        "table": "link",
+        "name": "link_insert_inviter",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "\"account\".\"link\".\"inviter_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "account",
+        "table": "link",
+        "name": "link_delete_party",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"account\".\"link\".\"inviter_id\" = nullif(current_setting('app.account_id', true), '')::uuid OR \"account\".\"link\".\"invitee_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "account",
+        "table": "link",
+        "name": "link_select_inviter_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"account\".\"link\".\"inviter_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "account",
+        "table": "link",
+        "name": "link_select_invitee_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"account\".\"link\".\"invitee_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "account",
+        "table": "link",
+        "name": "link_delete_inviter_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"account\".\"link\".\"inviter_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "account",
+        "table": "link",
+        "name": "link_delete_invitee_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"account\".\"link\".\"invitee_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "document_select_owner_or_recipient",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"vault\".\"document\".\"owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid OR EXISTS (SELECT 1 FROM \"vault\".\"document_recipient\" r WHERE r.document_id = \"vault\".\"document\".\"id\" AND r.recipient_id = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "document_insert_own",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "\"vault\".\"document\".\"owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "document_update_own",
+        "as": "PERMISSIVE",
+        "for": "UPDATE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"vault\".\"document\".\"owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": "\"vault\".\"document\".\"owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "document_delete_own",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"vault\".\"document\".\"owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "document_select_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"vault\".\"document\".\"owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "document_delete_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"vault\".\"document\".\"owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_recipient",
+        "name": "document_recipient_select_party",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"vault\".\"document_recipient\".\"document_owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid OR \"vault\".\"document_recipient\".\"recipient_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_recipient",
+        "name": "document_recipient_insert_owner",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "\"vault\".\"document_recipient\".\"document_owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid AND EXISTS (SELECT 1 FROM \"account\".\"link\" WHERE (\"account\".\"link\".\"inviter_id\" = nullif(current_setting('app.account_id', true), '')::uuid AND \"account\".\"link\".\"invitee_id\" = \"vault\".\"document_recipient\".\"recipient_id\") OR (\"account\".\"link\".\"invitee_id\" = nullif(current_setting('app.account_id', true), '')::uuid AND \"account\".\"link\".\"inviter_id\" = \"vault\".\"document_recipient\".\"recipient_id\"))",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_recipient",
+        "name": "document_recipient_delete_owner",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"vault\".\"document_recipient\".\"document_owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_recipient",
+        "name": "document_recipient_select_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"vault\".\"document_recipient\".\"recipient_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_recipient",
+        "name": "document_recipient_delete_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"vault\".\"document_recipient\".\"recipient_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "recipient",
+        "name": "recipient_select_linked",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"vault\".\"recipient\".\"rotated_at\" IS NULL AND EXISTS (SELECT 1 FROM \"account\".\"link\" WHERE (\"account\".\"link\".\"inviter_id\" = nullif(current_setting('app.account_id', true), '')::uuid AND \"account\".\"link\".\"invitee_id\" = \"vault\".\"recipient\".\"account_id\") OR (\"account\".\"link\".\"invitee_id\" = nullif(current_setting('app.account_id', true), '')::uuid AND \"account\".\"link\".\"inviter_id\" = \"vault\".\"recipient\".\"account_id\"))",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    }
+  ]
+}

@@ -1019,7 +1019,7 @@ export const resetVault = {
   path: '/vault',
   operationId: 'resetVault',
   summary:
-    "Deletes the vault's recipients, envelopes and sharing state, so it can be set up again, after a sensitive_settings step-up; 403 step_up_required, 404 not_found before set-up",
+    "Deletes the vault's recipients, envelopes and sharing state, so it can be set up again, after a sensitive_settings step-up; 403 step_up_required, 404 not_found before set-up, 409 vault_has_documents while the account owns a document",
   body: z.strictObject({}),
   response: { description: 'Vault reset', schema: ResetVaultResponse },
 } as const satisfies RouteDefinition<typeof ResetVaultResponse>;

@@ -447,10 +447,26 @@ describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
     ).toBe('no_vault');
   });
 
+  it('refuses a reset while the account owns a document, and changes nothing', async () => {
+    const owner = await fixtures.account(1);
+    await setUp(owner);
+    await testDatabase.asAdmin((client) =>
+      client.query(
+        `INSERT INTO vault.document (owner_id, type_key, size, sha256, object_key)
+         VALUES ($1, 'passport', 1024, $2, $3)`,
+        [owner.accountId, randomBytes(32), `documents/${randomUUID()}`],
+      ),
+    );
+    expect(await vault.reset(owner.accountId)).toBe('has_documents');
+    expect(await recipientsOf(owner)).toHaveLength(1);
+    expect(await envelopeRows(owner)).not.toEqual([]);
+    expect(await fixtures.events(owner, ['vault_reset'])).toEqual([]);
+  });
+
   it("resets the account's vault and nothing of another's, so it can be set up again", async () => {
     const owner = await fixtures.account(1);
     const stranger = await fixtures.account(1);
-    expect(await vault.reset(owner.accountId)).toBe(false);
+    expect(await vault.reset(owner.accountId)).toBe('no_vault');
     await setUp(owner);
     await vault.rotate(owner.accountId, identity(owner, await currentId(owner)));
     await setUp(stranger);
@@ -460,7 +476,7 @@ describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
         [owner.accountId, Buffer.from('{}'), randomBytes(32)],
       ),
     );
-    expect(await vault.reset(owner.accountId)).toBe(true);
+    expect(await vault.reset(owner.accountId)).toBe('reset');
     expect(await recipientsOf(owner)).toEqual([]);
     expect(await envelopeRows(owner)).toEqual([]);
     expect(

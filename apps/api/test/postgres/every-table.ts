@@ -1,5 +1,5 @@
 import { randomBytes, randomUUID } from 'node:crypto';
-import { registry, type RegistryEntry } from '@arca/db/registry';
+import { ownerColumns, registry, type RegistryEntry } from '@arca/db/registry';
 import type { AuthTestDatabase } from './auth-database.js';
 
 // Synthetic accounts with rows in every registry table (spec 0004, R7 to R9).
@@ -95,6 +95,31 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
       `INSERT INTO vault.sharing_state (account_id, version, state, tag) VALUES ($1, 1, $2, $3)`,
       [accountId, Buffer.from('{}'), bytes(32)],
     );
+    const sharerId = randomUUID();
+    const sharedId = randomUUID();
+    await insert(`INSERT INTO account.link (inviter_id, invitee_id) VALUES ($1, $2), ($3, $1)`, [
+      accountId,
+      randomUUID(),
+      sharerId,
+    ]);
+    await insert(
+      `INSERT INTO vault.document (id, owner_id, type_key, size, sha256, object_key)
+       VALUES ($1, $2, 'passport', 1024, $3, $4), ($5, $6, 'passport', 2048, $3, $7)`,
+      [
+        randomUUID(),
+        accountId,
+        bytes(32),
+        `documents/${randomUUID()}`,
+        sharedId,
+        sharerId,
+        `documents/${randomUUID()}`,
+      ],
+    );
+    await insert(
+      `INSERT INTO vault.document_recipient (document_id, document_owner_id, recipient_id)
+       VALUES ($1, $2, $3)`,
+      [sharedId, sharerId, accountId],
+    );
     const channelId = randomUUID();
     const messageId = randomUUID();
     await insert(
@@ -121,8 +146,9 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
 /** Counts the account's rows in one registry table, joining a child to its parent. */
 export function ownedCountQuery(entry: RegistryEntry): string {
   const { owner } = entry;
-  if ('column' in owner) {
-    return `SELECT count(*)::int AS n FROM ${entry.table} WHERE ${owner.column} = $1`;
+  if (!('parent' in owner)) {
+    const matches = ownerColumns(owner).map((column) => `${column} = $1`);
+    return `SELECT count(*)::int AS n FROM ${entry.table} WHERE ${matches.join(' OR ')}`;
   }
   const parent = registry.entries.find(({ table }) => table === owner.parent);
   const parentOwner = parent !== undefined && 'column' in parent.owner ? parent.owner.column : '';

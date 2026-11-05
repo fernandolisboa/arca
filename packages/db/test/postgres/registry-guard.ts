@@ -1,5 +1,9 @@
 import type { ClientBase } from 'pg';
-import type { Registry, RegistryEntry } from '../../src/registry.js';
+import {
+  ownerColumns as directOwnerColumns,
+  type Registry,
+  type RegistryEntry,
+} from '../../src/registry.js';
 
 /** What the guard reads from the catalog after migrations. */
 export interface Catalog {
@@ -131,12 +135,12 @@ const sameColumns = (a: readonly string[], b: readonly string[]) =>
 export const identityQualifier = (quotedColumn: string) =>
   `(${quotedColumn} = (NULLIF(current_setting('app.account_id'::text, true), ''::text))::uuid)`;
 
-function jobsErasureProblems(table: string, ownerColumn: Column, catalog: Catalog): string[] {
+function jobsErasureProblems(table: string, owners: readonly Column[], catalog: Catalog): string[] {
   const problems: string[] = [];
   if (!catalog.forcedRls.has(table)) {
     problems.push(`${table} does not have row-level security enabled and forced`);
   }
-  const expected = identityQualifier(ownerColumn.quoted);
+  const expected = owners.map((owner) => identityQualifier(owner.quoted));
   const jobs = catalog.policies.filter(
     (policy) => policy.table === table && policy.forJobs && 'rd*'.includes(policy.command),
   );
@@ -144,11 +148,20 @@ function jobsErasureProblems(table: string, ownerColumn: Column, catalog: Catalo
     jobs.filter((policy) => policy.permissive && commands.includes(policy.command));
   const deletes = permissive('d*');
   if (deletes.length === 0) problems.push(`${table} has no app_jobs DELETE policy`);
-  for (const policy of deletes.filter((policy) => policy.qualifier !== expected)) {
+  for (const policy of deletes.filter(
+    (policy) => !expected.some((qualifier) => qualifier === policy.qualifier),
+  )) {
     problems.push(`${table} policy ${policy.name} lets app_jobs delete beyond the identity`);
   }
-  if (!permissive('r*').some((policy) => policy.qualifier === expected)) {
-    problems.push(`${table} has no app_jobs SELECT policy on the identity`);
+  // Each owner column needs its own pair, or the erasure leaves the rows that name it behind.
+  for (const [index, qualifier] of expected.entries()) {
+    const on = owners.length > 1 ? ` on ${owners[index]?.quoted ?? ''}` : '';
+    if (owners.length > 1 && !deletes.some((policy) => policy.qualifier === qualifier)) {
+      problems.push(`${table} has no app_jobs DELETE policy${on}`);
+    }
+    if (!permissive('r*').some((policy) => policy.qualifier === qualifier)) {
+      problems.push(`${table} has no app_jobs SELECT policy on the identity${on}`);
+    }
   }
   // A restrictive policy narrows the erasure, which then leaves rows behind without an error.
   for (const policy of jobs.filter((policy) => !policy.permissive)) {
@@ -162,7 +175,7 @@ function entryProblems(entry: RegistryEntry, catalog: Catalog, registry: Registr
   const columns = catalog.columns.get(table);
   if (columns === undefined) return [];
   const problems: string[] = [];
-  const ownerColumns = 'column' in owner ? [owner.column] : owner.columns;
+  const ownerColumns = 'parent' in owner ? owner.columns : directOwnerColumns(owner);
   for (const column of [...ownerColumns, ...entry.export]) {
     if (!columns.has(column)) problems.push(`${table} has no column ${column}`);
   }
@@ -204,9 +217,10 @@ function entryProblems(entry: RegistryEntry, catalog: Catalog, registry: Registr
       );
     }
   } else if (entry.strategy === 'delete' && entry.pool === 'app_jobs') {
-    const ownerColumn = columns.get(owner.column);
-    if (ownerColumn !== undefined)
-      problems.push(...jobsErasureProblems(table, ownerColumn, catalog));
+    const owners = ownerColumns.flatMap((name) => columns.get(name) ?? []);
+    if (owners.length === ownerColumns.length) {
+      problems.push(...jobsErasureProblems(table, owners, catalog));
+    }
   }
   return problems;
 }

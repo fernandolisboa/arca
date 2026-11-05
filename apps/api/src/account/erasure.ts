@@ -1,5 +1,10 @@
 import { withIdentity, type Database } from '@arca/db';
-import { registry as fullRegistry, type Registry, type RegistryEntry } from '@arca/db/registry';
+import {
+  registry as fullRegistry,
+  ownerColumns,
+  type Registry,
+  type RegistryEntry,
+} from '@arca/db/registry';
 import { sql, type SQL } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import { accounts, erasedAccounts } from '../auth/auth.js';
@@ -42,13 +47,22 @@ export function qualified(table: string): SQL {
   return sql`${sql.identifier(schema)}.${sql.identifier(name)}`;
 }
 
-/** Entries erased by their own owner column; a parent's children leave by its cascade. */
+/** Entries erased by their own owner columns; a parent's children leave by its cascade. */
 const ownedByColumn = (entry: RegistryEntry, pool: 'app_auth' | 'app_jobs') =>
-  entry.strategy === 'delete' && entry.pool === pool && 'column' in entry.owner;
+  entry.strategy === 'delete' && entry.pool === pool && ownerColumns(entry.owner).length > 0;
+
+/** The entry's rows that name the account in any of its owner columns. */
+export function namesAccount(entry: RegistryEntry, accountId: string, alias?: string): SQL {
+  const matches = ownerColumns(entry.owner).map((name) =>
+    alias === undefined
+      ? sql`${sql.identifier(name)} = ${accountId}`
+      : sql`${sql.identifier(alias)}.${sql.identifier(name)} = ${accountId}`,
+  );
+  return sql.join(matches, sql` OR `);
+}
 
 function eraseOwned(entry: RegistryEntry, accountId: string): SQL {
-  const owner = 'column' in entry.owner ? entry.owner.column : '';
-  return sql`DELETE FROM ${qualified(entry.table)} WHERE ${sql.identifier(owner)} = ${accountId}`;
+  return sql`DELETE FROM ${qualified(entry.table)} WHERE ${namesAccount(entry, accountId)}`;
 }
 
 export function createErasure({

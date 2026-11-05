@@ -56,6 +56,8 @@ export interface InviteSettings {
   readonly logger: Logger;
   /** Starts `eraseAccount` for a declined account (spec 0004, R9). */
   readonly startErasure: (accountId: string) => Promise<unknown>;
+  /** Links the inviter and the confirmed account, before the confirmation commits (spec 0005, R4). */
+  readonly linkAccounts: (inviterId: string, inviteeId: string) => Promise<void>;
   readonly random?: (size: number) => Buffer;
 }
 
@@ -114,6 +116,7 @@ export function createInvites({
   origin,
   logger,
   startErasure,
+  linkAccounts,
   random = randomBytes,
 }: InviteSettings): Invites {
   return {
@@ -209,6 +212,8 @@ export function createInvites({
       db.transaction(async (tx) => {
         const accountId = await awaitingDecision(tx, inviterId, inviteId);
         if (accountId === undefined || !(await accounts.confirm(tx, accountId))) return false;
+        // A failure here rolls the confirmation back; the link is kept, and a retry adds nothing.
+        await linkAccounts(inviterId, accountId);
         await audit.record({
           code: 'invite_confirmed',
           subjectAccountId: inviterId,

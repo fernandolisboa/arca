@@ -332,6 +332,12 @@ describe('personal-data registry (spec 0004, R7)', () => {
       expect(await problemsAfter(`${probe} ${policies}`, withProbe)).toEqual([problem]);
     });
 
+    it('fails when one of two owner columns has no erase policy', async () => {
+      expect(
+        await problemsAfter('DROP POLICY link_delete_invitee_by_jobs ON account.link'),
+      ).toEqual(['account.link has no app_jobs DELETE policy on invitee_id']);
+    });
+
     it('fails when row-level security is not forced', async () => {
       expect(
         await problemsAfter(

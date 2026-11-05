@@ -3,6 +3,7 @@ import { inviteLifetimeHours, type PasskeyCreationOptions } from '@arca/api-cont
 import { createI18n } from '@arca/i18n';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createErasure, eraseAccountNow } from '../../src/account/erasure.js';
+import { linkAccounts } from '../../src/account/links.js';
 import { createApp, type App } from '../../src/app.js';
 import { auditLog, auditReader } from '../../src/audit/log.js';
 import { createAuth, credentialStore } from '../../src/auth/auth.js';
@@ -53,6 +54,7 @@ beforeAll(async () => {
       erasuresStarted.push(accountId);
       return Promise.resolve();
     },
+    linkAccounts: linkAccounts(apiDb),
   });
   const hooks = registrationHooks({ db: authDb, audit, ownerCode: matching });
   const auth = createAuth({
@@ -613,6 +615,17 @@ describe('invites (spec 0003, R2)', () => {
     const decided = (await listed(owner.cookie)).find((entry) => entry.id === inviteId);
     expect(decided).toMatchObject({ status: 'confirmed' });
     expect(await eventCodes(owner.cookie)).toContain('invite_confirmed');
+    // The confirmation links the two accounts, so either can share documents with the other.
+    const links = await testDatabase.asAdmin(
+      async (client) =>
+        (
+          await client.query<{ inviter: string; invitee: string }>(
+            `SELECT i.email AS inviter, e.email AS invitee FROM account.link l
+               JOIN auth.user i ON i.id = l.inviter_id JOIN auth.user e ON e.id = l.invitee_id`,
+          )
+        ).rows,
+    );
+    expect(links).toEqual([{ inviter: ownerEmail, invitee }]);
     // A confirmed account cannot be confirmed or declined again.
     const again = await stepUp(owner, 'declineInvite', [inviteId]);
     expect((await decide('decline', inviteId, { 'arca-step-up-nonce': again })).status).toBe(404);

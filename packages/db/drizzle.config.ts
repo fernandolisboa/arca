@@ -12,6 +12,7 @@ export default defineConfig({
     './src/step-up-schema.ts',
     './src/enrollment-schema.ts',
     './src/audit-schema.ts',
+    './src/account-schema.ts',
     './src/vault-schema.ts',
     './src/notification-schema.ts',
   ],

@@ -30,11 +30,13 @@ import {
 
 export const Route = createLazyFileRoute('/vault')({ component: Vault });
 
-type VaultFailure = CommonFailure | 'wrong_secret' | 'wrong_identity' | 'exists' | 'changed';
+type VaultFailure =
+  CommonFailure | 'wrong_secret' | 'wrong_identity' | 'exists' | 'changed' | 'has_documents';
 
 const vaultApiFailures: Partial<Record<string, VaultFailure>> = {
   vault_exists: 'exists',
   vault_changed: 'changed',
+  vault_has_documents: 'has_documents',
 };
 
 function vaultFailure(error: unknown): VaultFailure {
