@@ -128,6 +128,7 @@ interface DocumentRow extends Record<string, unknown> {
   readonly type_key: string;
   readonly size: number;
   readonly sha256: Buffer;
+  readonly label: Buffer;
   readonly created_at: Date;
   readonly shared_with: string[];
 }
@@ -213,8 +214,8 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
       accountId,
       async (tx) =>
         (
-          await tx.execute<{ object_key: string; size: number; sha256: Buffer }>(sql`
-            SELECT object_key, size, sha256 FROM vault.document_replacement
+          await tx.execute<{ object_key: string; size: number; sha256: Buffer; label: Buffer }>(sql`
+            SELECT object_key, size, sha256, label FROM vault.document_replacement
              WHERE document_id = ${documentId} AND owner_id = ${accountId} AND ${confirmable}`)
         ).rows[0],
     );
@@ -252,7 +253,8 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
       }
       await tx.execute(sql`
         UPDATE vault.document
-           SET object_key = ${found.object_key}, size = ${found.size}, sha256 = ${found.sha256}
+           SET object_key = ${found.object_key}, size = ${found.size}, sha256 = ${found.sha256},
+               label = ${found.label}
          WHERE id = ${documentId} AND owner_id = ${accountId}`);
       await discard(tx, accountId, [current.object_key]);
       if (revoked.length > 0) {
@@ -298,7 +300,7 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
   }
 
   return {
-    create: (accountId, { typeKey, size, sha256 }) =>
+    create: (accountId, { typeKey, size, sha256, label }) =>
       asAccount(accountId, async (tx) => {
         if (!(await lockVault(tx, accountId))) return 'no_vault' as const;
         const held = await usage(tx, accountId);
@@ -312,8 +314,9 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
         // Raw SQL: app_api may insert only these columns, and Drizzle would list them all.
         const [row] = (
           await tx.execute<{ id: string }>(sql`
-            INSERT INTO vault.document (owner_id, type_key, size, sha256, object_key)
-            VALUES (${accountId}, ${typeKey}, ${size}, ${Buffer.from(sha256, 'base64url')}, ${objectKey})
+            INSERT INTO vault.document (owner_id, type_key, size, sha256, object_key, label)
+            VALUES (${accountId}, ${typeKey}, ${size}, ${Buffer.from(sha256, 'base64url')},
+                    ${objectKey}, ${Buffer.from(label, 'base64url')})
             RETURNING id`)
         ).rows;
         if (row === undefined) throw new Error('the document was not inserted');
@@ -370,7 +373,7 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
         // Row-level security limits this to owned documents and those shared with the account.
         const rows = (
           await tx.execute<DocumentRow>(sql`
-            SELECT d.id, d.owner_id, d.type_key, d.size, d.sha256, d.created_at,
+            SELECT d.id, d.owner_id, d.type_key, d.size, d.sha256, d.label, d.created_at,
                    CASE WHEN d.owner_id = ${accountId} THEN coalesce(
                      (SELECT array_agg(r.recipient_id ORDER BY r.recipient_id)
                         FROM vault.document_recipient r WHERE r.document_id = d.id),
@@ -388,6 +391,7 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
             typeKey: row.type_key,
             size: row.size,
             sha256: row.sha256.toString('base64url'),
+            label: row.label.toString('base64url'),
             createdAt: new Date(row.created_at).toISOString(),
             ownerId: row.owner_id,
             sharedWith: row.shared_with,
@@ -438,13 +442,13 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
         await discard(tx, accountId, earlier);
         discarded.push(...earlier);
         const uploads = [];
-        for (const { documentId, size, sha256 } of documents) {
+        for (const { documentId, size, sha256, label } of documents) {
           const objectKey = `documents/${randomUUID()}`;
           await tx.execute(sql`
             INSERT INTO vault.document_replacement
-              (document_id, owner_id, size, sha256, object_key, recipients)
+              (document_id, owner_id, size, sha256, object_key, label, recipients)
             VALUES (${documentId}, ${accountId}, ${size}, ${Buffer.from(sha256, 'base64url')},
-                    ${objectKey}, ${uuidArray(recipients)})`);
+                    ${objectKey}, ${Buffer.from(label, 'base64url')}, ${uuidArray(recipients)})`);
           uploads.push({ documentId, upload: storage.uploadTarget(objectKey, size) });
         }
         return { uploads };

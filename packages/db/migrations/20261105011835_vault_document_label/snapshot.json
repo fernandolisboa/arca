@@ -1,0 +1,139 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "6833971c-2df2-4a03-9f38-e59719e725ce",
+  "prevIds": [
+    "b40f88d7-2f1b-4e07-985f-7356cc127ba6"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "vault",
+        "document",
+        "label"
+      ],
+      "writes": [
+        "s|col|vault.document.label",
+        "n|col|vault.document.label",
+        "e|col|vault.document.label"
+      ],
+      "reads": [
+        "n|tbl|vault.document",
+        "n|sch|vault"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "vault",
+        "document_replacement",
+        "label"
+      ],
+      "writes": [
+        "s|col|vault.document_replacement.label",
+        "n|col|vault.document_replacement.label",
+        "e|col|vault.document_replacement.label"
+      ],
+      "reads": [
+        "n|tbl|vault.document_replacement",
+        "n|sch|vault"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document"
+      ],
+      "writes": [
+        "s|ck|vault.document.document_label_size",
+        "n|ck|vault.document.document_label_size",
+        "e|ck|vault.document.document_label_size",
+        "n|con|vault.document.document_label_size"
+      ],
+      "reads": [
+        "n|tbl|vault.document",
+        "n|sch|vault",
+        "n|col|vault.document.label"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_replacement"
+      ],
+      "writes": [
+        "s|ck|vault.document_replacement.document_replacement_label_size",
+        "n|ck|vault.document_replacement.document_replacement_label_size",
+        "e|ck|vault.document_replacement.document_replacement_label_size",
+        "n|con|vault.document_replacement.document_replacement_label_size"
+      ],
+      "reads": [
+        "n|tbl|vault.document_replacement",
+        "n|sch|vault",
+        "n|col|vault.document_replacement.label"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "label",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "label",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document",
+        "name": "document_label_size",
+        "value": "octet_length(\"label\") BETWEEN 1 AND 32768",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "document_replacement_label_size",
+        "value": "octet_length(\"label\") BETWEEN 1 AND 32768",
+        "entityType": "checks"
+      }
+    }
+  ]
+}

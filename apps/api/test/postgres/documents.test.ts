@@ -81,12 +81,15 @@ const share = (documentId: string, ownerId: string, recipientId: string) =>
   );
 
 const sha256Of = (body: Uint8Array) => createHash('sha256').update(body).digest('base64url');
+const label = Buffer.from('sealed label').toString('base64url');
+const newLabel = Buffer.from('sealed label, sealed again').toString('base64url');
 
 async function created(accountId: string, body: Uint8Array, typeKey = 'passport') {
   const outcome = await documents.create(accountId, {
     typeKey,
     size: body.length,
     sha256: sha256Of(body),
+    label,
   });
   if (typeof outcome === 'string') throw new Error(outcome);
   return outcome;
@@ -134,6 +137,7 @@ describe('creating a document (spec 0005, R4)', () => {
         typeKey: 'passport',
         size: 1,
         sha256: sha256Of(randomBytes(1)),
+        label,
       }),
     ).toBe('no_vault');
   });
@@ -141,8 +145,8 @@ describe('creating a document (spec 0005, R4)', () => {
   it('refuses the document past the quota of documents, pending ones included', async () => {
     const accountId = await owner();
     await admin(
-      `INSERT INTO vault.document (owner_id, type_key, size, sha256, object_key)
-       SELECT $1, 'passport', 1, $2, 'documents/' || gen_random_uuid()
+      `INSERT INTO vault.document (owner_id, type_key, size, sha256, object_key, label)
+       SELECT $1, 'passport', 1, $2, 'documents/' || gen_random_uuid(), decode('01', 'hex')
          FROM generate_series(1, $3)`,
       [accountId, randomBytes(32), documentQuota.documents],
     );
@@ -151,6 +155,7 @@ describe('creating a document (spec 0005, R4)', () => {
         typeKey: 'passport',
         size: 1,
         sha256: sha256Of(randomBytes(1)),
+        label,
       }),
     ).toBe('over_quota');
   });
@@ -159,18 +164,23 @@ describe('creating a document (spec 0005, R4)', () => {
     const accountId = await owner();
     const full = Math.floor(documentQuota.bytes / maxDocumentBytes);
     await admin(
-      `INSERT INTO vault.document (owner_id, type_key, size, sha256, object_key)
-       SELECT $1, 'passport', $2, $3, 'documents/' || gen_random_uuid()
+      `INSERT INTO vault.document (owner_id, type_key, size, sha256, object_key, label)
+       SELECT $1, 'passport', $2, $3, 'documents/' || gen_random_uuid(), decode('01', 'hex')
          FROM generate_series(1, $4)`,
       [accountId, maxDocumentBytes, randomBytes(32), full],
     );
     const left = documentQuota.bytes - full * maxDocumentBytes;
     const sha256 = sha256Of(randomBytes(1));
-    expect(await documents.create(accountId, { typeKey: 'passport', size: left + 1, sha256 })).toBe(
-      'over_quota',
-    );
     expect(
-      typeof (await documents.create(accountId, { typeKey: 'passport', size: left, sha256 })),
+      await documents.create(accountId, { typeKey: 'passport', size: left + 1, sha256, label }),
+    ).toBe('over_quota');
+    expect(
+      typeof (await documents.create(accountId, {
+        typeKey: 'passport',
+        size: left,
+        sha256,
+        label,
+      })),
     ).toBe('object');
   });
 
@@ -183,7 +193,12 @@ describe('creating a document (spec 0005, R4)', () => {
       ]);
       let settled = false;
       const creating = documents
-        .create(accountId, { typeKey: 'passport', size: 1, sha256: sha256Of(randomBytes(1)) })
+        .create(accountId, {
+          typeKey: 'passport',
+          size: 1,
+          sha256: sha256Of(randomBytes(1)),
+          label,
+        })
         .finally(() => {
           settled = true;
         });
@@ -300,6 +315,7 @@ describe('listing and downloading documents (spec 0005, R4)', () => {
     expect(
       owned.documents.map(({ id, ownerId, sharedWith }) => ({ id, ownerId, sharedWith })),
     ).toEqual([{ id: mine, ownerId: accountId, sharedWith: [relative] }]);
+    expect(owned.documents[0]?.label).toBe(label);
     expect(owned.next).toBeNull();
     const received = (await documents.list(relative, undefined)).documents.map(
       ({ id, sharedWith }) => ({ id, sharedWith }),
@@ -316,8 +332,8 @@ describe('listing and downloading documents (spec 0005, R4)', () => {
   it('pages by document ID', async () => {
     const accountId = await owner();
     await admin(
-      `INSERT INTO vault.document (owner_id, type_key, size, sha256, object_key, confirmed_at)
-       SELECT $1, 'passport', 1, $2, 'documents/' || gen_random_uuid(), now()
+      `INSERT INTO vault.document (owner_id, type_key, size, sha256, object_key, label, confirmed_at)
+       SELECT $1, 'passport', 1, $2, 'documents/' || gen_random_uuid(), decode('01', 'hex'), now()
          FROM generate_series(1, $3)`,
       [accountId, randomBytes(32), documentPageSize + 1],
     );
@@ -438,6 +454,7 @@ describe('replacing, sharing and deleting documents (spec 0005, R4)', () => {
         documentId,
         size: body.length,
         sha256: sha256Of(body),
+        label: newLabel,
       })),
     });
   }
@@ -486,6 +503,9 @@ describe('replacing, sharing and deleting documents (spec 0005, R4)', () => {
       ]),
     );
     expect(trail).toHaveLength(3);
+    expect(
+      (await documents.list(added, undefined)).documents.map((listed) => listed.label),
+    ).toEqual([newLabel]);
     expect((await documents.list(revoked, undefined)).documents).toEqual([]);
     expect(await documents.downloadUrl(revoked, documentId)).toBeUndefined();
   });
@@ -534,27 +554,27 @@ describe('replacing, sharing and deleting documents (spec 0005, R4)', () => {
     const earlier = await replacementOf(documentId);
     const full = Math.floor((documentQuota.bytes - 64) / maxDocumentBytes);
     await admin(
-      `INSERT INTO vault.document (owner_id, type_key, size, sha256, object_key)
-       SELECT $1, 'passport', $2, $3, 'documents/' || gen_random_uuid()
+      `INSERT INTO vault.document (owner_id, type_key, size, sha256, object_key, label)
+       SELECT $1, 'passport', $2, $3, 'documents/' || gen_random_uuid(), decode('01', 'hex')
          FROM generate_series(1, $4)`,
       [accountId, maxDocumentBytes, randomBytes(32), full],
     );
     const left = documentQuota.bytes - 64 - full * maxDocumentBytes;
     const sha256 = sha256Of(randomBytes(1));
     expect(
-      await documents.create(accountId, { typeKey: 'passport', size: left - 99, sha256 }),
+      await documents.create(accountId, { typeKey: 'passport', size: left - 99, sha256, label }),
     ).toBe('over_quota');
     expect(
       await documents.replace(accountId, {
         recipients: [],
-        documents: [{ documentId, size: left + 1, sha256 }],
+        documents: [{ documentId, size: left + 1, sha256, label }],
       }),
     ).toBe('over_quota');
     expect(await replacementOf(documentId)).toEqual(earlier);
     expect(
       typeof (await documents.replace(accountId, {
         recipients: [],
-        documents: [{ documentId, size: left, sha256 }],
+        documents: [{ documentId, size: left, sha256, label }],
       })),
     ).toBe('object');
   });

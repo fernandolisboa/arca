@@ -1070,8 +1070,7 @@ export function createApp({
     const current = await signedIn(c);
     if (current === null || documents === undefined) return unauthorized(c);
     const request = replaceDocuments.body.parse(await c.req.json());
-    const { action, targets, fields } = replaceDocumentsAction(request);
-    if (!(await stepUpGranted(c, current, 'vault_write', { action, targets, fields }))) {
+    if (!(await stepUpGranted(c, current, 'vault_write', await replaceDocumentsAction(request)))) {
       return fail(c, 'step_up_required', 403);
     }
     const outcome = await documents.replace(current.accountId, request);

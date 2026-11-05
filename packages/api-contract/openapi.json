@@ -4370,12 +4370,18 @@
                   "sha256": {
                     "type": "string",
                     "pattern": "^[A-Za-z0-9_-]{43}$"
+                  },
+                  "label": {
+                    "type": "string",
+                    "maxLength": 43691,
+                    "pattern": "^[A-Za-z0-9_-]+$"
                   }
                 },
                 "required": [
                   "typeKey",
                   "size",
-                  "sha256"
+                  "sha256",
+                  "label"
                 ],
                 "additionalProperties": false
               }
@@ -4513,6 +4519,11 @@
                             "type": "string",
                             "pattern": "^[A-Za-z0-9_-]{43}$"
                           },
+                          "label": {
+                            "type": "string",
+                            "maxLength": 43691,
+                            "pattern": "^[A-Za-z0-9_-]+$"
+                          },
                           "createdAt": {
                             "type": "string",
                             "format": "date-time"
@@ -4534,6 +4545,7 @@
                           "typeKey",
                           "size",
                           "sha256",
+                          "label",
                           "createdAt",
                           "ownerId",
                           "sharedWith"
@@ -4897,12 +4909,18 @@
                         "sha256": {
                           "type": "string",
                           "pattern": "^[A-Za-z0-9_-]{43}$"
+                        },
+                        "label": {
+                          "type": "string",
+                          "maxLength": 43691,
+                          "pattern": "^[A-Za-z0-9_-]+$"
                         }
                       },
                       "required": [
                         "documentId",
                         "size",
-                        "sha256"
+                        "sha256",
+                        "label"
                       ],
                       "additionalProperties": false
                     },

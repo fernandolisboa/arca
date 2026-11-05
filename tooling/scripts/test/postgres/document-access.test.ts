@@ -57,9 +57,9 @@ beforeAll(async () => {
       friend,
     ]);
     await client.query(
-      `INSERT INTO vault.document (id, owner_id, type_key, size, sha256, object_key, confirmed_at)
-       VALUES ($1, $2, 'passport', 1024, $5, $6, now()), ($3, $2, 'birth_certificate', 2048, $5, $7, now()),
-              ($4, $8, 'passport', 512, $5, $9, now())`,
+      `INSERT INTO vault.document (id, owner_id, type_key, size, sha256, object_key, label, confirmed_at)
+       VALUES ($1, $2, 'passport', 1024, $5, $6, $5, now()), ($3, $2, 'birth_certificate', 2048, $5, $7, $5, now()),
+              ($4, $8, 'passport', 512, $5, $9, $5, now())`,
       [shared, owner, unshared, strangers, hash, objectKey(), objectKey(), stranger, objectKey()],
     );
     await client.query(
@@ -82,6 +82,7 @@ const tables = {
     'size',
     'sha256',
     'object_key',
+    'label',
     'created_at',
     'confirmed_at',
   ],
@@ -92,6 +93,7 @@ const tables = {
     'size',
     'sha256',
     'object_key',
+    'label',
     'recipients',
     'created_at',
   ],
@@ -194,8 +196,8 @@ describe('the documents and account links access matrix (spec 0005, R4)', () => 
       },
       'vault.document': {
         SELECT: tables['vault.document'],
-        INSERT: ['owner_id', 'type_key', 'size', 'sha256', 'object_key'],
-        UPDATE: ['size', 'sha256', 'object_key', 'confirmed_at'],
+        INSERT: ['owner_id', 'type_key', 'size', 'sha256', 'object_key', 'label'],
+        UPDATE: ['size', 'sha256', 'object_key', 'label', 'confirmed_at'],
         DELETE: ['*'],
       },
       'vault.document_recipient': {
@@ -205,7 +207,7 @@ describe('the documents and account links access matrix (spec 0005, R4)', () => 
       },
       'vault.document_replacement': {
         SELECT: tables['vault.document_replacement'],
-        INSERT: ['document_id', 'owner_id', 'size', 'sha256', 'object_key', 'recipients'],
+        INSERT: ['document_id', 'owner_id', 'size', 'sha256', 'object_key', 'label', 'recipients'],
         DELETE: ['*'],
       },
       'vault.discarded_object': {
@@ -411,8 +413,8 @@ describe('the documents and account links access matrix (spec 0005, R4)', () => 
       await expect(
         as('app_api', owner, (client) =>
           client.query(
-            `INSERT INTO vault.document (owner_id, type_key, size, sha256, object_key)
-             VALUES ($1, 'passport', 10, $2, $3)`,
+            `INSERT INTO vault.document (owner_id, type_key, size, sha256, object_key, label)
+             VALUES ($1, 'passport', 10, $2, $3, $2)`,
             [stranger, hash, objectKey()],
           ),
         ),
@@ -432,8 +434,8 @@ describe('the documents and account links access matrix (spec 0005, R4)', () => 
       const insert = (size: number, sha256: Buffer, typeKey: string, key: string) =>
         as('app_api', owner, (client) =>
           client.query(
-            `INSERT INTO vault.document (owner_id, type_key, size, sha256, object_key)
-             VALUES ($1, $2, $3, $4, $5)`,
+            `INSERT INTO vault.document (owner_id, type_key, size, sha256, object_key, label)
+             VALUES ($1, $2, $3, $4, $5, $4)`,
             [owner, typeKey, size, sha256, key],
           ),
         );
@@ -488,8 +490,8 @@ describe('the documents and account links access matrix (spec 0005, R4)', () => 
   describe('replacements and discarded objects', () => {
     const replace = (documentId: string, documentOwner: string, recipientIds: string[]) =>
       [
-        `INSERT INTO vault.document_replacement (document_id, owner_id, size, sha256, object_key, recipients)
-         VALUES ($1, $2, 10, $3, $4, $5)`,
+        `INSERT INTO vault.document_replacement (document_id, owner_id, size, sha256, object_key, label, recipients)
+         VALUES ($1, $2, 10, $3, $4, $3, $5)`,
         [documentId, documentOwner, hash, objectKey(), recipientIds],
       ] as [string, unknown[]];
     const replacements = (client: pg.Client) =>

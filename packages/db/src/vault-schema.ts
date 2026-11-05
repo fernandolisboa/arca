@@ -154,6 +154,12 @@ const objectKeyCheck = (name: string, objectKey: unknown) =>
 /** The largest ciphertext a document may have (spec 0005, R3), in bytes. */
 export const maxDocumentBytes = 25 * 1024 * 1024;
 
+/** The largest sealed label: the file name and media type, encrypted to the same recipients. */
+export const maxDocumentLabelBytes = 32 * 1024;
+
+const labelCheck = (name: string, label: unknown) =>
+  check(name, sql`octet_length(${label}) BETWEEN 1 AND ${sql.raw(String(maxDocumentLabelBytes))}`);
+
 /**
  * A document's metadata; the ciphertext is a blob under `object_key`. A row is pending until the
  * upload is confirmed against its size and SHA-256, and counts against the quota either way.
@@ -167,6 +173,7 @@ export const document = vault.table(
     size: integer('size').notNull(),
     sha256: bytea('sha256').notNull(),
     objectKey: text('object_key').notNull(),
+    label: bytea('label').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
   },
@@ -178,6 +185,7 @@ export const document = vault.table(
     check('document_size', sql`${table.size} BETWEEN 1 AND ${sql.raw(String(maxDocumentBytes))}`),
     check('document_sha256_length', sql`octet_length(${table.sha256}) = 32`),
     objectKeyCheck('document_object_key', table.objectKey),
+    labelCheck('document_label_size', table.label),
     check(
       'document_confirmed_after_created',
       sql`${table.confirmedAt} IS NULL OR ${table.confirmedAt} >= ${table.createdAt}`,
@@ -207,6 +215,7 @@ export const documentReplacement = vault.table(
     size: integer('size').notNull(),
     sha256: bytea('sha256').notNull(),
     objectKey: text('object_key').notNull(),
+    label: bytea('label').notNull(),
     recipients: uuid('recipients').array().notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -224,6 +233,7 @@ export const documentReplacement = vault.table(
     ),
     check('document_replacement_sha256_length', sql`octet_length(${table.sha256}) = 32`),
     objectKeyCheck('document_replacement_object_key', table.objectKey),
+    labelCheck('document_replacement_label_size', table.label),
     check(
       'document_replacement_recipients',
       sql`cardinality(${table.recipients}) <= ${sql.raw(String(maxDocumentRecipients))} AND NOT (${table.ownerId} = ANY (${table.recipients}))`,

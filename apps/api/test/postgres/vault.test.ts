@@ -452,8 +452,8 @@ describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
     await setUp(owner);
     await testDatabase.asAdmin((client) =>
       client.query(
-        `INSERT INTO vault.document (owner_id, type_key, size, sha256, object_key)
-         VALUES ($1, 'passport', 1024, $2, $3)`,
+        `INSERT INTO vault.document (owner_id, type_key, size, sha256, object_key, label)
+         VALUES ($1, 'passport', 1024, $2, $3, decode('01', 'hex'))`,
         [owner.accountId, randomBytes(32), `documents/${randomUUID()}`],
       ),
     );

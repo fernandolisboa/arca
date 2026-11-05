@@ -35,7 +35,10 @@ const session = {
 const documentId = '0b4f6a1e-2c3d-4e5f-8a9b-0c1d2e3f4a5b';
 const pathname = 'documents/7d1e2f3a-4b5c-4d6e-8f70-8192a3b4c5d6';
 const sha256 = createHash('sha256').update('ciphertext').digest('base64url');
-const createBody = { typeKey: 'passport', size: 1024, sha256 };
+const labelBytes = Buffer.from('sealed label');
+const label = labelBytes.toString('base64url');
+const labelSha256 = createHash('sha256').update(labelBytes).digest('base64url');
+const createBody = { typeKey: 'passport', size: 1024, sha256, label };
 const presigned: DocumentUploadUrlResponse = {
   type: 'blob.generate-presigned-url',
   presignedUrlPayload: { delegationToken: 'token', signature: 'signature', params: {} },
@@ -46,8 +49,8 @@ const otherDocument = 'c2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f';
 const replaceBody = {
   recipients: [relative, cousin],
   documents: [
-    { documentId, size: 2048, sha256 },
-    { documentId: otherDocument, size: 10, sha256 },
+    { documentId, size: 2048, sha256, label },
+    { documentId: otherDocument, size: 10, sha256, label },
   ],
 };
 const nonce = 'MzMzMzMzMzMzMzMzMzMzMw';
@@ -201,6 +204,9 @@ describe('creating a document (spec 0005, R4)', () => {
     ['a short SHA-256', { ...createBody, sha256: sha256.slice(1) }],
     ['a type key with spaces', { ...createBody, typeKey: 'birth certificate' }],
     ['an extra field', { ...createBody, name: 'passport.pdf' }],
+    ['no label', { ...createBody, label: '' }],
+    ['a label that is not whole bytes', { ...createBody, label: 'AAAAA' }],
+    ['a label over 32 KiB', { ...createBody, label: 'A'.repeat(43_692) }],
   ])('refuses %s', async (_, body) => {
     const { call, calls } = setup();
     expect((await call('POST', '/vault/documents', body)).status).toBe(400);
@@ -322,7 +328,10 @@ describe('replacing documents (spec 0005, R4)', () => {
         action: {
           action: 'replaceDocuments',
           targets: [documentId, otherDocument],
-          fields: { recipients: `${relative},${cousin}`, objects: `2048:${sha256},10:${sha256}` },
+          fields: {
+            recipients: `${relative},${cousin}`,
+            objects: `2048:${sha256}:${labelSha256},10:${sha256}:${labelSha256}`,
+          },
           nonce: new Uint8Array(Buffer.from(nonce, 'base64url')),
         },
       },
@@ -378,6 +387,7 @@ describe('replacing documents (spec 0005, R4)', () => {
           documentId: `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
           size: 1,
           sha256,
+          label,
         })),
       },
     ],
