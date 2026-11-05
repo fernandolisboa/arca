@@ -39,9 +39,9 @@ Production accepts family data only when every item below is checked ([spec 0004
 - [ ] **7. The project owner knows the Neon restore steps in the runbook (R12).**
   - **Evidence:** the [restore steps](incident-response.md#restore-the-database).
   - **Owner step:** read them once, and say so on #63. This can happen during the tabletop.
-- [ ] **8. The threat model is written and reviewed (R13).**
-  - **Evidence:** the [foundations threat model](../threat-models/foundations.md), with the security and architecture reviews on its pull request ([#76](https://github.com/fernandolisboa/arca/issues/76)).
-  - Checked once that pull request merges.
+- [x] **8. The threat model is written and reviewed (R13).**
+  - **Evidence:** the [foundations threat model](../threat-models/foundations.md), merged in PR #210 after the security and architecture reviews passed ([#76](https://github.com/fernandolisboa/arca/issues/76)).
+  - Revisit it at the start of each epic, as SECURITY.md asks.
 - [x] **9. The access-matrix suite covers every table with case data.**
   - **Evidence:**
     - guard 1 forces row-level security on every table;
