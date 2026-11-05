@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page, type Request } from '@playwright/test';
 import {
@@ -103,6 +104,67 @@ test('with PRF, the passkey seals and opens the vault, which stays only in memor
   await expect(page.getByRole('button', { name: 'Abrir o cofre' })).toBeVisible();
   await page.getByRole('button', { name: 'Abrir o cofre' }).click();
   await expect(opened(page)).toBeVisible();
+  expect(problems).toEqual([]);
+});
+
+test('keeps documents encrypted on the server, and changes one only after a vault_write step-up', async ({
+  page,
+}) => {
+  const problems = watchProblems(page);
+  const { credential, userId } = await createdPrfCredential(page);
+  const { email } = await seedAccount(credential, userId, { confirmed: true });
+  await signIn(page, email);
+  await openVaultPage(page);
+  await setUp(page);
+  await expect(page.getByText(/^Ainda não há documentos no cofre\./)).toBeVisible();
+
+  const fileName = 'certidao-exemplo.txt';
+  const contents = 'synthetic birth certificate';
+  const created = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'POST' && response.url().endsWith('/v1/vault/documents'),
+  );
+  const stored = page.waitForRequest((request) => request.method() === 'PUT');
+  const chooser = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: 'Adicionar documento' }).click();
+  await (
+    await chooser
+  ).setFiles({ name: fileName, mimeType: 'text/plain', buffer: Buffer.from(contents) });
+  await expect(page.getByText('Documento guardado no cofre.')).toBeVisible();
+
+  // The server sees neither the name nor the contents: only age ciphertext.
+  const createRequest = (await created).request().postData() ?? '';
+  expect(createRequest).not.toContain('certidao');
+  const { documentId } = (await (await created).json()) as { documentId: string };
+  const upload = (await stored).postDataBuffer() ?? Buffer.alloc(0);
+  expect(upload.subarray(0, 21).toString()).toBe('age-encryption.org/v1');
+  expect(upload.toString('latin1')).not.toContain(contents);
+
+  const documents = page.getByRole('list', { name: 'Documentos' });
+  await expect(documents.getByText(fileName)).toBeVisible();
+  await expectAccessible(page);
+
+  const download = page.waitForEvent('download');
+  await documents.getByRole('button', { name: 'Baixar' }).click();
+  const saved = await download;
+  expect(saved.suggestedFilename()).toBe(fileName);
+  const path = await saved.path();
+  expect(await readFile(path, 'utf8')).toBe(contents);
+
+  // The vault_unlock window alone changes nothing (spec 0005, R4).
+  const refused = await page.request.post(`${databaseServer.origin}/v1/vault/documents/delete`, {
+    headers: { origin: databaseServer.origin },
+    data: { documentIds: [documentId] },
+  });
+  expect(refused.status()).toBe(403);
+  expect(await refused.json()).toEqual({ error: { code: 'step_up_required' } });
+  await page.reload();
+  await page.getByRole('button', { name: 'Abrir o cofre' }).click();
+  await expect(documents.getByText(fileName)).toBeVisible();
+
+  await documents.getByRole('button', { name: 'Apagar' }).click();
+  await expect(page.getByText('Documento apagado.')).toBeVisible();
+  await expect(page.getByText(/^Ainda não há documentos no cofre\./)).toBeVisible();
   expect(problems).toEqual([]);
 });
 

@@ -11,3 +11,6 @@ export const keyStorage = web.capabilities.has('keyStorage') ? web.keyStorage : 
 /** Push for this device, and why it is missing where it is (spec 0005, R7). */
 export const notifications = web.notifications;
 export const notificationsUnavailable = web.capabilities.whyUnavailable('notifications');
+
+/** Choosing files for the vault; undefined where the device cannot pick them. */
+export const filePicking = web.capabilities.has('filePicking') ? web.filePicking : undefined;

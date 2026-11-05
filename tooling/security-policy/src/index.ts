@@ -12,7 +12,13 @@ const cspReportGroup = 'csp';
 const contentSecurityPolicyDirectives = {
   'default-src': ["'self'"],
   'script-src': ["'self'"],
-  'connect-src': ["'self'"],
+  // Vault uploads go to Vercel Blob's API and downloads come from a private store's own host
+  // (spec 0005, R4), both through short-lived presigned URLs.
+  'connect-src': [
+    "'self'",
+    'https://vercel.com/api/blob/',
+    'https://*.private.blob.vercel-storage.com',
+  ],
   'img-src': ["'self'", 'data:'],
   'object-src': ["'none'"],
   'base-uri': ["'none'"],

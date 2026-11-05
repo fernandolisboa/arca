@@ -4,9 +4,13 @@ import type { z } from 'zod';
 import { apiBasePath, ErrorResponse, type RouteDefinition } from '../routes/index.js';
 
 export {
+  apiBasePath,
   apiPathSegments,
+  deleteDocumentsAction,
   deletionWaitDays,
+  documentQuota,
   inviteLifetimeHours,
+  maxDocumentBytes,
   maxOpenInvites,
   maxPushChannels,
   pendingPasskeyHours,
@@ -25,6 +29,7 @@ export type {
   DevicePasskey,
   DeviceSession,
   DevicesResponse,
+  DocumentUpload,
   HealthResponse,
   Invite,
   InviteDetails,
@@ -40,6 +45,7 @@ export type {
   StepUpOptionsRequest,
   StepUpPurpose,
   SignOutResponse,
+  VaultDocument,
   VaultEnvelopesResponse,
 } from '../routes/index.js';
 

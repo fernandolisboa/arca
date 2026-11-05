@@ -364,6 +364,27 @@ export const ptBR = {
     lock: 'Fechar o cofre',
     failure:
       '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} wrong_secret {Esse segredo não abre o cofre. Confira e tente de novo.} wrong_identity {A chave aberta não é a do seu cofre atual. Atualize a página e tente de novo.} exists {O seu cofre já foi criado em outro dispositivo. Atualize a página.} changed {O cofre mudou em outro dispositivo. Atualize a página e tente de novo.} has_documents {Não dá para recomeçar o cofre, porque ele já tem documentos que só a chave do cofre atual abre.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+    /** The open vault's documents (spec 0005, R4); names are sealed and opened on the device. */
+    documents: {
+      title: 'Documentos',
+      add: 'Adicionar documento',
+      cannotPick:
+        'Este navegador não deixa escolher arquivos. Abra o Arca em um navegador atualizado.',
+      working: 'Aguarde um instante…',
+      empty:
+        'Ainda não há documentos no cofre. Os que você adicionar ficam trancados aqui, e só a chave do cofre abre.',
+      listFailure: 'Não conseguimos carregar os documentos agora.',
+      retry: 'Tentar de novo',
+      details: '{size} · adicionado em {created}',
+      sharedWithYou: 'Compartilhado com você',
+      unnamed: 'Documento que este cofre não consegue abrir',
+      fallbackName: 'documento',
+      save: 'Baixar',
+      delete: 'Apagar',
+      done: '{done, select, added {Documento guardado no cofre.} saved {Documento baixado neste dispositivo.} deleted {Documento apagado.} other {Pronto.}}',
+      failure:
+        '{reason, select, too_large {Esse arquivo passa de {maxSize}, o limite de cada documento.} quota {O cofre está cheio. Cabem até {maxDocuments} documentos ou {maxBytes}.} changed {O cofre mudou em outro dispositivo. Atualize a página e tente de novo.} not_opened {Não deu para abrir esse documento. O arquivo guardado não é o que deveria ser.} unconfirmed {Sua conta ainda espera a confirmação de quem convidou você. Depois disso, você pode guardar documentos.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+    },
     /** The vault part of the recovery kit (spec 0003, R6): shown once, after the check. */
     kit: {
       lead: 'Este é o segundo item do seu kit de recuperação. Ele aparece uma vez só.',

@@ -12,6 +12,14 @@ export {
   reencryptDocument,
 } from './documents.js';
 export {
+  documentMediaType,
+  documentName,
+  InvalidDocumentLabel,
+  openDocumentLabel,
+  sealDocumentLabel,
+  type DocumentLabel,
+} from './document-label.js';
+export {
   generateRecoverySecret,
   normalizeRecoverySecret,
   openRecoveryEnvelope,

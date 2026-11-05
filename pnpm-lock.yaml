@@ -521,6 +521,9 @@ importers:
       '@tanstack/react-router':
         specifier: 'catalog:'
         version: 1.170.46(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@vercel/blob':
+        specifier: 'catalog:'
+        version: 2.8.2
       react:
         specifier: 'catalog:'
         version: 19.3.1
