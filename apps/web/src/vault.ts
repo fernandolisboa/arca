@@ -316,6 +316,29 @@ export async function openRetained(
   };
 }
 
+const pause = (milliseconds: number) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+
+/**
+ * Sends a rotation and, when no answer comes back, asks whether it was stored anyway: the new
+ * identity and secret exist only here, so a rotation that landed must still finish here.
+ */
+async function stored(recipient: string, rotate: () => Promise<unknown>): Promise<void> {
+  try {
+    await reach(rotate());
+  } catch (error) {
+    for (const wait of [0, 1000, 3000]) {
+      await pause(wait);
+      const status = await reach(api.call(routes.vaultStatus)).catch(() => undefined);
+      if (status?.recipient === recipient) return;
+      if (status !== undefined) break;
+    }
+    throw error;
+  }
+}
+
 /**
  * Rotation (ADR-0018): a new identity and vault recovery secret, every kept identity sealed to
  * the secret, the verified sharing state re-tagged under the new share key, and an envelope for
@@ -339,7 +362,7 @@ export async function rotateVault(device: VaultDevice, vault: UnlockedVault): Pr
     fields: { recipient },
   });
   const passkeyEnvelope = await sealForPasskey(device, identity, credentialId);
-  await reach(
+  await stored(recipient, () =>
     client.call(routes.rotateVaultIdentity, {
       from: current.id,
       recipient,

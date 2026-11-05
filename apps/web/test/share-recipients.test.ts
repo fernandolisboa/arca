@@ -8,6 +8,7 @@ import {
   sharedState,
   sharePerson,
   shareRecipients,
+  withoutUnlinked,
   type SharingView,
 } from '../src/share-recipients.js';
 
@@ -164,5 +165,25 @@ describe('moving documents to a rotated identity', () => {
     expect(
       moveBatches(view, [huge, openedOf(idOf(2))]).map(({ documents }) => documents.length),
     ).toEqual([1, 1]);
+  });
+});
+
+describe('moving documents shared with someone no longer linked', () => {
+  it('takes only the unlinked people off the moving documents', async () => {
+    const other = idOf(901);
+    const state = {
+      pins: { [pinnedId]: 'age1pinned', [otherId]: 'age1other' },
+      documents: { [documentId]: [pinnedId, otherId], [other]: [otherId] },
+    };
+    const people = [await sharePerson(viewOf(state), link(pinnedId, 'age1pinned'))];
+    const stricter = withoutUnlinked(viewOf(state), people, owner, [documentId]);
+    expect(stricter?.documents).toEqual({ [documentId]: [pinnedId], [other]: [otherId] });
+    expect(stricter?.pins[owner.accountId]).toBe(owner.recipient);
+    expect(withoutUnlinked(viewOf(state), [...people], owner, [])).toBeUndefined();
+  });
+
+  it('changes nothing when everyone is still linked', async () => {
+    const people = [await sharePerson(view, link(pinnedId, 'age1pinned'))];
+    expect(withoutUnlinked(view, people, owner, [documentId])).toBeUndefined();
   });
 });

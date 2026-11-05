@@ -15,6 +15,7 @@ import { reach } from './requests.js';
 import {
   moveBatches,
   sharedState,
+  withoutUnlinked,
   sharePerson,
   shareRecipients,
   type Sharing,
@@ -194,11 +195,19 @@ export async function rotatedSharingState(
 export async function moveDocuments(
   passkeys: Passkeys,
   vault: UnlockedVault,
-  { view }: Sharing,
+  { view, people }: Sharing,
   stale: readonly OpenedDocument[],
 ) {
   if (view.status !== 'verified') throw new SharingStateInvalid();
-  for (const { sharedWith, documents } of moveBatches(view, stale)) {
+  const stricter = withoutUnlinked(
+    view,
+    people,
+    { accountId: vault.accountId, recipient: vault.recipient },
+    stale.map(({ document }) => document.id),
+  );
+  if (stricter !== undefined) await storeState(passkeys, vault, view, stricter);
+  const moving = stricter === undefined ? view : { ...view, state: stricter };
+  for (const { sharedWith, documents } of moveBatches(moving, stale)) {
     await replaceDocuments(passkeys, vault, documents, sharedWith);
   }
 }

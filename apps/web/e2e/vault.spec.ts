@@ -370,6 +370,35 @@ test('rotates the vault key: a new kit, the old key still opens shared documents
   expect(problems).toEqual([]);
 });
 
+test('finishes a rotation the server stored when its answer never arrived', async ({ page }) => {
+  const problems = watchProblems(page);
+  const { credential, userId } = await createdPrfCredential(page);
+  const { email } = await seedAccount(credential, userId);
+  await signIn(page, email);
+  await openVaultPage(page);
+  await setUp(page);
+
+  // The rotation reaches the server and is stored; the answer is lost on the way back.
+  let lost = false;
+  await page.route('**/v1/vault/rotate', async (route) => {
+    await route.fetch();
+    lost = true;
+    await route.abort('connectionreset');
+  });
+  await page.getByRole('button', { name: 'Trocar a chave do cofre' }).click();
+  const secret = await keepSecret(page);
+  expect(lost).toBe(true);
+
+  await page.getByRole('button', { name: 'Fechar o cofre' }).click();
+  await page.getByRole('button', { name: 'Abrir o cofre' }).click();
+  await expect(opened(page)).toBeVisible();
+  expect(secret).not.toBe('');
+  // Only the cut connection itself, which the browser logs without its URL.
+  expect(
+    problems.filter((problem) => !problem.startsWith('Failed to load resource: net::')),
+  ).toEqual([]);
+});
+
 test('without PRF, the recovery secret opens the vault and the device keeps it wrapped', async ({
   page,
 }) => {

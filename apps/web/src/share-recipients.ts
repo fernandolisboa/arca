@@ -148,3 +148,31 @@ export function moveBatches(
     return batches.map((batch) => ({ sharedWith, documents: batch }));
   });
 }
+
+/**
+ * The state with every person no longer linked taken off these documents, or undefined when
+ * none is: a replacement to an unlinked account is refused, so the stricter state goes first.
+ */
+export function withoutUnlinked(
+  view: SharingView,
+  people: readonly SharePerson[],
+  owner: DocumentRecipient,
+  documentIds: readonly string[],
+): SharingState | undefined {
+  const linked = new Set(people.map(({ accountId }) => accountId));
+  let state = view.state;
+  let changed = false;
+  for (const documentId of documentIds) {
+    const sharedWith = sharedInState(view, documentId);
+    const kept = sharedWith.filter((accountId) => linked.has(accountId));
+    if (kept.length === sharedWith.length) continue;
+    changed = true;
+    state = sharedState(
+      state,
+      owner,
+      documentId,
+      kept.map((accountId) => ({ accountId, recipient: state.pins[accountId] ?? '' })),
+    );
+  }
+  return changed ? state : undefined;
+}
