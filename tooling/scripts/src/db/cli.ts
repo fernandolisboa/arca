@@ -59,7 +59,8 @@ async function main(command: string | undefined): Promise<void> {
     return;
   }
   if (command === 'seed') {
-    if (deploymentFor(env, requiredVariable(env, 'PGHOST_UNPOOLED')) === 'production') {
+    const deployment = deploymentFor(env, requiredVariable(env, 'PGHOST_UNPOOLED'));
+    if (deployment === 'production') {
       console.log('no seed in production');
       return;
     }
@@ -68,7 +69,7 @@ async function main(command: string | undefined): Promise<void> {
       password: requiredVariable(env, 'ARCA_DB_AUTH_PASSWORD'),
     });
     const accounts = await readSeedAccounts(join(dbPackage, 'seed/accounts.json'));
-    await seed(target, accounts, deploymentFor(env, target.host));
+    await seed(target, accounts, deployment);
     console.log(`synthetic seed applied: ${String(accounts.length)} accounts`);
     return;
   }

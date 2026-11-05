@@ -63,8 +63,8 @@ export async function readSeedAccounts(file: string): Promise<SeedAccount[]> {
 
 /**
  * The seed passkey's credential ID and COSE public key. Its P-256 private key is the SHA-256 of
- * the public label, so anyone can compute it: it guards synthetic accounts on previews, which sit
- * behind Deployment Protection, and lets a test sign in with a virtual authenticator.
+ * the public label, so the key is public and protects nothing: Deployment Protection is the only
+ * control on previews. It lets a test sign in with a virtual authenticator.
  */
 export function seedPasskeyCredential(label: string): {
   credentialId: string;
@@ -94,6 +94,9 @@ export class SeedRefusedInProduction extends Error {
   }
 }
 
+// A fixed key, so previews building at once against the shared branch seed one at a time.
+const advisoryLockKey = 4_174_523_012;
+
 /**
  * Writes the synthetic accounts as app_auth, in one transaction, leaving rows that exist alone so
  * a second run changes nothing. A preview checks the database target and the lineage mark first.
@@ -110,6 +113,7 @@ export async function seed(
   try {
     await client.query('BEGIN');
     try {
+      await client.query('SELECT pg_catalog.pg_advisory_xact_lock($1)', [advisoryLockKey]);
       if (deployment === 'preview') {
         await checkDeploymentTarget(client, deployment, target.host, { mayMark: false });
         await checkLineage(client, deployment);

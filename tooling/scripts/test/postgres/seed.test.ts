@@ -49,6 +49,12 @@ describe('the synthetic seed (spec 0004, R2)', () => {
     expect(await rows()).toEqual(first);
   });
 
+  it('seeds once when two runs race', async () => {
+    const target = roleTarget(database, 'app_auth');
+    await Promise.all([seed(target, accounts, undefined), seed(target, accounts, undefined)]);
+    expect(await rows()).toHaveLength(accounts.length * 2);
+  });
+
   it('refuses a production run and writes nothing', async () => {
     await expect(seed(roleTarget(database, 'app_auth'), accounts, 'production')).rejects.toThrow(
       'seed_refused_in_production',
