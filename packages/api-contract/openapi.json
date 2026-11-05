@@ -3153,6 +3153,8 @@
                               "vault_identity_rotated",
                               "vault_recovery_resealed",
                               "vault_reset",
+                              "document_created",
+                              "document_download_url_issued",
                               "notification_channel_added",
                               "notification_channel_removed"
                             ]
@@ -4307,6 +4309,520 @@
                 "schema": {
                   "type": "object",
                   "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vault/documents": {
+      "post": {
+        "operationId": "createDocument",
+        "summary": "Adds a pending document and says where to upload its ciphertext; 401 without a session, 403 account_unconfirmed, 403 step_up_required outside a vault_unlock window, 404 not_found before the vault is set up, 409 document_quota past 300 documents or 1 GiB, 429 rate_limited",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "typeKey": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_.-]{0,63}$"
+                  },
+                  "size": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 26214400
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{43}$"
+                  }
+                },
+                "required": [
+                  "typeKey",
+                  "size",
+                  "sha256"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pending document",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "documentId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "upload": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "via": {
+                              "type": "string",
+                              "enum": [
+                                "vercel_blob"
+                              ]
+                            },
+                            "pathname": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "via",
+                            "pathname"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "via": {
+                              "type": "string",
+                              "enum": [
+                                "direct"
+                              ]
+                            },
+                            "url": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "via",
+                            "url"
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "documentId",
+                    "upload"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listDocuments",
+        "summary": "The confirmed documents the account owns or that are shared with it, in document ID order, at most 50 a page; 401 without a session",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": false,
+            "name": "after",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of documents",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "documents": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "typeKey": {
+                            "type": "string"
+                          },
+                          "size": {
+                            "type": "integer"
+                          },
+                          "sha256": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]{43}$"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "ownerId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "sharedWith": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "format": "uuid"
+                            }
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "typeKey",
+                          "size",
+                          "sha256",
+                          "createdAt",
+                          "ownerId",
+                          "sharedWith"
+                        ]
+                      },
+                      "maxItems": 50
+                    },
+                    "next": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "documents",
+                    "next"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vault/documents/upload-url": {
+      "post": {
+        "operationId": "documentUploadUrl",
+        "summary": "A presigned upload for one pending document's pathname, valid for 5 minutes and limited to its declared size; 401 without a session, 404 not_found unless the pathname is a pending document of the account created within the hour",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "blob.generate-presigned-url"
+                    ]
+                  },
+                  "payload": {
+                    "type": "object",
+                    "properties": {
+                      "pathname": {
+                        "type": "string",
+                        "maxLength": 128
+                      },
+                      "clientPayload": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 256
+                      },
+                      "multipart": {
+                        "type": "boolean",
+                        "enum": [
+                          false
+                        ]
+                      }
+                    },
+                    "required": [
+                      "pathname",
+                      "clientPayload",
+                      "multipart"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "type",
+                  "payload"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Presigned upload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "blob.generate-presigned-url"
+                      ]
+                    },
+                    "presignedUrlPayload": {
+                      "type": "object",
+                      "properties": {
+                        "delegationToken": {
+                          "type": "string"
+                        },
+                        "signature": {
+                          "type": "string"
+                        },
+                        "params": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "delegationToken",
+                        "signature",
+                        "params"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "presignedUrlPayload"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vault/documents/confirm": {
+      "post": {
+        "operationId": "confirmDocumentUpload",
+        "summary": "Confirms a pending upload once the stored ciphertext has the declared size and SHA-256; any other ciphertext is deleted and the document stays pending until the daily cleanup; 401 without a session, 404 not_found, 409 not_uploaded before the upload, 409 upload_mismatch, 429 rate_limited",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "documentId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "documentId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload confirmed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vault/documents/download": {
+      "post": {
+        "operationId": "documentDownloadUrl",
+        "summary": "A short-lived URL to one confirmed document's ciphertext, for its owner or a recipient, within the session's vault_unlock window; 401 without a session, 403 step_up_required, 404 not_found",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "documentId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "documentId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Download URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string"
+                    },
+                    "expiresAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "url",
+                    "expiresAt"
+                  ]
                 }
               }
             }

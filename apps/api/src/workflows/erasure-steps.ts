@@ -11,6 +11,11 @@ export async function erasable(accountId: EntityId): Promise<boolean> {
   return (await run('database_unavailable', accountId, 'erasable')) === true;
 }
 
+export async function eraseStoredObjects(accountId: EntityId): Promise<void> {
+  'use step';
+  await run('storage_unavailable', accountId, 'eraseStoredObjects');
+}
+
 export async function eraseOwnedEntries(accountId: EntityId): Promise<void> {
   'use step';
   await run('database_unavailable', accountId, 'eraseOwnedEntries');

@@ -73,6 +73,11 @@ export const openApiRoutes = {
   notificationChannels: toOpenApiRoute(routes.notificationChannels),
   addPushChannel: toOpenApiRoute(routes.addPushChannel),
   removeNotificationChannel: toOpenApiRoute(routes.removeNotificationChannel),
+  createDocument: toOpenApiRoute(routes.createDocument),
+  documentUploadUrl: toOpenApiRoute(routes.documentUploadUrl),
+  confirmDocumentUpload: toOpenApiRoute(routes.confirmDocumentUpload),
+  listDocuments: toOpenApiRoute(routes.listDocuments),
+  documentDownloadUrl: toOpenApiRoute(routes.documentDownloadUrl),
 } as const;
 
 export const openApiInfo = { title: 'Arca API', version: '1.0.0' } as const;

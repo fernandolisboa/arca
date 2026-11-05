@@ -6,8 +6,13 @@ import {
   AuditEventsQuery,
   authBasePath,
   authRoutes,
+  confirmDocumentUpload,
   confirmInvite,
+  createDocument,
   createInvite,
+  documentDownloadUrl,
+  DocumentsQuery,
+  documentUploadUrl,
   declineInvite,
   cancelAccountDeletion,
   enrollOwner,
@@ -57,6 +62,7 @@ import {
   deviceLimits,
   inviteLimits,
   monitoringLimits,
+  documentLimits,
   notificationLimits,
   recoveryLimits,
   registrationLimits,
@@ -77,6 +83,12 @@ import type { Tunnel } from './monitoring-tunnel.js';
 import { securityTxt } from './security-txt.js';
 import type { NotificationChannels } from './notification/channels.js';
 import { isP256PublicKey } from './notification/push.js';
+import type { DocumentRequests } from './vault/documents.js';
+import {
+  memoryObjectsPath,
+  objectUrlMinutes,
+  type MemoryObjectStorage,
+} from './vault/object-storage.js';
 import type { Vault } from './vault/vault.js';
 import { cspReportPath } from '@arca/security-policy';
 import { tunnelPath, type Logger } from '@arca/telemetry';
@@ -146,6 +158,15 @@ export interface AppDependencies {
   readonly accountDeletion?: AccountDeletion;
   /** The vault's recipients and envelopes (spec 0005, R2); absent, its routes answer 401. */
   readonly vault?: Vault;
+  /** The vault's documents (spec 0005, R4); absent, their routes answer 401. */
+  readonly documents?: DocumentRequests;
+  /** Whether the account's inviter confirmed it, read on the app_auth pool (spec 0003, R2). */
+  readonly accountConfirmed?: (accountId: string) => Promise<boolean>;
+  /**
+   * The in-memory object store, given only in development, whose upload and download URLs
+   * `/internal/objects` serves; absent, that path is a 404.
+   */
+  readonly memoryObjects?: MemoryObjectStorage;
   /** The account's notification channels (spec 0005, R7); absent, their routes answer 401. */
   readonly notifications?: {
     readonly channels: NotificationChannels;
@@ -203,6 +224,9 @@ export type ErrorCode =
   | 'vault_exists'
   | 'vault_changed'
   | 'vault_has_documents'
+  | 'document_quota'
+  | 'upload_mismatch'
+  | 'not_uploaded'
   | 'push_unavailable'
   | 'too_many_push_channels'
   | 'accounts_closed'
@@ -327,6 +351,9 @@ export function createApp({
   dataExports,
   accountDeletion,
   vault,
+  documents,
+  accountConfirmed,
+  memoryObjects,
   notifications,
   outbox,
   monitor,
@@ -969,6 +996,69 @@ export function createApp({
     return c.json({}, 200);
   });
 
+  // Documents (spec 0005, R4): metadata on app_api, ciphertext in the object store.
+  v1.openapi(openApiRoutes.createDocument, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || documents === undefined || authLimits === undefined) {
+      return unauthorized(c);
+    }
+    if (accountConfirmed === undefined || !(await accountConfirmed(current.accountId))) {
+      return fail(c, 'account_unconfirmed', 403);
+    }
+    if (!(await unlocked(current))) return fail(c, 'step_up_required', 403);
+    const limited = await overLimit(c, authLimits, documentLimits.create, current.accountId);
+    if (limited !== undefined) return limited;
+    const outcome = await documents.create(
+      current.accountId,
+      createDocument.body.parse(await c.req.json()),
+    );
+    if (outcome === 'no_vault') return fail(c, 'not_found', 404);
+    if (outcome === 'over_quota') return fail(c, 'document_quota', 409);
+    return c.json(outcome, 200);
+  });
+
+  v1.openapi(openApiRoutes.documentUploadUrl, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || documents === undefined) return unauthorized(c);
+    const { payload } = documentUploadUrl.body.parse(await c.req.json());
+    const presigned = await documents.presignUpload(current.accountId, payload.pathname);
+    return presigned === undefined ? fail(c, 'not_found', 404) : c.json(presigned, 200);
+  });
+
+  v1.openapi(openApiRoutes.confirmDocumentUpload, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || documents === undefined || authLimits === undefined) {
+      return unauthorized(c);
+    }
+    const limited = await overLimit(c, authLimits, documentLimits.confirm, current.accountId);
+    if (limited !== undefined) return limited;
+    const { documentId } = confirmDocumentUpload.body.parse(await c.req.json());
+    const outcome = await documents.confirm(current.accountId, documentId);
+    if (outcome === 'not_found') return fail(c, 'not_found', 404);
+    if (outcome === 'not_uploaded') return fail(c, 'not_uploaded', 409);
+    if (outcome === 'mismatch') return fail(c, 'upload_mismatch', 409);
+    return c.json({}, 200);
+  });
+
+  v1.openapi(openApiRoutes.listDocuments, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || documents === undefined) return unauthorized(c);
+    const { after } = DocumentsQuery.parse(c.req.query());
+    return c.json(await documents.list(current.accountId, after), 200);
+  });
+
+  v1.openapi(openApiRoutes.documentDownloadUrl, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || documents === undefined) return unauthorized(c);
+    if (!(await unlocked(current))) return fail(c, 'step_up_required', 403);
+    const { documentId } = documentDownloadUrl.body.parse(await c.req.json());
+    const url = await documents.downloadUrl(current.accountId, documentId);
+    if (url === undefined) return fail(c, 'not_found', 404);
+    c.header('cache-control', 'no-store');
+    const expiresAt = new Date(Date.now() + objectUrlMinutes * 60_000).toISOString();
+    return c.json({ url, expiresAt }, 200);
+  });
+
   v1.openapi(openApiRoutes.notificationChannels, async (c) => {
     const current = await signedIn(c);
     if (current === null || notifications === undefined) return unauthorized(c);
@@ -1056,6 +1146,23 @@ export function createApp({
 
   if (outbox !== undefined) {
     app.get('/internal/outbox', async (c) => c.json({ messages: await outbox() }, 200));
+  }
+
+  if (memoryObjects !== undefined) {
+    const objectPath = (c: Context<AppEnv>) => c.req.path.slice(`${memoryObjectsPath}/`.length);
+    app.put(`${memoryObjectsPath}/*`, async (c) => {
+      const body = new Uint8Array(await c.req.arrayBuffer());
+      const stored = memoryObjects.receive(objectPath(c), c.req.query('token') ?? '', body);
+      return stored ? c.body(null, 204) : reject(c, 'not_found', 404);
+    });
+    app.get(`${memoryObjectsPath}/*`, (c) => {
+      const bytes = memoryObjects.serve(objectPath(c), c.req.query('token') ?? '');
+      if (bytes === undefined) return reject(c, 'not_found', 404);
+      return c.body(new Uint8Array(bytes), 200, {
+        'content-type': 'application/octet-stream',
+        'cache-control': 'no-store',
+      });
+    });
   }
 
   if (syntheticError) {
