@@ -8,6 +8,7 @@ import type { CanonicalAction } from '../src/auth/step-up-encoding.js';
 import type {
   EnvelopeAdded,
   RecoveryResealed,
+  SharingStateStored,
   Vault,
   VaultReset,
   VaultRotation,
@@ -43,6 +44,15 @@ const envelopes = {
   ],
 };
 
+const taggedState = {
+  version: 3,
+  state: Buffer.from('{"documents":{},"format":1,"pins":{}}').toString('base64url'),
+  tag: randomBytes(32).toString('base64url'),
+};
+const links = [
+  { accountId: '5c4b3a29-1807-4f6e-9d5c-4b3a29180716', email: 'relative@example.com', recipient },
+];
+
 function setup({
   unlocked = true,
   setUp = 'created',
@@ -52,6 +62,7 @@ function setup({
   rotated = 'rotated',
   resealed = 'resealed',
   reset,
+  storedState = 'stored',
 }: {
   unlocked?: boolean;
   setUp?: VaultSetUp;
@@ -61,6 +72,7 @@ function setup({
   rotated?: VaultRotation;
   resealed?: RecoveryResealed;
   reset?: VaultReset;
+  storedState?: SharingStateStored;
 } = {}) {
   const calls: unknown[] = [];
   const spent: { purpose: string; action: CanonicalAction }[] = [];
@@ -102,6 +114,18 @@ function setup({
     reset: (accountId) => {
       calls.push(['reset', accountId]);
       return Promise.resolve(reset ?? (stored ? 'reset' : 'no_vault'));
+    },
+    sharingState: (accountId) => {
+      calls.push(['sharingState', accountId]);
+      return Promise.resolve(stored ? taggedState : null);
+    },
+    storeSharingState: (accountId, request) => {
+      calls.push(['storeSharingState', accountId, request]);
+      return Promise.resolve(storedState);
+    },
+    links: (accountId) => {
+      calls.push(['links', accountId]);
+      return Promise.resolve(links);
     },
   };
   const devices = {
@@ -337,5 +361,69 @@ describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
     const response = await setup({ reset: 'has_documents' }).call('DELETE', '/vault', {});
     expect(response.status).toBe(409);
     expect(await response.json()).toMatchObject({ error: { code: 'vault_has_documents' } });
+  });
+});
+
+const storeBody = { recipient, expectedVersion: 2, sharingState: taggedState };
+
+describe('sharing state and account links (spec 0005, R4)', () => {
+  it('serves the stored sharing state, or null before the first, without a window', async () => {
+    const response = await setup({ unlocked: false }).call('GET', '/vault/sharing-state');
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ sharingState: taggedState });
+    const none = await setup({ stored: false }).call('GET', '/vault/sharing-state');
+    expect(await none.json()).toEqual({ sharingState: null });
+  });
+
+  it('stores a sharing state only within a vault_unlock window', async () => {
+    const refused = setup({ unlocked: false });
+    const response = await refused.call('PUT', '/vault/sharing-state', storeBody);
+    expect(response.status).toBe(403);
+    expect(await errorOf(response)).toBe('step_up_required');
+    expect(refused.calls).toEqual([]);
+    const { call, calls } = setup();
+    expect((await call('PUT', '/vault/sharing-state', storeBody)).status).toBe(200);
+    expect(calls).toEqual([['storeSharingState', owner.accountId, storeBody]]);
+  });
+
+  it.each([
+    ['no_vault', 404, 'not_found'],
+    ['vault_changed', 409, 'vault_changed'],
+    ['changed', 409, 'sharing_state_changed'],
+  ] as const)('answers a %s store with %i %s', async (outcome, status, code) => {
+    const response = await setup({ storedState: outcome }).call(
+      'PUT',
+      '/vault/sharing-state',
+      storeBody,
+    );
+    expect(response.status).toBe(status);
+    expect(await errorOf(response)).toBe(code);
+  });
+
+  it.each([
+    ['a version not above the one it replaces', { ...storeBody, expectedVersion: 3 }],
+    [
+      'a first version of 0',
+      { ...storeBody, expectedVersion: null, sharingState: { ...taggedState, version: 0 } },
+    ],
+    ['a short tag', { ...storeBody, sharingState: { ...taggedState, tag: 'AAAA' } }],
+    [
+      'a state that is not base64url',
+      { ...storeBody, sharingState: { ...taggedState, state: 'a+b/' } },
+    ],
+    ['a classic recipient', { ...storeBody, recipient: `age1${'q'.repeat(58)}` }],
+    ['an extra field', { ...storeBody, documents: {} }],
+  ])('refuses a sharing state with %s', async (_, body) => {
+    const { call, calls } = setup();
+    expect((await call('PUT', '/vault/sharing-state', body)).status).toBe(400);
+    expect(calls).toEqual([]);
+  });
+
+  it("lists the account's links with their recipients", async () => {
+    const { call, calls } = setup({ unlocked: false });
+    const response = await call('GET', '/account/links');
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ links });
+    expect(calls).toEqual([['links', owner.accountId]]);
   });
 });

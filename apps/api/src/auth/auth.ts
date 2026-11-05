@@ -377,6 +377,18 @@ export const accounts = {
   lock: async (tx: Transaction, accountId: string) =>
     (await tx.select({ id: user.id }).from(user).where(eq(user.id, accountId)).for('update'))
       .length === 1,
+  /** The email of each of these accounts that still exists. */
+  emailsOf: async (db: Database | Transaction, accountIds: readonly string[]) =>
+    new Map(
+      accountIds.length === 0
+        ? []
+        : (
+            await db
+              .select({ id: user.id, email: user.email })
+              .from(user)
+              .where(inArray(user.id, [...accountIds]))
+          ).map(({ id, email }) => [id, email]),
+    ),
   /** The accounts among these that are confirmed. */
   confirmedAmong: async (db: Database | Transaction, accountIds: readonly string[]) =>
     new Set(

@@ -773,6 +773,8 @@ export const auditEventDetails = {
   document_deleted: documentEvent,
   document_shared: documentShareEvent,
   document_share_revoked: documentShareEvent,
+  /** The owner's sharing state now pins another recipient for this account. */
+  recipient_pin_changed: z.strictObject({ accountId: z.uuid() }),
   notification_channel_added: z.strictObject({ channelId: z.uuid() }),
   notification_channel_removed: z.strictObject({ channelId: z.uuid() }),
 } as const;
@@ -1032,6 +1034,89 @@ export const resetVault = {
   body: z.strictObject({}),
   response: { description: 'Vault reset', schema: ResetVaultResponse },
 } as const satisfies RouteDefinition<typeof ResetVaultResponse>;
+
+/** The largest serialized sharing state the database keeps. */
+export const maxSharingStateBytes = 1024 * 1024;
+
+/** The owner's sharing state as their device tagged it under the share key (ADR-0018). */
+export const TaggedSharingState = z.strictObject({
+  version: z
+    .int()
+    .min(1)
+    .max(2 ** 31 - 1),
+  /** The canonical serialized state, base64url without padding. */
+  state: z
+    .string()
+    .min(2)
+    .max(Math.ceil((maxSharingStateBytes * 4) / 3))
+    .regex(/^[A-Za-z0-9_-]+$/)
+    .refine((state) => state.length % 4 !== 1, 'whole bytes'),
+  /** HMAC-SHA-256 over the domain tag, the account ID, the version and the state. */
+  tag: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
+});
+export type TaggedSharingState = z.infer<typeof TaggedSharingState>;
+
+export const SharingStateResponse = z.object({
+  /** Null until the account first stores one. */
+  sharingState: TaggedSharingState.nullable(),
+});
+export type SharingStateResponse = z.infer<typeof SharingStateResponse>;
+
+export const getSharingState = {
+  method: 'get',
+  path: '/vault/sharing-state',
+  operationId: 'getSharingState',
+  summary:
+    "The account's sharing state as its device last stored it, for the device to verify; 401 without a session",
+  response: { description: 'The sharing state', schema: SharingStateResponse },
+} as const satisfies RouteDefinition<typeof SharingStateResponse>;
+
+export const StoreSharingStateRequest = z
+  .strictObject({
+    /** The current recipient, as the device derives it from the identity whose key tagged it. */
+    recipient: VaultRecipient,
+    /** The version the device read and changed; null when there was none. */
+    expectedVersion: z.int().min(1).nullable(),
+    sharingState: TaggedSharingState,
+  })
+  .refine(
+    ({ expectedVersion, sharingState }) => sharingState.version > (expectedVersion ?? 0),
+    'a higher version than the one it replaces',
+  );
+export type StoreSharingStateRequest = z.infer<typeof StoreSharingStateRequest>;
+
+export const StoreSharingStateResponse = z.object({});
+
+export const storeSharingState = {
+  method: 'put',
+  path: '/vault/sharing-state',
+  operationId: 'storeSharingState',
+  summary:
+    "Stores the account's newly tagged sharing state, within a vault_unlock window, only over the version the device read; 403 step_up_required, 404 not_found before set-up, 409 vault_changed unless the recipient is the current one, 409 sharing_state_changed when another version was stored since",
+  body: StoreSharingStateRequest,
+  response: { description: 'Sharing state stored', schema: StoreSharingStateResponse },
+} as const satisfies RouteDefinition<typeof StoreSharingStateResponse>;
+
+/** An account linked to this one by a confirmed invite, in either direction (spec 0005, R4). */
+export const AccountLink = z.object({
+  accountId: z.uuid(),
+  email: z.email(),
+  /** Their current vault recipient, to share with; null until they set up their vault. */
+  recipient: VaultRecipient.nullable(),
+});
+export type AccountLink = z.infer<typeof AccountLink>;
+
+export const AccountLinksResponse = z.object({ links: z.array(AccountLink) });
+export type AccountLinksResponse = z.infer<typeof AccountLinksResponse>;
+
+export const listAccountLinks = {
+  method: 'get',
+  path: '/account/links',
+  operationId: 'listAccountLinks',
+  summary:
+    'The accounts linked to this one, each with its email and current vault recipient, in email order; 401 without a session',
+  response: { description: 'Linked accounts', schema: AccountLinksResponse },
+} as const satisfies RouteDefinition<typeof AccountLinksResponse>;
 
 /** Where an account's notifications go: its email, or a browser's push subscription (spec 0005, R7). */
 export const NotificationChannel = z.object({
@@ -1456,6 +1541,9 @@ export const routes = {
   rotateVaultIdentity,
   resealVaultRecovery,
   resetVault,
+  getSharingState,
+  storeSharingState,
+  listAccountLinks,
   notificationChannels,
   addPushChannel,
   removeNotificationChannel,

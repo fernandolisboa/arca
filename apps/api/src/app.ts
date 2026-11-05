@@ -39,6 +39,7 @@ import {
   rotateVaultIdentity,
   resealVaultRecovery,
   resetVault,
+  storeSharingState,
   addPushChannel,
   removeNotificationChannel,
   StepUpAction,
@@ -229,6 +230,7 @@ export type ErrorCode =
   | 'vault_exists'
   | 'vault_changed'
   | 'vault_has_documents'
+  | 'sharing_state_changed'
   | 'document_quota'
   | 'upload_mismatch'
   | 'not_uploaded'
@@ -1000,6 +1002,33 @@ export function createApp({
     if (outcome === 'no_vault') return fail(c, 'not_found', 404);
     if (outcome === 'has_documents') return fail(c, 'vault_has_documents', 409);
     return c.json({}, 200);
+  });
+
+  // The sharing state is tagged on the device; the server keeps it and its version (ADR-0018).
+  v1.openapi(openApiRoutes.getSharingState, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || vault === undefined) return unauthorized(c);
+    return c.json({ sharingState: await vault.sharingState(current.accountId) }, 200);
+  });
+
+  v1.openapi(openApiRoutes.storeSharingState, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || vault === undefined) return unauthorized(c);
+    if (!(await unlocked(current))) return fail(c, 'step_up_required', 403);
+    const outcome = await vault.storeSharingState(
+      current.accountId,
+      storeSharingState.body.parse(await c.req.json()),
+    );
+    if (outcome === 'no_vault') return fail(c, 'not_found', 404);
+    if (outcome === 'vault_changed') return fail(c, 'vault_changed', 409);
+    if (outcome === 'changed') return fail(c, 'sharing_state_changed', 409);
+    return c.json({}, 200);
+  });
+
+  v1.openapi(openApiRoutes.listAccountLinks, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || vault === undefined) return unauthorized(c);
+    return c.json({ links: await vault.links(current.accountId) }, 200);
   });
 
   // Documents (spec 0005, R4): metadata on app_api, ciphertext in the object store.
