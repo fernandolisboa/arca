@@ -170,9 +170,21 @@ test('keeps documents encrypted on the server, and changes one only after a vaul
   });
   expect(refused.status()).toBe(403);
   expect(await refused.json()).toEqual({ error: { code: 'step_up_required' } });
+  const replace = await page.request.post(`${databaseServer.origin}/v1/vault/documents/replace`, {
+    headers: { origin: databaseServer.origin },
+    data: {
+      recipients: [],
+      documents: [{ documentId, size: 64, sha256: 'A'.repeat(43), label: 'AAAA' }],
+    },
+  });
+  expect(replace.status()).toBe(403);
+  expect(await replace.json()).toEqual({ error: { code: 'step_up_required' } });
   await page.reload();
   await page.getByRole('button', { name: 'Abrir o cofre' }).click();
   await expect(documents.getByText(fileName)).toBeVisible();
+  const unchanged = page.waitForEvent('download');
+  await documents.getByRole('button', { name: 'Baixar' }).click();
+  expect(await readFile(await (await unchanged).path(), 'utf8')).toBe(contents);
 
   await documents.getByRole('button', { name: 'Apagar' }).click();
   await expect(page.getByText('Documento apagado.')).toBeVisible();
@@ -303,6 +315,9 @@ test('never encrypts to a recipient the server added, and asks before using a re
   await choice.getByRole('button', { name: 'Salvar' }).click();
   await expect(page.getByText('Compartilhamento salvo.')).toBeVisible();
   await expect(documents.getByText('Compartilhado com 1 pessoa')).toHaveCount(0);
+  await expect
+    .poll(async () => (await sharingStateOf(owner.userId)).version)
+    .toBeGreaterThan(sharedState.version);
 
   // A recipient row the owner's list does not name is called out, and its box starts clear.
   const documentId = await addRecipientRow(owner.userId, relative.userId);
@@ -325,6 +340,7 @@ test('never encrypts to a recipient the server added, and asks before using a re
   await expect(relativePage.getByText(/^Ainda não há documentos no cofre\./)).toBeVisible();
 
   // A restored older list waits for the owner, who sees what it shares first.
+  const highest = (await sharingStateOf(owner.userId)).version;
   await restoreSharingState(owner.userId, sharedState);
   await page.reload();
   await page.getByRole('button', { name: 'Abrir o cofre' }).click();
@@ -341,7 +357,8 @@ test('never encrypts to a recipient the server added, and asks before using a re
   await expectAccessible(page);
   await page.getByRole('button', { name: 'Conferi, pode usar esta lista' }).click();
   await expect(page.getByText('Lista de compartilhamento confirmada.')).toBeVisible();
-  expect((await sharingStateOf(owner.userId)).version).toBeGreaterThan(sharedState.version + 1);
+  // Confirming tags it above the version stored and the one this device saw.
+  expect((await sharingStateOf(owner.userId)).version).toBeGreaterThan(highest);
 
   // No document opens in a new session until its own vault_unlock step-up (spec 0005, R2).
   await signOutAndIn(page, ownerEmail);

@@ -218,15 +218,18 @@ describe('eraseAccount (spec 0004, R9)', () => {
       await makeDue(accountId);
       expect(await eraseAccountNow(erasureWith(), accountId)).toBe(true);
     }
-    const left = await admin(
-      `SELECT (SELECT count(*) FROM vault.document WHERE owner_id IN ($1, $2))
-              + (SELECT count(*) FROM vault.document_recipient
-                  WHERE recipient_id IN ($1, $2) OR document_owner_id IN ($1, $2))
-              + (SELECT count(*) FROM account.link
-                  WHERE inviter_id IN ($1, $2) OR invitee_id IN ($1, $2)) AS n`,
+    for (const { accountId } of pair) {
+      const counts = await ownedCounts(testDatabase, accountId);
+      for (const entry of registry.entries) {
+        if (entry.strategy === 'delete') expect(counts[entry.table], entry.table).toBe(0);
+      }
+    }
+    const shared = await admin(
+      `SELECT count(*)::int AS n FROM vault.document_recipient
+        WHERE recipient_id IN ($1, $2) OR document_owner_id IN ($1, $2)`,
       [a.accountId, b.accountId],
     );
-    expect(left.rows).toEqual([{ n: '0' }]);
+    expect(shared.rows).toEqual([{ n: 0 }]);
   });
 
   it('keeps the rows that name the objects when the objects cannot be deleted', async () => {
