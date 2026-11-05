@@ -47,7 +47,7 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 
 - Rules engine and knowledge base, specified in [specs/0002-rules-engine-and-knowledge-base.md](specs/0002-rules-engine-and-knowledge-base.md), with the knowledge base as reviewed data activated by the owner's passkey ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)).
 - Knowledge seed for the first countries, from official sources.
-- AI intake (text first, proposed) and case model, with playback and correction; permissions per person and unit; audit log.
+- Case model with guided questions first, then AI intake from free text ([spec 0007](specs/0007-case-model-and-guided-intake.md)), with playback and correction; permissions per person and unit; audit log.
 - Destination comparison weighted by each person.
 - Strategy recommendation with alternatives, pros, cons, risks, cost and time.
 - Personalized document checklist.

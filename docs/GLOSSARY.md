@@ -31,6 +31,9 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Family (mode) | Em família | The step is assigned to a relative in the case who offered to help |
 | Action point | Ponto de ação | Where a step actually happens: link, phone, office, partner; says whether the step can be done online |
 | Family area | Área da família | The screen with the people in a case, who has an account, invites and who may upload documents for whom; grants no access by itself |
+| Guided questions | Perguntas guiadas | The step-by-step questions per person that fill the case, each setting one fact; "Não sei" leaves it unknown |
+| Playback | Resumo do caso | The case read back in plain sentences, each linked to the question that sets it, so the person can correct it |
+| Controller | Responsável pelos dados | The one account that writes a person's facts and decides who sees them: the person, or whoever added someone without an account |
 | Progress | Progresso | Documents obtained and steps done out of what a person's or the family's chosen routes need, computed in code; unknowns shown apart |
 | Shared analysis | Análise compartilhada | A comparison or recommendation an adult shares, read-only and revocable, with chosen people in the case; not a document share |
 | Guided tour | Tour guiado | The first-run walkthrough of the app and the hint shown the first time a screen opens; skippable and replayable |
@@ -45,21 +48,15 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Official source | Fonte oficial | A source on a host the knowledge base lists as official for a country or an international body |
 | Secondary source | Fonte secundária | A non-official source cited beside an official one, never instead of it |
 | Stale source | Fonte desatualizada | A source not re-verified in the last 90 days; evaluations that cite it say the rule needs re-checking |
-| Activation | Ativação | An approver's passkey approval of one route version, bound to its content hash; counts only after its notice and veto window |
+| Activation | Ativação | An approver's passkey approval of one route version, bound to its content hash; counts once stored ([ADR-0022](adr/0022-single-approver-activation.md)) |
 | Rejection | Recusa | An approver's passkey decision that a version, proposed or active, will never be used; once it counts, selection skips it |
-| Veto | Veto | An approver's passkey cancellation of a pending decision before it counts; final |
-| Approver | Aprovador | A person on the reviewed approver list who may activate, reject or veto knowledge-base versions with a pinned passkey |
-| Decision | Decisão | An approver's activation, rejection or veto, stored with its passkey assertion |
-| Notice | Aviso de segurança | The message every approver gets for every decision; the veto window runs from it |
+| Approver | Aprovador | An account on the reviewed approver list who may activate or reject knowledge-base versions with a step-up |
+| Decision | Decisão | An approver's activation or rejection, stored with the step-up it consumed |
 | Step-up | Confirmação com chave de acesso | A fresh passkey verification for one sensitive action, bound to that action |
 | Content hash | Internal, no UI label | SHA-256 of the canonical JSON of a version and every file it pins; what a decision is bound to |
 | Passkey | Chave de acesso | The WebAuthn credential a person signs in and confirms sensitive actions with |
 | Knowledge catalog | Internal, no UI label | The validated, hashed route data that `packages/knowledge` builds and the API bundles; not the pnpm catalog of dependency versions |
-| Approver list | Internal, no UI label | The reviewed, versioned file in the repository that names the approvers and pins their credentials; designed with consultancy core slice 3 |
-| Credential | Credencial | A passkey or security key pinned for an approver: the everyday credential or the offline credential |
-| Everyday credential | Chave de acesso | An approver's synced passkey, usually the phone's, for rule decisions and vetoes; it is a passkey, so it shares that label, and screens add a qualifier only where it must be told apart from the offline credential |
-| Offline credential | Chave de segurança | An approver's hardware security key, device-bound and attested, the only credential that may propose an approver-list change, besides the recovery path |
-| Recovery path | Internal, no UI label | The delayed, notified way to restore an approver who lost every credential; never rests on Git or email alone |
+| Approver list | Internal, no UI label | The reviewed file in the repository that names the approvers by account ID, per environment |
 | Activation screen | Tela de ativação | Where an approver reviews a proposed version as data and activates or rejects it |
 | Independent check | Verificação independente | The agent report that compares a proposed version with its official sources before the owner decides; advisory only |
 | Country guide | Internal, no UI label | The reviewed data file per country that the independent check loads: governing laws, how they change, known pitfalls; never a source and never a list of official hosts; not a Claude Code skill |
