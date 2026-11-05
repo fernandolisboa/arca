@@ -1,6 +1,6 @@
 import { ApiError, documentQuota, maxDocumentBytes } from '@arca/api-contract/client';
 import { Button } from '@arca/ui';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
 import { useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -9,29 +9,52 @@ import {
   DocumentNotOpened,
   documentsQuery,
   DocumentTooLarge,
+  ReplacementRefused,
   saveDocument,
   type OpenedDocument,
 } from './documents.js';
 import { dangerLinkClass, textLinkClass } from './forms/text-link.js';
 import { filePicking, passkeys } from './platform.js';
 import { commonFailure, type CommonFailure } from './requests.js';
+import { SharePanel } from './share-panel.js';
+import {
+  confirmSharingState,
+  shareDocument,
+  sharingQuery,
+  SharingStateInvalid,
+} from './sharing.js';
+import type { Sharing } from './share-recipients.js';
 import { useDateFormat } from './use-date-format.js';
 import type { UnlockedVault } from './vault-session.js';
 
-type Done = 'added' | 'saved' | 'deleted';
+type Done = 'added' | 'saved' | 'deleted' | 'shared' | 'confirmed';
 type DocumentFailure =
-  CommonFailure | 'too_large' | 'quota' | 'changed' | 'not_opened' | 'unconfirmed';
+  | CommonFailure
+  | 'too_large'
+  | 'quota'
+  | 'changed'
+  | 'not_opened'
+  | 'unconfirmed'
+  | 'not_shared'
+  | 'sharing_invalid';
 
 const documentApiFailures: Partial<Record<string, DocumentFailure>> = {
   document_quota: 'quota',
   account_unconfirmed: 'unconfirmed',
   // The vault was reset or set up again elsewhere since this device opened it.
   not_found: 'changed',
+  // Another device changed the vault or the sharing state since this one read it.
+  vault_changed: 'changed',
+  sharing_state_changed: 'changed',
+  // A person lost their link since the list was read.
+  not_linked: 'not_shared',
 };
 
 function documentFailure(error: unknown): DocumentFailure {
   if (error instanceof DocumentTooLarge) return 'too_large';
   if (error instanceof DocumentNotOpened) return 'not_opened';
+  if (error instanceof ReplacementRefused) return 'not_shared';
+  if (error instanceof SharingStateInvalid) return 'sharing_invalid';
   return commonFailure(error, (apiError: ApiError) => documentApiFailures[apiError.code]);
 }
 
@@ -61,6 +84,8 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
   const queryClient = useQueryClient();
   const query = documentsQuery(vault);
   const documents = useQuery(query);
+  const sharingOptions = sharingQuery(vault);
+  const sharing = useQuery(sharingOptions);
   const [waiting, setWaiting] = useState(false);
   const [outcome, setOutcome] = useState<{ done: Done } | { failure: DocumentFailure }>();
   const statusRef = useRef<HTMLParagraphElement>(null);
@@ -68,20 +93,26 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
   const change = (run: () => Promise<boolean>, done: Done, refresh: boolean) => {
     setOutcome(undefined);
     setWaiting(true);
-    run()
-      .then(async (changed) => {
-        if (!changed) return;
-        setOutcome({ done });
-        if (refresh) await queryClient.invalidateQueries({ queryKey: query.queryKey });
-      })
-      .catch((error: unknown) => {
+    void (async () => {
+      let changed: boolean;
+      try {
+        changed = await run();
+        if (changed) setOutcome({ done });
+      } catch (error) {
+        // A failed step can follow one that stored, so the lists are read again either way.
+        changed = true;
         setOutcome({ failure: documentFailure(error) });
-      })
-      .finally(() => {
-        setWaiting(false);
-        // The control that had focus may leave with its row, so focus moves to the result.
-        statusRef.current?.focus();
-      });
+      }
+      if (refresh && changed) {
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: query.queryKey }),
+          queryClient.invalidateQueries({ queryKey: sharingOptions.queryKey }),
+        ]);
+      }
+      setWaiting(false);
+      // The control that had focus may leave with its row, so focus moves to the result.
+      statusRef.current?.focus();
+    })();
   };
 
   const add = () => {
@@ -111,6 +142,8 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
             maxDocuments: documentQuota.documents,
             maxBytes: size(documentQuota.bytes),
           });
+
+  const documentNames = names(documents.data ?? []);
 
   return (
     <section aria-labelledby="documents-title" className="flex w-full flex-col items-start gap-3">
@@ -153,6 +186,7 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
               <DocumentRow
                 key={opened.document.id}
                 opened={opened}
+                names={documentNames}
                 own={opened.document.ownerId === vault.accountId}
                 disabled={waiting}
                 onSave={() => {
@@ -163,6 +197,31 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
                     },
                     'saved',
                     false,
+                  );
+                }}
+                sharing={sharing}
+                onShare={(chosen, accepted) => {
+                  if (sharing.data === undefined) return;
+                  const current = sharing.data;
+                  change(
+                    async () => {
+                      await shareDocument(passkeys, vault, current, opened, chosen, accepted);
+                      return true;
+                    },
+                    'shared',
+                    true,
+                  );
+                }}
+                onConfirmState={() => {
+                  if (sharing.data === undefined) return;
+                  const { view } = sharing.data;
+                  change(
+                    async () => {
+                      await confirmSharingState(passkeys, vault, view);
+                      return true;
+                    },
+                    'confirmed',
+                    true,
                   );
                 }}
                 onDelete={() => {
@@ -183,23 +242,42 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
   );
 }
 
+/** Each opened document's name by ID, for the rolled-back sharing list. */
+const names = (opened: readonly OpenedDocument[]): ReadonlyMap<string, string> =>
+  new Map(
+    opened.flatMap(({ document, label }) =>
+      label === undefined ? [] : [[document.id, label.name] as const],
+    ),
+  );
+
 function DocumentRow({
-  opened: { document, label },
+  opened,
+  names,
   own,
   disabled,
+  sharing,
   onSave,
+  onShare,
+  onConfirmState,
   onDelete,
 }: {
   readonly opened: OpenedDocument;
+  readonly names: ReadonlyMap<string, string>;
   readonly own: boolean;
   readonly disabled: boolean;
+  readonly sharing: UseQueryResult<Sharing>;
   readonly onSave: () => void;
+  readonly onShare: (chosen: ReadonlySet<string>, accepted: ReadonlySet<string>) => void;
+  readonly onConfirmState: () => void;
   readonly onDelete: () => void;
 }) {
+  const { document, label } = opened;
   const { t } = useTranslation();
   const when = useDateFormat();
   const size = useSize();
   const nameId = useId();
+  const panelId = useId();
+  const [sharingOpen, setSharingOpen] = useState(false);
   return (
     <li className="flex flex-col gap-2 rounded-card border border-line bg-surface p-4">
       <p id={nameId} className="font-medium break-words">
@@ -211,7 +289,15 @@ function DocumentRow({
           created: when.format(new Date(document.createdAt)),
         })}
       </p>
-      {!own && <p className="text-small text-muted">{t('vault.documents.sharedWithYou')}</p>}
+      {own ? (
+        document.sharedWith.length > 0 && (
+          <p className="text-small text-muted">
+            {t('vault.documents.sharedWith', { count: document.sharedWith.length })}
+          </p>
+        )
+      ) : (
+        <p className="text-small text-muted">{t('vault.documents.sharedWithYou')}</p>
+      )}
       <div className="flex flex-wrap gap-x-6">
         {label !== undefined && (
           <button
@@ -222,6 +308,21 @@ function DocumentRow({
             onClick={onSave}
           >
             {t('vault.documents.save')}
+          </button>
+        )}
+        {own && label !== undefined && (
+          <button
+            type="button"
+            disabled={disabled}
+            aria-describedby={nameId}
+            aria-expanded={sharingOpen}
+            aria-controls={sharingOpen ? panelId : undefined}
+            className={textLinkClass}
+            onClick={() => {
+              setSharingOpen((open) => !open);
+            }}
+          >
+            {t('vault.documents.share.open')}
           </button>
         )}
         {own && (
@@ -236,6 +337,21 @@ function DocumentRow({
           </button>
         )}
       </div>
+      {sharingOpen && (
+        <SharePanel
+          id={panelId}
+          opened={opened}
+          name={label?.name ?? t('vault.documents.unnamed')}
+          names={names}
+          sharing={sharing}
+          disabled={disabled}
+          onShare={onShare}
+          onConfirmState={onConfirmState}
+          onClose={() => {
+            setSharingOpen(false);
+          }}
+        />
+      )}
     </li>
   );
 }
