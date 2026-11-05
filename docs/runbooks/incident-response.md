@@ -284,4 +284,6 @@ Within two weeks of closing it, write a review in the private record. Write a su
 - Action items (owner, ticket):
 ```
 
-Drills and tabletop exercises for this runbook are logged in [drills.md](drills.md).
+## Keeping it current
+
+There are no scheduled drills or tabletop exercises: the project owner dropped them on 2026-11-05 as out of proportion for a family app. Update this runbook when a step changes. Once in a while, check in the repository's Actions tab that the weekly smoke run still runs: GitHub turns off scheduled workflows in a public repository after 60 days without activity, and that run is what warns that `security.txt` is about to expire.
