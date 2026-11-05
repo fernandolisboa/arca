@@ -160,7 +160,7 @@ Risks from the OWASP Top 10 for Agentic Applications (2026):
 | ID | Residual | Accepted in |
 | --- | --- | --- |
 | R-1 | Nothing in CI proves the reviewers ran, a branch that weakens the agent definitions is judged by the weakened reviewers, and a steered reviewer is not caught | [ADR-0019](../adr/0019-reviewers-in-the-authoring-session.md) |
-| R-2 | Preview builds and running functions can read the owner connection string in Vercel; someone holding it can write `auth` rows the guards trust | [ADR-0012](../adr/0012-automation-first-setup.md) |
+| R-2 | Builds and running functions can read their environment's owner connection string in Vercel, and Preview's app-role passwords (`ARCA_DB_*`) are production's too; someone holding them can write `auth` rows the guards trust | [ADR-0012](../adr/0012-automation-first-setup.md); [spec 0004 R1](../specs/0004-real-data-readiness.md#r1-previews-fork-from-development-and-the-build-proves-it) |
 | R-3 | Losing the Neon or Vercel account loses the data; damage older than the history window cannot be undone without a manual snapshot | [ADR-0021](../adr/0021-stay-on-vercel-and-neon.md) |
 | R-4 | The tunnel and the public DSN are unauthenticated ways to put events into Sentry; the DSN path skips the tunnel's limits | [ADR-0016](../adr/0016-observability-and-scrubbing.md) |
 | R-5 | One active passkey controls the account: a thief with an unlocked device can revoke the others | [ADR-0015](../adr/0015-identity-enrollment-step-up-and-recovery.md) |
@@ -171,7 +171,7 @@ Risks from the OWASP Top 10 for Agentic Applications (2026):
 | R-10 | Revoking only a session offers no rotation; a device offline past the checks loses a stored rotation's new secret; a later cancelled recovery hides an earlier one from the offer | [spec 0005 R4](../specs/0005-vault-devices-and-notifications.md#r4-documents) |
 | R-11 | After an account change or a 401, the old account's push channel stays until the push service answers gone | [spec 0005 R7](../specs/0005-vault-devices-and-notifications.md#r7-notifications) |
 | R-12 | Agents hold the owner's GitHub token and could change the ruleset or settings | [ADR-0012](../adr/0012-automation-first-setup.md) |
-| R-13 | The owner's other apps share the `filx.app` sending domain, so one of them, or its leaked Resend key, can send mail that passes DMARC as Arca's | [ADR-0015](../adr/0015-identity-enrollment-step-up-and-recovery.md#email) |
+| R-13 | The owner's other apps share the `filx.app` sending domain, so one of them, or its leaked Resend key, can send mail that passes DMARC as Arca's and asks for a recovery link and code; recovery's wait and cancel (I2) limit it | [ADR-0015](../adr/0015-identity-enrollment-step-up-and-recovery.md#email) |
 
 ## Open gaps
 

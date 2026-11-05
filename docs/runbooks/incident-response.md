@@ -113,7 +113,7 @@ Rotate every secret the incident may have reached; when in doubt, all of them. G
 
 - **Database passwords** must match `^[A-Za-z0-9_-]{32,128}$`, or the build fails at bootstrap. Base64 output, with its `+`, `/` and `=`, does not match.
 - **Redeploy** after each change, and Promote to Production if a rollback is active.
-- **Preview builds** use their own Preview-scoped values of the same variables. If the incident may have reached Vercel's variables or a preview, rotate those too, and delete the preview branches forked from production.
+- **Preview builds** use their own Preview-scoped values of the same variables. If the incident may have reached Vercel's variables or a preview, rotate those too, and rebuild the `development` branch if it holds production rows (spec 0004 R1).
 
 | Secret | Where it lives | How to rotate |
 | --- | --- | --- |
