@@ -60,7 +60,7 @@ const envelopeRows = (owner: Account) =>
       (
         await client.query<{ kind: string; credential_id: string | null }>(
           `SELECT kind, credential_id FROM vault.envelope WHERE account_id = $1
-            ORDER BY kind, credential_id`,
+            ORDER BY kind, credential_id COLLATE "C"`,
           [owner.accountId],
         )
       ).rows,
@@ -92,7 +92,8 @@ describe('vault set-up and status (spec 0005, R2)', () => {
         { kind: 'passkey_prf', credential_id: credentialOf(owner, 1) },
         { kind: 'recovery', credential_id: null },
       ].sort((a, b) =>
-        `${a.kind}${a.credential_id ?? ''}`.localeCompare(`${b.kind}${b.credential_id ?? ''}`),
+        // Byte order, as the query's COLLATE "C": a locale may skip the `-` an ID can start with.
+        `${a.kind}${a.credential_id ?? ''}` < `${b.kind}${b.credential_id ?? ''}` ? -1 : 1,
       ),
     );
     expect((await setUp(owner)).outcome).toBe('exists');
