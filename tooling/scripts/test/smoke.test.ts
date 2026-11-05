@@ -16,19 +16,21 @@ interface Answer {
 }
 
 /**
- * Answers `/v1/health` with each of `health` in turn, repeating the last, `/` with `page`, and the
- * workflow runner with `runnerStatus`.
+ * Answers `/v1/health` with each of `health` in turn, repeating the last, `/` with `page`, the
+ * workflow runner with `runnerStatus` and its webhook with `webhookStatus`.
  */
 function fakeFetch(
   health: readonly Answer[],
   {
     page = {},
     runnerStatus = 404,
+    webhookStatus = 404,
     headers = securityHeaders,
     contact = { raw: securityTxt('2027-11-04T00:00:00.000Z') },
   }: {
     page?: Answer;
     runnerStatus?: number;
+    webhookStatus?: number;
     headers?: Record<string, string>;
     contact?: Answer;
   } = {},
@@ -56,6 +58,9 @@ function fakeFetch(
     }
     if (path === '/.well-known/workflow/v1/flow') {
       return Promise.resolve(new Response(null, { status: runnerStatus }));
+    }
+    if (path.startsWith('/.well-known/workflow/v1/webhook/')) {
+      return Promise.resolve(new Response(null, { status: webhookStatus }));
     }
     return Promise.resolve(
       new Response('<!doctype html>', {
@@ -107,6 +112,7 @@ describe('production smoke test (spec 0001, R9)', () => {
       { where: '/v1/health', problem: 'request failed: TypeError' },
       { where: '/', problem: 'request failed: TypeError' },
       { where: '/.well-known/workflow/v1/flow', problem: 'request failed: TypeError' },
+      { where: '/.well-known/workflow/v1/webhook/', problem: 'request failed: TypeError' },
       { where: '/.well-known/security.txt', problem: 'request failed: TypeError' },
     ]);
   });
@@ -145,6 +151,25 @@ describe('production smoke test (spec 0001, R9)', () => {
         {
           where: '/.well-known/workflow/v1/flow',
           problem: `answered ${String(status)} to an unsigned request`,
+        },
+      ]);
+    },
+  );
+
+  it.each([401, 403, 404])(
+    'accepts a webhook that refuses an unknown token with %i',
+    async (status) => {
+      expect(await run(fakeFetch([healthy], { webhookStatus: status }))).toEqual([]);
+    },
+  );
+
+  it.each([200, 202, 302, 400, 500])(
+    'fails when the workflow webhook answers %i to an unknown token',
+    async (status) => {
+      expect(await run(fakeFetch([healthy], { webhookStatus: status }))).toEqual([
+        {
+          where: '/.well-known/workflow/v1/webhook/',
+          problem: `answered ${String(status)} to an unknown token`,
         },
       ]);
     },

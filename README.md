@@ -58,7 +58,8 @@ The first case is the founder's own family. The app goes to other families only 
 | [docs/vault-format.md](docs/vault-format.md) | The vault's file format: envelopes, documents, the sharing state and its tag |
 | [docs/adr/](docs/adr/) | Architecture decision records: language, rules as data, stack, AI ports, platforms, auth, background jobs, database security, automation-first setup, the knowledge base as reviewed data, reviewers in the authoring session, identity, observability, data lifecycle and backups, vault encryption |
 | [docs/specs/](docs/specs/) | Feature specs, written before tickets and code |
-| [docs/runbooks/](docs/runbooks/) | Incident response, and the log of tabletop exercises |
+| [docs/runbooks/](docs/runbooks/) | Incident response, the log of tabletop exercises, and the real-data gate |
+| [docs/threat-models/](docs/threat-models/) | Component threat models, each control linked to its test |
 | [docs/research/](docs/research/) | Sourced research notes that seed the knowledge base |
 
 ## Language

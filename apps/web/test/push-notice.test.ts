@@ -22,6 +22,13 @@ describe('the text a push shows (spec 0005, R7)', () => {
     expect(pushNotice(payload)).toMatchObject(ptBR.push.fallback);
   });
 
+  it('carries no link in any notice the catalog words', () => {
+    // Deliberately broad: a notice never names a site, so even a domain-like word fails.
+    for (const notice of Object.values(ptBR.push)) {
+      expect(JSON.stringify(notice)).not.toMatch(/https?:|www\.|\.(?:com|app|br)\b/i);
+    }
+  });
+
   it('never puts anything but a UUID in the tag', () => {
     expect(pushNotice({ code: 'new_sign_in', id: '<b>' }).tag).toBe('arca');
   });
