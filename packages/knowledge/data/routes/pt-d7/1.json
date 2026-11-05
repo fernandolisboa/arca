@@ -1,0 +1,220 @@
+{
+  "schemaVersion": 1,
+  "routeId": "pt-d7",
+  "number": 1,
+  "title": "D7 residence visa for retirees and people living on their own income",
+  "country": "PT",
+  "tags": ["retirement", "temporary-residence"],
+  "effectiveFrom": "2026-01-01",
+  "status": "open",
+  "currency": "EUR",
+  "sources": [
+    {
+      "id": "lei-23-2007",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2007-67564445",
+      "title": "Lei n.º 23/2007 (foreigners law), article 58.º, n.º 5, and article 99.º, n.º 1: family members who may apply with the principal",
+      "kind": "official",
+      "verifiedAt": "2026-11-05"
+    },
+    {
+      "id": "portaria-1563-2007",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/1563-2007-628798",
+      "title": "Portaria n.º 1563/2007, articles 2.º and 5.º: means of subsistence per household member",
+      "kind": "official",
+      "verifiedAt": "2026-11-05"
+    },
+    {
+      "id": "dl-139-2025",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/139-2025-992879809",
+      "title": "Decreto-Lei n.º 139/2025: guaranteed minimum monthly wage of EUR 920 from 2026-01-01",
+      "kind": "official",
+      "verifiedAt": "2026-11-05"
+    },
+    {
+      "id": "codigo-civil",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1966-34509075",
+      "title": "Código Civil, article 279.º c), applied to ages by analogy: a period with no matching day ends on the month's last day",
+      "kind": "official",
+      "verifiedAt": "2026-11-05"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "pt",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "leapDayBirthday": "feb-28",
+  "leapDayBirthdaySources": ["codigo-civil"],
+  "requirements": [
+    {
+      "id": "household-income",
+      "title": "Monthly passive income of the 2026 minimum wage (EUR 920) for the principal, plus 50% of it per other adult and 30% per child under 18",
+      "expression": {
+        "op": "gte",
+        "left": {
+          "op": "sum",
+          "over": "unit.members",
+          "value": {
+            "op": "fact",
+            "key": "person.monthlyPassiveIncome"
+          }
+        },
+        "right": {
+          "op": "add",
+          "left": {
+            "op": "money",
+            "amount": 92000,
+            "currency": "EUR"
+          },
+          "right": {
+            "op": "add",
+            "left": {
+              "op": "sum",
+              "over": "unit.dependents",
+              "value": {
+                "op": "mul",
+                "operand": {
+                  "op": "money",
+                  "amount": 92000,
+                  "currency": "EUR"
+                },
+                "by": "0.5"
+              },
+              "where": {
+                "op": "gte",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              }
+            },
+            "right": {
+              "op": "sum",
+              "over": "unit.dependents",
+              "value": {
+                "op": "mul",
+                "operand": {
+                  "op": "money",
+                  "amount": 92000,
+                  "currency": "EUR"
+                },
+                "by": "0.3"
+              },
+              "where": {
+                "op": "lt",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              }
+            }
+          }
+        }
+      },
+      "sources": ["portaria-1563-2007", "dl-139-2025"]
+    }
+  ],
+  "assessments": [],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse aged 18 or over",
+      "path": ["spouse"],
+      "condition": {
+        "op": "gte",
+        "left": {
+          "op": "fact",
+          "key": "person.ageYears"
+        },
+        "right": {
+          "op": "int",
+          "value": 18
+        }
+      },
+      "sources": ["lei-23-2007"]
+    },
+    {
+      "id": "minor-children",
+      "title": "Children under 18",
+      "path": ["child"],
+      "condition": {
+        "op": "lt",
+        "left": {
+          "op": "fact",
+          "key": "person.ageYears"
+        },
+        "right": {
+          "op": "int",
+          "value": 18
+        }
+      },
+      "sources": ["lei-23-2007"]
+    },
+    {
+      "id": "spouse-minor-children",
+      "title": "The spouse's children under 18",
+      "path": ["spouse", "child"],
+      "condition": {
+        "op": "lt",
+        "left": {
+          "op": "fact",
+          "key": "person.ageYears"
+        },
+        "right": {
+          "op": "int",
+          "value": 18
+        }
+      },
+      "sources": ["lei-23-2007"]
+    },
+    {
+      "id": "parents",
+      "title": "Parents who depend on the principal",
+      "path": ["parent"],
+      "condition": {
+        "op": "fact",
+        "key": "person.dependsOnPrincipal"
+      },
+      "sources": ["lei-23-2007"]
+    },
+    {
+      "id": "spouse-parents",
+      "title": "The spouse's parents who depend on the principal or the spouse",
+      "path": ["spouse", "parent"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "fact",
+            "key": "person.dependsOnPrincipal"
+          },
+          {
+            "op": "fact",
+            "key": "edge.dependsOnLinkedPerson"
+          }
+        ]
+      },
+      "sources": ["lei-23-2007"]
+    }
+  ],
+  "costs": [],
+  "durations": []
+}

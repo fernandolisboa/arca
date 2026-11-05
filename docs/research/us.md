@@ -15,6 +15,8 @@ Implication: entering on a nonimmigrant visa and adjusting status inside the U.S
 
 ## EB-5 (investor green card)
 
+Checked on 2026-11-05 against 8 U.S.C. 1153(b)(5)(C) on govinfo.gov: USD 800,000 and 1,050,000, adjusted by CPI for petitions filed on or after 2027-01-01. The I-526 and I-526E fee is USD 11,160 (8 CFR 106.2). Not yet a route version: children under 8 U.S.C. 1101(b)(1) include stepchildren and adopted children, whose conditions the schema cannot express yet ([#219](https://github.com/fernandolisboa/arca/issues/219)).
+
 | Fact | Source |
 | --- | --- |
 | Minimum investment: USD 800,000 in a targeted employment area (TEA), USD 1,050,000 elsewhere (EB-5 Reform and Integrity Act of 2022) | [Claxton Law Group](https://claxtonlawgroup.com/investor-visas/eb-5-minimum-investment-2026) |
@@ -24,6 +26,8 @@ Implication: entering on a nonimmigrant visa and adjusting status inside the U.S
 | Concurrent filing of the investor petition and adjustment of status is possible when the applicant is in the U.S. in valid status | **Unverified** |
 
 ## E-2 (treaty investor)
+
+The official treaty table on travel.state.gov refuses automated reads (checked 2026-11-05), so the E-2 country set waits for a readable official copy.
 
 | Fact | Source |
 | --- | --- |

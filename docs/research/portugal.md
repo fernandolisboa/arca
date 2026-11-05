@@ -13,6 +13,8 @@ Checked 2026-10-31 and 2026-11-01.
 
 ## Residence visas
 
+D7 and D8 are now route versions `pt-d7` and `pt-d8` in `packages/knowledge/data/routes`, verified against the Diário da República on 2026-11-05. Where they differ from these notes, the route versions win: the means test counts 50% of the minimum wage for every adult after the principal (Portaria n.º 1563/2007, article 2.º), and D8 also needs the household means test.
+
 | Visa | Fact | Source |
 | --- | --- | --- |
 | D7 (passive income) | EUR 920/month for the applicant (2026 minimum wage), +50% for a spouse, +30% per child; practice recommends 12 months of reserve | [Ternrise](https://ternrise.com/pt/blog/visto-d7-portugal-2026-guia-completo), [Cidadania e Visto](https://www.cidadaniaevisto.com.br/blog/comprovacao-meios-visto-portugal-2026) |
@@ -20,6 +22,8 @@ Checked 2026-10-31 and 2026-11-01.
 | D2 (entrepreneur) | No minimum amount in law; business viability and means for 12 months | [Cidadania e Visto](https://www.cidadaniaevisto.com.br/blog/melhor-visto-para-portugal) |
 
 ## Family reunification
+
+Checked on 2026-11-05 against the consolidated Lei n.º 23/2007: the two-year wait is article 98.º, n.º 1, as amended by Lei n.º 61/2025, with the exceptions of n.º 3. Adult children qualify only when they study in Portugal (article 99.º, n.º 1, d), except for holders under article 90.º-A. Not yet a route version: the schema has no fact for how long the principal has held residence.
 
 | Fact | Source |
 | --- | --- |
