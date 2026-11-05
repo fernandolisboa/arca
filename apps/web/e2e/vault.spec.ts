@@ -8,11 +8,14 @@ import {
   withoutAutofill,
 } from './passkeys.js';
 import {
+  addRecipientRow,
   linkAccounts,
   recordEvent,
   resetRateLimits,
+  restoreSharingState,
   seedAccount,
   seedPasskey,
+  sharingStateOf,
 } from './postgres/accounts.js';
 import { reportViolations, watchProblems } from './problems.js';
 import { databaseServer } from './servers.js';
@@ -167,9 +170,21 @@ test('keeps documents encrypted on the server, and changes one only after a vaul
   });
   expect(refused.status()).toBe(403);
   expect(await refused.json()).toEqual({ error: { code: 'step_up_required' } });
+  const replace = await page.request.post(`${databaseServer.origin}/v1/vault/documents/replace`, {
+    headers: { origin: databaseServer.origin },
+    data: {
+      recipients: [],
+      documents: [{ documentId, size: 64, sha256: 'A'.repeat(43), label: 'AAAA' }],
+    },
+  });
+  expect(replace.status()).toBe(403);
+  expect(await replace.json()).toEqual({ error: { code: 'step_up_required' } });
   await page.reload();
   await page.getByRole('button', { name: 'Abrir o cofre' }).click();
   await expect(documents.getByText(fileName)).toBeVisible();
+  const unchanged = page.waitForEvent('download');
+  await documents.getByRole('button', { name: 'Baixar' }).click();
+  expect(await readFile(await (await unchanged).path(), 'utf8')).toBe(contents);
 
   await documents.getByRole('button', { name: 'Apagar' }).click();
   await expect(page.getByText('Documento apagado.')).toBeVisible();
@@ -262,6 +277,100 @@ async function downloaded(page: Page, row: ReturnType<Page['getByRole']>) {
   await row.getByRole('button', { name: 'Baixar' }).click();
   return readFile(await (await download).path(), 'utf8');
 }
+
+test('never encrypts to a recipient the server added, and asks before using a restored older list', async ({
+  page,
+  browser,
+}) => {
+  const problems = watchProblems(page);
+  const owner = await createdPrfCredential(page);
+  const { email: ownerEmail } = await seedAccount(owner.credential, owner.userId, {
+    confirmed: true,
+  });
+  const relativeContext = await browser.newContext();
+  const relativePage = await relativeContext.newPage();
+  await withoutAutofill(relativePage);
+  const relative = await createdPrfCredential(relativePage);
+  const { email: relativeEmail } = await seedAccount(relative.credential, relative.userId, {
+    confirmed: true,
+  });
+  await linkAccounts(owner.userId, relative.userId);
+  await signIn(relativePage, relativeEmail);
+  await openVaultPage(relativePage);
+  await setUp(relativePage);
+
+  await signIn(page, ownerEmail);
+  await openVaultPage(page);
+  await setUp(page);
+  const fileName = 'visto-exemplo.txt';
+  await addFile(page, fileName, 'synthetic visa');
+  const documents = page.getByRole('list', { name: 'Documentos' });
+  const choice = page.getByRole('group', { name: 'Com quem compartilhar' });
+  await documents.getByRole('button', { name: 'Compartilhar' }).click();
+  await choice.getByLabel(relativeEmail).check();
+  await choice.getByRole('button', { name: 'Salvar' }).click();
+  await expect(page.getByText('Compartilhamento salvo.')).toBeVisible();
+  const sharedState = await sharingStateOf(owner.userId);
+  await choice.getByLabel(relativeEmail).uncheck();
+  await choice.getByRole('button', { name: 'Salvar' }).click();
+  await expect(page.getByText('Compartilhamento salvo.')).toBeVisible();
+  await expect(documents.getByText('Compartilhado com 1 pessoa')).toHaveCount(0);
+  await expect
+    .poll(async () => (await sharingStateOf(owner.userId)).version)
+    .toBeGreaterThan(sharedState.version);
+
+  // A recipient row the owner's list does not name is called out, and its box starts clear.
+  const documentId = await addRecipientRow(owner.userId, relative.userId);
+  await page.reload();
+  await page.getByRole('button', { name: 'Abrir o cofre' }).click();
+  await documents.getByRole('button', { name: 'Compartilhar' }).click();
+  await expect(choice.getByText(/^O servidor diz que 1 pessoa tem acesso/)).toBeVisible();
+  await expect(choice.getByLabel(relativeEmail)).not.toBeChecked();
+  await expectAccessible(page);
+  // The relative is listed by the server, but nothing was encrypted to them.
+  await relativePage.reload();
+  await relativePage.getByRole('button', { name: 'Abrir o cofre' }).click();
+  await expect(
+    relativePage.getByText(/^Alguns documentos não abriram com a chave atual do cofre\./),
+  ).toBeVisible();
+  await choice.getByRole('button', { name: 'Salvar' }).click();
+  await expect(page.getByText('Compartilhamento salvo.')).toBeVisible();
+  await relativePage.reload();
+  await relativePage.getByRole('button', { name: 'Abrir o cofre' }).click();
+  await expect(relativePage.getByText(/^Ainda não há documentos no cofre\./)).toBeVisible();
+
+  // A restored older list waits for the owner, who sees what it shares first.
+  const highest = (await sharingStateOf(owner.userId)).version;
+  await restoreSharingState(owner.userId, sharedState);
+  await page.reload();
+  await page.getByRole('button', { name: 'Abrir o cofre' }).click();
+  await documents.getByRole('button', { name: 'Compartilhar' }).click();
+  await expect(
+    page.getByText(/^A lista de compartilhamento guardada no servidor é mais antiga/),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole('list', { name: 'Compartilhamentos nesta lista' })
+      .getByText(`${fileName}: ${relativeEmail}`),
+  ).toBeVisible();
+  await expect(choice).toHaveCount(0);
+  await expectAccessible(page);
+  await page.getByRole('button', { name: 'Conferi, pode usar esta lista' }).click();
+  await expect(page.getByText('Lista de compartilhamento confirmada.')).toBeVisible();
+  // Confirming tags it above the version stored and the one this device saw.
+  expect((await sharingStateOf(owner.userId)).version).toBeGreaterThan(highest);
+
+  // No document opens in a new session until its own vault_unlock step-up (spec 0005, R2).
+  await signOutAndIn(page, ownerEmail);
+  const refused = await page.request.post(`${databaseServer.origin}/v1/vault/documents/download`, {
+    headers: { origin: databaseServer.origin },
+    data: { documentId },
+  });
+  expect(refused.status()).toBe(403);
+  expect(await refused.json()).toEqual({ error: { code: 'step_up_required' } });
+  await relativeContext.close();
+  expect(problems).toEqual([]);
+});
 
 test('rotates the vault key: a new kit, the old key still opens shared documents, and each owner moves to the new one', async ({
   page,

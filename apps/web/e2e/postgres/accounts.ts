@@ -77,6 +77,53 @@ export async function recordEvent(userId: string, code: 'recovery_completed'): P
   );
 }
 
+/** The account's stored sharing state, as a database snapshot would hold it. */
+export interface StoredSharingState {
+  readonly version: number;
+  readonly state: Buffer;
+  readonly tag: Buffer;
+}
+
+export async function sharingStateOf(userId: string): Promise<StoredSharingState> {
+  const { rows } = await asAdmin((client) =>
+    client.query<StoredSharingState>(
+      'SELECT version, state, tag FROM vault.sharing_state WHERE account_id = $1',
+      [userId],
+    ),
+  );
+  const [row] = rows;
+  if (row === undefined) throw new Error('no sharing state stored');
+  return row;
+}
+
+/** Puts an older snapshot back, as a restore of the database would. */
+export async function restoreSharingState(
+  userId: string,
+  { version, state, tag }: StoredSharingState,
+): Promise<void> {
+  await asAdmin((client) =>
+    client.query(
+      'UPDATE vault.sharing_state SET version = $2, state = $3, tag = $4 WHERE account_id = $1',
+      [userId, version, state, tag],
+    ),
+  );
+}
+
+/** A recipient row the server added to the owner's only document, outside the sharing state. */
+export async function addRecipientRow(ownerId: string, recipientId: string): Promise<string> {
+  const { rows } = await asAdmin((client) =>
+    client.query<{ id: string }>(
+      `INSERT INTO vault.document_recipient (document_id, document_owner_id, recipient_id)
+       SELECT id, owner_id, $2 FROM vault.document WHERE owner_id = $1
+       RETURNING document_id AS id`,
+      [ownerId, recipientId],
+    ),
+  );
+  const [row] = rows;
+  if (row === undefined) throw new Error('the owner has no document');
+  return row.id;
+}
+
 /** The link a confirmed invite leaves between two accounts (spec 0005, R4). */
 export async function linkAccounts(inviterId: string, inviteeId: string): Promise<void> {
   await asAdmin(async (client) => {
