@@ -150,7 +150,8 @@ export function OpenRetained({
     ? t('vault.documents.working')
     : failure !== undefined
       ? failureMessage(failure)
-      : opened
+      : // A caller told of the opening says so itself, so it is announced once.
+        opened && onOpened === undefined
         ? t('vault.documents.done', { done: 'opened' })
         : '';
   return (
