@@ -586,6 +586,8 @@ export const ptBR = {
       accountLinks: 'Conexões entre contas',
       vaultDocuments: 'Documentos do cofre',
       vaultDocumentsSharedWithYou: 'Documentos compartilhados com você',
+      vaultDocumentReplacements: 'Novas versões de documentos ainda não confirmadas',
+      vaultDiscardedObjects: 'Arquivos de documentos apagados, aguardando a limpeza diária',
       vaultEnvelopes: 'Envelopes do cofre',
       vaultSharingState: 'Lista de compartilhamento do cofre',
       vaultRecipients: 'Destinatários do cofre',

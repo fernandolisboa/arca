@@ -145,6 +145,12 @@ export const sharingState = vault.table(
   ],
 );
 
+const objectKeyCheck = (name: string, objectKey: unknown) =>
+  check(
+    name,
+    sql`${objectKey} ~ '^documents/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'`,
+  );
+
 /** The largest ciphertext a document may have (spec 0005, R3), in bytes. */
 export const maxDocumentBytes = 25 * 1024 * 1024;
 
@@ -171,10 +177,7 @@ export const document = vault.table(
     check('document_type_key', sql`${table.typeKey} ~ '^[a-z][a-z0-9_.-]{0,63}$'`),
     check('document_size', sql`${table.size} BETWEEN 1 AND ${sql.raw(String(maxDocumentBytes))}`),
     check('document_sha256_length', sql`octet_length(${table.sha256}) = 32`),
-    check(
-      'document_object_key',
-      sql`${table.objectKey} ~ '^documents/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'`,
-    ),
+    objectKeyCheck('document_object_key', table.objectKey),
     check(
       'document_confirmed_after_created',
       sql`${table.confirmedAt} IS NULL OR ${table.confirmedAt} >= ${table.createdAt}`,
@@ -186,6 +189,65 @@ export const document = vault.table(
       using: sql`${ownRow(table.ownerId)} OR EXISTS (SELECT 1 FROM "vault"."document_recipient" r WHERE r.document_id = ${table.id} AND ${ownRow(sql`r.recipient_id`)})`,
     }),
     ...ownRowPolicies('document', table.ownerId, ['insert', 'update', 'delete']),
+  ],
+);
+
+/** The most accounts one document is shared with (spec 0005, R4). */
+export const maxDocumentRecipients = 16;
+
+/**
+ * New ciphertext the owner approved for a document, with the accounts it is encrypted to, until
+ * its upload is confirmed and takes the document's place. It counts against the quota.
+ */
+export const documentReplacement = vault.table(
+  'document_replacement',
+  {
+    documentId: uuid('document_id').primaryKey(),
+    ownerId: uuid('owner_id').notNull(),
+    size: integer('size').notNull(),
+    sha256: bytea('sha256').notNull(),
+    objectKey: text('object_key').notNull(),
+    recipients: uuid('recipients').array().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    foreignKey({
+      name: 'document_replacement_document_fkey',
+      columns: [table.documentId, table.ownerId],
+      foreignColumns: [document.id, document.ownerId],
+    }).onDelete('cascade'),
+    uniqueIndex('document_replacement_object_key_idx').on(table.objectKey),
+    index('document_replacement_owner_id_idx').on(table.ownerId),
+    check(
+      'document_replacement_size',
+      sql`${table.size} BETWEEN 1 AND ${sql.raw(String(maxDocumentBytes))}`,
+    ),
+    check('document_replacement_sha256_length', sql`octet_length(${table.sha256}) = 32`),
+    objectKeyCheck('document_replacement_object_key', table.objectKey),
+    check(
+      'document_replacement_recipients',
+      sql`cardinality(${table.recipients}) <= ${sql.raw(String(maxDocumentRecipients))} AND NOT (${table.ownerId} = ANY (${table.recipients}))`,
+    ),
+    ...ownRowPolicies('document_replacement', table.ownerId, ['select', 'insert', 'delete']),
+  ],
+);
+
+/**
+ * An object deleted while an upload grant for its pathname might still be live (spec 0005, R4):
+ * the daily cleanup deletes it again once every such grant has ended, so a late upload never
+ * leaves ciphertext that no row names.
+ */
+export const discardedObject = vault.table(
+  'discarded_object',
+  {
+    objectKey: text('object_key').primaryKey(),
+    ownerId: uuid('owner_id').notNull(),
+    discardedAt: timestamp('discarded_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('discarded_object_owner_id_idx').on(table.ownerId),
+    objectKeyCheck('discarded_object_object_key', table.objectKey),
+    ...ownRowPolicies('discarded_object', table.ownerId, ['select', 'insert']),
   ],
 );
 

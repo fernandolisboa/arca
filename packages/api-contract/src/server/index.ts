@@ -78,6 +78,9 @@ export const openApiRoutes = {
   confirmDocumentUpload: toOpenApiRoute(routes.confirmDocumentUpload),
   listDocuments: toOpenApiRoute(routes.listDocuments),
   documentDownloadUrl: toOpenApiRoute(routes.documentDownloadUrl),
+  replaceDocuments: toOpenApiRoute(routes.replaceDocuments),
+  confirmReplacements: toOpenApiRoute(routes.confirmReplacements),
+  deleteDocuments: toOpenApiRoute(routes.deleteDocuments),
 } as const;
 
 export const openApiInfo = { title: 'Arca API', version: '1.0.0' } as const;

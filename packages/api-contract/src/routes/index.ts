@@ -733,6 +733,7 @@ export type DeletionReason = (typeof deletionReasons)[number];
  * event against it before inserting.
  */
 const documentEvent = z.strictObject({ documentId: z.uuid() });
+const documentShareEvent = z.strictObject({ documentId: z.uuid(), recipientId: z.uuid() });
 
 export const auditEventDetails = {
   sign_in: z.strictObject({
@@ -768,6 +769,10 @@ export const auditEventDetails = {
   vault_reset: noDetails,
   document_created: documentEvent,
   document_download_url_issued: documentEvent,
+  document_replaced: documentEvent,
+  document_deleted: documentEvent,
+  document_shared: documentShareEvent,
+  document_share_revoked: documentShareEvent,
   notification_channel_added: z.strictObject({ channelId: z.uuid() }),
   notification_channel_removed: z.strictObject({ channelId: z.uuid() }),
 } as const;
@@ -1208,7 +1213,7 @@ export const confirmDocumentUpload = {
   path: '/vault/documents/confirm',
   operationId: 'confirmDocumentUpload',
   summary:
-    'Confirms a pending upload once the stored ciphertext has the declared size and SHA-256; any other ciphertext is deleted and the document stays pending until the daily cleanup; 401 without a session, 404 not_found, 409 not_uploaded before the upload, 409 upload_mismatch, 429 rate_limited',
+    'Confirms a pending upload once the stored ciphertext has the declared size and SHA-256; any other ciphertext is deleted and the document stays pending until the daily cleanup; 401 without a session, 404 not_found, also 2 hours after create, 409 not_uploaded before the upload, 409 upload_mismatch, 429 rate_limited',
   body: DocumentReference,
   response: { description: 'Upload confirmed', schema: ConfirmDocumentUploadResponse },
 } as const satisfies RouteDefinition<typeof ConfirmDocumentUploadResponse>;
@@ -1264,6 +1269,123 @@ export const documentDownloadUrl = {
   response: { description: 'Download URL', schema: DocumentDownloadResponse },
 } as const satisfies RouteDefinition<typeof DocumentDownloadResponse>;
 
+/** The most documents one replace, confirm-replacement or delete request names (spec 0005, R4). */
+export const maxDocumentBatch = 32;
+
+/** The most accounts besides its owner that one document is encrypted to. */
+export const maxDocumentRecipients = 16;
+
+const documentIds = z
+  .array(z.uuid())
+  .min(1)
+  .max(maxDocumentBatch)
+  .refine((ids) => new Set(ids).size === ids.length, 'each document once');
+
+export const ReplaceDocumentsRequest = z.strictObject({
+  /**
+   * The linked accounts the new ciphertexts are encrypted to, besides the owner, in ascending
+   * order; the shares become exactly these. Empty shares with nobody.
+   */
+  recipients: z
+    .array(z.uuid())
+    .max(maxDocumentRecipients)
+    .refine(
+      (ids) => ids.every((id, index) => index === 0 || (ids[index - 1] ?? '') < id),
+      'ascending, each account once',
+    ),
+  documents: z
+    .array(
+      z.strictObject({
+        documentId: z.uuid(),
+        size: z.int().min(1).max(maxDocumentBytes),
+        sha256: Sha256,
+      }),
+    )
+    .min(1)
+    .max(maxDocumentBatch)
+    .refine(
+      (documents) =>
+        new Set(documents.map(({ documentId }) => documentId)).size === documents.length,
+      'each document once',
+    ),
+});
+export type ReplaceDocumentsRequest = z.infer<typeof ReplaceDocumentsRequest>;
+
+/**
+ * The `vault_write` step-up's action for a replace (spec 0003, R5): the documents in order as
+ * targets, and the recipients and each new object's size and SHA-256 as fields, so the passkey
+ * approves exactly these ciphertexts for exactly these accounts.
+ */
+export function replaceDocumentsAction({ recipients, documents }: ReplaceDocumentsRequest) {
+  return {
+    action: 'replaceDocuments',
+    targets: documents.map(({ documentId }) => documentId),
+    fields: {
+      recipients: recipients.join(','),
+      objects: documents.map(({ size, sha256 }) => `${String(size)}:${sha256}`).join(','),
+    },
+  };
+}
+
+export const ReplaceDocumentsResponse = z.object({
+  uploads: z.array(z.object({ documentId: z.uuid(), upload: DocumentUpload })),
+});
+export type ReplaceDocumentsResponse = z.infer<typeof ReplaceDocumentsResponse>;
+
+export const replaceDocuments = {
+  method: 'post',
+  path: '/vault/documents/replace',
+  operationId: 'replaceDocuments',
+  summary:
+    'Approves new ciphertext for confirmed documents the account owns, encrypted to the given linked accounts, and says where to upload each; for sharing, revoking and rotating; needs a consumed vault_write step-up for this exact request; 401 without a session, 403 step_up_required, 404 not_found unless every document is a confirmed one of the account, 409 not_linked for an account without a link, 409 document_quota',
+  body: ReplaceDocumentsRequest,
+  response: {
+    description: 'Where to upload each new ciphertext',
+    schema: ReplaceDocumentsResponse,
+  },
+} as const satisfies RouteDefinition<typeof ReplaceDocumentsResponse>;
+
+export const DocumentBatch = z.strictObject({ documentIds });
+export type DocumentBatch = z.infer<typeof DocumentBatch>;
+
+export const ConfirmReplacementsResponse = z.object({
+  results: z.array(
+    z.object({
+      documentId: z.uuid(),
+      outcome: z.enum(['replaced', 'not_found', 'not_uploaded', 'mismatch', 'not_linked']),
+    }),
+  ),
+});
+export type ConfirmReplacementsResponse = z.infer<typeof ConfirmReplacementsResponse>;
+
+export const confirmReplacements = {
+  method: 'post',
+  path: '/vault/documents/replace/confirm',
+  operationId: 'confirmReplacements',
+  summary:
+    "Swaps in each approved replacement whose upload has the approved size and SHA-256, and sets the document's shares to its recipients; deletes any other upload; not_found also for a replacement approved over 2 hours ago, not_linked when a recipient lost its link, which ends that replacement; one outcome per document, in order; 401 without a session, 429 rate_limited",
+  body: DocumentBatch,
+  response: { description: 'One outcome per document', schema: ConfirmReplacementsResponse },
+} as const satisfies RouteDefinition<typeof ConfirmReplacementsResponse>;
+
+/** The `vault_write` step-up's action for a delete: the documents in order as targets. */
+export function deleteDocumentsAction({ documentIds: targets }: DocumentBatch) {
+  return { action: 'deleteDocuments', targets };
+}
+
+export const DeleteDocumentsResponse = z.object({});
+export type DeleteDocumentsResponse = z.infer<typeof DeleteDocumentsResponse>;
+
+export const deleteDocuments = {
+  method: 'post',
+  path: '/vault/documents/delete',
+  operationId: 'deleteDocuments',
+  summary:
+    'Deletes documents the account owns, pending or confirmed, with their shares and ciphertext; needs a consumed vault_write step-up for this exact request; 401 without a session, 403 step_up_required, 404 not_found unless every document is one of the account',
+  body: DocumentBatch,
+  response: { description: 'Deleted', schema: DeleteDocumentsResponse },
+} as const satisfies RouteDefinition<typeof DeleteDocumentsResponse>;
+
 export const routes = {
   health,
   session,
@@ -1312,6 +1434,9 @@ export const routes = {
   confirmDocumentUpload,
   listDocuments,
   documentDownloadUrl,
+  replaceDocuments,
+  confirmReplacements,
+  deleteDocuments,
 } as const;
 
 /** The Better Auth endpoints the API lets through; every other path under /v1/auth is a 404. */

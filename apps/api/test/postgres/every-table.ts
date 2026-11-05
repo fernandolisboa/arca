@@ -102,11 +102,12 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
       randomUUID(),
       sharerId,
     ]);
+    const ownedId = randomUUID();
     await insert(
       `INSERT INTO vault.document (id, owner_id, type_key, size, sha256, object_key)
        VALUES ($1, $2, 'passport', 1024, $3, $4), ($5, $6, 'passport', 2048, $3, $7)`,
       [
-        randomUUID(),
+        ownedId,
         accountId,
         bytes(32),
         `documents/${randomUUID()}`,
@@ -120,6 +121,15 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
        VALUES ($1, $2, $3)`,
       [sharedId, sharerId, accountId],
     );
+    await insert(
+      `INSERT INTO vault.document_replacement (document_id, owner_id, size, sha256, object_key, recipients)
+       VALUES ($1, $2, 512, $3, $4, '{}')`,
+      [ownedId, accountId, bytes(32), `documents/${randomUUID()}`],
+    );
+    await insert(`INSERT INTO vault.discarded_object (object_key, owner_id) VALUES ($1, $2)`, [
+      `documents/${randomUUID()}`,
+      accountId,
+    ]);
     const channelId = randomUUID();
     const messageId = randomUUID();
     await insert(

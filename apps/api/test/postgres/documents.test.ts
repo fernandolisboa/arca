@@ -403,3 +403,331 @@ describe('the jobs on stored objects (spec 0005, R4)', () => {
     expect(await objects.digest(await objectKeyOf(received))).toBeDefined();
   });
 });
+
+describe('replacing, sharing and deleting documents (spec 0005, R4)', () => {
+  const replacementOf = async (documentId: string) =>
+    (
+      await admin<{ object_key: string; size: number; recipients: string[] }>(
+        `SELECT object_key, size, recipients FROM vault.document_replacement WHERE document_id = $1`,
+        [documentId],
+      )
+    )[0];
+  const sharesOf = async (documentId: string) =>
+    (
+      await admin<{ recipient_id: string }>(
+        `SELECT recipient_id FROM vault.document_recipient WHERE document_id = $1 ORDER BY 1`,
+        [documentId],
+      )
+    ).map(({ recipient_id }) => recipient_id);
+  const discardedOf = async (accountId: string) =>
+    (
+      await admin<{ object_key: string }>(
+        `SELECT object_key FROM vault.discarded_object WHERE owner_id = $1 ORDER BY 1`,
+        [accountId],
+      )
+    ).map(({ object_key }) => object_key);
+
+  async function replacing(
+    accountId: string,
+    recipients: string[],
+    bodies: readonly (readonly [string, Uint8Array])[],
+  ) {
+    return documents.replace(accountId, {
+      recipients: [...recipients].sort(),
+      documents: bodies.map(([documentId, body]) => ({
+        documentId,
+        size: body.length,
+        sha256: sha256Of(body),
+      })),
+    });
+  }
+
+  /** Uploads each body to its replacement's pathname, as the device does. */
+  async function uploadReplacements(bodies: readonly (readonly [string, Uint8Array])[]) {
+    for (const [documentId, body] of bodies) {
+      putObject(objects, (await replacementOf(documentId))?.object_key ?? 'missing', body);
+    }
+  }
+
+  it('swaps in the approved ciphertext and sets the shares to its recipients', async () => {
+    const accountId = await owner();
+    const [kept, revoked, added] = [await owner(), await owner(), await owner()];
+    for (const relative of [kept, revoked, added]) await link(accountId, relative);
+    const documentId = await confirmed(accountId);
+    const before = await objectKeyOf(documentId);
+    await share(documentId, accountId, kept);
+    await share(documentId, accountId, revoked);
+    const body = randomBytes(80);
+
+    const started = await replacing(accountId, [kept, added], [[documentId, body]]);
+    expect(typeof started).toBe('object');
+    expect((await replacementOf(documentId))?.size).toBe(80);
+    await uploadReplacements([[documentId, body]]);
+    expect(await documents.confirmReplacements(accountId, [documentId])).toEqual({
+      results: [{ documentId, outcome: 'replaced' }],
+    });
+
+    const after = await objectKeyOf(documentId);
+    expect(after).not.toBe(before);
+    expect(await objects.digest(after)).toEqual({
+      size: 80,
+      sha256: createHash('sha256').update(body).digest(),
+    });
+    expect(await objects.digest(before)).toBeUndefined();
+    expect(await discardedOf(accountId)).toEqual([before]);
+    expect(await replacementOf(documentId)).toBeUndefined();
+    expect(await sharesOf(documentId)).toEqual([kept, added].sort());
+    const trail = (await events(accountId)).filter(({ code }) => code !== 'document_created');
+    expect(trail).toEqual(
+      expect.arrayContaining([
+        { code: 'document_replaced', details: { documentId } },
+        { code: 'document_shared', details: { documentId, recipientId: added } },
+        { code: 'document_share_revoked', details: { documentId, recipientId: revoked } },
+      ]),
+    );
+    expect(trail).toHaveLength(3);
+    expect((await documents.list(revoked, undefined)).documents).toEqual([]);
+    expect(await documents.downloadUrl(revoked, documentId)).toBeUndefined();
+  });
+
+  it('presigns a replacement for its approved size, only in the hour after approval', async () => {
+    const accountId = await owner();
+    const documentId = await confirmed(accountId);
+    await replacing(accountId, [], [[documentId, randomBytes(70)]]);
+    const pathname = (await replacementOf(documentId))?.object_key ?? 'missing';
+    expect(await documents.presignUpload(accountId, pathname)).toEqual(fakePresigned);
+    expect(presigned).toEqual([{ pathname, maxBytes: 70 }]);
+    await admin(
+      `UPDATE vault.document_replacement SET created_at = now() - interval '61 minutes'
+        WHERE document_id = $1`,
+      [documentId],
+    );
+    expect(await documents.presignUpload(accountId, pathname)).toBeUndefined();
+  });
+
+  it.each([
+    ['a pending document', 'pending'],
+    ["another account's document", 'foreign'],
+    ['an account it has no link to', 'unlinked'],
+  ] as const)('approves nothing for %s', async (_, refused) => {
+    const accountId = await owner();
+    const stranger = await owner();
+    const documentId = await confirmed(accountId);
+    const other =
+      refused === 'pending'
+        ? (await created(accountId, randomBytes(8))).documentId
+        : refused === 'foreign'
+          ? await confirmed(stranger)
+          : await confirmed(accountId);
+    const outcome = await replacing(accountId, refused === 'unlinked' ? [stranger] : [], [
+      [documentId, randomBytes(8)],
+      [other, randomBytes(8)],
+    ]);
+    expect(outcome).toBe(refused === 'unlinked' ? 'not_linked' : 'not_found');
+    expect(await replacementOf(documentId)).toBeUndefined();
+  });
+
+  it('counts replacements against the quota, and keeps an earlier one when refusing', async () => {
+    const accountId = await owner();
+    const documentId = await confirmed(accountId, randomBytes(64));
+    await replacing(accountId, [], [[documentId, randomBytes(100)]]);
+    const earlier = await replacementOf(documentId);
+    const full = Math.floor((documentQuota.bytes - 64) / maxDocumentBytes);
+    await admin(
+      `INSERT INTO vault.document (owner_id, type_key, size, sha256, object_key)
+       SELECT $1, 'passport', $2, $3, 'documents/' || gen_random_uuid()
+         FROM generate_series(1, $4)`,
+      [accountId, maxDocumentBytes, randomBytes(32), full],
+    );
+    const left = documentQuota.bytes - 64 - full * maxDocumentBytes;
+    const sha256 = sha256Of(randomBytes(1));
+    expect(
+      await documents.create(accountId, { typeKey: 'passport', size: left - 99, sha256 }),
+    ).toBe('over_quota');
+    expect(
+      await documents.replace(accountId, {
+        recipients: [],
+        documents: [{ documentId, size: left + 1, sha256 }],
+      }),
+    ).toBe('over_quota');
+    expect(await replacementOf(documentId)).toEqual(earlier);
+    expect(
+      typeof (await documents.replace(accountId, {
+        recipients: [],
+        documents: [{ documentId, size: left, sha256 }],
+      })),
+    ).toBe('object');
+  });
+
+  it('discards an earlier replacement still unconfirmed when a new one is approved', async () => {
+    const accountId = await owner();
+    const documentId = await confirmed(accountId);
+    const first = randomBytes(30);
+    await replacing(accountId, [], [[documentId, first]]);
+    await uploadReplacements([[documentId, first]]);
+    const earlier = (await replacementOf(documentId))?.object_key ?? 'missing';
+    await replacing(accountId, [], [[documentId, randomBytes(40)]]);
+    expect((await replacementOf(documentId))?.size).toBe(40);
+    expect(await objects.digest(earlier)).toBeUndefined();
+    expect(await discardedOf(accountId)).toEqual([earlier]);
+  });
+
+  it('keeps a replacement until its upload matches, and deletes an upload that does not', async () => {
+    const accountId = await owner();
+    const documentId = await confirmed(accountId);
+    const before = await objectKeyOf(documentId);
+    const body = randomBytes(50);
+    await replacing(accountId, [], [[documentId, body]]);
+    const pathname = (await replacementOf(documentId))?.object_key ?? 'missing';
+    const unreplaced = await confirmed(accountId);
+    expect(await documents.confirmReplacements(accountId, [documentId, unreplaced])).toEqual({
+      results: [
+        { documentId, outcome: 'not_uploaded' },
+        { documentId: unreplaced, outcome: 'not_found' },
+      ],
+    });
+    putObject(objects, pathname, Buffer.from(body).reverse());
+    expect(await documents.confirmReplacements(accountId, [documentId])).toEqual({
+      results: [{ documentId, outcome: 'mismatch' }],
+    });
+    expect(await objects.digest(pathname)).toBeUndefined();
+    expect(await replacementOf(documentId)).toBeDefined();
+    expect(await objectKeyOf(documentId)).toBe(before);
+  });
+
+  it('ends a replacement whose recipient lost its link, and still confirms the rest', async () => {
+    const accountId = await owner();
+    const [erased, kept] = [await owner(), await owner()];
+    await link(accountId, erased);
+    await link(accountId, kept);
+    const [first, second] = [await confirmed(accountId), await confirmed(accountId)];
+    const before = await objectKeyOf(first);
+    const bodies = [
+      [first, randomBytes(20)],
+      [second, randomBytes(30)],
+    ] as const;
+    await replacing(accountId, [erased], [bodies[0]]);
+    await replacing(accountId, [kept], [bodies[1]]);
+    await uploadReplacements(bodies);
+    const lost = (await replacementOf(first))?.object_key ?? 'missing';
+    await admin(`DELETE FROM account.link WHERE invitee_id = $1`, [erased]);
+
+    expect(await documents.confirmReplacements(accountId, [first, second])).toEqual({
+      results: [
+        { documentId: first, outcome: 'not_linked' },
+        { documentId: second, outcome: 'replaced' },
+      ],
+    });
+    expect(await replacementOf(first)).toBeUndefined();
+    expect(await objects.digest(lost)).toBeUndefined();
+    expect(await objectKeyOf(first)).toBe(before);
+    expect(await sharesOf(first)).toEqual([]);
+    expect(await discardedOf(accountId)).toContain(lost);
+    expect(await sharesOf(second)).toEqual([kept]);
+  });
+
+  it('confirms nothing 2 hours after its row was made, well before the daily cleanup', async () => {
+    const accountId = await owner();
+    const documentId = await confirmed(accountId);
+    const body = randomBytes(20);
+    await replacing(accountId, [], [[documentId, body]]);
+    await uploadReplacements([[documentId, body]]);
+    const late = await created(accountId, body);
+    putObject(objects, await objectKeyOf(late.documentId), body);
+    await admin(
+      `UPDATE vault.document_replacement SET created_at = now() - interval '121 minutes'
+        WHERE document_id = $1`,
+      [documentId],
+    );
+    await admin(
+      `UPDATE vault.document SET created_at = now() - interval '121 minutes' WHERE id = $1`,
+      [late.documentId],
+    );
+    expect(await documents.confirmReplacements(accountId, [documentId])).toEqual({
+      results: [{ documentId, outcome: 'not_found' }],
+    });
+    expect(await documents.confirm(accountId, late.documentId)).toBe('not_found');
+  });
+
+  it('deletes documents with their shares, replacements and objects, all or none', async () => {
+    const accountId = await owner();
+    const relative = await owner();
+    const stranger = await owner();
+    await link(accountId, relative);
+    const shared = await confirmed(accountId);
+    await share(shared, accountId, relative);
+    await replacing(accountId, [relative], [[shared, randomBytes(20)]]);
+    const replacementKey = (await replacementOf(shared))?.object_key ?? 'missing';
+    putObject(objects, replacementKey, randomBytes(20));
+    const pending = (await created(accountId, randomBytes(8))).documentId;
+    const keys = [await objectKeyOf(shared), await objectKeyOf(pending), replacementKey];
+    const foreign = await confirmed(stranger);
+
+    expect(await documents.delete(accountId, [shared, foreign])).toBe('not_found');
+    expect(await documents.delete(relative, [shared])).toBe('not_found');
+    expect(await objects.digest(keys[0] ?? 'missing')).toBeDefined();
+
+    expect(await documents.delete(accountId, [shared, pending])).toBe('deleted');
+    expect(
+      await admin(`SELECT id FROM vault.document WHERE id = ANY ($1)`, [[shared, pending]]),
+    ).toEqual([]);
+    expect(await sharesOf(shared)).toEqual([]);
+    expect(await replacementOf(shared)).toBeUndefined();
+    for (const key of keys) expect(await objects.digest(key), key).toBeUndefined();
+    expect(await discardedOf(accountId)).toEqual([...keys].sort());
+    const deleted = (await events(accountId)).filter(({ code }) => code === 'document_deleted');
+    expect(deleted).toEqual(
+      expect.arrayContaining([
+        { code: 'document_deleted', details: { documentId: shared } },
+        { code: 'document_deleted', details: { documentId: pending } },
+      ]),
+    );
+    expect(await objects.digest(await objectKeyOf(foreign))).toBeDefined();
+  });
+
+  it('deletes discarded objects again once their grants have ended, and stale replacements', async () => {
+    const accountId = await owner();
+    const now = new Date(Date.now() + 3_600_000);
+    const deleted = await confirmed(accountId);
+    const late = await objectKeyOf(deleted);
+    await documents.delete(accountId, [deleted]);
+    // A late upload under a grant issued before the delete.
+    putObject(objects, late, randomBytes(8));
+    const stale = await confirmed(accountId);
+    await replacing(accountId, [], [[stale, randomBytes(8)]]);
+    const staleKey = (await replacementOf(stale))?.object_key ?? 'missing';
+    putObject(objects, staleKey, randomBytes(8));
+    await admin(`UPDATE vault.document_replacement SET created_at = $2 WHERE document_id = $1`, [
+      stale,
+      new Date(now.getTime() - 24 * 3_600_000),
+    ]);
+    await admin(`UPDATE vault.discarded_object SET discarded_at = $2 WHERE object_key = $1`, [
+      late,
+      new Date(now.getTime() - 61 * 60_000),
+    ]);
+
+    expect(await jobs.expirePending(accountId, now)).toBe(2);
+    expect(await objects.digest(late)).toBeUndefined();
+    expect(await objects.digest(staleKey)).toBeUndefined();
+    expect(await discardedOf(accountId)).toEqual([]);
+    expect(await replacementOf(stale)).toBeUndefined();
+    expect(await objects.digest(await objectKeyOf(stale))).toBeDefined();
+  });
+
+  it('erases the objects of replacements and discarded objects with the account', async () => {
+    const accountId = await owner();
+    const documentId = await confirmed(accountId);
+    await replacing(accountId, [], [[documentId, randomBytes(8)]]);
+    const replacementKey = (await replacementOf(documentId))?.object_key ?? 'missing';
+    putObject(objects, replacementKey, randomBytes(8));
+    const deleted = await confirmed(accountId);
+    const discarded = await objectKeyOf(deleted);
+    await documents.delete(accountId, [deleted]);
+    putObject(objects, discarded, randomBytes(8));
+
+    await jobs.eraseObjects(accountId);
+    for (const key of [replacementKey, discarded, await objectKeyOf(documentId)]) {
+      expect(await objects.digest(key), key).toBeUndefined();
+    }
+  });
+});

@@ -1,0 +1,799 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "b40f88d7-2f1b-4e07-985f-7356cc127ba6",
+  "prevIds": [
+    "b2679ced-878c-4890-97cf-c61699a664e3"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "vault",
+        "discarded_object"
+      ],
+      "writes": [
+        "s|tbl|vault.discarded_object",
+        "n|tbl|vault.discarded_object",
+        "e|tbl|vault.discarded_object",
+        "n|rel|vault.discarded_object",
+        "n|type|vault.discarded_object",
+        "n|rel|vault.discarded_object_pkey"
+      ],
+      "reads": [
+        "n|sch|vault"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_replacement"
+      ],
+      "writes": [
+        "s|tbl|vault.document_replacement",
+        "n|tbl|vault.document_replacement",
+        "e|tbl|vault.document_replacement",
+        "n|rel|vault.document_replacement",
+        "n|type|vault.document_replacement",
+        "n|rel|vault.document_replacement_pkey"
+      ],
+      "reads": [
+        "n|sch|vault"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "vault",
+        "discarded_object",
+        "discarded_object_owner_id_idx"
+      ],
+      "writes": [
+        "s|idx|vault.discarded_object_owner_id_idx",
+        "n|idx|vault.discarded_object_owner_id_idx",
+        "e|idx|vault.discarded_object_owner_id_idx",
+        "n|rel|vault.discarded_object_owner_id_idx"
+      ],
+      "reads": [
+        "n|tbl|vault.discarded_object",
+        "n|sch|vault",
+        "n|col|vault.discarded_object.owner_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "vault",
+        "document_replacement",
+        "document_replacement_object_key_idx"
+      ],
+      "writes": [
+        "s|idx|vault.document_replacement_object_key_idx",
+        "n|idx|vault.document_replacement_object_key_idx",
+        "e|idx|vault.document_replacement_object_key_idx",
+        "n|rel|vault.document_replacement_object_key_idx"
+      ],
+      "reads": [
+        "n|tbl|vault.document_replacement",
+        "n|sch|vault",
+        "n|col|vault.document_replacement.object_key"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "vault",
+        "document_replacement",
+        "document_replacement_owner_id_idx"
+      ],
+      "writes": [
+        "s|idx|vault.document_replacement_owner_id_idx",
+        "n|idx|vault.document_replacement_owner_id_idx",
+        "e|idx|vault.document_replacement_owner_id_idx",
+        "n|rel|vault.document_replacement_owner_id_idx"
+      ],
+      "reads": [
+        "n|tbl|vault.document_replacement",
+        "n|sch|vault",
+        "n|col|vault.document_replacement.owner_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_replacement"
+      ],
+      "writes": [
+        "s|fk|vault.document_replacement.document_replacement_document_fkey",
+        "n|fk|vault.document_replacement.document_replacement_document_fkey",
+        "e|fk|vault.document_replacement.document_replacement_document_fkey",
+        "n|con|vault.document_replacement.document_replacement_document_fkey"
+      ],
+      "reads": [
+        "n|tbl|vault.document_replacement",
+        "n|sch|vault",
+        "n|tbl|vault.document",
+        "n|sch|vault",
+        "n|col|vault.document_replacement.document_id",
+        "n|col|vault.document_replacement.owner_id",
+        "n|col|vault.document.id",
+        "n|col|vault.document.owner_id",
+        "e|uniqueness|vault.document.id.owner_id"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "discarded_object"
+      ],
+      "writes": [
+        "s|pol|vault.discarded_object.discarded_object_select_own",
+        "n|pol|vault.discarded_object.discarded_object_select_own",
+        "e|pol|vault.discarded_object.discarded_object_select_own"
+      ],
+      "reads": [
+        "n|tbl|vault.discarded_object",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.discarded_object"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "discarded_object"
+      ],
+      "writes": [
+        "s|pol|vault.discarded_object.discarded_object_insert_own",
+        "n|pol|vault.discarded_object.discarded_object_insert_own",
+        "e|pol|vault.discarded_object.discarded_object_insert_own"
+      ],
+      "reads": [
+        "n|tbl|vault.discarded_object",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.discarded_object"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "discarded_object"
+      ],
+      "writes": [
+        "s|pol|vault.discarded_object.discarded_object_select_own_by_jobs",
+        "n|pol|vault.discarded_object.discarded_object_select_own_by_jobs",
+        "e|pol|vault.discarded_object.discarded_object_select_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|vault.discarded_object",
+        "n|sch|vault",
+        "n|role|app_jobs",
+        "e|rls|vault.discarded_object"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "discarded_object"
+      ],
+      "writes": [
+        "s|pol|vault.discarded_object.discarded_object_delete_own_by_jobs",
+        "n|pol|vault.discarded_object.discarded_object_delete_own_by_jobs",
+        "e|pol|vault.discarded_object.discarded_object_delete_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|vault.discarded_object",
+        "n|sch|vault",
+        "n|role|app_jobs",
+        "e|rls|vault.discarded_object"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_replacement"
+      ],
+      "writes": [
+        "s|pol|vault.document_replacement.document_replacement_select_own",
+        "n|pol|vault.document_replacement.document_replacement_select_own",
+        "e|pol|vault.document_replacement.document_replacement_select_own"
+      ],
+      "reads": [
+        "n|tbl|vault.document_replacement",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.document_replacement"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_replacement"
+      ],
+      "writes": [
+        "s|pol|vault.document_replacement.document_replacement_insert_own",
+        "n|pol|vault.document_replacement.document_replacement_insert_own",
+        "e|pol|vault.document_replacement.document_replacement_insert_own"
+      ],
+      "reads": [
+        "n|tbl|vault.document_replacement",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.document_replacement"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_replacement"
+      ],
+      "writes": [
+        "s|pol|vault.document_replacement.document_replacement_delete_own",
+        "n|pol|vault.document_replacement.document_replacement_delete_own",
+        "e|pol|vault.document_replacement.document_replacement_delete_own"
+      ],
+      "reads": [
+        "n|tbl|vault.document_replacement",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.document_replacement"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_replacement"
+      ],
+      "writes": [
+        "s|pol|vault.document_replacement.document_replacement_select_own_by_jobs",
+        "n|pol|vault.document_replacement.document_replacement_select_own_by_jobs",
+        "e|pol|vault.document_replacement.document_replacement_select_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|vault.document_replacement",
+        "n|sch|vault",
+        "n|role|app_jobs",
+        "e|rls|vault.document_replacement"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_replacement"
+      ],
+      "writes": [
+        "s|pol|vault.document_replacement.document_replacement_delete_own_by_jobs",
+        "n|pol|vault.document_replacement.document_replacement_delete_own_by_jobs",
+        "e|pol|vault.document_replacement.document_replacement_delete_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|vault.document_replacement",
+        "n|sch|vault",
+        "n|role|app_jobs",
+        "e|rls|vault.document_replacement"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "name": "discarded_object",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "name": "document_replacement",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "discarded_object",
+        "name": "object_key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "discarded_object",
+        "name": "owner_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "discarded_object",
+        "name": "discarded_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "document_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "owner_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "size",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "sha256",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "object_key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "recipients",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "discarded_object",
+        "name": "discarded_object_owner_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "owner_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "document_replacement_object_key_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "object_key",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "document_replacement_owner_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "owner_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "document_replacement_document_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "document_id",
+          "owner_id"
+        ],
+        "schemaTo": "vault",
+        "tableTo": "document",
+        "columnsTo": [
+          "id",
+          "owner_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "discarded_object",
+        "name": "discarded_object_pkey",
+        "columns": [
+          "object_key"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "document_replacement_pkey",
+        "columns": [
+          "document_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "discarded_object",
+        "name": "discarded_object_object_key",
+        "value": "\"object_key\" ~ '^documents/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "document_replacement_size",
+        "value": "\"size\" BETWEEN 1 AND 26214400",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "document_replacement_sha256_length",
+        "value": "octet_length(\"sha256\") = 32",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "document_replacement_object_key",
+        "value": "\"object_key\" ~ '^documents/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "document_replacement_recipients",
+        "value": "cardinality(\"recipients\") <= 16 AND NOT (\"owner_id\" = ANY (\"recipients\"))",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "discarded_object",
+        "name": "discarded_object_select_own",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"vault\".\"discarded_object\".\"owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "discarded_object",
+        "name": "discarded_object_insert_own",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "\"vault\".\"discarded_object\".\"owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "discarded_object",
+        "name": "discarded_object_select_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"vault\".\"discarded_object\".\"owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "discarded_object",
+        "name": "discarded_object_delete_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"vault\".\"discarded_object\".\"owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "document_replacement_select_own",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"vault\".\"document_replacement\".\"owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "document_replacement_insert_own",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "\"vault\".\"document_replacement\".\"owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "document_replacement_delete_own",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"vault\".\"document_replacement\".\"owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "document_replacement_select_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"vault\".\"document_replacement\".\"owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_replacement",
+        "name": "document_replacement_delete_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"vault\".\"document_replacement\".\"owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    }
+  ]
+}

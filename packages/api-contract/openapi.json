@@ -3155,6 +3155,10 @@
                               "vault_reset",
                               "document_created",
                               "document_download_url_issued",
+                              "document_replaced",
+                              "document_deleted",
+                              "document_shared",
+                              "document_share_revoked",
                               "notification_channel_added",
                               "notification_channel_removed"
                             ]
@@ -4716,7 +4720,7 @@
     "/vault/documents/confirm": {
       "post": {
         "operationId": "confirmDocumentUpload",
-        "summary": "Confirms a pending upload once the stored ciphertext has the declared size and SHA-256; any other ciphertext is deleted and the document stays pending until the daily cleanup; 401 without a session, 404 not_found, 409 not_uploaded before the upload, 409 upload_mismatch, 429 rate_limited",
+        "summary": "Confirms a pending upload once the stored ciphertext has the declared size and SHA-256; any other ciphertext is deleted and the document stays pending until the daily cleanup; 401 without a session, 404 not_found, also 2 hours after create, 409 not_uploaded before the upload, 409 upload_mismatch, 429 rate_limited",
         "requestBody": {
           "required": true,
           "content": {
@@ -4823,6 +4827,338 @@
                     "url",
                     "expiresAt"
                   ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vault/documents/replace": {
+      "post": {
+        "operationId": "replaceDocuments",
+        "summary": "Approves new ciphertext for confirmed documents the account owns, encrypted to the given linked accounts, and says where to upload each; for sharing, revoking and rotating; needs a consumed vault_write step-up for this exact request; 401 without a session, 403 step_up_required, 404 not_found unless every document is a confirmed one of the account, 409 not_linked for an account without a link, 409 document_quota",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "recipients": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "maxItems": 16
+                  },
+                  "documents": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "documentId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "size": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 26214400
+                        },
+                        "sha256": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9_-]{43}$"
+                        }
+                      },
+                      "required": [
+                        "documentId",
+                        "size",
+                        "sha256"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 32
+                  }
+                },
+                "required": [
+                  "recipients",
+                  "documents"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Where to upload each new ciphertext",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "uploads": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "documentId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "upload": {
+                            "oneOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "via": {
+                                    "type": "string",
+                                    "enum": [
+                                      "vercel_blob"
+                                    ]
+                                  },
+                                  "pathname": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "via",
+                                  "pathname"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "via": {
+                                    "type": "string",
+                                    "enum": [
+                                      "direct"
+                                    ]
+                                  },
+                                  "url": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "via",
+                                  "url"
+                                ]
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "documentId",
+                          "upload"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "uploads"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vault/documents/replace/confirm": {
+      "post": {
+        "operationId": "confirmReplacements",
+        "summary": "Swaps in each approved replacement whose upload has the approved size and SHA-256, and sets the document's shares to its recipients; deletes any other upload; not_found also for a replacement approved over 2 hours ago, not_linked when a recipient lost its link, which ends that replacement; one outcome per document, in order; 401 without a session, 429 rate_limited",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "documentIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "minItems": 1,
+                    "maxItems": 32
+                  }
+                },
+                "required": [
+                  "documentIds"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "One outcome per document",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "documentId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "outcome": {
+                            "type": "string",
+                            "enum": [
+                              "replaced",
+                              "not_found",
+                              "not_uploaded",
+                              "mismatch",
+                              "not_linked"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "documentId",
+                          "outcome"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "results"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vault/documents/delete": {
+      "post": {
+        "operationId": "deleteDocuments",
+        "summary": "Deletes documents the account owns, pending or confirmed, with their shares and ciphertext; needs a consumed vault_write step-up for this exact request; 401 without a session, 403 step_up_required, 404 not_found unless every document is one of the account",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "documentIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "minItems": 1,
+                    "maxItems": 32
+                  }
+                },
+                "required": [
+                  "documentIds"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
                 }
               }
             }

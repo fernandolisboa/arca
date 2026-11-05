@@ -230,6 +230,22 @@ export const registry: Registry = {
       label: 'dataExport.tables.vaultDocumentsSharedWithYou',
     },
     {
+      table: 'vault.document_replacement',
+      strategy: 'delete',
+      owner: ownedByAccount('owner_id'),
+      pool: 'app_jobs',
+      export: ['size', 'created_at'],
+      label: 'dataExport.tables.vaultDocumentReplacements',
+    },
+    {
+      table: 'vault.discarded_object',
+      strategy: 'delete',
+      owner: ownedByAccount('owner_id'),
+      pool: 'app_jobs',
+      export: ['discarded_at'],
+      label: 'dataExport.tables.vaultDiscardedObjects',
+    },
+    {
       table: 'vault.envelope',
       strategy: 'delete',
       owner: ownedByAccount('account_id'),

@@ -1,11 +1,22 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { maxDocumentBytes, type DocumentUploadUrlResponse } from '@arca/api-contract/routes';
+import {
+  maxDocumentBatch,
+  maxDocumentBytes,
+  maxDocumentRecipients,
+  type DocumentUploadUrlResponse,
+} from '@arca/api-contract/routes';
 import type { Logger } from '@arca/telemetry';
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import type { SignedIn } from '../src/auth/service.js';
 import type { StepUpService } from '../src/auth/step-up.js';
-import type { DocumentCreated, DocumentRequests, UploadConfirmed } from '../src/vault/documents.js';
+import type { CanonicalAction } from '../src/auth/step-up-encoding.js';
+import type {
+  DocumentCreated,
+  DocumentRequests,
+  ReplacementStarted,
+  UploadConfirmed,
+} from '../src/vault/documents.js';
 import { memoryObjectStorage, type MemoryObjectStorage } from '../src/vault/object-storage.js';
 import { noLimits } from './limits.js';
 
@@ -29,6 +40,17 @@ const presigned: DocumentUploadUrlResponse = {
   type: 'blob.generate-presigned-url',
   presignedUrlPayload: { delegationToken: 'token', signature: 'signature', params: {} },
 };
+const relative = '1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d';
+const cousin = '9f8e7d6c-5b4a-4392-8170-6f5e4d3c2b1a';
+const otherDocument = 'c2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f';
+const replaceBody = {
+  recipients: [relative, cousin],
+  documents: [
+    { documentId, size: 2048, sha256 },
+    { documentId: otherDocument, size: 10, sha256 },
+  ],
+};
+const nonce = 'MzMzMzMzMzMzMzMzMzMzMw';
 const uploadUrlBody = {
   type: 'blob.generate-presigned-url',
   payload: { pathname, clientPayload: null, multipart: false },
@@ -42,6 +64,9 @@ function setup({
   presignable = true,
   confirmed = 'confirmed',
   downloadable = true,
+  approved = true,
+  replaced = { uploads: [{ documentId, upload: { via: 'vercel_blob', pathname } }] },
+  deleted = true,
   memoryObjects,
 }: {
   unlocked?: boolean;
@@ -51,14 +76,21 @@ function setup({
   presignable?: boolean;
   confirmed?: UploadConfirmed;
   downloadable?: boolean;
+  approved?: boolean;
+  replaced?: ReplacementStarted;
+  deleted?: boolean;
   memoryObjects?: MemoryObjectStorage;
 } = {}) {
   const calls: unknown[] = [];
+  const spent: { purpose: string; action: CanonicalAction }[] = [];
   const limited: string[] = [];
   const stepUp: StepUpService = {
     options: () => Promise.reject(new Error('unused')),
     verify: () => Promise.reject(new Error('unused')),
-    consume: () => Promise.reject(new Error('unused')),
+    consume: (_, purpose, action) => {
+      spent.push({ purpose, action });
+      return Promise.resolve(approved);
+    },
     vaultUnlocked: () => Promise.resolve(unlocked),
   };
   const documents: DocumentRequests = {
@@ -81,6 +113,20 @@ function setup({
     downloadUrl: (accountId, id) => {
       calls.push(['downloadUrl', accountId, id]);
       return Promise.resolve(downloadable ? 'https://objects.example.com/one' : undefined);
+    },
+    replace: (accountId, request) => {
+      calls.push(['replace', accountId, request]);
+      return Promise.resolve(replaced);
+    },
+    confirmReplacements: (accountId, ids) => {
+      calls.push(['confirmReplacements', accountId, ids]);
+      return Promise.resolve({
+        results: ids.map((id) => ({ documentId: id, outcome: 'replaced' as const })),
+      });
+    },
+    delete: (accountId, ids) => {
+      calls.push(['delete', accountId, ids]);
+      return Promise.resolve(deleted ? 'deleted' : 'not_found');
     },
   };
   const app = createApp({
@@ -118,10 +164,10 @@ function setup({
     });
   const call = (method: 'GET' | 'POST', path: string, body?: unknown) =>
     request(method, `/v1${path}`, {
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', 'arca-step-up-nonce': nonce },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     });
-  return { call, request, calls, limited };
+  return { call, request, calls, limited, spent };
 }
 
 const errorOf = async (response: Response) =>
@@ -259,5 +305,130 @@ describe('the in-memory store (spec 0005, R3; development only)', () => {
     expect(served.headers.get('cache-control')).toBe('no-store');
     expect(Buffer.from(await served.arrayBuffer())).toEqual(body);
     expect((await request('GET', download.replace(/token=.*/, 'token=AAAA'))).status).toBe(404);
+  });
+});
+
+describe('replacing documents (spec 0005, R4)', () => {
+  it('spends a vault_write step-up for exactly this batch, then approves it', async () => {
+    const { call, calls, spent } = setup();
+    const response = await call('POST', '/vault/documents/replace', replaceBody);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      uploads: [{ documentId, upload: { via: 'vercel_blob', pathname } }],
+    });
+    expect(spent).toEqual([
+      {
+        purpose: 'vault_write',
+        action: {
+          action: 'replaceDocuments',
+          targets: [documentId, otherDocument],
+          fields: { recipients: `${relative},${cousin}`, objects: `2048:${sha256},10:${sha256}` },
+          nonce: new Uint8Array(Buffer.from(nonce, 'base64url')),
+        },
+      },
+    ]);
+    expect(calls).toEqual([['replace', owner.accountId, replaceBody]]);
+  });
+
+  it('changes nothing without the step-up', async () => {
+    const { call, calls } = setup({ approved: false });
+    const response = await call('POST', '/vault/documents/replace', replaceBody);
+    expect(response.status).toBe(403);
+    expect(await errorOf(response)).toBe('step_up_required');
+    expect(calls).toEqual([]);
+  });
+
+  it.each([
+    ['not_found' as const, 404, 'not_found'],
+    ['not_linked' as const, 409, 'not_linked'],
+    ['over_quota' as const, 409, 'document_quota'],
+  ])('answers %s with %i', async (replaced, status, code) => {
+    const response = await setup({ replaced }).call(
+      'POST',
+      '/vault/documents/replace',
+      replaceBody,
+    );
+    expect(response.status).toBe(status);
+    expect(await errorOf(response)).toBe(code);
+  });
+
+  it.each([
+    ['recipients out of order', { ...replaceBody, recipients: [cousin, relative] }],
+    ['a recipient twice', { ...replaceBody, recipients: [relative, relative] }],
+    [
+      'too many recipients',
+      {
+        ...replaceBody,
+        recipients: Array.from(
+          { length: maxDocumentRecipients + 1 },
+          (_, index) => `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
+        ),
+      },
+    ],
+    ['no documents', { ...replaceBody, documents: [] }],
+    [
+      'a document twice',
+      { ...replaceBody, documents: [replaceBody.documents[0], replaceBody.documents[0]] },
+    ],
+    [
+      'too many documents',
+      {
+        ...replaceBody,
+        documents: Array.from({ length: maxDocumentBatch + 1 }, (_, index) => ({
+          documentId: `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
+          size: 1,
+          sha256,
+        })),
+      },
+    ],
+  ])('refuses %s before any step-up', async (_, body) => {
+    const { call, calls, spent } = setup();
+    expect((await call('POST', '/vault/documents/replace', body)).status).toBe(400);
+    expect(spent).toEqual([]);
+    expect(calls).toEqual([]);
+  });
+
+  it('confirms a batch of replacements, counted once by the confirm limit', async () => {
+    const { call, calls, limited } = setup();
+    const response = await call('POST', '/vault/documents/replace/confirm', {
+      documentIds: [documentId, otherDocument],
+    });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      results: [
+        { documentId, outcome: 'replaced' },
+        { documentId: otherDocument, outcome: 'replaced' },
+      ],
+    });
+    expect(calls).toEqual([['confirmReplacements', owner.accountId, [documentId, otherDocument]]]);
+    expect(limited).toEqual(['document_confirm_account']);
+  });
+});
+
+describe('deleting documents (spec 0005, R4)', () => {
+  const body = { documentIds: [documentId, otherDocument] };
+
+  it('spends a vault_write step-up for exactly these documents, in order', async () => {
+    const { call, calls, spent } = setup();
+    expect((await call('POST', '/vault/documents/delete', body)).status).toBe(200);
+    expect(spent).toEqual([
+      {
+        purpose: 'vault_write',
+        action: {
+          action: 'deleteDocuments',
+          targets: [documentId, otherDocument],
+          nonce: new Uint8Array(Buffer.from(nonce, 'base64url')),
+        },
+      },
+    ]);
+    expect(calls).toEqual([['delete', owner.accountId, [documentId, otherDocument]]]);
+  });
+
+  it("deletes nothing without the step-up, and answers 404 for a document not the account's", async () => {
+    const refused = setup({ approved: false });
+    expect((await refused.call('POST', '/vault/documents/delete', body)).status).toBe(403);
+    expect(refused.calls).toEqual([]);
+    const missing = await setup({ deleted: false }).call('POST', '/vault/documents/delete', body);
+    expect(missing.status).toBe(404);
   });
 });

@@ -1,6 +1,15 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { maxDocumentBytes } from '@arca/api-contract/routes';
-import { maxDocumentBytes as storedDocumentBytes } from '@arca/db/vault-schema';
+import {
+  maxDocumentBatch,
+  maxDocumentBytes,
+  maxDocumentRecipients,
+  replaceDocumentsAction,
+  StepUpAction,
+} from '@arca/api-contract/routes';
+import {
+  maxDocumentBytes as storedDocumentBytes,
+  maxDocumentRecipients as storedDocumentRecipients,
+} from '@arca/db/vault-schema';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readBlobStore } from '../src/config.js';
 import {
@@ -112,8 +121,24 @@ describe('the store of each environment (spec 0005, R3)', () => {
   });
 });
 
-describe('the document size limit', () => {
-  it('is the same in the contract and in the database check', () => {
+describe('the document limits', () => {
+  it('are the same in the contract and in the database checks', () => {
     expect(maxDocumentBytes).toBe(storedDocumentBytes);
+    expect(maxDocumentRecipients).toBe(storedDocumentRecipients);
+  });
+
+  it("let the largest replace fit the step-up's caps (spec 0003, R5)", () => {
+    const id = (index: number) => `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`;
+    const action = replaceDocumentsAction({
+      recipients: Array.from({ length: maxDocumentRecipients }, (_, index) => id(index)),
+      documents: Array.from({ length: maxDocumentBatch }, (_, index) => ({
+        documentId: id(100 + index),
+        size: maxDocumentBytes,
+        sha256: 'A'.repeat(43),
+      })),
+    });
+    expect(StepUpAction.safeParse({ ...action, nonce: 'MzMzMzMzMzMzMzMzMzMzMw' }).success).toBe(
+      true,
+    );
   });
 });
