@@ -4346,7 +4346,7 @@
     "/vault/documents": {
       "post": {
         "operationId": "createDocument",
-        "summary": "Adds a pending document and says where to upload its ciphertext; 401 without a session, 403 account_unconfirmed, 404 not_found before the vault is set up, 409 document_quota past 300 documents or 1 GiB, 429 rate_limited",
+        "summary": "Adds a pending document and says where to upload its ciphertext; 401 without a session, 403 account_unconfirmed, 403 step_up_required outside a vault_unlock window, 404 not_found before the vault is set up, 409 document_quota past 300 documents or 1 GiB, 429 rate_limited",
         "requestBody": {
           "required": true,
           "content": {
@@ -4470,7 +4470,7 @@
       },
       "get": {
         "operationId": "listDocuments",
-        "summary": "The confirmed documents the account owns or that are shared with it, oldest first, at most 50 a page; 401 without a session",
+        "summary": "The confirmed documents the account owns or that are shared with it, in document ID order, at most 50 a page; 401 without a session",
         "parameters": [
           {
             "schema": {
@@ -4586,7 +4586,7 @@
     "/vault/documents/upload-url": {
       "post": {
         "operationId": "documentUploadUrl",
-        "summary": "A presigned upload for one pending document's pathname, valid for 5 minutes and limited to its declared size; 401 without a session, 404 not_found unless the pathname is a pending document of the account",
+        "summary": "A presigned upload for one pending document's pathname, valid for 5 minutes and limited to its declared size; 401 without a session, 404 not_found unless the pathname is a pending document of the account created within the hour",
         "requestBody": {
           "required": true,
           "content": {
@@ -4716,7 +4716,7 @@
     "/vault/documents/confirm": {
       "post": {
         "operationId": "confirmDocumentUpload",
-        "summary": "Confirms a pending upload once the stored ciphertext has the declared size and SHA-256; otherwise deletes it and the pending document; 401 without a session, 404 not_found, 409 upload_mismatch, 429 rate_limited",
+        "summary": "Confirms a pending upload once the stored ciphertext has the declared size and SHA-256; any other ciphertext is deleted and the document stays pending until the daily cleanup; 401 without a session, 404 not_found, 409 not_uploaded before the upload, 409 upload_mismatch, 429 rate_limited",
         "requestBody": {
           "required": true,
           "content": {

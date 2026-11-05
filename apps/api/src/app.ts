@@ -226,6 +226,7 @@ export type ErrorCode =
   | 'vault_has_documents'
   | 'document_quota'
   | 'upload_mismatch'
+  | 'not_uploaded'
   | 'push_unavailable'
   | 'too_many_push_channels'
   | 'accounts_closed'
@@ -1004,6 +1005,7 @@ export function createApp({
     if (accountConfirmed === undefined || !(await accountConfirmed(current.accountId))) {
       return fail(c, 'account_unconfirmed', 403);
     }
+    if (!(await unlocked(current))) return fail(c, 'step_up_required', 403);
     const limited = await overLimit(c, authLimits, documentLimits.create, current.accountId);
     if (limited !== undefined) return limited;
     const outcome = await documents.create(
@@ -1033,6 +1035,7 @@ export function createApp({
     const { documentId } = confirmDocumentUpload.body.parse(await c.req.json());
     const outcome = await documents.confirm(current.accountId, documentId);
     if (outcome === 'not_found') return fail(c, 'not_found', 404);
+    if (outcome === 'not_uploaded') return fail(c, 'not_uploaded', 409);
     if (outcome === 'mismatch') return fail(c, 'upload_mismatch', 409);
     return c.json({}, 200);
   });

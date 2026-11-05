@@ -13,20 +13,24 @@ import type { AuditLog } from '../audit/log.js';
 import type { ObjectStorage } from './object-storage.js';
 
 export type DocumentCreated = CreateDocumentResponse | 'no_vault' | 'over_quota';
-export type UploadConfirmed = 'confirmed' | 'not_found' | 'mismatch';
+export type UploadConfirmed = 'confirmed' | 'not_found' | 'not_uploaded' | 'mismatch';
 
 /** Documents in the vault (spec 0005, R4): metadata here, ciphertext in the object store. */
 export interface DocumentRequests {
   /** Adds a pending document, which counts against the quota from now on. */
   readonly create: (accountId: string, request: CreateDocumentRequest) => Promise<DocumentCreated>;
-  /** The presigned upload for the account's pending document at this pathname, if there is one. */
+  /**
+   * The presigned upload for the account's pending document at this pathname, while the document is
+   * younger than `uploadWindowMinutes`.
+   */
   readonly presignUpload: (
     accountId: string,
     pathname: string,
   ) => Promise<DocumentUploadUrlResponse | undefined>;
   /**
-   * Confirms a pending upload whose stored object has the declared size and SHA-256; any other
-   * object goes, with the pending document, so only the declared ciphertext is ever kept.
+   * Confirms a pending upload whose stored object has the declared size and SHA-256. Any other
+   * object is deleted and the document stays pending: its row is deleted only by the daily
+   * cleanup, after every upload grant for it has ended, so no object outlives the row naming it.
    */
   readonly confirm: (accountId: string, documentId: string) => Promise<UploadConfirmed>;
   /** A page of the confirmed documents the account owns or that are shared with it. */
@@ -58,6 +62,9 @@ export interface DocumentSettings {
 /** Pending documents older than this are deleted by the daily cleanup (RETENTION.md). */
 export const pendingDocumentHours = 24;
 
+/** Uploads are presigned only this long after create, so every grant ends before the cleanup. */
+export const uploadWindowMinutes = 60;
+
 interface DocumentRow extends Record<string, unknown> {
   readonly id: string;
   readonly owner_id: string;
@@ -78,15 +85,6 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
         SELECT id, object_key, size, sha256 FROM vault.document
          WHERE owner_id = ${accountId} AND confirmed_at IS NULL AND ${where}`)
     ).rows[0];
-
-  const discard = async (accountId: string, documentId: string, objectKey: string) => {
-    await storage.delete([objectKey]);
-    await asAccount(accountId, (tx) =>
-      tx.execute(sql`
-        DELETE FROM vault.document
-         WHERE id = ${documentId} AND owner_id = ${accountId} AND confirmed_at IS NULL`),
-    );
-  };
 
   return {
     create: (accountId, { typeKey, size, sha256 }) =>
@@ -122,7 +120,12 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
 
     async presignUpload(accountId, pathname) {
       const found = await asAccount(accountId, (tx) =>
-        pending(tx, accountId, sql`object_key = ${pathname}`),
+        pending(
+          tx,
+          accountId,
+          sql`object_key = ${pathname}
+              AND created_at > now() - make_interval(mins => ${uploadWindowMinutes})`,
+        ),
       );
       return found === undefined ? undefined : storage.presignUpload(pathname, found.size);
     },
@@ -133,8 +136,9 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
       );
       if (found === undefined) return 'not_found';
       const stored = await storage.digest(found.object_key);
-      if (stored?.size !== found.size || !stored.sha256.equals(found.sha256)) {
-        await discard(accountId, documentId, found.object_key);
+      if (stored === undefined) return 'not_uploaded';
+      if (stored.size !== found.size || !stored.sha256.equals(found.sha256)) {
+        await storage.delete([found.object_key]);
         return 'mismatch';
       }
       return asAccount(accountId, async (tx) => {

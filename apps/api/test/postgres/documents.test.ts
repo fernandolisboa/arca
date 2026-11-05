@@ -217,6 +217,17 @@ describe('presigning an upload (spec 0005, R4)', () => {
     expect(presigned).toEqual([{ pathname, maxBytes: 300 }]);
   });
 
+  it('presigns nothing an hour after create, so every grant ends before the daily cleanup', async () => {
+    const accountId = await owner();
+    const { documentId } = await created(accountId, randomBytes(8));
+    await admin(
+      `UPDATE vault.document SET created_at = now() - interval '61 minutes' WHERE id = $1`,
+      [documentId],
+    );
+    expect(await documents.presignUpload(accountId, await objectKeyOf(documentId))).toBeUndefined();
+    expect(presigned).toEqual([]);
+  });
+
   it('presigns nothing for a confirmed document', async () => {
     const accountId = await owner();
     const documentId = await confirmed(accountId);
@@ -237,18 +248,30 @@ describe('confirming an upload (spec 0005, R4)', () => {
   it.each([
     ['other bytes of the same size', (body: Buffer) => Buffer.from(body).reverse()],
     ['a shorter object', (body: Buffer) => body.subarray(1)],
-    ['no object', () => undefined],
-  ])('discards the document and its object when the store holds %s', async (_, stored) => {
+  ])(
+    'deletes the object and keeps the document pending when the store holds %s',
+    async (_, stored) => {
+      const accountId = await owner();
+      const body = randomBytes(64);
+      const { documentId } = await created(accountId, body);
+      const pathname = await objectKeyOf(documentId);
+      putObject(objects, pathname, stored(body));
+      expect(await documents.confirm(accountId, documentId)).toBe('mismatch');
+      expect(
+        await admin(`SELECT confirmed_at FROM vault.document WHERE id = $1`, [documentId]),
+      ).toEqual([{ confirmed_at: null }]);
+      expect(await objects.digest(pathname)).toBeUndefined();
+      expect(await events(accountId)).toEqual([]);
+    },
+  );
+
+  it('keeps a document confirmed before its upload, so an upload under a live grant still has its row', async () => {
     const accountId = await owner();
     const body = randomBytes(64);
     const { documentId } = await created(accountId, body);
-    const pathname = await objectKeyOf(documentId);
-    const bytes = stored(body);
-    if (bytes !== undefined) putObject(objects, pathname, bytes);
-    expect(await documents.confirm(accountId, documentId)).toBe('mismatch');
-    expect(await admin(`SELECT id FROM vault.document WHERE id = $1`, [documentId])).toEqual([]);
-    expect(await objects.digest(pathname)).toBeUndefined();
-    expect(await events(accountId)).toEqual([]);
+    expect(await documents.confirm(accountId, documentId)).toBe('not_uploaded');
+    putObject(objects, await objectKeyOf(documentId), body);
+    expect(await documents.confirm(accountId, documentId)).toBe('confirmed');
   });
 
   it("finds nothing to confirm in another account's document", async () => {

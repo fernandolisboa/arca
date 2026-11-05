@@ -139,6 +139,7 @@ describe('creating a document (spec 0005, R4)', () => {
 
   it.each([
     [{ confirmedAccount: false }, 403, 'account_unconfirmed'],
+    [{ unlocked: false }, 403, 'step_up_required'],
     [{ allowed: false }, 429, 'rate_limited'],
     [{ created: 'no_vault' as const }, 404, 'not_found'],
     [{ created: 'over_quota' as const }, 409, 'document_quota'],
@@ -195,6 +196,7 @@ describe('confirming an upload (spec 0005, R4)', () => {
   it.each([
     ['confirmed' as const, 200, undefined],
     ['not_found' as const, 404, 'not_found'],
+    ['not_uploaded' as const, 409, 'not_uploaded'],
     ['mismatch' as const, 409, 'upload_mismatch'],
   ])('answers %s with %i', async (confirmed, status, code) => {
     const { call, calls, limited } = setup({ confirmed });
