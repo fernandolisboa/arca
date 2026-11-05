@@ -205,7 +205,7 @@ interface Run {
  * unknown at least once; every dependent rule including and excluding someone; the statuses each
  * open version must reach, and `unavailable` for a closed one. Each dependent rule is measured on
  * its own, so another rule cannot cover for it: it includes someone, and reaches someone whose
- * condition fails.
+ * condition fails, unless its condition is the literal `true`, which nobody can fail.
  */
 function coverage(entry: CatalogEntry, runs: readonly Run[]): string[] {
   const { version } = entry;
@@ -242,10 +242,11 @@ function coverage(entry: CatalogEntry, runs: readonly Run[]): string[] {
     if (!units.some((unit) => unit.dependents.length > 0)) {
       gaps.push(`Dependent rule ${rule.id} never includes anyone`);
     }
+    const unconditional = rule.condition.op === 'bool' && rule.condition.value;
     const excludes = units.some((unit) =>
       unit.excluded.some((person) => person.reason === 'condition_not_met'),
     );
-    if (!excludes) gaps.push(`Dependent rule ${rule.id} never excludes anyone`);
+    if (!excludes && !unconditional) gaps.push(`Dependent rule ${rule.id} never excludes anyone`);
   }
   return gaps;
 }

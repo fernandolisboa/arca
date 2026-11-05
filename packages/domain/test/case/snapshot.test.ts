@@ -176,6 +176,18 @@ describe('CaseSnapshot', () => {
       },
     ],
     [
+      'more than four couple edges between the same two people',
+      {
+        ...base,
+        people: [{ id: 'p1' }, { id: 'p2' }],
+        relationships: ['2001', '2002', '2003', '2004', '2005'].map((year, index) => ({
+          kind: index % 2 === 0 ? 'spouse' : 'partner',
+          people: ['p1', 'p2'],
+          start: `${year}-01-01`,
+        })),
+      },
+    ],
+    [
       'an unknown ISIC section',
       {
         ...base,

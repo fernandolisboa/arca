@@ -251,6 +251,16 @@ describe('checkExpression', () => {
       { op: 'eq', left: fact('edge.parentKind'), right: { op: 'token', value: 'adoptive' } },
     ],
     [
+      "a path's first edge in a per-dependent cost",
+      { op: 'lt', left: fact('firstEdge.ageAtStart'), right: int(18) },
+      { current: true, unit: true, edge: true },
+    ],
+    [
+      'a fact about the linked person on the first edge',
+      fact('firstEdge.dependsOnLinkedPerson'),
+      { current: true, unit: false, edge: true, firstEdge: true },
+    ],
+    [
       'a lineage fact outside a line',
       { op: 'eq', left: fact('lineage.generation'), right: int(2) },
     ],
@@ -271,6 +281,24 @@ describe('checkExpression', () => {
     const { type, issues } = check(input, scope, overrides);
     expect(type).toBeUndefined();
     expect(issues.length).toBeGreaterThan(0);
+  });
+
+  it("types a fact on the path's first edge in a dependent rule", () => {
+    const { type, issues } = check(
+      { op: 'lt', left: fact('firstEdge.ageAtStart'), right: int(18) },
+      { ...dependent, firstEdge: true },
+    );
+    expect(issues).toEqual([]);
+    expect(type).toEqual({ kind: 'boolean' });
+  });
+
+  it('types an unmodeled branch as a boolean that is always unknown', () => {
+    const { type, issues } = check({
+      op: 'any',
+      operands: [{ op: 'unmodeled' }, { op: 'bool', value: false }],
+    });
+    expect(issues).toEqual([]);
+    expect(type).toEqual({ kind: 'boolean' });
   });
 
   it('types an edge fact in a dependent rule', () => {

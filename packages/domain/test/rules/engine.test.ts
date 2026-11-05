@@ -476,6 +476,54 @@ describe('evaluateVersion', () => {
     ]);
   });
 
+  it('reads the first edge of the path, such as the marriage that made a stepchild', () => {
+    // Synthetic: p1 married p2 when p2's child c1 was 10 and c2 was 19; c3's age is unknown.
+    const value = snapshot({
+      members: ['p1', 'p2'],
+      people: [
+        known('p1', '1980-01-01'),
+        known('p2', '1982-01-01'),
+        known('c1', '2010-01-01'),
+        known('c2', '2001-01-01'),
+        { id: 'c3' },
+      ],
+      relationships: [
+        { kind: 'spouse', people: ['p1', 'p2'], start: '2020-06-01', end: 'none' },
+        { kind: 'parent', parent: 'p2', child: 'c1', parentKind: 'biological' },
+        { kind: 'parent', parent: 'p2', child: 'c2', parentKind: 'biological' },
+        { kind: 'parent', parent: 'p2', child: 'c3', parentKind: 'biological' },
+      ],
+      assets: [cash('p1', 5000_00)],
+    });
+    const stepchildren = entry({
+      dependents: [
+        {
+          id: 'stepchildren',
+          title: 'Stepchildren from a marriage before they turned 18',
+          path: ['spouse', 'child'],
+          condition: {
+            op: 'lt',
+            left: { op: 'fact', key: 'firstEdge.ageAtStart' },
+            right: { op: 'int', value: 18 },
+          },
+          sources: ['law'],
+        },
+      ],
+    });
+    const unit = computeUnit(value, stepchildren, 'p1', context());
+    expect(unit.dependents.map((member) => member.personId)).toEqual(['c1']);
+    expect(unit.excluded).toContainEqual({ personId: 'c2', reason: 'condition_not_met' });
+    const [marriage] = value.relationships;
+    expect(unit.possibleDependents).toEqual([
+      expect.objectContaining({
+        personId: 'c3',
+        missingFacts: [
+          { kind: 'fact', reference: 'firstEdge.ageAtStart', personId: 'c3', edge: marriage },
+        ],
+      }),
+    ]);
+  });
+
   it('decides a per-dependent cost only through an edge that certainly covers the dependent', () => {
     // Synthetic: p3 is p1's biological child and the adoptive child of p2, whose marriage to p1
     // has an unknown start. A fee for adopted children may or may not apply.

@@ -28,6 +28,8 @@ export interface CheckScope {
   readonly current: boolean;
   readonly unit: boolean;
   readonly edge: boolean;
+  /** The first edge of a dependent rule's path, which only its condition reads. */
+  readonly firstEdge?: boolean;
   /** Inside a line of ancestors: at the ancestor itself, or at a link below it. */
   readonly lineage?: 'ancestor' | 'link';
   /** Inside a collection, where only `lineage.links` (inside ancestors) may nest. */
@@ -87,6 +89,7 @@ class Checker {
     const at = (key: string): string => `${path}/${key}`;
     switch (expression.op) {
       case 'bool':
+      case 'unmodeled':
         return boolean;
       case 'int':
       case 'decimal':
@@ -370,6 +373,8 @@ function reachable(target: FactTarget, scope: CheckScope): boolean {
       return scope.unit;
     case 'edge':
       return scope.edge;
+    case 'firstEdge':
+      return scope.firstEdge === true;
     case 'lineage':
     case 'ancestor':
       return scope.lineage !== undefined;

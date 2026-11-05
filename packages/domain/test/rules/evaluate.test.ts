@@ -54,6 +54,12 @@ describe('Kleene logic', () => {
     ['any with an unknown', { op: 'any', operands: [unknown, no] }, 'unknown'],
     ['not unknown', { op: 'not', operand: unknown }, 'unknown'],
     ['not true', { op: 'not', operand: yes }, false],
+    ['an unmodeled branch', { op: 'unmodeled' }, 'unknown'],
+    [
+      'an unmodeled branch cut off by a false',
+      { op: 'all', operands: [{ op: 'unmodeled' }, no] },
+      false,
+    ],
   ])('%s', (_label, input, expected) => {
     expect(truthOf(run(input, base))).toBe(expected);
   });

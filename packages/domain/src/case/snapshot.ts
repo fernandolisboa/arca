@@ -148,6 +148,8 @@ const parentEdgeSchema = z.strictObject({
   custody: z.enum(custodies).optional(),
   /** When the link began, for an adoption; without one it holds from the child's birth. */
   start: dateValueSchema.optional(),
+  /** When this parent's legal custody of the child, living together, began, for an adoption. */
+  custodyStart: dateValueSchema.optional(),
 });
 
 export const relationshipSchema = z.discriminatedUnion('kind', [
@@ -157,6 +159,9 @@ export const relationshipSchema = z.discriminatedUnion('kind', [
 
 /** At most this many parent edges per child, so lines of ancestors stay small. */
 export const maxParentsPerChild = 4;
+
+/** At most this many couple edges between two people, so paths through couples stay small. */
+export const maxCoupleEdgesPerPair = 4;
 
 const assetSchema = z
   .strictObject({
@@ -227,6 +232,15 @@ export const caseSnapshotSchema = z
     }
     if ([...parentCounts.values()].some((count) => count > maxParentsPerChild)) {
       issue(`A person has at most ${String(maxParentsPerChild)} parents`);
+    }
+    const pairCounts = new Map<string, number>();
+    for (const edge of snapshot.relationships) {
+      if (edge.kind === 'parent') continue;
+      const pair = [...edge.people].sort().join(':');
+      pairCounts.set(pair, (pairCounts.get(pair) ?? 0) + 1);
+    }
+    if ([...pairCounts.values()].some((count) => count > maxCoupleEdgesPerPair)) {
+      issue(`Two people share at most ${String(maxCoupleEdgesPerPair)} couple edges`);
     }
     if (hasParentCycle(parentEdges)) issue('Nobody is their own ancestor');
   });

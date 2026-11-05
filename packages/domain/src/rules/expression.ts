@@ -43,6 +43,11 @@ type Comparison = (typeof comparisonOperators)[number];
  */
 export type Expression =
   | { readonly op: 'bool'; readonly value: boolean }
+  /**
+   * A branch of the law the version does not model, such as an exception the snapshot cannot
+   * describe. It is always unknown, so whoever it decides stays possible, never wrongly settled.
+   */
+  | { readonly op: 'unmodeled' }
   | { readonly op: 'int'; readonly value: number }
   | { readonly op: 'decimal'; readonly value: string }
   | { readonly op: 'money'; readonly amount: number; readonly currency: string }
@@ -86,6 +91,7 @@ const generations = z.number().int().min(1).max(maxAncestorGenerations).optional
 export const expressionSchema: z.ZodType<Expression> = z.lazy(() =>
   z.discriminatedUnion('op', [
     z.strictObject({ op: z.literal('bool'), value: z.boolean() }),
+    z.strictObject({ op: z.literal('unmodeled') }),
     z.strictObject({ op: z.literal('int'), value: safeInteger }),
     z.strictObject({ op: z.literal('decimal'), value: decimalSchema }),
     z.strictObject({ op: z.literal('money'), amount: safeInteger, currency: currencyCodeSchema }),
@@ -179,6 +185,7 @@ export function childrenOf(expression: Expression): readonly Expression[] {
         ? [expression.value]
         : [expression.value, expression.where];
     case 'bool':
+    case 'unmodeled':
     case 'int':
     case 'decimal':
     case 'money':

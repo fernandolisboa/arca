@@ -219,6 +219,23 @@ describe('route version', () => {
     ],
     ['an open version with closure sources', { closureSources: ['law'] }, '/closureSources'],
     [
+      'a first-edge fact on a three-step path',
+      {
+        dependents: [
+          {
+            ...valid.dependents[0],
+            path: ['spouse', 'parent', 'child'],
+            condition: {
+              op: 'lt',
+              left: { op: 'fact', key: 'firstEdge.ageAtStart' },
+              right: { op: 'int', value: 18 },
+            },
+          },
+        ],
+      },
+      '/dependents/0/condition',
+    ],
+    [
       'a dependent rule at an undeclared date',
       { dependents: [{ ...valid.dependents[0], at: 'filingDate' }] },
       '/dependents/0/at',
