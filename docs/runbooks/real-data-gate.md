@@ -12,7 +12,8 @@ Production accepts family data only when every item below is checked ([spec 0004
   - **Evidence:**
     - the preview build never bootstraps or migrates production ([db-deployment-target.test.ts](../../tooling/scripts/test/db-deployment-target.test.ts), [bootstrap.test.ts](../../tooling/scripts/test/postgres/bootstrap.test.ts));
     - the lineage mark ([#64](https://github.com/fernandolisboa/arca/issues/64)): production writes it, and a preview that finds it fails before any migration ([runner.test.ts](../../tooling/scripts/test/postgres/runner.test.ts)).
-  - **Open:** the synthetic seed, [#65](https://github.com/fernandolisboa/arca/issues/65).
+    - the synthetic seed ([#65](https://github.com/fernandolisboa/arca/issues/65)): preview builds and CI run it as `app_auth` after migrations, a second run changes nothing, production skips it and the seed refuses it ([seed.test.ts](../../tooling/scripts/test/postgres/seed.test.ts), [db-seed.test.ts](../../tooling/scripts/test/db-seed.test.ts)), and a seeded account signs in with a virtual authenticator ([seeded.spec.ts](../../apps/web/e2e/seeded.spec.ts)).
+  - **Open:** the first preview built after #64 merged, recorded on [#64](https://github.com/fernandolisboa/arca/issues/64).
   - **Owner steps (done 2026-11-05):**
     - before #64 merges, create the Neon `development` branch from `main` (the production branch), with its data, and reset the owner role's password on it;
     - turn off the integration's branch per preview, and give Preview its own `PGHOST`, `PGHOST_UNPOOLED`, `PGDATABASE`, `PGUSER` and `PGPASSWORD` from `development`.

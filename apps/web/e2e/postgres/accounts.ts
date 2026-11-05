@@ -1,4 +1,8 @@
+import { execFile } from 'node:child_process';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
 import pg from 'pg';
 import { databaseServer } from '../servers.js';
 
@@ -23,6 +27,36 @@ async function asAdmin<T>(work: (client: pg.Client) => Promise<T>): Promise<T> {
   } finally {
     await client.end();
   }
+}
+
+/** An account of the synthetic seed, as `packages/db/seed/accounts.json` lists it. */
+export interface SeededAccount {
+  readonly id: string;
+  readonly email: string;
+  readonly passkey: { readonly id: string; readonly label: string };
+}
+
+/**
+ * Runs the seed command a preview build runs (spec 0004, R2) against the e2e database, as
+ * app_auth, and returns the accounts it seeds.
+ */
+export async function runSeed(): Promise<readonly SeededAccount[]> {
+  const password = process.env['ARCA_DB_AUTH_PASSWORD'] ?? '';
+  if (password === '') throw new Error('ARCA_DB_AUTH_PASSWORD is not set');
+  await promisify(execFile)(
+    process.execPath,
+    [fileURLToPath(new URL('../../../../tooling/scripts/src/db/cli.ts', import.meta.url)), 'seed'],
+    {
+      env: {
+        PGHOST_UNPOOLED: databaseServer.database.host,
+        PGPORT: String(databaseServer.database.port),
+        PGDATABASE: databaseServer.database.name,
+        ARCA_DB_AUTH_PASSWORD: password,
+      },
+    },
+  );
+  const file = new URL('../../../../packages/db/seed/accounts.json', import.meta.url);
+  return (JSON.parse(await readFile(file, 'utf8')) as { accounts: SeededAccount[] }).accounts;
 }
 
 /** A synthetic account with one passkey; `userId` when the credential already names its user. */

@@ -1,0 +1,13 @@
+{
+  "accounts": [
+    {
+      "id": "00000000-5eed-4000-8000-000000000001",
+      "email": "seed-owner@example.com",
+      "confirmedAt": "2026-01-01T00:00:00.000Z",
+      "passkey": {
+        "id": "00000000-5eed-4000-8000-000000000101",
+        "label": "arca synthetic seed: owner passkey"
+      }
+    }
+  ]
+}
