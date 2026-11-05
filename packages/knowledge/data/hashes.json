@@ -14,5 +14,14 @@
       "sha256": "2bb871d729d2db80eda1ae2b3e7a9bc5028979103235ab3682063191b3cb52c3"
     }
   ],
-  "files": []
+  "files": [
+    {
+      "path": "routes/pt-d7/1",
+      "sha256": "05ae5f5e259b58cce084b066ba4dc490a5f2e8256ee4d544481a1a9369f66104"
+    },
+    {
+      "path": "routes/pt-d8/1",
+      "sha256": "c063e67c2eefc4b5a7995d1f1479e19eaf6da7d3034b069c731816fdb0382e92"
+    }
+  ]
 }

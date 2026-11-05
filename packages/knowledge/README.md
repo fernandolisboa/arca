@@ -41,6 +41,13 @@ Every file in `data` is immutable once on `main`. A change is a new numbered fil
 
 `data/former-countries/<n>.json` lists ISO 3166-3 codes, with sources; their names live in the i18n catalogs (`formerCountries`), because `Intl.DisplayNames` names only current countries. A test in `@arca/i18n` fails when a code has no name. User-assigned codes `QM` to `QZ` (except `QO` and `QU`) are for test fixtures only, and the real build rejects them.
 
+## Tags
+
+Tags are free strings in each version, never an enumeration in code, so a new one is a data change. Use one route type and one outcome where they apply, and reuse an existing tag before adding one:
+
+- Route type: `work`, `investment`, `study`, `family`, `descent`, `retirement`, `digital-nomad`, `humanitarian`, `seasonal-work`.
+- Outcome: `temporary-residence`, `permanent-residence`, `citizenship`.
+
 ## Adding a file
 
 Add the new numbered file, run the build, and append the `{ "path", "sha256" }` entry the build prints for it to `files` in `data/hashes.json`. Never edit an existing entry: a hash that changes means the canonicalizer or a pinned file changed, and an activation of the old content no longer covers it.
