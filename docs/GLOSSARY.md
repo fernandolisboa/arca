@@ -33,7 +33,8 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Family area | Área da família | The screen with the people in a case, who has an account, invites and who may upload documents for whom; grants no access by itself |
 | Guided questions | Perguntas guiadas | The step-by-step questions per person that fill the case, each setting one fact; "Não sei" leaves it unknown |
 | Playback | Resumo do caso | The case read back in plain sentences, each linked to the question that sets it, so the person can correct it |
-| Controller | Responsável pelos dados | The one account that writes a person's facts and decides who sees them: the person, or whoever added someone without an account |
+| Keeper | Quem cuida dos dados | The one account that writes a person's facts and decides who sees them: the person, or whoever added someone without an account; not the data-protection controller |
+| Profile share | Compartilhamento de dados | A keeper letting a chosen member see a person's profile or, separately, their finances; not a document share |
 | Progress | Progresso | Documents obtained and steps done out of what a person's or the family's chosen routes need, computed in code; unknowns shown apart |
 | Shared analysis | Análise compartilhada | A comparison or recommendation an adult shares, read-only and revocable, with chosen people in the case; not a document share |
 | Guided tour | Tour guiado | The first-run walkthrough of the app and the hint shown the first time a screen opens; skippable and replayable |
@@ -68,7 +69,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Closed route version | Rota encerrada | A route version with status `closed`: the route no longer accepts applications, cited by its `closureSources` |
 | Former country | País extinto | A state that no longer exists, with an ISO 3166-3 code, allowed only in citizenship and ancestry facts |
 | Owner | Responsável | The founder, who owns the repository and is the first approver; "founder" in product docs means the same person |
-| Active version | Versão ativa | A route version whose activation counts and that has no rejection, pending or counted; the only kind the engine evaluates for a case |
+| Active version | Versão ativa | A route version with a counted activation and no rejection; the only kind the engine evaluates for a case |
 | Decisive missing fact | Dado decisivo pendente | An unknown fact whose answer could change an evaluation's status |
 | Eligible | Elegível | Evaluation status: every requirement holds |
 | Not eligible | Não elegível | Evaluation status: a requirement does not hold |

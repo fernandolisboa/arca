@@ -16,8 +16,9 @@ flowchart LR
     KB --> ACTIVATE[Human approval:<br/>owner activates with a passkey]
   end
   subgraph Case
-    INTAKE[Free description<br/>text or voice] --> EXTRACT[Structured extraction]
-    EXTRACT --> CONFIRM[Playback and correction]
+    QUESTIONS[Guided questions] --> CONFIRM[Playback and correction]
+    INTAKE[Free description<br/>text or voice, later] --> EXTRACT[Structured extraction]
+    EXTRACT --> CONFIRM
     CONFIRM --> CASE[(Case model<br/>people, relationships,<br/>assets, ancestry, aspirations)]
   end
   ACTIVATE --> ENGINE{{Evaluation engine<br/>pure function}}

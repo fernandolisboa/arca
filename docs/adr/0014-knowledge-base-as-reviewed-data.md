@@ -2,7 +2,7 @@
 
 - Status: Accepted; revised 2026-11-03: the owner is the only approver, with an independent check before activation and a way to report a wrong rule; the section "Decisions: required properties" is replaced by [ADR-0022](0022-single-approver-activation.md) (2026-11-05)
 - Date: 2026-11-02
-- Amends: [ADR-0002](0002-rules-as-versioned-data.md) (where route versions live, the shape of their sources, the country dataset, how approval is recorded); [ADR-0006](0006-auth.md) (knowledge-base decisions join the step-up actions, verified against keys pinned in the repository rather than the passkey table, as the slice 3 ADR will specify); [ADR-0010](0010-stack-revised.md) (fast-check for property tests); [ARCHITECTURE.md](../ARCHITECTURE.md) (code layout, rules flow, entities); CLAUDE.md domain rule 5 (what "sees the change" means)
+- Amends: [ADR-0002](0002-rules-as-versioned-data.md) (where route versions live, the shape of their sources, the country dataset, how approval is recorded); [ADR-0006](0006-auth.md) (knowledge-base decisions join the step-up actions, as [ADR-0022](0022-single-approver-activation.md) specifies); [ADR-0010](0010-stack-revised.md) (fast-check for property tests); [ARCHITECTURE.md](../ARCHITECTURE.md) (code layout, rules flow, entities); CLAUDE.md domain rule 5 (what "sees the change" means)
 
 ## Context
 
