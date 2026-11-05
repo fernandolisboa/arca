@@ -595,6 +595,60 @@ describe('replacing, sharing and deleting documents (spec 0005, R4)', () => {
     expect(await objectKeyOf(documentId)).toBe(before);
   });
 
+  it('ends a replacement whose recipient lost its link, and still confirms the rest', async () => {
+    const accountId = await owner();
+    const [erased, kept] = [await owner(), await owner()];
+    await link(accountId, erased);
+    await link(accountId, kept);
+    const [first, second] = [await confirmed(accountId), await confirmed(accountId)];
+    const before = await objectKeyOf(first);
+    const bodies = [
+      [first, randomBytes(20)],
+      [second, randomBytes(30)],
+    ] as const;
+    await replacing(accountId, [erased], [bodies[0]]);
+    await replacing(accountId, [kept], [bodies[1]]);
+    await uploadReplacements(bodies);
+    const lost = (await replacementOf(first))?.object_key ?? 'missing';
+    await admin(`DELETE FROM account.link WHERE invitee_id = $1`, [erased]);
+
+    expect(await documents.confirmReplacements(accountId, [first, second])).toEqual({
+      results: [
+        { documentId: first, outcome: 'not_linked' },
+        { documentId: second, outcome: 'replaced' },
+      ],
+    });
+    expect(await replacementOf(first)).toBeUndefined();
+    expect(await objects.digest(lost)).toBeUndefined();
+    expect(await objectKeyOf(first)).toBe(before);
+    expect(await sharesOf(first)).toEqual([]);
+    expect(await discardedOf(accountId)).toContain(lost);
+    expect(await sharesOf(second)).toEqual([kept]);
+  });
+
+  it('confirms nothing 2 hours after its row was made, well before the daily cleanup', async () => {
+    const accountId = await owner();
+    const documentId = await confirmed(accountId);
+    const body = randomBytes(20);
+    await replacing(accountId, [], [[documentId, body]]);
+    await uploadReplacements([[documentId, body]]);
+    const late = await created(accountId, body);
+    putObject(objects, await objectKeyOf(late.documentId), body);
+    await admin(
+      `UPDATE vault.document_replacement SET created_at = now() - interval '121 minutes'
+        WHERE document_id = $1`,
+      [documentId],
+    );
+    await admin(
+      `UPDATE vault.document SET created_at = now() - interval '121 minutes' WHERE id = $1`,
+      [late.documentId],
+    );
+    expect(await documents.confirmReplacements(accountId, [documentId])).toEqual({
+      results: [{ documentId, outcome: 'not_found' }],
+    });
+    expect(await documents.confirm(accountId, late.documentId)).toBe('not_found');
+  });
+
   it('deletes documents with their shares, replacements and objects, all or none', async () => {
     const accountId = await owner();
     const relative = await owner();

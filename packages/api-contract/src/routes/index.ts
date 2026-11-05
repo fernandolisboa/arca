@@ -1213,7 +1213,7 @@ export const confirmDocumentUpload = {
   path: '/vault/documents/confirm',
   operationId: 'confirmDocumentUpload',
   summary:
-    'Confirms a pending upload once the stored ciphertext has the declared size and SHA-256; any other ciphertext is deleted and the document stays pending until the daily cleanup; 401 without a session, 404 not_found, 409 not_uploaded before the upload, 409 upload_mismatch, 429 rate_limited',
+    'Confirms a pending upload once the stored ciphertext has the declared size and SHA-256; any other ciphertext is deleted and the document stays pending until the daily cleanup; 401 without a session, 404 not_found, also 2 hours after create, 409 not_uploaded before the upload, 409 upload_mismatch, 429 rate_limited',
   body: DocumentReference,
   response: { description: 'Upload confirmed', schema: ConfirmDocumentUploadResponse },
 } as const satisfies RouteDefinition<typeof ConfirmDocumentUploadResponse>;
@@ -1352,7 +1352,7 @@ export const ConfirmReplacementsResponse = z.object({
   results: z.array(
     z.object({
       documentId: z.uuid(),
-      outcome: z.enum(['replaced', 'not_found', 'not_uploaded', 'mismatch']),
+      outcome: z.enum(['replaced', 'not_found', 'not_uploaded', 'mismatch', 'not_linked']),
     }),
   ),
 });
@@ -1363,7 +1363,7 @@ export const confirmReplacements = {
   path: '/vault/documents/replace/confirm',
   operationId: 'confirmReplacements',
   summary:
-    "Swaps in each approved replacement whose upload has the approved size and SHA-256, and sets the document's shares to its recipients; deletes any other upload; one outcome per document, in order; 401 without a session, 429 rate_limited",
+    "Swaps in each approved replacement whose upload has the approved size and SHA-256, and sets the document's shares to its recipients; deletes any other upload; not_found also for a replacement approved over 2 hours ago, not_linked when a recipient lost its link, which ends that replacement; one outcome per document, in order; 401 without a session, 429 rate_limited",
   body: DocumentBatch,
   response: { description: 'One outcome per document', schema: ConfirmReplacementsResponse },
 } as const satisfies RouteDefinition<typeof ConfirmReplacementsResponse>;

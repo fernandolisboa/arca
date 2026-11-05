@@ -102,6 +102,12 @@ export const uploadWindowMinutes = 60;
  */
 export const discardedObjectMinutes = 60;
 
+/**
+ * An upload is confirmed only this long after its row was made, so a confirm never races the
+ * daily cleanup deleting the same object at 24 hours.
+ */
+export const confirmWindowHours = 2;
+
 const listOf = (values: readonly string[]): SQL =>
   sql`(${sql.join(
     values.map((value) => sql`${value}`),
@@ -173,6 +179,22 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
       )}`);
   };
 
+  /** Whether the account has a link, in either direction, to each of these accounts. */
+  const allLinked = async (tx: Transaction, accountId: string, ids: readonly string[]) => {
+    if (ids.length === 0) return true;
+    const [linked] = (
+      await tx.execute<{ accounts: number }>(sql`
+        SELECT count(DISTINCT CASE WHEN inviter_id = ${accountId} THEN invitee_id
+                                   ELSE inviter_id END)::int AS accounts
+          FROM account.link
+         WHERE (inviter_id = ${accountId} AND invitee_id IN ${listOf(ids)})
+            OR (invitee_id = ${accountId} AND inviter_id IN ${listOf(ids)})`)
+    ).rows;
+    return linked?.accounts === ids.length;
+  };
+
+  const confirmable = sql`created_at > now() - make_interval(hours => ${confirmWindowHours})`;
+
   const record = (
     accountId: string,
     event:
@@ -193,7 +215,7 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
         (
           await tx.execute<{ object_key: string; size: number; sha256: Buffer }>(sql`
             SELECT object_key, size, sha256 FROM vault.document_replacement
-             WHERE document_id = ${documentId} AND owner_id = ${accountId}`)
+             WHERE document_id = ${documentId} AND owner_id = ${accountId} AND ${confirmable}`)
         ).rows[0],
     );
     if (found === undefined) return 'not_found';
@@ -217,24 +239,28 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
           RETURNING recipients`)
       ).rows;
       if (current === undefined || taken === undefined) return undefined;
-      await tx.execute(sql`
-        UPDATE vault.document
-           SET object_key = ${found.object_key}, size = ${found.size}, sha256 = ${found.sha256}
-         WHERE id = ${documentId} AND owner_id = ${accountId}`);
-      await discard(tx, accountId, [current.object_key]);
       const shared = (
         await tx.execute<{ recipient_id: string }>(sql`
           SELECT recipient_id FROM vault.document_recipient WHERE document_id = ${documentId}`)
       ).rows.map(({ recipient_id }) => recipient_id);
       const revoked = shared.filter((id) => !taken.recipients.includes(id));
       const added = taken.recipients.filter((id) => !shared.includes(id));
+      // A recipient whose link went since the approval (an erased account) ends this replacement.
+      if (!(await allLinked(tx, accountId, added))) {
+        await discard(tx, accountId, [found.object_key]);
+        return { outcome: 'not_linked' as const, deletes: found.object_key };
+      }
+      await tx.execute(sql`
+        UPDATE vault.document
+           SET object_key = ${found.object_key}, size = ${found.size}, sha256 = ${found.sha256}
+         WHERE id = ${documentId} AND owner_id = ${accountId}`);
+      await discard(tx, accountId, [current.object_key]);
       if (revoked.length > 0) {
         await tx.execute(sql`
           DELETE FROM vault.document_recipient
            WHERE document_id = ${documentId} AND recipient_id IN ${listOf(revoked)}`);
       }
       for (const recipientId of added) {
-        // Row-level security refuses an account the owner no longer has a link to.
         await tx.execute(sql`
           INSERT INTO vault.document_recipient (document_id, document_owner_id, recipient_id)
           VALUES (${documentId}, ${accountId}, ${recipientId})`);
@@ -249,11 +275,11 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
           details: { documentId, recipientId },
         });
       }
-      return current.object_key;
+      return { outcome: 'replaced' as const, deletes: current.object_key };
     });
     if (replaced === undefined) return 'not_found';
-    await storage.delete([replaced]);
-    return 'replaced';
+    await storage.delete([replaced.deletes]);
+    return replaced.outcome;
   }
 
   /** Deletes the objects that `select` finds, then their rows with `remove`; returns how many. */
@@ -314,7 +340,7 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
 
     async confirm(accountId, documentId) {
       const found = await asAccount(accountId, (tx) =>
-        pending(tx, accountId, sql`id = ${documentId}`),
+        pending(tx, accountId, sql`id = ${documentId} AND ${confirmable}`),
       );
       if (found === undefined) return 'not_found';
       const stored = await storage.digest(found.object_key);
@@ -399,17 +425,7 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
            WHERE owner_id = ${accountId} AND confirmed_at IS NOT NULL AND id IN ${listOf(ids)}
            FOR UPDATE`);
         if (owned.rows.length !== ids.length) return 'not_found';
-        if (recipients.length > 0) {
-          const [linked] = (
-            await tx.execute<{ accounts: number }>(sql`
-              SELECT count(DISTINCT CASE WHEN inviter_id = ${accountId} THEN invitee_id
-                                         ELSE inviter_id END)::int AS accounts
-                FROM account.link
-               WHERE (inviter_id = ${accountId} AND invitee_id IN ${listOf(recipients)})
-                  OR (invitee_id = ${accountId} AND inviter_id IN ${listOf(recipients)})`)
-          ).rows;
-          if (linked?.accounts !== recipients.length) return 'not_linked';
-        }
+        if (!(await allLinked(tx, accountId, recipients))) return 'not_linked';
         const held = await usage(tx, accountId, ids);
         const adding = documents.reduce((sum, { size }) => sum + BigInt(size), 0n);
         if (held.bytes + adding > BigInt(documentQuota.bytes)) return 'over_quota';
