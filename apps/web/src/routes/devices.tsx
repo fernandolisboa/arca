@@ -8,7 +8,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { devicesQuery, recoveryKitQuery, resetAccount, sessionQuery } from '../api.js';
+import {
+  devicesQuery,
+  recoveryKitQuery,
+  resetAccount,
+  sessionQuery,
+  vaultStatusQuery,
+} from '../api.js';
 import {
   addPasskey,
   deviceFailure,
@@ -43,6 +49,11 @@ function Devices() {
   const { t } = useTranslation();
   const session = useQuery(sessionQuery);
   const devices = useQuery({ ...devicesQuery, enabled: session.isSuccess });
+  // A session restricted by a pending recovery may not read the vault (spec 0003, R6).
+  const vault = useQuery({
+    ...vaultStatusQuery,
+    enabled: session.isSuccess && !session.data.recoveryPending,
+  });
   const queryClient = useQueryClient();
   const [waiting, setWaiting] = useState(false);
   const [outcome, setOutcome] = useState<{ done: Done } | { failure: DeviceFailure }>();
@@ -74,6 +85,8 @@ function Devices() {
               queryClient.invalidateQueries({ queryKey: sessionQuery.queryKey }),
               // Cancelling a recovery deletes the recovery code, so the kit is missing again.
               queryClient.invalidateQueries({ queryKey: recoveryKitQuery.queryKey }),
+              // Removing a passkey that could open the vault makes a rotation due (ADR-0018).
+              queryClient.invalidateQueries({ queryKey: vaultStatusQuery.queryKey }),
             ]));
       })
       .catch((error: unknown) => {
@@ -105,6 +118,9 @@ function Devices() {
       >
         {message}
       </p>
+      {outcome !== undefined && 'done' in outcome && outcome.done === 'passkeyRevoked' && (
+        <RotateOffer due={vault.data?.rotationDue === true} />
+      )}
       {restricted ? (
         <p className="text-warn-ink">{t('devices.restricted')}</p>
       ) : (
@@ -164,6 +180,20 @@ function Devices() {
         </>
       )}
     </Page>
+  );
+}
+
+/** Any active passkey may have opened the vault, through PRF or an identity wrapped on its device. */
+function RotateOffer({ due }: { readonly due: boolean }) {
+  const { t } = useTranslation();
+  if (!due) return null;
+  return (
+    <p className="flex flex-col items-start gap-1">
+      {t('devices.rotateOffer')}
+      <Link to="/vault" className={textLinkClass}>
+        {t('devices.rotateLink')}
+      </Link>
+    </p>
   );
 }
 

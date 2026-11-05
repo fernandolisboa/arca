@@ -79,13 +79,21 @@ async function setUp(owner: Account, passkeys = [credentialOf(owner)]) {
 describe('vault set-up and status (spec 0005, R2)', () => {
   it('stores the recipient with its recovery and passkey envelopes, once', async () => {
     const owner = await fixtures.account(2);
-    expect(await vault.status(owner.accountId)).toEqual({ recipient: null, resealDue: false });
+    expect(await vault.status(owner.accountId)).toEqual({
+      recipient: null,
+      resealDue: false,
+      rotationDue: false,
+    });
     const { recipient, outcome } = await setUp(owner, [
       credentialOf(owner, 0),
       credentialOf(owner, 1),
     ]);
     expect(outcome).toBe('created');
-    expect(await vault.status(owner.accountId)).toEqual({ recipient, resealDue: false });
+    expect(await vault.status(owner.accountId)).toEqual({
+      recipient,
+      resealDue: false,
+      rotationDue: false,
+    });
     expect(await envelopeRows(owner)).toEqual(
       [
         { kind: 'passkey_prf', credential_id: credentialOf(owner, 0) },
@@ -97,7 +105,11 @@ describe('vault set-up and status (spec 0005, R2)', () => {
       ),
     );
     expect((await setUp(owner)).outcome).toBe('exists');
-    expect(await vault.status(owner.accountId)).toEqual({ recipient, resealDue: false });
+    expect(await vault.status(owner.accountId)).toEqual({
+      recipient,
+      resealDue: false,
+      rotationDue: false,
+    });
   });
 
   it('lets only one of two concurrent set-ups through', async () => {
@@ -111,7 +123,11 @@ describe('vault set-up and status (spec 0005, R2)', () => {
     const owner = await fixtures.account(1);
     const stranger = await fixtures.account(1);
     expect((await setUp(owner, [credentialOf(stranger)])).outcome).toBe('unknown_passkey');
-    expect(await vault.status(owner.accountId)).toEqual({ recipient: null, resealDue: false });
+    expect(await vault.status(owner.accountId)).toEqual({
+      recipient: null,
+      resealDue: false,
+      rotationDue: false,
+    });
   });
 
   it('sets up a vault with the recovery envelope alone, for passkeys without PRF', async () => {
@@ -160,17 +176,70 @@ describe('a new vault recovery secret due (spec 0003, R6)', () => {
     const owner = await fixtures.account(1);
     const { recipient } = await setUp(owner);
     for (const code of codes) await record(owner, code);
-    expect(await vault.status(owner.accountId)).toEqual({ recipient, resealDue: due });
+    expect(await vault.status(owner.accountId)).toMatchObject({ recipient, resealDue: due });
   });
 
   it("is never due before set-up, nor from another account's events", async () => {
     const owner = await fixtures.account(1);
     const stranger = await fixtures.account(1);
     await record(owner, 'recovery_kit_regenerated');
-    expect(await vault.status(owner.accountId)).toEqual({ recipient: null, resealDue: false });
+    expect(await vault.status(owner.accountId)).toEqual({
+      recipient: null,
+      resealDue: false,
+      rotationDue: false,
+    });
     const { recipient } = await setUp(stranger);
     await record(owner, 'recovery_completed');
-    expect(await vault.status(stranger.accountId)).toEqual({ recipient, resealDue: false });
+    expect(await vault.status(stranger.accountId)).toEqual({
+      recipient,
+      resealDue: false,
+      rotationDue: false,
+    });
+  });
+});
+
+describe('a rotation due (ADR-0018)', () => {
+  type Step = AuditEventCode | 'removed' | 'cancelled';
+  const record = (owner: Account, step: Step) =>
+    auditLog(testDatabase.auditDb).record({
+      code: step === 'removed' || step === 'cancelled' ? 'passkey_revoked' : step,
+      subjectAccountId: owner.accountId,
+      actorAccountId: owner.accountId,
+      details:
+        step === 'removed' || step === 'cancelled'
+          ? { passkeyId: randomUUID(), pending: step === 'cancelled' }
+          : {},
+    });
+
+  it.each<[string, Step[], boolean]>([
+    ['right after set-up', [], false],
+    ['after an active passkey was removed', ['removed'], true],
+    ['after a pending passkey was cancelled', ['cancelled'], false],
+    ['after an account recovery', ['recovery_completed'], true],
+    ['after a recovery that was cancelled', ['recovery_completed', 'recovery_cancelled'], false],
+    ['after a new recovery kit alone', ['recovery_kit_regenerated'], false],
+    ['once rotated', ['removed', 'recovery_completed', 'vault_identity_rotated'], false],
+    ['after a removal newer than the rotation', ['vault_identity_rotated', 'removed'], true],
+    [
+      'after a recovery, even once re-sealed',
+      ['recovery_completed', 'vault_recovery_resealed'],
+      true,
+    ],
+  ])('%s', async (_, steps, due) => {
+    const owner = await fixtures.account(1);
+    const { recipient } = await setUp(owner);
+    for (const step of steps) await record(owner, step);
+    expect(await vault.status(owner.accountId)).toMatchObject({ recipient, rotationDue: due });
+  });
+
+  it("is never due before set-up, nor from another account's events", async () => {
+    const owner = await fixtures.account(1);
+    const stranger = await fixtures.account(1);
+    await record(owner, 'removed');
+    expect(await vault.status(owner.accountId)).toMatchObject({ rotationDue: false });
+    await setUp(stranger);
+    await record(owner, 'recovery_completed');
+    expect(await vault.status(stranger.accountId)).toMatchObject({ rotationDue: false });
   });
 });
 
@@ -356,6 +425,7 @@ describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
     expect(await vault.status(owner.accountId)).toEqual({
       recipient: next.recipient,
       resealDue: false,
+      rotationDue: false,
     });
     expect((await envelopeRows(owner)).length).toBe(4);
     const found = await vault.envelopes(owner.accountId);
@@ -464,6 +534,7 @@ describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
     expect(await vault.status(owner.accountId)).toEqual({
       recipient: newer.recipient,
       resealDue: false,
+      rotationDue: false,
     });
   });
 
@@ -663,7 +734,11 @@ describe('the sharing state (spec 0005, R4; ADR-0018)', () => {
         sharingState: stale,
       }),
     ).toBe('sharing_state_changed');
-    expect(await vault.status(owner.accountId)).toEqual({ recipient, resealDue: false });
+    expect(await vault.status(owner.accountId)).toEqual({
+      recipient,
+      resealDue: false,
+      rotationDue: false,
+    });
     const retagged = tagged(2);
     const next = {
       ...(await identity(owner, from)),
@@ -674,6 +749,7 @@ describe('the sharing state (spec 0005, R4; ADR-0018)', () => {
     expect(await vault.status(owner.accountId)).toEqual({
       recipient: next.recipient,
       resealDue: false,
+      rotationDue: false,
     });
   });
 

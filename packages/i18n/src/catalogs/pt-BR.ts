@@ -312,6 +312,9 @@ export const ptBR = {
     restricted:
       'Enquanto a recuperação da conta estiver pendente, você só pode cancelar a chave criada por ela.',
     revokeOthers: 'Desconectar todos os outros dispositivos',
+    rotateOffer:
+      'A chave que você removeu podia abrir o seu cofre. Troque a chave do cofre para que ela não abra mais os seus documentos.',
+    rotateLink: 'Trocar a chave do cofre',
   },
   /** The account part of the recovery kit (spec 0003, R6): shown once, printed or written down. */
   recoveryKit: {
@@ -359,12 +362,17 @@ export const ptBR = {
     resealLead:
       'Crie agora o novo segredo de recuperação do cofre. Quando ele estiver pronto, o segredo antigo deixa de abrir o cofre.',
     reseal: 'Criar o novo segredo',
+    resealRotateLead:
+      'Como a conta foi recuperada, o melhor é trocar a chave do cofre. Você recebe o novo segredo de recuperação do cofre do mesmo jeito, e a chave antiga para de abrir os seus documentos assim que eles passarem para a nova.',
+    resealOnly: 'Só criar o novo segredo',
     opened:
       'O cofre está aberto neste dispositivo. Ele fecha sozinho depois de {minutes} minutos sem uso.',
     lock: 'Fechar o cofre',
     rotateLead:
       'Se você perdeu um dispositivo ou acha que alguém pode ter a chave do cofre, troque a chave. Você recebe um novo segredo de recuperação do cofre, e o antigo deixa de valer. Os seus documentos passam para a chave nova quando você tocar em “Passar para a chave nova”. Os que outras pessoas compartilham com você continuam abrindo com a chave antiga até elas salvarem de novo com a chave nova.',
     rotate: 'Trocar a chave do cofre',
+    rotationDue:
+      'Uma chave de acesso foi removida ou a conta foi recuperada. Troque a chave do cofre para que só os dispositivos que você usa hoje abram os seus documentos.',
     failure:
       '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} wrong_secret {Esse segredo não abre o cofre. Confira e tente de novo.} wrong_identity {A chave aberta não é a do seu cofre atual. Atualize a página e tente de novo.} exists {O seu cofre já foi criado em outro dispositivo. Atualize a página.} changed {O cofre mudou em outro dispositivo. Atualize a página e tente de novo.} has_documents {Não dá para recomeçar o cofre, porque ele já tem documentos que só a chave do cofre atual abre.} rotated_unopened {Antes de trocar a chave, abra os documentos da chave antiga, na lista abaixo.} sharing_invalid {A lista de compartilhamento não confere com o seu cofre. Resolva isso antes de trocar a chave.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
     /** The open vault's documents (spec 0005, R4); names are sealed and opened on the device. */

@@ -3502,11 +3502,15 @@
                     },
                     "resealDue": {
                       "type": "boolean"
+                    },
+                    "rotationDue": {
+                      "type": "boolean"
                     }
                   },
                   "required": [
                     "recipient",
-                    "resealDue"
+                    "resealDue",
+                    "rotationDue"
                   ]
                 }
               }

@@ -744,7 +744,8 @@ export const auditEventDetails = {
   sign_in_failed: z.strictObject({ passkeyId: z.uuid().optional() }),
   passkey_added: passkeyEvent,
   passkey_activated: passkeyEvent,
-  passkey_revoked: passkeyEvent,
+  /** `pending`: a passkey cancelled in its 24-hour window, which never opened anything. */
+  passkey_revoked: z.strictObject({ passkeyId: z.uuid(), pending: z.boolean() }),
   session_revoked: z.strictObject({ sessionId: z.uuid() }),
   step_up_verified: z.strictObject({ purpose: z.enum(stepUpPurposes) }),
   invite_created: inviteEvent,
@@ -902,6 +903,11 @@ export const VaultStatusResponse = z.object({
    * sealed, so the next unlock gives the vault a new secret before anything else (spec 0003, R6).
    */
   resealDue: z.boolean(),
+  /**
+   * An active passkey was removed, or the account was recovered, after the identity was last
+   * created or rotated, so the vault offers a rotation (ADR-0018).
+   */
+  rotationDue: z.boolean(),
 });
 export type VaultStatusResponse = z.infer<typeof VaultStatusResponse>;
 

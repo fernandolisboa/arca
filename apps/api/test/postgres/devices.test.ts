@@ -148,7 +148,11 @@ describe('revoking a passkey (spec 0003, R4)', () => {
       ),
     ).toBe(0);
     expect(await events(owner)).toEqual([
-      { code: 'passkey_revoked', actor: owner.accountId, details: { passkeyId: older.id } },
+      {
+        code: 'passkey_revoked',
+        actor: owner.accountId,
+        details: { passkeyId: older.id, pending: false },
+      },
     ]);
     expect(noticesTo(owner)).toEqual(['passkey_revoked']);
     const listed = await devices.list(current);
@@ -587,6 +591,13 @@ describe('adding a passkey (spec 0003, R4)', () => {
     expect(await devices.revokePasskey(current, owner.keys[0].id, noVault)).toBe('last_active');
     expect(await devices.revokePasskey(current, pending?.id ?? '', noVault)).toBe('revoked');
     expect(noticesTo(owner)).toEqual(['passkey_added', 'pending_passkey_cancelled']);
+    expect(await events(owner, ['passkey_revoked'])).toEqual([
+      {
+        code: 'passkey_revoked',
+        actor: owner.accountId,
+        details: { passkeyId: pending?.id, pending: true },
+      },
+    ]);
     expect((await devices.status(owner.accountId)).pendingUntil).toBeNull();
     expect((await devices.list(current)).passkeys.map(({ id }) => id)).toEqual([owner.keys[0].id]);
   });

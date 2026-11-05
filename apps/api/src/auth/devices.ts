@@ -162,7 +162,7 @@ export function createDevices({
           code: 'passkey_revoked',
           subjectAccountId: accountId,
           actorAccountId: accountId,
-          details: { passkeyId },
+          details: { passkeyId, pending: revoked.pending === true },
         });
         if (revoked.recovery) {
           // The code that recovery issued goes too, which closes recovery until a new kit (R6).

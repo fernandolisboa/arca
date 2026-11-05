@@ -53,6 +53,30 @@ export async function seedAccount(
   return { userId, email };
 }
 
+/** Another active passkey on the account, as one created on a device that is now lost. */
+export async function seedPasskey(
+  userId: string,
+  { credentialId, publicKey }: { readonly credentialId: string; readonly publicKey: string },
+): Promise<void> {
+  await asAdmin((client) =>
+    client.query(
+      `INSERT INTO auth.passkey (public_key, user_id, credential_id, counter, device_type, backed_up)
+       VALUES ($1, $2, $3, 0, 'multiDevice', true)`,
+      [publicKey, userId, credentialId],
+    ),
+  );
+}
+
+/** An audit event with no details, as the flow that records it would leave it. */
+export async function recordEvent(userId: string, code: 'recovery_completed'): Promise<void> {
+  await asAdmin((client) =>
+    client.query(
+      `INSERT INTO audit.event (subject_account_id, actor_account_id, code) VALUES ($1, $1, $2)`,
+      [userId, code],
+    ),
+  );
+}
+
 /** The link a confirmed invite leaves between two accounts (spec 0005, R4). */
 export async function linkAccounts(inviterId: string, inviteeId: string): Promise<void> {
   await asAdmin(async (client) => {

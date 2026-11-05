@@ -7,7 +7,13 @@ import {
   virtualAuthenticator,
   withoutAutofill,
 } from './passkeys.js';
-import { linkAccounts, resetRateLimits, seedAccount } from './postgres/accounts.js';
+import {
+  linkAccounts,
+  recordEvent,
+  resetRateLimits,
+  seedAccount,
+  seedPasskey,
+} from './postgres/accounts.js';
 import { reportViolations, watchProblems } from './problems.js';
 import { databaseServer } from './servers.js';
 
@@ -483,6 +489,76 @@ test('a new recovery kit gives the vault a new secret at its next opening, and t
   await field.fill(secret);
   await page.getByRole('button', { name: 'Abrir com o segredo' }).click();
   await expect(opened(page)).toBeVisible();
+  expect(problems).toEqual([]);
+});
+
+const rotationDue = (page: Page) => page.getByText(/^Uma chave de acesso foi removida/);
+
+/** Rotates from the open vault and keeps the new kit, which leaves nothing due. */
+async function rotate(page: Page) {
+  const options = page.waitForRequest(
+    (request) =>
+      request.url().endsWith('/v1/auth/step-up/options') &&
+      request.postData()?.includes('rotateVaultIdentity') === true,
+  );
+  await page.getByRole('button', { name: 'Trocar a chave do cofre' }).click();
+  await options;
+  return keepSecret(page);
+}
+
+test('offers a rotation once a passkey that could open the vault is removed', async ({ page }) => {
+  const problems = watchProblems(page);
+  const credential = newCredential();
+  const { userId, email } = await seedAccount(credential);
+  await seedPasskey(userId, newCredential());
+  await virtualAuthenticator(page, credential, { userId });
+  await signIn(page, email);
+  await openVaultPage(page);
+  await setUp(page);
+  await expect(rotationDue(page)).toHaveCount(0);
+
+  await page.goto(`${databaseServer.origin}/devices`);
+  await page
+    .getByRole('listitem')
+    .filter({ hasNot: page.getByText('Você entrou neste dispositivo com esta chave.') })
+    .getByRole('button', { name: 'Remover esta chave' })
+    .click();
+  await expect(page.getByRole('status').first()).toHaveText(/^Chave removida\./);
+  await expect(page.getByText(/^A chave que você removeu podia abrir o seu cofre\./)).toBeVisible();
+  await expectAccessible(page);
+  await page.getByRole('link', { name: 'Trocar a chave do cofre' }).click();
+
+  // The identity this device keeps wrapped opens the vault; the rotation comes before the documents.
+  await page.getByRole('button', { name: 'Abrir o cofre' }).click();
+  await expect(rotationDue(page)).toBeVisible();
+  await expectAccessible(page);
+  await rotate(page);
+  await expect(rotationDue(page)).toHaveCount(0);
+  expect(problems).toEqual([]);
+});
+
+test('after an account recovery, offers a rotation in place of a new secret alone', async ({
+  page,
+}) => {
+  const problems = watchProblems(page);
+  const credential = newCredential();
+  const { userId, email } = await seedAccount(credential);
+  await virtualAuthenticator(page, credential, { userId });
+  await signIn(page, email);
+  await openVaultPage(page);
+  const { secret: old } = await setUp(page);
+  await recordEvent(userId, 'recovery_completed');
+
+  await page.reload();
+  await expect(page.getByText(/^Seu kit de recuperação mudou/)).toBeVisible();
+  await page.getByRole('button', { name: 'Abrir o cofre' }).click();
+  await expect(page.getByText(/^Como a conta foi recuperada/)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Só criar o novo segredo' })).toBeVisible();
+  await expectAccessible(page);
+  const secret = await rotate(page);
+  expect(secret).not.toBe(old);
+  await expect(rotationDue(page)).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Criar o novo segredo' })).toHaveCount(0);
   expect(problems).toEqual([]);
 });
 
