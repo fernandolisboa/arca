@@ -4,7 +4,7 @@ import { contentSecurityPolicy, isUnpublishedFile, securityHeaders } from '../sr
 describe('securityHeaders', () => {
   it('matches spec 0001, R4, reporting violations as spec 0004, R5 asks', () => {
     expect(contentSecurityPolicy).toBe(
-      "default-src 'self'; script-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; require-trusted-types-for 'script'; trusted-types arca; report-to csp",
+      "default-src 'self'; script-src 'self'; connect-src 'self' https://vercel.com/api/blob/ https://*.private.blob.vercel-storage.com; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; require-trusted-types-for 'script'; trusted-types arca; report-to csp",
     );
     expect(securityHeaders).toEqual({
       'content-security-policy': contentSecurityPolicy,

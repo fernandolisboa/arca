@@ -35,12 +35,14 @@ export async function seedAccount(
     readonly publicKey: string;
   },
   userId: string = randomUUID(),
+  { confirmed = false }: { readonly confirmed?: boolean } = {},
 ): Promise<{ userId: string; email: string }> {
   const email = `e2e-${userId}@example.com`;
   await asAdmin(async (client) => {
     await client.query(
-      `INSERT INTO auth."user" (id, name, email, email_verified) VALUES ($1, '', $2, true)`,
-      [userId, email],
+      `INSERT INTO auth."user" (id, name, email, email_verified, confirmed_at)
+       VALUES ($1, '', $2, true, CASE WHEN $3 THEN now() END)`,
+      [userId, email, confirmed],
     );
     await client.query(
       `INSERT INTO auth.passkey (public_key, user_id, credential_id, counter, device_type, backed_up)

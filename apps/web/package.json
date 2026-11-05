@@ -44,6 +44,7 @@
     "@sentry/react": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-router": "catalog:",
+    "@vercel/blob": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-i18next": "catalog:"

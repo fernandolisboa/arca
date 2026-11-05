@@ -73,6 +73,8 @@ const accountQueries = [
   devicesQuery,
   vaultStatusQuery,
   notificationChannelsQuery,
+  // The vault's documents, whatever identity opened them (documents.ts).
+  { queryKey: ['documents'] },
 ];
 
 /**

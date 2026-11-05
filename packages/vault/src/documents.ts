@@ -14,7 +14,7 @@ export class InvalidRecipients extends Error {
  * Hybrid post-quantum recipients only, so a recipient the server supplies cannot downgrade a
  * document to X25519 alone. The library parses and checks each one when it is added.
  */
-function encrypterFor(recipients: readonly string[]): Encrypter {
+export function encrypterFor(recipients: readonly string[]): Encrypter {
   const unique = [...new Set(recipients)];
   if (unique.length === 0) throw new InvalidRecipients('no recipients');
   const encrypter = new Encrypter();

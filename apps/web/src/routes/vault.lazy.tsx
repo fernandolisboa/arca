@@ -7,6 +7,7 @@ import { Link, createLazyFileRoute } from '@tanstack/react-router';
 import { useState, type ReactNode, type SubmitEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { sessionQuery, vaultStatusQuery } from '../api.js';
+import { DocumentsSection } from '../documents-section.js';
 import { recoveryCodeInput } from '../forms/inputs.js';
 import { TextField } from '../forms/text-field.js';
 import { textLinkClass } from '../forms/text-link.js';
@@ -115,7 +116,7 @@ function Vault() {
     return <Locked accountId={accountId} resealDue={status.data.resealDue} />;
   }
   if (status.data.resealDue) return <NewSecret vault={unlocked} onSecret={setSecret} />;
-  return <Opened />;
+  return <Opened vault={unlocked} />;
 }
 
 function Section({ lead, children }: { readonly lead?: string; readonly children?: ReactNode }) {
@@ -267,7 +268,7 @@ function NewSecret({
   );
 }
 
-function Opened() {
+function Opened({ vault }: { readonly vault: UnlockedVault }) {
   const { t } = useTranslation();
   return (
     <Section>
@@ -279,6 +280,7 @@ function Opened() {
       >
         {t('vault.lock')}
       </Button>
+      <DocumentsSection vault={vault} />
     </Section>
   );
 }
