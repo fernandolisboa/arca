@@ -1,6 +1,6 @@
 import pg from 'pg';
 import { clientFor, type ConnectionTarget } from './connection.ts';
-import { checkDeploymentTarget, type Deployment } from './deployment-target.ts';
+import { checkDeploymentTarget, checkLineage, type Deployment } from './deployment-target.ts';
 import { runGuards, type GuardViolation } from './guards.ts';
 import { pendingMigrations, type JournalRow, type MigrationFile } from './migrations.ts';
 import { migratorRole, type DatabasePolicy } from './policy.ts';
@@ -192,7 +192,7 @@ export async function migrate(
       if (deployment !== undefined) {
         await checkDeploymentTarget(client, deployment, target.host, { mayMark: false });
       }
-      const applied = await applyInTransaction(client, files, statements, policy);
+      const applied = await applyInTransaction(client, files, statements, policy, deployment);
       await client.query('COMMIT');
       return { applied };
     } catch (error) {
@@ -209,6 +209,7 @@ async function applyInTransaction(
   files: readonly MigrationFile[],
   statements: ReadonlyMap<string, readonly string[]>,
   policy: DatabasePolicy,
+  deployment: Deployment | undefined,
 ): Promise<string[]> {
   await client.query('SELECT pg_catalog.pg_advisory_xact_lock($1)', [advisoryLockKey]);
   // A migration blocked behind live traffic fails fast instead of holding its locks until the
@@ -219,6 +220,7 @@ async function applyInTransaction(
   );
   const transactionId = transaction.rows[0]?.xid ?? '';
   await client.query('CREATE SCHEMA IF NOT EXISTS arca_migrations');
+  if (deployment !== undefined) await checkLineage(client, deployment);
   await client.query(
     `CREATE TABLE IF NOT EXISTS ${journalTable} (
        name text PRIMARY KEY,
@@ -249,6 +251,8 @@ async function applyInTransaction(
       file.checksum,
     ]);
   }
+  // A migration may not drop production's lineage mark: it is written again before the commit.
+  if (deployment === 'production') await checkLineage(client, deployment);
   // From here on the runner reads only built-in catalogs and a journal whose shape it checks first,
   // so no migration code runs; the identity check confirms the pin still holds. What would run at
   // COMMIT, after the guards, is rejected instead: a deferrable trigger or constraint (guard 9), a
