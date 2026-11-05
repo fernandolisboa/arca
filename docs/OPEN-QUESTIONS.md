@@ -18,6 +18,7 @@
 
 Made by agents, tracked here so they are not lost.
 
+- [ ] Delete the unused Preview copy of `RESEND_API_KEY` (only production sends email) and the unused `ARCA_GITHUB_TOKEN` in the agent environment ([SETUP.md](SETUP.md)); each needs the owner's OK or click.
 - [ ] Rotate `ARCA_RATE_LIMIT_KEY` monthly in Production and Preview ([spec 0003, R10](specs/0003-identity-and-access.md#r10-rate-limits)). Created by an agent on 2026-11-04; rotation is not automated yet: an agent writes a new value through the Vercel API, which resets the counters.
 - [ ] Audit-log purge: an ADR before the first `audit.event` record turns 5 years old (2031), since it changes ADR-0008's insert-only log ([ADR-0017](adr/0017-data-lifecycle-and-backups.md)).
 - [x] Resend's log and body retention for the plan: 30 days on the Free, Pro and Scale plans, recorded in [RETENTION.md](RETENTION.md) (checked 2026-11-04).

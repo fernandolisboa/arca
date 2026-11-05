@@ -10,18 +10,18 @@ Where things live:
 - **Agent session**: the cloud environment of the Claude Code sessions that work on this repository ([claude.ai/code](https://claude.ai/code), environment settings).
 - **Repository**: public values committed in code, changed by pull request.
 
-A new secret an agent creates is 64 hex characters (`openssl rand -hex 32`); database passwords must be, since the bootstrap refuses base64. The agent creates it through the Vercel API after the owner says OK once, without printing it.
+Unless a row says otherwise, a new secret an agent creates is 64 hex characters (`openssl rand -hex 32`); database passwords must match `^[A-Za-z0-9_-]{32,128}$`, which hex does and base64 does not. The agent creates it through the Vercel API after the owner says OK once, without printing it.
 
 ## Runtime secrets (Vercel)
 
 | Name | What it is for | Environments | Created by | While missing or wrong |
 | --- | --- | --- | --- | --- |
-| `ARCA_DB_MIGRATOR_PASSWORD`, `ARCA_DB_API_PASSWORD`, `ARCA_DB_JOBS_PASSWORD`, `ARCA_DB_AUTH_PASSWORD`, `ARCA_DB_AUDIT_PASSWORD` | Passwords of the database roles of [ADR-0008](adr/0008-database-security-and-environments.md); the build's bootstrap sets them on every deployment | Production and Preview, with the same values (residual R-2 in the [threat model](threat-models/foundations.md)) | Agent | The build fails at the bootstrap, so nothing deploys. A rotation takes the serving deployment off the database until the new one is live, so block the API first, as the runbook says |
+| `ARCA_DB_MIGRATOR_PASSWORD`, `ARCA_DB_API_PASSWORD`, `ARCA_DB_JOBS_PASSWORD`, `ARCA_DB_AUTH_PASSWORD`, `ARCA_DB_AUDIT_PASSWORD` | Passwords of the database roles of [ADR-0008](adr/0008-database-security-and-environments.md); the build's bootstrap sets them on every deployment | Production and Preview, as separate entries created with distinct values; the [threat model](threat-models/foundations.md) counts them as shared (residual R-2), the cautious reading | Agent | The build fails at the bootstrap, so nothing deploys. A rotation takes the serving deployment off the database until the new one is live, so block the API first, as the runbook says |
 | `BETTER_AUTH_SECRET` | Signs session cookies ([ADR-0006](adr/0006-auth.md)) | Production and Preview, distinct values | Agent | Sign-in and every signed-in route fail; after a rotation everyone signs in again with their passkey |
 | `ARCA_RATE_LIMIT_KEY` | Keys the rate-limit counters without storing raw identifiers ([spec 0003 R10](specs/0003-identity-and-access.md#r10-rate-limits)) | Production and Preview, distinct values | Agent | Rate-limited routes, sign-in among them, fail; a rotation resets the counters. Monthly rotation is still open in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) |
 | `CRON_SECRET` | Bearer token Vercel Cron sends to `/internal/cron/*` | Production | Agent | The daily jobs (heartbeat, retention, rate-limit sweep, account erasure) are refused |
 | `ARCA_VAPID_PRIVATE_KEY` | Signs web push messages ([spec 0005 R7](specs/0005-vault-devices-and-notifications.md)): the 43-character base64url private scalar of a P-256 pair whose public half is committed | Production and Preview, distinct pairs | Agent | Push notifications are off. After a new pair, each device turns push on again from the notifications screen |
-| `RESEND_API_KEY` | Sends invite, recovery and security email as `arca@filx.app` ([ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)); only production sends, every other environment writes to the outbox | Production. A Preview copy exists but nothing reads it; it should be deleted | Owner, once: [Resend › API Keys](https://resend.com/api-keys), sending access, domain `filx.app` | No email goes out and production closes enrollment and invites (503 `accounts_closed`) |
+| `RESEND_API_KEY` | Sends invite, recovery and security email as `arca@filx.app` ([ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)); only production sends, every other environment writes to the outbox | Production. A Preview copy exists but nothing reads it; deleting it is tracked in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) | Owner, once: [Resend › API Keys](https://resend.com/api-keys), sending access, domain `filx.app` | No email goes out, and production closes enrollment, invites, registration and account recovery (503 `accounts_closed`) |
 
 ## Values the integrations write (Vercel)
 
@@ -49,7 +49,7 @@ Public by design; a pull request changes them.
 | Name | What it is for | Where | Created by | While missing |
 | --- | --- | --- | --- | --- |
 | `VERCEL_TOKEN` | Agents read the project and write Sensitive variables after the owner's OK | Agent session | Owner: [Vercel › Account › Tokens](https://vercel.com/account/settings/tokens), scoped to the team, with an expiry | Agents cannot create variables or read build logs |
-| `ARCA_GITHUB_TOKEN` | The owner's fine-grained token for this repository (ADR-0012). Sessions reach GitHub through the Claude GitHub App instead, so nothing uses it today; let it expire | Agent session | Owner: [GitHub › Fine-grained tokens](https://github.com/settings/personal-access-tokens) | Nothing |
+| `ARCA_GITHUB_TOKEN` | The owner's fine-grained token for this repository (ADR-0012). Sessions reach GitHub through the Claude GitHub App instead, so nothing uses it today; revoke it and remove it from the environment | Agent session | Owner: [GitHub › Fine-grained tokens](https://github.com/settings/personal-access-tokens) | Nothing |
 | `GITHUB_TOKEN` | The staleness workflow posts its weekly issue | GitHub Actions, issued per run | GitHub | — |
 
 CI creates throwaway role passwords, `BETTER_AUTH_SECRET` and `ARCA_RATE_LIMIT_KEY` for each run, so it needs no stored secret. A workflow may use only the secrets listed in [.github/policy/workflow-secrets.json](../.github/policy/workflow-secrets.json).
