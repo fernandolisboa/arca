@@ -281,9 +281,14 @@ const recipientIds = [
   '0b4f6a1e-2c3d-4e5f-8a9b-0c1d2e3f4a5b',
   '7e6d5c4b-3a29-4817-8f6e-5d4c3b2a1908',
 ];
-const rotateBody = { ...setUpBody, from: recipientIds[0], sharingState: null };
 const resealBody = {
   envelopes: recipientIds.map((recipientId) => ({ recipientId, ciphertext: sealed })),
+};
+const rotateBody = {
+  ...setUpBody,
+  from: recipientIds[0],
+  sharingState: null,
+  keptRecoveryEnvelopes: resealBody.envelopes,
 };
 
 describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
@@ -339,6 +344,20 @@ describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
       Object.entries(rotateBody).filter(([key]) => key !== 'sharingState'),
     );
     expect((await setup().call('POST', '/vault/rotate', withoutState)).status).toBe(400);
+  });
+
+  it.each([
+    ['none', []],
+    ['the same recipient twice', [resealBody.envelopes[0], resealBody.envelopes[0]]],
+    ['a short envelope', [{ recipientId: recipientIds[0], ciphertext: sealed.slice(0, 40) }]],
+  ])('refuses a rotation that re-seals %s of the kept recovery envelopes', async (_, kept) => {
+    const { call, calls } = setup();
+    const response = await call('POST', '/vault/rotate', {
+      ...rotateBody,
+      keptRecoveryEnvelopes: kept,
+    });
+    expect(response.status).toBe(400);
+    expect(calls).toEqual([]);
   });
 
   it('binds a re-seal to the recipients in order', async () => {

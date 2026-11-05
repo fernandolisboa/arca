@@ -3883,7 +3883,7 @@
     "/vault/rotate": {
       "post": {
         "operationId": "rotateVaultIdentity",
-        "summary": "Makes a new identity's recipient current, with its envelopes, and marks the old one rotated, keeping its envelopes, after a sensitive_settings step-up whose target is the rotated recipient and whose fields carry the new one; 403 step_up_required, 404 not_found before set-up, 409 vault_changed unless the recipient named is still current, 409 sharing_state_changed unless the request re-tags exactly the stored sharing state's version, 400 invalid_request for a credential that is not an active passkey of the account",
+        "summary": "Makes a new identity's recipient current, with its envelopes, and marks the old one rotated, keeping its envelopes, after a sensitive_settings step-up whose target is the rotated recipient and whose fields carry the new one; 403 step_up_required, 404 not_found before set-up, 409 vault_changed unless the recipient named is still current and the kept recovery envelopes name exactly the account's recipients, 409 sharing_state_changed unless the request re-tags exactly the stored sharing state's version, 400 invalid_request for a credential that is not an active passkey of the account",
         "requestBody": {
           "required": true,
           "content": {
@@ -3975,6 +3975,31 @@
                       "sharingState"
                     ],
                     "additionalProperties": false
+                  },
+                  "keptRecoveryEnvelopes": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "recipientId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "ciphertext": {
+                          "type": "string",
+                          "minLength": 86,
+                          "maxLength": 21846,
+                          "format": "base64url"
+                        }
+                      },
+                      "required": [
+                        "recipientId",
+                        "ciphertext"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 32
                   }
                 },
                 "required": [
@@ -3982,7 +4007,8 @@
                   "passkeyEnvelopes",
                   "recoveryEnvelope",
                   "from",
-                  "sharingState"
+                  "sharingState",
+                  "keptRecoveryEnvelopes"
                 ],
                 "additionalProperties": false
               }
