@@ -41,9 +41,14 @@ export function formatIssue(issue: Issue): string {
   return `${issue.file}${issue.path === undefined ? '' : ` ${issue.path}`}: ${issue.message}`;
 }
 
+/** Today's date in UTC: the build date of the real catalog. */
+export function todayUtc(): CalendarDate {
+  return parseCalendarDate(new Date().toISOString().slice(0, 10));
+}
+
 async function main(): Promise<void> {
   const packageDir = fileURLToPath(new URL('..', import.meta.url));
-  const today = parseCalendarDate(new Date().toISOString().slice(0, 10));
+  const today = todayUtc();
   const target = join(packageDir, 'src', 'generated', 'catalog.ts');
   // Removed first, so a failed or crashed build leaves no earlier catalog for tools outside Turbo.
   await rm(target, { force: true });
