@@ -151,7 +151,7 @@ describe('choosing a sender', () => {
     expect(route).toEqual({
       via: 'resend',
       apiKey: 're_key',
-      from: 'Arca <no-reply@arca.example.com>',
+      from: 'Arca <arca@arca.example.com>',
     });
     expect(accountsOpenWith(route)).toBe(true);
   });
