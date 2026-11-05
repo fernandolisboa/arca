@@ -43,7 +43,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Assessment | Critério subjetivo | A judgment factor of a route version, such as national importance; shown with its evidence, never as pass or fail |
 | Country set | Grupo de países | A versioned, sourced list of countries a rule refers to, such as treaty countries |
 | Proposed version | Versão proposta | A route version in the knowledge catalog that is neither active nor rejected |
-| Decision state | Internal, no UI label | Per version identity (route, number, content hash): active, rejected or proposed. A version with no verified decision is proposed |
+| Decision state | Internal, no UI label | Per version identity (route, number, content hash): active, rejected or proposed. A version with no counted decision is proposed |
 | Newer proposed version | Nova versão proposta | A version not yet active that selection would pick, at the evaluation date or later, instead of the version evaluated |
 | Correction | Correção | A route version that fixes a data error in an earlier one, named by its `corrects` field; once in effect, the version it fixes is no longer selected |
 | Official source | Fonte oficial | A source on a host the knowledge base lists as official for a country or an international body |
