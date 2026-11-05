@@ -21,6 +21,9 @@ import { createNotifier } from '../notification/notifier.js';
 import { vapidPushSender } from '../notification/push.js';
 import { configuredVapidKeys } from '../notification/vapid.js';
 import { stdoutLogger } from '../logger.js';
+import { createDocuments } from '../vault/documents.js';
+import { unconnectedObjectStorage } from '../vault/object-storage.js';
+import { objectStorageFor } from '../vault/storage-environment.js';
 import { reportError, startMonitoring } from '../monitoring.js';
 import type { StepTelemetry } from './step-error.js';
 
@@ -81,12 +84,21 @@ const notices = once(async () => {
   return createNotices({ email, i18n: await createI18n(), origin: readAuthOrigin() });
 });
 
+/** The documents on the app_jobs pool; where no store is connected, erasing any object fails. */
+const jobDocuments = () =>
+  createDocuments({
+    db: jobsDatabase(),
+    storage: objectStorageFor(readDeploymentEnvironment())?.storage ?? unconnectedObjectStorage,
+    audit: auditLog(auditDatabase()),
+  });
+
 export const erasureSteps = once(async (): Promise<Erasure> =>
   createErasure({
     authDb: authDatabase(),
     jobsDb: jobsDatabase(),
     audit: auditLog(auditDatabase()),
     notices: await notices(),
+    documents: jobDocuments(),
   }),
 );
 
@@ -120,6 +132,7 @@ export const retentionSteps = once(async (): Promise<Retention> => {
     authDb: authDatabase(),
     jobsDb: jobsDatabase(),
     audit: auditLog(auditDatabase()),
+    documents: jobDocuments(),
     notifier: createNotifier({
       db: jobsDatabase(),
       startDelivery: (accountId, messageId) =>

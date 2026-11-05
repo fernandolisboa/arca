@@ -15,6 +15,8 @@ import { accounts } from '../../src/auth/auth.js';
 import type { Notice, Notices } from '../../src/email/notices.js';
 import { createDelivery, deliverNow } from '../../src/notification/delivery.js';
 import { createNotifier } from '../../src/notification/notifier.js';
+import { createDocuments } from '../../src/vault/documents.js';
+import { memoryObjectStorage } from '../../src/vault/object-storage.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
 import { seeded } from './every-table.js';
 
@@ -38,6 +40,11 @@ const retentionWith = (ownedRules?: readonly OwnedExpiryRule[]): Retention =>
     authDb: testDatabase.authDb,
     jobsDb: testDatabase.jobsDb,
     audit: auditLog(testDatabase.auditDb),
+    documents: createDocuments({
+      db: testDatabase.jobsDb,
+      storage: memoryObjectStorage(),
+      audit: auditLog(testDatabase.auditDb),
+    }),
     // As the daily job runs it: the warning delivered in the step, before the marking commits.
     notifier: createNotifier({
       db: testDatabase.jobsDb,
@@ -256,6 +263,33 @@ describe('rules on tables under row-level security (spec 0004, R10)', () => {
     );
     expect(await probeRows(a.accountId)).toEqual([]);
     expect(await probeRows(b.accountId)).toHaveLength(1);
+  });
+});
+
+describe('pending document uploads (spec 0005, R4)', () => {
+  it("deletes each account's uploads unconfirmed for 24 hours, under its own identity", async () => {
+    const now = later();
+    const a = await seeded(testDatabase);
+    const b = await seeded(testDatabase);
+    const pending = (accountId: string) =>
+      admin<{ id: string }>(
+        'SELECT id FROM vault.document WHERE owner_id = $1 AND confirmed_at IS NULL',
+        [accountId],
+      );
+    await admin('UPDATE vault.document SET created_at = $2 WHERE owner_id = ANY ($1)', [
+      [a.accountId, b.accountId],
+      new Date(now.getTime() - 24 * 3_600_000),
+    ]);
+    const fresh = randomUUID();
+    await admin(
+      `INSERT INTO vault.document (id, owner_id, type_key, size, sha256, object_key)
+       VALUES ($1, $2, 'passport', 1, $3, $4)`,
+      [fresh, a.accountId, randomBytes(32), `documents/${randomUUID()}`],
+    );
+    expect(await pending(b.accountId)).not.toEqual([]);
+    await retentionWith().expirePendingDocuments(now);
+    expect(await pending(a.accountId)).toEqual([{ id: fresh }]);
+    expect(await pending(b.accountId)).toEqual([]);
   });
 });
 

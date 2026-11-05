@@ -732,6 +732,8 @@ export type DeletionReason = (typeof deletionReasons)[number];
  * identifiers and enum values, never personal data (spec 0003, R7). The server validates every
  * event against it before inserting.
  */
+const documentEvent = z.strictObject({ documentId: z.uuid() });
+
 export const auditEventDetails = {
   sign_in: z.strictObject({
     passkeyId: z.uuid().optional(),
@@ -764,6 +766,8 @@ export const auditEventDetails = {
   vault_identity_rotated: noDetails,
   vault_recovery_resealed: noDetails,
   vault_reset: noDetails,
+  document_created: documentEvent,
+  document_download_url_issued: documentEvent,
   notification_channel_added: z.strictObject({ channelId: z.uuid() }),
   notification_channel_removed: z.strictObject({ channelId: z.uuid() }),
 } as const;
@@ -1120,6 +1124,146 @@ export const removeNotificationChannel = {
   response: { description: 'Removed', schema: RemoveNotificationChannelResponse },
 } as const satisfies RouteDefinition<typeof RemoveNotificationChannelResponse>;
 
+/** The largest document ciphertext the vault stores (spec 0005, R3). */
+export const maxDocumentBytes = 25 * 1024 * 1024;
+
+/** What one account may keep in the vault, pending uploads included (spec 0005, R4). */
+export const documentQuota = { bytes: 1024 * 1024 * 1024, documents: 300 } as const;
+
+/** The most documents one page of the list holds. */
+export const documentPageSize = 50;
+
+/** A SHA-256 digest, base64url without padding. */
+const Sha256 = z.string().regex(/^[A-Za-z0-9_-]{43}$/);
+
+export const CreateDocumentRequest = z.strictObject({
+  /** The document type's catalog key, such as `passport`; never a name or a number. */
+  typeKey: z.string().regex(/^[a-z][a-z0-9_.-]{0,63}$/),
+  /** The ciphertext's size in bytes. */
+  size: z.int().min(1).max(maxDocumentBytes),
+  /** The ciphertext's SHA-256, which the upload must match. */
+  sha256: Sha256,
+});
+export type CreateDocumentRequest = z.infer<typeof CreateDocumentRequest>;
+
+/**
+ * Where the device sends the ciphertext: Vercel Blob, through the SDK's presigned upload with
+ * this pathname and the upload-URL route; or, in development only, a URL on this origin.
+ */
+export const DocumentUpload = z.discriminatedUnion('via', [
+  z.object({ via: z.literal('vercel_blob'), pathname: z.string() }),
+  z.object({ via: z.literal('direct'), url: z.string() }),
+]);
+export type DocumentUpload = z.infer<typeof DocumentUpload>;
+
+export const CreateDocumentResponse = z.object({ documentId: z.uuid(), upload: DocumentUpload });
+export type CreateDocumentResponse = z.infer<typeof CreateDocumentResponse>;
+
+export const createDocument = {
+  method: 'post',
+  path: '/vault/documents',
+  operationId: 'createDocument',
+  summary:
+    'Adds a pending document and says where to upload its ciphertext; 401 without a session, 403 account_unconfirmed, 404 not_found before the vault is set up, 409 document_quota past 300 documents or 1 GiB, 429 rate_limited',
+  body: CreateDocumentRequest,
+  response: { description: 'Pending document', schema: CreateDocumentResponse },
+} as const satisfies RouteDefinition<typeof CreateDocumentResponse>;
+
+/** The request `uploadPresigned` from `@vercel/blob/client` sends for one pending document. */
+export const DocumentUploadUrlRequest = z.strictObject({
+  type: z.literal('blob.generate-presigned-url'),
+  payload: z.strictObject({
+    pathname: z.string().max(128),
+    clientPayload: z.string().max(256).nullable(),
+    multipart: z.literal(false),
+  }),
+});
+
+export const DocumentUploadUrlResponse = z.object({
+  type: z.literal('blob.generate-presigned-url'),
+  presignedUrlPayload: z.object({
+    delegationToken: z.string(),
+    signature: z.string(),
+    params: z.record(z.string(), z.string()),
+  }),
+});
+export type DocumentUploadUrlResponse = z.infer<typeof DocumentUploadUrlResponse>;
+
+export const documentUploadUrl = {
+  method: 'post',
+  path: '/vault/documents/upload-url',
+  operationId: 'documentUploadUrl',
+  summary:
+    "A presigned upload for one pending document's pathname, valid for 5 minutes and limited to its declared size; 401 without a session, 404 not_found unless the pathname is a pending document of the account",
+  body: DocumentUploadUrlRequest,
+  response: { description: 'Presigned upload', schema: DocumentUploadUrlResponse },
+} as const satisfies RouteDefinition<typeof DocumentUploadUrlResponse>;
+
+export const DocumentReference = z.strictObject({ documentId: z.uuid() });
+
+export const ConfirmDocumentUploadResponse = z.object({});
+
+export const confirmDocumentUpload = {
+  method: 'post',
+  path: '/vault/documents/confirm',
+  operationId: 'confirmDocumentUpload',
+  summary:
+    'Confirms a pending upload once the stored ciphertext has the declared size and SHA-256; otherwise deletes it and the pending document; 401 without a session, 404 not_found, 409 upload_mismatch, 429 rate_limited',
+  body: DocumentReference,
+  response: { description: 'Upload confirmed', schema: ConfirmDocumentUploadResponse },
+} as const satisfies RouteDefinition<typeof ConfirmDocumentUploadResponse>;
+
+export const VaultDocument = z.object({
+  id: z.uuid(),
+  typeKey: z.string(),
+  size: z.int(),
+  sha256: Sha256,
+  createdAt: z.iso.datetime({ offset: true }),
+  /** The owner's account; another account's when the document is shared with this one. */
+  ownerId: z.uuid(),
+  /** For the owner, the accounts it is shared with; empty for a recipient. */
+  sharedWith: z.array(z.uuid()),
+});
+export type VaultDocument = z.infer<typeof VaultDocument>;
+
+export const DocumentsQuery = z.object({
+  /** The last document of the previous page. */
+  after: z.uuid().optional(),
+});
+
+export const DocumentsResponse = z.object({
+  documents: z.array(VaultDocument).max(documentPageSize),
+  /** Pass as `after` for the next page; null on the last page. */
+  next: z.uuid().nullable(),
+});
+export type DocumentsResponse = z.infer<typeof DocumentsResponse>;
+
+export const listDocuments = {
+  method: 'get',
+  path: '/vault/documents',
+  operationId: 'listDocuments',
+  summary:
+    'The confirmed documents the account owns or that are shared with it, oldest first, at most 50 a page; 401 without a session',
+  query: DocumentsQuery,
+  response: { description: 'A page of documents', schema: DocumentsResponse },
+} as const satisfies RouteDefinition<typeof DocumentsResponse>;
+
+export const DocumentDownloadResponse = z.object({
+  /** Reads the ciphertext until `expiresAt`, five minutes from now. */
+  url: z.string(),
+  expiresAt: z.iso.datetime({ offset: true }),
+});
+
+export const documentDownloadUrl = {
+  method: 'post',
+  path: '/vault/documents/download',
+  operationId: 'documentDownloadUrl',
+  summary:
+    "A short-lived URL to one confirmed document's ciphertext, for its owner or a recipient, within the session's vault_unlock window; 401 without a session, 403 step_up_required, 404 not_found",
+  body: DocumentReference,
+  response: { description: 'Download URL', schema: DocumentDownloadResponse },
+} as const satisfies RouteDefinition<typeof DocumentDownloadResponse>;
+
 export const routes = {
   health,
   session,
@@ -1163,6 +1307,11 @@ export const routes = {
   notificationChannels,
   addPushChannel,
   removeNotificationChannel,
+  createDocument,
+  documentUploadUrl,
+  confirmDocumentUpload,
+  listDocuments,
+  documentDownloadUrl,
 } as const;
 
 /** The Better Auth endpoints the API lets through; every other path under /v1/auth is a 404. */

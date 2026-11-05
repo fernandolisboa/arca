@@ -685,6 +685,7 @@ describe('invites (spec 0003, R2)', () => {
         jobsDb: testDatabase.jobsDb,
         audit: auditLog(testDatabase.auditDb),
         notices: { send: () => Promise.resolve() },
+        documents: { eraseObjects: () => Promise.resolve() },
       }),
       accountId,
     );

@@ -7,6 +7,7 @@ import { markForRetentionErasure } from './deletion.js';
 import { qualified } from './erasure.js';
 import { forEachAccount } from './each-account.js';
 import type { Notifier } from '../notification/notifier.js';
+import type { DocumentObjects } from '../vault/documents.js';
 
 /** The periods of RETENTION.md that the daily jobs count (spec 0004, R10). */
 export const inactivityYears = 3;
@@ -58,7 +59,7 @@ export const expiryRules: readonly ExpiryRule[] = [
   },
 ];
 
-/** Notification messages expire with their deliveries; uploads and vault envelopes join later. */
+/** Notification messages expire with their deliveries; vault envelopes join later. */
 export const notificationDays = 90;
 
 export const ownedExpiryRules: readonly OwnedExpiryRule[] = [
@@ -74,6 +75,7 @@ export const ownedExpiryRules: readonly OwnedExpiryRule[] = [
 export const enforcedRows = [
   ...expiryRules.map(({ row }) => row),
   ...ownedExpiryRules.map(({ row }) => row),
+  'Pending document uploads',
   'Invites',
   'Unconfirmed invited accounts',
   'Case data and account data',
@@ -93,6 +95,8 @@ export interface Retention {
   sweepExpiredRows(now: Date): Promise<void>;
   /** Each account's expired rows in the tables under row-level security, as app_jobs. */
   expireOwnedRows(now: Date): Promise<void>;
+  /** Each account's document uploads left unconfirmed for 24 hours, objects first. */
+  expirePendingDocuments(now: Date): Promise<void>;
   /** Warns each account 3 years without a sign-in and marks it for erasure 60 days later. */
   warnInactiveAccounts(now: Date): Promise<void>;
   /** Marks invited accounts still unconfirmed after 30 days for erasure now. */
@@ -106,6 +110,8 @@ export interface RetentionDependencies {
   readonly jobsDb: Database;
   readonly audit: AuditLog;
   readonly notifier: Notifier;
+  /** On the app_jobs pool, with the environment's object store. */
+  readonly documents: Pick<DocumentObjects, 'expirePending'>;
   readonly ownedRules?: readonly OwnedExpiryRule[];
 }
 
@@ -114,6 +120,7 @@ export function createRetention({
   jobsDb,
   audit,
   notifier,
+  documents,
   ownedRules = ownedExpiryRules,
 }: RetentionDependencies): Retention {
   return {
@@ -137,6 +144,12 @@ export function createRetention({
           }
         }),
       );
+    },
+
+    async expirePendingDocuments(now) {
+      await forEachAccount(await accounts.ids(authDb), async (accountId) => {
+        await documents.expirePending(accountId, now);
+      });
     },
 
     async warnInactiveAccounts(now) {

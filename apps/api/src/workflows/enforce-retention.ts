@@ -1,5 +1,6 @@
 import {
   expireOwnedRows,
+  expirePendingDocuments,
   markUnconfirmedAccounts,
   sweepExpiredRows,
   warnInactiveAccounts,
@@ -16,6 +17,7 @@ export async function enforceRetention(runDate: IsoDate): Promise<void> {
   'use workflow';
   await sweepExpiredRows();
   await expireOwnedRows();
+  await expirePendingDocuments();
   await markUnconfirmedAccounts();
   await warnInactiveAccounts();
 }

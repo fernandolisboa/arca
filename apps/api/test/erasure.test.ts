@@ -13,6 +13,7 @@ vi.mock('../src/workflows/erasure-steps.js', () => {
   };
   return {
     erasable: step('erasable'),
+    eraseStoredObjects: step('eraseStoredObjects'),
     eraseOwnedEntries: step('eraseOwnedEntries'),
     sendCompletionNotice: step('sendCompletionNotice'),
     eraseAuthRows: step('eraseAuthRows'),
@@ -35,6 +36,7 @@ function recordingErasure(): { erasure: Erasure; calls: string[] } {
         calls.push('erasable');
         return Promise.resolve(due.value);
       },
+      eraseStoredObjects: step('eraseStoredObjects'),
       eraseOwnedEntries: step('eraseOwnedEntries'),
       sendCompletionNotice: step('sendCompletionNotice'),
       eraseAuthRows: step('eraseAuthRows'),

@@ -7,6 +7,9 @@ import { createErasure, eraseAccountNow, type Erasure } from '../../src/account/
 import { accounts } from '../../src/auth/auth.js';
 import { auditLog, type AuditLog } from '../../src/audit/log.js';
 import type { Notice, Notices } from '../../src/email/notices.js';
+import { createDocuments } from '../../src/vault/documents.js';
+import { memoryObjectStorage, type MemoryObjectStorage } from '../../src/vault/object-storage.js';
+import { putObject } from '../objects.js';
 import { recordingNotifier } from '../notifications.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
 import { ownedCounts, seeded } from './every-table.js';
@@ -16,6 +19,7 @@ import { ownedCounts, seeded } from './every-table.js';
 let testDatabase: AuthTestDatabase;
 let sent: Notice[];
 let deletion: AccountDeletion;
+let objects: MemoryObjectStorage;
 const notified = recordingNotifier();
 
 const notices: Notices = {
@@ -34,6 +38,7 @@ const erasureWith = (
     jobsDb: testDatabase.jobsDb,
     audit,
     notices,
+    documents: createDocuments({ db: testDatabase.jobsDb, storage: objects, audit }),
     registry: checked,
   });
 
@@ -50,6 +55,7 @@ beforeAll(async () => {
 });
 
 beforeEach(() => {
+  objects = memoryObjectStorage();
   sent = [];
   notified.sent.length = 0;
 });
@@ -167,6 +173,43 @@ describe('eraseAccount (spec 0004, R9)', () => {
     expect(sent.map(({ kind, to }) => ({ kind, to }))).toEqual([
       { kind: 'account_erased', to: a.email },
     ]);
+  });
+
+  it('deletes the objects of the documents the account owns before their rows, not those it received', async () => {
+    const a = await seeded(testDatabase);
+    await makeDue(a.accountId);
+    const stored = (
+      await admin(
+        `SELECT owner_id, object_key FROM vault.document
+          WHERE owner_id = $1
+             OR id IN (SELECT document_id FROM vault.document_recipient WHERE recipient_id = $1)`,
+        [a.accountId],
+      )
+    ).rows as { owner_id: string; object_key: string }[];
+    for (const { object_key } of stored) putObject(objects, object_key, Buffer.from('ciphertext'));
+    expect(stored.map(({ owner_id }) => owner_id === a.accountId).sort()).toEqual([false, true]);
+
+    await eraseAccountNow(erasureWith(), a.accountId);
+    for (const { owner_id, object_key } of stored) {
+      const left = await objects.digest(object_key);
+      expect(left === undefined, object_key).toBe(owner_id === a.accountId);
+    }
+  });
+
+  it('keeps the rows that name the objects when the objects cannot be deleted', async () => {
+    const a = await seeded(testDatabase);
+    await makeDue(a.accountId);
+    const failing = createErasure({
+      authDb: testDatabase.authDb,
+      jobsDb: testDatabase.jobsDb,
+      audit: auditLog(testDatabase.auditDb),
+      notices,
+      documents: { eraseObjects: () => Promise.reject(new Error('unavailable')) },
+    });
+    await expect(eraseAccountNow(failing, a.accountId)).rejects.toThrow('unavailable');
+    const counts = await ownedCounts(testDatabase, a.accountId);
+    expect(counts['vault.document']).toBeGreaterThan(0);
+    expect(await due()).toContain(a.accountId);
   });
 
   it('sweeps the expired rows of the tables kept until expiry, and only those', async () => {

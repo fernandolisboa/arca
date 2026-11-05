@@ -9,6 +9,7 @@ import { sql, type SQL } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import { accounts, erasedAccounts } from '../auth/auth.js';
 import type { Notices } from '../email/notices.js';
+import type { DocumentObjects } from '../vault/documents.js';
 
 /**
  * The steps of `eraseAccount` (spec 0004, R9), in their order. Each is idempotent, takes the
@@ -17,6 +18,8 @@ import type { Notices } from '../email/notices.js';
 export interface Erasure {
   /** Whether the erasure may go on: the deletion is due, or the account is already gone. */
   erasable(accountId: string): Promise<boolean>;
+  /** Deletes the account's stored document objects while the rows that name them remain. */
+  eraseStoredObjects(accountId: string): Promise<void>;
   /** Erases the account's rows in every app_jobs entry, under its identity. */
   eraseOwnedEntries(accountId: string): Promise<void>;
   /** Reads the address and sends the completion notice in one step; nothing once it is gone. */
@@ -37,6 +40,8 @@ export interface ErasureDependencies {
   readonly jobsDb: Database;
   readonly audit: AuditLog;
   readonly notices: Notices;
+  /** On the app_jobs pool, with the environment's object store. */
+  readonly documents: Pick<DocumentObjects, 'eraseObjects'>;
   readonly registry?: Registry;
   readonly clock?: () => Date;
 }
@@ -70,6 +75,7 @@ export function createErasure({
   jobsDb,
   audit,
   notices,
+  documents,
   registry = fullRegistry,
   clock = () => new Date(),
 }: ErasureDependencies): Erasure {
@@ -84,6 +90,8 @@ export function createErasure({
 
   return {
     erasable: (accountId) => accounts.erasable(authDb, accountId),
+
+    eraseStoredObjects: (accountId) => documents.eraseObjects(accountId),
 
     eraseOwnedEntries: (accountId) =>
       withIdentity(jobsDb, { accountId }, async (tx) => {
@@ -123,6 +131,7 @@ export function createErasure({
 /** Runs every step in the workflow's order, in one call; the database tests use it. */
 export async function eraseAccountNow(erasure: Erasure, accountId: string): Promise<boolean> {
   if (!(await erasure.erasable(accountId))) return false;
+  await erasure.eraseStoredObjects(accountId);
   await erasure.eraseOwnedEntries(accountId);
   await erasure.sendCompletionNotice(accountId);
   await erasure.eraseAuthRows(accountId);

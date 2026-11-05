@@ -135,6 +135,23 @@ export function readResendKey(): string | undefined {
  * The environment's VAPID private key, a Sensitive variable (spec 0005, R7): the P-256 private
  * scalar alone, 43 characters of base64url, never a JWK or PEM.
  */
+/**
+ * The environment's private Vercel Blob store, as the project connects it: production with the
+ * `BLOB` prefix, previews with `BLOB_PREVIEW` (spec 0005, R3). Undefined until it is connected.
+ */
+export function readBlobStore(
+  environment: 'production' | 'preview',
+): { readonly storeId: string; readonly webhookPublicKey: string } | undefined {
+  const [storeId, webhookPublicKey] = (
+    environment === 'production'
+      ? [process.env['BLOB_STORE_ID'], process.env['BLOB_WEBHOOK_PUBLIC_KEY']]
+      : [process.env['BLOB_PREVIEW_STORE_ID'], process.env['BLOB_PREVIEW_WEBHOOK_PUBLIC_KEY']]
+  ).map((value) => value?.trim());
+  if (storeId === undefined || storeId === '') return undefined;
+  if (webhookPublicKey === undefined || webhookPublicKey === '') return undefined;
+  return { storeId, webhookPublicKey };
+}
+
 export function readVapidPrivateKey(): string | undefined {
   const key = process.env['ARCA_VAPID_PRIVATE_KEY']?.trim();
   return key === '' ? undefined : key;

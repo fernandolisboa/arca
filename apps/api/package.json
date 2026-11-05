@@ -34,6 +34,7 @@
     "@sentry/hono": "catalog:",
     "@sentry/node": "catalog:",
     "@simplewebauthn/server": "catalog:",
+    "@vercel/blob": "catalog:",
     "better-auth": "catalog:",
     "drizzle-orm": "catalog:",
     "hono": "catalog:",

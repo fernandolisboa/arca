@@ -8,6 +8,8 @@ import { accounts } from './auth/auth.js';
 import { createApp } from './app.js';
 import { auditLog, auditReader, type AuditLog } from './audit/log.js';
 import { createAuth, credentialStore } from './auth/auth.js';
+import { createDocuments } from './vault/documents.js';
+import { objectStorageFor } from './vault/storage-environment.js';
 import { createVault } from './vault/vault.js';
 import { rateLimiter, type RateLimiter } from './auth/rate-limit.js';
 import { clientAddressFor } from './client-address.js';
@@ -194,6 +196,15 @@ async function vaultService() {
   });
 }
 
+const documentStorage = objectStorageFor(environment);
+
+/** The documents on the app_api pool, with their ciphertext in the environment's store. */
+async function documentService() {
+  const { audit } = await authParts();
+  if (documentStorage === undefined) throw new Error('no object store is connected');
+  return createDocuments({ db: connected().db, storage: documentStorage.storage, audit });
+}
+
 /** The account's channels on the app_api pool, audited on app_audit. */
 async function notificationChannels() {
   const { audit } = await authParts();
@@ -327,6 +338,24 @@ const app = createApp({
       vaultService().then((vault) => vault.resealRecovery(accountId, request)),
     reset: (accountId) => vaultService().then((vault) => vault.reset(accountId)),
   },
+  ...(documentStorage === undefined
+    ? {}
+    : {
+        documents: {
+          create: (accountId, request) =>
+            documentService().then((documents) => documents.create(accountId, request)),
+          presignUpload: (accountId, pathname) =>
+            documentService().then((documents) => documents.presignUpload(accountId, pathname)),
+          confirm: (accountId, documentId) =>
+            documentService().then((documents) => documents.confirm(accountId, documentId)),
+          list: (accountId, after) =>
+            documentService().then((documents) => documents.list(accountId, after)),
+          downloadUrl: (accountId, documentId) =>
+            documentService().then((documents) => documents.downloadUrl(accountId, documentId)),
+        },
+        ...(documentStorage.memory === undefined ? {} : { memoryObjects: documentStorage.memory }),
+      }),
+  accountConfirmed: (accountId) => accounts.isConfirmed(authConnection(), accountId),
   notifications: {
     channels: {
       list: (accountId) => notificationChannels().then((channels) => channels.list(accountId)),

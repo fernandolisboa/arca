@@ -1,6 +1,7 @@
 import type { Logger } from '@arca/telemetry';
 
-export type StepErrorCode = 'database_unavailable' | 'email_unavailable' | 'delivery_unavailable';
+export type StepErrorCode =
+  'database_unavailable' | 'email_unavailable' | 'delivery_unavailable' | 'storage_unavailable';
 
 /** Step errors carry a code only: the SDK logs and stores them (ADR-0009). */
 export class StepError extends Error {
