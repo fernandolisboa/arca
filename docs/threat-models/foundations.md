@@ -66,7 +66,7 @@ The [data-flow table](../ARCHITECTURE.md#data-flows) lists every service and wha
 | D4 | Elevation: `app_auth` reaches case data, or `app_api` reads `auth` | Privileges per schema; the access matrix | [access.test.ts](../../tooling/scripts/test/postgres/access.test.ts) "lets app_auth read and write its tables, and nothing more" and "gives %s no access to the auth schema" |
 | D5 | Broken access control on any table | Forced row-level security on every table (guard 1); one access matrix per schema, each with its exact table list | [access.test.ts](../../tooling/scripts/test/postgres/access.test.ts) "has exactly the tables the matrix lists"; [vault-access.test.ts](../../tooling/scripts/test/postgres/vault-access.test.ts) "forces row-level security on every vault table"; [notification-access.test.ts](../../tooling/scripts/test/postgres/notification-access.test.ts) "forces row-level security on exactly the three tables"; [document-access.test.ts](../../tooling/scripts/test/postgres/document-access.test.ts) "the documents and account links access matrix (spec 0005, R4)" |
 | D6 | Information disclosure: production data in a preview | A preview build never bootstraps or migrates production (the database mark); previews fork from `development` | [db-deployment-target.test.ts](../../tooling/scripts/test/db-deployment-target.test.ts) "refuses %s"; [bootstrap.test.ts](../../tooling/scripts/test/postgres/bootstrap.test.ts) "marks the database on the first production build and refuses a preview there"; [runner.test.ts](../../tooling/scripts/test/postgres/runner.test.ts) "is written by production, idempotently, on the schema app_migrator owns" and "refuses a preview on a fork that carries it, before any migration" (the lineage mark) |
-| D7 | Information disclosure: real data in tests or seeds | Synthetic data only; a synthetic seed for previews and CI | Review rule (CLAUDE.md). The seed is **Open** ([#65](https://github.com/fernandolisboa/arca/issues/65)) |
+| D7 | Information disclosure: real data in tests or seeds | Synthetic data only; a synthetic seed for previews and CI | Review rule (CLAUDE.md). The seed accepts only `example.com` addresses ([db-seed.test.ts](../../tooling/scripts/test/db-seed.test.ts) "refuses %s") and runs only outside production ([seed.test.ts](../../tooling/scripts/test/postgres/seed.test.ts) "refuses a production run and writes nothing"; [#65](https://github.com/fernandolisboa/arca/issues/65)) |
 | D8 | Loss of data | Neon point-in-time restore inside the history window; an optional manual snapshot | Recorded proof: the [restore steps](../runbooks/incident-response.md#restore-the-database). Residual R-3 |
 
 ### Web and API (specs 0001 and 0004)
@@ -172,11 +172,10 @@ Risks from the OWASP Top 10 for Agentic Applications (2026):
 | R-11 | After an account change or a 401, the old account's push channel stays until the push service answers gone | [spec 0005 R7](../specs/0005-vault-devices-and-notifications.md#r7-notifications) |
 | R-12 | Agents hold the owner's GitHub token and could change the ruleset or settings | [ADR-0012](../adr/0012-automation-first-setup.md) |
 | R-13 | The owner's other apps share the `filx.app` sending domain, so one of them, or its leaked Resend key, can send mail that passes DMARC as Arca's and asks for a recovery link and code, and with `p=quarantine` an outsider's forgery still lands in spam; recovery's wait and cancel (I2) limit it | [ADR-0015](../adr/0015-identity-enrollment-step-up-and-recovery.md#email) |
+| R-14 | The seed's passkey key is public by design, so anyone past Vercel Deployment Protection can sign in to a preview as the seed's synthetic owner, on the `development` branch every preview shares; Deployment Protection is the only control there | [spec 0004 R2](../specs/0004-real-data-readiness.md#r2-synthetic-seed) |
 
 ## Open gaps
 
 | Gap | Ticket | Blocks the gate |
 | --- | --- | --- |
 | No check that every action is pinned by SHA (S2) | [#6](https://github.com/fernandolisboa/arca/issues/6) | No: pins are reviewed by hand |
-| The lineage mark's end-to-end proof (D6): the first preview after it merges | [#64](https://github.com/fernandolisboa/arca/issues/64) | Yes, item 1 |
-| The synthetic seed (D7) | [#65](https://github.com/fernandolisboa/arca/issues/65) | Yes, item 1 |

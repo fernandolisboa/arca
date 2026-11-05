@@ -1,4 +1,6 @@
 import {
+  createECDH,
+  createHash,
   createPrivateKey,
   createPublicKey,
   generateKeyPairSync,
@@ -31,6 +33,32 @@ export function newCredential(): Credential {
     credentialId: randomBytes(16).toString('base64url'),
     privateKey: privateKey.export({ format: 'der', type: 'pkcs8' }).toString('base64'),
     publicKey: coseKey(Buffer.from(String(x), 'base64url'), Buffer.from(String(y), 'base64url')),
+  };
+}
+
+/**
+ * The synthetic seed's passkey (spec 0004, R2): its private key is the SHA-256 of a public label,
+ * as `tooling/scripts/src/db/seed.ts` derives the public key it stores.
+ */
+export function seededCredential(label: string): Credential {
+  const d = createHash('sha256').update(label).digest();
+  const ecdh = createECDH('prime256v1');
+  ecdh.setPrivateKey(d);
+  const point = ecdh.getPublicKey();
+  const [x, y] = [point.subarray(1, 33), point.subarray(33, 65)];
+  const jwk = {
+    kty: 'EC',
+    crv: 'P-256',
+    d: d.toString('base64url'),
+    x: x.toString('base64url'),
+    y: y.toString('base64url'),
+  };
+  return {
+    credentialId: Buffer.from(label).toString('base64url'),
+    privateKey: createPrivateKey({ key: jwk, format: 'jwk' })
+      .export({ format: 'der', type: 'pkcs8' })
+      .toString('base64'),
+    publicKey: coseKey(x, y),
   };
 }
 
