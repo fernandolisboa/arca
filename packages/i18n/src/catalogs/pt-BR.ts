@@ -387,7 +387,7 @@ export const ptBR = {
       share: {
         open: 'Compartilhar',
         close: 'Fechar',
-        legend: 'Com quem compartilhar {name}',
+        legend: 'Com quem compartilhar “{name}”',
         lead: 'Marque quem pode abrir este documento. Desmarcar tira o acesso. Antes de compartilhar com alguém pela primeira vez, confira com a pessoa, ao vivo ou por telefone, se a impressão digital da chave do cofre dela é a mesma que aparece aqui.',
         fingerprint: 'Impressão digital da chave: {fingerprint}',
         newFingerprint: 'Impressão digital da chave nova: {fingerprint}',

@@ -123,7 +123,8 @@ function RolledBackList({
   readonly people: readonly SharePerson[];
   readonly names: ReadonlyMap<string, string>;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const list = new Intl.ListFormat(i18n.language, { type: 'conjunction' });
   const emails = new Map(people.map(({ accountId, email }) => [accountId, email]));
   const shared = Object.entries(view.state.documents).filter(
     ([, accountIds]) => accountIds.length > 0,
@@ -137,9 +138,11 @@ function RolledBackList({
         <li key={documentId} className="break-words">
           {t('vault.documents.share.rolledBackItem', {
             name: names.get(documentId) ?? t('vault.documents.unnamed'),
-            people: accountIds
-              .map((accountId) => emails.get(accountId) ?? t('vault.documents.share.unlinked'))
-              .join(', '),
+            people: list.format(
+              accountIds.map(
+                (accountId) => emails.get(accountId) ?? t('vault.documents.share.unlinked'),
+              ),
+            ),
           })}
         </li>
       ))}
@@ -279,6 +282,7 @@ function PersonChoice({
           type="button"
           disabled={disabled}
           aria-describedby={detailsId}
+          aria-pressed={accepted}
           className={`${textLinkClass} ms-8 self-start`}
           onClick={() => {
             onAccept(!accepted);
