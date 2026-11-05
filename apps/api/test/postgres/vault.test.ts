@@ -403,6 +403,29 @@ describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
     expect(await fixtures.events(owner, ['vault_identity_rotated'])).toHaveLength(1);
   });
 
+  it('races a re-seal or a reset against a rotation without a deadlock', async () => {
+    for (let round = 0; round < 4; round += 1) {
+      const owner = await fixtures.account(1);
+      await setUp(owner);
+      await vault.rotate(owner.accountId, await identity(owner, await currentId(owner)));
+      const next = await identity(owner, await currentId(owner));
+      const [rotated, resealed] = await Promise.all([
+        vault.rotate(owner.accountId, next),
+        vault.resealRecovery(owner.accountId, { envelopes: next.keptRecoveryEnvelopes }),
+      ]);
+      expect(rotated).toBe('rotated');
+      expect(['resealed', 'changed']).toContain(resealed);
+
+      const [again, reset] = await Promise.all([
+        vault.rotate(owner.accountId, await identity(owner, await currentId(owner))),
+        vault.reset(owner.accountId),
+      ]);
+      expect(['rotated', 'no_vault']).toContain(again);
+      expect(reset).toBe('reset');
+      expect(await recipientsOf(owner)).toEqual([]);
+    }
+  });
+
   it('lets only one of two rotations from the same recipient through', async () => {
     const owner = await fixtures.account(1);
     await setUp(owner);

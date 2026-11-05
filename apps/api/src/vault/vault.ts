@@ -319,6 +319,15 @@ export function createVault({ db, activeCredentials, emailsOf, audit }: VaultSet
       passkeyEnvelopes.map(({ credentialId }) => credentialId),
     );
 
+  /** Locks every recipient of the account, always in the same order. */
+  const lockRecipients = (tx: Transaction, accountId: string) =>
+    tx
+      .select({ id: recipient.id })
+      .from(recipient)
+      .where(isRecipientOf(accountId))
+      .orderBy(recipient.id)
+      .for('update');
+
   /**
    * Seals every kept recovery envelope again, or none unless the list names exactly the
    * recipients that have one. The recipients are locked first, so a rotation adding one with its
@@ -330,11 +339,7 @@ export function createVault({ db, activeCredentials, emailsOf, audit }: VaultSet
     accountId: string,
     resealed: ResealVaultRecoveryRequest['envelopes'],
   ): Promise<RecoveryResealed> => {
-    await tx
-      .select({ id: recipient.id })
-      .from(recipient)
-      .where(isRecipientOf(accountId))
-      .for('update');
+    await lockRecipients(tx, accountId);
     const kept = await tx
       .select({ recipientId: envelope.recipientId })
       .from(envelope)
@@ -456,8 +461,10 @@ export function createVault({ db, activeCredentials, emailsOf, audit }: VaultSet
       if (!(await passkeysActive(accountId, request))) return 'unknown_passkey';
       // Recorded before the commit, like every security event: a failed write keeps the old state.
       return asAccount(accountId, async (tx) => {
-        // The update locks the row, so a concurrent rotation of the same recipient waits, then
-        // finds it rotated and answers `changed`.
+        // Every recipient is locked first, in the order a re-seal and a reset lock them, so a
+        // concurrent one waits instead of deadlocking; a concurrent rotation of the same
+        // recipient then finds it rotated and answers `changed`.
+        await lockRecipients(tx, accountId);
         const rotated = await tx.execute<{ id: string }>(sql`
           UPDATE vault.recipient SET rotated_at = now()
            WHERE id = ${request.from} AND account_id = ${accountId} AND rotated_at IS NULL
@@ -501,11 +508,7 @@ export function createVault({ db, activeCredentials, emailsOf, audit }: VaultSet
     reset: (accountId) =>
       asAccount(accountId, async (tx) => {
         // Locked first: a document created meanwhile then commits before the check below sees it.
-        await tx
-          .select({ id: recipient.id })
-          .from(recipient)
-          .where(isRecipientOf(accountId))
-          .for('update');
+        await lockRecipients(tx, accountId);
         const owned = await tx
           .select({ id: document.id })
           .from(document)
