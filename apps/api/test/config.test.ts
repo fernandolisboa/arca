@@ -271,7 +271,7 @@ describe('readEnrollmentCodeHash (spec 0003, R2)', () => {
   it('takes a local hash only in development', () => {
     vi.stubEnv('ARCA_ENROLLMENT_CODE_HASH', hash);
     expect(readEnrollmentCodeHash('development')).toBe(hash);
-    expect(readEnrollmentCodeHash('preview')).toBe(enrollmentCodeHash);
+    expect(readEnrollmentCodeHash('preview')).toBeNull();
     expect(readEnrollmentCodeHash('production')).toBe(enrollmentCodeHash);
   });
 
