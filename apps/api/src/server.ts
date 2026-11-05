@@ -192,6 +192,7 @@ async function vaultService() {
     db: connected().db,
     activeCredentials: async (accountId) =>
       (await credentials.activeOf(accountId)).map(({ credentialId }) => credentialId),
+    emailsOf: (accountIds) => accounts.emailsOf(authConnection(), accountIds),
     audit,
   });
 }
@@ -337,6 +338,10 @@ const app = createApp({
     resealRecovery: (accountId, request) =>
       vaultService().then((vault) => vault.resealRecovery(accountId, request)),
     reset: (accountId) => vaultService().then((vault) => vault.reset(accountId)),
+    sharingState: (accountId) => vaultService().then((vault) => vault.sharingState(accountId)),
+    storeSharingState: (accountId, request) =>
+      vaultService().then((vault) => vault.storeSharingState(accountId, request)),
+    links: (accountId) => vaultService().then((vault) => vault.links(accountId)),
   },
   ...(documentStorage === undefined
     ? {}

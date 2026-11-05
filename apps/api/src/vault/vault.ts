@@ -1,21 +1,29 @@
 import type {
+  AccountLink,
   AuditEventCode,
   PasskeyEnvelope,
   ResealVaultRecoveryRequest,
   RotateVaultIdentityRequest,
   SetUpVaultRequest,
+  SharingStateChange,
+  StoreSharingStateRequest,
+  StoredSharingState,
   VaultEnvelopesResponse,
   VaultStatusResponse,
 } from '@arca/api-contract/routes';
 import { withIdentity, type Database, type Transaction } from '@arca/db';
+import { link } from '@arca/db/account-schema';
 import { document, envelope, recipient, sharingState } from '@arca/db/vault-schema';
 import { and, asc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
+import { z } from 'zod';
 import type { AuditLog } from '../audit/log.js';
 
 export type VaultSetUp = 'created' | 'exists' | 'unknown_passkey';
 export type EnvelopeAdded = 'added' | 'no_vault' | 'unknown_passkey';
-export type VaultRotation = 'rotated' | 'no_vault' | 'changed' | 'unknown_passkey';
+export type VaultRotation =
+  'rotated' | 'no_vault' | 'changed' | 'sharing_state_changed' | 'unknown_passkey';
 export type RecoveryResealed = 'resealed' | 'no_vault' | 'changed';
+export type SharingStateStored = 'stored' | 'no_vault' | 'vault_changed' | 'changed';
 
 /**
  * The vault's server side (spec 0005, R2): it stores what the device sealed and serves it back,
@@ -58,6 +66,21 @@ export interface Vault {
    * the lost identity opens.
    */
   readonly reset: (accountId: string) => Promise<VaultReset>;
+  /** The sharing state as the account's device last stored it; null before the first. */
+  readonly sharingState: (accountId: string) => Promise<StoredSharingState | null>;
+  /**
+   * Stores a newly tagged state over the version the device read, for the identity still current:
+   * `vault_changed` when a rotation or reset came first, `changed` when another state did.
+   */
+  readonly storeSharingState: (
+    accountId: string,
+    request: StoreSharingStateRequest,
+  ) => Promise<SharingStateStored>;
+  /**
+   * The accounts linked to this one, with their email and current recipient, by email; here
+   * because the recipients are the vault's, though the route sits with the account's.
+   */
+  readonly links: (accountId: string) => Promise<AccountLink[]>;
 }
 
 export type VaultReset = 'reset' | 'no_vault' | 'has_documents';
@@ -67,10 +90,30 @@ export interface VaultSettings {
   readonly db: Database;
   /** The credential IDs of the account's active passkeys, read on the app_auth pool. */
   readonly activeCredentials: (accountId: string) => Promise<readonly string[]>;
+  /** The email of each of these accounts that still exists, read on the app_auth pool. */
+  readonly emailsOf: (accountIds: readonly string[]) => Promise<ReadonlyMap<string, string>>;
   readonly audit: AuditLog;
 }
 
 const bytes = (base64url: string) => Buffer.from(base64url, 'base64url');
+const base64url = (value: Uint8Array) => Buffer.from(value).toString('base64url');
+
+/**
+ * The pins of a stored state, read only to audit a changed one: the device alone verifies a
+ * state and decides encryption from it, so anything unreadable here has no pins.
+ */
+const pinsOf = (state: Uint8Array | undefined): Readonly<Record<string, string>> => {
+  if (state === undefined) return {};
+  try {
+    const parsed = StatePins.safeParse(JSON.parse(Buffer.from(state).toString('utf8')));
+    return parsed.success ? parsed.data.pins : {};
+  } catch {
+    return {};
+  }
+};
+const StatePins = z.object({
+  pins: z.record(z.uuid(), z.string().regex(/^age1pq1[02-9ac-hj-np-z]+$/)),
+});
 
 interface NewEnvelope {
   readonly kind: 'passkey_prf' | 'recovery';
@@ -162,7 +205,82 @@ const current = (tx: Transaction, accountId: string) =>
     .where(and(eq(recipient.accountId, accountId), isNull(recipient.rotatedAt)))
     .then(([found]) => found);
 
-export function createVault({ db, activeCredentials, audit }: VaultSettings): Vault {
+/** The accounts linked to this one, in either direction. */
+async function linkedAccounts(tx: Transaction, accountId: string): Promise<string[]> {
+  const rows = await tx
+    .select({ inviterId: link.inviterId, inviteeId: link.inviteeId })
+    .from(link)
+    .where(or(eq(link.inviterId, accountId), eq(link.inviteeId, accountId)));
+  return [
+    ...new Set(rows.map((row) => (row.inviterId === accountId ? row.inviteeId : row.inviterId))),
+  ];
+}
+
+const storedVersion = async (tx: Transaction, accountId: string) =>
+  (
+    await tx
+      .select({ version: sharingState.version })
+      .from(sharingState)
+      .where(eq(sharingState.accountId, accountId))
+  )[0]?.version;
+
+/** Rolls a rotation back when it would leave the stored sharing state under the old key. */
+class SharingStateConflict extends Error {
+  override name = 'SharingStateConflict';
+}
+
+export function createVault({ db, activeCredentials, emailsOf, audit }: VaultSettings): Vault {
+  /**
+   * Stores a state over the version it replaces, the caller holding the current recipient's row
+   * lock first. A linked account's changed pin is audited; nothing else is, so a state cannot
+   * make one request write an audit event per invented pin.
+   */
+  const writeSharingState = async (
+    tx: Transaction,
+    accountId: string,
+    { expectedVersion, sharingState: { version, state, tag } }: SharingStateChange,
+  ): Promise<'stored' | 'changed'> => {
+    let previous: Uint8Array | undefined;
+    if (expectedVersion === null) {
+      const inserted = await tx.execute<{ account_id: string }>(sql`
+        INSERT INTO vault.sharing_state (account_id, version, state, tag)
+        VALUES (${accountId}, ${version}, ${bytes(state)}, ${bytes(tag)})
+        ON CONFLICT DO NOTHING RETURNING account_id`);
+      if (inserted.rows.length === 0) return 'changed';
+    } else {
+      const [found] = await tx
+        .select({ state: sharingState.state })
+        .from(sharingState)
+        .where(
+          and(eq(sharingState.accountId, accountId), eq(sharingState.version, expectedVersion)),
+        )
+        .for('update');
+      if (found === undefined) return 'changed';
+      previous = found.state;
+      await tx.execute(sql`
+        UPDATE vault.sharing_state
+           SET version = ${version}, state = ${bytes(state)}, tag = ${bytes(tag)}, updated_at = now()
+         WHERE account_id = ${accountId}`);
+    }
+    const before = pinsOf(previous);
+    const after = pinsOf(bytes(state));
+    for (const pinned of (await linkedAccounts(tx, accountId)).sort()) {
+      if (
+        Object.hasOwn(before, pinned) &&
+        Object.hasOwn(after, pinned) &&
+        before[pinned] !== after[pinned]
+      ) {
+        await audit.record({
+          code: 'recipient_pin_changed',
+          subjectAccountId: accountId,
+          actorAccountId: accountId,
+          details: { accountId: pinned },
+        });
+      }
+    }
+    return 'stored';
+  };
+
   const asAccount = <T>(accountId: string, work: (tx: Transaction) => Promise<T>) =>
     withIdentity(db, { accountId }, work);
 
@@ -309,11 +427,21 @@ export function createVault({ db, activeCredentials, audit }: VaultSettings): Va
             ? ('no_vault' as const)
             : ('changed' as const);
         }
+        // No device could verify a state left under the old share key, so the rotation stores
+        // its re-tagged state over the stored version, or finds none stored.
+        const retagged =
+          request.sharingState === null
+            ? (await storedVersion(tx, accountId)) === undefined
+            : (await writeSharingState(tx, accountId, request.sharingState)) === 'stored';
+        if (!retagged) throw new SharingStateConflict();
         const recipientId = await insertRecipient(tx, accountId, request.recipient);
         if (recipientId === undefined) throw new Error('the rotated recipient is still current');
         await storeIdentity(tx, accountId, recipientId, request);
         await record(accountId, 'vault_identity_rotated');
         return 'rotated' as const;
+      }).catch((error: unknown) => {
+        if (error instanceof SharingStateConflict) return 'sharing_state_changed' as const;
+        throw error;
       });
     },
 
@@ -372,5 +500,57 @@ export function createVault({ db, activeCredentials, audit }: VaultSettings): Va
         await record(accountId, 'vault_reset');
         return 'reset';
       }),
+
+    sharingState: (accountId) =>
+      asAccount(accountId, async (tx) => {
+        const [found] = await tx
+          .select({
+            version: sharingState.version,
+            state: sharingState.state,
+            tag: sharingState.tag,
+          })
+          .from(sharingState)
+          .where(eq(sharingState.accountId, accountId));
+        if (found === undefined) return null;
+        return { version: found.version, state: base64url(found.state), tag: base64url(found.tag) };
+      }),
+
+    storeSharingState: (accountId, { recipient: tagger, expectedVersion, sharingState: stored }) =>
+      asAccount(accountId, async (tx) => {
+        // Shared with the lock a rotation's update and a reset take, so neither runs beside this:
+        // the state is stored only for the identity still current, whose share key tagged it.
+        const [held] = await tx
+          .select({ recipient: recipient.recipient })
+          .from(recipient)
+          .where(and(eq(recipient.accountId, accountId), isNull(recipient.rotatedAt)))
+          .for('share');
+        if (held === undefined) {
+          return (await anyRecipient(tx, accountId)) === undefined
+            ? ('no_vault' as const)
+            : ('vault_changed' as const);
+        }
+        if (held.recipient !== tagger) return 'vault_changed' as const;
+        return writeSharingState(tx, accountId, { expectedVersion, sharingState: stored });
+      }),
+
+    links: async (accountId) => {
+      const found = await asAccount(accountId, async (tx) => {
+        const linked = await linkedAccounts(tx, accountId);
+        if (linked.length === 0) return [];
+        const current = await tx
+          .select({ accountId: recipient.accountId, recipient: recipient.recipient })
+          .from(recipient)
+          .where(and(inArray(recipient.accountId, linked), isNull(recipient.rotatedAt)));
+        const recipients = new Map(current.map((row) => [row.accountId, row.recipient]));
+        return linked.map((id) => ({ accountId: id, recipient: recipients.get(id) ?? null }));
+      });
+      const emails = await emailsOf(found.map((row) => row.accountId));
+      return found
+        .flatMap((row) => {
+          const email = emails.get(row.accountId);
+          return email === undefined ? [] : [{ ...row, email }];
+        })
+        .sort((a, b) => (a.email < b.email ? -1 : a.email > b.email ? 1 : 0));
+    },
   };
 }

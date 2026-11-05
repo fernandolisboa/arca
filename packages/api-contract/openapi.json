@@ -3159,6 +3159,7 @@
                               "document_deleted",
                               "document_shared",
                               "document_share_revoked",
+                              "recipient_pin_changed",
                               "notification_channel_added",
                               "notification_channel_removed"
                             ]
@@ -3882,7 +3883,7 @@
     "/vault/rotate": {
       "post": {
         "operationId": "rotateVaultIdentity",
-        "summary": "Makes a new identity's recipient current, with its envelopes, and marks the old one rotated, keeping its envelopes, after a sensitive_settings step-up whose target is the rotated recipient and whose fields carry the new one; 403 step_up_required, 404 not_found before set-up, 409 vault_changed unless the recipient named is still current, 400 invalid_request for a credential that is not an active passkey of the account",
+        "summary": "Makes a new identity's recipient current, with its envelopes, and marks the old one rotated, keeping its envelopes, after a sensitive_settings step-up whose target is the rotated recipient and whose fields carry the new one; 403 step_up_required, 404 not_found before set-up, 409 vault_changed unless the recipient named is still current, 409 sharing_state_changed unless the request re-tags exactly the stored sharing state's version, 400 invalid_request for a credential that is not an active passkey of the account",
         "requestBody": {
           "required": true,
           "content": {
@@ -3928,13 +3929,60 @@
                   "from": {
                     "type": "string",
                     "format": "uuid"
+                  },
+                  "sharingState": {
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "expectedVersion": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 1
+                      },
+                      "sharingState": {
+                        "type": "object",
+                        "properties": {
+                          "version": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 2147483647
+                          },
+                          "state": {
+                            "type": "string",
+                            "minLength": 2,
+                            "maxLength": 1398102,
+                            "pattern": "^[A-Za-z0-9_-]+$"
+                          },
+                          "tag": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]{43}$"
+                          }
+                        },
+                        "required": [
+                          "version",
+                          "state",
+                          "tag"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "expectedVersion",
+                      "sharingState"
+                    ],
+                    "additionalProperties": false
                   }
                 },
                 "required": [
                   "recipient",
                   "passkeyEnvelopes",
                   "recoveryEnvelope",
-                  "from"
+                  "from",
+                  "sharingState"
                 ],
                 "additionalProperties": false
               }
@@ -4036,6 +4084,264 @@
                 "schema": {
                   "type": "object",
                   "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vault/sharing-state": {
+      "get": {
+        "operationId": "getSharingState",
+        "summary": "The account's sharing state as its device last stored it, for the device to verify; 401 without a session",
+        "responses": {
+          "200": {
+            "description": "The sharing state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sharingState": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "version": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2147483647
+                        },
+                        "state": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 1398102,
+                          "pattern": "^[A-Za-z0-9_-]+$"
+                        },
+                        "tag": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9_-]{43}$"
+                        }
+                      },
+                      "required": [
+                        "version",
+                        "state",
+                        "tag"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "sharingState"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "storeSharingState",
+        "summary": "Stores the account's newly tagged sharing state, within a vault_unlock window, only over the version the device read; 403 step_up_required, 404 not_found before set-up, 409 vault_changed unless the recipient is the current one, 409 sharing_state_changed when another version was stored since",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "expectedVersion": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 1
+                  },
+                  "sharingState": {
+                    "type": "object",
+                    "properties": {
+                      "version": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 2147483647
+                      },
+                      "state": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 1398102,
+                        "pattern": "^[A-Za-z0-9_-]+$"
+                      },
+                      "tag": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_-]{43}$"
+                      }
+                    },
+                    "required": [
+                      "version",
+                      "state",
+                      "tag"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "recipient": {
+                    "type": "string",
+                    "maxLength": 2100,
+                    "pattern": "^age1pq1[02-9ac-hj-np-z]+$"
+                  }
+                },
+                "required": [
+                  "expectedVersion",
+                  "sharingState",
+                  "recipient"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sharing state stored",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/account/links": {
+      "get": {
+        "operationId": "listAccountLinks",
+        "summary": "The accounts linked to this one, each with its email and current vault recipient, in email order; 401 without a session",
+        "responses": {
+          "200": {
+            "description": "Linked accounts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "links": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "accountId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "email": {
+                            "type": "string",
+                            "format": "email"
+                          },
+                          "recipient": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "maxLength": 2100,
+                            "pattern": "^age1pq1[02-9ac-hj-np-z]+$"
+                          }
+                        },
+                        "required": [
+                          "accountId",
+                          "email",
+                          "recipient"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "links"
+                  ]
                 }
               }
             }

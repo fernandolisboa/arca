@@ -2,7 +2,7 @@ import type { AuditEventCode } from '@arca/api-contract/routes';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { auditLog } from '../../src/audit/log.js';
-import { credentialStore } from '../../src/auth/auth.js';
+import { accounts, credentialStore } from '../../src/auth/auth.js';
 import { createDevices, type Devices } from '../../src/auth/devices.js';
 import { createVault, type Vault } from '../../src/vault/vault.js';
 import { accountFixtures, type Account } from './accounts.js';
@@ -30,6 +30,7 @@ beforeAll(async () => {
     db: apiDb,
     activeCredentials: async (accountId) =>
       (await credentials.activeOf(accountId)).map(({ credentialId }) => credentialId),
+    emailsOf: (accountIds) => accounts.emailsOf(authDb, accountIds),
     audit,
   });
   devices = createDevices({
@@ -59,7 +60,7 @@ const envelopeRows = (owner: Account) =>
       (
         await client.query<{ kind: string; credential_id: string | null }>(
           `SELECT kind, credential_id FROM vault.envelope WHERE account_id = $1
-            ORDER BY kind, credential_id`,
+            ORDER BY kind, credential_id COLLATE "C"`,
           [owner.accountId],
         )
       ).rows,
@@ -91,7 +92,8 @@ describe('vault set-up and status (spec 0005, R2)', () => {
         { kind: 'passkey_prf', credential_id: credentialOf(owner, 1) },
         { kind: 'recovery', credential_id: null },
       ].sort((a, b) =>
-        `${a.kind}${a.credential_id ?? ''}`.localeCompare(`${b.kind}${b.credential_id ?? ''}`),
+        // Byte order, as the query's COLLATE "C": a locale may skip the `-` an ID can start with.
+        `${a.kind}${a.credential_id ?? ''}` < `${b.kind}${b.credential_id ?? ''}` ? -1 : 1,
       ),
     );
     expect((await setUp(owner)).outcome).toBe('exists');
@@ -321,6 +323,7 @@ const currentId = async (owner: Account) =>
 
 const identity = (owner: Account, from: string, passkeys = [credentialOf(owner)]) => ({
   from,
+  sharingState: null,
   recipient: recipientText(),
   passkeyEnvelopes: passkeys.map((credentialId) => ({ credentialId, ciphertext: sealed() })),
   recoveryEnvelope: sealed(),
@@ -488,5 +491,201 @@ describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
     expect(await recipientsOf(stranger)).toHaveLength(1);
     expect(await fixtures.events(owner, ['vault_reset'])).toHaveLength(1);
     expect((await setUp(owner)).outcome).toBe('created');
+  });
+});
+
+const stateBytes = (pins: Record<string, string>) =>
+  Buffer.from(JSON.stringify({ documents: {}, format: 1, pins })).toString('base64url');
+
+const tagged = (version: number, pins: Record<string, string> = {}) => ({
+  version,
+  state: stateBytes(pins),
+  tag: randomBytes(32).toString('base64url'),
+});
+
+const linkAccounts = (inviterId: string, inviteeId: string) =>
+  testDatabase.asAdmin((client) =>
+    client.query(`INSERT INTO account.link (inviter_id, invitee_id) VALUES ($1, $2)`, [
+      inviterId,
+      inviteeId,
+    ]),
+  );
+
+describe('the sharing state (spec 0005, R4; ADR-0018)', () => {
+  it('stores a first state, then only over the version the device read', async () => {
+    const owner = await fixtures.account(1);
+    const { recipient } = await setUp(owner);
+    expect(await vault.sharingState(owner.accountId)).toBeNull();
+    const first = tagged(1);
+    const store = (expectedVersion: number | null, sharingState: ReturnType<typeof tagged>) =>
+      vault.storeSharingState(owner.accountId, { recipient, expectedVersion, sharingState });
+    expect(await store(null, first)).toBe('stored');
+    expect(await vault.sharingState(owner.accountId)).toEqual(first);
+    expect(await store(null, tagged(1))).toBe('changed');
+    const second = tagged(2);
+    expect(await store(1, second)).toBe('stored');
+    expect(await store(1, tagged(3))).toBe('changed');
+    expect(await vault.sharingState(owner.accountId)).toEqual(second);
+  });
+
+  it('lets only one of two stores over the same version through', async () => {
+    const owner = await fixtures.account(1);
+    const { recipient } = await setUp(owner);
+    const store = (sharingState: ReturnType<typeof tagged>) =>
+      vault.storeSharingState(owner.accountId, { recipient, expectedVersion: null, sharingState });
+    expect((await Promise.all([store(tagged(1)), store(tagged(1))])).sort()).toEqual([
+      'changed',
+      'stored',
+    ]);
+  });
+
+  it('stores nothing before set-up, nor for a recipient that is not current', async () => {
+    const owner = await fixtures.account(1);
+    const request = { recipient: recipientText(), expectedVersion: null, sharingState: tagged(1) };
+    expect(await vault.storeSharingState(owner.accountId, request)).toBe('no_vault');
+    const { recipient } = await setUp(owner);
+    expect(await vault.storeSharingState(owner.accountId, request)).toBe('vault_changed');
+    expect(await vault.rotate(owner.accountId, identity(owner, await currentId(owner)))).toBe(
+      'rotated',
+    );
+    expect(await vault.storeSharingState(owner.accountId, { ...request, recipient })).toBe(
+      'vault_changed',
+    );
+    expect(await vault.sharingState(owner.accountId)).toBeNull();
+  });
+
+  it("records a linked person's changed pin, and not a new one or an unlinked one", async () => {
+    const owner = await fixtures.account(1);
+    const { recipient } = await setUp(owner);
+    const [kept, changed, unlinked] = [randomUUID(), randomUUID(), randomUUID()];
+    await linkAccounts(owner.accountId, kept);
+    await linkAccounts(changed, owner.accountId);
+    const store = (expectedVersion: number | null, sharingState: ReturnType<typeof tagged>) =>
+      vault.storeSharingState(owner.accountId, { recipient, expectedVersion, sharingState });
+    const [one, two] = [recipientText(), recipientText()];
+    expect(await store(null, tagged(1, { [kept]: one, [unlinked]: one }))).toBe('stored');
+    expect(await store(1, tagged(2, { [kept]: one, [changed]: one, [unlinked]: one }))).toBe(
+      'stored',
+    );
+    expect(await fixtures.events(owner, ['recipient_pin_changed'])).toEqual([]);
+    expect(await store(2, tagged(3, { [kept]: one, [changed]: two, [unlinked]: two }))).toBe(
+      'stored',
+    );
+    expect(await fixtures.events(owner, ['recipient_pin_changed'])).toEqual([
+      { code: 'recipient_pin_changed', actor: owner.accountId, details: { accountId: changed } },
+    ]);
+  });
+
+  it('rotates only with the stored state re-tagged, and rolls the rotation back otherwise', async () => {
+    const owner = await fixtures.account(1);
+    const { recipient } = await setUp(owner);
+    await vault.storeSharingState(owner.accountId, {
+      recipient,
+      expectedVersion: null,
+      sharingState: tagged(1),
+    });
+    const from = await currentId(owner);
+    expect(await vault.rotate(owner.accountId, identity(owner, from))).toBe(
+      'sharing_state_changed',
+    );
+    const stale = { expectedVersion: null, sharingState: tagged(2) };
+    expect(
+      await vault.rotate(owner.accountId, { ...identity(owner, from), sharingState: stale }),
+    ).toBe('sharing_state_changed');
+    expect(await vault.status(owner.accountId)).toEqual({ recipient, resealDue: false });
+    const retagged = tagged(2);
+    const next = {
+      ...identity(owner, from),
+      sharingState: { expectedVersion: 1, sharingState: retagged },
+    };
+    expect(await vault.rotate(owner.accountId, next)).toBe('rotated');
+    expect(await vault.sharingState(owner.accountId)).toEqual(retagged);
+    expect(await vault.status(owner.accountId)).toEqual({
+      recipient: next.recipient,
+      resealDue: false,
+    });
+  });
+
+  it('never leaves a state under a rotated identity when a store races a rotation', async () => {
+    const owner = await fixtures.account(1);
+    const { recipient } = await setUp(owner);
+    const next = identity(owner, await currentId(owner));
+    const [stored, rotated] = await Promise.all([
+      vault.storeSharingState(owner.accountId, {
+        recipient,
+        expectedVersion: null,
+        sharingState: tagged(1),
+      }),
+      vault.rotate(owner.accountId, next),
+    ]);
+    // Whichever locked the recipient first wins; the other refuses and changes nothing.
+    expect([
+      ['stored', 'sharing_state_changed'],
+      ['vault_changed', 'rotated'],
+    ]).toContainEqual([stored, rotated]);
+    expect((await vault.sharingState(owner.accountId)) === null).toBe(rotated === 'rotated');
+  });
+
+  it('leaves no state behind when a store races a reset', async () => {
+    const owner = await fixtures.account(1);
+    const { recipient } = await setUp(owner);
+    const [stored, reset] = await Promise.all([
+      vault.storeSharingState(owner.accountId, {
+        recipient,
+        expectedVersion: null,
+        sharingState: tagged(1),
+      }),
+      vault.reset(owner.accountId),
+    ]);
+    expect(['stored', 'no_vault']).toContain(stored);
+    expect(reset).toBe('reset');
+    expect(await vault.sharingState(owner.accountId)).toBeNull();
+  });
+
+  it("serves only the account's own state", async () => {
+    const owner = await fixtures.account(1);
+    const stranger = await fixtures.account(1);
+    const { recipient } = await setUp(owner);
+    await vault.storeSharingState(owner.accountId, {
+      recipient,
+      expectedVersion: null,
+      sharingState: tagged(1),
+    });
+    expect(await vault.sharingState(stranger.accountId)).toBeNull();
+  });
+
+  it('is deleted with the vault by a reset', async () => {
+    const owner = await fixtures.account(1);
+    const { recipient } = await setUp(owner);
+    await vault.storeSharingState(owner.accountId, {
+      recipient,
+      expectedVersion: null,
+      sharingState: tagged(1),
+    });
+    expect(await vault.reset(owner.accountId)).toBe('reset');
+    expect(await vault.sharingState(owner.accountId)).toBeNull();
+  });
+});
+
+describe('account links (spec 0005, R4)', () => {
+  it('lists either side of a link with its email and current recipient, by email', async () => {
+    const owner = await fixtures.account(1);
+    const invitee = await fixtures.account(1);
+    const inviter = await fixtures.account(1);
+    const stranger = await fixtures.account(1);
+    await setUp(stranger);
+    await linkAccounts(owner.accountId, invitee.accountId);
+    await linkAccounts(inviter.accountId, owner.accountId);
+    await setUp(invitee);
+    expect(await vault.rotate(invitee.accountId, identity(invitee, await currentId(invitee)))).toBe(
+      'rotated',
+    );
+    const { recipient } = await vault.status(invitee.accountId);
+    const expected = [
+      { accountId: invitee.accountId, email: invitee.email, recipient },
+      { accountId: inviter.accountId, email: inviter.email, recipient: null },
+    ].sort((a, b) => (a.email < b.email ? -1 : 1));
+    expect(await vault.links(owner.accountId)).toEqual(expected);
+    expect(await vault.links(stranger.accountId)).toEqual([]);
   });
 });

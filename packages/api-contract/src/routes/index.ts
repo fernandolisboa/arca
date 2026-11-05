@@ -773,6 +773,8 @@ export const auditEventDetails = {
   document_deleted: documentEvent,
   document_shared: documentShareEvent,
   document_share_revoked: documentShareEvent,
+  /** The owner's sharing state now pins another recipient for this account. */
+  recipient_pin_changed: z.strictObject({ accountId: z.uuid() }),
   notification_channel_added: z.strictObject({ channelId: z.uuid() }),
   notification_channel_removed: z.strictObject({ channelId: z.uuid() }),
 } as const;
@@ -981,9 +983,60 @@ export const addVaultEnvelope = {
   response: { description: 'Envelope stored', schema: AddVaultEnvelopeResponse },
 } as const satisfies RouteDefinition<typeof AddVaultEnvelopeResponse>;
 
+/** The largest serialized sharing state the database keeps. */
+export const maxSharingStateBytes = 1024 * 1024;
+
+/** The owner's sharing state as their device tagged it under the share key (ADR-0018). */
+export const StoredSharingState = z.strictObject({
+  version: z
+    .int()
+    .min(1)
+    .max(2 ** 31 - 1),
+  /** The canonical serialized state, base64url without padding. */
+  state: z
+    .string()
+    .min(2)
+    .max(Math.ceil((maxSharingStateBytes * 4) / 3))
+    .regex(/^[A-Za-z0-9_-]+$/)
+    .refine((state) => state.length % 4 !== 1, 'whole bytes'),
+  /** HMAC-SHA-256 over the domain tag, the account ID, the version and the state. */
+  tag: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
+});
+export type StoredSharingState = z.infer<typeof StoredSharingState>;
+
+export const SharingStateResponse = z.object({
+  /** Null until the account first stores one. */
+  sharingState: StoredSharingState.nullable(),
+});
+export type SharingStateResponse = z.infer<typeof SharingStateResponse>;
+
+/** The most one change may raise the version, so a state never reaches the last version. */
+export const maxSharingStateVersionStep = 2 ** 20;
+
+const sharingStateChange = z.strictObject({
+  /** The version the device read and changed; null when there was none. */
+  expectedVersion: z.int().min(1).nullable(),
+  sharingState: StoredSharingState,
+});
+
+const raisesVersion = ({ expectedVersion, sharingState }: z.infer<typeof sharingStateChange>) =>
+  sharingState.version > (expectedVersion ?? 0) &&
+  sharingState.version <= (expectedVersion ?? 0) + maxSharingStateVersionStep;
+
+const raisesVersionMessage = 'a higher version than the one it replaces, by at most 2^20';
+
+/** A newly tagged state and the version it replaces. */
+export const SharingStateChange = sharingStateChange.refine(raisesVersion, raisesVersionMessage);
+export type SharingStateChange = z.infer<typeof SharingStateChange>;
+
 export const RotateVaultIdentityRequest = SetUpVaultRequest.extend({
   /** The current recipient being rotated, as the device last fetched it. */
   from: z.uuid(),
+  /**
+   * The stored sharing state re-tagged under the new identity's share key (ADR-0018); null only
+   * when none is stored, since no other device could verify one left under the old key.
+   */
+  sharingState: SharingStateChange.nullable(),
 });
 export type RotateVaultIdentityRequest = z.infer<typeof RotateVaultIdentityRequest>;
 
@@ -994,7 +1047,7 @@ export const rotateVaultIdentity = {
   path: '/vault/rotate',
   operationId: 'rotateVaultIdentity',
   summary:
-    "Makes a new identity's recipient current, with its envelopes, and marks the old one rotated, keeping its envelopes, after a sensitive_settings step-up whose target is the rotated recipient and whose fields carry the new one; 403 step_up_required, 404 not_found before set-up, 409 vault_changed unless the recipient named is still current, 400 invalid_request for a credential that is not an active passkey of the account",
+    "Makes a new identity's recipient current, with its envelopes, and marks the old one rotated, keeping its envelopes, after a sensitive_settings step-up whose target is the rotated recipient and whose fields carry the new one; 403 step_up_required, 404 not_found before set-up, 409 vault_changed unless the recipient named is still current, 409 sharing_state_changed unless the request re-tags exactly the stored sharing state's version, 400 invalid_request for a credential that is not an active passkey of the account",
   body: RotateVaultIdentityRequest,
   response: { description: 'Identity rotated', schema: RotateVaultIdentityResponse },
 } as const satisfies RouteDefinition<typeof RotateVaultIdentityResponse>;
@@ -1032,6 +1085,56 @@ export const resetVault = {
   body: z.strictObject({}),
   response: { description: 'Vault reset', schema: ResetVaultResponse },
 } as const satisfies RouteDefinition<typeof ResetVaultResponse>;
+
+export const getSharingState = {
+  method: 'get',
+  path: '/vault/sharing-state',
+  operationId: 'getSharingState',
+  summary:
+    "The account's sharing state as its device last stored it, for the device to verify; 401 without a session",
+  response: { description: 'The sharing state', schema: SharingStateResponse },
+} as const satisfies RouteDefinition<typeof SharingStateResponse>;
+
+export const StoreSharingStateRequest = sharingStateChange
+  .extend({
+    /** The current recipient, as the device derives it from the identity whose key tagged it. */
+    recipient: VaultRecipient,
+  })
+  .refine(raisesVersion, raisesVersionMessage);
+export type StoreSharingStateRequest = z.infer<typeof StoreSharingStateRequest>;
+
+export const StoreSharingStateResponse = z.object({});
+
+export const storeSharingState = {
+  method: 'put',
+  path: '/vault/sharing-state',
+  operationId: 'storeSharingState',
+  summary:
+    "Stores the account's newly tagged sharing state, within a vault_unlock window, only over the version the device read; 403 step_up_required, 404 not_found before set-up, 409 vault_changed unless the recipient is the current one, 409 sharing_state_changed when another version was stored since",
+  body: StoreSharingStateRequest,
+  response: { description: 'Sharing state stored', schema: StoreSharingStateResponse },
+} as const satisfies RouteDefinition<typeof StoreSharingStateResponse>;
+
+/** An account linked to this one by a confirmed invite, in either direction (spec 0005, R4). */
+export const AccountLink = z.object({
+  accountId: z.uuid(),
+  email: z.email(),
+  /** Their current vault recipient, to share with; null until they set up their vault. */
+  recipient: VaultRecipient.nullable(),
+});
+export type AccountLink = z.infer<typeof AccountLink>;
+
+export const AccountLinksResponse = z.object({ links: z.array(AccountLink) });
+export type AccountLinksResponse = z.infer<typeof AccountLinksResponse>;
+
+export const listAccountLinks = {
+  method: 'get',
+  path: '/account/links',
+  operationId: 'listAccountLinks',
+  summary:
+    'The accounts linked to this one, each with its email and current vault recipient, in email order; 401 without a session',
+  response: { description: 'Linked accounts', schema: AccountLinksResponse },
+} as const satisfies RouteDefinition<typeof AccountLinksResponse>;
 
 /** Where an account's notifications go: its email, or a browser's push subscription (spec 0005, R7). */
 export const NotificationChannel = z.object({
@@ -1456,6 +1559,9 @@ export const routes = {
   rotateVaultIdentity,
   resealVaultRecovery,
   resetVault,
+  getSharingState,
+  storeSharingState,
+  listAccountLinks,
   notificationChannels,
   addPushChannel,
   removeNotificationChannel,
