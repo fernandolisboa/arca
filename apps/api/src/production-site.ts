@@ -11,5 +11,5 @@ export interface ProductionSite {
 
 export const productionSite: ProductionSite = {
   host: 'arca.filx.app',
-  senderDomain: null,
+  senderDomain: 'filx.app',
 };

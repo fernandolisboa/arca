@@ -25,7 +25,7 @@ export function emailRouteFor(
   const { host, senderDomain } = site;
   if (host === null || senderDomain === null || apiKey === undefined) return { via: 'none' };
   if (!hostNamePattern.test(senderDomain)) return { via: 'none' };
-  return { via: 'resend', apiKey, from: `Arca <no-reply@${senderDomain}>` };
+  return { via: 'resend', apiKey, from: `Arca <arca@${senderDomain}>` };
 }
 
 /**
