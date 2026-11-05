@@ -19,9 +19,9 @@ Production accepts family data only when every item below is checked ([spec 0004
     - production stays closed to new accounts until the sending domain and `RESEND_API_KEY` exist.
   - **Open:** [#62](https://github.com/fernandolisboa/arca/issues/62).
   - **Owner steps:**
-    - set up Resend through the Vercel Marketplace with the DMARC record;
-    - hand over only the enrollment code's hash, from `pnpm enrollment-code` on their own computer;
-    - enroll, then try a recovery on production.
+    - add `arca.filx.app` in Resend (São Paulo region), its DNS records and `_dmarc.arca` TXT `v=DMARC1; p=reject; adkim=s; aspf=s` in Vercel's DNS for `filx.app`, then `RESEND_API_KEY` as a Sensitive, Production-only Vercel variable;
+    - hand over only the enrollment code's hash, from `pnpm enrollment-code` (or the same two lines of `node:crypto`) on their own computer;
+    - enroll on `arca.filx.app` with the code.
 - [x] **3. Sentry reports from server and client, scrubbed (R3 to R5).**
   - **Evidence:**
     - [#66](https://github.com/fernandolisboa/arca/issues/66), [#67](https://github.com/fernandolisboa/arca/issues/67) and [#68](https://github.com/fernandolisboa/arca/issues/68) are closed;
@@ -32,13 +32,10 @@ Production accepts family data only when every item below is checked ([spec 0004
 - [ ] **5. Retention jobs run (R10).**
   - **Evidence:** [#72](https://github.com/fernandolisboa/arca/issues/72) is closed. The daily cron and its tests are listed under L3 in the [threat model](../threat-models/foundations.md#data-lifecycle-spec-0004).
   - **Open:** a completed production run of the 06:15 UTC `enforceRetention` workflow, seen in the Vercel logs or the workflow's run list; check this item with its date.
-- [ ] **6. Runbook written and one tabletop done (R11).**
-  - **Evidence:** the [incident-response runbook](incident-response.md) and `security.txt` were merged in PR #173.
-  - **Open:** the first tabletop, recorded in [drills.md](drills.md) ([#73](https://github.com/fernandolisboa/arca/issues/73)).
-  - **Owner step:** walk through one scenario with the runbook open, about an hour.
-- [ ] **7. The project owner knows the Neon restore steps in the runbook (R12).**
+- [x] **6. Runbook written (R11).**
+  - **Evidence:** the [incident-response runbook](incident-response.md) and `security.txt`, merged in PR #173. The owner dropped the tabletop on 2026-11-05.
+- [x] **7. The Neon restore steps are in the runbook (R12).**
   - **Evidence:** the [restore steps](incident-response.md#restore-the-database).
-  - **Owner step:** read them once, and say so on #63. This can happen during the tabletop.
 - [x] **8. The threat model is written and reviewed (R13).**
   - **Evidence:** the [foundations threat model](../threat-models/foundations.md), merged in PR #210 after the security and architecture reviews passed ([#76](https://github.com/fernandolisboa/arca/issues/76)).
   - Revisit it at the start of each epic, as SECURITY.md asks.

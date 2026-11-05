@@ -108,7 +108,7 @@ Recorded here so the requirement is not lost; implemented by the consultancy cor
   - stop crons;
   - restore the database with Neon point-in-time restore (R12).
 - Evidence to keep, and where. Notification: under Resolução CD/ANPD 15/2024, the ANPD and affected people within 3 business days of learning that an incident affected personal data, with the official form's link and a pt-BR template for each notice. A post-incident review template.
-- A yearly tabletop exercise, with a results log in `docs/runbooks/drills.md` (the quarterly restore drill went with the off-vendor backups, R12).
+- No drills or tabletop exercises: the project owner dropped the yearly tabletop on 2026-11-05 as out of proportion for a family app (the quarterly restore drill went earlier, with the off-vendor backups, R12).
 - `/.well-known/security.txt` served by the API, with the repository's private vulnerability reporting URL as `Contact`, `Expires` one year ahead, `Preferred-Languages: pt-BR, en`; a test fails 30 days before it expires.
 
 ### R12. Backups
@@ -128,8 +128,8 @@ Amended by [ADR-0021](../adr/0021-stay-on-vercel-and-neon.md) on 2026-11-04: bac
   3. Sentry reports from server and client, scrubbed (R3 to R5).
   4. Registry guard, export and deletion work (R7 to R9).
   5. Retention jobs run (R10).
-  6. Runbook written and one tabletop done (R11).
-  7. The project owner knows the Neon restore steps in the runbook (R12).
+  6. Runbook written (R11).
+  7. The Neon restore steps are in the runbook (R12).
   8. The threat model is written and reviewed (R13).
   9. The access-matrix suite covers every table with case data.
   10. Every AI adapter reachable in production passes the synthetic evaluation suite in CI, including its adversarial cases; each model vendor is in the data-flow table with its training and retention settings recorded; the scrubber suite covers model calls (R6); if Langfuse is adopted, its masking is wired and RETENTION.md has its row.
@@ -144,7 +144,7 @@ Amended by [ADR-0021](../adr/0021-stay-on-vercel-and-neon.md) on 2026-11-04: bac
 | Elevation: deletion or export by someone holding a session | Account | Purpose-bound step-up; 7-day locked window with cancel; notices |
 | Repudiation, and incomplete deletion | Registry | Guard fails on unregistered tables; audit events with identifiers only |
 | Loss of data | Database | Neon point-in-time restore within the history window; an optional manual snapshot; residual, accepted: losing the Neon or Vercel account loses the data ([ADR-0021](../adr/0021-stay-on-vercel-and-neon.md)) |
-| Slow response to an incident | Operations | Runbook with exact steps; ANPD deadline and templates; drills |
+| Slow response to an incident | Operations | Runbook with exact steps; ANPD deadline and templates |
 
 ## Definition of done
 
