@@ -377,13 +377,39 @@ export const ptBR = {
       retry: 'Tentar de novo',
       details: '{size} · adicionado em {created}',
       sharedWithYou: 'Compartilhado com você',
+      sharedWith:
+        '{count, plural, one {Compartilhado com 1 pessoa} other {Compartilhado com # pessoas}}',
       unnamed: 'Documento que este cofre não consegue abrir',
       fallbackName: 'documento',
       save: 'Baixar',
       delete: 'Apagar',
-      done: '{done, select, added {Documento guardado no cofre.} saved {Documento baixado neste dispositivo.} deleted {Documento apagado.} other {Pronto.}}',
+      /** Sharing one document (spec 0005, R4): who gets it, each with their key's fingerprint. */
+      share: {
+        open: 'Compartilhar',
+        close: 'Fechar',
+        legend: 'Com quem compartilhar',
+        lead: 'Marque quem pode abrir este documento. Desmarcar tira o acesso. Antes de compartilhar com alguém pela primeira vez, confira com a pessoa, ao vivo ou por telefone, se a impressão digital da chave dela é a mesma que aparece aqui.',
+        fingerprint: 'Impressão digital da chave: {fingerprint}',
+        trust:
+          '{trust, select, new {Primeiro compartilhamento com esta pessoa. Confira a impressão digital com ela.} changed {A chave desta pessoa mudou desde o último compartilhamento. Confira a impressão digital nova com ela antes de salvar.} no_vault {Esta pessoa ainda não criou o cofre dela.} other {}}',
+        unconfirmed:
+          '{count, plural, one {O servidor diz que 1 pessoa tem acesso a este documento sem que você tenha confirmado. Ao salvar, só fica quem estiver marcado aqui.} other {O servidor diz que # pessoas têm acesso a este documento sem que você tenha confirmado. Ao salvar, só fica quem estiver marcado aqui.}}',
+        summary:
+          '{count, plural, =0 {Ao salvar, só você vai conseguir abrir este documento.} one {Ao salvar, você e mais 1 pessoa vão conseguir abrir este documento.} other {Ao salvar, você e mais # pessoas vão conseguir abrir este documento.}}',
+        save: 'Salvar',
+        noLinks:
+          'Você ainda não tem ninguém conectado. Quando alguém que você convidou tiver a conta confirmada, a pessoa aparece aqui.',
+        invite: 'Convidar alguém',
+        loadFailure: 'Não conseguimos carregar com quem você compartilha agora.',
+        invalid:
+          'A lista de compartilhamento guardada no servidor não confere com o seu cofre. Por segurança, compartilhar fica desligado até isso ser resolvido.',
+        rolledBack:
+          'A lista de compartilhamento guardada no servidor é mais antiga do que uma que este dispositivo já viu. Isso pode acontecer depois de uma restauração do servidor. Confira com quem cada documento está compartilhado antes de seguir.',
+        confirmState: 'Conferi, pode usar esta lista',
+      },
+      done: '{done, select, added {Documento guardado no cofre.} saved {Documento baixado neste dispositivo.} deleted {Documento apagado.} shared {Compartilhamento salvo.} confirmed {Lista de compartilhamento confirmada.} other {Pronto.}}',
       failure:
-        '{reason, select, too_large {Esse arquivo passa de {maxSize}, o limite de cada documento.} quota {O cofre está cheio. Cabem até {maxDocuments} documentos ou {maxBytes}.} changed {O cofre mudou em outro dispositivo. Atualize a página e tente de novo.} not_opened {Não deu para abrir esse documento. O arquivo guardado não é o que deveria ser.} unconfirmed {Sua conta ainda espera a confirmação de quem convidou você. Depois disso, você pode guardar documentos.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+        '{reason, select, too_large {Esse arquivo passa de {maxSize}, o limite de cada documento.} quota {O cofre está cheio. Cabem até {maxDocuments} documentos ou {maxBytes}.} changed {O cofre mudou em outro dispositivo. Atualize a página e tente de novo.} not_opened {Não deu para abrir esse documento. O arquivo guardado não é o que deveria ser.} unconfirmed {Sua conta ainda espera a confirmação de quem convidou você. Depois disso, você pode guardar documentos.} not_shared {O compartilhamento não foi salvo. Alguém pode ter perdido a conexão com você. Atualize a página e tente de novo.} sharing_invalid {Compartilhar está desligado porque a lista de compartilhamento não confere.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
     },
     /** The vault part of the recovery kit (spec 0003, R6): shown once, after the check. */
     kit: {

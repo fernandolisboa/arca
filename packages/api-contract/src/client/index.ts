@@ -16,6 +16,7 @@ export {
   maxPushChannels,
   pendingPasskeyHours,
   recoveryLinkMinutes,
+  replaceDocumentsAction,
   routes,
   stepUpNonceHeader,
   webPathSegments,

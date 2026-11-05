@@ -7,7 +7,7 @@ import {
   virtualAuthenticator,
   withoutAutofill,
 } from './passkeys.js';
-import { resetRateLimits, seedAccount } from './postgres/accounts.js';
+import { linkAccounts, resetRateLimits, seedAccount } from './postgres/accounts.js';
 import { reportViolations, watchProblems } from './problems.js';
 import { databaseServer } from './servers.js';
 
@@ -165,6 +165,78 @@ test('keeps documents encrypted on the server, and changes one only after a vaul
   await documents.getByRole('button', { name: 'Apagar' }).click();
   await expect(page.getByText('Documento apagado.')).toBeVisible();
   await expect(page.getByText(/^Ainda não há documentos no cofre\./)).toBeVisible();
+  expect(problems).toEqual([]);
+});
+
+test('shares a document with a linked account and takes the access back', async ({
+  page,
+  browser,
+}) => {
+  const problems = watchProblems(page);
+  const owner = await createdPrfCredential(page);
+  const { email: ownerEmail } = await seedAccount(owner.credential, owner.userId, {
+    confirmed: true,
+  });
+  const relativeContext = await browser.newContext();
+  const relativePage = await relativeContext.newPage();
+  await withoutAutofill(relativePage);
+  const relative = await createdPrfCredential(relativePage);
+  const { email: relativeEmail } = await seedAccount(relative.credential, relative.userId, {
+    confirmed: true,
+  });
+  await linkAccounts(owner.userId, relative.userId);
+
+  await signIn(relativePage, relativeEmail);
+  await openVaultPage(relativePage);
+  await setUp(relativePage);
+
+  await signIn(page, ownerEmail);
+  await openVaultPage(page);
+  await setUp(page);
+  const fileName = 'passaporte-exemplo.txt';
+  const contents = 'synthetic passport scan';
+  const chooser = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: 'Adicionar documento' }).click();
+  await (
+    await chooser
+  ).setFiles({ name: fileName, mimeType: 'text/plain', buffer: Buffer.from(contents) });
+  await expect(page.getByText('Documento guardado no cofre.')).toBeVisible();
+
+  const documents = page.getByRole('list', { name: 'Documentos' });
+  await documents.getByRole('button', { name: 'Compartilhar' }).click();
+  const choice = page.getByRole('group', { name: 'Com quem compartilhar' });
+  await expect(choice.getByText(/^Primeiro compartilhamento com esta pessoa\./)).toBeVisible();
+  await expect(
+    choice.getByText(/^Impressão digital da chave: ([0-9a-f]{4} ){7}[0-9a-f]{4}$/),
+  ).toBeVisible();
+  await expectAccessible(page);
+  await choice.getByLabel(relativeEmail).check();
+  await expect(choice.getByText(/^Ao salvar, você e mais 1 pessoa/)).toBeVisible();
+  await choice.getByRole('button', { name: 'Salvar' }).click();
+  await expect(page.getByText('Compartilhamento salvo.')).toBeVisible();
+  await expect(documents.getByText('Compartilhado com 1 pessoa')).toBeVisible();
+  // The pinned key is trusted now, so the first-share note is gone.
+  await expect(choice.getByText(/^Primeiro compartilhamento/)).toHaveCount(0);
+
+  await relativePage.reload();
+  await relativePage.getByRole('button', { name: 'Abrir o cofre' }).click();
+  const shared = relativePage.getByRole('list', { name: 'Documentos' });
+  await expect(shared.getByText(fileName)).toBeVisible();
+  await expect(shared.getByText('Compartilhado com você')).toBeVisible();
+  const download = relativePage.waitForEvent('download');
+  await shared.getByRole('button', { name: 'Baixar' }).click();
+  expect(await readFile(await (await download).path(), 'utf8')).toBe(contents);
+
+  await choice.getByLabel(relativeEmail).uncheck();
+  await expect(choice.getByText(/^Ao salvar, só você/)).toBeVisible();
+  await choice.getByRole('button', { name: 'Salvar' }).click();
+  await expect(page.getByText('Compartilhamento salvo.')).toBeVisible();
+  await expect(documents.getByText('Compartilhado com 1 pessoa')).toHaveCount(0);
+
+  await relativePage.reload();
+  await relativePage.getByRole('button', { name: 'Abrir o cofre' }).click();
+  await expect(relativePage.getByText(/^Ainda não há documentos no cofre\./)).toBeVisible();
+  await relativeContext.close();
   expect(problems).toEqual([]);
 });
 

@@ -53,6 +53,16 @@ export async function seedAccount(
   return { userId, email };
 }
 
+/** The link a confirmed invite leaves between two accounts (spec 0005, R4). */
+export async function linkAccounts(inviterId: string, inviteeId: string): Promise<void> {
+  await asAdmin(async (client) => {
+    await client.query(`INSERT INTO account.link (inviter_id, invitee_id) VALUES ($1, $2)`, [
+      inviterId,
+      inviteeId,
+    ]);
+  });
+}
+
 /**
  * A local server counts every request as one client, so repeated local runs would reach the
  * per-IP limits; each run starts from fresh counters.

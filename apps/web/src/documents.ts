@@ -3,6 +3,7 @@ import {
   apiBasePath,
   deleteDocumentsAction,
   maxDocumentBytes,
+  replaceDocumentsAction,
   routes,
   type DocumentUpload,
   type VaultDocument,
@@ -13,6 +14,7 @@ import {
   documentName,
   encryptDocument,
   openDocumentLabel,
+  reencryptDocument,
   sealDocumentLabel,
   type DocumentLabel,
 } from '@arca/vault';
@@ -35,6 +37,17 @@ export class DocumentTooLarge extends Error {
 /** The stored ciphertext or its label is not what the list said: nothing of it is shown. */
 export class DocumentNotOpened extends Error {
   override name = 'DocumentNotOpened';
+}
+
+/** The server kept the old ciphertext: a person lost their link, or the approval ran out. */
+export class ReplacementRefused extends Error {
+  override name = 'ReplacementRefused';
+}
+
+/** An account a document is encrypted to besides its owner, with the recipient used for it. */
+export interface DocumentRecipient {
+  readonly accountId: string;
+  readonly recipient: string;
 }
 
 export interface OpenedDocument {
@@ -95,7 +108,7 @@ export function documentsQuery(vault: UnlockedVault) {
  * Runs a request that needs this session's `vault_unlock` window; when the window has ended while
  * the vault stayed open here, opens it again with the passkey and tries once more.
  */
-async function inVaultWindow<T>(passkeys: Passkeys, request: () => Promise<T>): Promise<T> {
+export async function inVaultWindow<T>(passkeys: Passkeys, request: () => Promise<T>): Promise<T> {
   try {
     return await reach(request());
   } catch (error) {
@@ -158,12 +171,8 @@ export async function addDocument(
  * Downloads the ciphertext, checks it is the one the list named, decrypts it on this device and
  * saves the file under its own name.
  */
-export async function saveDocument(
-  passkeys: Passkeys,
-  vault: UnlockedVault,
-  { document, label }: OpenedDocument,
-) {
-  if (label === undefined) throw new DocumentNotOpened();
+/** The stored ciphertext, refused unless it is the one the list named. */
+async function storedCiphertext(passkeys: Passkeys, document: VaultDocument) {
   const { url } = await inVaultWindow(passkeys, () =>
     api.call(routes.documentDownloadUrl, { documentId: document.id }),
   );
@@ -173,6 +182,16 @@ export async function saveDocument(
   if (!sameBytes(await sha256Of(ciphertext), fromBase64url(document.sha256))) {
     throw new DocumentNotOpened();
   }
+  return ciphertext;
+}
+
+export async function saveDocument(
+  passkeys: Passkeys,
+  vault: UnlockedVault,
+  { document, label }: OpenedDocument,
+) {
+  if (label === undefined) throw new DocumentNotOpened();
+  const ciphertext = await storedCiphertext(passkeys, document);
   let plaintext: Uint8Array<ArrayBuffer>;
   try {
     plaintext = await bytesOf(
@@ -191,4 +210,50 @@ export async function deleteDocument(passkeys: Passkeys, documentId: string) {
   const request = { documentIds: [documentId] };
   const client = await stepUpFor(passkeys, deleteDocumentsAction(request), 'vault_write');
   await reach(client.call(routes.deleteDocuments, request));
+}
+
+/**
+ * Encrypts one of the owner's documents again, on this device, to the owner and exactly these
+ * people, with its label sealed the same way, then swaps it in after a `vault_write` step-up for
+ * exactly that ciphertext (spec 0005, R4): sharing and revoking are both this.
+ */
+export async function replaceDocument(
+  passkeys: Passkeys,
+  vault: UnlockedVault,
+  { document, label }: OpenedDocument,
+  sharedWith: readonly DocumentRecipient[],
+) {
+  if (label === undefined) throw new DocumentNotOpened();
+  const ciphertext = await storedCiphertext(passkeys, document);
+  const recipients = [vault.recipient, ...sharedWith.map(({ recipient }) => recipient)];
+  let replaced: Uint8Array<ArrayBuffer>;
+  try {
+    replaced = await bytesOf(
+      await reencryptDocument(new Blob([ciphertext]).stream(), vault.identity, recipients),
+    );
+  } catch {
+    throw new DocumentNotOpened();
+  }
+  if (replaced.length > maxDocumentBytes) throw new DocumentTooLarge();
+  const sha256 = await sha256Of(replaced);
+  const request = {
+    recipients: sharedWith.map(({ accountId }) => accountId).sort(),
+    documents: [
+      {
+        documentId: document.id,
+        size: replaced.length,
+        sha256: base64url(sha256),
+        label: base64url(await sealDocumentLabel(label, sha256, recipients)),
+      },
+    ],
+  };
+  const client = await stepUpFor(passkeys, await replaceDocumentsAction(request), 'vault_write');
+  const { uploads } = await reach(client.call(routes.replaceDocuments, request));
+  const [approved] = uploads;
+  if (approved === undefined) throw new ReplacementRefused();
+  await send(approved.upload, replaced);
+  const { results } = await reach(
+    api.call(routes.confirmReplacements, { documentIds: [document.id] }),
+  );
+  if (results[0]?.outcome !== 'replaced') throw new ReplacementRefused();
 }
