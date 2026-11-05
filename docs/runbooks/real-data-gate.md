@@ -11,19 +11,14 @@ Production accepts family data only when every item below is checked ([spec 0004
 - [ ] **1. Previews fork from `development`, proven by R1.**
   - **Evidence:** the preview build never bootstraps or migrates production ([db-deployment-target.test.ts](../../tooling/scripts/test/db-deployment-target.test.ts), [bootstrap.test.ts](../../tooling/scripts/test/postgres/bootstrap.test.ts)).
   - **Open:** the lineage proof, [#64](https://github.com/fernandolisboa/arca/issues/64), and the synthetic seed, [#65](https://github.com/fernandolisboa/arca/issues/65).
-  - **Owner steps:**
+  - **Owner steps (done 2026-11-05):**
     - before #64 merges, create the Neon `development` branch from `main` (the production branch), with its data, and reset the owner role's password on it;
     - turn off the integration's branch per preview, and give Preview its own `PGHOST`, `PGHOST_UNPOOLED`, `PGDATABASE`, `PGUSER` and `PGPASSWORD` from `development`.
-- [ ] **2. Spec 0003 is done in production on `arca.filx.app`, including recovery, which needs the email domain (ADR-0015).**
+- [x] **2. Spec 0003 is done in production on `arca.filx.app`, including recovery, which needs the email domain (ADR-0015).**
   - **Evidence:**
-    - the identity tickets #53 to #61 are closed;
-    - production names its host ([production-site.ts](../../apps/api/src/production-site.ts));
-    - production stays closed to new accounts until the sending domain and `RESEND_API_KEY` exist.
-  - **Open:** [#62](https://github.com/fernandolisboa/arca/issues/62).
-  - **Owner steps:**
-    - add `filx.app` in Resend (São Paulo region), its DNS records and `_dmarc` TXT `v=DMARC1; p=quarantine; adkim=s` in Vercel's DNS for `filx.app`, then an Arca-only key, allowed to send from `filx.app`, as `RESEND_API_KEY`, a Sensitive, Production-only Vercel variable;
-    - hand over only the enrollment code's hash, from `pnpm enrollment-code` (or the same two lines of `node:crypto`) on their own computer;
-    - enroll on `arca.filx.app` with the code.
+    - the identity tickets #53 to #62 are closed;
+    - production names its host and the sending domain `filx.app` ([production-site.ts](../../apps/api/src/production-site.ts)), with `RESEND_API_KEY` set, so `/v1/health` answers `accounts: open` (PRs #213 to #215);
+    - the owner enrolled on `arca.filx.app` with the enrollment code on 2026-11-05, which also proved the email link.
 - [x] **3. Sentry reports from server and client, scrubbed (R3 to R5).**
   - **Evidence:**
     - [#66](https://github.com/fernandolisboa/arca/issues/66), [#67](https://github.com/fernandolisboa/arca/issues/67) and [#68](https://github.com/fernandolisboa/arca/issues/68) are closed;
