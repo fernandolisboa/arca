@@ -56,6 +56,11 @@ export const notificationLimits = {
 } as const satisfies Record<string, RateLimitRule>;
 
 /** Per-account limits on adding documents and confirming their uploads (spec 0005, R4). */
+/** Storing a sharing state follows the owner's own shares and revocations. */
+export const vaultLimits = {
+  storeSharingState: { name: 'sharing_state_store_account', limit: 60, windowSeconds: hour },
+} as const satisfies Record<string, RateLimitRule>;
+
 export const documentLimits = {
   create: { name: 'document_create_account', limit: 60, windowSeconds: hour },
   confirm: { name: 'document_confirm_account', limit: 60, windowSeconds: hour },

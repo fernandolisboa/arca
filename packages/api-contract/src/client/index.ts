@@ -11,6 +11,7 @@ export {
   documentQuota,
   inviteLifetimeHours,
   maxDocumentBytes,
+  maxSharingStateBytes,
   maxOpenInvites,
   maxPushChannels,
   pendingPasskeyHours,
@@ -20,6 +21,7 @@ export {
   webPathSegments,
 } from '../routes/index.js';
 export type {
+  AccountLink,
   AuditEvent,
   AuditEventCode,
   AuditEventsQuery,
@@ -45,6 +47,7 @@ export type {
   StepUpOptionsRequest,
   StepUpPurpose,
   SignOutResponse,
+  StoredSharingState,
   VaultDocument,
   VaultEnvelopesResponse,
 } from '../routes/index.js';

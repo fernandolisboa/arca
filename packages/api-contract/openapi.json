@@ -3883,7 +3883,7 @@
     "/vault/rotate": {
       "post": {
         "operationId": "rotateVaultIdentity",
-        "summary": "Makes a new identity's recipient current, with its envelopes, and marks the old one rotated, keeping its envelopes, after a sensitive_settings step-up whose target is the rotated recipient and whose fields carry the new one; 403 step_up_required, 404 not_found before set-up, 409 vault_changed unless the recipient named is still current, 400 invalid_request for a credential that is not an active passkey of the account",
+        "summary": "Makes a new identity's recipient current, with its envelopes, and marks the old one rotated, keeping its envelopes, after a sensitive_settings step-up whose target is the rotated recipient and whose fields carry the new one; 403 step_up_required, 404 not_found before set-up, 409 vault_changed unless the recipient named is still current, 409 sharing_state_changed unless the request re-tags exactly the stored sharing state's version, 400 invalid_request for a credential that is not an active passkey of the account",
         "requestBody": {
           "required": true,
           "content": {
@@ -3929,13 +3929,60 @@
                   "from": {
                     "type": "string",
                     "format": "uuid"
+                  },
+                  "sharingState": {
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "expectedVersion": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 1
+                      },
+                      "sharingState": {
+                        "type": "object",
+                        "properties": {
+                          "version": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 2147483647
+                          },
+                          "state": {
+                            "type": "string",
+                            "minLength": 2,
+                            "maxLength": 1398102,
+                            "pattern": "^[A-Za-z0-9_-]+$"
+                          },
+                          "tag": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_-]{43}$"
+                          }
+                        },
+                        "required": [
+                          "version",
+                          "state",
+                          "tag"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "expectedVersion",
+                      "sharingState"
+                    ],
+                    "additionalProperties": false
                   }
                 },
                 "required": [
                   "recipient",
                   "passkeyEnvelopes",
                   "recoveryEnvelope",
-                  "from"
+                  "from",
+                  "sharingState"
                 ],
                 "additionalProperties": false
               }
@@ -4159,11 +4206,6 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "recipient": {
-                    "type": "string",
-                    "maxLength": 2100,
-                    "pattern": "^age1pq1[02-9ac-hj-np-z]+$"
-                  },
                   "expectedVersion": {
                     "type": [
                       "integer",
@@ -4196,12 +4238,17 @@
                       "tag"
                     ],
                     "additionalProperties": false
+                  },
+                  "recipient": {
+                    "type": "string",
+                    "maxLength": 2100,
+                    "pattern": "^age1pq1[02-9ac-hj-np-z]+$"
                   }
                 },
                 "required": [
-                  "recipient",
                   "expectedVersion",
-                  "sharingState"
+                  "sharingState",
+                  "recipient"
                 ],
                 "additionalProperties": false
               }

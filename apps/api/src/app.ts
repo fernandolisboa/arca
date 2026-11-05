@@ -69,6 +69,7 @@ import {
   inviteLimits,
   monitoringLimits,
   documentLimits,
+  vaultLimits,
   notificationLimits,
   recoveryLimits,
   registrationLimits,
@@ -971,6 +972,7 @@ export function createApp({
     const outcome = await vault.rotate(current.accountId, request);
     if (outcome === 'no_vault') return fail(c, 'not_found', 404);
     if (outcome === 'changed') return fail(c, 'vault_changed', 409);
+    if (outcome === 'sharing_state_changed') return fail(c, 'sharing_state_changed', 409);
     if (outcome === 'unknown_passkey') return fail(c, 'invalid_request', 400);
     return c.json({}, 200);
   });
@@ -1013,8 +1015,17 @@ export function createApp({
 
   v1.openapi(openApiRoutes.storeSharingState, async (c) => {
     const current = await signedIn(c);
-    if (current === null || vault === undefined) return unauthorized(c);
+    if (current === null || vault === undefined || authLimits === undefined) {
+      return unauthorized(c);
+    }
     if (!(await unlocked(current))) return fail(c, 'step_up_required', 403);
+    const limited = await overLimit(
+      c,
+      authLimits,
+      vaultLimits.storeSharingState,
+      current.accountId,
+    );
+    if (limited !== undefined) return limited;
     const outcome = await vault.storeSharingState(
       current.accountId,
       storeSharingState.body.parse(await c.req.json()),

@@ -63,6 +63,7 @@ function setup({
   resealed = 'resealed',
   reset,
   storedState = 'stored',
+  allowed = true,
 }: {
   unlocked?: boolean;
   setUp?: VaultSetUp;
@@ -73,8 +74,10 @@ function setup({
   resealed?: RecoveryResealed;
   reset?: VaultReset;
   storedState?: SharingStateStored;
+  allowed?: boolean;
 } = {}) {
   const calls: unknown[] = [];
+  const limited: string[] = [];
   const spent: { purpose: string; action: CanonicalAction }[] = [];
   const stepUp: StepUpService = {
     options: () => Promise.reject(new Error('unused')),
@@ -155,7 +158,15 @@ function setup({
       signedIn: () => Promise.resolve(owner),
       refresh: () => Promise.resolve({ session, setCookies: [] }),
     },
-    authLimits: noLimits,
+    authLimits: {
+      ...noLimits,
+      limiter: {
+        hit: (rule) => {
+          limited.push(rule.name);
+          return Promise.resolve(allowed ? { allowed } : { allowed, retryAfterSeconds: 60 });
+        },
+      },
+    },
     stepUp,
     devices,
     vault,
@@ -171,7 +182,7 @@ function setup({
       },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     });
-  return { call, calls, spent };
+  return { call, calls, spent, limited };
 }
 
 const setUpBody = {
@@ -270,7 +281,7 @@ const recipientIds = [
   '0b4f6a1e-2c3d-4e5f-8a9b-0c1d2e3f4a5b',
   '7e6d5c4b-3a29-4817-8f6e-5d4c3b2a1908',
 ];
-const rotateBody = { ...setUpBody, from: recipientIds[0] };
+const rotateBody = { ...setUpBody, from: recipientIds[0], sharingState: null };
 const resealBody = {
   envelopes: recipientIds.map((recipientId) => ({ recipientId, ciphertext: sealed })),
 };
@@ -308,11 +319,26 @@ describe('vault rotation, re-sealing and reset (spec 0005, R2)', () => {
   it.each([
     ['no_vault', 404, 'not_found'],
     ['changed', 409, 'vault_changed'],
+    ['sharing_state_changed', 409, 'sharing_state_changed'],
     ['unknown_passkey', 400, 'invalid_request'],
   ] as const)('answers a %s rotation with %i', async (outcome, status, code) => {
     const response = await setup({ rotated: outcome }).call('POST', '/vault/rotate', rotateBody);
     expect(response.status).toBe(status);
     expect(await errorOf(response)).toBe(code);
+  });
+
+  it('passes a re-tagged sharing state on, and refuses a rotation that leaves it out', async () => {
+    const { call, calls } = setup();
+    const retagged = {
+      ...rotateBody,
+      sharingState: { expectedVersion: 2, sharingState: taggedState },
+    };
+    expect((await call('POST', '/vault/rotate', retagged)).status).toBe(200);
+    expect(calls).toEqual([['rotate', owner.accountId, retagged]]);
+    const withoutState = Object.fromEntries(
+      Object.entries(rotateBody).filter(([key]) => key !== 'sharingState'),
+    );
+    expect((await setup().call('POST', '/vault/rotate', withoutState)).status).toBe(400);
   });
 
   it('binds a re-seal to the recipients in order', async () => {
@@ -381,9 +407,17 @@ describe('sharing state and account links (spec 0005, R4)', () => {
     expect(response.status).toBe(403);
     expect(await errorOf(response)).toBe('step_up_required');
     expect(refused.calls).toEqual([]);
-    const { call, calls } = setup();
+    const { call, calls, limited } = setup();
     expect((await call('PUT', '/vault/sharing-state', storeBody)).status).toBe(200);
     expect(calls).toEqual([['storeSharingState', owner.accountId, storeBody]]);
+    expect(limited).toEqual(['sharing_state_store_account']);
+  });
+
+  it('answers 429 past the limit and stores nothing', async () => {
+    const { call, calls } = setup({ allowed: false });
+    const response = await call('PUT', '/vault/sharing-state', storeBody);
+    expect(response.status).toBe(429);
+    expect(calls).toEqual([]);
   });
 
   it.each([
@@ -405,6 +439,10 @@ describe('sharing state and account links (spec 0005, R4)', () => {
     [
       'a first version of 0',
       { ...storeBody, expectedVersion: null, sharingState: { ...taggedState, version: 0 } },
+    ],
+    [
+      'a version raised by more than 2^20',
+      { ...storeBody, expectedVersion: 1, sharingState: { ...taggedState, version: 2 + 2 ** 20 } },
     ],
     ['a short tag', { ...storeBody, sharingState: { ...taggedState, tag: 'AAAA' } }],
     [
