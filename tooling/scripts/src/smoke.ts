@@ -3,6 +3,7 @@ import { securityHeaders } from '@arca/security-policy';
 import { isRecord, reportViolations, type Violation } from './report.ts';
 
 const workflowRunnerPath = '/.well-known/workflow/v1/flow';
+const workflowWebhookPath = '/.well-known/workflow/v1/webhook/';
 const securityTxtPath = '/.well-known/security.txt';
 const dayMs = 24 * 60 * 60 * 1000;
 /** security.txt is renewed at least this long before it expires (spec 0004, R11). */
@@ -23,7 +24,8 @@ export interface SmokeOptions {
 /**
  * The production smoke test (spec 0001, R9): the health check reports `ok` with the database
  * reached as the API's own role, the web app answers, both carry the security headers, and the
- * workflow runner refuses an unsigned request, and `security.txt` is more than 30 days from its
+ * workflow runner refuses an unsigned request, the workflow webhook refuses an unknown token, and
+ * `security.txt` is more than 30 days from its
  * `Expires` (spec 0004, R11; the weekly run catches it between deploys). It needs no secret, since
  * the production domain is public.
  */
@@ -81,6 +83,22 @@ export async function smokeTest(
     violations.push({
       where: workflowRunnerPath,
       problem: `answered ${String(runner.status)} to an unsigned request`,
+    });
+  }
+
+  // The webhook route is public; with no hook created (a static test holds that), it must refuse a
+  // token it does not know, as the SDK or the platform may (spec 0001, R6).
+  const webhook = await request(`${workflowWebhookPath}${crypto.randomUUID()}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: '{}',
+  });
+  if (webhook instanceof Error) {
+    violations.push({ where: workflowWebhookPath, problem: `request failed: ${webhook.name}` });
+  } else if (!platformRejections.has(webhook.status)) {
+    violations.push({
+      where: workflowWebhookPath,
+      problem: `answered ${String(webhook.status)} to an unknown token`,
     });
   }
 
