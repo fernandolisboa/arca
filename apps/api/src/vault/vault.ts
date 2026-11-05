@@ -160,42 +160,48 @@ const anyRecipient = (tx: Transaction, accountId: string) =>
     .then(([found]) => found);
 
 /**
- * Whether the vault recovery secret is no longer the kit's (spec 0003, R6): a new kit, or a
- * recovery that was not cancelled, came after the secret was last sealed. Read from the account's
- * own audit trail, which row-level security lets app_api read.
+ * What the vault owes, read from the account's own audit trail, which row-level security lets
+ * app_api read. A new secret (spec 0003, R6): a new kit, or a recovery that was not cancelled,
+ * came after the secret was last sealed. A rotation (ADR-0018): an active passkey was removed, or
+ * such a recovery came, after the identity was last created or rotated.
  */
-const resealDue = async (tx: Transaction, accountId: string) => {
+const vaultDue = async (tx: Transaction, accountId: string) => {
   const codes: readonly AuditEventCode[] = [
     'recovery_kit_regenerated',
     'recovery_completed',
     'recovery_cancelled',
+    'passkey_revoked',
     'vault_created',
     'vault_recovery_resealed',
+    'vault_identity_rotated',
   ];
-  const latest = (...of: readonly AuditEventCode[]) =>
-    sql`max(time) FILTER (WHERE code IN (${sql.join(
+  const list = (of: readonly AuditEventCode[]) =>
+    sql.join(
       of.map((code) => sql`${code}`),
       sql`, `,
-    )}))`;
+    );
+  const latest = (...of: readonly AuditEventCode[]) =>
+    sql`max(time) FILTER (WHERE code IN (${list(of)}))`;
   const [row] = (
-    await tx.execute<{ due: boolean }>(sql`
+    await tx.execute<{ reseal: boolean; rotation: boolean }>(sql`
       WITH latest AS (
         SELECT ${latest('recovery_kit_regenerated')} AS kit,
                ${latest('recovery_completed')} AS recovered,
-               ${latest('recovery_cancelled')} AS cancelled,
-               coalesce(${latest('vault_created', 'vault_recovery_resealed')}, '-infinity') AS sealed
+               coalesce(${latest('recovery_cancelled')}, '-infinity') AS cancelled,
+               max(time) FILTER (WHERE code = 'passkey_revoked'
+                 AND coalesce((details->>'pending')::boolean, false) = false) AS revoked,
+               coalesce(${latest('vault_created', 'vault_recovery_resealed')}, '-infinity') AS sealed,
+               coalesce(${latest('vault_created', 'vault_identity_rotated')}, '-infinity') AS rotated
           FROM audit.event
          WHERE subject_account_id = ${accountId}
-           AND code IN (${sql.join(
-             codes.map((code) => sql`${code}`),
-             sql`, `,
-           )}))
+           AND code IN (${list(codes)}))
       SELECT coalesce(kit > sealed, false)
-          OR coalesce(recovered > sealed AND recovered > coalesce(cancelled, '-infinity'), false)
-          AS due
+          OR coalesce(recovered > sealed AND recovered > cancelled, false) AS reseal,
+             coalesce(revoked > rotated, false)
+          OR coalesce(recovered > rotated AND recovered > cancelled, false) AS rotation
         FROM latest`)
   ).rows;
-  return row?.due === true;
+  return { resealDue: row?.reseal === true, rotationDue: row?.rotation === true };
 };
 
 const current = (tx: Transaction, accountId: string) =>
@@ -363,8 +369,8 @@ export function createVault({ db, activeCredentials, emailsOf, audit }: VaultSet
     status: (accountId) =>
       asAccount(accountId, async (tx) => {
         const found = await current(tx, accountId);
-        if (found === undefined) return { recipient: null, resealDue: false };
-        return { recipient: found.recipient, resealDue: await resealDue(tx, accountId) };
+        if (found === undefined) return { recipient: null, resealDue: false, rotationDue: false };
+        return { recipient: found.recipient, ...(await vaultDue(tx, accountId)) };
       }),
 
     setUp: async (accountId, request) => {

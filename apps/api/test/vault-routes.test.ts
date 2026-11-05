@@ -89,7 +89,12 @@ function setup({
     vaultUnlocked: () => Promise.resolve(unlocked),
   };
   const vault: Vault = {
-    status: () => Promise.resolve({ recipient: stored ? recipient : null, resealDue: stored }),
+    status: () =>
+      Promise.resolve({
+        recipient: stored ? recipient : null,
+        resealDue: stored,
+        rotationDue: stored,
+      }),
     setUp: (accountId, request) => {
       calls.push(['setUp', accountId, request]);
       return Promise.resolve(setUp);
@@ -199,7 +204,7 @@ describe('vault routes (spec 0005, R2)', () => {
     const { call } = setup({ unlocked: false });
     const response = await call('GET', '/vault');
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ recipient, resealDue: true });
+    expect(await response.json()).toEqual({ recipient, resealDue: true, rotationDue: true });
   });
 
   it.each([

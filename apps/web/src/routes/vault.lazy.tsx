@@ -7,7 +7,7 @@ import { Link, createLazyFileRoute } from '@tanstack/react-router';
 import { useState, type ReactNode, type SubmitEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { sessionQuery, vaultStatusQuery } from '../api.js';
-import { DocumentsSection } from '../documents-section.js';
+import { DocumentsSection, OpenRetained } from '../documents-section.js';
 import { recoveryCodeInput } from '../forms/inputs.js';
 import { TextField } from '../forms/text-field.js';
 import { textLinkClass } from '../forms/text-link.js';
@@ -80,6 +80,19 @@ function useStep() {
   return { waiting, failure, run };
 }
 
+/** A step that ends with a new vault recovery secret: the kit comes first, then the new status. */
+function useSecretStep(onSecret: (secret: string) => void) {
+  const queryClient = useQueryClient();
+  const step = useStep();
+  const runForSecret = (next: () => Promise<string>) => {
+    step.run(async () => {
+      onSecret(await next());
+      await queryClient.invalidateQueries({ queryKey: vaultStatusQuery.queryKey });
+    });
+  };
+  return { ...step, runForSecret };
+}
+
 /**
  * The vault (spec 0005, R2): set up on first use, opened with a passkey or, where the passkey
  * cannot, the vault recovery secret, and closed by hand, on sign-out or after 15 minutes idle.
@@ -128,8 +141,11 @@ function Vault() {
   if (unlocked === undefined) {
     return <Locked accountId={accountId} resealDue={status.data.resealDue} />;
   }
-  if (status.data.resealDue) return <NewSecret vault={unlocked} onSecret={setSecret} />;
-  return <Opened vault={unlocked} onSecret={setSecret} />;
+  const { resealDue, rotationDue } = status.data;
+  if (resealDue) {
+    return <NewSecret vault={unlocked} rotationDue={rotationDue} onSecret={setSecret} />;
+  }
+  return <Opened vault={unlocked} rotationDue={rotationDue} onSecret={setSecret} />;
 }
 
 function Section({ lead, children }: { readonly lead?: string; readonly children?: ReactNode }) {
@@ -164,8 +180,7 @@ function SetUp({
   readonly onSecret: (secret: string) => void;
 }) {
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
-  const { waiting, failure, run } = useStep();
+  const { waiting, failure, runForSecret } = useSecretStep(onSecret);
   return (
     <Section>
       <p>{t('vault.setUpLead')}</p>
@@ -173,11 +188,7 @@ function SetUp({
         disabled={waiting}
         aria-busy={waiting}
         onClick={() => {
-          run(async () => {
-            const secret = await setUpVault(vaultDevice, accountId);
-            onSecret(secret);
-            await queryClient.invalidateQueries({ queryKey: vaultStatusQuery.queryKey });
-          });
+          runForSecret(() => setUpVault(vaultDevice, accountId));
         }}
       >
         {t('vault.setUp')}
@@ -247,50 +258,64 @@ function EnterSecret({ needed }: { readonly needed: SecretNeeded }) {
   );
 }
 
+interface VaultStepProps {
+  readonly vault: UnlockedVault;
+  readonly rotationDue: boolean;
+  readonly onSecret: (secret: string) => void;
+}
+
 /**
  * After an account recovery or a new recovery kit, the vault part of the kit comes next: a new
- * secret sealed in before it is shown (spec 0003, R6).
+ * secret sealed in before it is shown (spec 0003, R6). After a recovery, a rotation does that too
+ * and is offered first (ADR-0018).
  */
-function NewSecret({
-  vault,
-  onSecret,
-}: {
-  readonly vault: UnlockedVault;
-  readonly onSecret: (secret: string) => void;
-}) {
+function NewSecret({ vault, rotationDue, onSecret }: VaultStepProps) {
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
-  const { waiting, failure, run } = useStep();
+  const { waiting, failure, runForSecret } = useSecretStep(onSecret);
+  const reseal = () => {
+    runForSecret(() => replaceVaultSecret(vaultDevice, vault));
+  };
   return (
     <Section>
-      <p>{t('vault.resealLead')}</p>
-      <Button
-        disabled={waiting}
-        aria-busy={waiting}
-        onClick={() => {
-          run(async () => {
-            onSecret(await replaceVaultSecret(vaultDevice, vault));
-            await queryClient.invalidateQueries({ queryKey: vaultStatusQuery.queryKey });
-          });
-        }}
-      >
-        {t('vault.reseal')}
-      </Button>
+      {rotationDue ? (
+        <>
+          <p>{t('vault.resealRotateLead')}</p>
+          <Button
+            disabled={waiting}
+            aria-busy={waiting}
+            onClick={() => {
+              runForSecret(() => rotateVault(vaultDevice, vault));
+            }}
+          >
+            {t('vault.rotate')}
+          </Button>
+          <button
+            type="button"
+            disabled={waiting}
+            className={`${textLinkClass} self-start`}
+            onClick={reseal}
+          >
+            {t('vault.resealOnly')}
+          </button>
+        </>
+      ) : (
+        <>
+          <p>{t('vault.resealLead')}</p>
+          <Button disabled={waiting} aria-busy={waiting} onClick={reseal}>
+            {t('vault.reseal')}
+          </Button>
+        </>
+      )}
       <StepStatus waiting={waiting} failure={failure} />
+      {failure === 'rotated_unopened' && <OpenRetained vault={vault} />}
     </Section>
   );
 }
 
-function Opened({
-  vault,
-  onSecret,
-}: {
-  readonly vault: UnlockedVault;
-  readonly onSecret: (secret: string) => void;
-}) {
+function Opened(props: VaultStepProps) {
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
-  const { waiting, failure, run } = useStep();
+  // A rotation the account owes comes before the documents, so it is the first thing offered.
+  const rotate = <Rotate {...props} />;
   return (
     <Section>
       <p role="status">{t('vault.opened', { minutes: vaultIdleMinutes })}</p>
@@ -301,24 +326,32 @@ function Opened({
       >
         {t('vault.lock')}
       </Button>
-      <DocumentsSection vault={vault} />
-      <div className="flex flex-col items-start gap-3">
-        <p className="text-muted">{t('vault.rotateLead')}</p>
-        <Button
-          disabled={waiting}
-          aria-busy={waiting}
-          onClick={() => {
-            run(async () => {
-              // The kit comes first: the new secret is already the only one sealed in.
-              onSecret(await rotateVault(vaultDevice, vault));
-              await queryClient.invalidateQueries({ queryKey: vaultStatusQuery.queryKey });
-            });
-          }}
-        >
-          {t('vault.rotate')}
-        </Button>
-        <StepStatus waiting={waiting} failure={failure} />
-      </div>
+      {props.rotationDue && rotate}
+      <DocumentsSection vault={props.vault} />
+      {!props.rotationDue && rotate}
     </Section>
+  );
+}
+
+function Rotate({ vault, rotationDue, onSecret }: VaultStepProps) {
+  const { t } = useTranslation();
+  const { waiting, failure, runForSecret } = useSecretStep(onSecret);
+  return (
+    <div className="flex flex-col items-start gap-3">
+      {rotationDue && <p className="text-warn-ink">{t('vault.rotationDue')}</p>}
+      <p className="text-muted">{t('vault.rotateLead')}</p>
+      <Button
+        disabled={waiting}
+        aria-busy={waiting}
+        onClick={() => {
+          // The kit comes first: the new secret is already the only one sealed in.
+          runForSecret(() => rotateVault(vaultDevice, vault));
+        }}
+      >
+        {t('vault.rotate')}
+      </Button>
+      <StepStatus waiting={waiting} failure={failure} />
+      {failure === 'rotated_unopened' && <OpenRetained vault={vault} />}
+    </div>
   );
 }
