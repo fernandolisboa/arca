@@ -251,6 +251,8 @@ async function applyInTransaction(
       file.checksum,
     ]);
   }
+  // A migration may not drop production's lineage mark: it is written again before the commit.
+  if (deployment === 'production') await checkLineage(client, deployment);
   // From here on the runner reads only built-in catalogs and a journal whose shape it checks first,
   // so no migration code runs; the identity check confirms the pin still holds. What would run at
   // COMMIT, after the guards, is rejected instead: a deferrable trigger or constraint (guard 9), a

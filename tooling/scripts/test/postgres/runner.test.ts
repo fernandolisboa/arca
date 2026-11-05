@@ -126,10 +126,25 @@ describe('migrate', () => {
       await setComment(database, productionMark(target));
       await migrate(target, files.slice(0, 1), policy, 'production');
       await setComment(database, 'arca production endpoint: ep-production');
-      await expect(migrate(target, files, policy, 'preview')).rejects.toThrow(
+      const failing = migration('20990101000000_fails', 'SELECT 1 / 0');
+      await expect(migrate(target, [...files, failing], policy, 'preview')).rejects.toThrow(
         'preview_forked_from_production',
       );
       expect(await journal()).toEqual([files[0]?.name]);
+    });
+
+    it('keeps the mark when a migration drops it', async () => {
+      const files = await realMigrations();
+      const policy = await containerPolicy();
+      const target = migratorTarget(database);
+      await setComment(database, productionMark(target));
+      await migrate(target, files, policy, 'production');
+      const dropping = migration(
+        '20990101000000_drop_mark',
+        'COMMENT ON SCHEMA arca_migrations IS NULL',
+      );
+      await migrate(target, [...files, dropping], policy, 'production');
+      expect(await schemaComment()).toEqual({ comment: lineage, owner: 'app_migrator' });
     });
 
     it('lets a preview through on an empty schema with the endpoint mark and no lineage mark', async () => {
