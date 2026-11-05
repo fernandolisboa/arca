@@ -49,16 +49,23 @@ describe('document labels (spec 0005, R4)', () => {
     );
   });
 
-  it.each(['', 'a'.repeat(256), 'line\nbreak.pdf', 'tab\t.pdf'])(
-    'refuses to seal the name %j',
-    async (name) => {
-      await expect(
-        sealDocumentLabel({ name, type: 'application/pdf' }, ciphertextSha256, [
-          await recipientOf(owner),
-        ]),
-      ).rejects.toThrow(InvalidDocumentLabel);
-    },
-  );
+  it.each([
+    '',
+    'a'.repeat(256),
+    'line\nbreak.pdf',
+    'tab\t.pdf',
+    'invoice\u202efdp.exe',
+    'right\u200fmark.pdf',
+    'isolate\u2066.pdf',
+    'zero\u200bwidth.pdf',
+    'bom\ufeff.pdf',
+  ])('refuses to seal the name %j', async (name) => {
+    await expect(
+      sealDocumentLabel({ name, type: 'application/pdf' }, ciphertextSha256, [
+        await recipientOf(owner),
+      ]),
+    ).rejects.toThrow(InvalidDocumentLabel);
+  });
 
   it('keeps names in any script, up to 255 characters', async () => {
     const recipients = [await recipientOf(owner)];
@@ -85,6 +92,8 @@ describe('document labels (spec 0005, R4)', () => {
     ['passaporte.pdf', 'passaporte.pdf'],
     ['  linha\nquebrada.pdf ', 'linhaquebrada.pdf'],
     ['\u0007', ''],
+    ['invoice\u202efdp.exe', 'invoicefdp.exe'],
+    ['\u2067nome\u2069.pdf', 'nome.pdf'],
     [`${'a'.repeat(300)}.pdf`, `${'a'.repeat(251)}.pdf`],
     [`😀${'a'.repeat(254)}`, 'a'.repeat(254)],
   ])('names the file %j as %j', (fileName, expected) => {

@@ -1,4 +1,4 @@
-import { ApiError } from '@arca/api-contract/client';
+import { ApiError, documentQuota, maxDocumentBytes } from '@arca/api-contract/client';
 import { Button } from '@arca/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useId, useRef, useState } from 'react';
@@ -35,21 +35,29 @@ function documentFailure(error: unknown): DocumentFailure {
   return commonFailure(error, (apiError: ApiError) => documentApiFailures[apiError.code]);
 }
 
+const sizeUnits = [
+  ['gigabyte', 1024 ** 3],
+  ['megabyte', 1024 ** 2],
+  ['kilobyte', 1024],
+] as const;
+
+/** Sizes in binary units, as the limits are set, so a file at the limit reads as the limit. */
 function useSize() {
   const { i18n } = useTranslation();
   return (bytes: number) => {
-    const megabytes = bytes >= 1_000_000;
+    const [unit, scale] = sizeUnits.find(([, of]) => bytes >= of) ?? sizeUnits[2];
     return new Intl.NumberFormat(i18n.language, {
       style: 'unit',
-      unit: megabytes ? 'megabyte' : 'kilobyte',
+      unit,
       maximumFractionDigits: 1,
-    }).format(megabytes ? bytes / 1_000_000 : Math.max(bytes / 1000, 0.1));
+    }).format(Math.max(bytes / scale, 0.1));
   };
 }
 
 /** The open vault's documents (spec 0005, R4): added, saved and deleted on this device. */
 export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
   const { t } = useTranslation();
+  const size = useSize();
   const queryClient = useQueryClient();
   const query = documentsQuery(vault);
   const documents = useQuery(query);
@@ -97,7 +105,12 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
       ? ''
       : 'done' in outcome
         ? t('vault.documents.done', { done: outcome.done })
-        : t('vault.documents.failure', { reason: outcome.failure });
+        : t('vault.documents.failure', {
+            reason: outcome.failure,
+            maxSize: size(maxDocumentBytes),
+            maxDocuments: documentQuota.documents,
+            maxBytes: size(documentQuota.bytes),
+          });
 
   return (
     <section aria-labelledby="documents-title" className="flex w-full flex-col items-start gap-3">

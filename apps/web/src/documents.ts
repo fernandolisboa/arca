@@ -181,7 +181,9 @@ export async function saveDocument(
   } catch {
     throw new DocumentNotOpened();
   }
-  saveFile(label.name, new Blob([plaintext], { type: label.type }));
+  // Never the label's type: a blob URL has this page's origin, and a label can be forged, so the
+  // file is always a download and its extension picks the program that opens it.
+  saveFile(label.name, new Blob([plaintext], { type: 'application/octet-stream' }));
 }
 
 /** Deletes one of the account's documents after a `vault_write` step-up for exactly it. */

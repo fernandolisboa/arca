@@ -8,6 +8,7 @@ export {
   apiPathSegments,
   deleteDocumentsAction,
   deletionWaitDays,
+  documentQuota,
   inviteLifetimeHours,
   maxDocumentBytes,
   maxOpenInvites,
