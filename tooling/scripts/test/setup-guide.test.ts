@@ -20,7 +20,7 @@ const skipped = new Set([
 ]);
 
 const variableRead =
-  /(?:process\.env|\benv)(?:\.([A-Z][A-Z0-9_]+)|\[\s*'([A-Z][A-Z0-9_]+)'\s*\])|requiredVariable\(\s*\w+,\s*'([A-Z][A-Z0-9_]+)'/g;
+  /(?:process\.env|\benv)[?!]?(?:\??\.([A-Z][A-Z0-9_]+)|\??\.?\[\s*['"`]([A-Z][A-Z0-9_]+)['"`]\s*\])|requiredVariable\(\s*\w+,\s*['"`]([A-Z][A-Z0-9_]+)['"`]/g;
 const secretLike = /SECRET|PASSWORD|TOKEN|_KEY$|^BLOB_/;
 
 async function sources(dir: string): Promise<string[]> {
@@ -29,7 +29,7 @@ async function sources(dir: string): Promise<string[]> {
     if (skipped.has(entry.name)) continue;
     const path = join(dir, entry.name);
     if (entry.isDirectory()) found.push(...(await sources(path)));
-    else if (/\.(?:ts|tsx|js|mjs)$/.test(entry.name)) found.push(path);
+    else if (/\.(?:[cm]?ts|tsx|[cm]?js)$/.test(entry.name)) found.push(path);
   }
   return found;
 }
@@ -60,6 +60,7 @@ describe('docs/SETUP.md (#124)', () => {
     const names = await secretNamesReadByCode();
     expect(names).toContain('BETTER_AUTH_SECRET');
     expect(names).toContain('ARCA_DB_API_PASSWORD');
+    expect(names).toContain('ARCA_DB_MIGRATOR_PASSWORD');
     expect(names).toContain('BLOB_STORE_ID');
   });
 });
