@@ -427,8 +427,8 @@ export function createVault({ db, activeCredentials, emailsOf, audit }: VaultSet
             ? ('no_vault' as const)
             : ('changed' as const);
         }
-        // No device could verify a state left under the old share key, so the rotation re-tags
-        // exactly the stored one or stores nothing.
+        // No device could verify a state left under the old share key, so the rotation stores
+        // its re-tagged state over the stored version, or finds none stored.
         const retagged =
           request.sharingState === null
             ? (await storedVersion(tx, accountId)) === undefined
