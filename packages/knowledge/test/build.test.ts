@@ -2,7 +2,7 @@ import { rm, symlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { buildKnowledge, catalogModule, formatIssue } from '../scripts/build.ts';
+import { buildKnowledge, catalogModule, formatIssue, todayUtc } from '../scripts/build.ts';
 import { contentHash } from '../scripts/content-hash.ts';
 import type { Json } from '@arca/scripts/json';
 import { baseTree, buildDate, emptyHashes, fixtures, routeVersion, writeTree } from './data.ts';
@@ -41,9 +41,9 @@ describe('buildKnowledge', () => {
     );
   });
 
-  it('builds the real data directory', async () => {
+  it('builds the real data directory on the date the real build uses', async () => {
     const dataDir = fileURLToPath(new URL('../data', import.meta.url));
-    expect((await buildKnowledge(dataDir, buildDate)).issues).toEqual([]);
+    expect((await buildKnowledge(dataDir, todayUtc())).issues).toEqual([]);
   });
 
   it('checks country tokens against the pinned countries and former countries', async () => {

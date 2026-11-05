@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "id": "us",
+  "number": 1,
+  "issuer": "United States federal government",
+  "hosts": [
+    {
+      "host": "ecfr.gov",
+      "source": {
+        "id": "dotgov-registry",
+        "url": "https://get.gov/about/data/",
+        "title": "CISA .gov registry data page and its daily list of federal .gov domains",
+        "kind": "official",
+        "verifiedAt": "2026-11-05"
+      }
+    },
+    {
+      "host": "federalregister.gov",
+      "source": {
+        "id": "dotgov-registry",
+        "url": "https://get.gov/about/data/",
+        "title": "CISA .gov registry data page and its daily list of federal .gov domains",
+        "kind": "official",
+        "verifiedAt": "2026-11-05"
+      }
+    },
+    {
+      "host": "get.gov",
+      "source": {
+        "id": "dotgov-registry",
+        "url": "https://get.gov/about/data/",
+        "title": "CISA .gov registry data page and its daily list of federal .gov domains",
+        "kind": "official",
+        "verifiedAt": "2026-11-05"
+      }
+    },
+    {
+      "host": "govinfo.gov",
+      "source": {
+        "id": "dotgov-registry",
+        "url": "https://get.gov/about/data/",
+        "title": "CISA .gov registry data page and its daily list of federal .gov domains",
+        "kind": "official",
+        "verifiedAt": "2026-11-05"
+      }
+    },
+    {
+      "host": "uscis.gov",
+      "source": {
+        "id": "dotgov-registry",
+        "url": "https://get.gov/about/data/",
+        "title": "CISA .gov registry data page and its daily list of federal .gov domains",
+        "kind": "official",
+        "verifiedAt": "2026-11-05"
+      }
+    }
+  ]
+}

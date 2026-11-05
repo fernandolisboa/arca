@@ -12,7 +12,7 @@ import {
 } from '@arca/domain';
 import { hostOf } from '@arca/scripts/host';
 import { parseEntries } from '../src/entries.ts';
-import { buildKnowledge, formatIssue } from './build.ts';
+import { buildKnowledge, formatIssue, todayUtc } from './build.ts';
 
 /** One stale source, as identifiers only: no titles or other free text (spec 0002, R9). */
 export interface StaleRow {
@@ -102,7 +102,7 @@ export function formatReport(rows: readonly StaleRow[], date: CalendarDate): str
 
 async function main(): Promise<void> {
   const packageDir = fileURLToPath(new URL('..', import.meta.url));
-  const date = parseCalendarDate(process.argv[2] ?? new Date().toISOString().slice(0, 10));
+  const date = process.argv[2] === undefined ? todayUtc() : parseCalendarDate(process.argv[2]);
   const { entries, issues } = await buildKnowledge(join(packageDir, 'data'), date);
   if (issues.length > 0) {
     process.stderr.write(`${issues.map(formatIssue).join('\n')}\n`);
