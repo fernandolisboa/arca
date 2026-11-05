@@ -1,7 +1,5 @@
 import { base64urlnopad } from '@scure/base';
-import { Decrypter } from 'age-encryption';
-import { encrypterFor } from './documents.js';
-import { identityParts, type VaultIdentity } from './identity.js';
+import { decrypterFor, encrypterFor, type VaultIdentities } from './documents.js';
 import { utf8 } from './encoding.js';
 
 /** What a person sees of a document before opening it: its file name and media type. */
@@ -74,14 +72,12 @@ export async function sealDocumentLabel(
 /** Opens a label, refusing one that is malformed or names another ciphertext. */
 export async function openDocumentLabel(
   sealed: Uint8Array,
-  identity: VaultIdentity,
+  identities: VaultIdentities,
   ciphertextSha256: Uint8Array,
 ): Promise<DocumentLabel> {
-  const decrypter = new Decrypter();
-  decrypter.addIdentity(identityParts(identity).secret);
   let value: unknown;
   try {
-    value = JSON.parse(utf8.decode(await decrypter.decrypt(sealed)));
+    value = JSON.parse(utf8.decode(await decrypterFor(identities).decrypt(sealed)));
   } catch {
     throw new InvalidDocumentLabel('not a label this identity opens');
   }

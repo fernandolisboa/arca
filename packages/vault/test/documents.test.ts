@@ -91,6 +91,20 @@ describe('documents (spec 0005, R1)', () => {
     await expect(opened(after, owner)).rejects.toThrow();
   });
 
+  it('opens a document with any of the identities a rotation kept', async () => {
+    const document = new TextEncoder().encode('synthetic lease');
+    const rotated = await generateVaultIdentity();
+    const before = await encrypted(document, [await recipientOf(owner)]);
+    expect(await bytesOf(await decryptDocument(streamOf(before), [rotated, owner]))).toEqual(
+      document,
+    );
+    const after = await bytesOf(
+      await reencryptDocument(streamOf(before), [rotated, owner], [await recipientOf(rotated)]),
+    );
+    expect(await opened(after, rotated)).toEqual(document);
+    await expect(decryptDocument(streamOf(before), [])).rejects.toThrow();
+  });
+
   it('refuses a document whose ciphertext was changed', async () => {
     const ciphertext = await encrypted(new Uint8Array(1000), [await recipientOf(owner)]);
     ciphertext[ciphertext.length - 1] = (ciphertext.at(-1) ?? 0) ^ 1;

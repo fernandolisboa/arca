@@ -36,6 +36,9 @@ describe('document labels (spec 0005, R4)', () => {
     const sealed = await sealDocumentLabel(label, ciphertextSha256, recipients);
     for (const identity of [owner, sharedWith]) {
       expect(await openDocumentLabel(sealed, identity, ciphertextSha256)).toEqual(label);
+      expect(await openDocumentLabel(sealed, [stranger, identity], ciphertextSha256)).toEqual(
+        label,
+      );
     }
     await expect(openDocumentLabel(sealed, stranger, ciphertextSha256)).rejects.toThrow(
       InvalidDocumentLabel,

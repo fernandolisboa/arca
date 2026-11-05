@@ -8,6 +8,7 @@ import {
   type VaultEnvelopes,
 } from '@arca/platform';
 import {
+  WrongRecoverySecret,
   generateRecoverySecret,
   generateVaultIdentity,
   openRecoveryEnvelope,
@@ -18,7 +19,8 @@ import {
 import { api } from './api.js';
 import { base64url, fromBase64url } from './base64url.js';
 import { reach } from './requests.js';
-import { openVaultWindow, stepUpFor } from './step-up.js';
+import { checkedView, rememberVersion, rotatedSharingState } from './sharing.js';
+import { approvedWith, openVaultWindow, stepUpFor } from './step-up.js';
 import { holdVault, type UnlockedVault } from './vault-session.js';
 
 /** What the vault screens need from the platform, so a native build can supply its own. */
@@ -36,11 +38,16 @@ export class WrongVaultIdentity extends Error {
 }
 
 /**
- * The account keeps a rotated identity whose recovery envelope needs the new secret too; that
- * comes with the rotation screens (spec 0005, R4), so until then nothing is re-sealed.
+ * The account keeps an identity a rotation replaced that this device has not opened, so a new
+ * secret cannot be sealed to it: its documents are opened with it first.
  */
 export class RotatedVaultIdentity extends Error {
   override name = 'RotatedVaultIdentity';
+}
+
+/** The account keeps no identity a rotation replaced. */
+export class NothingRetained extends Error {
+  override name = 'NothingRetained';
 }
 
 const keyContext = (device: VaultDevice, accountId: string): KeyContext => ({
@@ -94,7 +101,7 @@ export async function setUpVault(device: VaultDevice, accountId: string): Promis
     }),
   );
   if (sealed === undefined) await keepWrapped(device, accountId, identity);
-  holdVault({ accountId, recipient, identity });
+  holdVault({ accountId, recipient, identity, retained: [] });
   return secret;
 }
 
@@ -125,7 +132,7 @@ export async function unlockVault(
   const ofCurrent = kept.envelopes.filter((envelope) => envelope.recipientId === current.id);
   const own = ofCurrent.find((envelope) => envelope.credentialId === credentialId);
   const hold = (identity: VaultIdentity) => {
-    holdVault({ accountId, recipient: current.recipient, identity });
+    holdVault({ accountId, recipient: current.recipient, identity, retained: [] });
   };
 
   let sealHere = own === undefined;
@@ -195,29 +202,163 @@ async function keptEnvelopes(device: VaultDevice): Promise<VaultEnvelopesRespons
 }
 
 /**
+ * The identity sealed in each kept recovery envelope: the current one or one this device opened
+ * from a rotation, so a new secret can be sealed to every one of them.
+ */
+async function sealedIdentities(vault: UnlockedVault, kept: VaultEnvelopesResponse) {
+  const current = kept.recipients.find((candidate) => candidate.current);
+  if (current?.recipient !== vault.recipient) throw new WrongVaultIdentity();
+  const retained = await Promise.all(
+    vault.retained.map(async (identity) => ({ identity, recipient: await recipientOf(identity) })),
+  );
+  const withRecovery = kept.recipients.filter(({ id }) =>
+    kept.envelopes.some(({ recipientId, kind }) => recipientId === id && kind === 'recovery'),
+  );
+  return {
+    current,
+    sealed: withRecovery.map(({ id, recipient, current: isCurrent }) => {
+      const identity = isCurrent
+        ? vault.identity
+        : retained.find((candidate) => candidate.recipient === recipient)?.identity;
+      if (identity === undefined) throw new RotatedVaultIdentity();
+      return { recipientId: id, identity };
+    }),
+  };
+}
+
+const sealedTo = (
+  secret: string,
+  sealed: readonly { recipientId: string; identity: VaultIdentity }[],
+) =>
+  Promise.all(
+    sealed.map(async ({ recipientId, identity }) => ({
+      recipientId,
+      ciphertext: base64url(await sealRecoveryEnvelope(identity, secret)),
+    })),
+  );
+
+/**
  * A new vault recovery secret, after an account recovery or a new recovery kit (spec 0003, R6):
- * the open identity sealed to it and opened once, then a `sensitive_settings` step-up replaces
- * every recovery envelope, so the old secret opens none. Returns the secret to show once.
+ * every kept identity sealed to it, the current one opened once as a check, then a
+ * `sensitive_settings` step-up replaces every recovery envelope, so the old secret opens none.
+ * Returns the secret to show once.
  */
 export async function replaceVaultSecret(
   device: VaultDevice,
   vault: UnlockedVault,
 ): Promise<string> {
-  const kept = await keptEnvelopes(device);
-  const sealedToSecret = kept.recipients.filter(({ id }) =>
-    kept.envelopes.some(({ recipientId, kind }) => recipientId === id && kind === 'recovery'),
-  );
-  const current = sealedToSecret.find((candidate) => candidate.current);
-  if (current?.recipient !== vault.recipient) throw new WrongVaultIdentity();
-  if (sealedToSecret.length > 1) throw new RotatedVaultIdentity();
+  const { current, sealed } = await sealedIdentities(vault, await keptEnvelopes(device));
   const secret = generateRecoverySecret();
-  const recoveryEnvelope = await sealRecoveryEnvelope(vault.identity, secret);
-  await openRecoveryEnvelope(recoveryEnvelope, secret);
-  const envelopes = [{ recipientId: current.id, ciphertext: base64url(recoveryEnvelope) }];
+  const envelopes = await sealedTo(secret, sealed);
+  const own = envelopes.find(({ recipientId }) => recipientId === current.id);
+  if (own === undefined) throw new WrongVaultIdentity();
+  await check(await openRecoveryEnvelope(fromBase64url(own.ciphertext), secret), vault.recipient);
   const approved = await stepUpFor(device.passkeys, {
     action: routes.resealVaultRecovery.operationId,
     targets: envelopes.map(({ recipientId }) => recipientId),
   });
   await reach(approved.call(routes.resealVaultRecovery, { envelopes }));
+  return secret;
+}
+
+/**
+ * Opens, on this device, the identities a rotation replaced, so documents still encrypted to
+ * them open (ADR-0018): this passkey's envelope for each, else the vault recovery secret.
+ * `undefined` once every one is open.
+ */
+export async function openRetained(
+  device: VaultDevice,
+  vault: UnlockedVault,
+): Promise<SecretNeeded | undefined> {
+  const credentialId = await openVaultWindow(device.passkeys);
+  const kept: VaultEnvelopesResponse = await reach(api.call(routes.vaultEnvelopes));
+  const rotated = kept.recipients.filter(({ current }) => !current);
+  if (rotated.length === 0) throw new NothingRetained();
+  const opened: VaultIdentity[] = [];
+  const missing: typeof rotated = [];
+  for (const candidate of rotated) {
+    const own = kept.envelopes.find(
+      ({ recipientId, credentialId: id }) => recipientId === candidate.id && id === credentialId,
+    );
+    const identity =
+      own === undefined
+        ? undefined
+        : await device.envelopes
+            .open({ credentialId, bytes: fromBase64url(own.ciphertext) })
+            .then((found) => check(found, candidate.recipient))
+            .catch(() => undefined);
+    if (identity === undefined) missing.push(candidate);
+    else opened.push(identity);
+  }
+  const hold = (more: readonly VaultIdentity[]) => {
+    holdVault({ ...vault, retained: [...opened, ...more] });
+  };
+  if (missing.length === 0) {
+    hold([]);
+    return undefined;
+  }
+  return {
+    openWithSecret: async (secret) => {
+      const more = await Promise.all(
+        missing.map(async ({ id, recipient }) => {
+          const recovery = kept.envelopes.find(
+            ({ recipientId, kind }) => recipientId === id && kind === 'recovery',
+          );
+          if (recovery === undefined) throw new WrongRecoverySecret();
+          return check(
+            await openRecoveryEnvelope(fromBase64url(recovery.ciphertext), secret),
+            recipient,
+          );
+        }),
+      );
+      hold(more);
+    },
+  };
+}
+
+/**
+ * Rotation (ADR-0018): a new identity and vault recovery secret, every kept identity sealed to
+ * the secret, the verified sharing state re-tagged under the new share key, and an envelope for
+ * the approving passkey (or the identity wrapped on a device without PRF), all stored in one
+ * `sensitive_settings` step-up. The replaced identity stays open here for the documents still
+ * encrypted to it. Returns the secret to show once.
+ */
+export async function rotateVault(device: VaultDevice, vault: UnlockedVault): Promise<string> {
+  const view = await checkedView(vault);
+  const { current, sealed } = await sealedIdentities(vault, await keptEnvelopes(device));
+  const identity = await generateVaultIdentity();
+  const recipient = await recipientOf(identity);
+  const secret = generateRecoverySecret();
+  const recoveryEnvelope = await sealRecoveryEnvelope(identity, secret);
+  await check(await openRecoveryEnvelope(recoveryEnvelope, secret), recipient);
+  const keptRecoveryEnvelopes = await sealedTo(secret, sealed);
+  const sharingState = await rotatedSharingState(vault, view, identity, recipient);
+  const { client, credentialId } = await approvedWith(device.passkeys, {
+    action: routes.rotateVaultIdentity.operationId,
+    targets: [current.id],
+    fields: { recipient },
+  });
+  const passkeyEnvelope = await sealForPasskey(device, identity, credentialId);
+  await reach(
+    client.call(routes.rotateVaultIdentity, {
+      from: current.id,
+      recipient,
+      passkeyEnvelopes:
+        passkeyEnvelope === undefined
+          ? []
+          : [{ credentialId, ciphertext: base64url(passkeyEnvelope) }],
+      recoveryEnvelope: base64url(recoveryEnvelope),
+      sharingState,
+      keptRecoveryEnvelopes,
+    }),
+  );
+  if (sharingState !== null) rememberVersion(vault.accountId, sharingState.sharingState.version);
+  if (passkeyEnvelope === undefined) await keepWrapped(device, vault.accountId, identity);
+  holdVault({
+    accountId: vault.accountId,
+    recipient,
+    identity,
+    retained: [vault.identity, ...vault.retained],
+  });
   return secret;
 }

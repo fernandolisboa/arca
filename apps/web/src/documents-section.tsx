@@ -1,7 +1,8 @@
 import { ApiError, documentQuota, maxDocumentBytes } from '@arca/api-contract/client';
 import { Button } from '@arca/ui';
+import { WrongRecoverySecret } from '@arca/vault';
 import { useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
-import { useId, useRef, useState } from 'react';
+import { useId, useRef, useState, type SubmitEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   addDocument,
@@ -13,21 +14,26 @@ import {
   saveDocument,
   type OpenedDocument,
 } from './documents.js';
+import { recoveryCodeInput } from './forms/inputs.js';
+import { TextField } from './forms/text-field.js';
 import { dangerLinkClass, textLinkClass } from './forms/text-link.js';
 import { filePicking, passkeys } from './platform.js';
 import { commonFailure, type CommonFailure } from './requests.js';
 import { SharePanel } from './share-panel.js';
 import {
   confirmSharingState,
+  moveDocuments,
   shareDocument,
   sharingQuery,
   SharingStateInvalid,
 } from './sharing.js';
 import type { Sharing } from './share-recipients.js';
 import { useDateFormat } from './use-date-format.js';
+import { NothingRetained, openRetained, type SecretNeeded } from './vault.js';
+import { vaultDevice } from './vault-device.js';
 import type { UnlockedVault } from './vault-session.js';
 
-type Done = 'added' | 'saved' | 'deleted' | 'shared' | 'confirmed';
+type Done = 'added' | 'saved' | 'deleted' | 'shared' | 'confirmed' | 'moved' | 'opened';
 type DocumentFailure =
   | CommonFailure
   | 'too_large'
@@ -36,7 +42,9 @@ type DocumentFailure =
   | 'not_opened'
   | 'unconfirmed'
   | 'not_shared'
-  | 'sharing_invalid';
+  | 'sharing_invalid'
+  | 'nothing_retained'
+  | 'wrong_secret';
 
 const documentApiFailures: Partial<Record<string, DocumentFailure>> = {
   document_quota: 'quota',
@@ -55,6 +63,8 @@ function documentFailure(error: unknown): DocumentFailure {
   if (error instanceof DocumentNotOpened) return 'not_opened';
   if (error instanceof ReplacementRefused) return 'not_shared';
   if (error instanceof SharingStateInvalid) return 'sharing_invalid';
+  if (error instanceof NothingRetained) return 'nothing_retained';
+  if (error instanceof WrongRecoverySecret) return 'wrong_secret';
   return commonFailure(error, (apiError: ApiError) => documentApiFailures[apiError.code]);
 }
 
@@ -88,6 +98,8 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
   const sharing = useQuery(sharingOptions);
   const [waiting, setWaiting] = useState(false);
   const [outcome, setOutcome] = useState<{ done: Done } | { failure: DocumentFailure }>();
+  const [secretNeeded, setSecretNeeded] = useState<SecretNeeded>();
+  const [secret, setSecret] = useState('');
   const statusRef = useRef<HTMLParagraphElement>(null);
 
   const change = (run: () => Promise<boolean>, done: Done, refresh: boolean) => {
@@ -144,6 +156,52 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
           });
 
   const documentNames = names(documents.data ?? []);
+  const stale = (documents.data ?? []).filter(
+    ({ document, stale: old }) => old && document.ownerId === vault.accountId,
+  );
+  const unopened =
+    vault.retained.length === 0 && (documents.data ?? []).some(({ label }) => label === undefined);
+
+  const move = () => {
+    if (sharing.data === undefined) return;
+    const current = sharing.data;
+    change(
+      async () => {
+        await moveDocuments(passkeys, vault, current, stale);
+        return true;
+      },
+      'moved',
+      true,
+    );
+  };
+
+  const openOld = () => {
+    change(
+      async () => {
+        const needed = await openRetained(vaultDevice, vault);
+        setSecretNeeded(needed);
+        return needed === undefined;
+      },
+      'opened',
+      false,
+    );
+  };
+
+  const submitSecret = (event: SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (secretNeeded === undefined) return;
+    const needed = secretNeeded;
+    change(
+      async () => {
+        await needed.openWithSecret(secret);
+        setSecretNeeded(undefined);
+        setSecret('');
+        return true;
+      },
+      'opened',
+      false,
+    );
+  };
 
   return (
     <section aria-labelledby="documents-title" className="flex w-full flex-col items-start gap-3">
@@ -165,6 +223,39 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
       >
         {message}
       </p>
+      {stale.length > 0 && (
+        <div className="flex flex-col items-start gap-3">
+          <p className="text-ink">{t('vault.documents.stale', { count: stale.length })}</p>
+          <Button disabled={waiting || !sharing.isSuccess} aria-busy={waiting} onClick={move}>
+            {t('vault.documents.move')}
+          </Button>
+        </div>
+      )}
+      {unopened && (
+        <div className="flex flex-col items-start gap-3">
+          <p className="text-ink">{t('vault.documents.unopened')}</p>
+          {secretNeeded === undefined ? (
+            <Button disabled={waiting} aria-busy={waiting} onClick={openOld}>
+              {t('vault.documents.openRetained')}
+            </Button>
+          ) : (
+            <form onSubmit={submitSecret} className="flex flex-col gap-4">
+              <p>{t('vault.documents.retainedSecretLead')}</p>
+              <TextField
+                label={t('vault.kit.codeLabel')}
+                {...recoveryCodeInput}
+                value={secret}
+                onChange={(event) => {
+                  setSecret(event.currentTarget.value);
+                }}
+              />
+              <Button type="submit" disabled={waiting} aria-busy={waiting}>
+                {t('vault.documents.retainedSecretSubmit')}
+              </Button>
+            </form>
+          )}
+        </div>
+      )}
       {documents.isError && (
         <div className="flex flex-col items-start gap-3">
           <p className="text-ink">{t('vault.documents.listFailure')}</p>

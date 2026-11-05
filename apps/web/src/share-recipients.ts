@@ -1,6 +1,6 @@
-import type { AccountLink } from '@arca/api-contract/client';
+import { maxDocumentBatch, type AccountLink } from '@arca/api-contract/client';
 import { recipientFingerprint, type SharingState } from '@arca/vault';
-import type { DocumentRecipient } from './documents.js';
+import type { DocumentRecipient, OpenedDocument } from './documents.js';
 
 /**
  * The owner's sharing state as this device checked it (ADR-0018). Only a `verified` state decides
@@ -107,4 +107,44 @@ export function sharedInState(view: SharingView, documentId: string): readonly s
   return Object.hasOwn(view.state.documents, documentId)
     ? (view.state.documents[documentId] ?? [])
     : [];
+}
+
+/** Enough ciphertext for one replacement to hold in memory at once. */
+export const moveBatchBytes = 64 * 1024 * 1024;
+
+/**
+ * The owner's documents to encrypt again, grouped by the people the state shares each with (one
+ * recipient list per replacement), each batch within the replace route's count and in memory.
+ */
+export function moveBatches(
+  view: SharingView,
+  documents: readonly OpenedDocument[],
+): { sharedWith: DocumentRecipient[]; documents: OpenedDocument[] }[] {
+  const groups = new Map<string, OpenedDocument[]>();
+  for (const opened of documents) {
+    const key = sharedInState(view, opened.document.id).join(',');
+    groups.set(key, [...(groups.get(key) ?? []), opened]);
+  }
+  return [...groups].flatMap(([key, group]) => {
+    const sharedWith = key
+      .split(',')
+      .filter((accountId) => accountId !== '' && Object.hasOwn(view.state.pins, accountId))
+      .map((accountId) => ({ accountId, recipient: view.state.pins[accountId] ?? '' }));
+    const batches: OpenedDocument[][] = [[]];
+    let bytes = 0;
+    for (const opened of group) {
+      const last = batches.at(-1) ?? [];
+      if (
+        last.length > 0 &&
+        (last.length === maxDocumentBatch || bytes + opened.document.size > moveBatchBytes)
+      ) {
+        batches.push([opened]);
+        bytes = opened.document.size;
+      } else {
+        last.push(opened);
+        bytes += opened.document.size;
+      }
+    }
+    return batches.map((batch) => ({ sharedWith, documents: batch }));
+  });
 }

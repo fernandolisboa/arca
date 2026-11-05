@@ -15,8 +15,11 @@ import { Page } from '../page.js';
 import { vaultDevice } from '../vault-device.js';
 import { RecoveryCodeSheet } from '../recovery-code.js';
 import { commonFailure, type CommonFailure } from '../requests.js';
+import { SharingStateInvalid } from '../sharing.js';
 import {
   replaceVaultSecret,
+  RotatedVaultIdentity,
+  rotateVault,
   setUpVault,
   unlockVault,
   WrongVaultIdentity,
@@ -32,17 +35,27 @@ import {
 export const Route = createLazyFileRoute('/vault')({ component: Vault });
 
 type VaultFailure =
-  CommonFailure | 'wrong_secret' | 'wrong_identity' | 'exists' | 'changed' | 'has_documents';
+  | CommonFailure
+  | 'wrong_secret'
+  | 'wrong_identity'
+  | 'exists'
+  | 'changed'
+  | 'has_documents'
+  | 'rotated_unopened'
+  | 'sharing_invalid';
 
 const vaultApiFailures: Partial<Record<string, VaultFailure>> = {
   vault_exists: 'exists',
   vault_changed: 'changed',
   vault_has_documents: 'has_documents',
+  sharing_state_changed: 'changed',
 };
 
 function vaultFailure(error: unknown): VaultFailure {
   if (error instanceof WrongRecoverySecret) return 'wrong_secret';
   if (error instanceof WrongVaultIdentity) return 'wrong_identity';
+  if (error instanceof RotatedVaultIdentity) return 'rotated_unopened';
+  if (error instanceof SharingStateInvalid) return 'sharing_invalid';
   if (error instanceof EnvelopeNotOpenedError || error instanceof EnvelopeNotSealedError) {
     return 'cancelled';
   }
@@ -116,7 +129,7 @@ function Vault() {
     return <Locked accountId={accountId} resealDue={status.data.resealDue} />;
   }
   if (status.data.resealDue) return <NewSecret vault={unlocked} onSecret={setSecret} />;
-  return <Opened vault={unlocked} />;
+  return <Opened vault={unlocked} onSecret={setSecret} />;
 }
 
 function Section({ lead, children }: { readonly lead?: string; readonly children?: ReactNode }) {
@@ -268,8 +281,16 @@ function NewSecret({
   );
 }
 
-function Opened({ vault }: { readonly vault: UnlockedVault }) {
+function Opened({
+  vault,
+  onSecret,
+}: {
+  readonly vault: UnlockedVault;
+  readonly onSecret: (secret: string) => void;
+}) {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const { waiting, failure, run } = useStep();
   return (
     <Section>
       <p role="status">{t('vault.opened', { minutes: vaultIdleMinutes })}</p>
@@ -281,6 +302,23 @@ function Opened({ vault }: { readonly vault: UnlockedVault }) {
         {t('vault.lock')}
       </Button>
       <DocumentsSection vault={vault} />
+      <div className="flex flex-col items-start gap-3">
+        <p className="text-muted">{t('vault.rotateLead')}</p>
+        <Button
+          disabled={waiting}
+          aria-busy={waiting}
+          onClick={() => {
+            run(async () => {
+              // The kit comes first: the new secret is already the only one sealed in.
+              onSecret(await rotateVault(vaultDevice, vault));
+              await queryClient.invalidateQueries({ queryKey: vaultStatusQuery.queryKey });
+            });
+          }}
+        >
+          {t('vault.rotate')}
+        </Button>
+        <StepStatus waiting={waiting} failure={failure} />
+      </div>
     </Section>
   );
 }
