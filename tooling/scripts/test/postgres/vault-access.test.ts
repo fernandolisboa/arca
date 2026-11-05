@@ -140,7 +140,13 @@ describe('the vault schema access matrix (spec 0005, R2)', () => {
       return result.rows;
     });
     // The document tables' own matrix is in document-access.test.ts.
-    const names = [...Object.keys(tables), 'document', 'document_recipient'].sort();
+    const names = [
+      ...Object.keys(tables),
+      'discarded_object',
+      'document',
+      'document_recipient',
+      'document_replacement',
+    ].sort();
     expect(shape).toEqual(names.map((name) => ({ name, forced: true })));
   });
 

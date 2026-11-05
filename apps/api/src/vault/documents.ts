@@ -2,18 +2,24 @@ import { randomUUID } from 'node:crypto';
 import {
   documentPageSize,
   documentQuota,
+  type ConfirmReplacementsResponse,
   type CreateDocumentRequest,
   type CreateDocumentResponse,
   type DocumentsResponse,
   type DocumentUploadUrlResponse,
+  type ReplaceDocumentsRequest,
+  type ReplaceDocumentsResponse,
 } from '@arca/api-contract/routes';
 import { withIdentity, type Database, type Transaction } from '@arca/db';
-import { sql } from 'drizzle-orm';
+import { sql, type SQL } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import type { ObjectStorage } from './object-storage.js';
 
 export type DocumentCreated = CreateDocumentResponse | 'no_vault' | 'over_quota';
 export type UploadConfirmed = 'confirmed' | 'not_found' | 'not_uploaded' | 'mismatch';
+export type ReplacementStarted =
+  ReplaceDocumentsResponse | 'not_found' | 'not_linked' | 'over_quota';
+export type ReplacementOutcome = ConfirmReplacementsResponse['results'][number]['outcome'];
 
 /** Documents in the vault (spec 0005, R4): metadata here, ciphertext in the object store. */
 export interface DocumentRequests {
@@ -37,16 +43,41 @@ export interface DocumentRequests {
   readonly list: (accountId: string, after: string | undefined) => Promise<DocumentsResponse>;
   /** A download URL for a confirmed document the account owns or receives, recorded. */
   readonly downloadUrl: (accountId: string, documentId: string) => Promise<string | undefined>;
+  /**
+   * Approves new ciphertext for the account's confirmed documents, encrypted to these linked
+   * accounts, replacing any replacement still unconfirmed; all of them or none.
+   */
+  readonly replace: (
+    accountId: string,
+    request: ReplaceDocumentsRequest,
+  ) => Promise<ReplacementStarted>;
+  /**
+   * Swaps in each replacement whose stored object has the approved size and SHA-256, sets the
+   * document's shares to its recipients and deletes the old object; any other object is deleted
+   * and the replacement stays until the daily cleanup.
+   */
+  readonly confirmReplacements: (
+    accountId: string,
+    documentIds: readonly string[],
+  ) => Promise<ConfirmReplacementsResponse>;
+  /** Deletes the account's documents, all of them or none, with their shares and objects. */
+  readonly delete: (
+    accountId: string,
+    documentIds: readonly string[],
+  ) => Promise<'deleted' | 'not_found'>;
 }
 
 /** What the jobs do to stored objects, on the app_jobs pool. */
 export interface DocumentObjects {
   /**
-   * Deletes the objects of every document the account owns, pending ones included, before
-   * erasure deletes the rows that name them (spec 0004, R9).
+   * Deletes every object a row of the account names, pending documents, replacements and
+   * discarded objects included, before erasure deletes the rows (spec 0004, R9).
    */
   readonly eraseObjects: (accountId: string) => Promise<void>;
-  /** Deletes the account's pending documents created 24 hours before `now`, objects first. */
+  /**
+   * The daily cleanup of the account's objects, each object before its row: pending documents
+   * and replacements 24 hours old, and discarded objects once every grant for them has ended.
+   */
   readonly expirePending: (accountId: string, now: Date) => Promise<number>;
 }
 
@@ -65,6 +96,26 @@ export const pendingDocumentHours = 24;
 /** Uploads are presigned only this long after create, so every grant ends before the cleanup. */
 export const uploadWindowMinutes = 60;
 
+/**
+ * A discarded object is deleted again this long after it was discarded: no grant is issued for
+ * it any more, and one issued before lasts 5 minutes.
+ */
+export const discardedObjectMinutes = 60;
+
+const listOf = (values: readonly string[]): SQL =>
+  sql`(${sql.join(
+    values.map((value) => sql`${value}`),
+    sql`, `,
+  )})`;
+
+const uuidArray = (values: readonly string[]): SQL =>
+  values.length === 0
+    ? sql`'{}'::uuid[]`
+    : sql`ARRAY[${sql.join(
+        values.map((value) => sql`${value}::uuid`),
+        sql`, `,
+      )}]`;
+
 interface DocumentRow extends Record<string, unknown> {
   readonly id: string;
   readonly owner_id: string;
@@ -79,30 +130,155 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
   const asAccount = <T>(accountId: string, work: (tx: Transaction) => Promise<T>) =>
     withIdentity(db, { accountId }, work);
 
-  const pending = async (tx: Transaction, accountId: string, where: ReturnType<typeof sql>) =>
+  const pending = async (tx: Transaction, accountId: string, where: SQL) =>
     (
       await tx.execute<{ id: string; object_key: string; size: number; sha256: Buffer }>(sql`
         SELECT id, object_key, size, sha256 FROM vault.document
          WHERE owner_id = ${accountId} AND confirmed_at IS NULL AND ${where}`)
     ).rows[0];
 
+  /**
+   * The current recipient's lock queues the account's creates and replaces, so the quota holds,
+   * and orders them with a vault reset, which takes it before checking for documents.
+   */
+  const lockVault = async (tx: Transaction, accountId: string) =>
+    (
+      await tx.execute<{ id: string }>(sql`
+        SELECT id FROM vault.recipient
+         WHERE account_id = ${accountId} AND rotated_at IS NULL FOR UPDATE`)
+    ).rows.length > 0;
+
+  /** Documents and bytes held, replacements included, leaving out the replacements of `except`. */
+  const usage = async (tx: Transaction, accountId: string, except: readonly string[] = []) => {
+    const [row] = (
+      await tx.execute<{ documents: number; bytes: string }>(sql`
+        SELECT (SELECT count(*)::int FROM vault.document WHERE owner_id = ${accountId}) AS documents,
+               ((SELECT coalesce(sum(size), 0) FROM vault.document WHERE owner_id = ${accountId})
+                + (SELECT coalesce(sum(size), 0) FROM vault.document_replacement
+                    WHERE owner_id = ${accountId}
+                      ${except.length === 0 ? sql`` : sql`AND document_id NOT IN ${listOf(except)}`})
+               )::text AS bytes`)
+    ).rows;
+    return { documents: row?.documents ?? 0, bytes: BigInt(row?.bytes ?? '0') };
+  };
+
+  /** Records objects deleted while a grant for them may be live, for the cleanup to delete again. */
+  const discard = async (tx: Transaction, accountId: string, keys: readonly string[]) => {
+    if (keys.length === 0) return;
+    await tx.execute(sql`
+      INSERT INTO vault.discarded_object (object_key, owner_id)
+      VALUES ${sql.join(
+        keys.map((key) => sql`(${key}, ${accountId})`),
+        sql`, `,
+      )}`);
+  };
+
+  const record = (
+    accountId: string,
+    event:
+      | { code: 'document_replaced' | 'document_deleted'; details: { documentId: string } }
+      | {
+          code: 'document_shared' | 'document_share_revoked';
+          details: { documentId: string; recipientId: string };
+        },
+  ) => audit.record({ ...event, subjectAccountId: accountId, actorAccountId: accountId });
+
+  async function confirmReplacement(
+    accountId: string,
+    documentId: string,
+  ): Promise<ReplacementOutcome> {
+    const found = await asAccount(
+      accountId,
+      async (tx) =>
+        (
+          await tx.execute<{ object_key: string; size: number; sha256: Buffer }>(sql`
+            SELECT object_key, size, sha256 FROM vault.document_replacement
+             WHERE document_id = ${documentId} AND owner_id = ${accountId}`)
+        ).rows[0],
+    );
+    if (found === undefined) return 'not_found';
+    const stored = await storage.digest(found.object_key);
+    if (stored === undefined) return 'not_uploaded';
+    if (stored.size !== found.size || !stored.sha256.equals(found.sha256)) {
+      await storage.delete([found.object_key]);
+      return 'mismatch';
+    }
+    const replaced = await asAccount(accountId, async (tx) => {
+      const [current] = (
+        await tx.execute<{ object_key: string }>(sql`
+          SELECT object_key FROM vault.document
+           WHERE id = ${documentId} AND owner_id = ${accountId} FOR UPDATE`)
+      ).rows;
+      const [taken] = (
+        await tx.execute<{ recipients: string[] }>(sql`
+          DELETE FROM vault.document_replacement
+           WHERE document_id = ${documentId} AND owner_id = ${accountId}
+             AND object_key = ${found.object_key}
+          RETURNING recipients`)
+      ).rows;
+      if (current === undefined || taken === undefined) return undefined;
+      await tx.execute(sql`
+        UPDATE vault.document
+           SET object_key = ${found.object_key}, size = ${found.size}, sha256 = ${found.sha256}
+         WHERE id = ${documentId} AND owner_id = ${accountId}`);
+      await discard(tx, accountId, [current.object_key]);
+      const shared = (
+        await tx.execute<{ recipient_id: string }>(sql`
+          SELECT recipient_id FROM vault.document_recipient WHERE document_id = ${documentId}`)
+      ).rows.map(({ recipient_id }) => recipient_id);
+      const revoked = shared.filter((id) => !taken.recipients.includes(id));
+      const added = taken.recipients.filter((id) => !shared.includes(id));
+      if (revoked.length > 0) {
+        await tx.execute(sql`
+          DELETE FROM vault.document_recipient
+           WHERE document_id = ${documentId} AND recipient_id IN ${listOf(revoked)}`);
+      }
+      for (const recipientId of added) {
+        // Row-level security refuses an account the owner no longer has a link to.
+        await tx.execute(sql`
+          INSERT INTO vault.document_recipient (document_id, document_owner_id, recipient_id)
+          VALUES (${documentId}, ${accountId}, ${recipientId})`);
+      }
+      await record(accountId, { code: 'document_replaced', details: { documentId } });
+      for (const recipientId of added) {
+        await record(accountId, { code: 'document_shared', details: { documentId, recipientId } });
+      }
+      for (const recipientId of revoked) {
+        await record(accountId, {
+          code: 'document_share_revoked',
+          details: { documentId, recipientId },
+        });
+      }
+      return current.object_key;
+    });
+    if (replaced === undefined) return 'not_found';
+    await storage.delete([replaced]);
+    return 'replaced';
+  }
+
+  /** Deletes the objects that `select` finds, then their rows with `remove`; returns how many. */
+  async function expire(
+    accountId: string,
+    select: SQL,
+    remove: (keys: readonly string[]) => SQL,
+  ): Promise<number> {
+    const keys = await asAccount(accountId, async (tx) =>
+      (await tx.execute<{ object_key: string }>(select)).rows.map(({ object_key }) => object_key),
+    );
+    if (keys.length === 0) return 0;
+    await storage.delete(keys);
+    await asAccount(accountId, (tx) => tx.execute(remove(keys)));
+    return keys.length;
+  }
+
   return {
     create: (accountId, { typeKey, size, sha256 }) =>
       asAccount(accountId, async (tx) => {
-        // The current recipient's lock queues concurrent creates, so the quota holds, and orders
-        // them with a vault reset, which takes it before checking for documents.
-        const vault = await tx.execute<{ id: string }>(sql`
-          SELECT id FROM vault.recipient
-           WHERE account_id = ${accountId} AND rotated_at IS NULL FOR UPDATE`);
-        if (vault.rows.length === 0) return 'no_vault' as const;
-        const [usage] = (
-          await tx.execute<{ documents: number; bytes: string }>(sql`
-            SELECT count(*)::int AS documents, coalesce(sum(size), 0)::text AS bytes
-              FROM vault.document WHERE owner_id = ${accountId}`)
-        ).rows;
+        if (!(await lockVault(tx, accountId))) return 'no_vault' as const;
+        const held = await usage(tx, accountId);
         if (
-          (usage?.documents ?? 0) >= documentQuota.documents ||
-          BigInt(usage?.bytes ?? '0') + BigInt(size) > BigInt(documentQuota.bytes)
+          held.documents >= documentQuota.documents ||
+          held.bytes + BigInt(size) > BigInt(documentQuota.bytes)
         ) {
           return 'over_quota' as const;
         }
@@ -119,13 +295,19 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
       }),
 
     async presignUpload(accountId, pathname) {
-      const found = await asAccount(accountId, (tx) =>
-        pending(
-          tx,
-          accountId,
-          sql`object_key = ${pathname}
-              AND created_at > now() - make_interval(mins => ${uploadWindowMinutes})`,
-        ),
+      const recent = sql`created_at > now() - make_interval(mins => ${uploadWindowMinutes})`;
+      const [found] = await asAccount(
+        accountId,
+        async (tx) =>
+          (
+            await tx.execute<{ size: number }>(sql`
+              SELECT size FROM vault.document
+               WHERE owner_id = ${accountId} AND confirmed_at IS NULL
+                 AND object_key = ${pathname} AND ${recent}
+              UNION ALL
+              SELECT size FROM vault.document_replacement
+               WHERE owner_id = ${accountId} AND object_key = ${pathname} AND ${recent}`)
+          ).rows,
       );
       return found === undefined ? undefined : storage.presignUpload(pathname, found.size);
     },
@@ -207,11 +389,101 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
       return objectKey === undefined ? undefined : storage.downloadUrl(objectKey);
     },
 
+    async replace(accountId, { recipients, documents }) {
+      const ids = documents.map(({ documentId }) => documentId);
+      const discarded: string[] = [];
+      const outcome = await asAccount(accountId, async (tx): Promise<ReplacementStarted> => {
+        if (!(await lockVault(tx, accountId))) return 'not_found';
+        const owned = await tx.execute<{ id: string }>(sql`
+          SELECT id FROM vault.document
+           WHERE owner_id = ${accountId} AND confirmed_at IS NOT NULL AND id IN ${listOf(ids)}
+           FOR UPDATE`);
+        if (owned.rows.length !== ids.length) return 'not_found';
+        if (recipients.length > 0) {
+          const [linked] = (
+            await tx.execute<{ accounts: number }>(sql`
+              SELECT count(DISTINCT CASE WHEN inviter_id = ${accountId} THEN invitee_id
+                                         ELSE inviter_id END)::int AS accounts
+                FROM account.link
+               WHERE (inviter_id = ${accountId} AND invitee_id IN ${listOf(recipients)})
+                  OR (invitee_id = ${accountId} AND inviter_id IN ${listOf(recipients)})`)
+          ).rows;
+          if (linked?.accounts !== recipients.length) return 'not_linked';
+        }
+        const held = await usage(tx, accountId, ids);
+        const adding = documents.reduce((sum, { size }) => sum + BigInt(size), 0n);
+        if (held.bytes + adding > BigInt(documentQuota.bytes)) return 'over_quota';
+        const earlier = (
+          await tx.execute<{ object_key: string }>(sql`
+            DELETE FROM vault.document_replacement
+             WHERE owner_id = ${accountId} AND document_id IN ${listOf(ids)}
+            RETURNING object_key`)
+        ).rows.map(({ object_key }) => object_key);
+        await discard(tx, accountId, earlier);
+        discarded.push(...earlier);
+        const uploads = [];
+        for (const { documentId, size, sha256 } of documents) {
+          const objectKey = `documents/${randomUUID()}`;
+          await tx.execute(sql`
+            INSERT INTO vault.document_replacement
+              (document_id, owner_id, size, sha256, object_key, recipients)
+            VALUES (${documentId}, ${accountId}, ${size}, ${Buffer.from(sha256, 'base64url')},
+                    ${objectKey}, ${uuidArray(recipients)})`);
+          uploads.push({ documentId, upload: storage.uploadTarget(objectKey, size) });
+        }
+        return { uploads };
+      });
+      await storage.delete(discarded);
+      return outcome;
+    },
+
+    async confirmReplacements(accountId, documentIds) {
+      const results = [];
+      for (const documentId of documentIds) {
+        results.push({ documentId, outcome: await confirmReplacement(accountId, documentId) });
+      }
+      return { results };
+    },
+
+    async delete(accountId, documentIds) {
+      const keys = await asAccount(accountId, async (tx) => {
+        const found = (
+          await tx.execute<{ id: string; object_key: string }>(sql`
+            SELECT id, object_key FROM vault.document
+             WHERE owner_id = ${accountId} AND id IN ${listOf(documentIds)}
+             FOR UPDATE`)
+        ).rows;
+        if (found.length !== documentIds.length) return undefined;
+        const replacements = (
+          await tx.execute<{ object_key: string }>(sql`
+            SELECT object_key FROM vault.document_replacement
+             WHERE owner_id = ${accountId} AND document_id IN ${listOf(documentIds)}`)
+        ).rows;
+        const objects = [...found, ...replacements].map(({ object_key }) => object_key);
+        await discard(tx, accountId, objects);
+        // The shares and any replacement go with the row, through their cascades.
+        await tx.execute(sql`
+          DELETE FROM vault.document
+           WHERE owner_id = ${accountId} AND id IN ${listOf(documentIds)}`);
+        for (const documentId of documentIds) {
+          await record(accountId, { code: 'document_deleted', details: { documentId } });
+        }
+        return objects;
+      });
+      if (keys === undefined) return 'not_found';
+      await storage.delete(keys);
+      return 'deleted';
+    },
+
     async eraseObjects(accountId) {
       const keys = await asAccount(accountId, async (tx) =>
         (
           await tx.execute<{ object_key: string }>(sql`
-            SELECT object_key FROM vault.document WHERE owner_id = ${accountId}`)
+            SELECT object_key FROM vault.document WHERE owner_id = ${accountId}
+            UNION ALL
+            SELECT object_key FROM vault.document_replacement WHERE owner_id = ${accountId}
+            UNION ALL
+            SELECT object_key FROM vault.discarded_object WHERE owner_id = ${accountId}`)
         ).rows.map(({ object_key }) => object_key),
       );
       await storage.delete(keys);
@@ -219,28 +491,30 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
 
     async expirePending(accountId, now) {
       const cutoff = new Date(now.getTime() - pendingDocumentHours * 3_600_000);
-      const expired = await asAccount(
+      const discardedBefore = new Date(now.getTime() - discardedObjectMinutes * 60_000);
+      const documents = await expire(
         accountId,
-        async (tx) =>
-          (
-            await tx.execute<{ id: string; object_key: string }>(sql`
-            SELECT id, object_key FROM vault.document
-             WHERE owner_id = ${accountId} AND confirmed_at IS NULL
-               AND created_at <= ${cutoff}`)
-          ).rows,
+        sql`SELECT object_key FROM vault.document
+             WHERE owner_id = ${accountId} AND confirmed_at IS NULL AND created_at <= ${cutoff}`,
+        (keys) => sql`DELETE FROM vault.document
+                       WHERE owner_id = ${accountId} AND confirmed_at IS NULL
+                         AND object_key IN ${listOf(keys)}`,
       );
-      if (expired.length === 0) return 0;
-      await storage.delete(expired.map(({ object_key }) => object_key));
-      await asAccount(accountId, (tx) =>
-        tx.execute(sql`
-          DELETE FROM vault.document
-           WHERE owner_id = ${accountId} AND confirmed_at IS NULL
-             AND id IN (${sql.join(
-               expired.map(({ id }) => sql`${id}`),
-               sql`, `,
-             )})`),
+      const replacements = await expire(
+        accountId,
+        sql`SELECT object_key FROM vault.document_replacement
+             WHERE owner_id = ${accountId} AND created_at <= ${cutoff}`,
+        (keys) => sql`DELETE FROM vault.document_replacement
+                       WHERE owner_id = ${accountId} AND object_key IN ${listOf(keys)}`,
       );
-      return expired.length;
+      const discarded = await expire(
+        accountId,
+        sql`SELECT object_key FROM vault.discarded_object
+             WHERE owner_id = ${accountId} AND discarded_at <= ${discardedBefore}`,
+        (keys) => sql`DELETE FROM vault.discarded_object
+                       WHERE owner_id = ${accountId} AND object_key IN ${listOf(keys)}`,
+      );
+      return documents + replacements + discarded;
     },
   };
 }

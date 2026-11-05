@@ -76,6 +76,7 @@ export const enforcedRows = [
   ...expiryRules.map(({ row }) => row),
   ...ownedExpiryRules.map(({ row }) => row),
   'Pending document uploads',
+  'Deleted and replaced document ciphertext',
   'Invites',
   'Unconfirmed invited accounts',
   'Case data and account data',

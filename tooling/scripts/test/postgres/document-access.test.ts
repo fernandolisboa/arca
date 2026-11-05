@@ -86,6 +86,16 @@ const tables = {
     'confirmed_at',
   ],
   'vault.document_recipient': ['document_id', 'document_owner_id', 'recipient_id', 'created_at'],
+  'vault.document_replacement': [
+    'document_id',
+    'owner_id',
+    'size',
+    'sha256',
+    'object_key',
+    'recipients',
+    'created_at',
+  ],
+  'vault.discarded_object': ['object_key', 'owner_id', 'discarded_at'],
 } as const;
 
 /** Per table: the columns each column privilege covers, and the table-level privileges. */
@@ -174,7 +184,7 @@ describe('the documents and account links access matrix (spec 0005, R4)', () => 
     expect(forced).toEqual(['link']);
   });
 
-  it('gives app_api reads, the inserts each side needs and the one update a document needs', async () => {
+  it('gives app_api reads, the inserts each side needs and the updates a document needs', async () => {
     expect(await privileges('app_api')).toEqual({
       account: { USAGE: ['*'] },
       'account.link': {
@@ -185,13 +195,22 @@ describe('the documents and account links access matrix (spec 0005, R4)', () => 
       'vault.document': {
         SELECT: tables['vault.document'],
         INSERT: ['owner_id', 'type_key', 'size', 'sha256', 'object_key'],
-        UPDATE: ['confirmed_at'],
+        UPDATE: ['size', 'sha256', 'object_key', 'confirmed_at'],
         DELETE: ['*'],
       },
       'vault.document_recipient': {
         SELECT: tables['vault.document_recipient'],
         INSERT: ['document_id', 'document_owner_id', 'recipient_id'],
         DELETE: ['*'],
+      },
+      'vault.document_replacement': {
+        SELECT: tables['vault.document_replacement'],
+        INSERT: ['document_id', 'owner_id', 'size', 'sha256', 'object_key', 'recipients'],
+        DELETE: ['*'],
+      },
+      'vault.discarded_object': {
+        SELECT: tables['vault.discarded_object'],
+        INSERT: ['object_key', 'owner_id'],
       },
     });
   });
@@ -206,6 +225,8 @@ describe('the documents and account links access matrix (spec 0005, R4)', () => 
       'account.link': readAndDelete('account.link'),
       'vault.document': readAndDelete('vault.document'),
       'vault.document_recipient': readAndDelete('vault.document_recipient'),
+      'vault.document_replacement': readAndDelete('vault.document_replacement'),
+      'vault.discarded_object': readAndDelete('vault.discarded_object'),
     });
   });
 
@@ -218,6 +239,8 @@ describe('the documents and account links access matrix (spec 0005, R4)', () => 
       'account.link': {},
       'vault.document': {},
       'vault.document_recipient': {},
+      'vault.document_replacement': {},
+      'vault.discarded_object': {},
     });
   });
 
@@ -459,6 +482,116 @@ describe('the documents and account links access matrix (spec 0005, R4)', () => 
       ).toEqual([]);
       expect(await as('app_jobs', friend, documents)).toEqual([]);
       expect(await as('app_jobs', stranger, documents)).toEqual([strangers]);
+    });
+  });
+
+  describe('replacements and discarded objects', () => {
+    const replace = (documentId: string, documentOwner: string, recipientIds: string[]) =>
+      [
+        `INSERT INTO vault.document_replacement (document_id, owner_id, size, sha256, object_key, recipients)
+         VALUES ($1, $2, 10, $3, $4, $5)`,
+        [documentId, documentOwner, hash, objectKey(), recipientIds],
+      ] as [string, unknown[]];
+    const replacements = (client: pg.Client) =>
+      column(client, `SELECT document_id AS value FROM vault.document_replacement ORDER BY 1`);
+    const discard = (account: string) =>
+      [
+        `INSERT INTO vault.discarded_object (object_key, owner_id) VALUES ($1, $2)`,
+        [objectKey(), account],
+      ] as [string, unknown[]];
+
+    it('lets only the owner approve a replacement, seen by nobody else', async () => {
+      expect(
+        await as('app_api', owner, async (client) => {
+          await client.query(...replace(shared, owner, [friend]));
+          return replacements(client);
+        }),
+      ).toEqual([shared]);
+      await expect(
+        as('app_api', friend, (client) => client.query(...replace(shared, owner, []))),
+      ).rejects.toThrow(/row-level security/);
+      await expect(
+        as('app_api', stranger, (client) => client.query(...replace(shared, stranger, []))),
+      ).rejects.toThrow(/document_replacement_document_fkey/);
+    });
+
+    it('refuses a replacement encrypted to its owner, or to more than 16 accounts', async () => {
+      await expect(
+        as('app_api', owner, (client) => client.query(...replace(shared, owner, [owner]))),
+      ).rejects.toThrow(/document_replacement_recipients/);
+      const many = Array.from({ length: 17 }, () => randomUUID());
+      await expect(
+        as('app_api', owner, (client) => client.query(...replace(shared, owner, many))),
+      ).rejects.toThrow(/document_replacement_recipients/);
+    });
+
+    it("hides a replacement from others, and lets app_jobs erase only the owner's", async () => {
+      const seen = await as('app_api', owner, async (client) => {
+        await client.query(...replace(shared, owner, []));
+        await client.query(`SELECT pg_catalog.set_config('app.account_id', $1, true)`, [friend]);
+        const friendSees = await replacements(client);
+        const friendDeletes = (await client.query(`DELETE FROM vault.document_replacement`))
+          .rowCount;
+        return { friendSees, friendDeletes };
+      });
+      expect(seen).toEqual({ friendSees: [], friendDeletes: 0 });
+    });
+
+    it("lets the owner change a document's object, and nobody else", async () => {
+      const update = (client: pg.Client) =>
+        client
+          .query(`UPDATE vault.document SET object_key = $2, size = 11 WHERE id = $1`, [
+            shared,
+            objectKey(),
+          ])
+          .then(({ rowCount }) => rowCount);
+      expect(await as('app_api', owner, update)).toBe(1);
+      expect(await as('app_api', friend, update)).toBe(0);
+      expect(await as('app_api', stranger, update)).toBe(0);
+    });
+
+    it('lets app_api record and read only its own discarded objects, never delete them', async () => {
+      const seen = await as('app_api', owner, async (client) => {
+        await client.query(...discard(owner));
+        const own = await column(
+          client,
+          `SELECT owner_id::text AS value FROM vault.discarded_object`,
+        );
+        await client.query(`SELECT pg_catalog.set_config('app.account_id', $1, true)`, [stranger]);
+        const others = await column(
+          client,
+          `SELECT owner_id::text AS value FROM vault.discarded_object`,
+        );
+        return { own, others };
+      });
+      expect(seen).toEqual({ own: [owner], others: [] });
+      await expect(
+        as('app_api', owner, (client) => client.query(...discard(stranger))),
+      ).rejects.toThrow(/row-level security/);
+      await expect(
+        as('app_api', owner, (client) => client.query(`DELETE FROM vault.discarded_object`)),
+      ).rejects.toThrow(/permission denied/);
+    });
+
+    it("lets app_jobs read and erase the owner's discarded objects, and nobody else's", async () => {
+      const keys = await withClient(adminTarget(database), async (client) => {
+        await client.query('BEGIN');
+        try {
+          await client.query(...discard(owner));
+          await client.query(...discard(stranger));
+          await client.query(`SET LOCAL ROLE app_jobs`);
+          await client.query(`SELECT pg_catalog.set_config('app.account_id', $1, true)`, [owner]);
+          const seen = await column(
+            client,
+            `SELECT owner_id::text AS value FROM vault.discarded_object`,
+          );
+          const erased = (await client.query(`DELETE FROM vault.discarded_object`)).rowCount;
+          return { seen, erased };
+        } finally {
+          await client.query('ROLLBACK');
+        }
+      });
+      expect(keys).toEqual({ seen: [owner], erased: 1 });
     });
   });
 });

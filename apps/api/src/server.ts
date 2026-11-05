@@ -352,6 +352,14 @@ const app = createApp({
             documentService().then((documents) => documents.list(accountId, after)),
           downloadUrl: (accountId, documentId) =>
             documentService().then((documents) => documents.downloadUrl(accountId, documentId)),
+          replace: (accountId, request) =>
+            documentService().then((documents) => documents.replace(accountId, request)),
+          confirmReplacements: (accountId, documentIds) =>
+            documentService().then((documents) =>
+              documents.confirmReplacements(accountId, documentIds),
+            ),
+          delete: (accountId, documentIds) =>
+            documentService().then((documents) => documents.delete(accountId, documentIds)),
         },
         ...(documentStorage.memory === undefined ? {} : { memoryObjects: documentStorage.memory }),
       }),

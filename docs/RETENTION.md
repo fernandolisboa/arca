@@ -9,7 +9,8 @@ As of 2026-11-04. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md).
 | Case data and account data | While the account exists; after 3 years without a sign-in, an email notice, then deletion 60 days later | Inactivity job (daily `enforceRetention` workflow), which records `deletion requested` (`inactivity`) with the notice; a sign-in before the deletion cancels it (`deletion cancelled`, `sign_in`); `eraseAccount` erases it when due |
 | Account after a deletion request | 7 days locked, then erased | `eraseAccount` workflow |
 | Sessions | 3 days idle, 30 days at most | Better Auth expiry (slid only while the session is under 30 days old, so it ends by day 33 at the latest) plus a daily cleanup job; never backed up |
-| Pending document uploads (never confirmed) | 24 hours, with their objects | Daily cleanup job |
+| Pending document uploads (new documents and replacements never confirmed) | 24 hours, with their objects | Daily cleanup job |
+| Deleted and replaced document ciphertext | Deleted at once; the object's pathname is kept, without the document, until every upload grant for it has ended (1 hour), and the object is deleted again then, in case a late upload recreated it | Daily cleanup job |
 | Browser and system families seen per passkey (`auth.passkey_client`) | While the passkey exists | Deleted with the passkey (foreign key cascade); erased with the account; backed up |
 | Unconfirmed invited accounts | Erased when the inviter declines them, or when `confirmed_at` is still empty 30 days after creation | The decline, or the daily cleanup job, ends the sessions and marks the account due with a `deletion requested` event (`invite_declined` or `invite_unconfirmed`); the decline starts `eraseAccount` at once, and the daily `eraseAccount` runs pick up the rest |
 | Account links (inviter and invitee) | While both accounts exist | Registry |

@@ -8,8 +8,11 @@ import {
   authRoutes,
   confirmDocumentUpload,
   confirmInvite,
+  confirmReplacements,
   createDocument,
   createInvite,
+  deleteDocuments,
+  deleteDocumentsAction,
   documentDownloadUrl,
   DocumentsQuery,
   documentUploadUrl,
@@ -24,6 +27,8 @@ import {
   recoveryVerify,
   regenerateRecoveryKit,
   registrationOptions,
+  replaceDocuments,
+  replaceDocumentsAction,
   registrationVerify,
   requestAccountDeletion,
   revokeOtherSessions,
@@ -227,6 +232,7 @@ export type ErrorCode =
   | 'document_quota'
   | 'upload_mismatch'
   | 'not_uploaded'
+  | 'not_linked'
   | 'push_unavailable'
   | 'too_many_push_channels'
   | 'accounts_closed'
@@ -1057,6 +1063,44 @@ export function createApp({
     c.header('cache-control', 'no-store');
     const expiresAt = new Date(Date.now() + objectUrlMinutes * 60_000).toISOString();
     return c.json({ url, expiresAt }, 200);
+  });
+
+  // Replace and delete approve one exact batch with a vault_write step-up (spec 0005, R4).
+  v1.openapi(openApiRoutes.replaceDocuments, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || documents === undefined) return unauthorized(c);
+    const request = replaceDocuments.body.parse(await c.req.json());
+    const { action, targets, fields } = replaceDocumentsAction(request);
+    if (!(await stepUpGranted(c, current, 'vault_write', { action, targets, fields }))) {
+      return fail(c, 'step_up_required', 403);
+    }
+    const outcome = await documents.replace(current.accountId, request);
+    if (outcome === 'not_found') return fail(c, 'not_found', 404);
+    if (outcome === 'not_linked') return fail(c, 'not_linked', 409);
+    if (outcome === 'over_quota') return fail(c, 'document_quota', 409);
+    return c.json(outcome, 200);
+  });
+
+  v1.openapi(openApiRoutes.confirmReplacements, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || documents === undefined || authLimits === undefined) {
+      return unauthorized(c);
+    }
+    const limited = await overLimit(c, authLimits, documentLimits.confirm, current.accountId);
+    if (limited !== undefined) return limited;
+    const { documentIds } = confirmReplacements.body.parse(await c.req.json());
+    return c.json(await documents.confirmReplacements(current.accountId, documentIds), 200);
+  });
+
+  v1.openapi(openApiRoutes.deleteDocuments, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || documents === undefined) return unauthorized(c);
+    const request = deleteDocuments.body.parse(await c.req.json());
+    if (!(await stepUpGranted(c, current, 'vault_write', deleteDocumentsAction(request)))) {
+      return fail(c, 'step_up_required', 403);
+    }
+    const outcome = await documents.delete(current.accountId, request.documentIds);
+    return outcome === 'not_found' ? fail(c, 'not_found', 404) : c.json({}, 200);
   });
 
   v1.openapi(openApiRoutes.notificationChannels, async (c) => {
