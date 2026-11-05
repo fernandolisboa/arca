@@ -118,9 +118,14 @@ function Devices() {
       >
         {message}
       </p>
-      {outcome !== undefined && 'done' in outcome && outcome.done === 'passkeyRevoked' && (
-        <RotateOffer due={vault.data?.rotationDue === true} />
-      )}
+      <RotateOffer
+        due={
+          outcome !== undefined &&
+          'done' in outcome &&
+          outcome.done === 'passkeyRevoked' &&
+          vault.data?.rotationDue === true
+        }
+      />
       {restricted ? (
         <p className="text-warn-ink">{t('devices.restricted')}</p>
       ) : (
@@ -183,17 +188,23 @@ function Devices() {
   );
 }
 
-/** Any active passkey may have opened the vault, through PRF or an identity wrapped on its device. */
+/**
+ * Any active passkey may have opened the vault, through PRF or an identity wrapped on its device.
+ * Its own live region, since the offer follows the vault status read after the removal.
+ */
 function RotateOffer({ due }: { readonly due: boolean }) {
   const { t } = useTranslation();
-  if (!due) return null;
   return (
-    <p className="flex flex-col items-start gap-1">
-      {t('devices.rotateOffer')}
-      <Link to="/vault" className={textLinkClass}>
-        {t('devices.rotateLink')}
-      </Link>
-    </p>
+    <div role="status" className="flex flex-col items-start gap-1">
+      {due && (
+        <>
+          <p>{t('devices.rotateOffer')}</p>
+          <Link to="/vault" className={textLinkClass}>
+            {t('devices.rotateLink')}
+          </Link>
+        </>
+      )}
+    </div>
   );
 }
 

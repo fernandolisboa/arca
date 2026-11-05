@@ -7,7 +7,7 @@ import { Link, createLazyFileRoute } from '@tanstack/react-router';
 import { useState, type ReactNode, type SubmitEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { sessionQuery, vaultStatusQuery } from '../api.js';
-import { DocumentsSection } from '../documents-section.js';
+import { DocumentsSection, OpenRetained } from '../documents-section.js';
 import { recoveryCodeInput } from '../forms/inputs.js';
 import { TextField } from '../forms/text-field.js';
 import { textLinkClass } from '../forms/text-link.js';
@@ -307,6 +307,7 @@ function NewSecret({ vault, rotationDue, onSecret }: VaultStepProps) {
         </>
       )}
       <StepStatus waiting={waiting} failure={failure} />
+      {failure === 'rotated_unopened' && <OpenRetained vault={vault} />}
     </Section>
   );
 }
@@ -350,6 +351,7 @@ function Rotate({ vault, rotationDue, onSecret }: VaultStepProps) {
         {t('vault.rotate')}
       </Button>
       <StepStatus waiting={waiting} failure={failure} />
+      {failure === 'rotated_unopened' && <OpenRetained vault={vault} />}
     </div>
   );
 }

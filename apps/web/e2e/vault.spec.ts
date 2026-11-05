@@ -524,7 +524,9 @@ test('offers a rotation once a passkey that could open the vault is removed', as
     .getByRole('button', { name: 'Remover esta chave' })
     .click();
   await expect(page.getByRole('status').first()).toHaveText(/^Chave removida\./);
-  await expect(page.getByText(/^A chave que você removeu podia abrir o seu cofre\./)).toBeVisible();
+  await expect(
+    page.getByText(/^A chave de acesso que você removeu pode ter aberto o seu cofre\./),
+  ).toBeVisible();
   await expectAccessible(page);
   await page.getByRole('link', { name: 'Trocar a chave do cofre' }).click();
 
@@ -559,6 +561,35 @@ test('after an account recovery, offers a rotation in place of a new secret alon
   expect(secret).not.toBe(old);
   await expect(rotationDue(page)).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Criar o novo segredo' })).toHaveCount(0);
+  expect(problems).toEqual([]);
+});
+
+test('after a rotation and a reload, opens the old key so a new kit can re-seal it', async ({
+  page,
+}) => {
+  const problems = watchProblems(page);
+  const credential = newCredential();
+  const { userId, email } = await seedAccount(credential);
+  await virtualAuthenticator(page, credential, { userId });
+  await signIn(page, email);
+  await keepAccountCode(page, 'Mostrar meu código');
+  await openVaultPage(page);
+  await setUp(page);
+  const rotated = await rotate(page);
+
+  // A new kit after a full page load: the replaced identity is no longer held in memory.
+  await keepAccountCode(page, 'Gerar um novo código');
+  await expect(page).toHaveURL(`${databaseServer.origin}/vault`);
+  await page.getByRole('button', { name: 'Abrir o cofre' }).click();
+  await page.getByRole('button', { name: 'Criar o novo segredo' }).click();
+  await expect(page.getByText(/^Antes, abra neste dispositivo a chave antiga/)).toBeVisible();
+  await page.getByRole('button', { name: 'Abrir com a chave antiga' }).click();
+  await page.getByLabel('Segredo de recuperação do cofre').fill(rotated);
+  await page.getByRole('button', { name: 'Abrir a chave antiga' }).click();
+  await expect(page.getByText('A chave antiga está aberta neste dispositivo.')).toBeVisible(scrypt);
+  await expectAccessible(page);
+  await page.getByRole('button', { name: 'Criar o novo segredo' }).click();
+  expect(await keepSecret(page)).not.toBe(rotated);
   expect(problems).toEqual([]);
 });
 

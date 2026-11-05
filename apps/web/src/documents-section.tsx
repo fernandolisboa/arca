@@ -87,10 +87,111 @@ function useSize() {
   };
 }
 
+function useFailureMessage() {
+  const { t } = useTranslation();
+  const size = useSize();
+  return (failure: DocumentFailure) =>
+    t('vault.documents.failure', {
+      reason: failure,
+      maxSize: size(maxDocumentBytes),
+      maxDocuments: documentQuota.documents,
+      maxBytes: size(documentQuota.bytes),
+    });
+}
+
+/**
+ * Opens on this device the identities a rotation replaced (spec 0005, R4): from this passkey's
+ * envelopes, or else with the kit's secret.
+ */
+export function OpenRetained({
+  vault,
+  onOpened,
+}: {
+  readonly vault: UnlockedVault;
+  readonly onOpened?: () => void;
+}) {
+  const { t } = useTranslation();
+  const failureMessage = useFailureMessage();
+  const [waiting, setWaiting] = useState(false);
+  const [failure, setFailure] = useState<DocumentFailure>();
+  const [opened, setOpened] = useState(false);
+  const [needed, setNeeded] = useState<SecretNeeded>();
+  const [secret, setSecret] = useState('');
+
+  const step = (run: () => Promise<SecretNeeded | undefined>) => {
+    setFailure(undefined);
+    setWaiting(true);
+    run()
+      .then((next) => {
+        setNeeded(next);
+        if (next !== undefined) return;
+        setSecret('');
+        setOpened(true);
+        onOpened?.();
+      })
+      .catch((error: unknown) => {
+        setFailure(documentFailure(error));
+      })
+      .finally(() => {
+        setWaiting(false);
+      });
+  };
+  const submit = (event: SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (needed === undefined) return;
+    const pending = needed;
+    step(async () => {
+      await pending.openWithSecret(secret);
+      return undefined;
+    });
+  };
+
+  const message = waiting
+    ? t('vault.documents.working')
+    : failure !== undefined
+      ? failureMessage(failure)
+      : opened
+        ? t('vault.documents.done', { done: 'opened' })
+        : '';
+  return (
+    <div className="flex flex-col items-start gap-3">
+      {opened ? null : needed === undefined ? (
+        <Button
+          disabled={waiting}
+          aria-busy={waiting}
+          onClick={() => {
+            step(() => openRetained(vaultDevice, vault));
+          }}
+        >
+          {t('vault.documents.openRetained')}
+        </Button>
+      ) : (
+        <form onSubmit={submit} className="flex flex-col gap-4">
+          <p>{t('vault.documents.retainedSecretLead')}</p>
+          <TextField
+            label={t('vault.kit.codeLabel')}
+            {...recoveryCodeInput}
+            value={secret}
+            onChange={(event) => {
+              setSecret(event.currentTarget.value);
+            }}
+          />
+          <Button type="submit" disabled={waiting} aria-busy={waiting}>
+            {t('vault.documents.retainedSecretSubmit')}
+          </Button>
+        </form>
+      )}
+      <p role="status" className={opened ? 'text-ok-ink' : 'text-ink'}>
+        {message}
+      </p>
+    </div>
+  );
+}
+
 /** The open vault's documents (spec 0005, R4): added, saved and deleted on this device. */
 export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
   const { t } = useTranslation();
-  const size = useSize();
+  const failureMessage = useFailureMessage();
   const queryClient = useQueryClient();
   const query = documentsQuery(vault);
   const documents = useQuery(query);
@@ -98,8 +199,6 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
   const sharing = useQuery(sharingOptions);
   const [waiting, setWaiting] = useState(false);
   const [outcome, setOutcome] = useState<{ done: Done } | { failure: DocumentFailure }>();
-  const [secretNeeded, setSecretNeeded] = useState<SecretNeeded>();
-  const [secret, setSecret] = useState('');
   const statusRef = useRef<HTMLParagraphElement>(null);
 
   const change = (run: () => Promise<boolean>, done: Done, refresh: boolean) => {
@@ -148,12 +247,7 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
       ? ''
       : 'done' in outcome
         ? t('vault.documents.done', { done: outcome.done })
-        : t('vault.documents.failure', {
-            reason: outcome.failure,
-            maxSize: size(maxDocumentBytes),
-            maxDocuments: documentQuota.documents,
-            maxBytes: size(documentQuota.bytes),
-          });
+        : failureMessage(outcome.failure);
 
   const documentNames = names(documents.data ?? []);
   const stale = (documents.data ?? []).filter(
@@ -172,34 +266,6 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
       },
       'moved',
       true,
-    );
-  };
-
-  const openOld = () => {
-    change(
-      async () => {
-        const needed = await openRetained(vaultDevice, vault);
-        setSecretNeeded(needed);
-        return needed === undefined;
-      },
-      'opened',
-      false,
-    );
-  };
-
-  const submitSecret = (event: SubmitEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (secretNeeded === undefined) return;
-    const needed = secretNeeded;
-    change(
-      async () => {
-        await needed.openWithSecret(secret);
-        setSecretNeeded(undefined);
-        setSecret('');
-        return true;
-      },
-      'opened',
-      false,
     );
   };
 
@@ -234,26 +300,12 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
       {unopened && (
         <div className="flex flex-col items-start gap-3">
           <p className="text-ink">{t('vault.documents.unopened')}</p>
-          {secretNeeded === undefined ? (
-            <Button disabled={waiting} aria-busy={waiting} onClick={openOld}>
-              {t('vault.documents.openRetained')}
-            </Button>
-          ) : (
-            <form onSubmit={submitSecret} className="flex flex-col gap-4">
-              <p>{t('vault.documents.retainedSecretLead')}</p>
-              <TextField
-                label={t('vault.kit.codeLabel')}
-                {...recoveryCodeInput}
-                value={secret}
-                onChange={(event) => {
-                  setSecret(event.currentTarget.value);
-                }}
-              />
-              <Button type="submit" disabled={waiting} aria-busy={waiting}>
-                {t('vault.documents.retainedSecretSubmit')}
-              </Button>
-            </form>
-          )}
+          <OpenRetained
+            vault={vault}
+            onOpened={() => {
+              setOutcome({ done: 'opened' });
+            }}
+          />
         </div>
       )}
       {documents.isError && (
