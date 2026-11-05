@@ -53,6 +53,7 @@ export const deviceLimits = {
 /** Per-account limit on adding push channels, which the channel cap bounds again. */
 export const notificationLimits = {
   addPushChannel: { name: 'add_push_channel_account', limit: 30, windowSeconds: hour },
+  forgetPushChannel: { name: 'forget_push_channel_account', limit: 30, windowSeconds: hour },
 } as const satisfies Record<string, RateLimitRule>;
 
 /** Storing a sharing state follows the owner's own shares and revocations. */

@@ -8,6 +8,7 @@ import {
   type Capability,
   type KeyContext,
   type Platform,
+  type PushChannel,
   type VaultEnvelopes,
 } from '../src/index.js';
 import { capabilitiesFrom, guarded } from '../src/capabilities.js';
@@ -33,6 +34,7 @@ export function fakePlatform(capabilities: Capabilities) {
   let stored: { context: KeyContext; secret: Uint8Array } | undefined;
   let prompt: 'granted' | 'denied' = 'denied';
   let permission: 'granted' | 'denied' | 'prompt' = 'prompt';
+  let subscription: PushChannel | undefined;
   let shareSheet: 'shared' | 'cancelled' = 'shared';
   let inbox: File[] = [];
   const chosen = () =>
@@ -61,9 +63,18 @@ export function fakePlatform(capabilities: Capabilities) {
       subscribe: port('notifications', () => {
         permission = prompt;
         if (prompt !== 'granted') throw new NotificationsDeniedError('refused');
-        return { endpoint: 'https://push.example.com/synthetic', p256dh: 'BPk', auth: 'AAA' };
+        subscription = {
+          endpoint: 'https://push.example.com/synthetic',
+          p256dh: 'BPk',
+          auth: 'AAA',
+        };
+        return subscription;
       }),
-      unsubscribe: port('notifications', () => undefined),
+      unsubscribe: port('notifications', () => {
+        const ended = subscription;
+        subscription = undefined;
+        return ended;
+      }),
     },
     sharing: { share: port('sharing', () => shareSheet) },
     sharedFiles: {

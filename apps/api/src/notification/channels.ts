@@ -1,7 +1,9 @@
+import { timingSafeEqual } from 'node:crypto';
 import {
   maxPushChannels,
   type AddPushChannelRequest,
   type DeviceDescription,
+  type ForgetPushChannelRequest,
   type NotificationChannel,
 } from '@arca/api-contract/routes';
 import { withIdentity, type Database } from '@arca/db';
@@ -19,6 +21,8 @@ export interface NotificationChannels {
   ): Promise<AddPushOutcome>;
   /** False for an unknown channel or the email channel, which every account keeps. */
   removePush(accountId: string, channelId: string): Promise<boolean>;
+  /** The channel of this subscription, removed only when its auth secret matches; false if none. */
+  forgetPush(accountId: string, subscription: ForgetPushChannelRequest): Promise<boolean>;
 }
 
 /** `too_many`: the account already has `maxPushChannels` other push channels. */
@@ -41,16 +45,23 @@ export function createNotificationChannels({
   readonly db: Database;
   readonly audit: AuditLog;
 }): NotificationChannels {
-  const record = (
-    accountId: string,
-    code: 'notification_channel_added' | 'notification_channel_removed',
-    channelId: string,
-  ) =>
+  const added = (accountId: string, channelId: string) =>
     audit.record({
-      code,
+      code: 'notification_channel_added',
       subjectAccountId: accountId,
       actorAccountId: accountId,
       details: { channelId },
+    });
+  const removed = (
+    accountId: string,
+    channelId: string,
+    reason: 'step_up' | 'renewed' | 'subscription',
+  ) =>
+    audit.record({
+      code: 'notification_channel_removed',
+      subjectAccountId: accountId,
+      actorAccountId: accountId,
+      details: { channelId, reason },
     });
 
   return {
@@ -80,9 +91,7 @@ export function createNotificationChannels({
            WHERE account_id = ${accountId} AND endpoint = ${endpoint}
              AND (p256dh <> ${p256dh} OR auth_secret <> ${auth})
           RETURNING id`);
-        for (const { id } of replaced.rows) {
-          await record(accountId, 'notification_channel_removed', id);
-        }
+        for (const { id } of replaced.rows) await removed(accountId, id, 'renewed');
         const existing = await tx.execute<{ id: string }>(sql`
           SELECT id FROM notification.channel
            WHERE account_id = ${accountId} AND endpoint = ${endpoint}`);
@@ -92,17 +101,17 @@ export function createNotificationChannels({
           SELECT count(*)::int AS total FROM notification.channel
            WHERE account_id = ${accountId} AND kind = 'web_push'`);
         if ((others.rows[0]?.total ?? 0) >= maxPushChannels) return 'too_many';
-        const added = await tx.execute<{ id: string }>(sql`
+        const inserted = await tx.execute<{ id: string }>(sql`
           INSERT INTO notification.channel
                  (account_id, kind, endpoint, p256dh, auth_secret, browser, os)
           VALUES (${accountId}, 'web_push', ${endpoint}, ${p256dh}, ${auth},
                   ${device.browser}, ${device.os})
           ON CONFLICT (account_id, endpoint) DO NOTHING
           RETURNING id`);
-        const [inserted] = added.rows;
-        if (inserted !== undefined) {
-          await record(accountId, 'notification_channel_added', inserted.id);
-          return { channelId: inserted.id };
+        const [stored] = inserted.rows;
+        if (stored !== undefined) {
+          await added(accountId, stored.id);
+          return { channelId: stored.id };
         }
         // A concurrent request added the same endpoint first.
         const raced = await tx.execute<{ id: string }>(sql`
@@ -115,12 +124,31 @@ export function createNotificationChannels({
 
     removePush: (accountId, channelId) =>
       withIdentity(db, { accountId }, async (tx) => {
-        const removed = await tx.execute<{ id: string }>(sql`
+        const deleted = await tx.execute<{ id: string }>(sql`
           DELETE FROM notification.channel
            WHERE id = ${channelId} AND account_id = ${accountId} AND kind = 'web_push'
           RETURNING id`);
-        if (removed.rows.length === 0) return false;
-        await record(accountId, 'notification_channel_removed', channelId);
+        if (deleted.rows.length === 0) return false;
+        await removed(accountId, channelId, 'step_up');
+        return true;
+      }),
+
+    forgetPush: (accountId, { endpoint, auth }) =>
+      withIdentity(db, { accountId }, async (tx) => {
+        const found = await tx.execute<{ id: string; auth_secret: string }>(sql`
+          SELECT id, auth_secret FROM notification.channel
+           WHERE account_id = ${accountId} AND kind = 'web_push' AND endpoint = ${endpoint}`);
+        const [channel] = found.rows;
+        // Compared in constant time: the secret is what proves the browser holds the subscription.
+        const given = Buffer.from(auth);
+        const stored = Buffer.from(channel?.auth_secret ?? '');
+        if (channel === undefined || stored.length !== given.length) return false;
+        if (!timingSafeEqual(stored, given)) return false;
+        const deleted = await tx.execute<{ id: string }>(
+          sql`DELETE FROM notification.channel WHERE id = ${channel.id} RETURNING id`,
+        );
+        if (deleted.rows.length === 0) return false;
+        await removed(accountId, channel.id, 'subscription');
         return true;
       }),
   };

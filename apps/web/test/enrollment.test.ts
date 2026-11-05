@@ -1,5 +1,5 @@
 import { ApiError, createApiClient } from '@arca/api-contract/client';
-import type { Passkeys, RegistrationResponseJSON } from '@arca/platform';
+import type { Passkeys, PushChannel, RegistrationResponseJSON } from '@arca/platform';
 import { QueryClient, type QueryKey } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -39,7 +39,7 @@ let answers: Response[] = [];
 
 const { forgetKey, unsubscribe } = vi.hoisted(() => ({
   forgetKey: vi.fn(() => Promise.resolve()),
-  unsubscribe: vi.fn(() => Promise.resolve()),
+  unsubscribe: vi.fn((): Promise<PushChannel | undefined> => Promise.resolve(undefined)),
 }));
 vi.mock('../src/platform.js', () => ({
   keyStorage: { forget: forgetKey },
@@ -65,6 +65,11 @@ vi.mock('../src/api.js', () => ({
 }));
 
 const token = 'A'.repeat(43);
+const channel: PushChannel = {
+  endpoint: 'https://fcm.googleapis.com/fcm/send/synthetic',
+  p256dh: 'B'.repeat(87),
+  auth: 'C'.repeat(22),
+};
 const recoveryCode = '0123456789ABCDEFGHJKMNPQRS';
 const assertion = {
   id: 'Y3JlZA',
@@ -389,6 +394,43 @@ describe('a change of account', () => {
     answers = [Response.json({ success: true })];
     await signOut();
     expect(unsubscribe).toHaveBeenCalledOnce();
+  });
+
+  it("removes the ended subscription's channel while the session still holds", async () => {
+    unsubscribe.mockResolvedValueOnce(channel);
+    answers = [Response.json({}), Response.json({ success: true })];
+    await signOut();
+    expect(sent.map(({ path, body }) => ({ path, body }))).toEqual([
+      {
+        path: '/v1/notifications/channels/forget',
+        body: { endpoint: channel.endpoint, auth: channel.auth },
+      },
+      { path: '/v1/auth/sign-out', body: {} },
+    ]);
+  });
+
+  it('still signs out when the server cannot remove the channel', async () => {
+    unsubscribe.mockResolvedValueOnce(channel);
+    answers = [
+      Response.json({ code: 'not_found' }, { status: 404 }),
+      Response.json({ success: true }),
+    ];
+    await signOut();
+    expect(sent.at(-1)?.path).toBe('/v1/auth/sign-out');
+  });
+
+  it('signs out without waiting for a push service that never answers', async () => {
+    vi.useFakeTimers();
+    try {
+      unsubscribe.mockImplementationOnce(() => new Promise(() => undefined));
+      answers = [Response.json({ success: true })];
+      const signedOut = signOut();
+      await vi.advanceTimersByTimeAsync(3_000);
+      await signedOut;
+      expect(sent.at(-1)?.path).toBe('/v1/auth/sign-out');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('still signs out when ending the push subscription fails', async () => {

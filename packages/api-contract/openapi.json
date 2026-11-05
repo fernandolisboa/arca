@@ -4683,6 +4683,77 @@
         }
       }
     },
+    "/notifications/channels/forget": {
+      "post": {
+        "operationId": "forgetPushChannel",
+        "summary": "Removes the account's push channel of this subscription without a step-up, as on sign-out: the endpoint and auth secret only the subscribed browser holds stand in for it; 404 not_found when none matches",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "endpoint": {
+                    "type": "string",
+                    "maxLength": 2048
+                  },
+                  "auth": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{22}$"
+                  }
+                },
+                "required": [
+                  "endpoint",
+                  "auth"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Removed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/vault/documents": {
       "post": {
         "operationId": "createDocument",

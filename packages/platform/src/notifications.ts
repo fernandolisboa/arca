@@ -23,6 +23,6 @@ export interface Notifications {
     applicationServerKey: Uint8Array,
     options?: { readonly fresh?: boolean },
   ): Promise<PushChannel>;
-  /** Ends this device's subscription, if any. */
-  unsubscribe(): Promise<void>;
+  /** Ends this device's subscription, if any, and returns the channel it was. */
+  unsubscribe(): Promise<PushChannel | undefined>;
 }

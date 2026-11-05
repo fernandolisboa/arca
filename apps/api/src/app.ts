@@ -42,6 +42,7 @@ import {
   storeSharingState,
   addPushChannel,
   removeNotificationChannel,
+  forgetPushChannel,
   StepUpAction,
   stepUpNonceHeader,
   StepUpOptionsRequest,
@@ -1184,6 +1185,26 @@ export function createApp({
     });
     if (!approved) return fail(c, 'step_up_required', 403);
     if (!(await notifications.channels.removePush(current.accountId, channelId))) {
+      return fail(c, 'not_found', 404);
+    }
+    return c.json({}, 200);
+  });
+
+  // No step-up: only the subscribed browser holds the auth secret, so it can only give up its own.
+  v1.openapi(openApiRoutes.forgetPushChannel, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || notifications === undefined || authLimits === undefined) {
+      return unauthorized(c);
+    }
+    const limited = await overLimit(
+      c,
+      authLimits,
+      notificationLimits.forgetPushChannel,
+      current.accountId,
+    );
+    if (limited !== undefined) return limited;
+    const subscription = forgetPushChannel.body.parse(await c.req.json());
+    if (!(await notifications.channels.forgetPush(current.accountId, subscription))) {
       return fail(c, 'not_found', 404);
     }
     return c.json({}, 200);

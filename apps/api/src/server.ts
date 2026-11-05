@@ -378,6 +378,8 @@ const app = createApp({
         ),
       removePush: (accountId, channelId) =>
         notificationChannels().then((channels) => channels.removePush(accountId, channelId)),
+      forgetPush: (accountId, subscription) =>
+        notificationChannels().then((channels) => channels.forgetPush(accountId, subscription)),
     },
     pushKey,
   },

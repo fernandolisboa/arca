@@ -244,7 +244,7 @@ describe('push channels (spec 0005, R7)', () => {
     expect((await channels.list(accountId)).map(({ id }) => id)).toEqual([renewed]);
     expect(await auditOf(accountId)).toEqual([
       { code: 'notification_channel_added', details: { channelId: first } },
-      { code: 'notification_channel_removed', details: { channelId: first } },
+      { code: 'notification_channel_removed', details: { channelId: first, reason: 'renewed' } },
       { code: 'notification_channel_added', details: { channelId: renewed } },
     ]);
   });
@@ -280,9 +280,33 @@ describe('push channels (spec 0005, R7)', () => {
 
     expect((await channels.list(owner.accountId)).map(({ kind }) => kind)).toEqual(['email']);
     expect(await deliveriesOf(messageId)).toEqual([{ channel_id: email?.id }]);
-    expect((await auditOf(owner.accountId)).map(({ code }) => code)).toEqual([
-      'notification_channel_added',
-      'notification_channel_removed',
+    expect((await auditOf(owner.accountId)).map(({ details }) => details)).toEqual([
+      { channelId },
+      { channelId, reason: 'step_up' },
+    ]);
+  });
+
+  it('forgets a channel only for the browser that holds its subscription', async () => {
+    const owner = await account();
+    const other = await account();
+    const channelId = added(await channels.addPush(owner.accountId, subscription(4), device));
+    const { endpoint, auth } = subscription(4);
+
+    expect(await channels.forgetPush(owner.accountId, { endpoint, auth: 'E'.repeat(22) })).toBe(
+      false,
+    );
+    expect(await channels.forgetPush(other.accountId, { endpoint, auth })).toBe(false);
+    expect(
+      await channels.forgetPush(owner.accountId, { endpoint: subscription(5).endpoint, auth }),
+    ).toBe(false);
+    expect((await channels.list(owner.accountId)).map(({ id }) => id)).toContain(channelId);
+
+    expect(await channels.forgetPush(owner.accountId, { endpoint, auth })).toBe(true);
+    expect(await channels.list(owner.accountId)).toEqual([]);
+    expect(await channels.forgetPush(owner.accountId, { endpoint, auth })).toBe(false);
+    expect((await auditOf(owner.accountId)).map(({ details }) => details)).toEqual([
+      { channelId },
+      { channelId, reason: 'subscription' },
     ]);
   });
 });

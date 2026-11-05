@@ -3,6 +3,7 @@ import {
   NotificationsDeniedError,
   type NotificationPermission,
   type Notifications,
+  type PushChannel,
 } from './notifications.js';
 
 const permissions: Record<globalThis.NotificationPermission, NotificationPermission> = {
@@ -34,6 +35,16 @@ function sameKey(current: ArrayBuffer | null, wanted: Uint8Array): boolean {
   return bytes.every((byte, index) => byte === wanted[index]);
 }
 
+function channelOf(subscription: PushSubscription): PushChannel {
+  const { endpoint, keys } = subscription.toJSON();
+  const p256dh = keys?.['p256dh'];
+  const auth = keys?.['auth'];
+  if (endpoint === undefined || p256dh === undefined || auth === undefined) {
+    throw new Error('the push subscription has no endpoint or keys');
+  }
+  return { endpoint, p256dh, auth };
+}
+
 /** Web push through the app's service worker (spec 0005, R7). */
 export function createWebNotifications(
   capabilities: Capabilities,
@@ -63,18 +74,15 @@ export function createWebNotifications(
         userVisibleOnly: true,
         applicationServerKey: new Uint8Array(applicationServerKey),
       });
-      const { endpoint, keys } = subscription.toJSON();
-      const p256dh = keys?.['p256dh'];
-      const auth = keys?.['auth'];
-      if (endpoint === undefined || p256dh === undefined || auth === undefined) {
-        throw new Error('the push subscription has no endpoint or keys');
-      }
-      return { endpoint, p256dh, auth };
+      return channelOf(subscription);
     },
     async unsubscribe() {
       requireCapability(capabilities, 'notifications');
       const registration = await scope.navigator.serviceWorker.getRegistration();
-      await (await registration?.pushManager.getSubscription())?.unsubscribe();
+      const subscription = await registration?.pushManager.getSubscription();
+      if (subscription === null || subscription === undefined) return undefined;
+      await subscription.unsubscribe();
+      return channelOf(subscription);
     },
   };
 }
