@@ -201,9 +201,11 @@ const sha256HexPattern = /^[0-9a-f]{64}$/;
 /**
  * The owner enrollment code's hash (spec 0003, R2): the committed one, or in development only
  * `ARCA_ENROLLMENT_CODE_HASH`, so a local or end-to-end server can enroll with a code of its own.
+ * Previews get none, so the owner's one code is never spent on the shared development branch.
  * Null keeps owner enrollment closed.
  */
 export function readEnrollmentCodeHash(environment: DeploymentEnvironment): string | null {
+  if (environment === 'preview') return null;
   const local =
     environment === 'development' ? process.env['ARCA_ENROLLMENT_CODE_HASH'] : undefined;
   const hash = local === undefined || local === '' ? enrollmentCodeHash : local;

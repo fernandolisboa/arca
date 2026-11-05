@@ -13,6 +13,7 @@ import {
   readRateLimitKey,
   readResendKey,
 } from '../src/config.js';
+import { enrollmentCodeHash } from '../src/auth/enrollment-code-hash.js';
 import { productionSite } from '../src/production-site.js';
 
 afterEach(() => {
@@ -262,15 +263,16 @@ describe('readDeploymentEnvironment', () => {
 describe('readEnrollmentCodeHash (spec 0003, R2)', () => {
   const hash = 'a'.repeat(64);
 
-  it('keeps owner enrollment closed until a hash is committed', () => {
-    expect(readEnrollmentCodeHash('production')).toBeNull();
+  it('reads the committed hash in production', () => {
+    expect(enrollmentCodeHash).toMatch(/^[0-9a-f]{64}$/);
+    expect(readEnrollmentCodeHash('production')).toBe(enrollmentCodeHash);
   });
 
   it('takes a local hash only in development', () => {
     vi.stubEnv('ARCA_ENROLLMENT_CODE_HASH', hash);
     expect(readEnrollmentCodeHash('development')).toBe(hash);
     expect(readEnrollmentCodeHash('preview')).toBeNull();
-    expect(readEnrollmentCodeHash('production')).toBeNull();
+    expect(readEnrollmentCodeHash('production')).toBe(enrollmentCodeHash);
   });
 
   it('refuses a value that is not a SHA-256 hex digest', () => {
