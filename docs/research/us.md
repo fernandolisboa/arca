@@ -15,7 +15,16 @@ Implication: entering on a nonimmigrant visa and adjusting status inside the U.S
 
 ## EB-5 (investor green card)
 
-Checked on 2026-11-05 against 8 U.S.C. 1153(b)(5)(C) on govinfo.gov: USD 800,000 and 1,050,000, adjusted by CPI for petitions filed on or after 2027-01-01. The I-526 and I-526E fee is USD 11,160 (8 CFR 106.2). Not yet a route version: children under 8 U.S.C. 1101(b)(1) include stepchildren and adopted children, whose conditions the schema cannot express yet ([#219](https://github.com/fernandolisboa/arca/issues/219)).
+Checked on 2026-11-05 against 8 U.S.C. 1153(b)(5)(C) on govinfo.gov: USD 800,000 and 1,050,000, adjusted by CPI for petitions filed on or after 2027-01-01. The I-526 and I-526E fee is USD 11,160 (8 CFR 106.2). Route version `us-eb5` 1 (proposed, 2026-11-05) covers the spouse and unmarried children under 21 under 8 U.S.C. 1101(b)(1): biological children, children adopted before 16 after two years of custody, and stepchildren whose parent married the principal before they turned 18. A child adopted at 16 or 17 (the sibling exception in (E)(ii)) or whose two years of custody are not complete yet is shown as possible, not excluded. Lawful source of funds, capital at risk and job creation (8 CFR 204.6(j)) are assessments, so a family that meets the capital threshold gets "needs assessment", never a plain "eligible". Orphan and Hague adoptions ((F) and (G)) need a U.S.-citizen adopter, so they cannot apply to an EB-5 investor.
+
+Known gaps in version 1:
+
+- The amounts change for petitions filed on or after 2027-01-01, so a version 2 is needed once DHS publishes them; version 1 has no end date ([#219](https://github.com/fernandolisboa/arca/issues/219)).
+- Only the USD 800,000 amount (TEA or infrastructure) is modeled; the TEA status of a project is not a case fact.
+- Ages are read at `factsAsOf`, which fits a family that has not filed yet. After filing, the Child Status Protection Act (8 U.S.C. 1153(h)) can keep a child who turns 21 during processing; version 1 does not model it.
+- Any biological parent link counts. A child born out of wedlock qualifies through the father only with legitimation or a bona fide relationship ((C) and (D)), which the snapshot cannot tell.
+- Stepchildren are reached only through the current marriage, so a step relationship from an earlier marriage is missed; and the spouse's own link to the child is not checked against 1101(b)(1).
+- The leap-day convention (`feb-28`) has no official source; the version cites the statute's age of 21 and says the 28 February date is assumed.
 
 | Fact | Source |
 | --- | --- |

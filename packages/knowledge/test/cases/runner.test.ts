@@ -172,6 +172,37 @@ describe('runCases', () => {
     expect(problems.some((problem) => problem.includes('never excludes'))).toBe(false);
   });
 
+  it('does not ask an unconditional rule to exclude anyone, but still to include someone', async () => {
+    const spouse = {
+      id: 'spouse',
+      title: 'Spouse',
+      path: ['spouse'],
+      condition: { op: 'bool', value: true },
+      sources: ['law'],
+    };
+    const family = {
+      ...citizen,
+      members: ['p1', 'p2'],
+      people: [{ ...citizen.people[0], recordedInFull: ['spouses'] }, { id: 'p2' }],
+      relationships: [{ kind: 'spouse', people: ['p1', 'p2'], start: '2010-01-01', end: 'none' }],
+    };
+    const tree = (cases: readonly object[]): Record<string, unknown> => ({
+      ...baseTree(),
+      'routes/qm-work/1.json': routeVersion({ dependents: [spouse] }),
+      'routes/qm-work/1.cases.json': { schemaVersion: 1, cases },
+    });
+    const covered = await run(
+      tree([
+        { ...eligible, snapshot: family, expected: { ...eligible.expected, dependents: ['p2'] } },
+      ]),
+    );
+    expect(covered.problems.some((problem) => problem.includes('Dependent rule'))).toBe(false);
+    const uncovered = await run(tree([eligible]));
+    expect(uncovered.problems).toContain(
+      'routes/qm-work/1.cases.json: Dependent rule spouse never includes anyone',
+    );
+  });
+
   it('does not count a rule as including someone another rule included', async () => {
     const students = {
       id: 'students',

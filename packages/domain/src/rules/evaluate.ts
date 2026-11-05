@@ -54,6 +54,8 @@ export interface Frame {
   readonly countrySets: ReadonlyMap<string, readonly string[]>;
   readonly current: string;
   readonly edge?: Relationship;
+  /** The first edge of the path a dependent rule reached the candidate by. */
+  readonly firstEdge?: Relationship;
   readonly lineage?: LineageBinding;
 }
 
@@ -103,6 +105,8 @@ export function evaluate(expression: Expression, frame: Frame): Trace {
   switch (expression.op) {
     case 'bool':
       return leaf(expression.op, booleanValue(expression.value));
+    case 'unmodeled':
+      return leaf(expression.op, booleanValue('unknown'));
     case 'int':
       return leaf(expression.op, integerRange(expression.value, expression.value));
     case 'decimal': {
@@ -216,7 +220,10 @@ function readFact(reference: string, dateName: string | undefined, frame: Frame)
   const fact: FactRead = {
     reference,
     personId: binding.personId,
-    ...(resolved.target === 'edge' && binding.edge !== undefined ? { edge: binding.edge } : {}),
+    ...((resolved.target === 'edge' || resolved.target === 'firstEdge') &&
+    binding.edge !== undefined
+      ? { edge: binding.edge }
+      : {}),
     ...(resolved.definition.scope === 'lineage' && binding.lineage !== undefined
       ? { line: binding.lineage.path }
       : {}),
@@ -258,6 +265,12 @@ function bindingFor(target: string, frame: Frame): FactBinding {
       if (ancestor === undefined) throw new RangeError('An empty line');
       return { environment, personId: ancestor, lineage: { path: lineage.path, position: 0 } };
     }
+    case 'firstEdge':
+      return {
+        environment,
+        personId: frame.current,
+        ...(frame.firstEdge === undefined ? {} : { edge: frame.firstEdge }),
+      };
     default:
       return {
         environment,

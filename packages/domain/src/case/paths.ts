@@ -24,14 +24,21 @@ export interface Reach {
   readonly uncertainEdges: readonly Relationship[];
 }
 
-/** A last edge a path crossed to reach someone, and whether the path through it holds. */
+/**
+ * How a path arrived at someone, by its last edge and, when kept, its first edge, the only edges a
+ * condition reads, and whether some walk through them holds.
+ */
 export interface Arrival extends Reach {
+  /** The last edge, the one `edge.*` facts read. */
   readonly edge: Relationship;
+  /** The edge that left the principal, the one `firstEdge.*` facts read, when asked for. */
+  readonly firstEdge?: Relationship;
 }
 
 /**
- * Someone a relationship path reaches, once, with every last edge it arrived by. Edge facts are
- * read per arrival, so a rule's condition holds for the person when it holds through any of them.
+ * Someone a relationship path reaches, once, with every last edge (and kept first edge) it arrived
+ * by. Edge facts are read per arrival, so a rule's condition holds for the person when it holds
+ * through any of them.
  */
 export interface Reached extends Reach {
   readonly id: string;
@@ -51,41 +58,74 @@ const markers: Record<RelationshipStep, CompletenessMarker> = {
   parent: 'parents',
 };
 
+interface Walk extends Reach {
+  readonly id: string;
+  readonly firstEdge?: Relationship;
+  readonly edge: Relationship;
+}
+
 /**
  * Follows a relationship path such as `spouse.parent` from the principal at a date (spec 0002,
  * R4). Edges certainly invalid at the date are not crossed; an unknown one makes the person
- * reached only possibly. The principal is never returned, and each person and last edge once.
+ * reached only possibly. The principal is never returned, and each person once. Walks are merged
+ * at every step on the person and, when `keepFirstEdge` asks for it, the first edge; only the last
+ * step also keeps the last edge apart. So without first edges the work is bounded by the edges,
+ * as before, and with them by the first edges times the edges.
  */
 export function followPath(
   indexed: IndexedSnapshot,
   principalId: string,
   steps: readonly RelationshipStep[],
   date: CalendarDate,
+  keepFirstEdge = false,
 ): PathResult {
-  let frontier: Reached[] = [{ id: principalId, reached: true, uncertainEdges: [], arrivals: [] }];
-  const missingMarkers: MissingMarker[] = [];
-  for (const step of steps) {
-    const next = new Map<string, Map<Relationship, Reach>>();
-    for (const from of frontier) {
-      if (!isRecordedInFull(indexed.person(from.id), markers[step])) {
-        missingMarkers.push({ personId: from.id, marker: markers[step] });
+  let walks: readonly (Omit<Walk, 'edge'> & { edge?: Relationship })[] = [
+    { id: principalId, reached: true, uncertainEdges: [] },
+  ];
+  const missingMarkers = new Map<string, MissingMarker>();
+  const edgeIndex = new Map(indexed.snapshot.relationships.map((edge, at) => [edge, at]));
+  const keyOf = (edge: Relationship | undefined): string =>
+    edge === undefined ? '' : String(edgeIndex.get(edge));
+  for (const [index, step] of steps.entries()) {
+    const last = index === steps.length - 1;
+    const next = new Map<string, Walk>();
+    for (const walk of walks) {
+      if (!isRecordedInFull(indexed.person(walk.id), markers[step])) {
+        missingMarkers.set(`${walk.id}:${markers[step]}`, {
+          personId: walk.id,
+          marker: markers[step],
+        });
       }
-      for (const neighbor of neighbors(indexed, from.id, step, date)) {
-        const reach = cross(from, neighbor);
+      for (const neighbor of neighbors(indexed, walk.id, step, date)) {
+        const reach = cross(walk, neighbor);
         if (reach.reached === false) continue;
-        const arrivals = next.get(neighbor.id) ?? new Map<Relationship, Reach>();
-        arrivals.set(neighbor.edge, join(arrivals.get(neighbor.edge) ?? unreached, reach));
-        next.set(neighbor.id, arrivals);
+        const firstEdge = keepFirstEdge ? (walk.firstEdge ?? neighbor.edge) : undefined;
+        const key = [neighbor.id, keyOf(firstEdge), last ? keyOf(neighbor.edge) : ''].join('|');
+        const merged = join(next.get(key) ?? unreached, reach);
+        next.set(key, {
+          id: neighbor.id,
+          ...merged,
+          ...(firstEdge === undefined ? {} : { firstEdge }),
+          edge: neighbor.edge,
+        });
       }
     }
-    frontier = [...next].map(([id, arrivals]) => {
-      const reach = [...arrivals.values()].reduce<Reach>(join, unreached);
-      return { id, ...reach, arrivals: [...arrivals].map(([edge, each]) => ({ edge, ...each })) };
-    });
+    walks = [...next.values()];
+  }
+  const byPerson = new Map<string, Arrival[]>();
+  for (const { id, firstEdge, edge, ...reach } of walks) {
+    if (id === principalId || edge === undefined) continue;
+    const arrivals = byPerson.get(id) ?? [];
+    arrivals.push({ ...reach, edge, ...(firstEdge === undefined ? {} : { firstEdge }) });
+    byPerson.set(id, arrivals);
   }
   return {
-    reached: frontier.filter((entry) => entry.id !== principalId && entry.arrivals.length > 0),
-    missingMarkers,
+    reached: [...byPerson].map(([id, arrivals]) => ({
+      id,
+      ...arrivals.reduce<Reach>(join, unreached),
+      arrivals,
+    })),
+    missingMarkers: [...missingMarkers.values()],
   };
 }
 

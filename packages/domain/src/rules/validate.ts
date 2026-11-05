@@ -12,8 +12,12 @@ import { resolveFactReference } from './fact-reference.js';
 import type { CountrySet, RouteVersion, Source } from './route-version.js';
 
 const requirementScope: CheckScope = { current: true, unit: true, edge: false };
-const dependentScope: CheckScope = { current: true, unit: false, edge: true };
+const dependentScope: CheckScope = { current: true, unit: false, edge: true, firstEdge: true };
+const lastEdgeScope: CheckScope = { current: true, unit: false, edge: true };
 const perDependentScope: CheckScope = { current: true, unit: true, edge: true };
+
+/** The longest path whose condition may read `firstEdge.*`. */
+export const maxFirstEdgeSteps = 2;
 
 /** How to tell an official source: the hosts of the pinned official-domain lists, and a parser. */
 export interface OfficialHosts {
@@ -190,7 +194,9 @@ export function checkRouteVersion(
       issue(`${path}/at`, `Reference date ${rule.at} is not declared by the version`);
     }
     cites(`${path}/sources`, rule.sources);
-    expect(rule.condition, dependentScope, `${path}/condition`, condition);
+    // Keeping first edges multiplies a path's arrivals, so only short paths may read them.
+    const scope = rule.path.length <= maxFirstEdgeSteps ? dependentScope : lastEdgeScope;
+    expect(rule.condition, scope, `${path}/condition`, condition);
   });
   version.costs.forEach((cost, index) => {
     const path = `/costs/${String(index)}`;

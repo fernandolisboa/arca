@@ -67,6 +67,52 @@ describe('followPath', () => {
     expect(siblings.map(({ id, arrivals }) => [id, arrivals.length])).toEqual([['s1', 2]]);
   });
 
+  it('keeps first edges apart only when asked, merging walks that share their edges', () => {
+    // Synthetic: p1 married p2 twice; c1 is p2's child, and neither p1 nor p2 lists all children.
+    const first = { kind: 'spouse', people: ['p1', 'p2'], start: '2001-01-01' };
+    const second = { kind: 'spouse', people: ['p1', 'p2'], start: '2010-01-01', end: 'none' };
+    const birth = { kind: 'parent', parent: 'p2', child: 'c1', parentKind: 'biological' };
+    const value = indexSnapshot(
+      snapshot({
+        people: [{ id: 'p1' }, { id: 'p2' }, { id: 'c1', birthDate: '2005-01-01' }],
+        relationships: [first, second, birth],
+      }),
+    );
+    const merged = followPath(value, 'p1', ['spouse', 'child'], today).reached;
+    expect(
+      merged[0]?.arrivals.map(({ firstEdge, edge, reached }) => [firstEdge, edge, reached]),
+    ).toEqual([[undefined, birth, true]]);
+    const { reached, missingMarkers } = followPath(value, 'p1', ['spouse', 'child'], today, true);
+    const [child] = reached;
+    expect(
+      child?.arrivals.map(({ firstEdge, edge, reached }) => [firstEdge, edge, reached]),
+    ).toEqual([
+      [first, birth, 'unknown'],
+      [second, birth, true],
+    ]);
+    expect(child?.reached).toBe(true);
+    expect(missingMarkers).toEqual([
+      { personId: 'p1', marker: 'spouses' },
+      { personId: 'p2', marker: 'children' },
+    ]);
+  });
+
+  it('stays small when many couple edges join the same two people', () => {
+    // Synthetic: p1 and p2 share the most couple edges a snapshot allows, all current.
+    const edges = ['2001', '2002', '2003', '2004'].map((year) => ({
+      kind: 'partner',
+      people: ['p1', 'p2'],
+      start: `${year}-01-01`,
+      end: 'none',
+    }));
+    const value = indexSnapshot(
+      snapshot({ people: [{ id: 'p1' }, { id: 'p2' }], relationships: edges }),
+    );
+    const steps = ['partner', 'partner', 'partner'] as const;
+    expect(followPath(value, 'p1', steps, today).reached[0]?.arrivals).toHaveLength(4);
+    expect(followPath(value, 'p1', steps, today, true).reached[0]?.arrivals).toHaveLength(16);
+  });
+
   it('names the edges whose validity is unknown, and none once a path certainly holds', () => {
     const before = parseCalendarDate('2020-01-01');
     // Synthetic: p2 was adopted by p1 on an unknown date; p3 is p2's child, born 2019.

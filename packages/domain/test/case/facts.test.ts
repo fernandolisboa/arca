@@ -623,6 +623,58 @@ describe('edge facts', () => {
   });
 });
 
+describe('edge.ageAtStart and edge.custodyStart', () => {
+  // Synthetic: p2 adopted by p1 at 15, custody from 14; p3 met p1 through a marriage of unknown
+  // start; p4 has a partial birth date.
+  const family = snapshot({
+    people: [
+      { id: 'p1' },
+      { id: 'p2', birthDate: '2010-06-15' },
+      { id: 'p3', birthDate: '2012-01-01' },
+      { id: 'p4', birthDate: '2012' },
+    ],
+    relationships: [
+      {
+        kind: 'parent',
+        parent: 'p1',
+        child: 'p2',
+        parentKind: 'adoptive',
+        start: '2025-06-14',
+        custodyStart: '2024-07',
+      },
+      { kind: 'spouse', people: ['p1', 'p3'] },
+      { kind: 'parent', parent: 'p1', child: 'p4', parentKind: 'adoptive', start: '2026-03' },
+    ],
+  });
+  const env = environment(family);
+  const [adoption, marriage, partial] = family.relationships;
+  const read = (
+    key: 'edge.ageAtStart' | 'edge.custodyStart',
+    personId: string,
+    edge: unknown,
+  ): unknown => derive(key, { environment: env, personId, edge: edge as never }).value;
+
+  it("reads the candidate's age on the day the edge began", () => {
+    expect(read('edge.ageAtStart', 'p2', adoption)).toEqual(integer(14, 14));
+    expect(read('edge.ageAtStart', 'p3', marriage)).toEqual(integer(0, undefined));
+    expect(read('edge.ageAtStart', 'p4', partial)).toEqual(integer(13, 14));
+    expect(factCatalog['edge.ageAtStart'].readsAge).toBe(true);
+  });
+
+  it('reads when custody began, unknown on any other edge', () => {
+    expect(read('edge.custodyStart', 'p2', adoption)).toEqual({
+      type: 'date',
+      min: '2024-07-01',
+      max: '2024-07-31',
+    });
+    expect(read('edge.custodyStart', 'p3', marriage)).toEqual({
+      type: 'date',
+      min: '0001-01-01',
+      max: '9999-12-31',
+    });
+  });
+});
+
 describe('reading dates', () => {
   it('refuses a fact read after the date the snapshot describes', () => {
     const env = environment(snapshot({}));

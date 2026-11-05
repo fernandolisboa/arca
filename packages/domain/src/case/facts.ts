@@ -106,6 +106,8 @@ export interface FactDefinition {
   readonly readsAge?: boolean;
   /** Reads a birth date as a date, which `since` must never take (spec 0002, R2). */
   readonly isBirthDate?: boolean;
+  /** Reads the person at the edge's other end from the candidate, so only on the last edge. */
+  readonly readsLinkedPerson?: boolean;
   readonly derive: (binding: FactBinding, at: CalendarDate) => Derived;
 }
 
@@ -127,7 +129,11 @@ export const factCatalog = {
     nonNegative: true,
     readsAge: true,
     derive: ({ environment, personId }, at) => ({
-      value: ageRange(person(environment, personId).birthDate, at, environment.leapDayBirthday),
+      value: ageRange(
+        person(environment, personId).birthDate,
+        { min: at, max: at },
+        environment.leapDayBirthday,
+      ),
     }),
   },
   'person.citizenships': {
@@ -253,6 +259,39 @@ export const factCatalog = {
     scope: 'edge',
     derive: (binding) => dateFact(edgeOf(binding).start),
   },
+  /**
+   * The candidate's age when the edge began, such as a child's age at an adoption or at the
+   * marriage that made them a stepchild; unknown when the edge has no start.
+   */
+  'edge.ageAtStart': {
+    type: { kind: 'integer' },
+    scope: 'edge',
+    nonNegative: true,
+    readsAge: true,
+    derive: (binding) => {
+      const { environment, personId } = binding;
+      const start = edgeOf(binding).start;
+      return {
+        value:
+          start === undefined
+            ? integerRange(0, undefined)
+            : ageRange(
+                person(environment, personId).birthDate,
+                dateRange(start),
+                environment.leapDayBirthday,
+              ),
+      };
+    },
+  },
+  /** When a parent's legal custody of a child, living together, began. */
+  'edge.custodyStart': {
+    type: { kind: 'date' },
+    scope: 'edge',
+    derive: (binding) => {
+      const edge = edgeOf(binding);
+      return dateFact(edge.kind === 'parent' ? edge.custodyStart : undefined);
+    },
+  },
   /** The end of a couple edge; `"none"` means it had not ended by `recordedOn`, so it is later. */
   'edge.end': {
     type: { kind: 'date' },
@@ -270,6 +309,7 @@ export const factCatalog = {
   'edge.dependsOnLinkedPerson': {
     type: { kind: 'boolean' },
     scope: 'edge',
+    readsLinkedPerson: true,
     derive: (binding) => {
       const linked = otherEnd(edgeOf(binding), binding.personId);
       return { value: dependsOn(person(binding.environment, binding.personId), linked) };
@@ -337,13 +377,13 @@ function dependsOn(subject: Person, on: string): Value {
 }
 
 /**
- * Whole years at `at`. A partial birth date gives a range. Someone born after `at` counts as age
- * zero; edges to them are not valid before their birth, so they are reached only through an
- * explicit adoption date.
+ * Whole years on a date somewhere in `at`. A partial birth date, or a range of dates, gives a
+ * range. Someone born after the date counts as age zero; edges to them are not valid before their
+ * birth, so they are reached only through an explicit adoption date.
  */
 function ageRange(
   birthDate: DateValue | undefined,
-  at: CalendarDate,
+  at: Interval<CalendarDate>,
   leapDayBirthday: LeapDayBirthday | undefined,
 ): NumberValue {
   if (leapDayBirthday === undefined) {
@@ -351,9 +391,9 @@ function ageRange(
   }
   if (birthDate === undefined) return integerRange(0, undefined);
   const { min, max } = dateRange(birthDate);
-  const age = (birth: CalendarDate): number =>
-    compareDates(birth, at) > 0 ? 0 : ageYears(birth, at, leapDayBirthday);
-  return integerRange(age(max), age(min));
+  const age = (birth: CalendarDate, on: CalendarDate): number =>
+    compareDates(birth, on) > 0 ? 0 : ageYears(birth, on, leapDayBirthday);
+  return integerRange(age(max, at.min), age(min, at.max));
 }
 
 /**

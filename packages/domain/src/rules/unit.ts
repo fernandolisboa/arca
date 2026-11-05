@@ -7,6 +7,8 @@ import { type Truth, and, or } from '../logic/truth.js';
 import type { CatalogEntry } from './catalog.js';
 import { type Prepared, type VersionContext, environmentOf, prepare } from './context.js';
 import { type Trace, evaluate, truthOf } from './evaluate.js';
+import { type Expression, childrenOf } from './expression.js';
+import { resolveFactReference } from './fact-reference.js';
 import { type MissingFact, decisiveFacts, distinct, traceGaps } from './missing.js';
 
 /**
@@ -87,7 +89,13 @@ export function unitOf(prepared: Prepared): { unit: Unit; traces: readonly Trace
       if (rule.at !== undefined) unreadDates.add(rule.at);
       continue;
     }
-    const { reached, missingMarkers } = followPath(indexed, principalId, rule.path, date);
+    const { reached, missingMarkers } = followPath(
+      indexed,
+      principalId,
+      rule.path,
+      date,
+      readsFirstEdge(rule.condition),
+    );
     for (const missing of missingMarkers) {
       markers.set(`${missing.personId}:${missing.marker}`, missing);
     }
@@ -106,6 +114,7 @@ export function unitOf(prepared: Prepared): { unit: Unit; traces: readonly Trace
           countrySets: prepared.countrySets,
           current: person.id,
           edge: arrival.edge,
+          ...(arrival.firstEdge === undefined ? {} : { firstEdge: arrival.firstEdge }),
         });
         traces.push(trace);
         const condition = truthOf(trace);
@@ -179,4 +188,10 @@ export function unitEnvironment(unit: Unit): NonNullable<FactEnvironment['unit']
     open: unit.open,
     missingMarkers: unit.missingMarkers,
   };
+}
+
+/** Whether a condition reads the first edge of its path, so walks must keep it apart. */
+function readsFirstEdge(expression: Expression): boolean {
+  if (expression.op === 'fact') return resolveFactReference(expression.key)?.target === 'firstEdge';
+  return childrenOf(expression).some(readsFirstEdge);
 }
