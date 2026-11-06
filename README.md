@@ -52,9 +52,9 @@ The first case is the founder's own family. The app goes to other families only 
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Components, code layout, data model, AI stack, agents, quality, data flows |
 | [docs/SECURITY.md](docs/SECURITY.md) | Security pillar: principles, standards, threat model, required controls |
 | [SECURITY.md](SECURITY.md) | How to report a vulnerability |
-| [docs/REVIEW.md](docs/REVIEW.md) | Reviewer gates and the specialist reviewers in `.claude/agents/` |
+| [docs/REVIEW.md](docs/REVIEW.md) | How changes are reviewed: the `code-review` skill and the security reviewer |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Phases and the gates between them |
-| [docs/GLOSSARY.md](docs/GLOSSARY.md) | Domain terms and their pt-BR UI equivalents |
+| [CONTEXT.md](CONTEXT.md) | Domain glossary: terms and their pt-BR UI labels |
 | [docs/OPEN-QUESTIONS.md](docs/OPEN-QUESTIONS.md) | Decisions still pending |
 | [docs/SETUP.md](docs/SETUP.md) | Every key, token and secret: where it lives, who creates it, how to rotate it |
 | [docs/RETENTION.md](docs/RETENTION.md) | How long each kind of data is kept, and what enforces it |

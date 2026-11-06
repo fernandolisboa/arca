@@ -10,7 +10,7 @@ An immigration consultancy in an app. A user describes their family in free text
 
 - Code, identifiers, comments, docs, commit messages, PR descriptions, issues and your own reasoning: **English**.
 - User-facing strings: never hard-coded. Every string goes through i18n. `pt-BR` is the first locale and must read as natural Brazilian Portuguese, not a literal translation.
-- Domain terms have fixed English names and fixed pt-BR UI labels: [docs/GLOSSARY.md](docs/GLOSSARY.md). Use them; do not invent synonyms.
+- Domain terms have fixed English names and fixed pt-BR UI labels: [CONTEXT.md](CONTEXT.md). Use them; do not invent synonyms.
 
 ## Non-negotiable domain rules
 
@@ -37,11 +37,23 @@ Security is a product pillar. Before working on any feature, read [docs/SECURITY
 
 ## How we build
 
-- Workflow per feature: spec → tickets → tests first (TDD) → implementation → multi-reviewer pass → merge.
-- Reviewers are the subagents in `.claude/agents/`, run in parallel on the diff before every pull request and again before merging. CI runs only deterministic checks ([ADR-0019](docs/adr/0019-reviewers-in-the-authoring-session.md)). Rules, triggers and verdicts: [docs/REVIEW.md](docs/REVIEW.md).
-  - **Core, every change:** correctness, security and architecture (must pass); standards and context (should pass).
-  - **Specialists, must pass when their area is touched:** auth and cryptography; data access (schema, migrations, row-level security, roles, environments); supply chain (dependencies, CI, build, vendors); AI safety (prompts, agents, adapters, model output, evaluation).
-  - Any critical or high finding blocks the merge. The owner stays out of the loop; the reviewers are the gate.
+We follow the engineering flow of Matt Pocock's skills, the `mattpocock-skills` plugin ([ADR-0024](docs/adr/0024-mattpocock-skills-flow.md)):
+
+1. **New feature or idea:** `grill-with-docs` with the owner. Product questions go to the owner; technical ones the agent decides and records. `CONTEXT.md` and ADRs are updated as answers land.
+2. **Multi-session build:** `to-spec` publishes the spec as a GitHub issue, then `to-tickets` splits it into tracer-bullet sub-issues, each with its blockers, labelled `ready-for-agent`. One ticket per fresh session.
+3. **Each ticket, or a change small enough for one session:** `implement`, which drives `tdd` at the seams the spec names, then `code-review` before the pull request.
+4. **Something broken:** `diagnosing-bugs`. **An issue someone else filed:** `triage`. **A fact from outside the repo:** `research`. **A design question that needs something to look at:** `prototype`. **Upkeep:** `improve-codebase-architecture` now and then.
+
+Running the skills:
+
+- Skills the owner types by name (`grill-with-docs`, `to-spec`, `to-tickets`, `implement`, `triage`, `wayfinder`, `improve-codebase-architecture`) are not offered to the model. When the owner names one, or this flow calls for it, invoke `mattpocock-skills:<name>` with the Skill tool; if that is refused, read `skills/*/<name>/SKILL.md` under the installed plugin (`~/.claude/plugins/**/mattpocock-skills/`) and follow it.
+- In a project thread, a grilling question with options goes to the owner as a decision card with the recommended option; an open question goes as plain text. Ask the whole frontier of a round at once.
+- `tdd` and `to-spec` ask to confirm seams, and `to-tickets` to approve the breakdown: the agent picks the seams and records them in the spec's testing decisions, and shows the breakdown to the owner once, carrying on with it unless the owner objects.
+- Review: `code-review` (Standards and Spec axes) on every change; on a change that touches auth, cryptography, storage, case data, the database, dependencies, CI, a vendor or AI, the [security reviewer](.claude/agents/security-reviewer.md) too. Both run in the authoring session before the pull request; CI runs only deterministic checks. A critical or high finding blocks the merge. Rules: [docs/REVIEW.md](docs/REVIEW.md).
+- The standards the Standards axis checks are this file, `CONTEXT.md` and the ADRs of the area touched.
+
+Conventions:
+
 - Principles: SOLID, YAGNI, KISS, DRY. No duplicated logic; extract instead.
 - Comments: few. Well-named code explains itself. Comment only where the logic is genuinely hard and cannot be rewritten more clearly, or where performance or security is the reason for a non-obvious choice.
 - Every rule version ships with table-driven tests. Every AI-backed feature ships with cases in the synthetic evaluation suite ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#quality)).
@@ -75,7 +87,21 @@ The first engineering task is scaffolding the monorepo as described in ADR-0010,
 ## Definition of done
 
 - Tests pass, including the evaluation suite when AI behavior changed.
-- Must-pass reviewers approved.
+- `code-review` findings fixed or answered in the pull request; the security reviewer passed when it ran.
 - No new user-facing string outside i18n.
 - No real personal data anywhere in the diff.
 - Docs and ADRs updated when behavior or a decision changed.
+
+## Agent skills
+
+### Issue tracker
+
+GitHub Issues on `fernandolisboa/arca`, through the GitHub MCP tools. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five default labels (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` at the root and `docs/adr/`. See `docs/agents/domain.md`.

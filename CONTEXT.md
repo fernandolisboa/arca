@@ -1,6 +1,10 @@
-# Glossary
+# Arca
 
-One English term in code and docs, one pt-BR label in the interface. Add a row before using a new domain term. A term that no screen shows says "Internal, no UI label" in the label column.
+The domain language of Arca, an immigration consultancy in an app for one family. One English term in code and docs, one pt-BR label in the interface.
+
+## Language
+
+This repo keeps its glossary as a table, not the `**Term**:` list of the `domain-modeling` skill's format: add a row before using a new domain term, with its pt-BR label, and list words to avoid in the meaning cell when a synonym tempts. A term that no screen shows says "Internal, no UI label" in the label column.
 
 | Term (code and docs) | pt-BR UI label | Meaning |
 | --- | --- | --- |
@@ -54,7 +58,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Official source | Fonte oficial | A source on a host the knowledge base lists as official for a country or an international body |
 | Secondary source | Fonte secundária | A non-official source cited beside an official one, never instead of it |
 | Stale source | Fonte desatualizada | A source not re-verified in the last 90 days; evaluations that cite it say the rule needs re-checking |
-| Activation | Ativação | An approver's passkey approval of one route version, bound to its content hash; counts once stored ([ADR-0022](adr/0022-single-approver-activation.md)) |
+| Activation | Ativação | An approver's passkey approval of one route version, bound to its content hash; counts once stored ([ADR-0022](docs/adr/0022-single-approver-activation.md)) |
 | Rejection | Recusa | An approver's passkey decision that a version, proposed or active, will never be used; once it counts, selection skips it |
 | Approver | Aprovador | An account on the reviewed approver list who may activate or reject knowledge-base versions with a step-up |
 | Decision | Decisão | An approver's activation or rejection, stored with the step-up it consumed |

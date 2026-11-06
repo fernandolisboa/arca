@@ -1,44 +1,27 @@
 # Review
 
-Every change is reviewed by specialized AI reviewers before merge. They are defined as Claude Code subagents in [`.claude/agents/`](../.claude/agents/). The session that wrote the change runs them in parallel on the diff before opening a pull request and again before merging ([ADR-0019](adr/0019-reviewers-in-the-authoring-session.md)). CI runs only the deterministic checks. No change merges with a blocking finding open.
+Every change is reviewed before merge, in the session that wrote it, before it opens a pull request and again before it merges ([ADR-0019](adr/0019-reviewers-in-the-authoring-session.md), [ADR-0024](adr/0024-mattpocock-skills-flow.md)). CI runs only the deterministic checks. No change merges with a blocking finding open.
 
 ## Gates, in order
 
 1. **Automated checks:** types, lint, unit and integration tests, the row-level security access-matrix suite, the synthetic evaluation suite when AI behavior changed (the authoring session starts the manual `intake-eval` workflow on a change to the intake adapter, prompt, model file or draft schema, and cites the run in the PR; [spec 0008, R5](specs/0008-free-text-intake.md#r5-evaluation)), CodeQL, dependency advisories, secret scanning.
-2. **Core reviewers**, on every change.
-3. **Specialist reviewers**, on every change that touches their area. Sensitive changes therefore get at least two independent security reads: the general security reviewer and the specialist.
-
-## Reviewers
-
-| Reviewer | Runs on | Verdict weight | Model |
-| --- | --- | --- | --- |
-| [correctness-reviewer](../.claude/agents/correctness-reviewer.md) | Every change | Must pass | `fable` |
-| [security-reviewer](../.claude/agents/security-reviewer.md) | Every change | Must pass | `fable` |
-| [architecture-reviewer](../.claude/agents/architecture-reviewer.md) | Every change | Must pass | `fable` |
-| [standards-reviewer](../.claude/agents/standards-reviewer.md) | Every change | Should pass | `haiku` |
-| [context-reviewer](../.claude/agents/context-reviewer.md) | Every change | Should pass | `opus` |
-| [auth-crypto-reviewer](../.claude/agents/auth-crypto-reviewer.md) | Authentication, sessions, passkeys, recovery, vault, field encryption, key management | Must pass | `fable` |
-| [data-access-reviewer](../.claude/agents/data-access-reviewer.md) | Schema, migrations, row-level security policies, database roles, queries over case data, environment and seed data | Must pass | `fable` |
-| [supply-chain-reviewer](../.claude/agents/supply-chain-reviewer.md) | Dependencies, lockfile, CI workflows, build and deploy config, new services or vendors | Must pass | `fable` |
-| [ai-safety-reviewer](../.claude/agents/ai-safety-reviewer.md) | Prompts, agents, AI adapters, retrieval, rendering of model output, evaluation suite | Must pass | `fable` |
-
-A reviewer that runs on every change is a core reviewer; any other is a specialist. A specialist with no findings on a change that touches nothing in its area passes.
-
-Added in Phase 4: a mobile security reviewer verifying against OWASP MASVS.
+2. **`code-review`**, the `mattpocock-skills` skill, on every change: two sub-agents in parallel, against the merge-base with `main`.
+   - **Standards:** the diff against [CLAUDE.md](../CLAUDE.md), [CONTEXT.md](../CONTEXT.md) and the ADRs of the area touched, plus the skill's code-smell baseline.
+   - **Spec:** the diff against the ticket it closes and that ticket's parent spec (an issue, or a file in `docs/specs/` for older work).
+3. **[Security reviewer](../.claude/agents/security-reviewer.md)**, on every change that touches auth, cryptography, storage, case data, the database, dependencies, CI, a vendor or AI. It runs beside `code-review`, in its own sub-agent.
 
 ## Verdicts
 
-Each reviewer returns **PASS** or **BLOCK**, followed by findings with severity (critical, high, medium, low), file and line, and the fix.
-
-- Any critical or high finding from any reviewer blocks the merge.
-- Medium findings from must-pass reviewers block unless the change records why they are accepted, in the pull request and, when it is a lasting trade-off, in an ADR.
-- Should-pass reviewers never block alone; their findings are fixed in the same change or tracked.
-- A reviewer that could not assess something (missing context, tests that would not run) says so; that counts as BLOCK for must-pass reviewers.
-- Medium findings accepted in a change are listed, with the reason, in the pull request description.
+- The security reviewer returns **PASS** or **BLOCK**, with findings by severity (critical, high, medium, low), file and line, and the fix.
+- Any critical or high finding, from either review, blocks the merge.
+- A medium security finding blocks unless the pull request records why it is accepted, and an ADR does when it is a lasting trade-off.
+- `code-review` findings are fixed in the same change, or answered in the pull request description with the reason they stay.
+- A review that could not assess something (missing context, tests that would not run) says so; for the security reviewer that counts as BLOCK.
+- A second round covers only the delta since the reviewed commit, so rounds converge.
 
 ## Changing reviewers
 
-Reviewer definitions and this file are security-critical configuration. Changing either requires a PASS from the security, architecture and supply-chain reviewers, and an entry in this table ([ADR-0019](adr/0019-reviewers-in-the-authoring-session.md)).
+The security reviewer's definition and this file are security-critical configuration. Changing either needs a PASS from the security reviewer and an entry in this table.
 
 | Date | Change | Why |
 | --- | --- | --- |
@@ -52,3 +35,4 @@ Reviewer definitions and this file are security-critical configuration. Changing
 | 2026-11-02 | The gate skips draft pull requests and reviews them when they are marked ready | Drafts cannot merge; this saves subscription usage while authors iterate ([ADR-0013](adr/0013-review-gate-canary-and-model-pins.md)) |
 | 2026-11-02 | A canary dispatched for a push to `main` runs slim: one known-bad case per reviewer, every injected case against one reviewer, and one injected case against every must-pass reviewer; the weekly run covers the whole corpus, and after any failed run only a full run can pass; only the owner's dispatch can run full or force a run; a "Runs on" cell that nearly reads `Every change` stops the gate; the fallback ignores Claude Code's side requests on another model when deciding whether the reviewer's model answered | Every gate change cost a full canary of about 85 model runs against the subscription's limits ([ADR-0013](adr/0013-review-gate-canary-and-model-pins.md)) |
 | 2026-11-03 | Reviewers run only in the authoring session; the CI review gate, the canary, `eval/review-gate/` and `review-acceptances.md` are removed | Subscription limits and upkeep out of proportion to a single-family app ([ADR-0019](adr/0019-reviewers-in-the-authoring-session.md)) |
+| 2026-11-06 | The nine reviewer subagents become the `code-review` skill (Standards and Spec axes) on every change plus one security reviewer, which absorbs the four specialists, on sensitive changes | The owner adopted the `mattpocock-skills` flow ([ADR-0024](adr/0024-mattpocock-skills-flow.md)) |
