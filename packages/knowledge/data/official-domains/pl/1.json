@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "pl",
+  "number": 1,
+  "issuer": "Republic of Poland",
+  "hosts": [
+    {
+      "host": "dziennikustaw.gov.pl",
+      "source": {
+        "id": "nask-gov-pl-regulations",
+        "url": "https://www.dns.pl/regulamin_gov_pl",
+        "title": "NASK's .gov.pl Domain Name Regulations: only public authorities, professional self-government bodies and units under the Prime Minister or ministers may register names under gov.pl",
+        "kind": "official",
+        "verifiedAt": "2026-11-06"
+      }
+    },
+    {
+      "host": "sejm.gov.pl",
+      "source": {
+        "id": "nask-gov-pl-regulations",
+        "url": "https://www.dns.pl/regulamin_gov_pl",
+        "title": "NASK's .gov.pl Domain Name Regulations: only public authorities, professional self-government bodies and units under the Prime Minister or ministers may register names under gov.pl",
+        "kind": "official",
+        "verifiedAt": "2026-11-06"
+      }
+    },
+    {
+      "host": "uw.gov.pl",
+      "source": {
+        "id": "nask-gov-pl-regulations",
+        "url": "https://www.dns.pl/regulamin_gov_pl",
+        "title": "NASK's .gov.pl Domain Name Regulations: only public authorities, professional self-government bodies and units under the Prime Minister or ministers may register names under gov.pl",
+        "kind": "official",
+        "verifiedAt": "2026-11-06"
+      }
+    },
+    {
+      "host": "www.gov.pl",
+      "source": {
+        "id": "nask-gov-pl-regulations",
+        "url": "https://www.dns.pl/regulamin_gov_pl",
+        "title": "NASK's .gov.pl Domain Name Regulations: only public authorities, professional self-government bodies and units under the Prime Minister or ministers may register names under gov.pl",
+        "kind": "official",
+        "verifiedAt": "2026-11-06"
+      }
+    }
+  ]
+}
