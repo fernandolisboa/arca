@@ -220,6 +220,9 @@ async function columnPrivileges(role: string, table: string, columns: readonly s
 const auditPrivileges = (role: string) => columnPrivileges(role, 'audit.event', auditColumns);
 const decisionPrivileges = (role: string) =>
   columnPrivileges(role, 'knowledge.decision', decisionColumns);
+const summaryColumns = ['content_hash', 'prompt_version', 'model', 'overview', 'watch_points'];
+const summaryPrivileges = (role: string) =>
+  columnPrivileges(role, 'knowledge.rule_summary', summaryColumns);
 
 const onEvery = (columns: readonly string[], privileges: string[]) =>
   Object.fromEntries(columns.map((column) => [column, privileges]));
@@ -288,9 +291,12 @@ describe('the audit schema access matrix (spec 0003, R7)', () => {
 });
 
 describe('the knowledge schema access matrix (spec 0007, R7)', () => {
-  it('has only the decision table, with no foreign keys and forced row-level security', async () => {
+  it('has only the decision and rule summary tables, with no foreign keys and forced row-level security', async () => {
     expect(await schemaShape('knowledge')).toEqual({
-      tables: [{ name: 'decision', forced: true }],
+      tables: [
+        { name: 'decision', forced: true },
+        { name: 'rule_summary', forced: true },
+      ],
       foreignKeys: 0,
     });
   });
@@ -313,6 +319,20 @@ describe('the knowledge schema access matrix (spec 0007, R7)', () => {
     });
   });
 
+  it('lets app_api read and insert rule summaries, never change or delete one (ADR-0025)', async () => {
+    expect(await summaryPrivileges('app_api')).toEqual({
+      usage: true,
+      create: false,
+      columns: onEvery(summaryColumns, ['SELECT', 'INSERT']),
+      table: [],
+    });
+  });
+
+  it('gives app_auth no access to rule summaries', async () => {
+    expect((await summaryPrivileges('app_auth')).columns).toEqual(onEvery(summaryColumns, []));
+    expect((await summaryPrivileges('app_auth')).table).toEqual([]);
+  });
+
   it.each([
     ...runtimeRoles.filter((role) => !['app_auth', 'app_api'].includes(role)),
     ...retiredRoles,
@@ -321,6 +341,12 @@ describe('the knowledge schema access matrix (spec 0007, R7)', () => {
       usage: false,
       create: false,
       columns: onEvery(decisionColumns, []),
+      table: [],
+    });
+    expect(await summaryPrivileges(role)).toEqual({
+      usage: false,
+      create: false,
+      columns: onEvery(summaryColumns, []),
       table: [],
     });
   });
