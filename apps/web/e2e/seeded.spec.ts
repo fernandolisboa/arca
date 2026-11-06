@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Browser } from '@playwright/test';
+import type { KnowledgeVersions, VersionView } from '@arca/api-contract/client';
+import { expect, test, type Browser, type Page } from '@playwright/test';
 import { family, signedIn } from './case-accounts.js';
 import { seededCredential, virtualAuthenticator, withoutAutofill } from './passkeys.js';
 import {
@@ -58,12 +59,17 @@ test('the seed approver activates a version, reads and closes its reports, then 
   await page.goto(`${databaseServer.origin}/sign-in`);
   await page.getByRole('button', { name: 'Entrar com chave de acesso' }).click();
   await expect(page.getByText(`Você entrou como ${account.email}.`)).toBeVisible();
+  const { version, fallback } = await eb5InEffect(page);
 
   await page.goto(`${databaseServer.origin}/settings`);
   await page.getByRole('link', { name: 'Abrir a tela de ativação' }).click();
   const proposed = page.getByRole('region', { name: 'Versões propostas' });
-  await proposed.getByRole('button', { name: /^EB-5 immigrant investor/ }).click();
-  await expect(page.getByRole('heading', { level: 3, name: /EB-5 .* versão 1/ })).toBeVisible();
+  await proposed
+    .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
+    .click();
+  await expect(
+    page.getByRole('heading', { level: 3, name: new RegExp(`EB-5 .* versão ${version}\\b`) }),
+  ).toBeVisible();
   await expect(page.getByRole('region', { name: 'Requisitos' })).toContainText(
     'soma dos bens fáceis de transformar em dinheiro da unidade é maior ou igual a',
   );
@@ -86,14 +92,14 @@ test('the seed approver activates a version, reads and closes its reports, then 
   await expect(page.getByRole('status')).toHaveText('Versão ativada.');
   expect((await stepUp).postDataJSON()).toMatchObject({
     purpose: 'knowledge_decision',
-    target: { action: 'activateVersion', targets: ['us-eb5', '1'] },
+    target: { action: 'activateVersion', targets: ['us-eb5', version] },
   });
   await expect(page.getByText('Versão ativa', { exact: true })).toBeVisible();
 
   await memberReportsARequirement(browser);
   await page.reload();
   const reports = page.getByRole('region', { name: 'Avisos de regra errada' });
-  await expect(reports).toContainText(/EB-5 .* \(versão 1\), requisito/);
+  await expect(reports).toContainText(new RegExp(`EB-5 .* \\(versão ${version}\\), requisito`));
   await expect(reports).toContainText(/valor errado: \d+ avisos?/);
   await expect(reports).not.toContainText('Uma observação sintética');
   for (const close of await reports
@@ -109,7 +115,13 @@ test('the seed approver activates a version, reads and closes its reports, then 
 
   await page.getByRole('button', { name: 'Recusar esta versão' }).click();
   await expect(
-    page.getByText(/Hoje a rota usa esta versão\. Se recusar, a rota fica sem versão/),
+    page.getByText(
+      new RegExp(
+        `Hoje a rota usa esta versão\\. Se recusar, ${
+          fallback === null ? 'a rota fica sem versão' : `ela passa para a versão ${fallback}`
+        }`,
+      ),
+    ),
   ).toBeVisible();
   await page.getByRole('button', { name: 'Confirmar' }).click();
   await expect(page.getByRole('status')).toHaveText('Versão recusada.');
@@ -147,4 +159,31 @@ async function memberReportsARequirement(browser: Browser) {
   ).toBeVisible();
   expect(problems).toEqual([]);
   await context.close();
+}
+
+/**
+ * The EB-5 version the server selects today and the one it would fall back to on rejection, from
+ * the approver's own API: evaluations run on the real clock, so a version dated in the future takes
+ * over on its date.
+ */
+async function eb5InEffect(page: Page): Promise<{ version: string; fallback: string | null }> {
+  const api = `${databaseServer.origin}/v1/knowledge/versions`;
+  const list = await page.request.get(api);
+  expect(list.status()).toBe(200);
+  const { versions } = (await list.json()) as KnowledgeVersions;
+  for (const { routeId, number } of versions) {
+    if (routeId !== 'us-eb5') continue;
+    const view = await page.request.get(`${api}/view`, {
+      params: { routeId, number: String(number) },
+    });
+    expect(view.status()).toBe(200);
+    const { rejection } = (await view.json()) as VersionView;
+    if (rejection.selected) {
+      return {
+        version: String(number),
+        fallback: rejection.fallback === null ? null : String(rejection.fallback.number),
+      };
+    }
+  }
+  throw new Error('no EB-5 version is in effect today');
 }
