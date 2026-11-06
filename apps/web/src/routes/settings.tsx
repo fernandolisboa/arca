@@ -194,22 +194,21 @@ function KnowledgePanel() {
 type IntroKey = 'settings.appearance.intro' | 'knowledge.settings.intro';
 
 /** What each category shows under its heading; the approver's category only to an approver. */
-const panels: Record<
-  SettingsSection,
-  { readonly intro?: IntroKey; readonly Panel: () => ReactNode; readonly approverOnly?: true }
-> = {
-  appearance: {
-    intro: 'settings.appearance.intro',
-    Panel: () => <AxisPanel section="appearance" />,
-  },
-  navigation: {
-    intro: 'settings.appearance.intro',
-    Panel: () => <AxisPanel section="navigation" />,
-  },
-  accessibility: {
-    intro: 'settings.appearance.intro',
-    Panel: () => <AxisPanel section="accessibility" />,
-  },
+interface PanelEntry {
+  readonly intro?: IntroKey;
+  readonly Panel: () => ReactNode;
+  readonly approverOnly?: true;
+}
+
+const axisPanels = Object.fromEntries(
+  (Object.keys(sectionAxes) as AxisSection[]).map((section) => [
+    section,
+    { intro: 'settings.appearance.intro', Panel: () => <AxisPanel section={section} /> },
+  ]),
+) as Record<AxisSection, PanelEntry>;
+
+const panels: Record<SettingsSection, PanelEntry> = {
+  ...axisPanels,
   account: { Panel: AccountPanel },
   knowledge: { intro: 'knowledge.settings.intro', Panel: KnowledgePanel, approverOnly: true },
 };
