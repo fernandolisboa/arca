@@ -63,12 +63,12 @@ export function statedDates(text: string): StatedDate[] {
   const push = (date: StatedDate | undefined) => {
     if (date !== undefined) found.push(date);
   };
-  for (const [run] of folded.matchAll(/(?<![0-9])[0-9][0-9/.-]*[0-9](?![0-9])/g)) {
+  for (const [run] of folded.matchAll(/(?<![0-9])[0-9]+(?:[/.-][0-9]+)*/g)) {
     push(numericDate(run));
   }
   const monthName = months.join('|');
   const inWords = new RegExp(
-    String.raw`(?:(?<![0-9])([0-9]{1,2})(?:º|o)?\s+de\s+)?(${monthName})\s+(?:de\s+)?([0-9]{4})(?![0-9])`,
+    String.raw`(?:(?<![0-9])([0-9]{1,2})(?:º|o)? {1,3}de {1,3})?(${monthName}) {1,3}(?:de {1,3})?([0-9]{4})(?![0-9])`,
     'gu',
   );
   for (const match of folded.matchAll(inWords)) {

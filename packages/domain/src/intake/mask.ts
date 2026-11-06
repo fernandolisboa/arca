@@ -37,11 +37,32 @@ const particles: ReadonlySet<string> = new Set([
 ]);
 
 const wordPattern = /[\p{L}\p{M}]+/gu;
-const emailPattern = /[\p{L}\p{N}._%+-]+@[\p{L}\p{N}-]+(?:\.[\p{L}\p{N}-]+)+/gu;
+
+const alphanumeric = /[\p{L}\p{N}]/u;
+
+/**
+ * Each whitespace-separated token with an `@` between a letter or digit on each side, stripped of
+ * the punctuation around it, is an e-mail address. Token by token, so the cost stays linear.
+ */
+function maskEmails(text: string): string {
+  return text.replace(/\S+/gu, (token) => {
+    if (!token.includes('@')) return token;
+    let start = 0;
+    let end = token.length;
+    while (start < end && !alphanumeric.test(token.charAt(start))) start += 1;
+    while (end > start && !alphanumeric.test(token.charAt(end - 1))) end -= 1;
+    const core = token.slice(start, end);
+    return /[\p{L}\p{N}]@[\p{L}\p{N}]/u.test(core)
+      ? `${token.slice(0, start)}${emailPlaceholder}${token.slice(end)}`
+      : token;
+  });
+}
 
 /** Letters and digits that hold both, six or more: a passport, a codice fiscale, an IBAN. */
-const mixedTokenPattern =
-  /(?<![\p{L}\p{N}])(?=[\p{L}\p{N}]*\p{L})(?=[\p{L}\p{N}]*\p{N})[\p{L}\p{N}]{6,}(?![\p{L}\p{N}])/gu;
+const maskMixedTokens = (text: string): string =>
+  text.replace(/[\p{L}\p{N}]+/gu, (token) =>
+    token.length >= 6 && /\p{L}/u.test(token) && /\p{N}/u.test(token) ? numberPlaceholder : token,
+  );
 
 /** Digits, with spaces, or one dash, dot, comma or slash amid spaces, between them. */
 const digitRunPattern =
@@ -222,11 +243,9 @@ export function maskIntakeText(text: string, people: readonly NamedPerson[]): Ma
   // NFKC turns full-width digits and non-breaking spaces into the plain ones the patterns read;
   // brackets the member typed become parentheses, so the text cannot fake a placeholder.
   const plain = text.normalize('NFKC').replace(/\[/gu, '(').replace(/\]/gu, ')');
-  const withoutEmails = plain.replace(emailPattern, emailPlaceholder);
+  const withoutEmails = maskEmails(plain);
   const withoutNames = maskNames(withoutEmails, people, placeholderOf);
-  const masked = withoutNames
-    .replace(mixedTokenPattern, numberPlaceholder)
-    .replace(digitRunPattern, maskDigitRun);
+  const masked = maskMixedTokens(withoutNames).replace(digitRunPattern, maskDigitRun);
   const used = new Map<string, string>();
   for (const [id, placeholder] of placeholders) {
     if (masked.includes(placeholder)) used.set(placeholder, id);

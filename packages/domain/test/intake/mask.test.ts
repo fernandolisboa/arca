@@ -101,6 +101,21 @@ describe('maskIntakeText (spec 0008, R2)', () => {
     expect(maskIntakeText('Lukasz Oster', named).masked).toBe('[P1]');
   });
 
+  it.each([
+    ['repeated e-mail characters', '%'.repeat(4000)],
+    ['repeated digits and dots', '1.'.repeat(2000)],
+    ['repeated spaces after a digit', `1${' '.repeat(3999)}`],
+    ['repeated letters and digits', 'a1'.repeat(2000)],
+  ])('masks %s in linear time', (_, text) => {
+    const started = Date.now();
+    maskIntakeText(text, people);
+    expect(Date.now() - started).toBeLessThan(500);
+  });
+
+  it('masks an e-mail inside punctuation', () => {
+    expect(maskIntakeText('(joana@exemplo.com),', people).masked).toBe('([e-mail]),');
+  });
+
   it('maps only the placeholders the masked text holds back to their people', () => {
     const { placeholders } = maskIntakeText('Joana e Ana', people);
     expect([...placeholders]).toEqual([
