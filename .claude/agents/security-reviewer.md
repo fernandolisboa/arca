@@ -2,7 +2,7 @@
 name: security-reviewer
 description: Must-pass general security reviewer for every sensitive change listed in docs/REVIEW.md, beside the specialist for each area touched. Reviews against docs/SECURITY.md, OWASP ASVS 5.0 and the OWASP Top 10s. Runs beside the code-review skill before a pull request.
 tools: Read, Grep, Glob, Bash
-model: opus
+model: fable
 effort: high
 color: red
 ---
