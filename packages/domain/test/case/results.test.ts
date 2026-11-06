@@ -84,6 +84,13 @@ describe('decisiveQuestions (spec 0007, R6)', () => {
       ['parent', 'birthDate'],
       ['grandparent', 'citizenships'],
     ]);
+    expect(
+      decisiveQuestions(
+        [{ missingFacts: [read('lineage.ancestor.citizenshipsAtChildBirth')] }],
+        new Set(),
+        new Set(['parent']),
+      ).map(({ personId, question }) => [personId, question]),
+    ).toEqual([['grandparent', 'citizenships']]);
   });
 
   it('has a guided question for every fact the rules read', () => {

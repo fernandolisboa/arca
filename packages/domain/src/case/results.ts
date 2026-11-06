@@ -69,7 +69,11 @@ function relationshipQuestion(ends: readonly string[], kept: ReadonlySet<string>
 }
 
 /** Who answers a missing fact, and with which questions. */
-function asked(missing: MissingFact, kept: ReadonlySet<string>): Asked[] {
+function asked(
+  missing: MissingFact,
+  kept: ReadonlySet<string>,
+  bornOn: ReadonlySet<string>,
+): Asked[] {
   switch (missing.kind) {
     case 'fact': {
       const resolved = resolveFactReference(missing.reference);
@@ -82,9 +86,12 @@ function asked(missing: MissingFact, kept: ReadonlySet<string>): Asked[] {
         case 'lineage.childBirthDate':
           return next === undefined ? [] : [{ personId: next, question: 'birthDate' }];
         case 'lineage.citizenshipsAtChildBirth':
+          // The child's birth date narrows the window, unless it was answered already.
           return [
             { personId, question },
-            ...(next === undefined ? [] : [{ personId: next, question: 'birthDate' as const }]),
+            ...(next === undefined || bornOn.has(next)
+              ? []
+              : [{ personId: next, question: 'birthDate' as const }]),
           ];
         case 'lineage.edgeKind':
           return relationshipQuestion(next === undefined ? [personId] : [personId, next], kept);
@@ -112,11 +119,13 @@ const flowOrder = new Map(questionIds.map((id, index) => [id, index]));
 export function decisiveQuestions(
   results: readonly { readonly missingFacts: readonly MissingFact[] }[],
   kept: ReadonlySet<string>,
+  /** People whose birth date is answered, even in part, so it is not asked again. */
+  bornOn: ReadonlySet<string> = new Set(),
 ): DecisiveQuestion[] {
   const counted = new Map<string, { personId: string; question: QuestionId; decides: number }>();
   for (const { missingFacts } of results) {
     const keys = new Set<string>();
-    for (const question of missingFacts.flatMap((missing) => asked(missing, kept))) {
+    for (const question of missingFacts.flatMap((missing) => asked(missing, kept, bornOn))) {
       const key = `${question.question}\u0000${question.personId}`;
       if (keys.has(key)) continue;
       keys.add(key);
