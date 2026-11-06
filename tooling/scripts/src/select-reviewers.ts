@@ -28,48 +28,118 @@ interface Rule {
   readonly reviewers: readonly Reviewer[];
 }
 
-const docs: readonly Reviewer[] = ['spec', 'standards', 'context'];
-const core: readonly Reviewer[] = ['correctness', 'security', 'architecture', ...docs];
+export const docsReviewers: readonly Reviewer[] = ['spec', 'standards', 'context'];
+export const coreReviewers: readonly Reviewer[] = [
+  'correctness',
+  'security',
+  'architecture',
+  ...docsReviewers,
+];
+
+/** A path under the code roots whose directory or file name contains one of the keywords. */
+function codeNamed(keywords: readonly string[]): RegExp {
+  return new RegExp(`^(apps|packages|tooling|\\.github)/.*(${keywords.join('|')})`, 'i');
+}
+
+function anyOf(...patterns: readonly RegExp[]): RegExp {
+  return new RegExp(patterns.map((pattern) => `(${pattern.source})`).join('|'), 'i');
+}
 
 // A path takes the reviewers of every rule it matches; a path no rule matches takes them all,
-// so a new kind of file is over-reviewed rather than slipping through.
+// so a new kind of file is over-reviewed rather than slipping through. The specialist rules match
+// by area keywords as well as by directory, so a new file in a sensitive area is caught by its
+// name; matching too much costs one extra reviewer, matching too little loses a security read.
 const rules: readonly Rule[] = [
-  { match: /\.md$/, reviewers: docs },
+  // Markdown under the code roots may be a prompt or a fixture, so it is not docs.
+  { match: /^(?!(apps|packages|tooling|eval)\/).*\.md$/, reviewers: docsReviewers },
   {
     match: /^(SECURITY\.md|docs\/(SECURITY|SETUP|RETENTION)\.md|docs\/(threat-models|runbooks)\/)/,
     reviewers: ['security'],
   },
-  { match: /^packages\/knowledge\/data\//, reviewers: ['correctness', ...docs] },
+  // ADRs and the data-flow register admit vendors and services.
   {
-    match:
-      /^(?!packages\/knowledge\/data\/)(apps|packages|tooling)\/.*\.(ts|tsx|js|mjs|cjs|css|html|json|sql|svg|png|webmanifest)$/,
-    reviewers: core,
-  },
-  { match: /^eval\//, reviewers: [...core, 'ai-safety'] },
-  {
-    match: /^(apps\/api\/src\/|packages\/(db|api-contract|telemetry)\/)/,
-    reviewers: [...core, 'data-access'],
+    match: /^docs\/(adr\/|ARCHITECTURE\.md)/,
+    reviewers: ['security', 'architecture', 'supply-chain'],
   },
   {
     match:
-      /^(apps\/api\/src\/(auth|account|vault)\/|packages\/vault\/|packages\/platform\/src\/(passkeys|key-storage|vault-envelopes)|apps\/web\/src\/(enrollment|recovery|passkey-json|devices)|packages\/db\/src\/(auth|step-up|enrollment|vault)-schema)/,
-    reviewers: [...core, 'auth-crypto'],
+      /^(apps|packages|tooling)\/.*\.(ts|tsx|js|mjs|cjs|css|html|json|sql|svg|png|webmanifest)$/,
+    reviewers: coreReviewers,
   },
   {
-    match:
-      /^(apps\/api\/src\/intake\/|packages\/domain\/src\/intake\/|apps\/web\/src\/intake\/|apps\/api\/test\/eval\/)/,
-    reviewers: [...core, 'ai-safety'],
+    match: anyOf(
+      /^apps\/api\//,
+      /^apps\/[^/]+\/e2e\/postgres\//,
+      /^packages\/(db|api-contract|telemetry)\//,
+      /^tooling\/scripts\/src\/db\//,
+      /^apps\/[^/]+\/(src|test|e2e)\/(.*\/)?knowledge/,
+      codeNamed([
+        'decision',
+        'approver',
+        'monitoring',
+        'telemetry',
+        'notification',
+        'storage',
+        'blob',
+        'document',
+        'export',
+        'erasure',
+        'deletion',
+        'retention',
+        'audit',
+        'shar',
+        'invite',
+      ]),
+    ),
+    reviewers: [...coreReviewers, 'data-access'],
   },
   {
-    match:
-      /(^|\/)(package\.json|vercel\.json|nitro\.config\.ts|eslint\.config\.js|tsconfig[^/]*\.json)$|^(pnpm-lock\.yaml|pnpm-workspace\.yaml|turbo\.json|\.npmrc)$|^(\.github|tooling)\//,
-    reviewers: [...core, 'supply-chain'],
+    match: anyOf(
+      /^packages\/vault\//,
+      /^apps\/[^/]+\/(src|test|e2e)\/(.*\/)?knowledge/,
+      codeNamed([
+        'auth',
+        'passkey',
+        'webauthn',
+        'vault',
+        'step-up',
+        'sign-in',
+        'recover',
+        'enroll',
+        'key-storage',
+        'envelope',
+        'crypto',
+        'session',
+        'device',
+        'cookie',
+        'shar',
+        'invite',
+        'approver',
+        'decision',
+      ]),
+    ),
+    reviewers: [...coreReviewers, 'auth-crypto'],
   },
-  // Agent and review configuration: changing it needs the security, architecture and
-  // supply-chain reviewers (docs/REVIEW.md, "Changing reviewers").
+  {
+    match: anyOf(
+      /^eval\//,
+      codeNamed(['intake', 'prompt', 'extract', 'claude', 'anthropic', 'llm', '[/.-]eval[/.-]']),
+    ),
+    reviewers: [...coreReviewers, 'ai-safety'],
+  },
+  {
+    match: anyOf(
+      /(^|\/)(package\.json|vercel\.json|tsconfig[^/]*\.json|[^/]+\.config\.(ts|js|mjs|cjs))$/,
+      /^(pnpm-lock\.yaml|pnpm-workspace\.yaml|turbo\.json|\.npmrc)$/,
+      /^(\.github|tooling)\//,
+      /^packages\/[^/]+\/vendor\//,
+      codeNamed(['email', 'monitoring', 'sentry', 'resend', 'push', 'blob', 'tunnel', 'webhook']),
+    ),
+    reviewers: [...coreReviewers, 'supply-chain'],
+  },
   {
     match: /^(CLAUDE\.md|\.claude\/|docs\/agents\/|docs\/REVIEW\.md)/,
-    reviewers: [...core, 'supply-chain'],
+    reviewers: [...coreReviewers, 'supply-chain'],
   },
 ];
 
@@ -92,15 +162,29 @@ export function selectReviewers(paths: readonly string[]): Selection[] {
     .map((reviewer) => ({ reviewer, paths: needed.get(reviewer) ?? [] }));
 }
 
-async function main(): Promise<void> {
-  const base = process.argv[2] ?? 'origin/main';
-  const { stdout } = await promisify(execFile)('git', [
-    'diff',
-    '--name-only',
-    '-z',
-    `${base}...HEAD`,
+const run = promisify(execFile);
+
+async function git(cwd: string, args: readonly string[]): Promise<string[]> {
+  const { stdout } = await run('git', [...args], { cwd });
+  return stdout.split('\0').filter((path) => path !== '');
+}
+
+/**
+ * The paths changed since the merge base with `base`, committed or not, plus untracked files.
+ * Renames are split into a delete and an add, so a sensitive file moved under docs still brings
+ * in the reviewers of the path it left.
+ */
+export async function changedPaths(base: string, cwd = process.cwd()): Promise<string[]> {
+  if (base.startsWith('-')) throw new Error(`not a git revision: ${base}`);
+  const [changed, untracked] = await Promise.all([
+    git(cwd, ['diff', '--name-only', '-z', '--no-renames', '--merge-base', base]),
+    git(cwd, ['ls-files', '--others', '--exclude-standard', '-z']),
   ]);
-  const paths = stdout.split('\0').filter((path) => path !== '');
+  return [...new Set([...changed, ...untracked])];
+}
+
+async function main(): Promise<void> {
+  const paths = await changedPaths(process.argv[2] ?? 'origin/main');
   for (const { reviewer, paths: because } of selectReviewers(paths)) {
     const shown = because.slice(0, 3).join(', ');
     const more = because.length > 3 ? ` and ${String(because.length - 3)} more` : '';

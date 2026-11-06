@@ -20,6 +20,7 @@ The owner installed Matt Pocock's skills (the `mattpocock-skills` plugin) and as
 
 ## Consequences
 
-- Six review sub-agents on every change and seven or more on a sensitive one, one more than before. The owner chose depth over cost after comparing the reviewers with the skill.
+- Six review sub-agents on a change to code or config and seven or more on a sensitive one, one more than before. The owner chose depth over cost after comparing the reviewers with the skill.
+- The owner then chose to run only the reviewers a change needs, picked by a deterministic rule over the changed paths (`pnpm review:reviewers`) rather than by a model reading the diff, which a crafted change could steer. A docs-only change gets the spec, standards and context reviewers, plus security for the security docs and security, architecture and supply chain for ADRs; specialists are matched by area directories and name keywords; a path the rule does not know runs every reviewer.
 - A plugin update can change the process text without a pull request here. Accepted: the skills only shape the process, CLAUDE.md wins on any conflict, and a session that reads a skill checks the plugin's `plugin.json` version and tells the owner when it is no longer 1.2.3. Scripts shipped in the plugin are never run from it; one the work needs is copied into the repo and reviewed like any code.
 - Specs as issues are not versioned with the code; a spec that a later change contradicts is updated on its issue, not in a pull request.
