@@ -428,7 +428,7 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
           />
           {view.status === 'closed' && <StatusChip tone="unknown" label={t('knowledge.closed')} />}
         </div>
-        <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="font-display text-title">
             {t('knowledge.versionTitle', { title: view.title, number: view.number })}
           </h3>
