@@ -21,7 +21,7 @@ A member writes, in their own words, who is in the family and what they know abo
 
 - `packages/domain` defines the draft: a closed Zod schema `intakeDraftSchema`, with no free-text string anywhere in it.
   - **People:** each has a reference, either a local one matching `^n[0-9]{1,2}$` or a placeholder of a known person (`[P1]`) that must be one of the `knownPlaceholders` sent. Optional fields:
-    - a role relative to the writer, from a fixed list (self, spouse, partner, child, parent, grandparent, sibling, other), used only as a label hint on screen, never as a relationship;
+    - a role relative to the writer, from a fixed list (self, spouse, partner, child, parent, grandparent, sibling, other), used as a label hint on screen, to recognize the writer (R3) and to preset whether a new person is in the plan (R4), never as a relationship;
     - birth date as a partial date (R1, "Dates");
     - citizenships as country codes from the pinned country files (former states allowed), without basis, acquisition or loss;
     - residence country, education level, languages with levels.
@@ -50,7 +50,7 @@ A member writes, in their own words, who is in the family and what they know abo
 - The answer is the draft the case takes, built by a pure function `describeDraft(snapshot, draft, kept, visibility, at)` in `packages/domain`, after the API has mapped the draft's case person IDs to the snapshot's own IDs, the way `describeCase` gets them:
   - facts about people the viewer does not keep are dropped;
   - the draft is applied on top of the viewer's snapshot and never overwrites what is stored: a fact fills only a gap, and a birth date only sharpens a stored one it falls within (2015-03 for 2015); list facts are merged as a union with what is stored, keyed by country for citizenships and by language for languages, a stored entry winning; an edge the case already holds only fills the details it lacks, never changing one it has; an edge that would break `validCaseStructure` (a cycle, a fifth parent) is dropped; all new people are left out when they would break the case's limits; the result passes `caseSnapshotSchema`;
-  - it returns the draft cut to what the case took: the facts and list entries it adds, each edge once (twin edges for one pair merged), a stored edge as only the details it adds; and the `describeCase` sentences, under the same `PlaybackVisibility`, that the draft adds, without the `unanswered` sentences a new person brings, which the audit counts.
+  - it returns the draft cut to what the case took: the facts and list entries it adds, each edge once (twin edges for one pair merged), a stored edge as only the details it adds; and it counts the `describeCase` sentences, under the same `PlaybackVisibility`, that the draft adds (without the `unanswered` ones a new person brings) for the `intake_drafted` audit; they are not returned.
   The route answers the draft only; the screen words it. Nothing is written.
 - Limits: 10 drafts per account per day (`case_intake_day`) and 3 per minute (`case_intake_minute`), in the shared Postgres limiter. A request body over the cap is refused before the call. The model call has a timeout and a token cap.
 - Audit: `intake_drafted` with counts only (people and facts proposed), never text.

@@ -564,7 +564,7 @@ export const ptBR = {
     loadFailure: 'Não conseguimos carregar o caso agora.',
     lead: 'Escreva sobre a sua família do seu jeito. O Arca monta um rascunho das respostas, e você confere tudo antes de salvar.',
     privacy:
-      'Para montar o rascunho, o texto vai para o Claude, a IA da Anthropic. O Arca não guarda o que você escreve. Antes do envio, os nomes de quem já está no caso, emails e números como CPF e telefone viram marcadores. A Anthropic, em geral, apaga o texto em até 30 dias e não usa o que você escreve para treinar a IA.',
+      'Para montar o rascunho, o texto vai para o Claude, a IA da Anthropic. O Arca não guarda o que você escreve. Antes do envio, os nomes de quem já está no caso, emails e números como CPF e telefone viram marcadores. A Anthropic apaga o texto em até 30 dias, salvo as exceções dos termos dela, e não usa o que você escreve para treinar a IA.',
     tip: 'Para quem ainda não está no caso, escreva “minha esposa” ou “meu filho mais velho” em vez do nome. Assim o nome não sai do Arca.',
     label: 'Sua família, nas suas palavras',
     placeholder:
@@ -581,9 +581,9 @@ export const ptBR = {
     unnamed:
       '{role, select, self {Pessoa nova (você)} spouse {Pessoa nova (cônjuge)} partner {Pessoa nova (companheiro ou companheira)} child {Pessoa nova (filho ou filha)} parent {Pessoa nova (pai ou mãe)} grandparent {Pessoa nova (avô ou avó)} sibling {Pessoa nova (irmão ou irmã)} other {Pessoa nova}}',
     choice: {
-      legend: 'Quem é essa pessoa?',
-      keep: 'Incluir no caso',
-      drop: 'Deixar de fora, porque já está no caso ou não existe',
+      legend: 'Incluir essa pessoa no caso?',
+      keep: 'Sim, é alguém novo',
+      drop: 'Não, já está no caso ou o Arca entendeu errado',
     },
     nameHint: 'Como a família chama essa pessoa. O nome fica só no Arca.',
     whole: {
@@ -595,7 +595,7 @@ export const ptBR = {
     save: 'Salvar no caso',
     needNames: 'Dê um nome a cada pessoa nova para salvar.',
     saveFailure:
-      '{reason, select, case_invalid {Alguma coisa não combina com o que o caso já tem. O que já foi salvo continua no caso. Termine pelas perguntas guiadas.} case_limit {O caso chegou a um limite. Tire algo antes de incluir mais.} not_found {Isso não está mais disponível. Atualize a página.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas alterações em pouco tempo. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+      '{reason, select, case_invalid {Alguma coisa não combina com o que o caso já tem. O que já foi salvo continua no caso. Termine pelas perguntas guiadas.} case_limit {O caso chegou a um limite. Tire alguém na área da família e tente de novo.} not_found {Isso não está mais disponível. Atualize a página.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas alterações em pouco tempo. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
     restart: 'Escrever outro texto',
     toQuestions: 'Ir para as perguntas guiadas',
   },

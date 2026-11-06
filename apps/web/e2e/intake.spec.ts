@@ -28,10 +28,11 @@ test('drafts the family from a text, then saves what the member kept', async ({ 
     .fill('Minha filha nasceu em 2015 e tem cidadania italiana.');
   await page.getByRole('button', { name: 'Montar rascunho' }).click();
 
-  // The writer is the member's own person, with nothing new to say, so only the child is asked about.
+  // The writer is the member's own person, with nothing new to say, so only the child is
+  // asked about.
   await expect(page.getByRole('region', { name: 'Ana' })).toHaveCount(0);
   const child = page.getByRole('region', { name: 'Pessoa nova (filho ou filha)' });
-  await expect(child.getByRole('radio', { name: 'Incluir no caso' })).toBeChecked();
+  await expect(child.getByRole('radio', { name: 'Sim, é alguém novo' })).toBeChecked();
   const save = page.getByRole('button', { name: 'Salvar no caso' });
   await expect(save).toBeDisabled();
   await expect(page.getByText('Dê um nome a cada pessoa nova para salvar.')).toBeVisible();

@@ -46,6 +46,10 @@ export interface IntakeChoices {
 }
 
 export const listId = (ref: string, list: IntakeList) => `${ref}:${list}`;
+const factId = (ref: string, fact: string) => `${ref}:${fact}`;
+/** Whether a fact's ID is an entry of the person's list. */
+export const inList = (id: string, ref: string, list: IntakeList) =>
+  id.startsWith(`${listId(ref, list)}:`);
 const edgeId = (index: number) => `edge:${String(index)}`;
 
 /** A person's proposed facts, one sentence each, in the order the guided questions ask them. */
@@ -55,71 +59,85 @@ export function personItems(person: DraftPerson): DraftItem[] {
   const items: DraftItem[] = [];
   if (person.birthDate !== undefined) {
     items.push({
-      id: `${ref}:birthDate`,
+      id: factId(ref, 'birthDate'),
       sentence: { kind: 'born', about, person: ref, date: person.birthDate },
     });
   }
   for (const country of person.citizenships ?? []) {
     items.push({
-      id: `${listId(ref, 'citizenships')}:${country}`,
+      id: factId(listId(ref, 'citizenships'), country),
       sentence: { kind: 'citizenship', about, person: ref, country },
     });
   }
   if (person.residenceCountry !== undefined) {
     items.push({
-      id: `${ref}:residenceCountry`,
+      id: factId(ref, 'residenceCountry'),
       sentence: { kind: 'residence', about, person: ref, country: person.residenceCountry },
     });
   }
   if (person.educationLevel !== undefined) {
     items.push({
-      id: `${ref}:educationLevel`,
+      id: factId(ref, 'educationLevel'),
       sentence: { kind: 'education', about, person: ref, level: person.educationLevel },
     });
   }
   for (const { language, level } of person.languages ?? []) {
     items.push({
-      id: `${listId(ref, 'languages')}:${language}`,
+      id: factId(listId(ref, 'languages'), language),
       sentence: { kind: 'language', about, person: ref, language, level },
     });
   }
   return items;
 }
 
-/** The proposed relationships, one sentence each. */
-export function edgeItems(draft: IntakeDraft): DraftItem[] {
-  return draft.relationships.map((edge, index) => {
-    const start = edge.start === undefined ? {} : { start: edge.start };
-    if (edge.kind === 'parent') {
-      return {
-        id: edgeId(index),
-        sentence: {
-          kind: 'parent',
-          about: [edge.parent, edge.child],
-          parent: edge.parent,
-          child: edge.child,
-          ...(edge.parentKind === undefined ? {} : { parentKind: edge.parentKind }),
-          ...start,
-        },
-      };
-    }
-    const [a = '', b = ''] = edge.people;
-    return {
-      id: edgeId(index),
-      sentence: { kind: 'couple', about: [a, b], couple: edge.kind, people: [a, b], ...start },
-    };
+/** The proposed relationships, one sentence each, but those to a new person the member dropped. */
+export function edgeItems(draft: IntakeDraft, choices: IntakeChoices): DraftItem[] {
+  const gone = (ref: string) => choices.people.get(ref)?.keep === false;
+  return draft.relationships.flatMap((edge, index): DraftItem[] => {
+    const ends = edge.kind === 'parent' ? [edge.parent, edge.child] : edge.people;
+    return ends.some(gone) ? [] : [edgeItem(edge, index)];
   });
 }
 
-/** Every new person starts kept and unnamed, a member when their role usually is. */
+function edgeItem(edge: DraftEdge, index: number): DraftItem {
+  const start = edge.start === undefined ? {} : { start: edge.start };
+  if (edge.kind === 'parent') {
+    return {
+      id: edgeId(index),
+      sentence: {
+        kind: 'parent',
+        about: [edge.parent, edge.child],
+        parent: edge.parent,
+        child: edge.child,
+        ...(edge.parentKind === undefined ? {} : { parentKind: edge.parentKind }),
+        ...start,
+      },
+    };
+  }
+  const [a = '', b = ''] = edge.people;
+  return {
+    id: edgeId(index),
+    sentence: { kind: 'couple', about: [a, b], couple: edge.kind, people: [a, b], ...start },
+  };
+}
+
+/**
+ * Every new person starts kept and unnamed, a member when their role usually is; a second writer
+ * starts dropped when the draft already names the writer's own person.
+ */
 export function defaultChoices(draft: IntakeDraft): IntakeChoices {
+  const writerKnown = draft.people.some(({ ref, role }) => role === 'self' && !isNewReference(ref));
   return {
     people: new Map(
       draft.people
         .filter(({ ref }) => isNewReference(ref))
         .map(({ ref, role }) => [
           ref,
-          { keep: true, displayName: '', caseMember: startsInPlan(role) },
+          {
+            keep: !(writerKnown && role === 'self'),
+            displayName: '',
+            caseMember: startsInPlan(role),
+          },
         ]),
     ),
     dropped: new Set(),
@@ -174,7 +192,7 @@ export function wholeList(
     ...proposed.filter(
       (entry) =>
         !codes.has(entry[key]) &&
-        !choices.dropped.has(`${listId(person.ref, list)}:${String(entry[key])}`),
+        !choices.dropped.has(factId(listId(person.ref, list), String(entry[key]))),
     ),
   ];
 }
@@ -219,11 +237,11 @@ export function intakeWrites(
     const stored = storedAnswers(questions, personId);
     for (const key of ['birthDate', 'residenceCountry', 'educationLevel'] as const) {
       const value = person[key];
-      if (value !== undefined && keeps(`${person.ref}:${key}`)) answer(personId, key, value);
+      if (value !== undefined && keeps(factId(person.ref, key))) answer(personId, key, value);
     }
     for (const list of ['citizenships', 'languages'] as const) {
       const proposed = personItems(person).some(
-        ({ id }) => id.startsWith(`${listId(person.ref, list)}:`) && keeps(id),
+        ({ id }) => inList(id, person.ref, list) && keeps(id),
       );
       if (proposed && choices.whole.has(listId(person.ref, list))) {
         answer(personId, list, wholeList(person, list, choices, stored.get(list)));

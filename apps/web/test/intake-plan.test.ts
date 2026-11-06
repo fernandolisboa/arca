@@ -128,10 +128,24 @@ describe('the intake save plan (spec 0008, R4)', () => {
         },
       },
     ]);
-    expect(edgeItems(draft).map(({ sentence }) => sentence)).toEqual([
+    expect(edgeItems(draft, defaultChoices(draft)).map(({ sentence }) => sentence)).toEqual([
       { kind: 'couple', about: [me, 'n1'], couple: 'spouse', people: [me, 'n1'], start: '2010' },
       { kind: 'parent', about: ['n1', bruna], parent: 'n1', child: bruna },
     ]);
+  });
+
+  it('hides the edges of a dropped person, and starts a second writer dropped', () => {
+    const base = defaultChoices(draft);
+    const choices = { ...base, people: new Map(base.people).set('n1', dropped) };
+    expect(edgeItems(draft, choices)).toEqual([]);
+    const twice = draftOf({
+      people: [
+        { ref: me, role: 'self' },
+        { ref: 'n1', role: 'self' },
+      ],
+      relationships: [],
+    });
+    expect(defaultChoices(twice).people.get('n1')?.keep).toBe(false);
   });
 
   it('needs a name for every new person it keeps', () => {

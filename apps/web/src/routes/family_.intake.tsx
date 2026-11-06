@@ -26,6 +26,7 @@ import {
   type NewPerson,
   defaultChoices,
   edgeItems,
+  inList,
   listId,
   namesReady,
   personItems,
@@ -248,7 +249,7 @@ function Review({
   const shown = draft.people.filter(
     (person) => isNewReference(person.ref) || personItems(person).length > 0,
   );
-  const edges = edgeItems(draft);
+  const edges = edgeItems(draft, choices);
   if (shown.length === 0 && edges.length === 0) {
     return (
       <div className="flex flex-col gap-4">
@@ -322,9 +323,7 @@ function Review({
                     label={text(sentence)}
                     checked={!choices.dropped.has(id)}
                     onChange={(on) => {
-                      const list = lists.find((name) =>
-                        id.startsWith(`${listId(person.ref, name)}:`),
-                      );
+                      const list = lists.find((name) => inList(id, person.ref, name));
                       update({
                         dropped: toggled(choices.dropped, id, !on),
                         // A changed list needs confirming again.
@@ -340,7 +339,7 @@ function Review({
                 lists.map((list) => {
                   const id = listId(person.ref, list);
                   const kept = items.some(
-                    (item) => item.id.startsWith(`${id}:`) && !choices.dropped.has(item.id),
+                    (item) => inList(item.id, person.ref, list) && !choices.dropped.has(item.id),
                   );
                   if (!kept) return null;
                   const entries = wholeList(person, list, choices, stored.get(list)).map((entry) =>
@@ -407,7 +406,7 @@ function Review({
   );
 }
 
-type Keep = 'keep' | 'drop';
+type KeepChoice = 'keep' | 'drop';
 
 /** Keeps a proposed new person, with their name and whether they are in the plan, or drops them. */
 function NewPersonFields({
@@ -418,12 +417,12 @@ function NewPersonFields({
   readonly onChange: (choice: NewPerson) => void;
 }) {
   const { t } = useTranslation();
-  const keeps: readonly Keep[] = ['keep', 'drop'];
+  const keepChoices: readonly KeepChoice[] = ['keep', 'drop'];
   return (
     <div className="flex flex-col gap-3">
-      <ChoiceGroup<Keep>
+      <ChoiceGroup<KeepChoice>
         legend={t('intake.choice.legend')}
-        choices={keeps.map((value) => ({ value, label: t(`intake.choice.${value}`) }))}
+        choices={keepChoices.map((value) => ({ value, label: t(`intake.choice.${value}`) }))}
         value={choice.keep ? 'keep' : 'drop'}
         onChange={(next) => {
           onChange({ ...choice, keep: next === 'keep' });
