@@ -171,6 +171,68 @@ describe('knowledge decisions (spec 0007, R7)', () => {
     expect(await service.states()).toEqual(new Map());
   });
 
+  it('leaves the step-up unspent when storing the decision fails', async () => {
+    const action = decided('activate');
+    await approved(approver, action);
+    await expect(
+      stepUp.spend(approver.signedIn, 'knowledge_decision', action, () =>
+        Promise.reject(new Error('storage failed')),
+      ),
+    ).rejects.toThrow('storage failed');
+    expect(
+      await decisions().decide(approver.signedIn, 'activate', request, action.nonce),
+    ).toHaveProperty('decided');
+  });
+
+  it('admits on app_auth only an exact copy of a spent knowledge_decision step-up', async () => {
+    await approved(approver, decided('activate'));
+    const [spent] = (
+      await testDatabase.asAdmin((client) =>
+        client.query<{
+          id: string;
+          credential_id: string;
+          nonce: Buffer;
+          authenticator_data: Buffer;
+          client_data_json: Buffer;
+          signature: Buffer;
+        }>('SELECT * FROM auth.step_up WHERE account_id = $1', [approver.signedIn.accountId]),
+      )
+    ).rows;
+    if (spent === undefined) throw new Error('no step-up');
+    const insert = (changes: Partial<Record<string, unknown>> = {}) => {
+      const row = {
+        account: approver.signedIn.accountId,
+        credential: spent.credential_id,
+        signature: spent.signature,
+        ...changes,
+      };
+      return testDatabase.authDb.execute(sql`
+        INSERT INTO knowledge.decision (id, kind, route_id, version_number, content_hash,
+          approver_account_id, credential_id, public_key, action_nonce, server_nonce,
+          authenticator_data, client_data_json, signature, step_up_id)
+        VALUES (${randomUUID()}, 'activate', 'qm-sample', 1, ${version.hash}, ${row.account},
+          ${row.credential}, '\\x00', ${randomBytes(16)}, ${spent.nonce},
+          ${spent.authenticator_data}, ${spent.client_data_json}, ${row.signature}, ${spent.id})`);
+    };
+    await expect(insert()).rejects.toThrow();
+    await testDatabase.asAdmin((client) =>
+      client.query('UPDATE auth.step_up SET consumed_at = now() WHERE id = $1', [spent.id]),
+    );
+    await expect(insert({ account: randomUUID() })).rejects.toThrow();
+    await expect(insert({ credential: 'another' })).rejects.toThrow();
+    await expect(insert({ signature: randomBytes(64) })).rejects.toThrow();
+    await testDatabase.asAdmin((client) =>
+      client.query(`UPDATE auth.step_up SET purpose = 'data_export' WHERE id = $1`, [spent.id]),
+    );
+    await expect(insert()).rejects.toThrow();
+    await testDatabase.asAdmin((client) =>
+      client.query(`UPDATE auth.step_up SET purpose = 'knowledge_decision' WHERE id = $1`, [
+        spent.id,
+      ]),
+    );
+    await expect(insert()).resolves.toBeDefined();
+  });
+
   it('refuses a step-up spent before', async () => {
     const service = decisions();
     const nonce = await approved(approver, decided('activate'));

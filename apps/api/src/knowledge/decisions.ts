@@ -158,7 +158,8 @@ export function createKnowledgeDecisions({
         'knowledge_decision',
         action,
         async (tx, spent) => {
-          // Recorded first: a decision no event records must never be stored.
+          // Committed first, on app_audit: a decision no event records must never be stored, so an
+          // insert that fails after it leaves an event naming a decision that does not exist.
           await audit.record({
             code: auditCodes[kind],
             subjectAccountId: accountId,
