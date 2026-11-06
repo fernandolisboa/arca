@@ -9,6 +9,8 @@ export interface Palette {
   readonly line: string;
   readonly primary: string;
   readonly onPrimary: string;
+  /** What hover and pressed fills on `primary` mix toward: `ink`, or `bg` where `primary` is the ink. */
+  readonly primaryShift: string;
   /** Eyebrows, link underlines and the current step: the warm detail of the paper theme. */
   readonly accent: string;
   readonly soft: string;
@@ -50,6 +52,7 @@ export const palettes: Readonly<Record<ThemeId, ByMode<Palette>>> = {
       line: '#ECEBEA',
       primary: '#1A1A1D',
       onPrimary: '#FFFFFF',
+      primaryShift: '#FFFFFF',
       accent: '#945424',
       soft: '#F5F4F3',
       track: '#ECEBEA',
@@ -68,6 +71,7 @@ export const palettes: Readonly<Record<ThemeId, ByMode<Palette>>> = {
       line: '#2B2926',
       primary: '#F3F1EE',
       onPrimary: '#141312',
+      primaryShift: '#141312',
       accent: '#F2B866',
       soft: '#24221F',
       track: '#2B2926',
@@ -88,6 +92,7 @@ export const palettes: Readonly<Record<ThemeId, ByMode<Palette>>> = {
       line: '#E6DCCB',
       primary: '#A8461F',
       onPrimary: '#FFFFFF',
+      primaryShift: '#2B2622',
       accent: '#A8461F',
       soft: '#F1E8DA',
       track: '#EADFCD',
@@ -106,6 +111,7 @@ export const palettes: Readonly<Record<ThemeId, ByMode<Palette>>> = {
       line: '#3D352E',
       primary: '#E58A60',
       onPrimary: '#1E1A17',
+      primaryShift: '#F3EDE4',
       accent: '#E58A60',
       soft: '#352D27',
       track: '#3D352E',
@@ -126,6 +132,7 @@ export const palettes: Readonly<Record<ThemeId, ByMode<Palette>>> = {
       line: '#D9E2E4',
       primary: '#1D5B69',
       onPrimary: '#FFFFFF',
+      primaryShift: '#14262B',
       accent: '#1D5B69',
       soft: '#E6EDEE',
       track: '#E6EDEE',
@@ -144,6 +151,7 @@ export const palettes: Readonly<Record<ThemeId, ByMode<Palette>>> = {
       line: '#2A3F44',
       primary: '#6CC0D0',
       onPrimary: '#0F1C20',
+      primaryShift: '#E8F0F1',
       accent: '#6CC0D0',
       soft: '#1D3338',
       track: '#2A3F44',
@@ -164,6 +172,7 @@ export const palettes: Readonly<Record<ThemeId, ByMode<Palette>>> = {
       line: '#DDE1E6',
       primary: '#2457D6',
       onPrimary: '#FFFFFF',
+      primaryShift: '#1B1F24',
       accent: '#2457D6',
       soft: '#E9ECF1',
       track: '#E9ECF1',
@@ -182,6 +191,7 @@ export const palettes: Readonly<Record<ThemeId, ByMode<Palette>>> = {
       line: '#2C323A',
       primary: '#7AA2FF',
       onPrimary: '#111418',
+      primaryShift: '#E9ECF0',
       accent: '#7AA2FF',
       soft: '#222831',
       track: '#2C323A',

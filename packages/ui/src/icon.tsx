@@ -1,5 +1,6 @@
 import {
   Accessibility,
+  ArrowRight,
   Bell,
   BookOpenCheck,
   Check,
@@ -11,6 +12,7 @@ import {
   Flag,
   House,
   KeyRound,
+  LockKeyhole,
   LogOut,
   Palette,
   PanelsTopLeft,
@@ -43,6 +45,8 @@ const icons = {
   back: ChevronLeft,
   check: Check,
   alert: TriangleAlert,
+  vault: LockKeyhole,
+  next: ArrowRight,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof icons;

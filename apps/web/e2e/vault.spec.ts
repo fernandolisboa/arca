@@ -38,7 +38,7 @@ async function signIn(page: Page, email: string) {
 
 async function openVaultPage(page: Page) {
   await page.goto(`${databaseServer.origin}/`);
-  await page.getByRole('link', { name: 'Cofre' }).click();
+  await page.getByRole('link', { name: 'Abrir o cofre' }).click();
   await expect(page.getByRole('heading', { level: 2, name: 'Cofre' })).toBeVisible();
 }
 

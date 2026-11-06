@@ -9,8 +9,12 @@ export interface Layout {
   readonly textSize?: string;
 }
 
-/** The defaults: the menu on phones and the top bar from 768 px. */
-export const defaultLayout: Layout = { narrow: 'menu', wide: 'top', edge: 'bottom' };
+/** The built-in defaults: the menu on phones and the top bar from 768 px. */
+export const defaultLayout: Layout = {
+  narrow: axisList.navNarrow.default,
+  wide: axisList.navWide.default,
+  edge: axisList.dockEdge.default,
+};
 
 export const narrowLayouts: readonly Layout[] = [
   defaultLayout,

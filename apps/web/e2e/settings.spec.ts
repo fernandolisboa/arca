@@ -15,8 +15,8 @@ const stored = (page: Page) =>
 async function openSettings(page: Page) {
   await page.goto('/');
   // Phones open Settings from the menu; the default wide layout has a gear in its top bar.
-  const menu = page.getByRole('button', { name: 'Abrir menu' });
-  if (await menu.isVisible()) await menu.click();
+  const width = page.viewportSize()?.width ?? 0;
+  if (width < 768) await page.getByRole('button', { name: 'Abrir menu' }).click();
   await page.getByRole('link', { name: 'Configurações' }).click();
   await expect(page.getByRole('heading', { level: 2, name: 'Configurações' })).toBeVisible();
 }

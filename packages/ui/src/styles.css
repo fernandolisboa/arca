@@ -15,8 +15,8 @@
   --color-muted: var(--arca-muted);
   --color-line: var(--arca-line);
   --color-primary: var(--arca-primary);
-  --color-primary-hover: color-mix(in oklab, var(--arca-primary) 88%, var(--arca-muted));
-  --color-primary-pressed: color-mix(in oklab, var(--arca-primary) 76%, var(--arca-muted));
+  --color-primary-hover: color-mix(in oklab, var(--arca-primary) 88%, var(--arca-primary-shift));
+  --color-primary-pressed: color-mix(in oklab, var(--arca-primary) 76%, var(--arca-primary-shift));
   --color-on-primary: var(--arca-on-primary);
   --color-accent: var(--arca-accent);
   --color-soft: var(--arca-soft);
@@ -36,8 +36,7 @@
   --radius-chip: var(--arca-radius-chip);
   --radius-dock: var(--arca-radius-dock);
 
-  /* A hairline lift for cards; borders carry the edge, so it stays this faint in every theme. */
-  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-card: var(--arca-shadow-card);
 
   --ease-out: var(--arca-ease-out);
   --default-transition-duration: var(--arca-duration-fast);

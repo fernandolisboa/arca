@@ -1,4 +1,4 @@
-import { palettes } from '@arca/ui/theme';
+import { axes, palettes } from '@arca/ui/theme';
 import { expect, test, type Page } from '@playwright/test';
 import { reportViolations, watchProblems } from './problems.js';
 
@@ -35,14 +35,21 @@ async function firstPaint(page: Page) {
   await page.goto('/');
   await expect.poll(() => seen.length).toBeGreaterThan(0);
   const first = seen[0] ?? {};
-  return { ...first, color: longHex(first.color ?? null) };
+  return { ...first, color: expandShortHex(first['color'] ?? null) };
 }
 
 /** The minified stylesheet may shorten `#ffffff` to `#fff`; both are the same theme color. */
-function longHex(color: string | null): string | null {
-  if (color === null || !/^#[0-9a-f]{3}$/i.test(color)) return color;
-  return `#${[...color.slice(1)].map((digit) => digit + digit).join('')}`.toLowerCase();
+function expandShortHex(color: string | null): string | null {
+  return color === null ? null : color.replace(/^#(.)(.)(.)$/, '#$1$1$2$2$3$3').toLowerCase();
 }
+
+/** What the boot script applies with nothing stored, from the built-in defaults. */
+const defaults = {
+  theme: axes.theme.default,
+  mode: axes.mode.default,
+  nav: axes.navNarrow.default,
+  color: palettes[axes.theme.default][axes.mode.default].bg.toLowerCase(),
+};
 
 test('applies stored choices before the app starts', async ({ page }) => {
   const problems = watchProblems(page);
@@ -80,11 +87,8 @@ test('falls back to the defaults on tampered or unknown values', async ({ page }
     }),
   );
   expect(await firstPaint(page)).toEqual({
-    theme: 'paper',
-    mode: 'light',
-    nav: 'menu',
+    ...defaults,
     motion: 'off',
-    color: palettes.paper.light.bg.toLowerCase(),
   });
   expect(problems).toEqual([]);
 });
@@ -138,7 +142,7 @@ test('follows a change made in another tab', async ({ context }) => {
   await first.evaluate(() => {
     localStorage.removeItem('arca.appearance');
   });
-  await expect(second.locator('html')).toHaveAttribute('data-theme', 'paper');
+  await expect(second.locator('html')).toHaveAttribute('data-theme', axes.theme.default);
 });
 
 test('uses the defaults when storage is off', async ({ page }) => {
@@ -152,11 +156,8 @@ test('uses the defaults when storage is off', async ({ page }) => {
     Storage.prototype.removeItem = blocked;
   });
   expect(await firstPaint(page)).toEqual({
-    theme: 'paper',
-    mode: 'light',
-    nav: 'menu',
+    ...defaults,
     motion: 'on',
-    color: palettes.paper.light.bg.toLowerCase(),
   });
   await expect(page.getByRole('heading', { level: 1, name: 'Arca' })).toBeVisible();
   expect(problems).toEqual([]);

@@ -13,6 +13,7 @@ import {
   motion,
   palettes,
   radii,
+  shadows,
   textSizes,
   withHighContrast,
 } from '../src/theme/index.js';
@@ -135,6 +136,7 @@ export function renderThemesCss(): string {
       ...paletteDeclarations(palettes[defaults.theme][defaults.mode], defaults.mode),
       ...fontDeclarations(defaults.font),
       ...prefixed({ ...radii[defaults.corners] }, 'radius-'),
+      ...prefixed({ ...shadows }, 'shadow-'),
       ...prefixed({ ...motion }),
     }),
   ];

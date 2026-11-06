@@ -279,6 +279,7 @@
   --arca-line: #ECEBEA;
   --arca-primary: #1A1A1D;
   --arca-on-primary: #FFFFFF;
+  --arca-primary-shift: #FFFFFF;
   --arca-accent: #945424;
   --arca-soft: #F5F4F3;
   --arca-track: #ECEBEA;
@@ -304,6 +305,7 @@
   --arca-radius-control: 8px;
   --arca-radius-chip: 999px;
   --arca-radius-dock: 18px;
+  --arca-shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.04);
   --arca-duration-fast: 150ms;
   --arca-duration-base: 250ms;
   --arca-duration-slow: 450ms;
@@ -321,6 +323,7 @@
   --arca-line: #ECEBEA;
   --arca-primary: #1A1A1D;
   --arca-on-primary: #FFFFFF;
+  --arca-primary-shift: #FFFFFF;
   --arca-accent: #945424;
   --arca-soft: #F5F4F3;
   --arca-track: #ECEBEA;
@@ -347,6 +350,7 @@
   --arca-line: #2B2926;
   --arca-primary: #F3F1EE;
   --arca-on-primary: #141312;
+  --arca-primary-shift: #141312;
   --arca-accent: #F2B866;
   --arca-soft: #24221F;
   --arca-track: #2B2926;
@@ -374,6 +378,7 @@
     --arca-line: #2B2926;
     --arca-primary: #F3F1EE;
     --arca-on-primary: #141312;
+    --arca-primary-shift: #141312;
     --arca-accent: #F2B866;
     --arca-soft: #24221F;
     --arca-track: #2B2926;
@@ -438,6 +443,7 @@
   --arca-line: #E6DCCB;
   --arca-primary: #A8461F;
   --arca-on-primary: #FFFFFF;
+  --arca-primary-shift: #2B2622;
   --arca-accent: #A8461F;
   --arca-soft: #F1E8DA;
   --arca-track: #EADFCD;
@@ -464,6 +470,7 @@
   --arca-line: #3D352E;
   --arca-primary: #E58A60;
   --arca-on-primary: #1E1A17;
+  --arca-primary-shift: #F3EDE4;
   --arca-accent: #E58A60;
   --arca-soft: #352D27;
   --arca-track: #3D352E;
@@ -491,6 +498,7 @@
     --arca-line: #3D352E;
     --arca-primary: #E58A60;
     --arca-on-primary: #1E1A17;
+    --arca-primary-shift: #F3EDE4;
     --arca-accent: #E58A60;
     --arca-soft: #352D27;
     --arca-track: #3D352E;
@@ -555,6 +563,7 @@
   --arca-line: #D9E2E4;
   --arca-primary: #1D5B69;
   --arca-on-primary: #FFFFFF;
+  --arca-primary-shift: #14262B;
   --arca-accent: #1D5B69;
   --arca-soft: #E6EDEE;
   --arca-track: #E6EDEE;
@@ -581,6 +590,7 @@
   --arca-line: #2A3F44;
   --arca-primary: #6CC0D0;
   --arca-on-primary: #0F1C20;
+  --arca-primary-shift: #E8F0F1;
   --arca-accent: #6CC0D0;
   --arca-soft: #1D3338;
   --arca-track: #2A3F44;
@@ -608,6 +618,7 @@
     --arca-line: #2A3F44;
     --arca-primary: #6CC0D0;
     --arca-on-primary: #0F1C20;
+    --arca-primary-shift: #E8F0F1;
     --arca-accent: #6CC0D0;
     --arca-soft: #1D3338;
     --arca-track: #2A3F44;
@@ -672,6 +683,7 @@
   --arca-line: #DDE1E6;
   --arca-primary: #2457D6;
   --arca-on-primary: #FFFFFF;
+  --arca-primary-shift: #1B1F24;
   --arca-accent: #2457D6;
   --arca-soft: #E9ECF1;
   --arca-track: #E9ECF1;
@@ -698,6 +710,7 @@
   --arca-line: #2C323A;
   --arca-primary: #7AA2FF;
   --arca-on-primary: #111418;
+  --arca-primary-shift: #E9ECF0;
   --arca-accent: #7AA2FF;
   --arca-soft: #222831;
   --arca-track: #2C323A;
@@ -725,6 +738,7 @@
     --arca-line: #2C323A;
     --arca-primary: #7AA2FF;
     --arca-on-primary: #111418;
+    --arca-primary-shift: #E9ECF0;
     --arca-accent: #7AA2FF;
     --arca-soft: #222831;
     --arca-track: #2C323A;

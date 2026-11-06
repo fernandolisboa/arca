@@ -16,6 +16,8 @@ export const ptBR = {
     nav: {
       home: 'Início',
       family: 'Família',
+      vault: 'Cofre',
+      knowledge: 'Regras',
       settings: 'Configurações',
     },
   },
@@ -221,6 +223,64 @@ export const ptBR = {
     recoveryLink: 'Cancelar a recuperação',
   },
   /** Creating the first account (spec 0003, R2): the owner's link request, then the passkey. */
+  home: {
+    greeting: '{part, select, morning {Bom dia.} afternoon {Boa tarde.} other {Boa noite.}}',
+    greetingNamed:
+      '{part, select, morning {Bom dia, {name}.} afternoon {Boa tarde, {name}.} other {Boa noite, {name}.}}',
+    lead: {
+      family: 'Comece contando quem vai com você.',
+      questions: 'Falta pouco para ver as rotas que servem para a sua família.',
+      routes: 'As rotas da sua família já podem ser vistas.',
+    },
+    nextStep: 'Próximo passo',
+    next: {
+      family: {
+        title: 'Começar o caso',
+        body: 'Coloque as pessoas da família. Cada uma decide depois quem vê os dados dela.',
+        action: 'Começar',
+      },
+      questions: {
+        title: 'Responder às perguntas guiadas',
+        body: '{left, plural, =0 {Com as respostas, o Arca compara os destinos e mostra as rotas que servem para vocês.} one {Falta # pergunta. Com as respostas, o Arca compara os destinos e mostra as rotas que servem para vocês.} other {Faltam # perguntas. Com as respostas, o Arca compara os destinos e mostra as rotas que servem para vocês.}}',
+        action: 'Continuar',
+      },
+      routes: {
+        title: 'Ver as rotas que servem',
+        body: 'As perguntas estão respondidas. Veja quais rotas servem para cada pessoa e o que falta em cada uma.',
+        action: 'Ver as rotas',
+      },
+    },
+    stages: {
+      label: 'Etapas do caso',
+      family: 'Contar sobre a família',
+      questions: 'Perguntas guiadas',
+      routes: 'Ver as rotas que servem',
+      progress: '{answered} de {total}',
+      done: '(feita)',
+    },
+    shortcuts: 'Atalhos',
+    vault: {
+      title: 'Cofre',
+      body: 'Os documentos da família, cifrados no seu aparelho antes de subir.',
+      open: 'Abrir o cofre',
+    },
+    family: {
+      title: 'Família',
+      people: '{count, plural, one {pessoa no caso} other {pessoas no caso}}',
+      accounts:
+        '{count, plural, =0 {Ninguém tem conta ainda.} one {# já tem conta.} other {# já têm conta.}} Convide quem vai junto para cada um cuidar dos próprios dados.',
+      empty: 'O caso ainda não começou.',
+      invite: 'Convidar alguém',
+    },
+    rules: {
+      title: 'Regras',
+      pending: '{count, plural, one {versão para revisar} other {versões para revisar}}',
+      body: 'Nenhuma regra muda sem a sua aprovação.',
+      open: 'Revisar',
+    },
+    statusTitle: 'Status do serviço',
+    signedOut: 'Entre com a sua chave de acesso para continuar.',
+  },
   enroll: {
     request: {
       title: 'Criar a primeira conta',

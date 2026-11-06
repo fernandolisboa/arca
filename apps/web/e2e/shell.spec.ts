@@ -125,7 +125,8 @@ for (const [width, baseLayouts] of sizes) {
             expect(content.left).toBeGreaterThanOrEqual(nav.right);
           else if (layout.edge === 'right' && layout.narrow !== 'fixed-dock')
             expect(content.right).toBeLessThanOrEqual(nav.left);
-          else expect(content.bottom).toBeLessThanOrEqual(nav.top);
+          // Scrolling stops at a whole pixel, so a fractional page height leaves under 1 px.
+          else expect(content.bottom).toBeLessThan(nav.top + 1);
         });
       }
     }

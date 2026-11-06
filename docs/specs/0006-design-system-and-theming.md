@@ -8,7 +8,7 @@
 
 ## Goal
 
-One visual language for every screen, with the choices the owner asked for: three color themes, light and dark, nine font pairs, three corner shapes, four navigation layouts on wide screens and three on phones, the floating dock's edge, text size and high contrast, chosen per person in Settings. Components read tokens only, so a new theme is a data change.
+One visual language for every screen, with the choices the owner asked for: four color themes, light and dark, nine font pairs, three corner shapes, four navigation layouts on wide screens and three on phones, the floating dock's edge, text size and high contrast, chosen per person in Settings. Components read tokens only, so a new theme is a data change.
 
 ## Scope
 
@@ -18,7 +18,7 @@ One visual language for every screen, with the choices the owner asked for: thre
 
 ## Defaults
 
-The owner picked these on 2026-11-03 and revised them on 2026-11-06, when the first round of the visual refresh chose the "Papel" direction (the [Arca: novo visual](https://claude.ai/artifact/Ta6giPWVFMYQnv5UFiyjEM) canvas): a white page, near-black type, color only in small details, soft cards and a top bar on wide screens. Identifiers are English; the pt-BR labels come from the i18n catalog.
+The owner picked these on 2026-11-03 and revised them on 2026-11-06, when the first round of the visual refresh chose the "Papel" direction (the canvas [Arca: novo visual](https://claude.ai/artifact/Ta6giPWVFMYQnv5UFiyjEM), private to the owner): a white page, near-black type, color only in small details, soft cards and a top bar on wide screens. Identifiers are English; the pt-BR labels come from the i18n catalog.
 
 | Axis | Default | Other options |
 | --- | --- | --- |
@@ -54,7 +54,7 @@ The `paper` theme (added 2026-11-06):
 | `okBg` / `okInk` | `#E9F6EC` / `#166534` | `#12301F` / `#86EFAC` |
 | `warnBg` / `warnInk` | `#FFFBEB` / `#945424` | `#2A2114` / `#F2C47E` |
 
-On a white page, cards are told apart by a `line` border and the `shadow-card` token (`0 1px 2px` at 4% black), not by a different fill.
+On a white page, cards are told apart by a `line` border and the card shadow (`shadows.card` in the theme data, `0 1px 2px` at 4% black), not by a different fill. `cardClass` in `packages/ui` puts the two together, and new cards use it.
 
 | Key | notebook light | notebook dark | serene light | serene dark | panel light | panel dark |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -73,7 +73,7 @@ On a white page, cards are told apart by a `line` border and the `shadow-card` t
 
 Every palette also has `dangerBg` / `dangerInk`: `#FBE3E0` / `#9B1C1C` in light modes and `#3E1A19` / `#FFB4A8` in dark modes. `dangerInk` is also the color of error text on `bg` and `surface`.
 
-Hover and pressed states on `primary` fills use `color-mix(in oklab, var(--primary) 88%, var(--muted))` and 76%, so no extra token is needed. Both `primary` and `muted` pass 4.5:1 against the page, so the mix keeps `onPrimary` readable. (Until 2026-11-06 the mix went toward `ink`, which does nothing when `primary` is the ink, as in `paper`.)
+Hover and pressed states on `primary` fills use `color-mix(in oklab, var(--primary) 88%, var(--primaryShift))` and 76%. `primaryShift` is the palette's `ink` in every theme but `paper`, where `primary` is the ink itself, so the fill moves toward `bg` instead. The contrast test computes both mixes and checks that `onPrimary` stays at 4.5:1 on them (7:1 with high contrast) and that the pressed fill differs visibly from `primary`.
 
 **Rename from spec 0001.** `surface` (page) becomes `bg`; `surface-raised` (card) becomes `surface`; `brand` becomes `primary`; `brand-strong` becomes the hover rule above; `on-brand` becomes `onPrimary`; `ink-muted` becomes `muted`; `ok`, `warning` and `danger` as text become `okInk`, `warnInk` and `dangerInk`; `line` and `ink` keep their names.
 
@@ -127,6 +127,17 @@ The mark is a house on a straight hull with a ramp down from an arched door, cho
 | Windows | `#F1DCA9` | `#F5E2B8` |
 
 The door is a hole, so the background shows through. At 32 px and below the windows are dropped, as in `apps/web/public/favicon.svg`, which carries the light palette as fill attributes and switches to the dark one with a `prefers-color-scheme` style, so it still shows the light mark where that style is blocked. The PWA icons in `apps/web/public/icons/` put the light mark on a `#F7F1E8` tile; the maskable icon keeps it inside the safe zone, a centered circle 80% of the icon's width across. The mark palette lives in `packages/ui/src/theme/` as a fixed `mark` entry outside the per-palette keys. The shell renders the mark with a `Mark` component in `packages/ui` (R8), picking the light or dark palette from the resolved mode, `aria-hidden` because the name "Arca" sits beside it in the display font. Native icons and splash screens stay out of scope (Phase 4).
+
+## Home
+
+Added 2026-11-06 with the "Papel" direction. The home leads with where the case stands, then the way into each area:
+
+- **Notices first.** A pending passkey, an unsaved recovery kit, a pending recovery or a pending deletion shows as a strip in the warn colors at the top. While a recovery or a deletion waits, the home shows only that, as before.
+- **Greeting.** The weekday and date, then "Bom dia", "Boa tarde" or "Boa noite" by the device's hour, with the person's name in the case when there is one.
+- **Next step card.** One card with the step title, one sentence and one primary action, beside the case's stages as a numbered list: "Contar sobre a família" (done once a case exists), "Perguntas guiadas" (with "x de y" answered, "Não sei" included) and "Ver as rotas que servem" (once every question has an answer). The current stage carries `aria-current="step"` and the accent color; a done stage shows a check and says "(feita)" to screen readers. `nextStep` in `apps/web/src/home/next-step.ts` derives the stage from the case and its questions; it counts answers and decides nothing about eligibility.
+- **Shortcut cards.** Cofre, Família (people in the case and how many others have an account, with "Convidar alguém") and, for an approver, Regras (versions waiting for a decision). Each card has an icon tile, a title, at most one figure, one sentence and one link.
+- **Footer.** Who is signed in, Dispositivos and the service status, as a colored dot and text with a visually hidden "Status do serviço" heading.
+- **Navigation.** The shell lists Início, Família, Cofre and, for an approver, Regras.
 
 ## Shell and navigation
 
