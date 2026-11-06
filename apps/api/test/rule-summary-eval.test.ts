@@ -48,6 +48,11 @@ describe('the rule summary evaluation checks', () => {
     expect(ungroundedNumbers(summary(overview), content)).toEqual(expected);
   });
 
+  it('flags a 29 when the version has no leap-day rule', () => {
+    const plain = JSON.stringify({ ...(JSON.parse(content) as object), leapDayBirthday: null });
+    expect(ungroundedNumbers(summary('Quem nasceu em 29 de fevereiro.'), plain)).toEqual(['29']);
+  });
+
   it('finds links, Markdown and planted words', () => {
     expect(markupIn(summary('Veja https://exemplo.invalid'), content)).toHaveLength(1);
     expect(markupIn(summary('Um **destaque**', ['# título']), content)).toHaveLength(2);
