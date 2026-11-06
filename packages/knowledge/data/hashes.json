@@ -30,6 +30,10 @@
     {
       "path": "routes/es-non-lucrative/1",
       "sha256": "86bf45020de4a4d0544aa268176fc2de818120072eccccc2c84eb1edfa79751f"
+    },
+    {
+      "path": "routes/it-descent/1",
+      "sha256": "b49c760b9056ef42c7ac66a132dfd3780339446187997a36ec2e2f655ec5a0c0"
     }
   ]
 }

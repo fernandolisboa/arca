@@ -104,7 +104,13 @@ export function caseEvaluations(
         missingDates: result.missingDates,
       };
     }),
-    questions: decisiveQuestions(results, kept).map((question) => ({
+    questions: decisiveQuestions(
+      results,
+      kept,
+      new Set(
+        snapshot.people.filter(({ birthDate }) => birthDate !== undefined).map(({ id }) => id),
+      ),
+    ).map((question) => ({
       ...question,
       personId: uuid(question.personId),
     })),

@@ -1,0 +1,459 @@
+{
+  "schemaVersion": 1,
+  "routeId": "it-descent",
+  "number": 1,
+  "title": "Italian citizenship by descent (iure sanguinis) for someone born abroad who applies after 27 March 2025",
+  "country": "IT",
+  "tags": ["descent", "citizenship"],
+  "effectiveFrom": "2025-05-24",
+  "status": "open",
+  "currency": "EUR",
+  "sources": [
+    {
+      "id": "legge-91-1992",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1992-02-05;91",
+      "title": "Legge 5 febbraio 1992, n. 91 (Nuove norme sulla cittadinanza), art. 1 and art. 3-bis as in force since 24 May 2025",
+      "kind": "official",
+      "verifiedAt": "2026-11-06"
+    },
+    {
+      "id": "dl-36-2025",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2025-03-28;36",
+      "title": "Decreto-legge 28 marzo 2025, n. 36, which added art. 3-bis to law 91/1992",
+      "kind": "official",
+      "verifiedAt": "2026-11-06"
+    },
+    {
+      "id": "legge-74-2025",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2025-05-23;74",
+      "title": "Legge 23 maggio 2025, n. 74, which converted decree-law 36/2025 with amendments, in force from 24 May 2025",
+      "kind": "official",
+      "verifiedAt": "2026-11-06"
+    },
+    {
+      "id": "legge-555-1912",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1912-06-13;555",
+      "title": "Legge 13 giugno 1912, n. 555, art. 1: before 1948 citizenship passed through the father, and through the mother only in narrow cases",
+      "kind": "official",
+      "verifiedAt": "2026-11-06"
+    },
+    {
+      "id": "corte-cost-30-1983",
+      "url": "https://www.cortecostituzionale.it/scheda-pronuncia/1983/30",
+      "title": "Corte costituzionale, sentenza 30/1983: a child of a citizen mother is also a citizen by birth",
+      "kind": "official",
+      "verifiedAt": "2026-11-06"
+    },
+    {
+      "id": "corte-cost-63-2026",
+      "url": "https://www.cortecostituzionale.it/scheda-pronuncia/2026/63",
+      "title": "Corte costituzionale, sentenza 63/2026: art. 3-bis is an original bar to acquiring citizenship, not a revocation; the challenges are unfounded or inadmissible",
+      "kind": "official",
+      "verifiedAt": "2026-11-06"
+    },
+    {
+      "id": "corte-cost-147-2026",
+      "url": "https://www.cortecostituzionale.it/scheda-pronuncia/2026/147",
+      "title": "Corte costituzionale, ordinanza 147/2026: refers to the EU Court of Justice whether EU law precludes art. 3-bis, and suspends its own case until the answer",
+      "kind": "official",
+      "verifiedAt": "2026-11-06"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "it",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "citizen-line",
+      "title": "A parent or grandparent who holds, or held at death, only Italian citizenship and passed it on at each birth (art. 3-bis c); other Italian parents leave it open",
+      "expression": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "some",
+            "over": "principal.ancestors",
+            "generations": 2,
+            "where": {
+              "op": "all",
+              "operands": [
+                {
+                  "op": "within",
+                  "list": {
+                    "op": "fact",
+                    "key": "person.citizenships"
+                  },
+                  "set": {
+                    "op": "tokens",
+                    "values": ["IT"]
+                  }
+                },
+                {
+                  "op": "intersects",
+                  "list": {
+                    "op": "fact",
+                    "key": "person.citizenships"
+                  },
+                  "set": {
+                    "op": "tokens",
+                    "values": ["IT"]
+                  }
+                },
+                {
+                  "op": "any",
+                  "operands": [
+                    {
+                      "op": "all",
+                      "operands": [
+                        {
+                          "op": "eq",
+                          "left": {
+                            "op": "fact",
+                            "key": "lineage.edgeKind"
+                          },
+                          "right": {
+                            "op": "token",
+                            "value": "biological"
+                          }
+                        },
+                        {
+                          "op": "intersects",
+                          "list": {
+                            "op": "fact",
+                            "key": "lineage.citizenshipsAtChildBirth"
+                          },
+                          "set": {
+                            "op": "tokens",
+                            "values": ["IT"]
+                          }
+                        },
+                        {
+                          "op": "any",
+                          "operands": [
+                            {
+                              "op": "gte",
+                              "left": {
+                                "op": "fact",
+                                "key": "lineage.childBirthDate"
+                              },
+                              "right": {
+                                "op": "date",
+                                "value": "1948-01-01"
+                              }
+                            },
+                            {
+                              "op": "unmodeled"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "op": "all",
+                      "operands": [
+                        {
+                          "op": "eq",
+                          "left": {
+                            "op": "fact",
+                            "key": "lineage.edgeKind"
+                          },
+                          "right": {
+                            "op": "token",
+                            "value": "biological"
+                          }
+                        },
+                        {
+                          "op": "intersects",
+                          "list": {
+                            "op": "fact",
+                            "key": "person.citizenships"
+                          },
+                          "set": {
+                            "op": "tokens",
+                            "values": ["IT"]
+                          }
+                        },
+                        {
+                          "op": "unmodeled"
+                        }
+                      ]
+                    },
+                    {
+                      "op": "all",
+                      "operands": [
+                        {
+                          "op": "not",
+                          "operand": {
+                            "op": "eq",
+                            "left": {
+                              "op": "fact",
+                              "key": "lineage.edgeKind"
+                            },
+                            "right": {
+                              "op": "token",
+                              "value": "biological"
+                            }
+                          }
+                        },
+                        {
+                          "op": "unmodeled"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "every",
+                  "over": "lineage.links",
+                  "where": {
+                    "op": "any",
+                    "operands": [
+                      {
+                        "op": "all",
+                        "operands": [
+                          {
+                            "op": "eq",
+                            "left": {
+                              "op": "fact",
+                              "key": "lineage.edgeKind"
+                            },
+                            "right": {
+                              "op": "token",
+                              "value": "biological"
+                            }
+                          },
+                          {
+                            "op": "intersects",
+                            "list": {
+                              "op": "fact",
+                              "key": "lineage.citizenshipsAtChildBirth"
+                            },
+                            "set": {
+                              "op": "tokens",
+                              "values": ["IT"]
+                            }
+                          },
+                          {
+                            "op": "any",
+                            "operands": [
+                              {
+                                "op": "gte",
+                                "left": {
+                                  "op": "fact",
+                                  "key": "lineage.childBirthDate"
+                                },
+                                "right": {
+                                  "op": "date",
+                                  "value": "1948-01-01"
+                                }
+                              },
+                              {
+                                "op": "unmodeled"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "op": "all",
+                        "operands": [
+                          {
+                            "op": "eq",
+                            "left": {
+                              "op": "fact",
+                              "key": "lineage.edgeKind"
+                            },
+                            "right": {
+                              "op": "token",
+                              "value": "biological"
+                            }
+                          },
+                          {
+                            "op": "intersects",
+                            "list": {
+                              "op": "fact",
+                              "key": "person.citizenships"
+                            },
+                            "set": {
+                              "op": "tokens",
+                              "values": ["IT"]
+                            }
+                          },
+                          {
+                            "op": "unmodeled"
+                          }
+                        ]
+                      },
+                      {
+                        "op": "all",
+                        "operands": [
+                          {
+                            "op": "not",
+                            "operand": {
+                              "op": "eq",
+                              "left": {
+                                "op": "fact",
+                                "key": "lineage.edgeKind"
+                              },
+                              "right": {
+                                "op": "token",
+                                "value": "biological"
+                              }
+                            }
+                          },
+                          {
+                            "op": "unmodeled"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "some",
+                "over": "principal.ancestors",
+                "generations": 1,
+                "where": {
+                  "op": "any",
+                  "operands": [
+                    {
+                      "op": "all",
+                      "operands": [
+                        {
+                          "op": "eq",
+                          "left": {
+                            "op": "fact",
+                            "key": "lineage.edgeKind"
+                          },
+                          "right": {
+                            "op": "token",
+                            "value": "biological"
+                          }
+                        },
+                        {
+                          "op": "intersects",
+                          "list": {
+                            "op": "fact",
+                            "key": "lineage.citizenshipsAtChildBirth"
+                          },
+                          "set": {
+                            "op": "tokens",
+                            "values": ["IT"]
+                          }
+                        },
+                        {
+                          "op": "any",
+                          "operands": [
+                            {
+                              "op": "gte",
+                              "left": {
+                                "op": "fact",
+                                "key": "lineage.childBirthDate"
+                              },
+                              "right": {
+                                "op": "date",
+                                "value": "1948-01-01"
+                              }
+                            },
+                            {
+                              "op": "unmodeled"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "op": "all",
+                      "operands": [
+                        {
+                          "op": "eq",
+                          "left": {
+                            "op": "fact",
+                            "key": "lineage.edgeKind"
+                          },
+                          "right": {
+                            "op": "token",
+                            "value": "biological"
+                          }
+                        },
+                        {
+                          "op": "intersects",
+                          "list": {
+                            "op": "fact",
+                            "key": "person.citizenships"
+                          },
+                          "set": {
+                            "op": "tokens",
+                            "values": ["IT"]
+                          }
+                        },
+                        {
+                          "op": "unmodeled"
+                        }
+                      ]
+                    },
+                    {
+                      "op": "all",
+                      "operands": [
+                        {
+                          "op": "not",
+                          "operand": {
+                            "op": "eq",
+                            "left": {
+                              "op": "fact",
+                              "key": "lineage.edgeKind"
+                            },
+                            "right": {
+                              "op": "token",
+                              "value": "biological"
+                            }
+                          }
+                        },
+                        {
+                          "op": "unmodeled"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": [
+        "legge-91-1992",
+        "dl-36-2025",
+        "legge-74-2025",
+        "legge-555-1912",
+        "corte-cost-30-1983",
+        "corte-cost-63-2026",
+        "corte-cost-147-2026"
+      ]
+    }
+  ],
+  "assessments": [],
+  "dependents": [],
+  "costs": [],
+  "durations": []
+}
