@@ -16,4 +16,9 @@ describe('reading the case back (spec 0007, R5)', () => {
       '€\u00a012.345.678.901.234.567,89',
     );
   });
+
+  it('never rounds an amount with more digits than the locale usually shows', () => {
+    expect(formatAmount({ amount: '1.5', currency: 'IQD' }, 'pt-BR')).toBe('IQD\u00a01,5');
+    expect(formatAmount({ amount: '700.5', currency: 'JPY' }, 'pt-BR')).toBe('JP¥\u00a0700,5');
+  });
 });

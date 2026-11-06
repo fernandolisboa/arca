@@ -145,6 +145,7 @@ export {
   type RouteVersion,
   type Source,
   countrySetSchema,
+  durationStageSchema,
   jsonDepthWithin,
   maxKnowledgeJsonDepth,
   officialDomainListSchema,
@@ -153,7 +154,17 @@ export {
   routeVersionSchema,
   sourceSchema,
 } from './rules/route-version.js';
-export { nodeCount, referenceDateNameSchema, slugSchema } from './rules/expression.js';
+export {
+  collectionNames,
+  comparisonOperators,
+  expressionOperators,
+  nodeCount,
+  referenceDateNameSchema,
+  slugSchema,
+} from './rules/expression.js';
+export { factTargets } from './rules/fact-reference.js';
+export { type FactKey, factKeys } from './case/facts.js';
+export { relationshipSteps } from './case/paths.js';
 export { type CheckIssue } from './rules/check.js';
 export {
   type OfficialHosts,
@@ -177,6 +188,20 @@ export {
   versionIdentity,
 } from './rules/catalog.js';
 export { type CheckedDecision, type DecisionKind, decisionStates } from './rules/decisions.js';
+export {
+  type ExpressionView,
+  type FactName,
+  type RejectionEffect,
+  type RuleCaseSummary,
+  type SectionChange,
+  type SourceView,
+  type VersionView,
+  type VersionViewInput,
+  type ViewSection,
+  ruleCaseSummarySchema,
+  versionView,
+  viewSections,
+} from './rules/version-view.js';
 export { type VersionDates, checkVersionOrder } from './rules/version-order.js';
 export { type EvaluationContext, type VersionContext } from './rules/context.js';
 export {

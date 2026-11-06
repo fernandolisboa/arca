@@ -48,6 +48,8 @@ import {
   addCaseMemberAction,
   leaveCaseAction,
   DecideVersionRequest,
+  VersionView,
+  VersionViewQuery,
   StepUpAction,
   stepUpNonceHeader,
   StepUpOptionsRequest,
@@ -100,6 +102,7 @@ import { isP256PublicKey } from './notification/push.js';
 import type { CaseFiles, CaseWritten } from './case/case-files.js';
 import type { DecisionKind } from '@arca/domain';
 import type { DecisionOutcome, KnowledgeDecisions } from './knowledge/decisions.js';
+import type { KnowledgeVersions } from './knowledge/versions.js';
 import type { DocumentRequests } from './vault/documents.js';
 import {
   memoryObjectsPath,
@@ -181,6 +184,8 @@ export interface AppDependencies {
   readonly cases?: CaseFiles;
   /** Decisions on route versions (spec 0007, R7); absent, their routes answer 401. */
   readonly knowledge?: KnowledgeDecisions;
+  /** The activation screen's reads (spec 0007, R7); absent, their routes answer 401. */
+  readonly knowledgeVersions?: KnowledgeVersions;
   /** Whether the account's inviter confirmed it, read on the app_auth pool (spec 0003, R2). */
   readonly accountConfirmed?: (accountId: string) => Promise<boolean>;
   /**
@@ -382,6 +387,7 @@ export function createApp({
   documents,
   cases,
   knowledge,
+  knowledgeVersions,
   accountConfirmed,
   memoryObjects,
   notifications,
@@ -629,6 +635,7 @@ export function createApp({
         pendingPasskeyUntil: status?.pendingUntil?.toISOString() ?? null,
         recoveryPending: status?.recoveryPending ?? false,
         deletionDueAt: status?.deletionDueAt?.toISOString() ?? null,
+        approver: knowledge?.isApprover(session.accountId) ?? false,
       },
       200,
     );
@@ -1348,6 +1355,29 @@ export function createApp({
     if (nonce === undefined) return fail(c, 'step_up_required', 403);
     return decided(c, await knowledge.decide(current, kind, version, nonce));
   };
+  /** The approver's reads; anyone else learns only that they may not decide. */
+  const approverReads = async (c: Context<AppEnv>) => {
+    const current = await signedIn(c);
+    if (current === null || knowledge === undefined || knowledgeVersions === undefined) {
+      return { refused: unauthorized(c) };
+    }
+    if (!knowledge.isApprover(current.accountId)) {
+      return { refused: fail(c, 'not_approver', 403) };
+    }
+    return { versions: knowledgeVersions };
+  };
+  v1.openapi(openApiRoutes.listKnowledgeVersions, async (c) => {
+    const reads = await approverReads(c);
+    if ('refused' in reads) return reads.refused;
+    return c.json({ versions: [...(await reads.versions.list())] }, 200);
+  });
+  v1.openapi(openApiRoutes.getVersionView, async (c) => {
+    const reads = await approverReads(c);
+    if ('refused' in reads) return reads.refused;
+    const { routeId, number } = VersionViewQuery.parse(c.req.query());
+    const view = await reads.versions.view(routeId, number);
+    return view === undefined ? fail(c, 'not_found', 404) : c.json(VersionView.parse(view), 200);
+  });
   v1.openapi(openApiRoutes.activateVersion, (c) => decideVersion(c, 'activate'));
   v1.openapi(openApiRoutes.rejectVersion, (c) => decideVersion(c, 'reject'));
 

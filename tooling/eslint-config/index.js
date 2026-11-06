@@ -17,6 +17,9 @@ import {
   knowledgeRuntimeFiles,
   pureRuntime,
   rawCatalog,
+  displayLookup,
+  displayLookupFiles,
+  displayReexport,
   reproductionLookup,
   reproductionLookupFiles,
   reproductionReexport,
@@ -81,6 +84,7 @@ export function arcaConfig({ rootDir, kinds = [] }) {
     ...(isScripts ? [] : [databaseDrivers]),
     ...(kinds.includes('db') ? [] : [credentialRows]),
     reproductionLookup,
+    displayLookup,
   ];
   /** @typedef {import('./boundaries.js').Restrictions} Restrictions */
   /**
@@ -144,6 +148,7 @@ export function arcaConfig({ rootDir, kinds = [] }) {
         }
       : [],
     { files: reproductionLookupFiles, rules: scoped([reproductionLookup], [reproductionReexport]) },
+    { files: displayLookupFiles, rules: scoped([displayLookup], [displayReexport]) },
     kinds.includes('knowledge')
       ? [
           {

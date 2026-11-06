@@ -136,7 +136,7 @@ export const databaseTestFiles = ['test/postgres/**', 'e2e/postgres/**'];
 export const knowledgeRuntimeFiles = ['src/**'];
 
 /** The knowledge runtime files that read the built catalog, each behind its own entry point. */
-export const knowledgeCatalogReaders = ['src/index.ts', 'src/reproduction.ts'];
+export const knowledgeCatalogReaders = ['src/index.ts', 'src/reproduction.ts', 'src/display.ts'];
 
 /**
  * packages/knowledge: only the entry points read the built catalog, so no other module can hand
@@ -183,6 +183,45 @@ export const reproductionReexport = {
     },
   ],
 };
+
+const displayOnly =
+  'The display catalog hands out every version, proposed and rejected ones included, so only the activation view imports it (spec 0007, R7).';
+
+// The entry point, and any relative import of a module or folder named display.
+const displayModule =
+  '^(?:@arca/knowledge/display|(?:\\.{1,2}/)+(?:[^/]+/)*display(?:\\.[jt]s|/.*)?)$';
+
+/**
+ * Every package: the display catalog only where the activation screen's view is built, never
+ * where an evaluation runs.
+ *
+ * @type {Restrictions}
+ */
+export const displayLookup = {
+  patterns: [{ regex: displayModule, message: displayOnly }],
+};
+
+/**
+ * The files allowed to import the display catalog may not re-export it with `export … from`.
+ * Other ways of passing it on are left to review.
+ *
+ * @type {Restrictions}
+ */
+export const displayReexport = {
+  syntax: [
+    {
+      selector: `:matches(ExportAllDeclaration, ExportNamedDeclaration)[source.value=/${selectorRegex(displayModule)}/]`,
+      message: displayOnly,
+    },
+  ],
+};
+
+/** The activation view in the API and the tests of it and of the display catalog. */
+export const displayLookupFiles = [
+  'src/knowledge/versions.ts',
+  'test/knowledge-versions.test.ts',
+  'test/display.test.ts',
+];
 
 /** The cases runner and the reproduction path, with their tests. */
 export const reproductionLookupFiles = [

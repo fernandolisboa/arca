@@ -15,6 +15,7 @@ import {
   sumExact,
   toExact,
 } from '../../src/index.js';
+import { unitsAmount } from '../../src/money/currency.js';
 
 const eur = (amount: number): ExactAmount => toExact(money(amount, 'EUR'));
 const safeAmounts = fc.integer({ min: -1_000_000_000_000, max: 1_000_000_000_000 });
@@ -35,6 +36,23 @@ describe('currencies', () => {
     expect(() => money(100, 'XAU' as 'EUR')).toThrow();
     expect(() => money(1.5, 'EUR')).toThrow();
     expect(() => money(Number.MAX_SAFE_INTEGER + 1, 'EUR')).toThrow();
+  });
+});
+
+describe('unitsAmount', () => {
+  it.each([
+    [123450, 'BRL', '1234.5'],
+    [100, 'EUR', '1'],
+    [5, 'EUR', '0.05'],
+    [0, 'EUR', '0'],
+    [-150, 'EUR', '-1.5'],
+    [-5, 'EUR', '-0.05'],
+    [-100, 'EUR', '-1'],
+    [-1050, 'EUR', '-10.5'],
+    [1500, 'IQD', '1.5'],
+    [700, 'JPY', '700'],
+  ] as const)('writes %i %s minor units as %s', (amount, currency, expected) => {
+    expect(unitsAmount(amount, currency)).toBe(expected);
   });
 });
 

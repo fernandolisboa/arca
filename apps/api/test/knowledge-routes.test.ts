@@ -1,8 +1,10 @@
+import { KnowledgeVersion } from '@arca/api-contract/routes';
 import { describe, expect, it } from 'vitest';
 import type { Logger } from '@arca/telemetry';
 import { createApp } from '../src/app.js';
 import type { SignedIn } from '../src/auth/service.js';
 import type { DecisionOutcome, KnowledgeDecisions } from '../src/knowledge/decisions.js';
+import type { KnowledgeVersions } from '../src/knowledge/versions.js';
 import { noLimits } from './limits.js';
 
 const silentLogger: Logger = { info: () => undefined, error: () => undefined };
@@ -35,6 +37,19 @@ function setup({
     },
     states: () => Promise.resolve(new Map()),
   };
+  const listedVersion = KnowledgeVersion.parse({
+    routeId: 'pt-d7',
+    number: 2,
+    title: 'Visto D7',
+    country: 'PT',
+    effectiveFrom: '2026-01-01',
+    hash: 'a'.repeat(64),
+    state: 'proposed',
+  });
+  const knowledgeVersions: KnowledgeVersions = {
+    list: () => Promise.resolve([listedVersion]),
+    view: () => Promise.resolve(undefined),
+  };
   const app = createApp({
     checkDatabase: () => Promise.resolve('ok'),
     logger: silentLogger,
@@ -42,10 +57,23 @@ function setup({
     auth: {
       handle: () => Promise.resolve(Response.json({})),
       signedIn: () => Promise.resolve(signedIn),
-      refresh: () => Promise.resolve({ session: null, setCookies: [] }),
+      refresh: () =>
+        Promise.resolve({
+          session:
+            signedIn === null
+              ? null
+              : {
+                  accountId: signedIn.accountId,
+                  email: 'owner@example.com',
+                  confirmed: true,
+                  device: { browser: 'firefox', os: 'linux' },
+                },
+          setCookies: [],
+        }),
     },
     authLimits: noLimits,
     knowledge,
+    knowledgeVersions,
   });
   const decide = (kind: 'activate' | 'reject', body: unknown = version) =>
     app.request(`/v1/knowledge/versions/${kind}`, {
@@ -57,8 +85,19 @@ function setup({
       },
       body: JSON.stringify(body),
     });
-  return { decide, calls };
+  const read = (path: string) => app.request(`/v1/knowledge/versions${path}`);
+  return { app, decide, read, calls, listedVersion };
 }
+
+describe('GET /v1/session for approvers (spec 0007, R7)', () => {
+  it('says whether the account is on the approver list', async () => {
+    for (const listed of [true, false]) {
+      const response = await setup({ listed }).app.request('/v1/session');
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({ approver: listed });
+    }
+  });
+});
 
 describe('POST /v1/knowledge/versions (spec 0007, R7)', () => {
   it.each(['activate', 'reject'] as const)('%ss with the nonce the client sent', async (kind) => {
@@ -100,5 +139,21 @@ describe('POST /v1/knowledge/versions (spec 0007, R7)', () => {
       400,
     );
     expect([...noNonce.calls, ...malformed.calls]).toEqual([]);
+  });
+
+  it('lists the versions for an approver and refuses anyone else', async () => {
+    const { read, listedVersion } = setup();
+    const response = await read('');
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ versions: [listedVersion] });
+    const other = setup({ listed: false });
+    expect((await other.read('')).status).toBe(403);
+    expect((await other.read('/view?routeId=pt-d7&number=2')).status).toBe(403);
+  });
+
+  it('answers 404 for a version it does not hold and 400 for a malformed one', async () => {
+    const { read } = setup();
+    expect((await read('/view?routeId=pt-d7&number=2')).status).toBe(404);
+    expect((await read('/view?routeId=Nope&number=0')).status).toBe(400);
   });
 });

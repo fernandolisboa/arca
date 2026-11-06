@@ -17,7 +17,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Ancestor | Ascendente | A parent, grandparent or earlier forebear of the principal, whether or not in the case; read in descent rules |
 | Lineage | Linha de ascendência | The chain of people from an ancestor down to the principal |
 | Rule case | Caso de teste da regra | One table-driven test entry for a route version, in its cases file; not a family's case |
-| Official-domain list | Internal, no UI label | A versioned list of hosts that count as official for a country or international body |
+| Official-domain list | Lista de sites oficiais | A versioned list of hosts that count as official for a country or international body |
 | Evaluation | Avaliação | The result of applying a route version to a person or unit |
 | Evaluation engine | Internal, no UI label | The pure functions in `packages/domain` that select a version, compute the unit and evaluate requirements |
 | Case snapshot | Internal, no UI label | The engine's structured, free-text-free view of a case at one moment (`CaseSnapshot`) |
@@ -57,7 +57,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Approver | Aprovador | An account on the reviewed approver list who may activate or reject knowledge-base versions with a step-up |
 | Decision | Decisão | An approver's activation or rejection, stored with the step-up it consumed |
 | Step-up | Confirmação com chave de acesso | A fresh passkey verification for one sensitive action, bound to that action |
-| Content hash | Internal, no UI label | SHA-256 of the canonical JSON of a version and every file it pins; what a decision is bound to |
+| Content hash | Código do conteúdo | SHA-256 of the canonical JSON of a version and every file it pins; what a decision is bound to |
 | Passkey | Chave de acesso | The WebAuthn credential a person signs in and confirms sensitive actions with |
 | Knowledge catalog | Internal, no UI label | The validated, hashed route data that `packages/knowledge` builds and the API bundles; not the pnpm catalog of dependency versions |
 | Approver list | Internal, no UI label | The reviewed file in the repository that names the approvers by account ID, per environment |
@@ -73,6 +73,10 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Former country | País extinto | A state that no longer exists, with an ISO 3166-3 code, allowed only in citizenship and ancestry facts |
 | Owner | Responsável | The founder, who owns the repository and is the first approver; "founder" in product docs means the same person |
 | Active version | Versão ativa | A route version with a counted activation and no rejection; the only kind the engine evaluates for a case |
+| Rejected version | Versão recusada | A route version with a counted rejection; selection skips it for good |
+| Version settings | Configurações da versão | The fields of a route version other than its items: dates, currency, leap-day rule, reference dates, closure sources, tags and pins |
+| Tag | Etiqueta | A free label of a route version, such as `investment`, hashed and activated with it |
+| Pinned file | Arquivo fixado | A versioned data file a route version names by ID and number, such as a country list or an official-domain list |
 | Decisive missing fact | Dado decisivo pendente | An unknown fact whose answer could change an evaluation's status |
 | Eligible | Elegível | Evaluation status: every requirement holds |
 | Not eligible | Não elegível | Evaluation status: a requirement does not hold |

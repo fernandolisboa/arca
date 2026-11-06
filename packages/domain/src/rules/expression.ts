@@ -88,6 +88,37 @@ export type Expression =
 const safeInteger = z.number().int().min(Number.MIN_SAFE_INTEGER).max(Number.MAX_SAFE_INTEGER);
 const generations = z.number().int().min(1).max(maxAncestorGenerations).optional();
 
+/** Every operator of {@link Expression}, so a screen can name each one. */
+export const expressionOperators = [
+  'bool',
+  'unmodeled',
+  'int',
+  'decimal',
+  'money',
+  'date',
+  'token',
+  'tokens',
+  'set',
+  'fact',
+  ...comparisonOperators,
+  'in',
+  'intersects',
+  'all',
+  'any',
+  'not',
+  'add',
+  'sub',
+  'mul',
+  'min',
+  'max',
+  'convert',
+  'since',
+  'count',
+  'some',
+  'every',
+  'sum',
+] as const satisfies readonly Expression['op'][];
+
 export const expressionSchema: z.ZodType<Expression> = z.lazy(() =>
   z.discriminatedUnion('op', [
     z.strictObject({ op: z.literal('bool'), value: z.boolean() }),

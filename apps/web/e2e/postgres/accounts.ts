@@ -179,6 +179,23 @@ export async function resetRateLimits(): Promise<void> {
 }
 
 /**
+ * Starts a seed passkey's signature counter over, so a fresh virtual authenticator, whose counter
+ * also starts over, signs in with it again.
+ */
+export async function restartSeededCounter(accountId: string): Promise<void> {
+  await asAdmin(async (client) => {
+    await client.query('UPDATE auth.passkey SET counter = 0 WHERE user_id = $1', [accountId]);
+  });
+}
+
+/** Empties the knowledge decisions, which no role may delete, so every version is proposed. */
+export async function clearKnowledgeDecisions(): Promise<void> {
+  await asAdmin(async (client) => {
+    await client.query('TRUNCATE knowledge.decision');
+  });
+}
+
+/**
  * The first account is created once per database, so the enrollment tests start from one with no
  * account, no spent enrollment code and no pending link, and run before any test seeds an account.
  */

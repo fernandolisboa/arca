@@ -109,6 +109,8 @@ export const openApiRoutes = {
   leaveCase: toOpenApiRoute(routes.leaveCase),
   activateVersion: toOpenApiRoute(routes.activateVersion),
   rejectVersion: toOpenApiRoute(routes.rejectVersion),
+  listKnowledgeVersions: toOpenApiRoute(routes.listKnowledgeVersions),
+  getVersionView: toOpenApiRoute(routes.getVersionView),
 } as const;
 
 export const openApiInfo = { title: 'Arca API', version: '1.0.0' } as const;

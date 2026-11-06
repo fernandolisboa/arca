@@ -19,6 +19,7 @@ const signedIn: SessionResponse = {
   pendingPasskeyUntil: null,
   recoveryPending: false,
   deletionDueAt: null,
+  approver: false,
 };
 
 const origin = 'http://arca.test';
