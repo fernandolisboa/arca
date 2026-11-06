@@ -36,8 +36,15 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
 
   const basics = step(page, 'Dados básicos');
   const born = group(basics, 'Quando Ana nasceu?');
-  await born.getByLabel('Ano').fill('1985');
+  // A half-typed year never goes as "Não sei": the browser keeps the step from being sent.
   await born.getByLabel('Mês').selectOption({ label: 'abril' });
+  await basics.getByRole('button', { name: 'Salvar e continuar' }).click();
+  await expect(born.getByLabel('Ano')).toHaveJSProperty('validity.valueMissing', true);
+  await born.getByLabel('Ano').fill('198');
+  await basics.getByRole('button', { name: 'Salvar e continuar' }).click();
+  await expect(born.getByLabel('Ano')).toHaveJSProperty('validity.patternMismatch', true);
+  await expect(step(page, 'Dados básicos')).toBeVisible();
+  await born.getByLabel('Ano').fill('1985');
   await radio(basics, 'Quais cidadanias Ana tem ou já teve?', 'Sim');
   await basics.getByLabel('País', { exact: true }).selectOption({ label: 'Brasil' });
   await basics.getByLabel('Como conseguiu').selectOption({ label: 'Nascimento' });

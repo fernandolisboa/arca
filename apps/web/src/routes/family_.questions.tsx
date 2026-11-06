@@ -19,7 +19,8 @@ import { caseFailure, writeCase, type CaseFailure } from '../case.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { Page } from '../page.js';
 import { passkeys } from '../platform.js';
-import { QuestionEditor, sentAnswer, type QuestionContext } from '../questions/editors.js';
+import { QuestionEditor, type QuestionContext } from '../questions/editors.js';
+import { sentAnswer } from '../questions/entry.js';
 
 export const Route = createFileRoute('/family_/questions')({ component: Questions });
 
@@ -217,7 +218,9 @@ function StepForm({
   const [drafts, setDrafts] = useState<ReadonlyMap<QuestionId, unknown>>(
     () => new Map(step.questions.map((question) => [question.id, question.answer])),
   );
-  const saved = new Map(step.questions.map((question) => [question.id, question.answer]));
+  const [saved] = useState<ReadonlyMap<QuestionId, unknown>>(
+    () => new Map(step.questions.map((question) => [question.id, question.answer])),
+  );
   const [pending, setPending] = useState(false);
   const [failure, setFailure] = useState<CaseFailure>();
   return (

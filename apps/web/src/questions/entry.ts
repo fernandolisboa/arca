@@ -1,7 +1,7 @@
 /**
  * How the guided questions' answers are typed in (spec 0007, R4): dates in parts, amounts with a
- * decimal comma, shares as percentages. Only text is moved around here; the API turns amounts
- * into minor units and checks every answer against the storage schemas.
+ * decimal comma, shares as percentages, and the answer a step sends. Only text is moved around
+ * here; the API turns amounts into minor units and checks every answer against the storage schemas.
  */
 
 export interface DateParts {
@@ -28,7 +28,7 @@ export function joinDate({ year, month, day }: DateParts): string | undefined {
 
 export const amountText = (amount: string) => amount.replace('.', ',');
 
-const groupedAmount = /^\d{1,3}(?:\.\d{3})+(?:,\d+)?$/;
+const groupedAmount = /^[1-9]\d{0,2}(?:\.\d{3})+(?:,\d+)?$/;
 
 /**
  * `1.234,50` or `1234,50` back as a decimal string, `1234.50`. A point is a thousands separator
@@ -65,4 +65,33 @@ function trimDecimal(value: string): string {
   const integer = whole.replace(/^0+(?=\d)/, '');
   const decimals = fraction.replace(/0+$/, '');
   return decimals === '' ? integer : `${integer}.${decimals}`;
+}
+
+export const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const idOf = (item: unknown) =>
+  isRecord(item) && typeof item['id'] === 'string' ? item['id'] : undefined;
+
+/**
+ * The answer as the API takes it: a field left as "Não sei" inside an item is left out, and a
+ * saved item the person removed is sent as dropped, since the API keeps what an answer leaves out.
+ * `saved` is what the form opened with, never a later refetch, or an item added elsewhere since
+ * would look removed.
+ */
+export function sentAnswer(value: unknown, saved: unknown): unknown {
+  if (!Array.isArray(value)) return value;
+  const kept = new Set(value.map(idOf));
+  const dropped = (Array.isArray(saved) ? saved : [])
+    .map(idOf)
+    .filter((id): id is string => id !== undefined && !kept.has(id))
+    .map((id) => ({ id, dropped: true }));
+  return [
+    ...value.map((item: unknown) =>
+      isRecord(item)
+        ? Object.fromEntries(Object.entries(item).filter(([, field]) => field !== null))
+        : item,
+    ),
+    ...dropped,
+  ];
 }

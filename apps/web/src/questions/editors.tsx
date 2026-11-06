@@ -17,6 +17,7 @@ import {
   amountText,
   amountValue,
   dateParts,
+  isRecord,
   joinDate,
   noDate,
   percentFromShare,
@@ -46,8 +47,6 @@ const yearPattern = '\\d{4}';
 const listModes = { has: 'has', none: 'none', unknown: 'unknown' } as const;
 const scalar = (value: unknown) =>
   typeof value === 'string' || typeof value === 'number' ? String(value) : '';
-const isRecord = (value: unknown): value is Record_ =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 function useNames() {
   const { t, i18n } = useTranslation();
@@ -241,6 +240,7 @@ function DateEditor({
             autoComplete="off"
             maxLength={4}
             pattern={yearPattern}
+            title={t('questions.date.yearFormat')}
             required={parts.month !== '' || parts.day !== ''}
             value={parts.year}
             onChange={(event) => {
@@ -698,28 +698,4 @@ function RelationshipsEditor({
       ))}
     </fieldset>
   );
-}
-
-const idOf = (item: unknown) =>
-  isRecord(item) && typeof item['id'] === 'string' ? item['id'] : undefined;
-
-/**
- * The answer as the API takes it: a field left as "Não sei" inside an item is left out, and a
- * saved item the person removed is sent as dropped, since the API keeps what an answer leaves out.
- */
-export function sentAnswer(value: unknown, saved: unknown): unknown {
-  if (!Array.isArray(value)) return value;
-  const kept = new Set(value.map(idOf));
-  const dropped = (Array.isArray(saved) ? saved : [])
-    .map(idOf)
-    .filter((id): id is string => id !== undefined && !kept.has(id))
-    .map((id) => ({ id, dropped: true }));
-  return [
-    ...value.map((item: unknown) =>
-      isRecord(item)
-        ? Object.fromEntries(Object.entries(item).filter(([, field]) => field !== null))
-        : item,
-    ),
-    ...dropped,
-  ];
 }

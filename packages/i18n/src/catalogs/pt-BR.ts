@@ -451,6 +451,7 @@ export const ptBR = {
       day: 'Dia',
       anyMonth: 'Não sei o mês',
       anyDay: 'Não sei o dia',
+      yearFormat: 'Use os quatro números do ano, como 1985.',
       months:
         '{month, select, 01 {janeiro} 02 {fevereiro} 03 {março} 04 {abril} 05 {maio} 06 {junho} 07 {julho} 08 {agosto} 09 {setembro} 10 {outubro} 11 {novembro} 12 {dezembro} other {}}',
       none: '{field, select, lost {Ainda tem} end {Ainda estão juntos} sold {Ainda tem} other {Nunca}}',
