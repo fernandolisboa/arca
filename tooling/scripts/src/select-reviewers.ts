@@ -38,7 +38,9 @@ export const coreReviewers: readonly Reviewer[] = [
 
 /** A path under the code roots whose directory or file name contains one of the keywords. */
 function codeNamed(keywords: readonly string[]): RegExp {
-  return new RegExp(`^(apps|packages|tooling|\\.github)/.*(${keywords.join('|')})`, 'i');
+  // `step-up` also matches `step_up`, as migrations spell it.
+  const spelled = keywords.map((keyword) => keyword.replace(/(\w)-(\w)/g, '$1[-_]$2'));
+  return new RegExp(`^(apps|packages|tooling|\\.github)/.*(${spelled.join('|')})`, 'i');
 }
 
 function anyOf(...patterns: readonly RegExp[]): RegExp {
@@ -67,10 +69,10 @@ const rules: readonly Rule[] = [
     reviewers: ['security'],
   },
   { match: /^docs\/vault-format\.md$/, reviewers: ['security', 'auth-crypto'] },
-  // ADRs and the data-flow register admit vendors and services.
+  // ADRs and the data-flow register admit vendors and services and set the auth and vault design.
   {
     match: /^docs\/(adr\/|ARCHITECTURE\.md)/,
-    reviewers: ['security', 'architecture', 'supply-chain'],
+    reviewers: ['security', 'architecture', 'supply-chain', 'auth-crypto'],
   },
   {
     match:
@@ -80,7 +82,20 @@ const rules: readonly Rule[] = [
   // The API holds sessions, CSRF and headers, secrets and every third-party call.
   { match: /^apps\/api\//, reviewers: withCore('data-access', 'auth-crypto', 'supply-chain') },
   { match: /^packages\/(vault|platform)\//, reviewers: withCore('auth-crypto') },
-  { match: databaseTests, reviewers: withCore('data-access', 'auth-crypto') },
+  // The schema, the contract, the client's data and session glue, database-backed tests, version
+  // selection (ADR-0014) and the content hash a knowledge-base decision is bound to.
+  {
+    match: anyOf(
+      databaseTests,
+      /^packages\/(db|api-contract)\//,
+      /^apps\/web\/src\/[^/]+\.ts$/,
+      /^apps\/web\/e2e\//,
+      /^packages\/domain\/src\/rules\/(catalog|version-|decisions)/,
+      /^packages\/knowledge\/scripts\/(content-hash|canonical|hashes)\.ts$/,
+    ),
+    reviewers: withCore('data-access', 'auth-crypto'),
+  },
+  { match: /^apps\/web\/src\/main\.tsx$/, reviewers: withCore('supply-chain') },
   {
     match: anyOf(
       /^packages\/(db|api-contract|telemetry)\//,
@@ -133,7 +148,15 @@ const rules: readonly Rule[] = [
   {
     match: anyOf(
       /^eval\//,
-      codeNamed(['intake', 'prompt', 'extract', 'claude', 'anthropic', 'llm', '[/.-]eval[/.-]']),
+      codeNamed([
+        'intake',
+        'prompt',
+        'extract',
+        'claude',
+        'anthropic',
+        '[/.-]llm[/.-]',
+        '[/.-]eval[/.-]',
+      ]),
     ),
     reviewers: withCore('ai-safety'),
   },
@@ -166,7 +189,7 @@ const rules: readonly Rule[] = [
   // Agent and review configuration, wherever an agent would load it (threat model S4).
   {
     match:
-      /(^|\/)((CLAUDE|AGENTS|GEMINI)(\.local)?\.md|\.claude\/|\.mcp\.json$)|^(docs\/agents\/|docs\/REVIEW\.md$|tooling\/scripts\/src\/select-reviewers\.ts$)/,
+      /(^|\/)((CLAUDE|AGENTS|GEMINI)(\.local)?\.md|\.claude\/|\.mcp\.json$)|^(docs\/agents\/|docs\/REVIEW\.md$|tooling\/scripts\/src\/select-reviewers\.ts$)/i,
     reviewers: withCore('supply-chain'),
   },
 ];
