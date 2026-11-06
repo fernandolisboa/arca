@@ -1,4 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
+import type { KnowledgeVersions, VersionView } from '@arca/api-contract/client';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { family, signedIn } from './case-accounts.js';
 import { seededCredential, virtualAuthenticator, withoutAutofill } from './passkeys.js';
@@ -167,17 +168,16 @@ async function memberReportsARequirement(browser: Browser) {
  */
 async function eb5InEffect(page: Page): Promise<{ version: string; fallback: string | null }> {
   const api = `${databaseServer.origin}/v1/knowledge/versions`;
-  const { versions } = (await (await page.request.get(api)).json()) as {
-    versions: { routeId: string; number: number }[];
-  };
+  const list = await page.request.get(api);
+  expect(list.status()).toBe(200);
+  const { versions } = (await list.json()) as KnowledgeVersions;
   for (const { routeId, number } of versions) {
     if (routeId !== 'us-eb5') continue;
-    const response = await page.request.get(`${api}/view`, {
+    const view = await page.request.get(`${api}/view`, {
       params: { routeId, number: String(number) },
     });
-    const { rejection } = (await response.json()) as {
-      rejection: { selected: boolean; fallback: { number: number } | null };
-    };
+    expect(view.status()).toBe(200);
+    const { rejection } = (await view.json()) as VersionView;
     if (rejection.selected) {
       return {
         version: String(number),
