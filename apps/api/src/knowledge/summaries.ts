@@ -7,6 +7,7 @@ import {
   modelAttempts,
   parsedWithOneRetry,
 } from '../ai/model-call.js';
+import type { RuleSummaryStore, SummaryKey } from './summary/store.js';
 import { type Summarizer, SummarizerError, type SummarizerFailure } from './summary/summarizer.js';
 import type { KnowledgeVersions } from './versions.js';
 
@@ -14,14 +15,25 @@ export type RuleSummaryOutcome =
   | { readonly ok: true; readonly value: RuleSummary }
   | { readonly ok: false; readonly reason: 'not_found' | SummarizerFailure };
 
+export type StoredSummaryOutcome =
+  | { readonly ok: true; readonly value: RuleSummary | null }
+  | { readonly ok: false; readonly reason: 'not_found' };
+
 /** A model's summary of one version for the approver (ADR-0025). */
 export interface RuleSummaries {
+  /** The summary already stored for the version, with no model call. */
+  readonly stored: (routeId: string, number: number) => Promise<StoredSummaryOutcome>;
+  /** The stored summary, or a new one from the model, which is then stored. */
   readonly summarize: (routeId: string, number: number) => Promise<RuleSummaryOutcome>;
 }
 
 export interface RuleSummarySettings {
   readonly versions: KnowledgeVersions;
   readonly summarizer: Summarizer;
+  readonly store: RuleSummaryStore;
+  /** What a stored summary is kept under besides the content: today's prompt and model. */
+  readonly promptVersion: string;
+  readonly model: string;
   readonly logger: Logger;
   readonly now: ModelCallLog['now'];
 }
@@ -88,18 +100,23 @@ export function readRuleSummary(
 }
 
 /**
- * Each version is summarized once per server instance: the summary is kept by content hash, and a
- * request for a summary still on its way waits for that same call. A failure is not kept, so the
- * next request asks again. Only bundled versions reach the model, so the cache holds at most one
- * entry per catalog version. The content and the reply never reach a log line or an error.
+ * Each version is summarized once per prompt and model: the summary is stored by the version's
+ * content hash, and a request for a summary still on its way in this instance waits for that same
+ * call. A failure is not stored, so the next request asks again. Only bundled versions reach the
+ * model, so the store holds at most one row per catalog version, prompt and model. The content and
+ * the reply never reach a log line or an error.
  */
 export function createRuleSummaries({
   versions,
   summarizer,
+  store,
+  promptVersion,
+  model,
   logger,
   now,
 }: RuleSummarySettings): RuleSummaries {
-  const cache = new Map<string, Promise<RuleSummary>>();
+  const pending = new Map<string, Promise<RuleSummary>>();
+  const keyOf = (contentHash: string): SummaryKey => ({ contentHash, promptVersion, model });
 
   const loggedSummarizer: Summarizer = {
     summarize: (content) =>
@@ -116,18 +133,33 @@ export function createRuleSummaries({
     logger.error({ route, errorCode: 'summary_unparsable' });
   };
 
+  const summaryOf = async (view: VersionView): Promise<RuleSummary> => {
+    const key = keyOf(view.hash);
+    const found = await store.find(key);
+    if (found !== undefined) return found;
+    const summary = await readRuleSummary(loggedSummarizer, summaryContent(view), onUnparsable);
+    await store.save(key, summary);
+    return summary;
+  };
+
   return {
+    async stored(routeId, number) {
+      const view = await versions.view(routeId, number);
+      if (view === undefined) return { ok: false, reason: 'not_found' };
+      return { ok: true, value: (await store.find(keyOf(view.hash))) ?? null };
+    },
     async summarize(routeId, number) {
       const view = await versions.view(routeId, number);
       if (view === undefined) return { ok: false, reason: 'not_found' };
-      let summary = cache.get(view.hash);
+      let summary = pending.get(view.hash);
       if (summary === undefined) {
-        summary = readRuleSummary(loggedSummarizer, summaryContent(view), onUnparsable);
-        cache.set(view.hash, summary);
-        const pending = summary;
-        pending.catch(() => {
-          if (cache.get(view.hash) === pending) cache.delete(view.hash);
-        });
+        summary = summaryOf(view);
+        pending.set(view.hash, summary);
+        const asked = summary;
+        void asked.then(
+          () => pending.delete(view.hash),
+          () => pending.delete(view.hash),
+        );
       }
       try {
         return { ok: true, value: await summary };

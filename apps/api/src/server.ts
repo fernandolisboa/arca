@@ -31,6 +31,10 @@ import { todayInSaoPaulo } from './calendar.js';
 import { createRuleReportReview } from './knowledge/reports.js';
 import { createRuleSummaries } from './knowledge/summaries.js';
 import { summarizerFor } from './knowledge/summary/environment.js';
+import { fakeSummarizer } from './knowledge/summary/fake-summarizer.js';
+import { ruleSummaryModel } from './knowledge/summary/model.js';
+import { ruleSummaryPromptVersion } from './knowledge/summary/prompt.js';
+import { postgresSummaryStore } from './knowledge/summary/store.js';
 import { createKnowledgeVersions } from './knowledge/versions.js';
 import {
   databaseTargetFrom,
@@ -290,6 +294,10 @@ const ruleSummaries =
     : createRuleSummaries({
         versions: knowledgeVersions,
         summarizer,
+        store: postgresSummaryStore(() => connected().db),
+        promptVersion: ruleSummaryPromptVersion,
+        // A scripted summary is kept apart from the model's, so neither is ever read as the other.
+        model: summarizer === fakeSummarizer ? 'fake' : ruleSummaryModel,
         logger,
         now: () => performance.now(),
       });

@@ -3,8 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import type { SignedIn } from '../src/auth/service.js';
 import type { KnowledgeDecisions } from '../src/knowledge/decisions.js';
-import type { RuleSummaries, RuleSummaryOutcome } from '../src/knowledge/summaries.js';
+import type {
+  RuleSummaries,
+  RuleSummaryOutcome,
+  StoredSummaryOutcome,
+} from '../src/knowledge/summaries.js';
 import type { KnowledgeVersions } from '../src/knowledge/versions.js';
+import type { VersionView } from '@arca/domain';
 import { noLimits } from './limits.js';
 
 // The rule summary route with a fake service (ADR-0025).
@@ -18,20 +23,27 @@ const summary = { overview: 'Um resumo.', watchPoints: ['Confira o valor.'] };
 
 function setup({
   outcome = { ok: true, value: summary },
+  stored = { ok: true, value: summary },
   listed = true,
   signedIn = approver,
   withSummaries = true,
   blocked = '',
 }: {
   outcome?: RuleSummaryOutcome;
+  stored?: StoredSummaryOutcome;
   listed?: boolean;
   signedIn?: SignedIn | null;
   withSummaries?: boolean;
   blocked?: string;
 } = {}) {
   const asked: [string, number][] = [];
+  const read: [string, number][] = [];
   const limited: [string, string][] = [];
   const ruleSummaries: RuleSummaries = {
+    stored: (routeId, number) => {
+      read.push([routeId, number]);
+      return Promise.resolve(stored);
+    },
     summarize: (routeId, number) => {
       asked.push([routeId, number]);
       return Promise.resolve(outcome);
@@ -64,7 +76,7 @@ function setup({
     } satisfies KnowledgeDecisions,
     knowledgeVersions: {
       list: () => Promise.resolve([]),
-      view: () => Promise.resolve(undefined),
+      view: (_, number) => Promise.resolve(number === 2 ? ({} as VersionView) : undefined),
     } satisfies KnowledgeVersions,
     ...(withSummaries ? { ruleSummaries } : {}),
   });
@@ -74,7 +86,9 @@ function setup({
       headers: { origin, 'content-type': 'application/json' },
       body: JSON.stringify(body),
     });
-  return { post, asked, limited };
+  const get = (query = 'routeId=pt-d7&number=2') =>
+    app.request(`/v1/knowledge/versions/summary?${query}`, { headers: { origin } });
+  return { post, get, asked, read, limited };
 }
 
 const errorOf = async (response: Response) =>
@@ -144,5 +158,45 @@ describe('POST /v1/knowledge/versions/summary (ADR-0025)', () => {
     const { post, asked } = setup();
     expect((await post(body)).status).toBe(400);
     expect(asked).toEqual([]);
+  });
+});
+
+describe('GET /v1/knowledge/versions/summary (ADR-0025)', () => {
+  it('answers the stored summary with no model call and no limit', async () => {
+    const { get, asked, read, limited } = setup();
+    const response = await get();
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ summary });
+    expect([read, asked, limited]).toEqual([[['pt-d7', 2]], [], []]);
+  });
+
+  it('answers null when none is stored yet', async () => {
+    const response = await setup({ stored: { ok: true, value: null } }).get();
+    expect(await response.json()).toEqual({ summary: null });
+  });
+
+  it('answers not_found for a version the catalog does not hold', async () => {
+    const response = await setup({ stored: { ok: false, reason: 'not_found' } }).get();
+    expect(response.status).toBe(404);
+    expect(await errorOf(response)).toBe('not_found');
+  });
+
+  it('answers null with no summarizer, or not_found for an unknown version', async () => {
+    const { get } = setup({ withSummaries: false });
+    expect(await (await get()).json()).toEqual({ summary: null });
+    expect((await get('routeId=pt-d7&number=3')).status).toBe(404);
+  });
+
+  it('refuses anyone off the approver list, or with no session', async () => {
+    const refused = setup({ listed: false });
+    expect((await refused.get()).status).toBe(403);
+    expect((await setup({ signedIn: null }).get()).status).toBe(401);
+    expect(refused.read).toEqual([]);
+  });
+
+  it('refuses a bad query', async () => {
+    const { get, read } = setup();
+    expect((await get('routeId=../x&number=2')).status).toBe(400);
+    expect(read).toEqual([]);
   });
 });

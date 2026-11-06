@@ -16,6 +16,7 @@ import {
   PanelsTopLeft,
   Route,
   Settings,
+  Sparkles,
   TriangleAlert,
   UserRound,
   UsersRound,
@@ -43,6 +44,7 @@ const icons = {
   back: ChevronLeft,
   check: Check,
   alert: TriangleAlert,
+  ai: Sparkles,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof icons;

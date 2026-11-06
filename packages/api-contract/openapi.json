@@ -32036,9 +32036,106 @@
       }
     },
     "/knowledge/versions/summary": {
+      "get": {
+        "operationId": "getVersionSummary",
+        "summary": "The summary already stored for one version under today's prompt and model, or null when none was asked for yet; never calls a model. 403 not_approver; 404 not_found",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+            },
+            "required": true,
+            "name": "routeId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "required": true,
+            "name": "number",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The stored summary, or null",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "summary": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "overview": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 1500
+                        },
+                        "watchPoints": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 600
+                          },
+                          "maxItems": 8
+                        }
+                      },
+                      "required": [
+                        "overview",
+                        "watchPoints"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "summary"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "operationId": "summarizeVersion",
-        "summary": "Sends one version's content (public rule data, no case data) to a model and answers a short summary with points to check, for an approver; the same content answers the same summary while the server runs. 30 per account per day and 5 per minute (429 rate_limited); 403 not_approver; 404 not_found; 502 summary_unparsable or summary_failed; 503 summary_unavailable when no model can be reached; 504 summary_timeout",
+        "summary": "Sends one version's content (public rule data, no case data) to a model and answers a short summary with points to check, for an approver; the summary is stored, so the same content, prompt and model answer it again without a model call. 30 per account per day and 5 per minute (429 rate_limited); 403 not_approver; 404 not_found; 502 summary_unparsable or summary_failed; 503 summary_unavailable when no model can be reached; 504 summary_timeout",
         "requestBody": {
           "required": true,
           "content": {

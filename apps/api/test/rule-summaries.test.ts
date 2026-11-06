@@ -2,6 +2,7 @@ import { identityKey, parseCalendarDate } from '@arca/domain';
 import type { LogEntry, Logger } from '@arca/telemetry';
 import { describe, expect, it } from 'vitest';
 import { createRuleSummaries, summaryContent } from '../src/knowledge/summaries.js';
+import { memorySummaryStore, type RuleSummaryStore } from '../src/knowledge/summary/store.js';
 import {
   type Summarizer,
   SummarizerError,
@@ -30,7 +31,10 @@ const reply = (value: unknown): SummarizerReply => ({
   outputTokens: 200,
 });
 
-function setup(answers: (() => Promise<SummarizerReply>)[] = []) {
+function setup(
+  answers: (() => Promise<SummarizerReply>)[] = [],
+  { store = memorySummaryStore(), promptVersion = 'rule-summary-test', model = 'claude-test' } = {},
+) {
   let state: 'active' | 'proposed' = 'proposed';
   const versions = createKnowledgeVersions({
     states: () => Promise.resolve(new Map([[firstKey, state]])),
@@ -45,11 +49,19 @@ function setup(answers: (() => Promise<SummarizerReply>)[] = []) {
   };
   const logs: LogEntry[] = [];
   const logger: Logger = { info: (entry) => logs.push(entry), error: (entry) => logs.push(entry) };
-  const summaries = createRuleSummaries({ versions, summarizer, logger, now: () => 0 });
+  const summaries = createRuleSummaries({
+    versions,
+    summarizer,
+    store,
+    promptVersion,
+    model,
+    logger,
+    now: () => 0,
+  });
   const activate = () => {
     state = 'active';
   };
-  return { summaries, sent, logs, activate, versions };
+  return { summaries, sent, logs, activate, versions, store };
 }
 
 describe('the rule summaries (ADR-0025)', () => {
@@ -153,5 +165,43 @@ describe('the rule summaries (ADR-0025)', () => {
       },
     ]);
     expect(JSON.stringify(logs)).not.toContain(secret);
+  });
+  it('stores a summary, so a later service, as after a reload, answers it with no call', async () => {
+    const { routeId, number } = first.identity;
+    const { summaries, store } = setup();
+    expect(await summaries.stored(routeId, number)).toEqual({ ok: true, value: null });
+    await summaries.summarize(routeId, number);
+    const later = setup([], { store });
+    expect(await later.summaries.stored(routeId, number)).toEqual({ ok: true, value: summary });
+    expect(await later.summaries.summarize(routeId, number)).toEqual({ ok: true, value: summary });
+    expect(later.sent).toEqual([]);
+  });
+
+  it.each([
+    ['prompt', { promptVersion: 'rule-summary-next' }],
+    ['model', { model: 'claude-next' }],
+  ])('asks again once the %s changes', async (_, changed) => {
+    const { routeId, number } = first.identity;
+    const store: RuleSummaryStore = memorySummaryStore();
+    await setup([], { store }).summaries.summarize(routeId, number);
+    const next = setup([], { store, ...changed });
+    expect(await next.summaries.stored(routeId, number)).toEqual({ ok: true, value: null });
+    await next.summaries.summarize(routeId, number);
+    expect(next.sent).toHaveLength(1);
+  });
+
+  it('stores no failure', async () => {
+    const { routeId, number } = first.identity;
+    const { summaries } = setup([() => Promise.reject(new SummarizerError('summary_timeout'))]);
+    await summaries.summarize(routeId, number);
+    expect(await summaries.stored(routeId, number)).toEqual({ ok: true, value: null });
+  });
+
+  it('answers not_found for the stored summary of a version the catalog does not hold', async () => {
+    const { summaries } = setup();
+    expect(await summaries.stored(first.identity.routeId, 99_999)).toEqual({
+      ok: false,
+      reason: 'not_found',
+    });
   });
 });
