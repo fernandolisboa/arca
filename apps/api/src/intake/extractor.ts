@@ -4,7 +4,12 @@
  * `ExtractorError` that carries a fixed code and nothing of the request or the reply.
  */
 export interface Extractor {
-  draft(maskedText: string, knownPlaceholders: readonly string[]): Promise<ExtractorReply>;
+  /** `knownPlaceholders` holds the writer's placeholder, when there is one, as well. */
+  draft(
+    maskedText: string,
+    knownPlaceholders: readonly string[],
+    writerPlaceholder?: string,
+  ): Promise<ExtractorReply>;
 }
 
 export interface ExtractorReply {

@@ -15,10 +15,10 @@ export class CallLimitReached extends Error {
 export function withCallLimit(extractor: Extractor, limit = maxCallsPerRun) {
   let calls = 0;
   const limited: Extractor = {
-    async draft(masked, known) {
+    async draft(masked, known, writer) {
       if (calls >= limit) throw new CallLimitReached(`The run reached its ${String(limit)} calls`);
       calls += 1;
-      return extractor.draft(masked, known);
+      return extractor.draft(masked, known, writer);
     },
   };
   return { extractor: limited, calls: () => calls };

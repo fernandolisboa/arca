@@ -53,12 +53,12 @@ export function claudeExtractor({
     ...(fetch === undefined ? {} : { fetch }),
   });
   return {
-    async draft(maskedText, knownPlaceholders) {
+    async draft(maskedText, knownPlaceholders, writerPlaceholder) {
       try {
         const result = await generateText({
           model: anthropic(intakeModel),
           instructions: intakeInstructions,
-          prompt: intakeMessage(maskedText, knownPlaceholders),
+          prompt: intakeMessage(maskedText, knownPlaceholders, writerPlaceholder),
           output: Output.object({ schema: jsonSchema(draftJsonSchema), name: 'intake_draft' }),
           maxOutputTokens: 8_192,
           // Extraction needs no reasoning, and thinking tokens would count against the cap.

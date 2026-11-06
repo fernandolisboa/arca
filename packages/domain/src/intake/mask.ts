@@ -8,8 +8,13 @@ import { isYear, numericDate } from './dates.js';
 
 export interface MaskedIntakeText {
   readonly masked: string;
-  /** The placeholders the masked text holds, each to its person's ID; it never leaves the API. */
+  /**
+   * The placeholders the masked text holds, and the writer's, each to its person's ID; it never
+   * leaves the API.
+   */
   readonly placeholders: ReadonlyMap<string, string>;
+  /** The writer's placeholder, so the model can refer to them when the text says "eu". */
+  readonly writer?: string;
 }
 
 export interface NamedPerson {
@@ -235,9 +240,14 @@ function maskNames(
 /**
  * The text with known names, e-mail addresses and number-shaped tokens masked. People get
  * placeholders `[P1]`, `[P2]` … in the order given; a name word several people share, usually a
- * surname, becomes `[nome]`. Matching is by whole words, ignoring case and accents.
+ * surname, becomes `[nome]`. Matching is by whole words, ignoring case and accents. The writer, when
+ * given, keeps their placeholder even when the text does not name them.
  */
-export function maskIntakeText(text: string, people: readonly NamedPerson[]): MaskedIntakeText {
+export function maskIntakeText(
+  text: string,
+  people: readonly NamedPerson[],
+  writerId?: string,
+): MaskedIntakeText {
   const placeholders = new Map(people.map(({ id }, index) => [id, `[P${String(index + 1)}]`]));
   const placeholderOf = (id: string) => placeholders.get(id) ?? sharedNamePlaceholder;
   // NFKC turns full-width digits and non-breaking spaces into the plain ones the patterns read;
@@ -248,7 +258,8 @@ export function maskIntakeText(text: string, people: readonly NamedPerson[]): Ma
   const masked = maskMixedTokens(withoutNames).replace(digitRunPattern, maskDigitRun);
   const used = new Map<string, string>();
   for (const [id, placeholder] of placeholders) {
-    if (masked.includes(placeholder)) used.set(placeholder, id);
+    if (id === writerId || masked.includes(placeholder)) used.set(placeholder, id);
   }
-  return { masked, placeholders: used };
+  const writer = writerId === undefined ? undefined : placeholders.get(writerId);
+  return { masked, placeholders: used, ...(writer === undefined ? {} : { writer }) };
 }

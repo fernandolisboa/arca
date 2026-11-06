@@ -97,9 +97,10 @@ const draftEndpoints = (edge: DraftRelationship): readonly string[] =>
   edge.kind === 'parent' ? [edge.parent, edge.child] : edge.people;
 
 /**
- * The model's reply as a draft, or `undefined` when it does not parse: people are listed once,
- * a placeholder is one of those sent, and every relationship joins two different people of the
- * draft.
+ * The model's reply as a draft, or `undefined` when it does not parse: people are listed once and
+ * a placeholder is one of those sent. A relationship that does not join two different people of
+ * the draft, such as one to a former partner the text only implies, is dropped: it carries no fact
+ * the draft could keep, and the rest of the reply still holds.
  */
 export function parseIntakeDraft(
   reply: unknown,
@@ -112,13 +113,14 @@ export function parseIntakeDraft(
   const listed = new Set(refs);
   if (listed.size !== refs.length) return undefined;
   if (refs.some((ref) => ref.startsWith('[') && !knownPlaceholders.has(ref))) return undefined;
-  for (const edge of draft.relationships) {
+  const joinsTwoListed = (edge: DraftRelationship) => {
     const [a, b] = draftEndpoints(edge);
-    if (a === undefined || b === undefined || a === b || !listed.has(a) || !listed.has(b)) {
-      return undefined;
-    }
-  }
-  return { ...draft, people: draft.people.map(distinctLists) };
+    return a !== undefined && b !== undefined && a !== b && listed.has(a) && listed.has(b);
+  };
+  return {
+    people: draft.people.map(distinctLists),
+    relationships: draft.relationships.filter(joinsTwoListed),
+  };
 }
 
 /**
