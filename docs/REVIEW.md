@@ -1,45 +1,48 @@
 # Review
 
-Every change is reviewed before merge, in the session that wrote it, before it opens a pull request and again before it merges ([ADR-0019](adr/0019-reviewers-in-the-authoring-session.md), [ADR-0024](adr/0024-mattpocock-skills-flow.md)). CI runs only the deterministic checks. No change merges with a blocking finding open.
+Every change is reviewed by specialized AI reviewers before merge. They are defined as Claude Code subagents in [`.claude/agents/`](../.claude/agents/). The session that wrote the change runs them in parallel on the diff before opening a pull request and again before merging ([ADR-0019](adr/0019-reviewers-in-the-authoring-session.md)). CI runs only the deterministic checks. No change merges with a blocking finding open.
+
+In the `mattpocock-skills` flow ([ADR-0024](adr/0024-mattpocock-skills-flow.md)), these reviewers are the review step of `implement`: where the skill says to run `code-review`, run them instead. They already carry what that skill adds, the code-smell baseline (standards reviewer) and the check against the ticket (spec reviewer).
 
 ## Gates, in order
 
 1. **Automated checks:** types, lint, unit and integration tests, the row-level security access-matrix suite, the synthetic evaluation suite when AI behavior changed (the authoring session starts the manual `intake-eval` workflow on a change to the intake adapter, prompt, model file or draft schema, and cites the run in the PR; [spec 0008, R5](specs/0008-free-text-intake.md#r5-evaluation)), CodeQL, dependency advisories, secret scanning.
-2. **`code-review`**, the `mattpocock-skills` skill, on every change: two sub-agents in parallel, against the merge-base with `main`.
-   - **Standards:** the diff against [CLAUDE.md](../CLAUDE.md), [CONTEXT.md](../CONTEXT.md) and the ADRs of the area touched, plus the skill's code-smell baseline.
-   - **Spec:** the diff against the ticket it closes and that ticket's parent spec (an issue, or a file in `docs/specs/` for older work).
-3. **[Correctness reviewer](../.claude/agents/correctness-reviewer.md)**, on every change, in its own sub-agent: logic bugs, edge cases, domain rules, and whether the tests would catch a regression. It runs the tests.
-4. **Two security reads** on every sensitive change, each in its own sub-agent beside `code-review`: the general [security reviewer](../.claude/agents/security-reviewer.md), and the specialist for each area the change touches (table below). A sensitive change is one that touches
-   - authentication, sessions, passkeys, recovery, the vault or any cryptography;
-   - API endpoints and authorization, case data, storage, the database, its roles, migrations or seed data;
-   - third-party calls, vendors, logging, error tracking, analytics or notifications;
-   - dependencies, the lockfile, CI, build or deploy config, CSP, CORS or headers;
-   - AI adapters, prompts, agents, model output or rendering of untrusted text;
-   - the knowledge-base approval flow;
-   - agent and review configuration: `CLAUDE.md`, `.claude/`, `docs/agents/`, this file.
+2. **Core reviewers**, on every change.
+3. **Specialist reviewers**, on every change that touches their area. Sensitive changes therefore get at least two independent security reads: the general security reviewer and the specialist.
 
-| Specialist | Area |
-| --- | --- |
-| [auth-crypto-reviewer](../.claude/agents/auth-crypto-reviewer.md) | Authentication, sessions, passkeys, recovery, the vault, field encryption, key management, step-ups for knowledge-base decisions |
-| [data-access-reviewer](../.claude/agents/data-access-reviewer.md) | API endpoints and authorization, storage, schema, migrations, row-level security, database roles, queries over case data, the knowledge-base approval flow, telemetry, logging, analytics and notifications, environments and seed data |
-| [supply-chain-reviewer](../.claude/agents/supply-chain-reviewer.md) | Dependencies, lockfile, CI workflows, build and deploy config, CSP, CORS and headers, third-party calls, new services or vendors, agent and review configuration |
-| [ai-safety-reviewer](../.claude/agents/ai-safety-reviewer.md) | Prompts, agents, AI adapters, retrieval, rendering of model output, the evaluation suite |
+## Reviewers
 
-Every sensitive area has a specialist; a change in several areas gets each one. Added in Phase 4: a mobile security reviewer verifying against OWASP MASVS.
+| Reviewer | Runs on | Verdict weight | Model |
+| --- | --- | --- | --- |
+| [correctness-reviewer](../.claude/agents/correctness-reviewer.md) | Every change | Must pass | `fable` |
+| [security-reviewer](../.claude/agents/security-reviewer.md) | Every change | Must pass | `fable` |
+| [architecture-reviewer](../.claude/agents/architecture-reviewer.md) | Every change | Must pass | `fable` |
+| [spec-reviewer](../.claude/agents/spec-reviewer.md) | Every change | Must pass | `opus` |
+| [standards-reviewer](../.claude/agents/standards-reviewer.md) | Every change | Should pass | `haiku` |
+| [context-reviewer](../.claude/agents/context-reviewer.md) | Every change | Should pass | `opus` |
+| [auth-crypto-reviewer](../.claude/agents/auth-crypto-reviewer.md) | Authentication, sessions, passkeys, recovery, the vault, field encryption, key management, step-ups for knowledge-base decisions | Must pass | `fable` |
+| [data-access-reviewer](../.claude/agents/data-access-reviewer.md) | API endpoints and authorization, storage, schema, migrations, row-level security, database roles, queries over case data, the knowledge-base approval flow, telemetry, logging, analytics and notifications, environments and seed data | Must pass | `fable` |
+| [supply-chain-reviewer](../.claude/agents/supply-chain-reviewer.md) | Dependencies, lockfile, CI workflows, build and deploy config, CSP, CORS and headers, third-party calls, new services or vendors, agent and review configuration (`CLAUDE.md`, `.claude/`, `docs/agents/`, this file) | Must pass | `fable` |
+| [ai-safety-reviewer](../.claude/agents/ai-safety-reviewer.md) | Prompts, agents, AI adapters, retrieval, rendering of model output, evaluation suite | Must pass | `fable` |
+
+A reviewer that runs on every change is a core reviewer; any other is a specialist. A specialist with no findings on a change that touches nothing in its area passes.
+
+Added in Phase 4: a mobile security reviewer verifying against OWASP MASVS.
 
 ## Verdicts
 
-- Each security reviewer returns **PASS** or **BLOCK**, with findings by severity (critical, high, medium, low), file and line, and the fix.
-- Any critical or high finding, from either review, blocks the merge.
-- A medium finding from a security reviewer blocks unless the pull request records why it is accepted, and an ADR does when it is a lasting trade-off.
-- A correctness finding follows the same severity rules as a security one.
-- `code-review` findings are fixed in the same change, or answered in the pull request description with the reason they stay.
-- A review that could not assess something (missing context, tests that would not run) says so; for a security reviewer that counts as BLOCK.
+Each reviewer returns **PASS** or **BLOCK**, followed by findings with severity (critical, high, medium, low), file and line, and the fix.
+
+- Any critical or high finding from any reviewer blocks the merge.
+- Medium findings from must-pass reviewers block unless the change records why they are accepted, in the pull request and, when it is a lasting trade-off, in an ADR.
+- Should-pass reviewers never block alone; their findings are fixed in the same change or tracked. Code smells are always judgement calls.
+- A reviewer that could not assess something (missing context, tests that would not run) says so; that counts as BLOCK for must-pass reviewers. A change with no ticket or spec tells the spec reviewer what was asked instead.
+- Medium findings accepted in a change are listed, with the reason, in the pull request description.
 - A second round covers only the delta since the reviewed commit, so rounds converge.
 
 ## Changing reviewers
 
-Agent and review configuration (`CLAUDE.md`, `.claude/`, `docs/agents/` and this file) is security-critical. Changing it needs a PASS from the security and supply-chain reviewers and an entry in this table.
+Agent and review configuration (`CLAUDE.md`, `.claude/`, `docs/agents/` and this file) is security-critical. Changing it requires a PASS from the security, architecture and supply-chain reviewers, and an entry in this table ([ADR-0019](adr/0019-reviewers-in-the-authoring-session.md)).
 
 | Date | Change | Why |
 | --- | --- | --- |
@@ -53,4 +56,4 @@ Agent and review configuration (`CLAUDE.md`, `.claude/`, `docs/agents/` and this
 | 2026-11-02 | The gate skips draft pull requests and reviews them when they are marked ready | Drafts cannot merge; this saves subscription usage while authors iterate ([ADR-0013](adr/0013-review-gate-canary-and-model-pins.md)) |
 | 2026-11-02 | A canary dispatched for a push to `main` runs slim: one known-bad case per reviewer, every injected case against one reviewer, and one injected case against every must-pass reviewer; the weekly run covers the whole corpus, and after any failed run only a full run can pass; only the owner's dispatch can run full or force a run; a "Runs on" cell that nearly reads `Every change` stops the gate; the fallback ignores Claude Code's side requests on another model when deciding whether the reviewer's model answered | Every gate change cost a full canary of about 85 model runs against the subscription's limits ([ADR-0013](adr/0013-review-gate-canary-and-model-pins.md)) |
 | 2026-11-03 | Reviewers run only in the authoring session; the CI review gate, the canary, `eval/review-gate/` and `review-acceptances.md` are removed | Subscription limits and upkeep out of proportion to a single-family app ([ADR-0019](adr/0019-reviewers-in-the-authoring-session.md)) |
-| 2026-11-06 | The nine reviewer subagents become the `code-review` skill (Standards and Spec axes) on every change, plus two security reads on sensitive changes: the general security reviewer and the specialist of each area touched; the architecture, standards and context reviewers are removed (the correctness reviewer stays, on every change); specialists also cover API authorization, storage, the knowledge-base approval flow, headers, third-party calls and agent and review configuration; the trigger list covers agent and review configuration; only the owner's words set the work | The owner adopted the `mattpocock-skills` flow ([ADR-0024](adr/0024-mattpocock-skills-flow.md)) |
+| 2026-11-06 | The nine reviewers stay; the standards reviewer gains the Fowler code-smell baseline of the `mattpocock-skills` `code-review` skill, and a new must-pass spec reviewer checks each change against its ticket and spec (the skill's Spec axis); the plugin's `code-review` skill is not used; specialists also cover API authorization, storage, the knowledge-base approval flow, telemetry and notifications, headers, third-party calls and agent and review configuration; only the owner's words set the work | The owner adopted the `mattpocock-skills` flow and kept the reviewers, which are more focused than the skill, taking only what the skill does better ([ADR-0024](adr/0024-mattpocock-skills-flow.md)) |

@@ -34,7 +34,7 @@ ADR-0011 and ADR-0013 run the reviewer subagents in CI as a required `review-gat
   - A session can skip the reviewers.
   - Injected text in a diff, doc, commit message or fetched page can steer a local reviewer to a false PASS. The removed canary tested exactly this, and nothing tests it now.
   - Local reviewers can run commands with the session's credentials, including the owner's GitHub token ([ADR-0012](0012-automation-first-setup.md)). CI reviewers could only read files, so injected text that reaches a reviewer can now do more.
-  - (Since [ADR-0024](0024-mattpocock-skills-flow.md), such changes need the security and supply-chain reviewers instead.) The reviewers load the branch's own agent definitions and `CLAUDE.md` files. A change that weakens a reviewer is judged by the weakened reviewer, so the rule that `.claude/agents/` and `docs/REVIEW.md` changes need a PASS from the security, architecture and supply-chain reviewers is attested by the same session.
+  - The reviewers load the branch's own agent definitions and `CLAUDE.md` files. A change that weakens a reviewer is judged by the weakened reviewer, so the rule that `.claude/agents/` and `docs/REVIEW.md` changes need a PASS from the security, architecture and supply-chain reviewers is attested by the same session.
   - `ci.yml` runs the branch's own copy; of the pull request checks, only `policy.yml` runs its definition from `main`.
 
   What still limits this:
