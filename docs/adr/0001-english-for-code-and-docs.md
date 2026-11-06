@@ -11,7 +11,7 @@ The founder and the first users are Brazilian, and the planning so far happened 
 
 - Code, identifiers, comments, docs, commit messages, PRs, issues and agent reasoning are written in English.
 - Every user-facing string goes through i18n. `pt-BR` is the first locale.
-- Domain terms have one English name and one pt-BR label each, recorded in [GLOSSARY.md](../GLOSSARY.md).
+- Domain terms have one English name and one pt-BR label each, recorded in [CONTEXT.md](../../CONTEXT.md).
 
 ## Consequences
 

@@ -2,7 +2,7 @@ export type StatusTone = 'ok' | 'warn' | 'unknown';
 
 export interface StatusChipProps {
   readonly tone: StatusTone;
-  /** The status in GLOSSARY.md terms, such as "Versão ativa". */
+  /** The status in CONTEXT.md terms, such as "Versão ativa". */
   readonly label: string;
 }
 

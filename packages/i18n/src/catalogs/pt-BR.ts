@@ -1,5 +1,5 @@
 /**
- * The pt-BR catalog, in ICU message format. Domain terms use the labels in docs/GLOSSARY.md.
+ * The pt-BR catalog, in ICU message format. Domain terms use the labels in CONTEXT.md.
  */
 export const ptBR = {
   app: {
