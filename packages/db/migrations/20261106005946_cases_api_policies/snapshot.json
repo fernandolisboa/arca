@@ -1,0 +1,398 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "294ee2c4-8769-46ed-a1e9-a7e7d1c1f3ae",
+  "prevIds": [
+    "bbfd0569-537b-43f5-90b8-d8e27b775206"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "asset"
+      ],
+      "writes": [
+        "s|pol|cases.asset.asset_insert_by_definer",
+        "n|pol|cases.asset.asset_insert_by_definer",
+        "e|pol|cases.asset.asset_insert_by_definer"
+      ],
+      "reads": [
+        "n|tbl|cases.asset",
+        "n|sch|cases",
+        "n|role|cases_definer",
+        "e|rls|cases.asset"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "asset_owner"
+      ],
+      "writes": [
+        "s|pol|cases.asset_owner.asset_owner_insert_by_definer",
+        "n|pol|cases.asset_owner.asset_owner_insert_by_definer",
+        "e|pol|cases.asset_owner.asset_owner_insert_by_definer"
+      ],
+      "reads": [
+        "n|tbl|cases.asset_owner",
+        "n|sch|cases",
+        "n|role|cases_definer",
+        "e|rls|cases.asset_owner"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "asset_owner"
+      ],
+      "writes": [
+        "s|pol|cases.asset_owner.asset_owner_update_by_definer",
+        "n|pol|cases.asset_owner.asset_owner_update_by_definer",
+        "e|pol|cases.asset_owner.asset_owner_update_by_definer"
+      ],
+      "reads": [
+        "n|tbl|cases.asset_owner",
+        "n|sch|cases",
+        "n|role|cases_definer",
+        "e|rls|cases.asset_owner"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "case_file"
+      ],
+      "writes": [
+        "s|pol|cases.case_file.case_file_insert_by_definer",
+        "n|pol|cases.case_file.case_file_insert_by_definer",
+        "e|pol|cases.case_file.case_file_insert_by_definer"
+      ],
+      "reads": [
+        "n|tbl|cases.case_file",
+        "n|sch|cases",
+        "n|role|cases_definer",
+        "e|rls|cases.case_file"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "member"
+      ],
+      "writes": [
+        "s|pol|cases.member.member_delete_self",
+        "n|pol|cases.member.member_delete_self",
+        "e|pol|cases.member.member_delete_self"
+      ],
+      "reads": [
+        "n|tbl|cases.member",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.member"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "member"
+      ],
+      "writes": [
+        "s|pol|cases.member.member_insert_by_definer",
+        "n|pol|cases.member.member_insert_by_definer",
+        "e|pol|cases.member.member_insert_by_definer"
+      ],
+      "reads": [
+        "n|tbl|cases.member",
+        "n|sch|cases",
+        "n|role|cases_definer",
+        "e|rls|cases.member"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person"
+      ],
+      "writes": [
+        "s|pol|cases.person.person_select_by_definer",
+        "n|pol|cases.person.person_select_by_definer",
+        "e|pol|cases.person.person_select_by_definer"
+      ],
+      "reads": [
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|role|cases_definer",
+        "e|rls|cases.person"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person"
+      ],
+      "writes": [
+        "s|pol|cases.person.person_insert_by_definer",
+        "n|pol|cases.person.person_insert_by_definer",
+        "e|pol|cases.person.person_insert_by_definer"
+      ],
+      "reads": [
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|role|cases_definer",
+        "e|rls|cases.person"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person"
+      ],
+      "writes": [
+        "s|pol|cases.person.person_update_by_definer",
+        "n|pol|cases.person.person_update_by_definer",
+        "e|pol|cases.person.person_update_by_definer"
+      ],
+      "reads": [
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|role|cases_definer",
+        "e|rls|cases.person"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "share"
+      ],
+      "writes": [
+        "s|pol|cases.share.share_select_by_definer",
+        "n|pol|cases.share.share_select_by_definer",
+        "e|pol|cases.share.share_select_by_definer"
+      ],
+      "reads": [
+        "n|tbl|cases.share",
+        "n|sch|cases",
+        "n|role|cases_definer",
+        "e|rls|cases.share"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "share"
+      ],
+      "writes": [
+        "s|pol|cases.share.share_delete_by_definer",
+        "n|pol|cases.share.share_delete_by_definer",
+        "e|pol|cases.share.share_delete_by_definer"
+      ],
+      "reads": [
+        "n|tbl|cases.share",
+        "n|sch|cases",
+        "n|role|cases_definer",
+        "e|rls|cases.share"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "asset_insert_by_definer",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "cases_definer"
+        ],
+        "using": null,
+        "withCheck": "true",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset_owner",
+        "name": "asset_owner_insert_by_definer",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "cases_definer"
+        ],
+        "using": null,
+        "withCheck": "true",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset_owner",
+        "name": "asset_owner_update_by_definer",
+        "as": "PERMISSIVE",
+        "for": "UPDATE",
+        "roles": [
+          "cases_definer"
+        ],
+        "using": "true",
+        "withCheck": "true",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "case_file",
+        "name": "case_file_insert_by_definer",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "cases_definer"
+        ],
+        "using": null,
+        "withCheck": "true",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "member",
+        "name": "member_delete_self",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"cases\".\"member\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "member",
+        "name": "member_insert_by_definer",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "cases_definer"
+        ],
+        "using": null,
+        "withCheck": "true",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "person_select_by_definer",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "cases_definer"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "person_insert_by_definer",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "cases_definer"
+        ],
+        "using": null,
+        "withCheck": "true",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "person_update_by_definer",
+        "as": "PERMISSIVE",
+        "for": "UPDATE",
+        "roles": [
+          "cases_definer"
+        ],
+        "using": "true",
+        "withCheck": "true",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "share",
+        "name": "share_select_by_definer",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "cases_definer"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "share",
+        "name": "share_delete_by_definer",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "cases_definer"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    }
+  ]
+}

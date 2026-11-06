@@ -64,7 +64,8 @@ tooling/
 | `packages/ui` | `i18n` |
 | `packages/knowledge` | `domain` (added by spec 0002) |
 | `packages/platform` | `vault`, for types only (added by spec 0005; ESLint fails any import that would load it at run time) |
-| `packages/domain`, `packages/api-contract`, `packages/i18n`, `packages/db`, `packages/telemetry`, `packages/vault` | nothing in the workspace |
+| `packages/api-contract` | `domain`, for the case's storage schemas (added by [spec 0007](0007-case-model-and-guided-intake.md)) |
+| `packages/domain`, `packages/i18n`, `packages/db`, `packages/telemetry`, `packages/vault` | nothing in the workspace |
 
 - ESLint, scoped by package:
   - `packages/domain`: no imports of `node:*`, database clients, HTTP clients or `fetch`; no `Date.now()` or `new Date()` without arguments (time is passed in).

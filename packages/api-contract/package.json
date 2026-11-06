@@ -34,6 +34,7 @@
     "vitest": "catalog:"
   },
   "dependencies": {
+    "@arca/domain": "workspace:*",
     "@hono/zod-openapi": "catalog:",
     "hono": "catalog:",
     "zod": "catalog:"

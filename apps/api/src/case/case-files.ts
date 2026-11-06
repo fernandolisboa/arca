@@ -1,0 +1,490 @@
+import type {
+  AuditEventCode,
+  CaseView,
+  HandOverCasePersonRequest,
+} from '@arca/api-contract/routes';
+import type {
+  AddCaseAssetRequest,
+  AddCasePersonRequest,
+  CaseAssetOwnerReference,
+  ReplaceCaseSharesRequest,
+  SetCaseAssetOwnerRequest,
+  UpdateCaseAssetRequest,
+  UpdateCasePersonRequest,
+  WriteCaseFinancesRequest,
+  WriteCaseProfileRequest,
+} from '@arca/api-contract/routes';
+import { withIdentity, type Database, type Transaction } from '@arca/db';
+import {
+  type ShareScope,
+  type StoredAsset,
+  type StoredRelationship,
+  parseCalendarDate,
+  shareScopes,
+  validCaseStructure,
+} from '@arca/domain';
+import { type SQL, sql } from 'drizzle-orm';
+import type { z } from 'zod';
+import type { AuditLog, AuditRecord } from '../audit/log.js';
+import { type CaseRows, caseView, memberCase, readCase } from './view.js';
+
+/** Why a write was refused; each answers one status, and says nothing of a hidden row. */
+export type CaseRefusal = 'not_found' | 'case_exists' | 'case_limit' | 'case_invalid';
+
+export type CaseWritten =
+  | { readonly ok: true; readonly view: CaseView }
+  | {
+      readonly ok: false;
+      readonly reason: CaseRefusal;
+    };
+
+type Request<Schema extends z.ZodType> = z.infer<Schema>;
+
+/**
+ * The family's case (spec 0007, R1 to R3), on the app_api pool under the account's identity, so
+ * row-level security decides what each account sees and writes. Every write takes the case's
+ * transaction lock first, so its checks and the limits hold against concurrent writes, and
+ * answers the case as the account now sees it.
+ */
+export interface CaseFiles {
+  readonly view: (accountId: string) => Promise<CaseView | null>;
+  readonly create: (accountId: string, displayName: string) => Promise<CaseWritten>;
+  readonly addPerson: (
+    accountId: string,
+    request: Request<typeof AddCasePersonRequest>,
+  ) => Promise<CaseWritten>;
+  readonly updatePerson: (
+    accountId: string,
+    request: Request<typeof UpdateCasePersonRequest>,
+  ) => Promise<CaseWritten>;
+  readonly removePerson: (accountId: string, personId: string) => Promise<CaseWritten>;
+  readonly handOver: (
+    accountId: string,
+    request: HandOverCasePersonRequest,
+  ) => Promise<CaseWritten>;
+  readonly writeProfile: (
+    accountId: string,
+    request: Request<typeof WriteCaseProfileRequest>,
+  ) => Promise<CaseWritten>;
+  readonly writeFinances: (
+    accountId: string,
+    request: Request<typeof WriteCaseFinancesRequest>,
+  ) => Promise<CaseWritten>;
+  readonly replaceShares: (
+    accountId: string,
+    request: Request<typeof ReplaceCaseSharesRequest>,
+  ) => Promise<CaseWritten>;
+  readonly addRelationship: (
+    accountId: string,
+    relationship: StoredRelationship,
+  ) => Promise<CaseWritten>;
+  readonly removeRelationship: (accountId: string, relationshipId: string) => Promise<CaseWritten>;
+  readonly addAsset: (
+    accountId: string,
+    request: Request<typeof AddCaseAssetRequest>,
+  ) => Promise<CaseWritten>;
+  readonly updateAsset: (
+    accountId: string,
+    request: Request<typeof UpdateCaseAssetRequest>,
+  ) => Promise<CaseWritten>;
+  readonly removeAsset: (accountId: string, assetId: string) => Promise<CaseWritten>;
+  readonly setOwner: (
+    accountId: string,
+    request: Request<typeof SetCaseAssetOwnerRequest>,
+  ) => Promise<CaseWritten>;
+  readonly confirmOwner: (
+    accountId: string,
+    request: Request<typeof CaseAssetOwnerReference>,
+  ) => Promise<CaseWritten>;
+  readonly removeOwner: (
+    accountId: string,
+    request: Request<typeof CaseAssetOwnerReference>,
+  ) => Promise<CaseWritten>;
+  /** Deletes the account's member row, and with it every person it keeps. */
+  readonly leave: (accountId: string) => Promise<'left' | 'not_found'>;
+}
+
+export interface CaseFilesSettings {
+  /** The app_api pool, read when a request first needs it. */
+  readonly db: () => Database;
+  readonly audit: AuditLog;
+  /** Today, which the structure checks read the case as of. */
+  readonly today: () => Date;
+}
+
+/** The snapshot's limits that every member can count (spec 0007, R1); the rest are the definer's. */
+export const caseSizeLimits = { people: 60, members: 30, relationships: 200 } as const;
+
+/** Raised by the case's definer functions when a limit is reached (SQLSTATE CL001). */
+const limitReached = 'CL001';
+
+class Refused extends Error {
+  readonly reason: CaseRefusal;
+  constructor(reason: CaseRefusal) {
+    super(reason);
+    this.reason = reason;
+  }
+}
+
+type Event = Omit<AuditRecord, 'subjectAccountId' | 'actorAccountId'>;
+const event = <Code extends AuditEventCode>(
+  code: Code,
+  details: AuditRecord<Code>['details'],
+): Event => ({ code, details });
+
+/** The SQLSTATE of a database error, through the query builder's wrapping. */
+function sqlState(error: unknown): string | undefined {
+  for (let cause = error; cause instanceof Error; cause = cause.cause) {
+    if ('code' in cause && typeof cause.code === 'string' && /^[0-9A-Z]{5}$/.test(cause.code)) {
+      return cause.code;
+    }
+  }
+  return undefined;
+}
+
+const refuseUnless = (condition: boolean, reason: CaseRefusal) => {
+  if (!condition) throw new Refused(reason);
+};
+
+/** Whether a write's `RETURNING` gave a row: row-level security hides what the viewer may not write. */
+const one = async (tx: Transaction, query: SQL) =>
+  (await tx.execute<Record<string, unknown>>(query)).rows.length > 0;
+
+/** The value an asset's columns hold. */
+const assetColumns = (asset: StoredAsset) => ({
+  kind: asset.kind,
+  amount: asset.value.amount,
+  currency: asset.value.currency,
+  valuedAt: asset.valuedAt,
+  liquid: asset.liquid ?? null,
+  sold: asset.sold ?? null,
+});
+
+const isoDate = (date: Date) => parseCalendarDate(date.toISOString().slice(0, 10));
+
+/** The key the empty-case cleanup and the definer functions lock: a case's writes run one at a time. */
+const lockCase = (tx: Transaction, caseId: string) =>
+  tx.execute(
+    sql`SELECT pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(${`cases.case_file:${caseId}`}, 0))`,
+  );
+
+export function createCaseFiles({ db, audit, today }: CaseFilesSettings): CaseFiles {
+  /**
+   * Runs one write in the viewer's case under its lock, then records its events once it
+   * committed. `work` throws `Refused` to roll back with a refusal.
+   */
+  const write = async (
+    accountId: string,
+    work: (tx: Transaction, rows: CaseRows) => Promise<readonly Event[]>,
+  ): Promise<CaseWritten> => {
+    let events: readonly Event[] = [];
+    try {
+      const written = await withIdentity(db(), { accountId }, async (tx) => {
+        const caseId = await memberCase(tx, accountId);
+        if (caseId === undefined) throw new Refused('not_found');
+        await lockCase(tx, caseId);
+        const before = await readCase(tx, accountId, caseId);
+        if (before === undefined) throw new Refused('not_found');
+        events = await work(tx, before);
+        const after = await readCase(tx, accountId, caseId);
+        if (after === undefined) throw new Refused('not_found');
+        return caseView(after, accountId);
+      });
+      await recordAll(accountId, events);
+      return { ok: true, view: written };
+    } catch (error) {
+      if (error instanceof Refused) return { ok: false, reason: error.reason };
+      if (sqlState(error) === limitReached) return { ok: false, reason: 'case_limit' };
+      throw error;
+    }
+  };
+
+  const recordAll = async (accountId: string, events: readonly Event[]) => {
+    for (const entry of events) {
+      await audit.record({ ...entry, subjectAccountId: accountId, actorAccountId: accountId });
+    }
+  };
+
+  const keptPerson = (rows: CaseRows, personId: string) => {
+    const person = rows.people.find((row) => row.id === personId && row.keptByMe);
+    if (person === undefined) throw new Refused('not_found');
+    return person;
+  };
+
+  const members = (rows: CaseRows) => rows.people.filter((row) => row.caseMember).length;
+
+  const view = (accountId: string) =>
+    withIdentity(db(), { accountId }, async (tx) => {
+      const rows = await readCase(tx, accountId);
+      return rows === undefined ? null : caseView(rows, accountId);
+    });
+
+  return {
+    view,
+
+    async create(accountId, displayName) {
+      const caseId = await withIdentity(db(), { accountId }, async (tx) => {
+        const created = await tx.execute<{ id: string | null }>(
+          sql`SELECT cases.create_case(${displayName}) AS id`,
+        );
+        return created.rows[0]?.id ?? null;
+      });
+      if (caseId === null) return { ok: false, reason: 'case_exists' };
+      await recordAll(accountId, [event('case_created', { caseId })]);
+      const created = await view(accountId);
+      if (created === null) throw new Error('A case just created is not visible to its member');
+      return { ok: true, view: created };
+    },
+
+    addPerson: (accountId, { displayName, caseMember }) =>
+      write(accountId, async (tx, rows) => {
+        refuseUnless(rows.people.length < caseSizeLimits.people, 'case_limit');
+        refuseUnless(!caseMember || members(rows) < caseSizeLimits.members, 'case_limit');
+        const added = await tx.execute<{ id: string }>(sql`
+          INSERT INTO cases.person (case_id, keeper_account_id, display_name, case_member)
+          VALUES (${rows.caseId}, ${accountId}, ${displayName}, ${caseMember}) RETURNING id`);
+        const personId = added.rows[0]?.id;
+        if (personId === undefined) throw new Error('An added person has no ID');
+        return [event('person_added', { personId })];
+      }),
+
+    updatePerson: (accountId, { personId, displayName, caseMember }) =>
+      write(accountId, async (tx, rows) => {
+        const person = keptPerson(rows, personId);
+        refuseUnless(caseMember || person.accountId === null, 'case_invalid');
+        refuseUnless(
+          !caseMember || person.caseMember || members(rows) < caseSizeLimits.members,
+          'case_limit',
+        );
+        await tx.execute(sql`
+          UPDATE cases.person SET display_name = ${displayName}, case_member = ${caseMember}
+           WHERE id = ${personId}`);
+        return [];
+      }),
+
+    removePerson: (accountId, personId) =>
+      write(accountId, async (tx) => {
+        refuseUnless(
+          await one(tx, sql`DELETE FROM cases.person WHERE id = ${personId} RETURNING id`),
+          'not_found',
+        );
+        return [event('person_removed', { personId })];
+      }),
+
+    handOver: (accountId, { personId, accountId: newKeeper }) =>
+      write(accountId, async (tx) => {
+        const handed = await tx.execute<{ handed: boolean }>(
+          sql`SELECT cases.hand_over(${personId}, ${newKeeper}) AS handed`,
+        );
+        refuseUnless(handed.rows[0]?.handed === true, 'not_found');
+        return [event('person_handed_over', { personId, accountId: newKeeper })];
+      }),
+
+    writeProfile: (accountId, { personId, facts, dependsOn }) =>
+      write(accountId, async (tx, rows) => {
+        keptPerson(rows, personId);
+        const known = new Set(rows.people.map(({ id }) => id));
+        refuseUnless(
+          dependsOn === null ||
+            (new Set(dependsOn).size === dependsOn.length &&
+              dependsOn.every((id) => id !== personId && known.has(id))),
+          'case_invalid',
+        );
+        await tx.execute(sql`
+          INSERT INTO cases.person_profile (person_id, facts, dependence_answered)
+          VALUES (${personId}, ${JSON.stringify(facts)}::jsonb, ${dependsOn !== null})
+          ON CONFLICT (person_id) DO UPDATE
+            SET facts = excluded.facts, dependence_answered = excluded.dependence_answered,
+                updated_at = now()`);
+        await tx.execute(sql`DELETE FROM cases.dependence WHERE person_id = ${personId}`);
+        if (dependsOn !== null && dependsOn.length > 0) {
+          await tx.execute(sql`
+            INSERT INTO cases.dependence (case_id, person_id, depends_on_id)
+            VALUES ${sql.join(
+              dependsOn.map((id) => sql`(${rows.caseId}, ${personId}, ${id})`),
+              sql`, `,
+            )}`);
+        }
+        return [];
+      }),
+
+    writeFinances: (accountId, { personId, incomes, assetsRecordedInFull }) =>
+      write(accountId, async (tx, rows) => {
+        keptPerson(rows, personId);
+        const stored = incomes === undefined ? null : JSON.stringify(incomes);
+        await tx.execute(sql`
+          INSERT INTO cases.person_finances (person_id, incomes, assets_recorded_in_full)
+          VALUES (${personId}, ${stored}::jsonb, ${assetsRecordedInFull})
+          ON CONFLICT (person_id) DO UPDATE
+            SET incomes = excluded.incomes,
+                assets_recorded_in_full = excluded.assets_recorded_in_full, updated_at = now()`);
+        return [];
+      }),
+
+    replaceShares: (accountId, { personId, ...wanted }) =>
+      write(accountId, async (tx, rows) => {
+        keptPerson(rows, personId);
+        const others = new Set(
+          rows.people
+            .filter((row) => row.accountId !== null && row.accountId !== accountId)
+            .map((row) => row.accountId),
+        );
+        const changes: Event[] = [];
+        for (const scope of shareScopes) {
+          const target = new Set(wanted[scope]);
+          refuseUnless(
+            [...target].every((id) => others.has(id)),
+            'case_invalid',
+          );
+          const current = new Set(
+            rows.shares
+              .filter((row) => row.personId === personId && row.scope === scope)
+              .map((row) => row.accountId),
+          );
+          for (const grantee of current) {
+            if (target.has(grantee)) continue;
+            await tx.execute(sql`
+              DELETE FROM cases.share WHERE person_id = ${personId}
+                 AND grantee_account_id = ${grantee} AND scope = ${scope}`);
+            changes.push(shareEvent('share_revoked', personId, grantee, scope));
+          }
+          for (const grantee of target) {
+            if (current.has(grantee)) continue;
+            await tx.execute(sql`
+              INSERT INTO cases.share (case_id, person_id, grantee_account_id, scope)
+              VALUES (${rows.caseId}, ${personId}, ${grantee}, ${scope})`);
+            changes.push(shareEvent('share_granted', personId, grantee, scope));
+          }
+        }
+        return changes;
+      }),
+
+    addRelationship: (accountId, relationship) =>
+      write(accountId, async (tx, rows) => {
+        const ends = rows.people.filter(
+          (row) => row.id === relationship.from || row.id === relationship.to,
+        );
+        refuseUnless(ends.length === 2 && ends.some((row) => row.keptByMe), 'not_found');
+        refuseUnless(rows.relationships.length < caseSizeLimits.relationships, 'case_limit');
+        refuseUnless(
+          validCaseStructure(rows.people, [...rows.relationships, relationship], isoDate(today())),
+          'case_invalid',
+        );
+        await tx.execute(sql`
+          INSERT INTO cases.relationship (case_id, kind, from_person_id, to_person_id, details)
+          VALUES (${rows.caseId}, ${relationship.kind}, ${relationship.from}, ${relationship.to},
+                  ${JSON.stringify(relationship.details)}::jsonb)`);
+        return [];
+      }),
+
+    removeRelationship: (accountId, relationshipId) =>
+      write(accountId, async (tx) => {
+        refuseUnless(
+          await one(
+            tx,
+            sql`DELETE FROM cases.relationship WHERE id = ${relationshipId} RETURNING id`,
+          ),
+          'not_found',
+        );
+        return [];
+      }),
+
+    addAsset: (accountId, { personId, share, asset }) =>
+      write(accountId, async (tx) => {
+        const fields = assetColumns(asset);
+        const added = await tx.execute<{ id: string | null }>(sql`
+          SELECT cases.add_asset(${personId}, ${share}::numeric, ${fields.kind},
+                                 ${fields.amount}::bigint, ${fields.currency},
+                                 ${fields.valuedAt}::date, ${fields.liquid}::boolean,
+                                 ${fields.sold}::text) AS id`);
+        refuseUnless((added.rows[0]?.id ?? null) !== null, 'not_found');
+        return [];
+      }),
+
+    updateAsset: (accountId, { assetId, asset }) =>
+      write(accountId, async (tx) => {
+        const fields = assetColumns(asset);
+        refuseUnless(
+          await one(
+            tx,
+            sql`
+              UPDATE cases.asset
+                 SET kind = ${fields.kind}, value_amount = ${fields.amount},
+                     value_currency = ${fields.currency}, valued_at = ${fields.valuedAt}::date,
+                     liquid = ${fields.liquid}, sold = ${fields.sold}, updated_at = now()
+               WHERE id = ${assetId} RETURNING id`,
+          ),
+          'not_found',
+        );
+        return [];
+      }),
+
+    removeAsset: (accountId, assetId) =>
+      write(accountId, async (tx) => {
+        refuseUnless(
+          await one(tx, sql`DELETE FROM cases.asset WHERE id = ${assetId} RETURNING id`),
+          'not_found',
+        );
+        return [];
+      }),
+
+    setOwner: (accountId, { assetId, personId, share }) =>
+      write(accountId, async (tx) => {
+        const set = await tx.execute<{ set: boolean }>(
+          sql`SELECT cases.set_owner(${assetId}, ${personId}, ${share}::numeric) AS set`,
+        );
+        refuseUnless(set.rows[0]?.set === true, 'not_found');
+        return [];
+      }),
+
+    confirmOwner: (accountId, { assetId, personId }) =>
+      write(accountId, async (tx) => {
+        refuseUnless(
+          await one(
+            tx,
+            sql`
+              UPDATE cases.asset_owner SET confirmed = true
+               WHERE asset_id = ${assetId} AND person_id = ${personId} RETURNING asset_id`,
+          ),
+          'not_found',
+        );
+        return [];
+      }),
+
+    removeOwner: (accountId, { assetId, personId }) =>
+      write(accountId, async (tx) => {
+        refuseUnless(
+          await one(
+            tx,
+            sql`
+              DELETE FROM cases.asset_owner
+               WHERE asset_id = ${assetId} AND person_id = ${personId} RETURNING asset_id`,
+          ),
+          'not_found',
+        );
+        return [];
+      }),
+
+    async leave(accountId) {
+      const caseId = await withIdentity(db(), { accountId }, async (tx) => {
+        const found = await memberCase(tx, accountId);
+        if (found === undefined) return undefined;
+        await lockCase(tx, found);
+        await tx.execute(sql`DELETE FROM cases.member WHERE account_id = ${accountId}`);
+        return found;
+      });
+      if (caseId === undefined) return 'not_found';
+      await recordAll(accountId, [event('member_left', { caseId })]);
+      return 'left';
+    },
+  };
+}
+
+function shareEvent(
+  code: 'share_granted' | 'share_revoked',
+  personId: string,
+  accountId: string,
+  scope: ShareScope,
+): Event {
+  return event(code, { personId, accountId, scope });
+}
