@@ -937,6 +937,37 @@ describe('evaluating the case (spec 0007, R6)', () => {
     expect(asked(byBruno, people.child).map(({ question }) => question)).toContain('birthDate');
     expect(await files.evaluations(await account())).toBeNull();
   });
+
+  it('names no route and shows none of its content while its version waits (rule 5)', async () => {
+    const { alice } = await family();
+    const pending = createCaseFiles({
+      db: () => testDatabase.apiDb,
+      audit: auditLog(testDatabase.auditDb),
+      today: () => new Date('2026-11-06T12:00:00Z'),
+      countries: { countries: ['BR'], formerCountries: [] },
+      evaluation: {
+        catalog: routeCatalog,
+        routeIds,
+        states: () => Promise.resolve(new Map()),
+        today: () => parseCalendarDate('2026-11-06'),
+        engineCommit: 'test',
+      },
+    });
+    const evaluated = CaseEvaluations.parse(await pending.evaluations(alice));
+    expect(evaluated.results.length).toBeGreaterThan(0);
+    for (const result of evaluated.results) {
+      expect(result).toMatchObject({
+        status: 'pending_activation',
+        route: null,
+        requirements: [],
+        assessments: [],
+        costs: [],
+        durations: [],
+        closureSources: [],
+      });
+    }
+    expect(evaluated.questions).toEqual([]);
+  });
 });
 
 describe('leaving the case (spec 0007, R2)', () => {

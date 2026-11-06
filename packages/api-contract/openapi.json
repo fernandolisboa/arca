@@ -29779,7 +29779,7 @@
                                 "sources"
                               ]
                             },
-                            "maxItems": 500
+                            "maxItems": 3000
                           },
                           "durations": {
                             "type": "array",
@@ -29851,6 +29851,76 @@
                               ]
                             },
                             "maxItems": 20
+                          },
+                          "closureSources": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                                },
+                                "url": {
+                                  "type": "string",
+                                  "maxLength": 2000
+                                },
+                                "title": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 200
+                                },
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "official",
+                                    "secondary"
+                                  ]
+                                },
+                                "verifiedAt": {
+                                  "type": "string",
+                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "url",
+                                "title",
+                                "kind",
+                                "verifiedAt"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "maxItems": 50
+                          },
+                          "missingRates": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "from": {
+                                  "type": "string",
+                                  "pattern": "^[A-Z]{3}$"
+                                },
+                                "to": {
+                                  "type": "string",
+                                  "pattern": "^[A-Z]{3}$"
+                                }
+                              },
+                              "required": [
+                                "from",
+                                "to"
+                              ]
+                            },
+                            "maxItems": 50
+                          },
+                          "missingDates": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "maxLength": 96
+                            },
+                            "maxItems": 20
                           }
                         },
                         "required": [
@@ -29867,7 +29937,10 @@
                           "requirements",
                           "assessments",
                           "costs",
-                          "durations"
+                          "durations",
+                          "closureSources",
+                          "missingRates",
+                          "missingDates"
                         ]
                       }
                     },

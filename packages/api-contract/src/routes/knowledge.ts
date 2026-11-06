@@ -218,4 +218,5 @@ export {
   factKeys,
   factTargets,
   relationshipSteps,
+  staleAfterDays,
 } from '@arca/domain';

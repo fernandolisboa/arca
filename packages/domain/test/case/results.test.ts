@@ -5,6 +5,7 @@ import { questionIds } from '../../src/case/questions.js';
 import { identityKey, type RouteCatalog } from '../../src/rules/catalog.js';
 import { evaluateRoute } from '../../src/rules/engine.js';
 import type { MissingFact } from '../../src/rules/missing.js';
+import type { Relationship } from '../../src/case/snapshot.js';
 import { context, entry } from '../rules/fixtures.js';
 import { snapshot } from './builders.js';
 
@@ -45,13 +46,43 @@ describe('decisiveQuestions (spec 0007, R6)', () => {
     expect(questions.map(({ question }) => question)).toEqual(['birthDate', 'allAssets']);
   });
 
+  const spouses: Relationship = { kind: 'spouse', people: ['p1', 'p2'] };
+
   it('asks about a relationship through a person the viewer keeps, when one end is', () => {
-    const edge = {
-      kind: 'relationship',
-      edge: { kind: 'spouse', people: ['p1', 'p2'] },
-    } as unknown as MissingFact;
+    const edge: MissingFact = { kind: 'relationship', edge: spouses };
     expect(decisiveQuestions([{ missingFacts: [edge] }], new Set(['p2']))).toEqual([
       { personId: 'p2', question: 'relationships', decides: 1, kept: true },
+    ]);
+    const start: MissingFact = {
+      kind: 'fact',
+      reference: 'edge.start',
+      personId: 'p1',
+      edge: spouses,
+    };
+    expect(decisiveQuestions([{ missingFacts: [start] }], new Set(['p2']))).toEqual([
+      { personId: 'p2', question: 'relationships', decides: 1, kept: true },
+    ]);
+  });
+
+  it("asks a lineage fact about the child of the next person in the line, not the ancestor's", () => {
+    const line = ['grandparent', 'parent', 'p1'];
+    const read = (reference: string): MissingFact => ({
+      kind: 'fact',
+      reference,
+      personId: 'grandparent',
+      line,
+    });
+    expect(
+      decisiveQuestions([{ missingFacts: [read('lineage.ancestor.childBirthDate')] }], new Set()),
+    ).toEqual([{ personId: 'parent', question: 'birthDate', decides: 1, kept: false }]);
+    expect(
+      decisiveQuestions(
+        [{ missingFacts: [read('lineage.ancestor.citizenshipsAtChildBirth')] }],
+        new Set(),
+      ).map(({ personId, question }) => [personId, question]),
+    ).toEqual([
+      ['parent', 'birthDate'],
+      ['grandparent', 'citizenships'],
     ]);
   });
 
@@ -106,5 +137,58 @@ describe('routeResult (spec 0007, R6)', () => {
     ]);
     expect(shown.costs[0]?.min).toEqual({ amount: '100', currency: 'EUR' });
     expect(decisiveQuestions([shown], new Set(['p1'])).length).toBeGreaterThan(0);
+  });
+
+  it('asks nothing for a route a requirement rules out, or a closed one', () => {
+    const minor = snapshot({ people: [{ id: 'p1', birthDate: '2015-01-01' }] });
+    const ruledOut = routeResult(evaluateRoute(minor, catalog, 'qm-sample', 'p1', context()), 'p1');
+    expect(ruledOut.status).toBe('not_eligible');
+    expect(ruledOut.missingFacts).toEqual([]);
+
+    const closed = entry({ status: 'closed', closureSources: ['law'] });
+    const closedCatalog: RouteCatalog = {
+      identities: () => [closed.identity],
+      activeEntry: () => closed,
+    };
+    const shown = routeResult(
+      evaluateRoute(
+        snapshot({ people: [{ id: 'p1', birthDate: '1980-01-01' }] }),
+        closedCatalog,
+        'qm-sample',
+        'p1',
+        context(),
+      ),
+      'p1',
+    );
+    expect(shown.status).toBe('unavailable');
+    expect(shown.missingFacts).toEqual([]);
+  });
+
+  it('reports the rates the FX table lacks apart from the questions', () => {
+    const shown = routeResult(
+      evaluateRoute(
+        snapshot({
+          people: [{ id: 'p1', birthDate: '1980-01-01' }],
+          assets: [
+            {
+              id: 'a1',
+              kind: 'cash',
+              owners: [{ person: 'p1', share: '1' }],
+              value: { amount: 1, currency: 'BRL' },
+              valuedAt: '2026-10-01',
+              liquid: true,
+              sold: 'none',
+            },
+          ],
+        }),
+        catalog,
+        'qm-sample',
+        'p1',
+        context(),
+      ),
+      'p1',
+    );
+    expect(shown.missingRates).toEqual([{ from: 'BRL', to: 'EUR' }]);
+    expect(shown.missingDates).toEqual([]);
   });
 });

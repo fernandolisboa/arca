@@ -159,7 +159,9 @@ test('lists every route for the family by its status, with nothing hidden behind
   // Each route shows a status for each member, Ana and her child.
   const statuses = page.getByText(/como requerente principal/);
   await expect(statuses.first()).toBeVisible();
-  expect((await statuses.count()) % 2).toBe(0);
+  const routes = await page.locator('main article').count();
+  expect(routes).toBeGreaterThan(0);
+  expect(await statuses.count()).toBe(routes * 2);
   const { violations } = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
     .analyze();

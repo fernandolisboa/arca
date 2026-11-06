@@ -3,6 +3,7 @@ import {
   type CaseEvaluations,
   type CaseView,
   type RouteResult,
+  staleAfterDays,
 } from '@arca/api-contract/client';
 import { Button, SourceLine, StatusChip, type StatusTone } from '@arca/ui';
 import { useQuery } from '@tanstack/react-query';
@@ -161,26 +162,28 @@ function Evaluated({
         return (
           <section key={country ?? ''} aria-label={heading} className="flex flex-col gap-3">
             <h3 className="font-display text-lead">{heading}</h3>
-            {routes.map((group) => (
-              <article
-                key={group.routeId}
-                aria-label={group.route?.title ?? group.routeId}
-                className="flex flex-col gap-3 rounded-card border border-line bg-surface p-4"
-              >
-                <h4 className="font-medium break-words">
-                  {group.route?.title ?? t('results.unnamedRoute', { id: group.routeId })}
-                </h4>
-                {group.results.map((result) => (
-                  <PrincipalResult
-                    key={result.principalId}
-                    result={result}
-                    name={name}
-                    people={people}
-                    words={words}
-                  />
-                ))}
-              </article>
-            ))}
+            {routes.map((group) => {
+              const routeTitle =
+                group.route?.title ?? t('results.unnamedRoute', { id: group.routeId });
+              return (
+                <article
+                  key={group.routeId}
+                  aria-label={routeTitle}
+                  className="flex flex-col gap-3 rounded-card border border-line bg-surface p-4"
+                >
+                  <h4 className="font-medium break-words">{routeTitle}</h4>
+                  {group.results.map((result) => (
+                    <PrincipalResult
+                      key={result.principalId}
+                      result={result}
+                      name={name}
+                      people={people}
+                      words={words}
+                    />
+                  ))}
+                </article>
+              );
+            })}
           </section>
         );
       })}
@@ -210,7 +213,15 @@ function PrincipalResult({
           label={t('results.status', { status: result.status })}
         />
       </div>
-      {result.stale && <p className="text-small text-warn-ink">{t('results.stale')}</p>}
+      {result.stale && (
+        <p className="text-small text-warn-ink">{t('results.stale', { days: staleAfterDays })}</p>
+      )}
+      {result.closureSources.length > 0 && (
+        <div className="flex flex-col gap-1">
+          <p className="text-small">{t('results.closed')}</p>
+          <Sources sources={result.closureSources} words={words} />
+        </div>
+      )}
       {result.newerProposedVersion !== null && (
         <p className="text-small text-muted">
           {t('results.newerVersion', { date: words.date(result.newerProposedVersion.from) })}
@@ -218,19 +229,34 @@ function PrincipalResult({
       )}
       {evaluated && (
         <>
-          <p className="text-small">
-            {result.dependents.length === 0 && result.possibleDependents.length === 0
-              ? t('results.nobodyWith')
-              : [
-                  result.dependents.length > 0 &&
-                    t('results.goWith', { names: people(result.dependents) }),
-                  result.possibleDependents.length > 0 &&
-                    t('results.mayGoWith', { names: people(result.possibleDependents) }),
-                ]
-                  .filter(Boolean)
-                  .join(' · ')}
-          </p>
+          {result.dependents.length === 0 && result.possibleDependents.length === 0 && (
+            <p className="text-small">{t('results.nobodyWith')}</p>
+          )}
+          {result.dependents.length > 0 && (
+            <p className="text-small">
+              {t('results.goWith', { names: people(result.dependents) })}
+            </p>
+          )}
+          {result.possibleDependents.length > 0 && (
+            <p className="text-small">
+              {t('results.mayGoWith', { names: people(result.possibleDependents) })}
+            </p>
+          )}
           {result.unitOpen && <p className="text-small text-muted">{t('results.unitOpen')}</p>}
+          {result.missingRates.length > 0 && (
+            <p className="text-small text-muted">
+              {t('results.missingRates', {
+                pairs: words.list(result.missingRates.map((pair) => t('results.ratePair', pair))),
+              })}
+            </p>
+          )}
+          {result.missingDates.length > 0 && (
+            <p className="text-small text-muted">
+              {t('results.missingDates', {
+                dates: words.list(result.missingDates.map(words.referenceDate)),
+              })}
+            </p>
+          )}
           <details>
             <summary className={`${textLinkClass} cursor-pointer`}>{t('results.details')}</summary>
             <div className="mt-3 flex flex-col gap-4">
@@ -329,12 +355,17 @@ function ruleLine(item: Rule, words: KnowledgeWords, name: (id: string) => strin
   if ('costId' in item) {
     const money = (amount: NonNullable<typeof item.min>) =>
       words.money(amount.amount, amount.currency);
+    const { min, max } = item;
     const amount =
-      item.min === null || item.max === null
-        ? t('results.amountUnknown')
-        : item.min.amount === item.max.amount && item.min.currency === item.max.currency
-          ? money(item.min)
-          : t('results.amountRange', { min: money(item.min), max: money(item.max) });
+      max === null
+        ? min === null
+          ? t('results.amountUnknown')
+          : t('results.amountFrom', { min: money(min) })
+        : min === null
+          ? t('results.amountUpTo', { max: money(max) })
+          : min.amount === max.amount && min.currency === max.currency
+            ? money(min)
+            : t('results.amountRange', { min: money(min), max: money(max) });
     return item.personId === null
       ? t('results.cost', { title: item.title, amount })
       : t('results.costFor', { title: item.title, name: name(item.personId), amount });

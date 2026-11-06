@@ -84,10 +84,24 @@ export function caseEvaluations(
         requirements: result.requirements,
         assessments: result.assessments,
         costs: result.costs.map((cost) => ({
-          ...cost,
+          costId: cost.costId,
+          title: cost.title,
+          appliesTo: cost.appliesTo,
           personId: cost.personId === null ? null : uuid(cost.personId),
+          applies: cost.applies,
+          min: cost.min,
+          max: cost.max,
+          sources: cost.sources,
         })),
         durations: result.durations,
+        closureSources:
+          entry?.version.status === 'closed'
+            ? (entry.version.closureSources ?? []).flatMap((id) =>
+                entry.version.sources.filter((source) => source.id === id),
+              )
+            : [],
+        missingRates: result.missingRates,
+        missingDates: result.missingDates,
       };
     }),
     questions: decisiveQuestions(results, kept).map((question) => ({

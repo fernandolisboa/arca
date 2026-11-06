@@ -7,6 +7,7 @@ import { resolveFactReference } from '../rules/fact-reference.js';
 import type { MissingFact } from '../rules/missing.js';
 import type { Source } from '../rules/route-version.js';
 import type { FactKey } from './facts.js';
+import { endpoints } from './snapshot.js';
 import { type QuestionId, questionIds } from './questions.js';
 
 /** The guided question that sets each fact the rules read (spec 0007, R4 and R6). */
@@ -56,25 +57,45 @@ export interface DecisiveQuestion {
   readonly kept: boolean;
 }
 
-/** Who answers a missing fact, and with which question. */
-function asked(
-  missing: MissingFact,
-  kept: ReadonlySet<string>,
-): { readonly personId: string; readonly question: QuestionId } | undefined {
+interface Asked {
+  readonly personId: string;
+  readonly question: QuestionId;
+}
+
+/** A relationship's details, through an end the viewer keeps when there is one. */
+function relationshipQuestion(ends: readonly string[], kept: ReadonlySet<string>): Asked[] {
+  const personId = ends.find((end) => kept.has(end)) ?? ends[0];
+  return personId === undefined ? [] : [{ personId, question: 'relationships' }];
+}
+
+/** Who answers a missing fact, and with which questions. */
+function asked(missing: MissingFact, kept: ReadonlySet<string>): Asked[] {
   switch (missing.kind) {
     case 'fact': {
       const resolved = resolveFactReference(missing.reference);
-      if (resolved === undefined) return undefined;
-      return { personId: missing.personId, question: questionForFact[resolved.key] };
+      if (resolved === undefined) return [];
+      const { personId, edge, line } = missing;
+      const question = questionForFact[resolved.key];
+      // A lineage fact about a child reads the next person in the line, not the ancestor.
+      const next = line?.[line.indexOf(personId) + 1];
+      switch (resolved.key) {
+        case 'lineage.childBirthDate':
+          return next === undefined ? [] : [{ personId: next, question: 'birthDate' }];
+        case 'lineage.citizenshipsAtChildBirth':
+          return [
+            { personId, question },
+            ...(next === undefined ? [] : [{ personId: next, question: 'birthDate' as const }]),
+          ];
+        default:
+          return question === 'relationships' && edge !== undefined
+            ? relationshipQuestion([personId, ...endpoints(edge)], kept)
+            : [{ personId, question }];
+      }
     }
     case 'marker':
-      return { personId: missing.personId, question: questionForMarker[missing.marker] };
-    case 'relationship': {
-      const { edge } = missing;
-      const ends = edge.kind === 'parent' ? [edge.child, edge.parent] : [...edge.people];
-      const personId = ends.find((end) => kept.has(end)) ?? ends[0];
-      return personId === undefined ? undefined : { personId, question: 'relationships' };
-    }
+      return [{ personId: missing.personId, question: questionForMarker[missing.marker] }];
+    case 'relationship':
+      return relationshipQuestion(endpoints(missing.edge), kept);
   }
 }
 
@@ -92,9 +113,7 @@ export function decisiveQuestions(
   const counted = new Map<string, { personId: string; question: QuestionId; decides: number }>();
   for (const { missingFacts } of results) {
     const keys = new Set<string>();
-    for (const missing of missingFacts) {
-      const question = asked(missing, kept);
-      if (question === undefined) continue;
+    for (const question of missingFacts.flatMap((missing) => asked(missing, kept))) {
       const key = `${question.question}\u0000${question.personId}`;
       if (keys.has(key)) continue;
       keys.add(key);
@@ -159,6 +178,10 @@ export interface RouteResult {
     readonly max: string;
     readonly sources: readonly Source[];
   }[];
+  /** Rates the FX table lacks, which no one in the family can answer (spec 0002, R5). */
+  readonly missingRates: readonly { readonly from: string; readonly to: string }[];
+  /** Reference dates the version reads that the case does not set yet. */
+  readonly missingDates: readonly string[];
   /** What would settle the status or the unit: the decisive facts and the possible dependents'. */
   readonly missingFacts: readonly MissingFact[];
 }
@@ -170,6 +193,9 @@ const unitsMoney = (money: Money | undefined): UnitsMoney | null =>
         amount: unitsAmount(money.amount, money.currency),
         currency: money.currency,
       };
+
+/** A route a requirement already rules out, or a closed one: no answer changes its status. */
+const settled = (status: EvaluationStatus) => status === 'not_eligible' || status === 'unavailable';
 
 /** A route evaluation laid out for the results screen, with the case's IDs left as they are. */
 export function routeResult(evaluated: RouteEvaluation, principalId: string): RouteResult {
@@ -186,6 +212,8 @@ export function routeResult(evaluated: RouteEvaluation, principalId: string): Ro
     assessments: [],
     costs: [],
     durations: [],
+    missingRates: [],
+    missingDates: [],
     missingFacts: [],
   };
   if (evaluated.kind === 'no_version') return { ...empty, version: null };
@@ -235,11 +263,15 @@ export function routeResult(evaluated: RouteEvaluation, principalId: string): Ro
       max,
       sources,
     })),
-    // What settles the status, and who goes with whom.
-    missingFacts: [
-      ...evaluation.missingFacts,
-      ...unit.possibleDependents.flatMap((dependent) => dependent.missingFacts),
-      ...unit.missingMarkers.map((marker) => ({ kind: 'marker' as const, ...marker })),
-    ],
+    missingRates: evaluation.missingRates.map(({ from, to }) => ({ from, to })),
+    missingDates: evaluation.missingDates,
+    // What settles the status, and who goes with whom; nothing can change a status already settled.
+    missingFacts: settled(evaluation.status)
+      ? []
+      : [
+          ...evaluation.missingFacts,
+          ...unit.possibleDependents.flatMap((dependent) => dependent.missingFacts),
+          ...unit.missingMarkers.map((marker) => ({ kind: 'marker' as const, ...marker })),
+        ],
   };
 }

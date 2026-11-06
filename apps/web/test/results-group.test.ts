@@ -21,6 +21,9 @@ const result = (
   assessments: [],
   costs: [],
   durations: [],
+  closureSources: [],
+  missingRates: [],
+  missingDates: [],
 });
 
 const names: Record<string, string> = { PT: 'Portugal', US: 'Estados Unidos' };

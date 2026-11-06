@@ -342,7 +342,8 @@ export const getCasePlayback = {
 } as const satisfies RouteDefinition<typeof CasePlayback>;
 
 const truth = z.union([z.boolean(), z.literal('unknown')]);
-const unitsMoney = z.object({ amount: decimalSchema, currency: z.string().regex(/^[A-Z]{3}$/) });
+const currency = z.string().regex(/^[A-Z]{3}$/);
+const unitsMoney = z.object({ amount: decimalSchema, currency });
 const sources = z.array(sourceSchema).max(50);
 const people = z.array(z.uuid()).max(maxCasePeople);
 
@@ -385,7 +386,8 @@ export const RouteResult = z.object({
         sources,
       }),
     )
-    .max(500),
+    // Up to 50 costs a version, each charged once per person at most.
+    .max(50 * maxCasePeople),
   durations: z
     .array(
       z.object({
@@ -397,6 +399,12 @@ export const RouteResult = z.object({
       }),
     )
     .max(20),
+  /** The sources of a closed version's closure, which the screen cites with "Rota encerrada". */
+  closureSources: sources,
+  /** Rates the exchange table lacks; no one in the family can answer them. */
+  missingRates: z.array(z.object({ from: currency, to: currency })).max(50),
+  /** Reference dates the version reads that the case does not set yet. */
+  missingDates: z.array(z.string().max(96)).max(20),
 });
 export type RouteResult = z.infer<typeof RouteResult>;
 

@@ -9,6 +9,7 @@ export {
   apiBasePath,
   collectionNames,
   comparisonOperators,
+  staleAfterDays,
   expressionOperators,
   factKeys,
   factTargets,
