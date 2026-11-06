@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "it",
+  "number": 1,
+  "issuer": "Italian Republic",
+  "hosts": [
+    {
+      "host": "normattiva.it",
+      "source": {
+        "id": "governo-normattiva",
+        "url": "https://www.governo.it/it",
+        "title": "Governo italiano, the site of the Presidency of the Council of Ministers, links to Normattiva, the state portal of laws in force, at normattiva.it",
+        "kind": "official",
+        "verifiedAt": "2026-11-06"
+      }
+    },
+    {
+      "host": "cortecostituzionale.it",
+      "source": {
+        "id": "camera-corte-costituzionale",
+        "url": "https://www.camera.it/",
+        "title": "Camera dei deputati, the lower house of the Italian Parliament, links to the Constitutional Court at cortecostituzionale.it",
+        "kind": "official",
+        "verifiedAt": "2026-11-06"
+      }
+    }
+  ]
+}
