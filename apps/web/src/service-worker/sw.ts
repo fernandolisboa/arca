@@ -9,8 +9,8 @@ declare const self: ServiceWorkerGlobalScope;
 /** Every built static file with its content hash, written in by vite.config.ts. */
 declare const precacheManifest: PrecacheEntry[];
 
-// A new version takes over open tabs at once. Safe while the app is one chunk; before code
-// splitting, replace this with an update prompt, since old tabs would lose their lazy chunks.
+// A new version takes over open tabs at once. An old tab then loses its lazy chunks, which the
+// server answers with a 404, and reloads into the new version (main.tsx).
 void self.skipWaiting();
 clientsClaim();
 

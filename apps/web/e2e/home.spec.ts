@@ -133,3 +133,40 @@ test('serves pages from the network, so a header change reaches installed client
     await new Promise((resolve) => proxy.close(resolve));
   }
 });
+
+test('starts over from the network when the cached app script is not a script', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await activeServiceWorker(page);
+  await expect
+    .poll(() => page.evaluate(() => navigator.serviceWorker.controller !== null))
+    .toBe(true);
+  // What a deploy can leave in the precache: index.html stored under the entry script's URL.
+  const replaced = await page.evaluate(async () => {
+    const script = document.querySelector<HTMLScriptElement>('script[type="module"]');
+    if (script === null) return 0;
+    const entry = new URL(script.src).pathname;
+    let count = 0;
+    for (const name of await caches.keys()) {
+      const cache = await caches.open(name);
+      for (const request of await cache.keys()) {
+        if (new URL(request.url).pathname !== entry) continue;
+        await cache.put(
+          request,
+          new Response('<!doctype html>', { headers: { 'content-type': 'text/html' } }),
+        );
+        count += 1;
+      }
+    }
+    return count;
+  });
+  expect(replaced).toBe(1);
+
+  const problems = watchProblems(page);
+  await page.reload();
+  await expect(page.getByRole('heading', { level: 1, name: 'Arca' })).toBeVisible();
+  expect(problems.filter((problem) => !problem.startsWith('Failed to load module script'))).toEqual(
+    [],
+  );
+});
