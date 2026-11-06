@@ -4,7 +4,7 @@ Production accepts family data only when every item below is checked ([spec 0004
 
 - Check an item here and in the epic only when its evidence is linked.
 - An item that depends on the project owner says what they do.
-- Status as of 2026-11-05.
+- Status as of 2026-11-06: every item is checked, so production may accept family data. Item 10 unchecks itself when the first model SDK is added.
 
 ## Checklist
 
@@ -29,9 +29,9 @@ Production accepts family data only when every item below is checked ([spec 0004
     - the first preview event, checked by the owner in Sentry on 2026-11-04, showed no synthetic personal data. Production reports with the same DSN and scrubber ([sentry-project.ts](../../packages/telemetry/src/sentry-project.ts)), only under another environment tag.
 - [x] **4. Registry guard, export and deletion work (R7 to R9).**
   - **Evidence:** [#69](https://github.com/fernandolisboa/arca/issues/69), [#70](https://github.com/fernandolisboa/arca/issues/70) and [#71](https://github.com/fernandolisboa/arca/issues/71) are closed. The tests are listed under L1 and L2 in the [threat model](../threat-models/foundations.md#data-lifecycle-spec-0004).
-- [ ] **5. Retention jobs run (R10).**
+- [x] **5. Retention jobs run (R10).** (Checked 2026-11-06.)
   - **Evidence:** [#72](https://github.com/fernandolisboa/arca/issues/72) is closed. The daily cron and its tests are listed under L3 in the [threat model](../threat-models/foundations.md#data-lifecycle-spec-0004).
-  - **Open:** a completed production run of the 06:15 UTC `enforceRetention` workflow, seen in the Vercel logs or the workflow's run list; check this item with its date.
+  - The first production run completed on 2026-11-06: workflow run `wrun_41M6QQY7SV30RW3MMXTSE73THW` of `enforceRetention`, started 06:15:07 UTC in `gru1`, completed 06:15:09 UTC with no error, seen in the workflow's run list (`workflow inspect runs -b vercel -e production`).
 - [x] **6. Runbook written (R11).**
   - **Evidence:** the [incident-response runbook](incident-response.md) and `security.txt`, merged in PR #173. The owner dropped the tabletop on 2026-11-05.
 - [x] **7. The Neon restore steps are in the runbook (R12).**
