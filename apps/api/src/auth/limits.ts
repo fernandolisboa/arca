@@ -81,6 +81,12 @@ export const intakeLimits = {
   minute: { name: 'case_intake_minute', limit: 3, windowSeconds: 60 },
 } as const satisfies Record<string, RateLimitRule>;
 
+/** Rule summaries per approver (ADR-0025): each miss is one model call. */
+export const ruleSummaryLimits = {
+  day: { name: 'rule_summary_day', limit: 30, windowSeconds: 24 * hour },
+  minute: { name: 'rule_summary_minute', limit: 5, windowSeconds: 60 },
+} as const satisfies Record<string, RateLimitRule>;
+
 /**
  * Limits on recovery (spec 0003, R10): starting is per email HMAC and per IP; the link's token is
  * 256 random bits and five wrong codes lock the account's recovery, so the rest bound load.

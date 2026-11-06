@@ -1,6 +1,6 @@
 # ADR-0023: Free-text intake sends the writer's own words to the model
 
-- Status: Accepted
+- Status: Accepted, amended by [ADR-0025](0025-rule-summary-for-the-approver.md) (Langfuse waits until the owner asks)
 - Date: 2026-11-06
 - Amends: [ADR-0004](0004-ai-providers-behind-ports.md) (a second exception to "no names"), [ADR-0016](0016-observability-and-scrubbing.md) (Langfuse waits)
 

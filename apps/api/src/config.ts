@@ -142,8 +142,9 @@ export function readResendKey(): string | undefined {
 const anthropicKeyPattern = /^sk-ant-[A-Za-z0-9_-]+$/;
 
 /**
- * Anthropic's API key for the intake extractor (spec 0008, R1), one Sensitive value shared by
- * Production and Preview. Absent, the intake route answers 503 and the guided questions work.
+ * Anthropic's API key for the intake extractor (spec 0008, R1) and the rule summary (ADR-0025), one
+ * Sensitive value shared by Production and Preview. Absent, both routes answer 503 and the guided
+ * questions and the version reads work.
  */
 export function readAnthropicApiKey(): string | undefined {
   const key = process.env['ANTHROPIC_API_KEY']?.trim();
@@ -156,6 +157,14 @@ export function readAnthropicApiKey(): string | undefined {
  */
 export function readScriptedIntake(): boolean {
   return process.env['ARCA_INTAKE_EXTRACTOR'] === 'scripted';
+}
+
+/**
+ * Whether a local server summarizes rule versions with the scripted summarizer (ADR-0025), which
+ * the end-to-end build turns on with `ARCA_RULE_SUMMARIZER=scripted`; only development honours it.
+ */
+export function readScriptedRuleSummary(): boolean {
+  return process.env['ARCA_RULE_SUMMARIZER'] === 'scripted';
 }
 
 /**

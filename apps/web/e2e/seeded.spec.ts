@@ -77,6 +77,10 @@ test('the seed approver activates a version, reads and closes its reports, then 
     'ainda não existe',
   );
   await expect(page.getByRole('region', { name: 'Fontes' })).toContainText('https://');
+  await page.getByRole('button', { name: 'Resumir esta regra' }).click();
+  const summary = page.getByRole('region', { name: 'Resumo feito pela IA' });
+  await expect(summary).toContainText('Resumo de teste de EB-5');
+  await expect(summary).toContainText('A IA pode errar.');
   const { violations } = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
     .analyze();

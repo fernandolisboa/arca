@@ -7,6 +7,7 @@ import { passkeys } from '../platform.js';
 import { commonFailure, reach, type CommonFailure } from '../requests.js';
 import { stepUpFor } from '../step-up.js';
 import { ExpressionTree } from './expression-tree.js';
+import { RuleSummary } from './rule-summary.js';
 import { type KnowledgeWords, useKnowledgeWords } from './words.js';
 
 type DecisionKind = 'activate' | 'reject';
@@ -265,6 +266,7 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
           {t('knowledge.currency', { currency: view.currency })}
         </p>
       </div>
+      <RuleSummary view={view} />
       <Section title={t('knowledge.section.changes')}>
         <Changes view={view} words={words} />
       </Section>

@@ -77,6 +77,7 @@ export type {
   KnowledgeVersions,
   ReportRuleRequest,
   RuleReports,
+  RuleSummary,
   VersionView,
   DeviceDescription,
   DevicePasskey,
