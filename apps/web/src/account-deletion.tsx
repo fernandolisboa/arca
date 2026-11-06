@@ -48,6 +48,16 @@ function KeptPeopleWarning() {
   const session = useQuery(sessionQuery);
   // An unconfirmed account has no case to read yet (spec 0003, R2).
   const found = useQuery({ ...caseQuery, enabled: session.data?.confirmed === true });
+  if (found.isError) {
+    return (
+      <p className="text-danger-ink">
+        {t('settings.accountDeletion.keptPeopleUnknown')}{' '}
+        <Link to="/family" className={textLinkClass}>
+          {t('settings.accountDeletion.handOver')}
+        </Link>
+      </p>
+    );
+  }
   const view = found.data?.case;
   if (view === undefined || view === null) return null;
   const kept = view.people.filter(({ id, keptByMe }) => keptByMe && id !== view.me);

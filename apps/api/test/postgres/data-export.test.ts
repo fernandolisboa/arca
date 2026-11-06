@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDataExports, type DataExports } from '../../src/account/data-export.js';
 import { auditLog } from '../../src/audit/log.js';
 import { authTestDatabase, type AuthTestDatabase } from './auth-database.js';
-import { ownedCounts, seeded } from './every-table.js';
+import { ownedCounts, seeded, unsharedIncome } from './every-table.js';
 
 // The export on the real migrations, through the app_auth and app_api pools (spec 0004, R8).
 // Synthetic data only.
@@ -67,6 +67,8 @@ describe('data export (spec 0004, R8)', () => {
       ]) as unknown,
     });
     const text = JSON.stringify(document);
+    // Another keeper's rows stay out, shared with the account or not.
+    expect(text).not.toContain(String(unsharedIncome.monthly.amount));
     for (const value of [b.accountId, b.email, b.credentialId]) expect(text).not.toContain(value);
     expect(text).toContain(a.email);
     // Nothing outside the projections, such as an ID or a hash, leaves the database.

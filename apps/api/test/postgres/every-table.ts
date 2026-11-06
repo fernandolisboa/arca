@@ -18,6 +18,13 @@ export interface Seeded {
 
 const bytes = (size: number) => randomBytes(size);
 
+/** Another keeper's income, never shared with the seeded account, so its export must not hold it. */
+export const unsharedIncome = {
+  kind: 'active',
+  monthly: { amount: 987654321, currency: 'BRL' },
+  sourceCountry: 'BR',
+} as const;
+
 /** An account with at least one row in every table of the registry. */
 export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
   const accountId = randomUUID();
@@ -178,6 +185,20 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
     await insert(
       `INSERT INTO cases.person_finances (person_id, incomes, assets_recorded_in_full) VALUES ($1, '[]', true)`,
       [selfId],
+    );
+    // The sharer's relative: a profile shared with the account, finances that are not.
+    await insert(
+      `INSERT INTO cases.person_profile (person_id, facts, dependence_answered) VALUES ($1, '{}', false)`,
+      [relativeId],
+    );
+    await insert(
+      `INSERT INTO cases.person_finances (person_id, incomes, assets_recorded_in_full)
+       VALUES ($1, $2, false)`,
+      [relativeId, JSON.stringify([unsharedIncome])],
+    );
+    await insert(
+      `INSERT INTO cases.share (case_id, person_id, grantee_account_id, scope) VALUES ($1, $2, $3, 'profile')`,
+      [caseId, relativeId, accountId],
     );
     await insert(
       `INSERT INTO cases.dependence (case_id, person_id, depends_on_id) VALUES ($1, $2, $3)`,
