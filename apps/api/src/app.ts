@@ -1280,6 +1280,17 @@ export function createApp({
     caseRoutes.removeCaseAssetOwner.body,
     (files, id, request) => files.removeOwner(id, request),
   );
+  v1.openapi(openApiRoutes.getCaseQuestions, async (c) => {
+    const account = await caseAccount(c, false);
+    if ('refused' in account) return account.refused;
+    const questions = await account.cases.questions(account.current.accountId);
+    return questions === null ? fail(c, 'not_found', 404) : c.json(questions, 200);
+  });
+  caseWrite(
+    openApiRoutes.answerCaseQuestions,
+    caseRoutes.answerCaseQuestions.body,
+    (files, id, request) => files.answerQuestions(id, request),
+  );
   v1.openapi(openApiRoutes.leaveCase, async (c) => {
     const account = await caseAccount(c, true);
     if ('refused' in account) return account.refused;
