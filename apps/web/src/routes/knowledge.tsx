@@ -1,5 +1,5 @@
 import { ApiError, type KnowledgeVersion } from '@arca/api-contract/client';
-import { Button } from '@arca/ui';
+import { Button, StatusChip } from '@arca/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { knowledgeVersionsQuery, sessionQuery, versionViewQuery } from '../api.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { ReportsSection } from '../knowledge/reports-section.js';
+import { stateTone } from '../knowledge/steps.js';
 import { VersionPanel } from '../knowledge/version-panel.js';
 import { useKnowledgeWords } from '../knowledge/words.js';
 import { Page } from '../page.js';
@@ -58,17 +59,17 @@ function Knowledge() {
   if (versions.data === undefined) return <Page title={title} />;
   if (picked !== null) {
     return (
-      <Page title={title}>
+      <Page title={title} wide>
         <button
           type="button"
-          className={textLinkClass}
+          className={`${textLinkClass} self-start`}
           onClick={() => {
             setPicked(null);
           }}
         >
           {t('knowledge.back')}
         </button>
-        <PickedVersion picked={picked} />
+        <PickedVersion key={`${picked.routeId}:${String(picked.number)}`} picked={picked} />
       </Page>
     );
   }
@@ -76,13 +77,17 @@ function Knowledge() {
   const proposed = all.filter(({ state }) => state === 'proposed');
   const others = all.filter(({ state }) => state !== 'proposed');
   return (
-    <Page title={title} lead={t('knowledge.lead')}>
-      <VersionList title={t('knowledge.proposed')} versions={proposed} onPick={setPicked} />
-      {proposed.length === 0 && <p className="text-muted">{t('knowledge.noneProposed')}</p>}
-      {others.length > 0 && (
-        <VersionList title={t('knowledge.others')} versions={others} onPick={setPicked} />
-      )}
-      <ReportsSection versions={all} words={words} />
+    <Page title={title} lead={t('knowledge.lead')} wide>
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <div className="flex min-w-0 flex-col gap-6">
+          <VersionList title={t('knowledge.proposed')} versions={proposed} onPick={setPicked} />
+          {proposed.length === 0 && <p className="text-muted">{t('knowledge.noneProposed')}</p>}
+          {others.length > 0 && (
+            <VersionList title={t('knowledge.others')} versions={others} onPick={setPicked} />
+          )}
+        </div>
+        <ReportsSection versions={all} words={words} />
+      </div>
     </Page>
   );
 }
@@ -100,12 +105,12 @@ function VersionList({
   return (
     <section aria-label={title} className="flex flex-col gap-2">
       <h3 className="font-medium">{title}</h3>
-      <ul className="flex flex-col gap-2">
+      <ul className="grid gap-3 md:grid-cols-2">
         {versions.map((version) => (
           <li key={`${version.routeId}:${String(version.number)}`}>
             <button
               type="button"
-              className="flex min-h-touch w-full flex-col items-start rounded-control px-2 py-1 text-left hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="flex h-full min-h-touch w-full flex-col items-start gap-1 rounded-control border border-line bg-surface p-4 text-left hover:bg-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               onClick={() => {
                 onPick({ routeId: version.routeId, number: version.number });
               }}
@@ -117,14 +122,15 @@ function VersionList({
                 })}
               </span>
               <span className="text-small text-muted">
-                {[
-                  words.t('knowledge.versionMeta', {
-                    country: words.country(version.country),
-                    date: words.date(version.effectiveFrom),
-                  }),
-                  words.t('knowledge.state', { state: version.state }),
-                ].join(' · ')}
+                {words.t('knowledge.versionMeta', {
+                  country: words.country(version.country),
+                  date: words.date(version.effectiveFrom),
+                })}
               </span>
+              <StatusChip
+                tone={stateTone(version.state)}
+                label={words.t('knowledge.state', { state: version.state })}
+              />
             </button>
           </li>
         ))}

@@ -63,9 +63,9 @@ export function DataExportSection() {
           : '';
   return (
     <section aria-labelledby="data-export-title" className="flex flex-col items-start gap-3">
-      <h3 id="data-export-title" className="text-title font-medium">
+      <h4 id="data-export-title" className="text-lead font-medium">
         {t('settings.dataExport.title')}
-      </h3>
+      </h4>
       <p className="text-muted">{t('settings.dataExport.intro')}</p>
       {state === 'confirming' ? (
         <div className="flex flex-col items-start gap-3">

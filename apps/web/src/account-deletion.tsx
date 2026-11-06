@@ -112,9 +112,9 @@ export function AccountDeletionSection() {
         : '';
   return (
     <section aria-labelledby="account-deletion-title" className="flex flex-col items-start gap-3">
-      <h3 id="account-deletion-title" className="text-title font-medium">
+      <h4 id="account-deletion-title" className="text-lead font-medium">
         {t('settings.accountDeletion.title')}
-      </h3>
+      </h4>
       {!requested && <p className="text-muted">{t('settings.accountDeletion.intro')}</p>}
       {state === 'confirming' ? (
         <div className="flex flex-col items-start gap-3">

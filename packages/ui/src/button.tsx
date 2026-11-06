@@ -1,13 +1,21 @@
 import type { ButtonHTMLAttributes } from 'react';
 
-export type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'className'>;
+export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'className'> {
+  /** `secondary` is the quieter outlined button beside a primary one, such as "Voltar". */
+  readonly variant?: 'primary' | 'secondary';
+}
 
-/** The primary button, never smaller than the 44 px touch target. */
-export function Button({ type = 'button', ...props }: ButtonProps) {
+const variants = {
+  primary: 'bg-primary text-on-primary hover:bg-primary-hover active:bg-primary-pressed',
+  secondary: 'border border-line bg-surface text-ink hover:bg-soft',
+} as const;
+
+/** A button, never smaller than the 44 px touch target. */
+export function Button({ type = 'button', variant = 'primary', ...props }: ButtonProps) {
   return (
     <button
       type={type}
-      className="inline-flex min-h-touch min-w-touch items-center justify-center rounded-control bg-primary px-4 font-medium text-on-primary hover:bg-primary-hover active:bg-primary-pressed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-60"
+      className={`inline-flex min-h-touch min-w-touch items-center justify-center gap-2 rounded-control px-4 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-60 ${variants[variant]}`}
       {...props}
     />
   );

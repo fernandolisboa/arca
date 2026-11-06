@@ -34,7 +34,7 @@ test("lists the account's channels and stops a device's notices after a step-up"
   const channelId = await seedPushChannel(userId);
   await virtualAuthenticator(page, credential, { userId });
   await signIn(page, email);
-  await page.goto(`${databaseServer.origin}/settings`);
+  await page.goto(`${databaseServer.origin}/settings?section=account`);
 
   const section = page.getByRole('region', { name: 'Avisos de segurança' });
   const list = section.getByRole('list', { name: 'Avisos de segurança' });
@@ -66,7 +66,7 @@ test("lists the account's channels and stops a device's notices after a step-up"
 });
 
 test('offers no notification settings without a session', async ({ page }) => {
-  await page.goto(`${databaseServer.origin}/settings`);
-  await expect(page.getByRole('heading', { level: 2, name: 'Configurações' })).toBeVisible();
+  await page.goto(`${databaseServer.origin}/settings?section=account`);
+  await expect(page.getByRole('heading', { level: 3, name: 'Conta' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Avisos de segurança' })).toHaveCount(0);
 });
