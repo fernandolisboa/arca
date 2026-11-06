@@ -1,4 +1,5 @@
 import { sql } from 'drizzle-orm';
+import { stepUp } from './step-up-schema.js';
 import {
   bytea,
   check,
@@ -15,8 +16,10 @@ import {
  * Decisions on route versions (spec 0007, R7; ADR-0022). Each row is self-contained: it copies the
  * step-up's assertion and the passkey's public key, so it verifies again after the passkey is
  * revoked, the step-up is swept or the approver's account is erased, and no foreign key leaves this
- * schema. Insert-only, as the audit log: `app_api` inserts its own decisions and reads them all,
- * since every evaluation needs the states, and with no update or delete policy under forced
+ * schema. Insert-only, as the audit log: `app_auth` inserts a decision in the transaction that
+ * spends its step-up, and only one matching a spent `knowledge_decision` step-up of the approver,
+ * since a row carries its own key and whoever may insert could otherwise sign one; `app_api` reads
+ * them all, since every evaluation needs the states. With no update or delete policy under forced
  * row-level security nobody updates or deletes. Kept for good, as the record of which rules are in
  * use.
  */
@@ -26,7 +29,7 @@ export const decision = knowledge.table(
   'decision',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    kind: text('kind').notNull(),
+    kind: text('kind', { enum: ['activate', 'reject'] }).notNull(),
     routeId: text('route_id').notNull(),
     versionNumber: integer('version_number').notNull(),
     contentHash: text('content_hash').notNull(),
@@ -52,10 +55,19 @@ export const decision = knowledge.table(
     check('decision_content_hash_format', sql`${table.contentHash} ~ '^[0-9a-f]{64}$'`),
     check('decision_action_nonce_length', sql`octet_length(${table.actionNonce}) = 16`),
     check('decision_server_nonce_length', sql`octet_length(${table.serverNonce}) = 32`),
-    pgPolicy('decision_insert_own', {
+    pgPolicy('decision_insert_spent_step_up', {
       for: 'insert',
-      to: 'app_api',
-      withCheck: sql`${table.approverAccountId} = nullif(current_setting('app.account_id', true), '')::uuid`,
+      to: 'app_auth',
+      withCheck: sql`EXISTS (SELECT FROM ${stepUp}
+        WHERE ${stepUp.id} = ${table.stepUpId}
+          AND ${stepUp.accountId} = ${table.approverAccountId}
+          AND ${stepUp.purpose} = 'knowledge_decision'
+          AND ${stepUp.consumedAt} IS NOT NULL
+          AND ${stepUp.credentialId} = ${table.credentialId}
+          AND ${stepUp.nonce} = ${table.serverNonce}
+          AND ${stepUp.authenticatorData} = ${table.authenticatorData}
+          AND ${stepUp.clientDataJson} = ${table.clientDataJson}
+          AND ${stepUp.signature} = ${table.signature})`,
     }),
     pgPolicy('decision_read', { for: 'select', to: 'app_api', using: sql`true` }),
   ],

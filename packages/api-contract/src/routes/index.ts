@@ -1,4 +1,4 @@
-import { shareScopeSchema } from '@arca/domain';
+import { routeIdSchema, shareScopeSchema } from '@arca/domain';
 import { z } from 'zod';
 import { caseRoutes } from './case.js';
 import { knowledgeRoutes } from './knowledge.js';
@@ -744,7 +744,7 @@ const caseEvent = z.strictObject({ caseId: z.uuid() });
 /** A knowledge decision (spec 0007, R7): the decision and the version it covers. */
 const decisionEvent = z.strictObject({
   decisionId: z.uuid(),
-  routeId: z.string().max(64),
+  routeId: routeIdSchema,
   number: z.int().min(1),
 });
 const casePersonEvent = z.strictObject({ personId: z.uuid() });

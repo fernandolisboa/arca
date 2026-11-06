@@ -276,9 +276,11 @@ describe('eraseAccount (spec 0004, R9)', () => {
     const kept = new Set(
       registry.entries.filter(({ strategy }) => strategy === 'retain').map(({ table }) => table),
     );
-    for (const [table, count] of Object.entries(await ownedCounts(testDatabase, a.accountId))) {
+    const counts = await ownedCounts(testDatabase, a.accountId);
+    for (const [table, count] of Object.entries(counts)) {
       if (!kept.has(table)) expect(count, table).toBe(0);
     }
+    expect(counts['knowledge.decision']).toBe(1);
   });
 
   it('keeps an erased account in the scan until its event is recorded, recording it once', async () => {

@@ -29441,7 +29441,7 @@
     "/knowledge/versions/activate": {
       "post": {
         "operationId": "activateVersion",
-        "summary": "Activates a route version after a knowledge_decision step-up; it counts once its stored assertion verifies. 403 not_approver, 403 step_up_required, 404 not_found, 409 version_rejected",
+        "summary": "Activates a route version after a knowledge_decision step-up; it counts once its stored assertion verifies. 403 not_approver, 403 step_up_required, 404 not_found, 409 already_rejected",
         "requestBody": {
           "required": true,
           "content": {
@@ -29521,7 +29521,7 @@
     "/knowledge/versions/reject": {
       "post": {
         "operationId": "rejectVersion",
-        "summary": "Rejects a route version after a knowledge_decision step-up, at once and for good. 403 not_approver, 403 step_up_required, 404 not_found, 409 version_rejected",
+        "summary": "Rejects a route version after a knowledge_decision step-up, at once and for good. 403 not_approver, 403 step_up_required, 404 not_found, 409 already_rejected",
         "requestBody": {
           "required": true,
           "content": {

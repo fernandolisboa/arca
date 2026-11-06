@@ -183,8 +183,9 @@ const decisionColumns = [
 async function columnPrivileges(role: string, table: string, columns: readonly string[]) {
   const [schemaName = ''] = table.split('.');
   return withClient(adminTarget(database), async (client) => {
-    const schema = await client.query<{ usage: boolean }>(
-      `SELECT pg_catalog.has_schema_privilege($1, $2, 'USAGE') AS usage`,
+    const schema = await client.query<{ usage: boolean; create: boolean }>(
+      `SELECT pg_catalog.has_schema_privilege($1, $2, 'USAGE') AS usage,
+              pg_catalog.has_schema_privilege($1, $2, 'CREATE') AS create`,
       [role, schemaName],
     );
     const granted: Record<string, string[]> = {};
@@ -207,7 +208,12 @@ async function columnPrivileges(role: string, table: string, columns: readonly s
       );
       if (row.rows[0]?.granted) tablePrivileges.push(privilege);
     }
-    return { usage: schema.rows[0]?.usage, columns: granted, table: tablePrivileges };
+    return {
+      usage: schema.rows[0]?.usage,
+      create: schema.rows[0]?.create,
+      columns: granted,
+      table: tablePrivileges,
+    };
   });
 }
 
@@ -249,6 +255,7 @@ describe('the audit schema access matrix (spec 0003, R7)', () => {
   it('lets app_audit insert every column but the ID and the time, and nothing else', async () => {
     expect(await auditPrivileges('app_audit')).toEqual({
       usage: true,
+      create: false,
       columns: {
         ...onEveryColumn(['INSERT']),
         id: [],
@@ -261,6 +268,7 @@ describe('the audit schema access matrix (spec 0003, R7)', () => {
   it('lets app_api only read', async () => {
     expect(await auditPrivileges('app_api')).toEqual({
       usage: true,
+      create: false,
       columns: onEveryColumn(['SELECT']),
       table: [],
     });
@@ -272,6 +280,7 @@ describe('the audit schema access matrix (spec 0003, R7)', () => {
   ])('gives %s no access to the audit schema', async (role) => {
     expect(await auditPrivileges(role)).toEqual({
       usage: false,
+      create: false,
       columns: onEveryColumn([]),
       table: [],
     });
@@ -286,26 +295,33 @@ describe('the knowledge schema access matrix (spec 0007, R7)', () => {
     });
   });
 
-  it('lets app_api read and insert every column but the ID and the time, and nothing else', async () => {
-    expect(await decisionPrivileges('app_api')).toEqual({
+  it('lets app_auth insert every column but the time, and nothing else', async () => {
+    expect(await decisionPrivileges('app_auth')).toEqual({
       usage: true,
-      columns: {
-        ...onEvery(decisionColumns, ['SELECT', 'INSERT']),
-        id: ['SELECT'],
-        decided_at: ['SELECT'],
-      },
+      create: false,
+      columns: { ...onEvery(decisionColumns, ['INSERT']), decided_at: [] },
       table: [],
     });
   });
 
-  it.each([...runtimeRoles.filter((role) => role !== 'app_api'), ...retiredRoles])(
-    'gives %s no access to the knowledge schema',
-    async (role) => {
-      expect(await decisionPrivileges(role)).toEqual({
-        usage: false,
-        columns: onEvery(decisionColumns, []),
-        table: [],
-      });
-    },
-  );
+  it('lets app_api only read', async () => {
+    expect(await decisionPrivileges('app_api')).toEqual({
+      usage: true,
+      create: false,
+      columns: onEvery(decisionColumns, ['SELECT']),
+      table: [],
+    });
+  });
+
+  it.each([
+    ...runtimeRoles.filter((role) => !['app_auth', 'app_api'].includes(role)),
+    ...retiredRoles,
+  ])('gives %s no access to the knowledge schema', async (role) => {
+    expect(await decisionPrivileges(role)).toEqual({
+      usage: false,
+      create: false,
+      columns: onEvery(decisionColumns, []),
+      table: [],
+    });
+  });
 });

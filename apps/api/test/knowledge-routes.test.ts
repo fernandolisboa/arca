@@ -74,7 +74,7 @@ describe('POST /v1/knowledge/versions (spec 0007, R7)', () => {
   it.each<[Extract<DecisionOutcome, { refused: string }>['refused'], number]>([
     ['step_up_required', 403],
     ['not_found', 404],
-    ['version_rejected', 409],
+    ['already_rejected', 409],
   ])('answers %s with %i', async (refused, status) => {
     const { decide } = setup({ outcome: { refused } });
     const response = await decide('activate');

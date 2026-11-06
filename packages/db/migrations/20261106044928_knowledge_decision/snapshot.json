@@ -2,7 +2,7 @@
   "type": "diff",
   "version": "9",
   "dialect": "postgres",
-  "id": "eebf0e88-10cd-45ca-aebf-5e94ebccfd74",
+  "id": "6ae28872-07dd-4a31-b85a-abd3e84a10ae",
   "prevIds": [
     "294ee2c4-8769-46ed-a1e9-a7e7d1c1f3ae"
   ],
@@ -83,14 +83,14 @@
         "decision"
       ],
       "writes": [
-        "s|pol|knowledge.decision.decision_insert_own",
-        "n|pol|knowledge.decision.decision_insert_own",
-        "e|pol|knowledge.decision.decision_insert_own"
+        "s|pol|knowledge.decision.decision_insert_spent_step_up",
+        "n|pol|knowledge.decision.decision_insert_spent_step_up",
+        "e|pol|knowledge.decision.decision_insert_spent_step_up"
       ],
       "reads": [
         "n|tbl|knowledge.decision",
         "n|sch|knowledge",
-        "n|role|app_api",
+        "n|role|app_auth",
         "e|rls|knowledge.decision"
       ]
     },
@@ -463,14 +463,14 @@
       "row": {
         "schema": "knowledge",
         "table": "decision",
-        "name": "decision_insert_own",
+        "name": "decision_insert_spent_step_up",
         "as": "PERMISSIVE",
         "for": "INSERT",
         "roles": [
-          "app_api"
+          "app_auth"
         ],
         "using": null,
-        "withCheck": "\"knowledge\".\"decision\".\"approver_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": "EXISTS (SELECT FROM \"auth\".\"step_up\"\n        WHERE \"auth\".\"step_up\".\"id\" = \"knowledge\".\"decision\".\"step_up_id\"\n          AND \"auth\".\"step_up\".\"account_id\" = \"knowledge\".\"decision\".\"approver_account_id\"\n          AND \"auth\".\"step_up\".\"purpose\" = 'knowledge_decision'\n          AND \"auth\".\"step_up\".\"consumed_at\" IS NOT NULL\n          AND \"auth\".\"step_up\".\"credential_id\" = \"knowledge\".\"decision\".\"credential_id\"\n          AND \"auth\".\"step_up\".\"nonce\" = \"knowledge\".\"decision\".\"server_nonce\"\n          AND \"auth\".\"step_up\".\"authenticator_data\" = \"knowledge\".\"decision\".\"authenticator_data\"\n          AND \"auth\".\"step_up\".\"client_data_json\" = \"knowledge\".\"decision\".\"client_data_json\"\n          AND \"auth\".\"step_up\".\"signature\" = \"knowledge\".\"decision\".\"signature\")",
         "entityType": "policies"
       }
     },

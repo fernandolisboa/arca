@@ -205,7 +205,7 @@ describe('knowledge decisions (spec 0007, R7)', () => {
     expect(await service.states()).toEqual(new Map([[identityKey, 'rejected']]));
     const nonce = await approved(approver, decided('activate'));
     expect(await service.decide(approver.signedIn, 'activate', request, nonce)).toEqual({
-      refused: 'version_rejected',
+      refused: 'already_rejected',
     });
     expect((await decisionEvents(approver.signedIn.accountId)).map(({ code }) => code)).toEqual([
       'version_activated',
@@ -253,21 +253,56 @@ describe('knowledge decisions (spec 0007, R7)', () => {
     expect(await decisions([]).states()).toEqual(new Map());
   });
 
-  it("lets app_api insert only the request account's decisions, and never change one", async () => {
+  it('ignores a real activation copied onto another number or hash', async () => {
+    await decisions().decide(
+      approver.signedIn,
+      'activate',
+      request,
+      await approved(approver, decided('activate')),
+    );
+    await testDatabase.asAdmin(async (client) => {
+      for (const [number, hash] of [
+        [2, version.hash],
+        [1, 'b'.repeat(64)],
+      ] as const) {
+        await client.query(
+          `INSERT INTO knowledge.decision (kind, route_id, version_number, content_hash,
+             approver_account_id, credential_id, public_key, action_nonce, server_nonce,
+             authenticator_data, client_data_json, signature, step_up_id)
+           SELECT kind, route_id, $1, $2, approver_account_id, credential_id, public_key,
+             action_nonce, server_nonce, authenticator_data, client_data_json, signature,
+             gen_random_uuid()
+             FROM knowledge.decision WHERE version_number = 1 AND content_hash = $3`,
+          [number, hash, version.hash],
+        );
+      }
+    });
+    expect(await decisions().states()).toEqual(new Map([[identityKey, 'active']]));
+    expect(errors).toEqual(['KnowledgeActivationIgnored', 'KnowledgeActivationIgnored']);
+  });
+
+  it('lets only app_auth insert, only a copy of a spent step-up, and nobody change a decision', async () => {
     await forged('reject');
-    const other = randomUUID();
-    const attempt = (statement: ReturnType<typeof sql>) =>
-      withIdentity(testDatabase.apiDb, { accountId: other }, (tx) => tx.execute(statement));
+    const row = sql`
+      INSERT INTO knowledge.decision (id, kind, route_id, version_number, content_hash,
+        approver_account_id, credential_id, public_key, action_nonce, server_nonce,
+        authenticator_data, client_data_json, signature, step_up_id)
+      VALUES (${randomUUID()}, 'activate', 'qm-sample', 1, ${version.hash},
+        ${approver.signedIn.accountId}, ${approver.passkey.credentialId}, '\\x00',
+        ${randomBytes(16)}, ${randomBytes(32)}, '\\x00', '\\x00', '\\x00', ${randomUUID()})`;
     await expect(
-      attempt(sql`
-        INSERT INTO knowledge.decision (kind, route_id, version_number, content_hash,
-          approver_account_id, credential_id, public_key, action_nonce, server_nonce,
-          authenticator_data, client_data_json, signature, step_up_id)
-        VALUES ('activate', 'qm-sample', 1, ${version.hash}, ${approver.signedIn.accountId}, 'c',
-          '\\x00', ${randomBytes(16)}, ${randomBytes(32)}, '\\x00', '\\x00', '\\x00', ${randomUUID()})`),
+      withIdentity(testDatabase.apiDb, { accountId: approver.signedIn.accountId }, (tx) =>
+        tx.execute(row),
+      ),
     ).rejects.toThrow();
-    await expect(attempt(sql`UPDATE knowledge.decision SET kind = 'activate'`)).rejects.toThrow();
-    await expect(attempt(sql`DELETE FROM knowledge.decision`)).rejects.toThrow();
+    await expect(testDatabase.authDb.execute(row)).rejects.toThrow();
+    for (const change of [
+      sql`UPDATE knowledge.decision SET kind = 'activate'`,
+      sql`DELETE FROM knowledge.decision`,
+    ]) {
+      await expect(testDatabase.apiDb.execute(change)).rejects.toThrow();
+      await expect(testDatabase.authDb.execute(change)).rejects.toThrow();
+    }
     expect(await decisions().states()).toEqual(new Map([[identityKey, 'rejected']]));
   });
 });

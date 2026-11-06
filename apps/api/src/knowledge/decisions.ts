@@ -1,6 +1,6 @@
+import { randomUUID } from 'node:crypto';
 import { decideVersionAction, type DecideVersionRequest } from '@arca/api-contract/routes';
-import { withIdentity, type Database } from '@arca/db';
-import { sql } from 'drizzle-orm';
+import type { Database } from '@arca/db';
 import { decision } from '@arca/db/knowledge-schema';
 import {
   type CheckedDecision,
@@ -11,6 +11,7 @@ import {
   identityKey,
 } from '@arca/domain';
 import type { Logger } from '@arca/telemetry';
+import { sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import type { SignedIn } from '../auth/service.js';
 import type { StepUpSpender } from '../auth/step-up.js';
@@ -19,7 +20,7 @@ import { reverifyStepUp } from '../auth/step-up-reverify.js';
 
 export type DecisionOutcome =
   | { readonly decided: string }
-  | { readonly refused: 'not_approver' | 'not_found' | 'version_rejected' | 'step_up_required' };
+  | { readonly refused: 'not_approver' | 'not_found' | 'already_rejected' | 'step_up_required' };
 
 export interface KnowledgeDecisions {
   readonly isApprover: (accountId: string) => boolean;
@@ -38,8 +39,9 @@ export interface KnowledgeDecisions {
 }
 
 export interface KnowledgeDecisionSettings {
-  /** A database on the app_api pool. */
+  /** A database on the app_api pool, which reads the decisions. */
   readonly db: Database;
+  /** Spends the step-up and stores the decision in one app_auth transaction. */
   readonly stepUp: StepUpSpender;
   readonly audit: AuditLog;
   readonly catalog: Pick<RouteCatalog, 'identities'>;
@@ -60,7 +62,7 @@ function decidedAction(
 ): CanonicalAction {
   return {
     ...decideVersionAction(
-      actions[row.kind as DecisionKind],
+      actions[row.kind],
       { routeId: row.routeId, number: row.versionNumber },
       row.contentHash,
     ),
@@ -79,8 +81,13 @@ export function createKnowledgeDecisions({
 }: KnowledgeDecisionSettings): KnowledgeDecisions {
   const rpId = new URL(origin).hostname;
   const listed = new Set(approvers);
-  // Decisions never change, and the list is fixed for the process, so neither does whether one counts.
-  const counted = new Map<string, Promise<boolean>>();
+  /**
+   * Decisions never change, and the list is fixed for the process, so each decision is checked
+   * once. The whole checked decision is kept, built from the row that was verified, so a row
+   * changed later behind the policies cannot borrow an earlier verification.
+   */
+  const checkedById = new Map<string, Promise<CheckedDecision>>();
+
   const assertionVerifies = (row: DecisionRow) =>
     reverifyStepUp(
       {
@@ -100,24 +107,25 @@ export function createKnowledgeDecisions({
       },
     );
 
-  const counts = async (row: DecisionRow) => {
-    const valid = listed.has(row.approverAccountId) && (await assertionVerifies(row));
-    if (!valid && row.kind === 'activate')
+  const check = async (row: DecisionRow): Promise<CheckedDecision> => {
+    const verified = listed.has(row.approverAccountId) && (await assertionVerifies(row));
+    if (!verified && row.kind === 'activate') {
       logger.error({ errorName: 'KnowledgeActivationIgnored' });
-    return valid;
-  };
-
-  const checked = async (row: DecisionRow): Promise<CheckedDecision> => {
-    let check = counted.get(row.id);
-    if (check === undefined) {
-      check = counts(row);
-      counted.set(row.id, check);
     }
     return {
-      kind: row.kind as DecisionKind,
+      kind: row.kind,
       identity: { routeId: row.routeId, number: row.versionNumber, hash: row.contentHash },
-      verified: await check,
+      verified,
     };
+  };
+
+  const checked = (row: DecisionRow) => {
+    let known = checkedById.get(row.id);
+    if (known === undefined) {
+      known = check(row);
+      checkedById.set(row.id, known);
+    }
+    return known;
   };
 
   const states = async () => {
@@ -136,38 +144,39 @@ export function createKnowledgeDecisions({
         .find(({ number }) => number === version.number);
       if (identity === undefined) return { refused: 'not_found' };
       if ((await states()).get(identityKey(identity)) === 'rejected') {
-        return { refused: 'version_rejected' };
+        return { refused: 'already_rejected' };
       }
       const action = {
         ...decideVersionAction(actions[kind], version, identity.hash),
         nonce: actionNonce,
       };
-      // On app_auth, before anything is held on app_api.
-      const spent = await stepUp.spend(signedIn, 'knowledge_decision', action);
-      if (spent === undefined) return { refused: 'step_up_required' };
-      // Spelled out, since app_api may not insert the ID or the time, not even as DEFAULT.
-      const [stored] = (
-        await withIdentity(db, { accountId }, (tx) =>
-          tx.execute<{ id: string }>(sql`
-            INSERT INTO knowledge.decision (kind, route_id, version_number, content_hash,
-              approver_account_id, credential_id, public_key, action_nonce, server_nonce,
-              authenticator_data, client_data_json, signature, step_up_id)
-            VALUES (${kind}, ${identity.routeId}, ${identity.number}, ${identity.hash},
-              ${accountId}, ${spent.credentialId}, ${Buffer.from(spent.publicKey)},
-              ${Buffer.from(actionNonce)}, ${Buffer.from(spent.nonce)},
-              ${Buffer.from(spent.authenticatorData)}, ${Buffer.from(spent.clientDataJson)},
-              ${Buffer.from(spent.signature)}, ${spent.id})
-            RETURNING id`),
-        )
-      ).rows;
-      if (stored === undefined) throw new Error('the decision was not stored');
-      await audit.record({
-        code: auditCodes[kind],
-        subjectAccountId: accountId,
-        actorAccountId: accountId,
-        details: { decisionId: stored.id, routeId: identity.routeId, number: identity.number },
-      });
-      return { decided: stored.id };
+      const decisionId = randomUUID();
+      // The decision is stored on app_auth, in the transaction that spends its step-up, so only a
+      // role that can already write credentials can store one (ADR-0022); app_api only reads.
+      const stored = await stepUp.spend(
+        signedIn,
+        'knowledge_decision',
+        action,
+        async (tx, spent) => {
+          // Recorded first: a decision no event records must never be stored.
+          await audit.record({
+            code: auditCodes[kind],
+            subjectAccountId: accountId,
+            actorAccountId: accountId,
+            details: { decisionId, routeId: identity.routeId, number: identity.number },
+          });
+          await tx.execute(sql`
+          INSERT INTO knowledge.decision (id, kind, route_id, version_number, content_hash,
+            approver_account_id, credential_id, public_key, action_nonce, server_nonce,
+            authenticator_data, client_data_json, signature, step_up_id)
+          VALUES (${decisionId}, ${kind}, ${identity.routeId}, ${identity.number},
+            ${identity.hash}, ${accountId}, ${spent.credentialId}, ${Buffer.from(spent.publicKey)},
+            ${Buffer.from(actionNonce)}, ${Buffer.from(spent.nonce)},
+            ${Buffer.from(spent.authenticatorData)}, ${Buffer.from(spent.clientDataJson)},
+            ${Buffer.from(spent.signature)}, ${spent.id})`);
+        },
+      );
+      return stored ? { decided: decisionId } : { refused: 'step_up_required' };
     },
 
     states,

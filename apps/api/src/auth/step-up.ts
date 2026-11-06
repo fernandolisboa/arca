@@ -69,15 +69,19 @@ export interface StepUpService {
 /** For a consumer that keeps its own copy of the assertion it spends (spec 0007, R7). */
 export interface StepUpSpender {
   /**
-   * `consume`, returning the spent assertion and its passkey's public key, read in the same
-   * transaction; undefined when nothing was spent.
+   * `consume`, handing `record` the spent assertion and its passkey's public key inside the
+   * transaction that spends it, so the step-up is spent if and only if `record` commits. False,
+   * with nothing changed, when there is nothing to spend.
    */
   readonly spend: (
     signedIn: SignedIn,
     purpose: ActionPurpose,
     action: CanonicalAction,
-  ) => Promise<SpentStepUp | undefined>;
+    record: (tx: Transaction, spent: SpentStepUp) => Promise<void>,
+  ) => Promise<boolean>;
 }
+
+class NothingSpent extends Error {}
 
 /** A spent step-up: its ID, its stored assertion and the public key it verifies against. */
 export interface SpentStepUp extends StoredAssertion {
@@ -265,27 +269,34 @@ export function createStepUp({
       return spent.length > 0;
     },
 
-    spend: (signedIn, purpose, action) =>
-      db.transaction(async (tx) => {
-        const [spent] = await tx
-          .update(stepUp)
-          .set({ consumedAt: sql`now()` })
-          .where(spendable(signedIn, purpose, action))
-          .returning({
-            id: stepUp.id,
-            credentialId: stepUp.credentialId,
-            nonce: stepUp.nonce,
-            authenticatorData: stepUp.authenticatorData,
-            clientDataJson: stepUp.clientDataJson,
-            signature: stepUp.signature,
-          });
-        if (spent === undefined) return undefined;
-        // Revoking the passkey deletes its unspent step-ups in the revoking transaction, so a
-        // step-up this update found still has its passkey.
-        const credential = await credentials.activeIn(tx, signedIn.accountId, spent.credentialId);
-        if (credential === null) return undefined;
-        return { ...spent, publicKey: credential.publicKey };
-      }),
+    spend: async (signedIn, purpose, action, record) => {
+      try {
+        await db.transaction(async (tx) => {
+          const [spent] = await tx
+            .update(stepUp)
+            .set({ consumedAt: sql`now()` })
+            .where(spendable(signedIn, purpose, action))
+            .returning({
+              id: stepUp.id,
+              credentialId: stepUp.credentialId,
+              nonce: stepUp.nonce,
+              authenticatorData: stepUp.authenticatorData,
+              clientDataJson: stepUp.clientDataJson,
+              signature: stepUp.signature,
+            });
+          if (spent === undefined) throw new NothingSpent();
+          // Revoking the passkey deletes its unspent step-ups in the revoking transaction, so a
+          // step-up this update found still has its passkey; if not, nothing is spent.
+          const credential = await credentials.activeIn(tx, signedIn.accountId, spent.credentialId);
+          if (credential === null) throw new NothingSpent();
+          await record(tx, { ...spent, publicKey: credential.publicKey });
+        });
+        return true;
+      } catch (error) {
+        if (error instanceof NothingSpent) return false;
+        throw error;
+      }
+    },
 
     vaultUnlocked: async ({ accountId, sessionId }) => {
       const [open] = await db

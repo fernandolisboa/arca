@@ -93,15 +93,15 @@ const accountsOpen = accountsOpenWith(emailRoute);
 let knowledgeInstance: KnowledgeDecisions | undefined;
 
 /**
- * One service for the process, since it caches which decisions verify; it spends step-ups on the
- * app_auth pool and stores decisions on the app_api pool.
+ * One service for the process, since it caches which decisions verify; it spends step-ups and
+ * stores decisions on the app_auth pool and reads them on the app_api pool.
  */
 function knowledgeDecisions(): KnowledgeDecisions {
   knowledgeInstance ??= createKnowledgeDecisions({
     db: connected().db,
     stepUp: {
-      spend: async (signedIn, purpose, action) =>
-        (await authParts()).stepUp.spend(signedIn, purpose, action),
+      spend: async (signedIn, purpose, action, record) =>
+        (await authParts()).stepUp.spend(signedIn, purpose, action, record),
     },
     audit: { record: async (entry) => (await authParts()).audit.record(entry) },
     catalog: routeCatalog,

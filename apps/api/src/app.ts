@@ -98,6 +98,7 @@ import { securityTxt } from './security-txt.js';
 import type { NotificationChannels } from './notification/channels.js';
 import { isP256PublicKey } from './notification/push.js';
 import type { CaseFiles, CaseWritten } from './case/case-files.js';
+import type { DecisionKind } from '@arca/domain';
 import type { DecisionOutcome, KnowledgeDecisions } from './knowledge/decisions.js';
 import type { DocumentRequests } from './vault/documents.js';
 import {
@@ -255,7 +256,7 @@ export type ErrorCode =
   | 'case_invalid'
   | 'too_many_push_channels'
   | 'not_approver'
-  | 'version_rejected'
+  | 'already_rejected'
   | 'accounts_closed'
   | 'too_large'
   | 'request_failed'
@@ -491,15 +492,15 @@ export function createApp({
   /** Counted per client address, for the routes that come before any session. */
   const overAddressLimit = (c: Context<AppEnv>, limits: AuthLimits, rule: RateLimitRule) =>
     overLimit(c, limits, rule, limits.clientAddress(c.req.raw.headers));
-  /**
-   * `requireStepUp` (spec 0003, R5): spends this session's step-up for the purpose and for the
-   * action recomputed from this request, with the nonce the client sent in its header.
-   */
   /** The action nonce the client sent in its header, for the step-up it spends. */
   const actionNonce = (c: Context<AppEnv>) => {
     const nonce = StepUpAction.shape.nonce.safeParse(c.req.header(stepUpNonceHeader));
     return nonce.success ? new Uint8Array(Buffer.from(nonce.data, 'base64url')) : undefined;
   };
+  /**
+   * `requireStepUp` (spec 0003, R5): spends this session's step-up for the purpose and for the
+   * action recomputed from this request, with the nonce the client sent in its header.
+   */
   const stepUpGranted = async (
     c: Context<AppEnv>,
     current: SignedIn,
@@ -1330,15 +1331,17 @@ export function createApp({
     not_approver: 403,
     step_up_required: 403,
     not_found: 404,
-    version_rejected: 409,
+    already_rejected: 409,
   } as const;
   const decided = (c: Context<AppEnv>, outcome: DecisionOutcome) =>
     'decided' in outcome
       ? c.json({ decisionId: outcome.decided }, 200)
       : fail(c, outcome.refused, refusedDecision[outcome.refused]);
-  const decideVersion = async (c: Context<AppEnv>, kind: 'activate' | 'reject') => {
+  const decideVersion = async (c: Context<AppEnv>, kind: DecisionKind) => {
     const current = await signedIn(c);
     if (current === null || knowledge === undefined) return unauthorized(c);
+    // Before the body or the nonce is read, so anyone else learns only that they may not decide;
+    // the service checks again, as the authority.
     if (!knowledge.isApprover(current.accountId)) return fail(c, 'not_approver', 403);
     const version = DecideVersionRequest.parse(await c.req.json());
     const nonce = actionNonce(c);

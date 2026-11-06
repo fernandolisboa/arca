@@ -7,7 +7,7 @@ import type { RouteDefinition } from './index.js';
  * (403 not_approver), after a knowledge_decision step-up bound to the action, the route ID and the
  * version number as targets, and the version's content hash as the field contentHash (403
  * step_up_required). The API takes the hash from the catalog it bundles. 404 not_found for a
- * version the catalog does not hold, 409 version_rejected for one already rejected.
+ * version the catalog does not hold, 409 already_rejected for one already rejected.
  */
 
 export const DecideVersionRequest = z.strictObject({
@@ -24,7 +24,7 @@ export const activateVersion = {
   path: '/knowledge/versions/activate',
   operationId: 'activateVersion',
   summary:
-    'Activates a route version after a knowledge_decision step-up; it counts once its stored assertion verifies. 403 not_approver, 403 step_up_required, 404 not_found, 409 version_rejected',
+    'Activates a route version after a knowledge_decision step-up; it counts once its stored assertion verifies. 403 not_approver, 403 step_up_required, 404 not_found, 409 already_rejected',
   body: DecideVersionRequest,
   response: { description: 'Activated', schema: DecideVersionResponse },
 } as const satisfies RouteDefinition<typeof DecideVersionResponse>;
@@ -34,7 +34,7 @@ export const rejectVersion = {
   path: '/knowledge/versions/reject',
   operationId: 'rejectVersion',
   summary:
-    'Rejects a route version after a knowledge_decision step-up, at once and for good. 403 not_approver, 403 step_up_required, 404 not_found, 409 version_rejected',
+    'Rejects a route version after a knowledge_decision step-up, at once and for good. 403 not_approver, 403 step_up_required, 404 not_found, 409 already_rejected',
   body: DecideVersionRequest,
   response: { description: 'Rejected', schema: DecideVersionResponse },
 } as const satisfies RouteDefinition<typeof DecideVersionResponse>;
