@@ -4,7 +4,7 @@ import { Button, Icon, StatusChip, menuItemClass } from '@arca/ui';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Decision } from './decision.js';
 import { ExpressionTree } from './expression-tree.js';
-import { RuleSummary } from './rule-summary.js';
+import { RuleSummaryButton, RuleSummaryCard, useRuleSummary } from './rule-summary.js';
 import { stateTone } from './state-tone.js';
 import { reviewSteps, sectionCounts, type Step, type StepKey } from './steps.js';
 import { type KnowledgeWords, useKnowledgeWords } from './words.js';
@@ -384,6 +384,7 @@ function DecisionStep({
 export function VersionPanel({ view }: { readonly view: VersionView }) {
   const words = useKnowledgeWords();
   const { t } = words;
+  const summary = useRuleSummary(view);
   const steps = reviewSteps(view);
   const [currentKey, setCurrentKey] = useState<StepKey>('changes');
   const [seen, setSeen] = useState<ReadonlySet<StepKey>>(() => new Set(['changes']));
@@ -427,9 +428,12 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
           />
           {view.status === 'closed' && <StatusChip tone="unknown" label={t('knowledge.closed')} />}
         </div>
-        <h3 className="font-display text-title">
-          {t('knowledge.versionTitle', { title: view.title, number: view.number })}
-        </h3>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="font-display text-title">
+            {t('knowledge.versionTitle', { title: view.title, number: view.number })}
+          </h3>
+          <RuleSummaryButton state={summary} />
+        </div>
         <p className="text-small text-muted">
           {[
             t('knowledge.versionMeta', {
@@ -438,11 +442,22 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
             }),
             ...(view.corrects === null ? [] : [t('knowledge.corrects', { number: view.corrects })]),
             t('knowledge.currency', { currency: view.currency }),
-            ...(view.tags.length > 0 ? [t('knowledge.tags', { tags: words.list(view.tags) })] : []),
           ].join(' · ')}
         </p>
+        {view.tags.length > 0 && (
+          <ul aria-label={t('knowledge.tags')} className="flex flex-wrap gap-2">
+            {view.tags.map((tag) => (
+              <li
+                key={tag}
+                className="rounded-chip border border-line px-2 py-0.5 text-caption text-muted"
+              >
+                {tag}
+              </li>
+            ))}
+          </ul>
+        )}
       </header>
-      <RuleSummary view={view} />
+      <RuleSummaryCard state={summary} />
       <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-10">
         <nav aria-label={t('knowledge.wizard.steps')}>
           <ol className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 lg:sticky lg:top-4 lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:px-0 lg:pb-0">

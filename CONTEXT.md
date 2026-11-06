@@ -20,7 +20,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Rule | Regra | The requirements, assessments, dependents, costs and durations of one route version |
 | Ancestor | Ascendente | A parent, grandparent or earlier forebear of the principal, whether or not in the case; read in descent rules |
 | Lineage | Linha de ascendência | The chain of people from an ancestor down to the principal |
-| Rule summary | Resumo feito pela IA | A model's plain-text reading of one route version for the approver, with points to check; an aid to review that never decides, is never stored and never reaches members |
+| Rule summary | Resumo feito pela IA | A model's plain-text reading of one route version for the approver, with points to check; an aid to review that never decides and never reaches members; stored once per content, prompt and model, and shared by approvers |
 | Rule case | Caso de teste da regra | One table-driven test entry for a route version, in its cases file; not a family's case |
 | Official-domain list | Lista de sites oficiais | A versioned list of hosts that count as official for a country or international body |
 | Evaluation | Avaliação | The result of applying a route version to a person or unit |

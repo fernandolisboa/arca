@@ -78,6 +78,7 @@ export type {
   ReportRuleRequest,
   RuleReports,
   RuleSummary,
+  StoredRuleSummary,
   VersionView,
   DeviceDescription,
   DevicePasskey,

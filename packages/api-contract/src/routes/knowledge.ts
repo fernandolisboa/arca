@@ -220,10 +220,23 @@ export const summarizeVersion = {
   path: '/knowledge/versions/summary',
   operationId: 'summarizeVersion',
   summary:
-    "Sends one version's content (public rule data, no case data) to a model and answers a short summary with points to check, for an approver; the same content answers the same summary while the server runs. 30 per account per day and 5 per minute (429 rate_limited); 403 not_approver; 404 not_found; 502 summary_unparsable or summary_failed; 503 summary_unavailable when no model can be reached; 504 summary_timeout",
+    "Sends one version's content (public rule data, no case data) to a model and answers a short summary with points to check, for an approver; the summary is stored, so the same content, prompt and model answer it again without a model call. 30 per account per day and 5 per minute (429 rate_limited); 403 not_approver; 404 not_found; 502 summary_unparsable or summary_failed; 503 summary_unavailable when no model can be reached; 504 summary_timeout",
   body: DecideVersionRequest,
   response: { description: 'The summary', schema: RuleSummary },
 } as const satisfies RouteDefinition<typeof RuleSummary>;
+
+export const StoredRuleSummary = z.strictObject({ summary: RuleSummary.nullable() });
+export type StoredRuleSummary = z.infer<typeof StoredRuleSummary>;
+
+export const getVersionSummary = {
+  method: 'get',
+  path: '/knowledge/versions/summary',
+  operationId: 'getVersionSummary',
+  summary:
+    "The summary already stored for one version under today's prompt and model, or null when none was asked for yet; never calls a model. 403 not_approver; 404 not_found",
+  query: VersionViewQuery,
+  response: { description: 'The stored summary, or null', schema: StoredRuleSummary },
+} as const satisfies RouteDefinition<typeof StoredRuleSummary>;
 
 const ruleReference = {
   routeId: routeIdSchema,
@@ -272,6 +285,7 @@ export const knowledgeRoutes = {
   rejectVersion,
   listKnowledgeVersions,
   getVersionView,
+  getVersionSummary,
   summarizeVersion,
   listRuleReports,
   closeRuleReports,

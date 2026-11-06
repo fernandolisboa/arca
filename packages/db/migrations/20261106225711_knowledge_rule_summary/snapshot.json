@@ -1,0 +1,256 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "96ebe14b-1f4b-4dd9-878c-194ce7ce9a80",
+  "prevIds": [
+    "6fbed1e3-da4b-4104-a2a9-d8992deb49b9"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "rule_summary"
+      ],
+      "writes": [
+        "s|tbl|knowledge.rule_summary",
+        "n|tbl|knowledge.rule_summary",
+        "e|tbl|knowledge.rule_summary",
+        "n|rel|knowledge.rule_summary",
+        "n|type|knowledge.rule_summary",
+        "n|rel|knowledge.rule_summary_pkey"
+      ],
+      "reads": [
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "rule_summary"
+      ],
+      "writes": [
+        "s|pol|knowledge.rule_summary.rule_summary_read",
+        "n|pol|knowledge.rule_summary.rule_summary_read",
+        "e|pol|knowledge.rule_summary.rule_summary_read"
+      ],
+      "reads": [
+        "n|tbl|knowledge.rule_summary",
+        "n|sch|knowledge",
+        "n|role|app_api",
+        "e|rls|knowledge.rule_summary"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "rule_summary"
+      ],
+      "writes": [
+        "s|pol|knowledge.rule_summary.rule_summary_insert",
+        "n|pol|knowledge.rule_summary.rule_summary_insert",
+        "e|pol|knowledge.rule_summary.rule_summary_insert"
+      ],
+      "reads": [
+        "n|tbl|knowledge.rule_summary",
+        "n|sch|knowledge",
+        "n|role|app_api",
+        "e|rls|knowledge.rule_summary"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "name": "rule_summary",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "rule_summary",
+        "name": "content_hash",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "rule_summary",
+        "name": "prompt_version",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "rule_summary",
+        "name": "model",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "rule_summary",
+        "name": "overview",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "rule_summary",
+        "name": "watch_points",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "rule_summary",
+        "name": "rule_summary_pkey",
+        "columns": [
+          "content_hash",
+          "prompt_version",
+          "model"
+        ],
+        "nameExplicit": true,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "rule_summary",
+        "name": "rule_summary_content_hash_format",
+        "value": "\"content_hash\" ~ '^[0-9a-f]{64}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "rule_summary",
+        "name": "rule_summary_prompt_version_format",
+        "value": "\"prompt_version\" ~ '^[a-z0-9][a-z0-9.-]{0,63}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "rule_summary",
+        "name": "rule_summary_model_format",
+        "value": "\"model\" ~ '^[a-z0-9][a-z0-9.-]{0,63}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "rule_summary",
+        "name": "rule_summary_overview_length",
+        "value": "char_length(\"overview\") BETWEEN 1 AND 1500",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "rule_summary",
+        "name": "rule_summary_watch_points_count",
+        "value": "coalesce(array_length(\"watch_points\", 1), 0) <= 8",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "rule_summary",
+        "name": "rule_summary_read",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "rule_summary",
+        "name": "rule_summary_insert",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "true",
+        "entityType": "policies"
+      }
+    }
+  ]
+}

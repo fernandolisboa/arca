@@ -5,6 +5,7 @@ import {
   check,
   integer,
   pgPolicy,
+  primaryKey,
   pgSchema,
   text,
   timestamp,
@@ -70,5 +71,42 @@ export const decision = knowledge.table(
           AND ${stepUp.signature} = ${table.signature})`,
     }),
     pgPolicy('decision_read', { for: 'select', to: 'app_api', using: sql`true` }),
+  ],
+);
+
+/**
+ * Model summaries of route versions for the approver (ADR-0025), kept so a summary is asked for
+ * once per version, prompt and model, and shows again on the next visit. A summary reads only the
+ * version's public content, so a row holds no personal data and no account: every approver reads
+ * the same one. `app_api` reads and inserts them, behind the route's approver check; nobody updates
+ * or deletes, so a later prompt or model writes a new row instead of changing an old one.
+ */
+export const ruleSummary = knowledge.table(
+  'rule_summary',
+  {
+    contentHash: text('content_hash').notNull(),
+    promptVersion: text('prompt_version').notNull(),
+    model: text('model').notNull(),
+    overview: text('overview').notNull(),
+    watchPoints: text('watch_points').array().notNull(),
+  },
+  (table) => [
+    primaryKey({
+      name: 'rule_summary_pkey',
+      columns: [table.contentHash, table.promptVersion, table.model],
+    }),
+    check('rule_summary_content_hash_format', sql`${table.contentHash} ~ '^[0-9a-f]{64}$'`),
+    check(
+      'rule_summary_prompt_version_format',
+      sql`${table.promptVersion} ~ '^[a-z0-9][a-z0-9.-]{0,63}$'`,
+    ),
+    check('rule_summary_model_format', sql`${table.model} ~ '^[a-z0-9][a-z0-9.-]{0,63}$'`),
+    check('rule_summary_overview_length', sql`char_length(${table.overview}) BETWEEN 1 AND 1500`),
+    check(
+      'rule_summary_watch_points_count',
+      sql`coalesce(array_length(${table.watchPoints}, 1), 0) <= 8`,
+    ),
+    pgPolicy('rule_summary_read', { for: 'select', to: 'app_api', using: sql`true` }),
+    pgPolicy('rule_summary_insert', { for: 'insert', to: 'app_api', withCheck: sql`true` }),
   ],
 );

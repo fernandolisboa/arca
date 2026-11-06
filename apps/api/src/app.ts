@@ -1454,6 +1454,19 @@ export function createApp({
     summary_unavailable: 503,
     summary_timeout: 504,
   } as const;
+  v1.openapi(openApiRoutes.getVersionSummary, async (c) => {
+    const reads = await approverReads(c);
+    if ('refused' in reads) return reads.refused;
+    const { routeId, number } = VersionViewQuery.parse(c.req.query());
+    if (ruleSummaries === undefined) {
+      const view = await reads.versions.view(routeId, number);
+      return view === undefined ? fail(c, 'not_found', 404) : c.json({ summary: null }, 200);
+    }
+    const outcome = await ruleSummaries.stored(routeId, number);
+    return outcome.ok
+      ? c.json({ summary: outcome.value }, 200)
+      : fail(c, outcome.reason, summaryFailures[outcome.reason]);
+  });
   v1.openapi(openApiRoutes.summarizeVersion, async (c) => {
     const reads = await approverReads(c);
     if ('refused' in reads) return reads.refused;
@@ -1461,6 +1474,9 @@ export function createApp({
     if (ruleSummaries === undefined || authLimits === undefined) {
       return fail(c, 'summary_unavailable', 503);
     }
+    // A stored summary costs no model call, so it counts against no limit.
+    const stored = await ruleSummaries.stored(routeId, number);
+    if (stored.ok && stored.value !== null) return c.json(stored.value, 200);
     for (const rule of [ruleSummaryLimits.minute, ruleSummaryLimits.day]) {
       const limited = await overLimit(c, authLimits, rule, reads.current.accountId);
       if (limited !== undefined) return limited;
