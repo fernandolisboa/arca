@@ -64,6 +64,16 @@ export const casePlaybackQuery = queryOptions({
   refetchOnWindowFocus: false,
 });
 
+/** Every route for each member of the case, with the questions that change an answer (R6). */
+export const caseEvaluationsQuery = queryOptions({
+  queryKey: ['case', 'evaluations'],
+  queryFn: () => api.call(routes.getCaseEvaluations),
+  networkMode: 'always',
+  retry: false,
+  // Each read counts against a per-session limit, so a tab coming back into view does not read.
+  refetchOnWindowFocus: false,
+});
+
 /** The account's passkeys, each with its sessions (spec 0003, R4). */
 export const devicesQuery = queryOptions({
   queryKey: ['devices'],

@@ -1681,6 +1681,7 @@ export const webPathSegments = [
   'questions',
   'recover',
   'recovery-kit',
+  'results',
   'settings',
   'sign-in',
   'vault',

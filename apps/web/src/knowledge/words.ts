@@ -19,6 +19,7 @@ export function useKnowledgeWords() {
     i18n.exists(key) ? t(key as 'knowledge.title') : fallback;
   return {
     t,
+    language,
     list,
     country,
     date: (value: string) => formatDateValue(value, language),

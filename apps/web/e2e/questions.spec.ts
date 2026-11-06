@@ -144,3 +144,27 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
   await expect(group(step(page, 'Dados básicos'), 'Quando Criança nasceu?')).toBeVisible();
   expect(problems).toEqual([]);
 });
+
+test('lists every route for the family by its status, with nothing hidden behind it', async ({
+  page,
+}) => {
+  const problems = watchProblems(page);
+  await signedIn(page);
+  await family(page);
+  await page.getByRole('link', { name: 'Ver as rotas para a família' }).click();
+  await expect(page.getByRole('heading', { level: 2, name: 'Rotas para a família' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { level: 3, name: 'Perguntas que mudam o resultado' }),
+  ).toBeVisible();
+  // Each route shows a status for each member, Ana and her child.
+  const statuses = page.getByText(/como requerente principal/);
+  await expect(statuses.first()).toBeVisible();
+  expect((await statuses.count()) % 2).toBe(0);
+  const { violations } = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
+    .analyze();
+  expect(violations.map(({ id, nodes }) => [id, nodes.map((node) => node.target)])).toEqual([]);
+  await page.getByRole('link', { name: 'Voltar para a área da família' }).click();
+  await expect(page.getByRole('heading', { level: 2, name: 'Área da família' })).toBeVisible();
+  expect(problems).toEqual([]);
+});
