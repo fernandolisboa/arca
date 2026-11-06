@@ -93,6 +93,8 @@ export function createErasure({
 
     eraseStoredObjects: (accountId) => documents.eraseObjects(accountId),
 
+    // The member's own row is the registry's first case entry, so the account leaves its case
+    // first and the cascade takes the people it keeps, as leaving does (spec 0007, R9).
     eraseOwnedEntries: (accountId) =>
       withIdentity(jobsDb, { accountId }, async (tx) => {
         for (const entry of jobsEntries) await tx.execute(eraseOwned(entry, accountId));

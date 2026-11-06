@@ -66,6 +66,9 @@ export const ptBR = {
       start: 'Excluir minha conta',
       confirmLead:
         'Todos os dispositivos serão desconectados agora. Passados 7 dias, a conta e os dados dela serão apagados de vez, sem volta. Se quiser guardar uma cópia, baixe seus dados antes. Para continuar, confirme com sua chave de acesso.',
+      keptPeople:
+        'Os dados de {names} também serão apagados do caso, porque quem cuida deles é você. Se alguém da família deve continuar com esses dados, passe os cuidados para essa pessoa antes de excluir.',
+      handOver: 'Abrir a área da família',
       confirm: 'Confirmar exclusão',
       cancel: 'Agora não',
       waiting: 'Confirme no seu dispositivo para continuar.',

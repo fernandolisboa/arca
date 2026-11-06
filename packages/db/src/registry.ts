@@ -343,7 +343,7 @@ export const registry: Registry = {
       strategy: 'delete',
       owner: keptPerson(['person_id'], ['id']),
       pool: 'app_jobs',
-      export: ['dependence_answered', 'updated_at'],
+      export: ['facts', 'dependence_answered', 'updated_at'],
       label: 'dataExport.tables.caseProfiles',
     },
     {
@@ -351,7 +351,7 @@ export const registry: Registry = {
       strategy: 'delete',
       owner: keptPerson(['person_id'], ['id']),
       pool: 'app_jobs',
-      export: ['assets_recorded_in_full', 'updated_at'],
+      export: ['incomes', 'assets_recorded_in_full', 'updated_at'],
       label: 'dataExport.tables.caseFinances',
     },
     {
@@ -367,7 +367,7 @@ export const registry: Registry = {
       strategy: 'delete',
       owner: keptPerson(['person_id', 'case_id'], ['id', 'case_id']),
       pool: 'app_jobs',
-      export: ['confirmed', 'created_at'],
+      export: ['share', 'confirmed', 'created_at'],
       label: 'dataExport.tables.caseAssetShares',
     },
     {
@@ -379,7 +379,15 @@ export const registry: Registry = {
         columns: ['id', 'case_id'],
       },
       pool: 'app_jobs',
-      export: ['kind', 'value_currency', 'valued_at', 'liquid', 'sold', 'created_at'],
+      export: [
+        'kind',
+        'value_amount',
+        'value_currency',
+        'valued_at',
+        'liquid',
+        'sold',
+        'created_at',
+      ],
       label: 'dataExport.tables.caseAssets',
     },
     {
@@ -392,7 +400,7 @@ export const registry: Registry = {
         ],
       },
       pool: 'app_jobs',
-      export: ['kind', 'created_at'],
+      export: ['kind', 'details', 'created_at'],
       label: 'dataExport.tables.caseRelationships',
     },
     {

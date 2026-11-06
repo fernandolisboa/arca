@@ -8,6 +8,7 @@ As of 2026-11-06. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md).
 | --- | --- | --- |
 | Case data and account data | While the account exists; after 3 years without a sign-in, an email notice, then deletion 60 days later | Inactivity job (daily `enforceRetention` workflow), which records `deletion requested` (`inactivity`) with the notice; a sign-in before the deletion cancels it (`deletion cancelled`, `sign_in`); `eraseAccount` erases it when due |
 | Account after a deletion request | 7 days locked, then erased | `eraseAccount` workflow |
+| Case rows (`cases.*`: people, profiles, finances, relationships, assets and shares) | As long as their case and their keeper's account; a person goes when their keeper leaves the case or is erased, unless handed over first; the case goes with its last member | Cascades from `cases.member` and `cases.person`; the asset and empty-case triggers; `eraseAccount` deletes the member row first |
 | Sessions | 3 days idle, 30 days at most | Better Auth expiry (slid only while the session is under 30 days old, so it ends by day 33 at the latest) plus a daily cleanup job; never backed up |
 | Pending document uploads (new documents and replacements never confirmed) | 24 hours, with their objects | Daily cleanup job |
 | Deleted and replaced document ciphertext | Deleted at once; the object's pathname is kept, without the document, until every upload grant for it has ended (1 hour), and the object is deleted again then, in case a late upload recreated it | Daily cleanup job |

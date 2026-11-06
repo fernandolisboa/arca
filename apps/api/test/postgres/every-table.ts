@@ -12,6 +12,8 @@ export interface Seeded {
   readonly email: string;
   readonly credentialId: string;
   readonly codeHash: Buffer;
+  /** Another member of the account's case, with no account of its own here. */
+  readonly sharerId: string;
 }
 
 const bytes = (size: number) => randomBytes(size);
@@ -23,6 +25,7 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
   const email = `person-${randomBytes(6).toString('hex')}@example.com`;
   const credentialId = randomBytes(16).toString('base64url');
   const codeHash = bytes(32);
+  const sharerId = randomUUID();
   await testDatabase.asAdmin(async (client) => {
     const insert = (statement: string, values: unknown[]) => client.query(statement, values);
     await insert(`INSERT INTO auth.user (id, name, email) VALUES ($1, '', $2)`, [accountId, email]);
@@ -98,7 +101,6 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
       `INSERT INTO vault.sharing_state (account_id, version, state, tag) VALUES ($1, 1, $2, $3)`,
       [accountId, Buffer.from('{}'), bytes(32)],
     );
-    const sharerId = randomUUID();
     const sharedId = randomUUID();
     await insert(`INSERT INTO account.link (inviter_id, invitee_id) VALUES ($1, $2), ($3, $1)`, [
       accountId,
@@ -154,6 +156,7 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
     const selfId = randomUUID();
     const childId = randomUUID();
     const relativeId = randomUUID();
+    const sharerPersonId = randomUUID();
     const assetId = randomUUID();
     await insert(`INSERT INTO cases.case_file (id) VALUES ($1)`, [caseId]);
     await insert(`INSERT INTO cases.member (account_id, case_id) VALUES ($1, $2), ($3, $2)`, [
@@ -164,8 +167,9 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
     await insert(
       `INSERT INTO cases.person (id, case_id, keeper_account_id, account_id, display_name, case_member)
        VALUES ($1, $4, $5, $5, 'Synthetic adult', true), ($2, $4, $5, NULL, 'Synthetic child', true),
-              ($3, $4, $6, NULL, 'Synthetic relative', false)`,
-      [selfId, childId, relativeId, caseId, accountId, sharerId],
+              ($3, $4, $6, NULL, 'Synthetic relative', false),
+              ($7, $4, $6, $6, 'Synthetic sharer', true)`,
+      [selfId, childId, relativeId, caseId, accountId, sharerId, sharerPersonId],
     );
     await insert(
       `INSERT INTO cases.person_profile (person_id, facts, dependence_answered) VALUES ($1, '{}', true)`,
@@ -215,7 +219,7 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
       [accountId, credentialId],
     );
   });
-  return { accountId, email, credentialId, codeHash };
+  return { accountId, email, credentialId, codeHash, sharerId };
 }
 
 const dialect = new PgDialect();

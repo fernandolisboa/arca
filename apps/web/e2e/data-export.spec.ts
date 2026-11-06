@@ -60,7 +60,7 @@ test('downloads the account data after a data_export step-up, each time with its
     target: { action: 'exportAccountData', targets: [] },
   });
   expect(first.name).toMatch(/^arca-meus-dados-\d{4}-\d{2}-\d{2}\.json$/);
-  expect(first.contents.schemaVersion).toBe(1);
+  expect(first.contents.schemaVersion).toBe(2);
   const account = first.contents.tables.find(({ table }) => table === 'auth.user');
   expect(account?.rows).toEqual([expect.objectContaining({ email })]);
 

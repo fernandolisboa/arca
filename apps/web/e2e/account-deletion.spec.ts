@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { newCredential, virtualAuthenticator, withoutAutofill } from './passkeys.js';
+import { family, signedIn } from './case-accounts.js';
 import { resetRateLimits, seedAccount } from './postgres/accounts.js';
 import { reportViolations, watchProblems } from './problems.js';
 import { databaseServer } from './servers.js';
@@ -52,5 +53,23 @@ test('requests the deletion, then a new sign-in can only cancel it', async ({ pa
   await page.getByRole('button', { name: 'Cancelar a exclusão' }).click();
   await expect(page.getByRole('link', { name: 'Dispositivos' })).toBeVisible();
   await expect(page.getByText(/^Sua conta será apagada a partir de /)).toHaveCount(0);
+  expect(problems).toEqual([]);
+});
+
+test('warns that the people the account keeps go with it, unless handed over first', async ({
+  page,
+}) => {
+  const problems = watchProblems(page);
+  await signedIn(page);
+  await family(page);
+  await page.goto(`${databaseServer.origin}/settings`);
+  await page.getByRole('button', { name: 'Excluir minha conta' }).click();
+  await expect(
+    page.getByText(
+      /^Os dados de Criança também serão apagados do caso, porque quem cuida deles é você\./,
+    ),
+  ).toBeVisible();
+  await page.getByRole('link', { name: 'Abrir a área da família' }).click();
+  await expect(page.getByRole('heading', { level: 2, name: 'Área da família' })).toBeVisible();
   expect(problems).toEqual([]);
 });
