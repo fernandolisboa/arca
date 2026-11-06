@@ -31,13 +31,14 @@ export interface CaseScore {
   readonly missed: string[];
 }
 
-export const emptyTally = (): Tally => ({ hits: 0, wrong: 0, missed: 0 });
+const emptyTally = (): Tally => ({ hits: 0, wrong: 0, missed: 0 });
 export const emptyFields = () =>
   Object.fromEntries(fields.map((field) => [field, emptyTally()])) as Record<Field, Tally>;
 
-/** A proposed new person no expected one matches. */
-const extra = (ref: string) => `extra:${ref}`;
-const isNew = (ref: string) => isNewReference(ref) || ref.startsWith(extra(''));
+/** Marks a proposed new person no expected one matches. */
+const extraPrefix = 'extra:';
+const extra = (ref: string) => `${extraPrefix}${ref}`;
+const isNew = (ref: string) => isNewReference(ref) || ref.startsWith(extraPrefix);
 
 /** Every fact of a draft, once each, as `field: key`. A role counts unless the case leaves it open. */
 export function factsOf(
@@ -155,9 +156,9 @@ const better = (a: CaseScore, b: CaseScore) =>
     ? a.missed.length < b.missed.length
     : a.wrong.length < b.wrong.length;
 
-/** The wrong facts a case forbids outright, by key prefix such as `citizenships: `. */
-export const forbiddenIn = (score: CaseScore, forbidden: readonly string[]): string[] =>
-  score.wrong.filter((key) => forbidden.some((prefix) => key.startsWith(prefix)));
+/** The wrong facts a case forbids outright. */
+export const forbiddenIn = (score: CaseScore, forbidden: readonly RegExp[]): string[] =>
+  score.wrong.filter((key) => forbidden.some((pattern) => pattern.test(key)));
 
 /** Every case's tallies summed per field and in all. */
 export function totals(scores: readonly CaseScore[]): Record<Field | 'all', Tally> {

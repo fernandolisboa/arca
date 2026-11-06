@@ -82,7 +82,7 @@ A member writes, in their own words, who is in the family and what they know abo
 1. **Draft schema, masking and the draft playback** (R1 schema and dates, R2, `describeDraft`), pure domain code with table-driven tests.
 2. **Extractor port, Claude adapter and the draft route** (R1, R3): new dependencies `ai` and `@ai-sdk/anthropic` (ADR-0010) with the supply-chain review; Anthropic's current API data terms read and recorded in the data-flow register before the first production call; SETUP.md updated; the route tested with a fake adapter; AI safety reviewer. Production gets no extractor yet (real-data gate item 10), so the route answers 503 there and works on previews.
 3. **Intake screen** (R4), with e2e on a fake adapter in the e2e build.
-4. **Evaluation suite and workflow** (R5); the owner adds the GitHub secret once. Once a run passes, production gets its extractor and the real-data gate's item 10 cites that run.
+4. **Evaluation suite and workflow** (R5); the owner adds the GitHub secret once. Once two runs on the same commit pass, production gets its extractor and the real-data gate's item 10 cites them.
 
 ## Threats
 

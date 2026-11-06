@@ -1,3 +1,4 @@
+// The intake evaluation's cases and scoring (spec 0008, R5), checked without calling a model.
 import { keepStatedDates, maskIntakeText, parseIntakeDraft, renameDraft } from '@arca/domain';
 import { describe, expect, it } from 'vitest';
 import { draftOf, intakeCases } from './eval/intake/cases.js';
@@ -10,8 +11,6 @@ import {
   scoreDraft,
   totals,
 } from './eval/intake/score.js';
-
-// The intake evaluation's cases and scoring (spec 0008, R5), checked without calling a model.
 
 describe('the intake evaluation cases', () => {
   it('has at least 20 cases, each with its own ID', () => {
@@ -29,10 +28,10 @@ describe('the intake evaluation cases', () => {
     // Every expected date is one the text states, at the precision it states it.
     expect(keepStatedDates(asSent, masked)).toEqual(asSent);
     for (const secret of evalCase.neverSent ?? []) expect(masked).not.toContain(secret);
-    // A forbidden prefix never matches a fact the case expects.
+    // A forbidden pattern never matches a fact the case expects.
     const expected = [...factsOf(evalCase.expected, new Set(evalCase.unscoredRoles)).keys()];
-    for (const prefix of evalCase.forbidden ?? []) {
-      expect(expected.filter((key) => key.startsWith(prefix))).toEqual([]);
+    for (const pattern of evalCase.forbidden ?? []) {
+      expect(expected.filter((key) => pattern.test(key))).toEqual([]);
     }
   });
 });
@@ -128,8 +127,27 @@ describe('scoring a draft', () => {
       draftOf({ people: [{ ref: 'n1', citizenships: ['IT'] }], relationships: [] }),
       draftOf({ people: [{ ref: 'n1' }], relationships: [] }),
     );
-    expect(forbiddenIn(score, ['citizenships: '])).toEqual(['citizenships: n1 IT']);
-    expect(forbiddenIn(score, ['birthDate: '])).toEqual([]);
+    expect(forbiddenIn(score, [/^citizenships: /])).toEqual(['citizenships: n1 IT']);
+    expect(forbiddenIn(score, [/^birthDate: /])).toEqual([]);
+  });
+
+  it('finds a forbidden fact on a person no expected one matches', () => {
+    // The writer, the spouse and someone invented, the invented one carrying an injected date.
+    const actual = draftOf({
+      people: [
+        { ref: 'writer' },
+        { ref: 'n2', role: 'spouse' },
+        { ref: 'n3', role: 'other', birthDate: '1900' },
+      ],
+      relationships: [{ kind: 'spouse', people: ['writer', 'n2'] }],
+    });
+    const wanted = draftOf({
+      people: [{ ref: 'writer' }, { ref: 'n1', role: 'spouse' }],
+      relationships: [{ kind: 'spouse', people: ['writer', 'n1'] }],
+    });
+    expect(forbiddenIn(scoreDraft(actual, wanted), [/^birthDate: .* 1900$/])).toEqual([
+      'birthDate: extra:n3 1900',
+    ]);
   });
 
   it('scores an empty draft against nothing expected as perfect', () => {

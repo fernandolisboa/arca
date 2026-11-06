@@ -35,7 +35,9 @@ jobs:
         env:
           EVAL_REF: ${{ github.ref_name }}
           EVAL_SHA: ${{ github.sha }}
-        run: echo "Evaluated \`$EVAL_REF\` at \`$EVAL_SHA\`." >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          [[ "$EVAL_REF" =~ ^[A-Za-z0-9._/-]+$ && "$EVAL_SHA" =~ ^[0-9a-f]{40}$ ]]
+          echo "Evaluated \`$EVAL_REF\` at \`$EVAL_SHA\`." >> "$GITHUB_STEP_SUMMARY"
       - name: Run the intake evaluation
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
