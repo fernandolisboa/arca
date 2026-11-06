@@ -15,6 +15,7 @@ export default defineConfig({
     './src/account-schema.ts',
     './src/vault-schema.ts',
     './src/notification-schema.ts',
+    './src/case-schema.ts',
   ],
   out: './migrations',
 });

@@ -7,20 +7,33 @@
 /** The pool that erases an entry: `app_auth` for the `auth` schema, `app_jobs` for the rest. */
 export type ErasingPool = 'app_auth' | 'app_jobs';
 
+/** A foreign key from an entry's `columns` to its parent's `parentColumns`, `ON DELETE CASCADE`. */
+export interface ParentLink {
+  readonly parent: string;
+  readonly columns: readonly string[];
+  readonly parentColumns: readonly string[];
+}
+
 /**
  * Whose rows these are: a non-null column holding the account ID; several such columns, when a
- * row belongs to each account it names (a link between two accounts); or the entry the rows hang
- * off, whose erasure removes them through the `ON DELETE CASCADE` foreign key from `columns` to
- * the parent's `parentColumns`. The parent is owned by a column, and the export joins through the
- * same foreign key.
+ * row belongs to each account it names (a link between two accounts); the entry the rows hang
+ * off, whose erasure removes them through the cascade of a `ParentLink`; any of several parents,
+ * when a row belongs to whoever owns either end (a relationship between two people); or the rows
+ * of another entry that point at them, when a row belongs to the owners of the rows that reference
+ * it and goes with the last of them (an asset and its owner rows), which a trigger does. A parent
+ * or a referencing entry is itself owned by a column or by a parent, and the export joins through
+ * the same foreign keys.
  */
 export type Owner =
   | { readonly column: string }
   | { readonly anyColumn: readonly [string, ...string[]] }
+  | ParentLink
+  | { readonly anyParent: readonly [ParentLink, ParentLink, ...ParentLink[]] }
   | {
-      readonly parent: string;
+      readonly referencedBy: string;
+      /** The referencing entry's columns, which name this entry's `columns`. */
+      readonly referencingColumns: readonly string[];
       readonly columns: readonly string[];
-      readonly parentColumns: readonly string[];
     };
 
 interface Exported {
@@ -69,13 +82,26 @@ export interface Registry {
   readonly unowned: readonly UnownedTable[];
 }
 
-/** The columns that name the rows' accounts; none for rows that hang off a parent. */
+/** The columns that name the rows' accounts; none for rows owned through other rows. */
 export function ownerColumns(owner: Owner): readonly string[] {
   if ('column' in owner) return [owner.column];
   return 'anyColumn' in owner ? owner.anyColumn : [];
 }
 
+/** The foreign keys an owner reaches its rows' owners through; none for an owner column. */
+export function parentLinks(owner: Owner): readonly ParentLink[] {
+  if ('anyParent' in owner) return owner.anyParent;
+  return 'parent' in owner ? [owner] : [];
+}
+
 const ownedByAccount = (column: string) => ({ column });
+
+/** A case row that belongs to whoever keeps its person, and goes with the person. */
+const keptPerson = (columns: readonly string[], parentColumns: readonly string[]): ParentLink => ({
+  parent: 'cases.person',
+  columns,
+  parentColumns,
+});
 
 export const registry: Registry = {
   entries: [
@@ -294,6 +320,87 @@ export const registry: Registry = {
       label: 'dataExport.tables.notificationChannels',
     },
     {
+      table: 'cases.member',
+      strategy: 'delete',
+      owner: ownedByAccount('account_id'),
+      pool: 'app_jobs',
+      export: ['joined_at'],
+      label: 'dataExport.tables.caseMembership',
+    },
+    {
+      table: 'cases.person',
+      strategy: 'delete',
+      owner: ownedByAccount('keeper_account_id'),
+      pool: 'app_jobs',
+      export: ['display_name', 'case_member', 'created_at'],
+      label: 'dataExport.tables.casePeople',
+    },
+    {
+      table: 'cases.person_profile',
+      strategy: 'delete',
+      owner: keptPerson(['person_id'], ['id']),
+      pool: 'app_jobs',
+      export: ['dependence_answered', 'updated_at'],
+      label: 'dataExport.tables.caseProfiles',
+    },
+    {
+      table: 'cases.person_finances',
+      strategy: 'delete',
+      owner: keptPerson(['person_id'], ['id']),
+      pool: 'app_jobs',
+      export: ['assets_recorded_in_full', 'updated_at'],
+      label: 'dataExport.tables.caseFinances',
+    },
+    {
+      table: 'cases.dependence',
+      strategy: 'delete',
+      owner: keptPerson(['person_id', 'case_id'], ['id', 'case_id']),
+      pool: 'app_jobs',
+      export: ['created_at'],
+      label: 'dataExport.tables.caseDependence',
+    },
+    {
+      table: 'cases.asset_owner',
+      strategy: 'delete',
+      owner: keptPerson(['person_id', 'case_id'], ['id', 'case_id']),
+      pool: 'app_jobs',
+      export: ['confirmed', 'created_at'],
+      label: 'dataExport.tables.caseAssetShares',
+    },
+    {
+      table: 'cases.asset',
+      strategy: 'delete',
+      owner: {
+        referencedBy: 'cases.asset_owner',
+        referencingColumns: ['asset_id', 'case_id'],
+        columns: ['id', 'case_id'],
+      },
+      pool: 'app_jobs',
+      export: ['kind', 'value_currency', 'valued_at', 'liquid', 'sold', 'created_at'],
+      label: 'dataExport.tables.caseAssets',
+    },
+    {
+      table: 'cases.relationship',
+      strategy: 'delete',
+      owner: {
+        anyParent: [
+          keptPerson(['from_person_id', 'case_id'], ['id', 'case_id']),
+          keptPerson(['to_person_id', 'case_id'], ['id', 'case_id']),
+        ],
+      },
+      pool: 'app_jobs',
+      export: ['kind', 'created_at'],
+      label: 'dataExport.tables.caseRelationships',
+    },
+    {
+      table: 'cases.share',
+      strategy: 'delete',
+      owner: keptPerson(['person_id', 'case_id'], ['id', 'case_id']),
+      pool: 'app_jobs',
+      export: ['scope', 'created_at'],
+      label: 'dataExport.tables.caseShares',
+    },
+    {
       table: 'audit.event',
       strategy: 'retain',
       owner: ownedByAccount('subject_account_id'),
@@ -305,6 +412,11 @@ export const registry: Registry = {
     },
   ],
   unowned: [
+    {
+      table: 'cases.case_file',
+      personalData: 'none',
+      reason: 'A case: its ID and creation time only; it ends with its last member.',
+    },
     {
       table: 'arca_migrations.journal',
       personalData: 'none',

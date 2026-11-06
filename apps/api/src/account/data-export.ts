@@ -1,6 +1,12 @@
 import { DataExport, dataExportSchemaVersion } from '@arca/api-contract/routes';
 import { withIdentity, type Database, type Transaction } from '@arca/db';
-import { registry as fullRegistry, type Registry, type RegistryEntry } from '@arca/db/registry';
+import {
+  registry as fullRegistry,
+  parentLinks,
+  type ParentLink,
+  type Registry,
+  type RegistryEntry,
+} from '@arca/db/registry';
 import type { I18n } from '@arca/i18n';
 import { sql, type SQL } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
@@ -47,20 +53,51 @@ function projection(entry: RegistryEntry, placeholder: string): SQL {
   return sql`pg_catalog.jsonb_build_object(${sql.join(pairs, sql`, `)})`;
 }
 
-/** The account's rows of the entry: by its owner column, or joined to its parent's. */
-function owned(entry: RegistryEntry, registry: Registry, accountId: string): SQL {
-  const { owner } = entry;
-  const from = sql`FROM ${qualified(entry.table)} t`;
-  if (!('parent' in owner)) return sql`${from} WHERE ${namesAccount(entry, accountId, 't')}`;
-  const parent = registry.entries.find((candidate) => candidate.table === owner.parent);
-  if (parent === undefined || !('column' in parent.owner)) {
-    throw new Error(`${entry.table} hangs off an entry not owned by a column`);
-  }
-  const keys = owner.columns.map(
-    (name, index) => sql`${column('t', name)} = ${column('p', owner.parentColumns[index] ?? '')}`,
+/** `alias.columns` equal `otherAlias.otherColumns`, pairwise. */
+function sameKeys(
+  alias: string,
+  columns: readonly string[],
+  otherAlias: string,
+  otherColumns: readonly string[],
+): SQL {
+  const pairs = columns.map(
+    (name, index) => sql`${column(alias, name)} = ${column(otherAlias, otherColumns[index] ?? '')}`,
   );
-  return sql`${from} JOIN ${qualified(parent.table)} p ON ${sql.join(keys, sql` AND `)}
-    WHERE ${column('p', parent.owner.column)} = ${accountId}`;
+  return sql.join(pairs, sql` AND `);
+}
+
+/**
+ * Whether the entry's row `alias` is the account's: by its owner columns, through any of its
+ * parents, or through the rows that reference it, each reached by its own foreign key.
+ */
+function ownedBy(entry: RegistryEntry, registry: Registry, accountId: string, alias: string): SQL {
+  const { owner } = entry;
+  const entryOf = (table: string) => {
+    const found = registry.entries.find((candidate) => candidate.table === table);
+    if (found === undefined) throw new Error(`${entry.table} is owned through ${table}, unlisted`);
+    return found;
+  };
+  const next = `${alias}_`;
+  if ('referencedBy' in owner) {
+    const referencing = entryOf(owner.referencedBy);
+    return sql`EXISTS (SELECT FROM ${qualified(referencing.table)} ${sql.identifier(next)}
+      WHERE ${sameKeys(next, owner.referencingColumns, alias, owner.columns)}
+        AND ${ownedBy(referencing, registry, accountId, next)})`;
+  }
+  const links = parentLinks(owner);
+  if (links.length === 0) return sql`(${namesAccount(entry, accountId, alias)})`;
+  const throughParent = (link: ParentLink) => {
+    const parent = entryOf(link.parent);
+    return sql`EXISTS (SELECT FROM ${qualified(parent.table)} ${sql.identifier(next)}
+      WHERE ${sameKeys(alias, link.columns, next, link.parentColumns)}
+        AND ${ownedBy(parent, registry, accountId, next)})`;
+  };
+  return sql`(${sql.join(links.map(throughParent), sql` OR `)})`;
+}
+
+/** The account's rows of the entry, as a `FROM … WHERE` clause over alias `t`. */
+export function ownedRows(entry: RegistryEntry, registry: Registry, accountId: string): SQL {
+  return sql`FROM ${qualified(entry.table)} t WHERE ${ownedBy(entry, registry, accountId, 't')}`;
 }
 
 export function createDataExports({
@@ -73,7 +110,7 @@ export function createDataExports({
   const placeholder = i18n.t('dataExport.masked');
   const read = async (tx: Transaction, entry: RegistryEntry, accountId: string) => {
     const result = await tx.execute<{ row: Table['rows'][number] }>(
-      sql`SELECT ${projection(entry, placeholder)} AS row ${owned(entry, registry, accountId)} ORDER BY 1`,
+      sql`SELECT ${projection(entry, placeholder)} AS row ${ownedRows(entry, registry, accountId)} ORDER BY 1`,
     );
     return [entry.table, result.rows.map(({ row }) => row)] as const;
   };

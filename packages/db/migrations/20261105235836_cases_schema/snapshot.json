@@ -1,0 +1,3775 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "8a0a65ac-1451-47a3-92ae-f7acd398c2b7",
+  "prevIds": [
+    "6833971c-2df2-4a03-9f38-e59719e725ce"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_schema",
+      "statementTarget": [
+        "schema",
+        "cases"
+      ],
+      "writes": [
+        "s|sch|cases",
+        "n|sch|cases",
+        "e|sch|cases"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "cases",
+        "asset"
+      ],
+      "writes": [
+        "s|tbl|cases.asset",
+        "n|tbl|cases.asset",
+        "e|tbl|cases.asset",
+        "n|rel|cases.asset",
+        "n|type|cases.asset",
+        "n|rel|cases.asset_pkey",
+        "n|rel|cases.asset_id_case_id_key"
+      ],
+      "reads": [
+        "n|sch|cases"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "cases",
+        "asset_owner"
+      ],
+      "writes": [
+        "s|tbl|cases.asset_owner",
+        "n|tbl|cases.asset_owner",
+        "e|tbl|cases.asset_owner",
+        "n|rel|cases.asset_owner",
+        "n|type|cases.asset_owner",
+        "n|rel|cases.asset_owner_pkey"
+      ],
+      "reads": [
+        "n|sch|cases"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "cases",
+        "case_file"
+      ],
+      "writes": [
+        "s|tbl|cases.case_file",
+        "n|tbl|cases.case_file",
+        "e|tbl|cases.case_file",
+        "n|rel|cases.case_file",
+        "n|type|cases.case_file",
+        "n|rel|cases.case_file_pkey"
+      ],
+      "reads": [
+        "n|sch|cases"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "cases",
+        "dependence"
+      ],
+      "writes": [
+        "s|tbl|cases.dependence",
+        "n|tbl|cases.dependence",
+        "e|tbl|cases.dependence",
+        "n|rel|cases.dependence",
+        "n|type|cases.dependence",
+        "n|rel|cases.dependence_pkey"
+      ],
+      "reads": [
+        "n|sch|cases"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "cases",
+        "member"
+      ],
+      "writes": [
+        "s|tbl|cases.member",
+        "n|tbl|cases.member",
+        "e|tbl|cases.member",
+        "n|rel|cases.member",
+        "n|type|cases.member",
+        "n|rel|cases.member_pkey",
+        "n|rel|cases.member_case_id_account_id_key"
+      ],
+      "reads": [
+        "n|sch|cases"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person"
+      ],
+      "writes": [
+        "s|tbl|cases.person",
+        "n|tbl|cases.person",
+        "e|tbl|cases.person",
+        "n|rel|cases.person",
+        "n|type|cases.person",
+        "n|rel|cases.person_pkey",
+        "n|rel|cases.person_id_case_id_key",
+        "n|rel|cases.person_account_id_key"
+      ],
+      "reads": [
+        "n|sch|cases"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person_finances"
+      ],
+      "writes": [
+        "s|tbl|cases.person_finances",
+        "n|tbl|cases.person_finances",
+        "e|tbl|cases.person_finances",
+        "n|rel|cases.person_finances",
+        "n|type|cases.person_finances",
+        "n|rel|cases.person_finances_pkey"
+      ],
+      "reads": [
+        "n|sch|cases"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person_profile"
+      ],
+      "writes": [
+        "s|tbl|cases.person_profile",
+        "n|tbl|cases.person_profile",
+        "e|tbl|cases.person_profile",
+        "n|rel|cases.person_profile",
+        "n|type|cases.person_profile",
+        "n|rel|cases.person_profile_pkey"
+      ],
+      "reads": [
+        "n|sch|cases"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "cases",
+        "relationship"
+      ],
+      "writes": [
+        "s|tbl|cases.relationship",
+        "n|tbl|cases.relationship",
+        "e|tbl|cases.relationship",
+        "n|rel|cases.relationship",
+        "n|type|cases.relationship",
+        "n|rel|cases.relationship_pkey"
+      ],
+      "reads": [
+        "n|sch|cases"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "cases",
+        "share"
+      ],
+      "writes": [
+        "s|tbl|cases.share",
+        "n|tbl|cases.share",
+        "e|tbl|cases.share",
+        "n|rel|cases.share",
+        "n|type|cases.share",
+        "n|rel|cases.share_pkey"
+      ],
+      "reads": [
+        "n|sch|cases"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "cases",
+        "asset",
+        "asset_case_id_idx"
+      ],
+      "writes": [
+        "s|idx|cases.asset_case_id_idx",
+        "n|idx|cases.asset_case_id_idx",
+        "e|idx|cases.asset_case_id_idx",
+        "n|rel|cases.asset_case_id_idx"
+      ],
+      "reads": [
+        "n|tbl|cases.asset",
+        "n|sch|cases",
+        "n|col|cases.asset.case_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "cases",
+        "asset_owner",
+        "asset_owner_person_id_idx"
+      ],
+      "writes": [
+        "s|idx|cases.asset_owner_person_id_idx",
+        "n|idx|cases.asset_owner_person_id_idx",
+        "e|idx|cases.asset_owner_person_id_idx",
+        "n|rel|cases.asset_owner_person_id_idx"
+      ],
+      "reads": [
+        "n|tbl|cases.asset_owner",
+        "n|sch|cases",
+        "n|col|cases.asset_owner.person_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "cases",
+        "dependence",
+        "dependence_depends_on_id_idx"
+      ],
+      "writes": [
+        "s|idx|cases.dependence_depends_on_id_idx",
+        "n|idx|cases.dependence_depends_on_id_idx",
+        "e|idx|cases.dependence_depends_on_id_idx",
+        "n|rel|cases.dependence_depends_on_id_idx"
+      ],
+      "reads": [
+        "n|tbl|cases.dependence",
+        "n|sch|cases",
+        "n|col|cases.dependence.depends_on_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "cases",
+        "person",
+        "person_case_id_idx"
+      ],
+      "writes": [
+        "s|idx|cases.person_case_id_idx",
+        "n|idx|cases.person_case_id_idx",
+        "e|idx|cases.person_case_id_idx",
+        "n|rel|cases.person_case_id_idx"
+      ],
+      "reads": [
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|col|cases.person.case_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "cases",
+        "person",
+        "person_keeper_account_id_idx"
+      ],
+      "writes": [
+        "s|idx|cases.person_keeper_account_id_idx",
+        "n|idx|cases.person_keeper_account_id_idx",
+        "e|idx|cases.person_keeper_account_id_idx",
+        "n|rel|cases.person_keeper_account_id_idx"
+      ],
+      "reads": [
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|col|cases.person.keeper_account_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "cases",
+        "relationship",
+        "relationship_case_id_idx"
+      ],
+      "writes": [
+        "s|idx|cases.relationship_case_id_idx",
+        "n|idx|cases.relationship_case_id_idx",
+        "e|idx|cases.relationship_case_id_idx",
+        "n|rel|cases.relationship_case_id_idx"
+      ],
+      "reads": [
+        "n|tbl|cases.relationship",
+        "n|sch|cases",
+        "n|col|cases.relationship.case_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "cases",
+        "relationship",
+        "relationship_from_person_id_idx"
+      ],
+      "writes": [
+        "s|idx|cases.relationship_from_person_id_idx",
+        "n|idx|cases.relationship_from_person_id_idx",
+        "e|idx|cases.relationship_from_person_id_idx",
+        "n|rel|cases.relationship_from_person_id_idx"
+      ],
+      "reads": [
+        "n|tbl|cases.relationship",
+        "n|sch|cases",
+        "n|col|cases.relationship.from_person_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "cases",
+        "relationship",
+        "relationship_to_person_id_idx"
+      ],
+      "writes": [
+        "s|idx|cases.relationship_to_person_id_idx",
+        "n|idx|cases.relationship_to_person_id_idx",
+        "e|idx|cases.relationship_to_person_id_idx",
+        "n|rel|cases.relationship_to_person_id_idx"
+      ],
+      "reads": [
+        "n|tbl|cases.relationship",
+        "n|sch|cases",
+        "n|col|cases.relationship.to_person_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "cases",
+        "share",
+        "share_grantee_account_id_idx"
+      ],
+      "writes": [
+        "s|idx|cases.share_grantee_account_id_idx",
+        "n|idx|cases.share_grantee_account_id_idx",
+        "e|idx|cases.share_grantee_account_id_idx",
+        "n|rel|cases.share_grantee_account_id_idx"
+      ],
+      "reads": [
+        "n|tbl|cases.share",
+        "n|sch|cases",
+        "n|col|cases.share.grantee_account_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "cases",
+        "asset"
+      ],
+      "writes": [
+        "s|fk|cases.asset.asset_case_id_case_file_id_fkey",
+        "n|fk|cases.asset.asset_case_id_case_file_id_fkey",
+        "e|fk|cases.asset.asset_case_id_case_file_id_fkey",
+        "n|con|cases.asset.asset_case_id_case_file_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|cases.asset",
+        "n|sch|cases",
+        "n|tbl|cases.case_file",
+        "n|sch|cases",
+        "n|col|cases.asset.case_id",
+        "n|col|cases.case_file.id",
+        "e|uniqueness|cases.case_file.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "cases",
+        "asset_owner"
+      ],
+      "writes": [
+        "s|fk|cases.asset_owner.asset_owner_asset_fkey",
+        "n|fk|cases.asset_owner.asset_owner_asset_fkey",
+        "e|fk|cases.asset_owner.asset_owner_asset_fkey",
+        "n|con|cases.asset_owner.asset_owner_asset_fkey"
+      ],
+      "reads": [
+        "n|tbl|cases.asset_owner",
+        "n|sch|cases",
+        "n|tbl|cases.asset",
+        "n|sch|cases",
+        "n|col|cases.asset_owner.asset_id",
+        "n|col|cases.asset_owner.case_id",
+        "n|col|cases.asset.id",
+        "n|col|cases.asset.case_id",
+        "e|uniqueness|cases.asset.case_id.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "cases",
+        "asset_owner"
+      ],
+      "writes": [
+        "s|fk|cases.asset_owner.asset_owner_person_fkey",
+        "n|fk|cases.asset_owner.asset_owner_person_fkey",
+        "e|fk|cases.asset_owner.asset_owner_person_fkey",
+        "n|con|cases.asset_owner.asset_owner_person_fkey"
+      ],
+      "reads": [
+        "n|tbl|cases.asset_owner",
+        "n|sch|cases",
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|col|cases.asset_owner.person_id",
+        "n|col|cases.asset_owner.case_id",
+        "n|col|cases.person.id",
+        "n|col|cases.person.case_id",
+        "e|uniqueness|cases.person.case_id.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "cases",
+        "dependence"
+      ],
+      "writes": [
+        "s|fk|cases.dependence.dependence_person_fkey",
+        "n|fk|cases.dependence.dependence_person_fkey",
+        "e|fk|cases.dependence.dependence_person_fkey",
+        "n|con|cases.dependence.dependence_person_fkey"
+      ],
+      "reads": [
+        "n|tbl|cases.dependence",
+        "n|sch|cases",
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|col|cases.dependence.person_id",
+        "n|col|cases.dependence.case_id",
+        "n|col|cases.person.id",
+        "n|col|cases.person.case_id",
+        "e|uniqueness|cases.person.case_id.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "cases",
+        "dependence"
+      ],
+      "writes": [
+        "s|fk|cases.dependence.dependence_depends_on_fkey",
+        "n|fk|cases.dependence.dependence_depends_on_fkey",
+        "e|fk|cases.dependence.dependence_depends_on_fkey",
+        "n|con|cases.dependence.dependence_depends_on_fkey"
+      ],
+      "reads": [
+        "n|tbl|cases.dependence",
+        "n|sch|cases",
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|col|cases.dependence.depends_on_id",
+        "n|col|cases.dependence.case_id",
+        "n|col|cases.person.id",
+        "n|col|cases.person.case_id",
+        "e|uniqueness|cases.person.case_id.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "cases",
+        "member"
+      ],
+      "writes": [
+        "s|fk|cases.member.member_case_id_case_file_id_fkey",
+        "n|fk|cases.member.member_case_id_case_file_id_fkey",
+        "e|fk|cases.member.member_case_id_case_file_id_fkey",
+        "n|con|cases.member.member_case_id_case_file_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|cases.member",
+        "n|sch|cases",
+        "n|tbl|cases.case_file",
+        "n|sch|cases",
+        "n|col|cases.member.case_id",
+        "n|col|cases.case_file.id",
+        "e|uniqueness|cases.case_file.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person"
+      ],
+      "writes": [
+        "s|fk|cases.person.person_case_id_case_file_id_fkey",
+        "n|fk|cases.person.person_case_id_case_file_id_fkey",
+        "e|fk|cases.person.person_case_id_case_file_id_fkey",
+        "n|con|cases.person.person_case_id_case_file_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|tbl|cases.case_file",
+        "n|sch|cases",
+        "n|col|cases.person.case_id",
+        "n|col|cases.case_file.id",
+        "e|uniqueness|cases.case_file.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person"
+      ],
+      "writes": [
+        "s|fk|cases.person.person_keeper_fkey",
+        "n|fk|cases.person.person_keeper_fkey",
+        "e|fk|cases.person.person_keeper_fkey",
+        "n|con|cases.person.person_keeper_fkey"
+      ],
+      "reads": [
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|tbl|cases.member",
+        "n|sch|cases",
+        "n|col|cases.person.case_id",
+        "n|col|cases.person.keeper_account_id",
+        "n|col|cases.member.case_id",
+        "n|col|cases.member.account_id",
+        "e|uniqueness|cases.member.account_id.case_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person_finances"
+      ],
+      "writes": [
+        "s|fk|cases.person_finances.person_finances_person_id_person_id_fkey",
+        "n|fk|cases.person_finances.person_finances_person_id_person_id_fkey",
+        "e|fk|cases.person_finances.person_finances_person_id_person_id_fkey",
+        "n|con|cases.person_finances.person_finances_person_id_person_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|cases.person_finances",
+        "n|sch|cases",
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|col|cases.person_finances.person_id",
+        "n|col|cases.person.id",
+        "e|uniqueness|cases.person.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person_profile"
+      ],
+      "writes": [
+        "s|fk|cases.person_profile.person_profile_person_id_person_id_fkey",
+        "n|fk|cases.person_profile.person_profile_person_id_person_id_fkey",
+        "e|fk|cases.person_profile.person_profile_person_id_person_id_fkey",
+        "n|con|cases.person_profile.person_profile_person_id_person_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|cases.person_profile",
+        "n|sch|cases",
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|col|cases.person_profile.person_id",
+        "n|col|cases.person.id",
+        "e|uniqueness|cases.person.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "cases",
+        "relationship"
+      ],
+      "writes": [
+        "s|fk|cases.relationship.relationship_from_person_fkey",
+        "n|fk|cases.relationship.relationship_from_person_fkey",
+        "e|fk|cases.relationship.relationship_from_person_fkey",
+        "n|con|cases.relationship.relationship_from_person_fkey"
+      ],
+      "reads": [
+        "n|tbl|cases.relationship",
+        "n|sch|cases",
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|col|cases.relationship.from_person_id",
+        "n|col|cases.relationship.case_id",
+        "n|col|cases.person.id",
+        "n|col|cases.person.case_id",
+        "e|uniqueness|cases.person.case_id.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "cases",
+        "relationship"
+      ],
+      "writes": [
+        "s|fk|cases.relationship.relationship_to_person_fkey",
+        "n|fk|cases.relationship.relationship_to_person_fkey",
+        "e|fk|cases.relationship.relationship_to_person_fkey",
+        "n|con|cases.relationship.relationship_to_person_fkey"
+      ],
+      "reads": [
+        "n|tbl|cases.relationship",
+        "n|sch|cases",
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|col|cases.relationship.to_person_id",
+        "n|col|cases.relationship.case_id",
+        "n|col|cases.person.id",
+        "n|col|cases.person.case_id",
+        "e|uniqueness|cases.person.case_id.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "cases",
+        "share"
+      ],
+      "writes": [
+        "s|fk|cases.share.share_person_fkey",
+        "n|fk|cases.share.share_person_fkey",
+        "e|fk|cases.share.share_person_fkey",
+        "n|con|cases.share.share_person_fkey"
+      ],
+      "reads": [
+        "n|tbl|cases.share",
+        "n|sch|cases",
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|col|cases.share.person_id",
+        "n|col|cases.share.case_id",
+        "n|col|cases.person.id",
+        "n|col|cases.person.case_id",
+        "e|uniqueness|cases.person.case_id.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "cases",
+        "share"
+      ],
+      "writes": [
+        "s|fk|cases.share.share_grantee_fkey",
+        "n|fk|cases.share.share_grantee_fkey",
+        "e|fk|cases.share.share_grantee_fkey",
+        "n|con|cases.share.share_grantee_fkey"
+      ],
+      "reads": [
+        "n|tbl|cases.share",
+        "n|sch|cases",
+        "n|tbl|cases.member",
+        "n|sch|cases",
+        "n|col|cases.share.case_id",
+        "n|col|cases.share.grantee_account_id",
+        "n|col|cases.member.case_id",
+        "n|col|cases.member.account_id",
+        "e|uniqueness|cases.member.account_id.case_id"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "asset"
+      ],
+      "writes": [
+        "s|pol|cases.asset.asset_select_owner_visible",
+        "n|pol|cases.asset.asset_select_owner_visible",
+        "e|pol|cases.asset.asset_select_owner_visible"
+      ],
+      "reads": [
+        "n|tbl|cases.asset",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.asset"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "asset"
+      ],
+      "writes": [
+        "s|pol|cases.asset.asset_update_confirmed_keeper",
+        "n|pol|cases.asset.asset_update_confirmed_keeper",
+        "e|pol|cases.asset.asset_update_confirmed_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.asset",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.asset"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "asset"
+      ],
+      "writes": [
+        "s|pol|cases.asset.asset_delete_confirmed_keeper",
+        "n|pol|cases.asset.asset_delete_confirmed_keeper",
+        "e|pol|cases.asset.asset_delete_confirmed_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.asset",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.asset"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "asset"
+      ],
+      "writes": [
+        "s|pol|cases.asset.asset_select_by_definer",
+        "n|pol|cases.asset.asset_select_by_definer",
+        "e|pol|cases.asset.asset_select_by_definer"
+      ],
+      "reads": [
+        "n|tbl|cases.asset",
+        "n|sch|cases",
+        "n|role|cases_definer",
+        "e|rls|cases.asset"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "asset"
+      ],
+      "writes": [
+        "s|pol|cases.asset.asset_delete_by_definer",
+        "n|pol|cases.asset.asset_delete_by_definer",
+        "e|pol|cases.asset.asset_delete_by_definer"
+      ],
+      "reads": [
+        "n|tbl|cases.asset",
+        "n|sch|cases",
+        "n|role|cases_definer",
+        "e|rls|cases.asset"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "asset_owner"
+      ],
+      "writes": [
+        "s|pol|cases.asset_owner.asset_owner_select_keeper_or_shared",
+        "n|pol|cases.asset_owner.asset_owner_select_keeper_or_shared",
+        "e|pol|cases.asset_owner.asset_owner_select_keeper_or_shared"
+      ],
+      "reads": [
+        "n|tbl|cases.asset_owner",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.asset_owner"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "asset_owner"
+      ],
+      "writes": [
+        "s|pol|cases.asset_owner.asset_owner_update_keeper",
+        "n|pol|cases.asset_owner.asset_owner_update_keeper",
+        "e|pol|cases.asset_owner.asset_owner_update_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.asset_owner",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.asset_owner"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "asset_owner"
+      ],
+      "writes": [
+        "s|pol|cases.asset_owner.asset_owner_delete_keeper",
+        "n|pol|cases.asset_owner.asset_owner_delete_keeper",
+        "e|pol|cases.asset_owner.asset_owner_delete_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.asset_owner",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.asset_owner"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "asset_owner"
+      ],
+      "writes": [
+        "s|pol|cases.asset_owner.asset_owner_select_by_definer",
+        "n|pol|cases.asset_owner.asset_owner_select_by_definer",
+        "e|pol|cases.asset_owner.asset_owner_select_by_definer"
+      ],
+      "reads": [
+        "n|tbl|cases.asset_owner",
+        "n|sch|cases",
+        "n|role|cases_definer",
+        "e|rls|cases.asset_owner"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "case_file"
+      ],
+      "writes": [
+        "s|pol|cases.case_file.case_file_select_by_definer",
+        "n|pol|cases.case_file.case_file_select_by_definer",
+        "e|pol|cases.case_file.case_file_select_by_definer"
+      ],
+      "reads": [
+        "n|tbl|cases.case_file",
+        "n|sch|cases",
+        "n|role|cases_definer",
+        "e|rls|cases.case_file"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "case_file"
+      ],
+      "writes": [
+        "s|pol|cases.case_file.case_file_delete_by_definer",
+        "n|pol|cases.case_file.case_file_delete_by_definer",
+        "e|pol|cases.case_file.case_file_delete_by_definer"
+      ],
+      "reads": [
+        "n|tbl|cases.case_file",
+        "n|sch|cases",
+        "n|role|cases_definer",
+        "e|rls|cases.case_file"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "dependence"
+      ],
+      "writes": [
+        "s|pol|cases.dependence.dependence_select_keeper_or_shared",
+        "n|pol|cases.dependence.dependence_select_keeper_or_shared",
+        "e|pol|cases.dependence.dependence_select_keeper_or_shared"
+      ],
+      "reads": [
+        "n|tbl|cases.dependence",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.dependence"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "dependence"
+      ],
+      "writes": [
+        "s|pol|cases.dependence.dependence_insert_keeper",
+        "n|pol|cases.dependence.dependence_insert_keeper",
+        "e|pol|cases.dependence.dependence_insert_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.dependence",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.dependence"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "dependence"
+      ],
+      "writes": [
+        "s|pol|cases.dependence.dependence_delete_keeper",
+        "n|pol|cases.dependence.dependence_delete_keeper",
+        "e|pol|cases.dependence.dependence_delete_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.dependence",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.dependence"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "member"
+      ],
+      "writes": [
+        "s|pol|cases.member.member_select_by_definer",
+        "n|pol|cases.member.member_select_by_definer",
+        "e|pol|cases.member.member_select_by_definer"
+      ],
+      "reads": [
+        "n|tbl|cases.member",
+        "n|sch|cases",
+        "n|role|cases_definer",
+        "e|rls|cases.member"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "member"
+      ],
+      "writes": [
+        "s|pol|cases.member.member_select_own_by_jobs",
+        "n|pol|cases.member.member_select_own_by_jobs",
+        "e|pol|cases.member.member_select_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|cases.member",
+        "n|sch|cases",
+        "n|role|app_jobs",
+        "e|rls|cases.member"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "member"
+      ],
+      "writes": [
+        "s|pol|cases.member.member_delete_own_by_jobs",
+        "n|pol|cases.member.member_delete_own_by_jobs",
+        "e|pol|cases.member.member_delete_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|cases.member",
+        "n|sch|cases",
+        "n|role|app_jobs",
+        "e|rls|cases.member"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person"
+      ],
+      "writes": [
+        "s|pol|cases.person.person_insert_keeper",
+        "n|pol|cases.person.person_insert_keeper",
+        "e|pol|cases.person.person_insert_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.person"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person"
+      ],
+      "writes": [
+        "s|pol|cases.person.person_update_keeper",
+        "n|pol|cases.person.person_update_keeper",
+        "e|pol|cases.person.person_update_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.person"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person"
+      ],
+      "writes": [
+        "s|pol|cases.person.person_delete_keeper",
+        "n|pol|cases.person.person_delete_keeper",
+        "e|pol|cases.person.person_delete_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.person"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person"
+      ],
+      "writes": [
+        "s|pol|cases.person.person_select_own_by_jobs",
+        "n|pol|cases.person.person_select_own_by_jobs",
+        "e|pol|cases.person.person_select_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|role|app_jobs",
+        "e|rls|cases.person"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person"
+      ],
+      "writes": [
+        "s|pol|cases.person.person_delete_own_by_jobs",
+        "n|pol|cases.person.person_delete_own_by_jobs",
+        "e|pol|cases.person.person_delete_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|role|app_jobs",
+        "e|rls|cases.person"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person_finances"
+      ],
+      "writes": [
+        "s|pol|cases.person_finances.person_finances_select_keeper_or_shared",
+        "n|pol|cases.person_finances.person_finances_select_keeper_or_shared",
+        "e|pol|cases.person_finances.person_finances_select_keeper_or_shared"
+      ],
+      "reads": [
+        "n|tbl|cases.person_finances",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.person_finances"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person_finances"
+      ],
+      "writes": [
+        "s|pol|cases.person_finances.person_finances_insert_keeper",
+        "n|pol|cases.person_finances.person_finances_insert_keeper",
+        "e|pol|cases.person_finances.person_finances_insert_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.person_finances",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.person_finances"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person_finances"
+      ],
+      "writes": [
+        "s|pol|cases.person_finances.person_finances_update_keeper",
+        "n|pol|cases.person_finances.person_finances_update_keeper",
+        "e|pol|cases.person_finances.person_finances_update_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.person_finances",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.person_finances"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person_finances"
+      ],
+      "writes": [
+        "s|pol|cases.person_finances.person_finances_delete_keeper",
+        "n|pol|cases.person_finances.person_finances_delete_keeper",
+        "e|pol|cases.person_finances.person_finances_delete_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.person_finances",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.person_finances"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person_profile"
+      ],
+      "writes": [
+        "s|pol|cases.person_profile.person_profile_select_keeper_or_shared",
+        "n|pol|cases.person_profile.person_profile_select_keeper_or_shared",
+        "e|pol|cases.person_profile.person_profile_select_keeper_or_shared"
+      ],
+      "reads": [
+        "n|tbl|cases.person_profile",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.person_profile"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person_profile"
+      ],
+      "writes": [
+        "s|pol|cases.person_profile.person_profile_insert_keeper",
+        "n|pol|cases.person_profile.person_profile_insert_keeper",
+        "e|pol|cases.person_profile.person_profile_insert_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.person_profile",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.person_profile"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person_profile"
+      ],
+      "writes": [
+        "s|pol|cases.person_profile.person_profile_update_keeper",
+        "n|pol|cases.person_profile.person_profile_update_keeper",
+        "e|pol|cases.person_profile.person_profile_update_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.person_profile",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.person_profile"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person_profile"
+      ],
+      "writes": [
+        "s|pol|cases.person_profile.person_profile_delete_keeper",
+        "n|pol|cases.person_profile.person_profile_delete_keeper",
+        "e|pol|cases.person_profile.person_profile_delete_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.person_profile",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.person_profile"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "relationship"
+      ],
+      "writes": [
+        "s|pol|cases.relationship.relationship_insert_keeper",
+        "n|pol|cases.relationship.relationship_insert_keeper",
+        "e|pol|cases.relationship.relationship_insert_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.relationship",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.relationship"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "relationship"
+      ],
+      "writes": [
+        "s|pol|cases.relationship.relationship_update_keeper",
+        "n|pol|cases.relationship.relationship_update_keeper",
+        "e|pol|cases.relationship.relationship_update_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.relationship",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.relationship"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "relationship"
+      ],
+      "writes": [
+        "s|pol|cases.relationship.relationship_delete_keeper",
+        "n|pol|cases.relationship.relationship_delete_keeper",
+        "e|pol|cases.relationship.relationship_delete_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.relationship",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.relationship"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "share"
+      ],
+      "writes": [
+        "s|pol|cases.share.share_select_keeper_or_grantee",
+        "n|pol|cases.share.share_select_keeper_or_grantee",
+        "e|pol|cases.share.share_select_keeper_or_grantee"
+      ],
+      "reads": [
+        "n|tbl|cases.share",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.share"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "share"
+      ],
+      "writes": [
+        "s|pol|cases.share.share_insert_keeper",
+        "n|pol|cases.share.share_insert_keeper",
+        "e|pol|cases.share.share_insert_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.share",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.share"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "share"
+      ],
+      "writes": [
+        "s|pol|cases.share.share_delete_keeper",
+        "n|pol|cases.share.share_delete_keeper",
+        "e|pol|cases.share.share_delete_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.share",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.share"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "name": "cases",
+        "entityType": "schemas"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "name": "asset",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "name": "asset_owner",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "name": "case_file",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "name": "dependence",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "name": "member",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "name": "person",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "name": "person_finances",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "name": "person_profile",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "name": "relationship",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "name": "share",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "case_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "value_amount",
+        "type": "bigint",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "value_currency",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "valued_at",
+        "type": "date",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "liquid",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "sold",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset_owner",
+        "name": "case_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset_owner",
+        "name": "asset_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset_owner",
+        "name": "person_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset_owner",
+        "name": "share",
+        "type": "numeric(7,6)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset_owner",
+        "name": "confirmed",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset_owner",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "case_file",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "case_file",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "dependence",
+        "name": "case_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "dependence",
+        "name": "person_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "dependence",
+        "name": "depends_on_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "dependence",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "member",
+        "name": "account_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "member",
+        "name": "case_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "member",
+        "name": "joined_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "case_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "keeper_account_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "account_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "display_name",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "case_member",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_finances",
+        "name": "person_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_finances",
+        "name": "incomes",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_finances",
+        "name": "assets_recorded_in_full",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_finances",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_profile",
+        "name": "person_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_profile",
+        "name": "facts",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_profile",
+        "name": "dependence_answered",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_profile",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "relationship",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "relationship",
+        "name": "case_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "relationship",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "relationship",
+        "name": "from_person_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "relationship",
+        "name": "to_person_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "relationship",
+        "name": "details",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "relationship",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "share",
+        "name": "case_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "share",
+        "name": "person_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "share",
+        "name": "grantee_account_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "share",
+        "name": "scope",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "share",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "asset_case_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "case_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset_owner",
+        "name": "asset_owner_person_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "person_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "dependence",
+        "name": "dependence_depends_on_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "depends_on_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "person_case_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "case_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "person_keeper_account_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "keeper_account_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "relationship",
+        "name": "relationship_case_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "case_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "relationship",
+        "name": "relationship_from_person_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "from_person_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "relationship",
+        "name": "relationship_to_person_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "to_person_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "share",
+        "name": "share_grantee_account_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "grantee_account_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "asset_case_id_case_file_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "case_id"
+        ],
+        "schemaTo": "cases",
+        "tableTo": "case_file",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset_owner",
+        "name": "asset_owner_asset_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "asset_id",
+          "case_id"
+        ],
+        "schemaTo": "cases",
+        "tableTo": "asset",
+        "columnsTo": [
+          "id",
+          "case_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset_owner",
+        "name": "asset_owner_person_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "person_id",
+          "case_id"
+        ],
+        "schemaTo": "cases",
+        "tableTo": "person",
+        "columnsTo": [
+          "id",
+          "case_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "dependence",
+        "name": "dependence_person_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "person_id",
+          "case_id"
+        ],
+        "schemaTo": "cases",
+        "tableTo": "person",
+        "columnsTo": [
+          "id",
+          "case_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "dependence",
+        "name": "dependence_depends_on_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "depends_on_id",
+          "case_id"
+        ],
+        "schemaTo": "cases",
+        "tableTo": "person",
+        "columnsTo": [
+          "id",
+          "case_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "member",
+        "name": "member_case_id_case_file_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "case_id"
+        ],
+        "schemaTo": "cases",
+        "tableTo": "case_file",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "person_case_id_case_file_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "case_id"
+        ],
+        "schemaTo": "cases",
+        "tableTo": "case_file",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "person_keeper_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "case_id",
+          "keeper_account_id"
+        ],
+        "schemaTo": "cases",
+        "tableTo": "member",
+        "columnsTo": [
+          "case_id",
+          "account_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_finances",
+        "name": "person_finances_person_id_person_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "person_id"
+        ],
+        "schemaTo": "cases",
+        "tableTo": "person",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_profile",
+        "name": "person_profile_person_id_person_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "person_id"
+        ],
+        "schemaTo": "cases",
+        "tableTo": "person",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "relationship",
+        "name": "relationship_from_person_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "from_person_id",
+          "case_id"
+        ],
+        "schemaTo": "cases",
+        "tableTo": "person",
+        "columnsTo": [
+          "id",
+          "case_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "relationship",
+        "name": "relationship_to_person_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "to_person_id",
+          "case_id"
+        ],
+        "schemaTo": "cases",
+        "tableTo": "person",
+        "columnsTo": [
+          "id",
+          "case_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "share",
+        "name": "share_person_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "person_id",
+          "case_id"
+        ],
+        "schemaTo": "cases",
+        "tableTo": "person",
+        "columnsTo": [
+          "id",
+          "case_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "share",
+        "name": "share_grantee_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "case_id",
+          "grantee_account_id"
+        ],
+        "schemaTo": "cases",
+        "tableTo": "member",
+        "columnsTo": [
+          "case_id",
+          "account_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset_owner",
+        "name": "asset_owner_pkey",
+        "columns": [
+          "asset_id",
+          "person_id"
+        ],
+        "nameExplicit": true,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "dependence",
+        "name": "dependence_pkey",
+        "columns": [
+          "person_id",
+          "depends_on_id"
+        ],
+        "nameExplicit": true,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "share",
+        "name": "share_pkey",
+        "columns": [
+          "person_id",
+          "grantee_account_id",
+          "scope"
+        ],
+        "nameExplicit": true,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "asset_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "case_file",
+        "name": "case_file_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "member",
+        "name": "member_pkey",
+        "columns": [
+          "account_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "person_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_finances",
+        "name": "person_finances_pkey",
+        "columns": [
+          "person_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_profile",
+        "name": "person_profile_pkey",
+        "columns": [
+          "person_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "relationship",
+        "name": "relationship_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "asset_id_case_id_key",
+        "nameExplicit": true,
+        "columns": [
+          "id",
+          "case_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "member",
+        "name": "member_case_id_account_id_key",
+        "nameExplicit": true,
+        "columns": [
+          "case_id",
+          "account_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "person_id_case_id_key",
+        "nameExplicit": true,
+        "columns": [
+          "id",
+          "case_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "person_account_id_key",
+        "nameExplicit": true,
+        "columns": [
+          "account_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "asset_kind",
+        "value": "\"kind\" IN ('cash', 'investment', 'real_estate', 'business', 'retirement', 'vehicle', 'other')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "asset_value_amount",
+        "value": "\"value_amount\" >= 0",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "asset_value_currency",
+        "value": "\"value_currency\" ~ '^[A-Z]{3}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "asset_sold",
+        "value": "\"sold\" = 'none' OR \"sold\" ~ '^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset_owner",
+        "name": "asset_owner_share",
+        "value": "\"share\" > 0 AND \"share\" <= 1",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "dependence",
+        "name": "dependence_two_people",
+        "value": "\"person_id\" <> \"depends_on_id\"",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "person_display_name_length",
+        "value": "char_length(\"display_name\") BETWEEN 1 AND 80 AND \"display_name\" = btrim(\"display_name\")",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "person_keeps_own_account",
+        "value": "\"account_id\" IS NULL OR (\"account_id\" = \"keeper_account_id\" AND \"case_member\")",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_finances",
+        "name": "person_finances_incomes_shape",
+        "value": "jsonb_typeof(\"incomes\") = 'array' AND octet_length(\"incomes\"::text) <= 8192",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_profile",
+        "name": "person_profile_facts_shape",
+        "value": "jsonb_typeof(\"facts\") = 'object' AND octet_length(\"facts\"::text) <= 32768",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "relationship",
+        "name": "relationship_kind",
+        "value": "\"kind\" IN ('spouse', 'partner', 'parent')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "relationship",
+        "name": "relationship_two_people",
+        "value": "\"from_person_id\" <> \"to_person_id\"",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "relationship",
+        "name": "relationship_details_shape",
+        "value": "jsonb_typeof(\"details\") = 'object' AND octet_length(\"details\"::text) <= 1024",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "share",
+        "name": "share_scope",
+        "value": "\"scope\" IN ('profile', 'finances')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "asset_select_owner_visible",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "EXISTS (SELECT 1 FROM \"cases\".\"asset_owner\" WHERE \"cases\".\"asset_owner\".\"asset_id\" = \"cases\".\"asset\".\"id\")",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "asset_update_confirmed_keeper",
+        "as": "PERMISSIVE",
+        "for": "UPDATE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "EXISTS (SELECT 1 FROM \"cases\".\"asset_owner\" WHERE \"cases\".\"asset_owner\".\"asset_id\" = \"cases\".\"asset\".\"id\" AND \"cases\".\"asset_owner\".\"confirmed\" AND EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"asset_owner\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid))",
+        "withCheck": "EXISTS (SELECT 1 FROM \"cases\".\"asset_owner\" WHERE \"cases\".\"asset_owner\".\"asset_id\" = \"cases\".\"asset\".\"id\" AND \"cases\".\"asset_owner\".\"confirmed\" AND EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"asset_owner\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid))",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "asset_delete_confirmed_keeper",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "EXISTS (SELECT 1 FROM \"cases\".\"asset_owner\" WHERE \"cases\".\"asset_owner\".\"asset_id\" = \"cases\".\"asset\".\"id\" AND \"cases\".\"asset_owner\".\"confirmed\" AND EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"asset_owner\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid))",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "asset_select_by_definer",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "cases_definer"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset",
+        "name": "asset_delete_by_definer",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "cases_definer"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset_owner",
+        "name": "asset_owner_select_keeper_or_shared",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"asset_owner\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid) OR EXISTS (SELECT 1 FROM \"cases\".\"share\" WHERE \"cases\".\"share\".\"person_id\" = \"cases\".\"asset_owner\".\"person_id\" AND \"cases\".\"share\".\"grantee_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid AND \"cases\".\"share\".\"scope\" = 'finances')",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset_owner",
+        "name": "asset_owner_update_keeper",
+        "as": "PERMISSIVE",
+        "for": "UPDATE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"asset_owner\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "withCheck": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"asset_owner\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid) AND \"cases\".\"asset_owner\".\"confirmed\"",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset_owner",
+        "name": "asset_owner_delete_keeper",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"asset_owner\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "asset_owner",
+        "name": "asset_owner_select_by_definer",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "cases_definer"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "case_file",
+        "name": "case_file_select_by_definer",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "cases_definer"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "case_file",
+        "name": "case_file_delete_by_definer",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "cases_definer"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "dependence",
+        "name": "dependence_select_keeper_or_shared",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"dependence\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid) OR EXISTS (SELECT 1 FROM \"cases\".\"share\" WHERE \"cases\".\"share\".\"person_id\" = \"cases\".\"dependence\".\"person_id\" AND \"cases\".\"share\".\"grantee_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid AND \"cases\".\"share\".\"scope\" = 'profile')",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "dependence",
+        "name": "dependence_insert_keeper",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"dependence\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "dependence",
+        "name": "dependence_delete_keeper",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"dependence\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "member",
+        "name": "member_select_by_definer",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "cases_definer"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "member",
+        "name": "member_select_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"cases\".\"member\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "member",
+        "name": "member_delete_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"cases\".\"member\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "person_insert_keeper",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "\"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid AND \"cases\".\"person\".\"account_id\" IS NULL",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "person_update_keeper",
+        "as": "PERMISSIVE",
+        "for": "UPDATE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": "\"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "person_delete_keeper",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid AND \"cases\".\"person\".\"account_id\" IS NULL",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "person_select_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "person_delete_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_finances",
+        "name": "person_finances_select_keeper_or_shared",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"person_finances\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid) OR EXISTS (SELECT 1 FROM \"cases\".\"share\" WHERE \"cases\".\"share\".\"person_id\" = \"cases\".\"person_finances\".\"person_id\" AND \"cases\".\"share\".\"grantee_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid AND \"cases\".\"share\".\"scope\" = 'finances')",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_finances",
+        "name": "person_finances_insert_keeper",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"person_finances\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_finances",
+        "name": "person_finances_update_keeper",
+        "as": "PERMISSIVE",
+        "for": "UPDATE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"person_finances\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "withCheck": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"person_finances\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_finances",
+        "name": "person_finances_delete_keeper",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"person_finances\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_profile",
+        "name": "person_profile_select_keeper_or_shared",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"person_profile\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid) OR EXISTS (SELECT 1 FROM \"cases\".\"share\" WHERE \"cases\".\"share\".\"person_id\" = \"cases\".\"person_profile\".\"person_id\" AND \"cases\".\"share\".\"grantee_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid AND \"cases\".\"share\".\"scope\" = 'profile')",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_profile",
+        "name": "person_profile_insert_keeper",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"person_profile\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_profile",
+        "name": "person_profile_update_keeper",
+        "as": "PERMISSIVE",
+        "for": "UPDATE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"person_profile\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "withCheck": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"person_profile\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person_profile",
+        "name": "person_profile_delete_keeper",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"person_profile\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "relationship",
+        "name": "relationship_insert_keeper",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"relationship\".\"from_person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid) OR EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"relationship\".\"to_person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "relationship",
+        "name": "relationship_update_keeper",
+        "as": "PERMISSIVE",
+        "for": "UPDATE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"relationship\".\"from_person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid) OR EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"relationship\".\"to_person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "withCheck": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"relationship\".\"from_person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid) OR EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"relationship\".\"to_person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "relationship",
+        "name": "relationship_delete_keeper",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"relationship\".\"from_person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid) OR EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"relationship\".\"to_person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "share",
+        "name": "share_select_keeper_or_grantee",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"share\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid) OR \"cases\".\"share\".\"grantee_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "share",
+        "name": "share_insert_keeper",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"share\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "share",
+        "name": "share_delete_keeper",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"share\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    }
+  ]
+}

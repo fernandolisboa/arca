@@ -1,0 +1,153 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "bbfd0569-537b-43f5-90b8-d8e27b775206",
+  "prevIds": [
+    "8a0a65ac-1451-47a3-92ae-f7acd398c2b7"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "case_file"
+      ],
+      "writes": [
+        "s|pol|cases.case_file.case_file_select_member",
+        "n|pol|cases.case_file.case_file_select_member",
+        "e|pol|cases.case_file.case_file_select_member"
+      ],
+      "reads": [
+        "n|tbl|cases.case_file",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.case_file"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "member"
+      ],
+      "writes": [
+        "s|pol|cases.member.member_select_member",
+        "n|pol|cases.member.member_select_member",
+        "e|pol|cases.member.member_select_member"
+      ],
+      "reads": [
+        "n|tbl|cases.member",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.member"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "person"
+      ],
+      "writes": [
+        "s|pol|cases.person.person_select_member",
+        "n|pol|cases.person.person_select_member",
+        "e|pol|cases.person.person_select_member"
+      ],
+      "reads": [
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.person"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "relationship"
+      ],
+      "writes": [
+        "s|pol|cases.relationship.relationship_select_member",
+        "n|pol|cases.relationship.relationship_select_member",
+        "e|pol|cases.relationship.relationship_select_member"
+      ],
+      "reads": [
+        "n|tbl|cases.relationship",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.relationship"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "case_file",
+        "name": "case_file_select_member",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "cases.is_member(\"cases\".\"case_file\".\"id\")",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "member",
+        "name": "member_select_member",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "cases.is_member(\"cases\".\"member\".\"case_id\")",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "person",
+        "name": "person_select_member",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "cases.is_member(\"cases\".\"person\".\"case_id\")",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "relationship",
+        "name": "relationship_select_member",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "cases.is_member(\"cases\".\"relationship\".\"case_id\")",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    }
+  ]
+}

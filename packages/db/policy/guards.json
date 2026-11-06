@@ -87,7 +87,11 @@
   ],
   "materializedViews": [],
   "foreignTables": [],
-  "securityDefinerFunctions": [],
+  "securityDefinerFunctions": [
+    "cases.drop_empty_case",
+    "cases.drop_unowned_asset",
+    "cases.is_member"
+  ],
   "migrationExtensions": [],
   "deferrableConstraints": []
 }

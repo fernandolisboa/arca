@@ -1,0 +1,4 @@
+CREATE POLICY "case_file_select_member" ON "cases"."case_file" AS PERMISSIVE FOR SELECT TO "app_api" USING (cases.is_member("cases"."case_file"."id"));--> statement-breakpoint
+CREATE POLICY "member_select_member" ON "cases"."member" AS PERMISSIVE FOR SELECT TO "app_api" USING (cases.is_member("cases"."member"."case_id"));--> statement-breakpoint
+CREATE POLICY "person_select_member" ON "cases"."person" AS PERMISSIVE FOR SELECT TO "app_api" USING (cases.is_member("cases"."person"."case_id"));--> statement-breakpoint
+CREATE POLICY "relationship_select_member" ON "cases"."relationship" AS PERMISSIVE FOR SELECT TO "app_api" USING (cases.is_member("cases"."relationship"."case_id"));

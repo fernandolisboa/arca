@@ -1,6 +1,8 @@
 import type { ClientBase } from 'pg';
 import {
   ownerColumns as directOwnerColumns,
+  parentLinks,
+  type Owner,
   type Registry,
   type RegistryEntry,
 } from '../../src/registry.js';
@@ -15,6 +17,8 @@ export interface Catalog {
   readonly columns: ReadonlyMap<string, ReadonlyMap<string, Column>>;
   readonly foreignKeys: readonly ForeignKey[];
   readonly policies: readonly Policy[];
+  /** `schema.table` of each table with an enabled row-level `AFTER DELETE` trigger. */
+  readonly afterDeleteTriggers: ReadonlySet<string>;
 }
 
 export interface Column {
@@ -92,6 +96,15 @@ export async function readCatalog(client: Pick<ClientBase, 'query'>): Promise<Ca
        JOIN pg_catalog.pg_class c ON c.oid = p.polrelid
        JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace`,
   );
+  // tgtype bits: 1 row-level, 2 before, 8 delete, 64 instead of.
+  const triggers = await client.query<{ table: string }>(
+    `SELECT DISTINCT ${qualified} AS table
+       FROM pg_catalog.pg_trigger t
+       JOIN pg_catalog.pg_class c ON c.oid = t.tgrelid
+       JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+      WHERE NOT t.tgisinternal AND t.tgenabled <> 'D'
+        AND (t.tgtype & 1) = 1 AND (t.tgtype & 2) = 0 AND (t.tgtype & 64) = 0 AND (t.tgtype & 8) = 8`,
+  );
   const byTable = new Map<string, Map<string, Column>>();
   for (const { name, column, quoted, notNull, type } of columns.rows) {
     const known = byTable.get(name) ?? new Map<string, Column>();
@@ -104,6 +117,7 @@ export async function readCatalog(client: Pick<ClientBase, 'query'>): Promise<Ca
     columns: byTable,
     foreignKeys: foreignKeys.rows,
     policies: policies.rows,
+    afterDeleteTriggers: new Set(triggers.rows.map((row) => row.table)),
   };
 }
 
@@ -170,12 +184,35 @@ function jobsErasureProblems(table: string, owners: readonly Column[], catalog: 
   return problems;
 }
 
+/** The entry's own columns that tie its rows to their owners. */
+function tyingColumns(owner: Owner): readonly string[] {
+  if ('referencedBy' in owner) return owner.columns;
+  const links = parentLinks(owner);
+  return links.length === 0 ? directOwnerColumns(owner) : links.flatMap((link) => link.columns);
+}
+
+const cascadesTo = (
+  catalog: Catalog,
+  from: string,
+  columns: readonly string[],
+  to: string,
+  toColumns: readonly string[],
+) =>
+  catalog.foreignKeys.some(
+    (key) =>
+      key.table === from &&
+      key.references === to &&
+      key.onDelete === 'c' &&
+      sameColumns(key.columns, columns) &&
+      sameColumns(key.referencedColumns, toColumns),
+  );
+
 function entryProblems(entry: RegistryEntry, catalog: Catalog, registry: Registry): string[] {
   const { table, owner } = entry;
   const columns = catalog.columns.get(table);
   if (columns === undefined) return [];
   const problems: string[] = [];
-  const ownerColumns = 'parent' in owner ? owner.columns : directOwnerColumns(owner);
+  const ownerColumns = tyingColumns(owner);
   for (const column of [...ownerColumns, ...entry.export]) {
     if (!columns.has(column)) problems.push(`${table} has no column ${column}`);
   }
@@ -196,27 +233,42 @@ function entryProblems(entry: RegistryEntry, catalog: Catalog, registry: Registr
   if (!inAuth && entry.strategy === 'delete' && entry.pool !== 'app_jobs') {
     problems.push(`${table} is outside auth but is not deleted by app_jobs`);
   }
-  if ('parent' in owner) {
-    const parent = registry.entries.find((candidate) => candidate.table === owner.parent);
+  for (const link of parentLinks(owner)) {
+    const parent = registry.entries.find((candidate) => candidate.table === link.parent);
     if (parent?.strategy !== 'delete' || !('column' in parent.owner)) {
       problems.push(
-        `${table} hangs off ${owner.parent}, which is not a deleted entry owned by a column`,
+        `${table} hangs off ${link.parent}, which is not a deleted entry owned by a column`,
       );
     }
-    const cascades = catalog.foreignKeys.some(
-      (key) =>
-        key.table === table &&
-        key.references === owner.parent &&
-        key.onDelete === 'c' &&
-        sameColumns(key.columns, owner.columns) &&
-        sameColumns(key.referencedColumns, owner.parentColumns),
-    );
-    if (!cascades) {
+    if (!cascadesTo(catalog, table, link.columns, link.parent, link.parentColumns)) {
       problems.push(
-        `${table} has no ON DELETE CASCADE foreign key (${owner.columns.join(', ')}) to ${owner.parent} (${owner.parentColumns.join(', ')})`,
+        `${table} has no ON DELETE CASCADE foreign key (${link.columns.join(', ')}) to ${link.parent} (${link.parentColumns.join(', ')})`,
       );
     }
-  } else if (entry.strategy === 'delete' && entry.pool === 'app_jobs') {
+  }
+  if ('referencedBy' in owner) {
+    // The referencing rows own these: they go when it goes, and a trigger deletes it with the last.
+    const referencing = registry.entries.find(
+      (candidate) => candidate.table === owner.referencedBy,
+    );
+    if (referencing?.strategy !== 'delete' || parentLinks(referencing.owner).length === 0) {
+      problems.push(
+        `${table} is owned through ${owner.referencedBy}, which is not a deleted entry that hangs off a parent`,
+      );
+    }
+    if (!cascadesTo(catalog, owner.referencedBy, owner.referencingColumns, table, owner.columns)) {
+      problems.push(
+        `${owner.referencedBy} has no ON DELETE CASCADE foreign key (${owner.referencingColumns.join(', ')}) to ${table} (${owner.columns.join(', ')})`,
+      );
+    }
+    if (!catalog.afterDeleteTriggers.has(owner.referencedBy)) {
+      problems.push(
+        `${owner.referencedBy} has no AFTER DELETE row trigger, so ${table} outlives its owners`,
+      );
+    }
+  }
+  const ownedByColumns = directOwnerColumns(owner).length > 0;
+  if (ownedByColumns && entry.strategy === 'delete' && entry.pool === 'app_jobs') {
     const owners = ownerColumns.flatMap((name) => columns.get(name) ?? []);
     if (owners.length === ownerColumns.length) {
       problems.push(...jobsErasureProblems(table, owners, catalog));

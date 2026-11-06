@@ -42,6 +42,13 @@ export interface DatabasePolicy {
 export const appRoles = ['app_migrator', 'app_api', 'app_jobs', 'app_auth', 'app_audit'] as const;
 /** Roles bootstrap keeps without login so old migrations replay (ADR-0021 retired app_backup). */
 export const retiredRoles = ['app_backup'] as const;
+/**
+ * Roles that cannot log in and own SECURITY DEFINER functions (spec 0007, R1), each confined to
+ * its schema. The migrator may SET ROLE to one, without inheriting it, only to hand it a function
+ * a migration created.
+ */
+export const definerRoleSchemas = { cases_definer: 'cases' } as const;
+export const definerRoles = Object.keys(definerRoleSchemas) as (keyof typeof definerRoleSchemas)[];
 export const migratorRole = 'app_migrator';
 export const runtimeRoles = appRoles.filter((role) => role !== migratorRole);
 

@@ -151,7 +151,7 @@ The suite runs on every change to a prompt, model, adapter or rule version, and 
 ## Security
 
 - Passwordless login (passkeys), invite-only, with purpose-bound step-up for sensitive and financial actions and a user-verified passkey ceremony to open the vault ([ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)); step-up also activates or rejects a knowledge-base version ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)).
-- Row-level security on every table with case data, scoped by account and then by case membership (ADR-0008, ADR-0015). Each unit's finances are visible to others only if the owner shares them.
+- Row-level security on every table with case data, scoped by account and then by case membership (ADR-0008, ADR-0015). A person's profile and finances are visible only to their keeper and to the members the keeper shared them with ([spec 0007](specs/0007-case-model-and-guided-intake.md#r1-case-tables)).
 - Client-side encryption for documents in the age format: each person has a hybrid post-quantum identity, kept on the server only inside envelopes their passkeys or recovery kit open; each document is encrypted to its owner and the people it is shared with; storage holds ciphertext ([ADR-0018](adr/0018-vault-encryption.md)). Trade-off: AI extraction runs only when the user opens a document and authorizes it.
 - Two-person approval to change bank or exchange details.
 - Append-only audit log of who viewed and changed what.

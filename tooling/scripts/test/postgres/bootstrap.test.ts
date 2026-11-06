@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { bootstrap } from '../../src/db/bootstrap.ts';
-import { appRoles, retiredRoles } from '../../src/db/policy.ts';
+import { appRoles, definerRoles, retiredRoles } from '../../src/db/policy.ts';
 import {
   adminTarget,
   bootstrapSql,
@@ -70,8 +70,40 @@ describe('bootstrap', () => {
         rolvaliduntil: null,
       })),
     );
-    expect(snapshot.memberships).toEqual([]);
+    // Only the migrator's SET-only membership in the definer role, for handing it functions.
+    expect(snapshot.memberships).toEqual([
+      {
+        granted: 'cases_definer',
+        member: 'app_migrator',
+        admin_option: false,
+        inherit_option: false,
+        set_option: true,
+      },
+    ]);
     expect(snapshot.databaseCreate).toEqual([{ rolname: 'app_migrator' }]);
+  });
+
+  it('creates each definer role unable to log in or inherit', async () => {
+    const roles = await withClient(adminTarget(database), (client) =>
+      client.query(
+        `SELECT rolname, rolsuper, rolinherit, rolcreaterole, rolcreatedb, rolcanlogin,
+                rolreplication, rolbypassrls
+           FROM pg_catalog.pg_roles WHERE rolname = ANY ($1::text[]) ORDER BY rolname`,
+        [definerRoles],
+      ),
+    );
+    expect(roles.rows).toEqual(
+      [...definerRoles].sort().map((rolname) => ({
+        rolname,
+        rolsuper: false,
+        rolinherit: false,
+        rolcreaterole: false,
+        rolcreatedb: false,
+        rolcanlogin: false,
+        rolreplication: false,
+        rolbypassrls: false,
+      })),
+    );
   });
 
   it('is idempotent and corrects drifted attributes', async () => {

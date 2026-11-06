@@ -1,5 +1,13 @@
 import type { ClientBase } from 'pg';
-import { appRoles, retiredRoles, runtimeRoles, type DatabasePolicy } from './policy.ts';
+import {
+  appRoles,
+  definerRoleSchemas,
+  definerRoles,
+  migratorRole,
+  retiredRoles,
+  runtimeRoles,
+  type DatabasePolicy,
+} from './policy.ts';
 
 export interface GuardViolation {
   readonly guard: number;
@@ -34,7 +42,10 @@ function tablesWithoutForcedRls(client: Query, policy: DatabasePolicy) {
   );
 }
 
-/** Guard 2: views run as the invoker; materialized views, foreign tables and definer functions need listing. */
+/**
+ * Guard 2: views run as the invoker; materialized views, foreign tables and definer functions need
+ * listing, and a definer function is owned by a definer role and pins its search_path.
+ */
 function unsafeViewsAndFunctions(client: Query, policy: DatabasePolicy) {
   return rows(
     client,
@@ -61,11 +72,28 @@ function unsafeViewsAndFunctions(client: Query, policy: DatabasePolicy) {
          JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
         WHERE p.prosecdef AND ${userSchemas}
           AND NOT (n.nspname || '.' || p.proname = ANY ($3::text[]))
+       UNION ALL
+       SELECT pg_catalog.format('function %I.%I is SECURITY DEFINER but owned by %I, not a definer role',
+                n.nspname, p.proname, r.rolname)
+         FROM pg_catalog.pg_proc p
+         JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
+         JOIN pg_catalog.pg_roles r ON r.oid = p.proowner
+        WHERE p.prosecdef AND ${userSchemas}
+          AND NOT (r.rolname = ANY ($4::text[]))
+       UNION ALL
+       SELECT pg_catalog.format('function %I.%I is SECURITY DEFINER and does not pin search_path', n.nspname, p.proname)
+         FROM pg_catalog.pg_proc p
+         JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
+        WHERE p.prosecdef AND ${userSchemas}
+          AND NOT EXISTS (
+            SELECT FROM pg_catalog.unnest(p.proconfig) AS setting
+             WHERE setting = 'search_path=pg_catalog, pg_temp')
      ) found ORDER BY 1`,
     [
       policy.guards.materializedViews,
       policy.guards.foreignTables,
       policy.guards.securityDefinerFunctions,
+      definerRoles,
     ],
   );
 }
@@ -104,7 +132,8 @@ function privilegedRoles(client: Query, policy: DatabasePolicy) {
 
 /**
  * Guard 5: memberships that touch a checked role are at most the ADMIN OPTION grants Postgres 16+
- * records for the owner role that created each app role, with INHERIT and SET false. Predefined
+ * records for the owner role that created each app role, with INHERIT and SET false, and the
+ * migrator's SET-only membership in each definer role. Predefined
  * `pg_*` roles (a reserved prefix) are not checked themselves, so their own memberships and the
  * platform's grants of them to exempt roles pass, while granting one to a checked role does not.
  */
@@ -121,12 +150,24 @@ function unexpectedMemberships(client: Query, policy: DatabasePolicy) {
         AND NOT (member.rolname IS NOT DISTINCT FROM $2::text
                  AND granted.rolname = ANY ($3::text[])
                  AND m.admin_option AND NOT m.inherit_option AND NOT m.set_option)
+        AND NOT (member.rolname = $4::text
+                 AND granted.rolname = ANY ($5::text[])
+                 AND NOT m.admin_option AND NOT m.inherit_option AND m.set_option)
       ORDER BY 1`,
-    [policy.roles.exemptRoles, policy.roles.ownerAdminRole, [...appRoles, ...retiredRoles]],
+    [
+      policy.roles.exemptRoles,
+      policy.roles.ownerAdminRole,
+      [...appRoles, ...retiredRoles, ...definerRoles],
+      migratorRole,
+      definerRoles,
+    ],
   );
 }
 
-/** Guard 6: runtime and retired roles own nothing and cannot create anything. */
+/**
+ * Guard 6: runtime, retired and definer roles own no relation or schema and cannot create
+ * anything; a definer role owns only its allow-listed functions (guard 2).
+ */
 function runtimeRolePrivileges(client: Query) {
   return rows(
     client,
@@ -154,7 +195,36 @@ function runtimeRolePrivileges(client: Query) {
         WHERE EXISTS (SELECT FROM pg_catalog.pg_roles r WHERE r.rolname = role_name)
           AND pg_catalog.has_database_privilege(role_name, pg_catalog.current_database(), 'CREATE')
      ) found ORDER BY 1`,
-    [[...runtimeRoles, ...retiredRoles]],
+    [[...runtimeRoles, ...retiredRoles, ...definerRoles]],
+  );
+}
+
+/**
+ * Guard 6, continued: a definer role holds no privilege on a schema, table or column outside its
+ * own schema, since the code of its functions cannot be guarded.
+ */
+function definerRoleReach(client: Query) {
+  const entries = Object.entries(definerRoleSchemas);
+  return rows(
+    client,
+    `SELECT problem FROM (
+       SELECT pg_catalog.format('%I holds privileges on schema %I, outside %I', d.role, n.nspname, d.home) AS problem
+         FROM ROWS FROM (pg_catalog.unnest($1::text[]), pg_catalog.unnest($2::text[])) AS d(role, home)
+         JOIN pg_catalog.pg_roles r ON r.rolname = d.role
+         JOIN pg_catalog.pg_namespace n ON n.nspname <> d.home
+        WHERE EXISTS (SELECT FROM pg_catalog.aclexplode(n.nspacl) a WHERE a.grantee = r.oid)
+       UNION ALL
+       SELECT pg_catalog.format('%I holds privileges on %I.%I, outside %I', d.role, n.nspname, c.relname, d.home)
+         FROM ROWS FROM (pg_catalog.unnest($1::text[]), pg_catalog.unnest($2::text[])) AS d(role, home)
+         JOIN pg_catalog.pg_roles r ON r.rolname = d.role
+         JOIN pg_catalog.pg_namespace n ON n.nspname <> d.home
+         JOIN pg_catalog.pg_class c ON c.relnamespace = n.oid
+        WHERE EXISTS (SELECT FROM pg_catalog.aclexplode(c.relacl) a WHERE a.grantee = r.oid)
+           OR EXISTS (SELECT FROM pg_catalog.pg_attribute t
+                       CROSS JOIN LATERAL pg_catalog.aclexplode(t.attacl) a
+                       WHERE t.attrelid = c.oid AND a.grantee = r.oid)
+     ) found ORDER BY 1`,
+    [entries.map(([role]) => role), entries.map(([, home]) => home)],
   );
 }
 
@@ -226,7 +296,10 @@ const guards = [
   unexpectedLoginRoles,
   privilegedRoles,
   unexpectedMemberships,
-  (client: Query) => runtimeRolePrivileges(client),
+  async (client: Query) => [
+    ...(await runtimeRolePrivileges(client)),
+    ...(await definerRoleReach(client)),
+  ],
   roleSettings,
   extensions,
   deferrableConstraints,
