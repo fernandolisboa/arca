@@ -6185,6 +6185,17 @@
                                   "finances"
                                 ],
                                 "additionalProperties": false
+                              },
+                              "sharedWithMe": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "profile",
+                                    "finances"
+                                  ]
+                                },
+                                "maxItems": 2
                               }
                             },
                             "required": [
@@ -6195,7 +6206,8 @@
                               "keptByMe",
                               "profile",
                               "finances",
-                              "shares"
+                              "shares",
+                              "sharedWithMe"
                             ]
                           }
                         },
@@ -7252,6 +7264,17 @@
                                   "finances"
                                 ],
                                 "additionalProperties": false
+                              },
+                              "sharedWithMe": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "profile",
+                                    "finances"
+                                  ]
+                                },
+                                "maxItems": 2
                               }
                             },
                             "required": [
@@ -7262,7 +7285,8 @@
                               "keptByMe",
                               "profile",
                               "finances",
-                              "shares"
+                              "shares",
+                              "sharedWithMe"
                             ]
                           }
                         },
@@ -8325,6 +8349,17 @@
                                   "finances"
                                 ],
                                 "additionalProperties": false
+                              },
+                              "sharedWithMe": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "profile",
+                                    "finances"
+                                  ]
+                                },
+                                "maxItems": 2
                               }
                             },
                             "required": [
@@ -8335,7 +8370,8 @@
                               "keptByMe",
                               "profile",
                               "finances",
-                              "shares"
+                              "shares",
+                              "sharedWithMe"
                             ]
                           }
                         },
@@ -9403,6 +9439,17 @@
                                   "finances"
                                 ],
                                 "additionalProperties": false
+                              },
+                              "sharedWithMe": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "profile",
+                                    "finances"
+                                  ]
+                                },
+                                "maxItems": 2
                               }
                             },
                             "required": [
@@ -9413,7 +9460,8 @@
                               "keptByMe",
                               "profile",
                               "finances",
-                              "shares"
+                              "shares",
+                              "sharedWithMe"
                             ]
                           }
                         },
@@ -10471,6 +10519,17 @@
                                   "finances"
                                 ],
                                 "additionalProperties": false
+                              },
+                              "sharedWithMe": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "profile",
+                                    "finances"
+                                  ]
+                                },
+                                "maxItems": 2
                               }
                             },
                             "required": [
@@ -10481,7 +10540,8 @@
                               "keptByMe",
                               "profile",
                               "finances",
-                              "shares"
+                              "shares",
+                              "sharedWithMe"
                             ]
                           }
                         },
@@ -11544,6 +11604,17 @@
                                   "finances"
                                 ],
                                 "additionalProperties": false
+                              },
+                              "sharedWithMe": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "profile",
+                                    "finances"
+                                  ]
+                                },
+                                "maxItems": 2
                               }
                             },
                             "required": [
@@ -11554,7 +11625,8 @@
                               "keptByMe",
                               "profile",
                               "finances",
-                              "shares"
+                              "shares",
+                              "sharedWithMe"
                             ]
                           }
                         },
@@ -12640,6 +12712,17 @@
                                   "finances"
                                 ],
                                 "additionalProperties": false
+                              },
+                              "sharedWithMe": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "profile",
+                                    "finances"
+                                  ]
+                                },
+                                "maxItems": 2
                               }
                             },
                             "required": [
@@ -12650,7 +12733,8 @@
                               "keptByMe",
                               "profile",
                               "finances",
-                              "shares"
+                              "shares",
+                              "sharedWithMe"
                             ]
                           }
                         },
@@ -13941,6 +14025,17 @@
                                   "finances"
                                 ],
                                 "additionalProperties": false
+                              },
+                              "sharedWithMe": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "profile",
+                                    "finances"
+                                  ]
+                                },
+                                "maxItems": 2
                               }
                             },
                             "required": [
@@ -13951,7 +14046,8 @@
                               "keptByMe",
                               "profile",
                               "finances",
-                              "shares"
+                              "shares",
+                              "sharedWithMe"
                             ]
                           }
                         },
@@ -15224,6 +15320,17 @@
                                   "finances"
                                 ],
                                 "additionalProperties": false
+                              },
+                              "sharedWithMe": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "profile",
+                                    "finances"
+                                  ]
+                                },
+                                "maxItems": 2
                               }
                             },
                             "required": [
@@ -15234,7 +15341,8 @@
                               "keptByMe",
                               "profile",
                               "finances",
-                              "shares"
+                              "shares",
+                              "sharedWithMe"
                             ]
                           }
                         },
@@ -16310,6 +16418,17 @@
                                   "finances"
                                 ],
                                 "additionalProperties": false
+                              },
+                              "sharedWithMe": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "profile",
+                                    "finances"
+                                  ]
+                                },
+                                "maxItems": 2
                               }
                             },
                             "required": [
@@ -16320,7 +16439,8 @@
                               "keptByMe",
                               "profile",
                               "finances",
-                              "shares"
+                              "shares",
+                              "sharedWithMe"
                             ]
                           }
                         },
@@ -17503,6 +17623,17 @@
                                   "finances"
                                 ],
                                 "additionalProperties": false
+                              },
+                              "sharedWithMe": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "profile",
+                                    "finances"
+                                  ]
+                                },
+                                "maxItems": 2
                               }
                             },
                             "required": [
@@ -17513,7 +17644,8 @@
                               "keptByMe",
                               "profile",
                               "finances",
-                              "shares"
+                              "shares",
+                              "sharedWithMe"
                             ]
                           }
                         },
@@ -18571,6 +18703,17 @@
                                   "finances"
                                 ],
                                 "additionalProperties": false
+                              },
+                              "sharedWithMe": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "profile",
+                                    "finances"
+                                  ]
+                                },
+                                "maxItems": 2
                               }
                             },
                             "required": [
@@ -18581,7 +18724,8 @@
                               "keptByMe",
                               "profile",
                               "finances",
-                              "shares"
+                              "shares",
+                              "sharedWithMe"
                             ]
                           }
                         },
@@ -19878,6 +20022,17 @@
                                   "finances"
                                 ],
                                 "additionalProperties": false
+                              },
+                              "sharedWithMe": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "profile",
+                                    "finances"
+                                  ]
+                                },
+                                "maxItems": 2
                               }
                             },
                             "required": [
@@ -19888,7 +20043,8 @@
                               "keptByMe",
                               "profile",
                               "finances",
-                              "shares"
+                              "shares",
+                              "sharedWithMe"
                             ]
                           }
                         },
@@ -21180,6 +21336,17 @@
                                   "finances"
                                 ],
                                 "additionalProperties": false
+                              },
+                              "sharedWithMe": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "profile",
+                                    "finances"
+                                  ]
+                                },
+                                "maxItems": 2
                               }
                             },
                             "required": [
@@ -21190,7 +21357,8 @@
                               "keptByMe",
                               "profile",
                               "finances",
-                              "shares"
+                              "shares",
+                              "sharedWithMe"
                             ]
                           }
                         },
@@ -22248,6 +22416,17 @@
                                   "finances"
                                 ],
                                 "additionalProperties": false
+                              },
+                              "sharedWithMe": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "profile",
+                                    "finances"
+                                  ]
+                                },
+                                "maxItems": 2
                               }
                             },
                             "required": [
@@ -22258,7 +22437,8 @@
                               "keptByMe",
                               "profile",
                               "finances",
-                              "shares"
+                              "shares",
+                              "sharedWithMe"
                             ]
                           }
                         },
@@ -23326,6 +23506,17 @@
                                   "finances"
                                 ],
                                 "additionalProperties": false
+                              },
+                              "sharedWithMe": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "profile",
+                                    "finances"
+                                  ]
+                                },
+                                "maxItems": 2
                               }
                             },
                             "required": [
@@ -23336,7 +23527,8 @@
                               "keptByMe",
                               "profile",
                               "finances",
-                              "shares"
+                              "shares",
+                              "sharedWithMe"
                             ]
                           }
                         },
@@ -24399,6 +24591,17 @@
                                   "finances"
                                 ],
                                 "additionalProperties": false
+                              },
+                              "sharedWithMe": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "profile",
+                                    "finances"
+                                  ]
+                                },
+                                "maxItems": 2
                               }
                             },
                             "required": [
@@ -24409,7 +24612,8 @@
                               "keptByMe",
                               "profile",
                               "finances",
-                              "shares"
+                              "shares",
+                              "sharedWithMe"
                             ]
                           }
                         },
@@ -25472,6 +25676,17 @@
                                   "finances"
                                 ],
                                 "additionalProperties": false
+                              },
+                              "sharedWithMe": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "profile",
+                                    "finances"
+                                  ]
+                                },
+                                "maxItems": 2
                               }
                             },
                             "required": [
@@ -25482,7 +25697,8 @@
                               "keptByMe",
                               "profile",
                               "finances",
-                              "shares"
+                              "shares",
+                              "sharedWithMe"
                             ]
                           }
                         },

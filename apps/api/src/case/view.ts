@@ -208,6 +208,11 @@ export function caseView(rows: CaseRows, accountId: string): CaseView {
         shares: person.keptByMe
           ? { profile: grantees(person.id, 'profile'), finances: grantees(person.id, 'finances') }
           : null,
+        sharedWithMe: person.keptByMe
+          ? []
+          : rows.shares
+              .filter((row) => row.personId === person.id && row.accountId === accountId)
+              .map((row) => row.scope),
       };
     }),
     relationships: rows.relationships.map(({ id, ...relationship }) => ({

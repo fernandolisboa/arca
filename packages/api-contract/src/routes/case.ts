@@ -1,5 +1,8 @@
 import {
   displayNameSchema,
+  maxCaseMembers,
+  maxCasePeople,
+  shareScopeSchema,
   storedAssetSchema,
   storedFinancesSchema,
   storedOwnerShareSchema,
@@ -17,8 +20,7 @@ import type { RouteDefinition } from './index.js';
  * exist; 409 case_limit says only that a limit is reached, never what a hidden row holds.
  */
 
-/** At most this many members, and so grantees, in a case. */
-export const maxCaseMembers = 30;
+export { maxCaseMembers, maxCasePeople };
 
 export const CaseProfile = z.strictObject({
   facts: storedProfileFactsSchema,
@@ -45,6 +47,8 @@ export const CasePerson = z.object({
   finances: storedFinancesSchema.nullable(),
   /** The members who see this person's profile and finances; only for people the viewer keeps. */
   shares: CaseShares.nullable(),
+  /** What the keeper of a person the viewer does not keep shares with the viewer. */
+  sharedWithMe: z.array(shareScopeSchema).max(2),
 });
 export type CasePerson = z.infer<typeof CasePerson>;
 

@@ -159,6 +159,11 @@ export const relationshipSchema = z.discriminatedUnion('kind', [
   parentEdgeSchema,
 ]);
 
+/** A case's size limits, which the API and its definer functions enforce as well. */
+export const maxCaseMembers = 30;
+export const maxCasePeople = 60;
+export const maxCaseRelationships = 200;
+
 /** At most this many parent edges per child, so lines of ancestors stay small. */
 export const maxParentsPerChild = 4;
 
@@ -205,9 +210,9 @@ export const caseSnapshotSchema = z
      * of then, so facts are read only at dates on or before it.
      */
     recordedOn: calendarDateSchema,
-    members: z.array(opaqueIdSchema).min(1).max(30),
-    people: z.array(personSchema).min(1).max(60),
-    relationships: z.array(relationshipSchema).max(200),
+    members: z.array(opaqueIdSchema).min(1).max(maxCaseMembers),
+    people: z.array(personSchema).min(1).max(maxCasePeople),
+    relationships: z.array(relationshipSchema).max(maxCaseRelationships),
     assets: z.array(assetSchema).max(100),
   })
   .superRefine((snapshot, context) => {

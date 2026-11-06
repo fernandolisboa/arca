@@ -10,7 +10,11 @@ export {
   deleteDocumentsAction,
   deletionWaitDays,
   documentQuota,
+  handOverCasePersonAction,
   inviteLifetimeHours,
+  leaveCaseAction,
+  maxCaseMembers,
+  maxCasePeople,
   maxDocumentBatch,
   maxDocumentBytes,
   maxSharingStateBytes,
@@ -31,6 +35,7 @@ export type {
   AuditEventsQuery,
   AuditEventsResponse,
   CasePerson,
+  CaseRelationship,
   CaseView,
   DataExport,
   DeviceDescription,
@@ -92,6 +97,11 @@ export class ContractViolationError extends Error {
     this.operationId = operationId;
   }
 }
+
+/** The body a route takes, as a caller writes it. */
+export type RouteBody<Route extends RouteDefinition> = Route['body'] extends z.ZodType
+  ? z.input<Route['body']>
+  : never;
 
 /** The body a route takes, when it takes one, or else its optional query parameters. */
 type InputOf<Route extends RouteDefinition> = Route['body'] extends z.ZodType

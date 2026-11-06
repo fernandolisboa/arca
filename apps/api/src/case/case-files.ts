@@ -17,6 +17,9 @@ import type {
 } from '@arca/api-contract/routes';
 import { withIdentity, type Database, type Transaction } from '@arca/db';
 import {
+  maxCaseMembers,
+  maxCasePeople,
+  maxCaseRelationships,
   type ShareScope,
   type StoredAsset,
   type StoredRelationship,
@@ -116,7 +119,11 @@ export interface CaseFilesSettings {
 }
 
 /** The snapshot's limits that every member can count (spec 0007, R1); the rest are the definer's. */
-export const caseSizeLimits = { people: 60, members: 30, relationships: 200 } as const;
+export const caseSizeLimits = {
+  people: maxCasePeople,
+  members: maxCaseMembers,
+  relationships: maxCaseRelationships,
+} as const;
 
 /** Raised by the case's definer functions when a limit is reached (SQLSTATE CL001). */
 const limitReached = 'CL001';

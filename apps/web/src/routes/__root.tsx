@@ -6,7 +6,10 @@ import { appearance, useAppearance } from '../appearance/store.js';
 export const Route = createRootRoute({ component: Root });
 
 /** Only pages that exist get an item (spec 0006, R8); the list grows as features land. */
-const destinations = [{ id: 'home', to: '/', icon: 'home' }] as const;
+const destinations = [
+  { id: 'home', to: '/', icon: 'home' },
+  { id: 'family', to: '/family', icon: 'family' },
+] as const;
 const settingsPage = { id: 'settings', to: '/settings', icon: 'settings' } as const;
 
 function ShellLink({ href, ...props }: ShellLinkProps) {

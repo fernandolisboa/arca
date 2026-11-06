@@ -14,11 +14,13 @@ import {
   Settings,
   TriangleAlert,
   UserRound,
+  UsersRound,
   type LucideIcon,
 } from 'lucide-react';
 
 const icons = {
   home: House,
+  family: UsersRound,
   countries: Earth,
   plan: Route,
   documents: FileText,
