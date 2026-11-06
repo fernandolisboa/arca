@@ -1,6 +1,6 @@
 ---
 name: security-reviewer
-description: Must-pass security reviewer for every change. Reviews against docs/SECURITY.md, OWASP ASVS 5.0 Level 2 and OWASP Top 10:2025. Use proactively before any commit or pull request.
+description: Must-pass security reviewer for every change to code or config. Reviews against docs/SECURITY.md, OWASP ASVS 5.0 Level 2 and OWASP Top 10:2025. Use proactively before any commit or pull request.
 tools: Read, Grep, Glob, Bash
 model: fable
 effort: high
