@@ -52,7 +52,7 @@ TypeScript end to end, in a pnpm + Turborepo monorepo.
 | Object storage | A private Vercel Blob store in São Paulo per environment, holding client-side ciphertext only, reached through OIDC; no AWS and no server-side field keys ([ADR-0021](0021-stay-on-vercel-and-neon.md)) |
 | Transactional email | Resend |
 | AI | Adapters behind ports ([ADR-0004](0004-ai-providers-behind-ports.md)): Vercel AI SDK for LLM calls and structured output (Anthropic Claude by default); TypeSafe Jev for the `Classifier` port when it wins on evaluation; embedding and speech vendors chosen by ADR when those features are built |
-| LLM tracing | Langfuse, with a masking function so case content never leaves Brazil; only metadata, scores and redacted text are exported |
+| LLM tracing | Langfuse, with a masking function so case content never leaves Brazil; only metadata, scores and redacted text are exported; it arrives with the second model call kind ([ADR-0023](0023-free-text-intake-sends-the-writers-own-words.md)) |
 | Errors and traces | Sentry (errors and OpenTelemetry traces), personal data scrubbing on; structured JSON logs |
 | Rate limiting | Vercel Firewall at the edge, plus limits and per-person AI budgets stored in Postgres |
 | Testing | Vitest (unit and integration), fast-check for property tests ([spec 0002](../specs/0002-rules-engine-and-knowledge-base.md)), a Postgres service container in CI for database tests, Playwright (end to end), the access-matrix suite for row-level security, the synthetic evaluation suite for AI behavior; preview deployments use Neon branches forked from production until a synthetic `development` branch becomes the default, before the first case-data table ([ADR-0012](0012-automation-first-setup.md)) |
