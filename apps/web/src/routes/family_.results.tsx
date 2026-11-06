@@ -246,6 +246,7 @@ function PrincipalResult({
           {result.missingRates.length > 0 && (
             <p className="text-small text-muted">
               {t('results.missingRates', {
+                n: result.missingRates.length,
                 pairs: words.list(result.missingRates.map((pair) => t('results.ratePair', pair))),
               })}
             </p>

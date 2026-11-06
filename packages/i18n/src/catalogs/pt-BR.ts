@@ -639,7 +639,7 @@ export const ptBR = {
       'Fonte desatualizada: alguma regra desta rota não foi conferida nos últimos {days} dias e precisa ser checada de novo.',
     closed: 'Rota encerrada: ela não aceita mais pedidos.',
     missingRates:
-      'Falta a cotação de {pairs}. O Arca ainda não tem cotações de moeda, então esta comparação fica em aberto.',
+      '{n, plural, one {Falta a cotação} other {Faltam as cotações}} de {pairs}. O Arca ainda não tem cotações de moeda, então esta comparação fica em aberto.',
     ratePair: '{from} para {to}',
     missingDates: 'Ainda falta definir: {dates}.',
     newerVersion: 'Uma versão nova desta rota vale a partir de {date} e ainda aguarda ativação.',

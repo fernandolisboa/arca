@@ -86,9 +86,12 @@ function asked(missing: MissingFact, kept: ReadonlySet<string>): Asked[] {
             { personId, question },
             ...(next === undefined ? [] : [{ personId: next, question: 'birthDate' as const }]),
           ];
+        case 'lineage.edgeKind':
+          return relationshipQuestion(next === undefined ? [personId] : [personId, next], kept);
         default:
+          // The edge a fact reads may not touch the person it is about, so ask through its ends.
           return question === 'relationships' && edge !== undefined
-            ? relationshipQuestion([personId, ...endpoints(edge)], kept)
+            ? relationshipQuestion(endpoints(edge), kept)
             : [{ personId, question }];
       }
     }
