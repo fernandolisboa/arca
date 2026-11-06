@@ -226,8 +226,16 @@ function Decision({ view, words }: { readonly view: VersionView; readonly words:
   );
 }
 
-const leapDayRule = (rule: string | null) =>
-  rule === 'feb-28' ? 'february' : rule === 'march-1' ? 'march' : 'none';
+function leapDayRule(rule: VersionView['leapDayBirthday']) {
+  switch (rule) {
+    case 'feb-28':
+      return 'february';
+    case 'march-1':
+      return 'march';
+    case null:
+      return 'none';
+  }
+}
 
 /** One version as data (spec 0007, R7): what it requires, what changed, its sources and cases. */
 export function VersionPanel({ view }: { readonly view: VersionView }) {

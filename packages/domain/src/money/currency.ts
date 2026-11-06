@@ -190,9 +190,11 @@ export function minorUnitExponent(currency: CurrencyCode): number {
 /** Minor units as a decimal in the currency's units: 123450 BRL is `1234.5`. */
 export function unitsAmount(amount: number, currency: CurrencyCode): Decimal {
   const exponent = minorUnitExponent(currency);
-  const units = BigInt(amount);
+  // The parts come from the magnitude, so -150 EUR cents is `-1.5`, never `-1.-5`.
+  const units = BigInt(Math.abs(amount));
   const scale = powerOfTen(exponent);
   const whole = (units / scale).toString();
   const fraction = (units % scale).toString().padStart(exponent, '0').replace(/0+$/, '');
-  return decimalSchema.parse(fraction === '' ? whole : `${whole}.${fraction}`);
+  const sign = amount < 0 ? '-' : '';
+  return decimalSchema.parse(`${sign}${fraction === '' ? whole : `${whole}.${fraction}`}`);
 }

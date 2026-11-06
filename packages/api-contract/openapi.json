@@ -29793,7 +29793,11 @@
                         "string",
                         "null"
                       ],
-                      "maxLength": 20
+                      "enum": [
+                        "feb-28",
+                        "march-1",
+                        null
+                      ]
                     },
                     "leapDayBirthdaySources": {
                       "type": "array",
@@ -30322,7 +30326,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 },
@@ -30330,7 +30334,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 },
@@ -30338,7 +30342,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 }
@@ -30356,7 +30360,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 },
@@ -30364,7 +30368,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 },
@@ -30372,7 +30376,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 }
@@ -30390,7 +30394,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 },
@@ -30398,7 +30402,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 },
@@ -30406,7 +30410,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 }
@@ -30424,7 +30428,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 },
@@ -30432,7 +30436,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 },
@@ -30440,7 +30444,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 }
@@ -30458,7 +30462,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 },
@@ -30466,7 +30470,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 },
@@ -30474,7 +30478,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 }
@@ -30492,7 +30496,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 },
@@ -30500,7 +30504,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 },
@@ -30508,7 +30512,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 }
@@ -30526,7 +30530,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 },
@@ -30534,7 +30538,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 },
@@ -30542,7 +30546,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 }
@@ -30560,7 +30564,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 },
@@ -30568,7 +30572,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 },
@@ -30576,7 +30580,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 80
+                                    "maxLength": 96
                                   },
                                   "maxItems": 50
                                 }

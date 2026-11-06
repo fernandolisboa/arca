@@ -1,6 +1,7 @@
 import {
   calendarDateSchema,
   durationStageSchema,
+  leapDayBirthdaySchema,
   routeIdSchema,
   ruleCaseSummarySchema,
   sourceSchema,
@@ -57,7 +58,7 @@ export function decideVersionAction(
 
 const decisionState = z.enum(['active', 'rejected', 'proposed']);
 // A country set is named `<id>/<number>` in the changes; a setting by its field name.
-const ids = z.array(z.string().max(80)).max(50);
+const ids = z.array(z.string().max(96)).max(50);
 
 export const KnowledgeVersion = z.object({
   routeId: routeIdSchema,
@@ -107,7 +108,7 @@ export const VersionView = z.object({
   corrects: z.int().min(1).nullable(),
   status: z.enum(['open', 'closed']),
   currency: z.string().regex(/^[A-Z]{3}$/),
-  leapDayBirthday: z.string().max(20).nullable(),
+  leapDayBirthday: leapDayBirthdaySchema.nullable(),
   leapDayBirthdaySources: sourceIds,
   referenceDates: z.array(z.string().max(32)).max(10),
   closureSources: sourceIds,

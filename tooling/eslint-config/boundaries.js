@@ -187,22 +187,23 @@ export const reproductionReexport = {
 const displayOnly =
   'The display catalog hands out every version, proposed and rejected ones included, so only the activation view imports it (spec 0007, R7).';
 
+// The entry point, and any relative import of a module or folder named display.
+const displayModule =
+  '^(?:@arca/knowledge/display|(?:\\.{1,2}/)+(?:[^/]+/)*display(?:\\.[jt]s|/.*)?)$';
+
 /**
  * Every package: the display catalog only where the activation screen's view is built, never
  * where an evaluation runs.
  *
  * @type {Restrictions}
  */
-// The entry point, and any relative import of a module or folder named display.
-const displayModule =
-  '^(?:@arca/knowledge/display|(?:\\.{1,2}/)+(?:[^/]+/)*display(?:\\.[jt]s|/.*)?)$';
-
 export const displayLookup = {
   patterns: [{ regex: displayModule, message: displayOnly }],
 };
 
 /**
  * The files allowed to import the display catalog may not re-export it with `export … from`.
+ * Other ways of passing it on are left to review.
  *
  * @type {Restrictions}
  */

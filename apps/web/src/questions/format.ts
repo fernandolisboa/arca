@@ -17,7 +17,12 @@ export function formatAmount(
   { amount, currency }: { readonly amount: string; readonly currency: string },
   locale: string,
 ): string {
-  return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(
-    amount as Intl.StringNumericLiteral,
-  );
+  const usual = new Intl.NumberFormat(locale, { style: 'currency', currency }).resolvedOptions();
+  // Never round the amount: a rule's threshold may have more digits than the locale usually shows.
+  const digits = Math.max(amount.split('.')[1]?.length ?? 0, usual.maximumFractionDigits ?? 0);
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: digits,
+  }).format(amount as Intl.StringNumericLiteral);
 }

@@ -8,8 +8,8 @@ import {
   parseCalendarDate,
 } from '@arca/domain';
 import { hostOf } from '@arca/scripts/host';
-import { parseEntries } from '../src/entries.ts';
 import { parseJsonSubset } from '@arca/scripts/json';
+import { parseEntries } from '../src/entries.ts';
 import { casesFileSchema } from './cases.ts';
 import { checkHashes } from './hashes.ts';
 import { type Issue, type RawData, loadData, readKnowledgeFile } from './load.ts';
@@ -85,10 +85,6 @@ export async function buildKnowledge(
 }
 
 /**
- * The generated module. The data goes through JSON.parse rather than an object literal, so a
- * `__proto__` key stays data, and the runtime entry validates it again before use.
- */
-/**
  * The host of every cited URL as official-source matching reads it, or null for a URL with none,
  * so the activation screen names the same host the build matched.
  */
@@ -100,6 +96,10 @@ function sourceHosts(entries: readonly BuiltEntry[]): Record<string, string | nu
   );
 }
 
+/**
+ * The generated module. The data goes through JSON.parse rather than an object literal, so a
+ * `__proto__` key stays data, and the runtime entry validates it again before use.
+ */
 export function catalogModule(
   entries: readonly BuiltEntry[],
   countries: PinnedCountries = { countries: [], formerCountries: [] },
