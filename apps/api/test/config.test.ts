@@ -11,6 +11,7 @@ import {
   readEnrollmentCodeHash,
   readJobsDatabasePassword,
   readRateLimitKey,
+  readEngineCommit,
   readResendKey,
 } from '../src/config.js';
 import { enrollmentCodeHash } from '../src/auth/enrollment-code-hash.js';
@@ -223,6 +224,20 @@ describe('readResendKey', () => {
   ])('reads %j as %j', (value, expected) => {
     vi.stubEnv('RESEND_API_KEY', value);
     expect(readResendKey()).toBe(expected);
+  });
+});
+
+describe('readEngineCommit', () => {
+  it.each([
+    [undefined, 'unknown'],
+    ['', 'unknown'],
+    ['main', 'unknown'],
+    ['ABC1234', 'unknown'],
+    [' 8d177fa\n', '8d177fa'],
+    ['0123456789abcdef0123456789abcdef01234567', '0123456789abcdef0123456789abcdef01234567'],
+  ])('reads %j as %j', (value, expected) => {
+    vi.stubEnv('VERCEL_GIT_COMMIT_SHA', value);
+    expect(readEngineCommit()).toBe(expected);
   });
 });
 

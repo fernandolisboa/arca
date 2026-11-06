@@ -275,7 +275,8 @@ export function distinct(values: readonly string[]): boolean {
   return new Set(values).size === values.length;
 }
 
-function endpoints(edge: Relationship): [string, string] {
+/** The two people an edge joins: a parent and a child, or a couple. */
+export function endpoints(edge: Relationship): [string, string] {
   return edge.kind === 'parent' ? [edge.parent, edge.child] : [edge.people[0], edge.people[1]];
 }
 

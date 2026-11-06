@@ -106,6 +106,7 @@ export const openApiRoutes = {
   getCaseQuestions: toOpenApiRoute(routes.getCaseQuestions),
   answerCaseQuestions: toOpenApiRoute(routes.answerCaseQuestions),
   getCasePlayback: toOpenApiRoute(routes.getCasePlayback),
+  getCaseEvaluations: toOpenApiRoute(routes.getCaseEvaluations),
   leaveCase: toOpenApiRoute(routes.leaveCase),
   activateVersion: toOpenApiRoute(routes.activateVersion),
   rejectVersion: toOpenApiRoute(routes.rejectVersion),

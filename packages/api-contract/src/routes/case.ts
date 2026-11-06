@@ -1,5 +1,10 @@
 import {
+  calendarDateSchema,
   countryCodeSchema,
+  decimalSchema,
+  durationSchema,
+  routeIdSchema,
+  sourceSchema,
   displayNameSchema,
   maxCaseMembers,
   maxCasePeople,
@@ -336,6 +341,99 @@ export const getCasePlayback = {
   response: { description: 'The case read back', schema: CasePlayback },
 } as const satisfies RouteDefinition<typeof CasePlayback>;
 
+const truth = z.union([z.boolean(), z.literal('unknown')]);
+const currency = z.string().regex(/^[A-Z]{3}$/);
+const unitsMoney = z.object({ amount: decimalSchema, currency });
+const sources = z.array(sourceSchema).max(50);
+const people = z.array(z.uuid()).max(maxCasePeople);
+
+/** One route for one principal, as `routeResult` in the domain lays it out (spec 0007, R6). */
+export const RouteResult = z.object({
+  routeId: routeIdSchema,
+  principalId: z.uuid(),
+  status: z.enum([
+    'unavailable',
+    'not_eligible',
+    'missing_information',
+    'needs_assessment',
+    'eligible',
+    'pending_activation',
+  ]),
+  /** The active version's title and country; null while no version is active. */
+  route: z.object({ title: z.string().max(200), country: countryCodeSchema }).nullable(),
+  version: z
+    .object({ number: z.int().min(1), hash: z.string().regex(/^[0-9a-f]{64}$/) })
+    .nullable(),
+  stale: z.boolean(),
+  newerProposedVersion: z.object({ number: z.int().min(1), from: calendarDateSchema }).nullable(),
+  dependents: people,
+  possibleDependents: people,
+  unitOpen: z.boolean(),
+  requirements: z
+    .array(z.object({ id: z.string(), title: z.string(), result: truth, sources }))
+    .max(50),
+  assessments: z.array(z.object({ id: z.string(), title: z.string(), sources })).max(20),
+  costs: z
+    .array(
+      z.object({
+        costId: z.string(),
+        title: z.string(),
+        appliesTo: z.enum(['principal', 'each_dependent', 'unit']),
+        personId: z.uuid().nullable(),
+        applies: truth,
+        min: unitsMoney.nullable(),
+        max: unitsMoney.nullable(),
+        sources,
+      }),
+    )
+    // Up to 50 costs a version, each charged once per person at most.
+    .max(50 * maxCasePeople),
+  durations: z
+    .array(
+      z.object({
+        id: z.string(),
+        title: z.string(),
+        min: durationSchema,
+        max: durationSchema,
+        sources,
+      }),
+    )
+    .max(20),
+  /** The sources of a closed version's closure, which the screen cites with "Rota encerrada". */
+  closureSources: sources,
+  /** Rates the exchange table lacks; no one in the family can answer them. */
+  missingRates: z.array(z.object({ from: currency, to: currency })).max(50),
+  /** Reference dates the version reads that the case does not set yet. */
+  missingDates: z.array(z.string().max(96)).max(20),
+});
+export type RouteResult = z.infer<typeof RouteResult>;
+
+export const CaseEvaluations = z.object({
+  /** The date versions were selected and facts computed at: today in São Paulo. */
+  rulesAsOf: calendarDateSchema,
+  engineCommit: z.string().max(64),
+  results: z.array(RouteResult),
+  /** Only the questions that change an answer, the most decisive first. */
+  questions: z.array(
+    z.object({
+      personId: z.uuid(),
+      question: z.enum(questionIds),
+      decides: z.int().min(1),
+      kept: z.boolean(),
+    }),
+  ),
+});
+export type CaseEvaluations = z.infer<typeof CaseEvaluations>;
+
+export const getCaseEvaluations = {
+  method: 'get',
+  path: '/case/evaluations',
+  operationId: 'getCaseEvaluations',
+  summary:
+    'Every route evaluated for each member of the case as principal, from what the viewer sees, with only the questions that change an answer; nothing is stored; 60 per hour per session (429 rate_limited); 404 not_found outside a case',
+  response: { description: 'The evaluations', schema: CaseEvaluations },
+} as const satisfies RouteDefinition<typeof CaseEvaluations>;
+
 export const leaveCase = {
   method: 'post',
   path: '/case/leave',
@@ -383,6 +481,7 @@ export const caseRoutes = {
   getCaseQuestions,
   answerCaseQuestions,
   getCasePlayback,
+  getCaseEvaluations,
   leaveCase,
 } as const;
 

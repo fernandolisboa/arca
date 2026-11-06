@@ -23,6 +23,7 @@ import { Route as RecoveryKitRouteImport } from './routes/recovery-kit'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as FamilyQuestionsRouteImport } from './routes/family_.questions'
+import { Route as FamilyResultsRouteImport } from './routes/family_.results'
 
 const VaultLazyRouteImport = createFileRoute('/vault')()
 
@@ -91,6 +92,11 @@ const FamilyQuestionsRoute = FamilyQuestionsRouteImport.update({
   path: '/family/questions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FamilyResultsRoute = FamilyResultsRouteImport.update({
+  id: '/family_/results',
+  path: '/family/results',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof SignInRoute
   '/vault': typeof VaultLazyRoute
   '/family/questions': typeof FamilyQuestionsRoute
+  '/family/results': typeof FamilyResultsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -121,6 +128,7 @@ export interface FileRoutesByTo {
   '/sign-in': typeof SignInRoute
   '/vault': typeof VaultLazyRoute
   '/family/questions': typeof FamilyQuestionsRoute
+  '/family/results': typeof FamilyResultsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -137,6 +145,7 @@ export interface FileRoutesById {
   '/sign-in': typeof SignInRoute
   '/vault': typeof VaultLazyRoute
   '/family_/questions': typeof FamilyQuestionsRoute
+  '/family_/results': typeof FamilyResultsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -154,6 +163,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/vault'
     | '/family/questions'
+    | '/family/results'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -169,6 +179,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/vault'
     | '/family/questions'
+    | '/family/results'
   id:
     | '__root__'
     | '/'
@@ -184,6 +195,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/vault'
     | '/family_/questions'
+    | '/family_/results'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -200,6 +212,7 @@ export interface RootRouteChildren {
   SignInRoute: typeof SignInRoute
   VaultLazyRoute: typeof VaultLazyRoute
   FamilyQuestionsRoute: typeof FamilyQuestionsRoute
+  FamilyResultsRoute: typeof FamilyResultsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -295,6 +308,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FamilyQuestionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/family_/results': {
+      id: '/family_/results'
+      path: '/family/results'
+      fullPath: '/family/results'
+      preLoaderRoute: typeof FamilyResultsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -312,6 +332,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignInRoute: SignInRoute,
   VaultLazyRoute: VaultLazyRoute,
   FamilyQuestionsRoute: FamilyQuestionsRoute,
+  FamilyResultsRoute: FamilyResultsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

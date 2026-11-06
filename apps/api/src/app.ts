@@ -43,6 +43,7 @@ import {
   addPushChannel,
   removeNotificationChannel,
   forgetPushChannel,
+  CaseEvaluations,
   caseRoutes,
   handOverCasePersonAction,
   addCaseMemberAction,
@@ -1180,7 +1181,10 @@ export function createApp({
   });
 
   // The family's case (spec 0007, R3): a confirmed account, and writes within their hourly limit.
-  const caseAccount = async (c: Context<AppEnv>, counted: 'write' | 'playback' | false) => {
+  const caseAccount = async (
+    c: Context<AppEnv>,
+    counted: 'write' | 'playback' | 'evaluations' | false,
+  ) => {
     const current = await signedIn(c);
     if (current === null || cases === undefined || authLimits === undefined) {
       return { refused: unauthorized(c) };
@@ -1191,9 +1195,9 @@ export function createApp({
     const limited =
       counted === 'write'
         ? await overLimit(c, authLimits, caseLimits.write, current.accountId)
-        : counted === 'playback'
-          ? await overLimit(c, authLimits, caseLimits.playback, current.sessionId)
-          : undefined;
+        : counted === false
+          ? undefined
+          : await overLimit(c, authLimits, caseLimits[counted], current.sessionId);
     return limited === undefined ? { current, cases } : { refused: limited };
   };
   const caseAnswer = (c: Context<AppEnv>, outcome: CaseWritten) =>
@@ -1318,6 +1322,14 @@ export function createApp({
     if ('refused' in account) return account.refused;
     const playback = await account.cases.playback(account.current.accountId);
     return playback === null ? fail(c, 'not_found', 404) : c.json(playback, 200);
+  });
+  v1.openapi(openApiRoutes.getCaseEvaluations, async (c) => {
+    const account = await caseAccount(c, 'evaluations');
+    if ('refused' in account) return account.refused;
+    const evaluations = await account.cases.evaluations(account.current.accountId);
+    return evaluations === null
+      ? fail(c, 'not_found', 404)
+      : c.json(CaseEvaluations.parse(evaluations), 200);
   });
   caseWrite(
     openApiRoutes.answerCaseQuestions,

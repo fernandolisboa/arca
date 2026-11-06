@@ -20,7 +20,10 @@ import type {
 } from '@arca/api-contract/routes';
 import { withIdentity, type Database, type Transaction } from '@arca/db';
 import {
+  type CalendarDate,
+  type DecisionStates,
   type HeldAsset,
+  type RouteCatalog,
   type StoredFinances,
   type StoredProfile,
   applyAnswers,
@@ -41,6 +44,7 @@ import { type SQL, sql } from 'drizzle-orm';
 import type { z } from 'zod';
 import type { AuditLog, AuditRecord } from '../audit/log.js';
 import { caseQuestions, questionState } from './questions.js';
+import { type CaseEvaluationsView, caseEvaluations } from './evaluations.js';
 import { casePlayback } from './playback.js';
 import { type CaseRows, caseView, memberCase, readCase } from './view.js';
 
@@ -122,6 +126,8 @@ export interface CaseFiles {
   readonly questions: (accountId: string) => Promise<CaseQuestions | null>;
   /** The case read back as sentences; null outside a case. */
   readonly playback: (accountId: string) => Promise<CasePlayback | null>;
+  /** Every route for each member as principal, from what the viewer sees; null outside a case. */
+  readonly evaluations: (accountId: string) => Promise<CaseEvaluationsView | null>;
   readonly answerQuestions: (
     accountId: string,
     request: AnswerCaseQuestionsRequest,
@@ -138,6 +144,14 @@ export interface CaseFilesSettings {
   readonly today: () => Date;
   /** The pinned countries the guided questions offer and accept. */
   readonly countries: PinnedCountries;
+  readonly evaluation: {
+    readonly catalog: RouteCatalog;
+    readonly routeIds: readonly string[];
+    readonly states: () => Promise<DecisionStates>;
+    /** Today in São Paulo, which evaluations select versions and compute facts as of. */
+    readonly today: () => CalendarDate;
+    readonly engineCommit: string;
+  };
 }
 
 /** The snapshot's limits that every member can count (spec 0007, R1); the rest are the definer's. */
@@ -316,7 +330,13 @@ async function saveHeldAssets(
   for (const { id, share } of reshared) await setOwnerShare(tx, id, personId, share);
 }
 
-export function createCaseFiles({ db, audit, today, countries }: CaseFilesSettings): CaseFiles {
+export function createCaseFiles({
+  db,
+  audit,
+  today,
+  countries,
+  evaluation,
+}: CaseFilesSettings): CaseFiles {
   const known = {
     countries: new Set(countries.countries),
     formerCountries: new Set(countries.formerCountries),
@@ -607,6 +627,16 @@ export function createCaseFiles({ db, audit, today, countries }: CaseFilesSettin
         const rows = await readCase(tx, accountId);
         return rows === undefined ? null : casePlayback(rows, accountId, isoDate(today()));
       }),
+
+    evaluations: async (accountId) => {
+      const states = await evaluation.states();
+      return withIdentity(db(), { accountId }, async (tx) => {
+        const rows = await readCase(tx, accountId);
+        return rows === undefined
+          ? null
+          : caseEvaluations(rows, { ...evaluation, states, today: evaluation.today() });
+      });
+    },
 
     answerQuestions: (accountId, { personId, answers }) =>
       write(accountId, async (tx, rows) => {
