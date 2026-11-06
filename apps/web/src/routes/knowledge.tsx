@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { knowledgeVersionsQuery, sessionQuery, versionViewQuery } from '../api.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { ReportsSection } from '../knowledge/reports-section.js';
-import { stateTone } from '../knowledge/steps.js';
+import { stateTone } from '../knowledge/state-tone.js';
 import { VersionPanel } from '../knowledge/version-panel.js';
 import { useKnowledgeWords } from '../knowledge/words.js';
 import { Page } from '../page.js';

@@ -101,7 +101,7 @@ describe('reviewer selection', () => {
     ['a knowledge-base decision', ['apps/api/src/knowledge/decisions.ts'], api],
     [
       'the approver screen',
-      ['apps/web/src/knowledge/approver-section.tsx'],
+      ['apps/web/src/knowledge/decision.tsx'],
       [...core, 'data-access', 'auth-crypto'],
     ],
     ['the access matrix', ['apps/api/test/postgres/every-table.ts'], api],
@@ -190,7 +190,7 @@ const sensitive: readonly (readonly [string, Reviewer])[] = [
   ['apps/api/src/notification/vapid.ts', 'auth-crypto'],
   ['apps/api/src/knowledge/decisions.ts', 'auth-crypto'],
   ['apps/api/test/postgres/every-table.ts', 'data-access'],
-  ['apps/web/src/knowledge/approver-section.tsx', 'data-access'],
+  ['apps/web/src/knowledge/decision.tsx', 'data-access'],
   ['apps/web/src/knowledge/version-panel.tsx', 'auth-crypto'],
   ['apps/web/src/monitoring.ts', 'data-access'],
   ['apps/web/src/monitoring.ts', 'supply-chain'],

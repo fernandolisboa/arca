@@ -1,10 +1,14 @@
 import type { VersionView } from '@arca/api-contract/client';
-import { Button, Icon, StatusChip } from '@arca/ui';
+import type { Messages } from '@arca/i18n';
+import { Button, Icon, StatusChip, menuItemClass } from '@arca/ui';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Decision } from './decision.js';
 import { ExpressionTree } from './expression-tree.js';
-import { reviewSteps, sectionCounts, stateTone, type SectionKey, type Step } from './steps.js';
+import { stateTone } from './state-tone.js';
+import { reviewSteps, sectionCounts, type Step, type StepKey } from './steps.js';
 import { type KnowledgeWords, useKnowledgeWords } from './words.js';
+
+type SectionKey = keyof Messages['knowledge']['section'];
 
 const card = 'flex min-w-0 flex-col gap-2 rounded-control border border-line bg-surface p-4';
 
@@ -370,15 +374,17 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
   const words = useKnowledgeWords();
   const { t } = words;
   const steps = reviewSteps(view);
-  const [at, setAt] = useState(0);
-  const [seen, setSeen] = useState<ReadonlySet<number>>(() => new Set([0]));
+  const [currentKey, setCurrentKey] = useState<StepKey>('changes');
+  const [seen, setSeen] = useState<ReadonlySet<StepKey>>(() => new Set(['changes']));
   const movedRef = useRef(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const currentRef = useRef<HTMLButtonElement>(null);
   const headingId = useId();
 
-  // Steps are rebuilt from each fetched view; keep the position inside the list.
-  const index = Math.min(at, steps.length - 1);
+  const index = Math.max(
+    steps.findIndex(({ key }) => key === currentKey),
+    0,
+  );
   const step = steps[index] ?? { key: 'decision' };
   const next = steps[index + 1];
   const title = (target: Step) =>
@@ -391,12 +397,13 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
     // Focus lands on the new step's heading, so a screen reader reads where it now is.
     headingRef.current?.focus();
     currentRef.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-  }, [index]);
+  }, [currentKey]);
 
-  const go = (target: number) => {
+  const go = (target: Step | undefined) => {
+    if (target === undefined) return;
     movedRef.current = true;
-    setAt(target);
-    setSeen((before) => new Set(before).add(target));
+    setCurrentKey(target.key);
+    setSeen((before) => new Set(before).add(target.key));
   };
 
   return (
@@ -436,15 +443,16 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
                     type="button"
                     aria-current={current ? 'step' : undefined}
                     onClick={() => {
-                      go(position);
+                      go(item);
                     }}
-                    className="flex min-h-touch w-full items-center gap-3 rounded-control border border-line px-3 text-left whitespace-nowrap text-muted lg:whitespace-normal hover:bg-soft hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary aria-[current=step]:border-primary aria-[current=step]:bg-soft aria-[current=step]:font-medium aria-[current=step]:text-ink lg:border-transparent lg:aria-[current=step]:border-transparent lg:aria-[current=step]:shadow-[inset_3px_0_0_var(--arca-primary)]"
+                    data-current={current || undefined}
+                    className={menuItemClass}
                   >
                     <span
                       aria-hidden="true"
                       className="grid size-6 shrink-0 place-items-center rounded-full border border-line text-caption tabular-nums"
                     >
-                      {seen.has(position) && !current ? (
+                      {seen.has(item.key) && !current ? (
                         <Icon name="check" size={14} />
                       ) : (
                         position + 1
@@ -480,7 +488,7 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
               <Button
                 variant="secondary"
                 onClick={() => {
-                  go(index - 1);
+                  go(steps[index - 1]);
                 }}
               >
                 <Icon name="back" />
@@ -492,7 +500,7 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
             {next !== undefined && (
               <Button
                 onClick={() => {
-                  go(index + 1);
+                  go(next);
                 }}
               >
                 {t('knowledge.wizard.next', { step: title(next) })}

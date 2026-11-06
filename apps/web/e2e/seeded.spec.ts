@@ -9,6 +9,7 @@ import {
   restartSeededCounter,
   runSeed,
 } from './postgres/accounts.js';
+import { horizontalOverflow } from './layouts.js';
 import { reportViolations, watchProblems } from './problems.js';
 import { databaseServer } from './servers.js';
 
@@ -88,6 +89,10 @@ test('the seed approver activates a version, reads and closes its reports, then 
   );
   await reviewStep(page, 'Fontes');
   await expect(page.getByRole('region', { name: 'Fontes' })).toContainText('https://');
+  // On a phone the step list scrolls on its own; the page never scrolls sideways.
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await horizontalOverflow(page)).toBe(0);
+  await page.setViewportSize({ width: 1280, height: 800 });
   await reviewStep(page, 'Decisão');
   await expect(page.getByRole('region', { name: 'Verificação independente' })).toContainText(
     'ainda não existe',

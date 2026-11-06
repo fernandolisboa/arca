@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { horizontalOverflow } from './layouts.js';
 import { reportViolations, watchProblems } from './problems.js';
 
 test.beforeEach(async ({ page }) => {
@@ -30,7 +31,7 @@ test('splits the settings into categories and labels every control', async ({ pa
   const problems = watchProblems(page);
   await openSettings(page);
   const categories = page.getByRole('navigation', { name: 'Categorias' }).getByRole('link');
-  // Signed out: no approver category, and the account category asks to sign in.
+  // No session: no approver category. This server has no database, so the account can't load.
   await expect(categories).toHaveText(['Aparência', 'Navegação', 'Acessibilidade', 'Conta']);
   await expect(page.getByRole('heading', { level: 3, name: 'Aparência' })).toBeVisible();
 
@@ -56,7 +57,8 @@ test('splits the settings into categories and labels every control', async ({ pa
   expect(total).toBeGreaterThan(30);
 
   await openSection(page, 'Conta');
-  await expect(page.getByText('Entre na sua conta para ver os avisos de segurança')).toBeVisible();
+  await expect(page.getByText('Não deu para carregar sua conta agora.')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Tentar de novo' })).toBeVisible();
   expect(problems).toEqual([]);
 });
 
@@ -132,4 +134,13 @@ test('shows the dock side only with the floating dock', async ({ page }) => {
   await side.getByRole('radio', { name: 'Direita' }).check();
   await expect(page.locator('html')).toHaveAttribute('data-dock-edge', 'right');
   expect(problems).toEqual([]);
+});
+
+test('fits a phone screen in every category, with no sideways scroll', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openSettings(page);
+  for (const section of ['Aparência', 'Navegação', 'Acessibilidade', 'Conta']) {
+    await openSection(page, section);
+    expect(await horizontalOverflow(page)).toBe(0);
+  }
 });

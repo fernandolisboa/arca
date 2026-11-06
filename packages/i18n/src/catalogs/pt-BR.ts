@@ -32,6 +32,8 @@ export const ptBR = {
       knowledge: 'Base de conhecimento',
       signIn:
         'Entre na sua conta para ver os avisos de segurança, baixar seus dados ou excluir a conta.',
+      loadFailure: 'Não deu para carregar sua conta agora.',
+      retry: 'Tentar de novo',
     },
     /** The account's notification channels (spec 0005, R7). */
     notifications: {
@@ -795,7 +797,7 @@ export const ptBR = {
       back: 'Voltar',
       next: 'Próximo: {step}',
       decision: 'Decisão',
-      count: '{n, plural, =0 {nenhum} one {# item} other {# itens}}',
+      count: '{n, plural, =0 {nenhum item} one {# item} other {# itens}}',
     },
     firstVersion: 'Primeira versão desta rota, então não há o que comparar.',
     changesSince: 'Comparada com a versão {number}:',

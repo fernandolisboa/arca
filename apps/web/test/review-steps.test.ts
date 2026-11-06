@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { listedSections, reviewSteps, sectionCounts, stateTone } from '../src/knowledge/steps.js';
+import { stateTone } from '../src/knowledge/state-tone.js';
+import { listedSections, reviewSteps, sectionCounts } from '../src/knowledge/steps.js';
 
 /** A view's list sections with the given sizes; the steps read only how many items each holds. */
 function lists(sizes: Partial<Record<(typeof listedSections)[number], number>> = {}) {
-  const items = (count = 0) => Array.from({ length: count }) as never[];
+  const items = (count = 0) => Array.from<never>({ length: count });
   return {
     requirements: items(sizes.requirements),
     assessments: items(sizes.assessments),

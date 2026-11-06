@@ -1,17 +1,17 @@
-import { Button, ChoiceGroup, Icon, type Choice } from '@arca/ui';
+import { ApiError } from '@arca/api-contract/client';
+import { Button, ChoiceGroup, Icon, menuItemClass, type Choice } from '@arca/ui';
 import { axes, type AxisName, type AxisValue } from '@arca/ui/theme/ids';
 import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useCallback, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AccountDeletionSection } from '../account-deletion.js';
+import { AccountDeletionSection, DeletionPendingNotice } from '../account-deletion.js';
 import { sessionQuery } from '../api.js';
 import { appearance, useAppearance } from '../appearance/store.js';
 import { DataExportSection } from '../data-export.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { NotificationsSection } from '../notifications-section.js';
 import {
-  isAxisSection,
   sectionAxes,
   sectionIcons,
   settingsSearch,
@@ -152,16 +152,28 @@ function AxisPanel({ section }: { readonly section: AxisSection }) {
 function AccountPanel() {
   const { t } = useTranslation();
   const session = useQuery(sessionQuery);
+  const signedOut = session.error instanceof ApiError && session.error.status === 401;
+  const deletionDueAt = session.data?.deletionDueAt;
   return (
     <>
-      {session.isError && (
+      {signedOut ? (
         <div className="flex flex-col items-start gap-2">
           <p>{t('settings.sections.signIn')}</p>
           <Link to="/sign-in" className={textLinkClass}>
             {t('session.signIn')}
           </Link>
         </div>
+      ) : (
+        session.isError && (
+          <div className="flex flex-col items-start gap-2">
+            <p>{t('settings.sections.loadFailure')}</p>
+            <Button variant="secondary" onClick={() => void session.refetch()}>
+              {t('settings.sections.retry')}
+            </Button>
+          </div>
+        )
       )}
+      {typeof deletionDueAt === 'string' && <DeletionPendingNotice dueAt={deletionDueAt} />}
       <NotificationsSection />
       <DataExportSection />
       <AccountDeletionSection />
@@ -179,36 +191,47 @@ function KnowledgePanel() {
   );
 }
 
+type IntroKey = 'settings.appearance.intro' | 'knowledge.settings.intro';
+
+/** What each category shows under its heading; the approver's category only to an approver. */
+const panels: Record<
+  SettingsSection,
+  { readonly intro?: IntroKey; readonly Panel: () => ReactNode; readonly approverOnly?: true }
+> = {
+  appearance: {
+    intro: 'settings.appearance.intro',
+    Panel: () => <AxisPanel section="appearance" />,
+  },
+  navigation: {
+    intro: 'settings.appearance.intro',
+    Panel: () => <AxisPanel section="navigation" />,
+  },
+  accessibility: {
+    intro: 'settings.appearance.intro',
+    Panel: () => <AxisPanel section="accessibility" />,
+  },
+  account: { Panel: AccountPanel },
+  knowledge: { intro: 'knowledge.settings.intro', Panel: KnowledgePanel, approverOnly: true },
+};
+
 /** Settings in categories: a side menu on wide screens, a row of buttons on top on phones. */
 function Settings() {
   const { t } = useTranslation();
   const { section: asked } = Route.useSearch();
   const session = useQuery(sessionQuery);
-  const visible = settingsSections.filter((section) => {
-    switch (section) {
-      case 'account':
-        // A pending deletion leaves nothing here to change; the home page offers the cancel.
-        return session.data === undefined || session.data.deletionDueAt === null;
-      case 'knowledge':
-        return session.data?.approver === true;
-      default:
-        return true;
-    }
-  });
-  const current = asked !== undefined && visible.includes(asked) ? asked : 'appearance';
+  const visible = settingsSections.filter(
+    (section) => panels[section].approverOnly !== true || session.data?.approver === true,
+  );
+  const current = asked !== undefined && visible.includes(asked) ? asked : settingsSections[0];
+  const { intro, Panel } = panels[current];
   const sectionLabel = (section: SettingsSection) => t(`settings.sections.${section}`);
-  const intro = isAxisSection(current)
-    ? t('settings.appearance.intro')
-    : current === 'knowledge'
-      ? t('knowledge.settings.intro')
-      : undefined;
 
   return (
     <div className="flex flex-col gap-6">
       <h2 className="font-display text-page-title">{t('settings.title')}</h2>
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 md:grid-cols-[13rem_minmax(0,1fr)] md:gap-10">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-10">
         <nav aria-label={t('settings.sections.label')}>
-          <ul className="flex flex-wrap gap-2 md:sticky md:top-4 md:flex-col md:gap-1">
+          <ul className="flex flex-wrap gap-2 lg:sticky lg:top-4 lg:flex-col lg:gap-1">
             {visible.map((section) => (
               <li key={section}>
                 <Link
@@ -217,7 +240,8 @@ function Settings() {
                   replace
                   activeOptions={{ exact: true, includeSearch: true }}
                   aria-current={section === current ? 'page' : undefined}
-                  className="flex min-h-touch items-center gap-2 rounded-control border border-line px-3 font-medium whitespace-nowrap text-muted hover:bg-soft hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary aria-[current=page]:border-primary aria-[current=page]:bg-soft aria-[current=page]:text-ink md:border-transparent md:aria-[current=page]:border-transparent md:aria-[current=page]:shadow-[inset_3px_0_0_var(--arca-primary)]"
+                  data-current={section === current || undefined}
+                  className={menuItemClass}
                 >
                   <Icon name={sectionIcons[section]} />
                   {sectionLabel(section)}
@@ -235,15 +259,9 @@ function Settings() {
             <h3 id="settings-section-title" className="text-title font-medium">
               {sectionLabel(current)}
             </h3>
-            {intro !== undefined && <p className="text-muted">{intro}</p>}
+            {intro !== undefined && <p className="text-muted">{t(intro)}</p>}
           </div>
-          {isAxisSection(current) ? (
-            <AxisPanel section={current} />
-          ) : current === 'account' ? (
-            <AccountPanel />
-          ) : (
-            <KnowledgePanel />
-          )}
+          <Panel />
         </section>
       </div>
     </div>

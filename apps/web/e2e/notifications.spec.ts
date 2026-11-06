@@ -69,4 +69,5 @@ test('offers no notification settings without a session', async ({ page }) => {
   await page.goto(`${databaseServer.origin}/settings?section=account`);
   await expect(page.getByRole('heading', { level: 3, name: 'Conta' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Avisos de segurança' })).toHaveCount(0);
+  await expect(page.getByText(/^Entre na sua conta para ver os avisos de segurança/)).toBeVisible();
 });

@@ -29,10 +29,6 @@ export const sectionAxes = {
 
 export type AxisSection = keyof typeof sectionAxes;
 
-export function isAxisSection(section: SettingsSection): section is AxisSection {
-  return section in sectionAxes;
-}
-
 export function isSettingsSection(value: unknown): value is SettingsSection {
   return settingsSections.some((section) => section === value);
 }

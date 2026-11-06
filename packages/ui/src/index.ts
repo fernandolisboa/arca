@@ -6,6 +6,7 @@ export type { DockEdge, NavItem, ShellLayout, ShellLink, ShellLinkProps } from '
 export { formatCalendarDate, SourceLine, type SourceLineProps } from './patterns/source-line.js';
 export { Icon, iconNames, type IconName, type IconProps } from './icon.js';
 export { Mark, type MarkProps } from './mark.js';
+export { menuItemClass } from './patterns/menu-item.js';
 export { MenuToggle, type MenuToggleProps } from './menu-toggle.js';
 export { NextActionCard, type NextActionCardProps } from './patterns/next-action-card.js';
 export { ProgressBar, type ProgressBarProps } from './patterns/progress-bar.js';
