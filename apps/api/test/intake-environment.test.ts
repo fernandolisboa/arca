@@ -4,7 +4,7 @@ import { fakeExtractor } from '../src/intake/fake-extractor.js';
 
 describe('the extractor each deployment has (spec 0008, R1)', () => {
   it.each([
-    ['production', 'sk-ant-test', false],
+    ['production', 'sk-ant-test', true],
     ['preview', 'sk-ant-test', true],
     ['development', 'sk-ant-test', true],
     ['preview', undefined, false],
@@ -18,6 +18,8 @@ describe('the extractor each deployment has (spec 0008, R1)', () => {
     expect(extractorFor('development', undefined, true)).toBe(fakeExtractor);
     expect(extractorFor('development', 'sk-ant-test', true)).toBe(fakeExtractor);
     expect(extractorFor('preview', undefined, true)).toBeUndefined();
-    expect(extractorFor('production', 'sk-ant-test', true)).toBeUndefined();
+    expect(extractorFor('production', 'sk-ant-test', true)).toBeDefined();
+    expect(extractorFor('production', 'sk-ant-test', true)).not.toBe(fakeExtractor);
+    expect(extractorFor('production', undefined, true)).toBeUndefined();
   });
 });
