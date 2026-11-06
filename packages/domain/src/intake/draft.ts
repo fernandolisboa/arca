@@ -29,48 +29,56 @@ export const intakeReferenceSchema = z.string().regex(/^(?:n[0-9]{1,2}|\[P[0-9]{
 export const maxDraftPeople = 20;
 export const maxDraftRelationships = 40;
 
-const draftPersonSchema = z.strictObject({
-  ref: intakeReferenceSchema,
-  /** A label hint for the screen; never a relationship. */
-  role: z.enum(intakeRoles).optional(),
-  birthDate: dateValueSchema.optional(),
-  citizenships: z.array(countryCodeSchema).min(1).max(10).optional(),
-  residenceCountry: countryCodeSchema.optional(),
-  /** ISCED 2011 level, 0 to 8. */
-  educationLevel: z.number().int().min(0).max(8).optional(),
-  languages: z
-    .array(
-      z.strictObject({
-        language: z.enum(languageCodes),
-        level: z.enum(languageLevels),
-      }),
-    )
-    .min(1)
-    .max(20)
-    .optional(),
-});
-
-const draftParentSchema = z.strictObject({
-  kind: z.literal('parent'),
-  parent: intakeReferenceSchema,
-  child: intakeReferenceSchema,
-  parentKind: z.enum(parentKinds).optional(),
-  start: dateValueSchema.optional(),
-});
-
-const draftCoupleSchema = z.strictObject({
-  kind: z.enum(['spouse', 'partner']),
-  people: z.tuple([intakeReferenceSchema, intakeReferenceSchema]),
-  start: dateValueSchema.optional(),
-});
+/** A draft whose people are referred to by `reference`: placeholders for the model, IDs for the API. */
+const draftSchemaFor = (reference: z.ZodString) => {
+  const person = z.strictObject({
+    ref: reference,
+    /** A label hint for the screen; never a relationship. */
+    role: z.enum(intakeRoles).optional(),
+    birthDate: dateValueSchema.optional(),
+    citizenships: z.array(countryCodeSchema).min(1).max(10).optional(),
+    residenceCountry: countryCodeSchema.optional(),
+    /** ISCED 2011 level, 0 to 8. */
+    educationLevel: z.number().int().min(0).max(8).optional(),
+    languages: z
+      .array(
+        z.strictObject({
+          language: z.enum(languageCodes),
+          level: z.enum(languageLevels),
+        }),
+      )
+      .min(1)
+      .max(20)
+      .optional(),
+  });
+  const parent = z.strictObject({
+    kind: z.literal('parent'),
+    parent: reference,
+    child: reference,
+    parentKind: z.enum(parentKinds).optional(),
+    start: dateValueSchema.optional(),
+  });
+  const couple = z.strictObject({
+    kind: z.enum(['spouse', 'partner']),
+    people: z.tuple([reference, reference]),
+    start: dateValueSchema.optional(),
+  });
+  return z.strictObject({
+    people: z.array(person).max(maxDraftPeople),
+    relationships: z.array(z.union([parent, couple])).max(maxDraftRelationships),
+  });
+};
 
 /** The shape the model answers in; `parseIntakeDraft` adds the checks across fields. */
-export const intakeDraftSchema = z.strictObject({
-  people: z.array(draftPersonSchema).max(maxDraftPeople),
-  relationships: z
-    .array(z.union([draftParentSchema, draftCoupleSchema]))
-    .max(maxDraftRelationships),
-});
+export const intakeDraftSchema = draftSchemaFor(intakeReferenceSchema);
+
+/** The draft as the API answers it: a known person by their case ID, a new one as `n1`, `n2` … */
+export const caseIntakeDraftSchema = draftSchemaFor(
+  z
+    .string()
+    .regex(/^(?:n[0-9]{1,2}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/),
+);
+export type CaseIntakeDraft = z.infer<typeof caseIntakeDraftSchema>;
 
 export type IntakeDraft = z.infer<typeof intakeDraftSchema>;
 export type DraftPerson = IntakeDraft['people'][number];

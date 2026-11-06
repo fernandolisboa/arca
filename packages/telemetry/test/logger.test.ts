@@ -33,6 +33,33 @@ describe('logger', () => {
     expect(JSON.parse(lines[0] ?? '')).toEqual({ level: 'error', errorCode: 'internal_error' });
   });
 
+  it("keeps a model call's metadata and drops anything shaped like text", () => {
+    const lines: string[] = [];
+    const logger = createLogger((line) => lines.push(line));
+    logger.info({
+      model: 'claude-haiku-5-5',
+      promptVersion: 'intake-1',
+      inputTokens: 812,
+      outputTokens: 240,
+    });
+    logger.info({
+      model: 'Somos eu e minha esposa',
+      promptVersion: 'intake 1',
+      inputTokens: -1,
+      outputTokens: 1.5,
+    });
+    expect(lines.map((line) => JSON.parse(line) as unknown)).toEqual([
+      {
+        level: 'info',
+        model: 'claude-haiku-5-5',
+        promptVersion: 'intake-1',
+        inputTokens: 812,
+        outputTokens: 240,
+      },
+      { level: 'info' },
+    ]);
+  });
+
   it('drops values that do not fit their field', () => {
     const lines: string[] = [];
     createLogger((line) => lines.push(line)).error({

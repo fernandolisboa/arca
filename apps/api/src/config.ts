@@ -140,6 +140,15 @@ export function readResendKey(): string | undefined {
 }
 
 /**
+ * Anthropic's API key for the intake extractor (spec 0008, R1), one Sensitive value shared by
+ * Production and Preview. Absent, the intake route answers 503 and the guided questions work.
+ */
+export function readAnthropicApiKey(): string | undefined {
+  const key = process.env['ANTHROPIC_API_KEY']?.trim();
+  return key === undefined || key === '' ? undefined : key;
+}
+
+/**
  * The environment's private Vercel Blob store, as the project connects it: production with the
  * `BLOB` prefix, previews with `BLOB_PREVIEW` (spec 0005, R3). Undefined until it is connected.
  */

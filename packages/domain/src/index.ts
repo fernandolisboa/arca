@@ -274,10 +274,12 @@ export {
   relatedBy,
 } from './case/questions.js';
 export {
+  type CaseIntakeDraft,
   type DraftPerson,
   type DraftRelationship,
   type IntakeDraft,
   type IntakeRole,
+  caseIntakeDraftSchema,
   intakeDraftSchema,
   intakeReferenceSchema,
   intakeRoles,

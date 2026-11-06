@@ -822,6 +822,11 @@ export const auditEventDetails = {
     routeId: routeIdSchema,
     number: z.int().min(1),
   }),
+  /** A free-text draft was made (spec 0008, R3): counts only, never the text or the reply. */
+  intake_drafted: caseEvent.extend({
+    people: z.int().min(0).max(20),
+    facts: z.int().min(0).max(1_000),
+  }),
   version_activated: decisionEvent,
   version_rejected: decisionEvent,
 } as const;

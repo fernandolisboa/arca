@@ -3,6 +3,8 @@ import {
   errorName,
   finite,
   httpMethod,
+  integer,
+  modelName,
   routePattern,
   traceId,
   uuid,
@@ -23,6 +25,11 @@ const allowedFields = {
   durationMs: finite,
   errorCode,
   errorName,
+  /** A model call's metadata (spec 0008, R3): never its prompt, input or reply. */
+  model: modelName,
+  promptVersion: modelName,
+  inputTokens: integer,
+  outputTokens: integer,
 } as const satisfies Readonly<Record<string, Shape>>;
 
 export type LogField = keyof typeof allowedFields;

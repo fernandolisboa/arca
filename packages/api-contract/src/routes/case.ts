@@ -1,4 +1,5 @@
 import {
+  caseIntakeDraftSchema,
   calendarDateSchema,
   countryCodeSchema,
   decimalSchema,
@@ -494,6 +495,35 @@ export function addCaseMemberAction(request: AddCaseMemberRequest) {
 /** The step-up action of leaving the case. */
 export const leaveCaseAction = { action: leaveCase.operationId, targets: [] };
 
+/** The most a member may write for one draft (spec 0008, R3). */
+export const maxIntakeTextLength = 4_000;
+
+export const CaseIntakeDraftRequest = z.strictObject({
+  text: z.string().trim().min(1).max(maxIntakeTextLength),
+});
+export type CaseIntakeDraftRequest = z.infer<typeof CaseIntakeDraftRequest>;
+
+/**
+ * A draft of guided answers from the member's own words, and the sentences it adds or changes,
+ * all proposed: nothing is written (spec 0008, R3). A known person is named by their case ID, a
+ * new one as `n1`, `n2` …
+ */
+export const CaseIntakeDraftResponse = z.object({
+  draft: caseIntakeDraftSchema,
+  sentences: z.array(sentenceSchema),
+});
+export type CaseIntakeDraftResponse = z.infer<typeof CaseIntakeDraftResponse>;
+
+export const draftCaseIntake = {
+  method: 'post',
+  path: '/case/intake/draft',
+  operationId: 'draftCaseIntake',
+  summary:
+    "Sends the member's own description, with known names and number-shaped data masked, to the extraction model and answers a draft of guided answers to review; nothing of the text is stored. 10 per account per day and 3 per minute (429 rate_limited); 404 not_found outside a case; 502 intake_unparsable or intake_failed; 503 intake_unavailable when no model can be reached; 504 intake_timeout",
+  body: CaseIntakeDraftRequest,
+  response: { description: 'The proposed draft', schema: CaseIntakeDraftResponse },
+} as const satisfies RouteDefinition<typeof CaseIntakeDraftResponse>;
+
 export const caseRoutes = {
   getCase,
   createCase,
@@ -518,6 +548,7 @@ export const caseRoutes = {
   getCasePlayback,
   getCaseEvaluations,
   reportRule,
+  draftCaseIntake,
   leaveCase,
 } as const;
 

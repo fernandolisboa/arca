@@ -10,6 +10,8 @@ import { createApp } from './app.js';
 import { auditLog, auditReader, type AuditLog } from './audit/log.js';
 import { createAuth, credentialStore } from './auth/auth.js';
 import { createCaseFiles } from './case/case-files.js';
+import { createCaseIntake } from './case/intake.js';
+import { claudeExtractor } from './intake/claude-extractor.js';
 import { createDocuments } from './vault/documents.js';
 import { objectStorageFor } from './vault/storage-environment.js';
 import { createVault } from './vault/vault.js';
@@ -30,6 +32,7 @@ import { createRuleReportReview } from './knowledge/reports.js';
 import { createKnowledgeVersions } from './knowledge/versions.js';
 import {
   databaseTargetFrom,
+  readAnthropicApiKey,
   readApiSecrets,
   readAuditDatabasePassword,
   readAuthOrigin,
@@ -254,6 +257,19 @@ const withOrigin = (origin: string | undefined) => (origin === undefined ? {} : 
 
 const outbox = outboxReaderFor(environment, authConnection);
 
+const anthropicApiKey = readAnthropicApiKey();
+const intake =
+  anthropicApiKey === undefined
+    ? undefined
+    : createCaseIntake({
+        db: () => connected().db,
+        audit: { record: async (entry) => (await authParts()).audit.record(entry) },
+        logger,
+        extractor: claudeExtractor({ apiKey: anthropicApiKey }),
+        today: () => todayInSaoPaulo(),
+        now: () => performance.now(),
+      });
+
 const monitored = startMonitoring({ environment, origin: ownOrigin });
 const tunnel = tunnelFor({ environment, origin: ownOrigin, send: sendToSentry });
 
@@ -417,6 +433,7 @@ const app = createApp({
       knowledgeDecisions().decide(signedIn, kind, version, nonce),
     states: () => knowledgeDecisions().states(),
   },
+  ...(intake === undefined ? {} : { intake }),
   ruleReports: createRuleReportReview(() => connected().db),
   knowledgeVersions: createKnowledgeVersions({
     states: () => knowledgeDecisions().states(),
