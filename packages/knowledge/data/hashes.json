@@ -26,6 +26,10 @@
     {
       "path": "routes/us-eb5/1",
       "sha256": "73292a839c6a73ddc3672a147fef6248be2cbf71a76fd14c045dced0f2bb50c7"
+    },
+    {
+      "path": "routes/es-non-lucrative/1",
+      "sha256": "86bf45020de4a4d0544aa268176fc2de818120072eccccc2c84eb1edfa79751f"
     }
   ]
 }

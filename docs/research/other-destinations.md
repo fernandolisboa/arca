@@ -4,6 +4,8 @@ Checked 2026-11-01.
 
 ## Spain
 
+The non-lucrative residence visa is now route version `es-non-lucrative` 1 in `packages/knowledge/data/routes`, verified against the BOE on 2026-11-06: Real Decreto 1155/2024, articles 61 and 62, with the IPREM of EUR 600 a month from Ley 31/2022, whose 2023 budget stays extended. A registered partner, a partner with children in common and adult children who need support show as possible, since the case does not record those facts. The digital nomad visa (Ley 14/2013, article 74 bis) waits: its income threshold, a percentage of the minimum wage, is set in instructions on inclusion.gob.es, which refuses automated reads.
+
 | Fact | Source |
 | --- | --- |
 | Brazilians can apply for Spanish nationality after 2 years of legal, continuous residence (Ibero-American rule), instead of the general 10 | [Eurodicas](https://www.eurodicas.com.br/?p=173223) |

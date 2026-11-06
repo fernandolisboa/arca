@@ -203,6 +203,39 @@ describe('runCases', () => {
     );
   });
 
+  it('does not ask a rule that cannot be false to exclude anyone, unlike one that can', async () => {
+    const partner = (condition: object) => ({
+      id: 'partner',
+      title: 'Partner',
+      path: ['partner'],
+      condition,
+      sources: ['law'],
+    });
+    const sinceAYear = { op: 'since', date: { op: 'fact', key: 'edge.start' }, duration: 'P1Y' };
+    const family = {
+      ...citizen,
+      members: ['p1', 'p2'],
+      people: [{ ...citizen.people[0], recordedInFull: ['partners'] }, { id: 'p2' }],
+      relationships: [{ kind: 'partner', people: ['p1', 'p2'], start: '2010-01-01', end: 'none' }],
+    };
+    const tree = (condition: object): Record<string, unknown> => ({
+      ...baseTree(),
+      'routes/qm-work/1.json': routeVersion({ dependents: [partner(condition)] }),
+      'routes/qm-work/1.cases.json': {
+        schemaVersion: 1,
+        cases: [
+          { ...eligible, snapshot: family, expected: { ...eligible.expected, dependents: ['p2'] } },
+        ],
+      },
+    });
+    const orUnmodeled = await run(tree({ op: 'any', operands: [sinceAYear, { op: 'unmodeled' }] }));
+    expect(orUnmodeled.problems.some((problem) => problem.includes('Dependent rule'))).toBe(false);
+    const decidable = await run(tree(sinceAYear));
+    expect(decidable.problems).toContain(
+      'routes/qm-work/1.cases.json: Dependent rule partner never excludes anyone',
+    );
+  });
+
   it('does not count a rule as including someone another rule included', async () => {
     const students = {
       id: 'students',

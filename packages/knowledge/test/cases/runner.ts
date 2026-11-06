@@ -200,12 +200,34 @@ interface Run {
   readonly evaluation: Evaluation;
 }
 
+type Condition = CatalogEntry['version']['dependents'][number]['condition'];
+
+/**
+ * Whether a condition can never be false: the literal `true`, an `unmodeled` branch, which is
+ * always unknown, or a combination of them, such as a sufficient rule `any` an unmodeled
+ * alternative. Nobody can fail such a rule, so no case can show it excluding anyone.
+ */
+function cannotFail(condition: Condition): boolean {
+  switch (condition.op) {
+    case 'bool':
+      return condition.value;
+    case 'unmodeled':
+      return true;
+    case 'any':
+      return condition.operands.some(cannotFail);
+    case 'all':
+      return condition.operands.every(cannotFail);
+    default:
+      return false;
+  }
+}
+
 /**
  * The coverage rules of spec 0002 R8, from the engine's results: every requirement true, false and
  * unknown at least once; every dependent rule including and excluding someone; the statuses each
  * open version must reach, and `unavailable` for a closed one. Each dependent rule is measured on
  * its own, so another rule cannot cover for it: it includes someone, and reaches someone whose
- * condition fails, unless its condition is the literal `true`, which nobody can fail.
+ * condition fails, unless its condition cannot be false (see `cannotFail`).
  */
 function coverage(entry: CatalogEntry, runs: readonly Run[]): string[] {
   const { version } = entry;
@@ -242,11 +264,12 @@ function coverage(entry: CatalogEntry, runs: readonly Run[]): string[] {
     if (!units.some((unit) => unit.dependents.length > 0)) {
       gaps.push(`Dependent rule ${rule.id} never includes anyone`);
     }
-    const unconditional = rule.condition.op === 'bool' && rule.condition.value;
     const excludes = units.some((unit) =>
       unit.excluded.some((person) => person.reason === 'condition_not_met'),
     );
-    if (!excludes && !unconditional) gaps.push(`Dependent rule ${rule.id} never excludes anyone`);
+    if (!excludes && !cannotFail(rule.condition)) {
+      gaps.push(`Dependent rule ${rule.id} never excludes anyone`);
+    }
   }
   return gaps;
 }

@@ -6,7 +6,7 @@ const routes = [...new Set(displayCatalog.entries().map(({ identity }) => identi
 
 describe('the display catalog (spec 0007, R7)', () => {
   it('holds every seed version with its cases', () => {
-    expect(routes.sort()).toEqual(['pt-d7', 'pt-d8', 'us-eb5']);
+    expect(routes.sort()).toEqual(['es-non-lucrative', 'pt-d7', 'pt-d8', 'us-eb5']);
     for (const { identity } of displayCatalog.entries()) {
       expect(displayCatalog.cases(identity.hash).length).toBeGreaterThan(0);
     }
