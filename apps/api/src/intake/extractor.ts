@@ -1,3 +1,5 @@
+import type { ModelReply } from '../ai/model-call.js';
+
 /**
  * The `Extractor` port (spec 0008, R1): turns a member's masked text into a draft of guided
  * answers. An adapter answers the model's reply as data for the API to parse, or throws an
@@ -12,14 +14,8 @@ export interface Extractor {
   ): Promise<ExtractorReply>;
 }
 
-export interface ExtractorReply {
-  /** Untrusted: the API parses it against the closed draft schema. */
-  readonly reply: unknown;
-  readonly model: string;
-  readonly promptVersion: string;
-  readonly inputTokens?: number;
-  readonly outputTokens?: number;
-}
+/** Its `reply` is untrusted: the API parses it against the closed draft schema. */
+export type ExtractorReply = ModelReply;
 
 export type ExtractorFailure =
   'intake_unparsable' | 'intake_timeout' | 'intake_unavailable' | 'intake_failed';

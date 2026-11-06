@@ -81,7 +81,10 @@ export const intakeLimits = {
   minute: { name: 'case_intake_minute', limit: 3, windowSeconds: 60 },
 } as const satisfies Record<string, RateLimitRule>;
 
-/** Rule summaries per approver (ADR-0025): each miss is one model call. */
+/**
+ * Rule summaries per approver (ADR-0025): a request the cache misses is one model call, two when
+ * the first reply does not parse.
+ */
 export const ruleSummaryLimits = {
   day: { name: 'rule_summary_day', limit: 30, windowSeconds: 24 * hour },
   minute: { name: 'rule_summary_minute', limit: 5, windowSeconds: 60 },

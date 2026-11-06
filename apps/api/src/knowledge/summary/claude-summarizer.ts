@@ -6,10 +6,6 @@ import { ruleSummaryModel } from './model.js';
 import { ruleSummaryInstructions, ruleSummaryMessage, ruleSummaryPromptVersion } from './prompt.js';
 import { type Summarizer, SummarizerError } from './summarizer.js';
 
-export interface ClaudeSummarizerSettings extends ClaudeSettings {
-  readonly timeoutMs?: number;
-}
-
 const summaryJsonSchema = z.toJSONSchema(RuleSummary, { io: 'input' }) as JSONSchema7;
 
 /**
@@ -17,10 +13,7 @@ const summaryJsonSchema = z.toJSONSchema(RuleSummary, { io: 'input' }) as JSONSc
  * medium effort, a token cap that covers thinking and the reply, and a timeout. The SDK retries
  * nothing.
  */
-export function claudeSummarizer({
-  timeoutMs = 60_000,
-  ...settings
-}: ClaudeSummarizerSettings): Summarizer {
+export function claudeSummarizer(settings: ClaudeSettings): Summarizer {
   const claude = claudeClient(settings);
   return {
     async summarize(content) {
@@ -32,7 +25,7 @@ export function claudeSummarizer({
           schema: summaryJsonSchema,
           schemaName: 'rule_summary',
           maxOutputTokens: 8_192,
-          timeoutMs,
+          timeoutMs: 60_000,
           anthropic: { effort: 'medium' },
         });
         return {

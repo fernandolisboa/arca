@@ -49,7 +49,8 @@ export function RuleSummary({ view }: { readonly view: VersionView }) {
           <p className="text-muted">{t('knowledge.summary.noWatchPoints')}</p>
         ) : (
           <ul className="flex list-disc flex-col gap-1 pl-5">
-            {watchPoints.map((point) => (
+            {/* A point the model repeats shows once, so each text keys its own item. */}
+            {[...new Set(watchPoints)].map((point) => (
               <li key={point}>{point}</li>
             ))}
           </ul>

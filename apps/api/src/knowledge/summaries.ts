@@ -1,6 +1,12 @@
 import { RuleSummary } from '@arca/api-contract/routes';
 import type { VersionView } from '@arca/domain';
 import type { Logger } from '@arca/telemetry';
+import {
+  type ModelCallLog,
+  loggedModelCall,
+  modelAttempts,
+  parsedWithOneRetry,
+} from '../ai/model-call.js';
 import { type Summarizer, SummarizerError, type SummarizerFailure } from './summary/summarizer.js';
 import type { KnowledgeVersions } from './versions.js';
 
@@ -17,40 +23,68 @@ export interface RuleSummarySettings {
   readonly versions: KnowledgeVersions;
   readonly summarizer: Summarizer;
   readonly logger: Logger;
-  /** Monotonic milliseconds, for the model call's latency. */
-  readonly now: () => number;
+  readonly now: ModelCallLog['now'];
 }
 
 const route = '/v1/knowledge/versions/summary';
 
 /** Model calls one summary may take: the first and one retry on an unparsable reply. */
-export const summaryAttempts = 2;
+export const summaryAttempts = modelAttempts;
 
 /**
- * What the model reads: the version's content alone. Its state and what rejecting it would do to
- * today's selection change with decisions, so they stay out, and the content hash keys the cache.
+ * What the model reads: the version's content alone, field by field. Its hash, its state and what
+ * rejecting it would do to today's selection stay out; a field added to the view stays out until
+ * it is listed here.
  */
+const summaryFields = [
+  'routeId',
+  'number',
+  'title',
+  'country',
+  'tags',
+  'effectiveFrom',
+  'corrects',
+  'status',
+  'currency',
+  'leapDayBirthday',
+  'leapDayBirthdaySources',
+  'referenceDates',
+  'closureSources',
+  'pins',
+  'requirements',
+  'assessments',
+  'dependents',
+  'costs',
+  'durations',
+  'countrySets',
+  'sources',
+  'replaces',
+  'cases',
+] as const satisfies readonly Exclude<keyof VersionView, 'hash' | 'state' | 'rejection'>[];
+
 export function summaryContent(view: VersionView): string {
-  return JSON.stringify({ ...view, hash: undefined, state: undefined, rejection: undefined });
+  return JSON.stringify(Object.fromEntries(summaryFields.map((field) => [field, view[field]])));
 }
 
 /** The summary of `content`, asked for again once when the reply does not parse. */
-export async function readRuleSummary(
+export function readRuleSummary(
   summarizer: Summarizer,
   content: string,
   onUnparsable: () => void = () => undefined,
 ): Promise<RuleSummary> {
-  for (let attempt = 0; attempt < summaryAttempts; attempt += 1) {
-    try {
-      const { reply } = await summarizer.summarize(content);
+  return parsedWithOneRetry(
+    async () => (await summarizer.summarize(content)).reply,
+    (reply) => {
       const parsed = RuleSummary.safeParse(reply);
-      if (parsed.success) return parsed.data;
-      onUnparsable();
-    } catch (error) {
-      if (!(error instanceof SummarizerError) || error.code !== 'summary_unparsable') throw error;
-    }
-  }
-  throw new SummarizerError('summary_unparsable');
+      return parsed.success ? parsed.data : undefined;
+    },
+    {
+      isUnparsable: (error) =>
+        error instanceof SummarizerError && error.code === 'summary_unparsable',
+      unparsable: () => new SummarizerError('summary_unparsable'),
+      onUnparsable,
+    },
+  );
 }
 
 /**
@@ -65,28 +99,18 @@ export function createRuleSummaries({
   logger,
   now,
 }: RuleSummarySettings): RuleSummaries {
-  const kept = new Map<string, Promise<RuleSummary>>();
+  const cache = new Map<string, Promise<RuleSummary>>();
 
-  const logged: Summarizer = {
-    async summarize(content) {
-      const started = now();
-      try {
-        const reply = await summarizer.summarize(content);
-        logger.info({
-          route,
-          model: reply.model,
-          promptVersion: reply.promptVersion,
-          ...(reply.inputTokens === undefined ? {} : { inputTokens: reply.inputTokens }),
-          ...(reply.outputTokens === undefined ? {} : { outputTokens: reply.outputTokens }),
-          durationMs: now() - started,
-        });
-        return reply;
-      } catch (error) {
-        const code = error instanceof SummarizerError ? error.code : 'summary_failed';
-        logger.error({ route, errorCode: code, durationMs: now() - started });
-        throw new SummarizerError(code);
-      }
-    },
+  const loggedSummarizer: Summarizer = {
+    summarize: (content) =>
+      loggedModelCall(
+        () => summarizer.summarize(content),
+        { route, logger, now },
+        (error) =>
+          error instanceof SummarizerError
+            ? new SummarizerError(error.code)
+            : new SummarizerError('summary_failed'),
+      ),
   };
   const onUnparsable = () => {
     logger.error({ route, errorCode: 'summary_unparsable' });
@@ -96,13 +120,13 @@ export function createRuleSummaries({
     async summarize(routeId, number) {
       const view = await versions.view(routeId, number);
       if (view === undefined) return { ok: false, reason: 'not_found' };
-      let summary = kept.get(view.hash);
+      let summary = cache.get(view.hash);
       if (summary === undefined) {
-        summary = readRuleSummary(logged, summaryContent(view), onUnparsable);
-        kept.set(view.hash, summary);
+        summary = readRuleSummary(loggedSummarizer, summaryContent(view), onUnparsable);
+        cache.set(view.hash, summary);
         const pending = summary;
         pending.catch(() => {
-          if (kept.get(view.hash) === pending) kept.delete(view.hash);
+          if (cache.get(view.hash) === pending) cache.delete(view.hash);
         });
       }
       try {

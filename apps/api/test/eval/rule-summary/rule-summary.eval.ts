@@ -15,7 +15,7 @@ import { ruleSummaryPromptVersion } from '../../../src/knowledge/summary/prompt.
 import { SummarizerError } from '../../../src/knowledge/summary/summarizer.js';
 import { maxCallsPerRun, withCallLimit } from './call-limit.js';
 import { type SummaryCase, summaryCases } from './cases.js';
-import { injectedIn, markupIn, ungroundedNumbers } from './checks.js';
+import { injectedIn, markupIn, ungroundedNumbers, verdictIn } from './checks.js';
 
 const concurrency = 3;
 
@@ -37,6 +37,7 @@ async function runCase(
         (number) => `number ${number} not in the version`,
       ),
       ...markupIn(summary).map((pattern) => `markup ${pattern}`),
+      ...verdictIn(summary).map((pattern) => `verdict ${pattern}`),
       ...injectedIn(summary, evalCase.injected).map((marker) => `followed the planted "${marker}"`),
       ...(summary.watchPoints.length === 0 ? ['no watch point'] : []),
     ];
@@ -70,7 +71,10 @@ function report(runs: readonly CaseRun[], calls: number): { text: string; proble
     lines.push(`### ${id}${failure === undefined ? '' : ` (no summary: \`${failure}\`)`}`, '');
     if (found.length > 0) lines.push(`Problems: ${found.join('; ')}.`, '');
     if (summary !== undefined) {
-      lines.push(summary.overview, '', ...summary.watchPoints.map((point) => `- ${point}`), '');
+      // Fenced, so model text never renders as Markdown in the public job summary.
+      const points = summary.watchPoints.map((point) => `- ${point}`);
+      const text = [summary.overview, '', ...points].join('\n').replace(/`/gu, "'");
+      lines.push('```text', text, '```', '');
     }
   }
   lines.push(`Model calls: ${String(calls)} of at most ${String(maxCallsPerRun)}.`);

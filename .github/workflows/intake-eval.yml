@@ -1,10 +1,11 @@
 name: intake-eval
 
 # The AI evaluations: the intake's synthetic cases (spec 0008, R5) and the rule summary of every
-# bundled version (ADR-0025), against the real model, each writing its report to the job summary. Started by hand only (`gh workflow run intake-eval --ref
-# <branch>`), never a required check (ADR-0019). It evaluates the commit it was dispatched on, a
-# branch or tag of this repository, with that commit's own copy of this file; there is no ref
-# input, so no fork's code can run here with the key.
+# bundled version (ADR-0025), against the real model, each writing its report to the job summary.
+# Started by hand only (`gh workflow run intake-eval --ref <branch>`), never a required check
+# (ADR-0019). It evaluates the commit it was dispatched on, a branch or tag of this repository,
+# with that commit's own copy of this file; there is no ref input, so no fork's code can run here
+# with the key.
 on:
   workflow_dispatch:
 
@@ -21,7 +22,7 @@ env:
 jobs:
   evaluate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     permissions:
       contents: read
     steps:
@@ -32,6 +33,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm turbo run build --filter=@arca/api^...
       - name: Name the evaluated commit
+        id: named
         env:
           EVAL_REF: ${{ github.ref_name }}
           EVAL_SHA: ${{ github.sha }}
@@ -51,9 +53,10 @@ jobs:
           fi
           cat "$ARCA_EVAL_REPORT" >> "$GITHUB_STEP_SUMMARY"
           exit "$status"
-      # Runs even when the intake evaluation failed, so one run reports both.
+      # Runs even when the intake evaluation failed, so one run reports both, but not after a
+      # failed install or build.
       - name: Run the rule summary evaluation
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.named.outcome == 'success' }}
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           ARCA_EVAL_REPORT: ${{ runner.temp }}/rule-summary-eval.md

@@ -16,6 +16,6 @@ Check:
 3. **Decisions:** no model decides eligibility, compares dates or computes money; those stay in the deterministic engine.
 4. **Data minimization:** adapters send only the fields a call needs; names, document numbers and account numbers only through the authorized document-reading or speech exception, or the writer's own words under ADR-0023; no case data in shared embeddings; nothing sensitive in traces.
 5. **Output handling:** model output validated against schemas before use; rendered output sanitized, remote images stripped, links marked; claims about requirements cite knowledge-base items.
-6. **Evaluation:** the synthetic suite covers the change (the manual `intake-eval` run cited in the PR when intake changed), including adversarial cases (injected instructions in documents and web pages, attempts to read other cases, attempts to trigger outbound actions); classifier thresholds and calibration checked.
+6. **Evaluation:** the synthetic suite covers the change (the manual `intake-eval` run cited in the PR when intake or the rule summary changed), including adversarial cases (injected instructions in documents and web pages, attempts to read other cases, attempts to trigger outbound actions); classifier thresholds and calibration checked.
 
 Output: first line `PASS` or `BLOCK`. Then findings with severity (critical, high, medium, low), `file:line`, the attack or failure scenario and the fix.

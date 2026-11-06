@@ -31,7 +31,7 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 - Environments per [ADR-0008](adr/0008-database-security-and-environments.md) and [ADR-0012](adr/0012-automation-first-setup.md): a production Neon branch that previews stop forking from before any family data exists, synthetic seed for everything else, secrets per environment.
 - Database roles, forced row-level security and the access-matrix suite in CI before the first table with case data.
 - Supply-chain controls in CI from the first commit (pinned actions, advisories, secret scanning, SBOM, pnpm install-script and release-age settings).
-- Observability with personal data scrubbing: structured logs from the first deploy; Sentry errors and traces before real data; Langfuse with the second kind of model call ([ADR-0016](adr/0016-observability-and-scrubbing.md), [ADR-0023](adr/0023-free-text-intake-sends-the-writers-own-words.md)).
+- Observability with personal data scrubbing: structured logs from the first deploy; Sentry errors and traces before real data; Langfuse when the owner asks for it ([ADR-0016](adr/0016-observability-and-scrubbing.md), [ADR-0023](adr/0023-free-text-intake-sends-the-writers-own-words.md), [ADR-0025](adr/0025-rule-summary-for-the-approver.md)).
 - ~~Vault encryption ADR written and reviewed before any document upload is built.~~ Written: [ADR-0018](adr/0018-vault-encryption.md).
 - Before real family data enters: in-app account deletion and data export, retention periods ([RETENTION.md](RETENTION.md)), incident response runbook, backups on Neon, threat model for the epic ([ADR-0017](adr/0017-data-lifecycle-and-backups.md), [ADR-0021](adr/0021-stay-on-vercel-and-neon.md), spec 0004).
 - Client builds to a static bundle; no server-rendering dependency.
@@ -41,7 +41,7 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 - Notification service with per-device channels (web push first).
 - Vault encryption format documented and platform-neutral; key recovery designed and tested.
 - Responsive, touch-first layouts from phone to tablet to desktop, safe-area aware, with the themes and navigation layouts of [spec 0006](specs/0006-design-system-and-theming.md).
-- CI running unit tests, and the synthetic AI evaluation run by hand from a manual workflow (the `intake-eval` workflow for free-text intake), never as a required check; the multi-reviewer pass runs in the authoring session ([ADR-0019](adr/0019-reviewers-in-the-authoring-session.md)).
+- CI running unit tests, and the synthetic AI evaluation run by hand from a manual workflow (the `intake-eval` workflow for free-text intake and the rule summary), never as a required check; the multi-reviewer pass runs in the authoring session ([ADR-0019](adr/0019-reviewers-in-the-authoring-session.md)).
 
 **Epic: consultancy core** (slices and dependencies in [specs/0002-rules-engine-and-knowledge-base.md](specs/0002-rules-engine-and-knowledge-base.md#the-epic-consultancy-core); the case model and intake wait for the foundations' identity and data-protection work above)
 

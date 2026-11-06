@@ -63,7 +63,13 @@ describe('the rule summaries (ADR-0025)', () => {
     expect(content).toBe(summaryContent(view));
     const parsed = JSON.parse(content) as Record<string, unknown>;
     expect(parsed['title']).toBe(first.version.title);
-    for (const field of ['hash', 'state', 'rejection']) expect(parsed).not.toHaveProperty(field);
+    const withheld = ['hash', 'state', 'rejection'];
+    // Every other field of the view is listed on purpose, so a new one fails here until it is.
+    expect(Object.keys(parsed).sort()).toEqual(
+      Object.keys(view)
+        .filter((field) => !withheld.includes(field))
+        .sort(),
+    );
     expect(content).not.toContain(first.identity.hash);
   });
 
