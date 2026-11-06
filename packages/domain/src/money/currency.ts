@@ -178,7 +178,7 @@ export const minorUnitExponents = {
 
 export type CurrencyCode = keyof typeof minorUnitExponents;
 
-const currencyCodes = Object.keys(minorUnitExponents) as [CurrencyCode, ...CurrencyCode[]];
+export const currencyCodes = Object.keys(minorUnitExponents) as [CurrencyCode, ...CurrencyCode[]];
 
 export const currencyCodeSchema = z.enum(currencyCodes);
 

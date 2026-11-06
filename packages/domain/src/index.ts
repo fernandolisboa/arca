@@ -54,6 +54,7 @@ export {
 export {
   type CurrencyCode,
   currencyCodeSchema,
+  currencyCodes,
   minorUnitExponent,
   minorUnitExponents,
 } from './money/currency.js';
@@ -93,6 +94,13 @@ export {
   type Relationship,
   assetKinds,
   caseSnapshotSchema,
+  citizenshipBases,
+  custodies,
+  immigrationEventKinds,
+  incomeKinds,
+  isicSections,
+  languageLevels,
+  parentKinds,
   completenessMarkerSchema,
   countryCodeSchema,
   maxCaseMembers,
@@ -195,3 +203,27 @@ export {
 } from './rules/unit.js';
 export { type MissingMarker } from './case/graph.js';
 export { type Value } from './logic/value.js';
+export { languageCodes } from './case/languages.js';
+export {
+  type Answer,
+  type AppliedAnswers,
+  type ChoiceSet,
+  type FieldInput,
+  type HeldAsset,
+  type KnownCodes,
+  type Question,
+  type QuestionField,
+  type QuestionId,
+  type QuestionInput,
+  type QuestionState,
+  type QuestionStep,
+  type QuestionTarget,
+  type RelationshipRow,
+  answerOf,
+  applyAnswers,
+  choiceSets,
+  questionFlow,
+  questionIds,
+  questionSteps,
+  relatedBy,
+} from './case/questions.js';
