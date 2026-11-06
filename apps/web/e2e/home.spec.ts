@@ -166,6 +166,17 @@ test('starts over from the network when the cached app script is not a script', 
   const problems = watchProblems(page);
   await page.reload();
   await expect(page.getByRole('heading', { level: 1, name: 'Arca' })).toBeVisible();
+  // Only the poisoned entry goes: the offline fallback stays.
+  expect(
+    await page.evaluate(async () => {
+      for (const name of await caches.keys()) {
+        if (await (await caches.open(name)).match('/index.html', { ignoreSearch: true })) {
+          return true;
+        }
+      }
+      return false;
+    }),
+  ).toBe(true);
   // The worker stays, so this browser keeps its push subscription.
   expect(await page.evaluate(() => navigator.serviceWorker.controller?.scriptURL)).toMatch(
     /\/sw\.js$/,
