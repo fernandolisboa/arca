@@ -1,5 +1,5 @@
 import { createI18n, type I18n } from '@arca/i18n';
-import { pinnedCountries } from '@arca/knowledge';
+import { pinnedCountries, routeCatalog } from '@arca/knowledge';
 import { useRuntimeConfig } from 'nitro/runtime-config';
 import { createDataExports } from './account/data-export.js';
 import { createAccountDeletion, type AccountDeletion } from './account/deletion.js';
@@ -22,7 +22,9 @@ import { recoveryKits, type RecoveryKits } from './auth/recovery-kit.js';
 import { createRecovery, type Recovery } from './auth/recovery.js';
 import { registration, registrationHooks, type Registration } from './auth/registration.js';
 import { authService, type AuthService } from './auth/service.js';
-import { createStepUp, type StepUpService } from './auth/step-up.js';
+import { createStepUp, type StepUpService, type StepUpSpender } from './auth/step-up.js';
+import { approvers } from './knowledge/approvers.js';
+import { createKnowledgeDecisions, type KnowledgeDecisions } from './knowledge/decisions.js';
 import {
   databaseTargetFrom,
   readApiSecrets,
@@ -88,6 +90,28 @@ const environment = readDeploymentEnvironment();
 const emailRoute = emailRouteFor(environment);
 const accountsOpen = accountsOpenWith(emailRoute);
 
+let knowledgeInstance: KnowledgeDecisions | undefined;
+
+/**
+ * One service for the process, since it caches which decisions verify; it spends step-ups on the
+ * app_auth pool and stores decisions on the app_api pool.
+ */
+function knowledgeDecisions(): KnowledgeDecisions {
+  knowledgeInstance ??= createKnowledgeDecisions({
+    db: connected().db,
+    stepUp: {
+      spend: async (signedIn, purpose, action) =>
+        (await authParts()).stepUp.spend(signedIn, purpose, action),
+    },
+    audit: { record: async (entry) => (await authParts()).audit.record(entry) },
+    catalog: routeCatalog,
+    approvers: approvers[environment],
+    origin: readAuthOrigin(),
+    logger,
+  });
+  return knowledgeInstance;
+}
+
 let limiterInstance: RateLimiter | undefined;
 
 /**
@@ -106,7 +130,7 @@ function built(): RateLimiter {
 
 interface AuthParts {
   readonly auth: AuthService;
-  readonly stepUp: StepUpService;
+  readonly stepUp: StepUpService & StepUpSpender;
   readonly enrollment: Enrollment;
   readonly registration: Registration;
   readonly recoveryKits: RecoveryKits;
@@ -376,6 +400,12 @@ const app = createApp({
     today: () => new Date(),
     countries: pinnedCountries,
   }),
+  knowledge: {
+    isApprover: (accountId) => knowledgeDecisions().isApprover(accountId),
+    decide: (signedIn, kind, version, nonce) =>
+      knowledgeDecisions().decide(signedIn, kind, version, nonce),
+    states: () => knowledgeDecisions().states(),
+  },
   accountConfirmed: (accountId) => accounts.isConfirmed(authConnection(), accountId),
   notifications: {
     channels: {

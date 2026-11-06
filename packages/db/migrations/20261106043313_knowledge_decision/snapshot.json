@@ -1,0 +1,508 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "eebf0e88-10cd-45ca-aebf-5e94ebccfd74",
+  "prevIds": [
+    "294ee2c4-8769-46ed-a1e9-a7e7d1c1f3ae"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_schema",
+      "statementTarget": [
+        "schema",
+        "knowledge"
+      ],
+      "writes": [
+        "s|sch|knowledge",
+        "n|sch|knowledge",
+        "e|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "decision"
+      ],
+      "writes": [
+        "s|tbl|knowledge.decision",
+        "n|tbl|knowledge.decision",
+        "e|tbl|knowledge.decision",
+        "n|rel|knowledge.decision",
+        "n|type|knowledge.decision",
+        "n|rel|knowledge.decision_pkey",
+        "n|rel|knowledge.decision_step_up_id_key"
+      ],
+      "reads": [
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "auth",
+        "step_up"
+      ],
+      "writes": [
+        "s|ck|auth.step_up.step_up_purpose"
+      ],
+      "reads": [
+        "n|tbl|auth.step_up",
+        "n|sch|auth",
+        "n|col|auth.step_up.purpose",
+        "e|col|auth.step_up.purpose"
+      ],
+      "sqlHash": "f559540bb68b5a19"
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "auth",
+        "step_up_challenge"
+      ],
+      "writes": [
+        "s|ck|auth.step_up_challenge.step_up_challenge_purpose"
+      ],
+      "reads": [
+        "n|tbl|auth.step_up_challenge",
+        "n|sch|auth",
+        "n|col|auth.step_up_challenge.purpose",
+        "e|col|auth.step_up_challenge.purpose"
+      ],
+      "sqlHash": "526d18ee9e111e87"
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "decision"
+      ],
+      "writes": [
+        "s|pol|knowledge.decision.decision_insert_own",
+        "n|pol|knowledge.decision.decision_insert_own",
+        "e|pol|knowledge.decision.decision_insert_own"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|role|app_api",
+        "e|rls|knowledge.decision"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "decision"
+      ],
+      "writes": [
+        "s|pol|knowledge.decision.decision_read",
+        "n|pol|knowledge.decision.decision_read",
+        "e|pol|knowledge.decision.decision_read"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|role|app_api",
+        "e|rls|knowledge.decision"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "name": "knowledge",
+        "entityType": "schemas"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "name": "decision",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "route_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "version_number",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "content_hash",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "approver_account_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "credential_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "public_key",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "action_nonce",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "server_nonce",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "authenticator_data",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "client_data_json",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "signature",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "step_up_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "decided_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "decision_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "decision_step_up_id_key",
+        "nameExplicit": true,
+        "columns": [
+          "step_up_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "decision_kind",
+        "value": "\"kind\" IN ('activate', 'reject')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "decision_route_id_format",
+        "value": "\"route_id\" ~ '^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "decision_version_number_positive",
+        "value": "\"version_number\" > 0",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "decision_content_hash_format",
+        "value": "\"content_hash\" ~ '^[0-9a-f]{64}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "decision_action_nonce_length",
+        "value": "octet_length(\"action_nonce\") = 16",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "decision_server_nonce_length",
+        "value": "octet_length(\"server_nonce\") = 32",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "decision_insert_own",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "\"knowledge\".\"decision\".\"approver_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "decision_read",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"auth\",\"step_up\",\"step_up_purpose\"]",
+      "set": {
+        "value": "\"purpose\" IN ('sensitive_settings', 'account_deletion', 'data_export', 'financial_action', 'vault_unlock', 'vault_write', 'knowledge_decision')"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"auth\",\"step_up_challenge\",\"step_up_challenge_purpose\"]",
+      "set": {
+        "value": "\"purpose\" IN ('sensitive_settings', 'account_deletion', 'data_export', 'financial_action', 'vault_unlock', 'vault_write', 'knowledge_decision')"
+      }
+    }
+  ]
+}

@@ -161,56 +161,89 @@ const auditColumns = [
   'details',
 ];
 
-/** Per column, the privileges a role holds on audit.event, table-level grants included. */
-async function auditPrivileges(role: string) {
+const decisionColumns = [
+  'id',
+  'kind',
+  'route_id',
+  'version_number',
+  'content_hash',
+  'approver_account_id',
+  'credential_id',
+  'public_key',
+  'action_nonce',
+  'server_nonce',
+  'authenticator_data',
+  'client_data_json',
+  'signature',
+  'step_up_id',
+  'decided_at',
+];
+
+/** Per column, the privileges a role holds on one table, table-level grants included. */
+async function columnPrivileges(role: string, table: string, columns: readonly string[]) {
+  const [schemaName = ''] = table.split('.');
   return withClient(adminTarget(database), async (client) => {
     const schema = await client.query<{ usage: boolean }>(
-      `SELECT pg_catalog.has_schema_privilege($1, 'audit', 'USAGE') AS usage`,
-      [role],
+      `SELECT pg_catalog.has_schema_privilege($1, $2, 'USAGE') AS usage`,
+      [role, schemaName],
     );
-    const columns: Record<string, string[]> = {};
-    for (const column of auditColumns) {
-      const granted: string[] = [];
+    const granted: Record<string, string[]> = {};
+    for (const column of columns) {
+      const held: string[] = [];
       for (const privilege of ['SELECT', 'INSERT', 'UPDATE', 'REFERENCES']) {
         const row = await client.query<{ granted: boolean }>(
-          `SELECT pg_catalog.has_column_privilege($1, 'audit.event', $2, $3) AS granted`,
-          [role, column, privilege],
+          `SELECT pg_catalog.has_column_privilege($1, $2, $3, $4) AS granted`,
+          [role, table, column, privilege],
         );
-        if (row.rows[0]?.granted) granted.push(privilege);
+        if (row.rows[0]?.granted) held.push(privilege);
       }
-      columns[column] = granted;
+      granted[column] = held;
     }
-    const table: string[] = [];
+    const tablePrivileges: string[] = [];
     for (const privilege of ['DELETE', 'TRUNCATE', 'TRIGGER']) {
       const row = await client.query<{ granted: boolean }>(
-        `SELECT pg_catalog.has_table_privilege($1, 'audit.event', $2) AS granted`,
-        [role, privilege],
+        `SELECT pg_catalog.has_table_privilege($1, $2, $3) AS granted`,
+        [role, table, privilege],
       );
-      if (row.rows[0]?.granted) table.push(privilege);
+      if (row.rows[0]?.granted) tablePrivileges.push(privilege);
     }
-    return { usage: schema.rows[0]?.usage, columns, table };
+    return { usage: schema.rows[0]?.usage, columns: granted, table: tablePrivileges };
   });
 }
 
-const onEveryColumn = (privileges: string[]) =>
-  Object.fromEntries(auditColumns.map((column) => [column, privileges]));
+const auditPrivileges = (role: string) => columnPrivileges(role, 'audit.event', auditColumns);
+const decisionPrivileges = (role: string) =>
+  columnPrivileges(role, 'knowledge.decision', decisionColumns);
+
+const onEvery = (columns: readonly string[], privileges: string[]) =>
+  Object.fromEntries(columns.map((column) => [column, privileges]));
+const onEveryColumn = (privileges: string[]) => onEvery(auditColumns, privileges);
+
+/** The tables of a schema with whether row-level security is forced, and its foreign keys. */
+async function schemaShape(schema: string) {
+  return withClient(adminTarget(database), async (client) => {
+    const tables = await client.query<{ name: string; forced: boolean }>(
+      `SELECT c.relname AS name, c.relrowsecurity AND c.relforcerowsecurity AS forced
+         FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+        WHERE n.nspname = $1 AND c.relkind IN ('r', 'p', 'v', 'm', 'f') ORDER BY 1`,
+      [schema],
+    );
+    const foreignKeys = await client.query(
+      `SELECT FROM pg_catalog.pg_constraint k
+         JOIN pg_catalog.pg_namespace n ON n.oid = k.connamespace
+        WHERE n.nspname = $1 AND k.contype = 'f'`,
+      [schema],
+    );
+    return { tables: tables.rows, foreignKeys: foreignKeys.rowCount };
+  });
+}
 
 describe('the audit schema access matrix (spec 0003, R7)', () => {
   it('has only the event table, with no foreign keys and forced row-level security', async () => {
-    const shape = await withClient(adminTarget(database), async (client) => {
-      const tables = await client.query<{ name: string; forced: boolean }>(
-        `SELECT c.relname AS name, c.relrowsecurity AND c.relforcerowsecurity AS forced
-           FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-          WHERE n.nspname = 'audit' AND c.relkind IN ('r', 'p', 'v', 'm', 'f') ORDER BY 1`,
-      );
-      const foreignKeys = await client.query(
-        `SELECT FROM pg_catalog.pg_constraint k
-           JOIN pg_catalog.pg_namespace n ON n.oid = k.connamespace
-          WHERE n.nspname = 'audit' AND k.contype = 'f'`,
-      );
-      return { tables: tables.rows, foreignKeys: foreignKeys.rowCount };
+    expect(await schemaShape('audit')).toEqual({
+      tables: [{ name: 'event', forced: true }],
+      foreignKeys: 0,
     });
-    expect(shape).toEqual({ tables: [{ name: 'event', forced: true }], foreignKeys: 0 });
   });
 
   it('lets app_audit insert every column but the ID and the time, and nothing else', async () => {
@@ -243,4 +276,36 @@ describe('the audit schema access matrix (spec 0003, R7)', () => {
       table: [],
     });
   });
+});
+
+describe('the knowledge schema access matrix (spec 0007, R7)', () => {
+  it('has only the decision table, with no foreign keys and forced row-level security', async () => {
+    expect(await schemaShape('knowledge')).toEqual({
+      tables: [{ name: 'decision', forced: true }],
+      foreignKeys: 0,
+    });
+  });
+
+  it('lets app_api read and insert every column but the ID and the time, and nothing else', async () => {
+    expect(await decisionPrivileges('app_api')).toEqual({
+      usage: true,
+      columns: {
+        ...onEvery(decisionColumns, ['SELECT', 'INSERT']),
+        id: ['SELECT'],
+        decided_at: ['SELECT'],
+      },
+      table: [],
+    });
+  });
+
+  it.each([...runtimeRoles.filter((role) => role !== 'app_api'), ...retiredRoles])(
+    'gives %s no access to the knowledge schema',
+    async (role) => {
+      expect(await decisionPrivileges(role)).toEqual({
+        usage: false,
+        columns: onEvery(decisionColumns, []),
+        table: [],
+      });
+    },
+  );
 });

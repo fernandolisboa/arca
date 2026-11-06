@@ -874,6 +874,12 @@ export interface CredentialStore {
   /** The account's passkeys that may approve a step-up. */
   readonly activeOf: (accountId: string) => Promise<readonly StoredCredential[]>;
   readonly active: (accountId: string, credentialId: string) => Promise<StoredCredential | null>;
+  /** `active` inside a caller's transaction on the same pool. */
+  readonly activeIn: (
+    tx: Transaction,
+    accountId: string,
+    credentialId: string,
+  ) => Promise<StoredCredential | null>;
   /**
    * Records a verified signature counter and, in the same transaction, what the verification
    * approved. False when another verification moved the counter first, so two assertions with one
@@ -910,6 +916,23 @@ export function credentialStore(db: Database): CredentialStore {
     counter: row.counter,
     transports: (row.transports ?? '').split(',').filter((transport) => transport !== ''),
   });
+  const activeOn = async (
+    executor: Database | Transaction,
+    accountId: string,
+    credentialId: string,
+  ) => {
+    const [row] = await executor
+      .select(columns)
+      .from(passkeyTable)
+      .where(
+        and(
+          eq(passkeyTable.userId, accountId),
+          eq(passkeyTable.credentialID, credentialId),
+          not(pending(passkeyTable.credentialID)),
+        ),
+      );
+    return row === undefined ? null : toCredential(row);
+  };
   return {
     activeOf: async (accountId) =>
       (
@@ -919,19 +942,8 @@ export function credentialStore(db: Database): CredentialStore {
           .where(and(eq(passkeyTable.userId, accountId), not(pending(passkeyTable.credentialID))))
           .orderBy(passkeyTable.createdAt)
       ).map(toCredential),
-    active: async (accountId, credentialId) => {
-      const [row] = await db
-        .select(columns)
-        .from(passkeyTable)
-        .where(
-          and(
-            eq(passkeyTable.userId, accountId),
-            eq(passkeyTable.credentialID, credentialId),
-            not(pending(passkeyTable.credentialID)),
-          ),
-        );
-      return row === undefined ? null : toCredential(row);
-    },
+    active: (accountId, credentialId) => activeOn(db, accountId, credentialId),
+    activeIn: (tx, accountId, credentialId) => activeOn(tx, accountId, credentialId),
     advanceCounter: (accountId, credentialId, counter, record) =>
       db.transaction(async (tx) => {
         // The account row first, as every erasure locks it before its passkeys, so a step-up

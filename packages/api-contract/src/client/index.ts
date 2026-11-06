@@ -5,6 +5,7 @@ import { apiBasePath, ErrorResponse, type RouteDefinition } from '../routes/inde
 
 export {
   addCaseMemberAction,
+  decideVersionAction,
   apiBasePath,
   answerCanBeUnknown,
   choiceSets,
@@ -56,6 +57,8 @@ export type {
   SentenceKind,
   CaseView,
   DataExport,
+  DecideVersionRequest,
+  DecideVersionResponse,
   DeviceDescription,
   DevicePasskey,
   DeviceSession,

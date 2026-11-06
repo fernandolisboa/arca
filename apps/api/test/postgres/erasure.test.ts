@@ -273,8 +273,11 @@ describe('eraseAccount (spec 0004, R9)', () => {
     expect(sent).toEqual([]);
     const erased = (await events(a.accountId)).filter(({ code }) => code === 'account_erased');
     expect(erased).toHaveLength(1);
+    const kept = new Set(
+      registry.entries.filter(({ strategy }) => strategy === 'retain').map(({ table }) => table),
+    );
     for (const [table, count] of Object.entries(await ownedCounts(testDatabase, a.accountId))) {
-      if (table !== 'audit.event') expect(count, table).toBe(0);
+      if (!kept.has(table)) expect(count, table).toBe(0);
     }
   });
 
