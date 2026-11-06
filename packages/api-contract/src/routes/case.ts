@@ -20,6 +20,8 @@ import type { RouteDefinition } from './index.js';
 
 /** At most this many members, and so grantees, in a case. */
 export const maxCaseMembers = 30;
+/** At most this many people, with or without an account, in a case. */
+export const maxCasePeople = 60;
 
 export const CaseProfile = z.strictObject({
   facts: storedProfileFactsSchema,

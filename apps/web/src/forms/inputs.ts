@@ -25,6 +25,8 @@ export const nameInput = {
   type: 'text',
   required: true,
   maxLength: 80,
+  // Not only spaces: the API takes the name trimmed, and an empty one is refused.
+  pattern: '.*\\S.*',
   autoComplete: 'off',
   autoCapitalize: 'words',
 } as const;

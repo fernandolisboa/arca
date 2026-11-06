@@ -1,5 +1,6 @@
 import {
   maxCaseMembers,
+  maxCasePeople,
   routes,
   type CasePerson,
   type CaseRelationship,
@@ -11,7 +12,7 @@ import { Link, createFileRoute } from '@tanstack/react-router';
 import { useId, useState, type ReactNode, type SubmitEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { caseQuery, invitesQuery, sessionQuery } from '../api.js';
-import { caseFailure, handOver, leaveCase, writeCase, type CaseFailure } from '../case.js';
+import { caseFailure, handOverPerson, leaveCase, writeCase, type CaseFailure } from '../case.js';
 import { newsOf, readSeen, seenOf, writeSeen } from '../family-news.js';
 import { nameInput } from '../forms/inputs.js';
 import { TextField } from '../forms/text-field.js';
@@ -113,7 +114,7 @@ function WriteStatus({
         ? t(waiting)
         : failure === undefined
           ? ''
-          : t('family.failure', { reason: failure, max: maxCaseMembers })}
+          : t('family.failure', { reason: failure, max: maxCaseMembers, people: maxCasePeople })}
     </p>
   );
 }
@@ -183,10 +184,10 @@ function FamilyCase({ view, accountId }: { readonly view: CaseView; readonly acc
 /** Members who joined and shares that changed since this device last looked. */
 function FamilyNews({ view, accountId }: { readonly view: CaseView; readonly accountId: string }) {
   const { t } = useTranslation();
-  // A device that never looked starts from what it sees now.
+  // A device that never looked at this case starts from what it sees now.
   const [seen, setSeen] = useState(() => {
     const stored = readSeen(accountId);
-    if (stored !== undefined) return stored;
+    if (stored?.caseId === view.caseId) return stored;
     const baseline = seenOf(view);
     writeSeen(accountId, baseline);
     return baseline;
@@ -626,14 +627,18 @@ function HandOver({
 }) {
   const { t } = useTranslation();
   const members = others.filter((other) => other.accountId !== null);
-  const [chosen, setChosen] = useState(members[0]?.accountId ?? '');
+  const [picked, setPicked] = useState(members[0]?.accountId ?? '');
+  // A member who left while the panel was open is no longer a choice.
+  const chosen = members.some(({ accountId }) => accountId === picked)
+    ? picked
+    : (members[0]?.accountId ?? '');
   const { pending, failure, run } = useCaseWrite();
   return (
     <form
       className="flex flex-col gap-3 rounded-control border border-line p-3"
       onSubmit={(event: SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
-        run(() => handOver(passkeys, person.id, chosen));
+        run(() => handOverPerson(passkeys, person.id, chosen));
       }}
     >
       <ChoiceGroup
@@ -643,7 +648,7 @@ function HandOver({
           other.accountId === null ? [] : [{ value: other.accountId, label: other.displayName }],
         )}
         value={chosen}
-        onChange={setChosen}
+        onChange={setPicked}
       />
       <Button type="submit" disabled={pending || chosen === ''} aria-busy={pending}>
         {t('family.handOver.submit')}
@@ -718,8 +723,13 @@ function AddPerson({
 
 type RelationChoice = CaseRelationship['relationship']['kind'];
 
-/** The order the parentescos are offered in. */
-const relationChoices: readonly RelationChoice[] = ['parent', 'spouse', 'partner'];
+/** The relationship kinds in the order they are offered; the record keeps every kind listed. */
+const relationOffered: Readonly<Record<RelationChoice, true>> = {
+  parent: true,
+  spouse: true,
+  partner: true,
+};
+const relationChoices = Object.keys(relationOffered) as RelationChoice[];
 
 /** The relationships between the people, and adding one where the viewer keeps a person. */
 function Relationships({
@@ -730,10 +740,16 @@ function Relationships({
   readonly names: ReadonlyMap<string, string>;
 }) {
   const { t } = useTranslation();
-  const kept = view.people.filter((person) => person.keptByMe);
-  const [from, setFrom] = useState(kept[0]?.id ?? '');
+  const kept = new Set(view.people.flatMap((person) => (person.keptByMe ? [person.id] : [])));
+  const [pickedFrom, setPickedFrom] = useState(view.me);
   const [kind, setKind] = useState<RelationChoice>('parent');
-  const [to, setTo] = useState('');
+  const [pickedTo, setPickedTo] = useState('');
+  // Picks that left the case, or the same person twice, are no picks at all.
+  const present = new Set(view.people.map(({ id }) => id));
+  const from = present.has(pickedFrom) ? pickedFrom : '';
+  const to = present.has(pickedTo) && pickedTo !== from ? pickedTo : '';
+  // The API takes a relationship where the viewer keeps either end.
+  const ready = from !== '' && to !== '' && (kept.has(from) || kept.has(to));
   const add = useCaseWrite();
   const remove = useCaseWrite();
   const select =
@@ -774,7 +790,7 @@ function Relationships({
         </ul>
       )}
       <WriteStatus pending={remove.pending} failure={remove.failure} />
-      {view.people.length > 1 && kept.length > 0 && (
+      {view.people.length > 1 && kept.size > 0 && (
         <form
           className="flex flex-col gap-3"
           onSubmit={(event: SubmitEvent<HTMLFormElement>) => {
@@ -796,12 +812,14 @@ function Relationships({
           <select
             id={fromId}
             className={select}
+            required
             value={from}
             onChange={(event) => {
-              setFrom(event.currentTarget.value);
+              setPickedFrom(event.currentTarget.value);
             }}
           >
-            {kept.map((person) => (
+            <option value="">{t('family.relationships.pick')}</option>
+            {view.people.map((person) => (
               <option key={person.id} value={person.id}>
                 {person.displayName}
               </option>
@@ -833,7 +851,7 @@ function Relationships({
             required
             value={to}
             onChange={(event) => {
-              setTo(event.currentTarget.value);
+              setPickedTo(event.currentTarget.value);
             }}
           >
             <option value="">{t('family.relationships.pick')}</option>
@@ -845,7 +863,7 @@ function Relationships({
                 </option>
               ))}
           </select>
-          <Button type="submit" disabled={add.pending || to === ''} aria-busy={add.pending}>
+          <Button type="submit" disabled={add.pending || !ready} aria-busy={add.pending}>
             {t('family.relationships.add')}
           </Button>
           <WriteStatus pending={add.pending} failure={add.failure} />
@@ -895,9 +913,7 @@ function Invites() {
 /** Leaving takes every person the viewer keeps out of the case, after a step-up (R2). */
 function Leave() {
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
-  const [pending, setPending] = useState(false);
-  const [failure, setFailure] = useState<CaseFailure>();
+  const { pending, failure, run } = useCaseWrite();
   return (
     <Section title={t('family.leave.title')}>
       <p className="text-small text-muted">{t('family.leave.lead')}</p>
@@ -907,18 +923,7 @@ function Leave() {
         confirm={t('family.leave.yes')}
         disabled={pending}
         onConfirm={() => {
-          setFailure(undefined);
-          setPending(true);
-          leaveCase(passkeys)
-            .then(() => {
-              queryClient.setQueryData(caseQuery.queryKey, { case: null });
-            })
-            .catch((error: unknown) => {
-              setFailure(caseFailure(error));
-            })
-            .finally(() => {
-              setPending(false);
-            });
+          run(() => leaveCase(passkeys).then(() => null));
         }}
       />
       <WriteStatus pending={pending} failure={failure} waiting="family.waiting" />

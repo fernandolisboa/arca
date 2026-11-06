@@ -65,6 +65,15 @@ describe('the family area news (spec 0007, R2)', () => {
     expect(news.revoked.map(({ person: { id }, scope }) => [id, scope])).toEqual(revoked);
   });
 
+  it('says nothing about another case the viewer was in', () => {
+    const elsewhere = { ...seenOf(before), caseId: '00000000-0000-4000-8000-0000000000c2' };
+    expect(newsOf(viewWith([person({ id: bruno, accountId: brunoAccount })]), elsewhere)).toEqual({
+      joined: [],
+      granted: [],
+      revoked: [],
+    });
+  });
+
   it('stores IDs only', () => {
     expect(JSON.stringify(seenOf(before))).not.toContain('Pessoa');
   });

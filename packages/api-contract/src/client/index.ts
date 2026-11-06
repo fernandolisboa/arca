@@ -14,6 +14,7 @@ export {
   inviteLifetimeHours,
   leaveCaseAction,
   maxCaseMembers,
+  maxCasePeople,
   maxDocumentBatch,
   maxDocumentBytes,
   maxSharingStateBytes,

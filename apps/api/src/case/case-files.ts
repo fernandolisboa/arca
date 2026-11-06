@@ -4,6 +4,7 @@ import type {
   CaseView,
   HandOverCasePersonRequest,
 } from '@arca/api-contract/routes';
+import { maxCaseMembers, maxCasePeople } from '@arca/api-contract/routes';
 import type {
   AddCaseAssetRequest,
   AddCasePersonRequest,
@@ -116,7 +117,11 @@ export interface CaseFilesSettings {
 }
 
 /** The snapshot's limits that every member can count (spec 0007, R1); the rest are the definer's. */
-export const caseSizeLimits = { people: 60, members: 30, relationships: 200 } as const;
+export const caseSizeLimits = {
+  people: maxCasePeople,
+  members: maxCaseMembers,
+  relationships: 200,
+} as const;
 
 /** Raised by the case's definer functions when a limit is reached (SQLSTATE CL001). */
 const limitReached = 'CL001';

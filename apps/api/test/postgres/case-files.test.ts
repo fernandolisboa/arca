@@ -384,6 +384,11 @@ describe('profiles, finances and shares', () => {
     );
     expect((await seenBy(bruno, people.child))?.profile?.facts).toEqual({ studying: true });
     expect((await seenBy(bruno, people.child))?.sharedWithMe).toEqual(['profile']);
+    const carla = await account();
+    await join(alice, carla, 'Carla');
+    expect((await seenBy(carla, people.child))?.profile).toBeNull();
+    expect((await seenBy(carla, people.child))?.shares).toBeNull();
+    expect((await seenBy(carla, people.child))?.sharedWithMe).toEqual([]);
     expect((await seenBy(alice, people.child))?.sharedWithMe).toEqual([]);
     expect((await seenBy(alice, people.child))?.shares).toEqual({ profile: [bruno], finances: [] });
     viewOf(await files.replaceShares(alice, { personId: people.child, profile: [], finances: [] }));

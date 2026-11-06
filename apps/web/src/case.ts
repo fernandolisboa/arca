@@ -33,6 +33,7 @@ export async function writeCase<Route extends CaseRoute>(
   action?: Omit<StepUpAction, 'nonce'>,
 ): Promise<CaseView | null> {
   const client = action === undefined ? api : await stepUpFor(passkeys, action);
+  // The client's input type does not distribute over a union of routes; the body is typed above.
   const call = client.call.bind(client) as (
     route: CaseRoute,
     body: unknown,
@@ -44,7 +45,7 @@ export async function writeCase<Route extends CaseRoute>(
 export const addToCase = (passkeys: Passkeys, request: AddCaseMemberRequest) =>
   writeCase(passkeys, routes.addCaseMember, request, addCaseMemberAction(request));
 
-export const handOver = (passkeys: Passkeys, personId: string, accountId: string) =>
+export const handOverPerson = (passkeys: Passkeys, personId: string, accountId: string) =>
   writeCase(
     passkeys,
     routes.handOverCasePerson,

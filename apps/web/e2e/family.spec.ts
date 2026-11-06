@@ -57,6 +57,12 @@ test('starts a case, adds people, shares a child with a member and tells them', 
   await page.getByRole('button', { name: 'Entendi' }).click();
   await expect(card(page, 'Bruno').getByText('Participante do caso')).toBeVisible();
 
+  // A person added once someone else is in the case opens the sharing question, none checked.
+  await page.getByLabel('Nome', { exact: true }).fill('Avó');
+  await page.getByRole('button', { name: 'Adicionar pessoa' }).click();
+  await expect(card(page, 'Avó').getByText('Quem pode ver os dados de Avó?')).toBeVisible();
+  await expect(card(page, 'Avó').getByLabel('Bruno').first()).not.toBeChecked();
+
   const child = card(page, 'Criança');
   await child.getByRole('button', { name: 'Compartilhamento' }).click();
   await child
@@ -69,9 +75,14 @@ test('starts a case, adds people, shares a child with a member and tells them', 
   ).toBeVisible();
 
   await page.getByLabel('Com quem').selectOption({ label: 'Criança' });
-  await page.getByRole('button', { name: 'Anotar parentesco' }).click();
+  await page.getByRole('button', { name: 'Anotar vínculo' }).click();
   await expect(page.getByText('Ana é mãe ou pai de Criança')).toBeVisible();
   await expect(child.getByText('Filha ou filho de Ana')).toBeVisible();
+  // Either end may be the one the viewer keeps.
+  await page.getByLabel('Pessoa', { exact: true }).selectOption({ label: 'Bruno' });
+  await page.getByLabel('Com quem').selectOption({ label: 'Criança' });
+  await page.getByRole('button', { name: 'Anotar vínculo' }).click();
+  await expect(page.getByText('Bruno é mãe ou pai de Criança')).toBeVisible();
 
   await relativePage.goto(`${databaseServer.origin}/family`);
   await expect(card(relativePage, 'Criança').getByText('Você vê os dados.')).toBeVisible();

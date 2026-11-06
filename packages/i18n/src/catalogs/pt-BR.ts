@@ -308,7 +308,7 @@ export const ptBR = {
     saving: 'Salvando…',
     waiting: 'Confirme no seu dispositivo para continuar.',
     failure:
-      '{reason, select, not_found {Isso não está mais disponível. Atualize a página.} case_exists {Você já participa de um caso.} case_limit {O caso chegou ao limite: até 60 pessoas, das quais {max} no planejamento.} case_invalid {Isso não combina com o resto do caso. Confira e tente de novo.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas alterações em pouco tempo. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+      '{reason, select, not_found {Isso não está mais disponível. Atualize a página.} case_exists {Você já participa de um caso.} case_limit {O caso chegou ao limite: até {people} pessoas, das quais {max} no planejamento.} case_invalid {Isso não combina com o resto do caso. Confira e tente de novo.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas alterações em pouco tempo. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
     peopleTitle: 'Pessoas do caso',
     me: '{name} (você)',
     member: 'Entra no planejamento',
@@ -322,12 +322,12 @@ export const ptBR = {
     actions: {
       sharing: 'Compartilhamento',
       edit: 'Editar',
-      handOver: 'Passar para outra pessoa cuidar',
+      handOver: 'Passar os cuidados',
       invite: 'Convidar',
       remove: 'Remover',
     },
     removeConfirm:
-      'Remover {name} apaga do caso as respostas, as finanças e os parentescos dessa pessoa. Não dá para desfazer.',
+      'Remover {name} apaga do caso as respostas, as finanças e os vínculos dessa pessoa. Não dá para desfazer.',
     removeYes: 'Sim, remover',
     confirmNo: 'Cancelar',
     name: 'Nome',
@@ -363,15 +363,15 @@ export const ptBR = {
       partner: 'União estável com {name}',
     },
     relationships: {
-      title: 'Parentescos',
-      empty: 'Nenhum parentesco anotado ainda.',
+      title: 'Vínculos',
+      empty: 'Nenhum vínculo anotado ainda.',
       parent: '{from} é mãe ou pai de {to}',
       spouse: '{from} e {to} são casados',
       partner: '{from} e {to} vivem em união estável',
       remove: 'Remover',
-      addTitle: 'Anotar um parentesco',
+      addTitle: 'Anotar um vínculo',
       from: 'Pessoa',
-      kind: 'Parentesco',
+      kind: 'Vínculo',
       to: 'Com quem',
       pick: 'Escolha a pessoa',
       choice: {
@@ -379,20 +379,20 @@ export const ptBR = {
         spouse: 'é casada ou casado com',
         partner: 'vive em união estável com',
       },
-      add: 'Anotar parentesco',
+      add: 'Anotar vínculo',
     },
     invites: {
       title: 'Convites',
-      lead: 'Quem tem conta no Arca preenche os próprios dados. Convide pelo email. Quando a pessoa aceitar, confirme a conta e coloque no caso.',
+      lead: 'Quem tem conta no Arca preenche os próprios dados. Convide pelo email na tela de convites. Quando a pessoa aceitar, confirme a conta e adicione ao caso.',
       status:
-        '{status, select, open {Convite enviado, esperando a pessoa aceitar} accepted {Aceito, falta você confirmar} confirmed {Confirmado, falta colocar no caso} member {Participa do caso} other {}}',
+        '{status, select, open {Convite enviado, esperando a pessoa aceitar} accepted {Aceito, falta você confirmar} confirmed {Confirmado, falta adicionar ao caso} member {Participa do caso} other {}}',
       link: 'Abrir os convites',
     },
     leave: {
       title: 'Sair do caso',
-      lead: 'Quem sai leva os próprios dados: as pessoas que você cuida saem do caso junto com você. Se você for a última pessoa com conta, o caso é apagado.',
+      lead: 'Ao sair, você e as pessoas de quem você cuida saem do caso, com as respostas e as finanças. Se você for a última pessoa com conta, o caso é apagado.',
       confirm:
-        'Sair apaga do caso você e as pessoas que você cuida, com as respostas e as finanças delas. Não dá para desfazer.',
+        'Sair apaga do caso você e as pessoas de quem você cuida, com as respostas e as finanças. Não dá para desfazer.',
       yes: 'Sim, sair do caso',
       submit: 'Sair do caso',
     },
@@ -404,7 +404,7 @@ export const ptBR = {
       revoked:
         '{scope, select, profile {Você não vê mais os dados de {name}.} other {Você não vê mais as finanças de {name}.}}',
       decide:
-        'Em "Compartilhamento", escolha o que quem entrou pode ver das pessoas que você cuida.',
+        'Em Compartilhamento, escolha o que a pessoa que entrou pode ver das pessoas de quem você cuida.',
       done: 'Entendi',
     },
   },
