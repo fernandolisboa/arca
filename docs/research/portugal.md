@@ -15,6 +15,8 @@ Checked 2026-10-31 and 2026-11-01.
 
 D7 and D8 are now route versions `pt-d7` and `pt-d8` in `packages/knowledge/data/routes`, verified against the Diário da República on 2026-11-05. Where they differ from these notes, the route versions win: the means test counts 50% of the minimum wage for every adult after the principal (Portaria n.º 1563/2007, article 2.º), and D8 also needs the household means test.
 
+Both versions use the 2026 guaranteed minimum monthly wage (RMMG), EUR 920 (Decreto-Lei n.º 139/2025). On 2026-11-06 the Diário da República had no decree setting the RMMG for 2027, so `pt-d7` and `pt-d8` v2 wait for it ([#220](https://github.com/fernandolisboa/arca/issues/220)). The last decrees came out on 2023-11-17 ([DL 107/2023](https://diariodarepublica.pt/dr/detalhe/decreto-lei/107-2023-224427489)), 2024-12-19 ([DL 112/2024](https://diariodarepublica.pt/dr/detalhe/decreto-lei/112-2024-900706889)) and 2025-12-29 ([DL 139/2025](https://diariodarepublica.pt/dr/detalhe/decreto-lei/139-2025-992879809)), checked the same day.
+
 | Visa | Fact | Source |
 | --- | --- | --- |
 | D7 (passive income) | EUR 920/month for the applicant (2026 minimum wage), +50% for a spouse, +30% per child; practice recommends 12 months of reserve | [Ternrise](https://ternrise.com/pt/blog/visto-d7-portugal-2026-guia-completo), [Cidadania e Visto](https://www.cidadaniaevisto.com.br/blog/comprovacao-meios-visto-portugal-2026) |
