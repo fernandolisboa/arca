@@ -57,7 +57,7 @@ The first case is the founder's own family. The app goes to other families only 
 | [docs/SETUP.md](docs/SETUP.md) | Every key, token and secret: where it lives, who creates it, how to rotate it |
 | [docs/RETENTION.md](docs/RETENTION.md) | How long each kind of data is kept, and what enforces it |
 | [docs/vault-format.md](docs/vault-format.md) | The vault's file format: envelopes, documents, the sharing state and its tag |
-| [docs/adr/](docs/adr/) | Architecture decision records: language, rules as data, stack, AI ports, platforms, auth, background jobs, database security, automation-first setup, the knowledge base as reviewed data, reviewers in the authoring session, identity, observability, data lifecycle and backups, vault encryption |
+| [docs/adr/](docs/adr/) | Architecture decision records: language, rules as data, stack, AI ports, platforms, auth, background jobs, database security, automation-first setup, the knowledge base as reviewed data, reviewers in the authoring session, identity, observability, data lifecycle and backups, vault encryption, themeable UI, staying on Vercel and Neon, single-approver activation |
 | [docs/specs/](docs/specs/) | Feature specs, written before tickets and code |
 | [docs/runbooks/](docs/runbooks/) | Incident response and the real-data gate |
 | [docs/threat-models/](docs/threat-models/) | Component threat models, each control linked to its test |

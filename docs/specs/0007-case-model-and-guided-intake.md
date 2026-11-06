@@ -1,0 +1,142 @@
+# Spec 0007: Case model, guided intake and rule activation
+
+- Status: Ready for tickets
+- Date: 2026-11-05
+- Epic: consultancy core, slice 3 ([spec 0002](0002-rules-engine-and-knowledge-base.md#the-epic-consultancy-core)); the family area of epic [#117](https://github.com/fernandolisboa/arca/issues/117)
+- Decisions: [ADR-0022](../adr/0022-single-approver-activation.md) (how a version becomes active), [ADR-0014](../adr/0014-knowledge-base-as-reviewed-data.md), [ADR-0008](../adr/0008-database-security-and-environments.md), [ADR-0015](../adr/0015-identity-enrollment-step-up-and-recovery.md), [ADR-0017](../adr/0017-data-lifecycle-and-backups.md)
+
+## Goal
+
+The family enters its case by answering guided questions, sees it played back in plain sentences, and gets each route's result for each person: who qualifies, who goes with whom, what is missing and which questions would change the answer. The owner activates or rejects the route versions those results use, with a passkey.
+
+## Scope
+
+**In:** case tables under forced row-level security; people, relationships, assets and who may see what; the family area (#118); guided questions per person; playback; evaluations and decisive questions; activating and rejecting route versions (ADR-0022); reporting a wrong rule; audit events, export, erasure and retention for all of it.
+
+**Out, each a later step:**
+
+- Free-text intake through the `Extractor` port, which needs an Anthropic API budget. The owner chose on 2026-11-05 to build guided questions first and free text after them. The guided questions stay as the way to correct what a model extracts.
+- Uploading documents for another person (#119), which needs an ADR-0018 amendment.
+- Aspirations, destination choice, comparison and shared analyses (slice 4, #120); checklists, plans and progress (slice 5, #121, #122); the guided tour (#123); FX rates (slice 7).
+- The independent check agent (slice 2's shared tooling): the activation screen shows it as missing.
+
+**Before real data enters:** the real-data gate ([runbook](../runbooks/real-data-gate.md)) has every item checked before the first screen that takes case data (ticket 4) is deployed to production; tickets 1 to 3 add tables and routes that hold nothing until then. Item 5, the first production run of the retention job, is the only one open on 2026-11-05. Tests, seeds and screenshots use synthetic cases only.
+
+## Requirements
+
+### R1. Case tables
+
+A new schema `cases`, owned by `app_migrator`, with DML for `app_api`, the deletes and reads erasure and retention need for `app_jobs` (spec 0004 R9, R10), and every table under forced row-level security keyed on `app.account_id` (ADR-0008). Membership checks in policies go through one reviewed helper, `cases.is_member(case_id)`, so policies never recurse into `cases.member`. That helper, and every write that crosses keepers (joining, handing over, a co-owner's pending owner row, deleting an asset left without owners, the approvers' report counts), are `SECURITY DEFINER` functions owned by a dedicated role that cannot log in, with their own policies, a pinned `search_path` and their checks inside; ticket 1 lists them, since ADR-0008 forces row-level security on table owners too. Each table gets its entry in `packages/db/src/registry.ts` in the same pull request; where a table's owner is reached through a parent row or through either of two people (assets, relationships), ticket 1 extends the registry's owner type generically.
+
+| Table | Holds | Visible to | Registry |
+| --- | --- | --- | --- |
+| `cases.case_file` | ID and created time only | Its members | Unowned, no personal data; deleted when its last member leaves |
+| `cases.member` | Case, account, the person row that is this account, joined time; the account is unique (one case per account in this slice) | Members of the same case | Owned by the account |
+| `cases.person` | Case, display name (at most 80 characters), the person's own account if any, the keeping account (R2), whether the person is a member or a relative outside the case (such as a grandparent). A check keeps the person's own account equal to its keeper | Members of the same case | Owned by the keeping account |
+| `cases.person_profile` | One row per person: the facts of the domain `personSchema` except `incomes`, `financiallyDependentOn` and the `assets` completeness marker, as JSON, plus whether the person's financial dependence was answered | The keeper, and accounts it shared the profile with | Owned by the keeper, through the person |
+| `cases.person_finances` | One row per person: incomes, and whether the person's assets are recorded in full | The keeper, and accounts it shared finances with | Owned by the keeper, through the person |
+| `cases.dependence` | Person, the person they depend on financially; both cascade on delete | Like the dependent person's profile | Owned through the dependent person |
+| `cases.asset` | Kind, value, valuation date, liquidity, sale date | Whoever sees any of its owner rows | Owned through its confirmed owner rows; deleted, with any pending rows, when its last confirmed owner row goes |
+| `cases.asset_owner` | Asset, person, share, and whether that person's keeper confirmed it; cascades on the person's deletion | Like that person's finances, and a pending row also to that person's keeper | Owned by the person's keeper |
+| `cases.relationship` | One edge of the domain `relationshipSchema`, with person IDs; both ends cascade | Members of the same case | Owned through either person |
+| `cases.share` | Person, grantee member (a foreign key to `cases.member` that cascades, so a member who leaves loses every share at once), scope (`profile` or `finances`) | The keeper and the grantee | Owned by the keeper |
+| `cases.rule_report` | R8 | The reporter | Owned by the reporter |
+
+- **References are rows.** Every reference from one person to another (dependence, asset ownership, relationships) is a row with a foreign key that cascades, never an ID inside JSON, so deleting a person leaves no dangling reference. The snapshot builder gives a person `financiallyDependentOn` only when the profile says dependence was answered (`[]` when answered with nobody), so "Não sei" stays unknown.
+- **Validation.** Storage schemas in `packages/domain` derive from the snapshot's schemas with UUIDs in place of opaque IDs and without the cross-person fields above. The API validates every write with them, and validates a write to people, relationships, dependence or owner rows by building the case's people, relationships and owner rows as they would be after the write and running the snapshot's checks (no parent cycles, at most 4 parents, at most 4 couple edges per pair, no duplicate edge). Every write locks the case row (`FOR UPDATE`) first, so two writes cannot pass these checks and the limits together. The checks that span rows a writer may not see (the asset count, and owner shares of an asset adding up to at most 1, pending rows included) run over every row of the case inside one of the `SECURITY DEFINER` functions, and their 409 says only that the limit is reached, never what a hidden row holds. No free text is stored except display names and report notes.
+- **Limits.** The snapshot's limits apply per case: at most 30 members, 60 people, 200 relationships and 100 assets. A write that would exceed one answers 409.
+- **Who writes.** Only the keeper writes a person's profile, finances, dependence and shares. Relationships are written by the keeper of either person in the edge. An asset row is written by the keeper of any confirmed owner; an owner row only by the keeper of that person. A keeper may name a co-owner they do not keep, which adds a pending owner row that the co-owner's keeper sees and confirms or declines ("Bruno é dono de metade deste imóvel?"); the engine counts only confirmed rows, so nobody puts an asset into someone else's finances.
+- Access-matrix tests cover every table: a member of another case sees nothing; a member sees names and relationships but no profile or finances until shared; revoking a share hides the row at once; only the keeper writes; a member who leaves loses every share; `app_auth` has no access; `app_jobs` reaches only what erasure and retention delete.
+
+### R2. Members, invites and the family area
+
+- **Keeper.** Each person has one keeping account. An adult with an account keeps their own person. A person without an account (a child, or a relative who never signs in) is kept by the account that added them.
+- **Creating a case.** A confirmed account (spec 0003 R2) creates its case and its own person row in one call; it becomes the first member.
+- **Joining.** The invite flow of spec 0003 is the only way in. After the inviter confirms an invitee, the screen offers to add them to the case: `POST /v1/case/members {accountId, personId?}`, allowed only when a confirmed `account.link` joins the caller and that account and the account is in no case yet, and idempotent, so a retry after a lost answer is safe. With `personId`, the invitee takes over a person the inviter keeps and that has no account (such as a parent the inviter already described); that needs a `sensitive_settings` step-up with the person as a target, and the inviter's shares of that person are dropped, so the new keeper decides who sees their data.
+- **Handing over.** A keeper hands a person without an account to another member the same way (step-up, shares dropped), for example before leaving.
+- **Leaving.** A member leaves the case from the family area after a `sensitive_settings` step-up. The adult takes their data: every person they keep is deleted from the case, with their facts, their owner rows, dependence and relationships through the cascades, and assets with no owner left. A last member leaving deletes the case.
+- **The family area** (#118) lists the case's people with their relationships in plain words, whether each has an account and their link state (invited, waiting for confirmation, member), and, for the people the viewer keeps, who sees their profile and finances. From a person's row the viewer invites that relative (spec 0003 invites), opens the person's guided questions, hands the person over, or changes sharing.
+- **Sharing.** The keeper shares a person's profile and, separately, finances, with chosen members. Nothing is shared until the keeper chooses: the first time a keeper saves a person, the screen asks who may see it, with all members listed and none preselected. A member who joins later is asked about by each keeper in the family area. Granting and revoking write audit events and show the grantee a notice in the app.
+
+### R3. API
+
+- Every route is declared in `packages/api-contract` with Zod schemas built from the storage schemas, runs as `app_api` with `withIdentity`, and refuses an unconfirmed account (spec 0003 R2).
+- Routes, as a minimum: read the case (people, relationships, and what the viewer may see and edit); create the case; add a member (R2); add, rename, hand over and remove a person; write a profile, finances, dependence, an asset, an owner row and a relationship; replace a person's shares; leave the case; list the next questions (R4); read the playback (R5); list evaluations (R6); report a wrong rule (R8). Writes return the updated view, so the client never merges state itself.
+- Person and asset IDs are UUIDs in the API and the database. The snapshot builder replaces them with opaque IDs (`p1`, `a1`) for the engine, and maps results back.
+- Display names never appear in URLs, logs, error reports or audit details (CLAUDE.md privacy rules); request logs carry route IDs and status only, as today.
+- Rate limits (spec 0003 R10): evaluations and playback 60 per hour per session; writes 300 per hour per account.
+
+### R4. Guided questions
+
+- The question flow is data in `packages/domain`: an ordered list of steps (basics, studies and languages, work, finances, immigration history, family), each with questions that set one fact path of the storage schemas and an input kind. A new fact in the schema adds a question there without touching screens.
+- The API answers the next questions for a person, in flow order, with what is already answered; the client renders each by its step and question IDs, with text through i18n. Each step saves on its own, so a person can stop and come back.
+- Unknown is always an answer: "Não sei" leaves the fact absent, which the engine treats as unknown (spec 0002 R3), and partial dates (year, or year and month) are accepted where the schema accepts them.
+- Completeness questions set the markers: "Esses são todos os filhos de Ana?" sets `children` only when answered yes; the assets question sets the finances marker.
+- Inputs are touch-first and responsive (spec 0006); countries come from the pinned country dataset with pt-BR names. Every string goes through i18n in natural pt-BR (CLAUDE.md language rule), written plain and short.
+
+### R5. Playback
+
+- A pure function in `packages/domain`, `describeCase(snapshot, visibility, at)`, returns the case as sentence descriptors: a message key and typed parameters (person IDs, dates, countries, amounts), never text. `visibility` says, per person, whether the viewer sees the profile and the finances, so "not shared" reads apart from "not answered". Examples: two people married since a date; a child of two parents with shared custody; a person who holds two citizenships; an asset and its owners' shares; a refusal in a country and year.
+- The API returns the descriptors with each one's question ID. The client renders them through i18n with the viewer's names for the IDs and links each sentence to its question, so correcting a sentence is one tap.
+- Table-driven tests cover every descriptor kind, partial dates and both "not shared" and "not answered".
+
+### R6. Evaluations and decisive questions
+
+- `GET /v1/case/evaluations` builds a snapshot from the rows the viewer may see. Row-level security does the filtering, so a hidden fact is an unknown fact; an asset is in the snapshot with the confirmed owner rows the viewer sees, and not at all without one, so a co-owner's hidden share stays hidden, and the builder leaves out the `assets` completeness marker of a person whose finances the viewer does not see, so hidden assets read as unknown, never as none. It computes decision states (R7) and runs `evaluateRoute` for every route in the catalog with each member of the case as principal.
+- Context: `recordedOn`, `rulesAsOf` and `factsAsOf` are today's date in São Paulo, `today` the same; the `FxTable` is empty in this slice, so a comparison across currencies reports its missing rate apart (spec 0002 R5) until slice 7 adds rates.
+- The response gives, per route and principal: the status, the `stale` flag and any `newerProposedVersion`, the unit, each requirement's result with its sources and verification dates, costs and durations as the engine reports them, and the decisive missing facts.
+- **Only the questions that change the answer.** A pure function in `packages/domain` maps each decisive missing fact to the question that sets it (R4) and orders the questions by how many route and principal pairs they could decide, then by flow order. A fact about a person the viewer does not keep becomes "ask Ana to answer this" instead of a question.
+- Evaluations are computed on request and not stored in this slice; the response carries each version's identity and the engine commit, so a result can be reproduced (ADR-0014).
+- The results screen lists routes by country, each with a status per person using the glossary's labels (Elegível, Não elegível, Faltam informações, Depende de critério subjetivo, Versão aguardando ativação, Indisponível), a stale-source note where it applies, who goes with whom, and the questions above. Every rule shown keeps its source and date (CLAUDE.md rule 1).
+
+### R7. Activation and rejection (ADR-0022)
+
+- **Approvers** are listed per environment in a reviewed file in `apps/api` by account ID. Production lists the owner's account. Previews and development list the synthetic seed account.
+- **Decision.** An approver activates or rejects one version identity (route ID, number, content hash as lowercase hex) with a step-up of the new purpose `knowledge_decision` (spec 0003 R5; the purpose joins the contract's enum and the database's purpose check): action `activateVersion` or `rejectVersion`, targets the route ID and version number, field `contentHash`. The route answers 403 to an account not on the list, takes the content hash from the catalog the API bundles, refuses an unknown version or one already rejected, and consumes the step-up; the step-up consumer returns the consumed assertion and reads the passkey's public key in the same `app_auth` transaction, for the copy below.
+- **Storage.** `knowledge.decision` is self-contained, so a decision can be verified again after its passkey is revoked or its step-up row is gone: ID; kind; route ID; version number; content hash; approver account ID, as a plain value with no foreign key into `auth`; credential ID and its COSE public key, copied when the step-up is consumed; the client's action nonce; the step-up's server nonce, authenticator data, client data JSON and signature; the step-up ID, unique; and decided time. Insert-only: `app_api` may insert and select, nobody may update or delete, as for the audit log. Registry: a retained entry on the approver account ID, never erased, as the record of which rules are in use (ticket 7 fits it to the registry's types); it holds no other personal data. Each decision also writes an audit event.
+- **Verification.** Before a decision counts, the API checks that its approver is on the list and that its stored assertion verifies: it rebuilds the subject hash from the decision's own kind, route ID, version number, content hash and action nonce, the challenge from that hash and the server nonce, and checks it with spec 0003 R5's re-verification function against the stored public key. A verified result is cached by decision ID, since decisions never change. An activation that fails is ignored and logged. A rejection counts even if it fails, so a fault can only take a rule out of use, never put one in.
+- **States.** A pure, table-tested function in `packages/domain`, in its own module, computes each identity's state: rejected if any rejection counts, else active if an activation counts, else proposed. The API passes the result to the engine as `states` (spec 0002 R5).
+- **The activation screen**, shown to approvers only, lists proposed versions, newest first. For one version the API returns a view built by a pure function in `packages/domain` from the version's content, read through a display-only catalog entry point that never feeds an evaluation (the boundary rule and spec 0002 R5 name it), with no model involved: the rule's requirements as a tree with fact keys, its dependents, costs and durations, its pinned country sets with their members, the difference from the version it replaces, each source with its full URL as plain text, its title, kind and verification date, with hosts new to the route flagged, its rule cases with their expected results, and the content hash. The client only renders it, with fact names in pt-BR. The independent check's panel says the check does not exist yet.
+- Rejecting an active version shows the routes that would fall back to an older version or to Versão aguardando ativação, and asks for confirmation.
+
+### R8. Reporting a wrong rule
+
+- From a requirement shown in a result, a member marks it as possibly wrong, with a reason from a fixed list (outdated, wrong amount, wrong condition, source does not say this, other) and an optional note of at most 500 characters.
+- The server takes the route ID, version number and requirement key by recomputing the reporter's own evaluation and finding the requirement in it; a report about a requirement not in it answers 404. At most 20 reports per account per day.
+- `cases.rule_report` holds the report and its state (`open`, `closed`); the note is case data under row-level security. Approvers see open reports through one reviewed `SECURITY DEFINER` function, which the API calls only for an approver and which returns route ID, version number, requirement key, reason and count, never a note, a case or a reporter. An approver closes the reports of a requirement once it is researched; activating a correction of that version closes them too.
+- Nothing sends a report to an agent or a model; the owner asks an agent to research it.
+
+### R9. Audit, export, erasure and retention
+
+- Audit events, with IDs and kinds only, never names or facts: case created, member joined, member left, person added, person removed, person handed over, share granted, share revoked, rule reported, version activated, version rejected.
+- Data export (spec 0004 R8) includes every case row the account keeps and the case's people and relationships it can see.
+- Erasing an account (spec 0004 R9) does what leaving does (R2) first. The deletion screen warns that people the account keeps, such as children, are deleted with it unless they are handed over first.
+- Retention: case rows live as long as their case and their keeper's account; `cases.rule_report` rows are deleted 365 days after creation; decisions are kept. [RETENTION.md](../RETENTION.md) gains these lines.
+
+## Tickets, in order
+
+| # | Ticket | Requirements |
+| --- | --- | --- |
+| 1 | Case schema, row-level security, storage schemas, registry and access-matrix tests | R1, R9 (registry) |
+| 2 | Case API: create, people, profiles, finances, dependence, assets, relationships, shares, hand-over, leave; snapshot builder | R1, R2, R3 |
+| 3 | Joining the case after an invite is confirmed | R2 |
+| 4 | Family area screen | R2 |
+| 5 | Guided questions | R4 |
+| 6 | Playback | R5 |
+| 7 | Decisions: approvers file, `knowledge_decision` step-up, decision table, verification, states function | R7 |
+| 8 | Activation screen and its view model | R7 |
+| 9 | Evaluations, decisive questions and the results screen | R6 |
+| 10 | Reporting a wrong rule | R8 |
+| 11 | Export, erasure, retention and the deletion warning | R9 |
+
+## Threats
+
+| Threat | Control |
+| --- | --- |
+| A relative reads another adult's finances | Profile and finances in their own tables under row-level security, shared only by the keeper; evaluations see only what the viewer sees, and hidden assets read as unknown, so a result never reveals a hidden fact; access-matrix tests |
+| Another family's data leaks across cases | Every policy keys on case membership through one helper; access-matrix case with two cases |
+| Someone puts data into another adult's record | Only the keeper writes a person's rows; owner rows only by that person's keeper; access-matrix tests |
+| A forged or replayed decision activates a wrong rule | Step-up bound to the content hash; approver list in the repository; a self-contained decision verified again before it counts; insert-only table. Residual in ADR-0022 |
+| A lost passkey brings back a rejected rule | Decisions carry their own public key, and a rejection counts even when it cannot be verified |
+| Names leak into logs or analytics | Names only in `cases.person`; logs carry route IDs; audit details carry IDs and kinds |
+| A report note or a display name steers an agent | Neither reaches an agent or a model in this slice |
