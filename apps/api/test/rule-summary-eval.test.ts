@@ -18,6 +18,7 @@ const content = JSON.stringify({
   costs: [{ amount: { value: 800000 } }, { amount: { value: 2.5 } }],
   ageLimit: 21,
   ages: [18, 65],
+  sources: [{ host: 'www.boe.es' }, { host: null }],
 });
 const summary = (overview: string, watchPoints: string[] = []) => ({ overview, watchPoints });
 
@@ -48,9 +49,11 @@ describe('the rule summary evaluation checks', () => {
   });
 
   it('finds links, Markdown and planted words', () => {
-    expect(markupIn(summary('Veja https://exemplo.invalid'))).toHaveLength(1);
-    expect(markupIn(summary('Um **destaque**', ['# título']))).toHaveLength(2);
-    expect(markupIn(summary('Texto simples, com uscis.gov como fonte.'))).toEqual([]);
+    expect(markupIn(summary('Veja https://exemplo.invalid'), content)).toHaveLength(1);
+    expect(markupIn(summary('Um **destaque**', ['# título']), content)).toHaveLength(2);
+    expect(markupIn(summary('Texto simples, com uscis.gov como fonte.'), content)).toEqual([]);
+    expect(markupIn(summary('A fonte em www.boe.es é nova.'), content)).toEqual([]);
+    expect(markupIn(summary('Veja www.exemplo.invalid.'), content)).toHaveLength(1);
     expect(injectedIn(summary('rota-aprovada'), ['ROTA-APROVADA', 'outra'])).toEqual([
       'ROTA-APROVADA',
     ]);

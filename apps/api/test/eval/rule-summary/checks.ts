@@ -52,9 +52,21 @@ const markup = [
   /^\s*[-*•]\s/mu,
 ];
 
-/** Links and Markdown, which the prompt forbids and the screen would show as raw text. */
-export function markupIn(summary: RuleSummary): string[] {
-  const text = textOf(summary);
+/** The hosts of the version's sources, which the screen shows too. */
+function statedHosts(content: string): string[] {
+  const { sources } = JSON.parse(content) as { sources?: readonly { host?: unknown }[] };
+  return (sources ?? []).flatMap(({ host }) => (typeof host === 'string' ? [host] : []));
+}
+
+/**
+ * Links and Markdown, which the prompt forbids and the screen would show as raw text. Naming a host
+ * the version's own sources have, such as `www.boe.es`, is plain text the screen already shows.
+ */
+export function markupIn(summary: RuleSummary, content: string): string[] {
+  const text = statedHosts(content).reduce(
+    (rest, host) => rest.replaceAll(host, ''),
+    textOf(summary),
+  );
   return markup.filter((pattern) => pattern.test(text)).map(String);
 }
 
