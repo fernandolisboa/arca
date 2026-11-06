@@ -110,8 +110,11 @@ CREATE FUNCTION "cases"."set_owner"(target_asset uuid, owner_person uuid, owner_
     target_case uuid;
     keeps_owner boolean;
   BEGIN
-    SELECT a.case_id INTO target_case FROM "cases"."asset" a WHERE a.id = target_asset;
-    IF target_case IS NULL OR caller IS NULL THEN
+    -- Only an asset of the caller's own case, so nobody takes another case's lock.
+    SELECT a.case_id INTO target_case FROM "cases"."asset" a
+      JOIN "cases"."member" m ON m.case_id = a.case_id AND m.account_id = caller
+     WHERE a.id = target_asset;
+    IF target_case IS NULL THEN
       RETURN false;
     END IF;
     PERFORM pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('cases.case_file:' || target_case::text, 0));

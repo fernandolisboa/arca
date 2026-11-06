@@ -147,6 +147,7 @@ A new schema `cases`, owned by `app_migrator`, with DML for `app_api`, the delet
 | Another family's data leaks across cases | Every policy keys on case membership through one helper; access-matrix case with two cases |
 | Someone puts data into another adult's record | Only the keeper writes a person's rows; owner rows only by that person's keeper; access-matrix tests |
 | A keeper deletes a jointly owned asset | Accepted: the keeper of any confirmed owner may delete it, as R1 says; the other owners' keepers see it gone and can add it again; a family app does not need a second approval here |
+| A co-owner learns the other owners' total share of an asset | Accepted: the shares check counts rows the co-owner may not see, so changing their own share until it is refused reveals the total, not who holds it; in a family app that is not worth a second rule |
 | A forged or replayed decision activates a wrong rule | Step-up bound to the content hash; approver list in the repository; a self-contained decision verified again before it counts; insert-only table. Residual in ADR-0022 |
 | A lost passkey brings back a rejected rule | Decisions carry their own public key, and a rejection counts even when it cannot be verified |
 | Names leak into logs or analytics | Names only in `cases.person`; logs carry route IDs; audit details carry IDs and kinds |
