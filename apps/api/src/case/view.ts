@@ -40,9 +40,13 @@ export const memberCase = async (tx: Transaction, accountId: string) =>
     )
   ).rows[0]?.case_id;
 
-/** The viewer's case's rows, as the viewer sees them; undefined outside a case. */
-export async function readCase(tx: Transaction, accountId: string): Promise<CaseRows | undefined> {
-  const caseId = await memberCase(tx, accountId);
+/** The viewer's case's rows, as the viewer sees them; undefined outside a case. A write passes the case it locked. */
+export async function readCase(
+  tx: Transaction,
+  accountId: string,
+  knownCase?: string,
+): Promise<CaseRows | undefined> {
+  const caseId = knownCase ?? (await memberCase(tx, accountId));
   if (caseId === undefined) return undefined;
   const ofCase = sql`person_id IN (SELECT id FROM cases.person WHERE case_id = ${caseId})`;
   const rows = async <Row>(query: SQL) =>

@@ -183,10 +183,10 @@ export function createCaseFiles({ db, audit, today }: CaseFilesSettings): CaseFi
         const caseId = await memberCase(tx, accountId);
         if (caseId === undefined) throw new Refused('not_found');
         await lockCase(tx, caseId);
-        const before = await readCase(tx, accountId);
+        const before = await readCase(tx, accountId, caseId);
         if (before === undefined) throw new Refused('not_found');
         events = await work(tx, before);
-        const after = await readCase(tx, accountId);
+        const after = await readCase(tx, accountId, caseId);
         if (after === undefined) throw new Refused('not_found');
         return caseView(after, accountId);
       });
