@@ -19,12 +19,16 @@ Checked on 2026-11-05 against 8 U.S.C. 1153(b)(5)(C) on govinfo.gov: USD 800,000
 
 Known gaps in version 1:
 
-- The amounts change for petitions filed on or after 2027-01-01, so a version 2 is needed once DHS publishes them; version 1 has no end date ([#219](https://github.com/fernandolisboa/arca/issues/219)).
+- The amounts change for petitions filed on or after 2027-01-01, so a new version is needed once DHS publishes them; no version has an end date ([#219](https://github.com/fernandolisboa/arca/issues/219)).
 - Only the USD 800,000 amount (TEA or infrastructure) is modeled; the TEA status of a project is not a case fact.
 - Ages are read at `factsAsOf`, which fits a family that has not filed yet. After filing, the Child Status Protection Act (8 U.S.C. 1153(h)) can keep a child who turns 21 during processing; version 1 does not model it.
 - Any biological parent link counts. A child born out of wedlock qualifies through the father only with legitimation or a bona fide relationship ((C) and (D)), which the snapshot cannot tell.
 - Stepchildren are reached only through the current marriage, so a step relationship from an earlier marriage is missed; and the spouse's own link to the child is not checked against 1101(b)(1).
 - The leap-day convention (`feb-28`) has no official source; the version cites the statute's age of 21 and says the 28 February date is assumed.
+
+Version 2 (proposed, 2026-11-06, effective 2026-11-30) follows the EB-5 fee final rule ([91 FR 61940](https://www.federalregister.gov/documents/2026/09/30/2026-20016/us-citizenship-and-immigration-services-employment-based-immigrant-visa-fifth-preference-eb-5-fee), read from the [govinfo PDF](https://www.govinfo.gov/content/pkg/FR-2026-09-30/pdf/2026-20016.pdf)), which revises 8 CFR 106.2(d) for filings postmarked on or after 2026-11-30: Form I-526 USD 7,615, Form I-526E USD 7,850 (each with the USD 75 technology fee included), plus the USD 1,100 EB-5 Integrity Fund fee for each I-526E (up from USD 1,000 by CPI-U from 2022 to 2025). Its costs follow the regional center path, which the USD 800,000 amount already assumes: USD 7,850 plus USD 1,100; the petition fee's title gives the standalone I-526 amount. The capital requirement's title says it holds for petitions filed before 2027-01-01. Everything else is unchanged from version 1, with the same gaps.
+
+On 2026-11-06 the Federal Register had no technical amendment with the 2027 investment amounts, which 1153(b)(5)(C)(iii) asks DHS to publish (the standard amount follows CPI-U from 2022-01-01, rounded down to USD 50,000; the TEA amount is 75 percent of it).
 
 | Fact | Source |
 | --- | --- |

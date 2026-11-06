@@ -1,0 +1,327 @@
+{
+  "schemaVersion": 1,
+  "routeId": "us-eb5",
+  "number": 2,
+  "title": "EB-5 immigrant investor (permanent residence)",
+  "country": "US",
+  "tags": ["investment", "permanent-residence"],
+  "effectiveFrom": "2026-11-30",
+  "status": "open",
+  "currency": "USD",
+  "sources": [
+    {
+      "id": "usc-1153",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "title": "8 U.S.C. 1153(b)(5) and (d): employment creation visas and accompanying spouses and children",
+      "kind": "official",
+      "verifiedAt": "2026-11-06"
+    },
+    {
+      "id": "usc-1101",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "title": "8 U.S.C. 1101(b)(1): a child is an unmarried person under twenty-one years of age, including a stepchild and an adopted child",
+      "kind": "official",
+      "verifiedAt": "2026-11-05"
+    },
+    {
+      "id": "usc-1101-leap-day",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "title": "8 U.S.C. 1101(b)(1) sets the age of 21 but no rule for a 29 February birthday; the earlier date, 28 February, is assumed",
+      "kind": "official",
+      "verifiedAt": "2026-11-05"
+    },
+    {
+      "id": "cfr-204-6",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "title": "8 CFR 204.6(j): evidence of lawfully obtained capital placed at risk in a new commercial enterprise creating 10 full-time jobs",
+      "kind": "official",
+      "verifiedAt": "2026-11-05"
+    },
+    {
+      "id": "fee-rule-2026",
+      "url": "https://www.federalregister.gov/documents/2026/09/30/2026-20016/us-citizenship-and-immigration-services-employment-based-immigrant-visa-fifth-preference-eb-5-fee",
+      "title": "EB-5 fee final rule, 91 FR 61940, revising 8 CFR 106.2(d) for filings postmarked on or after 2026-11-30",
+      "kind": "official",
+      "verifiedAt": "2026-11-06"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "us",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "leapDayBirthday": "feb-28",
+  "leapDayBirthdaySources": ["usc-1101-leap-day"],
+  "requirements": [
+    {
+      "id": "capital",
+      "title": "Capital to invest of at least USD 800,000 (targeted employment area or infrastructure project; USD 1,050,000 elsewhere), for petitions filed before 2027-01-01",
+      "expression": {
+        "op": "gte",
+        "left": {
+          "op": "fact",
+          "key": "unit.liquidAssets"
+        },
+        "right": {
+          "op": "money",
+          "amount": 80000000,
+          "currency": "USD"
+        }
+      },
+      "sources": ["usc-1153"]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "lawful-source",
+      "title": "The capital was obtained through lawful means, with a documented path of funds",
+      "evidence": [
+        "principal.monthlyActiveIncome",
+        "principal.monthlyPassiveIncome",
+        "unit.liquidAssets"
+      ],
+      "sources": ["cfr-204-6"]
+    },
+    {
+      "id": "at-risk",
+      "title": "The capital is placed at risk in a new commercial enterprise, beyond a mere intent to invest",
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["usc-1153", "cfr-204-6"]
+    },
+    {
+      "id": "job-creation",
+      "title": "The enterprise will create at least 10 full-time jobs for qualifying employees",
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["usc-1153", "cfr-204-6"]
+    }
+  ],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse",
+      "path": ["spouse"],
+      "condition": {
+        "op": "bool",
+        "value": true
+      },
+      "sources": ["usc-1153"]
+    },
+    {
+      "id": "children",
+      "title": "Unmarried biological children under 21",
+      "path": ["child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 21
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "edge.parentKind"
+            },
+            "right": {
+              "op": "token",
+              "value": "biological"
+            }
+          }
+        ]
+      },
+      "sources": ["usc-1153", "usc-1101"]
+    },
+    {
+      "id": "adopted-children",
+      "title": "Unmarried adopted children under 21, adopted before 16 with two years of custody (adopted at 16 or 17, or custody still short: possible)",
+      "path": ["child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 21
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "edge.parentKind"
+            },
+            "right": {
+              "op": "token",
+              "value": "adoptive"
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "lt",
+                    "left": {
+                      "op": "fact",
+                      "key": "edge.ageAtStart"
+                    },
+                    "right": {
+                      "op": "int",
+                      "value": 16
+                    }
+                  },
+                  {
+                    "op": "since",
+                    "date": {
+                      "op": "fact",
+                      "key": "edge.custodyStart"
+                    },
+                    "duration": "P2Y"
+                  }
+                ]
+              },
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "lt",
+                    "left": {
+                      "op": "fact",
+                      "key": "edge.ageAtStart"
+                    },
+                    "right": {
+                      "op": "int",
+                      "value": 18
+                    }
+                  },
+                  {
+                    "op": "unmodeled"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["usc-1153", "usc-1101"]
+    },
+    {
+      "id": "stepchildren",
+      "title": "Unmarried stepchildren under 21 whose parent married the principal before they turned 18",
+      "path": ["spouse", "child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 21
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "firstEdge.ageAtStart"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          }
+        ]
+      },
+      "sources": ["usc-1153", "usc-1101"]
+    }
+  ],
+  "costs": [
+    {
+      "id": "investment",
+      "title": "Minimum investment in a targeted employment area or infrastructure project",
+      "kind": "capital",
+      "amount": {
+        "op": "money",
+        "amount": 80000000,
+        "currency": "USD"
+      },
+      "appliesTo": "principal",
+      "sources": ["usc-1153"]
+    },
+    {
+      "id": "petition-fee",
+      "title": "Form I-526E regional center petition fee, technology fee included (a standalone Form I-526 costs USD 7,615)",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 785000,
+        "currency": "USD"
+      },
+      "appliesTo": "principal",
+      "sources": ["fee-rule-2026"]
+    },
+    {
+      "id": "integrity-fund-fee",
+      "title": "EB-5 Integrity Fund fee for each Form I-526E regional center petition",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 110000,
+        "currency": "USD"
+      },
+      "appliesTo": "principal",
+      "sources": ["fee-rule-2026"]
+    }
+  ],
+  "durations": []
+}

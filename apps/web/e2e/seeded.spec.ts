@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Browser } from '@playwright/test';
+import { readdir, readFile } from 'node:fs/promises';
 import { family, signedIn } from './case-accounts.js';
 import { seededCredential, virtualAuthenticator, withoutAutofill } from './passkeys.js';
 import {
@@ -50,6 +51,8 @@ test('the seed approver activates a version, reads and closes its reports, then 
     clearKnowledgeDecisions(),
     resetRateLimits(),
   ]);
+  const number = await eb5VersionInEffect();
+  const version = String(number);
   const problems = watchProblems(page);
   await virtualAuthenticator(page, seededCredential(account.passkey.label), {
     userId: account.id,
@@ -62,8 +65,12 @@ test('the seed approver activates a version, reads and closes its reports, then 
   await page.goto(`${databaseServer.origin}/settings`);
   await page.getByRole('link', { name: 'Abrir a tela de ativação' }).click();
   const proposed = page.getByRole('region', { name: 'Versões propostas' });
-  await proposed.getByRole('button', { name: /^EB-5 immigrant investor/ }).click();
-  await expect(page.getByRole('heading', { level: 3, name: /EB-5 .* versão 1/ })).toBeVisible();
+  await proposed
+    .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
+    .click();
+  await expect(
+    page.getByRole('heading', { level: 3, name: new RegExp(`EB-5 .* versão ${version}\\b`) }),
+  ).toBeVisible();
   await expect(page.getByRole('region', { name: 'Requisitos' })).toContainText(
     'soma dos bens fáceis de transformar em dinheiro da unidade é maior ou igual a',
   );
@@ -86,14 +93,14 @@ test('the seed approver activates a version, reads and closes its reports, then 
   await expect(page.getByRole('status')).toHaveText('Versão ativada.');
   expect((await stepUp).postDataJSON()).toMatchObject({
     purpose: 'knowledge_decision',
-    target: { action: 'activateVersion', targets: ['us-eb5', '1'] },
+    target: { action: 'activateVersion', targets: ['us-eb5', version] },
   });
   await expect(page.getByText('Versão ativa', { exact: true })).toBeVisible();
 
   await memberReportsARequirement(browser);
   await page.reload();
   const reports = page.getByRole('region', { name: 'Avisos de regra errada' });
-  await expect(reports).toContainText(/EB-5 .* \(versão 1\), requisito/);
+  await expect(reports).toContainText(new RegExp(`EB-5 .* \\(versão ${version}\\), requisito`));
   await expect(reports).toContainText(/valor errado: \d+ avisos?/);
   await expect(reports).not.toContainText('Uma observação sintética');
   for (const close of await reports
@@ -108,8 +115,10 @@ test('the seed approver activates a version, reads and closes its reports, then 
     .click();
 
   await page.getByRole('button', { name: 'Recusar esta versão' }).click();
+  const fallback =
+    number === 1 ? 'a rota fica sem versão' : `ela passa para a versão ${String(number - 1)}`;
   await expect(
-    page.getByText(/Hoje a rota usa esta versão\. Se recusar, a rota fica sem versão/),
+    page.getByText(new RegExp(`Hoje a rota usa esta versão\\. Se recusar, ${fallback}`)),
   ).toBeVisible();
   await page.getByRole('button', { name: 'Confirmar' }).click();
   await expect(page.getByRole('status')).toHaveText('Versão recusada.');
@@ -147,4 +156,31 @@ async function memberReportsARequirement(browser: Browser) {
   ).toBeVisible();
   expect(problems).toEqual([]);
   await context.close();
+}
+
+/**
+ * The EB-5 version the server selects today: it evaluates on the real clock in São Paulo
+ * (`todayInSaoPaulo` in the API), so a version dated in the future takes over on its date.
+ */
+async function eb5VersionInEffect(): Promise<number> {
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(
+    new Date(),
+  );
+  const folder = new URL('../../../packages/knowledge/data/routes/us-eb5/', import.meta.url);
+  const versions = await Promise.all(
+    (await readdir(folder))
+      .filter((name) => /^\d+\.json$/.test(name))
+      .map(async (name) => {
+        const { number, effectiveFrom } = JSON.parse(
+          await readFile(new URL(name, folder), 'utf8'),
+        ) as { number: number; effectiveFrom: string };
+        return { number, effectiveFrom };
+      }),
+  );
+  const inEffect = versions
+    .filter(({ effectiveFrom }) => effectiveFrom <= today)
+    .sort((left, right) => left.effectiveFrom.localeCompare(right.effectiveFrom))
+    .at(-1);
+  if (inEffect === undefined) throw new Error('no EB-5 version is in effect today');
+  return inEffect.number;
 }
