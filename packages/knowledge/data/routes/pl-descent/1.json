@@ -1,0 +1,304 @@
+{
+  "schemaVersion": 1,
+  "routeId": "pl-descent",
+  "number": 1,
+  "title": "Confirmation of Polish citizenship held from birth through a line of Polish parents",
+  "country": "PL",
+  "tags": ["descent", "citizenship"],
+  "effectiveFrom": "2012-08-15",
+  "status": "open",
+  "currency": "PLN",
+  "sources": [
+    {
+      "id": "ustawa-2009",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "title": "Ustawa z dnia 2 kwietnia 2009 r. o obywatelstwie polskim (Dz.U. 2025 poz. 1611), in force since 15 August 2012: art. 14 (a child of a Polish parent is Polish by birth) and art. 55",
+      "kind": "official",
+      "verifiedAt": "2026-11-06"
+    },
+    {
+      "id": "ustawa-1962",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/1962/49/text.pdf",
+      "title": "Ustawa z dnia 15 lutego 1962 r. o obywatelstwie polskim, art. 4 and 6: from 21 August 1962, with one foreign parent the parents could choose the foreign citizenship within three months",
+      "kind": "official",
+      "verifiedAt": "2026-11-06"
+    },
+    {
+      "id": "ustawa-1951",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/1951/25/text.pdf",
+      "title": "Ustawa z dnia 8 stycznia 1951 r. o obywatelstwie polskim, art. 6, 8 and 9: from 19 January 1951, one Polish parent sufficed with an unknown or stateless other parent, a birth in Poland, or reciprocity",
+      "kind": "official",
+      "verifiedAt": "2026-11-06"
+    },
+    {
+      "id": "ustawa-1920",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/1920/44/text.pdf",
+      "title": "Ustawa z dnia 20 stycznia 1920 r. o obywatelstwie Państwa Polskiego, art. 5, 11 and 13: it passed through the father and was lost on taking a foreign one or serving a foreign state without consent",
+      "kind": "official",
+      "verifiedAt": "2026-11-06"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "pl",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "polish-line",
+      "title": "A Polish ancestor, up to four generations back, whose citizenship passed at every birth down the line; only births since 15 August 2012 settle a link, as earlier laws turn on more than a link holds",
+      "expression": {
+        "op": "some",
+        "over": "principal.ancestors",
+        "generations": 4,
+        "where": {
+          "op": "all",
+          "operands": [
+            {
+              "op": "any",
+              "operands": [
+                {
+                  "op": "all",
+                  "operands": [
+                    {
+                      "op": "eq",
+                      "left": {
+                        "op": "fact",
+                        "key": "lineage.edgeKind"
+                      },
+                      "right": {
+                        "op": "token",
+                        "value": "biological"
+                      }
+                    },
+                    {
+                      "op": "intersects",
+                      "list": {
+                        "op": "fact",
+                        "key": "lineage.citizenshipsAtChildBirth"
+                      },
+                      "set": {
+                        "op": "tokens",
+                        "values": ["PL"]
+                      }
+                    },
+                    {
+                      "op": "gte",
+                      "left": {
+                        "op": "fact",
+                        "key": "lineage.childBirthDate"
+                      },
+                      "right": {
+                        "op": "date",
+                        "value": "2012-08-15"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "op": "all",
+                  "operands": [
+                    {
+                      "op": "eq",
+                      "left": {
+                        "op": "fact",
+                        "key": "lineage.edgeKind"
+                      },
+                      "right": {
+                        "op": "token",
+                        "value": "biological"
+                      }
+                    },
+                    {
+                      "op": "intersects",
+                      "list": {
+                        "op": "fact",
+                        "key": "lineage.citizenshipsAtChildBirth"
+                      },
+                      "set": {
+                        "op": "tokens",
+                        "values": ["PL"]
+                      }
+                    },
+                    {
+                      "op": "unmodeled"
+                    }
+                  ]
+                },
+                {
+                  "op": "all",
+                  "operands": [
+                    {
+                      "op": "not",
+                      "operand": {
+                        "op": "eq",
+                        "left": {
+                          "op": "fact",
+                          "key": "lineage.edgeKind"
+                        },
+                        "right": {
+                          "op": "token",
+                          "value": "biological"
+                        }
+                      }
+                    },
+                    {
+                      "op": "unmodeled"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "op": "every",
+              "over": "lineage.links",
+              "where": {
+                "op": "any",
+                "operands": [
+                  {
+                    "op": "all",
+                    "operands": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "fact",
+                          "key": "lineage.edgeKind"
+                        },
+                        "right": {
+                          "op": "token",
+                          "value": "biological"
+                        }
+                      },
+                      {
+                        "op": "intersects",
+                        "list": {
+                          "op": "fact",
+                          "key": "lineage.citizenshipsAtChildBirth"
+                        },
+                        "set": {
+                          "op": "tokens",
+                          "values": ["PL"]
+                        }
+                      },
+                      {
+                        "op": "gte",
+                        "left": {
+                          "op": "fact",
+                          "key": "lineage.childBirthDate"
+                        },
+                        "right": {
+                          "op": "date",
+                          "value": "2012-08-15"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "op": "all",
+                    "operands": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "fact",
+                          "key": "lineage.edgeKind"
+                        },
+                        "right": {
+                          "op": "token",
+                          "value": "biological"
+                        }
+                      },
+                      {
+                        "op": "intersects",
+                        "list": {
+                          "op": "fact",
+                          "key": "lineage.citizenshipsAtChildBirth"
+                        },
+                        "set": {
+                          "op": "tokens",
+                          "values": ["PL"]
+                        }
+                      },
+                      {
+                        "op": "unmodeled"
+                      }
+                    ]
+                  },
+                  {
+                    "op": "all",
+                    "operands": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "fact",
+                          "key": "lineage.edgeKind"
+                        },
+                        "right": {
+                          "op": "token",
+                          "value": "biological"
+                        }
+                      },
+                      {
+                        "op": "not",
+                        "operand": {
+                          "op": "intersects",
+                          "list": {
+                            "op": "fact",
+                            "key": "lineage.citizenshipsAtChildBirth"
+                          },
+                          "set": {
+                            "op": "tokens",
+                            "values": ["PL"]
+                          }
+                        }
+                      },
+                      {
+                        "op": "unmodeled"
+                      }
+                    ]
+                  },
+                  {
+                    "op": "all",
+                    "operands": [
+                      {
+                        "op": "not",
+                        "operand": {
+                          "op": "eq",
+                          "left": {
+                            "op": "fact",
+                            "key": "lineage.edgeKind"
+                          },
+                          "right": {
+                            "op": "token",
+                            "value": "biological"
+                          }
+                        }
+                      },
+                      {
+                        "op": "unmodeled"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "sources": ["ustawa-2009", "ustawa-1962", "ustawa-1951", "ustawa-1920"]
+    }
+  ],
+  "assessments": [],
+  "dependents": [],
+  "costs": [],
+  "durations": []
+}

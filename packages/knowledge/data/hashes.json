@@ -34,6 +34,10 @@
     {
       "path": "routes/it-descent/1",
       "sha256": "b49c760b9056ef42c7ac66a132dfd3780339446187997a36ec2e2f655ec5a0c0"
+    },
+    {
+      "path": "routes/pl-descent/1",
+      "sha256": "6a32f8730e6476392ce3c749e9f6237b52b647b542f0ee0ac0b3e29f5f1a3b70"
     }
   ]
 }
