@@ -164,6 +164,14 @@ export {
 } from './rules/expression.js';
 export { factTargets } from './rules/fact-reference.js';
 export { type FactKey, factKeys } from './case/facts.js';
+export {
+  type DecisiveQuestion,
+  type RouteResult,
+  type UnitsMoney,
+  decisiveQuestions,
+  questionForFact,
+  routeResult,
+} from './case/results.js';
 export { relationshipSteps } from './case/paths.js';
 export { type CheckIssue } from './rules/check.js';
 export {
