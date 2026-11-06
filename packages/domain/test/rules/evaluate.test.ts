@@ -156,6 +156,36 @@ describe('comparisons over intervals', () => {
       ),
     ).toBe(false);
   });
+
+  it('reads within: false on a definite outsider, true only when complete and certain', () => {
+    const within = (citizenships: readonly object[] | undefined, values: readonly string[]) =>
+      truthOf(
+        run(
+          {
+            op: 'within',
+            list: fact('principal.citizenships'),
+            set: { op: 'tokens', values },
+          },
+          frame(
+            snapshot({
+              people: [{ id: 'p1', ...(citizenships === undefined ? {} : { citizenships }) }],
+            }),
+          ),
+        ),
+      );
+    const held = { country: 'QZ', basis: 'birth', lost: 'none' };
+    const maybeHeld = { country: 'QM', acquired: '2010-01-01' };
+    expect(within([held], ['QZ'])).toBe(true);
+    expect(within([], ['QZ'])).toBe(true);
+    expect(within([held], ['QM'])).toBe(false);
+    // QM is only possibly held: outside the set, it may make the list leave the set.
+    expect(within([held, maybeHeld], ['QZ'])).toBe('unknown');
+    expect(within([held, maybeHeld], ['QZ', 'QM'])).toBe(true);
+    // A definite outsider decides, whatever else is unknown.
+    expect(within([held, maybeHeld], ['QM'])).toBe(false);
+    // Citizenships not recorded: the list may hold anything.
+    expect(within(undefined, ['QZ'])).toBe('unknown');
+  });
 });
 
 describe('since', () => {

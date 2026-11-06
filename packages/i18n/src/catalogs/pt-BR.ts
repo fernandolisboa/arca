@@ -900,6 +900,7 @@ export const ptBR = {
       gte: 'é maior ou igual a',
       in: 'está em',
       intersects: 'tem algum item em comum com',
+      within: 'não tem itens fora de',
       all: 'Todas estas valem',
       any: 'Pelo menos uma destas vale',
       not: 'Isto não vale',

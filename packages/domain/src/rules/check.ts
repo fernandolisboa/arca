@@ -126,7 +126,8 @@ class Checker {
         return this.comparable(left, right, ordered, path) ? boolean : undefined;
       }
       case 'in':
-      case 'intersects': {
+      case 'intersects':
+      case 'within': {
         const isIn = expression.op === 'in';
         const item = this.check(
           isIn ? expression.item : expression.list,

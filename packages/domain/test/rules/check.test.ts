@@ -110,6 +110,24 @@ describe('checkExpression', () => {
       { kind: 'boolean' },
     ],
     [
+      'citizenships within a literal list',
+      {
+        op: 'within',
+        list: fact('principal.citizenships'),
+        set: { op: 'tokens', values: ['QM'] },
+      },
+      { kind: 'boolean' },
+    ],
+    [
+      'citizenships within a set with former states',
+      {
+        op: 'within',
+        list: fact('principal.citizenships'),
+        set: { op: 'set', id: 'historic' },
+      },
+      { kind: 'boolean' },
+    ],
+    [
       'a residence country equal to a current country',
       { op: 'eq', left: fact('principal.residenceCountry'), right: { op: 'token', value: 'QM' } },
       { kind: 'boolean' },
@@ -188,6 +206,14 @@ describe('checkExpression', () => {
       'a token outside the enum',
       { op: 'eq', left: fact('edge.parentKind'), right: { op: 'token', value: 'foster' } },
       dependent,
+    ],
+    [
+      'within on a single token',
+      {
+        op: 'within',
+        list: fact('principal.residenceCountry'),
+        set: { op: 'tokens', values: ['QM'] },
+      },
     ],
     [
       'a country literal not in the pinned countries files',
