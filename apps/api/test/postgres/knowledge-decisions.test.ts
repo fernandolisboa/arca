@@ -35,12 +35,13 @@ const catalog = {
 
 function decisions(
   approvers: readonly string[] = [approver.signedIn.accountId],
+  identities: typeof catalog = catalog,
 ): KnowledgeDecisions {
   return createKnowledgeDecisions({
     db: testDatabase.apiDb,
     stepUp,
     audit: auditLog(testDatabase.auditDb),
-    catalog,
+    catalog: identities,
     approvers,
     origin,
     logger: {
@@ -147,6 +148,61 @@ describe('knowledge decisions (spec 0007, R7)', () => {
         code: 'version_activated',
         details: { decisionId: 'decided' in outcome ? outcome.decided : '', ...request },
       },
+    ]);
+  });
+
+  it('closes the reports of the version a correction it activates corrects (R8)', async () => {
+    const correction: VersionIdentity = {
+      ...version,
+      number: 2,
+      corrects: 1,
+      hash: 'b'.repeat(64),
+    };
+    const service = decisions([approver.signedIn.accountId], {
+      identities: (routeId) => (routeId === version.routeId ? [version, correction] : []),
+    });
+    const caseId = randomUUID();
+    await testDatabase.asAdmin(async (client) => {
+      await client.query('INSERT INTO cases.case_file (id) VALUES ($1)', [caseId]);
+      await client.query('INSERT INTO cases.member (account_id, case_id) VALUES ($1, $2)', [
+        approver.signedIn.accountId,
+        caseId,
+      ]);
+      await client.query(
+        `INSERT INTO cases.rule_report
+           (case_id, reporter_account_id, route_id, version_number, requirement_id, reason)
+         VALUES ($1, $2, 'qm-sample', 1, 'adult', 'outdated'), ($1, $2, 'qm-sample', 2, 'adult', 'other')`,
+        [caseId, approver.signedIn.accountId],
+      );
+    });
+    const action: CanonicalAction = {
+      ...decideVersionAction(
+        'activateVersion',
+        { routeId: 'qm-sample', number: 2 },
+        correction.hash,
+      ),
+      nonce: randomBytes(16),
+    };
+    const nonce = await approved(approver, action);
+    const outcome = await service.decide(
+      approver.signedIn,
+      'activate',
+      { routeId: 'qm-sample', number: 2 },
+      nonce,
+    );
+    expect(outcome).toHaveProperty('decided');
+    const states = await testDatabase.asAdmin(
+      async (client) =>
+        (
+          await client.query<{ version_number: number; state: string }>(
+            'SELECT version_number, state FROM cases.rule_report WHERE case_id = $1 ORDER BY 1',
+            [caseId],
+          )
+        ).rows,
+    );
+    expect(states).toEqual([
+      { version_number: 1, state: 'closed' },
+      { version_number: 2, state: 'open' },
     ]);
   });
 

@@ -7,6 +7,7 @@ import {
   date,
   foreignKey,
   index,
+  integer,
   jsonb,
   numeric,
   pgPolicy,
@@ -499,5 +500,82 @@ export const share = cases.table(
     ...keeperWrites('share', table.personId, ['insert', 'delete']),
     // A hand-over drops the person's shares, so the new keeper decides who sees their data.
     ...byDefiner('share', ['select', 'delete']),
+  ],
+);
+
+export const ruleReportReasons = [
+  'outdated',
+  'wrong_amount',
+  'wrong_condition',
+  'source_mismatch',
+  'other',
+] as const;
+
+const ruleReportStates = ['open', 'closed'] as const;
+
+const inList = (column: unknown, values: readonly string[]) =>
+  sql`${column} IN (${sql.raw(values.map((value) => `'${value}'`).join(', '))})`;
+
+/**
+ * A member's report that a requirement shown in their results may be wrong (spec 0007, R8). Only
+ * the reporter sees it; approvers see open reports counted per requirement through a definer
+ * function that returns no note, case or reporter. Deleted with the reporter's membership, or 365
+ * days after it was made.
+ */
+export const ruleReport = cases.table(
+  'rule_report',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    caseId: uuid('case_id').notNull(),
+    reporterAccountId: uuid('reporter_account_id').notNull(),
+    routeId: text('route_id').notNull(),
+    versionNumber: integer('version_number').notNull(),
+    requirementId: text('requirement_id').notNull(),
+    reason: text('reason').notNull(),
+    note: text('note'),
+    state: text('state').notNull().default('open'),
+    createdAt: createdAt(),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+  },
+  (table) => [
+    // A member who leaves takes their reports with them.
+    foreignKey({
+      name: 'rule_report_reporter_fkey',
+      columns: [table.caseId, table.reporterAccountId],
+      foreignColumns: [member.caseId, member.accountId],
+    }).onDelete('cascade'),
+    index('rule_report_reporter_account_id_idx').on(table.reporterAccountId),
+    index('rule_report_open_idx')
+      .on(table.routeId, table.versionNumber, table.requirementId)
+      .where(sql`${table.state} = 'open'`),
+    check('rule_report_reason', inList(table.reason, ruleReportReasons)),
+    check('rule_report_state', inList(table.state, ruleReportStates)),
+    check(
+      'rule_report_closed_at',
+      sql`(${table.state} = 'closed') = (${table.closedAt} IS NOT NULL)`,
+    ),
+    check('rule_report_note_length', sql`char_length(${table.note}) BETWEEN 1 AND 500`),
+    check(
+      'rule_report_route_id_format',
+      sql`${table.routeId} ~ '^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$'`,
+    ),
+    check('rule_report_version_number_positive', sql`${table.versionNumber} > 0`),
+    check(
+      'rule_report_requirement_id_format',
+      sql`${table.requirementId} ~ '^[a-z0-9][a-z0-9-]{0,63}$'`,
+    ),
+    pgPolicy('rule_report_select_reporter', {
+      for: 'select',
+      to: 'app_api',
+      using: isIdentity(table.reporterAccountId),
+    }),
+    pgPolicy('rule_report_insert_reporter', {
+      for: 'insert',
+      to: 'app_api',
+      withCheck: sql`${isIdentity(table.reporterAccountId)} AND ${isMember(table.caseId)}`,
+    }),
+    ...erasedByJobs('rule_report', table.reporterAccountId),
+    // Approvers read the open reports and close them only through the definer functions.
+    ...byDefiner('rule_report', ['select', 'update']),
   ],
 );

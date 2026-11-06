@@ -107,11 +107,14 @@ export const openApiRoutes = {
   answerCaseQuestions: toOpenApiRoute(routes.answerCaseQuestions),
   getCasePlayback: toOpenApiRoute(routes.getCasePlayback),
   getCaseEvaluations: toOpenApiRoute(routes.getCaseEvaluations),
+  reportRule: toOpenApiRoute(routes.reportRule),
   leaveCase: toOpenApiRoute(routes.leaveCase),
   activateVersion: toOpenApiRoute(routes.activateVersion),
   rejectVersion: toOpenApiRoute(routes.rejectVersion),
   listKnowledgeVersions: toOpenApiRoute(routes.listKnowledgeVersions),
   getVersionView: toOpenApiRoute(routes.getVersionView),
+  listRuleReports: toOpenApiRoute(routes.listRuleReports),
+  closeRuleReports: toOpenApiRoute(routes.closeRuleReports),
 } as const;
 
 export const openApiInfo = { title: 'Arca API', version: '1.0.0' } as const;

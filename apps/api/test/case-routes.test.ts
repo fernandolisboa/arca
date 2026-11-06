@@ -232,6 +232,10 @@ function setup({
       calls.push(['evaluations', accountId]);
       return Promise.resolve(inCase ? evaluations : null);
     },
+    reportRule: (accountId: string, request: unknown) => {
+      calls.push(['reportRule', accountId, request]);
+      return Promise.resolve(inCase ? 'reported' : 'not_found');
+    },
     leave: (accountId: string) => {
       calls.push(['leave', accountId]);
       return Promise.resolve(left);
@@ -314,6 +318,30 @@ describe('the case routes (spec 0007, R3)', () => {
     const outside = await setup({ inCase: false }).call('GET', '/case/playback');
     expect(outside.status).toBe(404);
     expect(await errorOf(outside)).toBe('not_found');
+  });
+
+  it('takes a rule report under its daily per-account limit, and 404 for one not shown', async () => {
+    const report = {
+      routeId: 'us-eb5',
+      versionNumber: 1,
+      requirementId: 'capital',
+      reason: 'wrong_amount',
+      note: '  O valor mudou  ',
+    };
+    const { call, calls, limited } = setup();
+    const response = await call('POST', '/case/rule-reports', report);
+    expect(response.status).toBe(200);
+    expect(calls).toEqual([['reportRule', owner.accountId, { ...report, note: 'O valor mudou' }]]);
+    expect(limited).toEqual(['rule_report_account']);
+    const outside = await setup({ inCase: false }).call('POST', '/case/rule-reports', report);
+    expect(outside.status).toBe(404);
+    const bad = await setup().call('POST', '/case/rule-reports', { ...report, reason: 'nope' });
+    expect(bad.status).toBe(400);
+    const long = await setup().call('POST', '/case/rule-reports', {
+      ...report,
+      note: 'x'.repeat(501),
+    });
+    expect(long.status).toBe(400);
   });
 
   it('evaluates the case under its per-session limit, and 404 outside a case', async () => {

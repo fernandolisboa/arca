@@ -4,6 +4,7 @@ import {
   decimalSchema,
   durationSchema,
   routeIdSchema,
+  slugSchema,
   sourceSchema,
   displayNameSchema,
   maxCaseMembers,
@@ -434,6 +435,40 @@ export const getCaseEvaluations = {
   response: { description: 'The evaluations', schema: CaseEvaluations },
 } as const satisfies RouteDefinition<typeof CaseEvaluations>;
 
+/** Why a member thinks a requirement may be wrong (spec 0007, R8). */
+export const ruleReportReasons = [
+  'outdated',
+  'wrong_amount',
+  'wrong_condition',
+  'source_mismatch',
+  'other',
+] as const;
+
+export const ReportRuleRequest = z.strictObject({
+  routeId: routeIdSchema,
+  versionNumber: z.int().min(1).max(1_000_000),
+  requirementId: slugSchema,
+  reason: z.enum(ruleReportReasons),
+  note: z
+    .string()
+    .trim()
+    .min(1)
+    .max(500)
+    .regex(/^\P{Cc}*$/u)
+    .optional(),
+});
+export type ReportRuleRequest = z.infer<typeof ReportRuleRequest>;
+
+export const reportRule = {
+  method: 'post',
+  path: '/case/rule-reports',
+  operationId: 'reportRule',
+  summary:
+    "Reports a requirement of the viewer's own results as possibly wrong, with a reason and an optional note; 20 per account per day (429 rate_limited); 404 not_found when the viewer's evaluation holds no such requirement",
+  body: ReportRuleRequest,
+  response: { description: 'Reported', schema: z.object({}) },
+} as const satisfies RouteDefinition;
+
 export const leaveCase = {
   method: 'post',
   path: '/case/leave',
@@ -482,6 +517,7 @@ export const caseRoutes = {
   answerCaseQuestions,
   getCasePlayback,
   getCaseEvaluations,
+  reportRule,
   leaveCase,
 } as const;
 

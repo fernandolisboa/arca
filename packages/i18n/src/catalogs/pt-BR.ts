@@ -664,10 +664,37 @@ export const ptBR = {
     duration: '{title}: de {min} a {max}',
     source: 'Fonte: {host} · conferida em {date}',
     someone: 'alguém do caso',
+    report: {
+      open: 'Avisar regra errada',
+      title: 'Avisar regra errada',
+      legend: 'O que parece errado?',
+      reason:
+        '{reason, select, outdated {Está desatualizada} wrong_amount {O valor está errado} wrong_condition {A condição está errada} source_mismatch {A fonte não diz isso} other {Outro motivo}}',
+      note: 'Quer contar mais? (opcional)',
+      noteHint:
+        'Até 500 caracteres. Só você vê esta nota; quem revisa as regras vê apenas o motivo.',
+      send: 'Enviar aviso',
+      sending: 'Enviando…',
+      cancel: 'Cancelar',
+      sent: 'Aviso enviado. Quem revisa as regras vai conferir esta regra.',
+      tooMany: 'Você já mandou muitos avisos hoje. Tente de novo amanhã.',
+      failure: 'Não deu para enviar o aviso agora. Tente de novo.',
+    },
   },
   /** The activation screen (spec 0007, R7), shown to approvers only. */
   knowledge: {
     title: 'Tela de ativação',
+    reports: {
+      title: 'Avisos de regra errada',
+      lead: 'Pessoas do caso marcaram estes requisitos como possivelmente errados. Pesquise a regra nas fontes antes de encerrar os avisos.',
+      none: 'Nenhum aviso aberto.',
+      loadFailure: 'Não conseguimos carregar os avisos agora.',
+      item: '{title} (versão {number}), requisito {requirement}',
+      reason:
+        '{reason, select, outdated {desatualizada} wrong_amount {valor errado} wrong_condition {condição errada} source_mismatch {a fonte não diz isso} other {outro motivo}}: {n, plural, one {# aviso} other {# avisos}}',
+      close: 'Já pesquisei, encerrar os avisos',
+      closeFailure: 'Não deu para encerrar os avisos agora. Tente de novo.',
+    },
     lead: 'Aqui você confere cada versão de rota antes de ela entrar nas avaliações. Nenhuma versão vale antes de você ativar.',
     signIn: 'Entre na sua conta para ver as versões.',
     notApprover: 'Só um aprovador pode abrir esta tela.',
@@ -1286,6 +1313,7 @@ export const ptBR = {
       caseAssets: 'Bens',
       caseRelationships: 'Vínculos familiares',
       caseShares: 'Com quem você compartilhou dados',
+      ruleReports: 'Avisos de regra errada que você enviou',
     },
   },
   /**

@@ -89,12 +89,14 @@
   "foreignTables": [],
   "securityDefinerFunctions": [
     "cases.add_asset",
+    "cases.close_rule_reports",
     "cases.create_case",
     "cases.drop_empty_case",
     "cases.drop_unowned_asset",
     "cases.hand_over",
     "cases.is_member",
     "cases.join_case",
+    "cases.open_rule_reports",
     "cases.set_owner"
   ],
   "migrationExtensions": [],

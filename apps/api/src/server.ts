@@ -26,6 +26,7 @@ import { createStepUp, type StepUpService, type StepUpSpender } from './auth/ste
 import { approvers } from './knowledge/approvers.js';
 import { createKnowledgeDecisions, type KnowledgeDecisions } from './knowledge/decisions.js';
 import { todayInSaoPaulo } from './calendar.js';
+import { createRuleReportReview } from './knowledge/reports.js';
 import { createKnowledgeVersions } from './knowledge/versions.js';
 import {
   databaseTargetFrom,
@@ -416,6 +417,7 @@ const app = createApp({
       knowledgeDecisions().decide(signedIn, kind, version, nonce),
     states: () => knowledgeDecisions().states(),
   },
+  ruleReports: createRuleReportReview(() => connected().db),
   knowledgeVersions: createKnowledgeVersions({
     states: () => knowledgeDecisions().states(),
     today: () => todayInSaoPaulo(),

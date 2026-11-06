@@ -1,0 +1,661 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "6fbed1e3-da4b-4104-a2a9-d8992deb49b9",
+  "prevIds": [
+    "82670c2f-54e6-4851-91b7-f56df378c305"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "cases",
+        "rule_report"
+      ],
+      "writes": [
+        "s|tbl|cases.rule_report",
+        "n|tbl|cases.rule_report",
+        "e|tbl|cases.rule_report",
+        "n|rel|cases.rule_report",
+        "n|type|cases.rule_report",
+        "n|rel|cases.rule_report_pkey"
+      ],
+      "reads": [
+        "n|sch|cases"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "cases",
+        "rule_report",
+        "rule_report_reporter_account_id_idx"
+      ],
+      "writes": [
+        "s|idx|cases.rule_report_reporter_account_id_idx",
+        "n|idx|cases.rule_report_reporter_account_id_idx",
+        "e|idx|cases.rule_report_reporter_account_id_idx",
+        "n|rel|cases.rule_report_reporter_account_id_idx"
+      ],
+      "reads": [
+        "n|tbl|cases.rule_report",
+        "n|sch|cases",
+        "n|col|cases.rule_report.reporter_account_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "cases",
+        "rule_report",
+        "rule_report_open_idx"
+      ],
+      "writes": [
+        "s|idx|cases.rule_report_open_idx",
+        "n|idx|cases.rule_report_open_idx",
+        "e|idx|cases.rule_report_open_idx",
+        "n|rel|cases.rule_report_open_idx"
+      ],
+      "reads": [
+        "n|tbl|cases.rule_report",
+        "n|sch|cases",
+        "n|col|cases.rule_report.route_id",
+        "n|col|cases.rule_report.version_number",
+        "n|col|cases.rule_report.requirement_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "cases",
+        "rule_report"
+      ],
+      "writes": [
+        "s|fk|cases.rule_report.rule_report_reporter_fkey",
+        "n|fk|cases.rule_report.rule_report_reporter_fkey",
+        "e|fk|cases.rule_report.rule_report_reporter_fkey",
+        "n|con|cases.rule_report.rule_report_reporter_fkey"
+      ],
+      "reads": [
+        "n|tbl|cases.rule_report",
+        "n|sch|cases",
+        "n|tbl|cases.member",
+        "n|sch|cases",
+        "n|col|cases.rule_report.case_id",
+        "n|col|cases.rule_report.reporter_account_id",
+        "n|col|cases.member.case_id",
+        "n|col|cases.member.account_id",
+        "e|uniqueness|cases.member.account_id.case_id"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "rule_report"
+      ],
+      "writes": [
+        "s|pol|cases.rule_report.rule_report_select_reporter",
+        "n|pol|cases.rule_report.rule_report_select_reporter",
+        "e|pol|cases.rule_report.rule_report_select_reporter"
+      ],
+      "reads": [
+        "n|tbl|cases.rule_report",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.rule_report"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "rule_report"
+      ],
+      "writes": [
+        "s|pol|cases.rule_report.rule_report_insert_reporter",
+        "n|pol|cases.rule_report.rule_report_insert_reporter",
+        "e|pol|cases.rule_report.rule_report_insert_reporter"
+      ],
+      "reads": [
+        "n|tbl|cases.rule_report",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.rule_report"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "rule_report"
+      ],
+      "writes": [
+        "s|pol|cases.rule_report.rule_report_select_own_by_jobs",
+        "n|pol|cases.rule_report.rule_report_select_own_by_jobs",
+        "e|pol|cases.rule_report.rule_report_select_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|cases.rule_report",
+        "n|sch|cases",
+        "n|role|app_jobs",
+        "e|rls|cases.rule_report"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "rule_report"
+      ],
+      "writes": [
+        "s|pol|cases.rule_report.rule_report_delete_own_by_jobs",
+        "n|pol|cases.rule_report.rule_report_delete_own_by_jobs",
+        "e|pol|cases.rule_report.rule_report_delete_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|cases.rule_report",
+        "n|sch|cases",
+        "n|role|app_jobs",
+        "e|rls|cases.rule_report"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "rule_report"
+      ],
+      "writes": [
+        "s|pol|cases.rule_report.rule_report_select_by_definer",
+        "n|pol|cases.rule_report.rule_report_select_by_definer",
+        "e|pol|cases.rule_report.rule_report_select_by_definer"
+      ],
+      "reads": [
+        "n|tbl|cases.rule_report",
+        "n|sch|cases",
+        "n|role|cases_definer",
+        "e|rls|cases.rule_report"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "rule_report"
+      ],
+      "writes": [
+        "s|pol|cases.rule_report.rule_report_update_by_definer",
+        "n|pol|cases.rule_report.rule_report_update_by_definer",
+        "e|pol|cases.rule_report.rule_report_update_by_definer"
+      ],
+      "reads": [
+        "n|tbl|cases.rule_report",
+        "n|sch|cases",
+        "n|role|cases_definer",
+        "e|rls|cases.rule_report"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "name": "rule_report",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "case_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "reporter_account_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "route_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "version_number",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "requirement_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "reason",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "note",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "state",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'open'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "closed_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "rule_report_reporter_account_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "reporter_account_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "rule_report_open_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "route_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "version_number",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "requirement_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": "\"state\" = 'open'",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "rule_report_reporter_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "case_id",
+          "reporter_account_id"
+        ],
+        "schemaTo": "cases",
+        "tableTo": "member",
+        "columnsTo": [
+          "case_id",
+          "account_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "rule_report_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "rule_report_reason",
+        "value": "\"reason\" IN ('outdated', 'wrong_amount', 'wrong_condition', 'source_mismatch', 'other')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "rule_report_state",
+        "value": "\"state\" IN ('open', 'closed')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "rule_report_closed_at",
+        "value": "(\"state\" = 'closed') = (\"closed_at\" IS NOT NULL)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "rule_report_note_length",
+        "value": "char_length(\"note\") BETWEEN 1 AND 500",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "rule_report_route_id_format",
+        "value": "\"route_id\" ~ '^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "rule_report_version_number_positive",
+        "value": "\"version_number\" > 0",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "rule_report_requirement_id_format",
+        "value": "\"requirement_id\" ~ '^[a-z0-9][a-z0-9-]{0,63}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "rule_report_select_reporter",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"cases\".\"rule_report\".\"reporter_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "rule_report_insert_reporter",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "\"cases\".\"rule_report\".\"reporter_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid AND cases.is_member(\"cases\".\"rule_report\".\"case_id\")",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "rule_report_select_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"cases\".\"rule_report\".\"reporter_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "rule_report_delete_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"cases\".\"rule_report\".\"reporter_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "rule_report_select_by_definer",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "cases_definer"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "rule_report",
+        "name": "rule_report_update_by_definer",
+        "as": "PERMISSIVE",
+        "for": "UPDATE",
+        "roles": [
+          "cases_definer"
+        ],
+        "using": "true",
+        "withCheck": "true",
+        "entityType": "policies"
+      }
+    }
+  ]
+}

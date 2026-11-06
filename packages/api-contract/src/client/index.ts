@@ -38,6 +38,7 @@ export {
   recoveryLinkMinutes,
   replaceDocumentsAction,
   routes,
+  ruleReportReasons,
   stepUpNonceHeader,
   webPathSegments,
 } from '../routes/index.js';
@@ -70,6 +71,8 @@ export type {
   DecideVersionResponse,
   KnowledgeVersion,
   KnowledgeVersions,
+  ReportRuleRequest,
+  RuleReports,
   VersionView,
   DeviceDescription,
   DevicePasskey,

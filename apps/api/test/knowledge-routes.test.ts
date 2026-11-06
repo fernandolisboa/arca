@@ -4,6 +4,7 @@ import type { Logger } from '@arca/telemetry';
 import { createApp } from '../src/app.js';
 import type { SignedIn } from '../src/auth/service.js';
 import type { DecisionOutcome, KnowledgeDecisions } from '../src/knowledge/decisions.js';
+import type { RuleReportReview } from '../src/knowledge/reports.js';
 import type { KnowledgeVersions } from '../src/knowledge/versions.js';
 import { noLimits } from './limits.js';
 
@@ -50,6 +51,16 @@ function setup({
     list: () => Promise.resolve([listedVersion]),
     view: () => Promise.resolve(undefined),
   };
+  const openReports = [
+    { routeId: 'pt-d7', versionNumber: 2, requirementId: 'income', reason: 'outdated', count: 3 },
+  ] as const;
+  const ruleReports: RuleReportReview = {
+    open: () => Promise.resolve([...openReports]),
+    close: (reference) => {
+      calls.push(['close', reference]);
+      return Promise.resolve(3);
+    },
+  };
   const app = createApp({
     checkDatabase: () => Promise.resolve('ok'),
     logger: silentLogger,
@@ -74,6 +85,7 @@ function setup({
     authLimits: noLimits,
     knowledge,
     knowledgeVersions,
+    ruleReports,
   });
   const decide = (kind: 'activate' | 'reject', body: unknown = version) =>
     app.request(`/v1/knowledge/versions/${kind}`, {
@@ -86,7 +98,14 @@ function setup({
       body: JSON.stringify(body),
     });
   const read = (path: string) => app.request(`/v1/knowledge/versions${path}`);
-  return { app, decide, read, calls, listedVersion };
+  const reports = () => app.request('/v1/knowledge/reports');
+  const close = (body: unknown) =>
+    app.request('/v1/knowledge/reports/close', {
+      method: 'POST',
+      headers: { origin, 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  return { app, decide, read, reports, close, calls, listedVersion, openReports };
 }
 
 describe('GET /v1/session for approvers (spec 0007, R7)', () => {
@@ -155,5 +174,28 @@ describe('POST /v1/knowledge/versions (spec 0007, R7)', () => {
     const { read } = setup();
     expect((await read('/view?routeId=pt-d7&number=2')).status).toBe(404);
     expect((await read('/view?routeId=Nope&number=0')).status).toBe(400);
+  });
+});
+
+describe('the rule reports (spec 0007, R8)', () => {
+  const reference = { routeId: 'pt-d7', versionNumber: 2, requirementId: 'income' };
+
+  it('lists the open reports and closes one requirement’s for an approver', async () => {
+    const { reports, close, calls, openReports } = setup();
+    const listed = await reports();
+    expect(listed.status).toBe(200);
+    expect(await listed.json()).toEqual({ reports: openReports });
+    const closed = await close(reference);
+    expect(closed.status).toBe(200);
+    expect(await closed.json()).toEqual({ closed: 3 });
+    expect(calls).toEqual([['close', reference]]);
+  });
+
+  it('answers 401 signed out and 403 to an account not on the list, closing nothing', async () => {
+    expect((await setup({ signedIn: null }).reports()).status).toBe(401);
+    const other = setup({ listed: false });
+    expect((await other.reports()).status).toBe(403);
+    expect((await other.close(reference)).status).toBe(403);
+    expect(other.calls).toEqual([]);
   });
 });
