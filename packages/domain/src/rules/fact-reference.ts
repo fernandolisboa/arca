@@ -1,8 +1,16 @@
 import { type FactDefinition, type FactKey, factCatalog, isFactKey } from '../case/facts.js';
 
 /** Who a fact reference binds to in an expression (spec 0002, R3). */
-export type FactTarget =
-  'current' | 'principal' | 'unit' | 'edge' | 'firstEdge' | 'lineage' | 'ancestor';
+export const factTargets = [
+  'current',
+  'principal',
+  'unit',
+  'edge',
+  'firstEdge',
+  'lineage',
+  'ancestor',
+] as const;
+export type FactTarget = (typeof factTargets)[number];
 
 export interface ResolvedFact {
   readonly key: FactKey;

@@ -352,6 +352,9 @@ export const factCatalog = {
 
 export type FactKey = keyof typeof factCatalog;
 
+/** Every key of the fact catalog, so a screen can name each one. */
+export const factKeys = Object.keys(factCatalog) as readonly FactKey[];
+
 export function isFactKey(key: string): key is FactKey {
   return Object.hasOwn(factCatalog, key);
 }

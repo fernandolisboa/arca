@@ -88,6 +88,23 @@ export const notificationChannelsQuery = queryOptions({
   retry: false,
 });
 
+/** Every route version with its decision state, for an approver only (spec 0007, R7). */
+export const knowledgeVersionsQuery = queryOptions({
+  queryKey: ['knowledge', 'versions'],
+  queryFn: () => api.call(routes.listKnowledgeVersions),
+  networkMode: 'always',
+  retry: false,
+});
+
+/** One route version laid out for its approver (spec 0007, R7). */
+export const versionViewQuery = (routeId: string, number: number) =>
+  queryOptions({
+    queryKey: ['knowledge', 'view', routeId, number],
+    queryFn: () => api.call(routes.getVersionView, { routeId, number }),
+    networkMode: 'always',
+    retry: false,
+  });
+
 /**
  * Everything cached for one account, the session first; a new query that is the account's own
  * joins this list.
@@ -100,6 +117,7 @@ const accountQueries = [
   devicesQuery,
   vaultStatusQuery,
   notificationChannelsQuery,
+  { queryKey: ['knowledge'] },
   // The vault's documents, whatever identity opened them (documents.ts).
   { queryKey: ['documents'] },
 ];

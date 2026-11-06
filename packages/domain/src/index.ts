@@ -154,7 +154,16 @@ export {
   routeVersionSchema,
   sourceSchema,
 } from './rules/route-version.js';
-export { nodeCount, referenceDateNameSchema, slugSchema } from './rules/expression.js';
+export {
+  collectionNames,
+  expressionOperators,
+  nodeCount,
+  referenceDateNameSchema,
+  slugSchema,
+} from './rules/expression.js';
+export { factTargets } from './rules/fact-reference.js';
+export { type FactKey, factKeys } from './case/facts.js';
+export { relationshipSteps } from './case/paths.js';
 export { type CheckIssue } from './rules/check.js';
 export {
   type OfficialHosts,

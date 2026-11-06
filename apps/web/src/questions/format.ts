@@ -21,3 +21,11 @@ export function formatAmount(
     amount as Intl.StringNumericLiteral,
   );
 }
+
+/** An amount in the currency's minor units, as a decimal string, never through a float. */
+export function majorUnits(amount: number, digits: number): string {
+  if (digits === 0) return String(amount);
+  const sign = amount < 0 ? '-' : '';
+  const padded = String(Math.abs(amount)).padStart(digits + 1, '0');
+  return `${sign}${padded.slice(0, -digits)}.${padded.slice(-digits)}`;
+}

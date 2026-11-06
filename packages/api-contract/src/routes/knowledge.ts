@@ -199,3 +199,12 @@ export const knowledgeRoutes = {
   listKnowledgeVersions,
   getVersionView,
 } as const;
+
+export {
+  type FactKey,
+  collectionNames,
+  expressionOperators,
+  factKeys,
+  factTargets,
+  relationshipSteps,
+} from '@arca/domain';
