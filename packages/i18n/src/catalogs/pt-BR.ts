@@ -22,6 +22,19 @@ export const ptBR = {
   /** The Settings page (spec 0006, R9). Option labels follow the axis identifiers. */
   settings: {
     title: 'Configurações',
+    /** The page's categories, in its side menu on wide screens and on top on phones. */
+    sections: {
+      label: 'Categorias',
+      appearance: 'Aparência',
+      navigation: 'Navegação',
+      accessibility: 'Acessibilidade',
+      account: 'Conta',
+      knowledge: 'Base de conhecimento',
+      signIn:
+        'Entre na sua conta para ver os avisos de segurança, baixar seus dados ou excluir a conta.',
+      loadFailure: 'Não deu para carregar sua conta agora.',
+      retry: 'Tentar de novo',
+    },
     /** The account's notification channels (spec 0005, R7). */
     notifications: {
       title: 'Avisos de segurança',
@@ -82,8 +95,8 @@ export const ptBR = {
       title: 'Aparência',
       intro: 'As mudanças valem na hora e ficam salvas neste aparelho.',
       useDefault: 'Padrão ({value})',
-      clearAll: 'Voltar tudo ao padrão',
-      cleared: 'Tudo voltou ao padrão.',
+      clearSection: 'Voltar estas opções ao padrão',
+      cleared: 'Estas opções voltaram ao padrão.',
       theme: {
         legend: 'Cores',
         notebook: 'Caderno',
@@ -749,7 +762,6 @@ export const ptBR = {
     loadFailure: 'Não deu para carregar as versões agora.',
     retry: 'Tentar de novo',
     settings: {
-      title: 'Base de conhecimento',
       intro: 'Você aprova as versões de rota que o Arca usa nas avaliações.',
       open: 'Abrir a tela de ativação',
     },
@@ -778,7 +790,15 @@ export const ptBR = {
       cases: 'Casos de teste da regra',
       changes: 'O que mudou',
     },
-    empty: 'Nada aqui.',
+    /** The review of one version, a step per section (spec 0007, R7). */
+    wizard: {
+      steps: 'Passos da revisão',
+      progress: 'Passo {current} de {total}',
+      back: 'Voltar',
+      next: 'Próximo: {step}',
+      decision: 'Decisão',
+      count: '{n, plural, =0 {nenhum item} one {# item} other {# itens}}',
+    },
     firstVersion: 'Primeira versão desta rota, então não há o que comparar.',
     changesSince: 'Comparada com a versão {number}:',
     noChanges: 'O conteúdo é igual ao da versão {number}.',

@@ -1,50 +1,32 @@
-import { routes, decideVersionAction, type VersionView } from '@arca/api-contract/client';
+import type { VersionView } from '@arca/api-contract/client';
 import type { Messages } from '@arca/i18n';
-import { Button } from '@arca/ui';
-import { useQueryClient } from '@tanstack/react-query';
-import { useRef, useState, type ReactNode } from 'react';
-import { passkeys } from '../platform.js';
-import { commonFailure, reach, type CommonFailure } from '../requests.js';
-import { stepUpFor } from '../step-up.js';
+import { Button, Icon, StatusChip, menuItemClass } from '@arca/ui';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { Decision } from './decision.js';
 import { ExpressionTree } from './expression-tree.js';
+import { stateTone } from './state-tone.js';
+import { reviewSteps, sectionCounts, type Step, type StepKey } from './steps.js';
 import { type KnowledgeWords, useKnowledgeWords } from './words.js';
 
-type DecisionKind = 'activate' | 'reject';
 type SectionKey = keyof Messages['knowledge']['section'];
-type Failure = CommonFailure | 'rejected';
 
-/** A decision after its own `knowledge_decision` step-up, bound to the version's content hash. */
-async function decide(kind: DecisionKind, view: VersionView): Promise<void> {
-  const route = kind === 'activate' ? routes.activateVersion : routes.rejectVersion;
-  const request = { routeId: view.routeId, number: view.number };
-  const approved = await stepUpFor(
-    passkeys,
-    decideVersionAction(route.operationId, request, view.hash),
-    'knowledge_decision',
-  );
-  await reach(approved.call(route, request));
-}
+const card = 'flex min-w-0 flex-col gap-2 rounded-control border border-line bg-surface p-4';
 
-function Section({ title, children }: { readonly title: string; readonly children: ReactNode }) {
-  return (
-    <section aria-label={title} className="flex flex-col gap-2">
-      <h4 className="font-medium">{title}</h4>
-      {children}
-    </section>
-  );
-}
-
-function Items<T>({
+function Cards<T>({
   items,
   render,
-  words,
+  columns,
 }: {
   readonly items: readonly T[];
   readonly render: (item: T) => ReactNode;
-  readonly words: KnowledgeWords;
+  /** `wide` for items with expression trees, which need the room before they sit side by side. */
+  readonly columns: 'wide' | 'narrow';
 }) {
-  if (items.length === 0) return <p className="text-muted">{words.t('knowledge.empty')}</p>;
-  return <ul className="flex flex-col gap-4">{items.map(render)}</ul>;
+  return (
+    <ul className={`grid gap-3 ${columns === 'wide' ? '2xl:grid-cols-2' : 'md:grid-cols-2'}`}>
+      {items.map(render)}
+    </ul>
+  );
 }
 
 /** The facts and sources an item reads, under it. */
@@ -100,128 +82,15 @@ function Changes({ view, words }: { readonly view: VersionView; readonly words: 
     return <p>{words.t('knowledge.noChanges', { number: replaces.number })}</p>;
   }
   return (
-    <div className="flex flex-col gap-1">
-      <p>{words.t('knowledge.changesSince', { number: replaces.number })}</p>
-      <ul className="flex list-disc flex-col gap-1 pl-5">
+    <div className="flex flex-col gap-2">
+      <p className="text-muted">{words.t('knowledge.changesSince', { number: replaces.number })}</p>
+      <ul className="flex flex-col gap-2">
         {lines.map((line) => (
-          <li key={line}>{line}</li>
+          <li key={line} className={card}>
+            {line}
+          </li>
         ))}
       </ul>
-    </div>
-  );
-}
-
-/** The approver's decision: activate, reject, or neither once rejected. */
-function Decision({ view, words }: { readonly view: VersionView; readonly words: KnowledgeWords }) {
-  const queryClient = useQueryClient();
-  const [confirming, setConfirming] = useState<DecisionKind | null>(null);
-  const [state, setState] = useState<
-    'idle' | 'waiting' | { readonly done: DecisionKind } | { readonly failure: Failure }
-  >('idle');
-  const statusRef = useRef<HTMLParagraphElement>(null);
-
-  const start = (kind: DecisionKind) => {
-    setConfirming(null);
-    setState('waiting');
-    decide(kind, view)
-      .then(async () => {
-        setState({ done: kind });
-        await queryClient.invalidateQueries({ queryKey: ['knowledge'] });
-      })
-      .catch((error: unknown) => {
-        setState({
-          failure: commonFailure(error, (apiError) =>
-            apiError.code === 'already_rejected' ? 'rejected' : undefined,
-          ),
-        });
-      })
-      .finally(() => {
-        statusRef.current?.focus();
-      });
-  };
-  const { fallback, selected } = view.rejection;
-  const message =
-    state === 'waiting'
-      ? words.t('knowledge.waiting')
-      : typeof state === 'object'
-        ? 'done' in state
-          ? words.t('knowledge.decided', { kind: state.done })
-          : words.t('knowledge.failure', { reason: state.failure })
-        : '';
-  const status = (
-    <p ref={statusRef} role="status" tabIndex={-1}>
-      {message}
-    </p>
-  );
-  // A rejection is for good; the status stays, so the outcome and focus survive the refetch.
-  if (view.state === 'rejected') {
-    return (
-      <div className="flex flex-col items-start gap-3">
-        <p>{words.t('knowledge.rejectedNote')}</p>
-        {status}
-      </div>
-    );
-  }
-  return (
-    <div className="flex flex-col items-start gap-3">
-      {confirming === null ? (
-        <div className="flex flex-wrap gap-3">
-          {view.state === 'proposed' && (
-            <Button
-              disabled={state === 'waiting'}
-              onClick={() => {
-                setConfirming('activate');
-              }}
-            >
-              {words.t('knowledge.activate')}
-            </Button>
-          )}
-          <Button
-            disabled={state === 'waiting'}
-            onClick={() => {
-              setConfirming('reject');
-            }}
-          >
-            {words.t('knowledge.reject')}
-          </Button>
-        </div>
-      ) : (
-        <div className="flex flex-col items-start gap-3">
-          {confirming === 'activate' ? (
-            <p>{words.t('knowledge.activateLead', { date: words.date(view.effectiveFrom) })}</p>
-          ) : (
-            <>
-              {selected && (
-                <p className="text-danger-ink">
-                  {words.t('knowledge.rejectFallback', {
-                    current: view.state,
-                    fallback: fallback === null ? 'none' : fallback.state,
-                    number: fallback?.number ?? 0,
-                  })}
-                </p>
-              )}
-              <p>{words.t('knowledge.rejectLead')}</p>
-            </>
-          )}
-          <div className="flex flex-wrap gap-3">
-            <Button
-              onClick={() => {
-                start(confirming);
-              }}
-            >
-              {words.t('knowledge.confirm')}
-            </Button>
-            <Button
-              onClick={() => {
-                setConfirming(null);
-              }}
-            >
-              {words.t('knowledge.cancel')}
-            </Button>
-          </div>
-        </div>
-      )}
-      {status}
     </div>
   );
 }
@@ -237,128 +106,124 @@ function leapDayRule(rule: VersionView['leapDayBirthday']) {
   }
 }
 
-/** One version as data (spec 0007, R7): what it requires, what changed, its sources and cases. */
-export function VersionPanel({ view }: { readonly view: VersionView }) {
-  const words = useKnowledgeWords();
+function Settings({ view, words }: { readonly view: VersionView; readonly words: KnowledgeWords }) {
   const { t } = words;
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h3 className="text-title font-medium">
-          {t('knowledge.versionTitle', { title: view.title, number: view.number })}
-        </h3>
-        <p className="text-muted">
-          {t('knowledge.versionMeta', {
-            country: words.country(view.country),
-            date: words.date(view.effectiveFrom),
+    <ul className="grid gap-3 md:grid-cols-2">
+      <li className={card}>
+        <p>{t('knowledge.leapDay', { rule: leapDayRule(view.leapDayBirthday) })}</p>
+        <Reads sources={view.leapDayBirthdaySources} words={words} />
+      </li>
+      {view.referenceDates.length > 0 && (
+        <li className={card}>
+          {t('knowledge.referenceDates', {
+            dates: words.list(view.referenceDates.map(words.referenceDate)),
           })}
-        </p>
-        <p className="font-medium">{t('knowledge.state', { state: view.state })}</p>
-        {view.status === 'closed' && <p>{t('knowledge.closed')}</p>}
-        {view.corrects !== null && <p>{t('knowledge.corrects', { number: view.corrects })}</p>}
-        {view.tags.length > 0 && (
-          <p className="text-small text-muted">
-            {t('knowledge.tags', { tags: words.list(view.tags) })}
-          </p>
-        )}
-        <p className="text-small text-muted">
-          {t('knowledge.currency', { currency: view.currency })}
-        </p>
-      </div>
-      <Section title={t('knowledge.section.changes')}>
-        <Changes view={view} words={words} />
-      </Section>
-      <Section title={t('knowledge.section.settings')}>
-        <ul className="flex flex-col gap-1">
-          <li>
-            {t('knowledge.leapDay', { rule: leapDayRule(view.leapDayBirthday) })}
-            {view.leapDayBirthdaySources.length > 0 &&
-              ` ${t('knowledge.sourceIds', { sources: words.list(view.leapDayBirthdaySources) })}`}
-          </li>
-          {view.referenceDates.length > 0 && (
-            <li>
-              {t('knowledge.referenceDates', {
-                dates: words.list(view.referenceDates.map(words.referenceDate)),
-              })}
-            </li>
-          )}
-          {view.closureSources.length > 0 && (
-            <li>{t('knowledge.closureSources', { sources: words.list(view.closureSources) })}</li>
-          )}
-          <li>
-            {t('knowledge.pins', {
-              pins: words.list(
-                [view.pins.countries, view.pins.formerCountries, ...view.pins.officialDomains].map(
-                  (pin) => t('knowledge.pin', { id: pin.id, number: pin.number }),
-                ),
-              ),
-            })}
-          </li>
-        </ul>
-      </Section>
-      <Section title={t('knowledge.section.requirements')}>
-        <Items
-          words={words}
+        </li>
+      )}
+      {view.closureSources.length > 0 && (
+        <li className={card}>
+          {t('knowledge.closureSources', { sources: words.list(view.closureSources) })}
+        </li>
+      )}
+      <li className={card}>
+        {t('knowledge.pins', {
+          pins: words.list(
+            [view.pins.countries, view.pins.formerCountries, ...view.pins.officialDomains].map(
+              (pin) => t('knowledge.pin', { id: pin.id, number: pin.number }),
+            ),
+          ),
+        })}
+      </li>
+    </ul>
+  );
+}
+
+/** One step's content; the decision step closes the review with the counts and the buttons. */
+function StepContent({
+  step,
+  view,
+  words,
+}: {
+  readonly step: Step;
+  readonly view: VersionView;
+  readonly words: KnowledgeWords;
+}) {
+  const { t } = words;
+  switch (step.key) {
+    case 'changes':
+      return <Changes view={view} words={words} />;
+    case 'settings':
+      return <Settings view={view} words={words} />;
+    case 'requirements':
+      return (
+        <Cards
+          columns="wide"
           items={view.requirements}
           render={(requirement) => (
-            <li key={requirement.id} className="flex flex-col gap-2">
+            <li key={requirement.id} className={card}>
               <p className="font-medium">{requirement.title}</p>
               <ExpressionTree expression={requirement.expression} />
               <Reads facts={requirement.facts} sources={requirement.sources} words={words} />
             </li>
           )}
         />
-      </Section>
-      <Section title={t('knowledge.section.assessments')}>
-        <Items
-          words={words}
+      );
+    case 'assessments':
+      return (
+        <Cards
+          columns="narrow"
           items={view.assessments}
           render={(assessment) => (
-            <li key={assessment.id} className="flex flex-col gap-1">
+            <li key={assessment.id} className={card}>
               <p className="font-medium">{assessment.title}</p>
               <Reads facts={assessment.evidence} sources={assessment.sources} words={words} />
             </li>
           )}
         />
-      </Section>
-      <Section title={t('knowledge.section.dependents')}>
-        <Items
-          words={words}
+      );
+    case 'dependents':
+      return (
+        <Cards
+          columns="wide"
           items={view.dependents}
           render={(dependent) => (
-            <li key={dependent.id} className="flex flex-col gap-2">
+            <li key={dependent.id} className={card}>
               <p className="font-medium">{dependent.title}</p>
-              <p>
-                {t('knowledge.path', {
-                  path: dependent.path.map(words.step).join(' → '),
-                })}
+              <p className="text-small">
+                {t('knowledge.path', { path: dependent.path.map(words.step).join(' → ') })}
               </p>
               {dependent.at !== null && (
-                <p>{t('knowledge.at', { at: words.referenceDate(dependent.at) })}</p>
+                <p className="text-small">
+                  {t('knowledge.at', { at: words.referenceDate(dependent.at) })}
+                </p>
               )}
-              <p>{t('knowledge.condition')}</p>
+              <p className="text-small text-muted">{t('knowledge.condition')}</p>
               <ExpressionTree expression={dependent.condition} />
               <Reads facts={dependent.facts} sources={dependent.sources} words={words} />
             </li>
           )}
         />
-      </Section>
-      <Section title={t('knowledge.section.costs')}>
-        <Items
-          words={words}
+      );
+    case 'costs':
+      return (
+        <Cards
+          columns="wide"
           items={view.costs}
           render={(cost) => (
-            <li key={cost.id} className="flex flex-col gap-2">
+            <li key={cost.id} className={card}>
               <p className="font-medium">{cost.title}</p>
-              <p>{t('knowledge.appliesTo', { appliesTo: cost.appliesTo })}</p>
               <p className="text-small text-muted">
-                {t('knowledge.costKind', { kind: words.costKind(cost.kind) })}
+                {[
+                  t('knowledge.appliesTo', { appliesTo: cost.appliesTo }),
+                  t('knowledge.costKind', { kind: words.costKind(cost.kind) }),
+                ].join(' · ')}
               </p>
-              <p>{t('knowledge.amount')}</p>
+              <p className="text-small text-muted">{t('knowledge.amount')}</p>
               <ExpressionTree expression={cost.amount} />
               {cost.condition !== null && (
                 <>
-                  <p>{t('knowledge.onlyWhen')}</p>
+                  <p className="text-small text-muted">{t('knowledge.onlyWhen')}</p>
                   <ExpressionTree expression={cost.condition} />
                 </>
               )}
@@ -366,13 +231,14 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
             </li>
           )}
         />
-      </Section>
-      <Section title={t('knowledge.section.durations')}>
-        <Items
-          words={words}
+      );
+    case 'durations':
+      return (
+        <Cards
+          columns="narrow"
           items={view.durations}
           render={(stage) => (
-            <li key={stage.id} className="flex flex-col gap-1">
+            <li key={stage.id} className={card}>
               <p>
                 {t('knowledge.durationRange', {
                   title: stage.title,
@@ -384,13 +250,14 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
             </li>
           )}
         />
-      </Section>
-      <Section title={t('knowledge.section.countrySets')}>
-        <Items
-          words={words}
+      );
+    case 'countrySets':
+      return (
+        <Cards
+          columns="narrow"
           items={view.countrySets}
           render={(set) => (
-            <li key={set.id}>
+            <li key={set.id} className={card}>
               {t('knowledge.countrySet', {
                 title: set.title,
                 number: set.number,
@@ -399,16 +266,17 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
             </li>
           )}
         />
-      </Section>
-      <Section title={t('knowledge.section.sources')}>
-        <Items
-          words={words}
+      );
+    case 'sources':
+      return (
+        <Cards
+          columns="narrow"
           items={view.sources}
           render={(source) => (
-            <li key={source.id} className="flex flex-col gap-1">
+            <li key={source.id} className={card}>
               <p className="font-medium">{source.title}</p>
               {/* Plain text, never a link: the approver reads the full address before opening it. */}
-              <p className="break-all font-mono text-small">{source.url}</p>
+              <p className="font-mono text-small break-all">{source.url}</p>
               <p className="text-small">
                 {source.host === null
                   ? t('knowledge.noHost')
@@ -427,13 +295,14 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
             </li>
           )}
         />
-      </Section>
-      <Section title={t('knowledge.section.cases')}>
-        <Items
-          words={words}
+      );
+    case 'cases':
+      return (
+        <Cards
+          columns="narrow"
           items={view.cases}
           render={(ruleCase) => (
-            <li key={ruleCase.id} className="flex flex-col gap-1">
+            <li key={ruleCase.id} className={card}>
               <p>
                 {t('knowledge.case', {
                   id: ruleCase.id,
@@ -457,15 +326,190 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
             </li>
           )}
         />
-      </Section>
-      <Section title={t('knowledge.check.title')}>
+      );
+    case 'decision':
+      return <DecisionStep view={view} words={words} />;
+  }
+}
+
+function DecisionStep({
+  view,
+  words,
+}: {
+  readonly view: VersionView;
+  readonly words: KnowledgeWords;
+}) {
+  const { t } = words;
+  const checkId = useId();
+  return (
+    <div className="flex flex-col gap-6">
+      <dl className="grid grid-cols-2 gap-x-6 gap-y-1 text-small sm:grid-cols-4">
+        {sectionCounts(view).map(({ key, count }) => (
+          <div key={key} className="flex flex-col">
+            <dt className="text-muted">{t(`knowledge.section.${key}`)}</dt>
+            <dd className="font-medium">{t('knowledge.wizard.count', { n: count })}</dd>
+          </div>
+        ))}
+      </dl>
+      <section aria-labelledby={checkId} className={card}>
+        <h5 id={checkId} className="font-medium">
+          {t('knowledge.check.title')}
+        </h5>
         <p>{t('knowledge.check.body')}</p>
-      </Section>
+      </section>
       <div className="flex flex-col gap-1">
         <p className="text-small text-muted">{t('knowledge.hash')}</p>
-        <p className="break-all font-mono text-small">{view.hash}</p>
+        <p className="font-mono text-small break-all">{view.hash}</p>
       </div>
       <Decision view={view} words={words} />
+    </div>
+  );
+}
+
+/**
+ * One version as data (spec 0007, R7), reviewed as a wizard: a step per section of the version,
+ * named in a step list the approver can jump through, with Back and Next, and the decision last.
+ */
+export function VersionPanel({ view }: { readonly view: VersionView }) {
+  const words = useKnowledgeWords();
+  const { t } = words;
+  const steps = reviewSteps(view);
+  const [currentKey, setCurrentKey] = useState<StepKey>('changes');
+  const [seen, setSeen] = useState<ReadonlySet<StepKey>>(() => new Set(['changes']));
+  const movedRef = useRef(false);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const currentRef = useRef<HTMLButtonElement>(null);
+  const headingId = useId();
+
+  const index = Math.max(
+    steps.findIndex(({ key }) => key === currentKey),
+    0,
+  );
+  const step = steps[index] ?? { key: 'decision' };
+  const next = steps[index + 1];
+  const title = (target: Step) =>
+    target.key === 'decision'
+      ? t('knowledge.wizard.decision')
+      : t(`knowledge.section.${target.key}`);
+
+  useEffect(() => {
+    if (!movedRef.current) return;
+    // Focus lands on the new step's heading, so a screen reader reads where it now is.
+    headingRef.current?.focus();
+    currentRef.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }, [currentKey]);
+
+  const go = (target: Step | undefined) => {
+    if (target === undefined) return;
+    movedRef.current = true;
+    setCurrentKey(target.key);
+    setSeen((before) => new Set(before).add(target.key));
+  };
+
+  return (
+    <div className="flex flex-col gap-6">
+      <header className="flex flex-col gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusChip
+            tone={stateTone(view.state)}
+            label={t('knowledge.state', { state: view.state })}
+          />
+          {view.status === 'closed' && <StatusChip tone="unknown" label={t('knowledge.closed')} />}
+        </div>
+        <h3 className="font-display text-title">
+          {t('knowledge.versionTitle', { title: view.title, number: view.number })}
+        </h3>
+        <p className="text-small text-muted">
+          {[
+            t('knowledge.versionMeta', {
+              country: words.country(view.country),
+              date: words.date(view.effectiveFrom),
+            }),
+            ...(view.corrects === null ? [] : [t('knowledge.corrects', { number: view.corrects })]),
+            t('knowledge.currency', { currency: view.currency }),
+            ...(view.tags.length > 0 ? [t('knowledge.tags', { tags: words.list(view.tags) })] : []),
+          ].join(' · ')}
+        </p>
+      </header>
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-10">
+        <nav aria-label={t('knowledge.wizard.steps')}>
+          <ol className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 lg:sticky lg:top-4 lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:px-0 lg:pb-0">
+            {steps.map((item, position) => {
+              const current = position === index;
+              return (
+                <li key={item.key} className="shrink-0">
+                  <button
+                    ref={current ? currentRef : undefined}
+                    type="button"
+                    aria-current={current ? 'step' : undefined}
+                    onClick={() => {
+                      go(item);
+                    }}
+                    data-current={current || undefined}
+                    className={menuItemClass}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="grid size-6 shrink-0 place-items-center rounded-full border border-line text-caption tabular-nums"
+                    >
+                      {seen.has(item.key) && !current ? (
+                        <Icon name="check" size={14} />
+                      ) : (
+                        position + 1
+                      )}
+                    </span>
+                    <span className="flex-1">{title(item)}</span>
+                    {'count' in item && (
+                      <span className="text-caption text-muted tabular-nums">{item.count}</span>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        </nav>
+        <section aria-labelledby={headingId} className="flex min-w-0 flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <p className="text-small text-muted">
+              {t('knowledge.wizard.progress', { current: index + 1, total: steps.length })}
+            </p>
+            <h4
+              ref={headingRef}
+              id={headingId}
+              tabIndex={-1}
+              className="text-lead font-medium focus:outline-none"
+            >
+              {title(step)}
+            </h4>
+          </div>
+          <StepContent step={step} view={view} words={words} />
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
+            {index > 0 ? (
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  go(steps[index - 1]);
+                }}
+              >
+                <Icon name="back" />
+                {t('knowledge.wizard.back')}
+              </Button>
+            ) : (
+              <span />
+            )}
+            {next !== undefined && (
+              <Button
+                onClick={() => {
+                  go(next);
+                }}
+              >
+                {t('knowledge.wizard.next', { step: title(next) })}
+                <Icon name="chevron" />
+              </Button>
+            )}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

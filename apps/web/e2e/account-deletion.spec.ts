@@ -27,7 +27,7 @@ test('requests the deletion, then a new sign-in can only cancel it', async ({ pa
   const { userId, email } = await seedAccount(credential);
   await virtualAuthenticator(page, credential, { userId });
   await signIn(page, email);
-  await page.goto(`${databaseServer.origin}/settings`);
+  await page.goto(`${databaseServer.origin}/settings?section=account`);
 
   const stepUp = page.waitForRequest((request) =>
     request.url().endsWith('/v1/auth/step-up/options'),
@@ -62,7 +62,7 @@ test('warns that the people the account keeps go with it, unless handed over fir
   const problems = watchProblems(page);
   await signedIn(page);
   await family(page);
-  await page.goto(`${databaseServer.origin}/settings`);
+  await page.goto(`${databaseServer.origin}/settings?section=account`);
   await page.getByRole('button', { name: 'Excluir minha conta' }).click();
   await expect(
     page.getByText(
