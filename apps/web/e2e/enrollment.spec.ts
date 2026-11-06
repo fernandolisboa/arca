@@ -200,6 +200,18 @@ test('creates the first account from the emailed link, and shows its recovery ki
     target: { action: 'confirmInvite' },
   });
 
+  // With a case of their own, the owner then adds the confirmed account to it (spec 0007, R2).
+  const created = await page.request.post(`${databaseServer.origin}/v1/case`, {
+    headers: { origin: databaseServer.origin },
+    data: { displayName: 'Titular' },
+  });
+  expect(created.status()).toBe(200);
+  await page.reload();
+  await page.getByLabel('Nome dessa pessoa').fill('Pessoa convidada');
+  await page.getByRole('button', { name: 'Colocar no caso' }).click();
+  await expect(page.getByText(`${invitee} participa do caso.`)).toBeVisible();
+  expect(await scan(page)).toEqual([]);
+
   await guest.reload();
   await expect(guest.getByRole('link', { name: 'Convidar alguém' })).toBeVisible();
   await guestContext.close();

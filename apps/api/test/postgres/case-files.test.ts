@@ -50,19 +50,17 @@ function viewOf(written: CaseWritten) {
 
 const refusal = (written: CaseWritten) => (written.ok ? 'written' : written.reason);
 
-/** Joins a member the way ticket 3 will, which this ticket does not build. */
-async function join(caseId: string, accountId: string, displayName: string) {
-  await admin(`INSERT INTO cases.member (account_id, case_id) VALUES ($1, $2)`, [
-    accountId,
-    caseId,
-  ]);
-  const [row] = await admin<{ id: string }>(
-    `INSERT INTO cases.person (case_id, keeper_account_id, account_id, display_name, case_member)
-     VALUES ($1, $2, $2, $3, true) RETURNING id`,
-    [caseId, accountId, displayName],
-  );
-  if (row === undefined) throw new Error('no person');
-  return row.id;
+/** The link a confirmed invite leaves between two accounts. */
+const link = (inviter: string, invitee: string) =>
+  admin(`INSERT INTO account.link (inviter_id, invitee_id) VALUES ($1, $2)`, [inviter, invitee]);
+
+/** Adds a linked account to the inviter's case as a new person, and answers that person. */
+async function join(inviter: string, accountId: string, displayName: string) {
+  await link(inviter, accountId);
+  const joined = viewOf(await files.addMember(inviter, { accountId, displayName }));
+  const person = joined.people.find((row) => row.accountId === accountId);
+  if (person === undefined) throw new Error('no person');
+  return person.id;
 }
 
 /** Alice's case with Bruno as a member, and a child Alice keeps. */
@@ -70,7 +68,7 @@ async function family() {
   const alice = await account();
   const bruno = await account();
   const created = viewOf(await files.create(alice, 'Alice'));
-  const brunoPerson = await join(created.caseId, bruno, 'Bruno');
+  const brunoPerson = await join(alice, bruno, 'Bruno');
   const withChild = viewOf(
     await files.addPerson(alice, { displayName: 'Criança', caseMember: true }),
   );
@@ -140,6 +138,125 @@ describe('creating a case (spec 0007, R2)', () => {
   });
 });
 
+describe('joining after an invite (spec 0007, R2)', () => {
+  it('adds a linked account in no case as a new person, and a retry changes nothing', async () => {
+    const alice = await account();
+    const carla = await account();
+    const dora = await account();
+    const { caseId } = viewOf(await files.create(alice, 'Alice'));
+    const add = (accountId: string, displayName: string) =>
+      files.addMember(alice, { accountId, displayName });
+    expect(refusal(await add(carla, 'Carla'))).toBe('not_found');
+    await link(alice, carla);
+    const joined = viewOf(await add(carla, 'Carla'));
+    expect(joined.people.find(({ accountId }) => accountId === carla)).toMatchObject({
+      displayName: 'Carla',
+      caseMember: true,
+      keptByMe: false,
+    });
+    expect(viewOf(await add(carla, 'Carla de novo'))).toEqual(joined);
+    const carlaView = await files.view(carla);
+    expect(carlaView?.caseId).toBe(caseId);
+    expect(carlaView?.people.find(({ id }) => id === carlaView.me)?.keptByMe).toBe(true);
+    // A link the other account's invite made counts the same.
+    await link(dora, alice);
+    viewOf(await add(dora, 'Dora'));
+    expect(await events(alice)).toEqual([
+      { code: 'case_created', details: { caseId } },
+      { code: 'member_joined', details: { caseId, accountId: carla } },
+      { code: 'member_joined', details: { caseId, accountId: dora } },
+    ]);
+  });
+
+  it('refuses an account in another case and a person kept by someone else', async () => {
+    const { alice, bruno, people } = await family();
+    const erin = await account();
+    viewOf(await files.create(erin, 'Erin'));
+    await link(alice, erin);
+    expect(refusal(await files.addMember(alice, { accountId: erin, displayName: 'Erin' }))).toBe(
+      'case_exists',
+    );
+    const frank = await account();
+    await link(bruno, frank);
+    for (const personId of [people.child, people.alice, randomUUID()]) {
+      expect(refusal(await files.addMember(bruno, { accountId: frank, personId }))).toBe(
+        'not_found',
+      );
+    }
+    expect(refusal(await files.addMember(alice, { accountId: alice, displayName: 'Eu' }))).toBe(
+      'written',
+    );
+    expect(await files.view(frank)).toBeNull();
+  });
+
+  it('lets the new account take over a person the inviter keeps, dropping its shares', async () => {
+    const { alice, bruno } = await family();
+    const added = viewOf(await files.addPerson(alice, { displayName: 'Mãe', caseMember: false }));
+    const mother = added.people.find(({ displayName }) => displayName === 'Mãe')?.id ?? '';
+    viewOf(
+      await files.writeProfile(alice, {
+        personId: mother,
+        facts: storedProfileFactsSchema.parse({ studying: false }),
+        dependsOn: null,
+      }),
+    );
+    viewOf(await files.replaceShares(alice, { personId: mother, profile: [bruno], finances: [] }));
+    const gina = await account();
+    await link(alice, gina);
+    const joined = viewOf(await files.addMember(alice, { accountId: gina, personId: mother }));
+    expect(joined.people).toHaveLength(added.people.length);
+    expect(joined.people.find(({ id }) => id === mother)).toMatchObject({
+      accountId: gina,
+      caseMember: true,
+      keptByMe: false,
+      profile: null,
+    });
+    expect((await files.view(gina))?.people.find(({ id }) => id === mother)).toMatchObject({
+      keptByMe: true,
+      profile: { facts: { studying: false } },
+      shares: { profile: [], finances: [] },
+    });
+    expect((await files.view(bruno))?.people.find(({ id }) => id === mother)?.profile).toBeNull();
+  });
+
+  it('adds an account to one case when two members ask at once', async () => {
+    const alice = await account();
+    const hana = await account();
+    const ivan = await account();
+    viewOf(await files.create(alice, 'Alice'));
+    viewOf(await files.create(hana, 'Hana'));
+    await link(alice, ivan);
+    await link(hana, ivan);
+    const raced = await Promise.all([
+      files.addMember(alice, { accountId: ivan, displayName: 'Ivan' }),
+      files.addMember(hana, { accountId: ivan, displayName: 'Ivan' }),
+    ]);
+    expect(raced.map(refusal).sort()).toEqual(['case_exists', 'written']);
+    expect(await admin(`SELECT FROM cases.person WHERE account_id = $1`, [ivan])).toHaveLength(1);
+  });
+
+  it('holds 30 members, though a member taking over their own person needs no new place', async () => {
+    const { caseId, alice } = await family();
+    await admin(
+      `INSERT INTO cases.person (case_id, keeper_account_id, display_name, case_member)
+       SELECT $1, $2, 'Parente ' || n, true FROM generate_series(1, 27) AS n`,
+      [caseId, alice],
+    );
+    const julia = await account();
+    await link(alice, julia);
+    expect(refusal(await files.addMember(alice, { accountId: julia, displayName: 'Júlia' }))).toBe(
+      'case_limit',
+    );
+    const [relative] = await admin<{ id: string }>(
+      `SELECT id FROM cases.person WHERE case_id = $1 AND display_name = 'Parente 1'`,
+      [caseId],
+    );
+    expect(
+      refusal(await files.addMember(alice, { accountId: julia, personId: relative?.id ?? '' })),
+    ).toBe('written');
+  });
+});
+
 describe('people', () => {
   it('lets the keeper add, rename and remove people without an account, never a member’s own', async () => {
     const { alice, bruno, people } = await family();
@@ -175,6 +292,7 @@ describe('people', () => {
     expect(removed.people.map(({ id }) => id).sort()).toEqual([people.alice, people.bruno].sort());
     expect((await events(alice)).map(({ code }) => code)).toEqual([
       'case_created',
+      'member_joined',
       'person_added',
       'person_removed',
     ]);

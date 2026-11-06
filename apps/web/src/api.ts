@@ -38,6 +38,14 @@ export const invitesQuery = queryOptions({
   retry: false,
 });
 
+/** The family's case as the account sees it, null before it is in one (spec 0007, R3). */
+export const caseQuery = queryOptions({
+  queryKey: ['case'],
+  queryFn: () => api.call(routes.getCase),
+  networkMode: 'always',
+  retry: false,
+});
+
 /** The account's passkeys, each with its sessions (spec 0003, R4). */
 export const devicesQuery = queryOptions({
   queryKey: ['devices'],
@@ -70,6 +78,7 @@ const accountQueries = [
   sessionQuery,
   recoveryKitQuery,
   invitesQuery,
+  caseQuery,
   devicesQuery,
   vaultStatusQuery,
   notificationChannelsQuery,

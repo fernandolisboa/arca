@@ -91,6 +91,7 @@ export const openApiRoutes = {
   updateCasePerson: toOpenApiRoute(routes.updateCasePerson),
   removeCasePerson: toOpenApiRoute(routes.removeCasePerson),
   handOverCasePerson: toOpenApiRoute(routes.handOverCasePerson),
+  addCaseMember: toOpenApiRoute(routes.addCaseMember),
   writeCaseProfile: toOpenApiRoute(routes.writeCaseProfile),
   writeCaseFinances: toOpenApiRoute(routes.writeCaseFinances),
   replaceCaseShares: toOpenApiRoute(routes.replaceCaseShares),

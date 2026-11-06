@@ -99,6 +99,11 @@ export const AddCasePersonRequest = z.strictObject({
 export const UpdateCasePersonRequest = AddCasePersonRequest.extend(person);
 export const CasePersonReference = z.strictObject(person);
 export const HandOverCasePersonRequest = z.strictObject({ ...person, accountId: z.uuid() });
+/** A new member: a new person with their name, or a person the viewer keeps who has no account. */
+export const AddCaseMemberRequest = z.union([
+  z.strictObject({ accountId: z.uuid(), displayName: displayNameSchema }),
+  z.strictObject({ accountId: z.uuid(), ...person }),
+]);
 export const WriteCaseProfileRequest = CaseProfile.extend(person);
 export const WriteCaseFinancesRequest = storedFinancesSchema.extend(person);
 export const ReplaceCaseSharesRequest = CaseShares.extend(person);
@@ -118,6 +123,7 @@ export const SetCaseAssetOwnerRequest = z.strictObject({
 export const CaseAssetOwnerReference = z.strictObject({ ...owned, ...person });
 
 export type HandOverCasePersonRequest = z.infer<typeof HandOverCasePersonRequest>;
+export type AddCaseMemberRequest = z.infer<typeof AddCaseMemberRequest>;
 
 export const LeaveCaseResponse = z.object({});
 
@@ -174,6 +180,12 @@ export const handOverCasePerson = write(
   'handOverCasePerson',
   "Makes another member keep a person without an account the viewer keeps, and drops the person's shares, after a sensitive_settings step-up whose targets are the person and the account; 403 step_up_required",
   HandOverCasePersonRequest,
+);
+export const addCaseMember = write(
+  '/case/members',
+  'addCaseMember',
+  "Adds to the viewer's case an account a confirmed invite links to the viewer and that is in no case, as a new person or taking over a person the viewer keeps who has no account, whose shares are dropped; taking over needs a sensitive_settings step-up whose targets are the person and the account (403 step_up_required). An account already in the case answers the case unchanged; 409 case_exists in another case, 409 case_limit past 60 people or 30 members",
+  AddCaseMemberRequest,
 );
 export const writeCaseProfile = write(
   '/case/people/profile',
@@ -257,6 +269,13 @@ export function handOverCasePersonAction({ personId, accountId }: HandOverCasePe
   return { action: handOverCasePerson.operationId, targets: [personId, accountId] };
 }
 
+/** The step-up action of an account taking over a person, when it does: the person, then the account. */
+export function addCaseMemberAction(request: AddCaseMemberRequest) {
+  return 'personId' in request
+    ? { action: addCaseMember.operationId, targets: [request.personId, request.accountId] }
+    : undefined;
+}
+
 /** The step-up action of leaving the case. */
 export const leaveCaseAction = { action: leaveCase.operationId, targets: [] };
 
@@ -267,6 +286,7 @@ export const caseRoutes = {
   updateCasePerson,
   removeCasePerson,
   handOverCasePerson,
+  addCaseMember,
   writeCaseProfile,
   writeCaseFinances,
   replaceCaseShares,

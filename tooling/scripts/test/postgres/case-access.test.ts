@@ -370,6 +370,7 @@ describe('the case schema access matrix (spec 0007, R1)', () => {
       { name: 'drop_unowned_asset', ...definer, callers: [] },
       { name: 'hand_over', ...definer, callers: ['app_api'] },
       { name: 'is_member', ...definer, callers: ['app_api'] },
+      { name: 'join_case', ...definer, callers: ['app_api'] },
       { name: 'set_owner', ...definer, callers: ['app_api'] },
     ]);
   });

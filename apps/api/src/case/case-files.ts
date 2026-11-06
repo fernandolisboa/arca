@@ -1,4 +1,5 @@
 import type {
+  AddCaseMemberRequest,
   AuditEventCode,
   CaseView,
   HandOverCasePersonRequest,
@@ -62,6 +63,8 @@ export interface CaseFiles {
     accountId: string,
     request: HandOverCasePersonRequest,
   ) => Promise<CaseWritten>;
+  /** Adds an account linked to the viewer; answers the case unchanged when it is already in it. */
+  readonly addMember: (accountId: string, request: AddCaseMemberRequest) => Promise<CaseWritten>;
   readonly writeProfile: (
     accountId: string,
     request: Request<typeof WriteCaseProfileRequest>,
@@ -159,6 +162,15 @@ const assetColumns = (asset: StoredAsset) => ({
   liquid: asset.liquid ?? null,
   sold: asset.sold ?? null,
 });
+
+/** Whether a confirmed invite links the two accounts, either way; the identity sees only its own. */
+const linked = (tx: Transaction, accountId: string, other: string) =>
+  one(
+    tx,
+    sql`SELECT FROM account.link
+         WHERE (inviter_id = ${accountId} AND invitee_id = ${other})
+            OR (invitee_id = ${accountId} AND inviter_id = ${other})`,
+  );
 
 const isoDate = (date: Date) => parseCalendarDate(date.toISOString().slice(0, 10));
 
@@ -278,6 +290,30 @@ export function createCaseFiles({ db, audit, today }: CaseFilesSettings): CaseFi
         );
         refuseUnless(handed.rows[0]?.handed === true, 'not_found');
         return [event('person_handed_over', { personId, accountId: newKeeper })];
+      }),
+
+    addMember: (accountId, request) =>
+      write(accountId, async (tx, rows) => {
+        if (rows.people.some((row) => row.accountId === request.accountId)) return [];
+        // cases_definer stays in its schema (guard 6), so the link is read here, under row-level security.
+        refuseUnless(await linked(tx, accountId, request.accountId), 'not_found');
+        const takesOver = 'personId' in request;
+        const takenOver = takesOver
+          ? rows.people.find((row) => row.id === request.personId)
+          : undefined;
+        refuseUnless(takesOver || rows.people.length < caseSizeLimits.people, 'case_limit');
+        refuseUnless(
+          takenOver?.caseMember === true || members(rows) < caseSizeLimits.members,
+          'case_limit',
+        );
+        const joined = await tx.execute<{ outcome: string }>(sql`
+          SELECT cases.join_case(${request.accountId}, ${'personId' in request ? request.personId : null}::uuid,
+                                 ${'displayName' in request ? request.displayName : null}::text) AS outcome`);
+        const outcome = joined.rows[0]?.outcome;
+        if (outcome === 'unchanged') return [];
+        refuseUnless(outcome !== 'case_exists', 'case_exists');
+        refuseUnless(outcome === 'joined', 'not_found');
+        return [event('member_joined', { caseId: rows.caseId, accountId: request.accountId })];
       }),
 
     writeProfile: (accountId, { personId, facts, dependsOn }) =>

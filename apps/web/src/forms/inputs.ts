@@ -18,3 +18,13 @@ export const recoveryCodeInput = {
   autoCorrect: 'off',
   spellCheck: false,
 } as const;
+
+/** Someone else's name, as a case shows them: the browser should not offer the viewer's own. */
+export const nameInput = {
+  name: 'display-name',
+  type: 'text',
+  required: true,
+  maxLength: 80,
+  autoComplete: 'off',
+  autoCapitalize: 'words',
+} as const;

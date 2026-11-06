@@ -1,11 +1,12 @@
 import { inviteLifetimeHours, maxOpenInvites, type Invite } from '@arca/api-contract/client';
-import { Button } from '@arca/ui';
+import { Button, ChoiceGroup } from '@arca/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useState, type SubmitEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { invitesQuery, sessionQuery } from '../api.js';
-import { emailInput } from '../forms/inputs.js';
+import { caseQuery, invitesQuery, sessionQuery } from '../api.js';
+import { addFailure, addToCase, type AddFailure } from '../case-members.js';
+import { emailInput, nameInput } from '../forms/inputs.js';
 import { TextField } from '../forms/text-field.js';
 import { dangerLinkClass, textLinkClass } from '../forms/text-link.js';
 import {
@@ -160,6 +161,9 @@ function InviteList() {
                 }}
               />
             )}
+            {invite.accountId !== null && (
+              <AddToCase email={invite.email} accountId={invite.accountId} />
+            )}
           </li>
         ))}
       </ul>
@@ -228,5 +232,88 @@ function Review({
             : t('invites.decisionFailure', { reason: failure })}
       </p>
     </div>
+  );
+}
+
+/** A new person, or the ID of a person the inviter keeps who has no account yet. */
+const newPerson = 'new';
+
+/**
+ * Right after confirming, the inviter adds the account to their case (spec 0007, R2): as someone
+ * new, or as a person they already described, who then keeps their own data.
+ */
+function AddToCase({ email, accountId }: { readonly email: string; readonly accountId: string }) {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const familyCase = useQuery(caseQuery);
+  const [chosen, setChosen] = useState(newPerson);
+  const [displayName, setDisplayName] = useState('');
+  const [adding, setAdding] = useState(false);
+  const [failure, setFailure] = useState<AddFailure>();
+  const view = familyCase.data?.case;
+  if (view === undefined || view === null) return null;
+  if (view.people.some((person) => person.accountId === accountId)) {
+    return <p className="mt-3 text-small text-muted">{t('invites.inCase', { email })}</p>;
+  }
+  const described = view.people.filter((person) => person.keptByMe && person.accountId === null);
+
+  const submit = (event: SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setFailure(undefined);
+    setAdding(true);
+    addToCase(
+      passkeys,
+      chosen === newPerson
+        ? { accountId, displayName: displayName.trim() }
+        : { accountId, personId: chosen },
+    )
+      .then((updated) => {
+        queryClient.setQueryData(caseQuery.queryKey, { case: updated });
+      })
+      .catch((error: unknown) => {
+        setFailure(addFailure(error));
+      })
+      .finally(() => {
+        setAdding(false);
+      });
+  };
+
+  return (
+    <form onSubmit={submit} className="mt-3 flex flex-col gap-3">
+      <p className="font-medium">{t('invites.addTitle', { email })}</p>
+      <p className="text-muted">{t('invites.addLead')}</p>
+      {described.length > 0 && (
+        <ChoiceGroup
+          legend={t('invites.addAs')}
+          description={t('invites.addAsHint')}
+          choices={[
+            { value: newPerson, label: t('invites.addNew') },
+            ...described.map((person) => ({ value: person.id, label: person.displayName })),
+          ]}
+          value={chosen}
+          onChange={setChosen}
+        />
+      )}
+      {chosen === newPerson && (
+        <TextField
+          label={t('invites.addName')}
+          {...nameInput}
+          value={displayName}
+          onChange={(event) => {
+            setDisplayName(event.currentTarget.value);
+          }}
+        />
+      )}
+      <Button type="submit" disabled={adding} aria-busy={adding}>
+        {t('invites.addSubmit')}
+      </Button>
+      <p role="status" className={failure === undefined && !adding ? 'text-muted' : 'text-ink'}>
+        {adding
+          ? t(chosen === newPerson ? 'invites.adding' : 'invites.waiting')
+          : failure === undefined
+            ? ''
+            : t('invites.addFailure', { reason: failure })}
+      </p>
+    </form>
   );
 }

@@ -4,6 +4,7 @@ import type { z } from 'zod';
 import { apiBasePath, ErrorResponse, type RouteDefinition } from '../routes/index.js';
 
 export {
+  addCaseMemberAction,
   apiBasePath,
   apiPathSegments,
   deleteDocumentsAction,
@@ -24,10 +25,13 @@ export {
 } from '../routes/index.js';
 export type {
   AccountLink,
+  AddCaseMemberRequest,
   AuditEvent,
   AuditEventCode,
   AuditEventsQuery,
   AuditEventsResponse,
+  CasePerson,
+  CaseView,
   DataExport,
   DeviceDescription,
   DevicePasskey,
