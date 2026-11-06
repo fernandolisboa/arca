@@ -58,7 +58,7 @@ function nodeLabel(words: KnowledgeWords, node: Node): string {
 }
 
 // Operators with two operands, which read as one sentence between them.
-const binary = new Set<string>([...comparisonOperators, 'in', 'intersects']);
+const binary = new Set<string>([...comparisonOperators, 'in', 'intersects', 'within']);
 
 function ExpressionNode({ node, lead }: { readonly node: Node; readonly lead?: string }) {
   const words = useKnowledgeWords();

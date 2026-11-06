@@ -152,14 +152,20 @@ export function evaluate(expression: Expression, frame: Frame): Trace {
       return node(expression.op, booleanValue(truth), [item, set]);
     }
     case 'intersects': {
-      const list = evaluate(expression.list, frame);
-      const set = evaluate(expression.set, frame);
-      const tokens = list.value as TokenListValue;
-      const values = (set.value as SetValue).values;
+      const { list, set, tokens, values } = listAndSet(expression, frame);
       const truth: Truth = tokens.definite.some((token) => values.includes(token))
         ? true
         : tokens.complete && !tokens.possible.some((token) => values.includes(token))
           ? false
+          : 'unknown';
+      return node(expression.op, booleanValue(truth), [list, set]);
+    }
+    case 'within': {
+      const { list, set, tokens, values } = listAndSet(expression, frame);
+      const truth: Truth = !tokens.definite.every((token) => values.includes(token))
+        ? false
+        : tokens.complete && tokens.possible.every((token) => values.includes(token))
+          ? true
           : 'unknown';
       return node(expression.op, booleanValue(truth), [list, set]);
     }
@@ -462,6 +468,20 @@ function aggregate(
       return isNonNegative(expression.value) ? openAbove : withoutBound(openAbove, 'min');
     }
   }
+}
+
+function listAndSet(
+  expression: { readonly list: Expression; readonly set: Expression },
+  frame: Frame,
+): { list: Trace; set: Trace; tokens: TokenListValue; values: readonly string[] } {
+  const list = evaluate(expression.list, frame);
+  const set = evaluate(expression.set, frame);
+  return {
+    list,
+    set,
+    tokens: list.value as TokenListValue,
+    values: (set.value as SetValue).values,
+  };
 }
 
 function itemsOf(

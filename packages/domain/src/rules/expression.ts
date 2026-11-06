@@ -59,6 +59,8 @@ export type Expression =
   | { readonly op: Comparison; readonly left: Expression; readonly right: Expression }
   | { readonly op: 'in'; readonly item: Expression; readonly set: Expression }
   | { readonly op: 'intersects'; readonly list: Expression; readonly set: Expression }
+  /** Every item of the list is in the set; an empty list is. */
+  | { readonly op: 'within'; readonly list: Expression; readonly set: Expression }
   | { readonly op: 'all' | 'any'; readonly operands: readonly Expression[] }
   | { readonly op: 'not'; readonly operand: Expression }
   | { readonly op: 'add' | 'sub'; readonly left: Expression; readonly right: Expression }
@@ -103,6 +105,7 @@ export const expressionOperators = [
   ...comparisonOperators,
   'in',
   'intersects',
+  'within',
   'all',
   'any',
   'not',
@@ -140,6 +143,7 @@ export const expressionSchema: z.ZodType<Expression> = z.lazy(() =>
     ),
     z.strictObject({ op: z.literal('in'), item: expressionSchema, set: expressionSchema }),
     z.strictObject({ op: z.literal('intersects'), list: expressionSchema, set: expressionSchema }),
+    z.strictObject({ op: z.literal('within'), list: expressionSchema, set: expressionSchema }),
     ...(['all', 'any'] as const).map((op) =>
       z.strictObject({ op: z.literal(op), operands: z.array(expressionSchema).min(1).max(50) }),
     ),
@@ -195,6 +199,7 @@ export function childrenOf(expression: Expression): readonly Expression[] {
     case 'in':
       return [expression.item, expression.set];
     case 'intersects':
+    case 'within':
       return [expression.list, expression.set];
     case 'all':
     case 'any':
