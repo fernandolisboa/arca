@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { LeapDayBirthday } from '../calendar/age.js';
 import { type CalendarDate, calendarDateSchema } from '../calendar/calendar-date.js';
 import { opaqueIdSchema } from '../case/snapshot.js';
 import {
@@ -97,7 +98,7 @@ export interface VersionView {
   readonly corrects: number | null;
   readonly status: RouteVersion['status'];
   readonly currency: string;
-  readonly leapDayBirthday: string | null;
+  readonly leapDayBirthday: LeapDayBirthday | null;
   readonly leapDayBirthdaySources: readonly string[];
   readonly referenceDates: readonly string[];
   readonly closureSources: readonly string[];
