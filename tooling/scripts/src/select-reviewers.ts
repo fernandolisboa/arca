@@ -45,10 +45,20 @@ function anyOf(...patterns: readonly RegExp[]): RegExp {
   return new RegExp(patterns.map((pattern) => `(${pattern.source})`).join('|'), 'i');
 }
 
+function withCore(...specialists: readonly Reviewer[]): readonly Reviewer[] {
+  return [...coreReviewers, ...specialists];
+}
+
+const knowledgeBaseScreens = /^apps\/[^/]+\/(src|test|e2e)\/(.*\/)?knowledge/;
+const databaseTests =
+  /^(apps\/[^/]+\/(test|e2e)\/postgres\/|packages\/db\/test\/|tooling\/scripts\/test\/(postgres\/|db-))/;
+// Who may see or decide what: both the access rules and the step-ups behind them.
+const accessKeywords = ['shar', 'invite', 'approver', 'decision'];
+
 // A path takes the reviewers of every rule it matches; a path no rule matches takes them all,
-// so a new kind of file is over-reviewed rather than slipping through. The specialist rules match
-// by area keywords as well as by directory, so a new file in a sensitive area is caught by its
-// name; matching too much costs one extra reviewer, matching too little loses a security read.
+// so a new kind of file is over-reviewed rather than slipping through. Sensitive packages carry
+// their specialists on every file; elsewhere specialists match area keywords in file and directory
+// names. Matching too much costs one extra reviewer; matching too little loses a security read.
 const rules: readonly Rule[] = [
   // Markdown under the code roots may be a prompt or a fixture, so it is not docs.
   { match: /^(?!(apps|packages|tooling|eval)\/).*\.md$/, reviewers: docsReviewers },
@@ -56,6 +66,7 @@ const rules: readonly Rule[] = [
     match: /^(SECURITY\.md|docs\/(SECURITY|SETUP|RETENTION)\.md|docs\/(threat-models|runbooks)\/)/,
     reviewers: ['security'],
   },
+  { match: /^docs\/vault-format\.md$/, reviewers: ['security', 'auth-crypto'] },
   // ADRs and the data-flow register admit vendors and services.
   {
     match: /^docs\/(adr\/|ARCHITECTURE\.md)/,
@@ -66,16 +77,17 @@ const rules: readonly Rule[] = [
       /^(apps|packages|tooling)\/.*\.(ts|tsx|js|mjs|cjs|css|html|json|sql|svg|png|webmanifest)$/,
     reviewers: coreReviewers,
   },
+  // The API holds sessions, CSRF and headers, secrets and every third-party call.
+  { match: /^apps\/api\//, reviewers: withCore('data-access', 'auth-crypto', 'supply-chain') },
+  { match: /^packages\/(vault|platform)\//, reviewers: withCore('auth-crypto') },
+  { match: databaseTests, reviewers: withCore('data-access', 'auth-crypto') },
   {
     match: anyOf(
-      /^apps\/api\//,
-      /^apps\/[^/]+\/e2e\/postgres\//,
       /^packages\/(db|api-contract|telemetry)\//,
       /^tooling\/scripts\/src\/db\//,
-      /^apps\/[^/]+\/(src|test|e2e)\/(.*\/)?knowledge/,
+      knowledgeBaseScreens,
       codeNamed([
-        'decision',
-        'approver',
+        ...accessKeywords,
         'monitoring',
         'telemetry',
         'notification',
@@ -87,45 +99,43 @@ const rules: readonly Rule[] = [
         'deletion',
         'retention',
         'audit',
-        'shar',
-        'invite',
       ]),
     ),
-    reviewers: [...coreReviewers, 'data-access'],
+    reviewers: withCore('data-access'),
   },
   {
     match: anyOf(
-      /^packages\/vault\//,
-      /^apps\/[^/]+\/(src|test|e2e)\/(.*\/)?knowledge/,
+      knowledgeBaseScreens,
       codeNamed([
+        ...accessKeywords,
         'auth',
         'passkey',
         'webauthn',
+        'prf',
+        'fido',
         'vault',
         'step-up',
         'sign-in',
         'recover',
         'enroll',
+        'token',
         'key-storage',
         'envelope',
+        'framing',
         'crypto',
         'session',
         'device',
         'cookie',
-        'shar',
-        'invite',
-        'approver',
-        'decision',
       ]),
     ),
-    reviewers: [...coreReviewers, 'auth-crypto'],
+    reviewers: withCore('auth-crypto'),
   },
   {
     match: anyOf(
       /^eval\//,
       codeNamed(['intake', 'prompt', 'extract', 'claude', 'anthropic', 'llm', '[/.-]eval[/.-]']),
     ),
-    reviewers: [...coreReviewers, 'ai-safety'],
+    reviewers: withCore('ai-safety'),
   },
   {
     match: anyOf(
@@ -133,13 +143,31 @@ const rules: readonly Rule[] = [
       /^(pnpm-lock\.yaml|pnpm-workspace\.yaml|turbo\.json|\.npmrc)$/,
       /^(\.github|tooling)\//,
       /^packages\/[^/]+\/vendor\//,
-      codeNamed(['email', 'monitoring', 'sentry', 'resend', 'push', 'blob', 'tunnel', 'webhook']),
+      codeNamed([
+        'email',
+        'monitoring',
+        'sentry',
+        'resend',
+        'push',
+        'vapid',
+        'blob',
+        'tunnel',
+        'webhook',
+        'config',
+        'secret',
+        'csp',
+        'trusted-types',
+        'service-worker',
+        'pwa',
+      ]),
     ),
-    reviewers: [...coreReviewers, 'supply-chain'],
+    reviewers: withCore('supply-chain'),
   },
+  // Agent and review configuration, wherever an agent would load it (threat model S4).
   {
-    match: /^(CLAUDE\.md|\.claude\/|docs\/agents\/|docs\/REVIEW\.md)/,
-    reviewers: [...coreReviewers, 'supply-chain'],
+    match:
+      /(^|\/)((CLAUDE|AGENTS|GEMINI)(\.local)?\.md|\.claude\/|\.mcp\.json$)|^(docs\/agents\/|docs\/REVIEW\.md$|tooling\/scripts\/src\/select-reviewers\.ts$)/,
+    reviewers: withCore('supply-chain'),
   },
 ];
 
@@ -176,9 +204,12 @@ async function git(cwd: string, args: readonly string[]): Promise<string[]> {
  */
 export async function changedPaths(base: string, cwd = process.cwd()): Promise<string[]> {
   if (base.startsWith('-')) throw new Error(`not a git revision: ${base}`);
+  // Both listings are relative to the repository root, whatever directory the script runs from.
+  const [root] = await git(cwd, ['rev-parse', '--show-toplevel']);
+  if (root === undefined) throw new Error('not inside a git repository');
   const [changed, untracked] = await Promise.all([
-    git(cwd, ['diff', '--name-only', '-z', '--no-renames', '--merge-base', base]),
-    git(cwd, ['ls-files', '--others', '--exclude-standard', '-z']),
+    git(root.trim(), ['diff', '--name-only', '-z', '--no-renames', '--merge-base', base]),
+    git(root.trim(), ['ls-files', '--others', '--exclude-standard', '-z']),
   ]);
   return [...new Set([...changed, ...untracked])];
 }

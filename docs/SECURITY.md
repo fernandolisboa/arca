@@ -81,7 +81,7 @@ Revisited at the start of every epic. New features list the assets they touch an
 - Every vendor and store account is owned by the organization, uses phishing-resistant MFA (passkeys or security keys), named accounts and least-privilege roles.
 
 **Software delivery**
-- Branch protection, required checks and the reviewer gates in [REVIEW.md](REVIEW.md): a must-pass security reviewer on every change to code, config or the security docs, plus must-pass specialists (auth and cryptography, data access, supply chain, AI safety) on changes in their areas, so sensitive changes get at least two independent security reads.
+- Branch protection, required checks and the reviewer gates in [REVIEW.md](REVIEW.md): a must-pass security reviewer on every change to code, config, the security docs or ADRs ([gates](REVIEW.md#gates-in-order)), plus must-pass specialists (auth and cryptography, data access, supply chain, AI safety) on changes in their areas, so sensitive changes get at least two independent security reads.
 - CodeQL for code scanning; osv-scanner for dependency advisories (on each pull request and each push to `main`; Dependabot alerts cannot read pnpm 12's two-document lockfile), registry licenses checked against an allow-list; secret scanning with push protection; gitleaks; Dependabot version updates ([ADR-0010](adr/0010-stack-revised.md)); Actions pinned by SHA; SBOM per build. Reviews run in the authoring session, not in CI ([ADR-0019](adr/0019-reviewers-in-the-authoring-session.md)).
 - Dynamic scanning (OWASP ZAP baseline) against preview deployments.
 - External penetration test before Phase 3 (other families) and before each store launch; findings tracked to closure.

@@ -1,7 +1,9 @@
 import { execFile } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, rename, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { describe, expect, it } from 'vitest';
 import {
@@ -12,6 +14,8 @@ import {
   selectReviewers,
   type Reviewer,
 } from '../src/select-reviewers.ts';
+
+const api: readonly Reviewer[] = [...core, 'data-access', 'auth-crypto', 'supply-chain'];
 
 function names(paths: string[]): Reviewer[] {
   return selectReviewers(paths).map((selection) => selection.reviewer);
@@ -42,30 +46,22 @@ describe('reviewer selection', () => {
     ['domain code', ['packages/domain/src/rules/evaluate.ts'], core],
     ['a web screen', ['apps/web/src/questions/person.tsx'], core],
     ['a pt-BR string', ['packages/i18n/src/catalogs/pt-BR.ts'], core],
-    ['an API route', ['apps/api/src/case/routes.ts'], [...core, 'data-access']],
+    ['an API route', ['apps/api/src/case/routes.ts'], [...api]],
     ['the schema', ['packages/db/src/case-schema.ts'], [...core, 'data-access']],
     ['a migration', ['packages/db/migrations/0042_case.sql'], [...core, 'data-access']],
     ['telemetry', ['packages/telemetry/src/scrub.ts'], [...core, 'data-access']],
     ['the API contract', ['packages/api-contract/src/routes/case.ts'], [...core, 'data-access']],
-    ['sign-in', ['apps/api/src/auth/passkeys.ts'], [...core, 'data-access', 'auth-crypto']],
+    ['sign-in', ['apps/api/src/auth/passkeys.ts'], [...api]],
     ['the vault', ['packages/vault/src/envelope.ts'], [...core, 'auth-crypto']],
     ['a passkey port', ['packages/platform/src/passkeys.ts'], [...core, 'auth-crypto']],
     ['recovery on the web', ['apps/web/src/recovery.ts'], [...core, 'auth-crypto']],
-    [
-      'the intake adapter',
-      ['apps/api/src/intake/claude.ts'],
-      [...core, 'data-access', 'ai-safety'],
-    ],
+    ['the intake adapter', ['apps/api/src/intake/claude.ts'], [...api, 'ai-safety']],
     ['the intake draft', ['packages/domain/src/intake/draft.ts'], [...core, 'ai-safety']],
-    [
-      'an evaluation case',
-      ['apps/api/test/eval/intake/cases.json'],
-      [...core, 'data-access', 'ai-safety'],
-    ],
+    ['an evaluation case', ['apps/api/test/eval/intake/cases.json'], [...api, 'ai-safety']],
     ['a dependency', ['apps/web/package.json'], [...core, 'supply-chain']],
     ['the lockfile', ['pnpm-lock.yaml'], [...core, 'supply-chain']],
     ['a workflow', ['.github/workflows/ci.yml'], [...core, 'supply-chain']],
-    ['deploy config', ['apps/api/vercel.json'], [...core, 'data-access', 'supply-chain']],
+    ['deploy config', ['apps/api/vercel.json'], [...api]],
     ['a policy script', ['tooling/scripts/src/check-licenses.ts'], [...core, 'supply-chain']],
     ['CLAUDE.md', ['CLAUDE.md'], [...core, 'supply-chain']],
     ['a reviewer', ['.claude/agents/spec-reviewer.md'], [...core, 'supply-chain']],
@@ -94,35 +90,23 @@ describe('reviewer selection', () => {
     ['the sign-in screen', ['apps/web/src/routes/sign-in.tsx'], [...core, 'auth-crypto']],
     ['the vault screen', ['apps/web/src/routes/vault.lazy.tsx'], [...core, 'auth-crypto']],
     ['sharing', ['apps/web/src/sharing.ts'], [...core, 'data-access', 'auth-crypto']],
-    [
-      'a knowledge-base decision',
-      ['apps/api/src/knowledge/decisions.ts'],
-      [...core, 'data-access', 'auth-crypto'],
-    ],
+    ['a knowledge-base decision', ['apps/api/src/knowledge/decisions.ts'], [...api]],
     [
       'the approver screen',
       ['apps/web/src/knowledge/approver-section.tsx'],
       [...core, 'data-access', 'auth-crypto'],
     ],
-    ['the access matrix', ['apps/api/test/postgres/every-table.ts'], [...core, 'data-access']],
+    ['the access matrix', ['apps/api/test/postgres/every-table.ts'], [...api]],
     [
       'a database e2e test',
       ['apps/web/e2e/postgres/vault.spec.ts'],
       [...core, 'data-access', 'auth-crypto'],
     ],
     ['client telemetry', ['apps/web/src/monitoring.ts'], [...core, 'data-access', 'supply-chain']],
-    ['the email sender', ['apps/api/src/email/send.ts'], [...core, 'data-access', 'supply-chain']],
+    ['the email sender', ['apps/api/src/email/send.ts'], [...api]],
     ['the intake screen', ['apps/web/src/routes/family_.intake.tsx'], [...core, 'ai-safety']],
-    [
-      'an intake test',
-      ['apps/api/test/intake-prompt.test.ts'],
-      [...core, 'data-access', 'ai-safety'],
-    ],
-    [
-      'the evaluation config',
-      ['apps/api/vitest.eval.config.ts'],
-      [...core, 'data-access', 'ai-safety', 'supply-chain'],
-    ],
+    ['an intake test', ['apps/api/test/intake-prompt.test.ts'], [...api, 'ai-safety']],
+    ['the evaluation config', ['apps/api/vitest.eval.config.ts'], [...api, 'ai-safety']],
     [
       'the evaluation workflow',
       ['.github/workflows/intake-eval.yml'],
@@ -135,6 +119,11 @@ describe('reviewer selection', () => {
       ['tooling/scripts/src/db/runtime-config.ts'],
       [...core, 'data-access', 'supply-chain'],
     ],
+    ['a nested CLAUDE.md', ['docs/specs/CLAUDE.md'], [...core, 'supply-chain']],
+    ['a nested skill', ['docs/x/.claude/skills/y/SKILL.md'], [...core, 'supply-chain']],
+    ['AGENTS.md', ['AGENTS.md'], [...core, 'supply-chain']],
+    ['this selector', ['tooling/scripts/src/select-reviewers.ts'], [...core, 'supply-chain']],
+    ['the vault format', ['docs/vault-format.md'], [...docs, 'security', 'auth-crypto']],
   ])('picks the reviewers for %s', (_label, paths, expected) => {
     expect(names(paths)).toEqual(allReviewers.filter((reviewer) => expected.includes(reviewer)));
   });
@@ -169,6 +158,49 @@ describe('reviewer selection', () => {
   });
 });
 
+// Real files in this repository and a specialist each must get; the sweep fails if one is moved,
+// so the list cannot drift from the code it protects.
+const sensitive: readonly (readonly [string, Reviewer])[] = [
+  ['apps/api/src/app.ts', 'auth-crypto'],
+  ['apps/api/src/app.ts', 'supply-chain'],
+  ['apps/api/src/server.ts', 'auth-crypto'],
+  ['apps/api/src/config.ts', 'supply-chain'],
+  ['apps/api/src/production-site.ts', 'supply-chain'],
+  ['apps/api/src/notification/vapid.ts', 'auth-crypto'],
+  ['apps/api/src/knowledge/decisions.ts', 'auth-crypto'],
+  ['apps/api/test/postgres/every-table.ts', 'data-access'],
+  ['apps/web/src/knowledge/approver-section.tsx', 'data-access'],
+  ['apps/web/src/knowledge/version-panel.tsx', 'auth-crypto'],
+  ['apps/web/src/monitoring.ts', 'data-access'],
+  ['apps/web/src/monitoring.ts', 'supply-chain'],
+  ['apps/web/src/use-link-token.ts', 'auth-crypto'],
+  ['apps/web/src/pwa/trusted-types.ts', 'supply-chain'],
+  ['apps/web/src/service-worker/sw.ts', 'supply-chain'],
+  ['apps/web/src/vault.ts', 'auth-crypto'],
+  ['apps/web/src/routes/recover.tsx', 'auth-crypto'],
+  ['apps/web/src/routes/family_.intake.tsx', 'ai-safety'],
+  ['apps/web/vite.config.ts', 'supply-chain'],
+  ['packages/platform/src/framing.ts', 'auth-crypto'],
+  ['packages/platform/src/web-key-storage.ts', 'auth-crypto'],
+  ['packages/platform/test/fixtures/fido2prf-vector.ts', 'auth-crypto'],
+  ['packages/telemetry/src/sentry.ts', 'data-access'],
+  ['packages/domain/src/rules/decisions.ts', 'auth-crypto'],
+  ['packages/db/test/postgres/registry.test.ts', 'data-access'],
+  ['tooling/scripts/test/postgres/access.test.ts', 'data-access'],
+  ['tooling/scripts/test/postgres/access.test.ts', 'auth-crypto'],
+  ['tooling/scripts/test/db-policy.test.ts', 'data-access'],
+  ['.github/workflows/intake-eval.yml', 'ai-safety'],
+];
+
+describe('sensitive files in this repository', () => {
+  const root = fileURLToPath(new URL('../../../', import.meta.url));
+
+  it.each(sensitive)('%s gets the %s reviewer', (path, reviewer) => {
+    expect(existsSync(join(root, path)), `${path} moved: update this list`).toBe(true);
+    expect(names([path])).toContain(reviewer);
+  });
+});
+
 describe('changed paths', () => {
   const git = async (cwd: string, ...args: string[]) => {
     await promisify(execFile)('git', ['-c', 'user.name=t', '-c', 'user.email=t@t', ...args], {
@@ -192,11 +224,8 @@ describe('changed paths', () => {
     await writeFile(join(dir, 'README.md'), 'edited\n');
     await writeFile(join(dir, 'new.ts'), 'export {};\n');
 
-    expect((await changedPaths('main', dir)).sort()).toEqual([
-      'README.md',
-      'docs/key.md',
-      'new.ts',
-      'packages/vault/key.ts',
-    ]);
+    const expected = ['README.md', 'docs/key.md', 'new.ts', 'packages/vault/key.ts'];
+    expect((await changedPaths('main', dir)).sort()).toEqual(expected);
+    expect((await changedPaths('main', join(dir, 'docs'))).sort()).toEqual(expected);
   });
 });
