@@ -151,7 +151,7 @@ Risks from the OWASP Top 10 for Agentic Applications (2026):
 | ASI05 Unexpected code execution | The authoring session runs code that someone else wrote to subvert it | All code comes from the owner's own sessions, with no outside contributors; CI runs only deterministic checks, with no secrets (S5). Residual R-1 |
 | ASI06 Memory and context poisoning | A false fact in shared memory steers later threads | Convention, not enforced: memory holds no secrets and is advisory, and the repository's docs and tests win over it |
 | ASI07 Insecure inter-agent communication | A subagent's report is taken as the owner's approval | Agent reports are never approval; only the owner's own messages are |
-| ASI08 Cascading failures | One agent's wrong change merges unreviewed | `code-review`, two security reads on sensitive changes, and green deterministic CI before every merge |
+| ASI08 Cascading failures | One agent's wrong change merges unreviewed | `code-review` and the correctness reviewer, two security reads on sensitive changes, and green deterministic CI before every merge |
 | ASI09 Human–agent trust exploitation | An agent persuades the owner to approve a risky step | Convention, not enforced: owner asks are rare, one decision at a time, each with its consequence; production changes need the owner's own words |
 | ASI10 Rogue agents | An agent acts outside its brief | Branch-only pushes, no force-push, auditable PRs. Residual R-12 |
 
