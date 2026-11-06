@@ -19,6 +19,7 @@ import {
   rawCatalog,
   displayLookup,
   displayLookupFiles,
+  displayReexport,
   reproductionLookup,
   reproductionLookupFiles,
   reproductionReexport,
@@ -147,7 +148,7 @@ export function arcaConfig({ rootDir, kinds = [] }) {
         }
       : [],
     { files: reproductionLookupFiles, rules: scoped([reproductionLookup], [reproductionReexport]) },
-    { files: displayLookupFiles, rules: scoped([displayLookup]) },
+    { files: displayLookupFiles, rules: scoped([displayLookup], [displayReexport]) },
     kinds.includes('knowledge')
       ? [
           {

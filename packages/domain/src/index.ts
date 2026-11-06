@@ -156,6 +156,7 @@ export {
 } from './rules/route-version.js';
 export {
   collectionNames,
+  comparisonOperators,
   expressionOperators,
   nodeCount,
   referenceDateNameSchema,
@@ -197,7 +198,6 @@ export {
   type VersionView,
   type VersionViewInput,
   type ViewSection,
-  rejectionEffect,
   ruleCaseSummarySchema,
   versionView,
   viewSections,

@@ -7,6 +7,8 @@ import {
   maxKnowledgeJsonDepth,
   parseCalendarDate,
 } from '@arca/domain';
+import { hostOf } from '@arca/scripts/host';
+import { parseEntries } from '../src/entries.ts';
 import { parseJsonSubset } from '@arca/scripts/json';
 import { casesFileSchema } from './cases.ts';
 import { checkHashes } from './hashes.ts';
@@ -86,6 +88,18 @@ export async function buildKnowledge(
  * The generated module. The data goes through JSON.parse rather than an object literal, so a
  * `__proto__` key stays data, and the runtime entry validates it again before use.
  */
+/**
+ * The host of every cited URL as official-source matching reads it, or null for a URL with none,
+ * so the activation screen names the same host the build matched.
+ */
+function sourceHosts(entries: readonly BuiltEntry[]): Record<string, string | null> {
+  return Object.fromEntries(
+    [...parseEntries(entries).values()].flatMap(({ version }) =>
+      version.sources.map(({ url }) => [url, hostOf(url) ?? null] as const),
+    ),
+  );
+}
+
 export function catalogModule(
   entries: readonly BuiltEntry[],
   countries: PinnedCountries = { countries: [], formerCountries: [] },
@@ -96,6 +110,7 @@ export function catalogModule(
     `export const catalogData: unknown = JSON.parse(${JSON.stringify(JSON.stringify(entries))});`,
     `export const countryData: unknown = JSON.parse(${JSON.stringify(JSON.stringify(countries))});`,
     `export const caseData: unknown = JSON.parse(${JSON.stringify(JSON.stringify(cases))});`,
+    `export const hostData: unknown = JSON.parse(${JSON.stringify(JSON.stringify(sourceHosts(entries)))});`,
     '',
   ].join('\n');
 }

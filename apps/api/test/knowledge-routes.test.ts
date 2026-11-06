@@ -1,3 +1,4 @@
+import { KnowledgeVersion } from '@arca/api-contract/routes';
 import { describe, expect, it } from 'vitest';
 import type { Logger } from '@arca/telemetry';
 import { createApp } from '../src/app.js';
@@ -36,7 +37,7 @@ function setup({
     },
     states: () => Promise.resolve(new Map()),
   };
-  const listedVersion = {
+  const listedVersion = KnowledgeVersion.parse({
     routeId: 'pt-d7',
     number: 2,
     title: 'Visto D7',
@@ -44,10 +45,9 @@ function setup({
     effectiveFrom: '2026-01-01',
     hash: 'a'.repeat(64),
     state: 'proposed',
-  } as const;
+  });
   const knowledgeVersions: KnowledgeVersions = {
-    list: () =>
-      Promise.resolve([listedVersion] as unknown as Awaited<ReturnType<KnowledgeVersions['list']>>),
+    list: () => Promise.resolve([listedVersion]),
     view: () => Promise.resolve(undefined),
   };
   const app = createApp({

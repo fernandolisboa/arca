@@ -13,7 +13,8 @@ import {
 import type { EvaluationStatus } from './engine.js';
 import { slugSchema } from './expression.js';
 import { resolveFactReference } from './fact-reference.js';
-import type { RouteVersion, Source } from './route-version.js';
+import { type CurrencyCode, unitsAmount } from '../money/currency.js';
+import type { Pin, RouteVersion, Source } from './route-version.js';
 
 const evaluationStatuses = [
   'unavailable',
@@ -50,7 +51,9 @@ export interface FactName {
 export type ExpressionView = Readonly<Record<string, unknown>>;
 
 export interface SourceView extends Source {
-  /** No lower version of the route cites a source on this host. */
+  /** The host the URL really names, or null when it is not a plain `https` URL. */
+  readonly host: string | null;
+  /** No lower version of the route cites a source on this host, or the URL has no plain host. */
   readonly newHost: boolean;
 }
 
@@ -62,6 +65,7 @@ export interface SectionChange {
 }
 
 export const viewSections = [
+  'settings',
   'requirements',
   'assessments',
   'dependents',
@@ -93,6 +97,15 @@ export interface VersionView {
   readonly corrects: number | null;
   readonly status: RouteVersion['status'];
   readonly currency: string;
+  readonly leapDayBirthday: string | null;
+  readonly leapDayBirthdaySources: readonly string[];
+  readonly referenceDates: readonly string[];
+  readonly closureSources: readonly string[];
+  readonly pins: {
+    readonly countries: Pin;
+    readonly formerCountries: Pin;
+    readonly officialDomains: readonly Pin[];
+  };
   readonly requirements: readonly {
     readonly id: string;
     readonly title: string;
@@ -149,18 +162,27 @@ export interface VersionViewInput {
   readonly cases: readonly RuleCaseSummary[];
   readonly states: DecisionStates;
   readonly today: CalendarDate;
-  /** The host of an `https` URL, lowercased; the domain has no URL parser. */
+  /**
+   * The host of a plain `https` URL (no user information or port), lowercased and in ASCII, or
+   * undefined; the domain has no URL parser.
+   */
   readonly hostOf: (url: string) => string | undefined;
 }
 
 const isNode = (value: unknown): value is Readonly<Record<string, unknown>> =>
   typeof value === 'object' && value !== null && !Array.isArray(value) && 'op' in value;
 
-/** The expression as it is, with every fact node naming its catalog key and target. */
+/**
+ * The expression as it is, with every fact node naming its catalog key and target, and every money
+ * amount in the currency's units as a decimal, so the screen never applies an exponent itself.
+ */
 function expressionView(expression: unknown, facts: FactName[]): ExpressionView {
   const walk = (value: unknown): unknown => {
     if (Array.isArray(value)) return value.map(walk);
     if (!isNode(value)) return value;
+    if (value['op'] === 'money' && typeof value['amount'] === 'number') {
+      return { ...value, amount: unitsAmount(value['amount'], value['currency'] as CurrencyCode) };
+    }
     if (value['op'] === 'fact' && typeof value['key'] === 'string') {
       const name = factName(value['key']);
       facts.push(name);
@@ -208,9 +230,30 @@ function sectionChange(
   };
 }
 
+/** The item arrays, compared item by item; every other field of a version is a setting. */
+const itemFields = new Set<string>([
+  'requirements',
+  'assessments',
+  'dependents',
+  'costs',
+  'durations',
+  'sources',
+  'countrySets',
+]);
+/** Fields that differ between any two versions by construction. */
+const ownFields = new Set<string>(['number', 'corrects']);
+
+/** Every setting of the version as an item named by its field, so a change to any one shows. */
+function settings(version: RouteVersion): readonly { id: string }[] {
+  return Object.entries(version)
+    .filter(([field]) => !itemFields.has(field) && !ownFields.has(field))
+    .map(([field, value]) => ({ id: field, value }));
+}
+
 function sections(entry: CatalogEntry): Readonly<Record<ViewSection, readonly { id: string }[]>> {
   const { version } = entry;
   return {
+    settings: settings(version),
     requirements: version.requirements,
     assessments: version.assessments,
     dependents: version.dependents,
@@ -233,7 +276,7 @@ function changes(before: CatalogEntry, after: CatalogEntry): Record<ViewSection,
 }
 
 /** What the route selects today, and instead once this version is rejected. */
-export function rejectionEffect(
+function rejectionEffect(
   identities: readonly VersionIdentity[],
   identity: VersionIdentity,
   today: CalendarDate,
@@ -269,7 +312,8 @@ export function versionView({
   const earlierHosts = new Set(
     versions
       .filter((candidate) => candidate.identity.number < number)
-      .flatMap((candidate) => candidate.version.sources.map((source) => hostOf(source.url))),
+      .flatMap((candidate) => candidate.version.sources.map((source) => hostOf(source.url)))
+      .filter((host) => host !== undefined),
   );
   return {
     routeId: identity.routeId,
@@ -283,6 +327,15 @@ export function versionView({
     corrects: version.corrects ?? null,
     status: version.status,
     currency: version.currency,
+    leapDayBirthday: version.leapDayBirthday ?? null,
+    leapDayBirthdaySources: version.leapDayBirthdaySources ?? [],
+    referenceDates: version.referenceDates ?? [],
+    closureSources: version.closureSources ?? [],
+    pins: {
+      countries: version.countries,
+      formerCountries: version.formerCountries,
+      officialDomains: version.officialDomains,
+    },
     requirements: version.requirements.map(({ id, title, expression, sources }) =>
       withFacts((facts) => ({ id, title, expression: expressionView(expression, facts), sources })),
     ),
@@ -320,10 +373,14 @@ export function versionView({
       title,
       members,
     })),
-    sources: version.sources.map((source) => ({
-      ...source,
-      newHost: !earlierHosts.has(hostOf(source.url)),
-    })),
+    sources: version.sources.map((source) => {
+      const host = hostOf(source.url);
+      return {
+        ...source,
+        host: host ?? null,
+        newHost: host === undefined || !earlierHosts.has(host),
+      };
+    }),
     replaces:
       replaced === undefined || replacedNumber < 1
         ? null

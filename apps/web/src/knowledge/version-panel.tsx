@@ -73,15 +73,18 @@ function Changes({ view, words }: { readonly view: VersionView; readonly words: 
   const { replaces } = view;
   if (replaces === null) return <p className="text-muted">{words.t('knowledge.firstVersion')}</p>;
   const lines = Object.entries(replaces.changes).flatMap(([section, change]) => {
+    // Settings are named by their field; every other section by its items' IDs.
+    const items = (ids: readonly string[]) =>
+      words.list(section === 'settings' ? ids.map(words.field) : ids);
     const details = [
       ...(change.added.length > 0
-        ? [words.t('knowledge.changeAdded', { items: words.list(change.added) })]
+        ? [words.t('knowledge.changeAdded', { items: items(change.added) })]
         : []),
       ...(change.removed.length > 0
-        ? [words.t('knowledge.changeRemoved', { items: words.list(change.removed) })]
+        ? [words.t('knowledge.changeRemoved', { items: items(change.removed) })]
         : []),
       ...(change.changed.length > 0
-        ? [words.t('knowledge.changeChanged', { items: words.list(change.changed) })]
+        ? [words.t('knowledge.changeChanged', { items: items(change.changed) })]
         : []),
     ];
     return details.length === 0
@@ -116,7 +119,6 @@ function Decision({ view, words }: { readonly view: VersionView; readonly words:
     'idle' | 'waiting' | { readonly done: DecisionKind } | { readonly failure: Failure }
   >('idle');
   const statusRef = useRef<HTMLParagraphElement>(null);
-  if (view.state === 'rejected') return <p>{words.t('knowledge.rejectedNote')}</p>;
 
   const start = (kind: DecisionKind) => {
     setConfirming(null);
@@ -146,6 +148,20 @@ function Decision({ view, words }: { readonly view: VersionView; readonly words:
           ? words.t('knowledge.decided', { kind: state.done })
           : words.t('knowledge.failure', { reason: state.failure })
         : '';
+  const status = (
+    <p ref={statusRef} role="status" tabIndex={-1}>
+      {message}
+    </p>
+  );
+  // A rejection is for good; the status stays, so the outcome and focus survive the refetch.
+  if (view.state === 'rejected') {
+    return (
+      <div className="flex flex-col items-start gap-3">
+        <p>{words.t('knowledge.rejectedNote')}</p>
+        {status}
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col items-start gap-3">
       {confirming === null ? (
@@ -178,6 +194,7 @@ function Decision({ view, words }: { readonly view: VersionView; readonly words:
               {selected && (
                 <p className="text-danger-ink">
                   {words.t('knowledge.rejectFallback', {
+                    current: view.state,
                     fallback: fallback === null ? 'none' : fallback.state,
                     number: fallback?.number ?? 0,
                   })}
@@ -204,12 +221,13 @@ function Decision({ view, words }: { readonly view: VersionView; readonly words:
           </div>
         </div>
       )}
-      <p ref={statusRef} role="status" tabIndex={-1}>
-        {message}
-      </p>
+      {status}
     </div>
   );
 }
+
+const leapDayRule = (rule: string | null) =>
+  rule === 'feb-28' ? 'february' : rule === 'march-1' ? 'march' : 'none';
 
 /** One version as data (spec 0007, R7): what it requires, what changed, its sources and cases. */
 export function VersionPanel({ view }: { readonly view: VersionView }) {
@@ -230,12 +248,45 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
         <p className="font-medium">{t('knowledge.state', { state: view.state })}</p>
         {view.status === 'closed' && <p>{t('knowledge.closed')}</p>}
         {view.corrects !== null && <p>{t('knowledge.corrects', { number: view.corrects })}</p>}
+        {view.tags.length > 0 && (
+          <p className="text-small text-muted">
+            {t('knowledge.tags', { tags: words.list(view.tags) })}
+          </p>
+        )}
         <p className="text-small text-muted">
           {t('knowledge.currency', { currency: view.currency })}
         </p>
       </div>
       <Section title={t('knowledge.section.changes')}>
         <Changes view={view} words={words} />
+      </Section>
+      <Section title={t('knowledge.section.settings')}>
+        <ul className="flex flex-col gap-1">
+          <li>
+            {t('knowledge.leapDay', { rule: leapDayRule(view.leapDayBirthday) })}
+            {view.leapDayBirthdaySources.length > 0 &&
+              ` ${t('knowledge.sourceIds', { sources: words.list(view.leapDayBirthdaySources) })}`}
+          </li>
+          {view.referenceDates.length > 0 && (
+            <li>
+              {t('knowledge.referenceDates', {
+                dates: words.list(view.referenceDates.map(words.referenceDate)),
+              })}
+            </li>
+          )}
+          {view.closureSources.length > 0 && (
+            <li>{t('knowledge.closureSources', { sources: words.list(view.closureSources) })}</li>
+          )}
+          <li>
+            {t('knowledge.pins', {
+              pins: words.list(
+                [view.pins.countries, view.pins.formerCountries, ...view.pins.officialDomains].map(
+                  (pin) => t('knowledge.pin', { id: pin.id, number: pin.number }),
+                ),
+              ),
+            })}
+          </li>
+        </ul>
       </Section>
       <Section title={t('knowledge.section.requirements')}>
         <Items
@@ -274,7 +325,9 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
                   path: dependent.path.map(words.step).join(' → '),
                 })}
               </p>
-              {dependent.at !== null && <p>{t('knowledge.at', { at: dependent.at })}</p>}
+              {dependent.at !== null && (
+                <p>{t('knowledge.at', { at: words.referenceDate(dependent.at) })}</p>
+              )}
               <p>{t('knowledge.condition')}</p>
               <ExpressionTree expression={dependent.condition} />
               <Reads facts={dependent.facts} sources={dependent.sources} words={words} />
@@ -291,7 +344,7 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
               <p className="font-medium">{cost.title}</p>
               <p>{t('knowledge.appliesTo', { appliesTo: cost.appliesTo })}</p>
               <p className="text-small text-muted">
-                {t('knowledge.costKind', { kind: cost.kind })}
+                {t('knowledge.costKind', { kind: words.costKind(cost.kind) })}
               </p>
               <p>{t('knowledge.amount')}</p>
               <ExpressionTree expression={cost.amount} />
@@ -348,6 +401,11 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
               <p className="font-medium">{source.title}</p>
               {/* Plain text, never a link: the approver reads the full address before opening it. */}
               <p className="break-all font-mono text-small">{source.url}</p>
+              <p className="text-small">
+                {source.host === null
+                  ? t('knowledge.noHost')
+                  : t('knowledge.host', { host: source.host })}
+              </p>
               <p className="text-small text-muted">
                 {[
                   source.id,

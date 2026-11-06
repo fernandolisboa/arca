@@ -1,3 +1,4 @@
+import { comparisonOperators } from '@arca/api-contract/client';
 import { type KnowledgeWords, useKnowledgeWords } from './words.js';
 
 type Node = Readonly<Record<string, unknown>>;
@@ -31,7 +32,7 @@ function nodeLabel(words: KnowledgeWords, node: Node): string {
     value: text(node['value']),
     values: Array.isArray(node['values']) ? words.list(node['values'].map(text)) : '',
     amount:
-      typeof node['amount'] === 'number' && typeof node['currency'] === 'string'
+      typeof node['amount'] === 'string' && typeof node['currency'] === 'string'
         ? words.money(node['amount'], node['currency'])
         : '',
     date: op === 'date' && typeof node['value'] === 'string' ? words.date(node['value']) : '',
@@ -52,11 +53,12 @@ function nodeLabel(words: KnowledgeWords, node: Node): string {
       typeof generations === 'number' ? words.t('knowledge.generations', { generations }) : '',
   });
   return typeof node['at'] === 'string'
-    ? `${label} · ${words.t('knowledge.at', { at: node['at'] })}`
+    ? `${label} · ${words.t('knowledge.at', { at: words.referenceDate(node['at']) })}`
     : label;
 }
 
-const binary = new Set(['eq', 'ne', 'lt', 'lte', 'gt', 'gte', 'in', 'intersects']);
+// Operators with two operands, which read as one sentence between them.
+const binary = new Set<string>([...comparisonOperators, 'in', 'intersects']);
 
 function ExpressionNode({ node, lead }: { readonly node: Node; readonly lead?: string }) {
   const words = useKnowledgeWords();

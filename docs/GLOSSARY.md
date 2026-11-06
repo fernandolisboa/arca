@@ -57,7 +57,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Approver | Aprovador | An account on the reviewed approver list who may activate or reject knowledge-base versions with a step-up |
 | Decision | Decisão | An approver's activation or rejection, stored with the step-up it consumed |
 | Step-up | Confirmação com chave de acesso | A fresh passkey verification for one sensitive action, bound to that action |
-| Content hash | Internal, no UI label | SHA-256 of the canonical JSON of a version and every file it pins; what a decision is bound to |
+| Content hash | Código do conteúdo | SHA-256 of the canonical JSON of a version and every file it pins; what a decision is bound to |
 | Passkey | Chave de acesso | The WebAuthn credential a person signs in and confirms sensitive actions with |
 | Knowledge catalog | Internal, no UI label | The validated, hashed route data that `packages/knowledge` builds and the API bundles; not the pnpm catalog of dependency versions |
 | Approver list | Internal, no UI label | The reviewed file in the repository that names the approvers by account ID, per environment |
@@ -73,6 +73,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Former country | País extinto | A state that no longer exists, with an ISO 3166-3 code, allowed only in citizenship and ancestry facts |
 | Owner | Responsável | The founder, who owns the repository and is the first approver; "founder" in product docs means the same person |
 | Active version | Versão ativa | A route version with a counted activation and no rejection; the only kind the engine evaluates for a case |
+| Rejected version | Versão recusada | A route version with a counted rejection; selection skips it for good |
 | Decisive missing fact | Dado decisivo pendente | An unknown fact whose answer could change an evaluation's status |
 | Eligible | Elegível | Evaluation status: every requirement holds |
 | Not eligible | Não elegível | Evaluation status: a requirement does not hold |

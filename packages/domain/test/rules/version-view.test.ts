@@ -104,6 +104,7 @@ describe('the activation view (spec 0007, R7)', () => {
     expect(shown?.replaces).toEqual({
       number: 1,
       changes: {
+        settings: { added: [], removed: [], changed: ['effectiveFrom'] },
         requirements: { added: ['clean-record'], removed: ['means'], changed: ['adult'] },
         assessments: { added: [], removed: [], changed: [] },
         dependents: { added: [], removed: [], changed: [] },
@@ -113,11 +114,67 @@ describe('the activation view (spec 0007, R7)', () => {
         countrySets: { added: [], removed: [], changed: [] },
       },
     });
-    expect(shown?.sources.map(({ id, url, newHost }) => [id, url, newHost])).toEqual([
-      ['law', 'https://www.gov.example/law', false],
-      ['guide', 'https://guide.example/route', true],
+    expect(shown?.sources.map(({ id, host, newHost }) => [id, host, newHost])).toEqual([
+      ['law', 'www.gov.example', false],
+      ['guide', 'guide.example', true],
     ]);
     expect(view(1)?.sources.map(({ newHost }) => newHost)).toEqual([true]);
+  });
+
+  it('names a setting that changed even when every item stayed the same', () => {
+    const leapDay = entry({ number: 2, leapDayBirthday: 'march-1' });
+    const shown = versionView({
+      versions: [first, leapDay],
+      number: 2,
+      cases: [],
+      states: new Map(),
+      today,
+      hostOf,
+    });
+    expect(shown?.replaces?.changes.settings).toEqual({
+      added: [],
+      removed: [],
+      changed: ['leapDayBirthday'],
+    });
+    expect(shown).toMatchObject({
+      leapDayBirthday: 'march-1',
+      leapDayBirthdaySources: ['law'],
+      referenceDates: [],
+      closureSources: [],
+    });
+  });
+
+  it('flags a source whose URL names no plain host as new, with no host', () => {
+    const odd = entry({
+      number: 2,
+      sources: [
+        ...sampleVersion.sources,
+        {
+          id: 'odd',
+          url: 'https://user@gov.example/law',
+          title: 'Odd',
+          kind: 'secondary',
+          verifiedAt: '2026-10-02',
+        },
+      ],
+    });
+    const plainHostOf = (url: string) => (url.includes('@') ? undefined : hostOf(url));
+    const shown = versionView({
+      versions: [first, odd],
+      number: 2,
+      cases: [],
+      states: new Map(),
+      today,
+      hostOf: plainHostOf,
+    });
+    expect(shown?.sources.map(({ id, host, newHost }) => [id, host, newHost])).toEqual([
+      ['law', 'www.gov.example', false],
+      ['odd', null, true],
+    ]);
+  });
+
+  it('writes money in the currency units, never in minor units', () => {
+    expect(view(1)?.costs[0]?.amount).toEqual({ op: 'money', amount: '100', currency: 'EUR' });
   });
 
   it('compares with the version a correction corrects', () => {

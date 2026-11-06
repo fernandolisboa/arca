@@ -208,6 +208,18 @@ describe('display catalog', () => {
     );
   });
 
+  it('fails as a relative import of a display module', async () => {
+    expect(await ruleIds('knowledge', ['knowledge'], 'src/relative-display.ts')).toContain(
+      'no-restricted-imports',
+    );
+  });
+
+  it('may not be re-exported where it may be imported', async () => {
+    expect(await ruleIds('api', ['api'], 'test/knowledge-versions.test.ts')).toContain(
+      'no-restricted-syntax',
+    );
+  });
+
   it('may be imported by the activation view', async () => {
     expect(await ruleIds('api', ['api'], 'src/knowledge/versions.ts')).not.toContain(
       'no-restricted-imports',

@@ -193,8 +193,26 @@ const displayOnly =
  *
  * @type {Restrictions}
  */
+// The entry point, and any relative import of a module or folder named display.
+const displayModule =
+  '^(?:@arca/knowledge/display|(?:\\.{1,2}/)+(?:[^/]+/)*display(?:\\.[jt]s|/.*)?)$';
+
 export const displayLookup = {
-  patterns: [{ regex: '^@arca/knowledge/display$', message: displayOnly }],
+  patterns: [{ regex: displayModule, message: displayOnly }],
+};
+
+/**
+ * The files allowed to import the display catalog may not re-export it with `export … from`.
+ *
+ * @type {Restrictions}
+ */
+export const displayReexport = {
+  syntax: [
+    {
+      selector: `:matches(ExportAllDeclaration, ExportNamedDeclaration)[source.value=/${selectorRegex(displayModule)}/]`,
+      message: displayOnly,
+    },
+  ],
 };
 
 /** The activation view in the API and the tests of it and of the display catalog. */

@@ -2,7 +2,6 @@ import { parseCalendarDate, versionView } from '@arca/domain';
 import { describe, expect, it } from 'vitest';
 import { displayCatalog } from '../src/display.ts';
 
-const hostOf = (url: string) => new URL(url).hostname;
 const routes = [...new Set(displayCatalog.entries().map(({ identity }) => identity.routeId))];
 
 describe('the display catalog (spec 0007, R7)', () => {
@@ -25,7 +24,7 @@ describe('the display catalog (spec 0007, R7)', () => {
         cases: displayCatalog.cases(first.identity.hash),
         states: new Map(),
         today: parseCalendarDate('2026-11-06'),
-        hostOf,
+        hostOf: displayCatalog.hostOf,
       });
       expect(view).toMatchObject({
         routeId,
@@ -40,9 +39,11 @@ describe('the display catalog (spec 0007, R7)', () => {
       ].flatMap((item) => item.facts);
       expect(facts.length).toBeGreaterThan(0);
       expect(facts.filter(({ key }) => key === null)).toEqual([]);
-      expect(view?.sources.every(({ newHost, url }) => newHost && url.startsWith('https://'))).toBe(
-        true,
-      );
+      expect(
+        view?.sources.every(
+          ({ newHost, host, url }) => newHost && host !== null && url.includes(host),
+        ),
+      ).toBe(true);
       expect(view?.cases.length).toBeGreaterThan(0);
     },
   );

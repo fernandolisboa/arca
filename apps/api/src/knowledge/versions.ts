@@ -4,7 +4,6 @@ import {
   type DecisionStates,
   type VersionView,
   compareDates,
-  parseCalendarDate,
   stateOf,
   versionView,
 } from '@arca/domain';
@@ -22,19 +21,6 @@ export interface KnowledgeVersionSettings {
   readonly today: () => CalendarDate;
   readonly catalog?: DisplayCatalog;
 }
-
-const hostOf = (url: string) => new URL(url).hostname;
-
-const saoPaulo = new Intl.DateTimeFormat('en-CA', {
-  timeZone: 'America/Sao_Paulo',
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-});
-
-/** Today's date in São Paulo. */
-export const todayInSaoPaulo = (now = new Date()): CalendarDate =>
-  parseCalendarDate(saoPaulo.format(now));
 
 /**
  * The activation screen's reads, the only place the display catalog is read: its content reaches
@@ -77,7 +63,7 @@ export function createKnowledgeVersions({
         cases: catalog.cases(entry.identity.hash),
         states: await states(),
         today: today(),
-        hostOf,
+        hostOf: catalog.hostOf,
       });
     },
   };

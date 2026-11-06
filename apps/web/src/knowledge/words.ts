@@ -1,16 +1,11 @@
+import type { VersionView } from '@arca/api-contract/client';
 import { useTranslation } from 'react-i18next';
 import { useNames } from '../questions/editors.js';
-import { formatAmount, formatDateValue, majorUnits } from '../questions/format.js';
+import { formatAmount, formatDateValue } from '../questions/format.js';
+import { durationParts } from './duration.js';
 
-/** A fact node of a version view: the reference as written and the catalog key it resolves to. */
-export interface FactWords {
-  readonly reference: string;
-  readonly key: string | null;
-  readonly target: string | null;
-}
-
-const durationPattern = /^P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?$/;
-const durationUnits = ['year', 'month', 'day'] as const;
+/** A fact of a version view: the reference as written and the catalog key it resolves to. */
+export type FactWords = VersionView['requirements'][number]['facts'][number];
 
 /** The words the activation screen names rule data with, in the screen's language. */
 export function useKnowledgeWords() {
@@ -27,20 +22,12 @@ export function useKnowledgeWords() {
     list,
     country,
     date: (value: string) => formatDateValue(value, language),
-    money: (amount: number, currency: string) => {
-      const digits =
-        new Intl.NumberFormat(language, { style: 'currency', currency }).resolvedOptions()
-          .maximumFractionDigits ?? 2;
-      return formatAmount({ amount: majorUnits(amount, digits), currency }, language);
-    },
+    // The view writes each amount in the currency's units, as a decimal.
+    money: (amount: string, currency: string) => formatAmount({ amount, currency }, language),
     duration: (value: string) => {
-      const match = durationPattern.exec(value);
-      if (match === null) return value;
-      const parts = durationUnits.flatMap((unit, index) => {
-        const count = Number(match[index + 1] ?? '0');
-        return count === 0 ? [] : [t(`knowledge.duration.${unit}`, { n: count })];
-      });
-      return list(parts);
+      const parts = durationParts(value);
+      if (parts === null) return value;
+      return list(parts.map(({ unit, count }) => t(`knowledge.duration.${unit}`, { n: count })));
     },
     fact: ({ reference, key, target }: FactWords) => {
       if (key === null || target === null) return reference;
@@ -50,6 +37,9 @@ export function useKnowledgeWords() {
       });
     },
     collection: (name: string) => labelled(`knowledge.collection.${name}`, name),
+    field: (name: string) => labelled(`knowledge.field.${name}`, name),
+    costKind: (kind: string) => labelled(`knowledge.costKinds.${kind}`, kind),
+    referenceDate: (name: string) => labelled(`knowledge.referenceDate.${name}`, name),
     step: (name: string) => labelled(`knowledge.step.${name}`, name),
     op: (op: string, values: Record<string, unknown>) =>
       i18n.exists(`knowledge.op.${op}`)

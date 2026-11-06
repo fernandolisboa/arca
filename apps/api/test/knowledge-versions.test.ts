@@ -1,7 +1,9 @@
 import { identityKey, parseCalendarDate } from '@arca/domain';
 import { displayCatalog } from '@arca/knowledge/display';
 import { describe, expect, it } from 'vitest';
-import { createKnowledgeVersions, todayInSaoPaulo } from '../src/knowledge/versions.js';
+import { VersionView } from '@arca/api-contract/routes';
+import { todayInSaoPaulo } from '../src/calendar.js';
+import { createKnowledgeVersions } from '../src/knowledge/versions.js';
 
 const [first] = displayCatalog.entries();
 if (first === undefined) throw new Error('the catalog is empty');
@@ -34,6 +36,14 @@ describe('the activation screen reads (spec 0007, R7)', () => {
     });
     expect(await versions.view(first.identity.routeId, 99)).toBeUndefined();
     expect(await versions.view('qm-none', 1)).toBeUndefined();
+  });
+
+  it('answers every bundled version in the shape of the contract', async () => {
+    for (const { identity } of displayCatalog.entries()) {
+      const view = await versions.view(identity.routeId, identity.number);
+      expect(VersionView.safeParse(view).error).toBeUndefined();
+      expect(view?.sources.every(({ host }) => host !== null)).toBe(true);
+    }
   });
 
   it('takes the date in São Paulo', () => {

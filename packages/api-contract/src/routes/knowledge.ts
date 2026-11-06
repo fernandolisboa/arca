@@ -56,7 +56,8 @@ export function decideVersionAction(
 }
 
 const decisionState = z.enum(['active', 'rejected', 'proposed']);
-const ids = z.array(z.string().max(64)).max(50);
+// A country set is named `<id>/<number>` in the changes; a setting by its field name.
+const ids = z.array(z.string().max(80)).max(50);
 
 export const KnowledgeVersion = z.object({
   routeId: routeIdSchema,
@@ -91,6 +92,7 @@ const factName = z.object({
 const facts = z.array(factName).max(200);
 const sourceIds = z.array(z.string().max(64)).max(20);
 const sectionChange = z.object({ added: ids, removed: ids, changed: ids });
+const pin = z.object({ id: z.string().max(64), number: z.int().min(1) });
 
 /** One version laid out for the approver (spec 0007, R7), built by `versionView` in the domain. */
 export const VersionView = z.object({
@@ -105,6 +107,11 @@ export const VersionView = z.object({
   corrects: z.int().min(1).nullable(),
   status: z.enum(['open', 'closed']),
   currency: z.string().regex(/^[A-Z]{3}$/),
+  leapDayBirthday: z.string().max(20).nullable(),
+  leapDayBirthdaySources: sourceIds,
+  referenceDates: z.array(z.string().max(32)).max(10),
+  closureSources: sourceIds,
+  pins: z.object({ countries: pin, formerCountries: pin, officialDomains: z.array(pin).max(10) }),
   requirements: z
     .array(
       z.object({
@@ -157,7 +164,9 @@ export const VersionView = z.object({
       }),
     )
     .max(20),
-  sources: z.array(sourceSchema.extend({ newHost: z.boolean() })).max(50),
+  sources: z
+    .array(sourceSchema.extend({ host: z.string().max(253).nullable(), newHost: z.boolean() }))
+    .max(50),
   replaces: z
     .object({
       number: z.int().min(1),
@@ -203,6 +212,7 @@ export const knowledgeRoutes = {
 export {
   type FactKey,
   collectionNames,
+  comparisonOperators,
   expressionOperators,
   factKeys,
   factTargets,

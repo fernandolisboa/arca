@@ -8,6 +8,7 @@ export {
   decideVersionAction,
   apiBasePath,
   collectionNames,
+  comparisonOperators,
   expressionOperators,
   factKeys,
   factTargets,

@@ -29788,6 +29788,102 @@
                       "type": "string",
                       "pattern": "^[A-Z]{3}$"
                     },
+                    "leapDayBirthday": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "maxLength": 20
+                    },
+                    "leapDayBirthdaySources": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "maxLength": 64
+                      },
+                      "maxItems": 20
+                    },
+                    "referenceDates": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "maxLength": 32
+                      },
+                      "maxItems": 10
+                    },
+                    "closureSources": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "maxLength": 64
+                      },
+                      "maxItems": 20
+                    },
+                    "pins": {
+                      "type": "object",
+                      "properties": {
+                        "countries": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "maxLength": 64
+                            },
+                            "number": {
+                              "type": "integer",
+                              "minimum": 1
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "number"
+                          ]
+                        },
+                        "formerCountries": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "maxLength": 64
+                            },
+                            "number": {
+                              "type": "integer",
+                              "minimum": 1
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "number"
+                          ]
+                        },
+                        "officialDomains": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "maxLength": 64
+                              },
+                              "number": {
+                                "type": "integer",
+                                "minimum": 1
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "number"
+                            ]
+                          },
+                          "maxItems": 10
+                        }
+                      },
+                      "required": [
+                        "countries",
+                        "formerCountries",
+                        "officialDomains"
+                      ]
+                    },
                     "requirements": {
                       "type": "array",
                       "items": {
@@ -30182,6 +30278,13 @@
                             "type": "string",
                             "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
                           },
+                          "host": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "maxLength": 253
+                          },
                           "newHost": {
                             "type": "boolean"
                           }
@@ -30192,6 +30295,7 @@
                           "title",
                           "kind",
                           "verifiedAt",
+                          "host",
                           "newHost"
                         ],
                         "additionalProperties": false
@@ -30211,14 +30315,14 @@
                         "changes": {
                           "type": "object",
                           "properties": {
-                            "requirements": {
+                            "settings": {
                               "type": "object",
                               "properties": {
                                 "added": {
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 64
+                                    "maxLength": 80
                                   },
                                   "maxItems": 50
                                 },
@@ -30226,7 +30330,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 64
+                                    "maxLength": 80
                                   },
                                   "maxItems": 50
                                 },
@@ -30234,7 +30338,41 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 64
+                                    "maxLength": 80
+                                  },
+                                  "maxItems": 50
+                                }
+                              },
+                              "required": [
+                                "added",
+                                "removed",
+                                "changed"
+                              ]
+                            },
+                            "requirements": {
+                              "type": "object",
+                              "properties": {
+                                "added": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "maxLength": 80
+                                  },
+                                  "maxItems": 50
+                                },
+                                "removed": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "maxLength": 80
+                                  },
+                                  "maxItems": 50
+                                },
+                                "changed": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "maxLength": 80
                                   },
                                   "maxItems": 50
                                 }
@@ -30252,7 +30390,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 64
+                                    "maxLength": 80
                                   },
                                   "maxItems": 50
                                 },
@@ -30260,7 +30398,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 64
+                                    "maxLength": 80
                                   },
                                   "maxItems": 50
                                 },
@@ -30268,7 +30406,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 64
+                                    "maxLength": 80
                                   },
                                   "maxItems": 50
                                 }
@@ -30286,7 +30424,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 64
+                                    "maxLength": 80
                                   },
                                   "maxItems": 50
                                 },
@@ -30294,7 +30432,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 64
+                                    "maxLength": 80
                                   },
                                   "maxItems": 50
                                 },
@@ -30302,7 +30440,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 64
+                                    "maxLength": 80
                                   },
                                   "maxItems": 50
                                 }
@@ -30320,7 +30458,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 64
+                                    "maxLength": 80
                                   },
                                   "maxItems": 50
                                 },
@@ -30328,7 +30466,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 64
+                                    "maxLength": 80
                                   },
                                   "maxItems": 50
                                 },
@@ -30336,7 +30474,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 64
+                                    "maxLength": 80
                                   },
                                   "maxItems": 50
                                 }
@@ -30354,7 +30492,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 64
+                                    "maxLength": 80
                                   },
                                   "maxItems": 50
                                 },
@@ -30362,7 +30500,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 64
+                                    "maxLength": 80
                                   },
                                   "maxItems": 50
                                 },
@@ -30370,7 +30508,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 64
+                                    "maxLength": 80
                                   },
                                   "maxItems": 50
                                 }
@@ -30388,7 +30526,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 64
+                                    "maxLength": 80
                                   },
                                   "maxItems": 50
                                 },
@@ -30396,7 +30534,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 64
+                                    "maxLength": 80
                                   },
                                   "maxItems": 50
                                 },
@@ -30404,7 +30542,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 64
+                                    "maxLength": 80
                                   },
                                   "maxItems": 50
                                 }
@@ -30422,7 +30560,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 64
+                                    "maxLength": 80
                                   },
                                   "maxItems": 50
                                 },
@@ -30430,7 +30568,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 64
+                                    "maxLength": 80
                                   },
                                   "maxItems": 50
                                 },
@@ -30438,7 +30576,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "maxLength": 64
+                                    "maxLength": 80
                                   },
                                   "maxItems": 50
                                 }
@@ -30451,6 +30589,7 @@
                             }
                           },
                           "required": [
+                            "settings",
                             "requirements",
                             "assessments",
                             "dependents",
@@ -30590,6 +30729,11 @@
                     "corrects",
                     "status",
                     "currency",
+                    "leapDayBirthday",
+                    "leapDayBirthdaySources",
+                    "referenceDates",
+                    "closureSources",
+                    "pins",
                     "requirements",
                     "assessments",
                     "dependents",
