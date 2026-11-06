@@ -205,6 +205,26 @@ export const getVersionView = {
   response: { description: 'The version', schema: VersionView },
 } as const satisfies RouteDefinition<typeof VersionView>;
 
+/**
+ * A model's reading of one version for the approver (ADR-0025): an aid to review, never a decision.
+ * Plain text only; the screen renders it as text, so no link or image in it is ever followed.
+ */
+export const RuleSummary = z.strictObject({
+  overview: z.string().trim().min(1).max(1_500),
+  watchPoints: z.array(z.string().trim().min(1).max(600)).max(8),
+});
+export type RuleSummary = z.infer<typeof RuleSummary>;
+
+export const summarizeVersion = {
+  method: 'post',
+  path: '/knowledge/versions/summary',
+  operationId: 'summarizeVersion',
+  summary:
+    "Sends one version's content (public rule data, no case data) to a model and answers a short summary with points to check, for an approver; the same content answers the same summary while the server runs. 30 per account per day and 5 per minute (429 rate_limited); 403 not_approver; 404 not_found; 502 summary_unparsable or summary_failed; 503 summary_unavailable when no model can be reached; 504 summary_timeout",
+  body: DecideVersionRequest,
+  response: { description: 'The summary', schema: RuleSummary },
+} as const satisfies RouteDefinition<typeof RuleSummary>;
+
 const ruleReference = {
   routeId: routeIdSchema,
   versionNumber: z.int().min(1).max(1_000_000),
@@ -252,6 +272,7 @@ export const knowledgeRoutes = {
   rejectVersion,
   listKnowledgeVersions,
   getVersionView,
+  summarizeVersion,
   listRuleReports,
   closeRuleReports,
 } as const;

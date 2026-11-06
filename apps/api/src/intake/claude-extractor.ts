@@ -1,41 +1,16 @@
-import { createAnthropic } from '@ai-sdk/anthropic';
 import { intakeDraftSchema } from '@arca/domain';
-import { APICallError, type JSONSchema7, Output, generateText, jsonSchema } from 'ai';
+import type { JSONSchema7 } from 'ai';
 import { z } from 'zod';
-import { type Extractor, ExtractorError, type ExtractorFailure } from './extractor.js';
+import { ClaudeCallError, type ClaudeSettings, claudeClient } from '../ai/claude.js';
+import { type Extractor, ExtractorError } from './extractor.js';
 import { intakeModel } from './model.js';
 import { intakeInstructions, intakeMessage, intakePromptVersion } from './prompt.js';
 
-export interface ClaudeExtractorSettings {
-  readonly apiKey: string;
-  /** For tests: the HTTP client the provider calls. */
-  readonly fetch?: typeof globalThis.fetch;
+export interface ClaudeExtractorSettings extends ClaudeSettings {
   readonly timeoutMs?: number;
 }
 
-/** Pinned in code: the provider would otherwise take `ANTHROPIC_BASE_URL` from the environment. */
-export const anthropicBaseUrl = 'https://api.anthropic.com/v1';
-
 const draftJsonSchema = z.toJSONSchema(intakeDraftSchema, { io: 'input' }) as JSONSchema7;
-const parsedByTheApi = new Set(['AI_JSONParseError', 'AI_TypeValidationError']);
-
-/**
- * The SDK's own errors carry the request body (the masked text) or the model's reply, so none of
- * them leaves this file: each becomes a fixed code, with no message and no cause.
- */
-function failureOf(error: unknown): ExtractorFailure {
-  if (error instanceof Error && (error.name === 'AbortError' || error.name === 'TimeoutError')) {
-    return 'intake_timeout';
-  }
-  if (APICallError.isInstance(error)) return 'intake_unavailable';
-  if (
-    error instanceof Error &&
-    (parsedByTheApi.has(error.name) || /NoObject|NoContent/.test(error.name))
-  ) {
-    return 'intake_unparsable';
-  }
-  return 'intake_failed';
-}
 
 /**
  * The Claude adapter of the `Extractor` port (spec 0008, R1): one call with structured output
@@ -43,43 +18,28 @@ function failureOf(error: unknown): ExtractorFailure {
  * nothing; the API retries an unparsable reply once.
  */
 export function claudeExtractor({
-  apiKey,
-  fetch,
   timeoutMs = 25_000,
+  ...settings
 }: ClaudeExtractorSettings): Extractor {
-  const anthropic = createAnthropic({
-    apiKey,
-    baseURL: anthropicBaseUrl,
-    ...(fetch === undefined ? {} : { fetch }),
-  });
+  const claude = claudeClient(settings);
   return {
     async draft(maskedText, knownPlaceholders, writerPlaceholder) {
       try {
-        const result = await generateText({
-          model: anthropic(intakeModel),
+        const { output, ...usage } = await claude.object({
+          model: intakeModel,
           instructions: intakeInstructions,
           prompt: intakeMessage(maskedText, knownPlaceholders, writerPlaceholder),
-          output: Output.object({ schema: jsonSchema(draftJsonSchema), name: 'intake_draft' }),
+          schema: draftJsonSchema,
+          schemaName: 'intake_draft',
           maxOutputTokens: 8_192,
+          timeoutMs,
           // Extraction needs no reasoning, and thinking tokens would count against the cap.
-          providerOptions: { anthropic: { thinking: { type: 'disabled' } } },
-          maxRetries: 0,
-          abortSignal: AbortSignal.timeout(timeoutMs),
-          telemetry: { isEnabled: false, recordInputs: false, recordOutputs: false },
+          anthropic: { thinking: { type: 'disabled' } },
         });
-        return {
-          reply: result.output,
-          model: intakeModel,
-          promptVersion: intakePromptVersion,
-          ...(result.usage.inputTokens === undefined
-            ? {}
-            : { inputTokens: result.usage.inputTokens }),
-          ...(result.usage.outputTokens === undefined
-            ? {}
-            : { outputTokens: result.usage.outputTokens }),
-        };
+        return { reply: output, model: intakeModel, promptVersion: intakePromptVersion, ...usage };
       } catch (error) {
-        throw new ExtractorError(failureOf(error));
+        if (error instanceof ClaudeCallError) throw new ExtractorError(`intake_${error.kind}`);
+        throw error;
       }
     },
   };

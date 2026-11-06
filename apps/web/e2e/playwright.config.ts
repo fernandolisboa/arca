@@ -65,6 +65,7 @@ export default defineConfig({
               NITRO_DATABASE_NAME: databaseServer.database.name,
               ARCA_ENROLLMENT_CODE_HASH: e2eEnrollmentCodeHash,
               ARCA_INTAKE_EXTRACTOR: 'scripted',
+              ARCA_RULE_SUMMARIZER: 'scripted',
             },
             reuseExistingServer: false,
           },

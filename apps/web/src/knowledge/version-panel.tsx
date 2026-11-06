@@ -4,6 +4,7 @@ import { Button, Icon, StatusChip, menuItemClass } from '@arca/ui';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Decision } from './decision.js';
 import { ExpressionTree } from './expression-tree.js';
+import { RuleSummary } from './rule-summary.js';
 import { stateTone } from './state-tone.js';
 import { reviewSteps, sectionCounts, type Step, type StepKey } from './steps.js';
 import { type KnowledgeWords, useKnowledgeWords } from './words.js';
@@ -431,6 +432,7 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
           ].join(' · ')}
         </p>
       </header>
+      <RuleSummary view={view} />
       <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-10">
         <nav aria-label={t('knowledge.wizard.steps')}>
           <ol className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 lg:sticky lg:top-4 lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:px-0 lg:pb-0">

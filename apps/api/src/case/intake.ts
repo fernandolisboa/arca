@@ -15,13 +15,9 @@ import {
   withWriter,
 } from '@arca/domain';
 import type { Logger } from '@arca/telemetry';
+import { loggedModelCall, modelAttempts, parsedWithOneRetry } from '../ai/model-call.js';
 import type { AuditLog } from '../audit/log.js';
-import {
-  type Extractor,
-  ExtractorError,
-  type ExtractorFailure,
-  type ExtractorReply,
-} from '../intake/extractor.js';
+import { type Extractor, ExtractorError, type ExtractorFailure } from '../intake/extractor.js';
 import { playbackVisibility } from './playback.js';
 import { type CaseRows, readCase } from './view.js';
 
@@ -97,7 +93,7 @@ export async function readIntakeDraft(
 }
 
 /** Model calls one draft may take: the first and one retry on an unparsable reply. */
-export const draftAttempts = 2;
+export const draftAttempts = modelAttempts;
 
 async function parsedDraft(
   extractor: Extractor,
@@ -105,17 +101,19 @@ async function parsedDraft(
   onUnparsable: () => void,
 ): Promise<IntakeDraft> {
   const known = new Set(placeholders.keys());
-  for (let attempt = 0; attempt < draftAttempts; attempt += 1) {
-    try {
-      const { reply } = await extractor.draft(masked, [...known], writer);
+  return parsedWithOneRetry(
+    async () => (await extractor.draft(masked, [...known], writer)).reply,
+    (reply) => {
       const parsed = parseIntakeDraft(reply, known);
-      if (parsed !== undefined) return keepStatedDates(parsed, masked);
-      onUnparsable();
-    } catch (error) {
-      if (!(error instanceof ExtractorError) || error.code !== 'intake_unparsable') throw error;
-    }
-  }
-  throw new ExtractorError('intake_unparsable');
+      return parsed === undefined ? undefined : keepStatedDates(parsed, masked);
+    },
+    {
+      isUnparsable: (error) =>
+        error instanceof ExtractorError && error.code === 'intake_unparsable',
+      unparsable: () => new ExtractorError('intake_unparsable'),
+      onUnparsable,
+    },
+  );
 }
 
 /**
@@ -131,27 +129,17 @@ export function createCaseIntake({
   today,
   now,
 }: CaseIntakeSettings): CaseIntake {
-  const call: Extractor['draft'] = async (masked, known, writer): Promise<ExtractorReply> => {
-    const started = now();
-    try {
-      const reply = await extractor.draft(masked, known, writer);
-      logger.info({
-        route,
-        model: reply.model,
-        promptVersion: reply.promptVersion,
-        ...(reply.inputTokens === undefined ? {} : { inputTokens: reply.inputTokens }),
-        ...(reply.outputTokens === undefined ? {} : { outputTokens: reply.outputTokens }),
-        durationMs: now() - started,
-      });
-      return reply;
-    } catch (error) {
-      const code = error instanceof ExtractorError ? error.code : 'intake_failed';
-      logger.error({ route, errorCode: code, durationMs: now() - started });
-      throw new ExtractorError(code);
-    }
+  const logged: Extractor = {
+    draft: (masked, known, writer) =>
+      loggedModelCall(
+        () => extractor.draft(masked, known, writer),
+        { route, logger, now },
+        (error) =>
+          error instanceof ExtractorError
+            ? new ExtractorError(error.code)
+            : new ExtractorError('intake_failed'),
+      ),
   };
-
-  const logged: Extractor = { draft: call };
   const onUnparsable = () => {
     logger.error({ route, errorCode: 'intake_unparsable' });
   };

@@ -29,6 +29,8 @@ import { approvers } from './knowledge/approvers.js';
 import { createKnowledgeDecisions, type KnowledgeDecisions } from './knowledge/decisions.js';
 import { todayInSaoPaulo } from './calendar.js';
 import { createRuleReportReview } from './knowledge/reports.js';
+import { createRuleSummaries } from './knowledge/summaries.js';
+import { summarizerFor } from './knowledge/summary/environment.js';
 import { createKnowledgeVersions } from './knowledge/versions.js';
 import {
   databaseTargetFrom,
@@ -43,6 +45,7 @@ import {
   readEnrollmentCodeHash,
   readOwnOrigin,
   readScriptedIntake,
+  readScriptedRuleSummary,
   readRateLimitKey,
   readVapidPrivateKey,
 } from './config.js';
@@ -276,6 +279,21 @@ const intake =
         now: () => performance.now(),
       });
 
+const knowledgeVersions = createKnowledgeVersions({
+  states: () => knowledgeDecisions().states(),
+  today: () => todayInSaoPaulo(),
+});
+const summarizer = summarizerFor(environment, readAnthropicApiKey(), readScriptedRuleSummary());
+const ruleSummaries =
+  summarizer === undefined
+    ? undefined
+    : createRuleSummaries({
+        versions: knowledgeVersions,
+        summarizer,
+        logger,
+        now: () => performance.now(),
+      });
+
 const monitored = startMonitoring({ environment, origin: ownOrigin });
 const tunnel = tunnelFor({ environment, origin: ownOrigin, send: sendToSentry });
 
@@ -441,10 +459,8 @@ const app = createApp({
   },
   ...(intake === undefined ? {} : { intake }),
   ruleReports: createRuleReportReview(() => connected().db),
-  knowledgeVersions: createKnowledgeVersions({
-    states: () => knowledgeDecisions().states(),
-    today: () => todayInSaoPaulo(),
-  }),
+  knowledgeVersions,
+  ...(ruleSummaries === undefined ? {} : { ruleSummaries }),
   accountConfirmed: (accountId) => accounts.isConfirmed(authConnection(), accountId),
   notifications: {
     channels: {

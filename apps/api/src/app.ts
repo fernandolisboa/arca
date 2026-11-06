@@ -78,6 +78,7 @@ import {
   caseLimits,
   deviceLimits,
   intakeLimits,
+  ruleSummaryLimits,
   inviteLimits,
   monitoringLimits,
   documentLimits,
@@ -107,6 +108,7 @@ import type { CaseIntake } from './case/intake.js';
 import type { DecisionKind } from '@arca/domain';
 import type { DecisionOutcome, KnowledgeDecisions } from './knowledge/decisions.js';
 import type { RuleReportReview } from './knowledge/reports.js';
+import type { RuleSummaries } from './knowledge/summaries.js';
 import type { KnowledgeVersions } from './knowledge/versions.js';
 import type { DocumentRequests } from './vault/documents.js';
 import {
@@ -196,6 +198,11 @@ export interface AppDependencies {
   readonly knowledge?: KnowledgeDecisions;
   /** The activation screen's reads (spec 0007, R7); absent, their routes answer 401. */
   readonly knowledgeVersions?: KnowledgeVersions;
+  /**
+   * A model's summary of one version for the approver (ADR-0025); absent, as without a model key,
+   * the route answers 503 `summary_unavailable` and the version reads as before.
+   */
+  readonly ruleSummaries?: RuleSummaries;
   /** Approvers' view of members' rule reports (spec 0007, R8); absent, its routes answer 401. */
   readonly ruleReports?: RuleReportReview;
   /** Whether the account's inviter confirmed it, read on the app_auth pool (spec 0003, R2). */
@@ -281,6 +288,10 @@ export type ErrorCode =
   | 'intake_timeout'
   | 'intake_unavailable'
   | 'intake_failed'
+  | 'summary_unparsable'
+  | 'summary_timeout'
+  | 'summary_unavailable'
+  | 'summary_failed'
   | 'internal_error';
 
 /** The session a request is signed in with, and what its account's passkeys say about it. */
@@ -405,6 +416,7 @@ export function createApp({
   intake,
   knowledge,
   knowledgeVersions,
+  ruleSummaries,
   ruleReports,
   accountConfirmed,
   memoryObjects,
@@ -1421,7 +1433,7 @@ export function createApp({
     if (!knowledge.isApprover(current.accountId)) {
       return { refused: fail(c, 'not_approver', 403) };
     }
-    return { versions: knowledgeVersions };
+    return { versions: knowledgeVersions, current };
   };
   v1.openapi(openApiRoutes.listKnowledgeVersions, async (c) => {
     const reads = await approverReads(c);
@@ -1434,6 +1446,29 @@ export function createApp({
     const { routeId, number } = VersionViewQuery.parse(c.req.query());
     const view = await reads.versions.view(routeId, number);
     return view === undefined ? fail(c, 'not_found', 404) : c.json(VersionView.parse(view), 200);
+  });
+  const summaryFailures = {
+    not_found: 404,
+    summary_unparsable: 502,
+    summary_failed: 502,
+    summary_unavailable: 503,
+    summary_timeout: 504,
+  } as const;
+  v1.openapi(openApiRoutes.summarizeVersion, async (c) => {
+    const reads = await approverReads(c);
+    if ('refused' in reads) return reads.refused;
+    const { routeId, number } = DecideVersionRequest.parse(await c.req.json());
+    if (ruleSummaries === undefined || authLimits === undefined) {
+      return fail(c, 'summary_unavailable', 503);
+    }
+    for (const rule of [ruleSummaryLimits.minute, ruleSummaryLimits.day]) {
+      const limited = await overLimit(c, authLimits, rule, reads.current.accountId);
+      if (limited !== undefined) return limited;
+    }
+    const outcome = await ruleSummaries.summarize(routeId, number);
+    return outcome.ok
+      ? c.json(outcome.value, 200)
+      : fail(c, outcome.reason, summaryFailures[outcome.reason]);
   });
   const reportReview = async (c: Context<AppEnv>) => {
     const reads = await approverReads(c);

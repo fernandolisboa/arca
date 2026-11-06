@@ -862,6 +862,17 @@ export const ptBR = {
     caseDetails:
       'Regras de {date} · {dependents, plural, =0 {nenhum dependente} one {# dependente} other {# dependentes}} · {possible, plural, =0 {nenhum possível dependente} one {# possível dependente} other {# possíveis dependentes}}',
     caseMissing: 'Faltam: {facts}',
+    summary: {
+      button: 'Resumir esta regra',
+      pending: 'Lendo a regra…',
+      title: 'Resumo feito pela IA',
+      watchPoints: 'Pontos de atenção',
+      noWatchPoints: 'A IA não apontou pontos de atenção.',
+      note: 'A IA pode errar. Use o resumo para ler mais rápido e confira a regra e as fontes antes de ativar ou recusar.',
+      failure:
+        '{reason, select, summary_unavailable {O resumo não está disponível agora. A regra continua aqui para você ler.} summary_timeout {A IA demorou demais. Tente de novo.} summary_unparsable {A IA não conseguiu montar um resumo desta vez. Tente de novo.} limited {Você pediu muitos resumos. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+      retry: 'Tentar de novo',
+    },
     check: {
       title: 'Verificação independente',
       body: 'A verificação independente ainda não existe. Por enquanto, abra as fontes e confira por conta própria antes de decidir.',

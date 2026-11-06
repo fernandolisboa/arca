@@ -114,6 +114,7 @@ export const openApiRoutes = {
   rejectVersion: toOpenApiRoute(routes.rejectVersion),
   listKnowledgeVersions: toOpenApiRoute(routes.listKnowledgeVersions),
   getVersionView: toOpenApiRoute(routes.getVersionView),
+  summarizeVersion: toOpenApiRoute(routes.summarizeVersion),
   listRuleReports: toOpenApiRoute(routes.listRuleReports),
   closeRuleReports: toOpenApiRoute(routes.closeRuleReports),
 } as const;

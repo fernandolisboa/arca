@@ -82,6 +82,15 @@ export const intakeLimits = {
 } as const satisfies Record<string, RateLimitRule>;
 
 /**
+ * Rule summaries per approver (ADR-0025): a request the cache misses is one model call, two when
+ * the first reply does not parse.
+ */
+export const ruleSummaryLimits = {
+  day: { name: 'rule_summary_day', limit: 30, windowSeconds: 24 * hour },
+  minute: { name: 'rule_summary_minute', limit: 5, windowSeconds: 60 },
+} as const satisfies Record<string, RateLimitRule>;
+
+/**
  * Limits on recovery (spec 0003, R10): starting is per email HMAC and per IP; the link's token is
  * 256 random bits and five wrong codes lock the account's recovery, so the rest bound load.
  */
