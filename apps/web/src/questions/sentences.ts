@@ -19,7 +19,10 @@ export function sentenceText(
   const date = (value: string) => formatDateValue(value, language);
   const list = (items: readonly string[]) =>
     new Intl.ListFormat(language, { type: 'conjunction' }).format(items);
-  const when = (key: 'since' | 'until' | 'in' | 'startSince' | 'from' | 'sold', value?: string) =>
+  const when = (
+    key: 'since' | 'until' | 'in' | 'startSince' | 'from' | 'custodySince' | 'sold',
+    value?: string,
+  ) =>
     value === undefined || value === 'none' ? '' : t(`playback.part.${key}`, { date: date(value) });
   switch (said.kind) {
     case 'profileHidden':
@@ -143,7 +146,7 @@ export function sentenceText(
             ? ''
             : t('playback.part.parentKind', { parentKind: said.parentKind }),
           said.custody === undefined
-            ? ''
+            ? when('custodySince', said.custodyStart)
             : t('playback.part.custody', { custody: said.custody }) +
               when('startSince', said.custodyStart),
         ].join(''),

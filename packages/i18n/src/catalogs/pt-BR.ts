@@ -601,6 +601,7 @@ export const ptBR = {
       in: ', em {date}',
       startSince: ' desde {date}',
       from: ' de {date}',
+      custodySince: ', guarda desde {date}',
       temporary: ', temporária',
       parentKind: ', filiação {parentKind, select, biological {biológica} other {adotiva}}',
       custody:

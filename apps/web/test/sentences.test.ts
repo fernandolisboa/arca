@@ -1,4 +1,4 @@
-import type { Sentence } from '@arca/api-contract/client';
+import { routes } from '@arca/api-contract/client';
 import { createI18n } from '@arca/i18n';
 import { describe, expect, it } from 'vitest';
 import { sentenceText } from '../src/questions/sentences.js';
@@ -11,7 +11,8 @@ const names = new Map([
 const regions = new Intl.DisplayNames(['pt-BR'], { type: 'region' });
 const languages = new Intl.DisplayNames(['pt-BR'], { type: 'language' });
 
-const as = (sentence: Record<string, unknown>) => sentence as Sentence;
+const as = (sentence: Record<string, unknown>) =>
+  routes.getCasePlayback.response.schema.shape.sentences.element.parse(sentence);
 const ana = { about: ['a'], person: 'a' };
 
 describe('wording the case summary in pt-BR (spec 0007, R5)', () => {
@@ -127,6 +128,10 @@ describe('wording the case summary in pt-BR (spec 0007, R5)', () => {
         custodyStart: '2016',
       },
       'Ana é mãe ou pai de Lia desde 2018, filiação adotiva, guarda compartilhada desde 2016.',
+    ],
+    [
+      { kind: 'parent', about: ['a', 'c'], parent: 'a', child: 'c', custodyStart: '2016-02' },
+      'Ana é mãe ou pai de Lia, guarda desde fevereiro de 2016.',
     ],
     [
       {

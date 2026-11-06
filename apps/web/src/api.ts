@@ -60,6 +60,8 @@ export const casePlaybackQuery = queryOptions({
   queryFn: () => api.call(routes.getCasePlayback),
   networkMode: 'always',
   retry: false,
+  // Each read counts against a per-session limit, so a tab coming back into view does not read.
+  refetchOnWindowFocus: false,
 });
 
 /** The account's passkeys, each with its sessions (spec 0003, R4). */
