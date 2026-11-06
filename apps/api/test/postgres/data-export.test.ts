@@ -76,6 +76,15 @@ describe('data export (spec 0004, R8)', () => {
     expect(text).not.toContain(a.credentialId);
   });
 
+  it('writes amounts and shares as exact decimal text', async () => {
+    const a = await seeded(testDatabase);
+    const document = await exportsWith().build(a.accountId);
+    const rowsOf = (name: string) =>
+      document.tables.find(({ table }) => table === name)?.rows ?? [];
+    expect(rowsOf('cases.asset')[0]?.['value_amount']).toBe('1000');
+    expect(rowsOf('cases.asset_owner')[0]?.['share']).toBe('1.000000');
+  });
+
   it('writes timestamps in ISO 8601', async () => {
     const a = await seeded(testDatabase);
     const document = await exportsWith().build(a.accountId);

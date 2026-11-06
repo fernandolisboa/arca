@@ -43,15 +43,18 @@ const column = (alias: string, name: string) =>
 /**
  * The entry's projection as one JSON object per row, so timestamps come out in ISO 8601. A bytea
  * value is ciphertext or key material (spec 0005, R6): the export carries the placeholder instead
- * of any byte of it. A JSON value, such as a profile's facts, comes out as its JSON text.
+ * of any byte of it. A JSON value, such as a profile's facts, comes out as its JSON text, and a
+ * 64-bit integer or a numeric, such as an asset's amount or an owner's share, as its decimal text,
+ * so no reader rounds it. The registry guard allows exactly these types.
  */
 function projection(entry: RegistryEntry, placeholder: string): SQL {
   const pairs = entry.export.map((name) => {
     const value = column('t', name);
     const type = sql`pg_catalog.pg_typeof(${value})`;
-    return sql`${name}::text, CASE WHEN ${type} = 'bytea'::pg_catalog.regtype
+    return sql`${name}::text, CASE WHEN ${type} = 'pg_catalog.bytea'::pg_catalog.regtype
       THEN pg_catalog.to_jsonb(${placeholder}::text)
-      WHEN ${type} = 'jsonb'::pg_catalog.regtype THEN pg_catalog.to_jsonb(${value}::text)
+      WHEN ${type} IN ('pg_catalog.jsonb'::pg_catalog.regtype, 'pg_catalog.int8'::pg_catalog.regtype,
+        'pg_catalog.numeric'::pg_catalog.regtype) THEN pg_catalog.to_jsonb(${value}::text)
       ELSE pg_catalog.to_jsonb(${value}) END`;
   });
   return sql`pg_catalog.jsonb_build_object(${sql.join(pairs, sql`, `)})`;

@@ -62,9 +62,12 @@ export async function readCatalog(client: Pick<ClientBase, 'query'>): Promise<Ca
   );
   const columns = await client.query<{ name: string; column: string } & Column>(
     `SELECT ${qualified} AS name, a.attname AS column, pg_catalog.quote_ident(a.attname) AS quoted,
-            a.attnotnull AS "notNull", t.typname AS type
+            a.attnotnull AS "notNull",
+            CASE WHEN t.typnamespace = 'pg_catalog'::pg_catalog.regnamespace THEN t.typname::text
+                 ELSE tn.nspname || '.' || t.typname END AS type
        FROM pg_catalog.pg_attribute a
        JOIN pg_catalog.pg_type t ON t.oid = a.atttypid
+       JOIN pg_catalog.pg_namespace tn ON tn.oid = t.typnamespace
        JOIN pg_catalog.pg_class c ON c.oid = a.attrelid
        JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
       WHERE c.relkind IN ('r', 'p') AND ${userSchemas} AND a.attnum > 0 AND NOT a.attisdropped`,
@@ -123,8 +126,10 @@ export async function readCatalog(client: Pick<ClientBase, 'query'>): Promise<Ca
 
 /**
  * The types an export projection may carry: scalars the contract's values hold, plus `bytea`,
- * which the export always masks. A domain, an array or JSON would slip past the mask or the
- * contract, so it fails here instead of in an export. No `uuid`: identifiers stay out of exports
+ * which the export always masks, and `int8`, `numeric` and `jsonb`, which it carries as text. Only
+ * built-in types count: any other type is named with its schema, so a domain, even one named
+ * `bytea`, fails here, as do an array, plain JSON or a float, instead of slipping past the mask,
+ * the contract or exact values in an export. No `uuid`: identifiers stay out of exports
  * until a projection needs one and says why.
  */
 const exportableTypes = new Set([
@@ -133,6 +138,9 @@ const exportableTypes = new Set([
   'bool',
   'int2',
   'int4',
+  'int8',
+  'numeric',
+  'jsonb',
   'date',
   'timestamptz',
   'bytea',
