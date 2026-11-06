@@ -1663,6 +1663,7 @@ export const webPathSegments = [
   'family',
   'invite',
   'invites',
+  'questions',
   'recover',
   'recovery-kit',
   'settings',

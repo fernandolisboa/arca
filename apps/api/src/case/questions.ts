@@ -1,11 +1,5 @@
 import type { CaseQuestions } from '@arca/api-contract/routes';
-import {
-  type QuestionState,
-  answerOf,
-  questionFlow,
-  questionSteps,
-  relatedBy,
-} from '@arca/domain';
+import { type QuestionState, answerOf, questionFlow, questionSteps, relatedBy } from '@arca/domain';
 import type { PinnedCountries } from '@arca/knowledge';
 import type { CaseRows } from './view.js';
 

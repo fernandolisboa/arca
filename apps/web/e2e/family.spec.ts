@@ -1,29 +1,13 @@
-import { expect, test, type Page } from '@playwright/test';
-import { newCredential, virtualAuthenticator, withoutAutofill } from './passkeys.js';
-import { linkAccounts, resetRateLimits, seedAccount } from './postgres/accounts.js';
-import { reportViolations, watchProblems } from './problems.js';
+import { expect, test } from '@playwright/test';
+import { card, signedIn } from './case-accounts.js';
+import { linkAccounts, resetRateLimits } from './postgres/accounts.js';
+import { watchProblems } from './problems.js';
 import { databaseServer } from './servers.js';
 
 test.skip(!databaseServer.enabled, 'needs ARCA_E2E_DATABASE and a Postgres (see README)');
 test.beforeAll(async () => {
   await resetRateLimits();
 });
-
-/** A confirmed synthetic account signed in on its own page. */
-async function signedIn(page: Page) {
-  const credential = newCredential();
-  const { userId, email } = await seedAccount(credential, undefined, { confirmed: true });
-  await virtualAuthenticator(page, credential, { userId });
-  await withoutAutofill(page);
-  await reportViolations(page);
-  await page.goto(`${databaseServer.origin}/sign-in`);
-  await page.getByRole('button', { name: 'Entrar com chave de acesso' }).click();
-  await expect(page.getByText(`Você entrou como ${email}.`)).toBeVisible();
-  return userId;
-}
-
-const card = (page: Page, name: string) =>
-  page.getByRole('listitem').filter({ has: page.getByText(name, { exact: true }) });
 
 test('starts a case, adds people, shares a child with a member and tells them', async ({
   page,

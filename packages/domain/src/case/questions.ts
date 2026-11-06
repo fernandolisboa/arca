@@ -114,7 +114,7 @@ const needed = <Key extends string>(key: Key, input: FieldInput) =>
 const maybe = <Key extends string>(key: Key, input: FieldInput) =>
   ({ key, input, optional: true }) as const;
 const fact = (key: FactKey) => ({ kind: 'fact', key }) as const;
-const marker = (id: string, value: ProfileMarker) =>
+const marker = <Id extends string>(id: Id, value: ProfileMarker) =>
   ({
     id,
     step: 'family',

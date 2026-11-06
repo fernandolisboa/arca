@@ -328,12 +328,7 @@ async function saveHeldAssets(
   }
 }
 
-export function createCaseFiles({
-  db,
-  audit,
-  today,
-  countries,
-}: CaseFilesSettings): CaseFiles {
+export function createCaseFiles({ db, audit, today, countries }: CaseFilesSettings): CaseFiles {
   const known = {
     countries: new Set(countries.countries),
     formerCountries: new Set(countries.formerCountries),

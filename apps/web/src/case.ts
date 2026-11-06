@@ -23,7 +23,8 @@ type CaseRoute =
   | typeof routes.addCaseRelationship
   | typeof routes.removeCaseRelationship
   | typeof routes.handOverCasePerson
-  | typeof routes.addCaseMember;
+  | typeof routes.addCaseMember
+  | typeof routes.answerCaseQuestions;
 
 /** A write, after a `sensitive_settings` step-up when it names one. */
 export async function writeCase<Route extends CaseRoute>(

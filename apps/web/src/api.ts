@@ -46,6 +46,14 @@ export const caseQuery = queryOptions({
   retry: false,
 });
 
+/** The guided questions of the people the account keeps, with their answers (spec 0007, R4). */
+export const caseQuestionsQuery = queryOptions({
+  queryKey: ['case', 'questions'],
+  queryFn: () => api.call(routes.getCaseQuestions),
+  networkMode: 'always',
+  retry: false,
+});
+
 /** The account's passkeys, each with its sessions (spec 0003, R4). */
 export const devicesQuery = queryOptions({
   queryKey: ['devices'],
