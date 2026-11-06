@@ -205,6 +205,14 @@ export { type MissingMarker } from './case/graph.js';
 export { type Value } from './logic/value.js';
 export { languageCodes } from './case/languages.js';
 export {
+  type PlaybackVisibility,
+  type Sentence,
+  type SentenceKind,
+  describeCase,
+  renamePeople,
+  sentenceSchema,
+} from './case/playback.js';
+export {
   type Answer,
   type AppliedAnswers,
   type ChoiceSet,

@@ -185,3 +185,13 @@ export const currencyCodeSchema = z.enum(currencyCodes);
 export function minorUnitExponent(currency: CurrencyCode): number {
   return minorUnitExponents[currency];
 }
+
+/** Minor units as a decimal string in the currency's units: 123450 BRL is `1234.5`. */
+export function unitsAmount(amount: number, currency: CurrencyCode): string {
+  const exponent = minorUnitExponent(currency);
+  const units = BigInt(amount);
+  const scale = 10n ** BigInt(exponent);
+  const whole = (units / scale).toString();
+  const fraction = (units % scale).toString().padStart(exponent, '0').replace(/0+$/, '');
+  return fraction === '' ? whole : `${whole}.${fraction}`;
+}

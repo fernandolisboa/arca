@@ -1293,6 +1293,12 @@ export function createApp({
     const questions = await account.cases.questions(account.current.accountId);
     return questions === null ? fail(c, 'not_found', 404) : c.json(questions, 200);
   });
+  v1.openapi(openApiRoutes.getCasePlayback, async (c) => {
+    const account = await caseAccount(c, false);
+    if ('refused' in account) return account.refused;
+    const playback = await account.cases.playback(account.current.accountId);
+    return playback === null ? fail(c, 'not_found', 404) : c.json(playback, 200);
+  });
   caseWrite(
     openApiRoutes.answerCaseQuestions,
     caseRoutes.answerCaseQuestions.body,

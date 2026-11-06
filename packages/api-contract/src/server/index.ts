@@ -105,6 +105,7 @@ export const openApiRoutes = {
   removeCaseAssetOwner: toOpenApiRoute(routes.removeCaseAssetOwner),
   getCaseQuestions: toOpenApiRoute(routes.getCaseQuestions),
   answerCaseQuestions: toOpenApiRoute(routes.answerCaseQuestions),
+  getCasePlayback: toOpenApiRoute(routes.getCasePlayback),
   leaveCase: toOpenApiRoute(routes.leaveCase),
 } as const;
 

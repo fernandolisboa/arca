@@ -114,6 +114,31 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
     '9000,5',
   );
 
+  // The summary reads the case back, and a sentence opens the question that sets it.
+  await page.getByRole('button', { name: 'Ver o resumo do caso' }).click();
+  const ana = page.getByRole('region', { name: 'Ana' });
+  await expect(ana.getByText(/^Nascimento de Ana: abril de 1985 \(\d+ anos\)\.$/)).toBeVisible();
+  await expect(
+    ana.getByText(/^Renda de Ana: R\$\s9\.000,50 por mês, de trabalho \(Brasil\)\.$/),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole('region', { name: 'Vínculos' })
+      .getByText('Ana é mãe ou pai de Criança, filiação biológica.'),
+  ).toBeVisible();
+  const summary = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
+    .analyze();
+  expect(summary.violations.map(({ id, nodes }) => [id, nodes.map((node) => node.target)])).toEqual(
+    [],
+  );
+  await ana
+    .getByRole('button', {
+      name: 'Ainda sem resposta: Ana já teve visto ou residência em algum país, ou problema com imigração?',
+    })
+    .click();
+  await expect(step(page, 'Histórico de imigração')).toBeVisible();
+
   await radio(page.locator('main'), 'De quem são as respostas?', 'Criança');
   await expect(step(page, 'Dados básicos')).toBeVisible();
   await expect(group(step(page, 'Dados básicos'), 'Quando Criança nasceu?')).toBeVisible();

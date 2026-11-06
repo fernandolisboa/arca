@@ -26334,7 +26334,7 @@
     "/case/questions/answers": {
       "post": {
         "operationId": "answerCaseQuestions",
-        "summary": "Saves answers to the guided questions of a person the viewer keeps: facts, dependence, finances, the assets the person holds a confirmed share of (an asset left out loses the person's owner row) and their relationships' details; 409 case_invalid when an answer does not fit its question, 409 case_limit as for assets",
+        "summary": "Saves answers to the guided questions of a person the viewer keeps: facts, dependence, finances, the assets the person holds a confirmed share of (an asset the answer leaves out stays as it is; one sent as { id, dropped: true } loses the person's owner row) and their relationships' details; 409 case_invalid when an answer does not fit its question, 409 case_limit as for assets",
         "requestBody": {
           "required": true,
           "content": {
@@ -27414,6 +27414,1922 @@
                   },
                   "required": [
                     "case"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/case/playback": {
+      "get": {
+        "operationId": "getCasePlayback",
+        "summary": "The case as the viewer sees it, read back as sentences; a profile or finances not shared with the viewer reads as not shared, never as unanswered; 404 not_found outside a case",
+        "responses": {
+          "200": {
+            "description": "The case read back",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sentences": {
+                      "type": "array",
+                      "items": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "profileHidden"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "financesHidden"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "unanswered"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "born"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              },
+                              "date": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                  }
+                                ]
+                              },
+                              "age": {
+                                "type": "object",
+                                "properties": {
+                                  "min": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "max": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  }
+                                },
+                                "required": [
+                                  "min",
+                                  "max"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person",
+                              "date"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "citizenship"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              },
+                              "country": {
+                                "type": "string",
+                                "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "birth",
+                                  "descent",
+                                  "naturalization",
+                                  "marriage",
+                                  "investment",
+                                  "other"
+                                ]
+                              },
+                              "acquired": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                  }
+                                ]
+                              },
+                              "lost": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "none"
+                                    ]
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person",
+                              "country"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "noCitizenship"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "residence"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              },
+                              "country": {
+                                "type": "string",
+                                "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person",
+                              "country"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "education"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              },
+                              "level": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 8
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person",
+                              "level"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "studying"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              },
+                              "studying": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person",
+                              "studying"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "language"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              },
+                              "language": {
+                                "type": "string"
+                              },
+                              "level": {
+                                "type": "string",
+                                "enum": [
+                                  "A1",
+                                  "A2",
+                                  "B1",
+                                  "B2",
+                                  "C1",
+                                  "C2",
+                                  "native"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person",
+                              "language",
+                              "level"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "noLanguage"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "jobOffer"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              },
+                              "country": {
+                                "type": "string",
+                                "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                              },
+                              "sector": {
+                                "type": "string",
+                                "enum": [
+                                  "A",
+                                  "B",
+                                  "C",
+                                  "D",
+                                  "E",
+                                  "F",
+                                  "G",
+                                  "H",
+                                  "I",
+                                  "J",
+                                  "K",
+                                  "L",
+                                  "M",
+                                  "N",
+                                  "O",
+                                  "P",
+                                  "Q",
+                                  "R",
+                                  "S",
+                                  "T",
+                                  "U"
+                                ]
+                              },
+                              "temporary": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person",
+                              "country",
+                              "sector",
+                              "temporary"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "noJobOffer"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "immigrationEvent"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              },
+                              "country": {
+                                "type": "string",
+                                "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                              },
+                              "event": {
+                                "type": "string",
+                                "enum": [
+                                  "visa_refusal",
+                                  "entry_refusal",
+                                  "overstay",
+                                  "removal",
+                                  "visa_granted",
+                                  "residence_granted"
+                                ]
+                              },
+                              "date": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person",
+                              "country",
+                              "event"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "noImmigrationEvent"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "dependsOn"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              },
+                              "on": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person",
+                              "on"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "independent"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "recordedInFull"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              },
+                              "marker": {
+                                "type": "string",
+                                "enum": [
+                                  "spouses",
+                                  "partners",
+                                  "children",
+                                  "parents",
+                                  "assets"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person",
+                              "marker"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "income"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              },
+                              "income": {
+                                "type": "string",
+                                "enum": [
+                                  "active",
+                                  "passive"
+                                ]
+                              },
+                              "monthly": {
+                                "type": "object",
+                                "properties": {
+                                  "amount": {
+                                    "type": "string",
+                                    "pattern": "^\\d+(?:\\.\\d+)?$"
+                                  },
+                                  "currency": {
+                                    "type": "string",
+                                    "enum": [
+                                      "AED",
+                                      "AFN",
+                                      "ALL",
+                                      "AMD",
+                                      "AOA",
+                                      "ARS",
+                                      "AUD",
+                                      "AWG",
+                                      "AZN",
+                                      "BAM",
+                                      "BBD",
+                                      "BDT",
+                                      "BHD",
+                                      "BIF",
+                                      "BMD",
+                                      "BND",
+                                      "BOB",
+                                      "BOV",
+                                      "BRL",
+                                      "BSD",
+                                      "BTN",
+                                      "BWP",
+                                      "BYN",
+                                      "BZD",
+                                      "CAD",
+                                      "CDF",
+                                      "CHE",
+                                      "CHF",
+                                      "CHW",
+                                      "CLF",
+                                      "CLP",
+                                      "CNY",
+                                      "COP",
+                                      "COU",
+                                      "CRC",
+                                      "CUP",
+                                      "CVE",
+                                      "CZK",
+                                      "DJF",
+                                      "DKK",
+                                      "DOP",
+                                      "DZD",
+                                      "EGP",
+                                      "ERN",
+                                      "ETB",
+                                      "EUR",
+                                      "FJD",
+                                      "FKP",
+                                      "GBP",
+                                      "GEL",
+                                      "GHS",
+                                      "GIP",
+                                      "GMD",
+                                      "GNF",
+                                      "GTQ",
+                                      "GYD",
+                                      "HKD",
+                                      "HNL",
+                                      "HTG",
+                                      "HUF",
+                                      "IDR",
+                                      "ILS",
+                                      "INR",
+                                      "IQD",
+                                      "IRR",
+                                      "ISK",
+                                      "JMD",
+                                      "JOD",
+                                      "JPY",
+                                      "KES",
+                                      "KGS",
+                                      "KHR",
+                                      "KMF",
+                                      "KPW",
+                                      "KRW",
+                                      "KWD",
+                                      "KYD",
+                                      "KZT",
+                                      "LAK",
+                                      "LBP",
+                                      "LKR",
+                                      "LRD",
+                                      "LSL",
+                                      "LYD",
+                                      "MAD",
+                                      "MDL",
+                                      "MGA",
+                                      "MKD",
+                                      "MMK",
+                                      "MNT",
+                                      "MOP",
+                                      "MRU",
+                                      "MUR",
+                                      "MVR",
+                                      "MWK",
+                                      "MXN",
+                                      "MXV",
+                                      "MYR",
+                                      "MZN",
+                                      "NAD",
+                                      "NGN",
+                                      "NIO",
+                                      "NOK",
+                                      "NPR",
+                                      "NZD",
+                                      "OMR",
+                                      "PAB",
+                                      "PEN",
+                                      "PGK",
+                                      "PHP",
+                                      "PKR",
+                                      "PLN",
+                                      "PYG",
+                                      "QAR",
+                                      "RON",
+                                      "RSD",
+                                      "RUB",
+                                      "RWF",
+                                      "SAR",
+                                      "SBD",
+                                      "SCR",
+                                      "SDG",
+                                      "SEK",
+                                      "SGD",
+                                      "SHP",
+                                      "SLE",
+                                      "SOS",
+                                      "SRD",
+                                      "SSP",
+                                      "STN",
+                                      "SVC",
+                                      "SYP",
+                                      "SZL",
+                                      "THB",
+                                      "TJS",
+                                      "TMT",
+                                      "TND",
+                                      "TOP",
+                                      "TRY",
+                                      "TTD",
+                                      "TWD",
+                                      "TZS",
+                                      "UAH",
+                                      "UGX",
+                                      "USD",
+                                      "USN",
+                                      "UYI",
+                                      "UYU",
+                                      "UYW",
+                                      "UZS",
+                                      "VED",
+                                      "VES",
+                                      "VND",
+                                      "VUV",
+                                      "WST",
+                                      "XAD",
+                                      "XAF",
+                                      "XCD",
+                                      "XCG",
+                                      "XOF",
+                                      "XPF",
+                                      "YER",
+                                      "ZAR",
+                                      "ZMW",
+                                      "ZWG"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "amount",
+                                  "currency"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "sourceCountry": {
+                                "type": "string",
+                                "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person",
+                              "income",
+                              "monthly",
+                              "sourceCountry"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "noIncome"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "couple"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "couple": {
+                                "type": "string",
+                                "enum": [
+                                  "spouse",
+                                  "partner"
+                                ]
+                              },
+                              "people": {
+                                "type": "array",
+                                "prefixItems": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "string"
+                                  }
+                                ]
+                              },
+                              "start": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                  }
+                                ]
+                              },
+                              "end": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "none"
+                                    ]
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "couple",
+                              "people"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "parent"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "parent": {
+                                "type": "string"
+                              },
+                              "child": {
+                                "type": "string"
+                              },
+                              "parentKind": {
+                                "type": "string",
+                                "enum": [
+                                  "biological",
+                                  "adoptive"
+                                ]
+                              },
+                              "custody": {
+                                "type": "string",
+                                "enum": [
+                                  "full",
+                                  "shared",
+                                  "none"
+                                ]
+                              },
+                              "start": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "parent",
+                              "child"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "asset"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "asset": {
+                                "type": "string",
+                                "enum": [
+                                  "cash",
+                                  "investment",
+                                  "real_estate",
+                                  "business",
+                                  "retirement",
+                                  "vehicle",
+                                  "other"
+                                ]
+                              },
+                              "value": {
+                                "type": "object",
+                                "properties": {
+                                  "amount": {
+                                    "type": "string",
+                                    "pattern": "^\\d+(?:\\.\\d+)?$"
+                                  },
+                                  "currency": {
+                                    "type": "string",
+                                    "enum": [
+                                      "AED",
+                                      "AFN",
+                                      "ALL",
+                                      "AMD",
+                                      "AOA",
+                                      "ARS",
+                                      "AUD",
+                                      "AWG",
+                                      "AZN",
+                                      "BAM",
+                                      "BBD",
+                                      "BDT",
+                                      "BHD",
+                                      "BIF",
+                                      "BMD",
+                                      "BND",
+                                      "BOB",
+                                      "BOV",
+                                      "BRL",
+                                      "BSD",
+                                      "BTN",
+                                      "BWP",
+                                      "BYN",
+                                      "BZD",
+                                      "CAD",
+                                      "CDF",
+                                      "CHE",
+                                      "CHF",
+                                      "CHW",
+                                      "CLF",
+                                      "CLP",
+                                      "CNY",
+                                      "COP",
+                                      "COU",
+                                      "CRC",
+                                      "CUP",
+                                      "CVE",
+                                      "CZK",
+                                      "DJF",
+                                      "DKK",
+                                      "DOP",
+                                      "DZD",
+                                      "EGP",
+                                      "ERN",
+                                      "ETB",
+                                      "EUR",
+                                      "FJD",
+                                      "FKP",
+                                      "GBP",
+                                      "GEL",
+                                      "GHS",
+                                      "GIP",
+                                      "GMD",
+                                      "GNF",
+                                      "GTQ",
+                                      "GYD",
+                                      "HKD",
+                                      "HNL",
+                                      "HTG",
+                                      "HUF",
+                                      "IDR",
+                                      "ILS",
+                                      "INR",
+                                      "IQD",
+                                      "IRR",
+                                      "ISK",
+                                      "JMD",
+                                      "JOD",
+                                      "JPY",
+                                      "KES",
+                                      "KGS",
+                                      "KHR",
+                                      "KMF",
+                                      "KPW",
+                                      "KRW",
+                                      "KWD",
+                                      "KYD",
+                                      "KZT",
+                                      "LAK",
+                                      "LBP",
+                                      "LKR",
+                                      "LRD",
+                                      "LSL",
+                                      "LYD",
+                                      "MAD",
+                                      "MDL",
+                                      "MGA",
+                                      "MKD",
+                                      "MMK",
+                                      "MNT",
+                                      "MOP",
+                                      "MRU",
+                                      "MUR",
+                                      "MVR",
+                                      "MWK",
+                                      "MXN",
+                                      "MXV",
+                                      "MYR",
+                                      "MZN",
+                                      "NAD",
+                                      "NGN",
+                                      "NIO",
+                                      "NOK",
+                                      "NPR",
+                                      "NZD",
+                                      "OMR",
+                                      "PAB",
+                                      "PEN",
+                                      "PGK",
+                                      "PHP",
+                                      "PKR",
+                                      "PLN",
+                                      "PYG",
+                                      "QAR",
+                                      "RON",
+                                      "RSD",
+                                      "RUB",
+                                      "RWF",
+                                      "SAR",
+                                      "SBD",
+                                      "SCR",
+                                      "SDG",
+                                      "SEK",
+                                      "SGD",
+                                      "SHP",
+                                      "SLE",
+                                      "SOS",
+                                      "SRD",
+                                      "SSP",
+                                      "STN",
+                                      "SVC",
+                                      "SYP",
+                                      "SZL",
+                                      "THB",
+                                      "TJS",
+                                      "TMT",
+                                      "TND",
+                                      "TOP",
+                                      "TRY",
+                                      "TTD",
+                                      "TWD",
+                                      "TZS",
+                                      "UAH",
+                                      "UGX",
+                                      "USD",
+                                      "USN",
+                                      "UYI",
+                                      "UYU",
+                                      "UYW",
+                                      "UZS",
+                                      "VED",
+                                      "VES",
+                                      "VND",
+                                      "VUV",
+                                      "WST",
+                                      "XAD",
+                                      "XAF",
+                                      "XCD",
+                                      "XCG",
+                                      "XOF",
+                                      "XPF",
+                                      "YER",
+                                      "ZAR",
+                                      "ZMW",
+                                      "ZWG"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "amount",
+                                  "currency"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "valuedAt": {
+                                "type": "string",
+                                "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                              },
+                              "owners": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "person": {
+                                      "type": "string"
+                                    },
+                                    "share": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "person",
+                                    "share"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "minItems": 1
+                              },
+                              "liquid": {
+                                "type": "boolean"
+                              },
+                              "sold": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "none"
+                                    ]
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "asset",
+                              "value",
+                              "valuedAt",
+                              "owners"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "sentences"
                   ]
                 }
               }

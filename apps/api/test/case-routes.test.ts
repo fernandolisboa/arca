@@ -139,6 +139,13 @@ const questions = {
   formerCountries: [],
 };
 
+const playback = {
+  sentences: [
+    { kind: 'born', question: 'birthDate', about: [me], person: me, date: '1985-04' },
+    { kind: 'profileHidden', about: [child], person: child },
+  ],
+};
+
 function setup({
   confirmedAccount = true,
   allowed = true,
@@ -180,6 +187,10 @@ function setup({
     questions: (accountId: string) => {
       calls.push(['questions', accountId]);
       return Promise.resolve(inCase ? questions : null);
+    },
+    playback: (accountId: string) => {
+      calls.push(['playback', accountId]);
+      return Promise.resolve(inCase ? playback : null);
     },
     leave: (accountId: string) => {
       calls.push(['leave', accountId]);
@@ -249,6 +260,18 @@ describe('the case routes (spec 0007, R3)', () => {
     expect(calls).toEqual([['questions', owner.accountId]]);
     expect(limited).toEqual([]);
     const outside = await setup({ inCase: false }).call('GET', '/case/questions');
+    expect(outside.status).toBe(404);
+    expect(await errorOf(outside)).toBe('not_found');
+  });
+
+  it('reads the case back without counting a write, and 404 outside a case', async () => {
+    const { call, calls, limited } = setup();
+    const response = await call('GET', '/case/playback');
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual(playback);
+    expect(calls).toEqual([['playback', owner.accountId]]);
+    expect(limited).toEqual([]);
+    const outside = await setup({ inCase: false }).call('GET', '/case/playback');
     expect(outside.status).toBe(404);
     expect(await errorOf(outside)).toBe('not_found');
   });

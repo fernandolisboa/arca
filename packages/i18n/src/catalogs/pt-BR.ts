@@ -551,6 +551,63 @@ export const ptBR = {
     failure:
       '{reason, select, case_invalid {Alguma resposta não ficou certa. Confira e tente de novo.} not_found {Isso não está mais disponível. Atualize a página.} case_limit {O caso chegou a um limite. Tire algo antes de incluir mais.} limited {Muitas alterações em pouco tempo. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
   },
+  /** The case read back in plain sentences, each opening its question (spec 0007, R5). */
+  playback: {
+    title: 'Resumo do caso',
+    show: 'Ver o resumo do caso',
+    hide: 'Voltar às perguntas',
+    lead: 'É assim que o Arca entendeu o caso. Toque numa frase para corrigir a resposta.',
+    loadFailure: 'Não conseguimos carregar o resumo agora.',
+    relationships: 'Vínculos',
+    assets: 'Bens',
+    empty: 'Nada anotado ainda.',
+    sentence: {
+      profileHidden: 'Os dados pessoais de {person} não foram compartilhados com você.',
+      financesHidden: 'As finanças de {person} não foram compartilhadas com você.',
+      unanswered: 'Ainda sem resposta: {question}',
+      born: 'Nascimento de {person}: {date}{age}.',
+      citizenship: 'Cidadania de {person}: {country}{details}.',
+      noCitizenship: 'Cidadania de {person}: nenhuma.',
+      residence: 'País onde {person} mora: {country}.',
+      education: 'Estudos de {person}: {level}.',
+      studying: '{person} {studying, select, yes {está} other {não está}} estudando agora.',
+      language: 'Idioma de {person}: {language}, {level}.',
+      noLanguage: 'Idiomas de {person}: nenhum.',
+      jobOffer: 'Oferta de emprego para {person}: {country}, na área de {sector}{temporary}.',
+      noJobOffer: 'Ofertas de emprego para {person}: nenhuma.',
+      immigrationEvent: 'Imigração de {person}: {event}, {country}{date}.',
+      noImmigrationEvent: 'Imigração de {person}: nada a registrar.',
+      dependsOn: '{person} depende do dinheiro de {people}.',
+      independent: '{person} não depende do dinheiro de ninguém do caso.',
+      recordedInFull:
+        '{marker, select, spouses {Todos os casamentos de {person} estão anotados.} partners {Todas as uniões estáveis de {person} estão anotadas.} children {Todos os filhos de {person} estão anotados.} parents {Todos os pais de {person} estão anotados.} other {Todos os bens de {person} estão anotados.}}',
+      income:
+        'Renda de {person}: {amount} por mês, {income, select, active {de trabalho} other {sem trabalhar}} ({country}).',
+      noIncome: 'Renda de {person}: nenhuma.',
+      couple:
+        '{first} e {second} {couple, select, spouse {são casados} other {vivem em união estável}}{start}.',
+      coupleEnded:
+        '{first} e {second} {couple, select, spouse {foram casados} other {viveram em união estável}}{start} até {end}.',
+      parent: '{parent} é mãe ou pai de {child}{details}.',
+      asset: '{asset} de {owners}: {value} em {valuedAt}{sold}.',
+    },
+    part: {
+      age: ' ({min, plural, one {# ano} other {# anos}})',
+      ageRange: ' ({min} ou {max} anos)',
+      basis:
+        ', {basis, select, birth {por nascimento} descent {por descendência} naturalization {por naturalização} marriage {por casamento} investment {por investimento} other {de outro jeito}}',
+      since: ', desde {date}',
+      until: ', até {date}',
+      in: ', em {date}',
+      startSince: ' desde {date}',
+      temporary: ', temporária',
+      parentKind: ', filiação {parentKind, select, biological {biológica} other {adotiva}}',
+      custody:
+        ', {custody, select, full {guarda total} shared {guarda compartilhada} other {sem guarda}}',
+      owner: '{person} ({share}%)',
+      sold: ', vendido em {date}',
+    },
+  },
   /** The account's passkeys and the sessions each signed in (spec 0003, R4). */
   devices: {
     title: 'Dispositivos',
