@@ -36,7 +36,7 @@ Each reviewer returns **PASS** or **BLOCK**, followed by findings with severity 
 - Any critical or high finding from any reviewer blocks the merge.
 - Medium findings from must-pass reviewers block unless the change records why they are accepted, in the pull request and, when it is a lasting trade-off, in an ADR.
 - Should-pass reviewers never block alone; their findings are fixed in the same change or tracked. Code smells are always judgement calls.
-- A reviewer that could not assess something (missing context, tests that would not run) says so; that counts as BLOCK for must-pass reviewers. A change with no ticket or spec tells the spec reviewer what was asked instead.
+- A reviewer that could not assess something (missing context, tests that would not run) says so; that counts as BLOCK for must-pass reviewers. The authoring session hands the spec reviewer the spec: the ticket and its parent with only the owner's comments, or, with no ticket, the owner's message quoted.
 - Medium findings accepted in a change are listed, with the reason, in the pull request description.
 - A second round covers only the delta since the reviewed commit, so rounds converge.
 
