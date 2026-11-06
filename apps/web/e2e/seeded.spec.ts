@@ -92,7 +92,7 @@ test('the seed approver activates a version, reads and closes its reports, then 
 
   await memberReportsARequirement(browser);
   await page.reload();
-  const reports = page.getByRole('region', { name: 'Avisos de regra' });
+  const reports = page.getByRole('region', { name: 'Avisos de regra errada' });
   await expect(reports).toContainText(/EB-5 .* \(versão 1\), requisito/);
   await expect(reports).toContainText(/valor errado: \d+ avisos?/);
   await expect(reports).not.toContainText('Uma observação sintética');
@@ -130,8 +130,8 @@ async function memberReportsARequirement(browser: Browser) {
     .getByText('Ver requisitos, custos e prazos')
     .first()
     .click();
-  await page.getByRole('button', { name: 'Esta regra pode estar errada?' }).first().click();
-  const form = page.getByRole('form', { name: 'Avisar que a regra pode estar errada' });
+  await page.getByRole('button', { name: 'Avisar regra errada' }).first().click();
+  const form = page.getByRole('form', { name: 'Avisar regra errada' });
   await form
     .getByRole('group', { name: 'O que parece errado?' })
     .getByRole('radio', { name: 'O valor está errado', exact: true })

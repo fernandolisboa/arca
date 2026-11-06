@@ -1,6 +1,6 @@
 import { routes, type KnowledgeVersion, type RuleReports } from '@arca/api-contract/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { api, ruleReportsQuery } from '../api.js';
 import { textLinkClass } from '../forms/text-link.js';
 import type { KnowledgeWords } from './words.js';
@@ -17,17 +17,21 @@ interface Reported {
 }
 
 function byRequirement(reports: readonly Report[]): Reported[] {
-  const grouped = new Map<string, Reported>();
+  const grouped = new Map<string, Reported & { reasons: Report[] }>();
   for (const report of reports) {
     const key = `${report.routeId}:${String(report.versionNumber)}:${report.requirementId}`;
     const known = grouped.get(key);
-    grouped.set(key, {
-      key,
-      routeId: report.routeId,
-      versionNumber: report.versionNumber,
-      requirementId: report.requirementId,
-      reasons: [...(known?.reasons ?? []), report],
-    });
+    if (known === undefined) {
+      grouped.set(key, {
+        key,
+        routeId: report.routeId,
+        versionNumber: report.versionNumber,
+        requirementId: report.requirementId,
+        reasons: [report],
+      });
+    } else {
+      known.reasons.push(report);
+    }
   }
   return [...grouped.values()];
 }
@@ -47,6 +51,7 @@ export function ReportsSection({
   const queryClient = useQueryClient();
   const reports = useQuery(ruleReportsQuery);
   const [failed, setFailed] = useState<string>();
+  const baseId = useId();
   const title = t('knowledge.reports.title');
   const titleOf = (routeId: string, versionNumber: number) =>
     versions.find((version) => version.routeId === routeId && version.number === versionNumber)
@@ -62,9 +67,9 @@ export function ReportsSection({
         <>
           <p className="text-muted">{t('knowledge.reports.lead')}</p>
           <ul className="flex flex-col gap-3">
-            {byRequirement(reports.data.reports).map((reported) => (
+            {byRequirement(reports.data.reports).map((reported, index) => (
               <li key={reported.key} className="flex flex-col gap-1">
-                <p className="font-medium">
+                <p id={`${baseId}-${String(index)}`} className="font-medium">
                   {t('knowledge.reports.item', {
                     title: titleOf(reported.routeId, reported.versionNumber),
                     number: reported.versionNumber,
@@ -85,6 +90,7 @@ export function ReportsSection({
                 )}
                 <button
                   type="button"
+                  aria-describedby={`${baseId}-${String(index)}`}
                   className={`${textLinkClass} self-start`}
                   onClick={() => {
                     setFailed(undefined);

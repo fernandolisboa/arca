@@ -665,8 +665,8 @@ export const ptBR = {
     source: 'Fonte: {host} · conferida em {date}',
     someone: 'alguém do caso',
     report: {
-      open: 'Esta regra pode estar errada?',
-      title: 'Avisar que a regra pode estar errada',
+      open: 'Avisar regra errada',
+      title: 'Avisar regra errada',
       legend: 'O que parece errado?',
       reason:
         '{reason, select, outdated {Está desatualizada} wrong_amount {O valor está errado} wrong_condition {A condição está errada} source_mismatch {A fonte não diz isso} other {Outro motivo}}',
@@ -685,7 +685,7 @@ export const ptBR = {
   knowledge: {
     title: 'Tela de ativação',
     reports: {
-      title: 'Avisos de regra',
+      title: 'Avisos de regra errada',
       lead: 'Pessoas do caso marcaram estes requisitos como possivelmente errados. Pesquise a regra nas fontes antes de encerrar os avisos.',
       none: 'Nenhum aviso aberto.',
       loadFailure: 'Não conseguimos carregar os avisos agora.',
@@ -1313,7 +1313,7 @@ export const ptBR = {
       caseAssets: 'Bens',
       caseRelationships: 'Vínculos familiares',
       caseShares: 'Com quem você compartilhou dados',
-      ruleReports: 'Avisos de regra que você enviou',
+      ruleReports: 'Avisos de regra errada que você enviou',
     },
   },
   /**

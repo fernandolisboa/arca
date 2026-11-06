@@ -23,7 +23,8 @@ function Knowledge() {
   const words = useKnowledgeWords();
   const { t } = words;
   const session = useQuery(sessionQuery);
-  const versions = useQuery({ ...knowledgeVersionsQuery, enabled: session.isSuccess });
+  const approver = session.data?.approver === true;
+  const versions = useQuery({ ...knowledgeVersionsQuery, enabled: approver });
   const [picked, setPicked] = useState<Picked | null>(null);
   const title = t('knowledge.title');
   if (session.isError) {
@@ -36,7 +37,10 @@ function Knowledge() {
       </Page>
     );
   }
-  if (versions.error instanceof ApiError && versions.error.status === 403) {
+  if (
+    (session.isSuccess && !approver) ||
+    (versions.error instanceof ApiError && versions.error.status === 403)
+  ) {
     return (
       <Page title={title}>
         <p>{t('knowledge.notApprover')}</p>

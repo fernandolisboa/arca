@@ -449,7 +449,13 @@ export const ReportRuleRequest = z.strictObject({
   versionNumber: z.int().min(1).max(1_000_000),
   requirementId: slugSchema,
   reason: z.enum(ruleReportReasons),
-  note: z.string().trim().min(1).max(500).optional(),
+  note: z
+    .string()
+    .trim()
+    .min(1)
+    .max(500)
+    .regex(/^\P{Cc}*$/u)
+    .optional(),
 });
 export type ReportRuleRequest = z.infer<typeof ReportRuleRequest>;
 

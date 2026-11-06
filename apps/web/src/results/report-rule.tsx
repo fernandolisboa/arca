@@ -5,7 +5,7 @@ import {
   ruleReportReasons,
 } from '@arca/api-contract/client';
 import { Button, ChoiceGroup } from '@arca/ui';
-import { useState, type SubmitEvent } from 'react';
+import { useEffect, useRef, useState, type SubmitEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../api.js';
 import { textLinkClass } from '../forms/text-link.js';
@@ -20,18 +20,32 @@ type State = 'closed' | 'open' | 'sending' | 'sent' | 'limited' | 'failed';
  */
 export function ReportRule({
   rule,
+  describedBy,
 }: {
   readonly rule: Pick<ReportRuleRequest, 'routeId' | 'versionNumber' | 'requirementId'>;
+  /** The ID of the requirement's line, which tells this report apart from the others. */
+  readonly describedBy: string;
 }) {
   const { t } = useTranslation();
   const [state, setState] = useState<State>('closed');
   const [reason, setReason] = useState<Reason>('outdated');
   const [note, setNote] = useState('');
-  if (state === 'sent') return <p className="text-small">{t('results.report.sent')}</p>;
+  const formRef = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    if (state === 'open') formRef.current?.focus();
+  }, [state]);
+  if (state === 'sent') {
+    return (
+      <p role="status" className="text-small">
+        {t('results.report.sent')}
+      </p>
+    );
+  }
   if (state === 'closed') {
     return (
       <button
         type="button"
+        aria-describedby={describedBy}
         className={`${textLinkClass} self-start text-small`}
         onClick={() => {
           setState('open');
@@ -58,7 +72,10 @@ export function ReportRule({
   };
   return (
     <form
+      ref={formRef}
+      tabIndex={-1}
       aria-label={t('results.report.title')}
+      aria-describedby={describedBy}
       className="flex flex-col gap-3 rounded-control border border-line p-3"
       onSubmit={(event) => void send(event)}
     >

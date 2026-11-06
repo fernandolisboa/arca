@@ -900,7 +900,7 @@ describe('rule reports (spec 0007, R8)', () => {
       async (client) => {
         await report(client, caseId, alice, 'Uma observação sintética');
         expect(await refused(client, ...insertAs(caseId, bruno))).toBe(insufficientPrivilege);
-        expect(await refused(client, ...insertAs(otherCaseId, alice))).not.toBe('allowed');
+        expect(await refused(client, ...insertAs(otherCaseId, alice))).toBe(insufficientPrivilege);
         expect(
           await refused(
             client,
@@ -975,6 +975,30 @@ describe('rule reports (spec 0007, R8)', () => {
       await countAsAdmin(`FROM cases.rule_report WHERE reporter_account_id = $1`, [bruno]),
     ).toBe(1);
     expect(before).toBe(2);
+  });
+
+  it('takes a member’s reports when they leave, and keeps the others’', async () => {
+    const { caseId, alice, bruno } = await seedFamily();
+    for (const reporter of [alice, bruno]) {
+      await as('app_api', reporter, (client) => report(client, caseId, reporter), {
+        commit: true,
+      });
+    }
+    await as(
+      'app_api',
+      bruno,
+      async (client) => {
+        await client.query('DELETE FROM cases.member WHERE account_id = $1', [bruno]);
+      },
+      { commit: true },
+    );
+    const reportsOf = (reporter: string) =>
+      countAsAdmin('FROM cases.rule_report WHERE case_id = $1 AND reporter_account_id = $2', [
+        caseId,
+        reporter,
+      ]);
+    expect(await reportsOf(bruno)).toBe(0);
+    expect(await reportsOf(alice)).toBe(1);
   });
 });
 

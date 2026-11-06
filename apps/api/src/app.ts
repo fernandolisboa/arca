@@ -1337,9 +1337,9 @@ export function createApp({
       : c.json(CaseEvaluations.parse(evaluations), 200);
   });
   v1.openapi(openApiRoutes.reportRule, async (c) => {
-    const request = caseRoutes.reportRule.body.parse(await c.req.json());
     const account = await caseAccount(c, 'reports');
     if ('refused' in account) return account.refused;
+    const request = caseRoutes.reportRule.body.parse(await c.req.json());
     const outcome = await account.cases.reportRule(account.current.accountId, request);
     return outcome === 'reported' ? c.json({}, 200) : fail(c, 'not_found', 404);
   });

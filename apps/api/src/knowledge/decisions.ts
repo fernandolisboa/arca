@@ -180,8 +180,11 @@ export function createKnowledgeDecisions({
       );
       if (!stored) return { refused: 'step_up_required' };
       // Activating a correction answers the reports of the version it corrects (R8).
+      // The decision stands either way; the approver can still close the reports by hand.
       if (kind === 'activate' && identity.corrects !== undefined) {
-        await closeRuleReports(db, identity.routeId, identity.corrects, null);
+        await closeRuleReports(db, identity.routeId, identity.corrects, null).catch(() => {
+          logger.error({ errorName: 'RuleReportsNotClosed' });
+        });
       }
       return { decided: decisionId };
     },

@@ -390,6 +390,23 @@ export function createCaseFiles({
     }
   };
 
+  /** Evaluates the viewer's case under its identity, the decision states read first; null outside a case. */
+  const withEvaluations = async <T>(
+    accountId: string,
+    work: (tx: Transaction, rows: CaseRows, evaluated: CaseEvaluationsView) => Promise<T>,
+  ): Promise<T | null> => {
+    const states = await evaluation.states();
+    return withIdentity(db(), { accountId }, async (tx) => {
+      const rows = await readCase(tx, accountId);
+      if (rows === undefined) return null;
+      return work(
+        tx,
+        rows,
+        caseEvaluations(rows, { ...evaluation, states, today: evaluation.today() }),
+      );
+    });
+  };
+
   const keptPerson = (rows: CaseRows, personId: string) => {
     const person = rows.people.find((row) => row.id === personId && row.keptByMe);
     if (person === undefined) throw new Refused('not_found');
@@ -637,26 +654,11 @@ export function createCaseFiles({
         return rows === undefined ? null : casePlayback(rows, accountId, isoDate(today()));
       }),
 
-    evaluations: async (accountId) => {
-      const states = await evaluation.states();
-      return withIdentity(db(), { accountId }, async (tx) => {
-        const rows = await readCase(tx, accountId);
-        return rows === undefined
-          ? null
-          : caseEvaluations(rows, { ...evaluation, states, today: evaluation.today() });
-      });
-    },
+    evaluations: (accountId) =>
+      withEvaluations(accountId, (_tx, _rows, evaluated) => Promise.resolve(evaluated)),
 
     reportRule: async (accountId, { routeId, versionNumber, requirementId, reason, note }) => {
-      const states = await evaluation.states();
-      const reported = await withIdentity(db(), { accountId }, async (tx) => {
-        const rows = await readCase(tx, accountId);
-        if (rows === undefined) return undefined;
-        const evaluated = caseEvaluations(rows, {
-          ...evaluation,
-          states,
-          today: evaluation.today(),
-        });
+      const reported = await withEvaluations(accountId, async (tx, rows, evaluated) => {
         // Taken from the reporter's own results, so a report names only a requirement they saw.
         const shown = evaluated.results.some(
           (result) =>
@@ -673,7 +675,7 @@ export function createCaseFiles({
           RETURNING id`);
         return inserted.rows[0]?.id;
       });
-      if (reported === undefined) return 'not_found';
+      if (reported === undefined || reported === null) return 'not_found';
       await recordAll(accountId, [
         event('rule_reported', { reportId: reported, routeId, number: versionNumber }),
       ]);
