@@ -1,6 +1,6 @@
 # Foundations threat model
 
-As of 2026-11-05, written after the foundations epics landed ([spec 0004 R13](../specs/0004-real-data-readiness.md#r13-threat-model-and-the-real-data-gate)). It covers what was built for specs [0001](../specs/0001-foundations-scaffold.md), [0003](../specs/0003-identity-and-access.md), [0004](../specs/0004-real-data-readiness.md) and [0005](../specs/0005-vault-devices-and-notifications.md), and it gathers the threat tables of those specs in one place. Each control links to the test or the recorded proof that shows it holds. The [real-data gate](../runbooks/real-data-gate.md) uses this document as its item 8.
+As of 2026-11-06, written after the foundations epics landed ([spec 0004 R13](../specs/0004-real-data-readiness.md#r13-threat-model-and-the-real-data-gate)). It covers what was built for specs [0001](../specs/0001-foundations-scaffold.md), [0003](../specs/0003-identity-and-access.md), [0004](../specs/0004-real-data-readiness.md) and [0005](../specs/0005-vault-devices-and-notifications.md), and it gathers the threat tables of those specs in one place. Each control links to the test or the recorded proof that shows it holds. The [real-data gate](../runbooks/real-data-gate.md) uses this document as its item 8.
 
 **How to read the evidence column.**
 - A test is named by its file and its quoted test name, without a line number, so the link survives edits.
@@ -123,22 +123,22 @@ The [data-flow table](../ARCHITECTURE.md#data-flows) lists every service and wha
 
 ## LLM and agentic risks
 
-No model call is reachable in production yet: the intake extractor ([spec 0008](../specs/0008-free-text-intake.md)) runs on previews and stays off in production until its evaluation suite passes. The [rules engine](../specs/0002-rules-engine-and-knowledge-base.md) is deterministic, and the knowledge-base agents have their own threat model there. Before an adapter is reachable in production, the real-data gate's item 10 requires the evaluation suite and the data-flow rows. Until then, the agentic surface is development: coding agents and their reviewer subagents, which hold the owner's tokens.
+The one model call reachable in production is the intake extractor ([spec 0008](../specs/0008-free-text-intake.md)), switched on there once its evaluation suite passed and the data-flow rows were in place, as the real-data gate's item 10 requires (two passing runs on one commit, per spec 0008's ticket 4); any other adapter needs the same before production reaches it. Its own threats and controls are in [spec 0008's threat table](../specs/0008-free-text-intake.md#threats). The [rules engine](../specs/0002-rules-engine-and-knowledge-base.md) is deterministic, and the knowledge-base agents have their own threat model there. The rest of the agentic surface is development: coding agents and their reviewer subagents, which hold the owner's tokens.
 
 Risks from the OWASP Top 10 for LLM Applications (2025):
 
 | Risk | In the foundations | Control and evidence |
 | --- | --- | --- |
-| LLM01 Prompt injection | Text in a diff, an issue, a fetched page or a CI log steers an agent | Agents treat repository and web content as data (CLAUDE.md, [REVIEW.md](../REVIEW.md)); deterministic checks in CI. Residual R-1 |
-| LLM02 Sensitive information disclosure | An agent copies personal data into a commit, an issue or a model call | Synthetic data only; gitleaks and push protection (S3); the scrubber (W4) |
-| LLM03 Supply chain | A malicious package or model tooling | S1 and S3; no model SDK in the runtime yet |
+| LLM01 Prompt injection | Text in a diff, an issue, a fetched page or a CI log steers an agent; a member's intake text steers the extractor | Agents treat repository and web content as data (CLAUDE.md, [REVIEW.md](../REVIEW.md)); deterministic checks in CI. Residual R-1. The extractor has no tools, its reply must parse against a closed schema with no free text, nothing is saved without the member, and the evaluation holds four injection cases that fail the run on any forbidden fact (spec 0008, R5) |
+| LLM02 Sensitive information disclosure | An agent copies personal data into a commit, an issue or a model call; intake text carries names or numbers to the vendor | Synthetic data only; gitleaks and push protection (S3); the scrubber (W4). Intake text is masked before the call, known names and document and phone numbers included, and the evaluation fails on any that reaches the adapter (spec 0008, R2 and R5) |
+| LLM03 Supply chain | A malicious package or model tooling | S1 and S3; the only model SDKs are `ai` and `@ai-sdk/anthropic` in apps/api, reviewed by the supply-chain reviewer (spec 0008, ticket 2) and pinned by [untracked-surfaces.test.ts](../../tooling/scripts/test/untracked-surfaces.test.ts) |
 | LLM04 Data and model poisoning | A poisoned rule in the knowledge base | Human approval with a passkey ([ADR-0014](../adr/0014-knowledge-base-as-reviewed-data.md)); out of this model's scope |
-| LLM05 Improper output handling | Model output rendered as HTML or followed as a link | Not reachable yet; SECURITY.md requires sanitized rendering, stripped images and marked links, and W1 holds meanwhile |
+| LLM05 Improper output handling | Model output rendered as HTML or followed as a link | The intake reply is parsed against the closed draft schema (enums, dates, country codes, placeholders), so no model text reaches the screen; SECURITY.md requires sanitized rendering, stripped images and marked links for any later output, and W1 holds |
 | LLM06 Excessive agency | An agent pushes, merges or changes vendor settings unasked | Agents work on one branch; vendor settings need the owner's explicit OK; never force-push. Residual R-12 |
 | LLM07 System prompt leakage | Reviewer prompts reveal secrets | Prompts are public files in `.claude/agents/` and hold no secrets |
 | LLM08 Vector and embedding weaknesses | Cross-case leakage through retrieval | No embeddings yet; the shared base holds public rules only |
 | LLM09 Misinformation | A wrong rule shown as fact | Every requirement shown needs a source and a verification date ([ADR-0002](../adr/0002-rules-as-versioned-data.md)) |
-| LLM10 Unbounded consumption | Cost runaway | Model SDKs only in apps/api, off in production ([untracked-surfaces.test.ts](../../tooling/scripts/test/untracked-surfaces.test.ts) "keeps model SDKs to apps/api, whose extractor is off in production, so gate item 10 holds"); intake limits per account, a token cap and a Console spend limit (spec 0008); W2 for workflows |
+| LLM10 Unbounded consumption | Cost runaway | Model SDKs only in apps/api ([untracked-surfaces.test.ts](../../tooling/scripts/test/untracked-surfaces.test.ts) "keeps model SDKs to apps/api, whose extractor met gate item 10"); intake limits of 10 drafts a day and 3 a minute per account, each draft at most two calls with a token cap and a timeout, and a text cap (spec 0008); an evaluation run is capped at 60 calls; W2 for workflows |
 
 Risks from the OWASP Top 10 for Agentic Applications (2026):
 

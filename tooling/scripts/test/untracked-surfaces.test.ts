@@ -46,7 +46,7 @@ async function sources(dir: string): Promise<string[]> {
 }
 
 describe('surfaces the threat model counts as absent (docs/threat-models/foundations.md)', () => {
-  it('keeps model SDKs to apps/api, whose extractor is off in production, so gate item 10 holds', async () => {
+  it('keeps model SDKs to apps/api, whose extractor met gate item 10', async () => {
     const { packageRoots } = await readWorkspaceConfig(rootDir);
     const used = (await readManifests(rootDir, packageRoots)).flatMap((manifest) =>
       dependencyFields.flatMap((field) =>
@@ -55,8 +55,8 @@ describe('surfaces the threat model counts as absent (docs/threat-models/foundat
           .map((name) => `${manifest.name}: ${name}`),
       ),
     );
-    // apps/api/src/intake/environment.ts gives production no extractor until the evaluation
-    // suite passes (spec 0008, ticket 4); another user must meet the item before it ships.
+    // The intake extractor met the item through its evaluation suite (spec 0008, ticket 4);
+    // another user must meet it before it ships.
     expect(used.sort(), 'uncheck gate item 10 until this adapter meets it').toEqual([
       '@arca/api: @ai-sdk/anthropic',
       '@arca/api: ai',
