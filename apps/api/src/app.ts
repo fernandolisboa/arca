@@ -45,6 +45,7 @@ import {
   forgetPushChannel,
   caseRoutes,
   handOverCasePersonAction,
+  addCaseMemberAction,
   leaveCaseAction,
   StepUpAction,
   stepUpNonceHeader,
@@ -1179,15 +1180,16 @@ export function createApp({
     route: (typeof openApiRoutes)[keyof typeof caseRoutes],
     body: { parse: (value: unknown) => Body },
     run: (files: CaseFiles, accountId: string, request: Body) => Promise<CaseWritten>,
-    stepUpFor?: (request: Body) => Omit<CanonicalAction, 'nonce'>,
+    stepUpFor?: (request: Body) => Omit<CanonicalAction, 'nonce'> | undefined,
   ) =>
     v1.openapi(route, async (c) => {
       const account = await caseAccount(c, true);
       if ('refused' in account) return account.refused;
       const request = body.parse(await c.req.json());
+      const action = stepUpFor?.(request);
       if (
-        stepUpFor !== undefined &&
-        !(await stepUpGranted(c, account.current, 'sensitive_settings', stepUpFor(request)))
+        action !== undefined &&
+        !(await stepUpGranted(c, account.current, 'sensitive_settings', action))
       ) {
         return fail(c, 'step_up_required', 403);
       }
@@ -1220,6 +1222,12 @@ export function createApp({
     caseRoutes.handOverCasePerson.body,
     (files, id, request) => files.handOver(id, request),
     handOverCasePersonAction,
+  );
+  caseWrite(
+    openApiRoutes.addCaseMember,
+    caseRoutes.addCaseMember.body,
+    (files, id, request) => files.addMember(id, request),
+    addCaseMemberAction,
   );
   caseWrite(
     openApiRoutes.writeCaseProfile,

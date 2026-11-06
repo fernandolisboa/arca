@@ -51,47 +51,68 @@ export async function readCase(
   const ofCase = sql`person_id IN (SELECT id FROM cases.person WHERE case_id = ${caseId})`;
   const rows = async <Row>(query: SQL) =>
     (await tx.execute<Record<string, unknown>>(query)).rows as Row[];
-  const [people, profiles, dependence, finances, relationships, assets, owners, shares] =
-    await Promise.all([
-      rows<{
-        id: string;
-        display_name: string;
-        case_member: boolean;
-        account_id: string | null;
-        kept: boolean;
-      }>(sql`
-        SELECT id, display_name, case_member, account_id, keeper_account_id = ${accountId} AS kept
-          FROM cases.person WHERE case_id = ${caseId} ORDER BY created_at, id`),
-      rows<{ person_id: string; facts: unknown; dependence_answered: boolean }>(sql`
-        SELECT person_id, facts, dependence_answered FROM cases.person_profile WHERE ${ofCase}`),
-      rows<{ person_id: string; depends_on_id: string }>(sql`
-        SELECT person_id, depends_on_id FROM cases.dependence
-         WHERE case_id = ${caseId} ORDER BY person_id, depends_on_id`),
-      rows<{ person_id: string; incomes: unknown; assets_recorded_in_full: boolean }>(sql`
-        SELECT person_id, incomes, assets_recorded_in_full FROM cases.person_finances
-         WHERE ${ofCase}`),
-      rows<{ id: string; kind: string; from: string; to: string; details: unknown }>(sql`
-        SELECT id, kind, from_person_id AS from, to_person_id AS to, details
-          FROM cases.relationship WHERE case_id = ${caseId} ORDER BY created_at, id`),
-      rows<{
-        id: string;
-        kind: string;
-        amount: string;
-        currency: string;
-        valued_at: string;
-        liquid: boolean | null;
-        sold: string | null;
-      }>(sql`
-        SELECT id, kind, value_amount::text AS amount, value_currency AS currency,
-               valued_at::text AS valued_at, liquid, sold
-          FROM cases.asset WHERE case_id = ${caseId} ORDER BY created_at, id`),
-      rows<{ asset_id: string; person_id: string; share: string; confirmed: boolean }>(sql`
-        SELECT asset_id, person_id, share::text AS share, confirmed FROM cases.asset_owner
-         WHERE case_id = ${caseId} ORDER BY created_at, person_id`),
-      rows<{ person_id: string; grantee_account_id: string; scope: 'profile' | 'finances' }>(sql`
-        SELECT person_id, grantee_account_id, scope FROM cases.share
-         WHERE case_id = ${caseId} ORDER BY person_id, scope, grantee_account_id`),
-    ]);
+  // One after another: a transaction's client runs one query at a time anyway.
+  const people = await rows<{
+    id: string;
+    display_name: string;
+    case_member: boolean;
+    account_id: string | null;
+    kept: boolean;
+  }>(sql`
+    SELECT id, display_name, case_member, account_id, keeper_account_id = ${accountId} AS kept
+      FROM cases.person WHERE case_id = ${caseId} ORDER BY created_at, id`);
+  const profiles = await rows<{
+    person_id: string;
+    facts: unknown;
+    dependence_answered: boolean;
+  }>(sql`
+    SELECT person_id, facts, dependence_answered FROM cases.person_profile WHERE ${ofCase}`);
+  const dependence = await rows<{ person_id: string; depends_on_id: string }>(sql`
+    SELECT person_id, depends_on_id FROM cases.dependence
+     WHERE case_id = ${caseId} ORDER BY person_id, depends_on_id`);
+  const finances = await rows<{
+    person_id: string;
+    incomes: unknown;
+    assets_recorded_in_full: boolean;
+  }>(sql`
+    SELECT person_id, incomes, assets_recorded_in_full FROM cases.person_finances
+     WHERE ${ofCase}`);
+  const relationships = await rows<{
+    id: string;
+    kind: string;
+    from: string;
+    to: string;
+    details: unknown;
+  }>(sql`
+    SELECT id, kind, from_person_id AS from, to_person_id AS to, details
+      FROM cases.relationship WHERE case_id = ${caseId} ORDER BY created_at, id`);
+  const assets = await rows<{
+    id: string;
+    kind: string;
+    amount: string;
+    currency: string;
+    valued_at: string;
+    liquid: boolean | null;
+    sold: string | null;
+  }>(sql`
+    SELECT id, kind, value_amount::text AS amount, value_currency AS currency,
+           valued_at::text AS valued_at, liquid, sold
+      FROM cases.asset WHERE case_id = ${caseId} ORDER BY created_at, id`);
+  const owners = await rows<{
+    asset_id: string;
+    person_id: string;
+    share: string;
+    confirmed: boolean;
+  }>(sql`
+    SELECT asset_id, person_id, share::text AS share, confirmed FROM cases.asset_owner
+     WHERE case_id = ${caseId} ORDER BY created_at, person_id`);
+  const shares = await rows<{
+    person_id: string;
+    grantee_account_id: string;
+    scope: 'profile' | 'finances';
+  }>(sql`
+    SELECT person_id, grantee_account_id, scope FROM cases.share
+     WHERE case_id = ${caseId} ORDER BY person_id, scope, grantee_account_id`);
   return {
     caseId,
     people: people.map((row) => ({

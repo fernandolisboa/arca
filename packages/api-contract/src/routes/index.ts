@@ -529,6 +529,8 @@ export const Invite = z.object({
   email: z.email(),
   /** `accepted` waits for the inviter to confirm or decline the new account. */
   status: z.enum(['open', 'accepted', 'confirmed']),
+  /** The confirmed account, which the inviter may add to their case; null before that. */
+  accountId: z.uuid().nullable(),
   createdAt: z.iso.datetime({ offset: true }),
   expiresAt: z.iso.datetime({ offset: true }),
 });
@@ -795,6 +797,8 @@ export const auditEventDetails = {
     reason: z.enum(['step_up', 'renewed', 'subscription']),
   }),
   case_created: caseEvent,
+  /** `accountId`: the account the actor added. */
+  member_joined: caseEvent.extend({ accountId: z.uuid() }),
   member_left: caseEvent,
   person_added: casePersonEvent,
   person_removed: casePersonEvent,

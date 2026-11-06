@@ -63,6 +63,12 @@ const writes: readonly [string, unknown, string, unknown][] = [
   ],
   ['/case/people/remove', { personId: child }, 'removePerson', child],
   [
+    '/case/members',
+    { accountId: relative, displayName: 'Tia' },
+    'addMember',
+    { accountId: relative, displayName: 'Tia' },
+  ],
+  [
     '/case/people/profile',
     { personId: child, facts: { studying: true }, dependsOn: null },
     'writeProfile',
@@ -280,6 +286,27 @@ describe('the case routes (spec 0007, R3)', () => {
     expect(response.status).toBe(403);
     expect(await errorOf(response)).toBe('step_up_required');
     expect(refused.calls).toEqual([]);
+  });
+
+  it('adds a member taking over a person only with a sensitive_settings step-up for both', async () => {
+    const body = { accountId: relative, personId: child };
+    const granted = setup();
+    expect((await granted.call('POST', '/case/members', body)).status).toBe(200);
+    expect(
+      granted.spent.map(({ purpose, action }) => [purpose, action.action, action.targets]),
+    ).toEqual([['sensitive_settings', 'addCaseMember', [child, relative]]]);
+    expect(granted.calls).toEqual([['addMember', owner.accountId, body]]);
+
+    const refused = setup({ approved: false });
+    const response = await refused.call('POST', '/case/members', body);
+    expect(response.status).toBe(403);
+    expect(await errorOf(response)).toBe('step_up_required');
+    expect(refused.calls).toEqual([]);
+
+    const named = setup({ approved: false });
+    const both = { accountId: relative, personId: child, displayName: 'Tia' };
+    expect((await named.call('POST', '/case/members', both)).status).toBe(400);
+    expect(named.spent).toEqual([]);
   });
 
   it('leaves the case only with a sensitive_settings step-up', async () => {

@@ -526,7 +526,11 @@ describe('invites (spec 0003, R2)', () => {
     guest = { cookie: cookiesFrom(verified), passkey };
     const session = await app.request('/v1/session', { headers: { cookie: guest.cookie } });
     expect(await session.json()).toMatchObject({ email: invitee, confirmed: false });
-    expect((await listed(owner.cookie))[0]).toMatchObject({ id: inviteId, status: 'accepted' });
+    expect((await listed(owner.cookie))[0]).toMatchObject({
+      id: inviteId,
+      status: 'accepted',
+      accountId: null,
+    });
     const [notice] = await outbox();
     expect(notice).toMatchObject({ to: ownerEmail, subject: 'Seu convite foi aceito' });
     expect(notice?.text).not.toContain(invitee);
@@ -613,7 +617,16 @@ describe('invites (spec 0003, R2)', () => {
     const session = await app.request('/v1/session', { headers: { cookie: guest.cookie } });
     expect(await session.json()).toMatchObject({ confirmed: true });
     const decided = (await listed(owner.cookie)).find((entry) => entry.id === inviteId);
-    expect(decided).toMatchObject({ status: 'confirmed' });
+    // The confirmed account, which the inviter may then add to their case (spec 0007, R2).
+    const [joined] = await testDatabase.asAdmin(
+      async (client) =>
+        (
+          await client.query<{ id: string }>(`SELECT id FROM auth."user" WHERE email = $1`, [
+            invitee,
+          ])
+        ).rows,
+    );
+    expect(decided).toMatchObject({ status: 'confirmed', accountId: joined?.id });
     expect(await eventCodes(owner.cookie)).toContain('invite_confirmed');
     // The confirmation links the two accounts, so either can share documents with the other.
     const links = await testDatabase.asAdmin(

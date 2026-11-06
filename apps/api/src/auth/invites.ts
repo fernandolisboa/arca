@@ -186,12 +186,11 @@ export function createInvites({
       );
       return rows.map(({ acceptedAccountId, createdAt, expiresAt, ...row }) => ({
         ...row,
-        status:
-          acceptedAccountId === null
-            ? 'open'
-            : confirmed.has(acceptedAccountId)
-              ? 'confirmed'
-              : 'accepted',
+        ...(acceptedAccountId === null
+          ? { status: 'open' as const, accountId: null }
+          : confirmed.has(acceptedAccountId)
+            ? { status: 'confirmed' as const, accountId: acceptedAccountId }
+            : { status: 'accepted' as const, accountId: null }),
         createdAt: createdAt.toISOString(),
         expiresAt: expiresAt.toISOString(),
       }));
