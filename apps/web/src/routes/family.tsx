@@ -628,10 +628,8 @@ function HandOver({
   const { t } = useTranslation();
   const members = others.filter((other) => other.accountId !== null);
   const [picked, setPicked] = useState(members[0]?.accountId ?? '');
-  // A member who left while the panel was open is no longer a choice.
-  const chosen = members.some(({ accountId }) => accountId === picked)
-    ? picked
-    : (members[0]?.accountId ?? '');
+  // A member who left while the panel was open is no longer a choice; the viewer picks again.
+  const chosen = members.some(({ accountId }) => accountId === picked) ? picked : '';
   const { pending, failure, run } = useCaseWrite();
   return (
     <form
@@ -863,6 +861,9 @@ function Relationships({
                 </option>
               ))}
           </select>
+          {from !== '' && to !== '' && !ready && (
+            <p className="text-small text-muted">{t('family.relationships.notKept')}</p>
+          )}
           <Button type="submit" disabled={add.pending || !ready} aria-busy={add.pending}>
             {t('family.relationships.add')}
           </Button>

@@ -95,6 +95,9 @@ export {
   caseSnapshotSchema,
   completenessMarkerSchema,
   countryCodeSchema,
+  maxCaseMembers,
+  maxCasePeople,
+  maxCaseRelationships,
   opaqueIdSchema,
 } from './case/snapshot.js';
 export {

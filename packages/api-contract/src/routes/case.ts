@@ -1,5 +1,7 @@
 import {
   displayNameSchema,
+  maxCaseMembers,
+  maxCasePeople,
   shareScopeSchema,
   storedAssetSchema,
   storedFinancesSchema,
@@ -18,10 +20,7 @@ import type { RouteDefinition } from './index.js';
  * exist; 409 case_limit says only that a limit is reached, never what a hidden row holds.
  */
 
-/** At most this many members, and so grantees, in a case. */
-export const maxCaseMembers = 30;
-/** At most this many people, with or without an account, in a case. */
-export const maxCasePeople = 60;
+export { maxCaseMembers, maxCasePeople };
 
 export const CaseProfile = z.strictObject({
   facts: storedProfileFactsSchema,

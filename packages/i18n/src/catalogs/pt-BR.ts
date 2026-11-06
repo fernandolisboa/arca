@@ -380,6 +380,7 @@ export const ptBR = {
         partner: 'vive em união estável com',
       },
       add: 'Anotar vínculo',
+      notKept: 'Escolha pelo menos uma pessoa de quem você cuida.',
     },
     invites: {
       title: 'Convites',

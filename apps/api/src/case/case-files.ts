@@ -4,7 +4,6 @@ import type {
   CaseView,
   HandOverCasePersonRequest,
 } from '@arca/api-contract/routes';
-import { maxCaseMembers, maxCasePeople } from '@arca/api-contract/routes';
 import type {
   AddCaseAssetRequest,
   AddCasePersonRequest,
@@ -18,6 +17,9 @@ import type {
 } from '@arca/api-contract/routes';
 import { withIdentity, type Database, type Transaction } from '@arca/db';
 import {
+  maxCaseMembers,
+  maxCasePeople,
+  maxCaseRelationships,
   type ShareScope,
   type StoredAsset,
   type StoredRelationship,
@@ -120,7 +122,7 @@ export interface CaseFilesSettings {
 export const caseSizeLimits = {
   people: maxCasePeople,
   members: maxCaseMembers,
-  relationships: 200,
+  relationships: maxCaseRelationships,
 } as const;
 
 /** Raised by the case's definer functions when a limit is reached (SQLSTATE CL001). */
