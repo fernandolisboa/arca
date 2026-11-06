@@ -3,6 +3,7 @@ import { type Database, withIdentity } from '@arca/db';
 import {
   type CalendarDate,
   type IntakeDraft,
+  type NamedPerson,
   buildCaseSnapshot,
   describeDraft,
   isNewReference,
@@ -74,6 +75,45 @@ function describe(
 }
 
 /**
+ * The member's text as a draft in the case's IDs (spec 0008, R1 to R3): masked, sent, parsed (an
+ * unparsable reply is asked for again, once), its dates cut to what the text states, each
+ * placeholder back to its person's ID and the writer to the viewer's own person. The evaluation
+ * suite scores this same path.
+ */
+export async function readIntakeDraft(
+  extractor: Extractor,
+  text: string,
+  people: readonly (NamedPerson & { readonly accountId: string | null })[],
+  accountId: string,
+  onUnparsable: () => void = () => undefined,
+): Promise<IntakeDraft> {
+  const { masked, placeholders } = maskIntakeText(text, people);
+  const known = new Set(placeholders.keys());
+  const draft = await parsedDraft(extractor, masked, known, onUnparsable);
+  const named = renameDraft(draft, (ref) => placeholders.get(ref) ?? ref);
+  const writer = people.find((person) => person.accountId === accountId);
+  return writer === undefined ? named : withWriter(named, writer.id);
+}
+
+async function parsedDraft(
+  extractor: Extractor,
+  masked: string,
+  known: ReadonlySet<string>,
+  onUnparsable: () => void,
+): Promise<IntakeDraft> {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const parsed = parseIntakeDraft((await extractor.draft(masked, [...known])).reply, known);
+      if (parsed !== undefined) return keepStatedDates(parsed, masked);
+      onUnparsable();
+    } catch (error) {
+      if (!(error instanceof ExtractorError) || error.code !== 'intake_unparsable') throw error;
+    }
+  }
+  throw new ExtractorError('intake_unparsable');
+}
+
+/**
  * The viewer's rows are read first and the transaction closes before the model call, so no
  * connection waits on the vendor. The text, the masked text and the reply live only in this
  * call: no log line, audit detail or error carries them.
@@ -106,27 +146,9 @@ export function createCaseIntake({
     }
   };
 
-  /** The reply as a draft; an unparsable one is asked for again, once. */
-  const draftOf = async (masked: string, known: ReadonlySet<string>) => {
-    for (let attempt = 0; attempt < 2; attempt += 1) {
-      try {
-        const parsed = parseIntakeDraft((await call(masked, [...known])).reply, known);
-        if (parsed !== undefined) return keepStatedDates(parsed, masked);
-        logger.error({ route, errorCode: 'intake_unparsable' });
-      } catch (error) {
-        if (!(error instanceof ExtractorError) || error.code !== 'intake_unparsable') throw error;
-      }
-    }
-    throw new ExtractorError('intake_unparsable');
-  };
-
-  /** The draft in the case's IDs: each placeholder becomes its person's ID, the writer the viewer's. */
-  const draftFor = async (rows: CaseRows, accountId: string, text: string) => {
-    const { masked, placeholders } = maskIntakeText(text, rows.people);
-    const draft = await draftOf(masked, new Set(placeholders.keys()));
-    const named = renameDraft(draft, (ref) => placeholders.get(ref) ?? ref);
-    const writer = rows.people.find((person) => person.accountId === accountId);
-    return writer === undefined ? named : withWriter(named, writer.id);
+  const logged: Extractor = { draft: call };
+  const onUnparsable = () => {
+    logger.error({ route, errorCode: 'intake_unparsable' });
   };
 
   return {
@@ -136,7 +158,12 @@ export function createCaseIntake({
       if (rows === undefined) return { ok: false, reason: 'not_found' };
       let described: ReturnType<typeof describe>;
       try {
-        described = describe(rows, accountId, at, await draftFor(rows, accountId, text));
+        described = describe(
+          rows,
+          accountId,
+          at,
+          await readIntakeDraft(logged, text, rows.people, accountId, onUnparsable),
+        );
       } catch (error) {
         if (error instanceof ExtractorError) return { ok: false, reason: error.code };
         // Anything else thrown here may hold the text or the reply: only its class is logged.
