@@ -3183,6 +3183,7 @@
                               "person_handed_over",
                               "share_granted",
                               "share_revoked",
+                              "rule_reported",
                               "version_activated",
                               "version_rejected"
                             ]
@@ -30032,6 +30033,99 @@
         }
       }
     },
+    "/case/rule-reports": {
+      "post": {
+        "operationId": "reportRule",
+        "summary": "Reports a requirement of the viewer's own results as possibly wrong, with a reason and an optional note; 20 per account per day (429 rate_limited); 404 not_found when the viewer's evaluation holds no such requirement",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "routeId": {
+                    "type": "string",
+                    "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                  },
+                  "versionNumber": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000
+                  },
+                  "requirementId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "outdated",
+                      "wrong_amount",
+                      "wrong_condition",
+                      "source_mismatch",
+                      "other"
+                    ]
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "routeId",
+                  "versionNumber",
+                  "requirementId",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reported",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/case/leave": {
       "post": {
         "operationId": "leaveCase",
@@ -31399,6 +31493,183 @@
                     "replaces",
                     "cases",
                     "rejection"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/reports": {
+      "get": {
+        "operationId": "listRuleReports",
+        "summary": "The open reports of possibly wrong requirements, counted per requirement and reason, for an approver; 403 not_approver",
+        "responses": {
+          "200": {
+            "description": "The open reports",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "reports": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "routeId": {
+                            "type": "string",
+                            "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                          },
+                          "versionNumber": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 1000000
+                          },
+                          "requirementId": {
+                            "type": "string",
+                            "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                          },
+                          "reason": {
+                            "type": "string",
+                            "enum": [
+                              "outdated",
+                              "wrong_amount",
+                              "wrong_condition",
+                              "source_mismatch",
+                              "other"
+                            ]
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": 1
+                          }
+                        },
+                        "required": [
+                          "routeId",
+                          "versionNumber",
+                          "requirementId",
+                          "reason",
+                          "count"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "reports"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/reports/close": {
+      "post": {
+        "operationId": "closeRuleReports",
+        "summary": "Closes the open reports of one requirement of a version once it is researched, for an approver; answers how many it closed; 403 not_approver",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "routeId": {
+                    "type": "string",
+                    "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                  },
+                  "versionNumber": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000
+                  },
+                  "requirementId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                  }
+                },
+                "required": [
+                  "routeId",
+                  "versionNumber",
+                  "requirementId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Closed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "closed": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "closed"
                   ]
                 }
               }

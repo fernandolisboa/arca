@@ -45,6 +45,7 @@ import {
   forgetPushChannel,
   CaseEvaluations,
   caseRoutes,
+  CloseRuleReportsRequest,
   handOverCasePersonAction,
   addCaseMemberAction,
   leaveCaseAction,
@@ -103,6 +104,7 @@ import { isP256PublicKey } from './notification/push.js';
 import type { CaseFiles, CaseWritten } from './case/case-files.js';
 import type { DecisionKind } from '@arca/domain';
 import type { DecisionOutcome, KnowledgeDecisions } from './knowledge/decisions.js';
+import type { RuleReportReview } from './knowledge/reports.js';
 import type { KnowledgeVersions } from './knowledge/versions.js';
 import type { DocumentRequests } from './vault/documents.js';
 import {
@@ -187,6 +189,8 @@ export interface AppDependencies {
   readonly knowledge?: KnowledgeDecisions;
   /** The activation screen's reads (spec 0007, R7); absent, their routes answer 401. */
   readonly knowledgeVersions?: KnowledgeVersions;
+  /** Approvers' view of members' rule reports (spec 0007, R8); absent, its routes answer 401. */
+  readonly ruleReports?: RuleReportReview;
   /** Whether the account's inviter confirmed it, read on the app_auth pool (spec 0003, R2). */
   readonly accountConfirmed?: (accountId: string) => Promise<boolean>;
   /**
@@ -389,6 +393,7 @@ export function createApp({
   cases,
   knowledge,
   knowledgeVersions,
+  ruleReports,
   accountConfirmed,
   memoryObjects,
   notifications,
@@ -1183,7 +1188,7 @@ export function createApp({
   // The family's case (spec 0007, R3): a confirmed account, and writes within their hourly limit.
   const caseAccount = async (
     c: Context<AppEnv>,
-    counted: 'write' | 'playback' | 'evaluations' | false,
+    counted: 'write' | 'playback' | 'evaluations' | 'reports' | false,
   ) => {
     const current = await signedIn(c);
     if (current === null || cases === undefined || authLimits === undefined) {
@@ -1193,8 +1198,8 @@ export function createApp({
       return { refused: fail(c, 'account_unconfirmed', 403) };
     }
     const limited =
-      counted === 'write'
-        ? await overLimit(c, authLimits, caseLimits.write, current.accountId)
+      counted === 'write' || counted === 'reports'
+        ? await overLimit(c, authLimits, caseLimits[counted], current.accountId)
         : counted === false
           ? undefined
           : await overLimit(c, authLimits, caseLimits[counted], current.sessionId);
@@ -1331,6 +1336,13 @@ export function createApp({
       ? fail(c, 'not_found', 404)
       : c.json(CaseEvaluations.parse(evaluations), 200);
   });
+  v1.openapi(openApiRoutes.reportRule, async (c) => {
+    const request = caseRoutes.reportRule.body.parse(await c.req.json());
+    const account = await caseAccount(c, 'reports');
+    if ('refused' in account) return account.refused;
+    const outcome = await account.cases.reportRule(account.current.accountId, request);
+    return outcome === 'reported' ? c.json({}, 200) : fail(c, 'not_found', 404);
+  });
   caseWrite(
     openApiRoutes.answerCaseQuestions,
     caseRoutes.answerCaseQuestions.body,
@@ -1389,6 +1401,22 @@ export function createApp({
     const { routeId, number } = VersionViewQuery.parse(c.req.query());
     const view = await reads.versions.view(routeId, number);
     return view === undefined ? fail(c, 'not_found', 404) : c.json(VersionView.parse(view), 200);
+  });
+  const reportReview = async (c: Context<AppEnv>) => {
+    const reads = await approverReads(c);
+    if ('refused' in reads) return { refused: reads.refused };
+    return ruleReports === undefined ? { refused: unauthorized(c) } : { reports: ruleReports };
+  };
+  v1.openapi(openApiRoutes.listRuleReports, async (c) => {
+    const review = await reportReview(c);
+    if ('refused' in review) return review.refused;
+    return c.json({ reports: await review.reports.open() }, 200);
+  });
+  v1.openapi(openApiRoutes.closeRuleReports, async (c) => {
+    const review = await reportReview(c);
+    if ('refused' in review) return review.refused;
+    const request = CloseRuleReportsRequest.parse(await c.req.json());
+    return c.json({ closed: await review.reports.close(request) }, 200);
   });
   v1.openapi(openApiRoutes.activateVersion, (c) => decideVersion(c, 'activate'));
   v1.openapi(openApiRoutes.rejectVersion, (c) => decideVersion(c, 'reject'));

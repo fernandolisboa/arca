@@ -251,6 +251,25 @@ describe('rules on tables under row-level security (spec 0004, R10)', () => {
     expect(await probeRows(orphan)).toHaveLength(2);
   });
 
+  it('deletes rule reports 365 days after they were made (spec 0007, R9)', async () => {
+    const now = later();
+    const { accountId } = await seeded(testDatabase);
+    await admin(
+      `INSERT INTO cases.rule_report (case_id, reporter_account_id, route_id, version_number,
+         requirement_id, reason, created_at)
+       SELECT case_id, reporter_account_id, route_id, version_number, requirement_id, 'other', $2
+         FROM cases.rule_report WHERE reporter_account_id = $1`,
+      [accountId, daysFrom(now, -366)],
+    );
+    await retentionWith().expireOwnedRows(now);
+    expect(
+      await admin<{ reason: string }>(
+        'SELECT reason FROM cases.rule_report WHERE reporter_account_id = $1',
+        [accountId],
+      ),
+    ).toEqual([{ reason: 'outdated' }]);
+  });
+
   it("leaves another account's expired rows under one account's identity", async () => {
     const now = later();
     const a = await seeded(testDatabase);

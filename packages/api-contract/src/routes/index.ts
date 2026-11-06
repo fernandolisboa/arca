@@ -816,6 +816,12 @@ export const auditEventDetails = {
   person_handed_over: casePersonEvent.extend({ accountId: z.uuid() }),
   share_granted: caseShareEvent,
   share_revoked: caseShareEvent,
+  /** A member reported a requirement of a version; the report's note stays out. */
+  rule_reported: z.strictObject({
+    reportId: z.uuid(),
+    routeId: routeIdSchema,
+    number: z.int().min(1),
+  }),
   version_activated: decisionEvent,
   version_rejected: decisionEvent,
 } as const;

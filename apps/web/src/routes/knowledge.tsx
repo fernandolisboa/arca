@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { knowledgeVersionsQuery, sessionQuery, versionViewQuery } from '../api.js';
 import { textLinkClass } from '../forms/text-link.js';
+import { ReportsSection } from '../knowledge/reports-section.js';
 import { VersionPanel } from '../knowledge/version-panel.js';
 import { useKnowledgeWords } from '../knowledge/words.js';
 import { Page } from '../page.js';
@@ -19,7 +20,8 @@ interface Picked {
 
 /** The activation screen (spec 0007, R7): proposed versions first, the newest first. */
 function Knowledge() {
-  const { t } = useTranslation();
+  const words = useKnowledgeWords();
+  const { t } = words;
   const session = useQuery(sessionQuery);
   const versions = useQuery({ ...knowledgeVersionsQuery, enabled: session.isSuccess });
   const [picked, setPicked] = useState<Picked | null>(null);
@@ -76,6 +78,7 @@ function Knowledge() {
       {others.length > 0 && (
         <VersionList title={t('knowledge.others')} versions={others} onPick={setPicked} />
       )}
+      <ReportsSection versions={all} words={words} />
     </Page>
   );
 }

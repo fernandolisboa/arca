@@ -198,6 +198,11 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
       [caseId, assetId, selfId],
     );
     await insert(
+      `INSERT INTO cases.rule_report (case_id, reporter_account_id, route_id, version_number, requirement_id, reason, note)
+       VALUES ($1, $2, 'qm-sample', 1, 'adult', 'outdated', 'Synthetic note')`,
+      [caseId, accountId],
+    );
+    await insert(
       `INSERT INTO audit.event (subject_account_id, actor_account_id, code) VALUES ($1, $2, 'sign_in')`,
       [accountId, accountId],
     );

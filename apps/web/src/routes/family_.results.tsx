@@ -14,6 +14,7 @@ import { textLinkClass } from '../forms/text-link.js';
 import { useKnowledgeWords, type KnowledgeWords } from '../knowledge/words.js';
 import { Page } from '../page.js';
 import { groupResults } from '../results/group.js';
+import { ReportRule } from '../results/report-rule.js';
 
 export const Route = createFileRoute('/family_/results')({ component: Results });
 
@@ -266,6 +267,17 @@ function PrincipalResult({
                 items={result.requirements}
                 name={name}
                 words={words}
+                after={(requirement) =>
+                  result.version !== null && (
+                    <ReportRule
+                      rule={{
+                        routeId: result.routeId,
+                        versionNumber: result.version.number,
+                        requirementId: requirement.id,
+                      }}
+                    />
+                  )
+                }
               >
                 {(requirement) =>
                   t('results.requirement', {
@@ -327,12 +339,15 @@ function Rules<Item extends Rule>({
   name,
   words,
   children,
+  after,
 }: {
   readonly title: string;
   readonly items: readonly Item[];
   readonly name: (id: string) => string;
   readonly words: KnowledgeWords;
   readonly children: (item: Item) => ReactNode;
+  /** Shown under the item's sources, such as the way to report it. */
+  readonly after?: (item: Item) => ReactNode;
 }) {
   if (items.length === 0) return null;
   return (
@@ -340,10 +355,14 @@ function Rules<Item extends Rule>({
       <h5 className="font-medium">{title}</h5>
       <ul className="flex flex-col gap-3">
         {items.map((item) => (
-          <li key={'costId' in item ? `${item.costId}:${item.personId ?? ''}` : item.id}>
+          <li
+            key={'costId' in item ? `${item.costId}:${item.personId ?? ''}` : item.id}
+            className="flex flex-col gap-1"
+          >
             <p>{ruleLine(item, words, name)}</p>
             <p className="text-small text-muted">{children(item)}</p>
             <Sources sources={item.sources} words={words} />
+            {after?.(item)}
           </li>
         ))}
       </ul>

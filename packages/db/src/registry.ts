@@ -404,6 +404,22 @@ export const registry: Registry = {
       label: 'dataExport.tables.caseShares',
     },
     {
+      table: 'cases.rule_report',
+      strategy: 'delete',
+      owner: ownedByAccount('reporter_account_id'),
+      pool: 'app_jobs',
+      export: [
+        'route_id',
+        'version_number',
+        'requirement_id',
+        'reason',
+        'note',
+        'state',
+        'created_at',
+      ],
+      label: 'dataExport.tables.ruleReports',
+    },
+    {
       table: 'audit.event',
       strategy: 'retain',
       owner: ownedByAccount('subject_account_id'),

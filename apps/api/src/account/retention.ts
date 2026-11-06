@@ -59,8 +59,9 @@ export const expiryRules: readonly ExpiryRule[] = [
   },
 ];
 
-/** Notification messages expire with their deliveries; vault envelopes join later. */
+/** Notification messages expire with their deliveries; rule reports a year after they were made. */
 export const notificationDays = 90;
+export const ruleReportDays = 365;
 
 export const ownedExpiryRules: readonly OwnedExpiryRule[] = [
   {
@@ -68,6 +69,12 @@ export const ownedExpiryRules: readonly OwnedExpiryRule[] = [
     table: 'notification.message',
     owner: 'account_id',
     expired: (now) => atOrBefore('created_at', daysFrom(now, -notificationDays)),
+  },
+  {
+    row: 'Rule reports',
+    table: 'cases.rule_report',
+    owner: 'reporter_account_id',
+    expired: (now) => atOrBefore('created_at', daysFrom(now, -ruleReportDays)),
   },
 ];
 

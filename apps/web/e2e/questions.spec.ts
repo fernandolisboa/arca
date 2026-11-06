@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { signedIn } from './case-accounts.js';
+import { family, signedIn } from './case-accounts.js';
 import { resetRateLimits } from './postgres/accounts.js';
 import { watchProblems } from './problems.js';
 import { databaseServer } from './servers.js';
@@ -9,18 +9,6 @@ test.skip(!databaseServer.enabled, 'needs ARCA_E2E_DATABASE and a Postgres (see 
 test.beforeAll(async () => {
   await resetRateLimits();
 });
-
-/** A synthetic family: Ana, who answers, and her child. */
-async function family(page: Page) {
-  await page.goto(`${databaseServer.origin}/family`);
-  await page.getByLabel('Seu nome').fill('Ana');
-  await page.getByRole('button', { name: 'Começar o caso' }).click();
-  await page.getByLabel('Nome', { exact: true }).fill('Criança');
-  await page.getByRole('button', { name: 'Adicionar pessoa' }).click();
-  await page.getByLabel('Com quem').selectOption({ label: 'Criança' });
-  await page.getByRole('button', { name: 'Anotar vínculo' }).click();
-  await expect(page.getByText('Ana é mãe ou pai de Criança')).toBeVisible();
-}
 
 const step = (page: Page, name: string) => page.getByRole('form', { name });
 const group = (scope: Locator, name: string) => scope.getByRole('group', { name });

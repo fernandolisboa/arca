@@ -28,6 +28,7 @@ As of 2026-11-06. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md).
 | What a passkey's authenticator reported at registration (`auth.passkey_capability`) | While the passkey exists | Deleted with the passkey (foreign key cascade); erased with the account; backed up |
 | Notification channels (push subscriptions) | Until revoked, reported gone by the push service, or the account is deleted | Delivery step and registry |
 | Notification messages and their deliveries | 90 days | Daily cleanup job |
+| Rule reports (`cases.rule_report`: a route version, a requirement, a reason and an optional note) | 365 days, or until the reporter leaves the case | Daily cleanup job; cascade when the reporter's membership ends; erased with the account |
 | Vault envelopes, recipients, sharing state and document rows | While the account exists; a rotated identity's envelopes until every sharing owner re-encrypts, or 90 days | Registry; daily cleanup job for rotated envelopes |
 | Rate-limit counters (`auth.rate_limit`, HMAC keys only) | Their window (up to an hour; a day for invites) | A hit after the window starts a new one; the daily `/internal/cron/rate-limit-sweep` deletes ended windows in production; previews run no cron, so their ended windows stay until the next hit on the same key, bounded by the routes and addresses that reached them; never backed up |
 | Non-production email outbox (`auth.outbox`) | 7 days | Each outbox write deletes expired rows, and the preview page shows only unexpired ones; the daily cleanup job deletes the rest |

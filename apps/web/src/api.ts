@@ -99,6 +99,14 @@ export const notificationChannelsQuery = queryOptions({
 });
 
 /** Every route version with its decision state, for an approver only (spec 0007, R7). */
+/** The open reports of possibly wrong requirements, for an approver (spec 0007, R8). */
+export const ruleReportsQuery = queryOptions({
+  queryKey: ['knowledge', 'reports'],
+  queryFn: () => api.call(routes.listRuleReports),
+  networkMode: 'always',
+  retry: false,
+});
+
 export const knowledgeVersionsQuery = queryOptions({
   queryKey: ['knowledge', 'versions'],
   queryFn: () => api.call(routes.listKnowledgeVersions),

@@ -31,6 +31,7 @@ const tables = [
   'person_finances',
   'person_profile',
   'relationship',
+  'rule_report',
   'share',
 ] as const;
 
@@ -290,11 +291,20 @@ describe('the case schema access matrix (spec 0007, R1)', () => {
       'person_profile UPDATE': ['facts', 'dependence_answered', 'updated_at'],
       'relationship INSERT': ['id', 'case_id', 'kind', 'from_person_id', 'to_person_id', 'details'],
       'relationship UPDATE': ['details'],
+      'rule_report INSERT': [
+        'case_id',
+        'reporter_account_id',
+        'route_id',
+        'version_number',
+        'requirement_id',
+        'reason',
+        'note',
+      ],
       'share INSERT': ['case_id', 'person_id', 'grantee_account_id', 'scope'],
     });
   });
 
-  it('lets app_jobs read and delete only members and people, and the other roles nothing', async () => {
+  it('lets app_jobs read and delete only members, people and rule reports, and the other roles nothing', async () => {
     const access = await withClient(adminTarget(database), async (client) => {
       const result = await client.query<{ role: string; table: string; privilege: string }>(
         `SELECT r.role, c.relname AS table, p.privilege
@@ -318,6 +328,8 @@ describe('the case schema access matrix (spec 0007, R1)', () => {
       'app_jobs member SELECT',
       'app_jobs person DELETE',
       'app_jobs person SELECT',
+      'app_jobs rule_report DELETE',
+      'app_jobs rule_report SELECT',
       'cases_definer asset DELETE',
       'cases_definer asset INSERT',
       'cases_definer asset SELECT',
@@ -332,6 +344,8 @@ describe('the case schema access matrix (spec 0007, R1)', () => {
       'cases_definer person INSERT',
       'cases_definer person SELECT',
       'cases_definer person UPDATE',
+      'cases_definer rule_report SELECT',
+      'cases_definer rule_report UPDATE',
       'cases_definer share DELETE',
       'cases_definer share SELECT',
     ]);
@@ -365,12 +379,14 @@ describe('the case schema access matrix (spec 0007, R1)', () => {
     };
     expect(functions).toEqual([
       { name: 'add_asset', ...definer, callers: ['app_api'] },
+      { name: 'close_rule_reports', ...definer, callers: ['app_api'] },
       { name: 'create_case', ...definer, callers: ['app_api'] },
       { name: 'drop_empty_case', ...definer, callers: [] },
       { name: 'drop_unowned_asset', ...definer, callers: [] },
       { name: 'hand_over', ...definer, callers: ['app_api'] },
       { name: 'is_member', ...definer, callers: ['app_api'] },
       { name: 'join_case', ...definer, callers: ['app_api'] },
+      { name: 'open_rule_reports', ...definer, callers: ['app_api'] },
       { name: 'set_owner', ...definer, callers: ['app_api'] },
     ]);
   });
@@ -861,3 +877,112 @@ describe('cascades and erasure in the case schema (spec 0007, R1 and R9)', () =>
     });
   });
 });
+
+describe('rule reports (spec 0007, R8)', () => {
+  const report = (
+    client: pg.Client,
+    caseId: string,
+    reporter: string,
+    note: string | null = null,
+  ) =>
+    client.query(
+      `INSERT INTO cases.rule_report
+         (case_id, reporter_account_id, route_id, version_number, requirement_id, reason, note)
+       VALUES ($1, $2, 'us-eb5', 1, 'capital', 'outdated', $3) RETURNING id`,
+      [caseId, reporter, note],
+    );
+
+  it('lets a member report as themselves only, and shows each report to its reporter alone', async () => {
+    const { caseId, otherCaseId, alice, bruno } = family;
+    await as(
+      'app_api',
+      alice,
+      async (client) => {
+        await report(client, caseId, alice, 'Uma observação sintética');
+        expect(await refused(client, ...insertAs(caseId, bruno))).toBe(insufficientPrivilege);
+        expect(await refused(client, ...insertAs(otherCaseId, alice))).not.toBe('allowed');
+        expect(
+          await refused(
+            client,
+            `INSERT INTO cases.rule_report
+               (case_id, reporter_account_id, route_id, version_number, requirement_id, reason, note)
+             VALUES ($1, $2, 'us-eb5', 1, 'capital', 'outdated', $3)`,
+            [caseId, alice, 'x'.repeat(501)],
+          ),
+        ).toBe(checkViolation);
+        expect(
+          await refused(client, `UPDATE cases.rule_report SET state = 'closed', closed_at = now()`),
+        ).toBe(insufficientPrivilege);
+        expect(await ids(client, 'SELECT note AS id FROM cases.rule_report')).toEqual([
+          'Uma observação sintética',
+        ]);
+      },
+      { commit: true },
+    );
+    expect(
+      await as('app_api', bruno, (client) => ids(client, 'SELECT id FROM cases.rule_report')),
+    ).toEqual([]);
+  });
+
+  it('counts open reports for approvers without a note, case or reporter, and closes them', async () => {
+    const { caseId, alice, bruno } = family;
+    await as('app_api', bruno, (client) => report(client, caseId, bruno), { commit: true });
+    const open = await as('app_api', bruno, async (client) => {
+      const result = await client.query<Record<string, unknown>>(
+        'SELECT * FROM cases.open_rule_reports()',
+      );
+      return result.rows;
+    });
+    expect(open).toEqual([
+      {
+        route_id: 'us-eb5',
+        version_number: 1,
+        requirement_id: 'capital',
+        reason: 'outdated',
+        reports: '2',
+      },
+    ]);
+    const closed = await as(
+      'app_api',
+      alice,
+      async (client) =>
+        (
+          await client.query<{ n: number }>(
+            `SELECT cases.close_rule_reports('us-eb5', 1, NULL) AS n`,
+          )
+        ).rows[0]?.n,
+      { commit: true },
+    );
+    expect(closed).toBe(2);
+    expect(await countAsAdmin(`FROM cases.rule_report WHERE state = 'open'`)).toBe(0);
+  });
+
+  it('lets app_jobs erase only the identity’s reports', async () => {
+    const { alice, bruno } = family;
+    const before = await countAsAdmin(`FROM cases.rule_report`);
+    await as(
+      'app_jobs',
+      alice,
+      async (client) => {
+        await client.query('DELETE FROM cases.rule_report');
+      },
+      { commit: true },
+    );
+    expect(
+      await countAsAdmin(`FROM cases.rule_report WHERE reporter_account_id = $1`, [alice]),
+    ).toBe(0);
+    expect(
+      await countAsAdmin(`FROM cases.rule_report WHERE reporter_account_id = $1`, [bruno]),
+    ).toBe(1);
+    expect(before).toBe(2);
+  });
+});
+
+function insertAs(caseId: string, reporter: string): [string, unknown[]] {
+  return [
+    `INSERT INTO cases.rule_report
+       (case_id, reporter_account_id, route_id, version_number, requirement_id, reason)
+     VALUES ($1, $2, 'us-eb5', 1, 'capital', 'outdated')`,
+    [caseId, reporter],
+  ];
+}

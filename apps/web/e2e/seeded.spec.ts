@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from '@playwright/test';
+import { expect, test, type Browser } from '@playwright/test';
+import { family, signedIn } from './case-accounts.js';
 import { seededCredential, virtualAuthenticator, withoutAutofill } from './passkeys.js';
 import {
   clearKnowledgeDecisions,
@@ -37,7 +38,8 @@ test('a seeded account signs in with its passkey (spec 0004, R2)', async ({ page
 });
 
 // In this file, after the sign-in above: both use the seed passkey, whose counter one shares.
-test('the seed approver activates a version, then rejects it (spec 0007, R7)', async ({
+test('the seed approver activates a version, reads and closes its reports, then rejects it (spec 0007, R7 and R8)', async ({
+  browser,
   page,
 }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop', 'runs once, on the desktop project');
@@ -88,6 +90,23 @@ test('the seed approver activates a version, then rejects it (spec 0007, R7)', a
   });
   await expect(page.getByText('Versão ativa', { exact: true })).toBeVisible();
 
+  await memberReportsARequirement(browser);
+  await page.reload();
+  const reports = page.getByRole('region', { name: 'Avisos de regra' });
+  await expect(reports).toContainText(/EB-5 .* \(versão 1\), requisito/);
+  await expect(reports).toContainText(/valor errado: \d+ avisos?/);
+  await expect(reports).not.toContainText('Uma observação sintética');
+  for (const close of await reports
+    .getByRole('button', { name: 'Já pesquisei, encerrar os avisos' })
+    .all()) {
+    await close.click();
+  }
+  await expect(reports).toContainText('Nenhum aviso aberto.');
+  await page
+    .getByRole('region', { name: 'Outras versões' })
+    .getByRole('button', { name: /^EB-5 immigrant investor/ })
+    .click();
+
   await page.getByRole('button', { name: 'Recusar esta versão' }).click();
   await expect(
     page.getByText(/Hoje a rota usa esta versão\. Se recusar, a rota fica sem versão/),
@@ -97,3 +116,35 @@ test('the seed approver activates a version, then rejects it (spec 0007, R7)', a
   await expect(page.getByText('Esta versão foi recusada e não volta a ser usada.')).toBeVisible();
   expect(problems).toEqual([]);
 });
+
+/** Another account, in its own browser, reports a requirement of the active version (R8). */
+async function memberReportsARequirement(browser: Browser) {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const problems = watchProblems(page);
+  await signedIn(page);
+  await family(page);
+  await page.getByRole('link', { name: 'Ver as rotas para a família' }).click();
+  await page
+    .getByRole('article', { name: /^EB-5 immigrant investor/ })
+    .getByText('Ver requisitos, custos e prazos')
+    .first()
+    .click();
+  await page.getByRole('button', { name: 'Esta regra pode estar errada?' }).first().click();
+  const form = page.getByRole('form', { name: 'Avisar que a regra pode estar errada' });
+  await form
+    .getByRole('group', { name: 'O que parece errado?' })
+    .getByRole('radio', { name: 'O valor está errado', exact: true })
+    .check();
+  await form.getByLabel('Quer contar mais? (opcional)').fill('Uma observação sintética');
+  const { violations } = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
+    .analyze();
+  expect(violations.map(({ id, nodes }) => [id, nodes.map((node) => node.target)])).toEqual([]);
+  await form.getByRole('button', { name: 'Enviar aviso' }).click();
+  await expect(
+    page.getByText('Aviso enviado. Quem revisa as regras vai conferir esta regra.'),
+  ).toBeVisible();
+  expect(problems).toEqual([]);
+  await context.close();
+}

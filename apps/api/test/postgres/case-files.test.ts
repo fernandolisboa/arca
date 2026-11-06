@@ -13,6 +13,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { auditLog } from '../../src/audit/log.js';
 import { type CaseFiles, type CaseWritten, createCaseFiles } from '../../src/case/case-files.js';
 import { readCase } from '../../src/case/view.js';
+import { createRuleReportReview } from '../../src/knowledge/reports.js';
 import { authTestDatabase, type AuthTestDatabase } from './auth-database.js';
 
 // The case API's service on the real migrations, as app_api (spec 0007, R1 to R3). Synthetic
@@ -967,6 +968,57 @@ describe('evaluating the case (spec 0007, R6)', () => {
       });
     }
     expect(evaluated.questions).toEqual([]);
+  });
+});
+
+describe('reporting a wrong rule (spec 0007, R8)', () => {
+  it('takes a report only of a requirement in the reporter’s own results', async () => {
+    const { alice, bruno } = await family();
+    const evaluated = CaseEvaluations.parse(await files.evaluations(alice));
+    const shown = evaluated.results.find(({ requirements }) => requirements.length > 0);
+    if (shown?.version == null || shown.requirements[0] === undefined) throw new Error('no rule');
+    const request = {
+      routeId: shown.routeId,
+      versionNumber: shown.version.number,
+      requirementId: shown.requirements[0].id,
+      reason: 'outdated' as const,
+      note: 'Nota sintética',
+    };
+    expect(await files.reportRule(alice, request)).toBe('reported');
+    expect(await files.reportRule(bruno, { ...request, note: undefined })).toBe('reported');
+    expect(await files.reportRule(alice, { ...request, requirementId: 'not-shown' })).toBe(
+      'not_found',
+    );
+    expect(await files.reportRule(alice, { ...request, versionNumber: 999 })).toBe('not_found');
+    expect(await files.reportRule(await account(), request)).toBe('not_found');
+    expect(
+      await admin('SELECT note, state FROM cases.rule_report WHERE reporter_account_id = $1', [
+        alice,
+      ]),
+    ).toEqual([{ note: 'Nota sintética', state: 'open' }]);
+    const [reported] = (await events(alice)).filter(({ code }) => code === 'rule_reported');
+    expect(reported?.details).toMatchObject({
+      routeId: request.routeId,
+      number: request.versionNumber,
+    });
+    expect(JSON.stringify(reported?.details)).not.toContain('sintética');
+
+    const review = createRuleReportReview(() => testDatabase.apiDb);
+    const open = (await review.open()).filter(
+      ({ routeId, requirementId }) =>
+        routeId === request.routeId && requirementId === request.requirementId,
+    );
+    expect(open).toEqual([
+      {
+        routeId: request.routeId,
+        versionNumber: request.versionNumber,
+        requirementId: request.requirementId,
+        reason: 'outdated',
+        count: 2,
+      },
+    ]);
+    expect(await review.close(request)).toBe(2);
+    expect(await review.open()).toEqual([]);
   });
 });
 

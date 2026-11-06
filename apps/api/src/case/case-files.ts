@@ -6,6 +6,7 @@ import type {
   CaseQuestions,
   CaseView,
   HandOverCasePersonRequest,
+  ReportRuleRequest,
 } from '@arca/api-contract/routes';
 import type {
   AddCaseAssetRequest,
@@ -128,6 +129,14 @@ export interface CaseFiles {
   readonly playback: (accountId: string) => Promise<CasePlayback | null>;
   /** Every route for each member as principal, from what the viewer sees; null outside a case. */
   readonly evaluations: (accountId: string) => Promise<CaseEvaluationsView | null>;
+  /**
+   * Reports a requirement of the viewer's own evaluation as possibly wrong (R8); `not_found` when
+   * the viewer is in no case or the evaluation holds no such requirement.
+   */
+  readonly reportRule: (
+    accountId: string,
+    request: ReportRuleRequest,
+  ) => Promise<'reported' | 'not_found'>;
   readonly answerQuestions: (
     accountId: string,
     request: AnswerCaseQuestionsRequest,
@@ -636,6 +645,39 @@ export function createCaseFiles({
           ? null
           : caseEvaluations(rows, { ...evaluation, states, today: evaluation.today() });
       });
+    },
+
+    reportRule: async (accountId, { routeId, versionNumber, requirementId, reason, note }) => {
+      const states = await evaluation.states();
+      const reported = await withIdentity(db(), { accountId }, async (tx) => {
+        const rows = await readCase(tx, accountId);
+        if (rows === undefined) return undefined;
+        const evaluated = caseEvaluations(rows, {
+          ...evaluation,
+          states,
+          today: evaluation.today(),
+        });
+        // Taken from the reporter's own results, so a report names only a requirement they saw.
+        const shown = evaluated.results.some(
+          (result) =>
+            result.routeId === routeId &&
+            result.version?.number === versionNumber &&
+            result.requirements.some(({ id }) => id === requirementId),
+        );
+        if (!shown) return undefined;
+        const inserted = await tx.execute<{ id: string }>(sql`
+          INSERT INTO cases.rule_report
+            (case_id, reporter_account_id, route_id, version_number, requirement_id, reason, note)
+          VALUES (${rows.caseId}, ${accountId}, ${routeId}, ${versionNumber}, ${requirementId},
+                  ${reason}, ${note ?? null})
+          RETURNING id`);
+        return inserted.rows[0]?.id;
+      });
+      if (reported === undefined) return 'not_found';
+      await recordAll(accountId, [
+        event('rule_reported', { reportId: reported, routeId, number: versionNumber }),
+      ]);
+      return 'reported';
     },
 
     answerQuestions: (accountId, { personId, answers }) =>

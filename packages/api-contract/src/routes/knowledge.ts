@@ -4,10 +4,12 @@ import {
   leapDayBirthdaySchema,
   routeIdSchema,
   ruleCaseSummarySchema,
+  slugSchema,
   sourceSchema,
   viewSections,
 } from '@arca/domain';
 import { z } from 'zod';
+import { ruleReportReasons } from './case.js';
 import type { RouteDefinition } from './index.js';
 
 /*
@@ -203,11 +205,55 @@ export const getVersionView = {
   response: { description: 'The version', schema: VersionView },
 } as const satisfies RouteDefinition<typeof VersionView>;
 
+const ruleReference = {
+  routeId: routeIdSchema,
+  versionNumber: z.int().min(1).max(1_000_000),
+  requirementId: slugSchema,
+};
+
+/** Open reports counted per requirement and reason, with no note, case or reporter (R8). */
+export const RuleReports = z.object({
+  reports: z.array(
+    z.object({
+      ...ruleReference,
+      reason: z.enum(ruleReportReasons),
+      count: z.int().min(1),
+    }),
+  ),
+});
+export type RuleReports = z.infer<typeof RuleReports>;
+
+export const listRuleReports = {
+  method: 'get',
+  path: '/knowledge/reports',
+  operationId: 'listRuleReports',
+  summary:
+    'The open reports of possibly wrong requirements, counted per requirement and reason, for an approver; 403 not_approver',
+  response: { description: 'The open reports', schema: RuleReports },
+} as const satisfies RouteDefinition<typeof RuleReports>;
+
+export const CloseRuleReportsRequest = z.strictObject(ruleReference);
+export type CloseRuleReportsRequest = z.infer<typeof CloseRuleReportsRequest>;
+
+export const CloseRuleReportsResponse = z.object({ closed: z.int().min(0) });
+
+export const closeRuleReports = {
+  method: 'post',
+  path: '/knowledge/reports/close',
+  operationId: 'closeRuleReports',
+  summary:
+    'Closes the open reports of one requirement of a version once it is researched, for an approver; answers how many it closed; 403 not_approver',
+  body: CloseRuleReportsRequest,
+  response: { description: 'Closed', schema: CloseRuleReportsResponse },
+} as const satisfies RouteDefinition<typeof CloseRuleReportsResponse>;
+
 export const knowledgeRoutes = {
   activateVersion,
   rejectVersion,
   listKnowledgeVersions,
   getVersionView,
+  listRuleReports,
+  closeRuleReports,
 } as const;
 
 export {

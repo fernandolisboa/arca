@@ -17,6 +17,7 @@ import type { SignedIn } from '../auth/service.js';
 import type { StepUpSpender } from '../auth/step-up.js';
 import { subjectHash, type CanonicalAction } from '../auth/step-up-encoding.js';
 import { reverifyStepUp } from '../auth/step-up-reverify.js';
+import { closeRuleReports } from './reports.js';
 
 export type DecisionOutcome =
   | { readonly decided: string }
@@ -177,7 +178,12 @@ export function createKnowledgeDecisions({
             ${Buffer.from(spent.signature)}, ${spent.id})`);
         },
       );
-      return stored ? { decided: decisionId } : { refused: 'step_up_required' };
+      if (!stored) return { refused: 'step_up_required' };
+      // Activating a correction answers the reports of the version it corrects (R8).
+      if (kind === 'activate' && identity.corrects !== undefined) {
+        await closeRuleReports(db, identity.routeId, identity.corrects, null);
+      }
+      return { decided: decisionId };
     },
 
     states,
