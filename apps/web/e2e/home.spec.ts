@@ -170,3 +170,42 @@ test('starts over from the network when the cached app script is not a script', 
     [],
   );
 });
+
+test('reloads once into the new version when a lazy chunk is gone after a deploy', async ({
+  browser,
+}) => {
+  // Without the worker, so every request reaches the route below.
+  const context = await browser.newContext({ serviceWorkers: 'block' });
+  const page = await context.newPage();
+  let refuse = true;
+  let refused = 0;
+  await page.route(/\/assets\/vault\.lazy-[^/]+\.js$/, async (route) => {
+    if (refuse) {
+      refuse = false;
+      refused += 1;
+      await route.fulfill({ status: 404 });
+    } else {
+      await route.continue();
+    }
+  });
+  const goToVault = () =>
+    page.evaluate(() => {
+      history.pushState(null, '', '/vault');
+      dispatchEvent(new PopStateEvent('popstate'));
+    });
+  const vault = page.getByRole('heading', { level: 2, name: 'Cofre' });
+  await page.goto('/');
+  await expect(page.getByRole('heading', { level: 1, name: 'Arca' })).toBeVisible();
+
+  await goToVault();
+  await expect(vault).toBeVisible();
+  expect(refused).toBe(1);
+
+  // Within 30 seconds, a second failure shows the error instead of reloading again.
+  await page.goto('/');
+  refuse = true;
+  await goToVault();
+  await expect(page.getByRole('alert')).toBeVisible();
+  expect(refused).toBe(2);
+  await context.close();
+});

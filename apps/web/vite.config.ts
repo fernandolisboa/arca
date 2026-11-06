@@ -122,7 +122,8 @@ function pwa(): Plugin {
       order: 'post',
       handler: () => [
         { tag: 'script', attrs: { src: `/${appearanceBootFile}` }, injectTo: 'head' },
-        { tag: 'script', attrs: { src: `/${recoveryBootFile}` }, injectTo: 'head' },
+        // First in <head>, so it listens before any module script can fail.
+        { tag: 'script', attrs: { src: `/${recoveryBootFile}` }, injectTo: 'head-prepend' },
       ],
     },
     generateBundle() {

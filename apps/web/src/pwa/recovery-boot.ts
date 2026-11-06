@@ -1,18 +1,15 @@
 /*
- * Runs in <head> before the app's module script, as a classic same-origin script. When that script
- * or a module it imports fails to load, the page would stay blank, so this drops the service
- * worker and its caches and loads the page once more from the network.
+ * A classic same-origin script that runs before the app's module script executes. When that
+ * script or a module it imports fails to load, the page would stay blank, so this deletes the
+ * caches and loads the page once more from the network. The worker stays registered: dropping it
+ * would end this browser's push subscription (spec 0005, R7), and with its caches empty the
+ * precache answers from the network.
  */
 import { recoverOnce } from './recover.js';
 
-async function startOver(): Promise<void> {
-  if ('serviceWorker' in navigator) {
-    const registrations = await navigator.serviceWorker.getRegistrations();
-    await Promise.all(registrations.map((registration) => registration.unregister()));
-  }
-  if ('caches' in window) {
-    await Promise.all((await caches.keys()).map((name) => caches.delete(name)));
-  }
+async function emptyCaches(): Promise<void> {
+  if (!('caches' in window)) return;
+  await Promise.all((await caches.keys()).map((name) => caches.delete(name)));
 }
 
 window.addEventListener(
@@ -23,10 +20,11 @@ window.addEventListener(
       return;
     }
     recoverOnce(
+      'entry',
       () => sessionStorage,
       Date.now(),
       () => {
-        void startOver()
+        void emptyCaches()
           .catch(() => undefined)
           .finally(() => {
             location.reload();

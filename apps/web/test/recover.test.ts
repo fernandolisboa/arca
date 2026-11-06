@@ -26,10 +26,19 @@ describe('recoverOnce', () => {
     const storage = memoryStorage();
     const recover = vi.fn();
     const start = 1_800_000_000_000;
-    expect(recoverOnce(() => storage, start, recover)).toBe(true);
-    expect(recoverOnce(() => storage, start + recoveryWindowMs - 1, recover)).toBe(false);
-    expect(recoverOnce(() => storage, start + recoveryWindowMs, recover)).toBe(true);
+    expect(recoverOnce('entry', () => storage, start, recover)).toBe(true);
+    expect(recoverOnce('entry', () => storage, start + recoveryWindowMs - 1, recover)).toBe(false);
+    expect(recoverOnce('entry', () => storage, start + recoveryWindowMs, recover)).toBe(true);
     expect(recover).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps each recovery apart, so a chunk reload never blocks the entry recovery', () => {
+    const storage = memoryStorage();
+    const recover = vi.fn();
+    const start = 1_800_000_000_000;
+    expect(recoverOnce('chunk', () => storage, start, recover)).toBe(true);
+    expect(recoverOnce('entry', () => storage, start + 1, recover)).toBe(true);
+    expect(recoverOnce('chunk', () => storage, start + 2, recover)).toBe(false);
   });
 
   it('never recovers without session storage, so it cannot loop', () => {
@@ -37,7 +46,7 @@ describe('recoverOnce', () => {
     const blocked = () => {
       throw new DOMException('blocked', 'SecurityError');
     };
-    expect(recoverOnce(blocked, 1_800_000_000_000, recover)).toBe(false);
+    expect(recoverOnce('entry', blocked, 1_800_000_000_000, recover)).toBe(false);
     expect(recover).not.toHaveBeenCalled();
   });
 });

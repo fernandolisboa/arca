@@ -1,6 +1,11 @@
 import { fallbackExclusions } from '@arca/security-policy';
 import { clientsClaim } from 'workbox-core';
-import { cleanupOutdatedCaches, matchPrecache, precacheAndRoute } from 'workbox-precaching';
+import {
+  addPlugins,
+  cleanupOutdatedCaches,
+  matchPrecache,
+  precacheAndRoute,
+} from 'workbox-precaching';
 import type { PrecacheEntry } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
 import { pushNotice, pushPayload } from './push-notice.js';
@@ -38,6 +43,17 @@ registerRoute(
 
 // Only the built static files are cached. No route caches /v1 or any other response, so API
 // responses always come from the network and are never stored (spec 0001, R5).
+// A deployment that lacks a file answers it with index.html. Stored under a script's URL, that
+// page would be served as the script on every load, so the install fails instead.
+addPlugins([
+  {
+    cacheWillUpdate: ({ request, response }) => {
+      const isPage = response.headers.get('content-type')?.startsWith('text/html') === true;
+      const wantsPage = new URL(request.url).pathname.endsWith('.html');
+      return Promise.resolve(response.ok && isPage === wantsPage ? response : null);
+    },
+  },
+]);
 precacheAndRoute(precacheManifest);
 cleanupOutdatedCaches();
 

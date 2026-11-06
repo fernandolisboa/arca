@@ -17,9 +17,12 @@ import './styles.css';
 startMonitoring();
 
 // A new version's worker takes over open tabs at once and drops the old files, so a page left
-// open across a deploy can no longer load its lazy chunks: load the new version instead.
+// open across a deploy can no longer load its lazy chunks: load the new version instead. Offline,
+// a reload would not bring them back.
 window.addEventListener('vite:preloadError', (event) => {
+  if (!navigator.onLine) return;
   recoverOnce(
+    'chunk',
     () => sessionStorage,
     Date.now(),
     () => {
