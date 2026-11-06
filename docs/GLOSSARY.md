@@ -92,6 +92,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Rule watcher | Vigia de regras | Scheduled job that detects rule changes and proposes updates |
 | Fixture route | Internal, no UI label | A made-up route on a user-assigned country code (`QM` to `QZ`, except `QO` and `QU`) that proves the schema in tests; never shown to users |
 | Synthetic family | Internal, no UI label | An invented case snapshot in `eval/families`, shared by rule cases and AI evaluation; never real data |
+| Intake evaluation case | Internal, no UI label | An invented pt-BR description with the draft expected from it, in `apps/api/test/eval/intake`; never real data |
 | Source-of-funds trail | Trilha da origem dos recursos | Documented chain from an asset to the money used in a route |
 | Apostille | Apostila | Hague Convention certification of a public document |
 | Sworn translation | Tradução juramentada | Official translation required by some destinations |

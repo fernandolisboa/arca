@@ -1,21 +1,20 @@
+/**
+ * The intake evaluation (spec 0008, R5): every case through the same path the draft route takes,
+ * against the Claude adapter, scored and judged against the baseline. It refuses to run without
+ * a key, since a score without the model would say nothing about it.
+ */
 import { appendFileSync, readFileSync } from 'node:fs';
 import type { IntakeDraft } from '@arca/domain';
 import { expect, it } from 'vitest';
 import { readIntakeDraft } from '../../../src/case/intake.js';
-import { readAnthropicApiKey, readScriptedIntake } from '../../../src/config.js';
+import { readAnthropicApiKey } from '../../../src/config.js';
 import { claudeExtractor } from '../../../src/intake/claude-extractor.js';
 import { type Extractor, ExtractorError } from '../../../src/intake/extractor.js';
 import { intakeModel } from '../../../src/intake/model.js';
 import { intakePromptVersion } from '../../../src/intake/prompt.js';
 import { type IntakeCase, intakeCases, writerAccount } from './cases.js';
 import { type Baseline, type CaseRun, judge, report } from './report.js';
-import { scoreDraft } from './score.js';
-
-/**
- * The intake evaluation (spec 0008, R5): every case through the same path the draft route takes,
- * against the Claude adapter, scored and judged against the baseline. It refuses to run without
- * a key or on the scripted extractor, since a score of either would say nothing about the model.
- */
+import { forbiddenIn, scoreDraft } from './score.js';
 
 const concurrency = 4;
 
@@ -32,11 +31,15 @@ async function runCase(extractor: Extractor, evalCase: IntakeCase): Promise<Case
   try {
     draft = await readIntakeDraft(watched, evalCase.text, evalCase.people, writerAccount);
   } catch (error) {
-    failure = error instanceof ExtractorError ? error.code : 'intake_failed';
+    // Only the vendor's failures are tolerated; anything else is a bug in the path and fails the run.
+    if (!(error instanceof ExtractorError)) throw error;
+    failure = error.code;
   }
+  const score = scoreDraft(draft, evalCase.expected, new Set(evalCase.unscoredRoles));
   return {
     id: evalCase.id,
-    score: scoreDraft(draft, evalCase.expected, new Set(evalCase.unscoredRoles)),
+    score,
+    forbidden: forbiddenIn(score, evalCase.forbidden ?? []),
     leaked: (evalCase.neverSent ?? []).filter((secret) =>
       sent.some((text) => text.includes(secret)),
     ),
@@ -45,9 +48,6 @@ async function runCase(extractor: Extractor, evalCase: IntakeCase): Promise<Case
 }
 
 it('scores the intake extraction against the baseline', async () => {
-  if (readScriptedIntake()) {
-    throw new Error('ARCA_INTAKE_EXTRACTOR=scripted is set: the evaluation needs the real model');
-  }
   const apiKey = readAnthropicApiKey();
   if (apiKey === undefined) throw new Error('Set ANTHROPIC_API_KEY to run the intake evaluation');
   const extractor = claudeExtractor({ apiKey });

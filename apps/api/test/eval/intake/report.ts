@@ -6,7 +6,6 @@ import {
   precision,
   recall,
   totals,
-  weighted,
 } from './score.js';
 
 /** The scores of the accepted setup (spec 0008, R5); `null` until the first run is accepted. */
@@ -24,6 +23,8 @@ export interface CaseRun {
   readonly failure?: string;
   /** Text the masking should have kept from the extractor but did not. */
   readonly leaked: readonly string[];
+  /** The wrong facts the case forbids that the draft proposed. */
+  readonly forbidden: readonly string[];
 }
 
 export interface Verdict {
@@ -36,7 +37,10 @@ export interface Verdict {
 export const allowedDrop = 0.02;
 /** Whatever the baseline, a run below this precision does not pass. */
 export const precisionFloor = 0.9;
-/** And below this recall, since a model that proposes nothing is never wrong. */
+/**
+ * And below this recall, since a model that proposes nothing is never wrong. The floors differ
+ * because a wrong fact is worse than a question left for the guided flow.
+ */
 export const recallFloor = 0.6;
 /** More cases than this with no draft and the run says too little about the model. */
 export const maxFailures = 2;
@@ -47,9 +51,11 @@ export function judge(runs: readonly CaseRun[], baseline: Baseline): Verdict {
   const all = totals(runs.map(({ score }) => score)).all;
   const scored = { precision: round(precision(all)), recall: round(recall(all)) };
   const problems: string[] = [];
-  for (const { id, leaked } of runs) {
-    if (leaked.length > 0)
+  for (const { id, leaked, forbidden } of runs) {
+    if (leaked.length > 0) {
       problems.push(`${id}: the masking let ${String(leaked.length)} item(s) through`);
+    }
+    if (forbidden.length > 0) problems.push(`${id}: proposed ${forbidden.join(', ')}`);
   }
   const failed = runs.filter(({ failure }) => failure !== undefined);
   if (failed.length > maxFailures) {
@@ -73,7 +79,7 @@ export function judge(runs: readonly CaseRun[], baseline: Baseline): Verdict {
 
 const percent = (value: number) => `${(value * 100).toFixed(1)}%`;
 const row = (name: string, tally: Tally) =>
-  `| ${name} | ${String(tally.hits)} | ${String(tally.wrong)} | ${String(tally.missed)} | ${percent(precision(tally))} | ${percent(recall(tally))} | ${percent(weighted(tally))} |`;
+  `| ${name} | ${String(tally.hits)} | ${String(tally.wrong)} | ${String(tally.missed)} | ${percent(precision(tally))} | ${percent(recall(tally))} |`;
 
 /** The run as Markdown, for the job summary: scores per field, then each case's misses. */
 export function report(
@@ -90,14 +96,12 @@ export function report(
     verdict.problems.length === 0 ? '**Passed.**' : `**Failed:** ${verdict.problems.join('; ')}.`,
     baseline.precision === null
       ? 'No baseline yet: record the scores below in `baseline.json` once this run is accepted.'
-      : `Baseline: precision ${percent(baseline.precision)}, recall ${percent(baseline.recall ?? 0)} (\`${baseline.model ?? '?'}\`, \`${baseline.promptVersion ?? '?'}\`).`,
+      : `Baseline: precision ${percent(baseline.precision)}, recall ${baseline.recall === null ? '?' : percent(baseline.recall)} (\`${baseline.model ?? '?'}\`, \`${baseline.promptVersion ?? '?'}\`).`,
     '',
-    '| Field | Right | Wrong | Missed | Precision | Recall | Weighted |',
-    '| --- | --- | --- | --- | --- | --- | --- |',
+    '| Field | Right | Wrong | Missed | Precision | Recall |',
+    '| --- | --- | --- | --- | --- | --- |',
     ...fields.map((field: Field) => row(field, sums[field])),
     row('**all**', sums.all),
-    '',
-    'Weighted counts a wrong fact twice, a missed one once.',
     '',
   ];
   const notable = runs.filter(

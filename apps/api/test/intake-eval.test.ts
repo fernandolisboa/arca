@@ -1,18 +1,17 @@
-import {
-  type IntakeDraft,
-  keepStatedDates,
-  maskIntakeText,
-  parseIntakeDraft,
-  renameDraft,
-} from '@arca/domain';
+import { keepStatedDates, maskIntakeText, parseIntakeDraft, renameDraft } from '@arca/domain';
 import { describe, expect, it } from 'vitest';
-import { intakeCases } from './eval/intake/cases.js';
+import { draftOf, intakeCases } from './eval/intake/cases.js';
 import { type Baseline, type CaseRun, judge, report } from './eval/intake/report.js';
-import { precision, scoreDraft, totals } from './eval/intake/score.js';
+import {
+  emptyFields,
+  factsOf,
+  forbiddenIn,
+  precision,
+  scoreDraft,
+  totals,
+} from './eval/intake/score.js';
 
 // The intake evaluation's cases and scoring (spec 0008, R5), checked without calling a model.
-
-const draftOf = (value: unknown) => value as IntakeDraft;
 
 describe('the intake evaluation cases', () => {
   it('has at least 20 cases, each with its own ID', () => {
@@ -30,6 +29,11 @@ describe('the intake evaluation cases', () => {
     // Every expected date is one the text states, at the precision it states it.
     expect(keepStatedDates(asSent, masked)).toEqual(asSent);
     for (const secret of evalCase.neverSent ?? []) expect(masked).not.toContain(secret);
+    // A forbidden prefix never matches a fact the case expects.
+    const expected = [...factsOf(evalCase.expected, new Set(evalCase.unscoredRoles)).keys()];
+    for (const prefix of evalCase.forbidden ?? []) {
+      expect(expected.filter((key) => key.startsWith(prefix))).toEqual([]);
+    }
   });
 });
 
@@ -86,6 +90,48 @@ describe('scoring a draft', () => {
     expect(scoreDraft(actual, open).wrong).toEqual(['role: n1 other']);
   });
 
+  it('counts a fact the draft repeats once', () => {
+    const twice = draftOf({
+      people: [{ ref: 'writer' }, { ref: 'n1', role: 'spouse' }],
+      relationships: [
+        { kind: 'spouse', people: ['writer', 'n1'] },
+        { kind: 'spouse', people: ['n1', 'writer'] },
+      ],
+    });
+    expect(totals([scoreDraft(twice, twice)]).all).toEqual({ hits: 3, wrong: 0, missed: 0 });
+  });
+
+  it('scores a person the draft leaves out as missed', () => {
+    const fewer = draftOf({
+      people: [
+        { ref: 'writer', birthDate: '1980' },
+        { ref: 'n1', role: 'child', birthDate: '2010' },
+      ],
+      relationships: [],
+    });
+    const score = scoreDraft(fewer, expected);
+    expect(score.wrong).toEqual([]);
+    expect(score.missed).toContain('people: n1');
+  });
+
+  it('breaks a tie in hits by the fewer wrong facts', () => {
+    const actual = draftOf({
+      people: [{ ref: 'n1' }, { ref: 'n2', role: 'other' }],
+      relationships: [],
+    });
+    const open = draftOf({ people: [{ ref: 'n1' }], relationships: [] });
+    expect(scoreDraft(actual, open, new Set(['n1'])).wrong).toEqual(['people: extra:n1']);
+  });
+
+  it('names the forbidden facts a draft proposed', () => {
+    const score = scoreDraft(
+      draftOf({ people: [{ ref: 'n1', citizenships: ['IT'] }], relationships: [] }),
+      draftOf({ people: [{ ref: 'n1' }], relationships: [] }),
+    );
+    expect(forbiddenIn(score, ['citizenships: '])).toEqual(['citizenships: n1 IT']);
+    expect(forbiddenIn(score, ['birthDate: '])).toEqual([]);
+  });
+
   it('scores an empty draft against nothing expected as perfect', () => {
     const none = draftOf({ people: [], relationships: [] });
     expect(precision(totals([scoreDraft(none, none)]).all)).toBe(1);
@@ -95,26 +141,13 @@ describe('scoring a draft', () => {
 describe('judging a run', () => {
   const none: Baseline = { model: null, promptVersion: null, precision: null, recall: null };
   const run = (hits: number, wrong: number, extra: Partial<CaseRun> = {}): CaseRun => {
-    const people = { hits, wrong, missed: 0 };
-    const zero = { hits: 0, wrong: 0, missed: 0 };
+    const byField = emptyFields();
+    byField.people = { hits, wrong, missed: 0 };
     return {
       id: 'case',
       leaked: [],
-      score: {
-        byField: {
-          people,
-          role: zero,
-          birthDate: zero,
-          citizenships: zero,
-          residenceCountry: zero,
-          educationLevel: zero,
-          languages: zero,
-          relationships: zero,
-          relationshipDetails: zero,
-        },
-        wrong: [],
-        missed: [],
-      },
+      forbidden: [],
+      score: { byField, wrong: [], missed: [] },
       ...extra,
     };
   };
@@ -136,8 +169,11 @@ describe('judging a run', () => {
     expect(judge([quiet], none).problems).toEqual(['recall 0.1 is below the floor 0.6']);
   });
 
-  it('fails a run with a leak or too many cases without a draft', () => {
+  it('fails a run with a leak, a forbidden fact or too many cases without a draft', () => {
     expect(judge([run(1, 0, { leaked: ['x'] })], none).problems).toHaveLength(1);
+    expect(judge([run(1, 0, { forbidden: ['citizenships: n1 IT'] })], none).problems).toEqual([
+      'case: proposed citizenships: n1 IT',
+    ]);
     const failed = run(1, 0, { failure: 'intake_timeout' });
     expect(judge([failed, failed], none).problems).toEqual([]);
     expect(judge([failed, failed, failed], none).problems).toHaveLength(1);

@@ -14,8 +14,9 @@ const githubReference = /(?<![\w.-])github(?![\w-])(?:\s*\.\s*([A-Za-z_][\w-]*))
 
 /**
  * Triggers whose workflow definition comes from a pull request's branch, or from whatever commit
- * was deployed (a preview branch, or a fork Vercel was allowed to build). Secrets stay out of
- * other branches' runs because they live only in environments limited to main.
+ * was deployed (a preview branch, or a fork Vercel was allowed to build). A repository secret is
+ * still readable from any branch of this repository: the policy allows only one, the evaluation's
+ * own key (spec 0001, R8).
  */
 const branchControlledTriggers = ['pull_request', 'deployment', 'deployment_status'];
 

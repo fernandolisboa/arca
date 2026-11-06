@@ -58,8 +58,8 @@ packages/
   vault/        client-side document encryption in the age format (ADR-0018); never used by the API
 tooling/        shared ESLint and TypeScript configs, security header policy, repository scripts
                 (dependency-source, boundary and bundle checks, CI policy scripts, migration runner)
-eval/           evaluation corpora: the synthetic families in families/ (spec 0002), later the synthetic AI
-                evaluation suite
+eval/           evaluation corpora shared across packages: the synthetic families in families/ (spec 0002);
+                an AI evaluation lives next to the adapter it scores, such as apps/api/test/eval/intake
 ```
 
 Rules that keep every platform possible:
@@ -146,7 +146,7 @@ Each problem gets the right technique; an LLM never decides on its own what a ru
 
 Quality is measured, not assumed. A suite of **synthetic cases** covers families of varied shapes (single person, couple with young children, divorced parents with shared custody, dependent elderly parents, previous visa refusal, assets held by an ex-spouse, the shape of case 1), each with a reviewed expected outcome: units per route, top recommendations, required documents and execution modes.
 
-The suite runs on every change to a prompt, model, adapter or rule version, and blocks deploy when quality drops. Classifier outputs are scored on accuracy and calibration.
+Rule cases run in CI on every change. An AI evaluation calls the real model, so it runs by hand from a manual workflow, never as a required check ([ADR-0019](adr/0019-reviewers-in-the-authoring-session.md)): the authoring session starts it on every change to a prompt, model, adapter or draft schema, and the change lands only if the scores hold against the committed baseline. An adapter reaches production only after a passing run (free-text intake: [spec 0008, R5](specs/0008-free-text-intake.md#r5-evaluation)). Classifier outputs are scored on accuracy and calibration.
 
 ## Security
 
@@ -164,11 +164,11 @@ Every service that touches Arca's data, and what it may receive. A new processor
 
 | Service | Role | Receives | Location |
 | --- | --- | --- | --- |
-| GitHub (public repository) | Source, docs and knowledge data | Code and public rules ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)); no case data | Public |
+| GitHub (public repository) | Source, docs and knowledge data | Code and public rules ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)); no case data. Actions holds one secret, the evaluation's Anthropic key | Public |
 | Neon (Postgres) | Primary database | All case data, under forced row-level security | São Paulo (`sa-east-1`) |
 | Vercel | Client hosting, API functions, Workflows | All case data in processing; the database owner connection string (used by the build, readable by running functions) and the runtime role passwords ([ADR-0012](adr/0012-automation-first-setup.md)); workflow run payloads holding identifiers only, with zero retention ([ADR-0009](adr/0009-background-jobs-guarantees.md)) | São Paulo (`gru1`) for functions, run payloads and queues; run metadata (names, statuses, timestamps, no personal data) is processed outside Brazil and kept up to one year |
 | Vercel Blob (private store) | Document storage ([ADR-0021](adr/0021-stay-on-vercel-and-neon.md)) | Client-side ciphertext only, under random pathnames | São Paulo |
-| Anthropic (Claude) | LLM calls | Minimal fields per call; no names, document numbers or account numbers. Exception ([ADR-0023](adr/0023-free-text-intake-sends-the-writers-own-words.md)): free-text intake sends the member's own description, with known names, digit runs, mixed letter-and-digit tokens, e-mails and phone numbers masked; Arca stores nothing of it. Anthropic's API terms (read 2026-11-06): no training on API data by default ([Commercial Terms](https://www.anthropic.com/legal/commercial-terms) §B; [privacy center](https://privacy.claude.com/en/articles/7996868)); inputs and outputs deleted within 30 days, except content flagged for a usage-policy breach (up to 2 years), trust-and-safety scores (up to 7 years), feedback the account sends, or a legal hold ([retention](https://privacy.claude.com/en/articles/7996866)) | Vendor cloud, outside Brazil; the terms name no region |
+| Anthropic (Claude) | LLM calls | Minimal fields per call; no names, document numbers or account numbers. Exception ([ADR-0023](adr/0023-free-text-intake-sends-the-writers-own-words.md)): free-text intake sends the member's own description, with known names, digit runs, mixed letter-and-digit tokens, e-mails and phone numbers masked; Arca stores nothing of it. The manual `intake-eval` workflow also calls it from GitHub Actions, with synthetic texts only and a key of its own. Anthropic's API terms (read 2026-11-06): no training on API data by default ([Commercial Terms](https://www.anthropic.com/legal/commercial-terms) §B; [privacy center](https://privacy.claude.com/en/articles/7996868)); inputs and outputs deleted within 30 days, except content flagged for a usage-policy breach (up to 2 years), trust-and-safety scores (up to 7 years), feedback the account sends, or a legal hold ([retention](https://privacy.claude.com/en/articles/7996866)) | Vendor cloud, outside Brazil; the terms name no region |
 | Document-reading vendor (`DocumentReader`) | OCR and document review | Full content of a document, only when its owner authorizes that document | Chosen by ADR; vendor cloud |
 | Embedding vendor (`Embedder`) | Knowledge-base retrieval | Public knowledge-base text only | Chosen by ADR |
 | Speech vendor (`SpeechToText`, `TextToSpeech`) | Voice intake and interview practice | Audio of the person speaking, only when they start a voice session | Chosen by ADR |
