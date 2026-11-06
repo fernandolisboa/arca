@@ -15,7 +15,7 @@ The family enters its case by answering guided questions, sees it played back in
 
 **Out, each a later step:**
 
-- Free-text intake through the `Extractor` port, which needs an Anthropic API budget. The owner chose on 2026-11-05 to build guided questions first and free text after them. The guided questions stay as the way to correct what a model extracts.
+- Free-text intake through the `Extractor` port. The owner chose on 2026-11-05 to build guided questions first and free text after them; it is [spec 0008](0008-free-text-intake.md). The guided questions stay as the way to correct what a model extracts.
 - Uploading documents for another person (#119), which needs an ADR-0018 amendment.
 - Aspirations, destination choice, comparison and shared analyses (slice 4, #120); checklists, plans and progress (slice 5, #121, #122); the guided tour (#123); FX rates (slice 7).
 - The independent check agent (slice 2's shared tooling): the activation screen shows it as missing.

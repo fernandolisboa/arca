@@ -131,8 +131,8 @@ Each problem gets the right technique; an LLM never decides on its own what a ru
 
 | Kind of AI | Used for |
 | --- | --- |
-| Conversational LLM (Claude) | Free-form intake, explanations, guides, writing, on-call questions |
-| Structured extraction (LLM with schema output) | Turning the free description into the case model; detecting what is missing |
+| Conversational LLM (Claude) | Explanations, guides, writing, on-call questions |
+| Structured extraction (LLM with schema output) | Turning the free description into a draft of the case model ([spec 0008](specs/0008-free-text-intake.md)); detecting what is missing |
 | Deterministic rules engine | Eligibility and unit computation, auditable and testable |
 | Retrieval with citations (RAG) | Answering from the knowledge base, always with a source |
 | Multi-criteria optimization | Ranking route and country combinations by each person's weights and the family's constraints |
@@ -168,7 +168,7 @@ Every service that touches Arca's data, and what it may receive. A new processor
 | Neon (Postgres) | Primary database | All case data, under forced row-level security | São Paulo (`sa-east-1`) |
 | Vercel | Client hosting, API functions, Workflows | All case data in processing; the database owner connection string (used by the build, readable by running functions) and the runtime role passwords ([ADR-0012](adr/0012-automation-first-setup.md)); workflow run payloads holding identifiers only, with zero retention ([ADR-0009](adr/0009-background-jobs-guarantees.md)) | São Paulo (`gru1`) for functions, run payloads and queues; run metadata (names, statuses, timestamps, no personal data) is processed outside Brazil and kept up to one year |
 | Vercel Blob (private store) | Document storage ([ADR-0021](adr/0021-stay-on-vercel-and-neon.md)) | Client-side ciphertext only, under random pathnames | São Paulo |
-| Anthropic (Claude) | LLM calls | Minimal fields per call; no names, document numbers or account numbers | Vendor cloud, outside Brazil |
+| Anthropic (Claude) | LLM calls | Minimal fields per call; no names, document numbers or account numbers. Exception ([ADR-0023](adr/0023-free-text-intake-sends-the-writers-own-words.md)): free-text intake sends the member's own description, with known names, digit runs, mixed letter-and-digit tokens, e-mails and phone numbers masked; Arca stores nothing of it, and the vendor's own API retention is recorded here before the first production call | Vendor cloud, outside Brazil |
 | Document-reading vendor (`DocumentReader`) | OCR and document review | Full content of a document, only when its owner authorizes that document | Chosen by ADR; vendor cloud |
 | Embedding vendor (`Embedder`) | Knowledge-base retrieval | Public knowledge-base text only | Chosen by ADR |
 | Speech vendor (`SpeechToText`, `TextToSpeech`) | Voice intake and interview practice | Audio of the person speaking, only when they start a voice session | Chosen by ADR |
