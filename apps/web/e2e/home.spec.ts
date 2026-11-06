@@ -166,6 +166,10 @@ test('starts over from the network when the cached app script is not a script', 
   const problems = watchProblems(page);
   await page.reload();
   await expect(page.getByRole('heading', { level: 1, name: 'Arca' })).toBeVisible();
+  // The worker stays, so this browser keeps its push subscription.
+  expect(await page.evaluate(() => navigator.serviceWorker.controller?.scriptURL)).toMatch(
+    /\/sw\.js$/,
+  );
   expect(problems.filter((problem) => !problem.startsWith('Failed to load module script'))).toEqual(
     [],
   );

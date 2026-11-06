@@ -8,6 +8,7 @@ import {
 } from 'workbox-precaching';
 import type { PrecacheEntry } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
+import { isPageInPlaceOfFile } from '../pwa/cached-page.js';
 import { pushNotice, pushPayload } from './push-notice.js';
 
 declare const self: ServiceWorkerGlobalScope;
@@ -43,15 +44,15 @@ registerRoute(
 
 // Only the built static files are cached. No route caches /v1 or any other response, so API
 // responses always come from the network and are never stored (spec 0001, R5).
-// A deployment that lacks a file answers it with index.html. Stored under a script's URL, that
-// page would be served as the script on every load, so the install fails instead.
+// Never precache a page in place of a file, so the install fails instead (spec 0001, R5).
 addPlugins([
   {
-    cacheWillUpdate: ({ request, response }) => {
-      const isPage = response.headers.get('content-type')?.startsWith('text/html') === true;
-      const wantsPage = new URL(request.url).pathname.endsWith('.html');
-      return Promise.resolve(response.ok && isPage === wantsPage ? response : null);
-    },
+    cacheWillUpdate: ({ request, response }) =>
+      Promise.resolve(
+        response.ok && !isPageInPlaceOfFile(request.url, response.headers.get('content-type'))
+          ? response
+          : null,
+      ),
   },
 ]);
 precacheAndRoute(precacheManifest);
