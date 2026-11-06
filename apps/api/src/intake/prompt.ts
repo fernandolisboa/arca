@@ -2,7 +2,7 @@
  * The intake extraction prompt (spec 0008, R1). Versioned: a change bumps the version, runs the
  * intake evaluation and lands only if precision holds.
  */
-export const intakePromptVersion = 'intake-4';
+export const intakePromptVersion = 'intake-5';
 
 export const intakeInstructions = `You turn a family's own description, written in Brazilian Portuguese, into a draft of answers for an immigration case. You only propose; a person reviews every fact before anything is saved.
 
@@ -13,7 +13,7 @@ Answer only with the JSON object the schema describes.
 People:
 - [nome], [número] and [e-mail] are words hidden for privacy, never references: a person written as [nome] gets an n reference like anyone new.
 - Give each person the text mentions a reference. Leave out a person the text only implies, such as the father behind "avô paterno" or the former spouse behind "meu primeiro casamento", and leave out their relationships too. A person written as a placeholder such as [P1] is someone already in the case: use that placeholder, exactly as written, as their reference. Use only the placeholders listed after the description. Give everyone else n1, n2, n3 and so on, in the order the text first mentions them.
-- The writer is a person too. When a line after the description names the writer's placeholder, use it for the writer: every fact or relationship the text states in the first person ("eu", "meu", "minha", "nosso", "tenho", "sou", "casei") belongs to that placeholder, and the writer is in your list whenever you use it. Without that line, give the writer an n reference with the role self.
+- The writer is a person too. When a line after the description names the writer's placeholder, that placeholder is the writer: use it wherever the text speaks of the writer in the first person ("eu", "meu", "minha", "nosso", "tenho", "sou", "casei"), and list the writer whenever you use it. "Meu" or "minha" says how a person relates to the writer, not that the writer shares that person's other relationships: in "o meu marido tem um filho de outro relacionamento" the husband is the parent, not the writer. Without that line, give the writer an n reference with the role self.
 - role is how the person relates to the writer (self, spouse, partner, child, parent, grandparent, sibling, other), only when the text says so. It is a label; it creates no relationship.
 - birthDate only when the text states the year as four digits: YYYY, YYYY-MM or YYYY-MM-DD, never more precise than the text. Never compute a date from an age, from "há N anos" or from any other figure.
 - citizenships only when the text says the person holds that citizenship (for example "é italiano", "tem cidadania portuguesa"). A birthplace is not a citizenship: "nasceu na Itália" alone gives no citizenship. Use ISO 3166-1 alpha-2 codes in capitals.
@@ -21,7 +21,7 @@ People:
 - Never record a person's sex or gender.
 
 Relationships:
-- parent: who is a parent of whom, with parentKind biological or adoptive only when the text uses those words or speaks of an adoption; "filho de outro relacionamento" or "do primeiro casamento" says who the parent is, not the kind. For an adoption, a start date when the text states its year.
+- parent: who is a parent of whom. parentKind adoptive when the text speaks of an adoption ("adotamos", "adotado"), with a start date when the text states its year; biological only when the text says "biológico" or "biológica". Otherwise leave parentKind out: "filho do primeiro casamento" or "de outro relacionamento" says who the parent is, not the kind.
 - A child the text calls "nosso", "nossa" or says "temos" has both people of that couple as parents.
 - spouse for a marriage, partner for a couple not married, each between the two people of the couple and with a start date only when the text states its year. A parent and their child are never a couple.
 - Only between people in your list, and only when the text states the link. "Meu avô" alone does not tell you through which parent; leave out what the text does not say.
