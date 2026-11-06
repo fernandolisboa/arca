@@ -9,6 +9,7 @@ import {
   restartSeededCounter,
   runSeed,
 } from './postgres/accounts.js';
+import { horizontalOverflow } from './layouts.js';
 import { reportViolations, watchProblems } from './problems.js';
 import { databaseServer } from './servers.js';
 
@@ -62,6 +63,10 @@ test('the seed approver activates a version, reads and closes its reports, then 
   const { version, fallback } = await eb5InEffect(page);
 
   await page.goto(`${databaseServer.origin}/settings`);
+  await page
+    .getByRole('navigation', { name: 'Categorias' })
+    .getByRole('link', { name: 'Base de conhecimento' })
+    .click();
   await page.getByRole('link', { name: 'Abrir a tela de ativação' }).click();
   const proposed = page.getByRole('region', { name: 'Versões propostas' });
   await proposed
@@ -70,13 +75,28 @@ test('the seed approver activates a version, reads and closes its reports, then 
   await expect(
     page.getByRole('heading', { level: 3, name: new RegExp(`EB-5 .* versão ${version}\\b`) }),
   ).toBeVisible();
+  // The review is a wizard: Next and Back move one step, the step list jumps to any of them.
+  await expect(page.getByRole('region', { name: 'O que mudou' })).toBeVisible();
+  await page.getByRole('button', { name: 'Próximo: Configurações da versão' }).click();
+  await expect(
+    page.getByRole('heading', { level: 4, name: 'Configurações da versão' }),
+  ).toBeFocused();
+  await page.getByRole('button', { name: 'Voltar', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'O que mudou' })).toBeVisible();
+  await reviewStep(page, 'Requisitos');
   await expect(page.getByRole('region', { name: 'Requisitos' })).toContainText(
     'soma dos bens fáceis de transformar em dinheiro da unidade é maior ou igual a',
   );
+  await reviewStep(page, 'Fontes');
+  await expect(page.getByRole('region', { name: 'Fontes' })).toContainText('https://');
+  // On a phone the step list scrolls on its own; the page never scrolls sideways.
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await horizontalOverflow(page)).toBe(0);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await reviewStep(page, 'Decisão');
   await expect(page.getByRole('region', { name: 'Verificação independente' })).toContainText(
     'ainda não existe',
   );
-  await expect(page.getByRole('region', { name: 'Fontes' })).toContainText('https://');
   await page.getByRole('button', { name: 'Resumir esta regra' }).click();
   const summary = page.getByRole('region', { name: 'Resumo feito pela IA' });
   await expect(summary).toContainText('Resumo de teste de EB-5');
@@ -117,6 +137,7 @@ test('the seed approver activates a version, reads and closes its reports, then 
     .getByRole('button', { name: /^EB-5 immigrant investor/ })
     .click();
 
+  await reviewStep(page, 'Decisão');
   await page.getByRole('button', { name: 'Recusar esta versão' }).click();
   await expect(
     page.getByText(
@@ -132,6 +153,15 @@ test('the seed approver activates a version, reads and closes its reports, then 
   await expect(page.getByText('Esta versão foi recusada e não volta a ser usada.')).toBeVisible();
   expect(problems).toEqual([]);
 });
+
+/** Jumps to one step of a version's review from its step list. */
+async function reviewStep(page: Page, name: string) {
+  await page
+    .getByRole('navigation', { name: 'Passos da revisão' })
+    .getByRole('button', { name: new RegExp(`^${name}\\b`) })
+    .click();
+  await expect(page.getByRole('heading', { level: 4, name })).toBeFocused();
+}
 
 /** Another account, in its own browser, reports a requirement of the active version (R8). */
 async function memberReportsARequirement(browser: Browser) {

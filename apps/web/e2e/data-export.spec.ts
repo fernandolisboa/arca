@@ -52,7 +52,11 @@ test('downloads the account data after a data_export step-up, each time with its
   await virtualAuthenticator(page, credential, { userId });
   await signIn(page, email);
   await page.goto(`${databaseServer.origin}/settings`);
-  await expect(page.getByRole('heading', { level: 3, name: 'Seus dados' })).toBeVisible();
+  await page
+    .getByRole('navigation', { name: 'Categorias' })
+    .getByRole('link', { name: 'Conta' })
+    .click();
+  await expect(page.getByRole('heading', { level: 4, name: 'Seus dados' })).toBeVisible();
 
   const first = await exportOnce(page);
   expect(first.stepUp).toMatchObject({
@@ -70,7 +74,7 @@ test('downloads the account data after a data_export step-up, each time with its
 });
 
 test('offers no export without a session', async ({ page }) => {
-  await page.goto(`${databaseServer.origin}/settings`);
-  await expect(page.getByRole('heading', { level: 2, name: 'Configurações' })).toBeVisible();
+  await page.goto(`${databaseServer.origin}/settings?section=account`);
+  await expect(page.getByRole('heading', { level: 3, name: 'Conta' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Baixar meus dados' })).toHaveCount(0);
 });

@@ -81,9 +81,9 @@ export function NotificationsSection() {
 
   return (
     <section aria-labelledby="notifications-title" className="flex flex-col items-start gap-3">
-      <h3 id="notifications-title" className="text-title font-medium">
+      <h4 id="notifications-title" className="text-lead font-medium">
         {t('settings.notifications.title')}
-      </h3>
+      </h4>
       <p className="text-muted">{t('settings.notifications.intro')}</p>
       {channels.isError && <p className="text-ink">{t('settings.notifications.listFailure')}</p>}
       {channels.isSuccess && (

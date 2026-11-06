@@ -38,17 +38,16 @@ function commit(next: Preferences) {
   show(next);
 }
 
-/** The person's appearance choices: set one axis, clear one back to its default, or clear all. */
+/** The person's appearance choices: set one axis, or clear some back to their defaults. */
 export const appearance = {
   get: (): Preferences => current,
   set: <A extends AxisName>(axis: A, value: AxisValue<A>): void => {
     commit({ ...current, [axis]: value });
   },
-  clear: (axis: AxisName): void => {
-    commit(Object.fromEntries(Object.entries(current).filter(([name]) => name !== axis)));
-  },
-  clearAll: (): void => {
-    commit({});
+  /** Clears the named axes in one write, so they follow the defaults again. */
+  clear: (...names: readonly AxisName[]): void => {
+    const cleared = new Set<string>(names);
+    commit(Object.fromEntries(Object.entries(current).filter(([name]) => !cleared.has(name))));
   },
   subscribe: (listener: () => void): (() => void) => {
     listeners.add(listener);
