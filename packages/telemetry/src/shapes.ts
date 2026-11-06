@@ -27,7 +27,8 @@ export const functionName = matching(/^[A-Za-z_$<][\w$.<>]{0,99}$/);
 /** A Sentry operation or origin, such as `http.server` or `auto.db.otel.postgres`. */
 export const operation = matching(/^[a-z][a-z0-9_.]{0,63}$/);
 /** A model ID, such as `claude-haiku-5-5`, or a prompt version, such as `intake-1`. */
-export const modelName = matching(/^[a-z][a-z0-9.-]{0,63}$/);
+/** A model ID or a prompt version, such as `claude-haiku-5-5` or `intake-1`. */
+export const modelOrPromptId = matching(/^[a-z][a-z0-9.-]{0,63}$/);
 export const httpMethod = matching(/^(?:GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS)$/);
 export const contentType = matching(
   /^[a-z]+\/[a-z0-9.+-]{1,64}(?:; ?charset=[A-Za-z0-9-]{1,32})?$/,

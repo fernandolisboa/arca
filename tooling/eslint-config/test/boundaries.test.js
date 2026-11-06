@@ -121,6 +121,12 @@ describe('api', () => {
     expect(await ruleIds('api', ['api'], 'src/dynamic-start.ts')).toContain('no-restricted-syntax');
   });
 
+  it('forbids the AI Gateway', async () => {
+    expect(await ruleIds('api', ['api'], 'src/model-gateway.ts')).toContain(
+      'no-restricted-imports',
+    );
+  });
+
   it('allows start() in the helper', async () => {
     expect(await ruleIds('api', ['api'], 'src/workflows/start-workflow.ts')).not.toContain(
       'no-restricted-imports',

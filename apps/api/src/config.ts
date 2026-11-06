@@ -139,13 +139,15 @@ export function readResendKey(): string | undefined {
   return key !== undefined && resendKeyPattern.test(key) ? key : undefined;
 }
 
+const anthropicKeyPattern = /^sk-ant-[A-Za-z0-9_-]+$/;
+
 /**
  * Anthropic's API key for the intake extractor (spec 0008, R1), one Sensitive value shared by
  * Production and Preview. Absent, the intake route answers 503 and the guided questions work.
  */
 export function readAnthropicApiKey(): string | undefined {
   const key = process.env['ANTHROPIC_API_KEY']?.trim();
-  return key === undefined || key === '' ? undefined : key;
+  return key !== undefined && anthropicKeyPattern.test(key) ? key : undefined;
 }
 
 /**

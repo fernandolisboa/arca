@@ -12,6 +12,7 @@ import {
   readJobsDatabasePassword,
   readRateLimitKey,
   readEngineCommit,
+  readAnthropicApiKey,
   readResendKey,
 } from '../src/config.js';
 import { enrollmentCodeHash } from '../src/auth/enrollment-code-hash.js';
@@ -211,6 +212,19 @@ describe('the production site file (spec 0003, R9)', () => {
     for (const name of [productionSite.host, productionSite.senderDomain]) {
       if (name !== null) expect(name).toMatch(hostNamePattern);
     }
+  });
+});
+
+describe('readAnthropicApiKey', () => {
+  it.each([
+    [undefined, undefined],
+    ['', undefined],
+    ['re_abc', undefined],
+    ['sk-ant-abc DEF', undefined],
+    [' sk-ant-api03-abc_DEF-1\n', 'sk-ant-api03-abc_DEF-1'],
+  ])('reads %j as %j', (value, expected) => {
+    vi.stubEnv('ANTHROPIC_API_KEY', value);
+    expect(readAnthropicApiKey()).toBe(expected);
   });
 });
 

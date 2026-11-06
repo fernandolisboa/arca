@@ -5,6 +5,7 @@ import {
   type IntakeDraft,
   buildCaseSnapshot,
   describeDraft,
+  isNewReference,
   keepStatedDates,
   maskIntakeText,
   parseIntakeDraft,
@@ -42,7 +43,6 @@ export interface CaseIntakeSettings {
 }
 
 const route = '/v1/case/intake/draft';
-const isNew = (ref: string) => /^n[0-9]+$/.test(ref);
 
 /** The draft with every reference renamed, such as placeholders to case IDs. */
 function renameDraft(draft: IntakeDraft, rename: (ref: string) => string): IntakeDraft {
@@ -51,12 +51,12 @@ function renameDraft(draft: IntakeDraft, rename: (ref: string) => string): Intak
     relationships: draft.relationships.map((edge) =>
       edge.kind === 'parent'
         ? { ...edge, parent: rename(edge.parent), child: rename(edge.child) }
-        : { ...edge, people: [rename(edge.people[0]), rename(edge.people[1])] },
+        : { ...edge, people: edge.people.map(rename) },
     ),
   };
 }
 
-/** The draft and the sentences it adds or changes, in the case's IDs; new people stay `n1` … */
+/** What the case takes of the draft and the sentences it adds or changes, in the case's IDs. */
 function describe(
   rows: CaseRows,
   accountId: string,
@@ -78,18 +78,10 @@ function describe(
     at,
   );
   const uuids = new Map([...personIds].map(([uuid, opaque]) => [opaque, uuid]));
-  const keptIds = new Set(rows.people.filter(({ keptByMe }) => keptByMe).map(({ id }) => id));
+  const toUuid = (id: string) => uuids.get(id) ?? id;
   return {
-    // A known person the viewer does not keep keeps only the label: their facts are not the viewer's to propose.
-    draft: {
-      ...draft,
-      people: draft.people.map((person) =>
-        isNew(person.ref) || keptIds.has(person.ref)
-          ? person
-          : { ref: person.ref, ...(person.role === undefined ? {} : { role: person.role }) },
-      ),
-    },
-    sentences: renamePeople(described.sentences, (id) => uuids.get(id) ?? id),
+    draft: renameDraft(described.draft, toUuid),
+    sentences: renamePeople(described.sentences, toUuid),
   };
 }
 
@@ -171,7 +163,7 @@ export function createCaseIntake({
         actorAccountId: accountId,
         details: {
           caseId: rows.caseId,
-          people: value.draft.people.filter(({ ref }) => isNew(ref)).length,
+          people: value.draft.people.filter(({ ref }) => isNewReference(ref)).length,
           facts: value.sentences.length,
         },
       });

@@ -31,7 +31,7 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 - Environments per [ADR-0008](adr/0008-database-security-and-environments.md) and [ADR-0012](adr/0012-automation-first-setup.md): a production Neon branch that previews stop forking from before any family data exists, synthetic seed for everything else, secrets per environment.
 - Database roles, forced row-level security and the access-matrix suite in CI before the first table with case data.
 - Supply-chain controls in CI from the first commit (pinned actions, advisories, secret scanning, SBOM, pnpm install-script and release-age settings).
-- Observability with personal data scrubbing: structured logs from the first deploy; Sentry errors and traces before real data; Langfuse with the first model call ([ADR-0016](adr/0016-observability-and-scrubbing.md)).
+- Observability with personal data scrubbing: structured logs from the first deploy; Sentry errors and traces before real data; Langfuse with the second kind of model call ([ADR-0016](adr/0016-observability-and-scrubbing.md), [ADR-0023](adr/0023-free-text-intake-sends-the-writers-own-words.md)).
 - ~~Vault encryption ADR written and reviewed before any document upload is built.~~ Written: [ADR-0018](adr/0018-vault-encryption.md).
 - Before real family data enters: in-app account deletion and data export, retention periods ([RETENTION.md](RETENTION.md)), incident response runbook, backups on Neon, threat model for the epic ([ADR-0017](adr/0017-data-lifecycle-and-backups.md), [ADR-0021](adr/0021-stay-on-vercel-and-neon.md), spec 0004).
 - Client builds to a static bundle; no server-rendering dependency.

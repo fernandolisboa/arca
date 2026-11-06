@@ -1,6 +1,6 @@
 import {
-  caseIntakeDraftSchema,
   calendarDateSchema,
+  caseIntakeDraftSchema,
   countryCodeSchema,
   decimalSchema,
   durationSchema,
@@ -499,7 +499,15 @@ export const leaveCaseAction = { action: leaveCase.operationId, targets: [] };
 export const maxIntakeTextLength = 4_000;
 
 export const CaseIntakeDraftRequest = z.strictObject({
-  text: z.string().trim().min(1).max(maxIntakeTextLength),
+  text: z
+    .string()
+    .trim()
+    .min(1)
+    .max(maxIntakeTextLength)
+    // Masking normalizes to NFKC, which can grow a text many times over (U+FDFA is 18 letters).
+    .refine((text) => text.normalize('NFKC').length <= maxIntakeTextLength, {
+      message: `At most ${String(maxIntakeTextLength)} characters`,
+    }),
 });
 export type CaseIntakeDraftRequest = z.infer<typeof CaseIntakeDraftRequest>;
 

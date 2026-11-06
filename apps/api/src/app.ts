@@ -76,8 +76,8 @@ import type { Invites } from './auth/invites.js';
 import {
   authRouteLimits,
   caseLimits,
-  intakeLimits,
   deviceLimits,
+  intakeLimits,
   inviteLimits,
   monitoringLimits,
   documentLimits,

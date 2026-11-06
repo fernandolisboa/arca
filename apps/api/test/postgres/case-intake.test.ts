@@ -165,6 +165,38 @@ describe('the intake service (spec 0008, R3)', () => {
     });
   });
 
+  it('answers only what the case takes: no less precise date, no edge between people Alice does not keep', async () => {
+    const { alice, view, bruna, caio } = await family();
+    viewOf(
+      await files.answerQuestions(alice, {
+        personId: bruna,
+        answers: [{ questionId: 'birthDate', answer: '2015-03-12' }],
+      }),
+    );
+    const dora = await account();
+    await admin(`INSERT INTO account.link (inviter_id, invitee_id) VALUES ($1, $2)`, [alice, dora]);
+    viewOf(await files.addMember(alice, { accountId: dora, displayName: 'Dora' }));
+    const { intake } = service([
+      {
+        people: [{ ref: '[P2]', birthDate: '2015' }, { ref: '[P3]' }, { ref: '[P4]' }],
+        relationships: [{ kind: 'spouse', people: ['[P3]', '[P4]'], start: '2010' }],
+      },
+    ]);
+    const outcome = await intake.draft(
+      alice,
+      'A Bruna nasceu em 2015. O Caio e a Dora casaram em 2010.',
+    );
+    if (!outcome.ok) throw new Error(outcome.reason);
+    expect(outcome.value).toEqual({
+      draft: {
+        people: [{ ref: bruna }, { ref: caio }, { ref: expect.any(String) as string }],
+        relationships: [],
+      },
+      sentences: [],
+    });
+    expect(view.people.map(({ id }) => id)).toContain(caio);
+  });
+
   it('asks once more for an unparsable reply, then gives up', async () => {
     const { alice } = await family();
     const once = service([{ people: [{ ref: '[P9]' }], relationships: [] }, reply]);

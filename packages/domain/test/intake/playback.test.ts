@@ -208,3 +208,75 @@ describe('describeDraft (spec 0008, R3)', () => {
     expect(JSON.stringify(snapshot)).toBe(before);
   });
 });
+
+describe('the draft describeDraft takes (spec 0008, R3 and R4)', () => {
+  const taken = (input: Partial<IntakeDraft>, base = snapshot) =>
+    describeDraft(base, draft(input), kept, visibility, at).draft;
+
+  it('answers the facts as merged with what is stored, and only those that change it', () => {
+    expect(
+      taken({
+        people: [
+          {
+            ref: 'p1',
+            role: 'self',
+            birthDate: '1985' as never,
+            citizenships: ['BR', 'IT'],
+            languages: [{ language: 'en', level: 'B1' }],
+          },
+        ],
+      }),
+    ).toEqual({
+      people: [{ ref: 'p1', role: 'self', citizenships: ['BR', 'IT'] }],
+      relationships: [],
+    });
+  });
+
+  it('keeps only the label of a person the viewer does not keep', () => {
+    expect(taken({ people: [{ ref: 'p2', role: 'spouse', residenceCountry: 'PT' }] })).toEqual({
+      people: [{ ref: 'p2', role: 'spouse' }],
+      relationships: [],
+    });
+  });
+
+  it('leaves out an edge the case refuses, holds already, or joins only people the viewer does not keep', () => {
+    const third = caseSnapshotSchema.parse({
+      ...snapshot,
+      members: ['p1', 'p2', 'p3'],
+      people: [...snapshot.people, { id: 'p3' }],
+    });
+    expect(
+      taken(
+        {
+          people: [{ ref: 'n1' }],
+          relationships: [
+            { kind: 'parent', parent: 'p1', child: 'n1' },
+            { kind: 'parent', parent: 'n1', child: 'p1' },
+            { kind: 'spouse', people: ['p1', 'p2'] },
+            { kind: 'partner', people: ['p2', 'p3'] },
+          ],
+        },
+        third,
+      ),
+    ).toEqual({
+      people: [{ ref: 'n1' }],
+      relationships: [{ kind: 'parent', parent: 'p1', child: 'n1' }],
+    });
+  });
+
+  it('answers a stored edge whose missing start it fills', () => {
+    const start = { kind: 'spouse', people: ['p2', 'p1'], start: '2010' } as const;
+    expect(taken({ relationships: [start as never] }).relationships).toEqual([start]);
+  });
+
+  it('leaves out new people the case has no room for', () => {
+    const full = caseSnapshotSchema.parse({
+      ...snapshot,
+      people: [
+        ...snapshot.people,
+        ...Array.from({ length: 58 }, (_, i) => ({ id: `p${String(i + 3)}` })),
+      ],
+    });
+    expect(taken({ people: [{ ref: 'n1', citizenships: ['IT'] }] }, full).people).toEqual([]);
+  });
+});

@@ -8,7 +8,13 @@ import {
   caseSnapshotSchema,
   personSchema,
 } from '../case/snapshot.js';
-import type { DraftPerson, DraftRelationship, IntakeDraft } from './draft.js';
+import { languageCodes } from '../case/languages.js';
+import {
+  type DraftPerson,
+  type DraftRelationship,
+  type IntakeDraft,
+  isNewReference,
+} from './draft.js';
 
 /**
  * A draft read back on top of the case (spec 0008, R3). The draft's references are the snapshot's
@@ -18,6 +24,11 @@ import type { DraftPerson, DraftRelationship, IntakeDraft } from './draft.js';
 export interface DescribedDraft {
   /** The case as it would be with the draft applied. */
   readonly snapshot: CaseSnapshot;
+  /**
+   * What of the draft the case took: the facts it changes, lists as merged with what is stored,
+   * and the edges it adds or fills, so a screen saves exactly what the sentences say.
+   */
+  readonly draft: IntakeDraft;
   /** The sentences the draft adds or changes. */
   readonly sentences: Sentence[];
 }
@@ -95,7 +106,7 @@ function withEdge(relationships: readonly Relationship[], proposed: Relationship
   return relationships.map((edge) => (edge === stored ? filled : edge));
 }
 
-function snapshotEdge(edge: DraftRelationship): Relationship {
+function snapshotEdge(edge: DraftRelationship): Relationship | undefined {
   if (edge.kind === 'parent') {
     const { parent, child, parentKind, start } = edge;
     return {
@@ -106,10 +117,49 @@ function snapshotEdge(edge: DraftRelationship): Relationship {
       ...(start === undefined ? {} : { start }),
     };
   }
+  const [a, b] = edge.people;
+  if (a === undefined || b === undefined) return undefined;
   return {
     kind: edge.kind,
-    people: edge.people,
+    people: [a, b],
     ...(edge.start === undefined ? {} : { start: edge.start }),
+  };
+}
+
+const draftLanguages: ReadonlySet<string> = new Set(languageCodes);
+const isDraftLanguage = (code: string): code is (typeof languageCodes)[number] =>
+  draftLanguages.has(code);
+
+const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+
+/** The facts the case took for one person, as draft fields: only those that change what is stored. */
+function takenFacts(proposed: DraftPerson, before: Person | undefined, after: Person): DraftPerson {
+  const changed = (key: keyof Person) =>
+    proposed[key as keyof DraftPerson] !== undefined &&
+    after[key] !== undefined &&
+    !same(after[key], before?.[key]);
+  return {
+    ref: proposed.ref,
+    ...(proposed.role === undefined ? {} : { role: proposed.role }),
+    ...(changed('birthDate') && after.birthDate !== undefined
+      ? { birthDate: after.birthDate }
+      : {}),
+    ...(changed('citizenships') && after.citizenships !== undefined
+      ? { citizenships: after.citizenships.map(({ country }) => country) }
+      : {}),
+    ...(changed('residenceCountry') && after.residenceCountry !== undefined
+      ? { residenceCountry: after.residenceCountry }
+      : {}),
+    ...(changed('educationLevel') && after.educationLevel !== undefined
+      ? { educationLevel: after.educationLevel }
+      : {}),
+    ...(changed('languages') && after.languages !== undefined
+      ? {
+          languages: after.languages.flatMap(({ language, level }) =>
+            isDraftLanguage(language) ? [{ language, level }] : [],
+          ),
+        }
+      : {}),
   };
 }
 
@@ -143,7 +193,7 @@ export function describeDraft(
     return next === undefined || !kept.has(person.id) ? person : applyPerson(person, next);
   });
   const added = draft.people
-    .filter(({ ref }) => /^n[0-9]+$/.test(ref))
+    .filter(({ ref }) => isNewReference(ref))
     .map((person) => applyPerson({ id: person.ref }, person));
   const fits = (candidate: CaseSnapshot) => caseSnapshotSchema.safeParse(candidate).success;
   const options: CaseSnapshot[] = [
@@ -152,16 +202,32 @@ export function describeDraft(
   ];
   let combined = options.find(fits) ?? snapshot;
   const present = new Set(combined.people.map(({ id }) => id));
+  const ours = (id: string) => !known.has(id) || kept.has(id);
+  const edges: DraftRelationship[] = [];
   for (const edge of draft.relationships) {
     const relationship = snapshotEdge(edge);
+    if (relationship === undefined) continue;
     const ends =
       relationship.kind === 'parent'
         ? [relationship.parent, relationship.child]
         : relationship.people;
-    if (!ends.every((id) => present.has(id))) continue;
-    const next = { ...combined, relationships: withEdge(combined.relationships, relationship) };
-    if (fits(next)) combined = next;
+    // An edge between two people the viewer does not keep is not theirs to propose.
+    if (!ends.every((id) => present.has(id)) || !ends.some(ours)) continue;
+    const relationships = withEdge(combined.relationships, relationship);
+    const next = { ...combined, relationships };
+    if (same(relationships, combined.relationships) || !fits(next)) continue;
+    combined = next;
+    edges.push(edge);
   }
+  const after = new Map(combined.people.map((person) => [person.id, person]));
+  const taken = draft.people.flatMap((person): DraftPerson[] => {
+    const now = after.get(person.ref);
+    if (now === undefined) return [];
+    if (!ours(person.ref)) {
+      return [{ ref: person.ref, ...(person.role === undefined ? {} : { role: person.role }) }];
+    }
+    return [takenFacts(person, known.get(person.ref), now)];
+  });
   const seen = new Map(visibility);
   for (const person of combined.people) {
     if (!known.has(person.id)) seen.set(person.id, { profile: true, finances: false });
@@ -175,5 +241,5 @@ export function describeDraft(
     before.set(key, left - 1);
     return false;
   });
-  return { snapshot: combined, sentences };
+  return { snapshot: combined, draft: { people: taken, relationships: edges }, sentences };
 }

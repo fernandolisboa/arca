@@ -13,6 +13,9 @@ export interface ClaudeExtractorSettings {
   readonly timeoutMs?: number;
 }
 
+/** Pinned in code: the provider would otherwise take `ANTHROPIC_BASE_URL` from the environment. */
+export const anthropicBaseUrl = 'https://api.anthropic.com/v1';
+
 const draftJsonSchema = z.toJSONSchema(intakeDraftSchema, { io: 'input' }) as JSONSchema7;
 const parsedByTheApi = new Set(['AI_JSONParseError', 'AI_TypeValidationError']);
 
@@ -44,7 +47,11 @@ export function claudeExtractor({
   fetch,
   timeoutMs = 25_000,
 }: ClaudeExtractorSettings): Extractor {
-  const anthropic = createAnthropic({ apiKey, ...(fetch === undefined ? {} : { fetch }) });
+  const anthropic = createAnthropic({
+    apiKey,
+    baseURL: anthropicBaseUrl,
+    ...(fetch === undefined ? {} : { fetch }),
+  });
   return {
     async draft(maskedText, knownPlaceholders) {
       try {
@@ -53,7 +60,9 @@ export function claudeExtractor({
           instructions: intakeInstructions,
           prompt: intakeMessage(maskedText, knownPlaceholders),
           output: Output.object({ schema: jsonSchema(draftJsonSchema), name: 'intake_draft' }),
-          maxOutputTokens: 2_048,
+          maxOutputTokens: 8_192,
+          // Extraction needs no reasoning, and thinking tokens would count against the cap.
+          providerOptions: { anthropic: { thinking: { type: 'disabled' } } },
           maxRetries: 0,
           abortSignal: AbortSignal.timeout(timeoutMs),
           telemetry: { isEnabled: false, recordInputs: false, recordOutputs: false },

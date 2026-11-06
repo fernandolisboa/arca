@@ -11,7 +11,7 @@ import { auditLog, auditReader, type AuditLog } from './audit/log.js';
 import { createAuth, credentialStore } from './auth/auth.js';
 import { createCaseFiles } from './case/case-files.js';
 import { createCaseIntake } from './case/intake.js';
-import { claudeExtractor } from './intake/claude-extractor.js';
+import { extractorFor } from './intake/environment.js';
 import { createDocuments } from './vault/documents.js';
 import { objectStorageFor } from './vault/storage-environment.js';
 import { createVault } from './vault/vault.js';
@@ -97,6 +97,11 @@ const environment = readDeploymentEnvironment();
 const emailRoute = emailRouteFor(environment);
 const accountsOpen = accountsOpenWith(emailRoute);
 
+/** The audit log on the app_audit pool, for services built before the auth parts are. */
+const lazyAudit: Pick<AuditLog, 'record'> = {
+  record: async (entry) => (await authParts()).audit.record(entry),
+};
+
 let knowledgeInstance: KnowledgeDecisions | undefined;
 
 /**
@@ -110,7 +115,7 @@ function knowledgeDecisions(): KnowledgeDecisions {
       spend: async (signedIn, purpose, action, record) =>
         (await authParts()).stepUp.spend(signedIn, purpose, action, record),
     },
-    audit: { record: async (entry) => (await authParts()).audit.record(entry) },
+    audit: lazyAudit,
     catalog: routeCatalog,
     approvers: approvers[environment],
     origin: readAuthOrigin(),
@@ -257,15 +262,15 @@ const withOrigin = (origin: string | undefined) => (origin === undefined ? {} : 
 
 const outbox = outboxReaderFor(environment, authConnection);
 
-const anthropicApiKey = readAnthropicApiKey();
+const extractor = extractorFor(environment, readAnthropicApiKey());
 const intake =
-  anthropicApiKey === undefined
+  extractor === undefined
     ? undefined
     : createCaseIntake({
         db: () => connected().db,
-        audit: { record: async (entry) => (await authParts()).audit.record(entry) },
+        audit: lazyAudit,
         logger,
-        extractor: claudeExtractor({ apiKey: anthropicApiKey }),
+        extractor,
         today: () => todayInSaoPaulo(),
         now: () => performance.now(),
       });
@@ -416,7 +421,7 @@ const app = createApp({
       }),
   cases: createCaseFiles({
     db: () => connected().db,
-    audit: { record: async (entry) => (await authParts()).audit.record(entry) },
+    audit: lazyAudit,
     today: () => new Date(),
     countries: pinnedCountries,
     evaluation: {

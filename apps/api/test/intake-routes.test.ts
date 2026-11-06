@@ -135,6 +135,7 @@ describe('the intake route (spec 0008, R3)', () => {
     ['an empty text', { text: '   ' }],
     ['a text over 4,000 characters', { text: 'a'.repeat(4_001) }],
     ['an unknown field', { text: 'Nasci em 1985.', model: 'other' }],
+    ['a text that normalizing makes too long', { text: '\uFDFA'.repeat(300) }],
   ])('refuses %s', async (_, body) => {
     const { post, drafts } = setup();
     const response = await post(body);

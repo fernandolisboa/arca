@@ -20,6 +20,7 @@ import {
   displayLookup,
   displayLookupFiles,
   displayReexport,
+  modelGateway,
   reproductionLookup,
   reproductionLookupFiles,
   reproductionReexport,
@@ -46,8 +47,8 @@ const restrictionsByKind = {
   client: [client],
   /** apps/web: the API contract only through its client entry. */
   web: [web],
-  /** apps/api: workflows start only through the shared helper. */
-  api: [workflowStart],
+  /** apps/api: workflows start only through the shared helper; no AI Gateway. */
+  api: [workflowStart, modelGateway],
   /** packages/api-contract: ./routes and ./client import no Hono (restricted per file below). */
   contract: [],
   /** packages/db: the role pool, the one place a database driver is imported (R7). */

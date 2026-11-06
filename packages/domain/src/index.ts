@@ -283,6 +283,7 @@ export {
   intakeDraftSchema,
   intakeReferenceSchema,
   intakeRoles,
+  isNewReference,
   keepStatedDates,
   maxDraftPeople,
   maxDraftRelationships,

@@ -16,13 +16,8 @@ export interface ExtractorReply {
   readonly outputTokens?: number;
 }
 
-export const extractorFailures = [
-  'intake_unparsable',
-  'intake_timeout',
-  'intake_unavailable',
-  'intake_failed',
-] as const;
-export type ExtractorFailure = (typeof extractorFailures)[number];
+export type ExtractorFailure =
+  'intake_unparsable' | 'intake_timeout' | 'intake_unavailable' | 'intake_failed';
 
 export class ExtractorError extends Error {
   override name = 'ExtractorError';

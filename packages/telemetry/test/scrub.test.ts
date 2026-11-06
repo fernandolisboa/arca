@@ -264,6 +264,42 @@ describe('the scrubber, on every exporter path (spec 0004, R3)', () => {
     });
   });
 
+  it('keeps a model-call span to its operation and host, with no prompt or reply (ADR-0016)', () => {
+    const modelCall = {
+      type: 'transaction',
+      transaction: 'POST /v1/case/intake/draft',
+      spans: [
+        {
+          span_id: '0123456789abcdef',
+          op: 'gen_ai.generate_text',
+          description: `generate_text ${personal.freeText}`,
+          data: {
+            'gen_ai.request.model': 'claude-haiku-5-5',
+            'gen_ai.prompt': personal.freeText,
+            'gen_ai.response.text': personal.name,
+            'vercel.ai.prompt.messages': JSON.stringify([{ content: personal.freeText }]),
+          },
+        },
+        {
+          span_id: '0123456789abcdef',
+          op: 'http.client',
+          description: `POST https://api.anthropic.com/v1/messages?d=${personal.email}`,
+          data: {
+            'http.request.method': 'POST',
+            url: 'https://api.anthropic.com/v1/messages',
+            'http.request.body': personal.freeText,
+          },
+        },
+      ],
+    };
+    const scrubbed = JSON.stringify(sentry.event(modelCall));
+    for (const value of [personal.freeText, personal.name, personal.email]) {
+      expect(scrubbed).not.toContain(value);
+    }
+    expect(scrubbed).not.toContain('gen_ai.prompt');
+    expect(scrubbed).not.toContain('http.request.body');
+  });
+
   it('keeps a CSP report to its directive and reduced URLs', () => {
     expect(csp(reports)).toEqual([
       {

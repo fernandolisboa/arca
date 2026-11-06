@@ -26,6 +26,9 @@ export type IntakeRole = (typeof intakeRoles)[number];
 /** A person new to the case (`n1`), or the placeholder of a known one (`[P1]`). */
 export const intakeReferenceSchema = z.string().regex(/^(?:n[0-9]{1,2}|\[P[0-9]{1,3}\])$/);
 
+/** Whether a draft reference names a person new to the case (`n1`), not a known one. */
+export const isNewReference = (ref: string): boolean => /^n[0-9]{1,2}$/.test(ref);
+
 export const maxDraftPeople = 20;
 export const maxDraftRelationships = 40;
 
@@ -60,7 +63,8 @@ const draftSchemaFor = (reference: z.ZodString) => {
   });
   const couple = z.strictObject({
     kind: z.enum(['spouse', 'partner']),
-    people: z.tuple([reference, reference]),
+    /** An array, not a tuple: Anthropic's structured outputs drop tuple schemas (`prefixItems`). */
+    people: z.array(reference).length(2),
     start: dateValueSchema.optional(),
   });
   return z.strictObject({

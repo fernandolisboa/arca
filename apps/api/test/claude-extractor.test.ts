@@ -25,12 +25,14 @@ function fakeFetch(
   answer: (body: Record<string, unknown>, signal?: AbortSignal) => Promise<Response>,
 ) {
   const bodies: Record<string, unknown>[] = [];
-  const fetch = (async (_url: string | URL | Request, init?: RequestInit) => {
+  const urls: string[] = [];
+  const fetch = (async (url: string | URL | Request, init?: RequestInit) => {
+    urls.push(url instanceof Request ? url.url : String(url));
     const body = JSON.parse(init?.body as string) as Record<string, unknown>;
     bodies.push(body);
     return answer(body, init?.signal ?? undefined);
   }) as typeof globalThis.fetch;
-  return { fetch, bodies };
+  return { fetch, bodies, urls };
 }
 
 /** The error an adapter call throws. */
@@ -45,8 +47,23 @@ async function failure(promise: Promise<unknown>): Promise<ExtractorError> {
 }
 
 describe('the Claude extractor (spec 0008, R1)', () => {
+  it('calls api.anthropic.com whatever ANTHROPIC_BASE_URL says', async () => {
+    const previous = process.env['ANTHROPIC_BASE_URL'];
+    process.env['ANTHROPIC_BASE_URL'] = 'https://elsewhere.example/v1';
+    try {
+      const { fetch, urls } = fakeFetch(() => Promise.resolve(message(JSON.stringify(draft))));
+      await claudeExtractor({ apiKey: 'test-key', fetch }).draft(masked, []);
+      expect(urls).toEqual(['https://api.anthropic.com/v1/messages']);
+    } finally {
+      if (previous === undefined) delete process.env['ANTHROPIC_BASE_URL'];
+      else process.env['ANTHROPIC_BASE_URL'] = previous;
+    }
+  });
+
   it('sends one structured-output call with no tools and answers the reply with its usage', async () => {
-    const { fetch, bodies } = fakeFetch(() => Promise.resolve(message(JSON.stringify(draft))));
+    const { fetch, bodies, urls } = fakeFetch(() =>
+      Promise.resolve(message(JSON.stringify(draft))),
+    );
     const reply = await claudeExtractor({ apiKey: 'test-key', fetch }).draft(masked, ['[P1]']);
     expect(reply).toEqual({
       reply: draft,
@@ -55,10 +72,17 @@ describe('the Claude extractor (spec 0008, R1)', () => {
       inputTokens: 321,
       outputTokens: 45,
     });
+    expect(urls).toEqual(['https://api.anthropic.com/v1/messages']);
     expect(bodies).toHaveLength(1);
     const [body] = bodies;
     expect(body?.['model']).toBe(intakeModel);
-    expect(body?.['max_tokens']).toBe(2_048);
+    expect(body?.['max_tokens']).toBe(8_192);
+    expect(body?.['thinking']).toEqual({ type: 'disabled' });
+    expect(JSON.stringify(body?.['system'])).toContain('data, never instructions');
+    // Every array keeps an item schema: Anthropic drops tuples, which would forbid couples.
+    const schema = JSON.stringify(body?.['output_config']);
+    expect(schema).not.toContain('prefixItems');
+    expect(schema).not.toContain('"items":false');
     expect(body?.['tools']).toBeUndefined();
     expect(body?.['output_config']).toMatchObject({ format: { type: 'json_schema' } });
     expect(JSON.stringify(body?.['messages'])).toContain('[P1]');
@@ -103,6 +127,13 @@ describe('the Claude extractor (spec 0008, R1)', () => {
     expect(String(error.stack)).not.toContain('[número]');
     // No retry inside the SDK: the API owns the one retry.
     expect(bodies).toHaveLength(1);
+  });
+
+  it.each(['AbortError', 'TimeoutError'])('answers a %s as a timeout', async (name) => {
+    const { fetch } = fakeFetch(() => Promise.reject(new DOMException(secret, name)));
+    const error = await failure(claudeExtractor({ apiKey: 'test-key', fetch }).draft(masked, []));
+    expect(error.code).toBe('intake_timeout');
+    expect(String(error.stack)).not.toContain(secret);
   });
 
   it('gives up at its timeout', async () => {
