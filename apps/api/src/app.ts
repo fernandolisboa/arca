@@ -1180,7 +1180,6 @@ export function createApp({
     route: (typeof openApiRoutes)[keyof typeof caseRoutes],
     body: { parse: (value: unknown) => Body },
     run: (files: CaseFiles, accountId: string, request: Body) => Promise<CaseWritten>,
-    /** The step-up the write needs, if any. */
     stepUpFor?: (request: Body) => Omit<CanonicalAction, 'nonce'> | undefined,
   ) =>
     v1.openapi(route, async (c) => {

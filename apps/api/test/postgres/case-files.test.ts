@@ -158,6 +158,9 @@ describe('joining after an invite (spec 0007, R2)', () => {
     const carlaView = await files.view(carla);
     expect(carlaView?.caseId).toBe(caseId);
     expect(carlaView?.people.find(({ id }) => id === carlaView.me)?.keptByMe).toBe(true);
+    expect(await events(carla)).toEqual([
+      { code: 'member_joined', details: { caseId, accountId: carla } },
+    ]);
     // A link the other account's invite made counts the same.
     await link(dora, alice);
     viewOf(await add(dora, 'Dora'));
@@ -183,6 +186,11 @@ describe('joining after an invite (spec 0007, R2)', () => {
         'not_found',
       );
     }
+    // Alice keeps her own person, but it has an account.
+    await link(alice, frank);
+    expect(
+      refusal(await files.addMember(alice, { accountId: frank, personId: people.alice })),
+    ).toBe('not_found');
     expect(refusal(await files.addMember(alice, { accountId: alice, displayName: 'Eu' }))).toBe(
       'written',
     );

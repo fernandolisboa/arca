@@ -208,7 +208,7 @@ test('creates the first account from the emailed link, and shows its recovery ki
   expect(created.status()).toBe(200);
   await page.reload();
   await page.getByLabel('Nome dessa pessoa').fill('Pessoa convidada');
-  await page.getByRole('button', { name: 'Colocar no caso' }).click();
+  await page.getByRole('button', { name: 'Adicionar ao caso' }).click();
   await expect(page.getByText(`${invitee} participa do caso.`)).toBeVisible();
   expect(await scan(page)).toEqual([]);
 

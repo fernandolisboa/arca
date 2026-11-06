@@ -129,7 +129,10 @@ class Refused extends Error {
   }
 }
 
-type Event = Omit<AuditRecord, 'subjectAccountId' | 'actorAccountId'>;
+/** An event of the actor's own account, unless it names another account it happened to. */
+type Event = Omit<AuditRecord, 'subjectAccountId' | 'actorAccountId'> & {
+  readonly subjectAccountId?: string;
+};
 const event = <Code extends AuditEventCode>(
   code: Code,
   details: AuditRecord<Code>['details'],
@@ -149,7 +152,7 @@ const refuseUnless = (condition: boolean, reason: CaseRefusal) => {
   if (!condition) throw new Refused(reason);
 };
 
-/** Whether a write's `RETURNING` gave a row: row-level security hides what the viewer may not write. */
+/** Whether a query gave a row: row-level security hides what the viewer may not see or write. */
 const one = async (tx: Transaction, query: SQL) =>
   (await tx.execute<Record<string, unknown>>(query)).rows.length > 0;
 
@@ -213,7 +216,11 @@ export function createCaseFiles({ db, audit, today }: CaseFilesSettings): CaseFi
 
   const recordAll = async (accountId: string, events: readonly Event[]) => {
     for (const entry of events) {
-      await audit.record({ ...entry, subjectAccountId: accountId, actorAccountId: accountId });
+      await audit.record({
+        ...entry,
+        subjectAccountId: entry.subjectAccountId ?? accountId,
+        actorAccountId: accountId,
+      });
     }
   };
 
@@ -297,23 +304,30 @@ export function createCaseFiles({ db, audit, today }: CaseFilesSettings): CaseFi
         if (rows.people.some((row) => row.accountId === request.accountId)) return [];
         // cases_definer stays in its schema (guard 6), so the link is read here, under row-level security.
         refuseUnless(await linked(tx, accountId, request.accountId), 'not_found');
-        const takesOver = 'personId' in request;
-        const takenOver = takesOver
-          ? rows.people.find((row) => row.id === request.personId)
-          : undefined;
-        refuseUnless(takesOver || rows.people.length < caseSizeLimits.people, 'case_limit');
+        const personId = 'personId' in request ? request.personId : null;
+        const displayName = 'displayName' in request ? request.displayName : null;
+        const takenOver = rows.people.find((row) => row.id === personId);
+        refuseUnless(
+          personId === null || (takenOver?.keptByMe === true && takenOver.accountId === null),
+          'not_found',
+        );
+        refuseUnless(personId !== null || rows.people.length < caseSizeLimits.people, 'case_limit');
         refuseUnless(
           takenOver?.caseMember === true || members(rows) < caseSizeLimits.members,
           'case_limit',
         );
         const joined = await tx.execute<{ outcome: string }>(sql`
-          SELECT cases.join_case(${request.accountId}, ${'personId' in request ? request.personId : null}::uuid,
-                                 ${'displayName' in request ? request.displayName : null}::text) AS outcome`);
+          SELECT cases.join_case(${request.accountId}, ${personId}::uuid, ${displayName}::text)
+                 AS outcome`);
         const outcome = joined.rows[0]?.outcome;
         if (outcome === 'unchanged') return [];
         refuseUnless(outcome !== 'case_exists', 'case_exists');
         refuseUnless(outcome === 'joined', 'not_found');
-        return [event('member_joined', { caseId: rows.caseId, accountId: request.accountId })];
+        const added = event('member_joined', {
+          caseId: rows.caseId,
+          accountId: request.accountId,
+        });
+        return [added, { ...added, subjectAccountId: request.accountId }];
       }),
 
     writeProfile: (accountId, { personId, facts, dependsOn }) =>

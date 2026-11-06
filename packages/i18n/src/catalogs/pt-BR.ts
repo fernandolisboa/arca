@@ -278,19 +278,19 @@ export const ptBR = {
     decisionFailure:
       '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} not_found {Esse convite não espera mais uma decisão. Atualize a página.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
     signIn: 'Entre para ver seus convites.',
-    addTitle: 'Colocar {email} no caso da família',
+    addTitle: 'Adicionar {email} ao caso da família',
     addLead:
-      'Assim essa pessoa participa do caso com você. Os dados dela ficam com ela, e é ela quem decide quem vê.',
+      'Assim essa pessoa participa do caso com você. Ela passa a cuidar dos próprios dados e decide quem vê.',
     addAs: 'Quem é essa pessoa?',
     addAsHint:
       'Se você já tinha cadastrado essa pessoa, escolha o nome dela. Os dados passam para ela, e o que você tinha compartilhado deixa de ser compartilhado.',
     addNew: 'Alguém que ainda não está no caso',
     addName: 'Nome dessa pessoa',
-    addSubmit: 'Colocar no caso',
-    adding: 'Colocando no caso…',
+    addSubmit: 'Adicionar ao caso',
+    adding: 'Adicionando ao caso…',
     inCase: '{email} participa do caso.',
     addFailure:
-      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} case_exists {Essa pessoa já participa de outro caso no Arca.} case_limit {O caso já tem o máximo de pessoas.} not_found {Não deu para colocar essa pessoa no caso. Atualize a página e tente de novo.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} case_exists {Essa pessoa já participa de outro caso no Arca.} case_limit {O caso já chegou ao limite de pessoas ou de participantes.} not_found {Não deu para adicionar essa pessoa ao caso. Atualize a página e tente de novo.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
   },
   /** The account's passkeys and the sessions each signed in (spec 0003, R4). */
   devices: {
