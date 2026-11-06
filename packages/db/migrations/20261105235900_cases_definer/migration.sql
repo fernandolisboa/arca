@@ -11,10 +11,7 @@
 -- drop_empty_case: a case goes with its last member.
 -- Both take a transaction lock on the asset or case first: two transactions deleting its last two
 -- rows would otherwise each still see the other's row, and neither would remove it. The second
--- waits, and its next statement sees the first's delete. That holds under READ COMMITTED, the
--- level every write path uses; a REPEATABLE READ snapshot would still show the other's row. Two
--- multi-row deletes that lock the same assets in opposite orders can deadlock: Postgres aborts one,
--- nothing is left orphaned, and the caller retries.
+-- waits, and its next statement sees the first's delete.
 ALTER TABLE "cases"."case_file" FORCE ROW LEVEL SECURITY;
 --> statement-breakpoint
 ALTER TABLE "cases"."member" FORCE ROW LEVEL SECURITY;
