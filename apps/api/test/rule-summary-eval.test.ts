@@ -56,12 +56,18 @@ describe('the rule summary evaluation checks', () => {
     ]);
   });
 
-  it('finds a verdict on who qualifies or on the rule', () => {
-    expect(verdictIn(summary('Todos se qualificam para a rota.'))).toHaveLength(1);
-    expect(verdictIn(summary('Resumo.', ['A regra está correta.']))).toHaveLength(1);
-    expect(
-      verdictIn(summary('Filhos solteiros com menos de 21 anos entram como dependentes.')),
-    ).toEqual([]);
+  it.each([
+    ['Todos se qualificam para a rota.', 1],
+    ['A família não se qualifica.', 1],
+    ['O requerente atende aos requisitos.', 1],
+    ['A regra está correta.', 1],
+    ['Esta versão parece estar errada.', 1],
+    ['The rule is correct.', 1],
+    ['The family qualifies.', 1],
+    ['Filhos solteiros com menos de 21 anos entram como dependentes.', 0],
+    ['A versão é aberta e vale a partir de 2026-11-30.', 0],
+  ])('finds a verdict in "%s"', (text, found) => {
+    expect(verdictIn(summary(text))).toHaveLength(found);
   });
 
   it('keeps a run within its call limit', async () => {

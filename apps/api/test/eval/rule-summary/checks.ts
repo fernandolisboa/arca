@@ -22,9 +22,12 @@ function statedNumbers(content: string): Set<string> {
       for (const written of value.match(writtenNumber) ?? []) stated.add(canonicalNumber(written));
     } else if (typeof value === 'object' && value !== null) Object.values(value).forEach(visit);
   };
-  visit(JSON.parse(content));
+  const parsed: unknown = JSON.parse(content);
+  visit(parsed);
   // A leap-day rule is about birthdays on 29 February, which the version names only by its outcome.
-  if (/"leapDayBirthday":"(?:feb-28|march-1)"/u.test(content)) stated.add('29');
+  if (typeof parsed === 'object' && parsed !== null && 'leapDayBirthday' in parsed) {
+    if (parsed.leapDayBirthday !== null) stated.add('29');
+  }
   return stated;
 }
 
@@ -56,8 +59,10 @@ export function markupIn(summary: RuleSummary): string[] {
 }
 
 const verdict = [
-  /\b(?:todos|voc[êe]s?|a fam[íi]lia|ningu[ée]m) (?:se qualifica|(?:[ée]|s[ãa]o) eleg[íi]ve)/iu,
-  /\b(?:a |esta |essa )?(?:regra|vers[ãa]o) (?:est[áa]|parece|é) (?:correta|certa|errada|incorreta)/iu,
+  /\b(?:todos|voc[êe]s?|a fam[íi]lia|ningu[ée]m|o requerente|a pessoa)\s+(?:n[ãa]o\s+)?(?:se qualifica|pode(?:m)? se qualificar|(?:[ée]|s[ãa]o|est[áa]|est[ãa]o) eleg[íi]ve|atende(?:m)? a(?:os)? requisitos|cumpre(?:m)? os requisitos)/iu,
+  /\b(?:a |esta |essa )?(?:regra|vers[ãa]o)\s+(?:est[áa]|parece(?: estar)?|[ée])\s+(?:correta|certa|errada|incorreta)\b/iu,
+  /\b(?:everyone|you|the family|the applicant)\s+(?:does not |doesn't )?(?:qualif(?:y|ies)|(?:is|are) eligible|meets? the requirements)\b/iu,
+  /\b(?:the )?(?:rule|version)\s+(?:is|looks|seems)\s+(?:correct|right|wrong|incorrect)\b/iu,
 ];
 
 /** A verdict on who qualifies or on whether the rule is right, which the prompt forbids. */
