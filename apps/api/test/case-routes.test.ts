@@ -146,6 +146,39 @@ const playback = {
   ],
 };
 
+const source = {
+  id: 'uscis',
+  url: 'https://www.uscis.gov/',
+  title: 'USCIS',
+  kind: 'official',
+  verifiedAt: '2026-11-01',
+};
+const evaluations = {
+  rulesAsOf: '2026-11-06',
+  engineCommit: 'abc1234',
+  results: [
+    {
+      routeId: 'us-eb5',
+      principalId: me,
+      status: 'missing_information',
+      route: { title: 'EB-5', country: 'US' },
+      version: { number: 1, hash: 'a'.repeat(64) },
+      stale: false,
+      newerProposedVersion: null,
+      dependents: [],
+      possibleDependents: [child],
+      unitOpen: true,
+      requirements: [
+        { id: 'investment', title: 'Investment', result: 'unknown', sources: [source] },
+      ],
+      assessments: [],
+      costs: [],
+      durations: [],
+    },
+  ],
+  questions: [{ personId: child, question: 'birthDate', decides: 1, kept: false }],
+};
+
 function setup({
   confirmedAccount = true,
   allowed = true,
@@ -191,6 +224,10 @@ function setup({
     playback: (accountId: string) => {
       calls.push(['playback', accountId]);
       return Promise.resolve(inCase ? playback : null);
+    },
+    evaluations: (accountId: string) => {
+      calls.push(['evaluations', accountId]);
+      return Promise.resolve(inCase ? evaluations : null);
     },
     leave: (accountId: string) => {
       calls.push(['leave', accountId]);
@@ -272,6 +309,18 @@ describe('the case routes (spec 0007, R3)', () => {
     expect(calls).toEqual([['playback', owner.accountId]]);
     expect(limited).toEqual(['case_playback_session']);
     const outside = await setup({ inCase: false }).call('GET', '/case/playback');
+    expect(outside.status).toBe(404);
+    expect(await errorOf(outside)).toBe('not_found');
+  });
+
+  it('evaluates the case under its per-session limit, and 404 outside a case', async () => {
+    const { call, calls, limited } = setup();
+    const response = await call('GET', '/case/evaluations');
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual(evaluations);
+    expect(calls).toEqual([['evaluations', owner.accountId]]);
+    expect(limited).toEqual(['case_evaluations_session']);
+    const outside = await setup({ inCase: false }).call('GET', '/case/evaluations');
     expect(outside.status).toBe(404);
     expect(await errorOf(outside)).toBe('not_found');
   });

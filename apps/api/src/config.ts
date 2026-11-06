@@ -120,6 +120,14 @@ export function readOwnOrigin(): string | undefined {
   }
 }
 
+const commitPattern = /^[0-9a-f]{7,40}$/;
+
+/** The deployed commit, which evaluations carry so a result can be reproduced (ADR-0014). */
+export function readEngineCommit(): string {
+  const commit = process.env['VERCEL_GIT_COMMIT_SHA']?.trim();
+  return commit !== undefined && commitPattern.test(commit) ? commit : 'unknown';
+}
+
 const resendKeyPattern = /^re_[A-Za-z0-9_-]+$/;
 
 /**

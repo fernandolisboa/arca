@@ -1,11 +1,14 @@
 import { randomUUID } from 'node:crypto';
 import {
   buildCaseSnapshot,
+  identityKey,
   parseCalendarDate,
   storedAssetSchema,
   storedProfileFactsSchema,
 } from '@arca/domain';
 import { withIdentity } from '@arca/db';
+import { routeCatalog, routeIds } from '@arca/knowledge';
+import { CaseEvaluations } from '@arca/api-contract/routes';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { auditLog } from '../../src/audit/log.js';
 import { type CaseFiles, type CaseWritten, createCaseFiles } from '../../src/case/case-files.js';
@@ -17,6 +20,13 @@ import { authTestDatabase, type AuthTestDatabase } from './auth-database.js';
 let testDatabase: AuthTestDatabase;
 let files: CaseFiles;
 
+/** Every bundled version active, so each route evaluates. */
+const activeStates = new Map(
+  routeIds.flatMap((routeId) =>
+    routeCatalog.identities(routeId).map((identity) => [identityKey(identity), 'active' as const]),
+  ),
+);
+
 beforeAll(async () => {
   testDatabase = await authTestDatabase();
   files = createCaseFiles({
@@ -24,6 +34,13 @@ beforeAll(async () => {
     audit: auditLog(testDatabase.auditDb),
     today: () => new Date('2026-11-06T12:00:00Z'),
     countries: { countries: ['BR', 'PT', 'US'], formerCountries: ['YUCS'] },
+    evaluation: {
+      catalog: routeCatalog,
+      routeIds,
+      states: () => Promise.resolve(activeStates),
+      today: () => parseCalendarDate('2026-11-06'),
+      engineCommit: 'test',
+    },
   });
 });
 
@@ -871,6 +888,54 @@ describe('playing the case back (spec 0007, R5)', () => {
           said.kind === 'unanswered' && said.question === 'incomes' && said.person === people.child,
       ),
     ).toBe(true);
+  });
+});
+
+describe('evaluating the case (spec 0007, R6)', () => {
+  it('runs every route for each member, from what the viewer sees, with the questions to ask', async () => {
+    const { alice, bruno, people } = await family();
+    viewOf(
+      await files.answerQuestions(alice, {
+        personId: people.child,
+        answers: [{ questionId: 'birthDate', answer: '2015-03' }],
+      }),
+    );
+    viewOf(
+      await files.addRelationship(alice, {
+        kind: 'parent',
+        from: people.alice,
+        to: people.child,
+        details: {},
+      }),
+    );
+    const members = [people.alice, people.bruno, people.child];
+    const byAlice = CaseEvaluations.parse(await files.evaluations(alice));
+    expect(byAlice.rulesAsOf).toBe('2026-11-06');
+    expect(byAlice.engineCommit).toBe('test');
+    expect(byAlice.results).toHaveLength(routeIds.length * members.length);
+    expect(new Set(byAlice.results.map(({ principalId }) => principalId))).toEqual(
+      new Set(members),
+    );
+    for (const result of byAlice.results) {
+      expect(result.status).not.toBe('pending_activation');
+      expect(result.route?.title).toBeTruthy();
+      for (const id of [...result.dependents, ...result.possibleDependents]) {
+        expect(members).toContain(id);
+      }
+    }
+    const asked = (evaluated: CaseEvaluations, personId: string) =>
+      evaluated.questions.filter((question) => question.personId === personId);
+    // Alice keeps the child and answered the birth date; Bruno keeps himself.
+    expect(asked(byAlice, people.child).every(({ kept }) => kept)).toBe(true);
+    expect(asked(byAlice, people.child).map(({ question }) => question)).not.toContain('birthDate');
+    expect(asked(byAlice, people.bruno).every(({ kept }) => !kept)).toBe(true);
+
+    // The child's profile is not shared with Bruno, so whether the child goes with Alice turns on
+    // a birth date he cannot see.
+    const byBruno = CaseEvaluations.parse(await files.evaluations(bruno));
+    expect(asked(byBruno, people.child).every(({ kept }) => !kept)).toBe(true);
+    expect(asked(byBruno, people.child).map(({ question }) => question)).toContain('birthDate');
+    expect(await files.evaluations(await account())).toBeNull();
   });
 });
 

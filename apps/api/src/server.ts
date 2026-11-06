@@ -1,5 +1,5 @@
 import { createI18n, type I18n } from '@arca/i18n';
-import { pinnedCountries, routeCatalog } from '@arca/knowledge';
+import { pinnedCountries, routeCatalog, routeIds } from '@arca/knowledge';
 import { useRuntimeConfig } from 'nitro/runtime-config';
 import { createDataExports } from './account/data-export.js';
 import { createAccountDeletion, type AccountDeletion } from './account/deletion.js';
@@ -35,6 +35,7 @@ import {
   readAuthSecrets,
   readCronSecret,
   readDeploymentEnvironment,
+  readEngineCommit,
   readEnrollmentCodeHash,
   readOwnOrigin,
   readRateLimitKey,
@@ -401,6 +402,13 @@ const app = createApp({
     audit: { record: async (entry) => (await authParts()).audit.record(entry) },
     today: () => new Date(),
     countries: pinnedCountries,
+    evaluation: {
+      catalog: routeCatalog,
+      routeIds,
+      states: () => knowledgeDecisions().states(),
+      today: () => todayInSaoPaulo(),
+      engineCommit: readEngineCommit(),
+    },
   }),
   knowledge: {
     isApprover: (accountId) => knowledgeDecisions().isApprover(accountId),
