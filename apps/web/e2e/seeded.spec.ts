@@ -1,6 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Browser } from '@playwright/test';
-import { readdir, readFile } from 'node:fs/promises';
+import { expect, test, type Browser, type Page } from '@playwright/test';
 import { family, signedIn } from './case-accounts.js';
 import { seededCredential, virtualAuthenticator, withoutAutofill } from './passkeys.js';
 import {
@@ -51,8 +50,6 @@ test('the seed approver activates a version, reads and closes its reports, then 
     clearKnowledgeDecisions(),
     resetRateLimits(),
   ]);
-  const number = await eb5VersionInEffect();
-  const version = String(number);
   const problems = watchProblems(page);
   await virtualAuthenticator(page, seededCredential(account.passkey.label), {
     userId: account.id,
@@ -61,6 +58,7 @@ test('the seed approver activates a version, reads and closes its reports, then 
   await page.goto(`${databaseServer.origin}/sign-in`);
   await page.getByRole('button', { name: 'Entrar com chave de acesso' }).click();
   await expect(page.getByText(`Você entrou como ${account.email}.`)).toBeVisible();
+  const { version, fallback } = await eb5InEffect(page);
 
   await page.goto(`${databaseServer.origin}/settings`);
   await page.getByRole('link', { name: 'Abrir a tela de ativação' }).click();
@@ -115,10 +113,14 @@ test('the seed approver activates a version, reads and closes its reports, then 
     .click();
 
   await page.getByRole('button', { name: 'Recusar esta versão' }).click();
-  const fallback =
-    number === 1 ? 'a rota fica sem versão' : `ela passa para a versão ${String(number - 1)}`;
   await expect(
-    page.getByText(new RegExp(`Hoje a rota usa esta versão\\. Se recusar, ${fallback}`)),
+    page.getByText(
+      new RegExp(
+        `Hoje a rota usa esta versão\\. Se recusar, ${
+          fallback === null ? 'a rota fica sem versão' : `ela passa para a versão ${fallback}`
+        }`,
+      ),
+    ),
   ).toBeVisible();
   await page.getByRole('button', { name: 'Confirmar' }).click();
   await expect(page.getByRole('status')).toHaveText('Versão recusada.');
@@ -159,28 +161,29 @@ async function memberReportsARequirement(browser: Browser) {
 }
 
 /**
- * The EB-5 version the server selects today: it evaluates on the real clock in São Paulo
- * (`todayInSaoPaulo` in the API), so a version dated in the future takes over on its date.
+ * The EB-5 version the server selects today and the one it would fall back to on rejection, from
+ * the approver's own API: evaluations run on the real clock, so a version dated in the future takes
+ * over on its date.
  */
-async function eb5VersionInEffect(): Promise<number> {
-  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(
-    new Date(),
-  );
-  const folder = new URL('../../../packages/knowledge/data/routes/us-eb5/', import.meta.url);
-  const versions = await Promise.all(
-    (await readdir(folder))
-      .filter((name) => /^\d+\.json$/.test(name))
-      .map(async (name) => {
-        const { number, effectiveFrom } = JSON.parse(
-          await readFile(new URL(name, folder), 'utf8'),
-        ) as { number: number; effectiveFrom: string };
-        return { number, effectiveFrom };
-      }),
-  );
-  const inEffect = versions
-    .filter(({ effectiveFrom }) => effectiveFrom <= today)
-    .sort((left, right) => left.effectiveFrom.localeCompare(right.effectiveFrom))
-    .at(-1);
-  if (inEffect === undefined) throw new Error('no EB-5 version is in effect today');
-  return inEffect.number;
+async function eb5InEffect(page: Page): Promise<{ version: string; fallback: string | null }> {
+  const api = `${databaseServer.origin}/v1/knowledge/versions`;
+  const { versions } = (await (await page.request.get(api)).json()) as {
+    versions: { routeId: string; number: number }[];
+  };
+  for (const { routeId, number } of versions) {
+    if (routeId !== 'us-eb5') continue;
+    const response = await page.request.get(`${api}/view`, {
+      params: { routeId, number: String(number) },
+    });
+    const { rejection } = (await response.json()) as {
+      rejection: { selected: boolean; fallback: { number: number } | null };
+    };
+    if (rejection.selected) {
+      return {
+        version: String(number),
+        fallback: rejection.fallback === null ? null : String(rejection.fallback.number),
+      };
+    }
+  }
+  throw new Error('no EB-5 version is in effect today');
 }
