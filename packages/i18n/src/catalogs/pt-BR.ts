@@ -990,6 +990,7 @@ export const ptBR = {
       stepUpChallenges: 'Pedidos de confirmação com chave de acesso',
       invites: 'Convites enviados',
       securityHistory: 'Histórico de segurança',
+      knowledgeDecisions: 'Decisões sobre regras (ativações e recusas)',
       accountLinks: 'Conexões entre contas',
       vaultDocuments: 'Documentos do cofre',
       vaultDocumentsSharedWithYou: 'Documentos compartilhados com você',

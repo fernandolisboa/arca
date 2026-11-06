@@ -1,6 +1,7 @@
-import { shareScopeSchema } from '@arca/domain';
+import { routeIdSchema, shareScopeSchema } from '@arca/domain';
 import { z } from 'zod';
 import { caseRoutes } from './case.js';
+import { knowledgeRoutes } from './knowledge.js';
 
 /** Every route lives under this prefix; clients prepend their origin, if any. */
 export const apiBasePath = '/v1';
@@ -191,6 +192,7 @@ export const stepUpPurposes = [
   'financial_action',
   'vault_unlock',
   'vault_write',
+  'knowledge_decision',
 ] as const;
 
 export const StepUpPurpose = z.enum(stepUpPurposes);
@@ -739,6 +741,12 @@ export type DeletionReason = (typeof deletionReasons)[number];
 const documentEvent = z.strictObject({ documentId: z.uuid() });
 const documentShareEvent = z.strictObject({ documentId: z.uuid(), recipientId: z.uuid() });
 const caseEvent = z.strictObject({ caseId: z.uuid() });
+/** A knowledge decision (spec 0007, R7): the decision and the version it covers. */
+const decisionEvent = z.strictObject({
+  decisionId: z.uuid(),
+  routeId: routeIdSchema,
+  number: z.int().min(1),
+});
 const casePersonEvent = z.strictObject({ personId: z.uuid() });
 /** `accountId`: the member who now sees, or no longer sees, that scope of the person. */
 const caseShareEvent = casePersonEvent.extend({
@@ -806,6 +814,8 @@ export const auditEventDetails = {
   person_handed_over: casePersonEvent.extend({ accountId: z.uuid() }),
   share_granted: caseShareEvent,
   share_revoked: caseShareEvent,
+  version_activated: decisionEvent,
+  version_rejected: decisionEvent,
 } as const;
 
 export type AuditEventCode = keyof typeof auditEventDetails;
@@ -1578,6 +1588,7 @@ export const deleteDocuments = {
 } as const satisfies RouteDefinition<typeof DeleteDocumentsResponse>;
 
 export * from './case.js';
+export * from './knowledge.js';
 
 export const routes = {
   health,
@@ -1635,6 +1646,7 @@ export const routes = {
   confirmReplacements,
   deleteDocuments,
   ...caseRoutes,
+  ...knowledgeRoutes,
 } as const;
 
 /** The Better Auth endpoints the API lets through; every other path under /v1/auth is a 404. */

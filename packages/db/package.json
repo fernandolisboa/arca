@@ -8,6 +8,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./knowledge-schema": {
+      "types": "./dist/knowledge-schema.d.ts",
+      "default": "./dist/knowledge-schema.js"
+    },
     "./audit-schema": {
       "types": "./dist/audit-schema.d.ts",
       "default": "./dist/audit-schema.js"

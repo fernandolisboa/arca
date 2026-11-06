@@ -23,9 +23,9 @@
 
 | Role | Purpose | Privileges |
 | --- | --- | --- |
-| `app_api` | API requests | `NOBYPASSRLS`; DML on case tables, always under RLS |
+| `app_api` | API requests | `NOBYPASSRLS`; DML on case tables, always under RLS; `SELECT` only on knowledge decisions |
 | `app_jobs` | Workflow steps | `NOBYPASSRLS`; only the tables its jobs need |
-| `app_auth` | Better Auth | Only the auth tables (users, sessions, passkeys), which are not under per-person RLS |
+| `app_auth` | Better Auth | Only the auth tables (users, sessions, passkeys), which are not under per-person RLS, and `INSERT` on knowledge decisions, each a copy of a step-up it spends ([spec 0007](../specs/0007-case-model-and-guided-intake.md#r7-activation-and-rejection-adr-0022)) |
 | `app_audit` | Audit writer | `INSERT` only on the audit log; no `UPDATE` or `DELETE` for anyone but the migrator |
 | `app_migrator` | Schema migrations in the Vercel build ([ADR-0012](0012-automation-first-setup.md)) | DDL; never used by running services |
 | `cases_definer` | Owner of the case schema's `SECURITY DEFINER` functions ([spec 0007](../specs/0007-case-model-and-guided-intake.md#r1-case-tables)) | `NOLOGIN`, `NOINHERIT`; only the grants and policies its functions need, in `cases` alone. `app_migrator` may `SET ROLE` to it (no inheritance) to hand it a function, which also lets the migrator read the rows those functions read; the guards pin that membership |

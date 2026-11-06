@@ -9,10 +9,18 @@ import type { CanonicalAction } from '../../src/auth/step-up-encoding.js';
 import { reverifyStepUp } from '../../src/auth/step-up-reverify.js';
 import { softwarePasskey, type SoftwarePasskey } from '../software-passkey.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
+import {
+  addPasskey as addPasskeyTo,
+  ceremony as ceremonyWith,
+  type Ceremony,
+  origin,
+  person as newPerson,
+  type Person,
+  rpId,
+  toRequest,
+} from './step-up-people.js';
 
 // Step-up on the real migrations and the app_auth pool (spec 0003, R5). Synthetic data only.
-const origin = 'http://localhost:3000';
-const rpId = 'localhost';
 
 let testDatabase: AuthTestDatabase;
 let stepUp: StepUpService;
@@ -33,41 +41,6 @@ afterAll(async () => {
   await testDatabase.drop();
 });
 
-interface Person {
-  readonly signedIn: SignedIn;
-  readonly passkey: SoftwarePasskey;
-}
-
-/** An account with one passkey and a session it signed in, seeded as Better Auth stores them. */
-async function person(): Promise<Person> {
-  const accountId = randomUUID();
-  const sessionId = randomUUID();
-  const passkey = softwarePasskey(rpId);
-  await testDatabase.asAdmin(async (client) => {
-    await client.query(`INSERT INTO auth.user (id, name, email) VALUES ($1, '', $2)`, [
-      accountId,
-      `${accountId}@example.com`,
-    ]);
-    await addPasskey(accountId, passkey);
-    await client.query(
-      `INSERT INTO auth.session (id, expires_at, token, user_id, device_browser, device_os, credential_id)
-       VALUES ($1, now() + interval '1 day', $2, $3, 'firefox', 'linux', $4)`,
-      [sessionId, randomBytes(16).toString('hex'), accountId, passkey.credentialId],
-    );
-  });
-  return { signedIn: { accountId, sessionId }, passkey };
-}
-
-async function addPasskey(accountId: string, passkey: SoftwarePasskey) {
-  await testDatabase.asAdmin((client) =>
-    client.query(
-      `INSERT INTO auth.passkey (public_key, user_id, credential_id, counter, device_type, backed_up)
-       VALUES ($1, $2, $3, 0, 'multiDevice', true)`,
-      [passkey.publicKey, accountId, passkey.credentialId],
-    ),
-  );
-}
-
 /** Another session of the same account. */
 async function otherSession({ signedIn, passkey }: Person): Promise<SignedIn> {
   const sessionId = randomUUID();
@@ -87,39 +60,11 @@ const revokeSession = (target: string, actionNonce = nonce()): CanonicalAction =
   targets: [target],
   nonce: actionNonce,
 });
-const toRequest = (
-  purpose: Exclude<StepUpOptionsRequest['purpose'], 'vault_unlock'>,
-  action: CanonicalAction,
-): StepUpOptionsRequest => ({
-  purpose,
-  target: {
-    action: action.action,
-    targets: [...action.targets],
-    ...(action.fields === undefined ? {} : { fields: { ...action.fields } }),
-    nonce: Buffer.from(action.nonce).toString('base64url'),
-  },
-});
-
-interface Ceremony {
-  readonly signer?: SoftwarePasskey;
-  readonly verifiedBy?: SignedIn;
-  readonly userVerified?: boolean;
-}
-
-/** Options, then a signed assertion, then verify; returns whether verify accepted it. */
-async function ceremony(
-  owner: Person,
-  request: StepUpOptionsRequest,
-  { signer = owner.passkey, verifiedBy = owner.signedIn, userVerified = true }: Ceremony = {},
-) {
-  const { challengeId, options } = await stepUp.options(owner.signedIn, request);
-  const response = signer.assert({ challenge: options.challenge, origin, userVerified });
-  return {
-    challengeId,
-    response,
-    verified: await stepUp.verify(verifiedBy, challengeId, response),
-  };
-}
+const ceremony = (owner: Person, request: StepUpOptionsRequest, options?: Ceremony) =>
+  ceremonyWith(stepUp, owner, request, options);
+const person = () => newPerson(testDatabase);
+const addPasskey = (accountId: string, passkey: SoftwarePasskey) =>
+  addPasskeyTo(testDatabase, accountId, passkey);
 
 const sensitive = (action: CanonicalAction) => toRequest('sensitive_settings', action);
 

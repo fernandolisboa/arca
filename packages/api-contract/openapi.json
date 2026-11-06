@@ -537,7 +537,8 @@
                           "account_deletion",
                           "data_export",
                           "financial_action",
-                          "vault_write"
+                          "vault_write",
+                          "knowledge_decision"
                         ]
                       },
                       "target": {
@@ -3177,7 +3178,9 @@
                               "person_removed",
                               "person_handed_over",
                               "share_granted",
-                              "share_revoked"
+                              "share_revoked",
+                              "version_activated",
+                              "version_rejected"
                             ]
                           },
                           "actorAccountId": {
@@ -29401,6 +29404,166 @@
                 "schema": {
                   "type": "object",
                   "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/versions/activate": {
+      "post": {
+        "operationId": "activateVersion",
+        "summary": "Activates a route version after a knowledge_decision step-up; it counts once its stored assertion verifies. 403 not_approver, 403 step_up_required, 404 not_found, 409 already_rejected",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "routeId": {
+                    "type": "string",
+                    "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                  },
+                  "number": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000
+                  }
+                },
+                "required": [
+                  "routeId",
+                  "number"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Activated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "decisionId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "decisionId"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/versions/reject": {
+      "post": {
+        "operationId": "rejectVersion",
+        "summary": "Rejects a route version after a knowledge_decision step-up, at once and for good. 403 not_approver, 403 step_up_required, 404 not_found, 409 already_rejected",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "routeId": {
+                    "type": "string",
+                    "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                  },
+                  "number": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000
+                  }
+                },
+                "required": [
+                  "routeId",
+                  "number"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "decisionId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "decisionId"
+                  ]
                 }
               }
             }

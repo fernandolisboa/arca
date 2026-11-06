@@ -18,6 +18,7 @@ import type { Logger } from '@arca/telemetry';
 import type { CredentialStore } from './auth.js';
 import type { SignedIn } from './service.js';
 import { stepUpChallenge, subjectHash, type CanonicalAction } from './step-up-encoding.js';
+import type { StoredAssertion } from './step-up-reverify.js';
 
 export type ActionPurpose = Exclude<StepUpPurpose, 'vault_unlock'>;
 
@@ -65,6 +66,30 @@ export interface StepUpService {
   readonly vaultUnlocked: (signedIn: SignedIn) => Promise<boolean>;
 }
 
+/** For a consumer that keeps its own copy of the assertion it spends (spec 0007, R7). */
+export interface StepUpSpender {
+  /**
+   * `consume`, handing `record` the spent assertion and its passkey's public key inside the
+   * transaction that spends it, so the step-up is spent if and only if `record` commits. False,
+   * with nothing changed, when there is nothing to spend.
+   */
+  readonly spend: (
+    signedIn: SignedIn,
+    purpose: ActionPurpose,
+    action: CanonicalAction,
+    record: (tx: Transaction, spent: SpentStepUp) => Promise<void>,
+  ) => Promise<boolean>;
+}
+
+class NothingSpent extends Error {}
+
+/** A spent step-up: its ID, its stored assertion and the public key it verifies against. */
+export interface SpentStepUp extends StoredAssertion {
+  readonly id: string;
+  /** COSE, as the passkey was stored when the step-up was spent. */
+  readonly publicKey: Uint8Array<ArrayBuffer>;
+}
+
 export interface StepUpSettings {
   /** A database on the app_auth pool. */
   readonly db: Database;
@@ -90,8 +115,23 @@ export function createStepUp({
   audit,
   origin,
   logger,
-}: StepUpSettings): StepUpService {
+}: StepUpSettings): StepUpService & StepUpSpender {
   const rpId = new URL(origin).hostname;
+
+  /** The one step-up this session verified within 5 minutes for this purpose and action. */
+  const spendable = (
+    { accountId, sessionId }: SignedIn,
+    purpose: ActionPurpose,
+    action: CanonicalAction,
+  ) =>
+    and(
+      eq(stepUp.accountId, accountId),
+      eq(stepUp.sessionId, sessionId),
+      eq(stepUp.purpose, purpose),
+      eq(stepUp.subjectHash, Buffer.from(subjectHash(action))),
+      isNull(stepUp.consumedAt),
+      gt(stepUp.verifiedAt, sql`now() - interval '5 minutes'`),
+    );
 
   /**
    * Expired challenges, and step-ups never spent once no action can spend them, are deleted on
@@ -220,22 +260,42 @@ export function createStepUp({
       );
     },
 
-    consume: async ({ accountId, sessionId }, purpose, action) => {
+    consume: async (signedIn, purpose, action) => {
       const spent = await db
         .update(stepUp)
         .set({ consumedAt: sql`now()` })
-        .where(
-          and(
-            eq(stepUp.accountId, accountId),
-            eq(stepUp.sessionId, sessionId),
-            eq(stepUp.purpose, purpose),
-            eq(stepUp.subjectHash, Buffer.from(subjectHash(action))),
-            isNull(stepUp.consumedAt),
-            gt(stepUp.verifiedAt, sql`now() - interval '5 minutes'`),
-          ),
-        )
+        .where(spendable(signedIn, purpose, action))
         .returning({ id: stepUp.id });
       return spent.length > 0;
+    },
+
+    spend: async (signedIn, purpose, action, record) => {
+      try {
+        await db.transaction(async (tx) => {
+          const [spent] = await tx
+            .update(stepUp)
+            .set({ consumedAt: sql`now()` })
+            .where(spendable(signedIn, purpose, action))
+            .returning({
+              id: stepUp.id,
+              credentialId: stepUp.credentialId,
+              nonce: stepUp.nonce,
+              authenticatorData: stepUp.authenticatorData,
+              clientDataJson: stepUp.clientDataJson,
+              signature: stepUp.signature,
+            });
+          if (spent === undefined) throw new NothingSpent();
+          // Revoking the passkey deletes its unspent step-ups in the revoking transaction, so a
+          // step-up this update found still has its passkey; if not, nothing is spent.
+          const credential = await credentials.activeIn(tx, signedIn.accountId, spent.credentialId);
+          if (credential === null) throw new NothingSpent();
+          await record(tx, { ...spent, publicKey: credential.publicKey });
+        });
+        return true;
+      } catch (error) {
+        if (error instanceof NothingSpent) return false;
+        throw error;
+      }
     },
 
     vaultUnlocked: async ({ accountId, sessionId }) => {

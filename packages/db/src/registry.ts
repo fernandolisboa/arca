@@ -51,13 +51,16 @@ export interface DeletedEntry extends Exported {
   readonly pool: ErasingPool;
 }
 
-/** Kept after erasure with identifiers only; purging needs its own ADR before the period ends. */
+/**
+ * Kept after erasure with identifiers only; purging needs its own ADR before the period ends.
+ * `forever` is a record that must outlive every account, such as which rules are in use.
+ */
 export interface RetainedEntry extends Exported {
   readonly strategy: 'retain';
   readonly owner: { readonly column: string };
   readonly reason: string;
-  /** An ISO 8601 period, such as `P5Y`. */
-  readonly period: `P${number}Y`;
+  /** An ISO 8601 period, such as `P5Y`, or `forever`. */
+  readonly period: `P${number}Y` | 'forever';
 }
 
 export type RegistryEntry = DeletedEntry | RetainedEntry;
@@ -409,6 +412,16 @@ export const registry: Registry = {
       period: 'P5Y',
       export: ['time', 'code'],
       label: 'dataExport.tables.securityHistory',
+    },
+    {
+      table: 'knowledge.decision',
+      strategy: 'retain',
+      owner: ownedByAccount('approver_account_id'),
+      reason:
+        'The record of which rule versions are in use and who decided, with the assertion that proves it; it holds no other personal data (spec 0007, R7).',
+      period: 'forever',
+      export: ['decided_at', 'kind', 'route_id', 'version_number'],
+      label: 'dataExport.tables.knowledgeDecisions',
     },
   ],
   unowned: [

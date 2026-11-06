@@ -148,6 +148,7 @@ export {
   jsonDepthWithin,
   maxKnowledgeJsonDepth,
   officialDomainListSchema,
+  routeIdSchema,
   routeVersionJsonSchema,
   routeVersionSchema,
   sourceSchema,
@@ -175,6 +176,7 @@ export {
   stateOf,
   versionIdentity,
 } from './rules/catalog.js';
+export { type CheckedDecision, type DecisionKind, decisionStates } from './rules/decisions.js';
 export { type VersionDates, checkVersionOrder } from './rules/version-order.js';
 export { type EvaluationContext, type VersionContext } from './rules/context.js';
 export {

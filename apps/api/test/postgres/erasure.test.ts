@@ -273,9 +273,14 @@ describe('eraseAccount (spec 0004, R9)', () => {
     expect(sent).toEqual([]);
     const erased = (await events(a.accountId)).filter(({ code }) => code === 'account_erased');
     expect(erased).toHaveLength(1);
-    for (const [table, count] of Object.entries(await ownedCounts(testDatabase, a.accountId))) {
-      if (table !== 'audit.event') expect(count, table).toBe(0);
+    const kept = new Set(
+      registry.entries.filter(({ strategy }) => strategy === 'retain').map(({ table }) => table),
+    );
+    const counts = await ownedCounts(testDatabase, a.accountId);
+    for (const [table, count] of Object.entries(counts)) {
+      if (!kept.has(table)) expect(count, table).toBe(0);
     }
+    expect(counts['knowledge.decision']).toBe(1);
   });
 
   it('keeps an erased account in the scan until its event is recorded, recording it once', async () => {

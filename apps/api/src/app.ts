@@ -47,6 +47,7 @@ import {
   handOverCasePersonAction,
   addCaseMemberAction,
   leaveCaseAction,
+  DecideVersionRequest,
   StepUpAction,
   stepUpNonceHeader,
   StepUpOptionsRequest,
@@ -97,6 +98,8 @@ import { securityTxt } from './security-txt.js';
 import type { NotificationChannels } from './notification/channels.js';
 import { isP256PublicKey } from './notification/push.js';
 import type { CaseFiles, CaseWritten } from './case/case-files.js';
+import type { DecisionKind } from '@arca/domain';
+import type { DecisionOutcome, KnowledgeDecisions } from './knowledge/decisions.js';
 import type { DocumentRequests } from './vault/documents.js';
 import {
   memoryObjectsPath,
@@ -176,6 +179,8 @@ export interface AppDependencies {
   readonly documents?: DocumentRequests;
   /** The family's case (spec 0007, R3); absent, its routes answer 401. */
   readonly cases?: CaseFiles;
+  /** Decisions on route versions (spec 0007, R7); absent, their routes answer 401. */
+  readonly knowledge?: KnowledgeDecisions;
   /** Whether the account's inviter confirmed it, read on the app_auth pool (spec 0003, R2). */
   readonly accountConfirmed?: (accountId: string) => Promise<boolean>;
   /**
@@ -250,6 +255,8 @@ export type ErrorCode =
   | 'case_limit'
   | 'case_invalid'
   | 'too_many_push_channels'
+  | 'not_approver'
+  | 'already_rejected'
   | 'accounts_closed'
   | 'too_large'
   | 'request_failed'
@@ -374,6 +381,7 @@ export function createApp({
   vault,
   documents,
   cases,
+  knowledge,
   accountConfirmed,
   memoryObjects,
   notifications,
@@ -484,6 +492,11 @@ export function createApp({
   /** Counted per client address, for the routes that come before any session. */
   const overAddressLimit = (c: Context<AppEnv>, limits: AuthLimits, rule: RateLimitRule) =>
     overLimit(c, limits, rule, limits.clientAddress(c.req.raw.headers));
+  /** The action nonce the client sent in its header, for the step-up it spends. */
+  const actionNonce = (c: Context<AppEnv>) => {
+    const nonce = StepUpAction.shape.nonce.safeParse(c.req.header(stepUpNonceHeader));
+    return nonce.success ? new Uint8Array(Buffer.from(nonce.data, 'base64url')) : undefined;
+  };
   /**
    * `requireStepUp` (spec 0003, R5): spends this session's step-up for the purpose and for the
    * action recomputed from this request, with the nonce the client sent in its header.
@@ -494,12 +507,9 @@ export function createApp({
     purpose: ActionPurpose,
     action: Omit<CanonicalAction, 'nonce'>,
   ) => {
-    const nonce = StepUpAction.shape.nonce.safeParse(c.req.header(stepUpNonceHeader));
-    if (stepUp === undefined || !nonce.success) return false;
-    return stepUp.consume(current, purpose, {
-      ...action,
-      nonce: new Uint8Array(Buffer.from(nonce.data, 'base64url')),
-    });
+    const nonce = actionNonce(c);
+    if (stepUp === undefined || nonce === undefined) return false;
+    return stepUp.consume(current, purpose, { ...action, nonce });
   };
   const registered = <Body extends object>(
     c: Context<AppEnv>,
@@ -1316,6 +1326,30 @@ export function createApp({
     const outcome = await account.cases.leave(account.current.accountId);
     return outcome === 'left' ? c.json({}, 200) : fail(c, 'not_found', 404);
   });
+
+  const refusedDecision = {
+    not_approver: 403,
+    step_up_required: 403,
+    not_found: 404,
+    already_rejected: 409,
+  } as const;
+  const decided = (c: Context<AppEnv>, outcome: DecisionOutcome) =>
+    'decided' in outcome
+      ? c.json({ decisionId: outcome.decided }, 200)
+      : fail(c, outcome.refused, refusedDecision[outcome.refused]);
+  const decideVersion = async (c: Context<AppEnv>, kind: DecisionKind) => {
+    const current = await signedIn(c);
+    if (current === null || knowledge === undefined) return unauthorized(c);
+    // Before the body or the nonce is read, so anyone else learns only that they may not decide;
+    // the service checks again, as the authority.
+    if (!knowledge.isApprover(current.accountId)) return fail(c, 'not_approver', 403);
+    const version = DecideVersionRequest.parse(await c.req.json());
+    const nonce = actionNonce(c);
+    if (nonce === undefined) return fail(c, 'step_up_required', 403);
+    return decided(c, await knowledge.decide(current, kind, version, nonce));
+  };
+  v1.openapi(openApiRoutes.activateVersion, (c) => decideVersion(c, 'activate'));
+  v1.openapi(openApiRoutes.rejectVersion, (c) => decideVersion(c, 'reject'));
 
   v1.openapi(openApiRoutes.notificationChannels, async (c) => {
     const current = await signedIn(c);
