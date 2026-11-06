@@ -335,6 +335,26 @@ export const workflowStart = {
 };
 
 /**
+ * apps/api: models only through a provider of the data-flow register, never the AI Gateway,
+ * which `ai` would reach for a model given by name (spec 0008, R1).
+ *
+ * @type {Restrictions}
+ */
+export const modelGateway = {
+  paths: [
+    {
+      name: 'ai',
+      importNames: ['gateway', 'createGateway'],
+      message: 'Call models through a provider in the data-flow register, not the AI Gateway.',
+    },
+    {
+      name: '@ai-sdk/gateway',
+      message: 'Call models through a provider in the data-flow register, not the AI Gateway.',
+    },
+  ],
+};
+
+/**
  * @param {Restrictions[]} kinds
  * @returns {import('eslint').Linter.RulesRecord}
  */

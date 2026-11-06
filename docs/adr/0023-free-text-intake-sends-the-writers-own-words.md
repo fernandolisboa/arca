@@ -28,6 +28,7 @@ Two accepted decisions do not fit as written:
 
 - A name the member types that Arca does not know yet reaches the model, and so do facts about the people described, who include other adults and children, not only the writer (SECURITY.md principle 3). The screen says so before sending ("Prefira escrever 'minha esposa', 'meu filho mais velho'"). The residual is accepted for a one-family app in which a member describes their own family, for this one purpose, with the vendor's retention recorded.
 - One more exception to minimization to review: it lives in one adapter and one masking function, both under the AI safety reviewer.
+- Accepted by the owner: Production and Preview share one `ANTHROPIC_API_KEY`, so a preview deployment of any branch in this repository can spend it. The Console spend limit caps the cost, the API keeps no data a key could read back, and previews hold synthetic data only. The adapter pins the API host in code, so no deployment setting can send the text elsewhere.
 - No new vendor account. Adding Langfuse later is a change to the adapter only.
 
 ## Alternatives considered

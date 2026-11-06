@@ -123,7 +123,7 @@ The [data-flow table](../ARCHITECTURE.md#data-flows) lists every service and wha
 
 ## LLM and agentic risks
 
-No model call is reachable in production yet. The [rules engine](../specs/0002-rules-engine-and-knowledge-base.md) is deterministic, and the knowledge-base agents have their own threat model there. Before the first adapter ships, the real-data gate's item 10 requires the evaluation suite and the data-flow rows. Until then, the agentic surface is development: coding agents and their reviewer subagents, which hold the owner's tokens.
+No model call is reachable in production yet: the intake extractor ([spec 0008](../specs/0008-free-text-intake.md)) runs on previews and stays off in production until its evaluation suite passes. The [rules engine](../specs/0002-rules-engine-and-knowledge-base.md) is deterministic, and the knowledge-base agents have their own threat model there. Before an adapter is reachable in production, the real-data gate's item 10 requires the evaluation suite and the data-flow rows. Until then, the agentic surface is development: coding agents and their reviewer subagents, which hold the owner's tokens.
 
 Risks from the OWASP Top 10 for LLM Applications (2025):
 
@@ -138,7 +138,7 @@ Risks from the OWASP Top 10 for LLM Applications (2025):
 | LLM07 System prompt leakage | Reviewer prompts reveal secrets | Prompts are public files in `.claude/agents/` and hold no secrets |
 | LLM08 Vector and embedding weaknesses | Cross-case leakage through retrieval | No embeddings yet; the shared base holds public rules only |
 | LLM09 Misinformation | A wrong rule shown as fact | Every requirement shown needs a source and a verification date ([ADR-0002](../adr/0002-rules-as-versioned-data.md)) |
-| LLM10 Unbounded consumption | Cost runaway | No model SDK in any package ([untracked-surfaces.test.ts](../../tooling/scripts/test/untracked-surfaces.test.ts) "has no model SDK in any workspace package, so gate item 10 holds"); W2 for workflows |
+| LLM10 Unbounded consumption | Cost runaway | Model SDKs only in apps/api, off in production ([untracked-surfaces.test.ts](../../tooling/scripts/test/untracked-surfaces.test.ts) "keeps model SDKs to apps/api, whose extractor is off in production, so gate item 10 holds"); intake limits per account, a token cap and a Console spend limit (spec 0008); W2 for workflows |
 
 Risks from the OWASP Top 10 for Agentic Applications (2026):
 

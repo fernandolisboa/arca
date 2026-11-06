@@ -75,6 +75,12 @@ export const caseLimits = {
   reports: { name: 'rule_report_account', limit: 20, windowSeconds: 24 * hour },
 } as const satisfies Record<string, RateLimitRule>;
 
+/** Free-text drafts per account (spec 0008, R3): each one is a paid model call. */
+export const intakeLimits = {
+  day: { name: 'case_intake_day', limit: 10, windowSeconds: 24 * hour },
+  minute: { name: 'case_intake_minute', limit: 3, windowSeconds: 60 },
+} as const satisfies Record<string, RateLimitRule>;
+
 /**
  * Limits on recovery (spec 0003, R10): starting is per email HMAC and per IP; the link's token is
  * 256 random bits and five wrong codes lock the account's recovery, so the rest bound load.

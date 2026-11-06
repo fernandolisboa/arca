@@ -77,6 +77,7 @@ import {
   authRouteLimits,
   caseLimits,
   deviceLimits,
+  intakeLimits,
   inviteLimits,
   monitoringLimits,
   documentLimits,
@@ -102,6 +103,7 @@ import { securityTxt } from './security-txt.js';
 import type { NotificationChannels } from './notification/channels.js';
 import { isP256PublicKey } from './notification/push.js';
 import type { CaseFiles, CaseWritten } from './case/case-files.js';
+import type { CaseIntake } from './case/intake.js';
 import type { DecisionKind } from '@arca/domain';
 import type { DecisionOutcome, KnowledgeDecisions } from './knowledge/decisions.js';
 import type { RuleReportReview } from './knowledge/reports.js';
@@ -185,6 +187,11 @@ export interface AppDependencies {
   readonly documents?: DocumentRequests;
   /** The family's case (spec 0007, R3); absent, its routes answer 401. */
   readonly cases?: CaseFiles;
+  /**
+   * Drafts from the member's own words (spec 0008, R3); absent, as without a model key, the
+   * route answers 503 `intake_unavailable` and the guided questions keep working.
+   */
+  readonly intake?: CaseIntake;
   /** Decisions on route versions (spec 0007, R7); absent, their routes answer 401. */
   readonly knowledge?: KnowledgeDecisions;
   /** The activation screen's reads (spec 0007, R7); absent, their routes answer 401. */
@@ -270,6 +277,10 @@ export type ErrorCode =
   | 'accounts_closed'
   | 'too_large'
   | 'request_failed'
+  | 'intake_unparsable'
+  | 'intake_timeout'
+  | 'intake_unavailable'
+  | 'intake_failed'
   | 'internal_error';
 
 /** The session a request is signed in with, and what its account's passkeys say about it. */
@@ -391,6 +402,7 @@ export function createApp({
   vault,
   documents,
   cases,
+  intake,
   knowledge,
   knowledgeVersions,
   ruleReports,
@@ -492,7 +504,7 @@ export function createApp({
     c.set('errorCode', 'rate_limited');
     return c.json({ error: { code: 'rate_limited' } } satisfies ErrorResponse, 429);
   };
-  const fail = <Status extends 400 | 401 | 403 | 404 | 409 | 503>(
+  const fail = <Status extends 400 | 401 | 403 | 404 | 409 | 502 | 503 | 504>(
     c: Context<AppEnv>,
     code: ErrorCode,
     status: Status,
@@ -1335,6 +1347,27 @@ export function createApp({
     return evaluations === null
       ? fail(c, 'not_found', 404)
       : c.json(CaseEvaluations.parse(evaluations), 200);
+  });
+  const intakeFailures = {
+    not_found: 404,
+    intake_unparsable: 502,
+    intake_failed: 502,
+    intake_unavailable: 503,
+    intake_timeout: 504,
+  } as const;
+  v1.openapi(openApiRoutes.draftCaseIntake, async (c) => {
+    const account = await caseAccount(c, false);
+    if ('refused' in account) return account.refused;
+    const { text } = caseRoutes.draftCaseIntake.body.parse(await c.req.json());
+    if (intake === undefined || authLimits === undefined) return fail(c, 'intake_unavailable', 503);
+    for (const rule of [intakeLimits.minute, intakeLimits.day]) {
+      const limited = await overLimit(c, authLimits, rule, account.current.accountId);
+      if (limited !== undefined) return limited;
+    }
+    const outcome = await intake.draft(account.current.accountId, text);
+    return outcome.ok
+      ? c.json(outcome.value, 200)
+      : fail(c, outcome.reason, intakeFailures[outcome.reason]);
   });
   v1.openapi(openApiRoutes.reportRule, async (c) => {
     const account = await caseAccount(c, 'reports');

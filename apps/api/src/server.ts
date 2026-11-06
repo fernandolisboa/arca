@@ -10,6 +10,8 @@ import { createApp } from './app.js';
 import { auditLog, auditReader, type AuditLog } from './audit/log.js';
 import { createAuth, credentialStore } from './auth/auth.js';
 import { createCaseFiles } from './case/case-files.js';
+import { createCaseIntake } from './case/intake.js';
+import { extractorFor } from './intake/environment.js';
 import { createDocuments } from './vault/documents.js';
 import { objectStorageFor } from './vault/storage-environment.js';
 import { createVault } from './vault/vault.js';
@@ -30,6 +32,7 @@ import { createRuleReportReview } from './knowledge/reports.js';
 import { createKnowledgeVersions } from './knowledge/versions.js';
 import {
   databaseTargetFrom,
+  readAnthropicApiKey,
   readApiSecrets,
   readAuditDatabasePassword,
   readAuthOrigin,
@@ -94,6 +97,11 @@ const environment = readDeploymentEnvironment();
 const emailRoute = emailRouteFor(environment);
 const accountsOpen = accountsOpenWith(emailRoute);
 
+/** The audit log on the app_audit pool, for services built before the auth parts are. */
+const lazyAudit: Pick<AuditLog, 'record'> = {
+  record: async (entry) => (await authParts()).audit.record(entry),
+};
+
 let knowledgeInstance: KnowledgeDecisions | undefined;
 
 /**
@@ -107,7 +115,7 @@ function knowledgeDecisions(): KnowledgeDecisions {
       spend: async (signedIn, purpose, action, record) =>
         (await authParts()).stepUp.spend(signedIn, purpose, action, record),
     },
-    audit: { record: async (entry) => (await authParts()).audit.record(entry) },
+    audit: lazyAudit,
     catalog: routeCatalog,
     approvers: approvers[environment],
     origin: readAuthOrigin(),
@@ -253,6 +261,19 @@ const ownOrigin = readOwnOrigin();
 const withOrigin = (origin: string | undefined) => (origin === undefined ? {} : { origin });
 
 const outbox = outboxReaderFor(environment, authConnection);
+
+const extractor = extractorFor(environment, readAnthropicApiKey());
+const intake =
+  extractor === undefined
+    ? undefined
+    : createCaseIntake({
+        db: () => connected().db,
+        audit: lazyAudit,
+        logger,
+        extractor,
+        today: () => todayInSaoPaulo(),
+        now: () => performance.now(),
+      });
 
 const monitored = startMonitoring({ environment, origin: ownOrigin });
 const tunnel = tunnelFor({ environment, origin: ownOrigin, send: sendToSentry });
@@ -400,7 +421,7 @@ const app = createApp({
       }),
   cases: createCaseFiles({
     db: () => connected().db,
-    audit: { record: async (entry) => (await authParts()).audit.record(entry) },
+    audit: lazyAudit,
     today: () => new Date(),
     countries: pinnedCountries,
     evaluation: {
@@ -417,6 +438,7 @@ const app = createApp({
       knowledgeDecisions().decide(signedIn, kind, version, nonce),
     states: () => knowledgeDecisions().states(),
   },
+  ...(intake === undefined ? {} : { intake }),
   ruleReports: createRuleReportReview(() => connected().db),
   knowledgeVersions: createKnowledgeVersions({
     states: () => knowledgeDecisions().states(),
