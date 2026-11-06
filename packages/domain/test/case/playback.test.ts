@@ -49,7 +49,15 @@ const snapshot = caseSnapshotSchema.parse({
   ],
   relationships: [
     { kind: 'spouse', people: ['p1', 'p2'], start: '2010-05', end: 'none' },
-    { kind: 'parent', parent: 'p1', child: 'p3', parentKind: 'biological', custody: 'shared' },
+    {
+      kind: 'parent',
+      parent: 'p1',
+      child: 'p3',
+      parentKind: 'adoptive',
+      custody: 'shared',
+      start: '2018',
+      custodyStart: '2016',
+    },
   ],
   assets: [
     {
@@ -147,6 +155,16 @@ describe('playing the case back (spec 0007, R5)', () => {
       'allChildren',
       'allAssets',
     ]);
+    const hidden = describeCase(
+      snapshot,
+      new Map([...visibility, ['p1', { profile: true, finances: false }]]),
+      at,
+    );
+    expect(
+      hidden
+        .filter((sentence) => sentence.kind === 'recordedInFull')
+        .map(({ question }) => question),
+    ).toEqual(['allChildren']);
   });
 
   it('says relationships and assets after the people, with their dates and shares', () => {
@@ -166,8 +184,10 @@ describe('playing the case back (spec 0007, R5)', () => {
         about: ['p1', 'p3'],
         parent: 'p1',
         child: 'p3',
-        parentKind: 'biological',
+        parentKind: 'adoptive',
         custody: 'shared',
+        start: '2018',
+        custodyStart: '2016',
       },
       {
         kind: 'asset',
@@ -183,6 +203,26 @@ describe('playing the case back (spec 0007, R5)', () => {
         liquid: false,
       },
     ]);
+  });
+
+  it.each([
+    ['2026', { min: 0, max: 0 }],
+    ['2025-11', { min: 0, max: 1 }],
+    ['2026-11-07', undefined],
+  ])('gives someone born in %s the age %j', (birthDate, age) => {
+    const [born] = describeCase(
+      caseSnapshotSchema.parse({
+        recordedOn: at,
+        members: ['p1'],
+        people: [{ id: 'p1', birthDate }],
+        relationships: [],
+        assets: [],
+      }),
+      new Map([['p1', seen]]),
+      at,
+    );
+    expect(born).toMatchObject({ kind: 'born', date: birthDate });
+    expect(born !== undefined && 'age' in born ? born.age : undefined).toEqual(age);
   });
 
   it('gives no age before a birth date that may still be ahead', () => {

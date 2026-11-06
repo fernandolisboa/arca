@@ -1,6 +1,6 @@
 import type { CasePlayback } from '@arca/api-contract/routes';
 import { type CalendarDate, buildCaseSnapshot, describeCase, renamePeople } from '@arca/domain';
-import type { CaseRows } from './view.js';
+import { type CaseRows, sharedWith } from './view.js';
 
 /**
  * The case read back for the viewer (spec 0007, R5). What the viewer sees of a person comes from
@@ -9,20 +9,17 @@ import type { CaseRows } from './view.js';
  */
 export function casePlayback(rows: CaseRows, accountId: string, at: CalendarDate): CasePlayback {
   const { snapshot, personIds } = buildCaseSnapshot(rows, at);
-  const shared = (personId: string, scope: 'profile' | 'finances') =>
-    rows.shares.some(
-      (row) => row.personId === personId && row.accountId === accountId && row.scope === scope,
-    );
   const visibility = new Map(
     rows.people.flatMap((person) => {
       const opaque = personIds.get(person.id);
       if (opaque === undefined) return [];
+      const shared = sharedWith(rows, accountId, person.id);
       return [
         [
           opaque,
           {
-            profile: person.keptByMe || shared(person.id, 'profile'),
-            finances: person.keptByMe || shared(person.id, 'finances'),
+            profile: person.keptByMe || shared.includes('profile'),
+            finances: person.keptByMe || shared.includes('finances'),
           },
         ],
       ];

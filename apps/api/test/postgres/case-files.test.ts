@@ -859,6 +859,18 @@ describe('playing the case back (spec 0007, R5)', () => {
       age: { min: 11, max: 11 },
     });
     expect(await files.playback(await account())).toBeNull();
+
+    await files.replaceShares(alice, { personId: people.child, profile: [], finances: [bruno] });
+    const finances = kinds((await files.playback(bruno))?.sentences ?? [], people.child);
+    expect(finances[0]).toBe('profileHidden');
+    expect(finances).not.toContain('financesHidden');
+    expect(finances).not.toContain('born');
+    expect(
+      (await files.playback(bruno))?.sentences.some(
+        (said) =>
+          said.kind === 'unanswered' && said.question === 'incomes' && said.person === people.child,
+      ),
+    ).toBe(true);
   });
 });
 

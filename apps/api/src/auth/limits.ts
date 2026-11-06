@@ -67,9 +67,10 @@ export const documentLimits = {
   confirm: { name: 'document_confirm_account', limit: 60, windowSeconds: hour },
 } as const satisfies Record<string, RateLimitRule>;
 
-/** Writes to the family's case (spec 0007, R3). */
+/** Writes to the family's case per account, and its playback per session (spec 0007, R3). */
 export const caseLimits = {
   write: { name: 'case_write_account', limit: 300, windowSeconds: hour },
+  playback: { name: 'case_playback_session', limit: 60, windowSeconds: hour },
 } as const satisfies Record<string, RateLimitRule>;
 
 /**

@@ -27452,7 +27452,7 @@
     "/case/playback": {
       "get": {
         "operationId": "getCasePlayback",
-        "summary": "The case as the viewer sees it, read back as sentences; a profile or finances not shared with the viewer reads as not shared, never as unanswered; 404 not_found outside a case",
+        "summary": "The case as the viewer sees it, read back as sentences; a profile or finances not shared with the viewer reads as not shared, never as unanswered; 60 per hour per session (429 rate_limited); 404 not_found outside a case",
         "responses": {
           "200": {
             "description": "The case read back",
@@ -28612,7 +28612,7 @@
                                 "properties": {
                                   "amount": {
                                     "type": "string",
-                                    "pattern": "^\\d+(?:\\.\\d+)?$"
+                                    "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
                                   },
                                   "currency": {
                                     "type": "string",
@@ -29023,6 +29023,18 @@
                                     "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
                                   }
                                 ]
+                              },
+                              "custodyStart": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                  }
+                                ]
                               }
                             },
                             "required": [
@@ -29089,7 +29101,7 @@
                                 "properties": {
                                   "amount": {
                                     "type": "string",
-                                    "pattern": "^\\d+(?:\\.\\d+)?$"
+                                    "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
                                   },
                                   "currency": {
                                     "type": "string",
@@ -29281,7 +29293,8 @@
                                       "type": "string"
                                     },
                                     "share": {
-                                      "type": "string"
+                                      "type": "string",
+                                      "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
                                     }
                                   },
                                   "required": [

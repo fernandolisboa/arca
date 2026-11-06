@@ -571,41 +571,44 @@ export const ptBR = {
       residence: 'País onde {person} mora: {country}.',
       education: 'Estudos de {person}: {level}.',
       studying: '{person} {studying, select, yes {está} other {não está}} estudando agora.',
-      language: 'Idioma de {person}: {language}, {level}.',
+      language: 'Idioma de {person}: {language} ({level}).',
       noLanguage: 'Idiomas de {person}: nenhum.',
       jobOffer: 'Oferta de emprego para {person}: {country}, na área de {sector}{temporary}.',
       noJobOffer: 'Ofertas de emprego para {person}: nenhuma.',
       immigrationEvent: 'Imigração de {person}: {event}, {country}{date}.',
-      noImmigrationEvent: 'Imigração de {person}: nada a registrar.',
+      noImmigrationEvent: 'Imigração de {person}: nenhum visto, residência ou problema.',
       dependsOn: '{person} depende do dinheiro de {people}.',
       independent: '{person} não depende do dinheiro de ninguém do caso.',
       recordedInFull:
         '{marker, select, spouses {Todos os casamentos de {person} estão anotados.} partners {Todas as uniões estáveis de {person} estão anotadas.} children {Todos os filhos de {person} estão anotados.} parents {Todos os pais de {person} estão anotados.} other {Todos os bens de {person} estão anotados.}}',
       income:
-        'Renda de {person}: {amount} por mês, {income, select, active {de trabalho} other {sem trabalhar}} ({country}).',
+        'Renda de {person}: {amount} por mês, {income, select, active {de trabalho} other {de aluguel, aposentadoria ou rendimentos}} ({country}).',
       noIncome: 'Renda de {person}: nenhuma.',
       couple:
         '{first} e {second} {couple, select, spouse {são casados} other {vivem em união estável}}{start}.',
       coupleEnded:
         '{first} e {second} {couple, select, spouse {foram casados} other {viveram em união estável}}{start} até {end}.',
-      parent: '{parent} é mãe ou pai de {child}{details}.',
-      asset: '{asset} de {owners}: {value} em {valuedAt}{sold}.',
+      parent: '{parent} é mãe ou pai de {child}{since}{details}.',
+      asset: '{asset} de {owners}: {value} em {valuedAt}{liquid}{sold}.',
     },
     part: {
-      age: ' ({min, plural, one {# ano} other {# anos}})',
-      ageRange: ' ({min} ou {max} anos)',
+      age: ' ({min, plural, =0 {menos de 1 ano} one {# ano} other {# anos}})',
+      ageRange: ' ({min} ou {max, plural, one {# ano} other {# anos}})',
       basis:
-        ', {basis, select, birth {por nascimento} descent {por descendência} naturalization {por naturalização} marriage {por casamento} investment {por investimento} other {de outro jeito}}',
+        ', {basis, select, birth {por nascimento} descent {por descendência} naturalization {por naturalização} marriage {por casamento} investment {por investimento} other {por outro motivo}}',
       since: ', desde {date}',
       until: ', até {date}',
       in: ', em {date}',
       startSince: ' desde {date}',
+      from: ' de {date}',
       temporary: ', temporária',
       parentKind: ', filiação {parentKind, select, biological {biológica} other {adotiva}}',
       custody:
         ', {custody, select, full {guarda total} shared {guarda compartilhada} other {sem guarda}}',
       owner: '{person} ({share}%)',
-      sold: ', vendido em {date}',
+      sold: ', com venda em {date}',
+      liquid:
+        '{liquid, select, yes {, fácil de transformar em dinheiro} other {, difícil de transformar em dinheiro}}',
     },
   },
   /** The account's passkeys and the sessions each signed in (spec 0003, R4). */

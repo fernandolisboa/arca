@@ -264,13 +264,13 @@ describe('the case routes (spec 0007, R3)', () => {
     expect(await errorOf(outside)).toBe('not_found');
   });
 
-  it('reads the case back without counting a write, and 404 outside a case', async () => {
+  it('reads the case back under its per-session limit, and 404 outside a case', async () => {
     const { call, calls, limited } = setup();
     const response = await call('GET', '/case/playback');
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual(playback);
     expect(calls).toEqual([['playback', owner.accountId]]);
-    expect(limited).toEqual([]);
+    expect(limited).toEqual(['case_playback_session']);
     const outside = await setup({ inCase: false }).call('GET', '/case/playback');
     expect(outside.status).toBe(404);
     expect(await errorOf(outside)).toBe('not_found');

@@ -332,7 +332,7 @@ export const getCasePlayback = {
   path: '/case/playback',
   operationId: 'getCasePlayback',
   summary:
-    'The case as the viewer sees it, read back as sentences; a profile or finances not shared with the viewer reads as not shared, never as unanswered; 404 not_found outside a case',
+    'The case as the viewer sees it, read back as sentences; a profile or finances not shared with the viewer reads as not shared, never as unanswered; 60 per hour per session (429 rate_limited); 404 not_found outside a case',
   response: { description: 'The case read back', schema: CasePlayback },
 } as const satisfies RouteDefinition<typeof CasePlayback>;
 

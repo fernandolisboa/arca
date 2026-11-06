@@ -3,6 +3,7 @@ import { ageYears } from '../calendar/age.js';
 import { type CalendarDate, calendarDateSchema, compareDates } from '../calendar/calendar-date.js';
 import { type DateValue, dateRange, dateValueSchema } from '../calendar/partial-date.js';
 import { type CurrencyCode, currencyCodeSchema, unitsAmount } from '../money/currency.js';
+import { decimalSchema } from '../money/decimal.js';
 import { type QuestionId, questionFlow } from './questions.js';
 import {
   type CaseSnapshot,
@@ -12,6 +13,7 @@ import {
   citizenshipBases,
   completenessMarkers,
   countryCodeSchema,
+  coupleEdgeSchema,
   custodies,
   immigrationEventKinds,
   incomeKinds,
@@ -28,10 +30,7 @@ import {
  */
 const person = z.string();
 const dateOrNone = z.union([dateValueSchema, z.literal('none')]);
-const amount = z.strictObject({
-  amount: z.string().regex(/^\d+(?:\.\d+)?$/),
-  currency: currencyCodeSchema,
-});
+const amountSchema = z.strictObject({ amount: decimalSchema, currency: currencyCodeSchema });
 const ageRange = z.strictObject({ min: z.number().int().min(0), max: z.number().int().min(0) });
 const sentence = <Kind extends string, Shape extends z.ZodRawShape>(kind: Kind, shape: Shape) =>
   z.strictObject({
@@ -79,12 +78,12 @@ export const sentenceSchema = z.discriminatedUnion('kind', [
   sentence('income', {
     person,
     income: z.enum(incomeKinds),
-    monthly: amount,
+    monthly: amountSchema,
     sourceCountry: countryCodeSchema,
   }),
   sentence('noIncome', { person }),
   sentence('couple', {
-    couple: z.enum(['spouse', 'partner']),
+    couple: coupleEdgeSchema.shape.kind,
     people: z.tuple([person, person]),
     start: dateValueSchema.optional(),
     end: dateOrNone.optional(),
@@ -95,12 +94,13 @@ export const sentenceSchema = z.discriminatedUnion('kind', [
     parentKind: z.enum(parentKinds).optional(),
     custody: z.enum(custodies).optional(),
     start: dateValueSchema.optional(),
+    custodyStart: dateValueSchema.optional(),
   }),
   sentence('asset', {
     asset: z.enum(assetKinds),
-    value: amount,
+    value: amountSchema,
     valuedAt: calendarDateSchema,
-    owners: z.array(z.strictObject({ person, share: z.string() })).min(1),
+    owners: z.array(z.strictObject({ person, share: decimalSchema })).min(1),
     liquid: z.boolean().optional(),
     sold: dateOrNone.optional(),
   }),
@@ -144,11 +144,15 @@ const decimalAmount = ({ amount, currency }: { amount: number; currency: Currenc
   currency,
 });
 
-/** Whole years of age at `at`, as a range when the birth date is partial; none before birth. */
+/**
+ * Whole years of age at `at`, as a range when the birth date is partial; a partial date that runs
+ * past `at` counts only its days up to it, and a birth after `at` has no age.
+ */
 function ageAt(birthDate: DateValue, at: CalendarDate) {
   const { min, max } = dateRange(birthDate);
-  if (compareDates(max, at) > 0) return undefined;
-  return { min: ageYears(max, at, 'march-1'), max: ageYears(min, at, 'feb-28') };
+  if (compareDates(min, at) > 0) return undefined;
+  const latest = compareDates(max, at) > 0 ? at : max;
+  return { min: ageYears(latest, at, 'march-1'), max: ageYears(min, at, 'feb-28') };
 }
 
 const optional = <Key extends string, Value>(key: Key, value: Value | undefined) =>
@@ -249,7 +253,10 @@ function describePerson(
         break;
     }
   }
-  for (const marker of subject.recordedInFull ?? []) {
+  const markersSeen = (subject.recordedInFull ?? []).filter((marker) =>
+    marker === 'assets' ? visible.finances : visible.profile,
+  );
+  for (const marker of markersSeen) {
     said.push({
       kind: 'recordedInFull',
       question: markerQuestions[marker],
@@ -276,7 +283,7 @@ export function describeCase(
   );
   const relationships = snapshot.relationships.map((edge): Sentence => {
     if (edge.kind === 'parent') {
-      const { parent, child, parentKind, custody, start } = edge;
+      const { parent, child, parentKind, custody, start, custodyStart } = edge;
       return {
         kind: 'parent',
         question: 'relationships',
@@ -286,6 +293,7 @@ export function describeCase(
         ...optional('parentKind', parentKind),
         ...optional('custody', custody),
         ...optional('start', start),
+        ...optional('custodyStart', custodyStart),
       };
     }
     return {
