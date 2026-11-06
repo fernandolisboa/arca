@@ -1,21 +1,26 @@
-import type {
-  AnswerCaseQuestionsRequest,
-  CaseIntakeDraftResponse,
-  CaseQuestions,
-  CaseView,
-  RouteBody,
-  Sentence,
-  routes,
+import {
+  isNewReference,
+  startsInPlan,
+  type AnswerCaseQuestionsRequest,
+  type CaseIntakeDraftResponse,
+  type CaseQuestions,
+  type CaseView,
+  type RouteBody,
+  type Sentence,
+  type routes,
 } from '@arca/api-contract/client';
+import { isRecord } from '../questions/entry.js';
 
 /**
- * The intake draft as the screen reviews and saves it (spec 0008, R4). Everything here is pure:
- * the screen keeps the member's choices, and the save runs the writes this plans.
+ * The intake draft as the screen reviews and saves it (spec 0008, R4). The API has already cut the
+ * draft to what the case takes, so this only words it, keeps what the member kept, and orders the
+ * writes through the existing case routes.
  */
 
 export type IntakeDraft = CaseIntakeDraftResponse['draft'];
 type DraftPerson = IntakeDraft['people'][number];
 type DraftEdge = IntakeDraft['relationships'][number];
+type QuestionId = AnswerCaseQuestionsRequest['answers'][number]['questionId'];
 export type NewRelationship = RouteBody<typeof routes.addCaseRelationship>;
 export type IntakeList = 'citizenships' | 'languages';
 
@@ -25,14 +30,15 @@ export interface DraftItem {
   readonly sentence: Sentence;
 }
 
-/** A proposed person: kept as new, matched to someone in the case, or dropped. */
-export type PersonChoice =
-  | { readonly kind: 'new'; readonly displayName: string; readonly caseMember: boolean }
-  | { readonly kind: 'match'; readonly personId: string }
-  | { readonly kind: 'drop' };
+/** A proposed new person: kept, with the name and plan membership the member gives, or dropped. */
+export interface NewPerson {
+  readonly keep: boolean;
+  readonly displayName: string;
+  readonly caseMember: boolean;
+}
 
 export interface IntakeChoices {
-  readonly people: ReadonlyMap<string, PersonChoice>;
+  readonly people: ReadonlyMap<string, NewPerson>;
   /** The IDs of the facts and edges the member dropped. */
   readonly dropped: ReadonlySet<string>;
   /** The lists the member confirmed whole, as `listId(ref, list)`. */
@@ -41,9 +47,6 @@ export interface IntakeChoices {
 
 export const listId = (ref: string, list: IntakeList) => `${ref}:${list}`;
 const edgeId = (index: number) => `edge:${String(index)}`;
-
-/** The roles that usually belong to the plan, so a new person with one starts as a member. */
-const planRoles: ReadonlySet<string> = new Set(['self', 'spouse', 'partner', 'child']);
 
 /** A person's proposed facts, one sentence each, in the order the guided questions ask them. */
 export function personItems(person: DraftPerson): DraftItem[] {
@@ -108,56 +111,86 @@ export function edgeItems(draft: IntakeDraft): DraftItem[] {
   });
 }
 
-/**
- * The choices a draft starts with: a known person is themselves, the writer is the viewer's own
- * person, and anyone else is new, unnamed, and a member when their role usually is.
- */
-export function defaultChoices(draft: IntakeDraft, view: CaseView): IntakeChoices {
-  const known = new Set(view.people.map(({ id }) => id));
-  const meNamed = draft.people.some(({ ref }) => ref === view.me);
-  const people = new Map<string, PersonChoice>();
-  for (const { ref, role } of draft.people) {
-    if (known.has(ref)) people.set(ref, { kind: 'match', personId: ref });
-    else if (role === 'self' && !meNamed) people.set(ref, { kind: 'match', personId: view.me });
-    else people.set(ref, { kind: 'new', displayName: '', caseMember: planRoles.has(role ?? '') });
-  }
-  return { people, dropped: new Set(), whole: new Set() };
+/** Every new person starts kept and unnamed, a member when their role usually is. */
+export function defaultChoices(draft: IntakeDraft): IntakeChoices {
+  return {
+    people: new Map(
+      draft.people
+        .filter(({ ref }) => isNewReference(ref))
+        .map(({ ref, role }) => [
+          ref,
+          { keep: true, displayName: '', caseMember: startsInPlan(role) },
+        ]),
+    ),
+    dropped: new Set(),
+    whole: new Set(),
+  };
 }
 
 /** The new people to create, in draft order, with their names trimmed. */
 export function newPeople(draft: IntakeDraft, choices: IntakeChoices) {
   return draft.people.flatMap(({ ref }) => {
     const choice = choices.people.get(ref);
-    return choice?.kind === 'new'
+    return choice?.keep === true
       ? [{ ref, displayName: choice.displayName.trim(), caseMember: choice.caseMember }]
       : [];
   });
 }
 
-/** Whether every new person has a name the case takes (1 to 80 characters). */
+/** Whether every kept new person has a name the case takes (1 to 80 characters). */
 export const namesReady = (draft: IntakeDraft, choices: IntakeChoices) =>
   newPeople(draft, choices).every(
     ({ displayName }) => displayName.length >= 1 && displayName.length <= 80,
   );
 
+/** A person's stored answers by question, as the guided questions hold them. */
+export function storedAnswers(questions: CaseQuestions, personId: string) {
+  return new Map<string, unknown>(
+    (questions.people.find((entry) => entry.personId === personId)?.steps ?? []).flatMap(
+      ({ questions: asked }) => asked.map(({ id, answer }) => [id, answer] as const),
+    ),
+  );
+}
+
+const asList = (value: unknown): Record<string, unknown>[] =>
+  Array.isArray(value) ? value.filter(isRecord) : [];
+
+/** The list entries a save writes: the stored ones, then the kept entries the draft adds. */
+export function wholeList(
+  person: DraftPerson,
+  list: IntakeList,
+  choices: IntakeChoices,
+  stored: unknown,
+): Record<string, unknown>[] {
+  const held = asList(stored);
+  const key = list === 'citizenships' ? 'country' : 'language';
+  const proposed: Record<string, unknown>[] =
+    list === 'citizenships'
+      ? (person.citizenships ?? []).map((country) => ({ country }))
+      : [...(person.languages ?? [])];
+  const codes = new Set(held.map((entry) => entry[key]));
+  return [
+    ...held,
+    ...proposed.filter(
+      (entry) =>
+        !codes.has(entry[key]) &&
+        !choices.dropped.has(`${listId(person.ref, list)}:${String(entry[key])}`),
+    ),
+  ];
+}
+
 export interface IntakeWrites {
-  /** One call per person, with the facts and the details of stored relationships. */
+  /** One call per person: their facts, and the details the draft adds to stored relationships. */
   readonly answers: AnswerCaseQuestionsRequest[];
   readonly relationships: NewRelationship[];
 }
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-const asList = (value: unknown): Record<string, unknown>[] =>
-  Array.isArray(value) ? value.filter(isRecord) : [];
-
 /**
  * The writes that save what the member kept, once the new people exist (`created` maps their
- * draft reference to their case ID). A person matched to someone already in the case only fills
- * the facts that person lacks; a list is saved only when confirmed whole, as the stored entries
- * plus the kept ones (a language the draft restates for the same person replaces its level). An
- * edge the case holds only fills the details it lacks; one with a dropped end, or that would
- * join a person to themselves or two people the viewer does not keep, is left out.
+ * draft reference to their case ID). A list is saved only when confirmed whole; an edge with a
+ * dropped end, or that joins only people the viewer does not keep, is left out. The details of a
+ * relationship the case holds go with the answers of the person who keeps one of its ends, since
+ * that answer lists the person's relationships as they stand before any new one is added.
  */
 export function intakeWrites(
   draft: IntakeDraft,
@@ -170,66 +203,31 @@ export function intakeWrites(
     ...view.people.filter(({ keptByMe }) => keptByMe).map(({ id }) => id),
     ...created.values(),
   ]);
-  const resolve = (ref: string): string | undefined => {
-    const choice = choices.people.get(ref);
-    if (choice?.kind === 'match') return choice.personId;
-    return choice?.kind === 'new' ? created.get(ref) : undefined;
-  };
-  const stored = (personId: string) =>
-    new Map(
-      (questions.people.find((entry) => entry.personId === personId)?.steps ?? []).flatMap(
-        ({ questions: asked }) => asked.map(({ id, answer }) => [id as string, answer] as const),
-      ),
-    );
-  const answers = new Map<string, Map<string, unknown>>();
-  const answer = (personId: string, questionId: string, value: unknown) => {
+  const resolve = (ref: string) => (isNewReference(ref) ? created.get(ref) : ref);
+  const keeps = (id: string) => !choices.dropped.has(id);
+  const answers = new Map<string, Map<QuestionId, unknown>>();
+  const answer = (personId: string, questionId: QuestionId, value: unknown) => {
     answers.set(
       personId,
-      (answers.get(personId) ?? new Map<string, unknown>()).set(questionId, value),
+      (answers.get(personId) ?? new Map<QuestionId, unknown>()).set(questionId, value),
     );
   };
-  const keeps = (id: string) => !choices.dropped.has(id);
 
   for (const person of draft.people) {
     const personId = resolve(person.ref);
     if (personId === undefined || !kept.has(personId)) continue;
-    const before = stored(personId);
-    const itself = personId === person.ref || created.has(person.ref);
-    const fill = (key: 'birthDate' | 'residenceCountry' | 'educationLevel') => {
+    const stored = storedAnswers(questions, personId);
+    for (const key of ['birthDate', 'residenceCountry', 'educationLevel'] as const) {
       const value = person[key];
-      if (value === undefined || !keeps(`${person.ref}:${key}`)) return;
-      if (itself || before.get(key) === undefined || before.get(key) === null) {
-        answer(personId, key, value);
-      }
-    };
-    fill('birthDate');
-    const countries = (person.citizenships ?? []).filter((country) =>
-      keeps(`${listId(person.ref, 'citizenships')}:${country}`),
-    );
-    if (countries.length > 0 && choices.whole.has(listId(person.ref, 'citizenships'))) {
-      const list = asList(before.get('citizenships'));
-      const held = new Set(list.map(({ country }) => country));
-      answer(personId, 'citizenships', [
-        ...list,
-        ...countries.filter((country) => !held.has(country)).map((country) => ({ country })),
-      ]);
+      if (value !== undefined && keeps(`${person.ref}:${key}`)) answer(personId, key, value);
     }
-    fill('residenceCountry');
-    fill('educationLevel');
-    const spoken = (person.languages ?? []).filter(({ language }) =>
-      keeps(`${listId(person.ref, 'languages')}:${language}`),
-    );
-    if (spoken.length > 0 && choices.whole.has(listId(person.ref, 'languages'))) {
-      const list = asList(before.get('languages'));
-      const merged = list.map((entry) => {
-        const restated = spoken.find(({ language }) => language === entry['language']);
-        return itself && restated !== undefined ? restated : entry;
-      });
-      const held = new Set(list.map(({ language }) => language));
-      answer(personId, 'languages', [
-        ...merged,
-        ...spoken.filter(({ language }) => !held.has(language)),
-      ]);
+    for (const list of ['citizenships', 'languages'] as const) {
+      const proposed = personItems(person).some(
+        ({ id }) => id.startsWith(`${listId(person.ref, list)}:`) && keeps(id),
+      );
+      if (proposed && choices.whole.has(listId(person.ref, list))) {
+        answer(personId, list, wholeList(person, list, choices, stored.get(list)));
+      }
     }
   }
 
@@ -240,28 +238,15 @@ export function intakeWrites(
     const write = edgeWrite(edge, resolve);
     if (write === undefined || (!kept.has(write.from) && !kept.has(write.to))) return;
     const held = view.relationships.find(({ relationship }) => sameEdge(relationship, write));
-    const pending = relationships.find((added) => sameEdge(added, write));
-    if (held === undefined && pending === undefined) {
+    if (held === undefined) {
       relationships.push(write);
       return;
     }
-    const target = held?.relationship ?? pending;
-    if (target === undefined) return;
-    const details = lackingDetails(write.details, target.details);
-    if (Object.keys(details).length === 0) return;
-    if (pending !== undefined) {
-      relationships[relationships.indexOf(pending)] = {
-        ...pending,
-        details: { ...pending.details, ...details },
-      };
-      return;
-    }
-    if (held === undefined) return;
     const keeper = kept.has(write.from) ? write.from : write.to;
-    const list = rows.get(keeper) ?? asList(stored(keeper).get('relationships'));
+    const list = rows.get(keeper) ?? asList(storedAnswers(questions, keeper).get('relationships'));
     rows.set(
       keeper,
-      list.map((row) => (row['id'] === held.id ? { ...row, ...details } : row)),
+      list.map((row) => (row['id'] === held.id ? { ...row, ...write.details } : row)),
     );
   });
   for (const [personId, list] of rows) answer(personId, 'relationships', list);
@@ -269,16 +254,13 @@ export function intakeWrites(
   return {
     answers: [...answers].map(([personId, given]) => ({
       personId,
-      answers: [...given].map(([questionId, value]) => ({
-        questionId: questionId as AnswerCaseQuestionsRequest['answers'][number]['questionId'],
-        answer: value,
-      })),
+      answers: [...given].map(([questionId, value]) => ({ questionId, answer: value })),
     })),
     relationships,
   };
 }
 
-/** The draft edge as a new relationship between case IDs, or `undefined` when an end is gone. */
+/** The draft edge as a relationship between case IDs, or `undefined` when an end is dropped. */
 function edgeWrite(
   edge: DraftEdge,
   resolve: (ref: string) => string | undefined,
@@ -299,6 +281,3 @@ const sameEdge = (a: NewRelationship, b: NewRelationship) =>
   a.kind === b.kind &&
   ((a.from === b.from && a.to === b.to) ||
     (a.kind !== 'parent' && a.from === b.to && a.to === b.from));
-
-const lackingDetails = (proposed: object, held: object): Record<string, unknown> =>
-  Object.fromEntries(Object.entries(proposed).filter(([key]) => !(key in held)));

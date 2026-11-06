@@ -5,8 +5,8 @@ import { resetRateLimits } from './postgres/accounts.js';
 import { watchProblems } from './problems.js';
 import { databaseServer } from './servers.js';
 
-// The intake screen on the scripted model the development build runs without a key (spec 0008,
-// R4): the writer and one child, born in the first year the text states. Synthetic people only.
+// The intake screen on the scripted model the e2e server asks for (spec 0008, R4): the writer
+// and one child, born in the first year the text states. Synthetic people only.
 test.skip(!databaseServer.enabled, 'needs ARCA_E2E_DATABASE and a Postgres (see README)');
 test.beforeAll(async () => {
   await resetRateLimits();
@@ -28,10 +28,10 @@ test('drafts the family from a text, then saves what the member kept', async ({ 
     .fill('Minha filha nasceu em 2015 e tem cidadania italiana.');
   await page.getByRole('button', { name: 'Montar rascunho' }).click();
 
-  const writer = page.getByRole('region', { name: 'Ana' });
-  await expect(writer.getByLabel('Quem é?')).toHaveValue(/.+/);
+  // The writer is the member's own person, with nothing new to say, so only the child is asked about.
+  await expect(page.getByRole('region', { name: 'Ana' })).toHaveCount(0);
   const child = page.getByRole('region', { name: 'Pessoa nova (filho ou filha)' });
-  await expect(child.getByRole('radio', { name: 'Alguém novo no caso' })).toBeChecked();
+  await expect(child.getByRole('radio', { name: 'Incluir no caso' })).toBeChecked();
   const save = page.getByRole('button', { name: 'Salvar no caso' });
   await expect(save).toBeDisabled();
   await expect(page.getByText('Dê um nome a cada pessoa nova para salvar.')).toBeVisible();

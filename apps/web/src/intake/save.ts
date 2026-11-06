@@ -6,6 +6,7 @@ import type {
 import {
   type IntakeChoices,
   type IntakeDraft,
+  type IntakeWrites,
   type NewRelationship,
   intakeWrites,
   newPeople,
@@ -22,11 +23,13 @@ export interface IntakeCalls {
 }
 
 /**
- * How far a save got, kept across retries so a failed save resumes where it stopped instead of
- * creating the same people twice. The screen locks the choices once a save starts.
+ * How far a save got, kept across retries so a failed save resumes where it stopped: the people
+ * it created, and the writes it planned once they existed, so a case read again in between cannot
+ * shift what is left to send. The screen locks the choices once a save starts.
  */
 export interface IntakeProgress {
   readonly created: Map<string, string>;
+  writes?: IntakeWrites;
   done: number;
 }
 
@@ -56,16 +59,10 @@ export async function saveIntake(
     if (added === undefined) throw new Error('The new person is missing from the case');
     progress.created.set(ref, added.id);
   }
-  const { answers, relationships } = intakeWrites(
-    draft,
-    choices,
-    view,
-    questions,
-    progress.created,
-  );
+  progress.writes ??= intakeWrites(draft, choices, view, questions, progress.created);
   const writes = [
-    ...answers.map((body) => () => calls.answer(body)),
-    ...relationships.map((body) => () => calls.relate(body)),
+    ...progress.writes.answers.map((body) => () => calls.answer(body)),
+    ...progress.writes.relationships.map((body) => () => calls.relate(body)),
   ];
   for (const write of writes.slice(progress.done)) {
     current = await write();

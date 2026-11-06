@@ -2,9 +2,9 @@ import type { Extractor } from './extractor.js';
 import { intakePromptVersion } from './prompt.js';
 
 /**
- * A scripted model for development and the e2e build, which have no key: the writer, the people
- * already in the case the text names, and one child, born in the first year the text states.
- * Nothing leaves the process.
+ * A scripted model for a development server that asks for it, such as the e2e build: the writer,
+ * the people already in the case the text names, and one child of the writer, born in the first
+ * year the text states and Italian when the text says "itali". Nothing leaves the process.
  */
 export const fakeExtractor: Extractor = {
   draft(maskedText, knownPlaceholders) {

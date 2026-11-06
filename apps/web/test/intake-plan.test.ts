@@ -70,105 +70,95 @@ const empty = questionsWith({});
 /** A draft as the API answers it; its dates are plain strings here. */
 const draftOf = (draft: unknown) => draft as IntakeDraft;
 
-const choose = (
-  draft: IntakeDraft,
-  change: (choices: IntakeChoices) => Partial<IntakeChoices>,
-): IntakeChoices => {
-  const base = defaultChoices(draft, view);
-  return { ...base, ...change(base) };
-};
+const dropped = { keep: false, displayName: '', caseMember: false };
 
-const named = (choices: IntakeChoices, names: Record<string, string>) =>
-  new Map(
-    [...choices.people].map(([ref, choice]) => [
-      ref,
-      choice.kind === 'new' ? { ...choice, displayName: names[ref] ?? '' } : choice,
-    ]),
+/** The default choices with the new people named and the changes given. */
+function choose(
+  draft: IntakeDraft,
+  names: Record<string, string>,
+  change: Partial<IntakeChoices> = {},
+): IntakeChoices {
+  const base = defaultChoices(draft);
+  const people = new Map(
+    [...base.people].map(([ref, choice]) => [ref, { ...choice, displayName: names[ref] ?? '' }]),
   );
+  return { ...base, people, ...change };
+}
 
 describe('the intake save plan (spec 0008, R4)', () => {
   const draft = draftOf({
     people: [
-      { ref: 'n1', role: 'self', birthDate: '1985' },
+      { ref: me, role: 'self', birthDate: '1985' },
       { ref: bruna, role: 'child', citizenships: ['IT'] },
       {
-        ref: 'n2',
+        ref: 'n1',
         role: 'spouse',
         citizenships: ['IT'],
         languages: [{ language: 'it', level: 'native' }],
       },
-      { ref: 'n3', role: 'sibling' },
+      { ref: 'n2', role: 'grandparent' },
     ],
     relationships: [
-      { kind: 'spouse', people: ['n1', 'n2'], start: '2010' },
-      { kind: 'parent', parent: 'n2', child: bruna },
+      { kind: 'spouse', people: [me, 'n1'], start: '2010' },
+      { kind: 'parent', parent: 'n1', child: bruna },
     ],
   });
 
-  it('starts with the writer as the viewer, known people as themselves, and members by role', () => {
-    const { people } = defaultChoices(draft, view);
-    expect(people.get('n1')).toEqual({ kind: 'match', personId: me });
-    expect(people.get(bruna)).toEqual({ kind: 'match', personId: bruna });
-    expect(people.get('n2')).toEqual({ kind: 'new', displayName: '', caseMember: true });
-    expect(people.get('n3')).toEqual({ kind: 'new', displayName: '', caseMember: false });
-  });
-
-  it('keeps the writer new when the text names the viewer too', () => {
-    const both = draftOf({ people: [{ ref: me }, { ref: 'n1', role: 'self' }], relationships: [] });
-    expect(defaultChoices(both, view).people.get('n1')).toMatchObject({ kind: 'new' });
+  it('starts every new person kept and unnamed, in the plan by role', () => {
+    expect([...defaultChoices(draft).people]).toEqual([
+      ['n1', { keep: true, displayName: '', caseMember: true }],
+      ['n2', { keep: true, displayName: '', caseMember: false }],
+    ]);
   });
 
   it('words each fact and edge as the sentence it adds', () => {
     expect(personItems(draft.people[2] ?? { ref: '' })).toEqual([
       {
-        id: 'n2:citizenships:IT',
-        sentence: { kind: 'citizenship', about: ['n2'], person: 'n2', country: 'IT' },
+        id: 'n1:citizenships:IT',
+        sentence: { kind: 'citizenship', about: ['n1'], person: 'n1', country: 'IT' },
       },
       {
-        id: 'n2:languages:it',
+        id: 'n1:languages:it',
         sentence: {
           kind: 'language',
-          about: ['n2'],
-          person: 'n2',
+          about: ['n1'],
+          person: 'n1',
           language: 'it',
           level: 'native',
         },
       },
     ]);
     expect(edgeItems(draft).map(({ sentence }) => sentence)).toEqual([
-      {
-        kind: 'couple',
-        about: ['n1', 'n2'],
-        couple: 'spouse',
-        people: ['n1', 'n2'],
-        start: '2010',
-      },
-      { kind: 'parent', about: ['n2', bruna], parent: 'n2', child: bruna },
+      { kind: 'couple', about: [me, 'n1'], couple: 'spouse', people: [me, 'n1'], start: '2010' },
+      { kind: 'parent', about: ['n1', bruna], parent: 'n1', child: bruna },
     ]);
   });
 
-  it('needs a name for every new person', () => {
-    const choices = defaultChoices(draft, view);
-    expect(namesReady(draft, choices)).toBe(false);
-    const ready = { ...choices, people: named(choices, { n2: ' Davi ', n3: 'Eva' }) };
+  it('needs a name for every new person it keeps', () => {
+    expect(namesReady(draft, choose(draft, { n1: 'Davi' }))).toBe(false);
+    const ready = choose(draft, { n1: ' Davi ', n2: 'Eva' });
     expect(namesReady(draft, ready)).toBe(true);
     expect(newPeople(draft, ready)).toEqual([
-      { ref: 'n2', displayName: 'Davi', caseMember: true },
-      { ref: 'n3', displayName: 'Eva', caseMember: false },
+      { ref: 'n1', displayName: 'Davi', caseMember: true },
+      { ref: 'n2', displayName: 'Eva', caseMember: false },
     ]);
+    const one = choose(draft, { n1: 'Davi' });
+    const people = new Map(one.people).set('n2', dropped);
+    expect(namesReady(draft, { ...one, people })).toBe(true);
   });
 
   it('saves facts, lists confirmed whole next to the stored entries, and new edges', () => {
-    const choices = choose(draft, (base) => ({
-      people: named(base, { n2: 'Davi', n3: 'Eva' }),
-      whole: new Set([listId(bruna, 'citizenships'), listId('n2', 'citizenships')]),
-    }));
+    const choices = choose(
+      draft,
+      { n1: 'Davi', n2: 'Eva' },
+      { whole: new Set([listId(bruna, 'citizenships'), listId('n1', 'citizenships')]) },
+    );
     const questions = questionsWith({
       [bruna]: { citizenships: [{ country: 'BR', basis: 'birth' }] },
     });
     const created = new Map([
-      ['n2', 'davi'],
-      ['n3', 'eva'],
+      ['n1', 'davi'],
+      ['n2', 'eva'],
     ]);
     expect(intakeWrites(draft, choices, view, questions, created)).toEqual({
       answers: [
@@ -196,59 +186,28 @@ describe('the intake save plan (spec 0008, R4)', () => {
   });
 
   it('leaves out dropped facts, dropped people and their edges', () => {
-    const choices = choose(draft, (base) => ({
-      people: new Map(base.people).set('n2', { kind: 'drop' }),
+    const base = choose(draft, { n2: 'Eva' });
+    const choices: IntakeChoices = {
+      ...base,
+      people: new Map(base.people).set('n1', dropped),
       dropped: new Set([`${bruna}:citizenships:IT`]),
       whole: new Set([listId(bruna, 'citizenships')]),
-    }));
-    expect(intakeWrites(draft, choices, view, empty, new Map())).toEqual({
+    };
+    expect(intakeWrites(draft, choices, view, empty, new Map([['n2', 'eva']]))).toEqual({
       answers: [{ personId: me, answers: [{ questionId: 'birthDate', answer: '1985' }] }],
       relationships: [],
     });
   });
 
-  it('fills only what a matched person lacks, and a stored edge only with details it lacks', () => {
-    const matched = draftOf({
-      people: [
-        {
-          ref: 'n1',
-          birthDate: '2015',
-          residenceCountry: 'PT',
-          languages: [
-            { language: 'pt', level: 'C1' },
-            { language: 'en', level: 'B2' },
-          ],
-        },
-        { ref: 'n2', role: 'self' },
-      ],
-      relationships: [
-        { kind: 'parent', parent: 'n2', child: 'n1', parentKind: 'adoptive', start: '2016' },
-      ],
+  it('adds the details the draft gives a stored relationship to its keeper’s answer', () => {
+    const filled = draftOf({
+      people: [{ ref: me }, { ref: bruna }],
+      relationships: [{ kind: 'parent', parent: me, child: bruna, start: '2016' }],
     });
-    const choices = choose(matched, (base) => ({
-      people: new Map(base.people).set('n1', { kind: 'match', personId: bruna }),
-      whole: new Set([listId('n1', 'languages')]),
-    }));
     const row = { id: edge, kind: 'parent', from: me, to: bruna, parentKind: 'biological' };
-    const questions = questionsWith({
-      [me]: { relationships: [row] },
-      [bruna]: { birthDate: '2015-03-12', languages: [{ language: 'pt', level: 'native' }] },
-    });
-    expect(intakeWrites(matched, choices, view, questions, new Map())).toEqual({
+    const questions = questionsWith({ [me]: { relationships: [row] } });
+    expect(intakeWrites(filled, choose(filled, {}), view, questions, new Map())).toEqual({
       answers: [
-        {
-          personId: bruna,
-          answers: [
-            { questionId: 'residenceCountry', answer: 'PT' },
-            {
-              questionId: 'languages',
-              answer: [
-                { language: 'pt', level: 'native' },
-                { language: 'en', level: 'B2' },
-              ],
-            },
-          ],
-        },
         {
           personId: me,
           answers: [{ questionId: 'relationships', answer: [{ ...row, start: '2016' }] }],
@@ -258,40 +217,24 @@ describe('the intake save plan (spec 0008, R4)', () => {
     });
   });
 
-  it('replaces the level of a language the draft restates for the same person', () => {
-    const restated = draftOf({
-      people: [{ ref: bruna, languages: [{ language: 'pt', level: 'C2' }] }],
-      relationships: [],
-    });
-    const choices = choose(restated, () => ({ whole: new Set([listId(bruna, 'languages')]) }));
-    const questions = questionsWith({ [bruna]: { languages: [{ language: 'pt', level: 'B1' }] } });
-    expect(intakeWrites(restated, choices, view, questions, new Map()).answers).toEqual([
-      {
-        personId: bruna,
-        answers: [{ questionId: 'languages', answer: [{ language: 'pt', level: 'C2' }] }],
-      },
-    ]);
-  });
-
-  it('skips an edge to oneself or between people the viewer does not keep, and merges twins', () => {
-    const odd = draftOf({
-      people: [{ ref: me }, { ref: 'n1' }, { ref: 'n2' }, { ref: caio }, { ref: 'n3' }],
+  it('skips an edge with a dropped end, or one the viewer keeps neither end of', () => {
+    const outside = draftOf({
+      people: [{ ref: caio }, { ref: me }, { ref: 'n1' }],
       relationships: [
-        { kind: 'partner', people: ['n1', 'n2'] },
-        { kind: 'parent', parent: caio, child: 'n3' },
-        { kind: 'partner', people: [me, 'n3'] },
-        { kind: 'partner', people: ['n3', me], start: '2020' },
+        { kind: 'parent', parent: me, child: 'n1' },
+        { kind: 'partner', people: [caio, bruna] },
       ],
     });
-    const choices = choose(odd, (base) => ({
-      people: new Map(base.people)
-        .set('n1', { kind: 'match', personId: me })
-        .set('n2', { kind: 'match', personId: me })
-        .set('n3', { kind: 'match', personId: caio }),
-    }));
-    expect(intakeWrites(odd, choices, view, empty, new Map()).relationships).toEqual([
-      { kind: 'partner', from: me, to: caio, details: { start: '2020' } },
-    ]);
+    const base = choose(outside, {});
+    const choices = { ...base, people: new Map(base.people).set('n1', dropped) };
+    const outsideView = {
+      ...view,
+      people: [person(me, 'Alice'), person(bruna, 'Bruna', false), person(caio, 'Caio', false)],
+    };
+    expect(intakeWrites(outside, choices, outsideView, empty, new Map())).toEqual({
+      answers: [],
+      relationships: [],
+    });
   });
 });
 
@@ -300,7 +243,7 @@ describe('saving the intake (spec 0008, R4)', () => {
     people: [{ ref: me }, { ref: 'n1', role: 'child', birthDate: '2015' }],
     relationships: [{ kind: 'parent', parent: me, child: 'n1' }],
   });
-  const choices = choose(draft, (base) => ({ people: named(base, { n1: 'Davi' }) }));
+  const choices = choose(draft, { n1: 'Davi' });
 
   function calls(failAt = -1) {
     const made: string[] = [];
@@ -327,12 +270,15 @@ describe('saving the intake (spec 0008, R4)', () => {
     expect(made).toEqual(['add Davi', 'answer id-Davi', `relate ${me} id-Davi`]);
   });
 
-  it('resumes a failed save without creating anyone twice', async () => {
+  it('resumes the writes it planned, even when the case read again has changed', async () => {
     const progress = freshProgress();
-    const first = calls(1);
+    const first = calls(2);
     await expect(saveIntake(draft, choices, view, empty, first.fake, progress)).rejects.toThrow();
+    // Read again after the answer, the case shows the child's birth date as stored.
+    const reread = { ...view, people: [...view.people, person('id-Davi', 'Davi')] };
     const second = calls();
-    await saveIntake(draft, choices, view, empty, second.fake, progress);
-    expect(second.made).toEqual(['answer id-Davi', `relate ${me} id-Davi`]);
+    const stored = questionsWith({ 'id-Davi': { birthDate: '2015' } });
+    await saveIntake(draft, choices, reread, stored, second.fake, progress);
+    expect(second.made).toEqual([`relate ${me} id-Davi`]);
   });
 });

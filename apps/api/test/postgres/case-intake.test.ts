@@ -141,10 +141,7 @@ describe('the intake service (spec 0008, R3)', () => {
       ],
       relationships: [{ kind: 'parent', parent: 'n1', child: bruna }],
     });
-    expect(outcome.value.sentences).toContainEqual(
-      expect.objectContaining({ kind: 'born', person: bruna, date: '2015-03' }),
-    );
-    expect(JSON.stringify(outcome.value.sentences)).not.toContain('1990');
+    expect(JSON.stringify(outcome.value)).not.toContain('1990');
     expect(await files.view(alice)).toEqual(view);
     expect(lines).toEqual([
       {
@@ -161,7 +158,7 @@ describe('the intake service (spec 0008, R3)', () => {
     ]);
     expect((await events(alice)).at(-1)).toEqual({
       code: 'intake_drafted',
-      details: { caseId: view.caseId, people: 1, facts: outcome.value.sentences.length },
+      details: { caseId: view.caseId, people: 1, facts: 4 },
     });
   });
 
@@ -192,9 +189,31 @@ describe('the intake service (spec 0008, R3)', () => {
         people: [{ ref: bruna }, { ref: caio }, { ref: expect.any(String) as string }],
         relationships: [],
       },
-      sentences: [],
     });
     expect(view.people.map(({ id }) => id)).toContain(caio);
+  });
+
+  it('answers the writer as their own person, with only the facts they lack', async () => {
+    const { alice, view, bruna } = await family();
+    const me = view.people.find(({ displayName }) => displayName === 'Alice Souza')?.id ?? '';
+    const { intake } = service([
+      {
+        people: [
+          { ref: 'n1', role: 'self', birthDate: '1985', residenceCountry: 'PT' },
+          { ref: '[P2]', role: 'child' },
+        ],
+        relationships: [{ kind: 'parent', parent: 'n1', child: '[P2]', parentKind: 'biological' }],
+      },
+    ]);
+    const outcome = await intake.draft(alice, 'Nasci em 1985 e moro em Portugal com a Bruna.');
+    if (!outcome.ok) throw new Error(outcome.reason);
+    expect(outcome.value.draft).toEqual({
+      people: [
+        { ref: me, role: 'self', birthDate: '1985', residenceCountry: 'PT' },
+        { ref: bruna, role: 'child' },
+      ],
+      relationships: [{ kind: 'parent', parent: me, child: bruna, parentKind: 'biological' }],
+    });
   });
 
   it('asks once more for an unparsable reply, then gives up', async () => {

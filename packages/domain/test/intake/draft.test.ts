@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { type IntakeDraft, keepStatedDates, parseIntakeDraft } from '../../src/index.js';
+import {
+  type IntakeDraft,
+  keepStatedDates,
+  parseIntakeDraft,
+  startsInPlan,
+  withWriter,
+} from '../../src/index.js';
 
 const known = new Set(['[P1]']);
 
@@ -135,5 +141,44 @@ describe('keepStatedDates (spec 0008, R1)', () => {
       people: [{ ref: 'n1' }, { ref: 'n2' }],
       relationships: [{ kind: 'spouse', people: ['n1', 'n2'] }],
     });
+  });
+});
+
+describe('withWriter (spec 0008, R3)', () => {
+  const me = 'b3c1d2e4-5f60-4718-9a2b-3c4d5e6f7a8b';
+  const written = (people: IntakeDraft['people']): IntakeDraft => ({
+    people,
+    relationships: [{ kind: 'parent', parent: 'n1', child: 'n2' }],
+  });
+
+  it('names the writer as their own person, in their edges too', () => {
+    expect(withWriter(written([{ ref: 'n1', role: 'self' }, { ref: 'n2' }]), me)).toEqual({
+      people: [{ ref: me, role: 'self' }, { ref: 'n2' }],
+      relationships: [{ kind: 'parent', parent: me, child: 'n2' }],
+    });
+  });
+
+  it.each([
+    ['no writer', [{ ref: 'n1' }, { ref: 'n2' }]],
+    [
+      'two writers',
+      [
+        { ref: 'n1', role: 'self' },
+        { ref: 'n2', role: 'self' },
+      ],
+    ],
+    ['the writer already named', [{ ref: me }, { ref: 'n1', role: 'self' }, { ref: 'n2' }]],
+  ] as const)('leaves a draft with %s as it is', (_, people) => {
+    const draft = written([...people] as IntakeDraft['people']);
+    expect(withWriter(draft, me)).toBe(draft);
+  });
+
+  it.each([
+    ['self', true],
+    ['child', true],
+    ['grandparent', false],
+    [undefined, false],
+  ] as const)('starts a new %s in the plan: %s', (role, inPlan) => {
+    expect(startsInPlan(role)).toBe(inPlan);
   });
 });

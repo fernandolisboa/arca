@@ -16,6 +16,7 @@ import {
   questionSteps,
   sentenceSchema,
   shareScopeSchema,
+  startsInPlan,
   storedAssetSchema,
   storedFinancesSchema,
   storedOwnerShareSchema,
@@ -33,7 +34,7 @@ import type { RouteDefinition } from './index.js';
  * exist; 409 case_limit says only that a limit is reached, never what a hidden row holds.
  */
 
-export { isNewReference, maxCaseMembers, maxCasePeople };
+export { isNewReference, maxCaseMembers, maxCasePeople, startsInPlan };
 
 export const CaseProfile = z.strictObject({
   facts: storedProfileFactsSchema,
@@ -513,14 +514,12 @@ export const CaseIntakeDraftRequest = z.strictObject({
 export type CaseIntakeDraftRequest = z.infer<typeof CaseIntakeDraftRequest>;
 
 /**
- * A draft of guided answers from the member's own words, and the sentences it adds or changes,
- * all proposed: nothing is written (spec 0008, R3). A known person is named by their case ID, a
- * new one as `n1`, `n2` …
+ * A draft of guided answers from the member's own words, holding only what the case takes: the
+ * facts a person lacks, the list entries and edges it adds, and the details a stored edge lacks.
+ * Nothing is written (spec 0008, R3). A known person is named by their case ID, the writer by
+ * their own person's, a new one as `n1`, `n2` …
  */
-export const CaseIntakeDraftResponse = z.object({
-  draft: caseIntakeDraftSchema,
-  sentences: z.array(sentenceSchema),
-});
+export const CaseIntakeDraftResponse = z.object({ draft: caseIntakeDraftSchema });
 export type CaseIntakeDraftResponse = z.infer<typeof CaseIntakeDraftResponse>;
 
 export const draftCaseIntake = {

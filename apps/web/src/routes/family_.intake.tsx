@@ -10,26 +10,27 @@ import {
 import { Button, ChoiceGroup } from '@arca/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useId, useState, type SubmitEvent } from 'react';
+import { useId, useRef, useState, type SubmitEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api, casePlaybackQuery, caseQuery, caseQuestionsQuery, sessionQuery } from '../api.js';
 import { caseFailure, writeCase, type CaseFailure } from '../case.js';
 import { CheckRow } from '../forms/check-row.js';
 import { nameInput } from '../forms/inputs.js';
 import { MembershipChoice } from '../forms/membership-choice.js';
-import { SelectField } from '../forms/select-field.js';
 import { TextField } from '../forms/text-field.js';
 import { textLinkClass } from '../forms/text-link.js';
 import {
   type IntakeChoices,
   type IntakeDraft,
   type IntakeList,
-  type PersonChoice,
+  type NewPerson,
   defaultChoices,
   edgeItems,
   listId,
   namesReady,
   personItems,
+  storedAnswers,
+  wholeList,
 } from '../intake/plan.js';
 import { type IntakeProgress, freshProgress, saveIntake } from '../intake/save.js';
 import { Page } from '../page.js';
@@ -37,6 +38,7 @@ import { passkeys } from '../platform.js';
 import { useNames } from '../questions/editors.js';
 import { useSentenceText } from '../questions/playback.js';
 import { commonFailure, reach, type CommonFailure } from '../requests.js';
+import { toggled } from '../sets.js';
 
 export const Route = createFileRoute('/family_/intake')({ component: Intake });
 
@@ -51,7 +53,7 @@ function Intake() {
   if (session.isError) {
     return (
       <Page title={title}>
-        <p>{t('questions.signIn')}</p>
+        <p>{t('intake.signIn')}</p>
         <Link to="/sign-in" className={textLinkClass}>
           {t('session.signIn')}
         </Link>
@@ -76,10 +78,14 @@ function Intake() {
       </Page>
     );
   }
-  if (familyCase.isError || questions.isError) {
+  // A failed refetch keeps the cached case, so a review in progress stays on screen.
+  if (
+    (familyCase.data === undefined && familyCase.isError) ||
+    (questions.data === undefined && questions.isError)
+  ) {
     return (
       <Page title={title}>
-        <p>{t('questions.loadFailure')}</p>
+        <p>{t('intake.loadFailure')}</p>
         <Button
           onClick={() => {
             void familyCase.refetch();
@@ -221,37 +227,23 @@ function Review({
   const labels = useNames();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const [choices, setChoices] = useState<IntakeChoices>(() => defaultChoices(draft, view));
-  // Kept across retries, so a failed save resumes instead of creating the same people twice.
-  const [progress] = useState<IntakeProgress>(freshProgress);
-  const [started, setStarted] = useState(false);
+  const [choices, setChoices] = useState<IntakeChoices>(() => defaultChoices(draft));
+  const progressRef = useRef<IntakeProgress>(freshProgress());
+  // A failed save keeps the choices it started with, so a retry finishes the same writes.
+  const [locked, setLocked] = useState(false);
   const [pending, setPending] = useState(false);
   const [failure, setFailure] = useState<CaseFailure>();
-  const people = new Map(view.people.map((person) => [person.id, person]));
-  const keptPeople = view.people.filter(({ keptByMe }) => keptByMe);
-  const roleOf = new Map(draft.people.map(({ ref, role }) => [ref, role]));
+  const names = new Map(view.people.map(({ id, displayName }) => [id, displayName]));
   const nameOf = (ref: string): string => {
-    const choice = choices.people.get(ref);
-    if (choice?.kind === 'match') return people.get(choice.personId)?.displayName ?? '';
-    if (choice?.kind === 'new' && choice.displayName.trim() !== '') return choice.displayName;
-    return (
-      people.get(ref)?.displayName ?? t('intake.unnamed', { role: roleOf.get(ref) ?? 'other' })
-    );
+    const typed = choices.people.get(ref)?.displayName.trim() ?? '';
+    if (typed !== '') return typed;
+    const role = draft.people.find((person) => person.ref === ref)?.role ?? 'other';
+    return names.get(ref) ?? t('intake.unnamed', { role });
   };
   const text = useSentenceText(new Map(draft.people.map(({ ref }) => [ref, nameOf(ref)])));
-  // Once a save starts, the choices stay as they were, so a retry finishes the same writes.
-  const locked = started;
+  const listFormat = new Intl.ListFormat(i18n.language, { type: 'conjunction' });
   const update = (change: Partial<IntakeChoices>) => {
     setChoices((before) => ({ ...before, ...change }));
-  };
-  const toggle = (set: ReadonlySet<string>, id: string, on: boolean) => {
-    const next = new Set(set);
-    if (on) next.add(id);
-    else next.delete(id);
-    return next;
-  };
-  const choose = (ref: string, choice: PersonChoice) => {
-    update({ people: new Map(choices.people).set(ref, choice) });
   };
   const shown = draft.people.filter(
     (person) => isNewReference(person.ref) || personItems(person).length > 0,
@@ -271,7 +263,7 @@ function Review({
       className="flex flex-col gap-6"
       onSubmit={(event: SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
-        setStarted(true);
+        setLocked(true);
         setFailure(undefined);
         setPending(true);
         saveIntake(
@@ -284,7 +276,7 @@ function Review({
             answer: (body) => writeCase(passkeys, routes.answerCaseQuestions, body),
             relate: (body) => writeCase(passkeys, routes.addCaseRelationship, body),
           },
-          progress,
+          progressRef.current,
         )
           .then(async (updated) => {
             queryClient.setQueryData(caseQuery.queryKey, { case: updated });
@@ -305,8 +297,9 @@ function Review({
       <p className="text-muted">{t('intake.reviewLead')}</p>
       <fieldset disabled={locked || pending} className="flex flex-col gap-6">
         {shown.map((person) => {
-          const choice = choices.people.get(person.ref) ?? { kind: 'drop' };
+          const choice = choices.people.get(person.ref);
           const items = personItems(person);
+          const stored = storedAnswers(questions, person.ref);
           return (
             <section
               key={person.ref}
@@ -314,52 +307,57 @@ function Review({
               className="flex flex-col gap-3 rounded-control border border-line p-3"
             >
               <h3 className="font-display text-lead">{nameOf(person.ref)}</h3>
-              {isNewReference(person.ref) && (
-                <PersonPicker
+              {choice !== undefined && (
+                <NewPersonFields
                   choice={choice}
-                  kept={keptPeople}
                   onChange={(next) => {
-                    choose(person.ref, next);
+                    update({ people: new Map(choices.people).set(person.ref, next) });
                   }}
                 />
               )}
-              {choice.kind !== 'drop' &&
+              {choice?.keep !== false &&
                 items.map(({ id, sentence }) => (
                   <CheckRow
                     key={id}
                     label={text(sentence)}
                     checked={!choices.dropped.has(id)}
                     onChange={(on) => {
-                      update({ dropped: toggle(choices.dropped, id, !on) });
+                      const list = lists.find((name) =>
+                        id.startsWith(`${listId(person.ref, name)}:`),
+                      );
+                      update({
+                        dropped: toggled(choices.dropped, id, !on),
+                        // A changed list needs confirming again.
+                        whole:
+                          list === undefined
+                            ? choices.whole
+                            : toggled(choices.whole, listId(person.ref, list), false),
+                      });
                     }}
                   />
                 ))}
-              {choice.kind !== 'drop' &&
+              {choice?.keep !== false &&
                 lists.map((list) => {
-                  const entries = items.filter(
-                    ({ id }) =>
-                      id.startsWith(`${listId(person.ref, list)}:`) && !choices.dropped.has(id),
-                  );
-                  if (entries.length === 0) return null;
                   const id = listId(person.ref, list);
+                  const kept = items.some(
+                    (item) => item.id.startsWith(`${id}:`) && !choices.dropped.has(item.id),
+                  );
+                  if (!kept) return null;
+                  const entries = wholeList(person, list, choices, stored.get(list)).map((entry) =>
+                    list === 'citizenships'
+                      ? labels.country(String(entry['country']))
+                      : labels.language(String(entry['language'])),
+                  );
                   return (
                     <div key={list} className="flex flex-col gap-1">
                       <CheckRow
                         label={t(`intake.whole.${list}`, {
                           name: nameOf(person.ref),
-                          list: new Intl.ListFormat(i18n.language, { type: 'conjunction' }).format(
-                            entries.map(({ sentence }) =>
-                              'country' in sentence
-                                ? labels.country(sentence.country)
-                                : 'language' in sentence
-                                  ? labels.language(sentence.language)
-                                  : '',
-                            ),
-                          ),
+                          list: listFormat.format(entries),
                         })}
                         checked={choices.whole.has(id)}
                         onChange={(on) => {
-                          update({ whole: toggle(choices.whole, id, on) });
+                          update({ whole: toggled(choices.whole, id, on) });
                         }}
                       />
                       <p className="text-small text-muted">{t('intake.wholeHint')}</p>
@@ -381,7 +379,7 @@ function Review({
                 label={text(sentence)}
                 checked={!choices.dropped.has(id)}
                 onChange={(on) => {
-                  update({ dropped: toggle(choices.dropped, id, !on) });
+                  update({ dropped: toggled(choices.dropped, id, !on) });
                 }}
               />
             ))}
@@ -409,75 +407,46 @@ function Review({
   );
 }
 
-type PickerKind = PersonChoice['kind'];
+type Keep = 'keep' | 'drop';
 
-/** Keeps a proposed person as someone new, matches them to a person the viewer keeps, or drops them. */
-function PersonPicker({
+/** Keeps a proposed new person, with their name and whether they are in the plan, or drops them. */
+function NewPersonFields({
   choice,
-  kept,
   onChange,
 }: {
-  readonly choice: PersonChoice;
-  readonly kept: readonly CaseView['people'][number][];
-  readonly onChange: (choice: PersonChoice) => void;
+  readonly choice: NewPerson;
+  readonly onChange: (choice: NewPerson) => void;
 }) {
   const { t } = useTranslation();
-  const [name, setName] = useState(choice.kind === 'new' ? choice.displayName : '');
-  const [member, setMember] = useState(choice.kind === 'new' ? choice.caseMember : true);
-  const [match, setMatch] = useState(choice.kind === 'match' ? choice.personId : '');
-  const pick = (kind: PickerKind) => {
-    if (kind === 'new') onChange({ kind, displayName: name, caseMember: member });
-    else if (kind === 'match')
-      onChange(match === '' ? { kind: 'drop' } : { kind, personId: match });
-    else onChange({ kind });
-  };
-  const [kind, setKind] = useState<PickerKind>(choice.kind);
-  const kinds: readonly PickerKind[] =
-    kept.length === 0 ? ['new', 'drop'] : ['new', 'match', 'drop'];
+  const keeps: readonly Keep[] = ['keep', 'drop'];
   return (
     <div className="flex flex-col gap-3">
-      <ChoiceGroup<PickerKind>
+      <ChoiceGroup<Keep>
         legend={t('intake.choice.legend')}
-        choices={kinds.map((value) => ({ value, label: t(`intake.choice.${value}`) }))}
-        value={kind}
+        choices={keeps.map((value) => ({ value, label: t(`intake.choice.${value}`) }))}
+        value={choice.keep ? 'keep' : 'drop'}
         onChange={(next) => {
-          setKind(next);
-          pick(next);
+          onChange({ ...choice, keep: next === 'keep' });
         }}
       />
-      {kind === 'new' && (
+      {choice.keep && (
         <>
           <TextField
             label={t('family.name')}
             hint={t('intake.nameHint')}
             {...nameInput}
-            value={name}
+            value={choice.displayName}
             onChange={(event) => {
-              const next = event.currentTarget.value;
-              setName(next);
-              onChange({ kind: 'new', displayName: next, caseMember: member });
+              onChange({ ...choice, displayName: event.currentTarget.value });
             }}
           />
           <MembershipChoice
-            value={member ? 'member' : 'relative'}
+            value={choice.caseMember ? 'member' : 'relative'}
             onChange={(next) => {
-              setMember(next === 'member');
-              onChange({ kind: 'new', displayName: name, caseMember: next === 'member' });
+              onChange({ ...choice, caseMember: next === 'member' });
             }}
           />
         </>
-      )}
-      {kind === 'match' && (
-        <SelectField
-          label={t('intake.choice.who')}
-          placeholder={t('questions.pick')}
-          value={match}
-          options={kept.map(({ id, displayName }) => ({ value: id, label: displayName }))}
-          onChange={(next) => {
-            setMatch(next);
-            onChange(next === '' ? { kind: 'drop' } : { kind: 'match', personId: next });
-          }}
-        />
       )}
     </div>
   );
