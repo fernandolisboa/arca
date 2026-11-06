@@ -4,7 +4,7 @@ Every change is reviewed by specialized AI reviewers before merge. They are defi
 
 ## Gates, in order
 
-1. **Automated checks:** types, lint, unit and integration tests, the row-level security access-matrix suite, the synthetic evaluation suite when AI behavior changed, CodeQL, dependency advisories, secret scanning.
+1. **Automated checks:** types, lint, unit and integration tests, the row-level security access-matrix suite, the synthetic evaluation suite when AI behavior changed (the authoring session starts the manual `intake-eval` workflow on a change to the intake adapter, prompt, model file or draft schema, and cites the run in the PR; [spec 0008, R5](specs/0008-free-text-intake.md#r5-evaluation)), CodeQL, dependency advisories, secret scanning.
 2. **Core reviewers**, on every change.
 3. **Specialist reviewers**, on every change that touches their area. Sensitive changes therefore get at least two independent security reads: the general security reviewer and the specialist.
 

@@ -1,0 +1,53 @@
+name: intake-eval
+
+# The intake evaluation (spec 0008, R5): runs the synthetic cases against the real model and writes
+# the scores to the job summary. Started by hand only (`gh workflow run intake-eval --ref
+# <branch>`), never a required check (ADR-0019). It evaluates the commit it was dispatched on, a
+# branch or tag of this repository, with that commit's own copy of this file; there is no ref
+# input, so no fork's code can run here with the key.
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: intake-eval
+  cancel-in-progress: false
+
+env:
+  TURBO_TELEMETRY_DISABLED: '1'
+  DO_NOT_TRACK: '1'
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo run build --filter=@arca/api^...
+      - name: Name the evaluated commit
+        env:
+          EVAL_REF: ${{ github.ref_name }}
+          EVAL_SHA: ${{ github.sha }}
+        run: |
+          [[ "$EVAL_REF" =~ ^[A-Za-z0-9._/-]+$ && "$EVAL_SHA" =~ ^[0-9a-f]{40}$ ]]
+          echo "Evaluated \`$EVAL_REF\` at \`$EVAL_SHA\`." >> "$GITHUB_STEP_SUMMARY"
+      - name: Run the intake evaluation
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ARCA_EVAL_REPORT: ${{ runner.temp }}/intake-eval.md
+        run: |
+          status=0
+          pnpm --fail-if-no-match --filter @arca/api eval:intake || status=$?
+          if [ ! -f "$ARCA_EVAL_REPORT" ]; then
+            echo "The evaluation wrote no report." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          cat "$ARCA_EVAL_REPORT" >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"

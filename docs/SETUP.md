@@ -52,12 +52,13 @@ Public by design; a pull request changes them.
 | `VERCEL_TOKEN` | Agents read the project and write Sensitive variables after the owner's OK | Agent session | Owner: [Vercel › Account › Tokens](https://vercel.com/account/settings/tokens), scoped to the team, with an expiry | Agents cannot create variables or read build logs |
 | `ARCA_GITHUB_TOKEN` | The owner's fine-grained token for this repository (ADR-0012). Sessions reach GitHub through the Claude GitHub App instead, so nothing uses it today; revoke it and remove it from the environment | Agent session | Owner: [GitHub › Fine-grained tokens](https://github.com/settings/personal-access-tokens) | Nothing |
 | `GITHUB_TOKEN` | The staleness workflow posts its weekly issue | GitHub Actions, issued per run | GitHub | — |
+| `ANTHROPIC_API_KEY` | The manual `intake-eval` workflow scores the intake extractor against the real model ([spec 0008, R5](specs/0008-free-text-intake.md#r5-evaluation)) | GitHub repository secret | Owner, once: a new key of its own in the [Claude Console](https://platform.claude.com/settings/keys), ideally in its own workspace with a low spend limit, then repository › Settings › Secrets and variables › Actions › New repository secret. Not the Vercel key: any branch's workflow can read a repository secret, and a separate key keeps a leak away from production | `intake-eval` stops at "Set ANTHROPIC_API_KEY", so production keeps no extractor; nothing else depends on it, and revoking it touches nothing else |
 
-CI creates throwaway role passwords, `BETTER_AUTH_SECRET` and `ARCA_RATE_LIMIT_KEY` for each run, so it needs no stored secret. A workflow may use only the secrets listed in [.github/policy/workflow-secrets.json](../.github/policy/workflow-secrets.json).
+CI creates throwaway role passwords, `BETTER_AUTH_SECRET` and `ARCA_RATE_LIMIT_KEY` for each run, so its checks need no stored secret; only the manual `intake-eval` workflow holds one. A workflow may use only the secrets listed in [.github/policy/workflow-secrets.json](../.github/policy/workflow-secrets.json).
 
 ## Local development
 
-Nothing hosted reaches a local machine: the Neon integration does not connect Development. The local database tests and end-to-end tests use a throwaway Postgres and values of your own (`ARCA_TEST_DB_ADMIN_PASSWORD`, the role passwords, `BETTER_AUTH_SECRET`, `ARCA_RATE_LIMIT_KEY`, `ARCA_ENROLLMENT_CODE_HASH` for a local enrollment code, and `ARCA_INTAKE_EXTRACTOR=scripted` for free-text intake without a key). The steps are in [README.md](../README.md#development).
+Nothing hosted reaches a local machine: the Neon integration does not connect Development. The local database tests and end-to-end tests use a throwaway Postgres and values of your own (`ARCA_TEST_DB_ADMIN_PASSWORD`, the role passwords, `BETTER_AUTH_SECRET`, `ARCA_RATE_LIMIT_KEY`, `ARCA_ENROLLMENT_CODE_HASH` for a local enrollment code, and `ARCA_INTAKE_EXTRACTOR=scripted` for free-text intake without a key). The intake evaluation runs locally only with a key of your own in `ANTHROPIC_API_KEY`. The steps are in [README.md](../README.md#development).
 
 ## If a secret leaks
 
