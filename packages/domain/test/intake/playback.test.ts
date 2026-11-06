@@ -213,7 +213,7 @@ describe('the draft describeDraft takes (spec 0008, R3 and R4)', () => {
   const taken = (input: Partial<IntakeDraft>, base = snapshot) =>
     describeDraft(base, draft(input), kept, visibility, at).draft;
 
-  it('answers the facts as merged with what is stored, and only those that change it', () => {
+  it('answers only the facts and list entries that change what is stored', () => {
     expect(
       taken({
         people: [
@@ -227,7 +227,7 @@ describe('the draft describeDraft takes (spec 0008, R3 and R4)', () => {
         ],
       }),
     ).toEqual({
-      people: [{ ref: 'p1', role: 'self', citizenships: ['BR', 'IT'] }],
+      people: [{ ref: 'p1', role: 'self', citizenships: ['IT'] }],
       relationships: [],
     });
   });
@@ -267,6 +267,56 @@ describe('the draft describeDraft takes (spec 0008, R3 and R4)', () => {
   it('answers a stored edge whose missing start it fills', () => {
     const start = { kind: 'spouse', people: ['p2', 'p1'], start: '2010' } as const;
     expect(taken({ relationships: [start as never] }).relationships).toEqual([start]);
+  });
+
+  it('answers a stored edge as the details it adds, never one the case has', () => {
+    const third = caseSnapshotSchema.parse({
+      ...snapshot,
+      people: [...snapshot.people, { id: 'p3' }],
+      relationships: [
+        ...snapshot.relationships,
+        { kind: 'parent', parent: 'p1', child: 'p3', parentKind: 'biological' },
+      ],
+    });
+    const { draft: answered, sentences } = describeDraft(
+      third,
+      draft({
+        relationships: [
+          {
+            kind: 'parent',
+            parent: 'p1',
+            child: 'p3',
+            parentKind: 'adoptive',
+            start: '2010' as never,
+          },
+        ],
+      }),
+      new Set(['p1', 'p3']),
+      new Map([...visibility, ['p3', seen]]),
+      at,
+    );
+    expect(answered.relationships).toEqual([
+      { kind: 'parent', parent: 'p1', child: 'p3', start: '2010' },
+    ]);
+    expect(sentences).toEqual([
+      expect.objectContaining({ kind: 'parent', parentKind: 'biological', start: '2010' }),
+    ]);
+  });
+
+  it('answers a new language level, not the stored languages again', () => {
+    expect(
+      taken({
+        people: [
+          {
+            ref: 'p1',
+            languages: [
+              { language: 'en', level: 'B1' },
+              { language: 'it', level: 'A2' },
+            ],
+          },
+        ],
+      }).people,
+    ).toEqual([{ ref: 'p1', languages: [{ language: 'it', level: 'A2' }] }]);
   });
 
   it('leaves out new people the case has no room for', () => {

@@ -126,14 +126,44 @@ function snapshotEdge(edge: DraftRelationship): Relationship | undefined {
   };
 }
 
+/** A proposed edge the case holds already, as the details it adds to the stored one only. */
+function addedDetails(edge: DraftRelationship, stored: Relationship): DraftRelationship {
+  const lacks = (key: string) => !(key in stored);
+  if (edge.kind === 'parent') {
+    const { parentKind, start, ...ends } = edge;
+    return {
+      ...ends,
+      ...(parentKind !== undefined && lacks('parentKind') ? { parentKind } : {}),
+      ...(start !== undefined && lacks('start') ? { start } : {}),
+    };
+  }
+  const { start, ...ends } = edge;
+  return { ...ends, ...(start !== undefined && lacks('start') ? { start } : {}) };
+}
+
 const draftLanguages: ReadonlySet<string> = new Set(languageCodes);
 const isDraftLanguage = (code: string): code is (typeof languageCodes)[number] =>
   draftLanguages.has(code);
 
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
-/** The facts the case took for one person, as draft fields: only those that change what is stored. */
+/**
+ * The facts the case took for one person, as draft fields: only those that change what is stored.
+ * A list holds only the entries it adds or changes, so saving it next to the stored ones keeps
+ * their details, such as how a citizenship was acquired.
+ */
 function takenFacts(proposed: DraftPerson, before: Person | undefined, after: Person): DraftPerson {
+  const stored = new Set((before?.citizenships ?? []).map(({ country }) => country));
+  const countries = (proposed.citizenships === undefined ? [] : (after.citizenships ?? []))
+    .map(({ country }) => country)
+    .filter((country) => !stored.has(country));
+  const languages = (proposed.languages === undefined ? [] : (after.languages ?? [])).flatMap(
+    ({ language, level }) =>
+      isDraftLanguage(language) &&
+      !(before?.languages ?? []).some((entry) => same(entry, { language, level }))
+        ? [{ language, level }]
+        : [],
+  );
   const changed = (key: keyof Person) =>
     proposed[key as keyof DraftPerson] !== undefined &&
     after[key] !== undefined &&
@@ -144,22 +174,14 @@ function takenFacts(proposed: DraftPerson, before: Person | undefined, after: Pe
     ...(changed('birthDate') && after.birthDate !== undefined
       ? { birthDate: after.birthDate }
       : {}),
-    ...(changed('citizenships') && after.citizenships !== undefined
-      ? { citizenships: after.citizenships.map(({ country }) => country) }
-      : {}),
+    ...(countries.length === 0 ? {} : { citizenships: countries }),
     ...(changed('residenceCountry') && after.residenceCountry !== undefined
       ? { residenceCountry: after.residenceCountry }
       : {}),
     ...(changed('educationLevel') && after.educationLevel !== undefined
       ? { educationLevel: after.educationLevel }
       : {}),
-    ...(changed('languages') && after.languages !== undefined
-      ? {
-          languages: after.languages.flatMap(({ language, level }) =>
-            isDraftLanguage(language) ? [{ language, level }] : [],
-          ),
-        }
-      : {}),
+    ...(languages.length === 0 ? {} : { languages }),
   };
 }
 
@@ -213,11 +235,12 @@ export function describeDraft(
         : relationship.people;
     // An edge between two people the viewer does not keep is not theirs to propose.
     if (!ends.every((id) => present.has(id)) || !ends.some(ours)) continue;
+    const stored = combined.relationships.find((held) => sameEdge(held, relationship));
     const relationships = withEdge(combined.relationships, relationship);
     const next = { ...combined, relationships };
     if (same(relationships, combined.relationships) || !fits(next)) continue;
     combined = next;
-    edges.push(edge);
+    edges.push(stored === undefined ? edge : addedDetails(edge, stored));
   }
   const after = new Map(combined.people.map((person) => [person.id, person]));
   const taken = draft.people.flatMap((person): DraftPerson[] => {

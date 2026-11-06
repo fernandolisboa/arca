@@ -33,8 +33,8 @@ Two accepted decisions do not fit as written:
 
 ## Alternatives considered
 
-| Option                                                        | Why not                                                                |
-| ------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Refuse any text that might hold a name                        | No reliable detector; it would refuse most real descriptions           |
-| Ask members to write only roles, and block on capital letters | Breaks on places and countries, and annoys more than it protects       |
-| Langfuse now, as ADR-0016 planned                             | A vendor setup chore for the owner with nothing to compare yet (YAGNI) |
+| Option | Why not |
+| --- | --- |
+| Refuse any text that might hold a name | No reliable detector; it would refuse most real descriptions |
+| Ask members to write only roles, and block on capital letters | Breaks on places and countries, and annoys more than it protects |
+| Langfuse now, as ADR-0016 planned | A vendor setup chore for the owner with nothing to compare yet (YAGNI) |

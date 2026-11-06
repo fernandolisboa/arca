@@ -123,7 +123,7 @@ The [data-flow table](../ARCHITECTURE.md#data-flows) lists every service and wha
 
 ## LLM and agentic risks
 
-No model call is reachable in production yet: the intake extractor ([spec 0008](../specs/0008-free-text-intake.md)) runs on previews and stays off in production until its evaluation suite passes. The [rules engine](../specs/0002-rules-engine-and-knowledge-base.md) is deterministic, and the knowledge-base agents have their own threat model there. Before the first adapter ships, the real-data gate's item 10 requires the evaluation suite and the data-flow rows. Until then, the agentic surface is development: coding agents and their reviewer subagents, which hold the owner's tokens.
+No model call is reachable in production yet: the intake extractor ([spec 0008](../specs/0008-free-text-intake.md)) runs on previews and stays off in production until its evaluation suite passes. The [rules engine](../specs/0002-rules-engine-and-knowledge-base.md) is deterministic, and the knowledge-base agents have their own threat model there. Before an adapter is reachable in production, the real-data gate's item 10 requires the evaluation suite and the data-flow rows. Until then, the agentic surface is development: coding agents and their reviewer subagents, which hold the owner's tokens.
 
 Risks from the OWASP Top 10 for LLM Applications (2025):
 

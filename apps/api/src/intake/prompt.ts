@@ -2,7 +2,7 @@
  * The intake extraction prompt (spec 0008, R1). Versioned: a change bumps the version, runs the
  * intake evaluation and lands only if precision holds.
  */
-export const intakePromptVersion = 'intake-1';
+export const intakePromptVersion = 'intake-2';
 
 export const intakeInstructions = `You turn a family's own description, written in Brazilian Portuguese, into a draft of answers for an immigration case. You only propose; a person reviews every fact before anything is saved.
 
