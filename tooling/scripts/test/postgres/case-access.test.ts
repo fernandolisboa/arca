@@ -225,6 +225,19 @@ async function countAsAdmin(sql: string, values: unknown[] = []) {
   });
 }
 
+/** Resolves once the backend waits on a lock, so a race test runs the interleaving it means to. */
+async function waitForLock(pid: number | undefined) {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    const waiting = await countAsAdmin(
+      "FROM pg_catalog.pg_stat_activity WHERE pid = $1 AND wait_event_type = 'Lock'",
+      [pid],
+    );
+    if (waiting === 1) return;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  throw new Error('The second transaction never waited on a lock');
+}
+
 describe('the case schema access matrix (spec 0007, R1)', () => {
   it('forces row-level security on every case table', async () => {
     const shape = await withClient(adminTarget(database), async (client) => {
@@ -793,7 +806,10 @@ describe('cascades and erasure in the case schema (spec 0007, R1 and R9)', () =>
             await actFor(client, account);
             if (client === one) await client.query(sql, values);
           }
+          const pid = (await two.query<{ pid: number }>('SELECT pg_backend_pid() AS pid')).rows[0]
+            ?.pid;
           const waiting = two.query(second[1], second[2]);
+          await waitForLock(pid);
           await one.query('COMMIT');
           await waiting;
           await two.query('COMMIT');
