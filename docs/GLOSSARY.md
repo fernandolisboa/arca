@@ -35,6 +35,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Playback | Resumo do caso | The case read back in plain sentences, each linked to the question that sets it, so the person can correct it |
 | Keeper | Quem cuida dos dados | The one account that writes a person's facts and decides who sees them: the person, or whoever added someone without an account; not the data-protection controller |
 | Case member | Participante do caso | An account in a case; it sees the case's people and relationships, and keeps the people it added |
+| In the planning | Entra no planejamento | A person of the case the routes are evaluated for (`caseMember` in the code); a relative outside it, such as a grandparent who stays, is only described |
 | Asset | Bem | Something of value owned by one or more people of the case, with each owner's share; a co-owner named by another keeper stays pending until their keeper confirms |
 | Profile share | Compartilhamento de dados | A keeper letting a chosen member see a person's profile or, separately, their finances; not a document share |
 | Progress | Progresso | Documents obtained and steps done out of what a person's or the family's chosen routes need, computed in code; unknowns shown apart |

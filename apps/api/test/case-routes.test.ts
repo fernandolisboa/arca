@@ -40,6 +40,7 @@ const view: CaseView = {
       profile: null,
       finances: null,
       shares: { profile: [], finances: [] },
+      sharedWithMe: [],
     },
   ],
   relationships: [],

@@ -15,6 +15,7 @@ export const ptBR = {
     accountGroup: 'Sua conta',
     nav: {
       home: 'Início',
+      family: 'Família',
       settings: 'Configurações',
     },
   },
@@ -291,6 +292,121 @@ export const ptBR = {
     inCase: '{email} participa do caso.',
     addFailure:
       '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} case_exists {Essa pessoa já participa de outro caso no Arca.} case_limit {O caso já chegou ao limite de pessoas ou de participantes.} not_found {Não deu para adicionar essa pessoa ao caso. Atualize a página e tente de novo.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+  },
+  /** The family area (spec 0007, R2): the case's people, who sees what, invites and leaving. */
+  family: {
+    title: 'Área da família',
+    signIn: 'Entre para ver a área da família.',
+    loadFailure: 'Não conseguimos carregar a área da família agora.',
+    retry: 'Tentar de novo',
+    startLead:
+      'Comece o caso da sua família. Depois você coloca as outras pessoas, e cada uma decide quem vê os dados dela.',
+    lead: 'Estas são as pessoas do caso. Os dados de cada uma só aparecem para quem ela escolher.',
+    yourName: 'Seu nome',
+    yourNameHint: 'É assim que a família vai ver você no Arca.',
+    start: 'Começar o caso',
+    saving: 'Salvando…',
+    waiting: 'Confirme no seu dispositivo para continuar.',
+    failure:
+      '{reason, select, not_found {Isso não está mais disponível. Atualize a página.} case_exists {Você já participa de um caso.} case_limit {O caso chegou ao limite: até 60 pessoas, das quais {max} no planejamento.} case_invalid {Isso não combina com o resto do caso. Confira e tente de novo.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas alterações em pouco tempo. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+    peopleTitle: 'Pessoas do caso',
+    me: '{name} (você)',
+    member: 'Entra no planejamento',
+    relative: 'Parente fora do planejamento',
+    hasAccount: 'Participante do caso',
+    noAccount: 'Sem conta',
+    sharedWithMe:
+      '{what, select, both {Você vê os dados e as finanças.} profile {Você vê os dados.} finances {Você vê as finanças.} other {Você não vê os dados nem as finanças.}}',
+    whoSees: 'Quem vê os dados: {profile}. Quem vê as finanças: {finances}.',
+    nobody: 'só você',
+    actions: {
+      sharing: 'Compartilhamento',
+      edit: 'Editar',
+      handOver: 'Passar para outra pessoa cuidar',
+      invite: 'Convidar',
+      remove: 'Remover',
+    },
+    removeConfirm:
+      'Remover {name} apaga do caso as respostas, as finanças e os parentescos dessa pessoa. Não dá para desfazer.',
+    removeYes: 'Sim, remover',
+    confirmNo: 'Cancelar',
+    name: 'Nome',
+    save: 'Salvar',
+    membership: {
+      legend: 'Essa pessoa entra no planejamento?',
+      hint: 'O Arca avalia as rotas de imigração para quem entra no planejamento. Uma avó que fica no Brasil, por exemplo, pode ser só parente.',
+      member: 'Sim, entra no planejamento',
+      relative: 'Não, é só parente',
+    },
+    sharing: {
+      firstTitle: 'Quem pode ver os dados de {name}?',
+      title: 'O que cada pessoa vê de {name}',
+      lead: 'Ninguém vê nada até você marcar. Dá para mudar quando quiser.',
+      profile: 'Dados pessoais, como estudos, trabalho e idiomas',
+      finances: 'Finanças, como renda e bens',
+      save: 'Salvar compartilhamento',
+    },
+    handOver: {
+      legend: 'Quem vai cuidar dos dados de {name}?',
+      hint: 'Essa pessoa passa a preencher os dados e a decidir quem vê. O que você tinha compartilhado deixa de ser compartilhado.',
+      submit: 'Passar os cuidados',
+    },
+    add: {
+      title: 'Adicionar pessoa',
+      lead: 'Para crianças e parentes sem conta no Arca. Quem tem conta entra pelo convite.',
+      submit: 'Adicionar pessoa',
+    },
+    relation: {
+      parentOf: 'Mãe ou pai de {name}',
+      childOf: 'Filha ou filho de {name}',
+      spouse: 'Casamento com {name}',
+      partner: 'União estável com {name}',
+    },
+    relationships: {
+      title: 'Parentescos',
+      empty: 'Nenhum parentesco anotado ainda.',
+      parent: '{from} é mãe ou pai de {to}',
+      spouse: '{from} e {to} são casados',
+      partner: '{from} e {to} vivem em união estável',
+      remove: 'Remover',
+      addTitle: 'Anotar um parentesco',
+      from: 'Pessoa',
+      kind: 'Parentesco',
+      to: 'Com quem',
+      pick: 'Escolha a pessoa',
+      choice: {
+        parent: 'é mãe ou pai de',
+        spouse: 'é casada ou casado com',
+        partner: 'vive em união estável com',
+      },
+      add: 'Anotar parentesco',
+    },
+    invites: {
+      title: 'Convites',
+      lead: 'Quem tem conta no Arca preenche os próprios dados. Convide pelo email. Quando a pessoa aceitar, confirme a conta e coloque no caso.',
+      status:
+        '{status, select, open {Convite enviado, esperando a pessoa aceitar} accepted {Aceito, falta você confirmar} confirmed {Confirmado, falta colocar no caso} member {Participa do caso} other {}}',
+      link: 'Abrir os convites',
+    },
+    leave: {
+      title: 'Sair do caso',
+      lead: 'Quem sai leva os próprios dados: as pessoas que você cuida saem do caso junto com você. Se você for a última pessoa com conta, o caso é apagado.',
+      confirm:
+        'Sair apaga do caso você e as pessoas que você cuida, com as respostas e as finanças delas. Não dá para desfazer.',
+      yes: 'Sim, sair do caso',
+      submit: 'Sair do caso',
+    },
+    news: {
+      title: 'Novidades na família',
+      joined: '{name} entrou no caso.',
+      granted:
+        '{scope, select, profile {Agora você vê os dados de {name}.} other {Agora você vê as finanças de {name}.}}',
+      revoked:
+        '{scope, select, profile {Você não vê mais os dados de {name}.} other {Você não vê mais as finanças de {name}.}}',
+      decide:
+        'Em "Compartilhamento", escolha o que quem entrou pode ver das pessoas que você cuida.',
+      done: 'Entendi',
+    },
   },
   /** The account's passkeys and the sessions each signed in (spec 0003, R4). */
   devices: {

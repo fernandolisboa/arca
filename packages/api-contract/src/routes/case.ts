@@ -1,5 +1,6 @@
 import {
   displayNameSchema,
+  shareScopeSchema,
   storedAssetSchema,
   storedFinancesSchema,
   storedOwnerShareSchema,
@@ -45,6 +46,8 @@ export const CasePerson = z.object({
   finances: storedFinancesSchema.nullable(),
   /** The members who see this person's profile and finances; only for people the viewer keeps. */
   shares: CaseShares.nullable(),
+  /** What the keeper of a person the viewer does not keep shares with the viewer. */
+  sharedWithMe: z.array(shareScopeSchema).max(2),
 });
 export type CasePerson = z.infer<typeof CasePerson>;
 

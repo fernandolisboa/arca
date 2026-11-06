@@ -1,0 +1,102 @@
+import { expect, test, type Page } from '@playwright/test';
+import { newCredential, virtualAuthenticator, withoutAutofill } from './passkeys.js';
+import { linkAccounts, resetRateLimits, seedAccount } from './postgres/accounts.js';
+import { reportViolations, watchProblems } from './problems.js';
+import { databaseServer } from './servers.js';
+
+test.skip(!databaseServer.enabled, 'needs ARCA_E2E_DATABASE and a Postgres (see README)');
+test.beforeAll(async () => {
+  await resetRateLimits();
+});
+
+/** A confirmed synthetic account signed in on its own page. */
+async function signedIn(page: Page) {
+  const credential = newCredential();
+  const { userId, email } = await seedAccount(credential, undefined, { confirmed: true });
+  await virtualAuthenticator(page, credential, { userId });
+  await withoutAutofill(page);
+  await reportViolations(page);
+  await page.goto(`${databaseServer.origin}/sign-in`);
+  await page.getByRole('button', { name: 'Entrar com chave de acesso' }).click();
+  await expect(page.getByText(`Você entrou como ${email}.`)).toBeVisible();
+  return userId;
+}
+
+const card = (page: Page, name: string) =>
+  page.getByRole('listitem').filter({ has: page.getByText(name, { exact: true }) });
+
+test('starts a case, adds people, shares a child with a member and tells them', async ({
+  page,
+  browser,
+}) => {
+  const problems = watchProblems(page);
+  const owner = await signedIn(page);
+  const relativeContext = await browser.newContext();
+  const relativePage = await relativeContext.newPage();
+  const relative = await signedIn(relativePage);
+  await linkAccounts(owner, relative);
+
+  await page.goto(`${databaseServer.origin}/family`);
+  await expect(page.getByRole('heading', { level: 2, name: 'Área da família' })).toBeVisible();
+  await page.getByLabel('Seu nome').fill('Ana');
+  await page.getByRole('button', { name: 'Começar o caso' }).click();
+  await expect(page.getByText('Ana (você)')).toBeVisible();
+
+  await page.getByLabel('Nome', { exact: true }).fill('Criança');
+  await page.getByRole('button', { name: 'Adicionar pessoa' }).click();
+  await expect(card(page, 'Criança').getByText('Sem conta')).toBeVisible();
+
+  // The relative joins as the invites screen would add them (spec 0007, R2).
+  const joined = await page.request.post(`${databaseServer.origin}/v1/case/members`, {
+    headers: { origin: databaseServer.origin },
+    data: { accountId: relative, displayName: 'Bruno' },
+  });
+  expect(joined.status()).toBe(200);
+  await page.reload();
+  await expect(page.getByText('Bruno entrou no caso.')).toBeVisible();
+  await page.getByRole('button', { name: 'Entendi' }).click();
+  await expect(card(page, 'Bruno').getByText('Participante do caso')).toBeVisible();
+
+  const child = card(page, 'Criança');
+  await child.getByRole('button', { name: 'Compartilhamento' }).click();
+  await child
+    .getByRole('group', { name: /^Dados pessoais/ })
+    .getByLabel('Bruno')
+    .check();
+  await child.getByRole('button', { name: 'Salvar compartilhamento' }).click();
+  await expect(
+    child.getByText('Quem vê os dados: Bruno. Quem vê as finanças: só você.'),
+  ).toBeVisible();
+
+  await page.getByLabel('Com quem').selectOption({ label: 'Criança' });
+  await page.getByRole('button', { name: 'Anotar parentesco' }).click();
+  await expect(page.getByText('Ana é mãe ou pai de Criança')).toBeVisible();
+  await expect(child.getByText('Filha ou filho de Ana')).toBeVisible();
+
+  await relativePage.goto(`${databaseServer.origin}/family`);
+  await expect(card(relativePage, 'Criança').getByText('Você vê os dados.')).toBeVisible();
+
+  // Revoking shows the relative a notice on their next visit.
+  await child.getByRole('button', { name: 'Compartilhamento' }).click();
+  await child
+    .getByRole('group', { name: /^Dados pessoais/ })
+    .getByLabel('Bruno')
+    .uncheck();
+  await child.getByRole('button', { name: 'Salvar compartilhamento' }).click();
+  await relativePage.reload();
+  await expect(relativePage.getByText('Você não vê mais os dados de Criança.')).toBeVisible();
+
+  // Leaving takes a step-up, and the relative's case is gone for them.
+  const stepUp = relativePage.waitForRequest((request) =>
+    request.url().endsWith('/v1/auth/step-up/options'),
+  );
+  await relativePage.getByRole('button', { name: 'Sair do caso' }).click();
+  await relativePage.getByRole('button', { name: 'Sim, sair do caso' }).click();
+  await expect(relativePage.getByRole('button', { name: 'Começar o caso' })).toBeVisible();
+  expect((await stepUp).postDataJSON()).toMatchObject({
+    purpose: 'sensitive_settings',
+    target: { action: 'leaveCase', targets: [] },
+  });
+  await relativeContext.close();
+  expect(problems).toEqual([]);
+});

@@ -5,7 +5,7 @@ import { Link, createFileRoute } from '@tanstack/react-router';
 import { useState, type SubmitEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { caseQuery, invitesQuery, sessionQuery } from '../api.js';
-import { addFailure, addToCase, type AddFailure } from '../case-members.js';
+import { addToCase, caseFailure, type CaseFailure } from '../case.js';
 import { emailInput, nameInput } from '../forms/inputs.js';
 import { TextField } from '../forms/text-field.js';
 import { dangerLinkClass, textLinkClass } from '../forms/text-link.js';
@@ -249,7 +249,7 @@ function AddToCase({ email, accountId }: { readonly email: string; readonly acco
   const [chosen, setChosen] = useState(newPerson);
   const [displayName, setDisplayName] = useState('');
   const [adding, setAdding] = useState(false);
-  const [failure, setFailure] = useState<AddFailure>();
+  const [failure, setFailure] = useState<CaseFailure>();
   const view = familyCase.data?.case;
   if (view === undefined || view === null) return null;
   if (view.people.some((person) => person.accountId === accountId)) {
@@ -271,7 +271,7 @@ function AddToCase({ email, accountId }: { readonly email: string; readonly acco
         queryClient.setQueryData(caseQuery.queryKey, { case: updated });
       })
       .catch((error: unknown) => {
-        setFailure(addFailure(error));
+        setFailure(caseFailure(error));
       })
       .finally(() => {
         setAdding(false);

@@ -109,6 +109,7 @@ describe('creating a case (spec 0007, R2)', () => {
         profile: null,
         finances: null,
         shares: { profile: [], finances: [] },
+        sharedWithMe: [],
       },
     ]);
     expect(refusal(await files.create(alice, 'Alice again'))).toBe('case_exists');
@@ -382,9 +383,12 @@ describe('profiles, finances and shares', () => {
       }),
     );
     expect((await seenBy(bruno, people.child))?.profile?.facts).toEqual({ studying: true });
+    expect((await seenBy(bruno, people.child))?.sharedWithMe).toEqual(['profile']);
+    expect((await seenBy(alice, people.child))?.sharedWithMe).toEqual([]);
     expect((await seenBy(alice, people.child))?.shares).toEqual({ profile: [bruno], finances: [] });
     viewOf(await files.replaceShares(alice, { personId: people.child, profile: [], finances: [] }));
     expect((await seenBy(bruno, people.child))?.profile).toBeNull();
+    expect((await seenBy(bruno, people.child))?.sharedWithMe).toEqual([]);
 
     for (const grantees of [[alice], [randomUUID()]]) {
       expect(
