@@ -95,13 +95,16 @@ export async function readIntakeDraft(
   return writer === undefined ? named : withWriter(named, writer.id);
 }
 
+/** Model calls one draft may take: the first and one retry on an unparsable reply. */
+export const draftAttempts = 2;
+
 async function parsedDraft(
   extractor: Extractor,
   masked: string,
   known: ReadonlySet<string>,
   onUnparsable: () => void,
 ): Promise<IntakeDraft> {
-  for (let attempt = 0; attempt < 2; attempt += 1) {
+  for (let attempt = 0; attempt < draftAttempts; attempt += 1) {
     try {
       const parsed = parseIntakeDraft((await extractor.draft(masked, [...known])).reply, known);
       if (parsed !== undefined) return keepStatedDates(parsed, masked);

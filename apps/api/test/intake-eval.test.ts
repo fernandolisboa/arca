@@ -1,6 +1,9 @@
 // The intake evaluation's cases and scoring (spec 0008, R5), checked without calling a model.
 import { keepStatedDates, maskIntakeText, parseIntakeDraft, renameDraft } from '@arca/domain';
 import { describe, expect, it } from 'vitest';
+import { draftAttempts } from '../src/case/intake.js';
+import type { Extractor } from '../src/intake/extractor.js';
+import { CallLimitReached, maxCallsPerRun, withCallLimit } from './eval/intake/call-limit.js';
 import { draftOf, intakeCases } from './eval/intake/cases.js';
 import { type Baseline, type CaseRun, judge, report } from './eval/intake/report.js';
 import {
@@ -33,6 +36,30 @@ describe('the intake evaluation cases', () => {
     for (const pattern of evalCase.forbidden ?? []) {
       expect(expected.filter((key) => pattern.test(key))).toEqual([]);
     }
+  });
+});
+
+describe('the call limit of a run', () => {
+  it('fits every case with its retry', () => {
+    expect(intakeCases.length * draftAttempts).toBeLessThanOrEqual(maxCallsPerRun);
+  });
+
+  it('counts each call and refuses the one past the limit', async () => {
+    const reply = { reply: {}, model: 'model', promptVersion: 'prompt' };
+    const fake: Extractor = { draft: () => Promise.resolve(reply) };
+    const { extractor, calls } = withCallLimit(fake, 2);
+    await extractor.draft('a', []);
+    await extractor.draft('b', []);
+    await expect(extractor.draft('c', [])).rejects.toBeInstanceOf(CallLimitReached);
+    expect(calls()).toBe(2);
+  });
+
+  it('counts a call that fails', async () => {
+    const failing: Extractor = { draft: () => Promise.reject(new Error('down')) };
+    const { extractor, calls } = withCallLimit(failing, 1);
+    await expect(extractor.draft('a', [])).rejects.toThrow('down');
+    await expect(extractor.draft('b', [])).rejects.toBeInstanceOf(CallLimitReached);
+    expect(calls()).toBe(1);
   });
 });
 
