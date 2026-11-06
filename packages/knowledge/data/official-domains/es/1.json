@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "es",
+  "number": 1,
+  "issuer": "Kingdom of Spain",
+  "hosts": [
+    {
+      "host": "boe.es",
+      "source": {
+        "id": "pag-administracion",
+        "url": "https://administracion.gob.es/",
+        "title": "Punto de Acceso General, the Spanish government's portal on the .gob.es zone reserved for public administrations, links to the Boletín Oficial del Estado at boe.es",
+        "kind": "official",
+        "verifiedAt": "2026-11-06"
+      }
+    }
+  ]
+}
