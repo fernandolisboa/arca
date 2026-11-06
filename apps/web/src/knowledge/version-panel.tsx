@@ -11,12 +11,9 @@ import { type KnowledgeWords, useKnowledgeWords } from './words.js';
 
 type SectionKey = keyof Messages['knowledge']['section'];
 
-const card = 'flex min-w-0 flex-col gap-2 rounded-control border border-line bg-surface p-4';
+const surface = 'rounded-control border border-line bg-surface p-4';
+const card = `flex min-w-0 flex-col gap-2 ${surface}`;
 
-/**
- * A section's items in one numbered column, read top to bottom: each item is a card with its
- * number beside it, so the order is plain on any width.
- */
 function Cards<T>({
   items,
   keyOf,
@@ -29,10 +26,7 @@ function Cards<T>({
   return (
     <ol className="flex flex-col gap-3">
       {items.map((item, position) => (
-        <li
-          key={keyOf(item)}
-          className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 rounded-control border border-line bg-surface p-4"
-        >
+        <li key={keyOf(item)} className={`grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 ${surface}`}>
           <span
             aria-hidden="true"
             className="grid size-7 place-items-center rounded-full bg-soft text-small font-medium tabular-nums"
@@ -126,7 +120,7 @@ function leapDayRule(rule: VersionView['leapDayBirthday']) {
 function Settings({ view, words }: { readonly view: VersionView; readonly words: KnowledgeWords }) {
   const { t } = words;
   return (
-    <ul className="grid gap-3 md:grid-cols-2">
+    <ul className="flex flex-col gap-3">
       <li className={card}>
         <p>{t('knowledge.leapDay', { rule: leapDayRule(view.leapDayBirthday) })}</p>
         <Reads sources={view.leapDayBirthdaySources} words={words} />
