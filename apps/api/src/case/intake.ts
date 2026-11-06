@@ -9,7 +9,8 @@ import {
   keepStatedDates,
   maskIntakeText,
   parseIntakeDraft,
-  renamePeople,
+  renameDraft,
+  withWriter,
 } from '@arca/domain';
 import type { Logger } from '@arca/telemetry';
 import type { AuditLog } from '../audit/log.js';
@@ -44,25 +45,13 @@ export interface CaseIntakeSettings {
 
 const route = '/v1/case/intake/draft';
 
-/** The draft with every reference renamed, such as placeholders to case IDs. */
-function renameDraft(draft: IntakeDraft, rename: (ref: string) => string): IntakeDraft {
-  return {
-    people: draft.people.map((person) => ({ ...person, ref: rename(person.ref) })),
-    relationships: draft.relationships.map((edge) =>
-      edge.kind === 'parent'
-        ? { ...edge, parent: rename(edge.parent), child: rename(edge.child) }
-        : { ...edge, people: edge.people.map(rename) },
-    ),
-  };
-}
-
-/** What the case takes of the draft and the sentences it adds or changes, in the case's IDs. */
+/** What the case takes of the draft, in the case's IDs, and how many sentences it adds or changes. */
 function describe(
   rows: CaseRows,
   accountId: string,
   at: CalendarDate,
   draft: IntakeDraft,
-): CaseIntakeDraftResponse {
+): { readonly value: CaseIntakeDraftResponse; readonly facts: number } {
   const { snapshot, personIds } = buildCaseSnapshot(rows, at);
   const kept = new Set(
     rows.people.flatMap(({ id, keptByMe }) => {
@@ -78,10 +67,9 @@ function describe(
     at,
   );
   const uuids = new Map([...personIds].map(([uuid, opaque]) => [opaque, uuid]));
-  const toUuid = (id: string) => uuids.get(id) ?? id;
   return {
-    draft: renameDraft(described.draft, toUuid),
-    sentences: renamePeople(described.sentences, toUuid),
+    value: { draft: renameDraft(described.draft, (id) => uuids.get(id) ?? id) },
+    facts: described.sentences.length,
   };
 }
 
@@ -132,11 +120,13 @@ export function createCaseIntake({
     throw new ExtractorError('intake_unparsable');
   };
 
-  /** The draft in the case's IDs: each placeholder becomes its person's ID. */
-  const draftFor = async (rows: CaseRows, text: string): Promise<IntakeDraft> => {
+  /** The draft in the case's IDs: each placeholder becomes its person's ID, the writer the viewer's. */
+  const draftFor = async (rows: CaseRows, accountId: string, text: string) => {
     const { masked, placeholders } = maskIntakeText(text, rows.people);
     const draft = await draftOf(masked, new Set(placeholders.keys()));
-    return renameDraft(draft, (ref) => placeholders.get(ref) ?? ref);
+    const named = renameDraft(draft, (ref) => placeholders.get(ref) ?? ref);
+    const writer = rows.people.find((person) => person.accountId === accountId);
+    return writer === undefined ? named : withWriter(named, writer.id);
   };
 
   return {
@@ -144,9 +134,9 @@ export function createCaseIntake({
       const at = today();
       const rows = await withIdentity(db(), { accountId }, (tx) => readCase(tx, accountId));
       if (rows === undefined) return { ok: false, reason: 'not_found' };
-      let value: CaseIntakeDraftResponse;
+      let described: ReturnType<typeof describe>;
       try {
-        value = describe(rows, accountId, at, await draftFor(rows, text));
+        described = describe(rows, accountId, at, await draftFor(rows, accountId, text));
       } catch (error) {
         if (error instanceof ExtractorError) return { ok: false, reason: error.code };
         // Anything else thrown here may hold the text or the reply: only its class is logged.
@@ -163,11 +153,11 @@ export function createCaseIntake({
         actorAccountId: accountId,
         details: {
           caseId: rows.caseId,
-          people: value.draft.people.filter(({ ref }) => isNewReference(ref)).length,
-          facts: value.sentences.length,
+          people: described.value.draft.people.filter(({ ref }) => isNewReference(ref)).length,
+          facts: described.facts,
         },
       });
-      return { ok: true, value };
+      return { ok: true, value: described.value };
     },
   };
 }

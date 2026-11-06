@@ -55,13 +55,25 @@ function mergeBy<Item>(
   return merged;
 }
 
+/**
+ * A person with the facts a proposal adds: only those the person lacks, and a birth date more
+ * precise than the stored one it falls within, so a draft never overwrites what the case holds.
+ */
 function applyPerson(base: Person, proposed: DraftPerson): Person {
   const { citizenships, languages, birthDate, residenceCountry, educationLevel } = proposed;
+  const sharper =
+    birthDate !== undefined &&
+    (base.birthDate === undefined ||
+      (contains(base.birthDate, birthDate) && !contains(birthDate, base.birthDate)));
   const merged: Person = {
     ...base,
-    ...(birthDate === undefined || contains(birthDate, base.birthDate) ? {} : { birthDate }),
-    ...(residenceCountry === undefined ? {} : { residenceCountry }),
-    ...(educationLevel === undefined ? {} : { educationLevel }),
+    ...(sharper ? { birthDate } : {}),
+    ...(residenceCountry === undefined || base.residenceCountry !== undefined
+      ? {}
+      : { residenceCountry }),
+    ...(educationLevel === undefined || base.educationLevel !== undefined
+      ? {}
+      : { educationLevel }),
   };
   if (citizenships !== undefined) {
     merged.citizenships = mergeBy(
@@ -76,17 +88,16 @@ function applyPerson(base: Person, proposed: DraftPerson): Person {
       base.languages,
       languages,
       ({ language }) => language,
-      (_, next) => next,
+      (stored) => stored,
     );
   }
   return personSchema.safeParse(merged).success ? merged : base;
 }
 
-/** Whether a proposed date only restates a stored one less precisely, such as 1985 for 1985-05-12. */
-function contains(proposed: DateValue, stored: DateValue | undefined): boolean {
-  if (stored === undefined) return false;
-  const outer = dateRange(proposed);
-  const inner = dateRange(stored);
+/** Whether the outer date holds the inner one, such as 1985 for 1985-05-12. */
+function contains(outerDate: DateValue, innerDate: DateValue): boolean {
+  const outer = dateRange(outerDate);
+  const inner = dateRange(innerDate);
   return compareDates(outer.min, inner.min) <= 0 && compareDates(inner.max, outer.max) <= 0;
 }
 
@@ -240,7 +251,14 @@ export function describeDraft(
     const next = { ...combined, relationships };
     if (same(relationships, combined.relationships) || !fits(next)) continue;
     combined = next;
-    edges.push(stored === undefined ? edge : addedDetails(edge, stored));
+    // An edge this draft already proposed takes the details it adds, so each edge is answered once.
+    const twin = edges.findIndex((taken) => {
+      const earlier = snapshotEdge(taken);
+      return earlier !== undefined && sameEdge(earlier, relationship);
+    });
+    const added = stored === undefined ? edge : addedDetails(edge, stored);
+    if (twin === -1) edges.push(added);
+    else edges[twin] = { ...added, ...edges[twin] };
   }
   const after = new Map(combined.people.map((person) => [person.id, person]));
   const taken = draft.people.flatMap((person): DraftPerson[] => {

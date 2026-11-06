@@ -7,7 +7,7 @@ import { useNames } from './editors.js';
 import { type SentenceWords, sentenceText } from './sentences.js';
 
 /** Words each sentence with the viewer's names and the screen's language. */
-function useSentenceText(names: ReadonlyMap<string, string>) {
+export function useSentenceText(names: ReadonlyMap<string, string>) {
   const { t, i18n } = useTranslation();
   const labels = useNames();
   const words: SentenceWords = {

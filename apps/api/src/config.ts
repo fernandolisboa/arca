@@ -151,6 +151,14 @@ export function readAnthropicApiKey(): string | undefined {
 }
 
 /**
+ * Whether a local server drafts intake with the scripted extractor (spec 0008, R4), which the
+ * end-to-end build turns on with `ARCA_INTAKE_EXTRACTOR=scripted`; only development honours it.
+ */
+export function readScriptedIntake(): boolean {
+  return process.env['ARCA_INTAKE_EXTRACTOR'] === 'scripted';
+}
+
+/**
  * The environment's private Vercel Blob store, as the project connects it: production with the
  * `BLOB` prefix, previews with `BLOB_PREVIEW` (spec 0005, R3). Undefined until it is connected.
  */

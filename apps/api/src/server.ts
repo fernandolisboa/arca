@@ -42,6 +42,7 @@ import {
   readEngineCommit,
   readEnrollmentCodeHash,
   readOwnOrigin,
+  readScriptedIntake,
   readRateLimitKey,
   readVapidPrivateKey,
 } from './config.js';
@@ -262,7 +263,7 @@ const withOrigin = (origin: string | undefined) => (origin === undefined ? {} : 
 
 const outbox = outboxReaderFor(environment, authConnection);
 
-const extractor = extractorFor(environment, readAnthropicApiKey());
+const extractor = extractorFor(environment, readAnthropicApiKey(), readScriptedIntake());
 const intake =
   extractor === undefined
     ? undefined

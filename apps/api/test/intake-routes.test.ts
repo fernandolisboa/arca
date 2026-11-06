@@ -28,7 +28,6 @@ const value = {
     ],
     relationships: [],
   },
-  sentences: [{ kind: 'born', question: 'birthDate', about: [me], person: me, date: '1985' }],
 };
 
 function setup({

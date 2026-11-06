@@ -70,18 +70,50 @@ describe('describeDraft (spec 0008, R3)', () => {
     ]);
   });
 
-  it('reads a different language level as a change, not a second entry', () => {
+  it.each([
+    ['a language at another level', { languages: [{ language: 'en', level: 'C1' }] }],
+    ['a less precise birth date', { birthDate: '1985' }],
+    ['another birth year', { birthDate: '1986' }],
+  ] as const)('never overwrites a stored fact with %s', (_, facts) => {
     const { snapshot: combined, sentences } = describeDraft(
       snapshot,
-      draft({ people: [{ ref: 'p1', languages: [{ language: 'en', level: 'C1' }] }] }),
+      draft({ people: [{ ref: 'p1', ...(facts as object) }] }),
       kept,
       visibility,
       at,
     );
-    expect(combined.people[0]?.languages).toEqual([{ language: 'en', level: 'C1' }]);
-    expect(sentences).toEqual([
-      expect.objectContaining({ kind: 'language', language: 'en', level: 'C1' }),
-    ]);
+    expect(combined.people[0]).toEqual(snapshot.people[0]);
+    expect(sentences).toEqual([]);
+  });
+
+  it('fills a gap and sharpens a stored birth date it falls within', () => {
+    const { draft: taken } = describeDraft(
+      snapshot,
+      draft({
+        people: [{ ref: 'p1', birthDate: '1985-05' as never, residenceCountry: 'PT' }],
+      }),
+      kept,
+      visibility,
+      at,
+    );
+    expect(taken.people).toEqual([{ ref: 'p1', birthDate: '1985-05', residenceCountry: 'PT' }]);
+  });
+
+  it('answers twin edges for one pair once, with the details of both', () => {
+    const { draft: taken } = describeDraft(
+      snapshot,
+      draft({
+        people: [{ ref: 'p1' }, { ref: 'n1' }],
+        relationships: [
+          { kind: 'partner', people: ['p1', 'n1'] },
+          { kind: 'partner', people: ['n1', 'p1'], start: '2020' as never },
+        ],
+      }),
+      kept,
+      visibility,
+      at,
+    );
+    expect(taken.relationships).toEqual([{ kind: 'partner', people: ['p1', 'n1'], start: '2020' }]);
   });
 
   it('drops facts about a person the viewer does not keep', () => {

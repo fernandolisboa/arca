@@ -29,6 +29,11 @@ export const intakeReferenceSchema = z.string().regex(/^(?:n[0-9]{1,2}|\[P[0-9]{
 /** Whether a draft reference names a person new to the case (`n1`), not a known one. */
 export const isNewReference = (ref: string): boolean => /^n[0-9]{1,2}$/.test(ref);
 
+/** The roles whose new person usually belongs to the plan, so the screen starts them as members. */
+const planRoles: ReadonlySet<IntakeRole> = new Set(['self', 'spouse', 'partner', 'child']);
+export const startsInPlan = (role: IntakeRole | undefined): boolean =>
+  role !== undefined && planRoles.has(role);
+
 export const maxDraftPeople = 20;
 export const maxDraftRelationships = 40;
 
@@ -181,4 +186,33 @@ export function keepStatedDates(draft: IntakeDraft, maskedText: string): IntakeD
   };
   const cutDraft = intakeDraftSchema.safeParse(walk(draft, cut));
   return cutDraft.success ? cutDraft.data : intakeDraftSchema.parse(walk(draft, () => undefined));
+}
+
+/**
+ * The draft with the writer as their own person in the case: the model knows the writer only as
+ * someone new with the role `self`, unless the text names them. Left as it is when the draft lists
+ * that person already or proposes more than one writer.
+ */
+export function withWriter<Draft extends IntakeDraft>(draft: Draft, writerId: string): Draft {
+  const writers = draft.people.filter(({ ref, role }) => isNewReference(ref) && role === 'self');
+  const [writer] = writers;
+  if (writer === undefined || writers.length > 1) return draft;
+  if (draft.people.some(({ ref }) => ref === writerId)) return draft;
+  return renameDraft(draft, (ref) => (ref === writer.ref ? writerId : ref));
+}
+
+/** The draft with every reference renamed, such as placeholders to case IDs. */
+export function renameDraft<Draft extends IntakeDraft>(
+  draft: Draft,
+  rename: (ref: string) => string,
+): Draft {
+  return {
+    ...draft,
+    people: draft.people.map((person) => ({ ...person, ref: rename(person.ref) })),
+    relationships: draft.relationships.map((edge) =>
+      edge.kind === 'parent'
+        ? { ...edge, parent: rename(edge.parent), child: rename(edge.child) }
+        : { ...edge, people: edge.people.map(rename) },
+    ),
+  };
 }

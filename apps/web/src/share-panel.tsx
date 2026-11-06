@@ -11,6 +11,7 @@ import {
   type Sharing,
   type SharingView,
 } from './share-recipients.js';
+import { toggled } from './sets.js';
 
 /**
  * Whom one of the owner's documents is shared with (spec 0005, R4): each linked person with the
@@ -149,13 +150,6 @@ function RolledBackList({
     </ul>
   );
 }
-
-const toggled = (set: ReadonlySet<string>, accountId: string, on: boolean) => {
-  const next = new Set(set);
-  if (on) next.add(accountId);
-  else next.delete(accountId);
-  return next;
-};
 
 function ShareChoice({
   opened: { document },
