@@ -52,7 +52,7 @@ The first case is the founder's own family. The app goes to other families only 
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Components, code layout, data model, AI stack, agents, quality, data flows |
 | [docs/SECURITY.md](docs/SECURITY.md) | Security pillar: principles, standards, threat model, required controls |
 | [SECURITY.md](SECURITY.md) | How to report a vulnerability |
-| [docs/REVIEW.md](docs/REVIEW.md) | How changes are reviewed: the `code-review` skill and the security reviewer |
+| [docs/REVIEW.md](docs/REVIEW.md) | How changes are reviewed: the `code-review` skill and the security reviewers |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Phases and the gates between them |
 | [CONTEXT.md](CONTEXT.md) | Domain glossary: terms and their pt-BR UI labels |
 | [docs/OPEN-QUESTIONS.md](docs/OPEN-QUESTIONS.md) | Decisions still pending |
