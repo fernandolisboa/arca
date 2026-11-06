@@ -120,7 +120,24 @@ const writes: readonly [string, unknown, string, unknown][] = [
     'removeOwner',
     { assetId, personId: child },
   ],
+  [
+    '/case/questions/answers',
+    { personId: child, answers: [{ questionId: 'studying', answer: null }] },
+    'answerQuestions',
+    { personId: child, answers: [{ questionId: 'studying', answer: null }] },
+  ],
 ];
+
+const questions = {
+  people: [
+    {
+      personId: me,
+      steps: [{ id: 'basics', questions: [{ id: 'birthDate', answer: '1985-04' }] }],
+    },
+  ],
+  countries: ['BR'],
+  formerCountries: [],
+};
 
 function setup({
   confirmedAccount = true,
@@ -128,12 +145,14 @@ function setup({
   approved = true,
   outcome = { ok: true, view },
   left = 'left',
+  inCase = true,
 }: {
   confirmedAccount?: boolean;
   allowed?: boolean;
   approved?: boolean;
   outcome?: CaseWritten;
   left?: 'left' | 'not_found';
+  inCase?: boolean;
 } = {}) {
   const calls: unknown[][] = [];
   const spent: { purpose: string; action: CanonicalAction }[] = [];
@@ -157,6 +176,10 @@ function setup({
     view: (accountId: string) => {
       calls.push(['view', accountId]);
       return Promise.resolve(view);
+    },
+    questions: (accountId: string) => {
+      calls.push(['questions', accountId]);
+      return Promise.resolve(inCase ? questions : null);
     },
     leave: (accountId: string) => {
       calls.push(['leave', accountId]);
@@ -218,6 +241,18 @@ describe('the case routes (spec 0007, R3)', () => {
     expect(limited).toEqual([]);
   });
 
+  it('reads the guided questions without counting a write, and 404 outside a case', async () => {
+    const { call, calls, limited } = setup();
+    const response = await call('GET', '/case/questions');
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual(questions);
+    expect(calls).toEqual([['questions', owner.accountId]]);
+    expect(limited).toEqual([]);
+    const outside = await setup({ inCase: false }).call('GET', '/case/questions');
+    expect(outside.status).toBe(404);
+    expect(await errorOf(outside)).toBe('not_found');
+  });
+
   it.each(writes)(
     'POST %s calls the case and answers its view',
     async (path, body, method, arg) => {
@@ -266,11 +301,25 @@ describe('the case routes (spec 0007, R3)', () => {
       ['/case/people/profile', { personId: child, facts: { name: 'Alice' }, dependsOn: null }],
       ['/case/assets/owners', { assetId, personId: child, share: '1.5' }],
       ['/case/relationships', { kind: 'parent', from: me, to: me, details: {} }],
+      ['/case/questions/answers', { personId: child, answers: [] }],
+      [
+        '/case/questions/answers',
+        { personId: child, answers: [{ questionId: 'name', answer: 'A' }] },
+      ],
     ] as const) {
       const { call, calls } = setup();
       expect((await call('POST', path, body)).status, path).toBe(400);
       expect(calls).toEqual([]);
     }
+  });
+
+  it('refuses a case body over 256 KiB before parsing it', async () => {
+    const { call, calls } = setup();
+    const answers = [{ questionId: 'assets', answer: [{ note: 'x'.repeat(300 * 1024) }] }];
+    const response = await call('POST', '/case/questions/answers', { personId: child, answers });
+    expect(response.status).toBe(413);
+    expect(await errorOf(response)).toBe('too_large');
+    expect(calls).toEqual([]);
   });
 
   it('hands a person over only with a sensitive_settings step-up for the person and account', async () => {

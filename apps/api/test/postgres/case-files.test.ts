@@ -23,6 +23,7 @@ beforeAll(async () => {
     db: () => testDatabase.apiDb,
     audit: auditLog(testDatabase.auditDb),
     today: () => new Date('2026-11-06T12:00:00Z'),
+    countries: { countries: ['BR', 'PT', 'US'], formerCountries: ['YUCS'] },
   });
 });
 
@@ -589,6 +590,226 @@ describe('assets and owners', () => {
     expect(
       refusal(await files.addAsset(alice, { personId: people.alice, share: '1', asset: house })),
     ).toBe('case_limit');
+  });
+});
+
+describe('guided questions (spec 0007, R4)', () => {
+  const answersOf = async (accountId: string, personId: string) => {
+    const questions = await files.questions(accountId);
+    const person = questions?.people.find((entry) => entry.personId === personId);
+    return new Map(
+      person?.steps.flatMap(({ questions: asked }) => asked.map((q) => [q.id, q] as const)),
+    );
+  };
+
+  it('lists the questions of the people the viewer keeps, in flow order', async () => {
+    const { alice, bruno, people } = await family();
+    const questions = await files.questions(alice);
+    expect(questions?.people.map(({ personId }) => personId)).toEqual([people.alice, people.child]);
+    expect(questions?.people[0]?.steps.map(({ id }) => id)).toEqual([
+      'basics',
+      'studies',
+      'work',
+      'finances',
+      'history',
+      'family',
+    ]);
+    expect(questions?.countries).toEqual(['BR', 'PT', 'US']);
+    expect((await files.questions(bruno))?.people.map(({ personId }) => personId)).toEqual([
+      people.bruno,
+    ]);
+    expect(await files.questions(await account())).toBeNull();
+  });
+
+  it('saves a step, reads it back, and takes "Não sei" as unknown', async () => {
+    const { alice, people } = await family();
+    viewOf(
+      await files.answerQuestions(alice, {
+        personId: people.child,
+        answers: [
+          { questionId: 'birthDate', answer: '2015-03' },
+          { questionId: 'citizenships', answer: [{ country: 'BR', basis: 'birth' }] },
+          { questionId: 'dependsOn', answer: [people.alice] },
+          {
+            questionId: 'incomes',
+            answer: [
+              {
+                kind: 'passive',
+                monthly: { amount: '120.5', currency: 'BRL' },
+                sourceCountry: 'BR',
+              },
+            ],
+          },
+        ],
+      }),
+    );
+    const answered = await answersOf(alice, people.child);
+    expect(answered.get('birthDate')?.answer).toBe('2015-03');
+    expect(answered.get('dependsOn')?.answer).toEqual([people.alice]);
+    expect(answered.get('incomes')?.answer).toEqual([
+      { kind: 'passive', monthly: { amount: '120.5', currency: 'BRL' }, sourceCountry: 'BR' },
+    ]);
+    expect(answered.get('studying')?.answer).toBeUndefined();
+    const view = viewOf(
+      await files.answerQuestions(alice, {
+        personId: people.child,
+        answers: [{ questionId: 'birthDate', answer: null }],
+      }),
+    );
+    expect(view.people.find(({ id }) => id === people.child)?.profile?.facts).toEqual({
+      citizenships: [{ country: 'BR', basis: 'birth' }],
+    });
+    expect(view.people.find(({ id }) => id === people.child)?.finances?.incomes).toEqual([
+      { kind: 'passive', monthly: { amount: 12050, currency: 'BRL' }, sourceCountry: 'BR' },
+    ]);
+  });
+
+  it('marks the children recorded in full only on yes, naming them', async () => {
+    const { alice, people } = await family();
+    viewOf(
+      await files.addRelationship(alice, {
+        kind: 'parent',
+        from: people.alice,
+        to: people.child,
+        details: {},
+      }),
+    );
+    expect((await answersOf(alice, people.alice)).get('allChildren')?.related).toEqual([
+      people.child,
+    ]);
+    const view = viewOf(
+      await files.answerQuestions(alice, {
+        personId: people.alice,
+        answers: [
+          { questionId: 'allChildren', answer: true },
+          { questionId: 'allSpouses', answer: false },
+        ],
+      }),
+    );
+    expect(
+      view.people.find(({ id }) => id === people.alice)?.profile?.facts.recordedInFull,
+    ).toEqual(['children']);
+  });
+
+  it('adds, changes and drops the assets a person holds, and edits relationship details', async () => {
+    const { alice, people } = await family();
+    viewOf(
+      await files.addRelationship(alice, {
+        kind: 'parent',
+        from: people.alice,
+        to: people.child,
+        details: {},
+      }),
+    );
+    const cash = {
+      kind: 'cash',
+      value: { amount: '1000', currency: 'BRL' },
+      valuedAt: '2026-11-01',
+    };
+    const added = viewOf(
+      await files.answerQuestions(alice, {
+        personId: people.alice,
+        answers: [{ questionId: 'assets', answer: [{ ...cash, share: '1' }] }],
+      }),
+    );
+    expect(added.assets.map(({ asset }) => asset.value)).toEqual([
+      { amount: 100000, currency: 'BRL' },
+    ]);
+    const [held] = (await answersOf(alice, people.alice)).get('assets')?.answer as {
+      id: string;
+    }[];
+    const [relationship] = (await answersOf(alice, people.alice)).get('relationships')
+      ?.answer as Record<string, unknown>[];
+    const changed = viewOf(
+      await files.answerQuestions(alice, {
+        personId: people.alice,
+        answers: [
+          {
+            questionId: 'assets',
+            answer: [
+              { ...cash, id: held?.id, value: { amount: '2000', currency: 'BRL' }, share: '1' },
+            ],
+          },
+          {
+            questionId: 'relationships',
+            answer: [{ ...relationship, parentKind: 'adoptive', start: '2016' }],
+          },
+        ],
+      }),
+    );
+    expect(changed.assets.map(({ id, asset }) => [id, asset.value.amount])).toEqual([
+      [held?.id, 200000],
+    ]);
+    expect(changed.relationships[0]?.relationship.details).toEqual({
+      parentKind: 'adoptive',
+      start: '2016',
+    });
+    const unnamed = viewOf(
+      await files.answerQuestions(alice, {
+        personId: people.alice,
+        answers: [{ questionId: 'assets', answer: [] }],
+      }),
+    );
+    expect(unnamed.assets.map(({ id }) => id)).toEqual([held?.id]);
+    const dropped = viewOf(
+      await files.answerQuestions(alice, {
+        personId: people.alice,
+        answers: [{ questionId: 'assets', answer: [{ id: held?.id, dropped: true }] }],
+      }),
+    );
+    expect(dropped.assets).toEqual([]);
+  });
+
+  it("drops only the person's own share of a co-owned asset, within the shares left", async () => {
+    const { alice, bruno, people } = await family();
+    const added = viewOf(
+      await files.addAsset(alice, { personId: people.alice, share: '0.5', asset: house }),
+    );
+    const assetId = added.assets[0]?.id ?? '';
+    viewOf(await files.setOwner(alice, { assetId, personId: people.bruno, share: '0.5' }));
+    viewOf(await files.confirmOwner(bruno, { assetId, personId: people.bruno }));
+    const held = (await answersOf(alice, people.alice)).get('assets')?.answer as Record<
+      string,
+      unknown
+    >[];
+    expect(held.map(({ id, share }) => [id, share])).toEqual([[assetId, '0.500000']]);
+    expect(
+      refusal(
+        await files.answerQuestions(alice, {
+          personId: people.alice,
+          answers: [{ questionId: 'assets', answer: [{ ...held[0], share: '0.75' }] }],
+        }),
+      ),
+    ).toBe('case_limit');
+    const dropped = viewOf(
+      await files.answerQuestions(alice, {
+        personId: people.alice,
+        answers: [{ questionId: 'assets', answer: [{ id: assetId, dropped: true }] }],
+      }),
+    );
+    expect(dropped.assets).toEqual([]);
+    expect((await files.view(bruno))?.assets[0]?.owners).toEqual([
+      { personId: people.bruno, share: '0.500000', confirmed: true },
+    ]);
+  });
+
+  it('refuses answers that do not fit, and people the viewer does not keep', async () => {
+    const { alice, people } = await family();
+    const answer = async (personId: string, questionId: 'residenceCountry', value: unknown) =>
+      refusal(
+        await files.answerQuestions(alice, { personId, answers: [{ questionId, answer: value }] }),
+      );
+    expect(await answer(people.alice, 'residenceCountry', 'IT')).toBe('case_invalid');
+    expect(await answer(people.bruno, 'residenceCountry', 'BR')).toBe('not_found');
+    expect(await answer(randomUUID(), 'residenceCountry', 'BR')).toBe('not_found');
+    expect(
+      refusal(
+        await files.answerQuestions(alice, {
+          personId: people.alice,
+          answers: [{ questionId: 'dependsOn', answer: [people.alice] }],
+        }),
+      ),
+    ).toBe('case_invalid');
   });
 });
 

@@ -1,6 +1,8 @@
 import type {
   AddCaseMemberRequest,
+  AnswerCaseQuestionsRequest,
   AuditEventCode,
+  CaseQuestions,
   CaseView,
   HandOverCasePersonRequest,
 } from '@arca/api-contract/routes';
@@ -17,6 +19,11 @@ import type {
 } from '@arca/api-contract/routes';
 import { withIdentity, type Database, type Transaction } from '@arca/db';
 import {
+  type HeldAsset,
+  type StoredFinances,
+  type StoredProfile,
+  applyAnswers,
+  heldAssetChanges,
   maxCaseMembers,
   maxCasePeople,
   maxCaseRelationships,
@@ -25,11 +32,14 @@ import {
   type StoredRelationship,
   parseCalendarDate,
   shareScopes,
+  questionFlow,
   validCaseStructure,
 } from '@arca/domain';
+import type { PinnedCountries } from '@arca/knowledge';
 import { type SQL, sql } from 'drizzle-orm';
 import type { z } from 'zod';
 import type { AuditLog, AuditRecord } from '../audit/log.js';
+import { caseQuestions, questionState } from './questions.js';
 import { type CaseRows, caseView, memberCase, readCase } from './view.js';
 
 /** Why a write was refused; each answers one status, and says nothing of a hidden row. */
@@ -106,6 +116,12 @@ export interface CaseFiles {
     accountId: string,
     request: Request<typeof CaseAssetOwnerReference>,
   ) => Promise<CaseWritten>;
+  /** The guided questions of the people the account keeps; null outside a case. */
+  readonly questions: (accountId: string) => Promise<CaseQuestions | null>;
+  readonly answerQuestions: (
+    accountId: string,
+    request: AnswerCaseQuestionsRequest,
+  ) => Promise<CaseWritten>;
   /** Deletes the account's member row, and with it every person it keeps. */
   readonly leave: (accountId: string) => Promise<'left' | 'not_found'>;
 }
@@ -116,6 +132,8 @@ export interface CaseFilesSettings {
   readonly audit: AuditLog;
   /** Today, which the structure checks read the case as of. */
   readonly today: () => Date;
+  /** The pinned countries the guided questions offer and accept. */
+  readonly countries: PinnedCountries;
 }
 
 /** The snapshot's limits that every member can count (spec 0007, R1); the rest are the definer's. */
@@ -190,7 +208,115 @@ const lockCase = (tx: Transaction, caseId: string) =>
     sql`SELECT pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(${`cases.case_file:${caseId}`}, 0))`,
   );
 
-export function createCaseFiles({ db, audit, today }: CaseFilesSettings): CaseFiles {
+/** Replaces a person's facts and dependence; dependence names other people of the case. */
+async function saveProfile(
+  tx: Transaction,
+  rows: CaseRows,
+  personId: string,
+  facts: StoredProfile['facts'],
+  dependsOn: readonly string[] | null,
+) {
+  const known = new Set(rows.people.map(({ id }) => id));
+  refuseUnless(
+    dependsOn === null ||
+      (new Set(dependsOn).size === dependsOn.length &&
+        dependsOn.every((id) => id !== personId && known.has(id))),
+    'case_invalid',
+  );
+  await tx.execute(sql`
+    INSERT INTO cases.person_profile (person_id, facts, dependence_answered)
+    VALUES (${personId}, ${JSON.stringify(facts)}::jsonb, ${dependsOn !== null})
+    ON CONFLICT (person_id) DO UPDATE
+      SET facts = excluded.facts, dependence_answered = excluded.dependence_answered,
+          updated_at = now()`);
+  await tx.execute(sql`DELETE FROM cases.dependence WHERE person_id = ${personId}`);
+  if (dependsOn !== null && dependsOn.length > 0) {
+    await tx.execute(sql`
+      INSERT INTO cases.dependence (case_id, person_id, depends_on_id)
+      VALUES ${sql.join(
+        dependsOn.map((id) => sql`(${rows.caseId}, ${personId}, ${id})`),
+        sql`, `,
+      )}`);
+  }
+}
+
+async function saveFinances(
+  tx: Transaction,
+  personId: string,
+  { incomes, assetsRecordedInFull }: StoredFinances,
+) {
+  const stored = incomes === undefined ? null : JSON.stringify(incomes);
+  await tx.execute(sql`
+    INSERT INTO cases.person_finances (person_id, incomes, assets_recorded_in_full)
+    VALUES (${personId}, ${stored}::jsonb, ${assetsRecordedInFull})
+    ON CONFLICT (person_id) DO UPDATE
+      SET incomes = excluded.incomes,
+          assets_recorded_in_full = excluded.assets_recorded_in_full, updated_at = now()`);
+}
+
+async function insertAsset(tx: Transaction, personId: string, share: string, asset: StoredAsset) {
+  const fields = assetColumns(asset);
+  const added = await tx.execute<{ id: string | null }>(sql`
+    SELECT cases.add_asset(${personId}, ${share}::numeric, ${fields.kind},
+                           ${fields.amount}::bigint, ${fields.currency},
+                           ${fields.valuedAt}::date, ${fields.liquid}::boolean,
+                           ${fields.sold}::text) AS id`);
+  refuseUnless((added.rows[0]?.id ?? null) !== null, 'not_found');
+}
+
+async function updateAssetRow(tx: Transaction, assetId: string, asset: StoredAsset) {
+  const fields = assetColumns(asset);
+  refuseUnless(
+    await one(
+      tx,
+      sql`
+        UPDATE cases.asset
+           SET kind = ${fields.kind}, value_amount = ${fields.amount},
+               value_currency = ${fields.currency}, valued_at = ${fields.valuedAt}::date,
+               liquid = ${fields.liquid}, sold = ${fields.sold}, updated_at = now()
+         WHERE id = ${assetId} RETURNING id`,
+    ),
+    'not_found',
+  );
+}
+
+async function setOwnerShare(tx: Transaction, assetId: string, personId: string, share: string) {
+  const set = await tx.execute<{ set: boolean }>(
+    sql`SELECT cases.set_owner(${assetId}, ${personId}, ${share}::numeric) AS set`,
+  );
+  refuseUnless(set.rows[0]?.set === true, 'not_found');
+}
+
+async function deleteOwnerRow(tx: Transaction, assetId: string, personId: string) {
+  refuseUnless(
+    await one(
+      tx,
+      sql`
+        DELETE FROM cases.asset_owner
+         WHERE asset_id = ${assetId} AND person_id = ${personId} RETURNING asset_id`,
+    ),
+    'not_found',
+  );
+}
+
+async function saveHeldAssets(
+  tx: Transaction,
+  personId: string,
+  before: readonly HeldAsset[],
+  after: readonly HeldAsset[],
+) {
+  const { dropped, added, updated, reshared } = heldAssetChanges(before, after);
+  for (const id of dropped) await deleteOwnerRow(tx, id, personId);
+  for (const { share, asset } of added) await insertAsset(tx, personId, share, asset);
+  for (const { id, asset } of updated) await updateAssetRow(tx, id, asset);
+  for (const { id, share } of reshared) await setOwnerShare(tx, id, personId, share);
+}
+
+export function createCaseFiles({ db, audit, today, countries }: CaseFilesSettings): CaseFiles {
+  const known = {
+    countries: new Set(countries.countries),
+    formerCountries: new Set(countries.formerCountries),
+  };
   /**
    * Runs one write in the viewer's case under its lock, then records its events once it
    * committed. `work` throws `Refused` to roll back with a refusal.
@@ -340,41 +466,14 @@ export function createCaseFiles({ db, audit, today }: CaseFilesSettings): CaseFi
     writeProfile: (accountId, { personId, facts, dependsOn }) =>
       write(accountId, async (tx, rows) => {
         keptPerson(rows, personId);
-        const known = new Set(rows.people.map(({ id }) => id));
-        refuseUnless(
-          dependsOn === null ||
-            (new Set(dependsOn).size === dependsOn.length &&
-              dependsOn.every((id) => id !== personId && known.has(id))),
-          'case_invalid',
-        );
-        await tx.execute(sql`
-          INSERT INTO cases.person_profile (person_id, facts, dependence_answered)
-          VALUES (${personId}, ${JSON.stringify(facts)}::jsonb, ${dependsOn !== null})
-          ON CONFLICT (person_id) DO UPDATE
-            SET facts = excluded.facts, dependence_answered = excluded.dependence_answered,
-                updated_at = now()`);
-        await tx.execute(sql`DELETE FROM cases.dependence WHERE person_id = ${personId}`);
-        if (dependsOn !== null && dependsOn.length > 0) {
-          await tx.execute(sql`
-            INSERT INTO cases.dependence (case_id, person_id, depends_on_id)
-            VALUES ${sql.join(
-              dependsOn.map((id) => sql`(${rows.caseId}, ${personId}, ${id})`),
-              sql`, `,
-            )}`);
-        }
+        await saveProfile(tx, rows, personId, facts, dependsOn);
         return [];
       }),
 
-    writeFinances: (accountId, { personId, incomes, assetsRecordedInFull }) =>
+    writeFinances: (accountId, { personId, ...finances }) =>
       write(accountId, async (tx, rows) => {
         keptPerson(rows, personId);
-        const stored = incomes === undefined ? null : JSON.stringify(incomes);
-        await tx.execute(sql`
-          INSERT INTO cases.person_finances (person_id, incomes, assets_recorded_in_full)
-          VALUES (${personId}, ${stored}::jsonb, ${assetsRecordedInFull})
-          ON CONFLICT (person_id) DO UPDATE
-            SET incomes = excluded.incomes,
-                assets_recorded_in_full = excluded.assets_recorded_in_full, updated_at = now()`);
+        await saveFinances(tx, personId, finances);
         return [];
       }),
 
@@ -448,31 +547,13 @@ export function createCaseFiles({ db, audit, today }: CaseFilesSettings): CaseFi
 
     addAsset: (accountId, { personId, share, asset }) =>
       write(accountId, async (tx) => {
-        const fields = assetColumns(asset);
-        const added = await tx.execute<{ id: string | null }>(sql`
-          SELECT cases.add_asset(${personId}, ${share}::numeric, ${fields.kind},
-                                 ${fields.amount}::bigint, ${fields.currency},
-                                 ${fields.valuedAt}::date, ${fields.liquid}::boolean,
-                                 ${fields.sold}::text) AS id`);
-        refuseUnless((added.rows[0]?.id ?? null) !== null, 'not_found');
+        await insertAsset(tx, personId, share, asset);
         return [];
       }),
 
     updateAsset: (accountId, { assetId, asset }) =>
       write(accountId, async (tx) => {
-        const fields = assetColumns(asset);
-        refuseUnless(
-          await one(
-            tx,
-            sql`
-              UPDATE cases.asset
-                 SET kind = ${fields.kind}, value_amount = ${fields.amount},
-                     value_currency = ${fields.currency}, valued_at = ${fields.valuedAt}::date,
-                     liquid = ${fields.liquid}, sold = ${fields.sold}, updated_at = now()
-               WHERE id = ${assetId} RETURNING id`,
-          ),
-          'not_found',
-        );
+        await updateAssetRow(tx, assetId, asset);
         return [];
       }),
 
@@ -487,10 +568,7 @@ export function createCaseFiles({ db, audit, today }: CaseFilesSettings): CaseFi
 
     setOwner: (accountId, { assetId, personId, share }) =>
       write(accountId, async (tx) => {
-        const set = await tx.execute<{ set: boolean }>(
-          sql`SELECT cases.set_owner(${assetId}, ${personId}, ${share}::numeric) AS set`,
-        );
-        refuseUnless(set.rows[0]?.set === true, 'not_found');
+        await setOwnerShare(tx, assetId, personId, share);
         return [];
       }),
 
@@ -510,15 +588,60 @@ export function createCaseFiles({ db, audit, today }: CaseFilesSettings): CaseFi
 
     removeOwner: (accountId, { assetId, personId }) =>
       write(accountId, async (tx) => {
-        refuseUnless(
-          await one(
-            tx,
-            sql`
-              DELETE FROM cases.asset_owner
-               WHERE asset_id = ${assetId} AND person_id = ${personId} RETURNING asset_id`,
+        await deleteOwnerRow(tx, assetId, personId);
+        return [];
+      }),
+
+    questions: (accountId) =>
+      withIdentity(db(), { accountId }, async (tx) => {
+        const rows = await readCase(tx, accountId);
+        return rows === undefined ? null : caseQuestions(rows, countries);
+      }),
+
+    answerQuestions: (accountId, { personId, answers }) =>
+      write(accountId, async (tx, rows) => {
+        keptPerson(rows, personId);
+        const before = questionState(rows, personId);
+        const applied = applyAnswers(before, answers, known);
+        refuseUnless(applied.ok, 'case_invalid');
+        if (!applied.ok) return [];
+        const after = applied.state;
+        const answered = new Set(
+          answers.flatMap(({ questionId }) =>
+            questionFlow.filter(({ id }) => id === questionId).map(({ target }) => target.kind),
           ),
-          'not_found',
         );
+        if (answered.has('fact') || answered.has('marker') || answered.has('dependence')) {
+          await saveProfile(tx, rows, personId, after.facts, after.dependsOn);
+        }
+        if ((answered.has('incomes') || answered.has('assetsMarker')) && after.finances) {
+          await saveFinances(tx, personId, after.finances);
+        }
+        if (answered.has('assets')) await saveHeldAssets(tx, personId, before.assets, after.assets);
+        if (answered.has('relationships')) {
+          const details = new Map(after.relationships.map((row) => [row.id, row.relationship]));
+          const relationships = rows.relationships.map(({ id, ...relationship }) => ({
+            id,
+            ...(details.get(id) ?? relationship),
+          }));
+          refuseUnless(
+            validCaseStructure(rows.people, relationships, isoDate(today())),
+            'case_invalid',
+          );
+          const stored = new Map(before.relationships.map((row) => [row.id, row.relationship]));
+          for (const { id, relationship } of after.relationships) {
+            const details = JSON.stringify(relationship.details);
+            if (details === JSON.stringify(stored.get(id)?.details)) continue;
+            refuseUnless(
+              await one(
+                tx,
+                sql`UPDATE cases.relationship SET details = ${details}::jsonb
+                     WHERE id = ${id} RETURNING id`,
+              ),
+              'not_found',
+            );
+          }
+        }
         return [];
       }),
 

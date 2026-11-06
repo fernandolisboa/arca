@@ -598,6 +598,13 @@ export function createApp({
     return next();
   });
   v1.use('*', restrictWhilePending);
+  // A case write is a few kilobytes; the cap keeps a member from making the API parse megabytes.
+  const caseBodies = bodyLimit({
+    maxSize: 256 * 1024,
+    onError: (c: Context<AppEnv>) => reject(c, 'too_large', 413),
+  });
+  v1.use('/case', caseBodies);
+  v1.use('/case/*', caseBodies);
 
   v1.openapi(openApiRoutes.session, async (c) => {
     if (auth === undefined) return unauthorized(c);
@@ -1279,6 +1286,17 @@ export function createApp({
     openApiRoutes.removeCaseAssetOwner,
     caseRoutes.removeCaseAssetOwner.body,
     (files, id, request) => files.removeOwner(id, request),
+  );
+  v1.openapi(openApiRoutes.getCaseQuestions, async (c) => {
+    const account = await caseAccount(c, false);
+    if ('refused' in account) return account.refused;
+    const questions = await account.cases.questions(account.current.accountId);
+    return questions === null ? fail(c, 'not_found', 404) : c.json(questions, 200);
+  });
+  caseWrite(
+    openApiRoutes.answerCaseQuestions,
+    caseRoutes.answerCaseQuestions.body,
+    (files, id, request) => files.answerQuestions(id, request),
   );
   v1.openapi(openApiRoutes.leaveCase, async (c) => {
     const account = await caseAccount(c, true);

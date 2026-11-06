@@ -40,7 +40,14 @@ export interface ValidatedData {
   readonly hashes: ReadonlyMap<string, string>;
   /** Every route version and country set path that would have a hash, valid or not. */
   readonly hashable: ReadonlySet<string>;
+  /** The latest countries and former countries, which the guided questions offer (spec 0007, R4). */
+  readonly countries: PinnedCountries;
   readonly issues: readonly Issue[];
+}
+
+export interface PinnedCountries {
+  readonly countries: readonly string[];
+  readonly formerCountries: readonly string[];
 }
 
 type Parsed =
@@ -138,7 +145,21 @@ class Validation {
         .filter((file) => file.kind === 'country-sets' || file.kind === 'routes')
         .map((file) => withoutExtension(file.file)),
     );
-    return { entries, hashes, hashable, issues: this.issues };
+    return { entries, hashes, hashable, countries: this.latestCountries(), issues: this.issues };
+  }
+
+  private latestCountries(): PinnedCountries {
+    const latest = (kind: 'countries' | 'former-countries') =>
+      [...this.parsed.values()]
+        .flatMap((file) =>
+          (file.kind === 'countries' || file.kind === 'former-countries') &&
+          file.kind === kind &&
+          !this.failed.has(file.raw.file)
+            ? [file]
+            : [],
+        )
+        .sort((left, right) => right.raw.number - left.raw.number)[0]?.data.codes ?? [];
+    return { countries: latest('countries'), formerCountries: latest('former-countries') };
   }
 
   private parse(file: RawFile): void {

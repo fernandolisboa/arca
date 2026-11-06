@@ -1,7 +1,11 @@
 import {
+  countryCodeSchema,
   displayNameSchema,
   maxCaseMembers,
   maxCasePeople,
+  questionFlow,
+  questionIds,
+  questionSteps,
   shareScopeSchema,
   storedAssetSchema,
   storedFinancesSchema,
@@ -131,6 +135,47 @@ export type AddCaseMemberRequest = z.infer<typeof AddCaseMemberRequest>;
 
 export const LeaveCaseResponse = z.object({});
 
+/**
+ * The guided questions of every person the viewer keeps (spec 0007, R4), in flow order, with each
+ * one's answer while it has one. An answer has the stored shape, but for amounts, decimal strings
+ * in the currency's units, and assets and relationships, which carry their IDs. The flow's
+ * definitions are `questionFlow`.
+ */
+export const CaseQuestions = z.object({
+  people: z.array(
+    z.object({
+      personId: z.uuid(),
+      steps: z.array(
+        z.object({
+          id: z.enum(questionSteps),
+          questions: z.array(
+            z.object({
+              id: z.enum(questionIds),
+              answer: z.unknown().optional(),
+              /** For a completeness question, the people it is about. */
+              related: z.array(z.uuid()).optional(),
+            }),
+          ),
+        }),
+      ),
+    }),
+  ),
+  /** The pinned countries, and the former states a citizenship may name. */
+  countries: z.array(countryCodeSchema),
+  formerCountries: z.array(countryCodeSchema),
+});
+export type CaseQuestions = z.infer<typeof CaseQuestions>;
+
+/** One step's answers; null is "Não sei". */
+export const AnswerCaseQuestionsRequest = z.strictObject({
+  ...person,
+  answers: z
+    .array(z.strictObject({ questionId: z.enum(questionIds), answer: z.unknown() }))
+    .min(1)
+    .max(questionFlow.length),
+});
+export type AnswerCaseQuestionsRequest = z.infer<typeof AnswerCaseQuestionsRequest>;
+
 const view = { description: 'The case as the viewer now sees it', schema: CaseResponse };
 const write = <Path extends `/case${string}`, Body extends z.ZodType>(
   path: Path,
@@ -258,6 +303,21 @@ export const removeCaseAssetOwner = write(
   CaseAssetOwnerReference,
 );
 
+export const getCaseQuestions = {
+  method: 'get',
+  path: '/case/questions',
+  operationId: 'getCaseQuestions',
+  summary:
+    'The guided questions of every person the viewer keeps, with their answers, and the countries they offer; 404 not_found outside a case',
+  response: { description: 'The guided questions', schema: CaseQuestions },
+} as const satisfies RouteDefinition<typeof CaseQuestions>;
+export const answerCaseQuestions = write(
+  '/case/questions/answers',
+  'answerCaseQuestions',
+  "Saves answers to the guided questions of a person the viewer keeps: facts, dependence, finances, the assets the person holds a confirmed share of (an asset left out loses the person's owner row) and their relationships' details; 409 case_invalid when an answer does not fit its question, 409 case_limit as for assets",
+  AnswerCaseQuestionsRequest,
+);
+
 export const leaveCase = {
   method: 'post',
   path: '/case/leave',
@@ -302,5 +362,23 @@ export const caseRoutes = {
   setCaseAssetOwner,
   confirmCaseAssetOwner,
   removeCaseAssetOwner,
+  getCaseQuestions,
+  answerCaseQuestions,
   leaveCase,
 } as const;
+
+export {
+  type ChoiceSet,
+  type FieldInput,
+  type Question,
+  type QuestionField,
+  type QuestionId,
+  type QuestionInput,
+  type QuestionStep,
+  answerCanBeUnknown,
+  choiceSets,
+  currencyCodes,
+  languageCodes,
+  questionFlow,
+  questionSteps,
+} from '@arca/domain';

@@ -157,6 +157,11 @@ function FamilyCase({ view, accountId }: { readonly view: CaseView; readonly acc
   return (
     <>
       <FamilyNews view={view} accountId={accountId} />
+      {view.people.some((person) => person.keptByMe) && (
+        <Link to="/family/questions" className={textLinkClass}>
+          {t('family.questions')}
+        </Link>
+      )}
       <ul className="flex flex-col gap-3" aria-label={t('family.peopleTitle')}>
         {view.people.map((person) => (
           <PersonCard

@@ -1,4 +1,5 @@
 import { createI18n, type I18n } from '@arca/i18n';
+import { pinnedCountries } from '@arca/knowledge';
 import { useRuntimeConfig } from 'nitro/runtime-config';
 import { createDataExports } from './account/data-export.js';
 import { createAccountDeletion, type AccountDeletion } from './account/deletion.js';
@@ -373,6 +374,7 @@ const app = createApp({
     db: () => connected().db,
     audit: { record: async (entry) => (await authParts()).audit.record(entry) },
     today: () => new Date(),
+    countries: pinnedCountries,
   }),
   accountConfirmed: (accountId) => accounts.isConfirmed(authConnection(), accountId),
   notifications: {

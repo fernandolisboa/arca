@@ -26185,6 +26185,1270 @@
         }
       }
     },
+    "/case/questions": {
+      "get": {
+        "operationId": "getCaseQuestions",
+        "summary": "The guided questions of every person the viewer keeps, with their answers, and the countries they offer; 404 not_found outside a case",
+        "responses": {
+          "200": {
+            "description": "The guided questions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "people": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "personId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "steps": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "enum": [
+                                    "basics",
+                                    "studies",
+                                    "work",
+                                    "finances",
+                                    "history",
+                                    "family"
+                                  ]
+                                },
+                                "questions": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string",
+                                        "enum": [
+                                          "birthDate",
+                                          "citizenships",
+                                          "residenceCountry",
+                                          "educationLevel",
+                                          "studying",
+                                          "languages",
+                                          "jobOffers",
+                                          "incomes",
+                                          "dependsOn",
+                                          "assets",
+                                          "allAssets",
+                                          "immigrationHistory",
+                                          "allSpouses",
+                                          "allPartners",
+                                          "allChildren",
+                                          "allParents",
+                                          "relationships"
+                                        ]
+                                      },
+                                      "answer": {},
+                                      "related": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string",
+                                          "format": "uuid"
+                                        }
+                                      }
+                                    },
+                                    "required": [
+                                      "id"
+                                    ]
+                                  }
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "questions"
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "personId",
+                          "steps"
+                        ]
+                      }
+                    },
+                    "countries": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                      }
+                    },
+                    "formerCountries": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                      }
+                    }
+                  },
+                  "required": [
+                    "people",
+                    "countries",
+                    "formerCountries"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/case/questions/answers": {
+      "post": {
+        "operationId": "answerCaseQuestions",
+        "summary": "Saves answers to the guided questions of a person the viewer keeps: facts, dependence, finances, the assets the person holds a confirmed share of (an asset left out loses the person's owner row) and their relationships' details; 409 case_invalid when an answer does not fit its question, 409 case_limit as for assets",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "personId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "answers": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "questionId": {
+                          "type": "string",
+                          "enum": [
+                            "birthDate",
+                            "citizenships",
+                            "residenceCountry",
+                            "educationLevel",
+                            "studying",
+                            "languages",
+                            "jobOffers",
+                            "incomes",
+                            "dependsOn",
+                            "assets",
+                            "allAssets",
+                            "immigrationHistory",
+                            "allSpouses",
+                            "allPartners",
+                            "allChildren",
+                            "allParents",
+                            "relationships"
+                          ]
+                        },
+                        "answer": {}
+                      },
+                      "required": [
+                        "questionId"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 17
+                  }
+                },
+                "required": [
+                  "personId",
+                  "answers"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The case as the viewer now sees it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "case": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "caseId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "me": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "people": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "displayName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 80
+                              },
+                              "caseMember": {
+                                "type": "boolean"
+                              },
+                              "accountId": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "format": "uuid"
+                              },
+                              "keptByMe": {
+                                "type": "boolean"
+                              },
+                              "profile": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "facts": {
+                                    "type": "object",
+                                    "properties": {
+                                      "birthDate": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                          },
+                                          {
+                                            "type": "string",
+                                            "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                          }
+                                        ]
+                                      },
+                                      "citizenships": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "acquired": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "lost": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "basis": {
+                                              "type": "string",
+                                              "enum": [
+                                                "birth",
+                                                "descent",
+                                                "naturalization",
+                                                "marriage",
+                                                "investment",
+                                                "other"
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "country"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 10
+                                      },
+                                      "residenceCountry": {
+                                        "type": "string",
+                                        "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                      },
+                                      "educationLevel": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 8
+                                      },
+                                      "languages": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "language": {
+                                              "type": "string",
+                                              "pattern": "^[a-z]{2,3}$"
+                                            },
+                                            "level": {
+                                              "type": "string",
+                                              "enum": [
+                                                "A1",
+                                                "A2",
+                                                "B1",
+                                                "B2",
+                                                "C1",
+                                                "C2",
+                                                "native"
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "language",
+                                            "level"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "immigrationHistory": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "kind": {
+                                              "type": "string",
+                                              "enum": [
+                                                "visa_refusal",
+                                                "entry_refusal",
+                                                "overstay",
+                                                "removal",
+                                                "visa_granted",
+                                                "residence_granted"
+                                              ]
+                                            },
+                                            "date": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "country",
+                                            "kind"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 50
+                                      },
+                                      "jobOffers": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "sector": {
+                                              "type": "string",
+                                              "enum": [
+                                                "A",
+                                                "B",
+                                                "C",
+                                                "D",
+                                                "E",
+                                                "F",
+                                                "G",
+                                                "H",
+                                                "I",
+                                                "J",
+                                                "K",
+                                                "L",
+                                                "M",
+                                                "N",
+                                                "O",
+                                                "P",
+                                                "Q",
+                                                "R",
+                                                "S",
+                                                "T",
+                                                "U"
+                                              ]
+                                            },
+                                            "temporary": {
+                                              "type": "boolean"
+                                            }
+                                          },
+                                          "required": [
+                                            "country",
+                                            "sector",
+                                            "temporary"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 10
+                                      },
+                                      "studying": {
+                                        "type": "boolean"
+                                      },
+                                      "recordedInFull": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string",
+                                          "enum": [
+                                            "spouses",
+                                            "partners",
+                                            "children",
+                                            "parents"
+                                          ]
+                                        },
+                                        "maxItems": 4
+                                      }
+                                    },
+                                    "additionalProperties": false
+                                  },
+                                  "dependsOn": {
+                                    "type": [
+                                      "array",
+                                      "null"
+                                    ],
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 20
+                                  }
+                                },
+                                "required": [
+                                  "facts",
+                                  "dependsOn"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "finances": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "incomes": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "enum": [
+                                            "active",
+                                            "passive"
+                                          ]
+                                        },
+                                        "monthly": {
+                                          "type": "object",
+                                          "properties": {
+                                            "amount": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 9007199254740991
+                                            },
+                                            "currency": {
+                                              "type": "string",
+                                              "enum": [
+                                                "AED",
+                                                "AFN",
+                                                "ALL",
+                                                "AMD",
+                                                "AOA",
+                                                "ARS",
+                                                "AUD",
+                                                "AWG",
+                                                "AZN",
+                                                "BAM",
+                                                "BBD",
+                                                "BDT",
+                                                "BHD",
+                                                "BIF",
+                                                "BMD",
+                                                "BND",
+                                                "BOB",
+                                                "BOV",
+                                                "BRL",
+                                                "BSD",
+                                                "BTN",
+                                                "BWP",
+                                                "BYN",
+                                                "BZD",
+                                                "CAD",
+                                                "CDF",
+                                                "CHE",
+                                                "CHF",
+                                                "CHW",
+                                                "CLF",
+                                                "CLP",
+                                                "CNY",
+                                                "COP",
+                                                "COU",
+                                                "CRC",
+                                                "CUP",
+                                                "CVE",
+                                                "CZK",
+                                                "DJF",
+                                                "DKK",
+                                                "DOP",
+                                                "DZD",
+                                                "EGP",
+                                                "ERN",
+                                                "ETB",
+                                                "EUR",
+                                                "FJD",
+                                                "FKP",
+                                                "GBP",
+                                                "GEL",
+                                                "GHS",
+                                                "GIP",
+                                                "GMD",
+                                                "GNF",
+                                                "GTQ",
+                                                "GYD",
+                                                "HKD",
+                                                "HNL",
+                                                "HTG",
+                                                "HUF",
+                                                "IDR",
+                                                "ILS",
+                                                "INR",
+                                                "IQD",
+                                                "IRR",
+                                                "ISK",
+                                                "JMD",
+                                                "JOD",
+                                                "JPY",
+                                                "KES",
+                                                "KGS",
+                                                "KHR",
+                                                "KMF",
+                                                "KPW",
+                                                "KRW",
+                                                "KWD",
+                                                "KYD",
+                                                "KZT",
+                                                "LAK",
+                                                "LBP",
+                                                "LKR",
+                                                "LRD",
+                                                "LSL",
+                                                "LYD",
+                                                "MAD",
+                                                "MDL",
+                                                "MGA",
+                                                "MKD",
+                                                "MMK",
+                                                "MNT",
+                                                "MOP",
+                                                "MRU",
+                                                "MUR",
+                                                "MVR",
+                                                "MWK",
+                                                "MXN",
+                                                "MXV",
+                                                "MYR",
+                                                "MZN",
+                                                "NAD",
+                                                "NGN",
+                                                "NIO",
+                                                "NOK",
+                                                "NPR",
+                                                "NZD",
+                                                "OMR",
+                                                "PAB",
+                                                "PEN",
+                                                "PGK",
+                                                "PHP",
+                                                "PKR",
+                                                "PLN",
+                                                "PYG",
+                                                "QAR",
+                                                "RON",
+                                                "RSD",
+                                                "RUB",
+                                                "RWF",
+                                                "SAR",
+                                                "SBD",
+                                                "SCR",
+                                                "SDG",
+                                                "SEK",
+                                                "SGD",
+                                                "SHP",
+                                                "SLE",
+                                                "SOS",
+                                                "SRD",
+                                                "SSP",
+                                                "STN",
+                                                "SVC",
+                                                "SYP",
+                                                "SZL",
+                                                "THB",
+                                                "TJS",
+                                                "TMT",
+                                                "TND",
+                                                "TOP",
+                                                "TRY",
+                                                "TTD",
+                                                "TWD",
+                                                "TZS",
+                                                "UAH",
+                                                "UGX",
+                                                "USD",
+                                                "USN",
+                                                "UYI",
+                                                "UYU",
+                                                "UYW",
+                                                "UZS",
+                                                "VED",
+                                                "VES",
+                                                "VND",
+                                                "VUV",
+                                                "WST",
+                                                "XAD",
+                                                "XAF",
+                                                "XCD",
+                                                "XCG",
+                                                "XOF",
+                                                "XPF",
+                                                "YER",
+                                                "ZAR",
+                                                "ZMW",
+                                                "ZWG"
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "amount",
+                                            "currency"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "sourceCountry": {
+                                          "type": "string",
+                                          "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "monthly",
+                                        "sourceCountry"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "maxItems": 20
+                                  },
+                                  "assetsRecordedInFull": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "assetsRecordedInFull"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "shares": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "profile": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 30
+                                  },
+                                  "finances": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 30
+                                  }
+                                },
+                                "required": [
+                                  "profile",
+                                  "finances"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "sharedWithMe": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "profile",
+                                    "finances"
+                                  ]
+                                },
+                                "maxItems": 2
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "displayName",
+                              "caseMember",
+                              "accountId",
+                              "keptByMe",
+                              "profile",
+                              "finances",
+                              "shares",
+                              "sharedWithMe"
+                            ]
+                          }
+                        },
+                        "relationships": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "editable": {
+                                "type": "boolean"
+                              },
+                              "relationship": {
+                                "oneOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "enum": [
+                                          "spouse",
+                                          "partner"
+                                        ]
+                                      },
+                                      "from": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                      },
+                                      "to": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                      },
+                                      "details": {
+                                        "type": "object",
+                                        "properties": {
+                                          "start": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                              },
+                                              {
+                                                "type": "string",
+                                                "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                              }
+                                            ]
+                                          },
+                                          "end": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                              },
+                                              {
+                                                "type": "string",
+                                                "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                              },
+                                              {
+                                                "type": "string",
+                                                "enum": [
+                                                  "none"
+                                                ]
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "additionalProperties": false
+                                      }
+                                    },
+                                    "required": [
+                                      "kind",
+                                      "from",
+                                      "to",
+                                      "details"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "enum": [
+                                          "parent"
+                                        ]
+                                      },
+                                      "from": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                      },
+                                      "to": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                      },
+                                      "details": {
+                                        "type": "object",
+                                        "properties": {
+                                          "parentKind": {
+                                            "type": "string",
+                                            "enum": [
+                                              "biological",
+                                              "adoptive"
+                                            ]
+                                          },
+                                          "custody": {
+                                            "type": "string",
+                                            "enum": [
+                                              "full",
+                                              "shared",
+                                              "none"
+                                            ]
+                                          },
+                                          "start": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                              },
+                                              {
+                                                "type": "string",
+                                                "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                              }
+                                            ]
+                                          },
+                                          "custodyStart": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                              },
+                                              {
+                                                "type": "string",
+                                                "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "additionalProperties": false
+                                      }
+                                    },
+                                    "required": [
+                                      "kind",
+                                      "from",
+                                      "to",
+                                      "details"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "editable",
+                              "relationship"
+                            ]
+                          }
+                        },
+                        "assets": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "editable": {
+                                "type": "boolean"
+                              },
+                              "asset": {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "cash",
+                                      "investment",
+                                      "real_estate",
+                                      "business",
+                                      "retirement",
+                                      "vehicle",
+                                      "other"
+                                    ]
+                                  },
+                                  "value": {
+                                    "type": "object",
+                                    "properties": {
+                                      "amount": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "currency": {
+                                        "type": "string",
+                                        "enum": [
+                                          "AED",
+                                          "AFN",
+                                          "ALL",
+                                          "AMD",
+                                          "AOA",
+                                          "ARS",
+                                          "AUD",
+                                          "AWG",
+                                          "AZN",
+                                          "BAM",
+                                          "BBD",
+                                          "BDT",
+                                          "BHD",
+                                          "BIF",
+                                          "BMD",
+                                          "BND",
+                                          "BOB",
+                                          "BOV",
+                                          "BRL",
+                                          "BSD",
+                                          "BTN",
+                                          "BWP",
+                                          "BYN",
+                                          "BZD",
+                                          "CAD",
+                                          "CDF",
+                                          "CHE",
+                                          "CHF",
+                                          "CHW",
+                                          "CLF",
+                                          "CLP",
+                                          "CNY",
+                                          "COP",
+                                          "COU",
+                                          "CRC",
+                                          "CUP",
+                                          "CVE",
+                                          "CZK",
+                                          "DJF",
+                                          "DKK",
+                                          "DOP",
+                                          "DZD",
+                                          "EGP",
+                                          "ERN",
+                                          "ETB",
+                                          "EUR",
+                                          "FJD",
+                                          "FKP",
+                                          "GBP",
+                                          "GEL",
+                                          "GHS",
+                                          "GIP",
+                                          "GMD",
+                                          "GNF",
+                                          "GTQ",
+                                          "GYD",
+                                          "HKD",
+                                          "HNL",
+                                          "HTG",
+                                          "HUF",
+                                          "IDR",
+                                          "ILS",
+                                          "INR",
+                                          "IQD",
+                                          "IRR",
+                                          "ISK",
+                                          "JMD",
+                                          "JOD",
+                                          "JPY",
+                                          "KES",
+                                          "KGS",
+                                          "KHR",
+                                          "KMF",
+                                          "KPW",
+                                          "KRW",
+                                          "KWD",
+                                          "KYD",
+                                          "KZT",
+                                          "LAK",
+                                          "LBP",
+                                          "LKR",
+                                          "LRD",
+                                          "LSL",
+                                          "LYD",
+                                          "MAD",
+                                          "MDL",
+                                          "MGA",
+                                          "MKD",
+                                          "MMK",
+                                          "MNT",
+                                          "MOP",
+                                          "MRU",
+                                          "MUR",
+                                          "MVR",
+                                          "MWK",
+                                          "MXN",
+                                          "MXV",
+                                          "MYR",
+                                          "MZN",
+                                          "NAD",
+                                          "NGN",
+                                          "NIO",
+                                          "NOK",
+                                          "NPR",
+                                          "NZD",
+                                          "OMR",
+                                          "PAB",
+                                          "PEN",
+                                          "PGK",
+                                          "PHP",
+                                          "PKR",
+                                          "PLN",
+                                          "PYG",
+                                          "QAR",
+                                          "RON",
+                                          "RSD",
+                                          "RUB",
+                                          "RWF",
+                                          "SAR",
+                                          "SBD",
+                                          "SCR",
+                                          "SDG",
+                                          "SEK",
+                                          "SGD",
+                                          "SHP",
+                                          "SLE",
+                                          "SOS",
+                                          "SRD",
+                                          "SSP",
+                                          "STN",
+                                          "SVC",
+                                          "SYP",
+                                          "SZL",
+                                          "THB",
+                                          "TJS",
+                                          "TMT",
+                                          "TND",
+                                          "TOP",
+                                          "TRY",
+                                          "TTD",
+                                          "TWD",
+                                          "TZS",
+                                          "UAH",
+                                          "UGX",
+                                          "USD",
+                                          "USN",
+                                          "UYI",
+                                          "UYU",
+                                          "UYW",
+                                          "UZS",
+                                          "VED",
+                                          "VES",
+                                          "VND",
+                                          "VUV",
+                                          "WST",
+                                          "XAD",
+                                          "XAF",
+                                          "XCD",
+                                          "XCG",
+                                          "XOF",
+                                          "XPF",
+                                          "YER",
+                                          "ZAR",
+                                          "ZMW",
+                                          "ZWG"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "amount",
+                                      "currency"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "valuedAt": {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                  },
+                                  "liquid": {
+                                    "type": "boolean"
+                                  },
+                                  "sold": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "enum": [
+                                          "none"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "value",
+                                  "valuedAt"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "owners": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "personId": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "share": {
+                                      "type": "string",
+                                      "pattern": "^(?:0\\.[0-9]{1,6}|1(?:\\.0{1,6})?)$"
+                                    },
+                                    "confirmed": {
+                                      "type": "boolean"
+                                    }
+                                  },
+                                  "required": [
+                                    "personId",
+                                    "share",
+                                    "confirmed"
+                                  ]
+                                }
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "editable",
+                              "asset",
+                              "owners"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "caseId",
+                        "me",
+                        "people",
+                        "relationships",
+                        "assets"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "case"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/case/leave": {
       "post": {
         "operationId": "leaveCase",

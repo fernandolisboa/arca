@@ -39,6 +39,25 @@ const nonNegativeMoneySchema = z.strictObject({
 export const isicSections = 'ABCDEFGHIJKLMNOPQRSTU'.split('');
 export const parentKinds = ['biological', 'adoptive'] as const;
 export const custodies = ['full', 'shared', 'none'] as const;
+export const citizenshipBases = [
+  'birth',
+  'descent',
+  'naturalization',
+  'marriage',
+  'investment',
+  'other',
+] as const;
+/** CEFR levels, and a native speaker. */
+export const languageLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'native'] as const;
+export const incomeKinds = ['active', 'passive'] as const;
+export const immigrationEventKinds = [
+  'visa_refusal',
+  'entry_refusal',
+  'overstay',
+  'removal',
+  'visa_granted',
+  'residence_granted',
+] as const;
 
 /** Relationships, or assets, recorded in full for a person. Without one, more may exist. */
 export const completenessMarkers = [
@@ -58,9 +77,7 @@ const citizenshipSchema = z
     country: countryCodeSchema,
     acquired: dateValueSchema.optional(),
     lost: dateOrNoneSchema.optional(),
-    basis: z
-      .enum(['birth', 'descent', 'naturalization', 'marriage', 'investment', 'other'])
-      .optional(),
+    basis: z.enum(citizenshipBases).optional(),
   })
   .refine(
     ({ acquired, lost }) =>
@@ -74,25 +91,18 @@ const citizenshipSchema = z
 const languageSchema = z.strictObject({
   /** BCP 47 primary language subtag, such as `pt` or `en`. */
   language: z.string().regex(/^[a-z]{2,3}$/),
-  level: z.enum(['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'native']),
+  level: z.enum(languageLevels),
 });
 
 export const incomeSchema = z.strictObject({
-  kind: z.enum(['active', 'passive']),
+  kind: z.enum(incomeKinds),
   monthly: nonNegativeMoneySchema,
   sourceCountry: countryCodeSchema,
 });
 
 const immigrationEventSchema = z.strictObject({
   country: countryCodeSchema,
-  kind: z.enum([
-    'visa_refusal',
-    'entry_refusal',
-    'overstay',
-    'removal',
-    'visa_granted',
-    'residence_granted',
-  ]),
+  kind: z.enum(immigrationEventKinds),
   date: dateValueSchema.optional(),
 });
 
