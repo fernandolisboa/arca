@@ -12,6 +12,7 @@ import { claudeExtractor } from '../../../src/intake/claude-extractor.js';
 import { type Extractor, ExtractorError } from '../../../src/intake/extractor.js';
 import { intakeModel } from '../../../src/intake/model.js';
 import { intakePromptVersion } from '../../../src/intake/prompt.js';
+import { maxCallsPerRun, withCallLimit } from './call-limit.js';
 import { type IntakeCase, intakeCases, writerAccount } from './cases.js';
 import { type Baseline, type CaseRun, judge, report } from './report.js';
 import { forbiddenIn, scoreDraft } from './score.js';
@@ -50,7 +51,7 @@ async function runCase(extractor: Extractor, evalCase: IntakeCase): Promise<Case
 it('scores the intake extraction against the baseline', async () => {
   const apiKey = readAnthropicApiKey();
   if (apiKey === undefined) throw new Error('Set ANTHROPIC_API_KEY to run the intake evaluation');
-  const extractor = claudeExtractor({ apiKey });
+  const { extractor, calls } = withCallLimit(claudeExtractor({ apiKey }));
 
   const runs: CaseRun[] = [];
   const queue = [...intakeCases.entries()];
@@ -67,10 +68,11 @@ it('scores the intake extraction against the baseline', async () => {
     readFileSync(new URL('baseline.json', import.meta.url), 'utf8'),
   ) as Baseline;
   const verdict = judge(runs, baseline);
-  const text = report(runs, baseline, verdict, {
+  const scored = report(runs, baseline, verdict, {
     model: intakeModel,
     promptVersion: intakePromptVersion,
   });
+  const text = `${scored}\n\nModel calls: ${String(calls())} of at most ${String(maxCallsPerRun)}.`;
   console.log(text);
   const summary = process.env['ARCA_EVAL_REPORT'];
   if (summary !== undefined && summary !== '') appendFileSync(summary, `${text}\n`);
