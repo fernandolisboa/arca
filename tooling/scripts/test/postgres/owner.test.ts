@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { bootstrap } from '../../src/db/bootstrap.ts';
 import { runGuards } from '../../src/db/guards.ts';
-import { appRoles, retiredRoles, type DatabasePolicy } from '../../src/db/policy.ts';
+import { appRoles, definerRoles, retiredRoles, type DatabasePolicy } from '../../src/db/policy.ts';
 import { migrate } from '../../src/db/runner.ts';
 import {
   adminTarget,
@@ -29,7 +29,7 @@ async function dropAppRoles(): Promise<void> {
     for (const { datname } of leftovers.rows) {
       await client.query(`DROP DATABASE ${client.escapeIdentifier(datname)} WITH (FORCE)`);
     }
-    for (const role of [...appRoles, ...retiredRoles, owner]) {
+    for (const role of [...appRoles, ...retiredRoles, ...definerRoles, owner]) {
       await client.query(`DROP ROLE IF EXISTS ${role}`);
     }
   });
@@ -68,7 +68,7 @@ describe('bootstrap as a non-superuser owner', () => {
         [owner],
       );
       expect(grants.rows).toEqual(
-        [...appRoles, ...retiredRoles].sort().map((granted) => ({
+        [...appRoles, ...retiredRoles, ...definerRoles].sort().map((granted) => ({
           granted,
           admin_option: true,
           inherit_option: false,

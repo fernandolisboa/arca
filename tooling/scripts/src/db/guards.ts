@@ -1,5 +1,12 @@
 import type { ClientBase } from 'pg';
-import { appRoles, retiredRoles, runtimeRoles, type DatabasePolicy } from './policy.ts';
+import {
+  appRoles,
+  definerRoles,
+  migratorRole,
+  retiredRoles,
+  runtimeRoles,
+  type DatabasePolicy,
+} from './policy.ts';
 
 export interface GuardViolation {
   readonly guard: number;
@@ -34,7 +41,10 @@ function tablesWithoutForcedRls(client: Query, policy: DatabasePolicy) {
   );
 }
 
-/** Guard 2: views run as the invoker; materialized views, foreign tables and definer functions need listing. */
+/**
+ * Guard 2: views run as the invoker; materialized views, foreign tables and definer functions need
+ * listing, and a definer function is owned by a definer role and pins its search_path.
+ */
 function unsafeViewsAndFunctions(client: Query, policy: DatabasePolicy) {
   return rows(
     client,
@@ -61,11 +71,28 @@ function unsafeViewsAndFunctions(client: Query, policy: DatabasePolicy) {
          JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
         WHERE p.prosecdef AND ${userSchemas}
           AND NOT (n.nspname || '.' || p.proname = ANY ($3::text[]))
+       UNION ALL
+       SELECT pg_catalog.format('function %I.%I is SECURITY DEFINER but owned by %I, not a definer role',
+                n.nspname, p.proname, r.rolname)
+         FROM pg_catalog.pg_proc p
+         JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
+         JOIN pg_catalog.pg_roles r ON r.oid = p.proowner
+        WHERE p.prosecdef AND ${userSchemas}
+          AND NOT (r.rolname = ANY ($4::text[]))
+       UNION ALL
+       SELECT pg_catalog.format('function %I.%I is SECURITY DEFINER and does not pin search_path', n.nspname, p.proname)
+         FROM pg_catalog.pg_proc p
+         JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
+        WHERE p.prosecdef AND ${userSchemas}
+          AND NOT EXISTS (
+            SELECT FROM pg_catalog.unnest(p.proconfig) AS setting
+             WHERE setting = 'search_path=pg_catalog, pg_temp')
      ) found ORDER BY 1`,
     [
       policy.guards.materializedViews,
       policy.guards.foreignTables,
       policy.guards.securityDefinerFunctions,
+      definerRoles,
     ],
   );
 }
@@ -104,7 +131,8 @@ function privilegedRoles(client: Query, policy: DatabasePolicy) {
 
 /**
  * Guard 5: memberships that touch a checked role are at most the ADMIN OPTION grants Postgres 16+
- * records for the owner role that created each app role, with INHERIT and SET false. Predefined
+ * records for the owner role that created each app role, with INHERIT and SET false, and the
+ * migrator's SET-only membership in each definer role. Predefined
  * `pg_*` roles (a reserved prefix) are not checked themselves, so their own memberships and the
  * platform's grants of them to exempt roles pass, while granting one to a checked role does not.
  */
@@ -121,12 +149,24 @@ function unexpectedMemberships(client: Query, policy: DatabasePolicy) {
         AND NOT (member.rolname IS NOT DISTINCT FROM $2::text
                  AND granted.rolname = ANY ($3::text[])
                  AND m.admin_option AND NOT m.inherit_option AND NOT m.set_option)
+        AND NOT (member.rolname = $4::text
+                 AND granted.rolname = ANY ($5::text[])
+                 AND NOT m.admin_option AND NOT m.inherit_option AND m.set_option)
       ORDER BY 1`,
-    [policy.roles.exemptRoles, policy.roles.ownerAdminRole, [...appRoles, ...retiredRoles]],
+    [
+      policy.roles.exemptRoles,
+      policy.roles.ownerAdminRole,
+      [...appRoles, ...retiredRoles, ...definerRoles],
+      migratorRole,
+      definerRoles,
+    ],
   );
 }
 
-/** Guard 6: runtime and retired roles own nothing and cannot create anything. */
+/**
+ * Guard 6: runtime, retired and definer roles own no relation or schema and cannot create
+ * anything; a definer role owns only its allow-listed functions (guard 2).
+ */
 function runtimeRolePrivileges(client: Query) {
   return rows(
     client,
@@ -154,7 +194,7 @@ function runtimeRolePrivileges(client: Query) {
         WHERE EXISTS (SELECT FROM pg_catalog.pg_roles r WHERE r.rolname = role_name)
           AND pg_catalog.has_database_privilege(role_name, pg_catalog.current_database(), 'CREATE')
      ) found ORDER BY 1`,
-    [[...runtimeRoles, ...retiredRoles]],
+    [[...runtimeRoles, ...retiredRoles, ...definerRoles]],
   );
 }
 

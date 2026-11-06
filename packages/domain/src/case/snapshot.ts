@@ -77,7 +77,7 @@ const languageSchema = z.strictObject({
   level: z.enum(['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'native']),
 });
 
-const incomeSchema = z.strictObject({
+export const incomeSchema = z.strictObject({
   kind: z.enum(['active', 'passive']),
   monthly: nonNegativeMoneySchema,
   sourceCountry: countryCodeSchema,
@@ -102,27 +102,29 @@ const jobOfferSchema = z.strictObject({
   temporary: z.boolean(),
 });
 
+/** A person's fields, before the checks across them; storage derives its schemas from these. */
+export const personFieldsSchema = z.strictObject({
+  id: opaqueIdSchema,
+  birthDate: dateValueSchema.optional(),
+  citizenships: z.array(citizenshipSchema).max(10).optional(),
+  residenceCountry: countryCodeSchema.optional(),
+  /** ISCED 2011 level, 0 to 8. */
+  educationLevel: z.number().int().min(0).max(8).optional(),
+  languages: z.array(languageSchema).max(20).optional(),
+  incomes: z.array(incomeSchema).max(20).optional(),
+  immigrationHistory: z.array(immigrationEventSchema).max(50).optional(),
+  jobOffers: z.array(jobOfferSchema).max(10).optional(),
+  /** People this person depends on financially. */
+  financiallyDependentOn: z.array(opaqueIdSchema).max(20).optional(),
+  studying: z.boolean().optional(),
+  recordedInFull: z.array(completenessMarkerSchema).max(completenessMarkers.length).optional(),
+});
+
 /**
  * A person: structured facts only. An absent field is unknown, never false; a present list is
  * complete, so `[]` means none (spec 0002, R3).
  */
-export const personSchema = z
-  .strictObject({
-    id: opaqueIdSchema,
-    birthDate: dateValueSchema.optional(),
-    citizenships: z.array(citizenshipSchema).max(10).optional(),
-    residenceCountry: countryCodeSchema.optional(),
-    /** ISCED 2011 level, 0 to 8. */
-    educationLevel: z.number().int().min(0).max(8).optional(),
-    languages: z.array(languageSchema).max(20).optional(),
-    incomes: z.array(incomeSchema).max(20).optional(),
-    immigrationHistory: z.array(immigrationEventSchema).max(50).optional(),
-    jobOffers: z.array(jobOfferSchema).max(10).optional(),
-    /** People this person depends on financially. */
-    financiallyDependentOn: z.array(opaqueIdSchema).max(20).optional(),
-    studying: z.boolean().optional(),
-    recordedInFull: z.array(completenessMarkerSchema).max(completenessMarkers.length).optional(),
-  })
+export const personSchema = personFieldsSchema
   .refine((person) => !(person.financiallyDependentOn ?? []).includes(person.id), {
     message: 'A person does not depend on themselves',
   })
@@ -133,14 +135,14 @@ export const personSchema = z
     message: 'A completeness marker is listed once',
   });
 
-const coupleEdgeSchema = z.strictObject({
+export const coupleEdgeSchema = z.strictObject({
   kind: z.enum(['spouse', 'partner']),
   people: z.tuple([opaqueIdSchema, opaqueIdSchema]),
   start: dateValueSchema.optional(),
   end: dateOrNoneSchema.optional(),
 });
 
-const parentEdgeSchema = z.strictObject({
+export const parentEdgeSchema = z.strictObject({
   kind: z.literal('parent'),
   parent: opaqueIdSchema,
   child: opaqueIdSchema,
@@ -163,30 +165,33 @@ export const maxParentsPerChild = 4;
 /** At most this many couple edges between two people, so paths through couples stay small. */
 export const maxCoupleEdgesPerPair = 4;
 
-const assetSchema = z
-  .strictObject({
-    id: opaqueIdSchema,
-    kind: z.enum([
-      'cash',
-      'investment',
-      'real_estate',
-      'business',
-      'retirement',
-      'vehicle',
-      'other',
-    ]),
-    owners: z
-      .array(z.strictObject({ person: opaqueIdSchema, share: decimalSchema }))
-      .min(1)
-      .max(12),
-    value: nonNegativeMoneySchema,
-    valuedAt: calendarDateSchema,
-    liquid: z.boolean().optional(),
-    sold: dateOrNoneSchema.optional(),
-  })
-  .refine((asset) => validShares(asset.owners), {
-    message: 'Owners are distinct, each share is positive and the shares add up to at most 1',
-  });
+export const assetKinds = [
+  'cash',
+  'investment',
+  'real_estate',
+  'business',
+  'retirement',
+  'vehicle',
+  'other',
+] as const;
+
+/** An asset's fields, before the checks across its owners. */
+export const assetFieldsSchema = z.strictObject({
+  id: opaqueIdSchema,
+  kind: z.enum(assetKinds),
+  owners: z
+    .array(z.strictObject({ person: opaqueIdSchema, share: decimalSchema }))
+    .min(1)
+    .max(12),
+  value: nonNegativeMoneySchema,
+  valuedAt: calendarDateSchema,
+  liquid: z.boolean().optional(),
+  sold: dateOrNoneSchema.optional(),
+});
+
+const assetSchema = assetFieldsSchema.refine((asset) => validShares(asset.owners), {
+  message: 'Owners are distinct, each share is positive and the shares add up to at most 1',
+});
 
 /**
  * The engine's only view of a case. It holds no free text, names or document numbers, so it
@@ -251,7 +256,7 @@ export type Relationship = z.infer<typeof relationshipSchema>;
 export type Asset = z.infer<typeof assetSchema>;
 export type Citizenship = z.infer<typeof citizenshipSchema>;
 
-function distinct(values: readonly string[]): boolean {
+export function distinct(values: readonly string[]): boolean {
   return new Set(values).size === values.length;
 }
 

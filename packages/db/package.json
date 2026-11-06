@@ -47,6 +47,10 @@
     "./vault-schema": {
       "types": "./dist/vault-schema.d.ts",
       "default": "./dist/vault-schema.js"
+    },
+    "./case-schema": {
+      "types": "./dist/case-schema.d.ts",
+      "default": "./dist/case-schema.js"
     }
   },
   "scripts": {

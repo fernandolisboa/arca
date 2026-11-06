@@ -45,6 +45,21 @@ const fixtures: [number, string, string][] = [
     'CREATE FUNCTION app.f() RETURNS int LANGUAGE sql SECURITY DEFINER AS $$ SELECT 1 $$',
     'function app.f is SECURITY DEFINER and not allow-listed',
   ],
+  [
+    2,
+    'CREATE FUNCTION cases.f() RETURNS int LANGUAGE sql SECURITY DEFINER SET search_path = pg_catalog, pg_temp AS $$ SELECT 1 $$',
+    'function cases.f is SECURITY DEFINER but owned by postgres, not a definer role',
+  ],
+  [
+    2,
+    'ALTER FUNCTION cases.is_member(uuid) RESET search_path',
+    'function cases.is_member is SECURITY DEFINER and does not pin search_path',
+  ],
+  [
+    2,
+    'ALTER FUNCTION cases.is_member(uuid) SET search_path = cases, pg_catalog',
+    'function cases.is_member is SECURITY DEFINER and does not pin search_path',
+  ],
   [3, 'CREATE ROLE stray LOGIN', 'role stray can log in but is not an app role'],
   [3, 'ALTER ROLE app_audit NOLOGIN', 'app role app_audit is missing or cannot log in'],
   [3, 'ALTER ROLE app_backup LOGIN', 'role app_backup can log in but is not an app role'],
@@ -57,6 +72,12 @@ const fixtures: [number, string, string][] = [
   [5, 'GRANT pg_read_all_data TO app_api', 'app_api is a member of pg_read_all_data'],
   [
     5,
+    'GRANT cases_definer TO app_migrator WITH INHERIT TRUE',
+    'app_migrator is a member of cases_definer (admin f, inherit t, set t)',
+  ],
+  [5, 'GRANT cases_definer TO app_api', 'app_api is a member of cases_definer'],
+  [
+    5,
     'CREATE ROLE stray NOLOGIN; GRANT stray TO app_api; GRANT pg_read_all_data TO stray',
     'app_api is a member of stray',
   ],
@@ -64,6 +85,12 @@ const fixtures: [number, string, string][] = [
   [6, 'ALTER SCHEMA app OWNER TO app_jobs', 'app_jobs owns schema app'],
   [6, 'ALTER SCHEMA app OWNER TO app_backup', 'app_backup owns schema app'],
   [6, 'CREATE TABLE app.t (id int); ALTER TABLE app.t OWNER TO app_auth', 'app_auth owns app.t'],
+  [
+    6,
+    'CREATE TABLE app.t (id int); ALTER TABLE app.t OWNER TO cases_definer',
+    'cases_definer owns app.t',
+  ],
+  [6, 'GRANT CREATE ON SCHEMA cases TO cases_definer', 'cases_definer has CREATE on schema cases'],
   [
     6,
     `DO $$ BEGIN EXECUTE pg_catalog.format('GRANT CREATE ON DATABASE %I TO app_audit', pg_catalog.current_database()); END $$`,
@@ -80,7 +107,7 @@ const fixtures: [number, string, string][] = [
     'CREATE TABLE app.a (id int PRIMARY KEY); CREATE TABLE app.b (a int REFERENCES app.a DEFERRABLE)',
     'constraint b_a_fkey on app.b is deferrable and not allow-listed',
   ],
-  [8, 'DROP EXTENSION plpgsql', 'extension plpgsql is expected but not installed'],
+  [8, 'DROP EXTENSION plpgsql CASCADE', 'extension plpgsql is expected but not installed'],
 ];
 
 describe('guards', () => {

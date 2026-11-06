@@ -415,6 +415,9 @@ importers:
       '@arca/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@arca/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       '@arca/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n

@@ -33,6 +33,20 @@ BEGIN
 END
 $$;
 
+-- cases_definer owns the case schema's SECURITY DEFINER functions (spec 0007, R1), so their code
+-- runs with only its own grants and policies. It cannot log in. app_migrator may SET ROLE to it,
+-- without inheriting its privileges, only so a migration can hand it a function it created.
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'cases_definer') THEN
+    CREATE ROLE cases_definer;
+  END IF;
+  ALTER ROLE cases_definer NOLOGIN NOINHERIT NOBYPASSRLS NOREPLICATION NOCREATEROLE NOCREATEDB;
+END
+$$;
+
+GRANT cases_definer TO app_migrator WITH ADMIN FALSE, INHERIT FALSE, SET TRUE;
+
 ALTER ROLE app_migrator PASSWORD '{{app_migrator}}';
 ALTER ROLE app_api PASSWORD '{{app_api}}';
 ALTER ROLE app_jobs PASSWORD '{{app_jobs}}';

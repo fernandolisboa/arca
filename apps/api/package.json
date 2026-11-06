@@ -25,6 +25,7 @@
   "dependencies": {
     "@arca/api-contract": "workspace:*",
     "@arca/db": "workspace:*",
+    "@arca/domain": "workspace:*",
     "@arca/i18n": "workspace:*",
     "@arca/knowledge": "workspace:*",
     "@arca/telemetry": "workspace:*",

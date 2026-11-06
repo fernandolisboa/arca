@@ -1,5 +1,5 @@
 import { randomBytes, randomUUID } from 'node:crypto';
-import { ownerColumns, registry, type RegistryEntry } from '@arca/db/registry';
+import { ownerColumns, parentLinks, registry, type RegistryEntry } from '@arca/db/registry';
 import type { AuthTestDatabase } from './auth-database.js';
 
 // Synthetic accounts with rows in every registry table (spec 0004, R7 to R9).
@@ -146,6 +146,54 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
       `INSERT INTO notification.delivery (account_id, message_id, channel_id) VALUES ($1, $2, $3)`,
       [accountId, messageId, channelId],
     );
+    // A case the account shares with a sharer, which keeps a person of its own there.
+    const caseId = randomUUID();
+    const selfId = randomUUID();
+    const childId = randomUUID();
+    const relativeId = randomUUID();
+    const assetId = randomUUID();
+    await insert(`INSERT INTO cases.case_file (id) VALUES ($1)`, [caseId]);
+    await insert(`INSERT INTO cases.member (account_id, case_id) VALUES ($1, $2), ($3, $2)`, [
+      accountId,
+      caseId,
+      sharerId,
+    ]);
+    await insert(
+      `INSERT INTO cases.person (id, case_id, keeper_account_id, account_id, display_name, case_member)
+       VALUES ($1, $4, $5, $5, 'Synthetic adult', true), ($2, $4, $5, NULL, 'Synthetic child', true),
+              ($3, $4, $6, NULL, 'Synthetic relative', false)`,
+      [selfId, childId, relativeId, caseId, accountId, sharerId],
+    );
+    await insert(
+      `INSERT INTO cases.person_profile (person_id, facts, dependence_answered) VALUES ($1, '{}', true)`,
+      [childId],
+    );
+    await insert(
+      `INSERT INTO cases.person_finances (person_id, incomes, assets_recorded_in_full) VALUES ($1, '[]', true)`,
+      [selfId],
+    );
+    await insert(
+      `INSERT INTO cases.dependence (case_id, person_id, depends_on_id) VALUES ($1, $2, $3)`,
+      [caseId, childId, selfId],
+    );
+    await insert(
+      `INSERT INTO cases.relationship (case_id, kind, from_person_id, to_person_id)
+       VALUES ($1, 'parent', $2, $3), ($1, 'parent', $4, $2)`,
+      [caseId, selfId, childId, relativeId],
+    );
+    await insert(
+      `INSERT INTO cases.share (case_id, person_id, grantee_account_id, scope) VALUES ($1, $2, $3, 'profile')`,
+      [caseId, childId, sharerId],
+    );
+    await insert(
+      `INSERT INTO cases.asset (id, case_id, kind, value_amount, value_currency, valued_at)
+       VALUES ($1, $2, 'cash', 1000, 'BRL', '2026-01-01')`,
+      [assetId, caseId],
+    );
+    await insert(
+      `INSERT INTO cases.asset_owner (case_id, asset_id, person_id, share, confirmed) VALUES ($1, $2, $3, 1, true)`,
+      [caseId, assetId, selfId],
+    );
     await insert(
       `INSERT INTO audit.event (subject_account_id, actor_account_id, code) VALUES ($1, $2, 'sign_in')`,
       [accountId, accountId],
@@ -154,18 +202,46 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
   return { accountId, email, credentialId, codeHash };
 }
 
-/** Counts the account's rows in one registry table, joining a child to its parent. */
-export function ownedCountQuery(entry: RegistryEntry): string {
+const keysMatch = (
+  alias: string,
+  columns: readonly string[],
+  other: string,
+  others: readonly string[],
+) =>
+  columns
+    .map((column, index) => `${alias}.${column} = ${other}.${others[index] ?? ''}`)
+    .join(' AND ');
+
+/** Whether row `alias` of the entry is the account's in `$1`, following its owner's foreign keys. */
+function ownedBy(entry: RegistryEntry, alias: string): string {
   const { owner } = entry;
-  if (!('parent' in owner)) {
-    const matches = ownerColumns(owner).map((column) => `${column} = $1`);
-    return `SELECT count(*)::int AS n FROM ${entry.table} WHERE ${matches.join(' OR ')}`;
+  const next = `${alias}_`;
+  const entryOf = (table: string) =>
+    registry.entries.find((candidate) => candidate.table === table);
+  if ('referencedBy' in owner) {
+    const referencing = entryOf(owner.referencedBy);
+    if (referencing === undefined) return 'false';
+    return `EXISTS (SELECT FROM ${owner.referencedBy} ${next}
+      WHERE ${keysMatch(next, owner.referencingColumns, alias, owner.columns)} AND ${ownedBy(referencing, next)})`;
   }
-  const parent = registry.entries.find(({ table }) => table === owner.parent);
-  const parentOwner = parent !== undefined && 'column' in parent.owner ? parent.owner.column : '';
-  return `SELECT count(*)::int AS n FROM ${entry.table} t JOIN ${owner.parent} p
-            ON t.${owner.columns[0] ?? ''} = p.${owner.parentColumns[0] ?? ''}
-          WHERE p.${parentOwner} = $1`;
+  const links = parentLinks(owner);
+  if (links.length === 0) {
+    return `(${ownerColumns(owner)
+      .map((column) => `${alias}.${column} = $1`)
+      .join(' OR ')})`;
+  }
+  const throughParents = links.map((link) => {
+    const parent = entryOf(link.parent);
+    if (parent === undefined) return 'false';
+    return `EXISTS (SELECT FROM ${link.parent} ${next}
+      WHERE ${keysMatch(alias, link.columns, next, link.parentColumns)} AND ${ownedBy(parent, next)})`;
+  });
+  return `(${throughParents.join(' OR ')})`;
+}
+
+/** Counts the account's rows in one registry table, through its owner's foreign keys. */
+export function ownedCountQuery(entry: RegistryEntry): string {
+  return `SELECT count(*)::int AS n FROM ${entry.table} t WHERE ${ownedBy(entry, 't')}`;
 }
 
 /** The account's rows per registry table, counted as the server's admin. */

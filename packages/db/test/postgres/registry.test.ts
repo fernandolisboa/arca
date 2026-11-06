@@ -21,8 +21,9 @@ const migrationsDir = join(import.meta.dirname, '../../migrations');
 const database = `arca_registry_${randomBytes(6).toString('hex')}`;
 const jobsPassword = randomBytes(24).toString('base64url');
 const runtimeRoles = ['app_api', 'app_jobs', 'app_auth', 'app_audit'] as const;
-// Retired (ADR-0021): kept without login only so the migrations that once granted to it replay.
-const retiredRoles = ['app_backup'] as const;
+// Roles without login: app_backup is retired (ADR-0021) and kept only so the migrations that once
+// granted to it replay; cases_definer owns the case schema's definer functions (spec 0007).
+const noLoginRoles = ['app_backup', 'cases_definer'] as const;
 const createdRoles: string[] = [];
 
 const accountA = '0b9c3d6e-1f2a-4b5c-8d7e-9f0a1b2c3d4e';
@@ -48,7 +49,7 @@ const asAdmin = <T>(name: string, use: (client: pg.Client) => Promise<T>) =>
 beforeAll(async () => {
   await asAdmin('postgres', async (client) => {
     await client.query(`CREATE DATABASE ${database}`);
-    for (const role of [...runtimeRoles, ...retiredRoles]) {
+    for (const role of [...runtimeRoles, ...noLoginRoles]) {
       const exists = await client.query('SELECT FROM pg_catalog.pg_roles WHERE rolname = $1', [
         role,
       ]);
@@ -56,7 +57,7 @@ beforeAll(async () => {
       const password = role === 'app_jobs' ? jobsPassword : randomBytes(24).toString('base64url');
       await client.query(
         `${exists.rowCount === 0 ? 'CREATE' : 'ALTER'} ROLE ${role} ${
-          (retiredRoles as readonly string[]).includes(role)
+          (noLoginRoles as readonly string[]).includes(role)
             ? 'NOLOGIN'
             : `LOGIN PASSWORD '${password}'`
         }`,
@@ -242,6 +243,45 @@ describe('personal-data registry (spec 0004, R7)', () => {
       'auth.passkey_client has no ON DELETE CASCADE foreign key (credential_id) to auth.passkey_client (credential_id)',
       'auth.setup is listed more than once',
       'public.probe is outside auth but is not deleted by app_jobs',
+    ]);
+  });
+
+  it('fails on a row owned through either of two people when one end does not cascade', async () => {
+    expect(
+      await problemsAfter(
+        'ALTER TABLE cases.relationship DROP CONSTRAINT relationship_to_person_fkey',
+      ),
+    ).toEqual([
+      'cases.relationship has no ON DELETE CASCADE foreign key (to_person_id, case_id) to cases.person (id, case_id)',
+    ]);
+  });
+
+  it('fails on a row owned through referencing rows when they do not cascade or no trigger removes it', async () => {
+    expect(
+      await problemsAfter(
+        'ALTER TABLE cases.asset_owner DROP CONSTRAINT asset_owner_asset_fkey; DROP TRIGGER asset_owner_drop_unowned_asset ON cases.asset_owner',
+      ),
+    ).toEqual([
+      'cases.asset_owner has no AFTER DELETE row trigger, so cases.asset outlives its owners',
+      'cases.asset_owner has no ON DELETE CASCADE foreign key (asset_id, case_id) to cases.asset (id, case_id)',
+    ]);
+  });
+
+  it('fails on a row owned through an entry that does not hang off a parent', async () => {
+    expect(
+      await problemsAfter('SELECT 1', {
+        ...registry,
+        entries: registry.entries.map((entry) =>
+          entry.table === 'cases.asset' &&
+          entry.strategy === 'delete' &&
+          'referencedBy' in entry.owner
+            ? { ...entry, owner: { ...entry.owner, referencedBy: 'cases.member' } }
+            : entry,
+        ),
+      }),
+    ).toEqual([
+      'cases.asset is owned through cases.member, which is not a deleted entry that hangs off a parent',
+      'cases.member has no ON DELETE CASCADE foreign key (asset_id, case_id) to cases.asset (id, case_id)',
     ]);
   });
 

@@ -63,15 +63,18 @@ export async function authTestDatabase(): Promise<AuthTestDatabase> {
         `${exists.rowCount === 0 ? 'CREATE' : 'ALTER'} ROLE ${role} LOGIN PASSWORD '${password}'`,
       );
     }
-    // Retired (ADR-0021): kept without login only so the migrations that once granted to it replay.
-    await client.query(
-      `DO $$ BEGIN
-         IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'app_backup') THEN
-           CREATE ROLE app_backup;
-         END IF;
-         ALTER ROLE app_backup NOLOGIN;
-       END $$`,
-    );
+    // Roles without login: app_backup is retired (ADR-0021) and kept only so the migrations that
+    // once granted to it replay; cases_definer owns the case schema's definer functions (spec 0007).
+    for (const role of ['app_backup', 'cases_definer']) {
+      await client.query(
+        `DO $$ BEGIN
+           IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '${role}') THEN
+             CREATE ROLE ${role};
+           END IF;
+           ALTER ROLE ${role} NOLOGIN NOINHERIT;
+         END $$`,
+      );
+    }
   });
   // The runner's checks are tested in tooling/scripts; here the migrations only need to exist.
   await asAdminOn(database, async (client) => {
