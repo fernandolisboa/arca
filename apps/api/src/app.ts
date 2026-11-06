@@ -598,6 +598,13 @@ export function createApp({
     return next();
   });
   v1.use('*', restrictWhilePending);
+  // A case write is a few kilobytes; the cap keeps a member from making the API parse megabytes.
+  const caseBodies = bodyLimit({
+    maxSize: 256 * 1024,
+    onError: (c: Context<AppEnv>) => reject(c, 'too_large', 413),
+  });
+  v1.use('/case', caseBodies);
+  v1.use('/case/*', caseBodies);
 
   v1.openapi(openApiRoutes.session, async (c) => {
     if (auth === undefined) return unauthorized(c);

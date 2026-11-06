@@ -313,6 +313,15 @@ describe('the case routes (spec 0007, R3)', () => {
     }
   });
 
+  it('refuses a case body over 256 KiB before parsing it', async () => {
+    const { call, calls } = setup();
+    const answers = [{ questionId: 'assets', answer: [{ note: 'x'.repeat(300 * 1024) }] }];
+    const response = await call('POST', '/case/questions/answers', { personId: child, answers });
+    expect(response.status).toBe(413);
+    expect(await errorOf(response)).toBe('too_large');
+    expect(calls).toEqual([]);
+  });
+
   it('hands a person over only with a sensitive_settings step-up for the person and account', async () => {
     const body = { personId: child, accountId: relative };
     const granted = setup();

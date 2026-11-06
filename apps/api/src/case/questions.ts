@@ -33,7 +33,6 @@ export function questionState(rows: CaseRows, personId: string): QuestionState {
   };
 }
 
-/** The questions of every person the viewer keeps, in flow order, with their answers. */
 export function caseQuestions(rows: CaseRows, countries: PinnedCountries): CaseQuestions {
   return {
     people: rows.people

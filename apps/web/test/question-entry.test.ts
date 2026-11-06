@@ -27,6 +27,11 @@ describe('typing in the guided questions (spec 0007, R4)', () => {
     ['1.234,50', '1234.50'],
     ['900', '900'],
     [' 12,5 ', '12.5'],
+    ['1.500', '1500'],
+    ['1.234.567', '1234567'],
+    ['1500.50', '1500.50'],
+    ['2.5', '2.5'],
+    ['1.5,0', '1.5,0'],
   ])('reads the amount %s as %s', (text, value) => {
     expect(amountValue(text)).toBe(value);
   });

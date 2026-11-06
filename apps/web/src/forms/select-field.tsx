@@ -15,6 +15,7 @@ export interface SelectFieldProps {
   readonly placeholder?: string;
   /** Further groups of options, such as former states after the countries. */
   readonly children?: ReactNode;
+  readonly required?: boolean;
 }
 
 export const selectClass =
@@ -29,6 +30,7 @@ export function SelectField({
   options,
   placeholder,
   children,
+  required,
 }: SelectFieldProps) {
   const id = useId();
   const hintId = useId();
@@ -41,6 +43,7 @@ export function SelectField({
         id={id}
         className={selectClass}
         value={value}
+        required={required}
         aria-describedby={hint === undefined ? undefined : hintId}
         onChange={(event) => {
           onChange(event.currentTarget.value);

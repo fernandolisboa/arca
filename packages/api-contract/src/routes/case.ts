@@ -375,6 +375,7 @@ export {
   type QuestionId,
   type QuestionInput,
   type QuestionStep,
+  answerCanBeUnknown,
   choiceSets,
   currencyCodes,
   languageCodes,

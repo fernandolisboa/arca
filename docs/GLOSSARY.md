@@ -31,7 +31,7 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Family (mode) | Em família | The step is assigned to a relative in the case who offered to help |
 | Action point | Ponto de ação | Where a step actually happens: link, phone, office, partner; says whether the step can be done online |
 | Family area | Área da família | The screen with the people in a case, who has an account, invites and who may upload documents for whom; grants no access by itself |
-| Guided questions | Perguntas guiadas | The step-by-step questions per person that fill the case, each setting one fact; "Não sei" leaves it unknown |
+| Guided questions | Perguntas guiadas | The step-by-step questions per person that fill the case, each setting one part of it (a fact, a completeness marker, dependence, an asset or a relationship's details); "Não sei" leaves it unknown |
 | Playback | Resumo do caso | The case read back in plain sentences, each linked to the question that sets it, so the person can correct it |
 | Keeper | Quem cuida dos dados | The one account that writes a person's facts and decides who sees them: the person, or whoever added someone without an account; not the data-protection controller |
 | Case member | Participante do caso | An account in a case; it sees the case's people and relationships, and keeps the people it added |

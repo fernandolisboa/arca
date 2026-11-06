@@ -1,5 +1,11 @@
 import { minorUnitExponent, currencyCodeSchema } from '../money/currency.js';
-import { decimalSchema, powerOfTen, scaledDecimal } from '../money/decimal.js';
+import {
+  compareScaled,
+  decimalSchema,
+  normalizeScaled,
+  powerOfTen,
+  scaledDecimal,
+} from '../money/decimal.js';
 import { languageCodes } from './languages.js';
 import {
   assetKinds,
@@ -42,7 +48,6 @@ export const questionSteps = [
 ] as const;
 export type QuestionStep = (typeof questionSteps)[number];
 
-/** The values a choice offers, each labelled through i18n. */
 export const choiceSets = {
   citizenshipBasis: citizenshipBases,
   /** ISCED 2011 levels. */
@@ -249,7 +254,6 @@ export const questionFlow = [
 export type QuestionId = (typeof questionFlow)[number]['id'];
 export const questionIds = questionFlow.map(({ id }) => id) as [QuestionId, ...QuestionId[]];
 
-/** A JSON value, as an answer travels. */
 export type Answer =
   string | number | boolean | null | readonly Answer[] | { [key: string]: Answer };
 
@@ -265,7 +269,6 @@ export interface RelationshipRow {
   readonly relationship: StoredRelationship;
 }
 
-/** What the questions read and write of one person. */
 export interface QuestionState {
   readonly facts: StoredProfile['facts'];
   /** Null while dependence is unanswered. */
@@ -273,11 +276,9 @@ export interface QuestionState {
   /** Undefined until the finances are first saved. */
   readonly finances: StoredFinances | undefined;
   readonly assets: readonly HeldAsset[];
-  /** The relationships the person is in. */
   readonly relationships: readonly RelationshipRow[];
 }
 
-/** The codes a country or language answer must be one of. */
 export interface KnownCodes {
   readonly countries: ReadonlySet<string>;
   readonly formerCountries: ReadonlySet<string>;
@@ -307,7 +308,7 @@ function storedMoney(value: unknown): unknown {
   const amount = decimalSchema.safeParse(value['amount']);
   const currency = currencyCodeSchema.safeParse(value['currency']);
   if (!amount.success || !currency.success) return null;
-  const { units, scale } = scaledDecimal(amount.data);
+  const { units, scale } = normalizeScaled(scaledDecimal(amount.data));
   const exponent = minorUnitExponent(currency.data);
   if (scale > exponent || units < 0n) return null;
   const minor = units * powerOfTen(exponent - scale);
@@ -334,7 +335,6 @@ const mapList = (input: QuestionInput, value: unknown, money: (value: unknown) =
     ? value.map((item) => mapFields(input.fields, item, money))
     : value;
 
-/** Whether every country and language in an answer is one the pinned lists hold. */
 function knownCodes(input: QuestionInput, value: unknown, known: KnownCodes): boolean {
   const fieldKnown = (field: FieldInput, entry: unknown): boolean => {
     if (entry === undefined) return true;
@@ -360,7 +360,6 @@ function knownCodes(input: QuestionInput, value: unknown, known: KnownCodes): bo
   return true;
 }
 
-/** The people a completeness marker is about, from the person's relationships. */
 export function relatedBy(
   personId: string,
   value: ProfileMarker,
@@ -375,7 +374,6 @@ export function relatedBy(
   });
 }
 
-/** The current answer to a question, or undefined while it is unanswered. */
 export function answerOf(question: Question, state: QuestionState): unknown {
   const { target } = question;
   switch (target.kind) {
@@ -429,7 +427,7 @@ export function applyAnswers(
 
   for (const { questionId, answer } of answers) {
     const question = byId.get(questionId);
-    if (question === undefined) return refused;
+    if (question === undefined || answer === undefined) return refused;
     if (answer !== null && !knownCodes(question.input, answer, known)) return refused;
     const { target } = question;
     switch (target.kind) {
@@ -498,25 +496,86 @@ export function applyAnswers(
   };
 }
 
-/** The assets an answer lists: known IDs among the person's own, new ones without an ID. */
+/**
+ * The assets an answer lists: changed or kept ones by ID, new ones without one, and `{ id, dropped:
+ * true }` for one the person no longer holds. An asset the answer does not name stays as it is, so
+ * a form opened before another tab added an asset never drops it.
+ */
 function heldAssets(answer: unknown, current: readonly HeldAsset[]): HeldAsset[] | undefined {
   if (!Array.isArray(answer)) return undefined;
-  const ids = new Set(current.map(({ id }) => id));
-  const held: HeldAsset[] = [];
+  const byId = new Map(current.flatMap((held) => (held.id === undefined ? [] : [[held.id, held]])));
+  const named = new Set<string>();
+  const dropped = new Set<string>();
+  const added: HeldAsset[] = [];
+  const edited = new Map<string, HeldAsset>();
   for (const item of answer) {
     if (!isRecord(item)) return undefined;
-    const { id, share, ...fields } = item;
-    if (id !== undefined && (typeof id !== 'string' || !ids.has(id))) return undefined;
+    const { id, share, dropped: drop, ...fields } = item;
+    if (id !== undefined) {
+      if (typeof id !== 'string' || !byId.has(id) || named.has(id)) return undefined;
+      named.add(id);
+    }
+    if (drop !== undefined) {
+      if (drop !== true || id === undefined || share !== undefined) return undefined;
+      if (Object.keys(fields).length > 0) return undefined;
+      dropped.add(id);
+      continue;
+    }
     const asset = storedAssetSchema.safeParse({ ...fields, value: storedMoney(fields['value']) });
     const parsedShare = storedOwnerShareSchema.safeParse(share);
     if (!asset.success || !parsedShare.success) return undefined;
-    held.push({ ...(id === undefined ? {} : { id }), asset: asset.data, share: parsedShare.data });
+    const held = { asset: asset.data, share: parsedShare.data };
+    if (typeof id === 'string') edited.set(id, { id, ...held });
+    else added.push(held);
   }
-  return new Set(held.flatMap(({ id }) => (id === undefined ? [] : [id]))).size ===
-    held.filter(({ id }) => id !== undefined).length
-    ? held
-    : undefined;
+  return [
+    ...current.flatMap((held) =>
+      held.id === undefined || dropped.has(held.id) ? [] : [edited.get(held.id) ?? held],
+    ),
+    ...added,
+  ];
 }
+
+export interface HeldAssetChanges {
+  readonly dropped: readonly string[];
+  readonly added: readonly HeldAsset[];
+  readonly updated: readonly { readonly id: string; readonly asset: StoredAsset }[];
+  readonly reshared: readonly { readonly id: string; readonly share: string }[];
+}
+
+const sameShare = (left: string, right: string) =>
+  compareScaled(
+    scaledDecimal(decimalSchema.parse(left)),
+    scaledDecimal(decimalSchema.parse(right)),
+  ) === 0;
+
+/** What saving `after` over `before` writes: owner rows to drop, assets to add, fields and shares. */
+export function heldAssetChanges(
+  before: readonly HeldAsset[],
+  after: readonly HeldAsset[],
+): HeldAssetChanges {
+  const kept = new Set(after.flatMap(({ id }) => (id === undefined ? [] : [id])));
+  const previous = new Map(
+    before.flatMap((held) => (held.id === undefined ? [] : [[held.id, held]])),
+  );
+  const updated: { id: string; asset: StoredAsset }[] = [];
+  const reshared: { id: string; share: string }[] = [];
+  for (const { id, asset, share } of after) {
+    const current = id === undefined ? undefined : previous.get(id);
+    if (id === undefined || current === undefined) continue;
+    if (JSON.stringify(current.asset) !== JSON.stringify(asset)) updated.push({ id, asset });
+    if (!sameShare(current.share, share)) reshared.push({ id, share });
+  }
+  return {
+    dropped: [...previous.keys()].filter((id) => !kept.has(id)),
+    added: after.filter(({ id }) => id === undefined),
+    updated,
+    reshared,
+  };
+}
+
+/** Whether "Não sei" may answer the question: assets save on their own rows, so it would mean nothing. */
+export const answerCanBeUnknown = (question: Question) => question.target.kind !== 'assets';
 
 /** The person's relationships with the details an answer gives; their ends and kinds stay. */
 function editedRelationships(

@@ -23,6 +23,7 @@ import {
   type StoredFinances,
   type StoredProfile,
   applyAnswers,
+  heldAssetChanges,
   maxCaseMembers,
   maxCasePeople,
   maxCaseRelationships,
@@ -298,34 +299,17 @@ async function deleteOwnerRow(tx: Transaction, assetId: string, personId: string
   );
 }
 
-/** A share as one string per value, so `0.500000` and `0.5` are the same. */
-const shareKey = (share: string) => (share.includes('.') ? share.replace(/\.?0+$/, '') : share);
-
-/** Writes the assets a person holds as the answer lists them: new, changed and dropped ones. */
 async function saveHeldAssets(
   tx: Transaction,
   personId: string,
   before: readonly HeldAsset[],
   after: readonly HeldAsset[],
 ) {
-  const kept = new Set(after.flatMap(({ id }) => (id === undefined ? [] : [id])));
-  for (const { id } of before) {
-    if (id !== undefined && !kept.has(id)) await deleteOwnerRow(tx, id, personId);
-  }
-  for (const held of after) {
-    if (held.id === undefined) {
-      await insertAsset(tx, personId, held.share, held.asset);
-      continue;
-    }
-    const current = before.find(({ id }) => id === held.id);
-    if (current === undefined) continue;
-    if (JSON.stringify(current.asset) !== JSON.stringify(held.asset)) {
-      await updateAssetRow(tx, held.id, held.asset);
-    }
-    if (shareKey(current.share) !== shareKey(held.share)) {
-      await setOwnerShare(tx, held.id, personId, held.share);
-    }
-  }
+  const { dropped, added, updated, reshared } = heldAssetChanges(before, after);
+  for (const id of dropped) await deleteOwnerRow(tx, id, personId);
+  for (const { share, asset } of added) await insertAsset(tx, personId, share, asset);
+  for (const { id, asset } of updated) await updateAssetRow(tx, id, asset);
+  for (const { id, share } of reshared) await setOwnerShare(tx, id, personId, share);
 }
 
 export function createCaseFiles({ db, audit, today, countries }: CaseFilesSettings): CaseFiles {
@@ -644,10 +628,18 @@ export function createCaseFiles({ db, audit, today, countries }: CaseFilesSettin
             validCaseStructure(rows.people, relationships, isoDate(today())),
             'case_invalid',
           );
-          for (const row of after.relationships) {
-            await tx.execute(sql`
-              UPDATE cases.relationship SET details = ${JSON.stringify(row.relationship.details)}::jsonb
-               WHERE id = ${row.id}`);
+          const stored = new Map(before.relationships.map((row) => [row.id, row.relationship]));
+          for (const { id, relationship } of after.relationships) {
+            const details = JSON.stringify(relationship.details);
+            if (details === JSON.stringify(stored.get(id)?.details)) continue;
+            refuseUnless(
+              await one(
+                tx,
+                sql`UPDATE cases.relationship SET details = ${details}::jsonb
+                     WHERE id = ${id} RETURNING id`,
+              ),
+              'not_found',
+            );
           }
         }
         return [];

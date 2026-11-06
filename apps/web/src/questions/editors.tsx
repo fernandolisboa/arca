@@ -8,7 +8,7 @@ import {
 } from '@arca/api-contract/client';
 import type { Messages } from '@arca/i18n';
 import { Button, ChoiceGroup } from '@arca/ui';
-import { useId, useState, type ReactNode } from 'react';
+import { useId, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { dangerLinkClass } from '../forms/text-link.js';
 import { SelectField } from '../forms/select-field.js';
@@ -29,7 +29,6 @@ import {
  */
 
 export interface QuestionContext {
-  /** The person the answers are about. */
   readonly personId: string;
   readonly names: ReadonlyMap<string, string>;
   readonly countries: readonly string[];
@@ -40,10 +39,10 @@ type FieldKey = keyof Messages['questions']['fields'];
 type Record_ = Readonly<Record<string, unknown>>;
 
 const unknownValue = '?';
-/** The radio values of yes, no and "Não sei"; their labels come from i18n. */
 const yesNo = { yes: 'yes', no: 'no', unknown: 'unknown' } as const;
 type YesNo = (typeof yesNo)[keyof typeof yesNo];
 const noneDate = 'none';
+const yearPattern = '\\d{4}';
 const listModes = { has: 'has', none: 'none', unknown: 'unknown' } as const;
 const scalar = (value: unknown) =>
   typeof value === 'string' || typeof value === 'number' ? String(value) : '';
@@ -76,7 +75,6 @@ function useNames() {
   };
 }
 
-/** One value of a field, with "Não sei" when it may be left out. */
 export function FieldEditor({
   fieldKey,
   label,
@@ -225,6 +223,8 @@ function DateEditor({
     setParts(next);
     onChange(joinDate(next));
   };
+  // The browser refuses a half-typed date before the step is sent, so it never goes as "Não sei".
+  const fullDate = input.precision === 'day' && parts.year !== '';
   const months = Array.from({ length: 12 }, (_, index) => String(index + 1).padStart(2, '0'));
   const days = Array.from({ length: 31 }, (_, index) => String(index + 1).padStart(2, '0'));
   return (
@@ -240,6 +240,8 @@ function DateEditor({
             inputMode="numeric"
             autoComplete="off"
             maxLength={4}
+            pattern={yearPattern}
+            required={parts.month !== '' || parts.day !== ''}
             value={parts.year}
             onChange={(event) => {
               set({ ...parts, year: event.currentTarget.value.replace(/\D/g, '') });
@@ -258,6 +260,7 @@ function DateEditor({
               })),
             ]}
             {...(input.precision === 'day' ? { placeholder: t('questions.pick') } : {})}
+            required={fullDate}
             onChange={(month) => {
               set({ ...parts, month, day: month === '' ? '' : parts.day });
             }}
@@ -273,6 +276,7 @@ function DateEditor({
                 ...days.map((day) => ({ value: day, label: String(Number(day)) })),
               ]}
               {...(input.precision === 'day' ? { placeholder: t('questions.pick') } : {})}
+              required={fullDate}
               onChange={(day) => {
                 set({ ...parts, day });
               }}
@@ -372,7 +376,6 @@ function MoneyEditor({
   );
 }
 
-/** The fields of one item, such as a citizenship or an asset. */
 function ItemFields({
   fields,
   item,
@@ -433,6 +436,14 @@ function ListEditor({
   const [mode, setMode] = useState<ListMode>(() =>
     value === null ? 'unknown' : !Array.isArray(value) ? '' : items.length === 0 ? 'none' : 'has',
   );
+  // Each item keeps its key when another is removed, so its editors keep their own typed text.
+  const lastKeyRef = useRef(items.length);
+  const [keys, setKeys] = useState(() => items.map((_, index) => index));
+  const keyAt = (index: number) => keys[index] ?? -1 - index;
+  const added = () => {
+    lastKeyRef.current += 1;
+    return lastKeyRef.current;
+  };
   return (
     <div className="flex flex-col gap-3">
       <ChoiceGroup
@@ -446,6 +457,7 @@ function ListEditor({
         value={mode}
         onChange={(chosen) => {
           setMode(chosen);
+          if (chosen === 'has' && items.length === 0) setKeys([added()]);
           onChange(
             chosen === 'unknown' ? null : chosen === 'none' ? [] : items.length > 0 ? items : [{}],
           );
@@ -454,9 +466,10 @@ function ListEditor({
       {mode === 'has' && (
         <ol className="flex flex-col gap-3">
           {items.map((item, index) => (
-            // Items have no identity of their own until saved; the position is what the person sees.
-            // eslint-disable-next-line @eslint-react/no-array-index-key
-            <li key={index} className="flex flex-col gap-3 rounded-control border border-line p-3">
+            <li
+              key={keyAt(index)}
+              className="flex flex-col gap-3 rounded-control border border-line p-3"
+            >
               <p className="font-medium">{t('questions.list.item', { number: index + 1 })}</p>
               <ItemFields
                 fields={fields}
@@ -470,6 +483,7 @@ function ListEditor({
                 type="button"
                 className={dangerLinkClass}
                 onClick={() => {
+                  setKeys(keys.filter((_, at) => at !== index));
                   onChange(items.filter((_, at) => at !== index));
                 }}
               >
@@ -481,6 +495,7 @@ function ListEditor({
             <Button
               type="button"
               onClick={() => {
+                setKeys([...keys, added()]);
                 onChange([...items, {}]);
               }}
             >
@@ -493,7 +508,6 @@ function ListEditor({
   );
 }
 
-/** One question of the flow, by its input kind. */
 export function QuestionEditor({
   input,
   legend,
@@ -686,12 +700,26 @@ function RelationshipsEditor({
   );
 }
 
-/** The answer as the API takes it: a field left as "Não sei" inside an item is left out. */
-export function sentAnswer(value: unknown): unknown {
+const idOf = (item: unknown) =>
+  isRecord(item) && typeof item['id'] === 'string' ? item['id'] : undefined;
+
+/**
+ * The answer as the API takes it: a field left as "Não sei" inside an item is left out, and a
+ * saved item the person removed is sent as dropped, since the API keeps what an answer leaves out.
+ */
+export function sentAnswer(value: unknown, saved: unknown): unknown {
   if (!Array.isArray(value)) return value;
-  return value.map((item: unknown) =>
-    isRecord(item)
-      ? Object.fromEntries(Object.entries(item).filter(([, field]) => field !== null))
-      : item,
-  );
+  const kept = new Set(value.map(idOf));
+  const dropped = (Array.isArray(saved) ? saved : [])
+    .map(idOf)
+    .filter((id): id is string => id !== undefined && !kept.has(id))
+    .map((id) => ({ id, dropped: true }));
+  return [
+    ...value.map((item: unknown) =>
+      isRecord(item)
+        ? Object.fromEntries(Object.entries(item).filter(([, field]) => field !== null))
+        : item,
+    ),
+    ...dropped,
+  ];
 }

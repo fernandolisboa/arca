@@ -1,5 +1,6 @@
 import {
   ApiError,
+  answerCanBeUnknown,
   questionFlow,
   routes,
   type CaseQuestions,
@@ -216,6 +217,7 @@ function StepForm({
   const [drafts, setDrafts] = useState<ReadonlyMap<QuestionId, unknown>>(
     () => new Map(step.questions.map((question) => [question.id, question.answer])),
   );
+  const saved = new Map(step.questions.map((question) => [question.id, question.answer]));
   const [pending, setPending] = useState(false);
   const [failure, setFailure] = useState<CaseFailure>();
   return (
@@ -230,7 +232,7 @@ function StepForm({
           personId: context.personId,
           answers: step.questions.map(({ id }) => ({
             questionId: id,
-            answer: sentAnswer(drafts.get(id) ?? null),
+            answer: sentAnswer(drafts.get(id) ?? null, saved.get(id)),
           })),
         })
           .then(async (updated) => {
@@ -259,7 +261,7 @@ function StepForm({
             {...(i18n.exists(hintKey) ? { hint: t(`questions.hint.${asked.id as Hinted}`) } : {})}
             value={drafts.get(asked.id)}
             {...(asked.related === undefined ? {} : { related: asked.related })}
-            canBeUnknown={definition.target.kind !== 'assets'}
+            canBeUnknown={answerCanBeUnknown(definition)}
             context={context}
             onChange={(value) => {
               setDrafts((before) => new Map(before).set(asked.id, value));

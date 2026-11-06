@@ -410,11 +410,10 @@ export const ptBR = {
       done: 'Entendi',
     },
   },
-  /** The account's passkeys and the sessions each signed in (spec 0003, R4). */
   /** The guided questions (spec 0007, R4): one step at a time, "Não sei" always allowed. */
   questions: {
     title: 'Perguntas guiadas',
-    lead: 'Responda no seu ritmo. Cada etapa fica salva quando você avança, e "Não sei" sempre vale.',
+    lead: 'Responda no seu ritmo. Cada etapa fica salva quando você avança, e “Não sei” sempre vale.',
     signIn: 'Entre para responder às perguntas.',
     noCase: 'Comece o caso na área da família para responder às perguntas.',
     noneKept: 'Você ainda não cuida dos dados de ninguém no caso.',
@@ -438,7 +437,7 @@ export const ptBR = {
     unknown: 'Não sei',
     yes: 'Sim',
     no: 'Não',
-    pick: 'Escolha',
+    pick: 'Escolha uma opção',
     list: {
       has: 'Sim',
       none: 'Nenhum',
@@ -473,7 +472,7 @@ export const ptBR = {
       sourceCountry: 'País de onde vem',
       value: 'Quanto vale',
       valuedAt: 'Data desse valor',
-      liquid: 'Dá para usar logo, como dinheiro, ou vender rápido?',
+      liquid: 'É fácil de transformar em dinheiro?',
       sold: 'Quando vendeu',
       share: 'Parte dessa pessoa (%)',
       date: 'Quando',
@@ -498,7 +497,7 @@ export const ptBR = {
         '{value, select, cash {Dinheiro em conta} investment {Investimentos} real_estate {Imóvel} business {Empresa ou participação} retirement {Previdência} vehicle {Veículo} other {Outro bem}}',
       immigrationEvent:
         '{value, select, visa_refusal {Visto negado} entry_refusal {Entrada negada na fronteira} overstay {Ficou além do prazo permitido} removal {Deportação} visa_granted {Visto concedido} residence_granted {Residência concedida} other {}}',
-      parentKind: '{value, select, biological {Biológica} adoptive {Adoção} other {}}',
+      parentKind: '{value, select, biological {Biológica} adoptive {Adotiva} other {}}',
       custody:
         '{value, select, full {Guarda total} shared {Guarda compartilhada} none {Sem guarda} other {}}',
     },
@@ -515,18 +514,18 @@ export const ptBR = {
       assets: 'Quais bens {name} tem?',
       allAssets: 'Esses são todos os bens de {name}?',
       immigrationHistory:
-        '{name} já teve visto, residência ou problema na imigração de algum país?',
-      allSpouses: 'Os casamentos de {name} anotados no caso são todos, contando os que acabaram?',
-      allPartners: 'As uniões estáveis de {name} anotadas no caso são todas?',
-      allChildren: 'Os filhos de {name} anotados no caso são todos?',
-      allParents: 'Os pais de {name} anotados no caso são todos?',
+        '{name} já teve visto ou residência em algum país, ou problema com imigração?',
+      allSpouses: 'Esses são todos os casamentos de {name}, inclusive os que acabaram?',
+      allPartners: 'Essas são todas as uniões estáveis de {name}?',
+      allChildren: 'Esses são todos os filhos de {name}?',
+      allParents: 'Esses são todos os pais de {name}?',
       relationships: 'Detalhes dos vínculos de {name}',
     },
     hint: {
       birthDate: 'Sem o dia, vale só o mês e o ano, ou só o ano.',
       citizenships: 'Conte também uma cidadania que já perdeu.',
-      educationLevel: 'Conta o último curso concluído.',
-      incomes: 'Cada fonte de renda vai separada.',
+      educationLevel: 'Vale o último curso que concluiu.',
+      incomes: 'Anote cada fonte de renda separadamente.',
       assets: 'Contas, investimentos, imóveis, empresa, previdência e veículos.',
       immigrationHistory: 'Vistos e residências concedidos também contam.',
       relationships: 'Para incluir ou tirar um vínculo, use a área da família.',
@@ -551,6 +550,7 @@ export const ptBR = {
     failure:
       '{reason, select, case_invalid {Alguma resposta não ficou certa. Confira e tente de novo.} not_found {Isso não está mais disponível. Atualize a página.} case_limit {O caso chegou a um limite. Tire algo antes de incluir mais.} limited {Muitas alterações em pouco tempo. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
   },
+  /** The account's passkeys and the sessions each signed in (spec 0003, R4). */
   devices: {
     title: 'Dispositivos',
     lead: 'Aqui estão as chaves de acesso da sua conta e os dispositivos que entraram com cada uma. Se não reconhecer algum, desconecte.',

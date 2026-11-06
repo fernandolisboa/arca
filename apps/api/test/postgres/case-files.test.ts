@@ -744,13 +744,53 @@ describe('guided questions (spec 0007, R4)', () => {
       parentKind: 'adoptive',
       start: '2016',
     });
-    const dropped = viewOf(
+    const unnamed = viewOf(
       await files.answerQuestions(alice, {
         personId: people.alice,
         answers: [{ questionId: 'assets', answer: [] }],
       }),
     );
+    expect(unnamed.assets.map(({ id }) => id)).toEqual([held?.id]);
+    const dropped = viewOf(
+      await files.answerQuestions(alice, {
+        personId: people.alice,
+        answers: [{ questionId: 'assets', answer: [{ id: held?.id, dropped: true }] }],
+      }),
+    );
     expect(dropped.assets).toEqual([]);
+  });
+
+  it("drops only the person's own share of a co-owned asset, within the shares left", async () => {
+    const { alice, bruno, people } = await family();
+    const added = viewOf(
+      await files.addAsset(alice, { personId: people.alice, share: '0.5', asset: house }),
+    );
+    const assetId = added.assets[0]?.id ?? '';
+    viewOf(await files.setOwner(alice, { assetId, personId: people.bruno, share: '0.5' }));
+    viewOf(await files.confirmOwner(bruno, { assetId, personId: people.bruno }));
+    const held = (await answersOf(alice, people.alice)).get('assets')?.answer as Record<
+      string,
+      unknown
+    >[];
+    expect(held.map(({ id, share }) => [id, share])).toEqual([[assetId, '0.500000']]);
+    expect(
+      refusal(
+        await files.answerQuestions(alice, {
+          personId: people.alice,
+          answers: [{ questionId: 'assets', answer: [{ ...held[0], share: '0.75' }] }],
+        }),
+      ),
+    ).toBe('case_limit');
+    const dropped = viewOf(
+      await files.answerQuestions(alice, {
+        personId: people.alice,
+        answers: [{ questionId: 'assets', answer: [{ id: assetId, dropped: true }] }],
+      }),
+    );
+    expect(dropped.assets).toEqual([]);
+    expect((await files.view(bruno))?.assets[0]?.owners).toEqual([
+      { personId: people.bruno, share: '0.500000', confirmed: true },
+    ]);
   });
 
   it('refuses answers that do not fit, and people the viewer does not keep', async () => {

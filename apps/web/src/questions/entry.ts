@@ -12,7 +12,6 @@ export interface DateParts {
 
 export const noDate: DateParts = { year: '', month: '', day: '' };
 
-/** A stored date, full or partial, in its parts; anything else as no date. */
 export function dateParts(value: unknown): DateParts {
   if (typeof value !== 'string') return noDate;
   const match = /^(\d{4})(?:-(\d{2}))?(?:-(\d{2}))?$/.exec(value);
@@ -21,18 +20,26 @@ export function dateParts(value: unknown): DateParts {
     : { year: match[1] ?? '', month: match[2] ?? '', day: match[3] ?? '' };
 }
 
-/** The date the parts make: a year, a year and month, or a full date; undefined without a year. */
 export function joinDate({ year, month, day }: DateParts): string | undefined {
   if (!/^\d{4}$/.test(year)) return undefined;
   if (month === '') return year;
   return day === '' ? `${year}-${month}` : `${year}-${month}-${day}`;
 }
 
-/** `1234.5` as people in Brazil write it: `1234,5`. */
 export const amountText = (amount: string) => amount.replace('.', ',');
 
-/** `1.234,50` back as a decimal string, `1234.50`; the API refuses anything that is not one. */
-export const amountValue = (text: string) => text.trim().replace(/[\s.]/g, '').replace(',', '.');
+const groupedAmount = /^\d{1,3}(?:\.\d{3})+(?:,\d+)?$/;
+
+/**
+ * `1.234,50` or `1234,50` back as a decimal string, `1234.50`. A point is a thousands separator
+ * only between groups of three, so `1500.50` typed on a keypad with a point stays `1500.50`; the
+ * API refuses anything that is not a decimal.
+ */
+export function amountValue(text: string): string {
+  const typed = text.replace(/\s/g, '');
+  if (groupedAmount.test(typed)) return typed.replace(/\./g, '').replace(',', '.');
+  return typed.includes('.') ? typed : typed.replace(',', '.');
+}
 
 const percentPattern = /^(\d{1,3})(?:[.,](\d{1,4}))?$/;
 

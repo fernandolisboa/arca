@@ -6,6 +6,7 @@ import { apiBasePath, ErrorResponse, type RouteDefinition } from '../routes/inde
 export {
   addCaseMemberAction,
   apiBasePath,
+  answerCanBeUnknown,
   choiceSets,
   currencyCodes,
   languageCodes,

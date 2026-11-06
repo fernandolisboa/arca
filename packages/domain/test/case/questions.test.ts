@@ -4,8 +4,10 @@ import { coupleEdgeSchema, incomeSchema, parentEdgeSchema } from '../../src/case
 import {
   type Question,
   type QuestionState,
+  type HeldAsset,
   answerOf,
   applyAnswers,
+  heldAssetChanges,
   parseCalendarDate,
   parsePartialDate,
   profileMarkers,
@@ -203,7 +205,7 @@ describe('answering the guided questions (spec 0007, R4)', () => {
     expect(relatedBy(ana, 'partners', withFamily.relationships)).toEqual([]);
   });
 
-  it('lists held assets, new ones without an ID, with their share', () => {
+  it('lists held assets, new ones without an ID, and keeps the ones it does not name', () => {
     const state: QuestionState = {
       ...empty,
       assets: [
@@ -238,17 +240,66 @@ describe('answering the guided questions (spec 0007, R4)', () => {
         },
       ],
     });
-    expect(applied.ok && applied.state.assets).toEqual([
-      {
-        asset: {
-          kind: 'cash',
-          value: { amount: 10025, currency: 'EUR' },
-          valuedAt: '2026-11-01',
-          liquid: true,
-        },
-        share: '1',
+    const added = {
+      asset: {
+        kind: 'cash',
+        value: { amount: 10025, currency: 'EUR' },
+        valuedAt: '2026-11-01',
+        liquid: true,
       },
-    ]);
+      share: '1',
+    };
+    expect(applied.ok && applied.state.assets).toEqual([state.assets[0], added]);
+    const dropped = apply(state, { assets: [{ id: house, dropped: true }] });
+    expect(dropped.ok && dropped.state.assets).toEqual([]);
+    for (const refused of [
+      [
+        { id: house, dropped: true },
+        { id: house, dropped: true },
+      ],
+      [{ dropped: true }],
+      [{ id: house, dropped: true, share: '1' }],
+      [{ id: house, dropped: false }],
+      [{ id: marriage, dropped: true }],
+    ]) {
+      expect(apply(state, { assets: refused }).ok, JSON.stringify(refused)).toBe(false);
+    }
+  });
+
+  it('works out the owner rows to drop and the assets, fields and shares to write', () => {
+    const cash = {
+      kind: 'cash',
+      value: { amount: 100, currency: 'BRL' },
+      valuedAt: parseCalendarDate('2026-01-10'),
+    } as const;
+    const before: HeldAsset[] = [
+      { id: house, asset: cash, share: '0.500000' },
+      { id: marriage, asset: cash, share: '1' },
+      { id: parenthood, asset: cash, share: '1' },
+    ];
+    const moved = { ...cash, value: { amount: 200, currency: 'BRL' } } as const;
+    expect(
+      heldAssetChanges(before, [
+        { id: house, asset: cash, share: '0.5' },
+        { id: marriage, asset: moved, share: '0.25' },
+        { asset: cash, share: '1' },
+      ]),
+    ).toEqual({
+      dropped: [parenthood],
+      added: [{ asset: cash, share: '1' }],
+      updated: [{ id: marriage, asset: moved }],
+      reshared: [{ id: marriage, share: '0.25' }],
+    });
+  });
+
+  it('refuses an answer left out, and an amount finer than the currency', () => {
+    expect(apply(empty, { studying: undefined }).ok).toBe(false);
+    const money = (amount: string) => [
+      { kind: 'active', monthly: { amount, currency: 'BRL' }, sourceCountry: 'BR' },
+    ];
+    expect(apply(empty, { incomes: money('10.505') }).ok).toBe(false);
+    const trailing = apply(empty, { incomes: money('10.500') });
+    expect(trailing.ok && trailing.state.finances?.incomes?.[0]?.monthly.amount).toBe(1050);
   });
 
   it('edits relationship details, never their ends or kinds', () => {

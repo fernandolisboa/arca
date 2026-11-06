@@ -60,10 +60,17 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
 
   const finances = step(page, 'Finanças');
   await radio(finances, 'Quanto Ana recebe por mês?', 'Sim');
+  const incomes = finances.getByRole('listitem').filter({ has: page.getByLabel('Valor') });
+  await incomes.first().getByLabel('Valor').fill('100');
+  await finances.getByRole('button', { name: 'Adicionar' }).click();
+  await incomes.nth(1).getByLabel('Valor').fill('9.000,50');
+  // Removing the first income must not hand its typed amount to the one left.
+  await incomes.first().getByRole('button', { name: 'Remover' }).click();
+  await expect(incomes).toHaveCount(1);
+  await expect(incomes.first().getByLabel('Valor')).toHaveValue('9.000,50');
   await finances
     .getByLabel('Tipo')
     .selectOption({ label: 'De trabalho, como salário ou serviços' });
-  await group(finances, 'Quanto por mês').getByLabel('Valor').fill('9.000,50');
   await finances.getByLabel('País de onde vem').selectOption({ label: 'Brasil' });
   await radio(finances, 'Ana depende do dinheiro de alguém do caso?', 'Não depende de ninguém');
   await radio(finances, 'Quais bens Ana tem?', 'Nenhum');
@@ -77,13 +84,13 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
   const history = step(page, 'Histórico de imigração');
   await radio(
     history,
-    'Ana já teve visto, residência ou problema na imigração de algum país?',
+    'Ana já teve visto ou residência em algum país, ou problema com imigração?',
     'Não sei',
   );
   await history.getByRole('button', { name: 'Salvar e continuar' }).click();
 
   const relatives = step(page, 'Família');
-  const children = group(relatives, 'Os filhos de Ana anotados no caso são todos?');
+  const children = group(relatives, 'Esses são todos os filhos de Ana?');
   await expect(children.getByText('Anotados: Criança.')).toBeVisible();
   await children.getByRole('radio', { name: 'Sim, são todos' }).check();
   await relatives.getByLabel('Filiação').selectOption({ label: 'Biológica' });
