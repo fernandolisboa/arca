@@ -1,6 +1,6 @@
 ---
 name: data-access-reviewer
-description: Must-pass specialist for any change touching API endpoints and authorization, storage, the database schema, migrations, row-level security policies, database roles, queries over case data, the knowledge-base approval flow, environments or seed data.
+description: Must-pass specialist for any change touching API endpoints and authorization, storage, the database schema, migrations, row-level security policies, database roles, queries over case data, the knowledge-base approval flow, telemetry, logging, analytics or notifications, environments or seed data.
 tools: Read, Grep, Glob, Bash
 model: fable
 effort: high
@@ -20,5 +20,6 @@ Check:
 7. **Deletion:** new data is covered by case deletion, account deletion and data export paths.
 8. **API authorization and storage:** every new endpoint checks the caller's access to the case and person before any read or write; stored objects (document ciphertext in Vercel Blob) are reachable only through those checks.
 9. **Knowledge-base approval flow** (ADR-0014): only approvers on the reviewed list can decide; a decision counts only once stored with its step-up; selection reads a proposed version's identity, never its content.
+10. **Telemetry and notices** (ADR-0016): scrubbing still runs before logs, errors, traces and analytics leave the app; no personal data in logs, error reports, analytics or notification bodies.
 
 Output: first line `PASS` or `BLOCK`. Then findings with severity (critical, high, medium, low), `file:line`, the failure scenario and the fix.

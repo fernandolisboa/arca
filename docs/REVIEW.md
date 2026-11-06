@@ -21,11 +21,11 @@ Every change is reviewed before merge, in the session that wrote it, before it o
 | Specialist | Area |
 | --- | --- |
 | [auth-crypto-reviewer](../.claude/agents/auth-crypto-reviewer.md) | Authentication, sessions, passkeys, recovery, the vault, field encryption, key management, step-ups for knowledge-base decisions |
-| [data-access-reviewer](../.claude/agents/data-access-reviewer.md) | API endpoints and authorization, storage, schema, migrations, row-level security, database roles, queries over case data, the knowledge-base approval flow, environments and seed data |
+| [data-access-reviewer](../.claude/agents/data-access-reviewer.md) | API endpoints and authorization, storage, schema, migrations, row-level security, database roles, queries over case data, the knowledge-base approval flow, telemetry, logging, analytics and notifications, environments and seed data |
 | [supply-chain-reviewer](../.claude/agents/supply-chain-reviewer.md) | Dependencies, lockfile, CI workflows, build and deploy config, CSP, CORS and headers, third-party calls, new services or vendors, agent and review configuration |
 | [ai-safety-reviewer](../.claude/agents/ai-safety-reviewer.md) | Prompts, agents, AI adapters, retrieval, rendering of model output, the evaluation suite |
 
-Logging, error tracking, analytics and notifications have no specialist of their own: the specialist of the code they sit in reads them (data-access for the API, ai-safety for AI paths), and supply-chain when they add a vendor. Added in Phase 4: a mobile security reviewer verifying against OWASP MASVS.
+Every sensitive area has a specialist; a change in several areas gets each one. Added in Phase 4: a mobile security reviewer verifying against OWASP MASVS.
 
 ## Verdicts
 
