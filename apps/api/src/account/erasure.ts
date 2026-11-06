@@ -8,6 +8,7 @@ import {
 import { sql, type SQL } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import { accounts, erasedAccounts } from '../auth/auth.js';
+import { lockCase, memberCase } from '../case/view.js';
 import type { Notices } from '../email/notices.js';
 import type { DocumentObjects } from '../vault/documents.js';
 
@@ -93,8 +94,12 @@ export function createErasure({
 
     eraseStoredObjects: (accountId) => documents.eraseObjects(accountId),
 
+    // The member's own row is the registry's first case entry, so the account leaves its case
+    // first and the cascade takes the people it keeps, as leaving does (spec 0007, R9).
     eraseOwnedEntries: (accountId) =>
       withIdentity(jobsDb, { accountId }, async (tx) => {
+        const caseId = await memberCase(tx, accountId);
+        if (caseId !== undefined) await lockCase(tx, caseId);
         for (const entry of jobsEntries) await tx.execute(eraseOwned(entry, accountId));
       }),
 

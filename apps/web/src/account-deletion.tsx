@@ -1,9 +1,11 @@
 import { routes } from '@arca/api-contract/client';
 import { Button } from '@arca/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Link } from '@tanstack/react-router';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { resetAccount, sessionQuery } from './api.js';
+import { caseQuery, resetAccount, sessionQuery } from './api.js';
+import { textLinkClass } from './forms/text-link.js';
 import { passkeys } from './platform.js';
 import { commonFailure, reach, type CommonFailure } from './requests.js';
 import { stepUpFor } from './step-up.js';
@@ -36,6 +38,42 @@ type State =
   | 'waiting'
   | { readonly dueAt: string }
   | { readonly failure: CommonFailure };
+
+/**
+ * The people the account keeps in its case, but its own: erasing the account deletes them unless
+ * they are handed over first (spec 0007, R9).
+ */
+function KeptPeopleWarning() {
+  const { t, i18n } = useTranslation();
+  const session = useQuery(sessionQuery);
+  // An unconfirmed account has no case to read yet (spec 0003, R2).
+  const found = useQuery({ ...caseQuery, enabled: session.data?.confirmed === true });
+  if (found.isError) {
+    return (
+      <p className="text-danger-ink">
+        {t('settings.accountDeletion.keptPeopleUnknown')}{' '}
+        <Link to="/family" className={textLinkClass}>
+          {t('settings.accountDeletion.handOver')}
+        </Link>
+      </p>
+    );
+  }
+  const view = found.data?.case;
+  if (view === undefined || view === null) return null;
+  const kept = view.people.filter(({ id, keptByMe }) => keptByMe && id !== view.me);
+  if (kept.length === 0) return null;
+  const names = new Intl.ListFormat(i18n.language, { type: 'conjunction' }).format(
+    kept.map(({ displayName }) => displayName),
+  );
+  return (
+    <p className="text-danger-ink">
+      {t('settings.accountDeletion.keptPeople', { names })}{' '}
+      <Link to="/family" className={textLinkClass}>
+        {t('settings.accountDeletion.handOver')}
+      </Link>
+    </p>
+  );
+}
 
 /** "Excluir conta" in the settings, for a signed-in account with no deletion waiting. */
 export function AccountDeletionSection() {
@@ -81,6 +119,7 @@ export function AccountDeletionSection() {
       {state === 'confirming' ? (
         <div className="flex flex-col items-start gap-3">
           <p>{t('settings.accountDeletion.confirmLead')}</p>
+          <KeptPeopleWarning />
           <div className="flex flex-wrap gap-3">
             <Button onClick={start}>{t('settings.accountDeletion.confirm')}</Button>
             <Button

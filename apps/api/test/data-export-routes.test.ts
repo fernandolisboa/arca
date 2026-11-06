@@ -16,7 +16,7 @@ const owner: SignedIn = {
 };
 const nonce = 'MzMzMzMzMzMzMzMzMzMzMw';
 const document: DataExport = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   exportedAt: '2026-11-04T13:20:00.123456+00:00',
   tables: [
     {
@@ -25,6 +25,7 @@ const document: DataExport = {
       rows: [{ email: 'owner@example.com', created_at: '2026-11-01T10:00:00+00:00' }],
     },
   ],
+  case: null,
 };
 
 function setup({

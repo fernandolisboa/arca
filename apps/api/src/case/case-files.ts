@@ -47,7 +47,7 @@ import type { AuditLog, AuditRecord } from '../audit/log.js';
 import { caseQuestions, questionState } from './questions.js';
 import { type CaseEvaluationsView, caseEvaluations } from './evaluations.js';
 import { casePlayback } from './playback.js';
-import { type CaseRows, caseView, memberCase, readCase } from './view.js';
+import { type CaseRows, caseView, lockCase, memberCase, readCase } from './view.js';
 
 /** Why a write was refused; each answers one status, and says nothing of a hidden row. */
 export type CaseRefusal = 'not_found' | 'case_exists' | 'case_limit' | 'case_invalid';
@@ -228,12 +228,6 @@ const linked = (tx: Transaction, accountId: string, other: string) =>
   );
 
 const isoDate = (date: Date) => parseCalendarDate(date.toISOString().slice(0, 10));
-
-/** The key the empty-case cleanup and the definer functions lock: a case's writes run one at a time. */
-const lockCase = (tx: Transaction, caseId: string) =>
-  tx.execute(
-    sql`SELECT pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(${`cases.case_file:${caseId}`}, 0))`,
-  );
 
 /** Replaces a person's facts and dependence; dependence names other people of the case. */
 async function saveProfile(

@@ -32,6 +32,12 @@ export interface CaseRows extends Omit<VisibleCaseRows, 'people' | 'relationship
   }[];
 }
 
+/** The key the empty-case cleanup and the definer functions lock: a case's writes run one at a time. */
+export const lockCase = (tx: Transaction, caseId: string) =>
+  tx.execute(
+    sql`SELECT pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(${`cases.case_file:${caseId}`}, 0))`,
+  );
+
 /** The viewer's case, or undefined outside one. */
 export const memberCase = async (tx: Transaction, accountId: string) =>
   (

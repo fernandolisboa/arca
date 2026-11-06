@@ -1,10 +1,13 @@
 import { randomUUID } from 'node:crypto';
+import { withIdentity } from '@arca/db';
 import { registry, type Registry } from '@arca/db/registry';
+import { buildCaseSnapshot, parseCalendarDate } from '@arca/domain';
 import { sql } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createAccountDeletion, type AccountDeletion } from '../../src/account/deletion.js';
 import { createErasure, eraseAccountNow, type Erasure } from '../../src/account/erasure.js';
 import { accounts } from '../../src/auth/auth.js';
+import { readCase } from '../../src/case/view.js';
 import { auditLog, type AuditLog } from '../../src/audit/log.js';
 import type { Notice, Notices } from '../../src/email/notices.js';
 import { createDocuments } from '../../src/vault/documents.js';
@@ -173,6 +176,25 @@ describe('eraseAccount (spec 0004, R9)', () => {
     expect(sent.map(({ kind, to }) => ({ kind, to }))).toEqual([
       { kind: 'account_erased', to: a.email },
     ]);
+  });
+
+  it('leaves the case first, so the other member keeps a case whose snapshot still builds (spec 0007, R9)', async () => {
+    const a = await seeded(testDatabase);
+    await deletion.request(a.accountId);
+    await makeDue(a.accountId);
+
+    expect(await eraseAccountNow(erasureWith(), a.accountId)).toBe(true);
+
+    const rows = await withIdentity(testDatabase.apiDb, { accountId: a.sharerId }, (tx) =>
+      readCase(tx, a.sharerId),
+    );
+    if (rows === undefined) throw new Error('the sharer lost the case');
+    expect(rows.people.map(({ displayName }) => displayName).sort()).toEqual([
+      'Synthetic relative',
+      'Synthetic sharer',
+    ]);
+    expect(rows.relationships).toEqual([]);
+    expect(() => buildCaseSnapshot(rows, parseCalendarDate('2026-11-06'))).not.toThrow();
   });
 
   it('deletes the objects of the documents the account owns before their rows, not those it received', async () => {

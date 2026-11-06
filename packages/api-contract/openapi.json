@@ -3294,7 +3294,7 @@
                     "schemaVersion": {
                       "type": "number",
                       "enum": [
-                        1
+                        2
                       ]
                     },
                     "exportedAt": {
@@ -3341,12 +3341,73 @@
                           "rows"
                         ]
                       }
+                    },
+                    "case": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "people": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "displayName": {
+                                "type": "string"
+                              },
+                              "caseMember": {
+                                "type": "boolean"
+                              },
+                              "keptByMe": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "displayName",
+                              "caseMember",
+                              "keptByMe"
+                            ]
+                          }
+                        },
+                        "relationships": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string"
+                              },
+                              "from": {
+                                "type": "string"
+                              },
+                              "to": {
+                                "type": "string"
+                              },
+                              "details": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "from",
+                              "to",
+                              "details"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "people",
+                        "relationships"
+                      ]
                     }
                   },
                   "required": [
                     "schemaVersion",
                     "exportedAt",
-                    "tables"
+                    "tables",
+                    "case"
                   ]
                 }
               }

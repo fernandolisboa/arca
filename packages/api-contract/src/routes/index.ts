@@ -867,7 +867,7 @@ export const auditEvents = {
 } as const satisfies RouteDefinition<typeof AuditEventsResponse>;
 
 /** The export's own format; a change that is not additive moves it to the next version. */
-export const dataExportSchemaVersion = 1;
+export const dataExportSchemaVersion = 2;
 
 /** A value as the database holds it, or a fixed placeholder where the export masks one. */
 const ExportedValue = z.union([z.string(), z.number(), z.boolean(), z.null()]);
@@ -886,6 +886,20 @@ export const DataExport = z.object({
       rows: z.array(z.record(z.string(), ExportedValue)),
     }),
   ),
+  /**
+   * The account's case as it sees it (spec 0007, R9): every person and relationship, including
+   * the ones other members keep, named by display name instead of IDs; null outside a case.
+   */
+  case: z
+    .object({
+      people: z.array(
+        z.object({ displayName: z.string(), caseMember: z.boolean(), keptByMe: z.boolean() }),
+      ),
+      relationships: z.array(
+        z.object({ kind: z.string(), from: z.string(), to: z.string(), details: z.string() }),
+      ),
+    })
+    .nullable(),
 });
 export type DataExport = z.infer<typeof DataExport>;
 

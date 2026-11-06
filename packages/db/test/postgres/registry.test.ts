@@ -309,9 +309,9 @@ describe('personal-data registry (spec 0004, R7)', () => {
   });
 
   it.each([
-    ['JSON', 'jsonb'],
+    ['plain JSON', 'json'],
     ['an array of bytes', 'bytea[]'],
-    ['a 64-bit integer', 'bigint'],
+    ['a floating-point number', 'double precision'],
   ])('fails on an exported column holding %s', async (_kind, type) => {
     expect(
       await problemsAfter(
@@ -321,6 +321,17 @@ describe('personal-data registry (spec 0004, R7)', () => {
       expect.stringMatching(
         /^auth\.recovery_lock\.locked_until has type \S+, which the export cannot carry$/,
       ),
+    ]);
+  });
+
+  it('fails on an exported column whose domain borrows a built-in name', async () => {
+    expect(
+      await problemsAfter(
+        `CREATE DOMAIN public.bytea AS pg_catalog.bytea;
+         ALTER TABLE auth.recovery_lock ALTER COLUMN locked_until TYPE public.bytea USING NULL`,
+      ),
+    ).toEqual([
+      'auth.recovery_lock.locked_until has type public.bytea, which the export cannot carry',
     ]);
   });
 

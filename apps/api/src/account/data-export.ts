@@ -10,6 +10,7 @@ import {
 import type { I18n } from '@arca/i18n';
 import { sql, type SQL } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
+import { type CaseRows, readCase } from '../case/view.js';
 import { namesAccount } from './erasure.js';
 
 export interface DataExports {
@@ -42,13 +43,19 @@ const column = (alias: string, name: string) =>
 /**
  * The entry's projection as one JSON object per row, so timestamps come out in ISO 8601. A bytea
  * value is ciphertext or key material (spec 0005, R6): the export carries the placeholder instead
- * of any byte of it.
+ * of any byte of it. A JSON value, such as a profile's facts, comes out as its JSON text, and a
+ * 64-bit integer or a numeric, such as an asset's amount or an owner's share, as its decimal text,
+ * so no reader rounds it. The registry guard allows exactly these types.
  */
 function projection(entry: RegistryEntry, placeholder: string): SQL {
   const pairs = entry.export.map((name) => {
     const value = column('t', name);
-    return sql`${name}::text, CASE WHEN pg_catalog.pg_typeof(${value}) = 'bytea'::pg_catalog.regtype
-      THEN pg_catalog.to_jsonb(${placeholder}::text) ELSE pg_catalog.to_jsonb(${value}) END`;
+    const type = sql`pg_catalog.pg_typeof(${value})`;
+    return sql`${name}::text, CASE WHEN ${type} = 'pg_catalog.bytea'::pg_catalog.regtype
+      THEN pg_catalog.to_jsonb(${placeholder}::text)
+      WHEN ${type} IN ('pg_catalog.jsonb'::pg_catalog.regtype, 'pg_catalog.int8'::pg_catalog.regtype,
+        'pg_catalog.numeric'::pg_catalog.regtype) THEN pg_catalog.to_jsonb(${value}::text)
+      ELSE pg_catalog.to_jsonb(${value}) END`;
   });
   return sql`pg_catalog.jsonb_build_object(${sql.join(pairs, sql`, `)})`;
 }
@@ -100,6 +107,24 @@ export function ownedRows(entry: RegistryEntry, registry: Registry, accountId: s
   return sql`FROM ${qualified(entry.table)} t WHERE ${ownedBy(entry, registry, accountId, 't')}`;
 }
 
+/** The case's people and relationships as the account sees them, by name (spec 0007, R9). */
+function seenCase(rows: CaseRows): NonNullable<DataExport['case']> {
+  const names = new Map(rows.people.map((person) => [person.id, person.displayName]));
+  return {
+    people: rows.people.map(({ displayName, caseMember, keptByMe }) => ({
+      displayName,
+      caseMember,
+      keptByMe,
+    })),
+    relationships: rows.relationships.map(({ kind, from, to, details }) => ({
+      kind,
+      from: names.get(from) ?? '',
+      to: names.get(to) ?? '',
+      details: JSON.stringify(details),
+    })),
+  };
+}
+
 export function createDataExports({
   authDb,
   apiDb,
@@ -135,13 +160,17 @@ export function createDataExports({
         },
         { isolationLevel: 'repeatable read', accessMode: 'read only' },
       );
-      const otherTables = await withIdentity(apiDb, { accountId }, (tx) =>
-        readAll(
-          tx,
-          registry.entries.filter((entry) => !inAuth(entry)),
-          accountId,
-        ),
-      );
+      const { otherTables, seen } = await withIdentity(apiDb, { accountId }, async (tx) => {
+        const caseRows = await readCase(tx, accountId);
+        return {
+          otherTables: await readAll(
+            tx,
+            registry.entries.filter((entry) => !inAuth(entry)),
+            accountId,
+          ),
+          seen: caseRows === undefined ? null : seenCase(caseRows),
+        };
+      });
       const rows = new Map([...authTables, ...otherTables]);
       const document = DataExport.parse({
         schemaVersion: dataExportSchemaVersion,
@@ -151,6 +180,7 @@ export function createDataExports({
           label: i18n.t(entry.label as never),
           rows: rows.get(entry.table) ?? [],
         })),
+        case: seen,
       });
       await audit.record({
         code: 'data_exported',
