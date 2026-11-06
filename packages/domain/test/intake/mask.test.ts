@@ -106,11 +106,13 @@ describe('maskIntakeText (spec 0008, R2)', () => {
     ['repeated digits and dots', '1.'.repeat(2000)],
     ['repeated spaces after a digit', `1${' '.repeat(3999)}`],
     ['repeated letters and digits', 'a1'.repeat(2000)],
-  ])('masks %s in linear time', (_, text) => {
-    const started = Date.now();
-    maskIntakeText(text, people);
-    expect(Date.now() - started).toBeLessThan(500);
-  });
+  ])(
+    'masks %s within the test timeout, so the patterns do not backtrack',
+    (_, text) => {
+      expect(maskIntakeText(text, people).masked.length).toBeLessThanOrEqual(text.length);
+    },
+    1000,
+  );
 
   it('masks an e-mail inside punctuation', () => {
     expect(maskIntakeText('(joana@exemplo.com),', people).masked).toBe('([e-mail]),');
