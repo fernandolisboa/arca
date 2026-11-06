@@ -1474,6 +1474,9 @@ export function createApp({
     if (ruleSummaries === undefined || authLimits === undefined) {
       return fail(c, 'summary_unavailable', 503);
     }
+    // A stored summary costs no model call, so it counts against no limit.
+    const stored = await ruleSummaries.stored(routeId, number);
+    if (stored.ok && stored.value !== null) return c.json(stored.value, 200);
     for (const rule of [ruleSummaryLimits.minute, ruleSummaryLimits.day]) {
       const limited = await overLimit(c, authLimits, rule, reads.current.accountId);
       if (limited !== undefined) return limited;

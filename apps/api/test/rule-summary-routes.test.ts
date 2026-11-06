@@ -23,7 +23,7 @@ const summary = { overview: 'Um resumo.', watchPoints: ['Confira o valor.'] };
 
 function setup({
   outcome = { ok: true, value: summary },
-  stored = { ok: true, value: summary },
+  stored = { ok: true, value: null },
   listed = true,
   signedIn = approver,
   withSummaries = true,
@@ -107,6 +107,14 @@ describe('POST /v1/knowledge/versions/summary (ADR-0025)', () => {
     ]);
   });
 
+  it('answers a stored summary with no call and no count', async () => {
+    const { post, asked, limited } = setup({ stored: { ok: true, value: summary } });
+    const response = await post();
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual(summary);
+    expect([asked, limited]).toEqual([[], []]);
+  });
+
   it('refuses anyone off the approver list before counting or calling', async () => {
     const { post, asked, limited } = setup({ listed: false });
     const response = await post();
@@ -163,7 +171,7 @@ describe('POST /v1/knowledge/versions/summary (ADR-0025)', () => {
 
 describe('GET /v1/knowledge/versions/summary (ADR-0025)', () => {
   it('answers the stored summary with no model call and no limit', async () => {
-    const { get, asked, read, limited } = setup();
+    const { get, asked, read, limited } = setup({ stored: { ok: true, value: summary } });
     const response = await get();
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ summary });

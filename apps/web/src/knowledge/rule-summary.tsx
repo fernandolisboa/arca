@@ -1,6 +1,6 @@
 import {
   type ApiError,
-  type RuleSummary as Summary,
+  type RuleSummary,
   routes,
   type VersionView,
 } from '@arca/api-contract/client';
@@ -31,8 +31,11 @@ const storedSummaryQuery = ({ routeId, number, hash }: VersionView) =>
   });
 
 export interface RuleSummaryState {
-  readonly summary: Summary | undefined;
-  /** Whether the button belongs on screen: the stored summary was read and there is none. */
+  readonly summary: RuleSummary | undefined;
+  /**
+   * Whether the button belongs on screen: no summary is stored, or reading the stored one failed,
+   * so asking again stays possible.
+   */
   readonly canAsk: boolean;
   readonly asking: boolean;
   readonly failure: ReturnType<typeof commonFailure> | undefined;
@@ -55,7 +58,7 @@ export function useRuleSummary(view: VersionView): RuleSummaryState {
   });
   return {
     summary: stored.data ?? undefined,
-    canAsk: stored.data === null,
+    canAsk: stored.data === null || stored.isError,
     asking: asked.isPending,
     failure: asked.isError
       ? commonFailure(asked.error, ({ code }: ApiError) => (isSummaryCode(code) ? code : undefined))

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { summarizerFor } from '../src/knowledge/summary/environment.js';
 import { fakeSummarizer } from '../src/knowledge/summary/fake-summarizer.js';
+import { ruleSummaryModel } from '../src/knowledge/summary/model.js';
 import { ruleSummaryMessage } from '../src/knowledge/summary/prompt.js';
 
 describe('the summarizer each deployment has (ADR-0025)', () => {
@@ -16,9 +17,14 @@ describe('the summarizer each deployment has (ADR-0025)', () => {
   });
 
   it('gives the scripted summarizer only to a development server that asks for it', () => {
-    expect(summarizerFor('development', undefined, true)).toBe(fakeSummarizer);
+    expect(summarizerFor('development', undefined, true)).toEqual({
+      summarizer: fakeSummarizer,
+      model: 'fake',
+    });
     expect(summarizerFor('preview', undefined, true)).toBeUndefined();
-    expect(summarizerFor('production', 'sk-ant-test', true)).not.toBe(fakeSummarizer);
+    const production = summarizerFor('production', 'sk-ant-test', true);
+    expect(production?.summarizer).not.toBe(fakeSummarizer);
+    expect(production?.model).toBe(ruleSummaryModel);
     expect(summarizerFor('production', undefined, true)).toBeUndefined();
   });
 });

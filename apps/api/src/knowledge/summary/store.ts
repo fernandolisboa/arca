@@ -1,4 +1,4 @@
-import type { RuleSummary } from '@arca/api-contract/routes';
+import { RuleSummary } from '@arca/api-contract/routes';
 import type { Database } from '@arca/db';
 import { ruleSummary } from '@arca/db/knowledge-schema';
 import { and, eq } from 'drizzle-orm';
@@ -17,16 +17,16 @@ export interface RuleSummaryStore {
   readonly save: (key: SummaryKey, summary: RuleSummary) => Promise<void>;
 }
 
-const keyOf = ({ contentHash, promptVersion, model }: SummaryKey) =>
+const rowKey = ({ contentHash, promptVersion, model }: SummaryKey) =>
   `${contentHash}/${promptVersion}/${model}`;
 
-/** For tests and for a server with no database: kept while the process runs. */
+/** For tests: kept while the process runs. */
 export function memorySummaryStore(): RuleSummaryStore {
   const rows = new Map<string, RuleSummary>();
   return {
-    find: (key) => Promise.resolve(rows.get(keyOf(key))),
+    find: (key) => Promise.resolve(rows.get(rowKey(key))),
     save: (key, summary) => {
-      if (!rows.has(keyOf(key))) rows.set(keyOf(key), summary);
+      if (!rows.has(rowKey(key))) rows.set(rowKey(key), summary);
       return Promise.resolve();
     },
   };
@@ -46,7 +46,9 @@ export function postgresSummaryStore(db: () => Database): RuleSummaryStore {
             eq(ruleSummary.model, model),
           ),
         );
-      return row;
+      // Checked again on the way out, so a row the table's checks let through never reaches the screen.
+      const parsed = RuleSummary.safeParse(row);
+      return parsed.success ? parsed.data : undefined;
     },
     async save(key, { overview, watchPoints }) {
       await db()

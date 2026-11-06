@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { RuleSummary } from '@arca/api-contract/routes';
 import type { VersionView } from '@arca/domain';
 import type { Logger } from '@arca/telemetry';
@@ -116,7 +117,13 @@ export function createRuleSummaries({
   now,
 }: RuleSummarySettings): RuleSummaries {
   const pending = new Map<string, Promise<RuleSummary>>();
-  const keyOf = (contentHash: string): SummaryKey => ({ contentHash, promptVersion, model });
+  // Keyed by what the model reads, not the version's hash alone: its rule cases are read too and
+  // can change under the same hash.
+  const keyOf = (view: VersionView): SummaryKey => ({
+    contentHash: createHash('sha256').update(summaryContent(view)).digest('hex'),
+    promptVersion,
+    model,
+  });
 
   const loggedSummarizer: Summarizer = {
     summarize: (content) =>
@@ -134,19 +141,27 @@ export function createRuleSummaries({
   };
 
   const summaryOf = async (view: VersionView): Promise<RuleSummary> => {
-    const key = keyOf(view.hash);
+    const key = keyOf(view);
     const found = await store.find(key);
     if (found !== undefined) return found;
     const summary = await readRuleSummary(loggedSummarizer, summaryContent(view), onUnparsable);
-    await store.save(key, summary);
-    return summary;
+    try {
+      await store.save(key, summary);
+    } catch {
+      // The approver still gets the summary already paid for; the error, which may carry its
+      // text, is dropped for a fixed code.
+      logger.error({ route, errorCode: 'summary_not_stored' });
+      return summary;
+    }
+    // Another instance may have stored its own first; every approver then reads that one.
+    return (await store.find(key)) ?? summary;
   };
 
   return {
     async stored(routeId, number) {
       const view = await versions.view(routeId, number);
       if (view === undefined) return { ok: false, reason: 'not_found' };
-      return { ok: true, value: (await store.find(keyOf(view.hash))) ?? null };
+      return { ok: true, value: (await store.find(keyOf(view))) ?? null };
     },
     async summarize(routeId, number) {
       const view = await versions.view(routeId, number);

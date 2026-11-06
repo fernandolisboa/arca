@@ -190,6 +190,36 @@ describe('the rule summaries (ADR-0025)', () => {
     expect(next.sent).toHaveLength(1);
   });
 
+  it('still answers a summary it could not store, logging only a code', async () => {
+    const { routeId, number } = first.identity;
+    const failing: RuleSummaryStore = {
+      find: () => Promise.resolve(undefined),
+      save: () => Promise.reject(new Error(summary.overview)),
+    };
+    const { summaries, logs } = setup([], { store: failing });
+    expect(await summaries.summarize(routeId, number)).toEqual({ ok: true, value: summary });
+    expect(logs).toContainEqual({
+      route: '/v1/knowledge/versions/summary',
+      errorCode: 'summary_not_stored',
+    });
+    expect(JSON.stringify(logs)).not.toContain(summary.overview);
+  });
+
+  it('answers the summary another instance stored first', async () => {
+    const { routeId, number } = first.identity;
+    const store = memorySummaryStore();
+    const earlier = { overview: 'O primeiro.', watchPoints: [] };
+    const racing: RuleSummaryStore = {
+      find: store.find,
+      save: async (key, value) => {
+        await store.save(key, earlier);
+        await store.save(key, value);
+      },
+    };
+    const { summaries } = setup([], { store: racing });
+    expect(await summaries.summarize(routeId, number)).toEqual({ ok: true, value: earlier });
+  });
+
   it('stores no failure', async () => {
     const { routeId, number } = first.identity;
     const { summaries } = setup([() => Promise.reject(new SummarizerError('summary_timeout'))]);
