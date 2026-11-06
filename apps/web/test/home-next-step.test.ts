@@ -35,6 +35,7 @@ describe('nextStep', () => {
   it.each([
     ['no case yet', null, undefined, { stage: 'family', answered: 0, total: 0 }],
     ['questions still loading', view, undefined, { stage: 'questions', answered: 0, total: 0 }],
+    ['no questions shown yet', view, questionsWith(), { stage: 'questions', answered: 0, total: 0 }],
     [
       'some questions open across people',
       view,

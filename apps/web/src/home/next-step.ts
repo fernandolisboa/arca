@@ -14,8 +14,8 @@ export interface NextStep {
 
 /**
  * Where the family stands, from the case and its guided questions: no case yet, questions still
- * open, or every question answered so the routes can be read. Questions not loaded yet count as
- * open, so the home never sends someone to the results too early.
+ * open, or every question answered so the routes can be read. Questions not loaded yet, or none
+ * shown at all, count as open, so the home never sends someone to the results too early.
  */
 export function nextStep(view: CaseView | null, questions: CaseQuestions | undefined): NextStep {
   if (view === null) return { stage: 'family', answered: 0, total: 0 };
@@ -23,7 +23,7 @@ export function nextStep(view: CaseView | null, questions: CaseQuestions | undef
     person.steps.flatMap((step) => step.questions),
   );
   const answered = all.filter((question) => question.answer !== undefined).length;
-  const done = questions !== undefined && answered === all.length;
+  const done = all.length > 0 && answered === all.length;
   return { stage: done ? 'routes' : 'questions', answered, total: all.length };
 }
 

@@ -130,10 +130,10 @@ function Greeting({
   readonly name: string | undefined;
   readonly lead: Stage | undefined;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [now] = useState(() => new Date());
   const part = dayPart(now.getHours());
-  const date = new Intl.DateTimeFormat('pt-BR', {
+  const date = new Intl.DateTimeFormat(i18n.language, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -291,7 +291,7 @@ function FamilyCard({ view }: { readonly view: CaseView | null | undefined }) {
   if (view === undefined || view === null) {
     return (
       <ShortcutCard icon="family" title={t('home.family.title')}>
-        <p className="text-muted">{t('home.family.empty')}</p>
+        {view === null && <p className="text-muted">{t('home.family.empty')}</p>}
         <Link to="/invites" className={cardLink}>
           {t('home.family.invite')}
         </Link>
