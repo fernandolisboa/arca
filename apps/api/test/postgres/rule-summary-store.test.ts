@@ -51,6 +51,15 @@ describe('knowledge.rule_summary (ADR-0025)', () => {
     }
   });
 
+  it('never answers a row the table takes but the summary schema refuses', async () => {
+    const odd = { ...key, model: 'claude-odd' };
+    await postgresSummaryStore(() => testDatabase.apiDb).save(odd, {
+      overview: 'Um resumo.',
+      watchPoints: ['x'.repeat(601)],
+    });
+    expect(await postgresSummaryStore(() => testDatabase.apiDb).find(odd)).toBeUndefined();
+  });
+
   it('lets app_api only read and insert, and no other runtime role touch it', async () => {
     await postgresSummaryStore(() => testDatabase.apiDb).save(
       { ...key, model: 'claude-kept' },

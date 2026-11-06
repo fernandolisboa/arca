@@ -101,11 +101,11 @@ export function readRuleSummary(
 }
 
 /**
- * Each version is summarized once per prompt and model: the summary is stored by the version's
- * content hash, and a request for a summary still on its way in this instance waits for that same
- * call. A failure is not stored, so the next request asks again. Only bundled versions reach the
- * model, so the store holds at most one row per catalog version, prompt and model. The content and
- * the reply never reach a log line or an error.
+ * What the model reads is summarized once per prompt and model: the summary is stored by that
+ * content's digest, and a request for a summary still on its way in this instance waits for that
+ * same call. A failure is not stored, so the next request asks again. Only bundled versions reach
+ * the model, so the store holds one row per catalog version's content, prompt and model. The
+ * content and the reply never reach a log line or an error.
  */
 export function createRuleSummaries({
   versions,
@@ -154,7 +154,11 @@ export function createRuleSummaries({
       return summary;
     }
     // Another instance may have stored its own first; every approver then reads that one.
-    return (await store.find(key)) ?? summary;
+    try {
+      return (await store.find(key)) ?? summary;
+    } catch {
+      return summary;
+    }
   };
 
   return {
@@ -166,14 +170,15 @@ export function createRuleSummaries({
     async summarize(routeId, number) {
       const view = await versions.view(routeId, number);
       if (view === undefined) return { ok: false, reason: 'not_found' };
-      let summary = pending.get(view.hash);
+      const { contentHash } = keyOf(view);
+      let summary = pending.get(contentHash);
       if (summary === undefined) {
         summary = summaryOf(view);
-        pending.set(view.hash, summary);
+        pending.set(contentHash, summary);
         const asked = summary;
         void asked.then(
-          () => pending.delete(view.hash),
-          () => pending.delete(view.hash),
+          () => pending.delete(contentHash),
+          () => pending.delete(contentHash),
         );
       }
       try {
