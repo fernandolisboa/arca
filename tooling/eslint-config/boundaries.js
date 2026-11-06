@@ -136,7 +136,7 @@ export const databaseTestFiles = ['test/postgres/**', 'e2e/postgres/**'];
 export const knowledgeRuntimeFiles = ['src/**'];
 
 /** The knowledge runtime files that read the built catalog, each behind its own entry point. */
-export const knowledgeCatalogReaders = ['src/index.ts', 'src/reproduction.ts'];
+export const knowledgeCatalogReaders = ['src/index.ts', 'src/reproduction.ts', 'src/display.ts'];
 
 /**
  * packages/knowledge: only the entry points read the built catalog, so no other module can hand
@@ -183,6 +183,26 @@ export const reproductionReexport = {
     },
   ],
 };
+
+const displayOnly =
+  'The display catalog hands out every version, proposed and rejected ones included, so only the activation view imports it (spec 0007, R7).';
+
+/**
+ * Every package: the display catalog only where the activation screen's view is built, never
+ * where an evaluation runs.
+ *
+ * @type {Restrictions}
+ */
+export const displayLookup = {
+  patterns: [{ regex: '^@arca/knowledge/display$', message: displayOnly }],
+};
+
+/** The activation view in the API and the tests of it and of the display catalog. */
+export const displayLookupFiles = [
+  'src/knowledge/versions.ts',
+  'test/knowledge-versions.test.ts',
+  'test/display.test.ts',
+];
 
 /** The cases runner and the reproduction path, with their tests. */
 export const reproductionLookupFiles = [

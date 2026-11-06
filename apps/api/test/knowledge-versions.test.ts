@@ -1,0 +1,43 @@
+import { identityKey, parseCalendarDate } from '@arca/domain';
+import { displayCatalog } from '@arca/knowledge/display';
+import { describe, expect, it } from 'vitest';
+import { createKnowledgeVersions, todayInSaoPaulo } from '../src/knowledge/versions.js';
+
+const [first] = displayCatalog.entries();
+if (first === undefined) throw new Error('the catalog is empty');
+const versions = createKnowledgeVersions({
+  states: () => Promise.resolve(new Map([[identityKey(first.identity), 'active' as const]])),
+  today: () => parseCalendarDate('2026-11-06'),
+});
+
+describe('the activation screen reads (spec 0007, R7)', () => {
+  it('lists every bundled version with its state, the newest first', async () => {
+    const listed = await versions.list();
+    expect(listed).toHaveLength(displayCatalog.entries().length);
+    const dates = listed.map(({ effectiveFrom }) => effectiveFrom);
+    expect(dates).toEqual([...dates].sort().reverse());
+    expect(
+      listed.find(
+        ({ routeId, number }) =>
+          routeId === first.identity.routeId && number === first.identity.number,
+      ),
+    ).toMatchObject({ state: 'active', title: first.version.title, hash: first.identity.hash });
+    expect(listed.filter(({ state }) => state === 'proposed')).toHaveLength(listed.length - 1);
+  });
+
+  it("views one version with its state and today's selection", async () => {
+    const view = await versions.view(first.identity.routeId, first.identity.number);
+    expect(view).toMatchObject({
+      routeId: first.identity.routeId,
+      state: 'active',
+      rejection: { selected: true, fallback: null },
+    });
+    expect(await versions.view(first.identity.routeId, 99)).toBeUndefined();
+    expect(await versions.view('qm-none', 1)).toBeUndefined();
+  });
+
+  it('takes the date in São Paulo', () => {
+    expect(todayInSaoPaulo(new Date('2026-11-07T02:00:00Z'))).toBe('2026-11-06');
+    expect(todayInSaoPaulo(new Date('2026-11-07T03:00:00Z'))).toBe('2026-11-07');
+  });
+});

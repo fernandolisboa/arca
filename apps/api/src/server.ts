@@ -25,6 +25,7 @@ import { authService, type AuthService } from './auth/service.js';
 import { createStepUp, type StepUpService, type StepUpSpender } from './auth/step-up.js';
 import { approvers } from './knowledge/approvers.js';
 import { createKnowledgeDecisions, type KnowledgeDecisions } from './knowledge/decisions.js';
+import { createKnowledgeVersions, todayInSaoPaulo } from './knowledge/versions.js';
 import {
   databaseTargetFrom,
   readApiSecrets,
@@ -406,6 +407,10 @@ const app = createApp({
       knowledgeDecisions().decide(signedIn, kind, version, nonce),
     states: () => knowledgeDecisions().states(),
   },
+  knowledgeVersions: createKnowledgeVersions({
+    states: () => knowledgeDecisions().states(),
+    today: () => todayInSaoPaulo(),
+  }),
   accountConfirmed: (accountId) => accounts.isConfirmed(authConnection(), accountId),
   notifications: {
     channels: {

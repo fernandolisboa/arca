@@ -201,6 +201,20 @@ describe('reproduction lookup', () => {
   });
 });
 
+describe('display catalog', () => {
+  it('fails outside the activation view', async () => {
+    expect(await ruleIds('api', ['api'], 'src/display-import.ts')).toContain(
+      'no-restricted-imports',
+    );
+  });
+
+  it('may be imported by the activation view', async () => {
+    expect(await ruleIds('api', ['api'], 'src/knowledge/versions.ts')).not.toContain(
+      'no-restricted-imports',
+    );
+  });
+});
+
 describe('contract', () => {
   it.each([
     ['src/routes/hono.ts', 'no-restricted-imports'],

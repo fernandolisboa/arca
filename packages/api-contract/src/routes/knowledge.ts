@@ -1,4 +1,11 @@
-import { routeIdSchema } from '@arca/domain';
+import {
+  calendarDateSchema,
+  durationStageSchema,
+  routeIdSchema,
+  ruleCaseSummarySchema,
+  sourceSchema,
+  viewSections,
+} from '@arca/domain';
 import { z } from 'zod';
 import type { RouteDefinition } from './index.js';
 
@@ -48,4 +55,147 @@ export function decideVersionAction(
   return { action: decision, targets: [routeId, String(number)], fields: { contentHash } };
 }
 
-export const knowledgeRoutes = { activateVersion, rejectVersion } as const;
+const decisionState = z.enum(['active', 'rejected', 'proposed']);
+const ids = z.array(z.string().max(64)).max(50);
+
+export const KnowledgeVersion = z.object({
+  routeId: routeIdSchema,
+  number: z.int().min(1),
+  title: z.string().max(200),
+  country: z.string().regex(/^[A-Z]{2}$/),
+  effectiveFrom: calendarDateSchema,
+  hash: z.string().regex(/^[0-9a-f]{64}$/),
+  state: decisionState,
+});
+export type KnowledgeVersion = z.infer<typeof KnowledgeVersion>;
+
+export const KnowledgeVersions = z.object({ versions: z.array(KnowledgeVersion) });
+export type KnowledgeVersions = z.infer<typeof KnowledgeVersions>;
+
+export const listKnowledgeVersions = {
+  method: 'get',
+  path: '/knowledge/versions',
+  operationId: 'listKnowledgeVersions',
+  summary:
+    'Every route version the API bundles with its decision state, the newest first, for an approver; 403 not_approver',
+  response: { description: 'The versions', schema: KnowledgeVersions },
+} as const satisfies RouteDefinition<typeof KnowledgeVersions>;
+
+/** An expression tree with each fact node naming its catalog key and target; display only. */
+const expressionView = z.record(z.string(), z.unknown());
+const factName = z.object({
+  reference: z.string().max(80),
+  key: z.string().max(80).nullable(),
+  target: z.string().max(20).nullable(),
+});
+const facts = z.array(factName).max(200);
+const sourceIds = z.array(z.string().max(64)).max(20);
+const sectionChange = z.object({ added: ids, removed: ids, changed: ids });
+
+/** One version laid out for the approver (spec 0007, R7), built by `versionView` in the domain. */
+export const VersionView = z.object({
+  routeId: routeIdSchema,
+  number: z.int().min(1),
+  hash: z.string().regex(/^[0-9a-f]{64}$/),
+  state: decisionState,
+  title: z.string().max(200),
+  country: z.string().regex(/^[A-Z]{2}$/),
+  tags: z.array(z.string().max(40)).max(20),
+  effectiveFrom: calendarDateSchema,
+  corrects: z.int().min(1).nullable(),
+  status: z.enum(['open', 'closed']),
+  currency: z.string().regex(/^[A-Z]{3}$/),
+  requirements: z
+    .array(
+      z.object({
+        id: z.string(),
+        title: z.string(),
+        expression: expressionView,
+        facts,
+        sources: sourceIds,
+      }),
+    )
+    .max(50),
+  assessments: z
+    .array(z.object({ id: z.string(), title: z.string(), evidence: facts, sources: sourceIds }))
+    .max(20),
+  dependents: z
+    .array(
+      z.object({
+        id: z.string(),
+        title: z.string(),
+        path: z.array(z.string()).max(3),
+        condition: expressionView,
+        facts,
+        at: z.string().nullable(),
+        sources: sourceIds,
+      }),
+    )
+    .max(20),
+  costs: z
+    .array(
+      z.object({
+        id: z.string(),
+        title: z.string(),
+        kind: z.string(),
+        appliesTo: z.string(),
+        amount: expressionView,
+        condition: expressionView.nullable(),
+        facts,
+        sources: sourceIds,
+      }),
+    )
+    .max(50),
+  durations: z.array(durationStageSchema).max(20),
+  countrySets: z
+    .array(
+      z.object({
+        id: z.string(),
+        number: z.int().min(1),
+        title: z.string(),
+        members: z.array(z.string()).max(300),
+      }),
+    )
+    .max(20),
+  sources: z.array(sourceSchema.extend({ newHost: z.boolean() })).max(50),
+  replaces: z
+    .object({
+      number: z.int().min(1),
+      changes: z.object(
+        Object.fromEntries(viewSections.map((section) => [section, sectionChange])) as Record<
+          (typeof viewSections)[number],
+          typeof sectionChange
+        >,
+      ),
+    })
+    .nullable(),
+  cases: z.array(ruleCaseSummarySchema).max(500),
+  rejection: z.object({
+    selected: z.boolean(),
+    fallback: z.object({ number: z.int().min(1), state: decisionState }).nullable(),
+  }),
+});
+export type VersionView = z.infer<typeof VersionView>;
+
+export const VersionViewQuery = z.object({
+  routeId: routeIdSchema,
+  number: z.coerce.number<number>().int().min(1).max(1_000_000),
+});
+export type VersionViewQuery = z.infer<typeof VersionViewQuery>;
+
+export const getVersionView = {
+  method: 'get',
+  path: '/knowledge/versions/view',
+  operationId: 'getVersionView',
+  summary:
+    "One route version laid out for an approver, from its content alone, with what changed, its sources, its cases and what rejecting it would do to today's selection; 403 not_approver, 404 not_found",
+  query: VersionViewQuery,
+  response: { description: 'The version', schema: VersionView },
+} as const satisfies RouteDefinition<typeof VersionView>;
+
+export const knowledgeRoutes = {
+  activateVersion,
+  rejectVersion,
+  listKnowledgeVersions,
+  getVersionView,
+} as const;

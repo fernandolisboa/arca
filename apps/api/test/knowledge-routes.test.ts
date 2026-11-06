@@ -3,6 +3,7 @@ import type { Logger } from '@arca/telemetry';
 import { createApp } from '../src/app.js';
 import type { SignedIn } from '../src/auth/service.js';
 import type { DecisionOutcome, KnowledgeDecisions } from '../src/knowledge/decisions.js';
+import type { KnowledgeVersions } from '../src/knowledge/versions.js';
 import { noLimits } from './limits.js';
 
 const silentLogger: Logger = { info: () => undefined, error: () => undefined };
@@ -35,6 +36,20 @@ function setup({
     },
     states: () => Promise.resolve(new Map()),
   };
+  const listedVersion = {
+    routeId: 'pt-d7',
+    number: 2,
+    title: 'Visto D7',
+    country: 'PT',
+    effectiveFrom: '2026-01-01',
+    hash: 'a'.repeat(64),
+    state: 'proposed',
+  } as const;
+  const knowledgeVersions: KnowledgeVersions = {
+    list: () =>
+      Promise.resolve([listedVersion] as unknown as Awaited<ReturnType<KnowledgeVersions['list']>>),
+    view: () => Promise.resolve(undefined),
+  };
   const app = createApp({
     checkDatabase: () => Promise.resolve('ok'),
     logger: silentLogger,
@@ -46,6 +61,7 @@ function setup({
     },
     authLimits: noLimits,
     knowledge,
+    knowledgeVersions,
   });
   const decide = (kind: 'activate' | 'reject', body: unknown = version) =>
     app.request(`/v1/knowledge/versions/${kind}`, {
@@ -57,7 +73,8 @@ function setup({
       },
       body: JSON.stringify(body),
     });
-  return { decide, calls };
+  const read = (path: string) => app.request(`/v1/knowledge/versions${path}`);
+  return { decide, read, calls, listedVersion };
 }
 
 describe('POST /v1/knowledge/versions (spec 0007, R7)', () => {
@@ -100,5 +117,21 @@ describe('POST /v1/knowledge/versions (spec 0007, R7)', () => {
       400,
     );
     expect([...noNonce.calls, ...malformed.calls]).toEqual([]);
+  });
+
+  it('lists the versions for an approver and refuses anyone else', async () => {
+    const { read, listedVersion } = setup();
+    const response = await read('');
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ versions: [listedVersion] });
+    const other = setup({ listed: false });
+    expect((await other.read('')).status).toBe(403);
+    expect((await other.read('/view?routeId=pt-d7&number=2')).status).toBe(403);
+  });
+
+  it('answers 404 for a version it does not hold and 400 for a malformed one', async () => {
+    const { read } = setup();
+    expect((await read('/view?routeId=pt-d7&number=2')).status).toBe(404);
+    expect((await read('/view?routeId=Nope&number=0')).status).toBe(400);
   });
 });

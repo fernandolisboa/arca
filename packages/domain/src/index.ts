@@ -145,6 +145,7 @@ export {
   type RouteVersion,
   type Source,
   countrySetSchema,
+  durationStageSchema,
   jsonDepthWithin,
   maxKnowledgeJsonDepth,
   officialDomainListSchema,
@@ -177,6 +178,21 @@ export {
   versionIdentity,
 } from './rules/catalog.js';
 export { type CheckedDecision, type DecisionKind, decisionStates } from './rules/decisions.js';
+export {
+  type ExpressionView,
+  type FactName,
+  type RejectionEffect,
+  type RuleCaseSummary,
+  type SectionChange,
+  type SourceView,
+  type VersionView,
+  type VersionViewInput,
+  type ViewSection,
+  rejectionEffect,
+  ruleCaseSummarySchema,
+  versionView,
+  viewSections,
+} from './rules/version-view.js';
 export { type VersionDates, checkVersionOrder } from './rules/version-order.js';
 export { type EvaluationContext, type VersionContext } from './rules/context.js';
 export {
