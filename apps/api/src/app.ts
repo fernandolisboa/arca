@@ -635,6 +635,7 @@ export function createApp({
         pendingPasskeyUntil: status?.pendingUntil?.toISOString() ?? null,
         recoveryPending: status?.recoveryPending ?? false,
         deletionDueAt: status?.deletionDueAt?.toISOString() ?? null,
+        approver: knowledge?.isApprover(session.accountId) ?? false,
       },
       200,
     );

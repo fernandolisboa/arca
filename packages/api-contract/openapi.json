@@ -169,6 +169,9 @@
                         "null"
                       ],
                       "format": "date-time"
+                    },
+                    "approver": {
+                      "type": "boolean"
                     }
                   },
                   "required": [
@@ -178,7 +181,8 @@
                     "device",
                     "pendingPasskeyUntil",
                     "recoveryPending",
-                    "deletionDueAt"
+                    "deletionDueAt",
+                    "approver"
                   ]
                 }
               }

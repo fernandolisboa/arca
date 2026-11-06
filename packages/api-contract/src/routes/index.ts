@@ -99,6 +99,8 @@ export const SessionResponse = z.object({
    * may only show so and cancel it; every other route answers 403 deletion_pending. Null otherwise.
    */
   deletionDueAt: z.iso.datetime({ offset: true }).nullable(),
+  /** The account is on this environment's approver list (spec 0007, R7). */
+  approver: z.boolean(),
 });
 export type SessionResponse = z.infer<typeof SessionResponse>;
 

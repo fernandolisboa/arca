@@ -57,7 +57,19 @@ function setup({
     auth: {
       handle: () => Promise.resolve(Response.json({})),
       signedIn: () => Promise.resolve(signedIn),
-      refresh: () => Promise.resolve({ session: null, setCookies: [] }),
+      refresh: () =>
+        Promise.resolve({
+          session:
+            signedIn === null
+              ? null
+              : {
+                  accountId: signedIn.accountId,
+                  email: 'owner@example.com',
+                  confirmed: true,
+                  device: { browser: 'firefox', os: 'linux' },
+                },
+          setCookies: [],
+        }),
     },
     authLimits: noLimits,
     knowledge,
@@ -74,8 +86,18 @@ function setup({
       body: JSON.stringify(body),
     });
   const read = (path: string) => app.request(`/v1/knowledge/versions${path}`);
-  return { decide, read, calls, listedVersion };
+  return { app, decide, read, calls, listedVersion };
 }
+
+describe('GET /v1/session for approvers (spec 0007, R7)', () => {
+  it('says whether the account is on the approver list', async () => {
+    for (const listed of [true, false]) {
+      const response = await setup({ listed }).app.request('/v1/session');
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({ approver: listed });
+    }
+  });
+});
 
 describe('POST /v1/knowledge/versions (spec 0007, R7)', () => {
   it.each(['activate', 'reject'] as const)('%ss with the nonce the client sent', async (kind) => {
