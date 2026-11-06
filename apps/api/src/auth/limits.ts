@@ -67,6 +67,11 @@ export const documentLimits = {
   confirm: { name: 'document_confirm_account', limit: 60, windowSeconds: hour },
 } as const satisfies Record<string, RateLimitRule>;
 
+/** Writes to the family's case (spec 0007, R3). */
+export const caseLimits = {
+  write: { name: 'case_write_account', limit: 300, windowSeconds: hour },
+} as const satisfies Record<string, RateLimitRule>;
+
 /**
  * Limits on recovery (spec 0003, R10): starting is per email HMAC and per IP; the link's token is
  * 256 random bits and five wrong codes lock the account's recovery, so the rest bound load.

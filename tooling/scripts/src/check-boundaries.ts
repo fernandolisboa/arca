@@ -29,7 +29,8 @@ export const allowedDependencies: Readonly<Record<string, readonly string[]>> = 
   '@arca/ui': ['@arca/i18n'],
   '@arca/domain': [],
   '@arca/knowledge': ['@arca/domain'],
-  '@arca/api-contract': [],
+  // The case routes take the domain's storage schemas (spec 0007, R3).
+  '@arca/api-contract': ['@arca/domain'],
   // Types only, enforced by ESLint (spec 0005, R1).
   '@arca/platform': ['@arca/vault'],
   '@arca/i18n': [],

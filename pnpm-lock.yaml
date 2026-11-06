@@ -603,6 +603,9 @@ importers:
 
   packages/api-contract:
     dependencies:
+      '@arca/domain':
+        specifier: workspace:*
+        version: link:../domain
       '@hono/zod-openapi':
         specifier: 'catalog:'
         version: 1.6.3(hono@4.13.14)(zod@4.6.7)

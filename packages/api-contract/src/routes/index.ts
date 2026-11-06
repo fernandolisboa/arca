@@ -1,4 +1,6 @@
+import { shareScopeSchema } from '@arca/domain';
 import { z } from 'zod';
+import { caseRoutes } from './case.js';
 
 /** Every route lives under this prefix; clients prepend their origin, if any. */
 export const apiBasePath = '/v1';
@@ -734,6 +736,13 @@ export type DeletionReason = (typeof deletionReasons)[number];
  */
 const documentEvent = z.strictObject({ documentId: z.uuid() });
 const documentShareEvent = z.strictObject({ documentId: z.uuid(), recipientId: z.uuid() });
+const caseEvent = z.strictObject({ caseId: z.uuid() });
+const casePersonEvent = z.strictObject({ personId: z.uuid() });
+/** `accountId`: the member who now sees, or no longer sees, that scope of the person. */
+const caseShareEvent = casePersonEvent.extend({
+  accountId: z.uuid(),
+  scope: shareScopeSchema,
+});
 
 export const auditEventDetails = {
   sign_in: z.strictObject({
@@ -785,6 +794,14 @@ export const auditEventDetails = {
     channelId: z.uuid(),
     reason: z.enum(['step_up', 'renewed', 'subscription']),
   }),
+  case_created: caseEvent,
+  member_left: caseEvent,
+  person_added: casePersonEvent,
+  person_removed: casePersonEvent,
+  /** `accountId`: the new keeper. */
+  person_handed_over: casePersonEvent.extend({ accountId: z.uuid() }),
+  share_granted: caseShareEvent,
+  share_revoked: caseShareEvent,
 } as const;
 
 export type AuditEventCode = keyof typeof auditEventDetails;
@@ -1556,6 +1573,8 @@ export const deleteDocuments = {
   response: { description: 'Deleted', schema: DeleteDocumentsResponse },
 } as const satisfies RouteDefinition<typeof DeleteDocumentsResponse>;
 
+export * from './case.js';
+
 export const routes = {
   health,
   session,
@@ -1611,6 +1630,7 @@ export const routes = {
   replaceDocuments,
   confirmReplacements,
   deleteDocuments,
+  ...caseRoutes,
 } as const;
 
 /** The Better Auth endpoints the API lets through; every other path under /v1/auth is a 404. */

@@ -66,6 +66,24 @@ function erasedByJobs(table: string, accountId: unknown) {
   ];
 }
 
+/**
+ * `cases_definer`'s access to a table: its functions name every row they touch, and check the
+ * identity themselves, so its policies admit every row.
+ */
+function byDefiner(
+  table: string,
+  commands: readonly ('select' | 'insert' | 'update' | 'delete')[],
+) {
+  return commands.map((command) =>
+    pgPolicy(`${table}_${command}_by_definer`, {
+      for: command,
+      to: 'cases_definer',
+      ...(command === 'insert' ? {} : { using: sql`true` }),
+      ...(command === 'insert' || command === 'update' ? { withCheck: sql`true` } : {}),
+    }),
+  );
+}
+
 const createdAt = () => timestamp('created_at', { withTimezone: true }).notNull().defaultNow();
 const updatedAt = () => timestamp('updated_at', { withTimezone: true }).notNull().defaultNow();
 
@@ -82,16 +100,7 @@ export const caseFile = cases.table(
       to: 'app_api',
       using: isMember(table.id),
     }),
-    pgPolicy('case_file_select_by_definer', {
-      for: 'select',
-      to: 'cases_definer',
-      using: sql`true`,
-    }),
-    pgPolicy('case_file_delete_by_definer', {
-      for: 'delete',
-      to: 'cases_definer',
-      using: sql`true`,
-    }),
+    ...byDefiner('case_file', ['select', 'insert', 'delete']),
   ],
 );
 
@@ -112,12 +121,14 @@ export const member = cases.table(
       to: 'app_api',
       using: isMember(table.caseId),
     }),
-    // `is_member` names the identity itself; the empty-case cleanup needs every member of a case.
-    pgPolicy('member_select_by_definer', {
-      for: 'select',
-      to: 'cases_definer',
-      using: sql`true`,
+    // A member leaves the case by deleting their own row; the cascades take what they keep.
+    pgPolicy('member_delete_self', {
+      for: 'delete',
+      to: 'app_api',
+      using: isIdentity(table.accountId),
     }),
+    // `is_member` names the identity itself; the empty-case cleanup needs every member of a case.
+    ...byDefiner('member', ['select', 'insert']),
     ...erasedByJobs('member', table.accountId),
   ],
 );
@@ -175,12 +186,13 @@ export const person = cases.table(
       using: isIdentity(table.keeperAccountId),
       withCheck: isIdentity(table.keeperAccountId),
     }),
-    // A member's own person goes only when the member leaves, through `cases_definer`.
+    // A member's own person goes only when the member leaves, by deleting their member row.
     pgPolicy('person_delete_keeper', {
       for: 'delete',
       to: 'app_api',
       using: sql`${isIdentity(table.keeperAccountId)} AND ${table.accountId} IS NULL`,
     }),
+    ...byDefiner('person', ['select', 'insert', 'update']),
     ...erasedByJobs('person', table.keeperAccountId),
   ],
 );
@@ -346,16 +358,7 @@ export const asset = cases.table(
       to: 'app_api',
       using: keepsConfirmedOwner(table.id),
     }),
-    pgPolicy('asset_select_by_definer', {
-      for: 'select',
-      to: 'cases_definer',
-      using: sql`true`,
-    }),
-    pgPolicy('asset_delete_by_definer', {
-      for: 'delete',
-      to: 'cases_definer',
-      using: sql`true`,
-    }),
+    ...byDefiner('asset', ['select', 'insert', 'delete']),
   ],
 );
 
@@ -411,11 +414,7 @@ export const assetOwner = cases.table(
       to: 'app_api',
       using: keeps(table.personId),
     }),
-    pgPolicy('asset_owner_select_by_definer', {
-      for: 'select',
-      to: 'cases_definer',
-      using: sql`true`,
-    }),
+    ...byDefiner('asset_owner', ['select', 'insert', 'update']),
   ],
 );
 
@@ -498,5 +497,7 @@ export const share = cases.table(
       using: sql`${keeps(table.personId)} OR ${isIdentity(table.granteeAccountId)}`,
     }),
     ...keeperWrites('share', table.personId, ['insert', 'delete']),
+    // A hand-over drops the person's shares, so the new keeper decides who sees their data.
+    ...byDefiner('share', ['select', 'delete']),
   ],
 );

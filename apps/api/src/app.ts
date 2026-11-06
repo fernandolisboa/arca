@@ -43,6 +43,9 @@ import {
   addPushChannel,
   removeNotificationChannel,
   forgetPushChannel,
+  caseRoutes,
+  handOverCasePersonAction,
+  leaveCaseAction,
   StepUpAction,
   stepUpNonceHeader,
   StepUpOptionsRequest,
@@ -66,6 +69,7 @@ import type { Enrollment } from './auth/enrollment.js';
 import type { Invites } from './auth/invites.js';
 import {
   authRouteLimits,
+  caseLimits,
   deviceLimits,
   inviteLimits,
   monitoringLimits,
@@ -91,6 +95,7 @@ import type { Tunnel } from './monitoring-tunnel.js';
 import { securityTxt } from './security-txt.js';
 import type { NotificationChannels } from './notification/channels.js';
 import { isP256PublicKey } from './notification/push.js';
+import type { CaseFiles, CaseWritten } from './case/case-files.js';
 import type { DocumentRequests } from './vault/documents.js';
 import {
   memoryObjectsPath,
@@ -168,6 +173,8 @@ export interface AppDependencies {
   readonly vault?: Vault;
   /** The vault's documents (spec 0005, R4); absent, their routes answer 401. */
   readonly documents?: DocumentRequests;
+  /** The family's case (spec 0007, R3); absent, its routes answer 401. */
+  readonly cases?: CaseFiles;
   /** Whether the account's inviter confirmed it, read on the app_auth pool (spec 0003, R2). */
   readonly accountConfirmed?: (accountId: string) => Promise<boolean>;
   /**
@@ -238,6 +245,9 @@ export type ErrorCode =
   | 'not_uploaded'
   | 'not_linked'
   | 'push_unavailable'
+  | 'case_exists'
+  | 'case_limit'
+  | 'case_invalid'
   | 'too_many_push_channels'
   | 'accounts_closed'
   | 'too_large'
@@ -362,6 +372,7 @@ export function createApp({
   accountDeletion,
   vault,
   documents,
+  cases,
   accountConfirmed,
   memoryObjects,
   notifications,
@@ -1141,6 +1152,134 @@ export function createApp({
     }
     const outcome = await documents.delete(current.accountId, request.documentIds);
     return outcome === 'not_found' ? fail(c, 'not_found', 404) : c.json({}, 200);
+  });
+
+  // The family's case (spec 0007, R3): a confirmed account, and writes within their hourly limit.
+  const caseAccount = async (c: Context<AppEnv>, counted: boolean) => {
+    const current = await signedIn(c);
+    if (current === null || cases === undefined || authLimits === undefined) {
+      return { refused: unauthorized(c) };
+    }
+    if (accountConfirmed === undefined || !(await accountConfirmed(current.accountId))) {
+      return { refused: fail(c, 'account_unconfirmed', 403) };
+    }
+    const limited = counted
+      ? await overLimit(c, authLimits, caseLimits.write, current.accountId)
+      : undefined;
+    return limited === undefined ? { current, cases } : { refused: limited };
+  };
+  const caseAnswer = (c: Context<AppEnv>, outcome: CaseWritten) =>
+    outcome.ok
+      ? c.json({ case: outcome.view }, 200)
+      : outcome.reason === 'not_found'
+        ? fail(c, 'not_found', 404)
+        : fail(c, outcome.reason, 409);
+  /** A case write: its body, an optional step-up over it, then the write itself. */
+  const caseWrite = <Body>(
+    route: (typeof openApiRoutes)[keyof typeof caseRoutes],
+    body: { parse: (value: unknown) => Body },
+    run: (files: CaseFiles, accountId: string, request: Body) => Promise<CaseWritten>,
+    stepUpFor?: (request: Body) => Omit<CanonicalAction, 'nonce'>,
+  ) =>
+    v1.openapi(route, async (c) => {
+      const account = await caseAccount(c, true);
+      if ('refused' in account) return account.refused;
+      const request = body.parse(await c.req.json());
+      if (
+        stepUpFor !== undefined &&
+        !(await stepUpGranted(c, account.current, 'sensitive_settings', stepUpFor(request)))
+      ) {
+        return fail(c, 'step_up_required', 403);
+      }
+      return caseAnswer(c, await run(account.cases, account.current.accountId, request));
+    });
+
+  v1.openapi(openApiRoutes.getCase, async (c) => {
+    const account = await caseAccount(c, false);
+    if ('refused' in account) return account.refused;
+    return c.json({ case: await account.cases.view(account.current.accountId) }, 200);
+  });
+  caseWrite(openApiRoutes.createCase, caseRoutes.createCase.body, (files, id, { displayName }) =>
+    files.create(id, displayName),
+  );
+  caseWrite(openApiRoutes.addCasePerson, caseRoutes.addCasePerson.body, (files, id, request) =>
+    files.addPerson(id, request),
+  );
+  caseWrite(
+    openApiRoutes.updateCasePerson,
+    caseRoutes.updateCasePerson.body,
+    (files, id, request) => files.updatePerson(id, request),
+  );
+  caseWrite(
+    openApiRoutes.removeCasePerson,
+    caseRoutes.removeCasePerson.body,
+    (files, id, { personId }) => files.removePerson(id, personId),
+  );
+  caseWrite(
+    openApiRoutes.handOverCasePerson,
+    caseRoutes.handOverCasePerson.body,
+    (files, id, request) => files.handOver(id, request),
+    handOverCasePersonAction,
+  );
+  caseWrite(
+    openApiRoutes.writeCaseProfile,
+    caseRoutes.writeCaseProfile.body,
+    (files, id, request) => files.writeProfile(id, request),
+  );
+  caseWrite(
+    openApiRoutes.writeCaseFinances,
+    caseRoutes.writeCaseFinances.body,
+    (files, id, request) => files.writeFinances(id, request),
+  );
+  caseWrite(
+    openApiRoutes.replaceCaseShares,
+    caseRoutes.replaceCaseShares.body,
+    (files, id, request) => files.replaceShares(id, request),
+  );
+  caseWrite(
+    openApiRoutes.addCaseRelationship,
+    caseRoutes.addCaseRelationship.body,
+    (files, id, relationship) => files.addRelationship(id, relationship),
+  );
+  caseWrite(
+    openApiRoutes.removeCaseRelationship,
+    caseRoutes.removeCaseRelationship.body,
+    (files, id, { relationshipId }) => files.removeRelationship(id, relationshipId),
+  );
+  caseWrite(openApiRoutes.addCaseAsset, caseRoutes.addCaseAsset.body, (files, id, request) =>
+    files.addAsset(id, request),
+  );
+  caseWrite(openApiRoutes.updateCaseAsset, caseRoutes.updateCaseAsset.body, (files, id, request) =>
+    files.updateAsset(id, request),
+  );
+  caseWrite(
+    openApiRoutes.removeCaseAsset,
+    caseRoutes.removeCaseAsset.body,
+    (files, id, { assetId }) => files.removeAsset(id, assetId),
+  );
+  caseWrite(
+    openApiRoutes.setCaseAssetOwner,
+    caseRoutes.setCaseAssetOwner.body,
+    (files, id, request) => files.setOwner(id, request),
+  );
+  caseWrite(
+    openApiRoutes.confirmCaseAssetOwner,
+    caseRoutes.confirmCaseAssetOwner.body,
+    (files, id, request) => files.confirmOwner(id, request),
+  );
+  caseWrite(
+    openApiRoutes.removeCaseAssetOwner,
+    caseRoutes.removeCaseAssetOwner.body,
+    (files, id, request) => files.removeOwner(id, request),
+  );
+  v1.openapi(openApiRoutes.leaveCase, async (c) => {
+    const account = await caseAccount(c, true);
+    if ('refused' in account) return account.refused;
+    if (!(await stepUpGranted(c, account.current, 'sensitive_settings', leaveCaseAction))) {
+      return fail(c, 'step_up_required', 403);
+    }
+    const outcome = await account.cases.leave(account.current.accountId);
+    return outcome === 'left' ? c.json({}, 200) : fail(c, 'not_found', 404);
   });
 
   v1.openapi(openApiRoutes.notificationChannels, async (c) => {

@@ -319,15 +319,25 @@ describe('the case schema access matrix (spec 0007, R1)', () => {
       'app_jobs person DELETE',
       'app_jobs person SELECT',
       'cases_definer asset DELETE',
+      'cases_definer asset INSERT',
       'cases_definer asset SELECT',
+      'cases_definer asset_owner INSERT',
       'cases_definer asset_owner SELECT',
+      'cases_definer asset_owner UPDATE',
       'cases_definer case_file DELETE',
+      'cases_definer case_file INSERT',
       'cases_definer case_file SELECT',
+      'cases_definer member INSERT',
       'cases_definer member SELECT',
+      'cases_definer person INSERT',
+      'cases_definer person SELECT',
+      'cases_definer person UPDATE',
+      'cases_definer share DELETE',
+      'cases_definer share SELECT',
     ]);
   });
 
-  it('runs the definer functions as cases_definer, callable only where a policy needs it', async () => {
+  it('runs the definer functions as cases_definer, callable by app_api only where it needs them', async () => {
     const functions = await withClient(adminTarget(database), async (client) => {
       const result = await client.query<{
         name: string;
@@ -354,9 +364,13 @@ describe('the case schema access matrix (spec 0007, R1)', () => {
       config: ['search_path=pg_catalog, pg_temp'],
     };
     expect(functions).toEqual([
+      { name: 'add_asset', ...definer, callers: ['app_api'] },
+      { name: 'create_case', ...definer, callers: ['app_api'] },
       { name: 'drop_empty_case', ...definer, callers: [] },
       { name: 'drop_unowned_asset', ...definer, callers: [] },
+      { name: 'hand_over', ...definer, callers: ['app_api'] },
       { name: 'is_member', ...definer, callers: ['app_api'] },
+      { name: 'set_owner', ...definer, callers: ['app_api'] },
     ]);
   });
 
@@ -661,7 +675,7 @@ describe('the case schema access matrix (spec 0007, R1)', () => {
           [caseId, assets.joint, people.child],
         ],
         [`UPDATE cases.asset_owner SET share = 1 WHERE person_id = $1`, [people.alice]],
-        [`DELETE FROM cases.member WHERE account_id = $1`, [alice]],
+        [`UPDATE cases.person SET keeper_account_id = $1 WHERE id = $2`, [alice, people.child]],
         [`SELECT cases.drop_empty_case()`, []],
       ] as const) {
         expect(await refused(client, sql, [...values]), sql).toBe(insufficientPrivilege);
@@ -728,16 +742,18 @@ describe('cascades and erasure in the case schema (spec 0007, R1 and R9)', () =>
     ).toBe(0);
   });
 
-  it('takes a leaving member’s people, facts, shares and relationships with them', async () => {
+  it('lets a member leave, only themselves, taking their people, facts, shares and relationships', async () => {
     const leaving = await seedFamily();
     const { caseId, alice, bruno, people, assets } = leaving;
+    const leave = 'DELETE FROM cases.member WHERE account_id = $1';
+    await as('app_api', alice, async (client) => {
+      expect((await client.query(leave, [bruno])).rowCount).toBe(0);
+    });
     await as(
-      'app_jobs',
+      'app_api',
       bruno,
       async (client) => {
-        expect(
-          (await client.query('DELETE FROM cases.member WHERE account_id = $1', [bruno])).rowCount,
-        ).toBe(1);
+        expect((await client.query(leave, [bruno])).rowCount).toBe(1);
       },
       { commit: true },
     );

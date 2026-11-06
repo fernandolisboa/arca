@@ -66,6 +66,15 @@ A new schema `cases`, owned by `app_migrator`, with DML for `app_api`, the delet
 - Person and asset IDs are UUIDs in the API and the database. The snapshot builder replaces them with opaque IDs (`p1`, `a1`) for the engine, and maps results back.
 - Display names never appear in URLs, logs, error reports or audit details (CLAUDE.md privacy rules); request logs carry route IDs and status only, as today.
 - Rate limits (spec 0003 R10): evaluations and playback 60 per hour per session; writes 300 per hour per account.
+- As built (#229): the routes of `packages/api-contract/src/routes/case.ts` (the contract now depends on `packages/domain` for the storage schemas), served by `apps/api/src/case/`.
+  - **Lock.** Every write takes a transaction advisory lock on the case, under the key the empty-case cleanup locks, in place of `FOR UPDATE`, so `app_api` needs no `UPDATE` on `cases.case_file`.
+  - **Definer functions.** `cases_definer` owns four more functions, each taking the same lock: `create_case`, `hand_over` (which drops the person's shares), `add_asset` (the asset with its first confirmed owner row, at most 100 per case) and `set_owner` (a co-owner's pending row, or the keeper's own share; at most 12 owner rows per asset, shares at most 1, pending rows included). A limit raises SQLSTATE `CL001`, which the API answers as `409 case_limit`.
+  - **Leaving.** A member leaves by deleting their own `cases.member` row under the policy `member_delete_self`. The cascades and the triggers do the rest, so leaving needs no definer function.
+  - **Shares.** Changing shares is an insert or delete by the keeper under the policies. The foreign key to `cases.member` keeps grantees in the case.
+  - **Error codes.** `404 not_found` for anything the viewer may not write, `409 case_exists`, `case_limit` and `case_invalid`.
+  - **Relationships.** A relationship is removed and added again rather than edited.
+  - **Not here yet.** The grantee's in-app notice of a share comes with the family area (ticket 4); `member_joined` comes with ticket 3.
+  - **Snapshot builder.** It is `buildCaseSnapshot` in `packages/domain/src/case/builder.ts`, with `validCaseStructure` for the checks across rows.
 
 ### R4. Guided questions
 

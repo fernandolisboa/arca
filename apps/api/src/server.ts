@@ -8,6 +8,7 @@ import { accounts } from './auth/auth.js';
 import { createApp } from './app.js';
 import { auditLog, auditReader, type AuditLog } from './audit/log.js';
 import { createAuth, credentialStore } from './auth/auth.js';
+import { createCaseFiles } from './case/case-files.js';
 import { createDocuments } from './vault/documents.js';
 import { objectStorageFor } from './vault/storage-environment.js';
 import { createVault } from './vault/vault.js';
@@ -368,6 +369,11 @@ const app = createApp({
         },
         ...(documentStorage.memory === undefined ? {} : { memoryObjects: documentStorage.memory }),
       }),
+  cases: createCaseFiles({
+    db: () => connected().db,
+    audit: { record: async (entry) => (await authParts()).audit.record(entry) },
+    today: () => new Date(),
+  }),
   accountConfirmed: (accountId) => accounts.isConfirmed(authConnection(), accountId),
   notifications: {
     channels: {

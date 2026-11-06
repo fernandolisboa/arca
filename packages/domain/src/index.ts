@@ -117,6 +117,12 @@ export {
   storedRelationshipSchema,
 } from './case/storage.js';
 export {
+  type BuiltSnapshot,
+  type VisibleCaseRows,
+  buildCaseSnapshot,
+  validCaseStructure,
+} from './case/builder.js';
+export {
   type Assessment,
   type Cost,
   type CountrySet,
