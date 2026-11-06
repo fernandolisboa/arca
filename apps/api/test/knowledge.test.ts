@@ -19,4 +19,12 @@ describe('approver list (spec 0007, R7)', () => {
     expect(approvers.preview).toEqual([owner?.id]);
     expect(approvers.development).toEqual([owner?.id]);
   });
+
+  it('lists one real account in production, never the seed account', () => {
+    expect(approvers.production).toHaveLength(1);
+    expect(approvers.production[0]).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+    );
+    expect(approvers.production).not.toContain(approvers.preview[0]);
+  });
 });
