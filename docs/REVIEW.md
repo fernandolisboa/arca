@@ -8,7 +8,14 @@ Every change is reviewed before merge, in the session that wrote it, before it o
 2. **`code-review`**, the `mattpocock-skills` skill, on every change: two sub-agents in parallel, against the merge-base with `main`.
    - **Standards:** the diff against [CLAUDE.md](../CLAUDE.md), [CONTEXT.md](../CONTEXT.md) and the ADRs of the area touched, plus the skill's code-smell baseline.
    - **Spec:** the diff against the ticket it closes and that ticket's parent spec (an issue, or a file in `docs/specs/` for older work).
-3. **[Security reviewer](../.claude/agents/security-reviewer.md)**, on every change that touches auth, cryptography, storage, case data, the database, dependencies, CI, a vendor or AI. It runs beside `code-review`, in its own sub-agent.
+3. **[Security reviewer](../.claude/agents/security-reviewer.md)**, beside `code-review` in its own sub-agent, on every sensitive change: one that touches
+   - authentication, sessions, passkeys, recovery, the vault or any cryptography;
+   - API endpoints and authorization, case data, storage, the database, its roles, migrations or seed data;
+   - third-party calls, vendors, logging, error tracking, analytics or notifications;
+   - dependencies, the lockfile, CI, build or deploy config, CSP, CORS or headers;
+   - AI adapters, prompts, agents, model output or rendering of untrusted text;
+   - the knowledge-base approval flow;
+   - agent and review configuration: `CLAUDE.md`, `docs/agents/`, `.claude/`, this file.
 
 ## Verdicts
 
@@ -21,7 +28,7 @@ Every change is reviewed before merge, in the session that wrote it, before it o
 
 ## Changing reviewers
 
-The security reviewer's definition and this file are security-critical configuration. Changing either needs a PASS from the security reviewer and an entry in this table.
+Agent and review configuration (the security reviewer's definition, this file, `CLAUDE.md` "How we build" and `docs/agents/`) is security-critical. Changing it needs a PASS from the security reviewer and an entry in this table.
 
 | Date | Change | Why |
 | --- | --- | --- |
