@@ -4,8 +4,8 @@
     "lib": ["es2024", "webworker"],
     "noEmit": true,
     "composite": false,
-    "rootDir": "${configDir}",
+    "rootDir": "${configDir}/..",
     "tsBuildInfoFile": null
   },
-  "include": ["."]
+  "include": [".", "../pwa/cached-page.ts"]
 }

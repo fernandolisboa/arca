@@ -7,6 +7,7 @@ import { I18nextProvider } from 'react-i18next';
 import { startAppearance } from './appearance/store.js';
 import { Failure, NotFound } from './fallbacks.js';
 import { reportCaught, reportUncaught, startMonitoring } from './monitoring.js';
+import { recoverOnce } from './pwa/recover.js';
 import { registerServiceWorker } from './pwa/register.js';
 import { routeTree } from './routeTree.gen.js';
 import { sessionQuery } from './api.js';
@@ -14,6 +15,22 @@ import { guardVault } from './vault-guard.js';
 import './styles.css';
 
 startMonitoring();
+
+// A new version's worker takes over open tabs at once and drops the old files, so a page left
+// open across a deploy can no longer load its lazy chunks: load the new version instead. Offline,
+// a reload would not bring them back.
+window.addEventListener('vite:preloadError', (event) => {
+  if (!navigator.onLine) return;
+  recoverOnce(
+    'chunk',
+    () => sessionStorage,
+    Date.now(),
+    () => {
+      event.preventDefault();
+      location.reload();
+    },
+  );
+});
 
 const i18n = await createI18n({
   // The e2e suite fails on any console error, so a missing message fails a test.

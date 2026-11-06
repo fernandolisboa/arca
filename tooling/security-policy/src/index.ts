@@ -47,9 +47,11 @@ export const securityHeaders: Readonly<Record<string, string>> = {
 
 /**
  * Path prefixes that never fall back to the SPA's index.html: an unmatched path under them is a
- * 404. `/.well-known` also holds the Workflow SDK's routes (`/.well-known/workflow/…`).
+ * 404. `/.well-known` also holds the Workflow SDK's routes (`/.well-known/workflow/…`). `/assets`
+ * holds the built files: a file another deployment built is a 404, never index.html, which a
+ * browser or the service worker would otherwise take for the script it asked for.
  */
-export const fallbackExclusions = ['/v1', '/internal', '/.well-known'] as const;
+export const fallbackExclusions = ['/v1', '/internal', '/.well-known', '/assets'] as const;
 
 /**
  * Built web files that are never published or precached: dotfiles, and the source maps the

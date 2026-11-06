@@ -71,6 +71,17 @@ describe('one origin (spec 0001, R4)', () => {
     expectSecurityHeaders(response);
   });
 
+  it('serves a built script as JavaScript', async () => {
+    const html = await (await get('/')).text();
+    const entry = /<script type="module" crossorigin src="(\/assets\/[^"]+\.js)"/.exec(html)?.[1];
+    if (entry === undefined) throw new Error('index.html names no entry script');
+    const response = await get(entry);
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toMatch(
+      /^text\/javascript|^application\/javascript/,
+    );
+  });
+
   it('serves security.txt from the API, not the web fallback (spec 0004, R11)', async () => {
     const response = await get('/.well-known/security.txt');
     expect(response.status).toBe(200);
@@ -78,7 +89,7 @@ describe('one origin (spec 0001, R4)', () => {
     expectSecurityHeaders(response);
   });
 
-  it.each(['/casos', '/casos/123/documentos', '/v10', '/internals', '/.well-knownx'])(
+  it.each(['/casos', '/casos/123/documentos', '/v10', '/internals', '/.well-knownx', '/assetsx'])(
     'falls back to index.html for %s',
     async (path) => {
       const response = await get(path);
@@ -97,6 +108,8 @@ describe('one origin (spec 0001, R4)', () => {
     '/.well-known',
     '/.well-known/unknown',
     '/.well-known/workflow/v1/unknown',
+    '/assets',
+    '/assets/index-from-another-deployment.js',
   ])('answers 404 with every security header for %s', async (path) => {
     const response = await get(path);
     expect(response.status).toBe(404);

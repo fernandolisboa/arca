@@ -1,16 +1,22 @@
 import { fallbackExclusions } from '@arca/security-policy';
 import { clientsClaim } from 'workbox-core';
-import { cleanupOutdatedCaches, matchPrecache, precacheAndRoute } from 'workbox-precaching';
+import {
+  addPlugins,
+  cleanupOutdatedCaches,
+  matchPrecache,
+  precacheAndRoute,
+} from 'workbox-precaching';
 import type { PrecacheEntry } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
+import { isPageInPlaceOfFile } from '../pwa/cached-page.js';
 import { pushNotice, pushPayload } from './push-notice.js';
 
 declare const self: ServiceWorkerGlobalScope;
 /** Every built static file with its content hash, written in by vite.config.ts. */
 declare const precacheManifest: PrecacheEntry[];
 
-// A new version takes over open tabs at once. Safe while the app is one chunk; before code
-// splitting, replace this with an update prompt, since old tabs would lose their lazy chunks.
+// A new version takes over open tabs at once. An old tab then loses its lazy chunks, which the
+// server answers with a 404, and reloads into the new version (main.tsx).
 void self.skipWaiting();
 clientsClaim();
 
@@ -38,6 +44,17 @@ registerRoute(
 
 // Only the built static files are cached. No route caches /v1 or any other response, so API
 // responses always come from the network and are never stored (spec 0001, R5).
+// Never precache a page in place of a file, so the install fails instead (spec 0001, R5).
+addPlugins([
+  {
+    cacheWillUpdate: ({ request, response }) =>
+      Promise.resolve(
+        response.ok && !isPageInPlaceOfFile(request.url, response.headers.get('content-type'))
+          ? response
+          : null,
+      ),
+  },
+]);
 precacheAndRoute(precacheManifest);
 cleanupOutdatedCaches();
 
