@@ -8,6 +8,7 @@ import {
   slugSchema,
   sourceSchema,
   displayNameSchema,
+  isNewReference,
   maxCaseMembers,
   maxCasePeople,
   questionFlow,
@@ -32,7 +33,7 @@ import type { RouteDefinition } from './index.js';
  * exist; 409 case_limit says only that a limit is reached, never what a hidden row holds.
  */
 
-export { maxCaseMembers, maxCasePeople };
+export { isNewReference, maxCaseMembers, maxCasePeople };
 
 export const CaseProfile = z.strictObject({
   facts: storedProfileFactsSchema,

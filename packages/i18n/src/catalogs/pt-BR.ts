@@ -556,6 +556,48 @@ export const ptBR = {
     failure:
       '{reason, select, case_invalid {Alguma resposta não ficou certa. Confira e tente de novo.} not_found {Isso não está mais disponível. Atualize a página.} case_limit {O caso chegou a um limite. Tire algo antes de incluir mais.} limited {Muitas alterações em pouco tempo. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
   },
+  /** The family told in the member's own words, as a draft to review (spec 0008, R4). */
+  intake: {
+    title: 'Contar com suas palavras',
+    open: 'Contar com minhas palavras',
+    lead: 'Escreva sobre a sua família do seu jeito. O Arca monta um rascunho das respostas, e você confere tudo antes de salvar.',
+    privacy:
+      'Para montar o rascunho, o texto vai para o Claude, a IA da Anthropic. O Arca não guarda o que você escreve. Antes do envio, os nomes de quem já está no caso, e-mails e números como CPF e telefone viram marcadores.',
+    tip: 'Para quem ainda não está no caso, escreva “minha esposa” ou “meu filho mais velho” em vez do nome. Assim o nome não sai do Arca.',
+    label: 'Sua família, nas suas palavras',
+    placeholder:
+      'Por exemplo: nasci em 1985 e casei em 2010. Minha filha nasceu em março de 2015. Meu marido tem cidadania italiana.',
+    count: '{count} de {max} caracteres',
+    submit: 'Montar rascunho',
+    drafting: 'Lendo o seu texto…',
+    failure:
+      '{reason, select, not_found {Comece o caso na área da família antes de contar com suas palavras.} intake_unavailable {O rascunho por texto não está disponível agora. Você pode seguir pelas perguntas guiadas.} intake_timeout {O rascunho demorou demais. Tente de novo, talvez com um texto mais curto.} intake_unparsable {Não deu para montar um rascunho com esse texto. Tente escrever de outro jeito.} limited {Você já montou muitos rascunhos. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+    reviewLead:
+      'Confira o que o Arca entendeu e desmarque o que estiver errado. Nada vai para o caso antes de você salvar.',
+    empty:
+      'O texto não trouxe nada novo para o caso. Conte com mais detalhes ou siga pelas perguntas guiadas.',
+    unnamed:
+      '{role, select, self {Pessoa nova (você)} spouse {Pessoa nova (cônjuge)} partner {Pessoa nova (companheiro ou companheira)} child {Pessoa nova (filho ou filha)} parent {Pessoa nova (pai ou mãe)} grandparent {Pessoa nova (avô ou avó)} sibling {Pessoa nova (irmão ou irmã)} other {Pessoa nova}}',
+    choice: {
+      legend: 'Quem é essa pessoa?',
+      new: 'Alguém novo no caso',
+      match: 'Alguém que já está no caso',
+      drop: 'Deixar de fora',
+      who: 'Quem é?',
+    },
+    nameHint: 'Como a família chama essa pessoa. O nome fica só no Arca.',
+    whole: {
+      citizenships: 'Essas são todas as cidadanias de {name}: {list}',
+      languages: 'Esses são todos os idiomas de {name}: {list}',
+    },
+    wholeHint: 'Se faltar alguma, deixe desmarcado. A lista fica para as perguntas guiadas.',
+    save: 'Salvar no caso',
+    needNames: 'Dê um nome a cada pessoa nova para salvar.',
+    saveFailure:
+      '{reason, select, case_invalid {Alguma coisa não combina com o que o caso já tem. Desmarque o que estiver diferente ou siga pelas perguntas guiadas.} case_limit {O caso chegou a um limite. Tire algo antes de incluir mais.} not_found {Isso não está mais disponível. Atualize a página.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas alterações em pouco tempo. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+    restart: 'Escrever outro texto',
+    toQuestions: 'Ir para as perguntas guiadas',
+  },
   /** The case read back in plain sentences, each opening its question (spec 0007, R5). */
   playback: {
     title: 'Resumo do caso',

@@ -14,7 +14,9 @@ import { useTranslation } from 'react-i18next';
 import { caseQuery, invitesQuery, sessionQuery } from '../api.js';
 import { caseFailure, handOverPerson, leaveCase, writeCase, type CaseFailure } from '../case.js';
 import { newsOf, readSeen, seenOf, writeSeen } from '../family-news.js';
+import { CheckRow } from '../forms/check-row.js';
 import { nameInput } from '../forms/inputs.js';
+import { MembershipChoice, type Membership } from '../forms/membership-choice.js';
 import { TextField } from '../forms/text-field.js';
 import { dangerLinkClass, textLinkClass } from '../forms/text-link.js';
 import { Page } from '../page.js';
@@ -162,6 +164,9 @@ function FamilyCase({ view, accountId }: { readonly view: CaseView; readonly acc
           {t('family.questions')}
         </Link>
       )}
+      <Link to="/family/intake" className={textLinkClass}>
+        {t('intake.open')}
+      </Link>
       <Link to="/family/results" className={textLinkClass}>
         {t('results.open')}
       </Link>
@@ -524,54 +529,6 @@ function Checks({
             ],
       )}
     </fieldset>
-  );
-}
-
-function CheckRow({
-  label,
-  checked,
-  onChange,
-}: {
-  readonly label: string;
-  readonly checked: boolean;
-  readonly onChange: (checked: boolean) => void;
-}) {
-  return (
-    <label className="flex min-h-touch cursor-pointer items-center gap-3 rounded-control border border-line bg-surface px-3 py-2 hover:bg-soft has-checked:border-primary has-checked:bg-soft has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-primary">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(event) => {
-          onChange(event.currentTarget.checked);
-        }}
-        className="size-4 shrink-0 accent-(--arca-primary)"
-      />
-      <span className="min-w-0 flex-1 break-words">{label}</span>
-    </label>
-  );
-}
-
-type Membership = 'member' | 'relative';
-
-function MembershipChoice({
-  value,
-  onChange,
-}: {
-  readonly value: Membership;
-  readonly onChange: (value: Membership) => void;
-}) {
-  const { t } = useTranslation();
-  return (
-    <ChoiceGroup<Membership>
-      legend={t('family.membership.legend')}
-      description={t('family.membership.hint')}
-      choices={[
-        { value: 'member', label: t('family.membership.member') },
-        { value: 'relative', label: t('family.membership.relative') },
-      ]}
-      value={value}
-      onChange={onChange}
-    />
   );
 }
 

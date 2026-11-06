@@ -1700,6 +1700,7 @@ export const webPathSegments = [
   'devices',
   'enroll',
   'family',
+  'intake',
   'invite',
   'invites',
   'knowledge',

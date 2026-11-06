@@ -96,6 +96,9 @@ function Questions() {
       ) : (
         <Answering view={view} questions={questions.data} />
       )}
+      <Link to="/family/intake" className={textLinkClass}>
+        {t('intake.open')}
+      </Link>
       <Link to="/family" className={textLinkClass}>
         {t('questions.back')}
       </Link>
