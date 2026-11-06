@@ -11,22 +11,32 @@ import { type KnowledgeWords, useKnowledgeWords } from './words.js';
 
 type SectionKey = keyof Messages['knowledge']['section'];
 
-const card = 'flex min-w-0 flex-col gap-2 rounded-control border border-line bg-surface p-4';
+const surface = 'rounded-control border border-line bg-surface p-4';
+const card = `flex min-w-0 flex-col gap-2 ${surface}`;
 
 function Cards<T>({
   items,
+  keyOf,
   render,
-  columns,
 }: {
   readonly items: readonly T[];
+  readonly keyOf: (item: T) => string;
   readonly render: (item: T) => ReactNode;
-  /** `wide` for items with expression trees, which need the room before they sit side by side. */
-  readonly columns: 'wide' | 'narrow';
 }) {
   return (
-    <ul className={`grid gap-3 ${columns === 'wide' ? '2xl:grid-cols-2' : 'md:grid-cols-2'}`}>
-      {items.map(render)}
-    </ul>
+    <ol className="flex flex-col gap-3">
+      {items.map((item, position) => (
+        <li key={keyOf(item)} className={`grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 ${surface}`}>
+          <span
+            aria-hidden="true"
+            className="grid size-7 place-items-center rounded-full bg-soft text-small font-medium tabular-nums"
+          >
+            {position + 1}
+          </span>
+          <div className="flex min-w-0 flex-col gap-2">{render(item)}</div>
+        </li>
+      ))}
+    </ol>
   );
 }
 
@@ -110,7 +120,7 @@ function leapDayRule(rule: VersionView['leapDayBirthday']) {
 function Settings({ view, words }: { readonly view: VersionView; readonly words: KnowledgeWords }) {
   const { t } = words;
   return (
-    <ul className="grid gap-3 md:grid-cols-2">
+    <ul className="flex flex-col gap-3">
       <li className={card}>
         <p>{t('knowledge.leapDay', { rule: leapDayRule(view.leapDayBirthday) })}</p>
         <Reads sources={view.leapDayBirthdaySources} words={words} />
@@ -159,37 +169,37 @@ function StepContent({
     case 'requirements':
       return (
         <Cards
-          columns="wide"
           items={view.requirements}
+          keyOf={(requirement) => requirement.id}
           render={(requirement) => (
-            <li key={requirement.id} className={card}>
+            <>
               <p className="font-medium">{requirement.title}</p>
               <ExpressionTree expression={requirement.expression} />
               <Reads facts={requirement.facts} sources={requirement.sources} words={words} />
-            </li>
+            </>
           )}
         />
       );
     case 'assessments':
       return (
         <Cards
-          columns="narrow"
           items={view.assessments}
+          keyOf={(assessment) => assessment.id}
           render={(assessment) => (
-            <li key={assessment.id} className={card}>
+            <>
               <p className="font-medium">{assessment.title}</p>
               <Reads facts={assessment.evidence} sources={assessment.sources} words={words} />
-            </li>
+            </>
           )}
         />
       );
     case 'dependents':
       return (
         <Cards
-          columns="wide"
           items={view.dependents}
+          keyOf={(dependent) => dependent.id}
           render={(dependent) => (
-            <li key={dependent.id} className={card}>
+            <>
               <p className="font-medium">{dependent.title}</p>
               <p className="text-small">
                 {t('knowledge.path', { path: dependent.path.map(words.step).join(' → ') })}
@@ -202,17 +212,17 @@ function StepContent({
               <p className="text-small text-muted">{t('knowledge.condition')}</p>
               <ExpressionTree expression={dependent.condition} />
               <Reads facts={dependent.facts} sources={dependent.sources} words={words} />
-            </li>
+            </>
           )}
         />
       );
     case 'costs':
       return (
         <Cards
-          columns="wide"
           items={view.costs}
+          keyOf={(cost) => cost.id}
           render={(cost) => (
-            <li key={cost.id} className={card}>
+            <>
               <p className="font-medium">{cost.title}</p>
               <p className="text-small text-muted">
                 {[
@@ -229,17 +239,17 @@ function StepContent({
                 </>
               )}
               <Reads facts={cost.facts} sources={cost.sources} words={words} />
-            </li>
+            </>
           )}
         />
       );
     case 'durations':
       return (
         <Cards
-          columns="narrow"
           items={view.durations}
+          keyOf={(stage) => stage.id}
           render={(stage) => (
-            <li key={stage.id} className={card}>
+            <>
               <p>
                 {t('knowledge.durationRange', {
                   title: stage.title,
@@ -248,33 +258,33 @@ function StepContent({
                 })}
               </p>
               <Reads sources={stage.sources} words={words} />
-            </li>
+            </>
           )}
         />
       );
     case 'countrySets':
       return (
         <Cards
-          columns="narrow"
           items={view.countrySets}
+          keyOf={(set) => set.id}
           render={(set) => (
-            <li key={set.id} className={card}>
+            <>
               {t('knowledge.countrySet', {
                 title: set.title,
                 number: set.number,
                 members: words.list(set.members.map(words.country)),
               })}
-            </li>
+            </>
           )}
         />
       );
     case 'sources':
       return (
         <Cards
-          columns="narrow"
           items={view.sources}
+          keyOf={(source) => source.id}
           render={(source) => (
-            <li key={source.id} className={card}>
+            <>
               <p className="font-medium">{source.title}</p>
               {/* Plain text, never a link: the approver reads the full address before opening it. */}
               <p className="font-mono text-small break-all">{source.url}</p>
@@ -293,17 +303,17 @@ function StepContent({
               {source.newHost && (
                 <p className="font-medium text-danger-ink">{t('knowledge.newHost')}</p>
               )}
-            </li>
+            </>
           )}
         />
       );
     case 'cases':
       return (
         <Cards
-          columns="narrow"
           items={view.cases}
+          keyOf={(ruleCase) => ruleCase.id}
           render={(ruleCase) => (
-            <li key={ruleCase.id} className={card}>
+            <>
               <p>
                 {t('knowledge.case', {
                   id: ruleCase.id,
@@ -324,7 +334,7 @@ function StepContent({
                   })}
                 </p>
               )}
-            </li>
+            </>
           )}
         />
       );
