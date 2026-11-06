@@ -159,7 +159,7 @@ Risks from the OWASP Top 10 for Agentic Applications (2026):
 
 | ID | Residual | Accepted in |
 | --- | --- | --- |
-| R-1 | Nothing in CI proves the reviewers ran, a branch that weakens the agent definitions is judged by the weakened reviewers, a steered reviewer is not caught, and a file named to dodge the reviewer selector's keywords outside its blanket directories gets only the core security reviewer unless the session adds the specialist | [ADR-0019](../adr/0019-reviewers-in-the-authoring-session.md) |
+| R-1 | Nothing in CI proves the reviewers ran, a branch that weakens the agent definitions is judged by the weakened reviewers, a steered reviewer is not caught, and a file named to dodge the reviewer selector's keywords outside its blanket directories gets only the core security reviewer unless the session adds the specialist | [ADR-0019](../adr/0019-reviewers-in-the-authoring-session.md), [ADR-0024](../adr/0024-mattpocock-skills-flow.md) |
 | R-2 | Builds and running functions can read their environment's owner connection string in Vercel, and Preview's app-role passwords (`ARCA_DB_*`) are production's too; someone holding them can write `auth` rows the guards trust | [ADR-0012](../adr/0012-automation-first-setup.md); [spec 0004 R1](../specs/0004-real-data-readiness.md#r1-previews-fork-from-development-and-the-build-proves-it) |
 | R-3 | Losing the Neon or Vercel account loses the data; damage older than the history window cannot be undone without a manual snapshot | [ADR-0021](../adr/0021-stay-on-vercel-and-neon.md) |
 | R-4 | The tunnel and the public DSN are unauthenticated ways to put events into Sentry; the DSN path skips the tunnel's limits | [ADR-0016](../adr/0016-observability-and-scrubbing.md) |

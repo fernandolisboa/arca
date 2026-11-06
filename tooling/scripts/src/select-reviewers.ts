@@ -39,7 +39,7 @@ export const coreReviewers: readonly Reviewer[] = [
 /** A path under the code roots whose directory or file name contains one of the keywords. */
 function codeNamed(keywords: readonly string[]): RegExp {
   // `step-up` also matches `step_up`, as migrations spell it.
-  const spelled = keywords.map((keyword) => keyword.replace(/(\w)-(\w)/g, '$1[-_]$2'));
+  const spelled = keywords.map((keyword) => keyword.replace(/(?<=\w)-(?=\w)/g, '[-_]'));
   return new RegExp(`^(apps|packages|tooling|\\.github)/.*(${spelled.join('|')})`, 'i');
 }
 
@@ -88,17 +88,18 @@ const rules: readonly Rule[] = [
     match: anyOf(
       databaseTests,
       /^packages\/(db|api-contract)\//,
-      /^apps\/web\/src\/[^/]+\.ts$/,
+      /^apps\/web\/src\/[^/]+\.tsx?$/,
       /^apps\/web\/e2e\//,
-      /^packages\/domain\/src\/rules\/(catalog|version-|decisions)/,
+      /^packages\/domain\/(src|test)\/rules\/(catalog|version-|decisions)/,
+      /^packages\/knowledge\/(src|test)\/(catalog|reproduction|display)/,
       /^packages\/knowledge\/scripts\/(content-hash|canonical|hashes)\.ts$/,
     ),
     reviewers: withCore('data-access', 'auth-crypto'),
   },
-  { match: /^apps\/web\/src\/main\.tsx$/, reviewers: withCore('supply-chain') },
+  { match: /^apps\/web\/(src\/main\.tsx|index\.html)$/, reviewers: withCore('supply-chain') },
   {
     match: anyOf(
-      /^packages\/(db|api-contract|telemetry)\//,
+      /^packages\/telemetry\//,
       /^tooling\/scripts\/src\/db\//,
       knowledgeBaseScreens,
       codeNamed([

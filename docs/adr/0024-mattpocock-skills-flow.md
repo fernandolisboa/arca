@@ -21,6 +21,6 @@ The owner installed Matt Pocock's skills (the `mattpocock-skills` plugin) and as
 
 ## Consequences
 
-- Six review sub-agents on a change to plain code or config, up to nine or ten on the API and the other sensitive packages, and three to six on docs. The owner chose depth over cost after comparing the reviewers with the skill.
+- Six review sub-agents on a change to plain code or config, up to nine or ten on the API and the other sensitive packages, and three to seven on docs. The owner chose depth over cost after comparing the reviewers with the skill.
 - A plugin update can change the process text without a pull request here. Accepted: the skills only shape the process, CLAUDE.md wins on any conflict, and a session that reads a skill checks the plugin's `plugin.json` version and tells the owner when it is no longer 1.2.3. Scripts shipped in the plugin are never run from it; one the work needs is copied into the repo and reviewed like any code.
 - Specs as issues are not versioned with the code; a spec that a later change contradicts is updated on its issue, not in a pull request.
