@@ -28,14 +28,6 @@ describe('parseIntakeDraft (spec 0008, R1)', () => {
     ['a reference shaped like a name', { ...valid, people: [{ ref: 'Joana' }], relationships: [] }],
     ['a placeholder that was not sent', { people: [{ ref: '[P2]' }], relationships: [] }],
     ['a person listed twice', { people: [{ ref: 'n1' }, { ref: 'n1' }], relationships: [] }],
-    [
-      'a relationship to someone outside the draft',
-      { people: [{ ref: 'n1' }], relationships: [{ kind: 'parent', parent: 'n1', child: 'n2' }] },
-    ],
-    [
-      'a relationship of a person with themselves',
-      { people: [{ ref: 'n1' }], relationships: [{ kind: 'spouse', people: ['n1', 'n1'] }] },
-    ],
     ['an empty citizenship list', { people: [{ ref: 'n1', citizenships: [] }], relationships: [] }],
     ['a lowercase country', { people: [{ ref: 'n1', citizenships: ['br'] }], relationships: [] }],
     [
@@ -58,6 +50,15 @@ describe('parseIntakeDraft (spec 0008, R1)', () => {
     ['a plain string', 'Somos quatro.'],
   ])('refuses %s', (_, reply) => {
     expect(parseIntakeDraft(reply, known)).toBeUndefined();
+  });
+
+  it.each([
+    ['to someone outside the draft', { kind: 'parent', parent: '[P1]', child: 'n2' }],
+    ['to a placeholder that was not sent', { kind: 'parent', parent: '[P2]', child: 'n1' }],
+    ['of a person with themselves', { kind: 'spouse', people: ['n1', 'n1'] }],
+  ])('drops a relationship %s and keeps the rest of the draft', (_, edge) => {
+    const reply = { ...valid, relationships: [...valid.relationships, edge] };
+    expect(parseIntakeDraft(reply, known)).toEqual(valid);
   });
 });
 
@@ -167,10 +168,32 @@ describe('withWriter (spec 0008, R3)', () => {
         { ref: 'n2', role: 'self' },
       ],
     ],
-    ['the writer already named', [{ ref: me }, { ref: 'n1', role: 'self' }, { ref: 'n2' }]],
   ] as const)('leaves a draft with %s as it is', (_, people) => {
     const draft = written([...people] as IntakeDraft['people']);
     expect(withWriter(draft, me)).toBe(draft);
+  });
+
+  it('merges a new self into the writer the draft already lists, whose own facts win', () => {
+    const draft: IntakeDraft = {
+      people: [
+        { ref: me, birthDate: '1985' as IntakeDraft['people'][number]['birthDate'] },
+        {
+          ref: 'n1',
+          role: 'self',
+          birthDate: '1986' as IntakeDraft['people'][number]['birthDate'],
+          residenceCountry: 'PT',
+        },
+        { ref: 'n2' },
+      ],
+      relationships: [
+        { kind: 'parent', parent: 'n1', child: 'n2' },
+        { kind: 'spouse', people: [me, 'n1'] },
+      ],
+    };
+    expect(withWriter(draft, me)).toEqual({
+      people: [{ ref: me, role: 'self', birthDate: '1985', residenceCountry: 'PT' }, { ref: 'n2' }],
+      relationships: [{ kind: 'parent', parent: me, child: 'n2' }],
+    });
   });
 
   it.each([

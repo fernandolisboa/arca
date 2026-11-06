@@ -97,9 +97,10 @@ const draftEndpoints = (edge: DraftRelationship): readonly string[] =>
   edge.kind === 'parent' ? [edge.parent, edge.child] : edge.people;
 
 /**
- * The model's reply as a draft, or `undefined` when it does not parse: people are listed once,
- * a placeholder is one of those sent, and every relationship joins two different people of the
- * draft.
+ * The model's reply as a draft, or `undefined` when it does not parse: people are listed once and
+ * a placeholder is one of those sent. A relationship that does not join two different people of
+ * the draft, such as one to a former partner the text only implies, is dropped: it carries no fact
+ * the draft could keep, and the rest of the reply still holds.
  */
 export function parseIntakeDraft(
   reply: unknown,
@@ -112,13 +113,14 @@ export function parseIntakeDraft(
   const listed = new Set(refs);
   if (listed.size !== refs.length) return undefined;
   if (refs.some((ref) => ref.startsWith('[') && !knownPlaceholders.has(ref))) return undefined;
-  for (const edge of draft.relationships) {
+  const joinsTwoListed = (edge: DraftRelationship) => {
     const [a, b] = draftEndpoints(edge);
-    if (a === undefined || b === undefined || a === b || !listed.has(a) || !listed.has(b)) {
-      return undefined;
-    }
-  }
-  return { ...draft, people: draft.people.map(distinctLists) };
+    return a !== undefined && b !== undefined && a !== b && listed.has(a) && listed.has(b);
+  };
+  return {
+    people: draft.people.map(distinctLists),
+    relationships: draft.relationships.filter(joinsTwoListed),
+  };
 }
 
 /**
@@ -189,16 +191,34 @@ export function keepStatedDates(draft: IntakeDraft, maskedText: string): IntakeD
 }
 
 /**
- * The draft with the writer as their own person in the case: the model knows the writer only as
- * someone new with the role `self`, unless the text names them. Left as it is when the draft lists
- * that person already or proposes more than one writer.
+ * The draft with a new person of the role `self` as the writer's own person in the case. When the
+ * draft lists the writer already, the new one is merged into them, the listed writer's facts
+ * winning, and an edge between the two is dropped. Left as it is when it proposes more than one
+ * new writer.
  */
 export function withWriter<Draft extends IntakeDraft>(draft: Draft, writerId: string): Draft {
   const writers = draft.people.filter(({ ref, role }) => isNewReference(ref) && role === 'self');
   const [writer] = writers;
   if (writer === undefined || writers.length > 1) return draft;
-  if (draft.people.some(({ ref }) => ref === writerId)) return draft;
-  return renameDraft(draft, (ref) => (ref === writer.ref ? writerId : ref));
+  const listed = draft.people.find(({ ref }) => ref === writerId);
+  const merged =
+    listed === undefined
+      ? draft
+      : {
+          ...draft,
+          people: draft.people.flatMap((person) => {
+            if (person === writer) return [];
+            return person === listed ? [{ ...writer, ...listed }] : [person];
+          }),
+        };
+  const renamed = renameDraft(merged, (ref) => (ref === writer.ref ? writerId : ref));
+  return {
+    ...renamed,
+    relationships: renamed.relationships.filter((edge) => {
+      const [a, b] = draftEndpoints(edge);
+      return a !== b;
+    }),
+  };
 }
 
 /** The draft with every reference renamed, such as placeholders to case IDs. */

@@ -3,6 +3,7 @@ import { type Database, withIdentity } from '@arca/db';
 import {
   type CalendarDate,
   type IntakeDraft,
+  type MaskedIntakeText,
   type NamedPerson,
   buildCaseSnapshot,
   describeDraft,
@@ -77,7 +78,8 @@ function describe(
 /**
  * The member's text as a draft in the case's IDs (spec 0008, R1 to R3): masked, sent, parsed (an
  * unparsable reply is asked for again, once), its dates cut to what the text states, each
- * placeholder back to its person's ID and the writer to the viewer's own person. The evaluation
+ * placeholder back to its person's ID and the writer to the viewer's own person. The model gets the
+ * writer's placeholder even when the text does not name them, so "eu" has a reference. The evaluation
  * suite scores this same path.
  */
 export async function readIntakeDraft(
@@ -87,11 +89,10 @@ export async function readIntakeDraft(
   accountId: string,
   onUnparsable: () => void = () => undefined,
 ): Promise<IntakeDraft> {
-  const { masked, placeholders } = maskIntakeText(text, people);
-  const known = new Set(placeholders.keys());
-  const draft = await parsedDraft(extractor, masked, known, onUnparsable);
-  const named = renameDraft(draft, (ref) => placeholders.get(ref) ?? ref);
   const writer = people.find((person) => person.accountId === accountId);
+  const masked = maskIntakeText(text, people, writer?.id);
+  const draft = await parsedDraft(extractor, masked, onUnparsable);
+  const named = renameDraft(draft, (ref) => masked.placeholders.get(ref) ?? ref);
   return writer === undefined ? named : withWriter(named, writer.id);
 }
 
@@ -100,13 +101,14 @@ export const draftAttempts = 2;
 
 async function parsedDraft(
   extractor: Extractor,
-  masked: string,
-  known: ReadonlySet<string>,
+  { masked, placeholders, writer }: MaskedIntakeText,
   onUnparsable: () => void,
 ): Promise<IntakeDraft> {
+  const known = new Set(placeholders.keys());
   for (let attempt = 0; attempt < draftAttempts; attempt += 1) {
     try {
-      const parsed = parseIntakeDraft((await extractor.draft(masked, [...known])).reply, known);
+      const { reply } = await extractor.draft(masked, [...known], writer);
+      const parsed = parseIntakeDraft(reply, known);
       if (parsed !== undefined) return keepStatedDates(parsed, masked);
       onUnparsable();
     } catch (error) {
@@ -129,10 +131,10 @@ export function createCaseIntake({
   today,
   now,
 }: CaseIntakeSettings): CaseIntake {
-  const call = async (masked: string, known: readonly string[]): Promise<ExtractorReply> => {
+  const call: Extractor['draft'] = async (masked, known, writer): Promise<ExtractorReply> => {
     const started = now();
     try {
-      const reply = await extractor.draft(masked, known);
+      const reply = await extractor.draft(masked, known, writer);
       logger.info({
         route,
         model: reply.model,

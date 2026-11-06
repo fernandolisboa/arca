@@ -126,6 +126,20 @@ describe('maskIntakeText (spec 0008, R2)', () => {
     ]);
   });
 
+  it("names the writer's placeholder, and maps it back, even when the text does not name them", () => {
+    const { placeholders, writer } = maskIntakeText('Tenho uma filha, a Ana.', people, 'b');
+    expect(writer).toBe('[P2]');
+    expect([...placeholders]).toEqual([
+      ['[P2]', 'b'],
+      ['[P3]', 'c'],
+    ]);
+  });
+
+  it('names no writer when none is given or the writer is not in the case', () => {
+    expect(maskIntakeText('Ana', people).writer).toBeUndefined();
+    expect(maskIntakeText('Ana', people, 'z').writer).toBeUndefined();
+  });
+
   it('masks an e-mail before the name inside it', () => {
     expect(maskIntakeText('joana@exemplo.com', people).masked).toBe('[e-mail]');
   });

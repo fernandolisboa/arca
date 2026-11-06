@@ -22,9 +22,9 @@ const concurrency = 4;
 async function runCase(extractor: Extractor, evalCase: IntakeCase): Promise<CaseRun> {
   const sent: string[] = [];
   const watched: Extractor = {
-    draft: (masked, known) => {
+    draft: (masked, known, writer) => {
       sent.push(masked);
-      return extractor.draft(masked, known);
+      return extractor.draft(masked, known, writer);
     },
   };
   let draft: IntakeDraft = { people: [], relationships: [] };

@@ -1,6 +1,6 @@
 {
   "model": "claude-haiku-5-5",
-  "promptVersion": "intake-3",
-  "precision": 0.955,
-  "recall": 0.728
+  "promptVersion": "intake-6",
+  "precision": 0.986,
+  "recall": 0.966
 }

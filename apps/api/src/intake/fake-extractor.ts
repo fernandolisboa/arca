@@ -2,18 +2,19 @@ import type { Extractor } from './extractor.js';
 import { intakePromptVersion } from './prompt.js';
 
 /**
- * A scripted model for a development server that asks for it, such as the e2e build: the writer,
- * the people already in the case the text names, and one child of the writer, born in the first
+ * A scripted model for a development server that asks for it, such as the e2e build: the people
+ * already in the case the text names, the writer, and one child of the writer, born in the first
  * year the text states and Italian when the text says "itali". Nothing leaves the process.
  */
 export const fakeExtractor: Extractor = {
-  draft(maskedText, knownPlaceholders) {
+  draft(maskedText, knownPlaceholders, writerPlaceholder) {
     const year = /(?<![0-9])(?:19|20)[0-9]{2}(?![0-9])/u.exec(maskedText)?.[0];
+    const writer = writerPlaceholder ?? 'n1';
     return Promise.resolve({
       reply: {
         people: [
           ...knownPlaceholders.map((ref) => ({ ref })),
-          { ref: 'n1', role: 'self' },
+          ...(writerPlaceholder === undefined ? [{ ref: writer, role: 'self' }] : []),
           {
             ref: 'n2',
             role: 'child',
@@ -21,7 +22,7 @@ export const fakeExtractor: Extractor = {
             ...(/itali/iu.test(maskedText) ? { citizenships: ['IT'] } : {}),
           },
         ],
-        relationships: [{ kind: 'parent', parent: 'n1', child: 'n2' }],
+        relationships: [{ kind: 'parent', parent: writer, child: 'n2' }],
       },
       model: 'fake',
       promptVersion: intakePromptVersion,

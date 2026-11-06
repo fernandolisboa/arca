@@ -64,7 +64,11 @@ describe('the Claude extractor (spec 0008, R1)', () => {
     const { fetch, bodies, urls } = fakeFetch(() =>
       Promise.resolve(message(JSON.stringify(draft))),
     );
-    const reply = await claudeExtractor({ apiKey: 'test-key', fetch }).draft(masked, ['[P1]']);
+    const reply = await claudeExtractor({ apiKey: 'test-key', fetch }).draft(
+      masked,
+      ['[P1]', '[P2]'],
+      '[P2]',
+    );
     expect(reply).toEqual({
       reply: draft,
       model: intakeModel,
@@ -85,7 +89,7 @@ describe('the Claude extractor (spec 0008, R1)', () => {
     expect(schema).not.toContain('"items":false');
     expect(body?.['tools']).toBeUndefined();
     expect(body?.['output_config']).toMatchObject({ format: { type: 'json_schema' } });
-    expect(JSON.stringify(body?.['messages'])).toContain('[P1]');
+    expect(JSON.stringify(body?.['messages'])).toContain('[P1], [P2].\\nThe writer is [P2].');
   });
 
   it.each([

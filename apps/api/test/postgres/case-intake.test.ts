@@ -72,15 +72,15 @@ async function family() {
 
 /** A fake model that answers each call in turn, and the calls and log lines it saw. */
 function service(replies: readonly unknown[]) {
-  const calls: { masked: string; known: readonly string[] }[] = [];
+  const calls: { masked: string; known: readonly string[]; writer?: string }[] = [];
   const lines: { level: 'info' | 'error'; fields: unknown }[] = [];
   const logger: Logger = {
     info: (fields) => lines.push({ level: 'info', fields }),
     error: (fields) => lines.push({ level: 'error', fields }),
   };
   const extractor: Extractor = {
-    draft: (masked, known) => {
-      calls.push({ masked, known });
+    draft: (masked, known, writer) => {
+      calls.push({ masked, known, ...(writer === undefined ? {} : { writer }) });
       const reply = replies[calls.length - 1];
       if (reply instanceof Error) return Promise.reject(reply);
       return Promise.resolve({
@@ -124,8 +124,9 @@ describe('the intake service (spec 0008, R3)', () => {
     const outcome = await intake.draft(alice, text);
     expect(calls).toHaveLength(1);
     const [call] = calls;
-    // Alice is [P1], unnamed in the text, so only Bruna's and Caio's placeholders are sent.
-    expect(call?.known).toEqual(['[P2]', '[P3]']);
+    // Alice is [P1], unnamed in the text but sent as the writer, with Bruna's and Caio's.
+    expect(call?.known).toEqual(['[P1]', '[P2]', '[P3]']);
+    expect(call?.writer).toBe('[P1]');
     for (const name of ['Bruna', 'Caio', 'alice@example.com']) {
       expect(call?.masked).not.toContain(name);
     }

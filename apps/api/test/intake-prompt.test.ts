@@ -23,4 +23,11 @@ describe('the intake message', () => {
     );
     expect(intakeMessage('oi', [])).toContain('Placeholders of people already in the case: none.');
   });
+
+  it('names the writer when the case has one', () => {
+    expect(intakeMessage('Tenho uma filha.', ['[P1]'], '[P1]')).toMatch(
+      /Placeholders of people already in the case: \[P1\]\.\nThe writer is \[P1\]\.$/u,
+    );
+    expect(intakeMessage('Tenho uma filha.', [])).not.toContain('The writer is');
+  });
 });
