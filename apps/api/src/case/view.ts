@@ -166,6 +166,12 @@ export async function readCase(
   };
 }
 
+/** The scopes of a person's data shared with the account, as the share rows say. */
+export const sharedWith = (rows: CaseRows, accountId: string, personId: string) =>
+  rows.shares
+    .filter((row) => row.personId === personId && row.accountId === accountId)
+    .map((row) => row.scope);
+
 /** The case as the viewer sees it: what they see, and what they may change (spec 0007, R3). */
 export function caseView(rows: CaseRows, accountId: string): CaseView {
   const kept = new Set(rows.people.filter((person) => person.keptByMe).map(({ id }) => id));
@@ -208,11 +214,7 @@ export function caseView(rows: CaseRows, accountId: string): CaseView {
         shares: person.keptByMe
           ? { profile: grantees(person.id, 'profile'), finances: grantees(person.id, 'finances') }
           : null,
-        sharedWithMe: person.keptByMe
-          ? []
-          : rows.shares
-              .filter((row) => row.personId === person.id && row.accountId === accountId)
-              .map((row) => row.scope),
+        sharedWithMe: person.keptByMe ? [] : sharedWith(rows, accountId, person.id),
       };
     }),
     relationships: rows.relationships.map(({ id, ...relationship }) => ({

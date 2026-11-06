@@ -1,4 +1,4 @@
-import { minorUnitExponent, currencyCodeSchema } from '../money/currency.js';
+import { currencyCodeSchema, minorUnitExponent, unitsAmount } from '../money/currency.js';
 import {
   compareScaled,
   decimalSchema,
@@ -294,12 +294,7 @@ function moneyAnswer(value: unknown): unknown {
   if (!isRecord(value) || typeof value['amount'] !== 'number') return value;
   const parsed = currencyCodeSchema.safeParse(value['currency']);
   if (!parsed.success) return value;
-  const exponent = minorUnitExponent(parsed.data);
-  const units = BigInt(value['amount']);
-  const whole = (units / powerOfTen(exponent)).toString();
-  const fraction = (units % powerOfTen(exponent)).toString().padStart(exponent, '0');
-  const trimmed = fraction.replace(/0+$/, '');
-  return { amount: trimmed === '' ? whole : `${whole}.${trimmed}`, currency: parsed.data };
+  return { amount: unitsAmount(value['amount'], parsed.data), currency: parsed.data };
 }
 
 /** The decimal amount back in minor units; null, which the schemas refuse, when it is not one. */

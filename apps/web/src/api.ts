@@ -54,6 +54,16 @@ export const caseQuestionsQuery = queryOptions({
   retry: false,
 });
 
+/** The case read back as sentences (spec 0007, R5). */
+export const casePlaybackQuery = queryOptions({
+  queryKey: ['case', 'playback'],
+  queryFn: () => api.call(routes.getCasePlayback),
+  networkMode: 'always',
+  retry: false,
+  // Each read counts against a per-session limit, so a tab coming back into view does not read.
+  refetchOnWindowFocus: false,
+});
+
 /** The account's passkeys, each with its sessions (spec 0003, R4). */
 export const devicesQuery = queryOptions({
   queryKey: ['devices'],

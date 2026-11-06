@@ -1163,7 +1163,7 @@ export function createApp({
   });
 
   // The family's case (spec 0007, R3): a confirmed account, and writes within their hourly limit.
-  const caseAccount = async (c: Context<AppEnv>, counted: boolean) => {
+  const caseAccount = async (c: Context<AppEnv>, counted: 'write' | 'playback' | false) => {
     const current = await signedIn(c);
     if (current === null || cases === undefined || authLimits === undefined) {
       return { refused: unauthorized(c) };
@@ -1171,9 +1171,12 @@ export function createApp({
     if (accountConfirmed === undefined || !(await accountConfirmed(current.accountId))) {
       return { refused: fail(c, 'account_unconfirmed', 403) };
     }
-    const limited = counted
-      ? await overLimit(c, authLimits, caseLimits.write, current.accountId)
-      : undefined;
+    const limited =
+      counted === 'write'
+        ? await overLimit(c, authLimits, caseLimits.write, current.accountId)
+        : counted === 'playback'
+          ? await overLimit(c, authLimits, caseLimits.playback, current.sessionId)
+          : undefined;
     return limited === undefined ? { current, cases } : { refused: limited };
   };
   const caseAnswer = (c: Context<AppEnv>, outcome: CaseWritten) =>
@@ -1190,7 +1193,7 @@ export function createApp({
     stepUpFor?: (request: Body) => Omit<CanonicalAction, 'nonce'> | undefined,
   ) =>
     v1.openapi(route, async (c) => {
-      const account = await caseAccount(c, true);
+      const account = await caseAccount(c, 'write');
       if ('refused' in account) return account.refused;
       const request = body.parse(await c.req.json());
       const action = stepUpFor?.(request);
@@ -1293,13 +1296,19 @@ export function createApp({
     const questions = await account.cases.questions(account.current.accountId);
     return questions === null ? fail(c, 'not_found', 404) : c.json(questions, 200);
   });
+  v1.openapi(openApiRoutes.getCasePlayback, async (c) => {
+    const account = await caseAccount(c, 'playback');
+    if ('refused' in account) return account.refused;
+    const playback = await account.cases.playback(account.current.accountId);
+    return playback === null ? fail(c, 'not_found', 404) : c.json(playback, 200);
+  });
   caseWrite(
     openApiRoutes.answerCaseQuestions,
     caseRoutes.answerCaseQuestions.body,
     (files, id, request) => files.answerQuestions(id, request),
   );
   v1.openapi(openApiRoutes.leaveCase, async (c) => {
-    const account = await caseAccount(c, true);
+    const account = await caseAccount(c, 'write');
     if ('refused' in account) return account.refused;
     if (!(await stepUpGranted(c, account.current, 'sensitive_settings', leaveCaseAction))) {
       return fail(c, 'step_up_required', 403);

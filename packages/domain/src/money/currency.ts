@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { type Decimal, decimalSchema, powerOfTen } from './decimal.js';
 
 /**
  * ISO 4217 active currency codes and their minor-unit exponents, from ISO 4217 List One as
@@ -184,4 +185,14 @@ export const currencyCodeSchema = z.enum(currencyCodes);
 
 export function minorUnitExponent(currency: CurrencyCode): number {
   return minorUnitExponents[currency];
+}
+
+/** Minor units as a decimal in the currency's units: 123450 BRL is `1234.5`. */
+export function unitsAmount(amount: number, currency: CurrencyCode): Decimal {
+  const exponent = minorUnitExponent(currency);
+  const units = BigInt(amount);
+  const scale = powerOfTen(exponent);
+  const whole = (units / scale).toString();
+  const fraction = (units % scale).toString().padStart(exponent, '0').replace(/0+$/, '');
+  return decimalSchema.parse(fraction === '' ? whole : `${whole}.${fraction}`);
 }

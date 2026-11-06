@@ -813,6 +813,67 @@ describe('guided questions (spec 0007, R4)', () => {
   });
 });
 
+describe('playing the case back (spec 0007, R5)', () => {
+  it('reads a shared profile as unanswered and a profile never shared as not shared', async () => {
+    const { alice, bruno, people } = await family();
+    viewOf(
+      await files.answerQuestions(alice, {
+        personId: people.child,
+        answers: [{ questionId: 'birthDate', answer: '2015-03' }],
+      }),
+    );
+    viewOf(
+      await files.addRelationship(alice, {
+        kind: 'parent',
+        from: people.alice,
+        to: people.child,
+        details: {},
+      }),
+    );
+    const kinds = (sentences: readonly { kind: string; about: readonly string[] }[], id: string) =>
+      sentences
+        .filter(({ about }) => about.length === 1 && about[0] === id)
+        .map(({ kind }) => kind);
+
+    const before = await files.playback(bruno);
+    expect(kinds(before?.sentences ?? [], people.child)).toEqual([
+      'profileHidden',
+      'financesHidden',
+    ]);
+    expect(before?.sentences.at(-1)).toEqual({
+      kind: 'parent',
+      question: 'relationships',
+      about: [people.alice, people.child],
+      parent: people.alice,
+      child: people.child,
+    });
+
+    await files.replaceShares(alice, { personId: people.child, profile: [bruno], finances: [] });
+    const after = await files.playback(bruno);
+    const child = kinds(after?.sentences ?? [], people.child);
+    expect(child.slice(0, 3)).toEqual(['financesHidden', 'born', 'unanswered']);
+    expect(child).not.toContain('profileHidden');
+    expect(after?.sentences.find(({ kind }) => kind === 'born')).toMatchObject({
+      person: people.child,
+      date: '2015-03',
+      age: { min: 11, max: 11 },
+    });
+    expect(await files.playback(await account())).toBeNull();
+
+    await files.replaceShares(alice, { personId: people.child, profile: [], finances: [bruno] });
+    const finances = kinds((await files.playback(bruno))?.sentences ?? [], people.child);
+    expect(finances[0]).toBe('profileHidden');
+    expect(finances).not.toContain('financesHidden');
+    expect(finances).not.toContain('born');
+    expect(
+      (await files.playback(bruno))?.sentences.some(
+        (said) =>
+          said.kind === 'unanswered' && said.question === 'incomes' && said.person === people.child,
+      ),
+    ).toBe(true);
+  });
+});
+
 describe('leaving the case (spec 0007, R2)', () => {
   it('takes the people the member keeps and their shares, and the case with its last member', async () => {
     const { caseId, alice, bruno, people } = await family();

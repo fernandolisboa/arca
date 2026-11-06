@@ -2,6 +2,7 @@ import type {
   AddCaseMemberRequest,
   AnswerCaseQuestionsRequest,
   AuditEventCode,
+  CasePlayback,
   CaseQuestions,
   CaseView,
   HandOverCasePersonRequest,
@@ -40,6 +41,7 @@ import { type SQL, sql } from 'drizzle-orm';
 import type { z } from 'zod';
 import type { AuditLog, AuditRecord } from '../audit/log.js';
 import { caseQuestions, questionState } from './questions.js';
+import { casePlayback } from './playback.js';
 import { type CaseRows, caseView, memberCase, readCase } from './view.js';
 
 /** Why a write was refused; each answers one status, and says nothing of a hidden row. */
@@ -118,6 +120,8 @@ export interface CaseFiles {
   ) => Promise<CaseWritten>;
   /** The guided questions of the people the account keeps; null outside a case. */
   readonly questions: (accountId: string) => Promise<CaseQuestions | null>;
+  /** The case read back as sentences; null outside a case. */
+  readonly playback: (accountId: string) => Promise<CasePlayback | null>;
   readonly answerQuestions: (
     accountId: string,
     request: AnswerCaseQuestionsRequest,
@@ -596,6 +600,12 @@ export function createCaseFiles({ db, audit, today, countries }: CaseFilesSettin
       withIdentity(db(), { accountId }, async (tx) => {
         const rows = await readCase(tx, accountId);
         return rows === undefined ? null : caseQuestions(rows, countries);
+      }),
+
+    playback: (accountId) =>
+      withIdentity(db(), { accountId }, async (tx) => {
+        const rows = await readCase(tx, accountId);
+        return rows === undefined ? null : casePlayback(rows, accountId, isoDate(today()));
       }),
 
     answerQuestions: (accountId, { personId, answers }) =>

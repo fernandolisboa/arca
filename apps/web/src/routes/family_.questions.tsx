@@ -14,13 +14,14 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useState, type SubmitEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { caseQuery, caseQuestionsQuery, sessionQuery } from '../api.js';
+import { casePlaybackQuery, caseQuery, caseQuestionsQuery, sessionQuery } from '../api.js';
 import { caseFailure, writeCase, type CaseFailure } from '../case.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { Page } from '../page.js';
 import { passkeys } from '../platform.js';
 import { QuestionEditor, type QuestionContext } from '../questions/editors.js';
 import { sentAnswer } from '../questions/entry.js';
+import { CaseSummary } from '../questions/playback.js';
 
 export const Route = createFileRoute('/family_/questions')({ component: Questions });
 
@@ -126,11 +127,40 @@ function Answering({
     person === undefined ? 'basics' : openStep(person),
   );
   const [saved, setSaved] = useState(false);
+  const [summary, setSummary] = useState(false);
   const go = (next: QuestionStep) => {
     setStep(next);
     setSaved(false);
   };
   if (person === undefined) return null;
+  const toggle = (
+    <button
+      type="button"
+      className={`${textLinkClass} self-start`}
+      onClick={() => {
+        setSummary(!summary);
+      }}
+    >
+      {summary ? t('playback.hide') : t('playback.show')}
+    </button>
+  );
+  if (summary) {
+    return (
+      <div className="flex flex-col gap-6">
+        {toggle}
+        <h3 className="font-display text-lead">{t('playback.title')}</h3>
+        <CaseSummary
+          people={view.people}
+          kept={new Set(questions.people.map((entry) => entry.personId))}
+          onPick={(chosen, question) => {
+            setPersonId(chosen);
+            go(definitions.get(question)?.step ?? 'basics');
+            setSummary(false);
+          }}
+        />
+      </div>
+    );
+  }
   const at = person.steps.findIndex(({ id }) => id === step);
   const current = person.steps[at] ?? person.steps[0];
   if (current === undefined) return null;
@@ -142,6 +172,7 @@ function Answering({
   };
   return (
     <div className="flex flex-col gap-6">
+      {toggle}
       {questions.people.length > 1 && (
         <ChoiceGroup
           legend={t('questions.person')}
@@ -240,7 +271,10 @@ function StepForm({
         })
           .then(async (updated) => {
             queryClient.setQueryData(caseQuery.queryKey, { case: updated });
-            await queryClient.invalidateQueries({ queryKey: caseQuestionsQuery.queryKey });
+            await Promise.all([
+              queryClient.invalidateQueries({ queryKey: caseQuestionsQuery.queryKey }),
+              queryClient.invalidateQueries({ queryKey: casePlaybackQuery.queryKey }),
+            ]);
             onSaved();
           })
           .catch((error: unknown) => {

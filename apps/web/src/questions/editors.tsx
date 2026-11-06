@@ -48,7 +48,7 @@ const listModes = { has: 'has', none: 'none', unknown: 'unknown' } as const;
 const scalar = (value: unknown) =>
   typeof value === 'string' || typeof value === 'number' ? String(value) : '';
 
-function useNames() {
+export function useNames() {
   const { t, i18n } = useTranslation();
   const regions = new Intl.DisplayNames([i18n.language], { type: 'region', fallback: 'code' });
   const languages = new Intl.DisplayNames([i18n.language], { type: 'language', fallback: 'code' });
@@ -60,6 +60,7 @@ function useNames() {
       const former = `formerCountries.${code}`;
       return i18n.exists(former) ? t(former as 'formerCountries.SUHH') : (regions.of(code) ?? code);
     },
+    language: (code: string) => languages.of(code) ?? code,
     countryOptions: (codes: readonly string[]) =>
       sorted(codes.map((code) => ({ value: code, label: regions.of(code) ?? code }))),
     languageOptions: () =>

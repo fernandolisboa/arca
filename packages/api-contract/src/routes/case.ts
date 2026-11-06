@@ -6,6 +6,7 @@ import {
   questionFlow,
   questionIds,
   questionSteps,
+  sentenceSchema,
   shareScopeSchema,
   storedAssetSchema,
   storedFinancesSchema,
@@ -314,9 +315,26 @@ export const getCaseQuestions = {
 export const answerCaseQuestions = write(
   '/case/questions/answers',
   'answerCaseQuestions',
-  "Saves answers to the guided questions of a person the viewer keeps: facts, dependence, finances, the assets the person holds a confirmed share of (an asset left out loses the person's owner row) and their relationships' details; 409 case_invalid when an answer does not fit its question, 409 case_limit as for assets",
+  "Saves answers to the guided questions of a person the viewer keeps: facts, dependence, finances, the assets the person holds a confirmed share of (an asset the answer leaves out stays as it is; one sent as { id, dropped: true } loses the person's owner row) and their relationships' details; 409 case_invalid when an answer does not fit its question, 409 case_limit as for assets",
   AnswerCaseQuestionsRequest,
 );
+
+/**
+ * The case read back as sentences (spec 0007, R5): each a kind with typed values and the case's
+ * person IDs, worded by the client, and the question that sets it, asked of the first person in
+ * `about` the viewer keeps.
+ */
+export const CasePlayback = z.object({ sentences: z.array(sentenceSchema) });
+export type CasePlayback = z.infer<typeof CasePlayback>;
+
+export const getCasePlayback = {
+  method: 'get',
+  path: '/case/playback',
+  operationId: 'getCasePlayback',
+  summary:
+    'The case as the viewer sees it, read back as sentences; a profile or finances not shared with the viewer reads as not shared, never as unanswered; 60 per hour per session (429 rate_limited); 404 not_found outside a case',
+  response: { description: 'The case read back', schema: CasePlayback },
+} as const satisfies RouteDefinition<typeof CasePlayback>;
 
 export const leaveCase = {
   method: 'post',
@@ -364,6 +382,7 @@ export const caseRoutes = {
   removeCaseAssetOwner,
   getCaseQuestions,
   answerCaseQuestions,
+  getCasePlayback,
   leaveCase,
 } as const;
 
@@ -375,6 +394,8 @@ export {
   type QuestionId,
   type QuestionInput,
   type QuestionStep,
+  type Sentence,
+  type SentenceKind,
   answerCanBeUnknown,
   choiceSets,
   currencyCodes,
