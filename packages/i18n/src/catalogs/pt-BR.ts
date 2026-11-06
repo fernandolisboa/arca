@@ -99,6 +99,7 @@ export const ptBR = {
       cleared: 'Estas opções voltaram ao padrão.',
       theme: {
         legend: 'Cores',
+        paper: 'Papel',
         notebook: 'Caderno',
         serene: 'Sereno',
         panel: 'Painel',

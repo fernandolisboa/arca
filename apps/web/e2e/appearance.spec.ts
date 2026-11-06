@@ -34,7 +34,14 @@ async function firstPaint(page: Page) {
   });
   await page.goto('/');
   await expect.poll(() => seen.length).toBeGreaterThan(0);
-  return seen[0];
+  const first = seen[0] ?? {};
+  return { ...first, color: longHex(first.color ?? null) };
+}
+
+/** The minified stylesheet may shorten `#ffffff` to `#fff`; both are the same theme color. */
+function longHex(color: string | null): string | null {
+  if (color === null || !/^#[0-9a-f]{3}$/i.test(color)) return color;
+  return `#${[...color.slice(1)].map((digit) => digit + digit).join('')}`.toLowerCase();
 }
 
 test('applies stored choices before the app starts', async ({ page }) => {
@@ -73,11 +80,11 @@ test('falls back to the defaults on tampered or unknown values', async ({ page }
     }),
   );
   expect(await firstPaint(page)).toEqual({
-    theme: 'notebook',
-    mode: 'dark',
+    theme: 'paper',
+    mode: 'light',
     nav: 'menu',
     motion: 'off',
-    color: palettes.notebook.dark.bg.toLowerCase(),
+    color: palettes.paper.light.bg.toLowerCase(),
   });
   expect(problems).toEqual([]);
 });
@@ -131,7 +138,7 @@ test('follows a change made in another tab', async ({ context }) => {
   await first.evaluate(() => {
     localStorage.removeItem('arca.appearance');
   });
-  await expect(second.locator('html')).toHaveAttribute('data-theme', 'notebook');
+  await expect(second.locator('html')).toHaveAttribute('data-theme', 'paper');
 });
 
 test('uses the defaults when storage is off', async ({ page }) => {
@@ -145,11 +152,11 @@ test('uses the defaults when storage is off', async ({ page }) => {
     Storage.prototype.removeItem = blocked;
   });
   expect(await firstPaint(page)).toEqual({
-    theme: 'notebook',
-    mode: 'dark',
+    theme: 'paper',
+    mode: 'light',
     nav: 'menu',
     motion: 'on',
-    color: palettes.notebook.dark.bg.toLowerCase(),
+    color: palettes.paper.light.bg.toLowerCase(),
   });
   await expect(page.getByRole('heading', { level: 1, name: 'Arca' })).toBeVisible();
   expect(problems).toEqual([]);

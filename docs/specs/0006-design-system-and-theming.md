@@ -18,15 +18,15 @@ One visual language for every screen, with the choices the owner asked for: thre
 
 ## Defaults
 
-The owner picked these on 2026-11-03. Identifiers are English; the pt-BR labels come from the i18n catalog.
+The owner picked these on 2026-11-03 and revised them on 2026-11-06, when the first round of the visual refresh chose the "Papel" direction (the [Arca: novo visual](https://claude.ai/artifact/Ta6giPWVFMYQnv5UFiyjEM) canvas): a white page, near-black type, color only in small details, soft cards and a top bar on wide screens. Identifiers are English; the pt-BR labels come from the i18n catalog.
 
 | Axis | Default | Other options |
 | --- | --- | --- |
-| Color theme | `notebook` | `serene`, `panel` |
-| Mode | `dark` | `light`, `system` |
-| Font pair | `retro` | `expressive`, `editorial`, `elegant`, `geometric`, `friendly`, `readable`, `clean`, `technical` |
-| Corners | `square` | `soft`, `round` |
-| Navigation from 768 px | `menu` | `top`, `side`, `floating-dock` |
+| Color theme | `paper` | `notebook`, `serene`, `panel` |
+| Mode | `light` | `dark`, `system` |
+| Font pair | `clean` | `retro`, `expressive`, `editorial`, `elegant`, `geometric`, `friendly`, `readable`, `technical` |
+| Corners | `soft` | `square`, `round` |
+| Navigation from 768 px | `top` | `menu`, `side`, `floating-dock` |
 | Navigation below 768 px | `menu` | `fixed-dock`, `floating-dock` |
 | Dock edge (floating dock only) | `bottom` | `left`, `right` |
 | Text size | `100` | `112`, `125`, `150` (percent of the root size) |
@@ -41,7 +41,20 @@ These ten axes are the whole preference set. Each is one attribute on `<html>`: 
 
 ### Color
 
-Every palette defines the same keys. `second` is the fill for non-leading bars.
+Every palette defines the same keys. `second` is the fill for non-leading bars. `accent` colors eyebrows, link underlines and the current step; it equals `primary` in every theme except `paper`, whose `primary` is its ink and whose accent is a warm amber.
+
+The `paper` theme (added 2026-11-06):
+
+| Key | paper light | paper dark |
+| --- | --- | --- |
+| `bg` / `surface` | `#FFFFFF` / `#FFFFFF` | `#141312` / `#1B1A18` |
+| `ink` / `muted` | `#1A1A1D` / `#5C5959` | `#F3F1EE` / `#B5AFA9` |
+| `line` / `soft` / `track` / `second` | `#ECEBEA` / `#F5F4F3` / `#ECEBEA` / `#A7A2A1` | `#2B2926` / `#24221F` / `#2B2926` / `#78716C` |
+| `primary` / `onPrimary` / `accent` | `#1A1A1D` / `#FFFFFF` / `#945424` | `#F3F1EE` / `#141312` / `#F2B866` |
+| `okBg` / `okInk` | `#E9F6EC` / `#166534` | `#12301F` / `#86EFAC` |
+| `warnBg` / `warnInk` | `#FFFBEB` / `#945424` | `#2A2114` / `#F2C47E` |
+
+On a white page, cards are told apart by a `line` border and the `shadow-card` token (`0 1px 2px` at 4% black), not by a different fill.
 
 | Key | notebook light | notebook dark | serene light | serene dark | panel light | panel dark |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -60,11 +73,11 @@ Every palette defines the same keys. `second` is the fill for non-leading bars.
 
 Every palette also has `dangerBg` / `dangerInk`: `#FBE3E0` / `#9B1C1C` in light modes and `#3E1A19` / `#FFB4A8` in dark modes. `dangerInk` is also the color of error text on `bg` and `surface`.
 
-Hover and pressed states on `primary` fills use `color-mix(in oklab, var(--primary) 88%, var(--ink))` and 76%, so no extra token is needed and contrast with `onPrimary` only grows.
+Hover and pressed states on `primary` fills use `color-mix(in oklab, var(--primary) 88%, var(--muted))` and 76%, so no extra token is needed. Both `primary` and `muted` pass 4.5:1 against the page, so the mix keeps `onPrimary` readable. (Until 2026-11-06 the mix went toward `ink`, which does nothing when `primary` is the ink, as in `paper`.)
 
 **Rename from spec 0001.** `surface` (page) becomes `bg`; `surface-raised` (card) becomes `surface`; `brand` becomes `primary`; `brand-strong` becomes the hover rule above; `on-brand` becomes `onPrimary`; `ink-muted` becomes `muted`; `ok`, `warning` and `danger` as text become `okInk`, `warnInk` and `dangerInk`; `line` and `ink` keep their names.
 
-**Contrast pairs** the test checks, each at least 4.5:1 in every palette: `ink` on `bg`, `surface`; `muted` on `bg`, `surface`, `soft`; `primary` on `bg`, `surface`, `soft`; `onPrimary` on `primary`; `okInk` on `okBg`; `warnInk` on `warnBg`; `dangerInk` on `dangerBg`, `bg`, `surface`. The values above pass; the lowest is 4.86:1, `primary` on `soft` in notebook light.
+**Contrast pairs** the test checks, each at least 4.5:1 in every palette: `ink` on `bg`, `surface`; `muted` on `bg`, `surface`, `soft`; `primary` on `bg`, `surface`, `soft`; `onPrimary` on `primary`; `accent` on `bg`, `surface`, `soft`; `okInk` on `okBg`; `warnInk` on `warnBg`; `dangerInk` on `dangerBg`, `bg`, `surface`. The values above pass; the lowest is 4.86:1, `primary` on `soft` in notebook light.
 
 Non-text cues (bars on `track`, the dashed `line` border of unknown items) are below 3:1 in some palettes. That is acceptable only because each one repeats information the text already gives (the score, the words "Ainda não sabemos"); a cue that carries meaning alone must reach 3:1 and joins the test.
 
@@ -86,14 +99,14 @@ Scale (rem at 16 px): 0.75 caption, 0.875 small, 1 body, 1.125 lead, 1.375 title
 
 ### High contrast
 
-`data-contrast="high"` overrides, in every palette: `muted` becomes `ink`; `line` and `second` reach 3:1 against `bg` and `surface`; text on `soft` uses `ink`; `primary` used as text or as a fill switches to a per-palette `primaryHigh`; and `okInk`, `warnInk` and `dangerInk` switch to per-palette high-contrast values. All are chosen so every text pair reaches 7:1 (WCAG AAA). R1 holds the values and R3 checks them.
+`data-contrast="high"` overrides, in every palette: `muted` becomes `ink`; `line` and `second` reach 3:1 against `bg` and `surface`; text on `soft` uses `ink`; `primary` used as text or as a fill switches to a per-palette `primaryHigh`, and `accent` to its own high value; and `okInk`, `warnInk` and `dangerInk` switch to per-palette high-contrast values. All are chosen so every text pair reaches 7:1 (WCAG AAA). R1 holds the values and R3 checks them.
 
 ### Shape, space and motion
 
 | Token | `square` | `soft` | `round` |
 | --- | --- | --- | --- |
 | `radius-card` | 4 px | 16 px | 28 px |
-| `radius-control` | 4 px | 12 px | 999 px |
+| `radius-control` | 4 px | 8 px | 999 px |
 | `radius-chip` | 4 px | 999 px | 999 px |
 | `radius-dock` | 6 px | 18 px | 999 px |
 

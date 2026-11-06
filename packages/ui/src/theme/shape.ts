@@ -10,7 +10,7 @@ export interface Radii {
 /** Corner sets (spec 0006, Shape, space and motion). */
 export const radii: Readonly<Record<CornersId, Radii>> = {
   square: { card: '4px', control: '4px', chip: '4px', dock: '6px' },
-  soft: { card: '16px', control: '12px', chip: '999px', dock: '18px' },
+  soft: { card: '16px', control: '8px', chip: '999px', dock: '18px' },
   round: { card: '28px', control: '999px', chip: '999px', dock: '999px' },
 };
 

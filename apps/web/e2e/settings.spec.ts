@@ -14,7 +14,9 @@ const stored = (page: Page) =>
 
 async function openSettings(page: Page) {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Abrir menu' }).click();
+  // Phones open Settings from the menu; the default wide layout has a gear in its top bar.
+  const menu = page.getByRole('button', { name: 'Abrir menu' });
+  if (await menu.isVisible()) await menu.click();
   await page.getByRole('link', { name: 'Configurações' }).click();
   await expect(page.getByRole('heading', { level: 2, name: 'Configurações' })).toBeVisible();
 }
@@ -74,29 +76,29 @@ test('opens the category the address names, and the first one for an unknown nam
 test('applies a choice at once and clears it back to the default', async ({ page }) => {
   await openSettings(page);
   const colors = page.getByRole('group', { name: 'Cores' });
-  await expect(colors.getByRole('radio', { name: 'Padrão (Caderno)' })).toBeChecked();
+  await expect(colors.getByRole('radio', { name: 'Padrão (Papel)' })).toBeChecked();
 
   await colors.getByRole('radio', { name: 'Painel' }).check();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'panel');
   expect(await stored(page)).toEqual({ v: 1, axes: { theme: 'panel' } });
 
   // Picking the default value explicitly is a choice of its own, kept in storage.
-  await colors.getByRole('radio', { name: 'Caderno', exact: true }).check();
-  expect(await stored(page)).toEqual({ v: 1, axes: { theme: 'notebook' } });
+  await colors.getByRole('radio', { name: 'Papel', exact: true }).check();
+  expect(await stored(page)).toEqual({ v: 1, axes: { theme: 'paper' } });
 
-  await colors.getByRole('radio', { name: 'Padrão (Caderno)' }).check();
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'notebook');
+  await colors.getByRole('radio', { name: 'Padrão (Papel)' }).check();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'paper');
   expect(await stored(page)).toBeNull();
 });
 
 test('works by keyboard and clears one category at a time', async ({ page }) => {
   await openSettings(page);
   const corners = page.getByRole('group', { name: 'Cantos' });
-  await corners.getByRole('radio', { name: 'Padrão (Retos)' }).focus();
+  await corners.getByRole('radio', { name: 'Padrão (Suaves)' }).focus();
   await page.keyboard.press('ArrowDown');
-  await expect(corners.getByRole('radio', { name: 'Retos', exact: true })).toBeChecked();
+  await expect(corners.getByRole('radio', { name: 'Suaves', exact: true })).toBeChecked();
   await page.keyboard.press('ArrowDown');
-  await expect(page.locator('html')).toHaveAttribute('data-corners', 'soft');
+  await expect(page.locator('html')).toHaveAttribute('data-corners', 'square');
 
   await openSection(page, 'Acessibilidade');
   await page
@@ -111,12 +113,12 @@ test('works by keyboard and clears one category at a time', async ({ page }) => 
   ).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('data-text-size', '100');
   // The other category keeps its choice until its own reset.
-  await expect(page.locator('html')).toHaveAttribute('data-corners', 'soft');
-  expect(await stored(page)).toEqual({ v: 1, axes: { corners: 'soft' } });
+  await expect(page.locator('html')).toHaveAttribute('data-corners', 'square');
+  expect(await stored(page)).toEqual({ v: 1, axes: { corners: 'square' } });
 
   await openSection(page, 'Aparência');
   await page.getByRole('button', { name: 'Voltar estas opções ao padrão' }).click();
-  await expect(page.locator('html')).toHaveAttribute('data-corners', 'square');
+  await expect(page.locator('html')).toHaveAttribute('data-corners', 'soft');
   expect(await stored(page)).toBeNull();
 });
 

@@ -9,20 +9,20 @@ export interface Layout {
   readonly textSize?: string;
 }
 
-/** The defaults: the menu at every width. */
-export const defaultLayout: Layout = { narrow: 'menu', wide: 'menu', edge: 'bottom' };
+/** The defaults: the menu on phones and the top bar from 768 px. */
+export const defaultLayout: Layout = { narrow: 'menu', wide: 'top', edge: 'bottom' };
 
 export const narrowLayouts: readonly Layout[] = [
   defaultLayout,
-  { narrow: 'fixed-dock', wide: 'menu', edge: 'bottom' },
-  { narrow: 'floating-dock', wide: 'menu', edge: 'bottom' },
-  { narrow: 'floating-dock', wide: 'menu', edge: 'left' },
-  { narrow: 'floating-dock', wide: 'menu', edge: 'right' },
+  { narrow: 'fixed-dock', wide: 'top', edge: 'bottom' },
+  { narrow: 'floating-dock', wide: 'top', edge: 'bottom' },
+  { narrow: 'floating-dock', wide: 'top', edge: 'left' },
+  { narrow: 'floating-dock', wide: 'top', edge: 'right' },
 ];
 
 export const wideLayouts: readonly Layout[] = [
   defaultLayout,
-  { narrow: 'menu', wide: 'top', edge: 'bottom' },
+  { narrow: 'menu', wide: 'menu', edge: 'bottom' },
   { narrow: 'menu', wide: 'side', edge: 'bottom' },
   { narrow: 'menu', wide: 'floating-dock', edge: 'bottom' },
   { narrow: 'menu', wide: 'floating-dock', edge: 'left' },

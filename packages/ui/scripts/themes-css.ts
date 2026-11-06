@@ -47,8 +47,8 @@ function paletteDeclarations(palette: Palette, mode: ResolvedMode): Declarations
 
 function highContrastDeclarations(theme: ThemeId, mode: ResolvedMode): Declarations {
   const palette = withHighContrast(palettes[theme][mode], highContrast[theme][mode]);
-  const { muted, line, second, primary, okInk, warnInk, dangerInk } = palette;
-  return prefixed({ muted, line, second, primary, okInk, warnInk, dangerInk });
+  const { muted, line, second, primary, accent, okInk, warnInk, dangerInk } = palette;
+  return prefixed({ muted, line, second, primary, accent, okInk, warnInk, dangerInk });
 }
 
 const stack = (role: FontRole) => `'${role.family}', ${role.fallback}`;

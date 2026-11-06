@@ -52,8 +52,14 @@ function render(layout: Partial<ShellLayout>, extra: Partial<AppShellProps> = {}
 const count = (html: string, pattern: RegExp) => [...html.matchAll(pattern)].length;
 
 describe('AppShell', () => {
-  it('shows only the menu button by default, with the mark and a skip link', () => {
+  it('shows the top bar on wide screens and the menu button on phones by default', () => {
     const html = render({});
+    expect(count(html, /aria-label="Abrir menu"/g)).toBe(1);
+    expect(html).toMatch(/href="\/configuracoes"[^>]*aria-label="Configurações"/);
+  });
+
+  it('shows only the menu button in the menu layout, with the mark and a skip link', () => {
+    const html = render({ wide: 'menu' });
     expect(count(html, /aria-label="Abrir menu"/g)).toBe(1);
     expect(html).not.toContain('<nav');
     expect(html).toContain('href="#main-content"');
