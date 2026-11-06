@@ -105,6 +105,7 @@ export {
   type StoredRelationship,
   displayNameSchema,
   profileMarkers,
+  relationshipKinds,
   shareScopeSchema,
   shareScopes,
   storedAssetSchema,

@@ -561,6 +561,10 @@ describe('the case schema access matrix (spec 0007, R1)', () => {
       expect(
         (await client.query(`DELETE FROM cases.person WHERE id = $1`, [people.child])).rowCount,
       ).toBe(1);
+      // Her own person goes only when she leaves the case.
+      expect(
+        (await client.query(`DELETE FROM cases.person WHERE id = $1`, [people.alice])).rowCount,
+      ).toBe(0);
     });
   });
 
@@ -768,6 +772,44 @@ describe('cascades and erasure in the case schema (spec 0007, R1 and R9)', () =>
       ).toBe(0);
     }
     expect(await countAsAdmin('FROM cases.case_file WHERE id = $1', [ending.otherCaseId])).toBe(1);
+  });
+
+  it('removes an asset, and a case, when its last two rows go in concurrent transactions', async () => {
+    const racing = await seedFamily();
+    const { assets, people, alice, bruno } = racing;
+    /** Deletes in two open transactions, the second while the first has not committed. */
+    async function race(
+      role: 'app_api' | 'app_jobs',
+      first: [string, string, unknown[]],
+      second: [string, string, unknown[]],
+    ) {
+      await withClient(roleTarget(database, role), (one) =>
+        withClient(roleTarget(database, role), async (two) => {
+          for (const [client, [account, sql, values]] of [
+            [one, first],
+            [two, second],
+          ] as const) {
+            await client.query('BEGIN');
+            await actFor(client, account);
+            if (client === one) await client.query(sql, values);
+          }
+          const waiting = two.query(second[1], second[2]);
+          await one.query('COMMIT');
+          await waiting;
+          await two.query('COMMIT');
+        }),
+      );
+    }
+    const removeOwnerRow = 'DELETE FROM cases.asset_owner WHERE asset_id = $1 AND person_id = $2';
+    await race(
+      'app_api',
+      [alice, removeOwnerRow, [assets.joint, people.alice]],
+      [bruno, removeOwnerRow, [assets.joint, people.bruno]],
+    );
+    expect(await countAsAdmin('FROM cases.asset WHERE id = $1', [assets.joint])).toBe(0);
+    const leave = 'DELETE FROM cases.member WHERE account_id = $1';
+    await race('app_jobs', [alice, leave, [alice]], [bruno, leave, [bruno]]);
+    expect(await countAsAdmin('FROM cases.case_file WHERE id = $1', [racing.caseId])).toBe(0);
   });
 
   it('lets app_jobs under one identity erase nothing another account keeps', async () => {

@@ -1,6 +1,7 @@
 import type { ClientBase } from 'pg';
 import {
   appRoles,
+  definerRoleSchemas,
   definerRoles,
   migratorRole,
   retiredRoles,
@@ -198,6 +199,35 @@ function runtimeRolePrivileges(client: Query) {
   );
 }
 
+/**
+ * Guard 6, continued: a definer role holds no privilege on a schema, table or column outside its
+ * own schema, since the code of its functions cannot be guarded.
+ */
+function definerRoleReach(client: Query) {
+  const entries = Object.entries(definerRoleSchemas);
+  return rows(
+    client,
+    `SELECT problem FROM (
+       SELECT pg_catalog.format('%I holds privileges on schema %I, outside %I', d.role, n.nspname, d.home) AS problem
+         FROM ROWS FROM (pg_catalog.unnest($1::text[]), pg_catalog.unnest($2::text[])) AS d(role, home)
+         JOIN pg_catalog.pg_roles r ON r.rolname = d.role
+         JOIN pg_catalog.pg_namespace n ON n.nspname <> d.home
+        WHERE EXISTS (SELECT FROM pg_catalog.aclexplode(n.nspacl) a WHERE a.grantee = r.oid)
+       UNION ALL
+       SELECT pg_catalog.format('%I holds privileges on %I.%I, outside %I', d.role, n.nspname, c.relname, d.home)
+         FROM ROWS FROM (pg_catalog.unnest($1::text[]), pg_catalog.unnest($2::text[])) AS d(role, home)
+         JOIN pg_catalog.pg_roles r ON r.rolname = d.role
+         JOIN pg_catalog.pg_namespace n ON n.nspname <> d.home
+         JOIN pg_catalog.pg_class c ON c.relnamespace = n.oid
+        WHERE EXISTS (SELECT FROM pg_catalog.aclexplode(c.relacl) a WHERE a.grantee = r.oid)
+           OR EXISTS (SELECT FROM pg_catalog.pg_attribute t
+                       CROSS JOIN LATERAL pg_catalog.aclexplode(t.attacl) a
+                       WHERE t.attrelid = c.oid AND a.grantee = r.oid)
+     ) found ORDER BY 1`,
+    [entries.map(([role]) => role), entries.map(([, home]) => home)],
+  );
+}
+
 /** Guard 7: no role or database defaults outside the allow-list. */
 function roleSettings(client: Query, policy: DatabasePolicy) {
   return rows(
@@ -266,7 +296,10 @@ const guards = [
   unexpectedLoginRoles,
   privilegedRoles,
   unexpectedMemberships,
-  (client: Query) => runtimeRolePrivileges(client),
+  async (client: Query) => [
+    ...(await runtimeRolePrivileges(client)),
+    ...(await definerRoleReach(client)),
+  ],
   roleSettings,
   extensions,
   deferrableConstraints,

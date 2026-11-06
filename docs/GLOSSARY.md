@@ -34,6 +34,8 @@ One English term in code and docs, one pt-BR label in the interface. Add a row b
 | Guided questions | Perguntas guiadas | The step-by-step questions per person that fill the case, each setting one fact; "Não sei" leaves it unknown |
 | Playback | Resumo do caso | The case read back in plain sentences, each linked to the question that sets it, so the person can correct it |
 | Keeper | Quem cuida dos dados | The one account that writes a person's facts and decides who sees them: the person, or whoever added someone without an account; not the data-protection controller |
+| Case member | Participante do caso | An account in a case; it sees the case's people and relationships, and keeps the people it added |
+| Asset | Bem | Something of value owned by one or more people of the case, with each owner's share; a co-owner named by another keeper stays pending until their keeper confirms |
 | Profile share | Compartilhamento de dados | A keeper letting a chosen member see a person's profile or, separately, their finances; not a document share |
 | Progress | Progresso | Documents obtained and steps done out of what a person's or the family's chosen routes need, computed in code; unknowns shown apart |
 | Shared analysis | Análise compartilhada | A comparison or recommendation an adult shares, read-only and revocable, with chosen people in the case; not a document share |

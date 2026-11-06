@@ -60,6 +60,11 @@ export const storedOwnerShareSchema = z
   .regex(/^(?:0\.[0-9]{1,6}|1(?:\.0{1,6})?)$/)
   .refine((share) => !/^0\.0+$/.test(share), { message: 'A share is more than 0' });
 
+export const relationshipKinds = [
+  ...coupleEdgeSchema.shape.kind.options,
+  parentEdgeSchema.shape.kind.value,
+] as const;
+
 const coupleDetailsSchema = coupleEdgeSchema.omit({ kind: true, people: true });
 const parentDetailsSchema = parentEdgeSchema.omit({ kind: true, parent: true, child: true });
 

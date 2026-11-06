@@ -175,10 +175,11 @@ export const person = cases.table(
       using: isIdentity(table.keeperAccountId),
       withCheck: isIdentity(table.keeperAccountId),
     }),
+    // A member's own person goes only when the member leaves, through `cases_definer`.
     pgPolicy('person_delete_keeper', {
       for: 'delete',
       to: 'app_api',
-      using: isIdentity(table.keeperAccountId),
+      using: sql`${isIdentity(table.keeperAccountId)} AND ${table.accountId} IS NULL`,
     }),
     ...erasedByJobs('person', table.keeperAccountId),
   ],
@@ -235,20 +236,29 @@ export const personFinances = cases.table(
   ],
 );
 
-/** One policy per command, each holding only for the keeper of the row's person. */
-function keeperWrites(
+/** One `app_api` policy per command, each holding only when `allowed` does. */
+function writePolicies(
   table: string,
-  personId: unknown,
+  allowed: SQL,
   commands: readonly ('insert' | 'update' | 'delete')[],
 ) {
   return commands.map((command) =>
     pgPolicy(`${table}_${command}_keeper`, {
       for: command,
       to: 'app_api',
-      ...(command === 'insert' ? { withCheck: keeps(personId) } : { using: keeps(personId) }),
-      ...(command === 'update' ? { withCheck: keeps(personId) } : {}),
+      ...(command === 'insert' ? { withCheck: allowed } : { using: allowed }),
+      ...(command === 'update' ? { withCheck: allowed } : {}),
     }),
   );
+}
+
+/** Writes by the keeper of the row's person only. */
+function keeperWrites(
+  table: string,
+  personId: unknown,
+  commands: readonly ('insert' | 'update' | 'delete')[],
+) {
+  return writePolicies(table, keeps(personId), commands);
 }
 
 /** A person depends financially on another person of the same case. */
@@ -445,15 +455,11 @@ export const relationship = cases.table(
       to: 'app_api',
       using: isMember(table.caseId),
     }),
-    ...(['insert', 'update', 'delete'] as const).map((command) => {
-      const either = sql`${keeps(table.fromPersonId)} OR ${keeps(table.toPersonId)}`;
-      return pgPolicy(`relationship_${command}_keeper`, {
-        for: command,
-        to: 'app_api',
-        ...(command === 'insert' ? { withCheck: either } : { using: either }),
-        ...(command === 'update' ? { withCheck: either } : {}),
-      });
-    }),
+    ...writePolicies(
+      'relationship',
+      sql`${keeps(table.fromPersonId)} OR ${keeps(table.toPersonId)}`,
+      ['insert', 'update', 'delete'],
+    ),
   ],
 );
 

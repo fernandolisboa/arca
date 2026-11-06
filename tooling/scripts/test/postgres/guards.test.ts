@@ -93,6 +93,21 @@ const fixtures: [number, string, string][] = [
   [6, 'GRANT CREATE ON SCHEMA cases TO cases_definer', 'cases_definer has CREATE on schema cases'],
   [
     6,
+    'GRANT USAGE ON SCHEMA vault TO cases_definer',
+    'cases_definer holds privileges on schema vault, outside cases',
+  ],
+  [
+    6,
+    'GRANT SELECT ON vault.envelope TO cases_definer',
+    'cases_definer holds privileges on vault.envelope, outside cases',
+  ],
+  [
+    6,
+    'GRANT SELECT (account_id) ON vault.envelope TO cases_definer',
+    'cases_definer holds privileges on vault.envelope, outside cases',
+  ],
+  [
+    6,
     `DO $$ BEGIN EXECUTE pg_catalog.format('GRANT CREATE ON DATABASE %I TO app_audit', pg_catalog.current_database()); END $$`,
     'app_audit has CREATE on the database',
   ],

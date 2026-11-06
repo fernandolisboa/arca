@@ -1,5 +1,8 @@
 import { randomBytes, randomUUID } from 'node:crypto';
-import { ownerColumns, parentLinks, registry, type RegistryEntry } from '@arca/db/registry';
+import { registry } from '@arca/db/registry';
+import { sql } from 'drizzle-orm';
+import { PgDialect } from 'drizzle-orm/pg-core';
+import { ownedRows } from '../../src/account/data-export.js';
 import type { AuthTestDatabase } from './auth-database.js';
 
 // Synthetic accounts with rows in every registry table (spec 0004, R7 to R9).
@@ -202,47 +205,7 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
   return { accountId, email, credentialId, codeHash };
 }
 
-const keysMatch = (
-  alias: string,
-  columns: readonly string[],
-  other: string,
-  others: readonly string[],
-) =>
-  columns
-    .map((column, index) => `${alias}.${column} = ${other}.${others[index] ?? ''}`)
-    .join(' AND ');
-
-/** Whether row `alias` of the entry is the account's in `$1`, following its owner's foreign keys. */
-function ownedBy(entry: RegistryEntry, alias: string): string {
-  const { owner } = entry;
-  const next = `${alias}_`;
-  const entryOf = (table: string) =>
-    registry.entries.find((candidate) => candidate.table === table);
-  if ('referencedBy' in owner) {
-    const referencing = entryOf(owner.referencedBy);
-    if (referencing === undefined) return 'false';
-    return `EXISTS (SELECT FROM ${owner.referencedBy} ${next}
-      WHERE ${keysMatch(next, owner.referencingColumns, alias, owner.columns)} AND ${ownedBy(referencing, next)})`;
-  }
-  const links = parentLinks(owner);
-  if (links.length === 0) {
-    return `(${ownerColumns(owner)
-      .map((column) => `${alias}.${column} = $1`)
-      .join(' OR ')})`;
-  }
-  const throughParents = links.map((link) => {
-    const parent = entryOf(link.parent);
-    if (parent === undefined) return 'false';
-    return `EXISTS (SELECT FROM ${link.parent} ${next}
-      WHERE ${keysMatch(alias, link.columns, next, link.parentColumns)} AND ${ownedBy(parent, next)})`;
-  });
-  return `(${throughParents.join(' OR ')})`;
-}
-
-/** Counts the account's rows in one registry table, through its owner's foreign keys. */
-export function ownedCountQuery(entry: RegistryEntry): string {
-  return `SELECT count(*)::int AS n FROM ${entry.table} t WHERE ${ownedBy(entry, 't')}`;
-}
+const dialect = new PgDialect();
 
 /** The account's rows per registry table, counted as the server's admin. */
 export async function ownedCounts(
@@ -252,7 +215,11 @@ export async function ownedCounts(
   return testDatabase.asAdmin(async (client) => {
     const counts: Record<string, number> = {};
     for (const entry of registry.entries) {
-      const result = await client.query<{ n: number }>(ownedCountQuery(entry), [accountId]);
+      // The export's own selection, rendered for the admin client, which sees past every policy.
+      const query = dialect.sqlToQuery(
+        sql`SELECT count(*)::int AS n ${ownedRows(entry, registry, accountId)}`,
+      );
+      const result = await client.query<{ n: number }>(query.sql, query.params);
       counts[entry.table] = result.rows[0]?.n ?? 0;
     }
     return counts;

@@ -95,8 +95,8 @@ function ownedBy(entry: RegistryEntry, registry: Registry, accountId: string, al
   return sql`(${sql.join(links.map(throughParent), sql` OR `)})`;
 }
 
-/** The account's rows of the entry. */
-function owned(entry: RegistryEntry, registry: Registry, accountId: string): SQL {
+/** The account's rows of the entry, as a `FROM … WHERE` clause over alias `t`. */
+export function ownedRows(entry: RegistryEntry, registry: Registry, accountId: string): SQL {
   return sql`FROM ${qualified(entry.table)} t WHERE ${ownedBy(entry, registry, accountId, 't')}`;
 }
 
@@ -110,7 +110,7 @@ export function createDataExports({
   const placeholder = i18n.t('dataExport.masked');
   const read = async (tx: Transaction, entry: RegistryEntry, accountId: string) => {
     const result = await tx.execute<{ row: Table['rows'][number] }>(
-      sql`SELECT ${projection(entry, placeholder)} AS row ${owned(entry, registry, accountId)} ORDER BY 1`,
+      sql`SELECT ${projection(entry, placeholder)} AS row ${ownedRows(entry, registry, accountId)} ORDER BY 1`,
     );
     return [entry.table, result.rows.map(({ row }) => row)] as const;
   };

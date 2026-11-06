@@ -9,6 +9,9 @@
 -- drop_unowned_asset: an asset goes, with any pending owner rows, when its last confirmed owner
 -- row goes, whoever deleted that row (a keeper, a person's deletion, a member leaving, erasure).
 -- drop_empty_case: a case goes with its last member.
+-- Both take a transaction lock on the asset or case first: two transactions deleting its last two
+-- rows would otherwise each still see the other's row, and neither would remove it. The second
+-- waits, and its next statement sees the first's delete.
 ALTER TABLE "cases"."case_file" FORCE ROW LEVEL SECURITY;
 --> statement-breakpoint
 ALTER TABLE "cases"."member" FORCE ROW LEVEL SECURITY;
@@ -44,6 +47,7 @@ CREATE FUNCTION "cases"."drop_unowned_asset"() RETURNS trigger
   SET search_path = pg_catalog, pg_temp
   AS $$
   BEGIN
+    PERFORM pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('cases.asset:' || OLD.asset_id::text, 0));
     DELETE FROM "cases"."asset" a
      WHERE a.id = OLD.asset_id
        AND NOT EXISTS (
@@ -57,6 +61,7 @@ CREATE FUNCTION "cases"."drop_empty_case"() RETURNS trigger
   SET search_path = pg_catalog, pg_temp
   AS $$
   BEGIN
+    PERFORM pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('cases.case_file:' || OLD.case_id::text, 0));
     DELETE FROM "cases"."case_file" c
      WHERE c.id = OLD.case_id
        AND NOT EXISTS (SELECT FROM "cases"."member" m WHERE m.case_id = OLD.case_id);
