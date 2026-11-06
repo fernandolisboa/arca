@@ -39,6 +39,7 @@ const manifest = {
 
 const serviceWorkerFile = 'sw.js';
 const appearanceBootFile = 'appearance-boot.js';
+const recoveryBootFile = 'recovery-boot.js';
 
 const defaultPair = fontPairs[axes.font.default];
 const defaultFontFiles = [defaultPair.display, defaultPair.body, defaultPair.numeric].map(
@@ -101,8 +102,8 @@ async function buildScript(
 }
 
 /**
- * Writes the manifest, adds the appearance boot script to the page and, after the app build,
- * builds that script and then the service worker with Workbox bundled
+ * Writes the manifest, adds the appearance and recovery boot scripts to the page and, after the
+ * app build, builds those scripts and then the service worker with Workbox bundled
  * in (no importScripts, since Trusted Types apply inside the worker) and the list of built files
  * to precache. A small plugin instead of vite-plugin-pwa, whose workbox-build dependency pulls
  * in a fork with a provenance downgrade that the lockfile policy rejects.
@@ -121,6 +122,8 @@ function pwa(): Plugin {
       order: 'post',
       handler: () => [
         { tag: 'script', attrs: { src: `/${appearanceBootFile}` }, injectTo: 'head' },
+        // First in <head>, so it listens before any module script can fail.
+        { tag: 'script', attrs: { src: `/${recoveryBootFile}` }, injectTo: 'head-prepend' },
       ],
     },
     generateBundle() {
@@ -131,8 +134,9 @@ function pwa(): Plugin {
       });
     },
     async closeBundle() {
-      // The boot script first, so the precache list includes it.
+      // The boot scripts first, so the precache list includes them.
       await buildScript(outDir, 'src/appearance/boot.ts', 'arcaAppearanceBoot', appearanceBootFile);
+      await buildScript(outDir, 'src/pwa/recovery-boot.ts', 'arcaRecoveryBoot', recoveryBootFile);
       await buildScript(
         outDir,
         'src/service-worker/sw.ts',
