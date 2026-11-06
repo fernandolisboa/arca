@@ -273,3 +273,25 @@ export {
   questionSteps,
   relatedBy,
 } from './case/questions.js';
+export {
+  type DraftPerson,
+  type DraftRelationship,
+  type IntakeDraft,
+  type IntakeRole,
+  intakeDraftSchema,
+  intakeReferenceSchema,
+  intakeRoles,
+  keepStatedDates,
+  maxDraftPeople,
+  maxDraftRelationships,
+  parseIntakeDraft,
+} from './intake/draft.js';
+export {
+  type MaskedIntakeText,
+  type NamedPerson,
+  emailPlaceholder,
+  maskIntakeText,
+  numberPlaceholder,
+  sharedNamePlaceholder,
+} from './intake/mask.js';
+export { type DescribedDraft, describeDraft } from './intake/playback.js';
