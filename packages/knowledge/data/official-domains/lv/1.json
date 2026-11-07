@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "lv",
+  "number": 1,
+  "issuer": "Republic of Latvia",
+  "hosts": [
+    {
+      "host": "likumi.lv",
+      "source": {
+        "id": "official-publications-law",
+        "url": "https://www.vestnesis.lv/ta/id/249322",
+        "title": "Official Publications and Legal Information Law, as published in the official gazette Latvijas Vēstnesis, arts. 16(1) and 17(2): the systematized legal acts are published on www.likumi.lv",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    }
+  ]
+}
