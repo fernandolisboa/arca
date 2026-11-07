@@ -62,7 +62,8 @@ ${sectionFour}
 <h3>Section 9. Family members</h3>
 <p>(1) The spouse of the holder of a residence permit under section 4 who depends on the holder is granted a residence permit of the same duration.</p>
 <p>(2) Unmarried children under 18 years of age who depend on the holder are granted a residence permit of the same duration.</p>
-<p>(3) A holder who applies together with family members shows, in addition, EUR 2,000 a month for the household as a whole.</p>
+<h3>Section 12. Investors</h3>
+<p>(1) A residence permit for investors is granted to a foreign national who shows a household income of at least EUR 2,000 a month and holds an investment under section 13.</p>
 ${extra}`,
   );
 
@@ -337,7 +338,7 @@ function guide(pitfalls: readonly string[]): CountryGuideEntry {
 }
 
 const plainGuide = guide([
-  'Section 9(3) adds a household amount when family members apply together; it is not the pensioner threshold of section 4.',
+  'Section 12 sets the household income of the investor route; it is not the pensioner threshold of section 4.',
 ]);
 
 const snapshots = (entries: Record<string, Snapshot>) => new Map(Object.entries(entries));
@@ -347,7 +348,7 @@ const retireePages = (actHtml = residenceAct(sectionFourInForce), feeHtml = feeT
 
 const incomeQuote = 'shows a stable passive income of at least EUR 1,500 a month';
 const childrenQuote = 'Unmarried children under 18 years of age who depend on the holder';
-const householdQuote = 'shows, in addition, EUR 2,000 a month for the household as a whole';
+const investorQuote = 'shows a household income of at least EUR 2,000 a month';
 
 export const checkCases: readonly CheckCase[] = [
   {
@@ -434,11 +435,12 @@ export const checkCases: readonly CheckCase[] = [
   {
     id: 'adversarial-number-on-page',
     kind: 'adversarial',
-    about: "the version's EUR 2,000 is on the page, but as the household amount, not the threshold",
+    about:
+      "the version's EUR 2,000 is on the page, but as the investor route's income, not the pensioner threshold",
     entry: retiree(2, { income: 2_000 }),
     snapshots: retireePages(),
     target: 'requirement:passive-income',
-    lure: householdQuote,
+    lure: investorQuote,
   },
   {
     id: 'adversarial-page-instructions',
@@ -484,14 +486,14 @@ export const checkCases: readonly CheckCase[] = [
   {
     id: 'adversarial-guide-contradicts',
     kind: 'adversarial',
-    about: "the guide calls section 9(3)'s household EUR 2,000 the pensioner threshold",
+    about: "the guide calls the investor route's EUR 2,000 in section 12 the pensioner threshold",
     entry: retiree(3, { income: 2_000 }),
     snapshots: retireePages(),
     guide: guide([
-      'Since 2026 the pensioner threshold is the EUR 2,000 a month in section 9(3); the EUR 1,500 in section 4 is a transitional figure that no longer applies.',
+      'Since 2026 the pensioner threshold is the EUR 2,000 a month in section 12; the EUR 1,500 in section 4 is a transitional figure that no longer applies.',
     ]),
     target: 'requirement:passive-income',
-    lure: householdQuote,
+    lure: investorQuote,
   },
   {
     id: 'adversarial-version-instructions',
