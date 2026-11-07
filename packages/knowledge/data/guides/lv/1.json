@@ -1,0 +1,210 @@
+{
+  "schemaVersion": 1,
+  "id": "lv",
+  "number": 1,
+  "title": "Latvian immigration law for third-country nationals",
+  "laws": [
+    {
+      "id": "immigration-law-2026",
+      "title": "Immigration Law (Imigrācijas likums) adopted 2026-08-20, in force 2026-09-15: definitions, temporary residence grounds, family members, refusal, annulment and transitional provisions",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by laws of the Saeima, ad hoc, each with its own entry-into-force date; likumi.lv notes each amending law under the article it changes, but its consolidated text already differs from the gazette publication. Article 48 enters into force only on 2027-12-31. The Cabinet must issue the implementing regulations by 2027-12-01; until each takes effect, and not after 2027-12-01, the older regulations listed in transitional provision 3 apply as far as they do not contradict the law."
+    },
+    {
+      "id": "immigration-law-amendment-2026-06-18",
+      "title": "Amendment to the Immigration Law (Grozījums Imigrācijas likumā) adopted 2026-06-18, in force 2026-06-27: adds point 36 to art. 27(7) and (8)",
+      "url": "https://likumi.lv/ta/id/369301",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A one-off amending law published in Latvijas Vēstnesis No. 119A of 2026-06-26; it is not itself amended. Its transitional provision makes the change take effect together with the Immigration Law adopted on 2026-06-11, while the law in force was adopted on 2026-08-20."
+    },
+    {
+      "id": "immigration-law-2002",
+      "title": "Immigration Law (Imigrācijas likums) adopted 2002-10-31, which lost force on 2026-09-15 and still governs visa and temporary residence permit applications filed before that day",
+      "url": "https://likumi.lv/ta/id/68522-imigracijas-likums",
+      "verifiedAt": "2026-11-07",
+      "amendment": "No longer amended: it lost force on 2026-09-15 (transitional provision 1 of the 2026 law); its last amending law, of 2026-04-23, took effect on 2026-05-20. It still matters for visa and temporary permit documents submitted before 2026-09-15 (provision 4) and for repeat permits that provisions 7 to 11 of the 2026 law test against it, provision 10 against its text as worded on 2026-04-23."
+    },
+    {
+      "id": "civil-law-family",
+      "title": "Civil Law (Civillikums), Part One, family law: marriage age and same-sex marriage (arts. 32, 33, 35), guardianship and curatorship (art. 217), minority (arts. 219 to 221)",
+      "url": "https://likumi.lv/ta/id/90223",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by laws of the Saeima, ad hoc; art. 217 was last amended by laws of 2012-11-29 and 2015-10-29 and art. 219 by the law of 2015-10-29, in force 2015-12-03."
+    },
+    {
+      "id": "administrative-procedure-law",
+      "title": "Administrative Procedure Law (Administratīvā procesa likums), art. 43: how procedural periods counted in months end",
+      "url": "https://likumi.lv/ta/id/55567-administrativa-procesa-likums",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by laws of the Saeima, ad hoc; art. 43 was last amended by a law of 2006-10-26, in force 2006-12-01."
+    },
+    {
+      "id": "official-publications-law",
+      "title": "Official Publications and Legal Information Law, arts. 2, 16 and 17: the official gazette Latvijas Vēstnesis is binding, the systematized texts on likumi.lv are not",
+      "url": "https://likumi.lv/ta/id/249322",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by laws of the Saeima, ad hoc; arts. 16 and 17 were last amended by a law of 2020-11-24, in force 2021-01-01."
+    },
+    {
+      "id": "cabinet-regulation-564-2010",
+      "title": "Cabinet Regulation No. 564 of 2010-06-21, Residence Permit Regulations (Uzturēšanās atļauju noteikumi): documents, payment and refund of the investor payment",
+      "url": "https://likumi.lv/ta/id/212441",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by Cabinet regulations, most recently No. 388 of 2026-07-07; points 2.3 and 2.4, inserted by No. 244 of 2024-04-23, took effect on 2026-11-01. Issued under the 2002 law, it applies under the 2026 law only until the new regulations take effect and not after 2027-12-01, as far as it does not contradict the new law. Unlike regulations 225, 554, 675 and 731, its likumi.lv page, when read, showed no date on which it loses force."
+    },
+    {
+      "id": "cabinet-regulation-731-2024",
+      "title": "Cabinet Regulation No. 731 of 2024-11-26 on the state fee for migration services, including the fee for examining residence permit documents",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Set by the Cabinet of Ministers; in force from 2025-01-01, replacing Regulation No. 557 of 2017. Issued under the 2002 law and applied under the 2026 law as a transitional measure; likumi.lv shows it losing force on 2027-12-02."
+    },
+    {
+      "id": "cabinet-regulation-225-2017",
+      "title": "Cabinet Regulation No. 225 of 2017-04-25 on the financial means a foreigner needs and how they are established",
+      "url": "https://likumi.lv/ta/id/290808-noteikumi-par-arzemniekam-nepieciesamo-finansu-lidzeklu-apmeru-un-finansu-lidzeklu-esibas-konstatesanu",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Set by the Cabinet of Ministers and amended by Cabinet regulations (2018, 2024). Its amounts are tied to figures set elsewhere: the minimum monthly wage and the Central Statistical Bureau's average wages and pensions of the previous year. Applied under the 2026 law as a transitional measure; likumi.lv shows it losing force on 2027-12-02."
+    },
+    {
+      "id": "cabinet-regulation-554-2010",
+      "title": "Cabinet Regulation No. 554 of 2010-06-21 on the countries whose citizens undergo an additional check before a visa or residence permit",
+      "url": "https://likumi.lv/ta/id/212364-noteikumi-par-valstim-kuru-pilsoniem-izsniedzot-vizu-vai-uzturesanas-atlauju-veic-papildu-parbaudi",
+      "verifiedAt": "2026-11-07",
+      "amendment": "The annex listing the countries is replaced by Cabinet regulation (current annex by Regulation No. 29 of 2026-01-27) and is reviewed at least every 3 years. Applied under the 2026 law as a transitional measure; likumi.lv shows it losing force on 2027-12-02."
+    },
+    {
+      "id": "cabinet-regulation-675-2011",
+      "title": "Cabinet Regulation No. 675 of 2011-08-30 on how Union citizens and their family members enter and reside in Latvia",
+      "url": "https://likumi.lv/ta/id/235499-kartiba-kada-savienibas-pilsoni-un-vinu-gimenes-locekli-iecelo-un-uzturas-latvijas-republika",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Set by the Cabinet of Ministers and amended by Cabinet regulations (2012, 2015, 2022). Issued under the 2002 law and applied under the 2026 law as a transitional measure; likumi.lv shows it losing force on 2027-12-02, so a replacement is due."
+    }
+  ],
+  "pitfalls": [
+    {
+      "id": "pending-applications-old-law",
+      "text": "The 2002 Immigration Law lost force on 2026-09-15. Documents for a visa or temporary residence permit submitted before that day are examined, and the permit issued, under the 2002 law (transitional provision 4), and permits issued before it stay valid until their registration term, or their validity if none was set (provision 6). The filing date does not pick the law for everything: permanent residence documents filed before that day are examined under the 2026 law (provision 5), and so are repeat permits that holders with a registration term request (provision 7).",
+      "laws": ["immigration-law-2026", "immigration-law-2002"]
+    },
+    {
+      "id": "no-real-estate-ground",
+      "text": "Art. 27(1) of the 2026 law has no real estate ground. The 2002 law's point 29 (real estate of at least EUR 250,000) and point 30 (subordinated liabilities of at least EUR 280,000 to a Latvian credit institution) gave permits of up to 5 years. Their holders and family members may get a repeat permit of up to 5 years under transitional provision 10: filed while the previous permit is valid, the investment still meeting the 2002 law as worded on 2026-04-23, no art. 34 ground, and EUR 1,000 paid per year of the previous and new permit, less what was paid before.",
+      "laws": ["immigration-law-2026", "immigration-law-2002"]
+    },
+    {
+      "id": "investment-form",
+      "text": "Point 10 counts only an investment in a company's share capital made by increasing it or by founding a new company; buying existing shares is not named. The EUR 10,000 payment to the state budget is made when the first permit under point 10 is requested and is separate from the investment, so the investor needs at least EUR 60,000 (or EUR 110,000) in all. The permit lasts up to 2 years, where the 2002 law's art. 23(1) point 28 gave up to 5.",
+      "laws": ["immigration-law-2026"]
+    },
+    {
+      "id": "company-size-tiers",
+      "text": "EUR 50,000 needs a company with at most 50 employees and an annual turnover or balance sheet of at most EUR 10 million; at most 10 foreigners get a permit for investing in one such company. EUR 100,000 needs a company that, alone or with its Latvian-registered subsidiaries, employs more than 50 people, with turnover or balance sheet above EUR 10 million. The texts name no tier for a company with more than 50 employees whose turnover and balance sheet are both at most EUR 10 million. The 10-foreigner cap is written only for the smaller tier.",
+      "laws": ["immigration-law-2026"]
+    },
+    {
+      "id": "taxes-keep-permit-valid",
+      "text": "The permit stays valid only if, in each reporting year of its validity, the company pays taxes to the state and municipal budgets, per its tax returns, of at least EUR 40,000 (smaller tier) or EUR 100,000 (larger tier, Latvian subsidiaries' taxes included); refunded or refundable taxes do not count. A company tax debt above EUR 150 is a ground to refuse (art. 34(1) point 26) and to annul the permit (art. 36(1) point 17), unless the tax administration deferred or split the payments and they are paid on schedule, or the decision setting the debt is not in force or is suspended.",
+      "laws": ["immigration-law-2026"]
+    },
+    {
+      "id": "payment-not-refunded",
+      "text": "The EUR 10,000 is a one-off payment and is not refunded except in cases the Cabinet sets (art. 30). Regulation 564, point 73², refunds the payment named in its point 73¹, wholly or in part, on a written request within 4 months of the decision to grant the permit if it was overpaid or paid wrongly or the permit was not received in that time, or to an heir if the foreigner died or went missing before receiving it. Point 73¹ still names the 2002 law's art. 23(1) points 28 to 30 and art. 23(8), so applying it to a point 10 payment rests on transitional provision 3.",
+      "laws": ["immigration-law-2026", "cabinet-regulation-564-2010"]
+    },
+    {
+      "id": "renewals-and-five-years",
+      "text": "A holder of a point 10 permit may request it again while its conditions still hold (art. 29(3)); a request counts as a repeat one if filed no later than 90 days after the previous permit expired (art. 29(1)). After at least 5 years of residence under point 10, the foreigner pays EUR 2,000 in one payment on receiving the repeat permit. If the request comes more than 90 days after expiry or the investment object changes, the first-permit conditions of art. 27 apply instead, and they include the EUR 10,000 payment.",
+      "laws": ["immigration-law-2026"]
+    },
+    {
+      "id": "suspension-by-nationality",
+      "text": "The Cabinet may suspend permits under point 10 or 36 for nationals of named third countries for up to 5 years (art. 28), and a permit is not issued to someone the suspension covers (art. 34(4)); art. 29(1) also leaves the art. 28 case out of the general right to a repeat permit. The regulations are due by 2027-12-01 (transitional provision 3) and do not apply to point 10 documents filed before they take effect (provision 12). No suspension applies until a regulation naming a country takes effect.",
+      "laws": ["immigration-law-2026"]
+    },
+    {
+      "id": "russia-belarus",
+      "text": "Citizens of Belarus (art. 27(7)) and of Russia (art. 27(8)) have no right to a permit under art. 27(1) point 10, among others; the gazette text does not list point 36 there, likumi.lv does. In cases the law does not foresee, the Minister of the Interior, not the head of the Office, decides for them on international-law or humanitarian grounds (art. 27(2) points 2 and 3). Parts 7 and 8 name points of part 1, while a family member requests under part 3, so the text does not say whether they bar a Russian or Belarusian family member. Regulation 554 lists both for an extra check (art. 9).",
+      "laws": [
+        "immigration-law-2026",
+        "cabinet-regulation-554-2010",
+        "immigration-law-amendment-2026-06-18"
+      ]
+    },
+    {
+      "id": "third-country-nationals-only",
+      "text": "The law's permits are for third-country nationals: persons with no citizenship of an EU member state, an EEA state or Switzerland (art. 1(1) point 29), so a dual citizen holding one of these, a Latvian citizen included, is outside them. A Latvian non-citizen is not a third-country national except for EU long-term resident status (art. 1(5)). Union citizens and their family members, third-country nationals among them, reside under regulation 675, whose family members include descendants under 21 or dependent, dependent ascendants and, as extended family, partners (points 3 to 5, 9).",
+      "laws": ["immigration-law-2026", "cabinet-regulation-675-2011"]
+    },
+    {
+      "id": "family-member-definition",
+      "text": "A family member is the spouse, the minor children of the third-country national or of the spouse (wards under guardianship included), and persons under curatorship (art. 1(1) point 8); no partner, parent or adult child is named unless under curatorship. No spouse definition is given; the Civil Law prohibits same-sex marriage (art. 35), and the texts read do not say if one made abroad counts. A family member may get a permit for the principal's term (art. 27(3)) and is refused if the principal is (art. 34(3)) or the marriage is thought fictitious (art. 34(1) point 12).",
+      "laws": ["immigration-law-2026", "civil-law-family"]
+    },
+    {
+      "id": "family-permits-follow-principal",
+      "text": "An adult child of the foreigner or spouse may request repeat permits for the foreigner's term if a minor when the first permit issued to him was requested (art. 29(2)). If the principal's permit is annulled, so are the minor children's, unless the other parent is a Latvian citizen, non-citizen or permanent resident or the child got it independently or is in out-of-family care; wards' permits go too (art. 36(2)). If the investor dies, family permits stay if the investment lasted until death and absences stayed within 3 months a calendar year or had causes beyond their control (art. 36(5)).",
+      "laws": ["immigration-law-2026"]
+    },
+    {
+      "id": "minority-and-marriage",
+      "text": "Minority lasts until the age of 18 (Civil Law, art. 219). The orphans' court may declare a minor of at least 16 of age, with a court's approval (arts. 220 and 221), and a person who married before 18 as the law allows is of age (art. 221). Marriage from 16 needs a spouse of age and the consent of the parents or guardians, or of the orphans' court if they refuse without good reason (art. 33). Art. 221 speaks of a person who has married and does not say that majority ends with a divorce or a spouse's death, so being married now is not the test of majority.",
+      "laws": ["civil-law-family", "immigration-law-2026"]
+    },
+    {
+      "id": "curatorship-scope",
+      "text": "Curatorship over a person (Civil Law, art. 217) covers a person with a mental or other health disorder whose capacity a court restricted, the same person in urgent cases without restricting capacity, which is temporary curatorship for at most 2 years (art. 364.2), and a person whose capacity a court restricted for a wasteful life or abuse of alcohol or other intoxicants. Curatorship over property or an estate is not over a person, and guardianship is established over minors. Art. 1(1) point 8 of the Immigration Law does not say whose curatorship a family member must be under.",
+      "laws": ["civil-law-family", "immigration-law-2026"]
+    },
+    {
+      "id": "leap-day-age",
+      "text": "The Latvian texts read here have no rule for when a person born on 29 February turns a given age. Art. 43(1) of the Administrative Procedure Law ends a procedural period counted in months on the date with the same number in the last month, or on that month's last day if it has none; no text read applies it to ages.",
+      "laws": ["administrative-procedure-law", "civil-law-family"]
+    },
+    {
+      "id": "subsistence-means",
+      "text": "Apart from the investment, a permit is refused if the foreigner lacks, or in the last year of a stay in Latvia lacked, the financial means the Cabinet sets for subsistence (art. 34(1) point 4). Regulation 225 sets them per month: for cases its points 11.1 to 11.6 do not list, the minimum monthly wage (point 11.7), and for a child 30 percent of that (point 12); sufficiency is assessed case by case (point 3). Those points use the 2002 law's numbering and none names the share-capital investor, so point 11.7 covers the investor only on a reading. The minimum wage amount is set elsewhere.",
+      "laws": ["immigration-law-2026", "cabinet-regulation-225-2017"]
+    },
+    {
+      "id": "state-fee",
+      "text": "The state fee for examining the documents (art. 13) is set by regulation 731: EUR 160 for a temporary residence permit examined within 30 days, EUR 280 within 10 working days and EUR 560 within 5 working days (points 5.1.1 to 5.1.3), paid before the documents are submitted (point 7). It is separate from the EUR 10,000 payment to the state budget. likumi.lv shows the regulation losing force on 2027-12-02, the day after transitional provision 3 stops its use.",
+      "laws": ["immigration-law-2026", "cabinet-regulation-731-2024"]
+    },
+    {
+      "id": "old-numbering-in-regulations",
+      "text": "Until new Cabinet regulations take effect, and not after 2027-12-01, regulations 564, 225, 554, 675 and 731, among others, apply as far as they do not contradict the 2026 law (transitional provision 3). They cite the 2002 law, whose art. 23(1) point 28 is today's art. 27(1) point 10 and whose point 29 was real estate, while today's point 29 is entry to a monastery; regulation 225 point 11.6 still names that old point 29. Transitional provision 7, in the gazette too, names regulation 731 as of 2004-11-26, while provision 3 and the regulation itself date it 2024-11-26.",
+      "laws": ["immigration-law-2026", "cabinet-regulation-225-2017", "cabinet-regulation-731-2024"]
+    },
+    {
+      "id": "consolidated-text-not-binding",
+      "text": "The systematized texts on likumi.lv are not binding; where they conflict with the official publication in Latvijas Vēstnesis, the publication prevails (Official Publications and Legal Information Law, art. 16(2)). The 2026 law was published in Latvijas Vēstnesis No. 167 of 2026-09-01, and its gazette text lists no point 36 in art. 27(7) and (8). likumi.lv adds it from an amending law of 2026-06-18 that takes effect with the Immigration Law adopted on 2026-06-11, and adds a transitional provision 22 the gazette text lacks.",
+      "laws": [
+        "official-publications-law",
+        "immigration-law-2026",
+        "immigration-law-amendment-2026-06-18"
+      ]
+    },
+    {
+      "id": "fund-investment",
+      "text": "Art. 27(1) point 36 gives a permit of up to 5 years for a contract and transfer of at least EUR 150,000 invested for at least 5 years with an alternative investment fund manager established by the state, plus EUR 10,000; the law does not say whether such a manager exists.",
+      "laws": ["immigration-law-2026"]
+    },
+    {
+      "id": "permanent-residence-after-5-years",
+      "text": "Permanent residence (EU long-term resident status, art. 24(1) point 2) may be requested after 5 years of continuous residence with a permit, with enough means, Latvian at level A2 and a culture and history course (art. 31(1)); absences may not exceed 6 consecutive months or 10 in all, save justified ones beyond the person's control (art. 31(3)).",
+      "laws": ["immigration-law-2026"]
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "lv",
+      "number": 1
+    }
+  ]
+}

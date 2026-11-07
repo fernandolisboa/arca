@@ -198,6 +198,42 @@
     {
       "path": "routes/lv-capital-investment/3",
       "sha256": "9188c8b460a3ea4c9bbb5e8361cc9641301a5c843a786acf195e71a8ab0d98d2"
+    },
+    {
+      "path": "guides/au/1",
+      "sha256": "e4de0370f898805d8a041bad09d4eb2bcc074ac408aab34b02fc45d73fc338a9"
+    },
+    {
+      "path": "guides/cz/1",
+      "sha256": "db2946b8822dbc08ea2676f229e6d6eda8c94f486385971417a44e2964844cb7"
+    },
+    {
+      "path": "guides/gb/1",
+      "sha256": "417dc1d17806a85c02c074391deb53cf8528c90bcb916f9e82548f50d879a70f"
+    },
+    {
+      "path": "guides/ie/1",
+      "sha256": "dd4e8151e9c80d6ca46c6569f5d02c21a786e4c7029034163854822e71275344"
+    },
+    {
+      "path": "guides/it/1",
+      "sha256": "e35008379135d6ab8dc94a416bec9eb98ed3a5031b5dfce5775689f47ae77e63"
+    },
+    {
+      "path": "guides/lv/1",
+      "sha256": "0d2ae7e5c473985a8515208f120f9021606669c99624e51a29263ecb32636a55"
+    },
+    {
+      "path": "guides/pl/1",
+      "sha256": "c030de18a4f0c1bf78ad2406b8a206bee766027304a440c7e874eee9dee336be"
+    },
+    {
+      "path": "guides/pt/1",
+      "sha256": "26a8e7dea258168093b01fca11a718243e9002bb8694ab61aaa40364d5724585"
+    },
+    {
+      "path": "guides/py/1",
+      "sha256": "5e135ffa1fc1c59342f2e1eddf3eadcd9a530eb32bdef0cb49aef483490a255f"
     }
   ]
 }
