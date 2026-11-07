@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "au",
+  "number": 1,
+  "issuer": "Commonwealth of Australia",
+  "hosts": [
+    {
+      "host": "homeaffairs.gov.au",
+      "source": {
+        "id": "auda-gov-au",
+        "url": "https://www.auda.org.au/au-domain-names/the-different-au-domain-names/gov-au-domain-names/",
+        "title": "auDA, the .au domain administrator: gov.au domain names are restricted to Australian government entities and used only for official government purposes",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    },
+    {
+      "host": "legislation.gov.au",
+      "source": {
+        "id": "auda-gov-au",
+        "url": "https://www.auda.org.au/au-domain-names/the-different-au-domain-names/gov-au-domain-names/",
+        "title": "auDA, the .au domain administrator: gov.au domain names are restricted to Australian government entities and used only for official government purposes",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    }
+  ]
+}
