@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "id": "cl",
+  "number": 1,
+  "title": "Chilean migration law: temporary residence under the Mercosur Residence Agreement",
+  "laws": [
+    {
+      "id": "ley-21325",
+      "title": "Ley N.º 21.325, Ley de Migración y Extranjería (migration law), published 2021-04-20: arts. 58, 68 to 79, temporary and definitive residence, dependents; transitory articles",
+      "url": "https://www.bcn.cl/leychile/navegar?idNorma=1158549",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by later laws published in the Diario Oficial, ad hoc, with no fixed cycle. Ley Chile shows the consolidated text with an inline note on each amended provision; when read it listed the original text in force from 2022-02-12 and 6 later versions, the latest in force from 2026-06-02 (Ley 21.816 on art. 88), with notes from Ley 21.589, 21.590, 21.610, 21.655 and 21.730, and none on arts. 58 or 68 to 81. The subcategories and their requirements are not in the law: art. 70 leaves them to a supreme decree, so most changes to the subcategories and their requirements come by decree."
+    },
+    {
+      "id": "decreto-177-2022",
+      "title": "Decreto N.º 177 of 2022, Interior Ministry: temporary residence subcategories, in force 2022-05-14; art. 4, where to apply; art. 10, the list; art. 46, treaty permits; arts. 72 to 74, dependents",
+      "url": "https://www.bcn.cl/leychile/navegar?idNorma=1176043",
+      "verifiedAt": "2026-11-07",
+      "amendment": "The supreme decree that art. 70 of Ley 21.325 requires, issued through the Interior Ministry, signed by the ministers of the Migration Policy Council and taken reason of by the Comptroller; it is changed only by another such decree, ad hoc, with no yearly cycle. When read, Ley Chile showed a single version, the original text, with no amending decree and no end of validity. A new subcategory, a new requirement or a change to who may later apply for definitive residence would come by such a decree; art. 72 of the law leaves each subcategory's validity to a decree too."
+    },
+    {
+      "id": "codigo-civil",
+      "title": "Código Civil (Civil Code), consolidated text fixed by D.F.L. N.º 1 of 2000: art. 26, of age at 18; art. 48, counting periods of years, which also applies to ages; art. 102, marriage",
+      "url": "https://www.bcn.cl/leychile/navegar?idNorma=172986",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by later laws, ad hoc, with no fixed cycle; Ley Chile shows the consolidated text with an inline note on each amended provision. When read, art. 102 carried a note of Ley 21.400 (Diario Oficial 2021-12-10), which made marriage a union of two persons; arts. 26 and 48 carried no amendment note."
+    },
+    {
+      "id": "mercosur-residence-agreement",
+      "title": "Mercosur, Bolivia and Chile Residence Agreement (Brasilia, 2002-12-06), as approved by Paraguay's Ley N.º 3578 of 2008: arts. 2 to 5, nationals, scope, 2-year temporary residence; art. 9, family",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A treaty; the text read has no amendment clause, and a party leaves it by written notice to Paraguay, the depositary, effective 180 days later (art. 16). Paraguay's Ley 3578 only approves it for Paraguay. Chile's own promulgating decree was not read, so this text is the agreement, not Chile's act incorporating it."
+    },
+    {
+      "id": "sermig-mercosur",
+      "title": "Servicio Nacional de Migraciones guidance page: subcategory 15, Mercosur temporary residence by international reciprocity, for nationals of Argentina, Bolivia, Brazil, Paraguay and Uruguay",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/subcategorias/reciprocidad-internacional/",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A web page the migration service edits at will, with no version history; when read it showed only a last-update date, 2025-12-18. It is guidance, not law; its subcategory numbering is the service's own and does not match the letters of Decreto 177, art. 10."
+    },
+    {
+      "id": "sermig-dependents",
+      "title": "Servicio Nacional de Migraciones guidance page: temporary residence as a dependent, who qualifies and the documents for spouses, partners and children",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A web page the migration service edits at will, with no version history; when read it showed only a last-update date, 2025-12-16. It is guidance, not law. It cites art. 74 of Ley 21.325 and art. 4 of Decreto 177, restates the documents of arts. 73 and 74 of the decree and adds document rules of its own."
+    }
+  ],
+  "pitfalls": [
+    {
+      "id": "legal-basis-numbering",
+      "text": "The service's page grounds subcategory 15 on art. 70 N.º 13 of Ley 21.325, residence by reciprocity or under other treaties. None of the 16 letters of Decreto 177, art. 10, names Mercosur or reciprocity: its treaty permit is letter i), persons covered by international agreements, regulated in art. 46, whose words follow art. 70 N.º 9, and the page lists that one separately as subcategory 8. The page's numbers are the service's, not the decree's letters, and art. 70 N.º 9 and N.º 13 are distinct numerals.",
+      "laws": ["ley-21325", "decreto-177-2022", "sermig-mercosur"]
+    },
+    {
+      "id": "treaty-sets-terms",
+      "text": "Decreto 177, art. 46, sets no requirements of its own for treaty permits: their requirements and effects, and whether they may be requested from abroad or inside Chile, are those of the applicable treaty, and the permit is open to nationals or residents of the treaty's states, as the treaty says. The Residence Agreement lets the consulate or migration service grant a temporary residence of up to 2 years on the documents it lists (art. 4), so the agreement, not the decree, is where a requirement must be found.",
+      "laws": ["decreto-177-2022", "mercosur-residence-agreement"]
+    },
+    {
+      "id": "who-is-a-national",
+      "text": "The agreement covers nationals by origin of a party, and nationals by naturalization only once they have held it for 5 years (art. 2). It names no other way of holding a nationality. A national naturalized less than 5 years ago is not a national of a party under the agreement, whatever the passport says. The service's page does not mention the 5-year condition.",
+      "laws": ["mercosur-residence-agreement"]
+    },
+    {
+      "id": "listed-states-only",
+      "text": "The agreement defines its parties as member and associated states of Mercosur (art. 2), and the text read is the one signed in 2002 by Argentina, Brazil, Paraguay, Uruguay, Bolivia and Chile. The service's page grants subcategory 15 only to citizens of Argentina, Bolivia, Brazil, Paraguay and Uruguay. A national of any other state does not qualify for subcategory 15 as the page reads it; whether a later party may use another treaty permit is not in the texts read.",
+      "laws": ["mercosur-residence-agreement", "sermig-mercosur"]
+    },
+    {
+      "id": "where-to-apply",
+      "text": "The service's page says subcategory 15 is applied for only from abroad, online. Decreto 177, art. 4, makes applying from abroad the general rule, and Ley 21.325, art. 58, bars a holder of permanencia transitoria already in Chile from applying for residence unless art. 69 is met. The agreement itself also covers nationals already in the territory who apply to regularize (art. 3, 2), and art. 46 of the decree defers to the treaty on this. The page and the agreement differ on applying from inside Chile.",
+      "laws": ["sermig-mercosur", "decreto-177-2022", "ley-21325", "mercosur-residence-agreement"]
+    },
+    {
+      "id": "duration-and-entry",
+      "text": "Temporary residence lasts up to 2 years, except seasonal work, and may be extended for up to 2 more; each subcategory's validity and extensions are for a decree (Ley 21.325, art. 72). Decreto 177 sets none for treaty permits, the agreement gives up to 2 years (art. 4) and the page says up to 2 years. A permit granted outside Chile must be used to enter within 90 calendar days of being added to the passport, travel document or record, and its validity runs from entry (art. 72). The page asks an extension request to show that the activities behind the original permit continue.",
+      "laws": ["ley-21325", "sermig-mercosur"]
+    },
+    {
+      "id": "dependents-closed-list",
+      "text": "Dependents are only the spouse or conviviente (partner) of the temporary resident, and the children of the resident, the spouse or the partner who are under 18 or have a disability, or are over 18 but under 24 and studying at an educational institution the State recognizes (Ley 21.325, art. 74). Decreto 177, art. 72, grants dependent permits to those persons, without prejudice to the last paragraph of art. 77 of the law (next pitfall). Grandchildren and siblings are never dependents, and parents only in that case.",
+      "laws": ["ley-21325", "decreto-177-2022"]
+    },
+    {
+      "id": "parents-only-violence-victims",
+      "text": "Decreto 177, art. 73 a), lists a birth certificate for an applicant who is the holder's father or mother. That does not make parents dependents of every holder: art. 73 covers the bonds of art. 74 N.º 1 and 2 and of the last paragraph of art. 77 of Ley 21.325, and only the latter names ascendants: a victim of intrafamily violence may ask that the residence granted to her or him extend to ascendants, spouse or partner, minor children or children with a disability, and children under 24.",
+      "laws": ["decreto-177-2022", "ley-21325"]
+    },
+    {
+      "id": "child-age-limits",
+      "text": "Of age means having turned 18 (Civil Code, art. 26). A child under 18 qualifies outright; from the 18th birthday the child qualifies only while studying and before turning 24, or with a disability, for which the law sets no age limit. The service's page says between 18 and 24 years of age, but the law says under 24, so a child who has turned 24 is out. The page asks for enrolment at an establishment recognized by the State of Chile, and the law leaves conditions for child dependents to the regulation, which was not read.",
+      "laws": ["ley-21325", "codigo-civil", "sermig-dependents"]
+    },
+    {
+      "id": "leap-day-ages",
+      "text": "Civil Code, art. 48, applies its rules for counting periods to age qualifications: periods are counted whole and run until midnight of their last day, and a period of years begun on a day the end month lacks ends on that month's last day. So for a person born on 29 February, a period of years ends on 28 February in a common year.",
+      "laws": ["codigo-civil"]
+    },
+    {
+      "id": "partner-no-minimum",
+      "text": "A conviviente proves the union with a sworn declaration before the competent Chilean consulate, ratified by the other partner in an instrument recorded before a notary or Chilean consulate (Decreto 177, art. 73 d)); the articles read (law art. 74, decree arts. 72 to 74) set no minimum time living together, but art. 74 of the law asks proof of a genuine cohabiting relationship. A spouse shows a marriage certificate or a figure with the same civil effects as marriage (art. 73 c)). The Civil Code defines marriage as between two persons (art. 102, since Ley 21.400).",
+      "laws": ["decreto-177-2022", "ley-21325", "codigo-civil"]
+    },
+    {
+      "id": "means-test-unquantified",
+      "text": "The holder must prove economic activity or stable income enough to support the dependents (Ley 21.325, art. 74), with a notarized sworn statement and documents showing sufficient means measured against indicators estimated by the Ministry of Social Development and Family (Decreto 177, art. 74). Neither article sets an amount, so a person who fits the bonds of art. 74 may still be refused on the means test.",
+      "laws": ["ley-21325", "decreto-177-2022", "sermig-dependents"]
+    },
+    {
+      "id": "dependent-follows-holder",
+      "text": "A dependent's permit follows the validity of the holder's permit (service's page), and the agreement gives family members who are not nationals of a party a residence of the same validity as the person they depend on (art. 9, 2). On the holder's death or the end of the bond the service may grant a dependent a permit as holder; one not granted it has 6 months to leave (Ley 21.325, art. 77). Dependents may work (art. 74).",
+      "laws": ["sermig-dependents", "mercosur-residence-agreement", "ley-21325"]
+    },
+    {
+      "id": "documents-page-stricter",
+      "text": "The agreement accepts a valid passport, an identity card or a consular certificate of nationality (art. 4, 1 a)). The service's page asks a passport valid for at least 1 year from the application, except that Bolivians may use their identity card, and for adults a criminal record certificate from the country of origin or of residence in the last 5 years; a certificate from the country of origin must be at most 60 days old, and public documents must be attached within 60 days of issue.",
+      "laws": ["mercosur-residence-agreement", "sermig-mercosur"]
+    },
+    {
+      "id": "fee-by-nationality",
+      "text": "The page sends the fee to a table of migration fees by nationality and says the Bolivia and Chile migration agreement removed the application fee for Bolivians; the agreement only says a fee is paid as domestic law sets it (art. 4, 1 g)).",
+      "laws": ["sermig-mercosur", "mercosur-residence-agreement"]
+    },
+    {
+      "id": "definitive-residence-separate",
+      "text": "Definitive residence is a separate permit. Ley 21.325, art. 79, asks at least 24 months as temporary resident, which the regulation may raise up to 48 or lower to no less than 1 year, among others for cases in treaties. Art. 70 leaves to the decree which subcategories admit it and makes it always admissible for numerals 1, 2, 3, 5, 8, 9, 10 and 12, a list without 13; Decreto 177, art. 10, admits every letter except d), f), g) and k). The agreement lets the temporary residence turn permanent on a request in the 90 days before it expires (art. 5).",
+      "laws": ["ley-21325", "decreto-177-2022", "mercosur-residence-agreement"]
+    },
+    {
+      "id": "in-force-from-2022",
+      "text": "Ley 21.325 took effect only once its regulation was published (transitory art. 11); Ley Chile dates its original text from 2022-02-12. Until the subcategory decree was issued, the categories of Decreto Ley 1.094 of 1975 applied (transitory art. 5). Ley Chile records Decreto 177 as published and in force from 2022-05-14, and pending Temporaria, Sujeta a Contrato and Estudiante applications under the old law were resolved by matching them to the most similar subcategory (its transitory art. 1). So subcategory rules do not reach a case decided before 2022-05-14.",
+      "laws": ["ley-21325", "decreto-177-2022"]
+    },
+    {
+      "id": "agreement-text-source",
+      "text": "The agreement's text cited is Paraguay's approval law, because Chile's own promulgating decree was not located on Ley Chile. The agreement entered into force on notice from all 6 signatories to Paraguay (art. 14); the date it took effect for Chile is not in the text read.",
+      "laws": ["mercosur-residence-agreement"]
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "cl",
+      "number": 1
+    },
+    {
+      "id": "py",
+      "number": 1
+    }
+  ]
+}
