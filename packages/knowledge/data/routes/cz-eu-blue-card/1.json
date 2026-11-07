@@ -1,0 +1,272 @@
+{
+  "schemaVersion": 1,
+  "routeId": "cz-eu-blue-card",
+  "number": 1,
+  "title": "EU Blue Card for the Czech Republic: a highly qualified job with gross pay of at least 1.5 times the average gross annual wage, CZK 885,870 a year from May 2026",
+  "country": "CZ",
+  "tags": ["work", "temporary-residence"],
+  "effectiveFrom": "2026-05-01",
+  "status": "open",
+  "currency": "CZK",
+  "leapDayBirthday": "feb-28",
+  "leapDayBirthdaySources": ["civil-code-age"],
+  "sources": [
+    {
+      "id": "aliens-act-blue-card",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326",
+      "title": "Aliens Act (No. 326/1999 Sb.), § 42i(1), (2) and (11)(b): a highly qualified job in the central register of vacancies open to Blue Card holders; a degree or equivalent skill",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "aliens-act-blue-card-contract",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326",
+      "title": "Aliens Act, § 42j(1)(b) to (d): a contract of 6 months or more, full time, with gross pay of at least 1.5 times the average gross annual wage the Ministry of Labour announces",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "mpsv-average-wage-2025",
+      "url": "https://e-sbirka.gov.cz/sb/2026/44",
+      "title": "Ministry of Labour communication No. 44/2026 Sb.: from the 2025 average, the average gross annual wage for Blue Cards is CZK 590,580 from 1 May 2026 to 30 April 2027",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "professional-skill-decree",
+      "url": "https://e-sbirka.gov.cz/sb/2023/205",
+      "title": "Decree No. 205/2023 Sb., §§ 1 and 2: for ICT managers and specialists (CZ-ISCO 133 and 25), 3 years of practice in the 7 years before applying counts as high qualification",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "aliens-act-family",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326",
+      "title": "Aliens Act, § 42a(1)(a) to (d) and (7)(d): a Blue Card holder's spouse, minor children and the spouse's, and a lone parent over 65 or a parent or child unable to care for themselves",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "aliens-act-family-income",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326",
+      "title": "Aliens Act, § 42b(1)(d): the family's total monthly income after reuniting must reach the members' subsistence minimums plus the housing amounts",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "aliens-act-eu-citizens",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326",
+      "title": "Aliens Act, §§ 1(2), 1(3) and 87a and note 32: EU, EEA and Swiss citizens fall under the rules for EU citizens; the Blue Card is for third-country nationals (Directive 2021/1883)",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "blue-card-directive",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32021L1883",
+      "title": "Directive (EU) 2021/1883, arts. 2(1) and 3(2)(h): the Blue Card is for third-country nationals, not EU citizens, nor those with equal free movement rights by agreement",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "employment-act-eu-citizens",
+      "url": "https://e-sbirka.gov.cz/sb/2004/435",
+      "title": "Employment Act (No. 435/2004 Sb.), § 3(2): EU citizens and their family members have the same legal position as Czech citizens in employment",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "civil-code-age",
+      "url": "https://e-sbirka.gov.cz/sb/2012/89",
+      "title": "Civil Code (No. 89/2012 Sb.), §§ 30(1) and 605(2): majority at 18; a period whose last month lacks the start day ends on that month's last day",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "cz",
+      "number": 1
+    },
+    {
+      "id": "eu",
+      "number": 1
+    }
+  ],
+  "countrySets": [
+    {
+      "id": "eu-free-movement",
+      "number": 1
+    }
+  ],
+  "requirements": [
+    {
+      "id": "not-eu-eea-or-swiss-citizen",
+      "title": "Not a citizen of the Czech Republic, another EU or EEA state or Switzerland: they live and work there under the EU rules on free movement",
+      "expression": {
+        "op": "not",
+        "operand": {
+          "op": "intersects",
+          "list": {
+            "op": "fact",
+            "key": "principal.citizenships"
+          },
+          "set": {
+            "op": "set",
+            "id": "eu-free-movement"
+          }
+        }
+      },
+      "sources": ["aliens-act-eu-citizens", "blue-card-directive", "employment-act-eu-citizens"]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "job-offer",
+      "title": "A contract of 6 months or more, full time, for a highly qualified job in a vacancy listed as open to Blue Card holders, with gross pay of at least CZK 885,870 a year (1.5 × CZK 590,580)",
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["aliens-act-blue-card", "aliens-act-blue-card-contract", "mpsv-average-wage-2025"]
+    },
+    {
+      "id": "high-qualification",
+      "title": "A degree or higher vocational study from a programme of 3 years or more; for ICT managers and specialists, 3 years of practice in the last 7 years instead; a regulated profession needs recognition",
+      "evidence": ["principal.educationLevel"],
+      "sources": [
+        "aliens-act-blue-card",
+        "aliens-act-blue-card-contract",
+        "professional-skill-decree"
+      ]
+    },
+    {
+      "id": "family-income",
+      "title": "For family members who come too: the family's total monthly income after reuniting reaches their subsistence minimums plus the housing amounts, or the housing costs shown",
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["aliens-act-family", "aliens-act-family-income"]
+    }
+  ],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse",
+      "path": ["spouse"],
+      "condition": {
+        "op": "bool",
+        "value": true
+      },
+      "sources": ["aliens-act-family"]
+    },
+    {
+      "id": "children",
+      "title": "Children under 18; a child of 18 or more who depends on the principal: possible, if unable to care for themselves for health reasons",
+      "path": ["child"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "fact",
+                "key": "person.dependsOnPrincipal"
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["aliens-act-family", "civil-code-age"]
+    },
+    {
+      "id": "spouse-children",
+      "title": "The spouse's children under 18",
+      "path": ["spouse", "child"],
+      "condition": {
+        "op": "lt",
+        "left": {
+          "op": "fact",
+          "key": "person.ageYears"
+        },
+        "right": {
+          "op": "int",
+          "value": 18
+        }
+      },
+      "sources": ["aliens-act-family", "civil-code-age"]
+    },
+    {
+      "id": "parents",
+      "title": "Parents 65 or more who live alone, read as having no spouse or partner; a parent who depends on the principal: possible, if unable to care for themselves for health reasons",
+      "path": ["parent"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "gte",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 65
+                }
+              },
+              {
+                "op": "not",
+                "operand": {
+                  "op": "fact",
+                  "key": "person.hasSpouse"
+                }
+              },
+              {
+                "op": "not",
+                "operand": {
+                  "op": "fact",
+                  "key": "person.hasPartner"
+                }
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "fact",
+                "key": "person.dependsOnPrincipal"
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["aliens-act-family", "civil-code-age"]
+    }
+  ],
+  "costs": [],
+  "durations": []
+}
