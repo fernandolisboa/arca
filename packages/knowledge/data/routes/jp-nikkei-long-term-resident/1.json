@@ -27,7 +27,7 @@
     {
       "id": "immigration-act",
       "url": "https://laws.e-gov.go.jp/law/326CO0000000319",
-      "title": "Immigration Control and Refugee Recognition Act (Cabinet Order No. 319 of 1951), art. 7(1)(ii) and (iv), art. 5 and appended table II (long-term resident)",
+      "title": "Immigration Control and Refugee Recognition Act (Cabinet Order No. 319 of 1951), art. 2(i) (a foreigner has no Japanese nationality), art. 5, art. 7(1)(ii) and (iv), appended table II",
       "kind": "official",
       "verifiedAt": "2026-11-07"
     },
@@ -197,6 +197,29 @@
         "teijusha-notice",
         "immigration-act"
       ]
+    },
+    {
+      "id": "not-japanese-national",
+      "title": "Not a Japanese national: statuses of residence are only for foreigners, who hold no Japanese nationality",
+      "expression": {
+        "op": "not",
+        "operand": {
+          "op": "intersects",
+          "list": {
+            "op": "fact",
+            "key": "principal.citizenships"
+          },
+          "set": {
+            "op": "tokens",
+            "values": [
+              "JP"
+            ]
+          }
+        }
+      },
+      "sources": [
+        "immigration-act"
+      ]
     }
   ],
   "assessments": [
@@ -213,7 +236,7 @@
     },
     {
       "id": "family-conditions",
-      "title": "For the spouse and children: the principal is granted a period of stay of one year or more, and the spouse and biological children show good conduct too",
+      "title": "If a spouse or children apply: whoever they rely on (the principal, or the spouse for the spouse's children) gets a period of stay of a year or more; spouse and biological children show good conduct",
       "evidence": [
         "principal.hasSpouse"
       ],
@@ -388,7 +411,7 @@
     },
     {
       "id": "spouse-adopted-children",
-      "title": "The spouse's adopted children under 6 whom the spouse supports",
+      "title": "The spouse's adopted children under 6 whom the principal or the spouse supports",
       "path": [
         "spouse",
         "child"
@@ -419,8 +442,17 @@
             }
           },
           {
-            "op": "fact",
-            "key": "edge.dependsOnLinkedPerson"
+            "op": "any",
+            "operands": [
+              {
+                "op": "fact",
+                "key": "person.dependsOnPrincipal"
+              },
+              {
+                "op": "fact",
+                "key": "edge.dependsOnLinkedPerson"
+              }
+            ]
           }
         ]
       },
