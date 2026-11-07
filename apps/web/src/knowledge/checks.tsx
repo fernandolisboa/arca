@@ -4,9 +4,9 @@ import {
   type VersionCheckReport,
   type VersionView,
 } from '@arca/api-contract/client';
-import { Button, Icon, StatusChip, type StatusTone } from '@arca/ui';
+import { Button, Disclosure, StatusChip, type StatusTone } from '@arca/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useId, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { api, versionCheckQuery } from '../api.js';
 import { card, surface } from './review-parts.js';
 import type { KnowledgeWords } from './words.js';
@@ -76,14 +76,19 @@ export function CheckReport({
   readonly words: KnowledgeWords;
 }) {
   const { t } = words;
-  const titleId = useId();
   const check = useQuery(versionCheckQuery(view.routeId, view.number));
+  const status = check.data?.enabled === true ? check.data.status : undefined;
   return (
-    <section aria-labelledby={titleId} className={card}>
-      <h5 id={titleId} className="flex items-center gap-2 font-medium">
-        <Icon name="ai" size={18} />
-        {t('knowledge.check.title')}
-      </h5>
+    // Folded only once the version reads as checked, and opened again when its status changes.
+    <Disclosure
+      key={status}
+      title={t('knowledge.check.title')}
+      level={5}
+      icon="ai"
+      aside={status !== undefined && <CheckChip status={status} words={words} />}
+      defaultOpen={status !== 'checked'}
+      className={card}
+    >
       {check.isError ? (
         <div className="flex flex-col items-start gap-2">
           <p>{t('knowledge.check.loadFailure')}</p>
@@ -107,7 +112,7 @@ export function CheckReport({
       {check.data?.enabled === true && (
         <p className="text-small text-muted">{t('knowledge.check.footer')}</p>
       )}
-    </section>
+    </Disclosure>
   );
 }
 

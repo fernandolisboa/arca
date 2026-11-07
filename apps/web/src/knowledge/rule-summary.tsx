@@ -4,7 +4,7 @@ import {
   routes,
   type VersionView,
 } from '@arca/api-contract/client';
-import { Button, Icon } from '@arca/ui';
+import { Button, Disclosure, Icon } from '@arca/ui';
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api } from '../api.js';
@@ -32,6 +32,8 @@ const storedSummaryQuery = ({ routeId, number, hash }: VersionView) =>
 
 export interface RuleSummaryState {
   readonly summary: RuleSummary | undefined;
+  /** Whether the summary came from asking on this visit, rather than being stored already. */
+  readonly justAsked: boolean;
   /**
    * Whether the button belongs on screen: no summary is stored, or reading the stored one failed,
    * so asking again stays possible.
@@ -58,6 +60,7 @@ export function useRuleSummary(view: VersionView): RuleSummaryState {
   });
   return {
     summary: stored.data ?? undefined,
+    justAsked: asked.isSuccess,
     canAsk: stored.data === null || stored.isError,
     asking: asked.isPending,
     failure: asked.isError
@@ -92,14 +95,14 @@ export function RuleSummaryCard({ state }: { readonly state: RuleSummaryState })
   if (state.summary !== undefined) {
     const { overview, watchPoints } = state.summary;
     return (
-      <section
-        aria-label={title}
+      // Open only right after asking: a stored summary waits folded, so the review comes first.
+      <Disclosure
+        title={title}
+        level={4}
+        icon="ai"
+        defaultOpen={state.justAsked}
         className="flex flex-col gap-2 rounded-control border border-line bg-soft p-3"
       >
-        <h4 className="flex items-center gap-2 font-medium">
-          <Icon name="ai" size={18} />
-          {title}
-        </h4>
         <p>{overview}</p>
         <h5 className="font-medium">{t('knowledge.summary.watchPoints')}</h5>
         {watchPoints.length === 0 ? (
@@ -113,7 +116,7 @@ export function RuleSummaryCard({ state }: { readonly state: RuleSummaryState })
           </ul>
         )}
         <p className="text-small text-muted">{t('knowledge.summary.note')}</p>
-      </section>
+      </Disclosure>
     );
   }
 
