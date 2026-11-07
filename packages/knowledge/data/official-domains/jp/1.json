@@ -9,7 +9,7 @@
       "source": {
         "id": "jprs-go-jp",
         "url": "https://jprs.jp/doc/rule/rule.html",
-        "title": "JPRS, the .jp registry, rules for organizational JP domain names, annex 1, 1.3: only Japanese government agencies, their research institutes and public corporations may register GO.JP names",
+        "title": "JPRS .jp registry rules, annex 1, 1.3: GO.JP names only for government agencies, ministry research institutes, incorporated administrative agencies and special corporations",
         "kind": "official",
         "verifiedAt": "2026-11-07"
       }
@@ -19,7 +19,7 @@
       "source": {
         "id": "jprs-go-jp",
         "url": "https://jprs.jp/doc/rule/rule.html",
-        "title": "JPRS, the .jp registry, rules for organizational JP domain names, annex 1, 1.3: only Japanese government agencies, their research institutes and public corporations may register GO.JP names",
+        "title": "JPRS .jp registry rules, annex 1, 1.3: GO.JP names only for government agencies, ministry research institutes, incorporated administrative agencies and special corporations",
         "kind": "official",
         "verifiedAt": "2026-11-07"
       }
