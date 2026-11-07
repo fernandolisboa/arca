@@ -1080,17 +1080,17 @@ export const ptBR = {
       title: 'Conferidas pela IA',
       intro:
         '{n, plural, one {Uma versão proposta bate com as fontes oficiais em todos os itens.} other {# versões propostas batem com as fontes oficiais em todos os itens.}}',
-      action: '{n, plural, one {Aprovar a conferida} other {Aprovar as # conferidas}}',
-      lead: 'A IA conferiu estas versões nas fontes oficiais e não achou diferença. Ao confirmar, todas passam a valer de uma vez:',
+      action: '{n, plural, one {Aprovar a versão conferida} other {Aprovar as # conferidas}}',
+      lead: 'A IA conferiu estas versões nas fontes oficiais e não achou diferença. Ao confirmar, todas ficam ativas de uma vez, e cada uma passa a valer a partir da sua data de vigência:',
       oneByOne:
         'As versões marcadas para revisão e os dados da comparação continuam sendo decididos um por um.',
-      confirm: 'Aprovar todas',
-      waiting: 'Aprovando as versões…',
+      confirm: 'Ativar todas',
+      waiting: 'Ativando as versões…',
       activated:
-        '{n, plural, =0 {Nenhuma versão foi aprovada.} one {# versão aprovada:} other {# versões aprovadas:}}',
+        '{n, plural, =0 {Nenhuma versão foi ativada.} one {# versão ativada:} other {# versões ativadas:}}',
       skippedTitle: 'Ficaram de fora',
       skipped:
-        '{version}: {reason, select, not_found {o app não tem mais esta versão.} changed {a versão mudou depois que você abriu a tela.} rejected {ela já tinha sido recusada.} already_active {ela já estava ativa.} flagged {a nova verificação achou diferença. Abra a versão e decida.} not_admin {você não é mais administrador.} other {a verificação venceu ou ainda não terminou. Abra a versão e decida.}}',
+        '{version}: {reason, select, not_found {o app não tem mais esta versão.} changed {a versão mudou depois que você abriu a tela.} rejected {ela já tinha sido recusada.} already_active {ela já estava ativa.} flagged {a nova verificação não confirmou todos os itens. Abra a versão e decida.} not_admin {você não é mais administrador.} other {a verificação venceu ou ainda não terminou. Abra a versão e decida.}}',
     },
     activate: 'Ativar esta versão',
     reject: 'Recusar esta versão',

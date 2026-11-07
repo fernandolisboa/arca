@@ -2,6 +2,7 @@ import {
   type ActivateCheckedResponse,
   type KnowledgeVersion,
   routes,
+  versionKey,
 } from '@arca/api-contract/client';
 import { Button, Icon } from '@arca/ui';
 import { useQueryClient } from '@tanstack/react-query';
@@ -11,8 +12,7 @@ import { commonFailure, reach, type CommonFailure } from '../requests.js';
 import { card } from './review-parts.js';
 import type { KnowledgeWords } from './words.js';
 
-const keyOf = ({ routeId, number }: { routeId: string; number: number }) =>
-  `${routeId}/${String(number)}`;
+const bulleted = 'flex list-disc flex-col gap-1 pl-5';
 
 type BatchState =
   | { readonly step: 'idle' }
@@ -26,9 +26,8 @@ type BatchState =
   | { readonly step: 'failed'; readonly failure: CommonFailure };
 
 /**
- * One tap for every proposed route version the independent check found clean (ADR-0027). The
- * confirmation lists them; the server activates only those still checked and names the rest. The
- * versions confirmed are kept, so a refetch while the admin reads never changes what is sent.
+ * One tap for every checked route version (ADR-0027). The versions confirmed are kept, so a
+ * refetch while the admin reads never changes what is sent; the server names what it skipped.
  */
 export function CheckedBatch({
   versions,
@@ -45,11 +44,12 @@ export function CheckedBatch({
   const statusRef = useRef<HTMLParagraphElement>(null);
   const checked = versions.filter(({ state: s, check }) => s === 'proposed' && check === 'checked');
 
-  if (checked.length === 0 && (state.step === 'idle' || state.step === 'confirming')) return null;
+  if (checked.length === 0 && state.step === 'idle') return null;
 
   const name = (version: { routeId: string; number: number }, shown: readonly KnowledgeVersion[]) =>
     t('knowledge.versionTitle', {
-      title: shown.find((each) => keyOf(each) === keyOf(version))?.title ?? version.routeId,
+      title:
+        shown.find((each) => versionKey(each) === versionKey(version))?.title ?? version.routeId,
       number: version.number,
     });
 
@@ -60,15 +60,18 @@ export function CheckedBatch({
         versions: shown.map(({ routeId, number, hash }) => ({ routeId, number, hash })),
       }),
     )
-      .then(async (result) => {
-        setState({ step: 'done', shown, result });
-        await queryClient.invalidateQueries({ queryKey: ['knowledge'] });
-      })
-      .catch((error: unknown) => {
-        setState({ step: 'failed', failure: commonFailure(error) });
-      })
+      .then(
+        (result) => {
+          setState({ step: 'done', shown, result });
+        },
+        (error: unknown) => {
+          setState({ step: 'failed', failure: commonFailure(error) });
+        },
+      )
       .finally(() => {
         statusRef.current?.focus();
+        // Some may have been stored before a failure, so the list is read again either way.
+        void queryClient.invalidateQueries({ queryKey: ['knowledge'] });
       });
   };
 
@@ -90,9 +93,9 @@ export function CheckedBatch({
       {state.step === 'confirming' ? (
         <div className="flex flex-col items-start gap-3">
           <p>{t('knowledge.checkedBatch.lead')}</p>
-          <ul className="flex list-disc flex-col gap-1 pl-5">
+          <ul className={bulleted}>
             {state.shown.map((version) => (
-              <li key={keyOf(version)}>
+              <li key={versionKey(version)}>
                 {name(version, state.shown)} · {words.country(version.country)}
               </li>
             ))}
@@ -137,9 +140,9 @@ export function CheckedBatch({
         {message}
       </p>
       {state.step === 'done' && state.result.activated.length > 0 && (
-        <ul className="flex list-disc flex-col gap-1 pl-5">
+        <ul className={bulleted}>
           {state.result.activated.map((version) => (
-            <li key={keyOf(version)}>{name(version, state.shown)}</li>
+            <li key={versionKey(version)}>{name(version, state.shown)}</li>
           ))}
         </ul>
       )}
@@ -148,9 +151,9 @@ export function CheckedBatch({
           <h4 id={skippedId} className="font-medium">
             {t('knowledge.checkedBatch.skippedTitle')}
           </h4>
-          <ul className="flex list-disc flex-col gap-1 pl-5">
+          <ul className={bulleted}>
             {state.result.skipped.map((version) => (
-              <li key={keyOf(version)}>
+              <li key={versionKey(version)}>
                 {t('knowledge.checkedBatch.skipped', {
                   version: name(version, state.shown),
                   reason: version.reason,

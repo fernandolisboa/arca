@@ -16,6 +16,7 @@ import type { RuleCheckerChoice } from './check/checker.js';
 import type { CheckSubject } from './check/run.js';
 import type { RecordedStart, CheckStarts } from './check/starts.js';
 import type { CheckReport, CheckReportStore, FetchLogEntry } from './check/store.js';
+import type { KnowledgeVersion } from '@arca/api-contract/routes';
 import type { KnowledgeVersions } from './versions.js';
 
 /** A version's current report as the activation screen shows it (ADR-0027). */
@@ -170,4 +171,22 @@ export function createVersionChecks({
       };
     },
   };
+}
+
+/**
+ * Every bundled route version with its check status, `none` where no check runs: what the screen
+ * lists and what the checked batch decides on, so the two never disagree (ADR-0027).
+ */
+export async function versionsWithChecks(
+  versions: Pick<KnowledgeVersions, 'list'>,
+  checks: Pick<VersionChecks, 'statuses'> | undefined,
+): Promise<KnowledgeVersion[]> {
+  const [listed, statuses] = await Promise.all([
+    versions.list(),
+    checks?.statuses() ?? new Map<string, ListedCheckStatus>(),
+  ]);
+  return listed.map((version) => ({
+    ...version,
+    check: statuses.get(versionKey(version)) ?? 'none',
+  }));
 }

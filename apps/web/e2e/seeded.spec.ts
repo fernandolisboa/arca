@@ -347,7 +347,7 @@ test('the seed admin approves the checked versions with one tap, and the server 
   });
   await page.reload();
   const batch = page.getByRole('region', { name: 'Conferidas pela IA' });
-  await batch.getByRole('button', { name: 'Aprovar a conferida' }).click();
+  await batch.getByRole('button', { name: 'Aprovar a versão conferida' }).click();
   await expect(batch.getByRole('listitem')).toHaveText([
     new RegExp(`^EB-5 immigrant investor .* versão ${version} · `),
   ]);
@@ -365,12 +365,12 @@ test('the seed admin approves the checked versions with one tap, and the server 
   const activation = page.waitForRequest((request) =>
     request.url().endsWith('/v1/knowledge/versions/activate-checked'),
   );
-  await batch.getByRole('button', { name: 'Aprovar todas' }).click();
-  await expect(batch.getByRole('status')).toHaveText('Nenhuma versão foi aprovada.');
+  await batch.getByRole('button', { name: 'Ativar todas' }).click();
+  await expect(batch.getByRole('status')).toHaveText('Nenhuma versão foi ativada.');
   // Flagged once the scripted report lands, not checked while it runs: never activated either way.
   await expect(batch.getByRole('region', { name: 'Ficaram de fora' })).toContainText(
     new RegExp(
-      `EB-5 immigrant investor .* versão ${version}: (a nova verificação achou diferença|a verificação venceu ou ainda não terminou)`,
+      `EB-5 immigrant investor .* versão ${version}: (a nova verificação não confirmou todos os itens|a verificação venceu ou ainda não terminou)`,
     ),
   );
   expect((await activation).postDataJSON()).toEqual({
@@ -385,11 +385,9 @@ test('the seed admin approves the checked versions with one tap, and the server 
   await page.unroute('**/v1/knowledge/versions');
   await page.reload();
   await expect(
-    page
-      .getByRole('region', { name: 'Versões propostas' })
-      .getByRole('button', {
-        name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`),
-      }),
+    page.getByRole('region', { name: 'Versões propostas' }).getByRole('button', {
+      name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`),
+    }),
   ).toBeVisible();
   expect(stepUps).toEqual([]);
   expect(problems).toEqual([]);

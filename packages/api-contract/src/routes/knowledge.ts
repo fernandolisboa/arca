@@ -18,6 +18,7 @@ import {
   ruleCaseSummarySchema,
   slugSchema,
   sourceSchema,
+  versionKey,
   viewSections,
 } from '@arca/domain';
 import { z } from 'zod';
@@ -491,12 +492,7 @@ export const getVersionCheck = {
   response: { description: 'The check', schema: VersionCheck },
 } as const satisfies RouteDefinition<typeof VersionCheck>;
 
-/*
- * Activating every checked version at once (ADR-0027). The screen sends the identities it showed
- * as checked; the server activates only those still proposed, with the hash in the catalog it
- * bundles and a clean current report, each as its own decision, and names every one it skipped
- * with a reason. Flagged versions and comparison versions are decided one by one.
- */
+/* Activating every checked version at once (ADR-0027): the identities the screen showed. */
 
 const shownVersion = z.strictObject({
   routeId: routeIdSchema,
@@ -509,12 +505,7 @@ export const ActivateCheckedRequest = z.strictObject({
     .array(shownVersion)
     .min(1)
     .max(100)
-    .refine(
-      (list) =>
-        new Set(list.map(({ routeId, number }) => `${routeId}/${String(number)}`)).size ===
-        list.length,
-      'each version once',
-    ),
+    .refine((list) => new Set(list.map(versionKey)).size === list.length, 'each version once'),
 });
 export type ActivateCheckedRequest = z.infer<typeof ActivateCheckedRequest>;
 
@@ -576,4 +567,5 @@ export {
   factTargets,
   relationshipSteps,
   staleAfterDays,
+  versionKey,
 } from '@arca/domain';

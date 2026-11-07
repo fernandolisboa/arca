@@ -294,27 +294,16 @@ describe('activating the checked versions together (ADR-0027)', () => {
   /** Both versions listed with their states now, and both checked. */
   function batch(service: KnowledgeDecisions) {
     return createCheckedActivation({
-      versions: {
-        list: async () => {
-          const states = await service.states();
-          return [version, second].map((identity) => ({
-            routeId: identity.routeId,
-            number: identity.number,
-            title: 'Sample residence route',
-            country: 'QM',
-            effectiveFrom: identity.effectiveFrom,
-            hash: identity.hash,
-            state: stateOf(identity, states),
-          }));
-        },
+      listed: async () => {
+        const states = await service.states();
+        return [version, second].map((identity) => ({
+          routeId: identity.routeId,
+          number: identity.number,
+          hash: identity.hash,
+          state: stateOf(identity, states),
+          check: 'checked' as const,
+        }));
       },
-      statuses: () =>
-        Promise.resolve(
-          new Map([
-            ['qm-sample/1', 'checked'],
-            ['qm-sample/2', 'checked'],
-          ] as const),
-        ),
       decisions: service,
     });
   }

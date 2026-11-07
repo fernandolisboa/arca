@@ -55,7 +55,7 @@ function skipReason(
 export function checkedBatch(
   shown: readonly ShownVersion[],
   listed: readonly BatchListedVersion[],
-): { readonly activate: ShownVersion[]; readonly skipped: SkippedVersion[] } {
+): { readonly activate: readonly ShownVersion[]; readonly skipped: readonly SkippedVersion[] } {
   const byKey = new Map(listed.map((version) => [versionKey(version), version]));
   const seen = new Set<string>();
   const activate: ShownVersion[] = [];

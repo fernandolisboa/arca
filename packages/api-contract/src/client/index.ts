@@ -12,6 +12,7 @@ export {
   collectionNames,
   comparisonOperators,
   staleAfterDays,
+  versionKey,
   expressionOperators,
   factKeys,
   factTargets,
