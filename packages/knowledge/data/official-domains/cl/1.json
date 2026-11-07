@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "cl",
+  "number": 1,
+  "issuer": "Republic of Chile",
+  "hosts": [
+    {
+      "host": "serviciomigraciones.cl",
+      "source": {
+        "id": "nic-cl-whois-serviciomigraciones",
+        "url": "https://www.nic.cl/registry/Whois.do?d=serviciomigraciones.cl",
+        "title": "NIC Chile, the .cl registry: the holder of serviciomigraciones.cl is the Servicio Nacional de Migraciones",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    },
+    {
+      "host": "www.bcn.cl",
+      "source": {
+        "id": "nic-cl-whois-bcn",
+        "url": "https://www.nic.cl/registry/Whois.do?d=bcn.cl",
+        "title": "NIC Chile, the .cl registry: the holder of bcn.cl is the Biblioteca del Congreso Nacional, which publishes Chile's laws in force (Ley Chile)",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    }
+  ]
+}
