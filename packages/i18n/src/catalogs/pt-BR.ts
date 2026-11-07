@@ -965,6 +965,7 @@ export const ptBR = {
         birthDate: 'data de nascimento',
         ageYears: 'idade em anos',
         citizenships: 'cidadanias',
+        citizenshipsFromBirth: 'cidadanias desde o nascimento',
         residenceCountry: 'país onde mora',
         educationLevel: 'escolaridade',
         monthlyActiveIncome: 'renda mensal do trabalho',

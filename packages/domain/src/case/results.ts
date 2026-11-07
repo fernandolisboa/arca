@@ -15,6 +15,7 @@ export const questionForFact = {
   'person.birthDate': 'birthDate',
   'person.ageYears': 'birthDate',
   'person.citizenships': 'citizenships',
+  'person.citizenshipsFromBirth': 'citizenships',
   'person.residenceCountry': 'residenceCountry',
   'person.educationLevel': 'educationLevel',
   'person.monthlyActiveIncome': 'incomes',

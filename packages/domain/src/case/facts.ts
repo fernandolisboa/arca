@@ -24,6 +24,7 @@ import {
   parents,
 } from './graph.js';
 import {
+  type Citizenship,
   type CountryCode,
   type Person,
   type Relationship,
@@ -141,6 +142,13 @@ export const factCatalog = {
     scope: 'person',
     derive: ({ environment, personId }, at) => ({
       value: citizenshipsDuring(person(environment, personId), { min: at, max: at }),
+    }),
+  },
+  'person.citizenshipsFromBirth': {
+    type: { kind: 'countries', formerStates: true },
+    scope: 'person',
+    derive: ({ environment, personId }, at) => ({
+      value: citizenshipsFromBirth(person(environment, personId), at),
     }),
   },
   'person.residenceCountry': {
@@ -404,8 +412,7 @@ function ageRange(
  * complete. A citizenship by birth is held from the holder's birth.
  */
 function citizenshipsDuring(subject: Person, during: Interval<CalendarDate>): TokenListValue {
-  if (subject.citizenships === undefined) return tokens([], [], false);
-  const held = subject.citizenships.map((citizenship) => {
+  return citizenshipsWhere(subject, (citizenship) => {
     const since =
       citizenship.acquired ?? (citizenship.basis === 'birth' ? subject.birthDate : undefined);
     const acquired: Truth =
@@ -414,14 +421,55 @@ function citizenshipsDuring(subject: Person, during: Interval<CalendarDate>): To
           ? true
           : 'unknown'
         : onOrBefore(since, during);
-    const notLost: Truth =
-      citizenship.lost === undefined
-        ? 'unknown'
-        : citizenship.lost === 'none'
-          ? true
-          : after(citizenship.lost, during);
-    return { country: citizenship.country, held: and([acquired, notLost]) };
+    return and([acquired, notLostDuring(citizenship, during)]);
   });
+}
+
+/**
+ * Citizenships held since birth and still held on `at`, such as a native national's: one by birth,
+ * or by descent or another basis acquired on the birth date. Naturalization, marriage and
+ * investment are never held since birth.
+ */
+function citizenshipsFromBirth(subject: Person, at: CalendarDate): TokenListValue {
+  return citizenshipsWhere(subject, (citizenship) =>
+    and([heldSinceBirth(subject, citizenship), notLostDuring(citizenship, { min: at, max: at })]),
+  );
+}
+
+function heldSinceBirth(subject: Person, citizenship: Citizenship): Truth {
+  switch (citizenship.basis) {
+    case 'birth':
+      return true;
+    case 'naturalization':
+    case 'marriage':
+    case 'investment':
+      return false;
+    case 'descent':
+    case 'other':
+    case undefined: {
+      const { acquired } = citizenship;
+      const { birthDate } = subject;
+      if (acquired === undefined || birthDate === undefined) return 'unknown';
+      return onOrBefore(acquired, dateRange(birthDate));
+    }
+  }
+}
+
+function notLostDuring(citizenship: Citizenship, during: Interval<CalendarDate>): Truth {
+  if (citizenship.lost === undefined) return 'unknown';
+  return citizenship.lost === 'none' ? true : after(citizenship.lost, during);
+}
+
+/** The citizenships that `holds` is true or unknown for, and whether the list is complete. */
+function citizenshipsWhere(
+  subject: Person,
+  holds: (citizenship: Citizenship) => Truth,
+): TokenListValue {
+  if (subject.citizenships === undefined) return tokens([], [], false);
+  const held = subject.citizenships.map((citizenship) => ({
+    country: citizenship.country,
+    held: holds(citizenship),
+  }));
   const definite = held.filter((entry) => entry.held === true).map((entry) => entry.country);
   const possible = held
     .filter((entry) => entry.held === 'unknown' && !definite.includes(entry.country))

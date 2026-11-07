@@ -103,6 +103,101 @@ describe('person.citizenships: unknown, none, a date, empty and complete', () =>
   });
 });
 
+describe('person.citizenshipsFromBirth: held since birth and still held', () => {
+  it.each([
+    ['no list (unknown)', undefined, { definite: [], possible: [], complete: false }],
+    [
+      'by birth',
+      [{ country: 'QN', basis: 'birth', lost: 'none' }],
+      { definite: ['QN'], possible: [] },
+    ],
+    [
+      'by birth, later lost',
+      [{ country: 'QN', basis: 'birth', lost: '2020-01-01' }],
+      { definite: [], possible: [] },
+    ],
+    [
+      'by birth, loss unknown',
+      [{ country: 'QN', basis: 'birth' }],
+      { definite: [], possible: ['QN'] },
+    ],
+    [
+      'by naturalization, even dated at birth',
+      [{ country: 'QN', basis: 'naturalization', acquired: '1990-05-01', lost: 'none' }],
+      { definite: [], possible: [] },
+    ],
+    [
+      'by marriage',
+      [{ country: 'QN', basis: 'marriage', acquired: '2015-01-01', lost: 'none' }],
+      { definite: [], possible: [] },
+    ],
+    [
+      'by descent, acquired on the birth date',
+      [{ country: 'QN', basis: 'descent', acquired: '1990-05-01', lost: 'none' }],
+      { definite: ['QN'], possible: [] },
+    ],
+    [
+      'by descent, acquired later',
+      [{ country: 'QN', basis: 'descent', acquired: '2010-03-01', lost: 'none' }],
+      { definite: [], possible: [] },
+    ],
+    [
+      'no basis, acquired on the birth date',
+      [{ country: 'QN', acquired: '1990-05-01', lost: 'none' }],
+      { definite: ['QN'], possible: [] },
+    ],
+    [
+      'no basis, no acquisition date',
+      [{ country: 'QN', lost: 'none' }],
+      { definite: [], possible: ['QN'] },
+    ],
+    [
+      'no basis, acquired in the birth month',
+      [{ country: 'QN', acquired: '1990-05', lost: 'none' }],
+      { definite: [], possible: ['QN'] },
+    ],
+  ])('%s', (_label, citizenships, expected) => {
+    const person =
+      citizenships === undefined
+        ? { id: 'p1', birthDate: '1990-05-01' }
+        : { id: 'p1', birthDate: '1990-05-01', citizenships };
+    const env = environment(snapshot({ people: [person] }));
+    expect(
+      derive('person.citizenshipsFromBirth', { environment: env, personId: 'p1' }).value,
+    ).toEqual({ type: 'tokens', complete: true, ...expected });
+  });
+
+  it('reads a dated citizenship as open when the birth date is unknown', () => {
+    const env = environment(
+      snapshot({
+        people: [
+          { id: 'p1', citizenships: [{ country: 'QN', acquired: '1990-05-01', lost: 'none' }] },
+        ],
+      }),
+    );
+    expect(
+      derive('person.citizenshipsFromBirth', { environment: env, personId: 'p1' }).value,
+    ).toEqual({ type: 'tokens', definite: [], possible: ['QN'], complete: true });
+  });
+
+  it('reads an acquisition in the same month as a partial birth date as open', () => {
+    const env = environment(
+      snapshot({
+        people: [
+          {
+            id: 'p1',
+            birthDate: '1990-05',
+            citizenships: [{ country: 'QN', basis: 'descent', acquired: '1990-05', lost: 'none' }],
+          },
+        ],
+      }),
+    );
+    expect(
+      derive('person.citizenshipsFromBirth', { environment: env, personId: 'p1' }).value,
+    ).toEqual({ type: 'tokens', definite: [], possible: ['QN'], complete: true });
+  });
+});
+
 describe('person.hasSpouse: edge end and the completeness marker', () => {
   const people = (markers: string[] | undefined): object[] => [
     markers === undefined ? { id: 'p1' } : { id: 'p1', recordedInFull: markers },

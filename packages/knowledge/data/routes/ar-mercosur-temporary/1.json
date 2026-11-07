@@ -1,0 +1,252 @@
+{
+  "schemaVersion": 1,
+  "routeId": "ar-mercosur-temporary",
+  "number": 1,
+  "title": "Argentine temporary residence by nationality for native nationals of Mercosur member and associated states",
+  "country": "AR",
+  "tags": ["regional-agreement", "temporary-residence"],
+  "effectiveFrom": "2025-05-29",
+  "status": "open",
+  "currency": "ARS",
+  "leapDayBirthday": "feb-28",
+  "leapDayBirthdaySources": ["ccyc"],
+  "sources": [
+    {
+      "id": "ley-25871",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "title": "Ley 25.871 (migration law), current text: art. 23 l, temporary residence by nationality; art. 23 ñ, family reunification; art. 10; Disposición DNM 4880/2015 note on unions",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "decreto-616-2010",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/decreto-616-2010-167004/texto",
+      "title": "Decreto 616/2010 (migration regulation), art. 23 l: all Mercosur member and associated states count; art. 23, last paragraph: reunification with a temporary resident",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "decreto-366-2025",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-413297/texto",
+      "title": "Decreto 366/2025, art. 6: adds art. 23 ñ (family reunification) to Ley 25.871, in force from its publication on 2025-05-29",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "dnm-mercosur",
+      "url": "https://www.argentina.gob.ar/servicio/obtener-una-residencia-temporaria-por-nacionalidad-mercosur",
+      "title": "Dirección Nacional de Migraciones: temporary residence by nationality (Mercosur), who can apply and for how long",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "ccyc",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-26994-235975/actualizacion",
+      "title": "Civil and Commercial Code (Ley 26.994): art. 6, leap-day periods end on the month's last day; arts. 25 and 27, minors; arts. 510 e) and 511, two years living together, registration only as proof",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "ar",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "mercosur-native-nationality",
+      "title": "Native national of a Mercosur member or associated state the migration directorate lists, or naturalized for five years or more in one of the eight states it lists for that",
+      "expression": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "intersects",
+            "list": {
+              "op": "fact",
+              "key": "principal.citizenshipsFromBirth"
+            },
+            "set": {
+              "op": "tokens",
+              "values": ["BO", "BR", "CL", "CO", "EC", "GY", "PE", "PY", "SR", "UY", "VE"]
+            }
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "intersects",
+                "list": {
+                  "op": "fact",
+                  "key": "principal.citizenships"
+                },
+                "set": {
+                  "op": "tokens",
+                  "values": ["BO", "BR", "CL", "CO", "EC", "PE", "PY", "UY"]
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["ley-25871", "decreto-616-2010", "dnm-mercosur"]
+    }
+  ],
+  "assessments": [],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse",
+      "path": ["spouse"],
+      "condition": {
+        "op": "bool",
+        "value": true
+      },
+      "sources": ["ley-25871", "decreto-616-2010", "decreto-366-2025"]
+    },
+    {
+      "id": "partner",
+      "title": "Partner in a stable union of two years or more; registering the union is a document of proof, which is not checked",
+      "path": ["partner"],
+      "condition": {
+        "op": "since",
+        "date": {
+          "op": "fact",
+          "key": "edge.start"
+        },
+        "duration": "P2Y"
+      },
+      "sources": ["ley-25871", "decreto-616-2010", "decreto-366-2025", "ccyc"]
+    },
+    {
+      "id": "children",
+      "title": "Unmarried children under 18; adult children only with a disability, which is not recorded: possible",
+      "path": ["child"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "lt",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              },
+              {
+                "op": "not",
+                "operand": {
+                  "op": "fact",
+                  "key": "person.hasSpouse"
+                }
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "gte",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["ley-25871", "decreto-616-2010", "decreto-366-2025", "ccyc"]
+    },
+    {
+      "id": "spouse-children",
+      "title": "The spouse's unmarried children under 18, who join the spouse once the spouse is a temporary resident; adults: possible",
+      "path": ["spouse", "child"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "lt",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              },
+              {
+                "op": "not",
+                "operand": {
+                  "op": "fact",
+                  "key": "person.hasSpouse"
+                }
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "gte",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["ley-25871", "decreto-616-2010", "decreto-366-2025", "ccyc"]
+    },
+    {
+      "id": "parents",
+      "title": "Parents",
+      "path": ["parent"],
+      "condition": {
+        "op": "bool",
+        "value": true
+      },
+      "sources": ["ley-25871", "decreto-616-2010", "decreto-366-2025"]
+    }
+  ],
+  "costs": [],
+  "durations": []
+}

@@ -45,7 +45,7 @@ Every file in `data` is immutable once on `main`. A change is a new numbered fil
 
 Tags are free strings in each version, never an enumeration in code, so a new one is a data change. Use one route type and one outcome where they apply, and reuse an existing tag before adding one:
 
-- Route type: `work`, `investment`, `study`, `family`, `descent`, `retirement`, `digital-nomad`, `humanitarian`, `seasonal-work`.
+- Route type: `work`, `investment`, `study`, `family`, `descent`, `retirement`, `digital-nomad`, `humanitarian`, `seasonal-work`, `regional-agreement`.
 - Outcome: `temporary-residence`, `permanent-residence`, `citizenship`.
 
 ## Adding a file
