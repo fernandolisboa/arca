@@ -79,6 +79,8 @@ export type {
   DataExport,
   DestinationComparison,
   WriteComparisonPreferencesRequest,
+  ActivateCheckedRequest,
+  ActivateCheckedResponse,
   ComparisonVersionView,
   DecideComparisonRequest,
   DecideVersionRequest,

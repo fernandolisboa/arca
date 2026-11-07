@@ -52,6 +52,7 @@ import {
   handOverCasePersonAction,
   addCaseMemberAction,
   leaveCaseAction,
+  ActivateCheckedRequest,
   ComparisonVersionView,
   ComparisonViewQuery,
   DecideComparisonRequest,
@@ -114,6 +115,7 @@ import type { CaseFiles, CaseWritten } from './case/case-files.js';
 import type { CaseIntake } from './case/intake.js';
 import { type DecisionKind, type DecisionSubject, versionKey } from '@arca/domain';
 import type { AdminChangeOutcome, AdminGrants } from './knowledge/admin-grants.js';
+import { createCheckedActivation } from './knowledge/checked-activation.js';
 import type { DecisionOutcome, DecisionTarget, KnowledgeDecisions } from './knowledge/decisions.js';
 import type { RuleReportReview } from './knowledge/reports.js';
 import type { VersionChecks } from './knowledge/checks.js';
@@ -1614,6 +1616,25 @@ export function createApp({
     if ('refused' in review) return review.refused;
     const request = CloseRuleReportsRequest.parse(await c.req.json());
     return c.json({ closed: await review.reports.close(request) }, 200);
+  });
+  const checkedActivation =
+    knowledge === undefined || knowledgeVersions === undefined
+      ? undefined
+      : createCheckedActivation({
+          versions: knowledgeVersions,
+          statuses: () => versionChecks?.statuses() ?? Promise.resolve(new Map()),
+          decisions: knowledge,
+        });
+  v1.openapi(openApiRoutes.activateCheckedVersions, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || checkedActivation === undefined || admins === undefined) {
+      return unauthorized(c);
+    }
+    // As for one decision: anyone else learns only that they may not decide, and each decision
+    // checks the role again in the transaction that stores it (ADR-0027).
+    if (!(await admins.isAdmin(current.accountId))) return fail(c, 'not_admin', 403);
+    const { versions } = ActivateCheckedRequest.parse(await c.req.json());
+    return c.json(await checkedActivation.activate(current, versions), 200);
   });
   v1.openapi(openApiRoutes.activateVersion, (c) => decideVersion(c, 'activate', 'route'));
   v1.openapi(openApiRoutes.rejectVersion, (c) => decideVersion(c, 'reject', 'route'));

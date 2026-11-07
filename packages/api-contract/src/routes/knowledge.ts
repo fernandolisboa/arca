@@ -4,6 +4,7 @@ import {
   checkReasons,
   checkStatuses,
   checkFailures,
+  checkedBatchSkips,
   fetchOutcomes,
   listedCheckStatuses,
   maxCheckItemKeyLength,
@@ -490,9 +491,69 @@ export const getVersionCheck = {
   response: { description: 'The check', schema: VersionCheck },
 } as const satisfies RouteDefinition<typeof VersionCheck>;
 
+/*
+ * Activating every checked version at once (ADR-0027). The screen sends the identities it showed
+ * as checked; the server activates only those still proposed, with the hash in the catalog it
+ * bundles and a clean current report, each as its own decision, and names every one it skipped
+ * with a reason. Flagged versions and comparison versions are decided one by one.
+ */
+
+const shownVersion = z.strictObject({
+  routeId: routeIdSchema,
+  number: z.int().min(1).max(1_000_000),
+  hash: contentHash,
+});
+
+export const ActivateCheckedRequest = z.strictObject({
+  versions: z
+    .array(shownVersion)
+    .min(1)
+    .max(100)
+    .refine(
+      (list) =>
+        new Set(list.map(({ routeId, number }) => `${routeId}/${String(number)}`)).size ===
+        list.length,
+      'each version once',
+    ),
+});
+export type ActivateCheckedRequest = z.infer<typeof ActivateCheckedRequest>;
+
+export const ActivateCheckedResponse = z.strictObject({
+  activated: z
+    .array(
+      z.strictObject({
+        routeId: routeIdSchema,
+        number: z.int().min(1),
+        decisionId: z.uuid(),
+      }),
+    )
+    .max(100),
+  skipped: z
+    .array(
+      z.strictObject({
+        routeId: routeIdSchema,
+        number: z.int().min(1),
+        reason: z.enum(checkedBatchSkips),
+      }),
+    )
+    .max(100),
+});
+export type ActivateCheckedResponse = z.infer<typeof ActivateCheckedResponse>;
+
+export const activateCheckedVersions = {
+  method: 'post',
+  path: '/knowledge/versions/activate-checked',
+  operationId: 'activateCheckedVersions',
+  summary:
+    'Activates, for a signed-in admin with no step-up, each shown route version that is still proposed, matches the bundled hash and has a clean current independent check, one decision each; answers which were activated and which were skipped, with a reason each. 403 not_admin',
+  body: ActivateCheckedRequest,
+  response: { description: 'Activated and skipped', schema: ActivateCheckedResponse },
+} as const satisfies RouteDefinition<typeof ActivateCheckedResponse>;
+
 export const knowledgeRoutes = {
   activateVersion,
   rejectVersion,
+  activateCheckedVersions,
   activateComparison,
   rejectComparison,
   listKnowledgeVersions,

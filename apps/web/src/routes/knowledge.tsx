@@ -15,6 +15,7 @@ import {
   versionViewQuery,
 } from '../api.js';
 import { textLinkClass } from '../forms/text-link.js';
+import { CheckedBatch } from '../knowledge/checked-batch.js';
 import { CheckChip, useStartChecks } from '../knowledge/checks.js';
 import { ComparisonPanel } from '../knowledge/comparison-panel.js';
 import { ReportsSection } from '../knowledge/reports-section.js';
@@ -119,6 +120,7 @@ function Knowledge() {
     <Page title={title} lead={t('knowledge.lead')} wide>
       <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-6">
+          <CheckedBatch versions={all} words={words} />
           <VersionList title={t('knowledge.proposed')} versions={proposed} onPick={setPicked} />
           {proposed.length === 0 && <p className="text-muted">{t('knowledge.noneProposed')}</p>}
           {others.length > 0 && (

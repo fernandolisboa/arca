@@ -31720,6 +31720,165 @@
         }
       }
     },
+    "/knowledge/versions/activate-checked": {
+      "post": {
+        "operationId": "activateCheckedVersions",
+        "summary": "Activates, for a signed-in admin with no step-up, each shown route version that is still proposed, matches the bundled hash and has a clean current independent check, one decision each; answers which were activated and which were skipped, with a reason each. 403 not_admin",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "versions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "routeId": {
+                          "type": "string",
+                          "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                        },
+                        "number": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 1000000
+                        },
+                        "hash": {
+                          "type": "string",
+                          "pattern": "^[0-9a-f]{64}$"
+                        }
+                      },
+                      "required": [
+                        "routeId",
+                        "number",
+                        "hash"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 100
+                  }
+                },
+                "required": [
+                  "versions"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Activated and skipped",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "activated": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "routeId": {
+                            "type": "string",
+                            "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                          },
+                          "number": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "decisionId": {
+                            "type": "string",
+                            "format": "uuid"
+                          }
+                        },
+                        "required": [
+                          "routeId",
+                          "number",
+                          "decisionId"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "maxItems": 100
+                    },
+                    "skipped": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "routeId": {
+                            "type": "string",
+                            "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                          },
+                          "number": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "reason": {
+                            "type": "string",
+                            "enum": [
+                              "not_found",
+                              "changed",
+                              "rejected",
+                              "already_active",
+                              "flagged",
+                              "not_checked",
+                              "not_admin"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "routeId",
+                          "number",
+                          "reason"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "maxItems": 100
+                    }
+                  },
+                  "required": [
+                    "activated",
+                    "skipped"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/knowledge/comparisons/activate": {
       "post": {
         "operationId": "activateComparison",

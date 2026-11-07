@@ -285,6 +285,14 @@ export {
   startWindow,
   versionsToStart,
 } from './independent-check/reports.js';
+export {
+  type BatchListedVersion,
+  type CheckedBatchSkip,
+  type ShownVersion,
+  type SkippedVersion,
+  checkedBatch,
+  checkedBatchSkips,
+} from './independent-check/checked-batch.js';
 export { type VersionDates, checkVersionOrder } from './rules/version-order.js';
 export { type EvaluationContext, type VersionContext } from './rules/context.js';
 export {
