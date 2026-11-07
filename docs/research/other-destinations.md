@@ -1,6 +1,6 @@
 # Other destinations
 
-Checked 2026-11-01; the Uruguay, Argentina and Paraguay sections on 2026-11-07.
+Checked 2026-11-01; the Uruguay, Argentina, Paraguay and Chile sections on 2026-11-07.
 
 ## Spain
 
@@ -54,6 +54,25 @@ Mercosur temporary residence is now route version `py-mercosur-temporary` 1 in `
 | Not modeled: a naturalized national's five years, since no fact reads how long a citizenship has been held, so a non-native citizenship of a listed state shows as possible; an adult child's disability, so unmarried adult children show as possible; whether art. 9.2 also binds Paraguay for principals from Peru, Colombia and Ecuador, which acceded later, so their family members show as possible | [Ley 3578/2008](https://www.bacn.gov.py/leyes-paraguayas/1104/x), [Ley 6984/2022](https://www.bacn.gov.py/leyes-paraguayas/10973/x) |
 | Not modeled: identity document, birth and civil-status certificates, criminal records from the country of origin and Paraguay's police (from 14), proof of entry; minors sign with both parents, who hold or apply for residence at the same time. The fee is Gs. 2,341,540 (cash), which the version does not record yet | [DNM, Residencia Temporaria Mercosur](https://migraciones.gov.py/residencia-temporaria-mercosur/) |
 
+## Chile
+
+Mercosur temporary residence is now route version `cl-mercosur-temporary` 1 in `packages/knowledge/data/routes`, verified on 2026-11-07 against the laws on Ley Chile (www.bcn.cl) and the migration service's pages on serviciomigraciones.cl. Chile grants it by reciprocity to nationals of the states that signed the 2002 agreement with it: Argentina, Bolivia, Brazil, Paraguay and Uruguay. Peru, Colombia, Ecuador and Venezuela are not on the list. It grants up to two years, can be extended, and is applied for online from abroad. Any native national of a listed state qualifies, a child included. A non-native citizenship of a listed state shows as possible, because Decreto 177 applies the agreement's own terms and the agreement counts a naturalized national only after five years. Its text is cited from Paraguay's approving law, since Chile's promulgating decree was not found on Ley Chile.
+
+Dependents follow the migration law, art. 74, which applies to every temporary residence. A spouse, a partner in a genuine cohabiting relationship, and a child under 18 of the principal, the spouse or the partner are dependents. Older children qualify only with a disability, or when under 24 and studying at an institution Chile recognizes, and the case records neither, so they show as possible. Parents are not dependents of a temporary resident. They come in only through the separate family reunification subcategory (art. 19), which is not a route yet. A partner needs no minimum time together: the law asks only for a genuine relationship, which Decreto 177 (art. 73) proves with a sworn statement. Ages follow the Civil Code: of age at 18 (art. 26), and a period of years that starts on a day the end month lacks ends on that month's last day, a rule art. 48 also applies to ages, so a 29 February birthday counts on 28 February.
+
+Not modeled, pending the owner's decision (see OPEN-QUESTIONS): art. 74 also requires the principal to prove a stable activity or income enough to support the dependents, which Decreto 177 (art. 74) measures against the Social Development Ministry's indicators. Those indicators are not in the law, and the version does not read them. Each dependent rule says so in its title, and the version counts the family as dependents, because a rule that can only answer "not known" never includes anyone and fails the cases' coverage check.
+
+The law took effect when its regulation was published, on 2022-02-12, and the version starts when Decreto 177, which sets the subcategories, took effect on 2022-05-14. Ley Chile records no amendment to arts. 70 or 74 since then: the later amending laws (21.589, 21.590, 21.655, 21.730 and 21.816) change other articles.
+
+| Fact | Source |
+| --- | --- |
+| Temporary residence goes to foreigners granted it by reciprocity or entitled to it under a treaty in force (Ley 21.325, art. 70 N.º 13). The law was published on 2021-04-20 and took effect once its regulation was published (art. undécimo transitorio) | [Ley 21.325](https://www.bcn.cl/leychile/navegar?idNorma=1158549) |
+| The subcategory for international agreements takes the agreement's own requirements and effects (Decreto 177/2022, art. 46). The decree took effect on 2022-05-14, which is the version's start. Dependents are the people in art. 74 Nos. 1 and 2 of the law (art. 72). A partner swears to the relationship before a Chilean consulate (art. 73), and the principal swears to bear the costs and proves enough means (art. 74) | [Decreto 177/2022](https://www.bcn.cl/leychile/navegar?idNorma=1176043) |
+| Subcategory 15, "Mercosur: Principio de reciprocidad internacional": nationals of Argentina, Bolivia, Brazil, Paraguay and Uruguay; up to two years, extendable; applied for from abroad; passport valid for a year (a Bolivian ID card is accepted), criminal record from the countries lived in for the last five years (adults), photograph; Bolivians pay no application fee | [SERMIG, reciprocidad internacional](https://serviciomigraciones.cl/residencia-temporal/subcategorias/reciprocidad-internacional/) |
+| Dependents: spouse or partner; child of the principal, spouse or partner under 18, with a disability, or 18 to 23 and studying at an institution recognized by the Chilean state; documents for each | [SERMIG, calidad de dependiente](https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/), [Ley 21.325](https://www.bcn.cl/leychile/navegar?idNorma=1158549) |
+| Ages: of age at 18 (art. 26). A period of years whose start month has more days than its end month, and which starts on one of the extra days, ends on the end month's last day, and the rule covers ages (art. 48) | [Código Civil](https://www.bcn.cl/leychile/navegar?idNorma=172986) |
+| Not modeled: the principal's means for the dependents; an adult child's disability or studies; a naturalized national's five years; the fee, which depends on nationality; the documents above | [SERMIG, aranceles migratorios](https://serviciomigraciones.cl/aranceles-migratorios/) |
+
 ## Germany
 
 | Fact | Source |
@@ -80,7 +99,6 @@ Mercosur temporary residence is now route version `py-mercosur-temporary` 1 in `
 
 | Destination | Starting point |
 | --- | --- |
-| Chile | Mercosur Residence Agreement (**unverified** details per country) |
 | Canada | Express Entry points system |
 | Ireland | Critical Skills Employment Permit and general work permits |
 | Australia, New Zealand | Points-based skilled visas |
