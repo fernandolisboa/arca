@@ -396,8 +396,8 @@
       "rulesAsOf": "2026-10-01",
       "expected": {
         "status": "needs_assessment",
-        "dependents": ["p2"],
-        "possibleDependents": [],
+        "dependents": [],
+        "possibleDependents": ["p2"],
         "missingFacts": []
       }
     },

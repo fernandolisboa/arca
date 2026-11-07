@@ -223,51 +223,75 @@
     },
     {
       "id": "spouse-children",
-      "title": "The spouse's unmarried children under 18 who depend on a principal native of Argentina, Bolivia, Brazil, Chile or Uruguay; others: possible",
+      "title": "The spouse's unmarried children under 18 who depend on a principal native of Argentina, Bolivia, Brazil, Chile or Uruguay; others, adults married or not included: possible",
       "path": ["spouse", "child"],
       "condition": {
-        "op": "all",
+        "op": "any",
         "operands": [
           {
-            "op": "not",
-            "operand": {
-              "op": "fact",
-              "key": "person.hasSpouse"
-            }
-          },
-          {
-            "op": "any",
+            "op": "all",
             "operands": [
               {
-                "op": "all",
+                "op": "not",
+                "operand": {
+                  "op": "fact",
+                  "key": "person.hasSpouse"
+                }
+              },
+              {
+                "op": "any",
                 "operands": [
                   {
-                    "op": "lt",
-                    "left": {
-                      "op": "fact",
-                      "key": "person.ageYears"
-                    },
-                    "right": {
-                      "op": "int",
-                      "value": 18
-                    }
+                    "op": "all",
+                    "operands": [
+                      {
+                        "op": "lt",
+                        "left": {
+                          "op": "fact",
+                          "key": "person.ageYears"
+                        },
+                        "right": {
+                          "op": "int",
+                          "value": 18
+                        }
+                      },
+                      {
+                        "op": "intersects",
+                        "list": {
+                          "op": "fact",
+                          "key": "principal.citizenshipsFromBirth"
+                        },
+                        "set": {
+                          "op": "tokens",
+                          "values": ["AR", "BO", "BR", "CL", "UY"]
+                        }
+                      },
+                      {
+                        "op": "fact",
+                        "key": "person.dependsOnPrincipal"
+                      }
+                    ]
                   },
                   {
-                    "op": "intersects",
-                    "list": {
-                      "op": "fact",
-                      "key": "principal.citizenshipsFromBirth"
-                    },
-                    "set": {
-                      "op": "tokens",
-                      "values": ["AR", "BO", "BR", "CL", "UY"]
-                    }
-                  },
-                  {
-                    "op": "fact",
-                    "key": "person.dependsOnPrincipal"
+                    "op": "unmodeled"
                   }
                 ]
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "gte",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
               },
               {
                 "op": "unmodeled"

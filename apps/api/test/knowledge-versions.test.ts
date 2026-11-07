@@ -7,39 +7,49 @@ import { createKnowledgeVersions } from '../src/knowledge/versions.js';
 
 const entries = displayCatalog.entries();
 /** A route with one version, so rejecting it leaves no fallback whatever other routes hold. */
-const first = entries.find(
+const singleVersionEntry = entries.find(
   ({ identity }) =>
     entries.filter(({ identity: other }) => other.routeId === identity.routeId).length === 1,
 );
-if (first === undefined) throw new Error('the catalog has no route with a single version');
+if (singleVersionEntry === undefined)
+  throw new Error('the catalog has no route with a single version');
 const versions = createKnowledgeVersions({
-  states: () => Promise.resolve(new Map([[identityKey(first.identity), 'active' as const]])),
+  states: () =>
+    Promise.resolve(new Map([[identityKey(singleVersionEntry.identity), 'active' as const]])),
   today: () => parseCalendarDate('2026-11-06'),
 });
 
 describe('the activation screen reads (spec 0007, R7)', () => {
   it('lists every bundled version with its state, the newest first', async () => {
     const listed = await versions.list();
-    expect(listed).toHaveLength(displayCatalog.entries().length);
+    expect(listed).toHaveLength(entries.length);
     const dates = listed.map(({ effectiveFrom }) => effectiveFrom);
     expect(dates).toEqual([...dates].sort().reverse());
     expect(
       listed.find(
         ({ routeId, number }) =>
-          routeId === first.identity.routeId && number === first.identity.number,
+          routeId === singleVersionEntry.identity.routeId &&
+          number === singleVersionEntry.identity.number,
       ),
-    ).toMatchObject({ state: 'active', title: first.version.title, hash: first.identity.hash });
+    ).toMatchObject({
+      state: 'active',
+      title: singleVersionEntry.version.title,
+      hash: singleVersionEntry.identity.hash,
+    });
     expect(listed.filter(({ state }) => state === 'proposed')).toHaveLength(listed.length - 1);
   });
 
   it("views one version with its state and today's selection", async () => {
-    const view = await versions.view(first.identity.routeId, first.identity.number);
+    const view = await versions.view(
+      singleVersionEntry.identity.routeId,
+      singleVersionEntry.identity.number,
+    );
     expect(view).toMatchObject({
-      routeId: first.identity.routeId,
+      routeId: singleVersionEntry.identity.routeId,
       state: 'active',
       rejection: { selected: true, fallback: null },
     });
-    expect(await versions.view(first.identity.routeId, 99)).toBeUndefined();
+    expect(await versions.view(singleVersionEntry.identity.routeId, 99)).toBeUndefined();
     expect(await versions.view('qm-none', 1)).toBeUndefined();
   });
 

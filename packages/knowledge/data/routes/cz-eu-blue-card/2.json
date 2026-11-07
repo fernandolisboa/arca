@@ -42,14 +42,14 @@
     {
       "id": "aliens-act-family",
       "url": "https://e-sbirka.gov.cz/sb/1999/326",
-      "title": "Aliens Act, § 42a(1)(a) to (d) and (7)(d): a Blue Card holder’s spouse, minor children and the spouse’s, and a lone parent over 65 or a parent or child unable to care for themselves",
+      "title": "Aliens Act, § 42a(1)(a) to (d) and (7)(d): a Blue Card holder's spouse, minor children and the spouse's, and a lone parent over 65 or a parent or child unable to care for themselves",
       "kind": "official",
       "verifiedAt": "2026-11-07"
     },
     {
       "id": "aliens-act-family-income",
       "url": "https://e-sbirka.gov.cz/sb/1999/326",
-      "title": "Aliens Act, § 42b(1)(d): the family’s total monthly income after reuniting must reach the members’ living minimums (životní minimum) plus the housing amounts",
+      "title": "Aliens Act, § 42b(1)(d): the family's total monthly income after reuniting must reach the members' living minimums (životní minimum) plus the housing amounts",
       "kind": "official",
       "verifiedAt": "2026-11-07"
     },
@@ -222,7 +222,7 @@
     },
     {
       "id": "parents",
-      "title": "Parents 65 or more who are lone: single, widowed or divorced, even with a partner; a parent who depends on the principal: possible, if unable to care for themselves for health reasons",
+      "title": "Parents 65 or more who are single, widowed or divorced; one living with a partner, which may be a registered partnership: possible; a dependent parent unable to care for themselves: possible",
       "path": ["parent"],
       "condition": {
         "op": "any",
@@ -247,6 +247,39 @@
                   "op": "fact",
                   "key": "person.hasSpouse"
                 }
+              },
+              {
+                "op": "not",
+                "operand": {
+                  "op": "fact",
+                  "key": "person.hasPartner"
+                }
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "gte",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 65
+                }
+              },
+              {
+                "op": "not",
+                "operand": {
+                  "op": "fact",
+                  "key": "person.hasSpouse"
+                }
+              },
+              {
+                "op": "unmodeled"
               }
             ]
           },

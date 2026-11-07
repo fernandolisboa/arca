@@ -149,11 +149,11 @@
     },
     {
       "path": "routes/cz-eu-blue-card/2",
-      "sha256": "c3027cbf19c09b031633740a9e3d750c86423a9943b942a200758c18c41b140f"
+      "sha256": "2b3e431d695041df115d6dd420795cb0f4c86832c5f5fe5e8e916bf9f6b19e9b"
     },
     {
       "path": "routes/py-mercosur-temporary/2",
-      "sha256": "e169729fc7d0fe763eb6b0955c0b23ce1afc27b83ccdb3fe53893fb806e23124"
+      "sha256": "c47a24d49eb0e42bc50e709c3a026874271f33fa8d2af5fcc35864e01a425ceb"
     },
     {
       "path": "routes/uy-mercosur-permanent/2",
@@ -161,11 +161,11 @@
     },
     {
       "path": "routes/ar-mercosur-temporary/2",
-      "sha256": "912b7feedf5f0ddb41e217a9e3655384dca61fa435706b3c4f4bc723178e551b"
+      "sha256": "6c283c47d15fc3d35ff0854432ee7deda1c65221c2af616f0822ebe51d79576b"
     },
     {
       "path": "routes/lv-capital-investment/3",
-      "sha256": "a07737faa6b6d4ea6d781785f535a0064df23ee4d5ca42f791da29571c9392ae"
+      "sha256": "7c4015ebf6fdba1b83f173cd2ab8a2fa2f6e13e775382646949b0b06d45f6ad9"
     }
   ]
 }

@@ -217,27 +217,29 @@ function cannotFail(condition: Condition): boolean {
       return condition.operands.some(cannotFail);
     case 'all':
       return condition.operands.every(cannotFail);
+    case 'not':
+      return cannotHold(condition.operand);
     default:
       return false;
   }
 }
 
 /**
- * Whether a condition can never be true: the literal `false`, an `unmodeled` branch, or a
- * combination of them, such as a necessary rule `all` an unmodeled check the case cannot record
- * (a union's registration). Nobody can be included by such a rule, so a case shows it making
- * someone possible instead.
+ * Whether a condition can never be true without being false: an `unmodeled` branch, which is
+ * always unknown, or a combination of them, such as a necessary rule `all` an unmodeled check the
+ * case cannot record (a union's registration). Nobody can be included by such a rule, so a case
+ * shows it making someone possible instead.
  */
 function cannotHold(condition: Condition): boolean {
   switch (condition.op) {
-    case 'bool':
-      return !condition.value;
     case 'unmodeled':
       return true;
     case 'any':
       return condition.operands.every(cannotHold);
     case 'all':
       return condition.operands.some(cannotHold);
+    case 'not':
+      return cannotFail(condition.operand);
     default:
       return false;
   }

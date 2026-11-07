@@ -22,7 +22,7 @@
     {
       "id": "immigration-law-family",
       "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
-      "title": "Immigration Law of 2026, arts. 1(1) point 8 and 27(3): a family member (the spouse, minor children of the principal or the spouse, persons under curatorship) may get a permit for the principal’s term",
+      "title": "Immigration Law of 2026, arts. 1(1) point 8 and 27(3): a family member (the spouse, minor children of the principal or the spouse, persons under curatorship) may get a permit for the principal's term",
       "kind": "official",
       "verifiedAt": "2026-11-07"
     },
@@ -157,7 +157,7 @@
   "dependents": [
     {
       "id": "spouse",
-      "title": "Spouse, unless a citizen of an EU or EEA state or Switzerland, who lives in Latvia under the rules for EU citizens instead",
+      "title": "Spouse, unless a citizen of an EU or EEA state or Switzerland, who needs no permit under this law",
       "path": ["spouse"],
       "condition": {
         "op": "not",
@@ -177,7 +177,7 @@
     },
     {
       "id": "children",
-      "title": "Children under 18 who have not married; a child of 18 or more under curatorship, which is not recorded: possible; EU, EEA and Swiss citizens live there under the EU citizens’ rules instead",
+      "title": "Children under 18 who have not married; a child of 18 or more under curatorship, not recorded: possible; EU, EEA and Swiss citizens live there under the EU citizens' rules",
       "path": ["child"],
       "condition": {
         "op": "all",
@@ -233,7 +233,7 @@
     },
     {
       "id": "spouse-children",
-      "title": "The spouse’s children under 18 who have not married; one of 18 or more under curatorship: possible; EU, EEA and Swiss citizens live there under the EU citizens’ rules instead",
+      "title": "The spouse's children under 18 who have not married; a child of 18 or more under curatorship, not recorded: possible; EU, EEA and Swiss citizens live there under the EU citizens' rules",
       "path": ["spouse", "child"],
       "condition": {
         "op": "all",

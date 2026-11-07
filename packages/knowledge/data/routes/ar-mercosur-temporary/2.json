@@ -246,7 +246,7 @@
     },
     {
       "id": "partner-children",
-      "title": "The partner’s children, like the spouse’s, when the union of two years or more is registered, which is not recorded: possible; a married child under 18 is left out",
+      "title": "The partner's children, like the spouse's, when the union of two years or more is registered, which is not recorded: possible; a married child under 18 is left out",
       "path": ["partner", "child"],
       "condition": {
         "op": "all",
