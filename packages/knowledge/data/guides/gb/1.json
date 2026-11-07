@@ -37,7 +37,7 @@
       "title": "Immigration Rules, Appendix Finance: how funds are held and shown, currency conversion, accounts and dates of evidence (FIN 1.1 to FIN 8.2)",
       "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-finance",
       "verifiedAt": "2026-11-07",
-      "amendment": "Changed by statements of changes, rarely; last updated on 2025-04-09 for HC 733. The amounts each route requires are in the route's own appendix, not here."
+      "amendment": "Changed by statements of changes, rarely; last updated on 2025-04-09 for HC 733. The amounts each route requires are in the route's own appendix, not in Appendix Finance."
     },
     {
       "id": "appendix-relationship-with-partner",
@@ -117,14 +117,14 @@
       "amendment": "Laid once before Parliament under section 3(2) of the 1971 Act; later statements change the rules it amended. When read, it was the newest statement in the GOV.UK collection of statements of changes."
     },
     {
-      "id": "age-legal-capacity-scotland",
+      "id": "age-of-legal-capacity-scotland-act-1991",
       "title": "Age of Legal Capacity (Scotland) Act 1991, s. 6: when a person attains an age, and 1 March as the anniversary of a 29 February birth",
       "url": "https://www.legislation.gov.uk/ukpga/1991/50/section/6",
       "verifiedAt": "2026-11-07",
       "amendment": "Primary legislation, changed only by a later Act; on legislation.gov.uk section 6 extends to Scotland only."
     },
     {
-      "id": "family-law-reform-age",
+      "id": "family-law-reform-act-1969",
       "title": "Family Law Reform Act 1969, s. 9: a person attains an age at the commencement of the relevant anniversary of their birth",
       "url": "https://www.legislation.gov.uk/ukpga/1969/46/section/9",
       "verifiedAt": "2026-11-07",
@@ -168,13 +168,18 @@
     },
     {
       "id": "salary-thresholds-and-what-counts",
-      "text": "GBP 41,700 and the going rates are fixed figures that statements of changes update in line with ONS ASHE data, without transitional arrangements; the texts set no date for the next update. A Table 1 going rate is the higher of the median ASHE rate and GBP 17.13 an hour, a floor that also holds for the 70, 80 and 90 percent figures, for a 37.5-hour week pro-rated to the stated hours. Salary is guaranteed basic gross pay with employee pension and national insurance; overtime, bonuses, allowances, benefits in kind and employer contributions do not count, and only the first 48 hours a week count.",
+      "text": "GBP 41,700 and the going rates are fixed figures that statements of changes update from the Annual Survey of Hours and Earnings (ASHE); the texts set no date for the next update. A Table 1 going rate is the higher of the median ASHE rate and GBP 17.13 an hour, a floor that also holds for the 70, 80 and 90 percent figures, for a 37.5-hour week pro-rated to the stated hours.",
       "laws": [
         "appendix-skilled-occupations",
         "appendix-skilled-worker",
         "statement-hc-997-2025",
         "memo-hc-997-2025"
       ]
+    },
+    {
+      "id": "what-counts-as-salary",
+      "text": "Salary is guaranteed basic gross pay with employee pension and national insurance; overtime, bonuses, allowances, benefits in kind and employer contributions do not count. Only the first 48 hours a week count towards the thresholds (SW 14.3); the going rate uses the full weekly hours (SW 14.4(d)).",
+      "laws": ["appendix-skilled-worker"]
     },
     {
       "id": "salary-options",
@@ -188,7 +193,7 @@
     },
     {
       "id": "rqf-6-and-temporary-lists",
-      "text": "For certificates issued from 2025-07-22 a new Skilled Worker needs a job in Table 1, 2 or 3 of Appendix Skilled Occupations, skilled to RQF 6 or above. A job in Tables 1a, 2aa or 3a (RQF 3 to 5; SOC 6135 is RQF 2) is open only to someone granted Skilled Worker permission under the earlier rules and holding it continuously since, or if the job is on the Immigration Salary List or the Temporary Shortage List in SW 6.1A; the Table 3a note also excepts nursing auxiliaries (SOC 6131). Both lists are time-limited: see the dated cut-offs.",
+      "text": "For certificates issued from 2025-07-22 a new Skilled Worker needs a job in Table 1, 2 or 3 of Appendix Skilled Occupations, skilled to RQF 6 or above. A job in Tables 1a, 2aa or 3a (RQF 3 to 5; SOC 6135 is RQF 2) is open only to someone granted Skilled Worker permission under the earlier rules and holding it continuously since, or if the job is on the Immigration Salary List or the Temporary Shortage List in SW 6.1A; the Table 3a note also excepts nursing auxiliaries (SOC 6131). Both lists are time-limited (pitfall dated-cut-offs).",
       "laws": [
         "appendix-skilled-worker",
         "appendix-skilled-occupations",
@@ -198,12 +203,12 @@
     },
     {
       "id": "dated-cut-offs",
-      "text": "Dates to watch, each a date the Certificate of Sponsorship must be issued before or the application made before: 2026-12-01, SW 14.5 allowances and going rates for former Tier 2 (General) migrants; 2026-12-31, the Temporary Shortage List and nearly every Immigration Salary List entry; 2027-01-01 and 2028-01-01, prison officers switching in the UK and their option F (SW 6.1(g), SW 4.2(d)); 2028-07-22, care workers on the salary list and under SW 6.1B; 2030-04-04, options F to J through pre-2024 permission.",
+      "text": "The dated cut-offs, each a date the Certificate of Sponsorship must be issued before or the application made before: 2026-12-01, SW 14.5 allowances and going rates for former Tier 2 (General) migrants; 2026-12-31, the Temporary Shortage List and nearly every Immigration Salary List entry; 2027-01-01 and 2028-01-01, prison officers switching in the UK and their option F (SW 6.1(g), SW 4.2(d)); 2028-07-22, care workers on the salary list and under SW 6.1B; 2030-04-04, options F to J through pre-2024 permission.",
       "laws": ["appendix-skilled-worker", "appendix-immigration-salary-list", "memo-hc-1691-2026"]
     },
     {
       "id": "dependants-need-rqf-6-job",
-      "text": "A partner or child can join a worker only if the worker is sponsored for a job in Table 1, 2 or 3 (SW 29.1A, SW 32A.2), unless the worker has held Skilled Worker permission continuously since a grant in a listed lower-skilled code under the rules before 2025-07-22 (care workers only if granted before 2024-03-11), or is a prison officer and the application is to stay. A child is also let in if born in the UK or, applying to stay, if the worker has sole responsibility or shares it with another such worker. New workers on list jobs at RQF 3 to 5 cannot bring dependants.",
+      "text": "A partner or child can join a worker only if the worker is sponsored for a job in Table 1, 2 or 3 (SW 29.1A, SW 32A.2), unless the worker has held Skilled Worker permission continuously since a grant in a listed lower-skilled code under the rules before 2025-07-22 (care workers only if granted before 2024-03-11), or is a prison officer and the application is to stay. A child is also let in if born in the UK or, applying to stay, if the worker is the sole surviving parent or has sole responsibility, or shares it with another such worker.",
       "laws": ["appendix-skilled-worker", "memo-hc-997-2025"]
     },
     {
@@ -233,7 +238,7 @@
     },
     {
       "id": "who-is-a-parent",
-      "text": "Parent means a biological parent, a legal parent (including the spouse or civil partner of the birth mother at the birth, and a person with a parental order), or an adoptive parent who adopted while habitually resident outside the UK under a decision of a country whose adoption orders the UK recognises, or whose child was granted permission under Appendix Adoption or Part 8. The definition does not include a step-parent, whom the rules list as a close relative, so a partner's child does not qualify as the worker's child on that link alone.",
+      "text": "Parent means a biological parent, a legal parent (including the spouse or civil partner of the birth mother at the birth, and a person with a parental order), or an adoptive parent who adopted while habitually resident outside the UK under a decision of a country whose adoption orders the UK recognises, or whose child was granted permission under Appendix Adoption or Part 8. The definition does not include a step-parent, whom the rules list as a close relative.",
       "laws": ["rules-introduction", "appendix-children"]
     },
     {
@@ -268,11 +273,10 @@
     },
     {
       "id": "leap-day-and-age",
-      "text": "The rules' definitions and the appendices the Skilled Worker route uses do not say how an age is reckoned. The Family Law Reform Act 1969, s. 9, which extends to England and Wales, makes an age attained at the start of the anniversary of the birth and says nothing of 29 February. The Age of Legal Capacity (Scotland) Act 1991, s. 6(2), which extends to Scotland only, makes the anniversary 1 March in a year that is not a leap year. The rules extend to the whole UK, and the texts do not say whether 1 March applies to applicants outside Scotland.",
+      "text": "The rules' definitions and the appendices the Skilled Worker route uses do not say how an age is reckoned. The Family Law Reform Act 1969, s. 9, which extends to England and Wales, makes an age attained at the start of the anniversary of the birth and says nothing of 29 February. The Age of Legal Capacity (Scotland) Act 1991, s. 6(2), which extends to Scotland only, makes the anniversary 1 March in a year that is not a leap year. The texts read do not say whether 1 March applies to applicants outside Scotland.",
       "laws": [
-        "family-law-reform-age",
-        "age-legal-capacity-scotland",
-        "memo-hc-1691-2026",
+        "family-law-reform-act-1969",
+        "age-of-legal-capacity-scotland-act-1991",
         "rules-introduction"
       ]
     },

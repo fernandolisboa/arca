@@ -9,7 +9,7 @@
       "title": "Immigration Law (Imigrācijas likums) adopted 2026-08-20, in force 2026-09-15: definitions, temporary residence grounds, family members, refusal, annulment and transitional provisions",
       "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
       "verifiedAt": "2026-11-07",
-      "amendment": "Amended by laws of the Saeima, ad hoc, each with its own entry-into-force date; likumi.lv notes each amending law under the article it changes, but its consolidated text already differs from the gazette publication (see the pitfall on it). Article 48 enters into force only on 2027-12-31. The Cabinet must issue the implementing regulations by 2027-12-01; until each takes effect, and not after 2027-12-01, the older regulations listed in transitional provision 3 apply as far as they do not contradict the law."
+      "amendment": "Amended by laws of the Saeima, ad hoc, each with its own entry-into-force date; likumi.lv notes each amending law under the article it changes, but its consolidated text already differs from the gazette publication. Article 48 enters into force only on 2027-12-31. The Cabinet must issue the implementing regulations by 2027-12-01; until each takes effect, and not after 2027-12-01, the older regulations listed in transitional provision 3 apply as far as they do not contradict the law."
     },
     {
       "id": "immigration-law-amendment-2026-06-18",
@@ -100,7 +100,7 @@
     },
     {
       "id": "company-size-tiers",
-      "text": "EUR 50,000 needs a company with at most 50 employees and an annual turnover or balance sheet of at most EUR 10 million; at most 10 foreigners get a permit for investing in one such company. EUR 100,000 needs a company that, alone or with its Latvian-registered subsidiaries, employs more than 50 people, with turnover or balance sheet above EUR 10 million. Read literally, a company with more than 50 employees whose turnover and balance sheet are both at most EUR 10 million fits neither tier. The 10-foreigner cap is written only for the smaller tier.",
+      "text": "EUR 50,000 needs a company with at most 50 employees and an annual turnover or balance sheet of at most EUR 10 million; at most 10 foreigners get a permit for investing in one such company. EUR 100,000 needs a company that, alone or with its Latvian-registered subsidiaries, employs more than 50 people, with turnover or balance sheet above EUR 10 million. The texts name no tier for a company with more than 50 employees whose turnover and balance sheet are both at most EUR 10 million. The 10-foreigner cap is written only for the smaller tier.",
       "laws": ["immigration-law-2026"]
     },
     {
@@ -110,7 +110,7 @@
     },
     {
       "id": "payment-not-refunded",
-      "text": "The EUR 10,000 is a one-off payment and is not refunded except in cases the Cabinet sets (art. 30). Regulation 564, point 73.2, refunds the payment named in its point 73.1, wholly or in part, on a written request within 4 months of the decision to grant the permit if it was overpaid or paid wrongly or the permit was not received in that time, or to an heir if the foreigner died or went missing before receiving it. Point 73.1 still names the 2002 law's art. 23(1) points 28 to 30 and art. 23(8), so applying it to a point 10 payment rests on transitional provision 3.",
+      "text": "The EUR 10,000 is a one-off payment and is not refunded except in cases the Cabinet sets (art. 30). Regulation 564, point 73 superscript 2, refunds the payment named in its point 73 superscript 1, wholly or in part, on a written request within 4 months of the decision to grant the permit if it was overpaid or paid wrongly or the permit was not received in that time, or to an heir if the foreigner died or went missing before receiving it. Point 73.1 still names the 2002 law's art. 23(1) points 28 to 30 and art. 23(8), so applying it to a point 10 payment rests on transitional provision 3.",
       "laws": ["immigration-law-2026", "cabinet-regulation-564-2010"]
     },
     {
@@ -159,7 +159,7 @@
     },
     {
       "id": "leap-day-age",
-      "text": "The Latvian texts read here have no rule for when a person born on 29 February turns a given age. Art. 43(1) of the Administrative Procedure Law ends a procedural period counted in months on the matching date of the last month, or on that month's last day if it has none; reading ages the same way makes the birthday 28 February in a common year. That is a reading by analogy, not a rule for ages.",
+      "text": "The Latvian texts read here have no rule for when a person born on 29 February turns a given age. Art. 43(1) of the Administrative Procedure Law ends a procedural period counted in months on the date with the same number in the last month, or on that month's last day if it has none; no text read applies it to ages.",
       "laws": ["administrative-procedure-law", "civil-law-family"]
     },
     {
@@ -188,7 +188,7 @@
     },
     {
       "id": "fund-investment-and-permanent-residence",
-      "text": "Art. 27(1) point 36 gives a permit of up to 5 years for a contract and transfer of at least EUR 150,000 invested for at least 5 years with an alternative investment fund manager established by the state, plus EUR 10,000; the law does not say whether such a manager exists. Permanent residence (EU long-term resident status, art. 24(1) point 2) is granted after 5 years of continuous residence with a permit, with enough means, Latvian at level A2 and a culture and history course (art. 31(1)); absences may not exceed 6 consecutive months or 10 in all (art. 31(3)).",
+      "text": "Art. 27(1) point 36 gives a permit of up to 5 years for a contract and transfer of at least EUR 150,000 invested for at least 5 years with an alternative investment fund manager established by the state, plus EUR 10,000; the law does not say whether such a manager exists. Permanent residence (EU long-term resident status, art. 24(1) point 2) may be requested after 5 years of continuous residence with a permit, with enough means, Latvian at level A2 and a culture and history course (art. 31(1)); absences may not exceed 6 consecutive months or 10 in all (art. 31(3)).",
       "laws": ["immigration-law-2026"]
     }
   ],

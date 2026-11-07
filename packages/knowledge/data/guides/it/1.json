@@ -30,7 +30,7 @@
       "title": "Legge 13 giugno 1912, n. 555 (Sulla cittadinanza italiana), the former citizenship law: art. 1 transmission by the father, arts. 7, 8, 10 and 12 on keeping and losing citizenship, arts. 19 and 20",
       "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1912-06-13;555",
       "verifiedAt": "2026-11-07",
-      "amendment": "In force from 1912-07-01 (art. 20) and repealed by art. 26 of law 91/1992 from 1992-08-16, so not amended again; it still decides the status of births and losses before that date. Normattiva shows the repealed text by default; the wording in force on a past date is in the earlier versions of each article. Constitutional Court rulings 87/1975 (art. 10, third paragraph) and 30/1983 (art. 1, nn. 1 and 2) struck parts of it, and Normattiva records both in notes under those articles."
+      "amendment": "In force from 1912-07-01 (art. 20) and repealed by art. 26 of law 91/1992 from 1992-08-16, so not amended again; it still decides the status of births and losses before that date. Normattiva shows the repealed text by default; the wording in force on a past date is in the earlier versions of each article. Constitutional Court rulings 87/1975 (art. 10, third paragraph) and 30/1983 (art. 1, Nos. 1 and 2) struck parts of it, and Normattiva records both in notes under those articles."
     },
     {
       "id": "legge-123-1983",
@@ -41,10 +41,10 @@
     },
     {
       "id": "corte-costituzionale-sentenza-30-1983",
-      "title": "Corte costituzionale, sentenza 30/1983: art. 1, n. 1 of law 555/1912 is unconstitutional where it does not make the child of a citizen mother a citizen by birth",
+      "title": "Corte costituzionale, sentenza 30/1983: art. 1, No. 1 of law 555/1912 is unconstitutional where it does not make the child of a citizen mother a citizen by birth",
       "url": "https://www.cortecostituzionale.it/scheda-pronuncia/1983/30",
       "verifiedAt": "2026-11-07",
-      "amendment": "A final ruling of the Constitutional Court, decided 1983-01-28 and deposited 1983-02-09; it is not amended. It also struck art. 1, n. 2 and art. 2, second paragraph of law 555/1912. It does not say whether it reaches births before 1948-01-01; order 147/2026 records that the Court of Cassation and the administration answer that differently."
+      "amendment": "A final ruling of the Constitutional Court, decided 1983-01-28 and deposited 1983-02-09; it is not amended. It also struck art. 1, No. 2 and art. 2, second paragraph of law 555/1912. It does not say whether it reaches births before 1948-01-01; order 147/2026 records that the Court of Cassation and the administration answer that differently."
     },
     {
       "id": "corte-costituzionale-sentenza-87-1975",
@@ -123,7 +123,7 @@
     },
     {
       "id": "exclusively-italian-now-or-at-death",
-      "text": "Letter c needs a first or second degree ascendant, a parent or grandparent, who holds now, or held at death, exclusively Italian citizenship. It is read now or at death, not at the birth: an ancestor who was only Italian at the birth but later took another citizenship and still holds it, or held it at death, does not meet it. A dual citizen parent does not meet it either, though an exclusively Italian grandparent still can; a great-grandparent never does. Ruling 63/2026 says Interior Ministry circular 26185 of 2025-05-28 details this requirement; that circular is not on the pinned sites.",
+      "text": "Letter c needs a first or second degree ascendant, a parent or grandparent, who holds now, or held at death, exclusively Italian citizenship. It is read now or at death, not at the birth: an ancestor who was only Italian at the birth but later took another citizenship and still holds it, or held it at death, does not meet it. A dual citizen parent does not meet it either, though an exclusively Italian grandparent still can; a great-grandparent never does. Ruling 63/2026 says Interior Ministry circular 26185 of 2025-05-28 details this requirement; that circular is not among these texts.",
       "laws": ["legge-91-1992", "corte-costituzionale-sentenza-63-2026"]
     },
     {
@@ -143,7 +143,7 @@
     },
     {
       "id": "pre-1948-maternal-line",
-      "text": "Law 555/1912 made the child of a citizen father a citizen, and of a citizen mother only if the father was unknown or stateless or the child did not follow his citizenship. Ruling 30/1983 struck art. 1, n. 1 for not covering the child of a citizen mother. Order 147/2026 records that the Court of Cassation (ruling 4466/2009) holds the struck rules inapplicable also to facts before the Constitution came into force, while the administration follows Interior circular K.28.1 of 1991-04-08, which recognizes descent through a woman only for children born after 1948-01-01.",
+      "text": "Law 555/1912 made the child of a citizen father a citizen, and of a citizen mother only if the father was unknown or stateless or the child did not follow his citizenship. Ruling 30/1983 struck art. 1, No. 1 for not covering the child of a citizen mother. Order 147/2026 records that the Court of Cassation (ruling 4466/2009) holds the struck rules inapplicable also to facts before the Constitution came into force, while the administration follows Interior circular K.28.1 of 1991-04-08, which recognizes descent through a woman only for children born after 1948-01-01.",
       "laws": [
         "legge-555-1912",
         "corte-costituzionale-sentenza-30-1983",
@@ -161,7 +161,7 @@
     },
     {
       "id": "naturalization-before-1992",
-      "text": "Until 1992-08-15, art. 8, n. 1 of law 555/1912 took citizenship from whoever spontaneously acquired a foreign one and had or established residence abroad, while art. 7 let a citizen born and resident in a state that held them its citizen by birth keep Italian citizenship. From 1992-08-16, art. 11 of law 91/1992 lets a citizen who acquires another citizenship keep the Italian one. Whether a naturalization came before or after the next birth decides whether that link passes.",
+      "text": "Until 1992-08-15, art. 8, No. 1 of law 555/1912 took citizenship from whoever spontaneously acquired a foreign one and had or established residence abroad, while art. 7 let a citizen born and resident in a state that held them its citizen by birth keep Italian citizenship. From 1992-08-16, art. 11 of law 91/1992 lets a citizen who acquires another citizenship keep the Italian one. Whether a naturalization came before or after the next birth decides whether that link passes.",
       "laws": ["legge-555-1912", "legge-91-1992"]
     },
     {
@@ -176,7 +176,7 @@
     },
     {
       "id": "reacquisition-is-not-retroactive",
-      "text": "Art. 17 lets someone born in Italy, or resident there for 2 continuous years, who lost citizenship under art. 8, nn. 1 and 2 or art. 12 of law 555/1912, reacquire it by a declaration made between 2025-07-01 and 2027-12-31, without prejudice to art. 3-bis; the consular fee is EUR 250. Art. 15 gives reacquisition effect from the day after its conditions and formalities are met, so it does not make a child already born a citizen by birth; art. 14 extends it only to cohabiting minor children legally resident in Italy for 2 continuous years at that date, or since birth if under 2.",
+      "text": "Art. 17 lets someone born in Italy, or resident there for 2 continuous years, who lost citizenship under art. 8, Nos. 1 and 2 or art. 12 of law 555/1912, reacquire it by a declaration made between 2025-07-01 and 2027-12-31, without prejudice to art. 3-bis; the consular fee is EUR 250. Art. 15 gives reacquisition effect from the day after its conditions and formalities are met, so it does not make a child already born a citizen by birth; art. 14 extends it only to cohabiting minor children legally resident in Italy for 2 continuous years at that date, or since birth if under 2.",
       "laws": ["legge-91-1992", "decreto-legge-36-2025", "decreto-legislativo-71-2011"]
     },
     {

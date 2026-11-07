@@ -76,7 +76,7 @@
     },
     {
       "id": "ley-2169-2003",
-      "title": "Ley N.º 2169/2003, majority at 18: rewrote Civil Code art. 36, repealed art. 39 a) and set the ages of child, adolescent and adult in Ley 1702/2001",
+      "title": "Ley N.º 2169/2003, majority at 18: rewrote Civil Code art. 36, repealed art. 39(a) and set the ages of child, adolescent and adult in Ley 1702/2001",
       "url": "https://www.bacn.gov.py/leyes-paraguayas/4845/x",
       "verifiedAt": "2026-11-07",
       "amendment": "Published 2003-07-18. Its wording of Civil Code art. 36 was replaced by Ley 7371/2025, art. 27, which keeps full capacity at 18. Changed only by law of Congress."
@@ -93,7 +93,7 @@
       "title": "Civil Code (Ley N.º 1183/1985), preliminary title and book one: laws bind from the day after publication (art. 1), capacity and minors (arts. 36 to 39)",
       "url": "https://www.bacn.gov.py/leyes-paraguayas/5293/x",
       "verifiedAt": "2026-11-07",
-      "amendment": "Amended article by article by laws of Congress (art. 7: laws are repealed only by other laws), among them Ley 2169/2003 and Ley 7371/2025. The Congress library's page prints the 1985 text without those amendments, with 20 years in art. 36 and the repealed art. 39 a), so an article on that page may differ from the law in force."
+      "amendment": "Amended article by article by laws of Congress (art. 7: laws are repealed only by other laws), among them Ley 2169/2003 and Ley 7371/2025. The Congress library's page prints the 1985 text without those amendments, with 20 years in art. 36 and the repealed art. 39(a), so an article on that page may differ from the law in force."
     },
     {
       "id": "codigo-civil-libro-segundo",
@@ -128,7 +128,7 @@
     },
     {
       "id": "two-years-not-extendable",
-      "text": "The agreements allow temporary residence of up to 2 years (art. 4); the directorate grants 2 years, not extendable, unlike temporary residence under Ley 6984, up to 2 years and extendable for an equal period (art. 46). Permanent residence is asked for within the 90 days before expiry (art. 5 of the agreements); the directorate says a holder who misses that window loses the Mercosur path and applies under Ley 6984, as art. 6 sends late applicants to domestic law.",
+      "text": "The agreements allow temporary residence of up to 2 years (art. 4); the directorate grants 2 years, not extendable, unlike temporary residence under Ley 6984, up to 2 years and extendable for an equal period (art. 46). Permanent residence is asked for within the 90 days before expiry (art. 5 of the agreements); the directorate says a holder who misses that window loses the Mercosur path and applies under Ley 6984. Art. 6 of the agreements subjects those who do not present themselves once their temporary residence has expired to domestic law.",
       "laws": [
         "ley-3578-2008",
         "ley-6984-2022",
@@ -158,7 +158,7 @@
     },
     {
       "id": "age-of-majority-text-lag",
-      "text": "Full capacity comes at 18: Civil Code art. 36 as worded by Ley 7371/2025, art. 27, which kept the age Ley 2169/2003 set. Ley 2169 also calls a person adult from 18 for the children's laws, a child up to 13 and an adolescent from 14 to 17. The Congress library's Civil Code page still prints the 1985 text, with 20 years in art. 36 and the repealed art. 39 a), so never take an age from that page.",
+      "text": "Full capacity comes at 18: Civil Code art. 36 as worded by Ley 7371/2025, art. 27, which kept the age Ley 2169/2003 set. Ley 2169 also calls a person adult from 18 for the children's laws, a child up to 13 and an adolescent from 14 to 17. The Congress library's Civil Code page still prints the 1985 text, with 20 years in art. 36 and the repealed art. 39(a), so the ages on that page are not the law in force.",
       "laws": ["codigo-civil", "ley-2169-2003", "ley-7371-2025"]
     },
     {
@@ -183,12 +183,12 @@
     },
     {
       "id": "uruguayan-direct-permanent",
-      "text": "Uruguayans have another path: Ley 6774/2021 lets Paraguay grant them permanent residence with no prior temporary residence (art. 2) and free of costs (art. 4), and the directorate applies it, with no residence fee. Its text gives no entry-into-force date (art. 12). For a Uruguayan this path can be more favourable than Mercosur temporary residence.",
+      "text": "Uruguayans have another path: Ley 6774/2021 lets Paraguay grant them permanent residence with no prior temporary residence (art. 2) and free of costs (art. 4), and the directorate applies it, with no residence fee. Its text gives no entry-into-force date (art. 12).",
       "laws": ["ley-6774-2021", "migraciones-uruguayan-permanent-page"]
     },
     {
       "id": "minor-applicants",
-      "text": "For an applicant aged 0 to 17, both parents sign when both are present; with one parent, a court order or the absent parent's notarial authorization is needed; and a parent must hold residence or apply at the same time. A minor with neither parent needs a court order or homologated notarial authorization and a guardian who is Paraguayan, a resident, or applying at the same time. Record certificates are asked from age 14.",
+      "text": "For an applicant aged 0 to 17, both parents sign when both are present; with one parent, a court order or the absent parent's notarial authorization is needed; and a parent must hold residence or apply at the same time. A minor with neither parent needs a court order or homologated notarial authorization and a guardian who is Paraguayan, a resident, or applying at the same time. Record certificates are asked from age 14, with exemptions the page lists for some adolescents aged 15 to 18.",
       "laws": ["migraciones-mercosur-temporary-page"]
     },
     {

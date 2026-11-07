@@ -16,7 +16,7 @@
       "title": "Konstytucja Rzeczypospolitej Polskiej z dnia 2 kwietnia 1997 r. (Constitution), Dz.U. 1997 nr 78 poz. 483, in force since 1997-10-17: art. 34 on acquiring and losing citizenship",
       "url": "https://api.sejm.gov.pl/eli/acts/DU/1997/483/text.pdf",
       "verifiedAt": "2026-11-07",
-      "amendment": "Changed only by a statute the Sejm passes by at least two thirds of the votes and the Senate then passes in the same wording within 60 days (art. 235). Amended twice, in 2006 (art. 55) and 2009 (art. 99); art. 34 keeps its 1997 wording. The PDF is the text as published in 1997."
+      "amendment": "Changed only by a statute the Sejm passes by at least 2/3 of the votes and the Senate then passes in the same wording within 60 days (art. 235). Amended twice, in 2006 (art. 55) and 2009 (art. 99); art. 34 keeps its 1997 wording. The PDF is the text as published in 1997."
     },
     {
       "id": "citizenship-act-1962",
@@ -30,14 +30,14 @@
       "title": "Consolidated text of the 1962 act, notice of the Minister of Internal Affairs and Administration of 2000-04-03 (Dz.U. 2000 nr 28 poz. 353)",
       "url": "https://api.sejm.gov.pl/eli/acts/DU/2000/353/text.pdf",
       "verifiedAt": "2026-11-07",
-      "amendment": "A one-off consolidated text, not a law of its own. It includes the Aliens Act of 1997-06-25 and the act of 1998-07-24 on the competences of public bodies, in force 1999-01-01, which rewrote art. 13 and struck art. 14 and 15. The later amendments, Dz.U. 2001 poz. 475 to 2007 poz. 818, were never consolidated; read them for any provision you rely on."
+      "amendment": "A one-off consolidated text, not a law of its own. It includes the Aliens Act of 1997-06-25 and the act of 1998-07-24 on the competences of public bodies, in force 1999-01-01, which rewrote art. 13 and struck art. 14 and 15. The later amendments, Dz.U. 2001 poz. 475 to 2007 poz. 818, were never consolidated, so the 2000 text does not show them."
     },
     {
       "id": "citizenship-act-1951",
       "title": "Ustawa z dnia 8 stycznia 1951 r. o obywatelstwie polskim (Polish Citizenship Act 1951), Dz.U. 1951 nr 4 poz. 25, in force from 1951-01-19 until the 1962 act took effect",
       "url": "https://api.sejm.gov.pl/eli/acts/DU/1951/25/text.pdf",
       "verifiedAt": "2026-11-07",
-      "amendment": "Repealed by art. 20 of the 1962 act, from the date the Sejm ELI record gives as 1962-08-21; it still governs births while it was in force. The ELI record lists one amending act, the Universal Military Duty Act of 1959 (Dz.U. 1959 poz. 75), and no consolidated text. The PDF is the 1951 original, a scan whose text layer has OCR errors."
+      "amendment": "Repealed by art. 20 of the 1962 act, from the date the Sejm ELI record gives as 1962-08-21; it still governs births while it was in force. The ELI record lists 1 amending act, the Universal Military Duty Act of 1959 (Dz.U. 1959 poz. 75), and no consolidated text. The PDF is the 1951 original, a scan whose text layer has OCR errors."
     },
     {
       "id": "citizenship-act-1920",
@@ -65,7 +65,7 @@
       "title": "Ustawa z dnia 31 marca 1938 r. o pozbawianiu obywatelstwa (Deprivation of Citizenship Act), Dz.U. 1938 nr 22 poz. 191, as published; in force from 1938-04-01 to 1951-01-18",
       "url": "https://api.sejm.gov.pl/eli/acts/DU/1938/191/text.pdf",
       "verifiedAt": "2026-11-07",
-      "amendment": "Repealed from 1951-01-19 by art. 17(2)(3) of the 1951 act. The Sejm ELI record lists one amending act, the decree Dz.U. 1938 poz. 612 extending acts to Cieszyn Silesia, and no consolidated text. The PDF is the 1938 original, a scan."
+      "amendment": "Repealed from 1951-01-19 by art. 17(2)(3) of the 1951 act. The Sejm ELI record lists 1 amending act, the decree Dz.U. 1938 poz. 612 extending acts to Cieszyn Silesia, and no consolidated text. The PDF is the 1938 original, a scan."
     },
     {
       "id": "confirmation-form-2012",
@@ -118,11 +118,11 @@
     {
       "id": "one-polish-parent-since-2012",
       "text": "Under art. 14(1), since 2012-08-15 a minor acquires citizenship by birth when at least one parent is a Polish citizen. The article sets no condition on the other parent's citizenship or on the place of birth, and the 2009 act provides no choice of a foreign citizenship like the 1962 act's art. 6, though its registers keep past choices (art. 59(3)(5)). A later grant to a parent, or recognition of a parent, reaches a minor under parental authority only on the terms of art. 7, with the minor's consent from age 16 (art. 8); that is acquisition by grant or recognition, not by birth.",
-      "laws": ["citizenship-act-2009"]
+      "laws": ["citizenship-act-2009", "citizenship-act-1962"]
     },
     {
       "id": "parent-established-within-a-year",
-      "text": "Art. 6(1) of the 2009 act takes into account changes in establishing who a parent is, or a parent's citizenship, only if they happened within one year of the birth; art. 7(1) of the 1962 act says the same and runs its 3-month choice period from the date the change was established. A court ruling that denies paternity, or that a recognition is ineffective, counts unless the child is already of age, and from age 16 only with the child's consent (2009 act art. 6(2)).",
+      "text": "Art. 6(1) of the 2009 act takes into account changes in establishing who a parent is, or a parent's citizenship, only if they happened within 1 year of the birth; art. 7(1) of the 1962 act says the same and runs its 3-month choice period from the date the change was established. A court ruling that denies paternity, or that a recognition is ineffective, counts unless the child is already of age, and from age 16 only with the child's consent (2009 act art. 6(2)).",
       "laws": ["citizenship-act-2009", "citizenship-act-1962"]
     },
     {
@@ -181,7 +181,7 @@
     },
     {
       "id": "births-before-1920",
-      "text": "Art. 2 of the 1920 act gave citizenship, from its publication, to people settled in the Polish State in the senses it defines, or born in its territory, unless they held another state's citizenship, and to people entitled under treaties; art. 3 let people of Polish origin abroad and their descendants be recognised after returning, proving their origin and renouncing their other citizenship. For an ancestor born before 1920-01-31, these conditions apply in that person's own right.",
+      "text": "Art. 2 of the 1920 act gave citizenship, from its publication, to people settled in the Polish State in the senses it defines, or born in its territory, unless they held another state's citizenship, and to people entitled under treaties; art. 3 let citizens of other states of Polish origin and their descendants be recognised after returning, proving their origin and renouncing their other citizenship.",
       "laws": ["citizenship-act-1920"]
     },
     {
