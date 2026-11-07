@@ -236,6 +236,44 @@ describe('runCases', () => {
     );
   });
 
+  it('asks a rule that cannot be true to make someone possible instead of including anyone', async () => {
+    const partner = (condition: object) => ({
+      id: 'partner',
+      title: 'Registered partner',
+      path: ['partner'],
+      condition,
+      sources: ['law'],
+    });
+    const sinceTwoYears = { op: 'since', date: { op: 'fact', key: 'edge.start' }, duration: 'P2Y' };
+    const family = (start: string) => ({
+      ...citizen,
+      members: ['p1', 'p2'],
+      people: [{ ...citizen.people[0], recordedInFull: ['partners'] }, { id: 'p2' }],
+      relationships: [{ kind: 'partner', people: ['p1', 'p2'], start, end: 'none' }],
+    });
+    const tree = (cases: readonly object[]): Record<string, unknown> => ({
+      ...baseTree(),
+      'routes/qm-work/1.json': routeVersion({
+        dependents: [partner({ op: 'all', operands: [sinceTwoYears, { op: 'unmodeled' }] })],
+      }),
+      'routes/qm-work/1.cases.json': { schemaVersion: 1, cases },
+    });
+    const long = {
+      ...eligible,
+      id: 'long-union',
+      snapshot: family('2010-01-01'),
+      expected: { ...eligible.expected, possibleDependents: ['p2'] },
+    };
+    const short = { ...eligible, id: 'short-union', snapshot: family('2026-01-01') };
+    const covered = await run(tree([long, short]));
+    expect(covered.problems.some((problem) => problem.includes('Dependent rule'))).toBe(false);
+    const uncovered = await run(tree([short]));
+    expect(uncovered.problems).toContain(
+      'routes/qm-work/1.cases.json: Dependent rule partner never makes anyone possible',
+    );
+    expect(uncovered.problems.some((problem) => problem.includes('never includes'))).toBe(false);
+  });
+
   it('does not count a rule as including someone another rule included', async () => {
     const students = {
       id: 'students',

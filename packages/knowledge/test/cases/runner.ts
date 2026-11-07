@@ -223,11 +223,33 @@ function cannotFail(condition: Condition): boolean {
 }
 
 /**
+ * Whether a condition can never be true: the literal `false`, an `unmodeled` branch, or a
+ * combination of them, such as a necessary rule `all` an unmodeled check the case cannot record
+ * (a union's registration). Nobody can be included by such a rule, so a case shows it making
+ * someone possible instead.
+ */
+function cannotHold(condition: Condition): boolean {
+  switch (condition.op) {
+    case 'bool':
+      return !condition.value;
+    case 'unmodeled':
+      return true;
+    case 'any':
+      return condition.operands.every(cannotHold);
+    case 'all':
+      return condition.operands.some(cannotHold);
+    default:
+      return false;
+  }
+}
+
+/**
  * The coverage rules of spec 0002 R8, from the engine's results: every requirement true, false and
  * unknown at least once; every dependent rule including and excluding someone; the statuses each
  * open version must reach, and `unavailable` for a closed one. Each dependent rule is measured on
- * its own, so another rule cannot cover for it: it includes someone, and reaches someone whose
- * condition fails, unless its condition cannot be false (see `cannotFail`).
+ * its own, so another rule cannot cover for it: it includes someone, or makes someone possible when
+ * its condition cannot be true (see `cannotHold`), and reaches someone whose condition fails,
+ * unless its condition cannot be false (see `cannotFail`).
  */
 function coverage(entry: CatalogEntry, runs: readonly Run[]): string[] {
   const { version } = entry;
@@ -261,7 +283,11 @@ function coverage(entry: CatalogEntry, runs: readonly Run[]): string[] {
     const units = runs.map((run) =>
       computeUnit(run.snapshot, alone, run.ruleCase.principal, contextOf(run.ruleCase)),
     );
-    if (!units.some((unit) => unit.dependents.length > 0)) {
+    if (cannotHold(rule.condition)) {
+      if (!units.some((unit) => unit.possibleDependents.length > 0)) {
+        gaps.push(`Dependent rule ${rule.id} never makes anyone possible`);
+      }
+    } else if (!units.some((unit) => unit.dependents.length > 0)) {
       gaps.push(`Dependent rule ${rule.id} never includes anyone`);
     }
     const excludes = units.some((unit) =>

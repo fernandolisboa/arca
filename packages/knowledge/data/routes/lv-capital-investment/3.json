@@ -1,0 +1,318 @@
+{
+  "schemaVersion": 1,
+  "routeId": "lv-capital-investment",
+  "number": 3,
+  "corrects": 2,
+  "title": "Latvian temporary residence for an investment in a company's share capital (EUR 50,000 or EUR 100,000, plus EUR 10,000 to the state budget)",
+  "country": "LV",
+  "tags": ["investment", "temporary-residence"],
+  "effectiveFrom": "2026-09-15",
+  "status": "open",
+  "currency": "EUR",
+  "leapDayBirthday": "feb-28",
+  "leapDayBirthdaySources": ["administrative-procedure-law"],
+  "sources": [
+    {
+      "id": "immigration-law-investment",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "title": "Immigration Law of 2026, in force 2026-09-15, art. 27(1) point 10: up to two years for EUR 50,000 or EUR 100,000 invested in a company's share capital and EUR 10,000 paid to the state budget",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "immigration-law-family",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "title": "Immigration Law of 2026, arts. 1(1) point 8 and 27(3): a family member (the spouse, minor children of the principal or the spouse, persons under curatorship) may get a permit for the principal’s term",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "immigration-law-russia-belarus",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "title": "Immigration Law of 2026, art. 27(7) and (8): citizens of Belarus and of Russia have no right to a temporary residence permit under art. 27(1) point 10",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "civil-law-minors",
+      "url": "https://likumi.lv/ta/id/90223",
+      "title": "Civil Law, Part One (family law): art. 219, minority lasts until the age of 18; art. 221, a person who married before 18 is of age",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "administrative-procedure-law",
+      "url": "https://likumi.lv/ta/id/55567-administrativa-procesa-likums",
+      "title": "Administrative Procedure Law, art. 43(1): a period whose last month lacks the start date ends on that month's last day; read for ages, so a 29 February birthday counts on 28 February",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "immigration-law-third-country",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "title": "Immigration Law of 2026, arts. 1(1) points 21 and 29, 2 and 27(1): the law covers third-country nationals only, so no one with an EU, EEA or Swiss citizenship requests a permit under it",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "lv",
+      "number": 1
+    }
+  ],
+  "countrySets": [
+    {
+      "id": "eu-free-movement",
+      "number": 1
+    }
+  ],
+  "requirements": [
+    {
+      "id": "capital",
+      "title": "Funds of at least EUR 60,000: the EUR 50,000 minimum investment plus the EUR 10,000 payment to the state budget (EUR 110,000 for a company above the small-company limits)",
+      "expression": {
+        "op": "gte",
+        "left": {
+          "op": "fact",
+          "key": "unit.liquidAssets"
+        },
+        "right": {
+          "op": "add",
+          "left": {
+            "op": "money",
+            "amount": 5000000,
+            "currency": "EUR"
+          },
+          "right": {
+            "op": "money",
+            "amount": 1000000,
+            "currency": "EUR"
+          }
+        }
+      },
+      "sources": ["immigration-law-investment"]
+    },
+    {
+      "id": "not-russian-or-belarusian",
+      "title": "Not a citizen of Russia or Belarus, whose citizens have no right to this permit",
+      "expression": {
+        "op": "not",
+        "operand": {
+          "op": "intersects",
+          "list": {
+            "op": "fact",
+            "key": "principal.citizenships"
+          },
+          "set": {
+            "op": "tokens",
+            "values": ["BY", "RU"]
+          }
+        }
+      },
+      "sources": ["immigration-law-russia-belarus"]
+    },
+    {
+      "id": "not-eu-eea-or-swiss-citizen",
+      "title": "Not a citizen of an EU or EEA state or of Switzerland, Latvia included: only third-country nationals may request this permit",
+      "expression": {
+        "op": "not",
+        "operand": {
+          "op": "intersects",
+          "list": {
+            "op": "fact",
+            "key": "principal.citizenships"
+          },
+          "set": {
+            "op": "set",
+            "id": "eu-free-movement"
+          }
+        }
+      },
+      "sources": ["immigration-law-third-country"]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "company-size",
+      "title": "EUR 50,000: a company with at most 50 employees and turnover or balance sheet of at most EUR 10 million, at most 10 foreign investors; EUR 100,000: over 50 employees and over EUR 10 million",
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["immigration-law-investment"]
+    },
+    {
+      "id": "company-taxes",
+      "title": "The permit stays valid only while the company pays at least EUR 40,000 in taxes each reporting year (EUR 100,000 for the larger company, its Latvian subsidiaries included)",
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["immigration-law-investment"]
+    }
+  ],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse, unless a citizen of an EU or EEA state or Switzerland, who lives in Latvia under the rules for EU citizens instead",
+      "path": ["spouse"],
+      "condition": {
+        "op": "not",
+        "operand": {
+          "op": "intersects",
+          "list": {
+            "op": "fact",
+            "key": "person.citizenships"
+          },
+          "set": {
+            "op": "set",
+            "id": "eu-free-movement"
+          }
+        }
+      },
+      "sources": ["immigration-law-family", "immigration-law-third-country"]
+    },
+    {
+      "id": "children",
+      "title": "Children under 18 who have not married; a child of 18 or more under curatorship, which is not recorded: possible; EU, EEA and Swiss citizens live there under the EU citizens’ rules instead",
+      "path": ["child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "intersects",
+              "list": {
+                "op": "fact",
+                "key": "person.citizenships"
+              },
+              "set": {
+                "op": "set",
+                "id": "eu-free-movement"
+              }
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "lt",
+                    "left": {
+                      "op": "fact",
+                      "key": "person.ageYears"
+                    },
+                    "right": {
+                      "op": "int",
+                      "value": 18
+                    }
+                  },
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasSpouse"
+                    }
+                  }
+                ]
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["immigration-law-family", "civil-law-minors", "immigration-law-third-country"]
+    },
+    {
+      "id": "spouse-children",
+      "title": "The spouse’s children under 18 who have not married; one of 18 or more under curatorship: possible; EU, EEA and Swiss citizens live there under the EU citizens’ rules instead",
+      "path": ["spouse", "child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "intersects",
+              "list": {
+                "op": "fact",
+                "key": "person.citizenships"
+              },
+              "set": {
+                "op": "set",
+                "id": "eu-free-movement"
+              }
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "lt",
+                    "left": {
+                      "op": "fact",
+                      "key": "person.ageYears"
+                    },
+                    "right": {
+                      "op": "int",
+                      "value": 18
+                    }
+                  },
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasSpouse"
+                    }
+                  }
+                ]
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["immigration-law-family", "civil-law-minors", "immigration-law-third-country"]
+    }
+  ],
+  "costs": [
+    {
+      "id": "investment",
+      "title": "Minimum investment in the share capital of a company within the small-company limits",
+      "kind": "capital",
+      "amount": {
+        "op": "money",
+        "amount": 5000000,
+        "currency": "EUR"
+      },
+      "appliesTo": "principal",
+      "sources": ["immigration-law-investment"]
+    },
+    {
+      "id": "state-budget-payment",
+      "title": "One-off payment to the state budget with the first application",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 1000000,
+        "currency": "EUR"
+      },
+      "appliesTo": "principal",
+      "sources": ["immigration-law-investment"]
+    }
+  ],
+  "durations": []
+}
