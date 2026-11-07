@@ -385,7 +385,7 @@ function AdminRole({
         void queryClient.invalidateQueries({ queryKey: caseAdminsQuery.queryKey });
       });
   };
-  if (role?.owner === true) return null;
+  if (role?.onOwnerList === true) return null;
   return (
     <div className="flex flex-col gap-2">
       {role === undefined ? (

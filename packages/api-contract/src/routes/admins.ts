@@ -8,8 +8,11 @@ import type { RouteDefinition } from './index.js';
  * alike, so a refusal says nothing about accounts the admin does not share a case with.
  */
 
-/** One admin among the case's members: `owner` when the owner list names them, so never removable. */
-export const CaseAdmin = z.object({ accountId: z.uuid(), owner: z.boolean() });
+/**
+ * One admin among the case's members: `onOwnerList` when the owner list names them, so the role
+ * can never be taken away from them in the app.
+ */
+export const CaseAdmin = z.object({ accountId: z.uuid(), onOwnerList: z.boolean() });
 export type CaseAdmin = z.infer<typeof CaseAdmin>;
 
 export const CaseAdmins = z.object({ admins: z.array(CaseAdmin) });

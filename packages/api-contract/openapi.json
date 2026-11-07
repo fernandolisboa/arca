@@ -34018,13 +34018,13 @@
                             "type": "string",
                             "format": "uuid"
                           },
-                          "owner": {
+                          "onOwnerList": {
                             "type": "boolean"
                           }
                         },
                         "required": [
                           "accountId",
-                          "owner"
+                          "onOwnerList"
                         ]
                       }
                     }

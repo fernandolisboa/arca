@@ -38,10 +38,14 @@ interface Interval {
  * row, or by the grant it names, in force for the actor then. So a row by an account that was never
  * an admin changes nothing, and a later row never changes what an earlier time saw.
  */
+const byTime = (a: AdminGrantRow, b: AdminGrantRow): number => {
+  if (a.at !== b.at) return a.at < b.at ? -1 : 1;
+  if (a.id === b.id) return 0;
+  return a.id < b.id ? -1 : 1;
+};
+
 export function adminHistory(rows: readonly AdminGrantRow[]): AdminHistory {
-  const ordered = [...rows].sort((a, b) =>
-    a.at === b.at ? (a.id < b.id ? -1 : a.id > b.id ? 1 : 0) : a.at < b.at ? -1 : 1,
-  );
+  const ordered = [...rows].sort(byTime);
   const live = new Map<string, string>();
   const intervals = new Map<string, Interval>();
   for (const row of ordered) {
@@ -122,13 +126,29 @@ export async function lockAdmins(tx: Transaction, accountIds: readonly string[])
   }
 }
 
+/** Why an account was an admin, as a stored row records it. */
+export interface StoredBasis {
+  readonly basis: AdminBasis['basis'];
+  readonly grantId: string | null;
+}
+
 /** Who is an admin (ADR-0027): the owner list, then the history, read on every call. */
 export interface AdminRole {
+  readonly ownerList: readonly string[];
   readonly isOwner: (accountId: string) => boolean;
   /** Read on the app_api pool, never cached, so taking the role away takes effect at once. */
   readonly isAdmin: (accountId: string) => Promise<boolean>;
   /** Why the account is an admin, by the owner list and a history already read. */
   readonly basisOf: (history: AdminHistory, accountId: string) => AdminBasis | undefined;
+  /**
+   * In a transaction that is about to store a row: the locks on the actor and the other accounts
+   * the row names, then the history and why the actor is an admin. Undefined for a non-admin.
+   */
+  readonly held: (
+    tx: Transaction,
+    actorId: string,
+    others?: readonly string[],
+  ) => Promise<{ readonly basis: StoredBasis; readonly history: AdminHistory } | undefined>;
 }
 
 export function adminRole(db: () => Database, ownerList: readonly string[]): AdminRole {
@@ -139,9 +159,18 @@ export function adminRole(db: () => Database, ownerList: readonly string[]): Adm
     return grantId === undefined ? undefined : { basis: 'grant', grantId };
   };
   return {
+    ownerList,
     isOwner: (accountId) => owners.has(accountId),
     isAdmin: async (accountId) =>
       owners.has(accountId) || basisOf(await readAdminHistory(db()), accountId) !== undefined,
     basisOf,
+    held: async (tx, actorId, others = []) => {
+      await lockAdmins(tx, [actorId, ...others]);
+      const history = await readAdminHistory(tx);
+      const held = basisOf(history, actorId);
+      if (held === undefined) return undefined;
+      const grantId = held.basis === 'grant' ? held.grantId : null;
+      return { basis: { basis: held.basis, grantId }, history };
+    },
   };
 }

@@ -127,7 +127,7 @@ export const decision = knowledge.table(
     comparisonId: text('comparison_id'),
     versionNumber: integer('version_number').notNull(),
     contentHash: text('content_hash').notNull(),
-    approverAccountId: uuid('approver_account_id').notNull(),
+    authorAccountId: uuid('approver_account_id').notNull(),
     proof: text('proof', { enum: decisionProofs }).notNull(),
     /** Why a `session` row's author was an admin; null on a `step_up` row. */
     adminBasis: text('admin_basis', { enum: adminBases }),
@@ -184,9 +184,9 @@ export const decision = knowledge.table(
     pgPolicy('decision_insert_session', {
       for: 'insert',
       to: 'app_auth',
-      withCheck: sql`${table.proof} = 'session' AND ${isIdentity(table.approverAccountId)}
+      withCheck: sql`${table.proof} = 'session' AND ${isIdentity(table.authorAccountId)}
         AND (${table.adminBasis} = 'owner_list'
-          OR ${grantOf(table.adminGrantId, table.approverAccountId)})`,
+          OR ${grantOf(table.adminGrantId, table.authorAccountId)})`,
     }),
     pgPolicy('decision_read', { for: 'select', to: 'app_api', using: sql`true` }),
   ],

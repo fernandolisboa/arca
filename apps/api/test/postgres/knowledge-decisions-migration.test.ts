@@ -73,7 +73,6 @@ describe('the session-decision migration (ADR-0027)', () => {
       catalog: { identities: (routeId) => (routeId === version.routeId ? [version] : []) },
       comparisons: { identities: () => [] },
       role: adminRole(() => apiDb, [approver.signedIn.accountId]),
-      ownerList: [approver.signedIn.accountId],
       origin,
       logger: {
         info: () => undefined,

@@ -487,7 +487,7 @@ export const ptBR = {
         '{name} deixa de ver a área Regras e não aprova mais regras. As decisões que essa pessoa já tomou continuam valendo.',
       removeYes: 'Sim, tirar o papel de administrador',
       failure:
-        '{reason, select, not_found {Essa pessoa não está mais no caso. Atualize a página.} not_admin {Você não é mais administrador.} owner_list_admin {Essa pessoa é administradora fixa e não perde o papel pelo app.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas tentativas em pouco tempo. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+        '{reason, select, not_found {Essa pessoa não está mais no caso. Atualize a página.} not_admin {Você não é mais administrador.} owner_list_admin {Essa pessoa é administradora fixa e não perde o papel pelo app.} step_up_required {A confirmação com a chave de acesso venceu. Tente de novo.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas tentativas em pouco tempo. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} closed {O Arca ainda não abriu. Tente de novo mais tarde.} other {Não deu certo desta vez. Tente de novo.}}',
     },
     news: {
       title: 'Novidades na família',
@@ -921,7 +921,7 @@ export const ptBR = {
     },
     lead: 'Aqui você confere cada versão de rota e dos dados que comparam os destinos antes de o app usar. Nada vale antes de você ativar.',
     signIn: 'Entre na sua conta para ver as versões.',
-    notApprover: 'Só um aprovador pode abrir esta tela.',
+    notAdmin: 'Só um administrador pode abrir esta tela.',
     loadFailure: 'Não deu para carregar as versões agora.',
     retry: 'Tentar de novo',
     settings: {

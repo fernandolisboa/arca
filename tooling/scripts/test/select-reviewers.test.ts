@@ -229,6 +229,9 @@ const sensitive: readonly (readonly [string, Reviewer])[] = [
   ['docs/adr/0018-vault-encryption.md', 'auth-crypto'],
   ['packages/db/migrations/20261104044314_step_up/migration.sql', 'auth-crypto'],
   ['apps/web/src/sign-in.ts', 'auth-crypto'],
+  ['apps/api/src/knowledge/admin-grants.ts', 'auth-crypto'],
+  ['apps/api/src/knowledge/admin-grants.ts', 'data-access'],
+  ['apps/web/src/admins.ts', 'auth-crypto'],
 ];
 
 describe('sensitive files in this repository', () => {

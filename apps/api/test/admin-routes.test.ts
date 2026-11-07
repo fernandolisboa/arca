@@ -20,7 +20,7 @@ function setup({
   signedIn = admin,
   confirmed = true,
   outcome = 'changed',
-  listed = [{ accountId: admin.accountId, owner: true }],
+  listed = [{ accountId: admin.accountId, onOwnerList: true }],
 }: {
   signedIn?: SignedIn | null;
   confirmed?: boolean;
@@ -78,7 +78,7 @@ describe('GET /v1/admins (ADR-0027)', () => {
     const response = await app.request('/v1/admins');
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
-      admins: [{ accountId: admin.accountId, owner: true }],
+      admins: [{ accountId: admin.accountId, onOwnerList: true }],
     });
     expect(calls).toEqual([['list', admin.accountId]]);
   });

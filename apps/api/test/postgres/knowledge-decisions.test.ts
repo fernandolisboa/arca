@@ -23,7 +23,7 @@ import { origin, person, type Person } from './step-up-people.js';
 // Knowledge decisions on the real migrations (spec 0007, R7; ADR-0027). Synthetic data only.
 let testDatabase: AuthTestDatabase;
 let stepUp: ReturnType<typeof createStepUp>;
-let approver: Person;
+let admin: Person;
 let errors: string[];
 
 const version: VersionIdentity = {
@@ -49,7 +49,7 @@ const comparisonKey = comparisonIdentityKey({
 const denied = { cause: { message: expect.stringMatching(/^permission denied/) as unknown } };
 
 function decisions(
-  owners: readonly string[] = [approver.signedIn.accountId],
+  owners: readonly string[] = [admin.signedIn.accountId],
   identities: typeof catalog = catalog,
 ): KnowledgeDecisions {
   return createKnowledgeDecisions({
@@ -59,7 +59,6 @@ function decisions(
     catalog: identities,
     comparisons,
     role: adminRole(() => testDatabase.apiDb, owners),
-    ownerList: owners,
     origin,
     logger: {
       info: () => undefined,
@@ -88,7 +87,7 @@ afterAll(async () => {
 
 beforeEach(async () => {
   errors = [];
-  approver = await person(testDatabase);
+  admin = await person(testDatabase);
   await testDatabase.asAdmin((client) => client.query('TRUNCATE knowledge.decision'));
 });
 
@@ -145,7 +144,7 @@ describe('knowledge decisions by a signed-in admin (spec 0007, R7; ADR-0027)', (
   it('activates with no step-up, as a session row the database times, and records the event', async () => {
     const service = decisions();
     const before = new Date();
-    const outcome = await service.decide(approver.signedIn, 'activate', request);
+    const outcome = await service.decide(admin.signedIn, 'activate', request);
     expect(outcome).toHaveProperty('decided');
     expect(await service.states()).toEqual(new Map([[identityKey, 'active']]));
     expect(await decisions().states()).toEqual(new Map([[identityKey, 'active']]));
@@ -158,7 +157,7 @@ describe('knowledge decisions by a signed-in admin (spec 0007, R7; ADR-0027)', (
       route_id: version.routeId,
       version_number: version.number,
       content_hash: version.hash,
-      approver_account_id: approver.signedIn.accountId,
+      approver_account_id: admin.signedIn.accountId,
       proof: 'session',
       admin_basis: 'owner_list',
       credential_id: null,
@@ -171,7 +170,7 @@ describe('knowledge decisions by a signed-in admin (spec 0007, R7; ADR-0027)', (
       step_up_id: null,
     });
     expect((row?.['decided_at'] as Date).getTime()).toBeGreaterThanOrEqual(before.getTime() - 1000);
-    expect(await decisionEvents(approver.signedIn.accountId)).toEqual([
+    expect(await decisionEvents(admin.signedIn.accountId)).toEqual([
       {
         code: 'version_activated',
         details: {
@@ -184,13 +183,13 @@ describe('knowledge decisions by a signed-in admin (spec 0007, R7; ADR-0027)', (
   });
 
   it('decides a comparison version as its own subject kind', async () => {
-    const outcome = await decisions().decide(approver.signedIn, 'activate', comparisonTarget);
+    const outcome = await decisions().decide(admin.signedIn, 'activate', comparisonTarget);
     expect(outcome).toHaveProperty('decided');
     expect(await decisions().states()).toEqual(new Map([[comparisonKey, 'active']]));
     expect(await rows()).toMatchObject([
       { subject_kind: 'comparison', route_id: null, comparison_id: comparisonSeriesId },
     ]);
-    expect((await decisionEvents(approver.signedIn.accountId)).map(({ code }) => code)).toEqual([
+    expect((await decisionEvents(admin.signedIn.accountId)).map(({ code }) => code)).toEqual([
       'comparison_activated',
     ]);
   });
@@ -202,24 +201,24 @@ describe('knowledge decisions by a signed-in admin (spec 0007, R7; ADR-0027)', (
       corrects: 1,
       hash: 'b'.repeat(64),
     };
-    const service = decisions([approver.signedIn.accountId], {
+    const service = decisions([admin.signedIn.accountId], {
       identities: (routeId) => (routeId === version.routeId ? [version, correction] : []),
     });
     const caseId = randomUUID();
     await testDatabase.asAdmin(async (client) => {
       await client.query('INSERT INTO cases.case_file (id) VALUES ($1)', [caseId]);
       await client.query('INSERT INTO cases.member (account_id, case_id) VALUES ($1, $2)', [
-        approver.signedIn.accountId,
+        admin.signedIn.accountId,
         caseId,
       ]);
       await client.query(
         `INSERT INTO cases.rule_report
            (case_id, reporter_account_id, route_id, version_number, requirement_id, reason)
          VALUES ($1, $2, 'qm-sample', 1, 'adult', 'outdated'), ($1, $2, 'qm-sample', 2, 'adult', 'other')`,
-        [caseId, approver.signedIn.accountId],
+        [caseId, admin.signedIn.accountId],
       );
     });
-    const outcome = await service.decide(approver.signedIn, 'activate', {
+    const outcome = await service.decide(admin.signedIn, 'activate', {
       subject: 'route',
       routeId: 'qm-sample',
       number: 2,
@@ -253,20 +252,20 @@ describe('knowledge decisions by a signed-in admin (spec 0007, R7; ADR-0027)', (
 
   it('refuses a version the catalog does not hold', async () => {
     expect(
-      await decisions().decide(approver.signedIn, 'activate', { ...request, number: 2 }),
+      await decisions().decide(admin.signedIn, 'activate', { ...request, number: 2 }),
     ).toEqual({ refused: 'not_found' });
     expect(await rows()).toEqual([]);
   });
 
   it('rejects at once and for good', async () => {
     const service = decisions();
-    await service.decide(approver.signedIn, 'activate', request);
-    expect(await service.decide(approver.signedIn, 'reject', request)).toHaveProperty('decided');
+    await service.decide(admin.signedIn, 'activate', request);
+    expect(await service.decide(admin.signedIn, 'reject', request)).toHaveProperty('decided');
     expect(await service.states()).toEqual(new Map([[identityKey, 'rejected']]));
-    expect(await service.decide(approver.signedIn, 'activate', request)).toEqual({
+    expect(await service.decide(admin.signedIn, 'activate', request)).toEqual({
       refused: 'already_rejected',
     });
-    expect((await decisionEvents(approver.signedIn.accountId)).map(({ code }) => code)).toEqual([
+    expect((await decisionEvents(admin.signedIn.accountId)).map(({ code }) => code)).toEqual([
       'version_activated',
       'version_rejected',
     ]);
@@ -274,9 +273,9 @@ describe('knowledge decisions by a signed-in admin (spec 0007, R7; ADR-0027)', (
 
   it('keeps counting a session row after its author leaves the list, a rejection included', async () => {
     const service = decisions();
-    await service.decide(approver.signedIn, 'activate', request);
+    await service.decide(admin.signedIn, 'activate', request);
     expect(await decisions([]).states()).toEqual(new Map([[identityKey, 'active']]));
-    await service.decide(approver.signedIn, 'reject', request);
+    await service.decide(admin.signedIn, 'reject', request);
     // A rejected version never comes back because its author lost the role.
     expect(await decisions([]).states()).toEqual(new Map([[identityKey, 'rejected']]));
     expect(errors).toEqual([]);
@@ -284,17 +283,17 @@ describe('knowledge decisions by a signed-in admin (spec 0007, R7; ADR-0027)', (
 });
 
 describe('decisions stored under ADR-0022', () => {
-  const legacy = (kind: 'activate' | 'reject', who: Person = approver, changes = {}) =>
+  const legacy = (kind: 'activate' | 'reject', who: Person = admin, changes = {}) =>
     legacyDecision(testDatabase, stepUp, who, routeAction(kind, version), changes);
 
   it('still count after the passkey is revoked and the step-up is gone', async () => {
     await legacy('activate');
     await testDatabase.asAdmin(async (client) => {
       await client.query('DELETE FROM auth.step_up WHERE account_id = $1', [
-        approver.signedIn.accountId,
+        admin.signedIn.accountId,
       ]);
       await client.query('DELETE FROM auth.passkey WHERE user_id = $1', [
-        approver.signedIn.accountId,
+        admin.signedIn.accountId,
       ]);
     });
     expect(await decisions().states()).toEqual(new Map([[identityKey, 'active']]));
@@ -302,13 +301,13 @@ describe('decisions stored under ADR-0022', () => {
   });
 
   it('ignore an activation whose assertion does not verify, and log it', async () => {
-    await legacy('activate', approver, { signature: randomBytes(64) });
+    await legacy('activate', admin, { signature: randomBytes(64) });
     expect(await decisions().states()).toEqual(new Map());
     expect(errors).toEqual(['KnowledgeActivationIgnored']);
   });
 
   it('count a rejection even when it does not verify', async () => {
-    await legacy('reject', approver, { signature: randomBytes(64) });
+    await legacy('reject', admin, { signature: randomBytes(64) });
     expect(await decisions().states()).toEqual(new Map([[identityKey, 'rejected']]));
     expect(errors).toEqual([]);
   });
@@ -359,10 +358,10 @@ describe('decisions stored under ADR-0022', () => {
         client.query(`UPDATE knowledge.decision SET admin_basis = 'owner_list'`),
       ),
     ).rejects.toThrow(/decision_proof/);
-    await expect(stored('activate', approver.signedIn.accountId, null)).rejects.toThrow(
+    await expect(stored('activate', admin.signedIn.accountId, null)).rejects.toThrow(
       /decision_proof/,
     );
-    await expect(stored('activate', approver.signedIn.accountId, 'grant')).rejects.toThrow(
+    await expect(stored('activate', admin.signedIn.accountId, 'grant')).rejects.toThrow(
       /decision_proof/,
     );
     await expect(
@@ -375,7 +374,7 @@ describe('decisions stored under ADR-0022', () => {
 
 describe('who may store and change decisions (ADR-0027)', () => {
   it('lets app_auth insert only a session row by the transaction’s own account', async () => {
-    const author = approver.signedIn.accountId;
+    const author = admin.signedIn.accountId;
     const asAuthor = (statement: ReturnType<typeof sql>, accountId = author) =>
       withIdentity(testDatabase.authDb, { accountId }, (tx) => tx.execute(statement));
     await expect(testDatabase.authDb.execute(sessionInsert(author))).rejects.toThrow();
@@ -406,7 +405,7 @@ describe('who may store and change decisions (ADR-0027)', () => {
   });
 
   it('lets nobody change or delete a decision', async () => {
-    await decisions().decide(approver.signedIn, 'reject', request);
+    await decisions().decide(admin.signedIn, 'reject', request);
     for (const change of [
       sql`UPDATE knowledge.decision SET kind = 'activate'`,
       sql`DELETE FROM knowledge.decision`,
@@ -414,7 +413,7 @@ describe('who may store and change decisions (ADR-0027)', () => {
       await expect(testDatabase.apiDb.execute(change)).rejects.toThrow();
       await expect(testDatabase.authDb.execute(change)).rejects.toThrow();
       await expect(
-        withIdentity(testDatabase.authDb, { accountId: approver.signedIn.accountId }, (tx) =>
+        withIdentity(testDatabase.authDb, { accountId: admin.signedIn.accountId }, (tx) =>
           tx.execute(change),
         ),
       ).rejects.toThrow();

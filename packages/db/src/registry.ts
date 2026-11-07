@@ -471,7 +471,7 @@ export const registry: Registry = {
       table: 'knowledge.rule_summary',
       personalData: 'none',
       reason:
-        "A model's summary of a route version's public content for the approver (ADR-0025), keyed by the version's hash, prompt and model; it names no account.",
+        "A model's summary of a route version's public content for the admin (ADR-0025), keyed by the version's hash, prompt and model; it names no account.",
     },
     {
       table: 'cases.case_file',

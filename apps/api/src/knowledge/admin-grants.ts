@@ -7,7 +7,7 @@ import { accounts } from '../auth/auth.js';
 import type { SignedIn } from '../auth/service.js';
 import type { StepUpSpender } from '../auth/step-up.js';
 import type { AuditLog } from '../audit/log.js';
-import { type AdminBasis, type AdminRole, lockAdmins, readAdminHistory } from './admins.js';
+import { type AdminRole, readAdminHistory } from './admins.js';
 
 /** `unchanged`: the account already was, or already was not, an admin; nothing is stored. */
 export type AdminChangeOutcome =
@@ -37,22 +37,22 @@ export interface AdminGrantSettings {
   readonly stepUp: StepUpSpender;
   readonly audit: Pick<AuditLog, 'record'>;
   readonly notify: AccountNotice<'admin_role_changed'>;
-  readonly ownerList: readonly string[];
 }
 
+/** A grant refused inside the step-up's transaction, so the step-up stays unspent. */
 class Refused extends Error {
-  readonly outcome: 'not_admin' | 'not_found';
-  constructor(outcome: 'not_admin' | 'not_found') {
+  readonly outcome: 'not_admin' | 'not_found' | 'unchanged';
+  constructor(outcome: 'not_admin' | 'not_found' | 'unchanged') {
     super(outcome);
     this.outcome = outcome;
   }
 }
 
-/** The columns that record why the actor was an admin. */
-const basisColumns = (held: AdminBasis) =>
-  held.basis === 'grant'
-    ? { basis: held.basis, grantId: held.grantId }
-    : { basis: held.basis, grantId: null };
+/** One change of the role: the admin who makes it and the account whose role changes. */
+interface Change {
+  readonly actorId: string;
+  readonly granteeId: string;
+}
 
 export function createAdminGrants({
   db,
@@ -61,20 +61,20 @@ export function createAdminGrants({
   stepUp,
   audit,
   notify,
-  ownerList,
 }: AdminGrantSettings): AdminGrants {
-  /** The accounts of the actor's case, as row-level security lets the actor see them. */
+  /** The accounts of the actor's case; row-level security scopes the read as well. */
   const caseAccounts = (actorId: string) =>
     withIdentity(db(), { accountId: actorId }, async (tx) => {
-      const { rows } = await tx.execute<{ account_id: string }>(
-        sql`SELECT account_id FROM cases.member ORDER BY account_id`,
-      );
+      const { rows } = await tx.execute<{ account_id: string }>(sql`
+        SELECT account_id FROM cases.member
+         WHERE case_id IN (SELECT case_id FROM cases.member WHERE account_id = ${actorId})
+         ORDER BY account_id`);
       return rows.map((row) => row.account_id);
     });
 
   /** Whether the account shares the actor's case; false alike for unknown and outside accounts. */
-  const inCase = async (actorId: string, accountId: string) =>
-    (await caseAccounts(actorId)).includes(accountId);
+  const inCase = async ({ actorId, granteeId }: Change) =>
+    (await caseAccounts(actorId)).includes(granteeId);
 
   /**
    * The change's audit events, recorded first on app_audit so a change no event records is never
@@ -82,8 +82,7 @@ export function createAdminGrants({
    */
   const recordChange = async (
     code: 'admin_granted' | 'admin_removed',
-    actorId: string,
-    granteeId: string,
+    { actorId, granteeId }: Change,
     grantId: string,
   ) => {
     for (const subjectAccountId of [actorId, granteeId]) {
@@ -98,44 +97,34 @@ export function createAdminGrants({
 
   /** Every owner-list admin hears of a change, with a generic notice and no names. */
   const tellOwners = () =>
-    Promise.all(ownerList.map((ownerId) => notify(ownerId, 'admin_role_changed')));
+    Promise.all(role.ownerList.map((ownerId) => notify(ownerId, 'admin_role_changed')));
 
-  /**
-   * In an app_auth transaction under the actor's identity: the locks on both accounts, then the
-   * actor's role. Undefined when the actor is no longer an admin.
-   */
-  const actorBasis = async (tx: Transaction, actorId: string, granteeId: string) => {
-    await lockAdmins(tx, [actorId, granteeId]);
-    const history = await readAdminHistory(tx);
-    const basis = role.basisOf(history, actorId);
-    return basis === undefined ? undefined : { basis, history };
-  };
-
-  const grantIn = async (tx: Transaction, actorId: string, granteeId: string, stepUpId: string) => {
+  const grantIn = async (tx: Transaction, change: Change, stepUpId: string) => {
+    const { actorId, granteeId } = change;
     await actAs(tx, actorId);
-    const held = await actorBasis(tx, actorId, granteeId);
+    const held = await role.held(tx, actorId, [granteeId]);
     if (held === undefined) throw new Refused('not_admin');
     if (!(await accounts.isConfirmed(tx, granteeId))) throw new Refused('not_found');
-    if (role.basisOf(held.history, granteeId) !== undefined) return 'unchanged' as const;
+    if (role.basisOf(held.history, granteeId) !== undefined) throw new Refused('unchanged');
     const id = randomUUID();
-    const { basis, grantId } = basisColumns(held.basis);
-    await recordChange('admin_granted', actorId, granteeId, id);
+    const { basis, grantId } = held.basis;
+    await recordChange('admin_granted', change, id);
     await tx.execute(sql`
       INSERT INTO knowledge.admin_grant (id, kind, grantee_account_id, actor_account_id,
         actor_basis, actor_grant_id, step_up_id)
       VALUES (${id}, 'grant', ${granteeId}, ${actorId}, ${basis}, ${grantId}, ${stepUpId})`);
-    return 'changed' as const;
   };
 
-  const removeIn = async (actorId: string, granteeId: string) =>
-    withIdentity(authDb(), { accountId: actorId }, async (tx) => {
-      const held = await actorBasis(tx, actorId, granteeId);
+  const removeIn = async (change: Change) =>
+    withIdentity(authDb(), { accountId: change.actorId }, async (tx) => {
+      const { actorId, granteeId } = change;
+      const held = await role.held(tx, actorId, [granteeId]);
       if (held === undefined) return 'not_admin' as const;
       const removed = held.history.liveGrant(granteeId);
       if (removed === undefined) return 'unchanged' as const;
       const id = randomUUID();
-      const { basis, grantId } = basisColumns(held.basis);
-      await recordChange('admin_removed', actorId, granteeId, id);
+      const { basis, grantId } = held.basis;
+      await recordChange('admin_removed', change, id);
       await tx.execute(sql`
         INSERT INTO knowledge.admin_grant (id, kind, grantee_account_id, actor_account_id,
           actor_basis, actor_grant_id, removes_grant_id)
@@ -143,49 +132,53 @@ export function createAdminGrants({
       return 'changed' as const;
     });
 
+  /** The history as app_api reads it now, for the checks made before a transaction. */
+  const currentHistory = () => readAdminHistory(db());
+
   return {
     isAdmin: role.isAdmin,
 
     list: async (accountId) => {
-      if (!(await role.isAdmin(accountId))) return 'not_admin';
+      const history = await currentHistory();
+      if (role.basisOf(history, accountId) === undefined) return 'not_admin';
       const members = await caseAccounts(accountId);
       if (members.length === 0) return 'not_found';
-      const flags = await Promise.all(members.map((member) => role.isAdmin(member)));
-      return members.flatMap((member, index) =>
-        flags[index] === true ? [{ accountId: member, owner: role.isOwner(member) }] : [],
+      return members.flatMap((member) =>
+        role.basisOf(history, member) === undefined
+          ? []
+          : [{ accountId: member, onOwnerList: role.isOwner(member) }],
       );
     },
 
     grant: async (signedIn, granteeId, nonce) => {
-      const { accountId: actorId } = signedIn;
-      if (!(await role.isAdmin(actorId))) return 'not_admin';
+      const change = { actorId: signedIn.accountId, granteeId };
+      const history = await currentHistory();
+      if (role.basisOf(history, change.actorId) === undefined) return 'not_admin';
       // Checked before the grantee's role, so an account outside the case learns nothing.
-      if (!(await inCase(actorId, granteeId))) return 'not_found';
-      if (await role.isAdmin(granteeId)) return 'unchanged';
-      const stored: { outcome?: 'changed' | 'unchanged' } = {};
+      if (!(await inCase(change))) return 'not_found';
+      if (role.basisOf(history, granteeId) !== undefined) return 'unchanged';
       try {
         const spent = await stepUp.spend(
           signedIn,
           'admin_grant',
           { ...grantAdminAction({ accountId: granteeId }), nonce },
-          async (tx, { id }) => {
-            stored.outcome = await grantIn(tx, actorId, granteeId, id);
-          },
+          (tx, { id }) => grantIn(tx, change, id),
         );
-        if (!spent || stored.outcome === undefined) return 'step_up_required';
+        if (!spent) return 'step_up_required';
       } catch (error) {
         if (error instanceof Refused) return error.outcome;
         throw error;
       }
-      if (stored.outcome === 'changed') await tellOwners();
-      return stored.outcome;
+      await tellOwners();
+      return 'changed';
     },
 
     remove: async ({ accountId: actorId }, granteeId) => {
-      if (!(await role.isAdmin(actorId))) return 'not_admin';
-      if (!(await inCase(actorId, granteeId))) return 'not_found';
+      const change = { actorId, granteeId };
+      if (role.basisOf(await currentHistory(), actorId) === undefined) return 'not_admin';
+      if (!(await inCase(change))) return 'not_found';
       if (role.isOwner(granteeId)) return 'owner_list_admin';
-      const outcome = await removeIn(actorId, granteeId);
+      const outcome = await removeIn(change);
       if (outcome === 'changed') await tellOwners();
       return outcome;
     },

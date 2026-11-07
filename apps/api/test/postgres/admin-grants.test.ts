@@ -47,7 +47,6 @@ function grants(): AdminGrants {
       notices.push(`${accountId}:${kind}`);
       return Promise.resolve();
     },
-    ownerList: [owner.signedIn.accountId],
   });
 }
 
@@ -59,7 +58,6 @@ const decisions = () =>
     catalog: { identities: (routeId) => (routeId === version.routeId ? [version] : []) },
     comparisons: { identities: () => [] },
     role: role(),
-    ownerList: [owner.signedIn.accountId],
     origin,
     logger: silentLogger,
   });
@@ -249,9 +247,9 @@ describe('giving the admin role (ADR-0027)', () => {
     });
     expect(await grants().list(ana.signedIn.accountId)).toEqual(
       expect.arrayContaining([
-        { accountId: owner.signedIn.accountId, owner: true },
-        { accountId: ana.signedIn.accountId, owner: false },
-        { accountId: bruno.signedIn.accountId, owner: false },
+        { accountId: owner.signedIn.accountId, onOwnerList: true },
+        { accountId: ana.signedIn.accountId, onOwnerList: false },
+        { accountId: bruno.signedIn.accountId, onOwnerList: false },
       ]),
     );
   });

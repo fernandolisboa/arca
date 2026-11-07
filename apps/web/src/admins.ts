@@ -15,10 +15,10 @@ export async function removeAdmin(accountId: string): Promise<void> {
   await reach(api.call(routes.removeAdmin, { accountId }));
 }
 
-export type AdminFailure = CommonFailure | 'not_found' | 'not_admin' | 'owner_list_admin';
+const adminCodes = ['not_found', 'not_admin', 'owner_list_admin', 'step_up_required'] as const;
+
+export type AdminFailure = CommonFailure | (typeof adminCodes)[number];
 
 export function adminFailure(error: unknown): AdminFailure {
-  return commonFailure(error, ({ code }) =>
-    code === 'not_found' || code === 'not_admin' || code === 'owner_list_admin' ? code : undefined,
-  );
+  return commonFailure(error, ({ code }) => adminCodes.find((known) => known === code));
 }

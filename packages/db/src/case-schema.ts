@@ -518,7 +518,7 @@ const inList = (column: unknown, values: readonly string[]) =>
 
 /**
  * A member's report that a requirement shown in their results may be wrong (spec 0007, R8). Only
- * the reporter sees it; approvers see open reports counted per requirement through a definer
+ * the reporter sees it; admins see open reports counted per requirement through a definer
  * function that returns no note, case or reporter. Deleted with the reporter's membership, or 365
  * days after it was made.
  */

@@ -128,7 +128,6 @@ function knowledgeDecisions(): KnowledgeDecisions {
     catalog: routeCatalog,
     comparisons: comparisonCatalog,
     role,
-    ownerList: ownerList[environment],
     origin: readAuthOrigin(),
     logger,
   });
@@ -477,7 +476,6 @@ const app = createApp({
     },
     audit: lazyAudit,
     notify: async (accountId, kind) => (await authParts()).adminNotice(accountId, kind),
-    ownerList: ownerList[environment],
   }),
   knowledge: {
     decide: (signedIn, kind, target) => knowledgeDecisions().decide(signedIn, kind, target),

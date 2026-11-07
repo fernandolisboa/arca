@@ -85,7 +85,7 @@ export interface RejectionEffect {
   readonly fallback: { readonly number: number; readonly state: DecisionState } | null;
 }
 
-/** A route version laid out for the approver (spec 0007, R7), built from its content alone. */
+/** A route version laid out for the admin (spec 0007, R7), built from its content alone. */
 export interface VersionView {
   readonly routeId: string;
   readonly number: number;
@@ -293,7 +293,7 @@ function rejectionEffect(
 }
 
 /**
- * The approver's view of one version (spec 0007, R7): its rules as data, the facts they read, its
+ * The admin's view of one version (spec 0007, R7): its rules as data, the facts they read, its
  * pinned country sets, its sources with hosts new to the route flagged, what changed from the
  * version it replaces, its cases and what a rejection would do. No model is involved.
  */

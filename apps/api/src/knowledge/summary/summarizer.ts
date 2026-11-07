@@ -2,7 +2,7 @@ import type { ModelReply } from '../../ai/model-call.js';
 
 /**
  * The `Summarizer` port (ADR-0025): reads one route version's content, public rule data with no
- * case data, and answers a short summary for the approver. An adapter answers the model's reply as
+ * case data, and answers a short summary for the admin. An adapter answers the model's reply as
  * data for the API to parse, or throws a `SummarizerError` that carries a fixed code and nothing of
  * the request or the reply.
  */

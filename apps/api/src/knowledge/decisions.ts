@@ -29,7 +29,6 @@ import {
   type AdminHistory,
   type AdminRole,
   epochMicros,
-  lockAdmins,
   readAdminHistory,
 } from './admins.js';
 import { closeRuleReports } from './reports.js';
@@ -71,8 +70,6 @@ export interface KnowledgeDecisionSettings {
   readonly comparisons: Pick<ComparisonCatalog, 'identities'>;
   /** Who is an admin: the owner list and the role's history (ADR-0027). */
   readonly role: AdminRole;
-  /** The owner list, which ADR-0022 decisions are re-verified against. */
-  readonly ownerList: readonly string[];
   /** The environment's own origin, which ADR-0022 decisions are re-verified against. */
   readonly origin: string;
   readonly logger: Logger;
@@ -97,7 +94,7 @@ function sessionCounts(row: DecisionRow, history: AdminHistory): boolean {
     case 'grant':
       return (
         row.adminGrantId !== null &&
-        history.inForce(row.adminGrantId, row.approverAccountId, BigInt(row.decidedMicros))
+        history.inForce(row.adminGrantId, row.authorAccountId, BigInt(row.decidedMicros))
       );
     case null:
       return false;
@@ -200,22 +197,21 @@ export function createKnowledgeDecisions({
   catalog,
   comparisons,
   role,
-  ownerList,
   origin,
   logger,
 }: KnowledgeDecisionSettings): KnowledgeDecisions {
   const rpId = new URL(origin).hostname;
-  const listed = new Set(ownerList);
   /**
-   * Decisions never change, the list is fixed for the process, and the history only grows after
-   * the times a stored row looks at, so each decision is checked once. The whole checked decision is kept, built from the row that was verified, so a row
-   * changed later behind the policies cannot borrow an earlier verification.
+   * Decisions never change, the owner list is fixed for the process, and the history only grows
+   * after the times a stored row looks at, so each decision is checked once. The whole checked
+   * decision is kept, built from the row that was verified, so a row changed later behind the
+   * policies cannot borrow an earlier verification.
    */
   const checkedById = new Map<string, Promise<CheckedDecision | undefined>>();
 
   const assertionVerifies = async (row: DecisionRow, decided: DecidedVersion) => {
     const stored = storedStepUp(row);
-    if (stored === undefined || !listed.has(row.approverAccountId)) return false;
+    if (stored === undefined || !role.isOwner(row.authorAccountId)) return false;
     return reverifyStepUp(stored.assertion, {
       purpose: 'knowledge_decision',
       subjectHash: subjectHash(decisionAction(row.kind, decided, stored.actionNonce)),
@@ -300,10 +296,9 @@ export function createKnowledgeDecisions({
    */
   const store = (accountId: string, kind: DecisionKind, decided: DecidedVersion, id: string) =>
     withIdentity(authDb(), { accountId }, async (tx: Transaction) => {
-      await lockAdmins(tx, [accountId]);
-      const held = role.basisOf(await readAdminHistory(tx), accountId);
+      const held = await role.held(tx, accountId);
       if (held === undefined) return false;
-      const grantId = held.basis === 'grant' ? held.grantId : null;
+      const { basis, grantId } = held.basis;
       const { identity } = decided;
       const routeId = decided.subject === 'route' ? decided.identity.routeId : null;
       const comparisonId = decided.subject === 'comparison' ? decided.identity.comparisonId : null;
@@ -318,7 +313,7 @@ export function createKnowledgeDecisions({
         INSERT INTO knowledge.decision (id, kind, subject_kind, route_id, comparison_id,
           version_number, content_hash, approver_account_id, proof, admin_basis, admin_grant_id)
         VALUES (${id}, ${kind}, ${decided.subject}, ${routeId}, ${comparisonId},
-          ${identity.number}, ${identity.hash}, ${accountId}, 'session', ${held.basis}, ${grantId})`);
+          ${identity.number}, ${identity.hash}, ${accountId}, 'session', ${basis}, ${grantId})`);
       return true;
     });
 

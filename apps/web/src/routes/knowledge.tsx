@@ -67,7 +67,7 @@ function Knowledge() {
   ) {
     return (
       <Page title={title}>
-        <p>{t('knowledge.notApprover')}</p>
+        <p>{t('knowledge.notAdmin')}</p>
       </Page>
     );
   }
