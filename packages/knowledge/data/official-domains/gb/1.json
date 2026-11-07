@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "gb",
+  "number": 1,
+  "issuer": "Government of the United Kingdom",
+  "hosts": [
+    {
+      "host": "legislation.gov.uk",
+      "source": {
+        "id": "cddo-gov-uk-domains",
+        "url": "https://www.gov.uk/guidance/check-if-your-organisation-can-get-a-govuk-domain-name",
+        "title": "Central Digital and Data Office: it assigns .gov.uk domain names on behalf of the Cabinet Office, and only listed UK public sector bodies can get one",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    },
+    {
+      "host": "www.gov.uk",
+      "source": {
+        "id": "cddo-gov-uk-domains",
+        "url": "https://www.gov.uk/guidance/check-if-your-organisation-can-get-a-govuk-domain-name",
+        "title": "Central Digital and Data Office: it assigns .gov.uk domain names on behalf of the Cabinet Office, and only listed UK public sector bodies can get one",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    }
+  ]
+}
