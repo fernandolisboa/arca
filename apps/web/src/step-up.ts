@@ -3,13 +3,15 @@ import {
   stepUpNonceHeader,
   type StepUpAction,
   type StepUpOptionsRequest,
-  type StepUpPurpose,
 } from '@arca/api-contract/client';
 import type { Passkeys } from '@arca/platform';
 import { api } from './api.js';
 import { base64url } from './base64url.js';
 import { toAssertion, toRequestOptions } from './passkey-json.js';
 import { reach } from './requests.js';
+
+/** The purposes a step-up for one action may be asked for. */
+type ActionPurpose = Extract<StepUpOptionsRequest, { target: unknown }>['purpose'];
 
 /** Options, the passkey ceremony and verify; returns the credential ID the person approved with. */
 async function verifyStepUp(passkeys: Passkeys, request: StepUpOptionsRequest): Promise<string> {
@@ -27,7 +29,7 @@ async function verifyStepUp(passkeys: Passkeys, request: StepUpOptionsRequest): 
 export async function stepUpFor(
   passkeys: Passkeys,
   action: Omit<StepUpAction, 'nonce'>,
-  purpose: Exclude<StepUpPurpose, 'vault_unlock'> = 'sensitive_settings',
+  purpose: ActionPurpose = 'sensitive_settings',
 ): Promise<ReturnType<typeof api.withHeaders>> {
   return (await approvedWith(passkeys, action, purpose)).client;
 }
@@ -36,7 +38,7 @@ export async function stepUpFor(
 export async function approvedWith(
   passkeys: Passkeys,
   action: Omit<StepUpAction, 'nonce'>,
-  purpose: Exclude<StepUpPurpose, 'vault_unlock'> = 'sensitive_settings',
+  purpose: ActionPurpose = 'sensitive_settings',
 ): Promise<{ client: ReturnType<typeof api.withHeaders>; credentialId: string }> {
   const nonce = base64url(crypto.getRandomValues(new Uint8Array(16)));
   const credentialId = await verifyStepUp(passkeys, { purpose, target: { ...action, nonce } });

@@ -15,11 +15,14 @@ import { ruleReportReasons } from './case.js';
 import type { RouteDefinition } from './index.js';
 
 /*
- * Activating and rejecting a route version (spec 0007, R7; ADR-0022). Only an approver may decide
- * (403 not_approver), after a knowledge_decision step-up bound to the action, the route ID and the
- * version number as targets, and the version's content hash as the field contentHash (403
- * step_up_required). The API takes the hash from the catalog it bundles. 404 not_found for a
- * version the catalog does not hold, 409 already_rejected for one already rejected.
+ * Activating and rejecting a route version (spec 0007, R7; ADR-0027). Only an approver may decide
+ * (403 not_approver), signed in, with no step-up; the body names the version and nothing else, and
+ * the API takes its hash from the catalog it bundles. 404 not_found for a version the catalog does
+ * not hold, 409 already_rejected for one already rejected.
+ *
+ * Decisions stored before ADR-0027 were approved by a knowledge_decision step-up bound to the
+ * action, the route ID and the version number as targets, and the content hash as the field
+ * contentHash; `decideVersionAction` rebuilds that action so they verify again (ADR-0022).
  */
 
 export const DecideVersionRequest = z.strictObject({
@@ -36,7 +39,7 @@ export const activateVersion = {
   path: '/knowledge/versions/activate',
   operationId: 'activateVersion',
   summary:
-    'Activates a route version after a knowledge_decision step-up; it counts once its stored assertion verifies. 403 not_approver, 403 step_up_required, 404 not_found, 409 already_rejected',
+    'Activates a route version for a signed-in approver, with no step-up. 403 not_approver, 404 not_found, 409 already_rejected',
   body: DecideVersionRequest,
   response: { description: 'Activated', schema: DecideVersionResponse },
 } as const satisfies RouteDefinition<typeof DecideVersionResponse>;
@@ -46,12 +49,12 @@ export const rejectVersion = {
   path: '/knowledge/versions/reject',
   operationId: 'rejectVersion',
   summary:
-    'Rejects a route version after a knowledge_decision step-up, at once and for good. 403 not_approver, 403 step_up_required, 404 not_found, 409 already_rejected',
+    'Rejects a route version for a signed-in approver, with no step-up, at once and for good. 403 not_approver, 404 not_found, 409 already_rejected',
   body: DecideVersionRequest,
   response: { description: 'Rejected', schema: DecideVersionResponse },
 } as const satisfies RouteDefinition<typeof DecideVersionResponse>;
 
-/** The step-up action of a decision: the route and the number as targets, the hash as a field. */
+/** The step-up action of an ADR-0022 decision: the route and number as targets, the hash a field. */
 export function decideVersionAction(
   decision: 'activateVersion' | 'rejectVersion',
   { routeId, number }: DecideVersionRequest,
@@ -63,10 +66,10 @@ export function decideVersionAction(
 const contentHash = z.string().regex(/^[0-9a-f]{64}$/);
 
 /*
- * Activating and rejecting a comparison version (ADR-0026), as for a route version but with their
- * own step-up actions, so an approval of one kind can never be spent on the other. The targets are
- * the comparison ID and the version number, the field the content hash over the version and every
- * indicator it pins, which the API takes from the catalog it bundles.
+ * Activating and rejecting a comparison version (ADR-0026, ADR-0027), as for a route version. The
+ * API takes the content hash over the version and every indicator it pins from the catalog it
+ * bundles. Decisions stored before ADR-0027 used their own step-up actions, so an approval of one
+ * kind never verifies as the other.
  */
 
 export const DecideComparisonRequest = z.strictObject({
@@ -80,7 +83,7 @@ export const activateComparison = {
   path: '/knowledge/comparisons/activate',
   operationId: 'activateComparison',
   summary:
-    'Activates a comparison version after a knowledge_decision step-up; it counts once its stored assertion verifies. 403 not_approver, 403 step_up_required, 404 not_found, 409 already_rejected',
+    'Activates a comparison version for a signed-in approver, with no step-up. 403 not_approver, 404 not_found, 409 already_rejected',
   body: DecideComparisonRequest,
   response: { description: 'Activated', schema: DecideVersionResponse },
 } as const satisfies RouteDefinition<typeof DecideVersionResponse>;
@@ -90,12 +93,12 @@ export const rejectComparison = {
   path: '/knowledge/comparisons/reject',
   operationId: 'rejectComparison',
   summary:
-    'Rejects a comparison version after a knowledge_decision step-up, at once and for good; the newest active version before it stays in use. 403 not_approver, 403 step_up_required, 404 not_found, 409 already_rejected',
+    'Rejects a comparison version for a signed-in approver, with no step-up, at once and for good; the newest active version before it stays in use. 403 not_approver, 404 not_found, 409 already_rejected',
   body: DecideComparisonRequest,
   response: { description: 'Rejected', schema: DecideVersionResponse },
 } as const satisfies RouteDefinition<typeof DecideVersionResponse>;
 
-/** The step-up action of a comparison decision: its ID and number as targets, the hash as a field. */
+/** The step-up action of an ADR-0022 comparison decision: ID and number targets, the hash a field. */
 export function decideComparisonAction(
   decision: 'activateComparison' | 'rejectComparison',
   { comparisonId, number }: DecideComparisonRequest,

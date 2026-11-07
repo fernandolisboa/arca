@@ -1,0 +1,400 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "b1552226-b863-4fd8-96a8-b575f8e46b39",
+  "prevIds": [
+    "0a7aa7ba-6dc0-4d2c-a4d8-cfd10bc19900"
+  ],
+  "footprints": [
+    {
+      "statementType": "drop_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "decision"
+      ],
+      "writes": [
+        "s|pol|knowledge.decision.decision_insert_spent_step_up",
+        "n|pol|knowledge.decision.decision_insert_spent_step_up",
+        "e|pol|knowledge.decision.decision_insert_spent_step_up"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "decision",
+        "proof"
+      ],
+      "writes": [
+        "s|col|knowledge.decision.proof",
+        "n|col|knowledge.decision.proof",
+        "e|col|knowledge.decision.proof"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "decision",
+        "admin_basis"
+      ],
+      "writes": [
+        "s|col|knowledge.decision.admin_basis",
+        "n|col|knowledge.decision.admin_basis",
+        "e|col|knowledge.decision.admin_basis"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "decision",
+        "credential_id"
+      ],
+      "writes": [
+        "s|colprop|knowledge.decision.credential_id.notNull"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|col|knowledge.decision.credential_id"
+      ],
+      "sqlHash": "d37690a56280a768"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "decision",
+        "public_key"
+      ],
+      "writes": [
+        "s|colprop|knowledge.decision.public_key.notNull"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|col|knowledge.decision.public_key"
+      ],
+      "sqlHash": "b3202948cc144566"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "decision",
+        "action_nonce"
+      ],
+      "writes": [
+        "s|colprop|knowledge.decision.action_nonce.notNull"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|col|knowledge.decision.action_nonce"
+      ],
+      "sqlHash": "bec01b0a38ace5e4"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "decision",
+        "server_nonce"
+      ],
+      "writes": [
+        "s|colprop|knowledge.decision.server_nonce.notNull"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|col|knowledge.decision.server_nonce"
+      ],
+      "sqlHash": "f36d4ff0191364a4"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "decision",
+        "authenticator_data"
+      ],
+      "writes": [
+        "s|colprop|knowledge.decision.authenticator_data.notNull"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|col|knowledge.decision.authenticator_data"
+      ],
+      "sqlHash": "d64a573afadee4cc"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "decision",
+        "client_data_json"
+      ],
+      "writes": [
+        "s|colprop|knowledge.decision.client_data_json.notNull"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|col|knowledge.decision.client_data_json"
+      ],
+      "sqlHash": "95e5cf10262a53a8"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "decision",
+        "signature"
+      ],
+      "writes": [
+        "s|colprop|knowledge.decision.signature.notNull"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|col|knowledge.decision.signature"
+      ],
+      "sqlHash": "1be7e05f3bf647f8"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "decision",
+        "step_up_id"
+      ],
+      "writes": [
+        "s|colprop|knowledge.decision.step_up_id.notNull"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|col|knowledge.decision.step_up_id"
+      ],
+      "sqlHash": "80153488fca158c2"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "decision",
+        "decided_at"
+      ],
+      "writes": [
+        "s|colprop|knowledge.decision.decided_at.default"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|col|knowledge.decision.decided_at"
+      ],
+      "sqlHash": "f615373376b4948a"
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "decision"
+      ],
+      "writes": [
+        "s|ck|knowledge.decision.decision_proof",
+        "n|ck|knowledge.decision.decision_proof",
+        "e|ck|knowledge.decision.decision_proof",
+        "n|con|knowledge.decision.decision_proof"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|col|knowledge.decision.proof",
+        "n|col|knowledge.decision.admin_basis",
+        "n|col|knowledge.decision.credential_id",
+        "n|col|knowledge.decision.public_key",
+        "n|col|knowledge.decision.action_nonce",
+        "n|col|knowledge.decision.server_nonce",
+        "n|col|knowledge.decision.authenticator_data",
+        "n|col|knowledge.decision.client_data_json",
+        "n|col|knowledge.decision.signature",
+        "n|col|knowledge.decision.step_up_id"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "decision"
+      ],
+      "writes": [
+        "s|pol|knowledge.decision.decision_insert_session",
+        "n|pol|knowledge.decision.decision_insert_session",
+        "e|pol|knowledge.decision.decision_insert_session"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|role|app_auth",
+        "e|rls|knowledge.decision"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "proof",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "admin_basis",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "decision_proof",
+        "value": "CASE \"proof\"\n        WHEN 'step_up' THEN \"admin_basis\" IS NULL\n          AND \"credential_id\" IS NOT NULL AND \"public_key\" IS NOT NULL\n          AND \"action_nonce\" IS NOT NULL AND \"server_nonce\" IS NOT NULL\n          AND \"authenticator_data\" IS NOT NULL AND \"client_data_json\" IS NOT NULL\n          AND \"signature\" IS NOT NULL AND \"step_up_id\" IS NOT NULL\n        WHEN 'session' THEN \"admin_basis\" IS NOT DISTINCT FROM 'owner_list'\n          AND \"credential_id\" IS NULL AND \"public_key\" IS NULL\n          AND \"action_nonce\" IS NULL AND \"server_nonce\" IS NULL\n          AND \"authenticator_data\" IS NULL AND \"client_data_json\" IS NULL\n          AND \"signature\" IS NULL AND \"step_up_id\" IS NULL\n        ELSE false END",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "decision_insert_session",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_auth"
+        ],
+        "using": null,
+        "withCheck": "\"knowledge\".\"decision\".\"proof\" = 'session'\n        AND \"knowledge\".\"decision\".\"approver_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "drop",
+      "key": "policies\u0000[\"knowledge\",\"decision\",\"decision_insert_spent_step_up\"]"
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"knowledge\",\"decision\",\"credential_id\"]",
+      "set": {
+        "notNull": false
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"knowledge\",\"decision\",\"public_key\"]",
+      "set": {
+        "notNull": false
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"knowledge\",\"decision\",\"action_nonce\"]",
+      "set": {
+        "notNull": false
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"knowledge\",\"decision\",\"server_nonce\"]",
+      "set": {
+        "notNull": false
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"knowledge\",\"decision\",\"authenticator_data\"]",
+      "set": {
+        "notNull": false
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"knowledge\",\"decision\",\"client_data_json\"]",
+      "set": {
+        "notNull": false
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"knowledge\",\"decision\",\"signature\"]",
+      "set": {
+        "notNull": false
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"knowledge\",\"decision\",\"step_up_id\"]",
+      "set": {
+        "notNull": false
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"knowledge\",\"decision\",\"decided_at\"]",
+      "set": {
+        "default": "clock_timestamp()"
+      }
+    }
+  ]
+}

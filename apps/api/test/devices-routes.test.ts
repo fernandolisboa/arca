@@ -169,6 +169,22 @@ describe('the device routes (spec 0003, R4)', () => {
     expect(calls).toEqual([]);
   });
 
+  it('no longer offers a knowledge_decision step-up (ADR-0027)', async () => {
+    const { app } = setup();
+    const target = {
+      action: 'activateVersion',
+      targets: ['pt-d7', '2'],
+      fields: { contentHash: 'a'.repeat(64) },
+      nonce,
+    };
+    const response = await app.request('/v1/auth/step-up/options', {
+      method: 'POST',
+      headers: { origin, 'content-type': 'application/json' },
+      body: JSON.stringify({ purpose: 'knowledge_decision', target }),
+    });
+    expect(response.status).toBe(400);
+  });
+
   it("answers 404 to a session or passkey that is not the account's", async () => {
     expect(
       (await setup({ found: false }).post('sessions/revoke', { sessionId: targetId })).status,

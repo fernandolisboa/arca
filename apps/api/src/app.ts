@@ -1432,7 +1432,6 @@ export function createApp({
 
   const refusedDecision = {
     not_approver: 403,
-    step_up_required: 403,
     not_found: 404,
     already_rejected: 409,
   } as const;
@@ -1447,17 +1446,15 @@ export function createApp({
   ) => {
     const current = await signedIn(c);
     if (current === null || knowledge === undefined) return unauthorized(c);
-    // Before the body or the nonce is read, so anyone else learns only that they may not decide;
-    // the service checks again, as the authority.
+    // Before the body is read, so anyone else learns only that they may not decide; the service
+    // checks again in the transaction that stores the decision, as the authority (ADR-0027).
     if (!knowledge.isApprover(current.accountId)) return fail(c, 'not_approver', 403);
     const body: unknown = await c.req.json();
     const target: DecisionTarget =
       subject === 'route'
         ? { subject, ...DecideVersionRequest.parse(body) }
         : { subject, ...DecideComparisonRequest.parse(body) };
-    const nonce = actionNonce(c);
-    if (nonce === undefined) return fail(c, 'step_up_required', 403);
-    return decided(c, await knowledge.decide(current, kind, target, nonce));
+    return decided(c, await knowledge.decide(current, kind, target));
   };
   /** The approver's reads; anyone else learns only that they may not decide. */
   const approverReads = async (c: Context<AppEnv>) => {

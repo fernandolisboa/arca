@@ -1029,18 +1029,17 @@ export const ptBR = {
     activate: 'Ativar esta versão',
     reject: 'Recusar esta versão',
     activateLead:
-      'Ao ativar, as avaliações passam a usar esta versão sempre que a rota a escolher, a partir de {date}. Para continuar, confirme com sua chave de acesso.',
-    rejectLead:
-      'A recusa vale para sempre: esta versão nunca mais será usada. Para continuar, confirme com sua chave de acesso.',
+      'Ao ativar, as avaliações passam a usar esta versão sempre que a rota a escolher, a partir de {date}.',
+    rejectLead: 'A recusa vale para sempre: esta versão nunca mais será usada.',
     rejectFallback:
       '{current, select, proposed {Hoje a rota escolhe esta versão, que ainda aguarda ativação.} other {Hoje a rota usa esta versão.}} {fallback, select, none {Se recusar, a rota fica sem versão e as avaliações mostram Indisponível.} active {Se recusar, ela volta para a versão {number}, que está ativa.} other {Se recusar, ela passa para a versão {number}, e as avaliações mostram Versão aguardando ativação até você ativá-la.}}',
     confirm: 'Confirmar',
     cancel: 'Agora não',
-    waiting: 'Confirme no seu dispositivo para continuar.',
+    waiting: 'Salvando sua decisão…',
     decided: '{kind, select, activate {Versão ativada.} other {Versão recusada.}}',
     rejectedNote: 'Esta versão foi recusada e não volta a ser usada.',
     failure:
-      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} rejected {Esta versão já foi recusada, e a recusa não pode ser desfeita.} other {Não deu certo desta vez. Tente de novo.}}',
+      '{reason, select, limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} rejected {Esta versão já foi recusada, e a recusa não pode ser desfeita.} other {Não deu certo desta vez. Tente de novo.}}',
     /** A comparison version: criteria and country data for comparing destinations (ADR-0026). */
     comparison: {
       meta: 'Dados da comparação de destinos',
@@ -1062,7 +1061,7 @@ export const ptBR = {
       noPrevious: 'novo',
       removed: 'Perderam o valor nesta versão: {countries}.',
       activateLead:
-        'Ao ativar, a comparação de destinos passa a usar estes critérios e valores para todas as pessoas que usam a comparação. Para continuar, confirme com sua chave de acesso.',
+        'Ao ativar, a comparação de destinos passa a usar estes critérios e valores para todas as pessoas que usam a comparação.',
       rejectFallback:
         '{fallback, select, none {Hoje a comparação usa esta versão. Se recusar, ela fica sem dados de países até você ativar outra.} other {Hoje a comparação usa esta versão. Se recusar, ela volta para a versão {number}.}}',
     },
