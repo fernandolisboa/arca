@@ -132,17 +132,8 @@ describe('RankingRow', () => {
 
 describe('ScaleChoice', () => {
   const legend = 'Segurança';
-  const render = (description?: string) =>
-    renderToStaticMarkup(
-      <ScaleChoice
-        legend={legend}
-        {...(description === undefined ? {} : { description })}
-        min={0}
-        max={5}
-        value={4}
-        onChange={noop}
-      />,
-    );
+  const render = () =>
+    renderToStaticMarkup(<ScaleChoice legend={legend} min={0} max={5} value={4} onChange={noop} />);
 
   it('is a fieldset with one native radio per step, the chosen one checked', () => {
     const html = render();
@@ -152,12 +143,6 @@ describe('ScaleChoice', () => {
     expect(new Set([...html.matchAll(/name="([^"]+)"/g)].map((match) => match[1])).size).toBe(1);
     expect(html).toMatch(/checked="" value="4"/);
     expect(html.match(/checked=""/g)).toHaveLength(1);
-    expect(html).not.toContain('aria-describedby');
-  });
-
-  it('ties the description to the group', () => {
-    const html = render('0 deixa de fora');
-    expect(html).toMatch(/aria-describedby="([^"]+)".*<p id="\1"[^>]*>0 deixa de fora<\/p>/);
   });
 });
 

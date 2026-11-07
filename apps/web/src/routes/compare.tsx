@@ -6,7 +6,7 @@ import { useId } from 'react';
 import { caseQuery, sessionQuery } from '../api.js';
 import { CountryCard } from '../compare/country-card.js';
 import { useComparison, type ComparisonEditor } from '../compare/use-comparison.js';
-import { WeightsPanel } from '../compare/weights-panel.js';
+import { WeightsPanel, weightsAnchor } from '../compare/weights-panel.js';
 import { useCompareWords, type CompareWords } from '../compare/words.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { Page } from '../page.js';
@@ -92,6 +92,10 @@ function Comparison({
     comparison.countries.filter(({ group, country }) => group === wanted && !hidden.has(country));
   const ranked = inGroup('ranked');
   const fewData = inGroup('few-data');
+  // Hidden by the API, or just now by the person; one just shown stays here until the API answers.
+  const hiddenCountries = comparison.countries.filter(
+    ({ group, country }) => group === 'hidden' || hidden.has(country),
+  );
   const card = (country: (typeof comparison.countries)[number], row: number) => (
     <CountryCard
       key={country.country}
@@ -113,7 +117,7 @@ function Comparison({
           <p className="rounded-card bg-warn-bg p-4 text-warn-ink">{t('compare.pendingNewer')}</p>
         )}
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
-          <a href="#pesos" className={`${textLinkClass} lg:hidden`}>
+          <a href={`#${weightsAnchor}`} className={`${textLinkClass} lg:hidden`}>
             {t('compare.jumpToWeights')}
           </a>
           <p role="status" className="text-small text-muted">
@@ -150,30 +154,45 @@ function Comparison({
             </ul>
           </section>
         )}
-        {preferences.hidden.length > 0 && (
+        {hiddenCountries.length > 0 && (
           <section aria-labelledby={hiddenId} className="flex flex-col gap-3">
-            <h3 id={hiddenId} className="font-display text-lead">
-              {t('compare.hiddenTitle')}
-            </h3>
+            <div className="flex flex-col gap-1">
+              <h3 id={hiddenId} className="font-display text-lead">
+                {t('compare.hiddenTitle')}
+              </h3>
+              <p className="text-small text-muted">{t('compare.hiddenLead')}</p>
+            </div>
             <ul className={`${cardClass} flex flex-col divide-y divide-line px-4`}>
-              {preferences.hidden.map((country) => (
-                <li
-                  key={country}
-                  className="flex flex-wrap items-center justify-between gap-x-4 py-1"
-                >
-                  <span>{words.country(country)}</span>
-                  <button
-                    type="button"
-                    className={textLinkClass}
-                    aria-label={t('compare.showLabel', { country: words.country(country) })}
-                    onClick={() => {
-                      change({ kind: 'show', country });
-                    }}
+              {hiddenCountries.map(({ country, total }) => {
+                const name = words.country(country);
+                return (
+                  <li
+                    key={country}
+                    className="flex flex-wrap items-center justify-between gap-x-4 py-1"
                   >
-                    {t('compare.show')}
-                  </button>
-                </li>
-              ))}
+                    <span>
+                      {name}{' '}
+                      <span className="text-small text-muted tabular-nums">
+                        {total === null
+                          ? t('compare.noTotal')
+                          : t('compare.totalLabel', { total: words.decimal(total) })}
+                      </span>
+                    </span>
+                    {hidden.has(country) && (
+                      <button
+                        type="button"
+                        className={textLinkClass}
+                        aria-label={t('compare.showLabel', { country: name })}
+                        onClick={() => {
+                          change({ kind: 'show', country });
+                        }}
+                      >
+                        {t('compare.show')}
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </section>
         )}

@@ -203,7 +203,7 @@ export function AppShell({
               inert={menuOpen}
               className={`${at(false, true)} items-center gap-2`}
             >
-              <NavList items={items} link={link} shape="row" direction="row" />
+              <NavList items={items} link={link} shape="row" direction="row" compact />
               {settings !== undefined && (
                 <NavLink item={settings} link={link} shape="row" iconOnly />
               )}

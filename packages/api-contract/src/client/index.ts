@@ -42,6 +42,7 @@ export {
   replaceDocumentsAction,
   routes,
   ownCriteriaLimit,
+  ownCriterionNameLimit,
   ruleReportReasons,
   startsInPlan,
   stepUpNonceHeader,

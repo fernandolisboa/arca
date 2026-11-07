@@ -1,25 +1,21 @@
 import { ApiError, routes, type DestinationComparison } from '@arca/api-contract/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
-import { api, comparisonQuery } from '../api.js';
+import { api, comparisonQuery, sessionQuery } from '../api.js';
 import { reach, UnreachableError } from '../requests.js';
-import { applyEdit, type Edit, type Preferences } from './edits.js';
+import type { Edit, Preferences } from './edits.js';
+import {
+  answered,
+  editedPreferences,
+  emptyQueue,
+  nextWrite,
+  queued,
+  shownComparison,
+  type SaveQueue,
+} from './save-queue.js';
 
 /** Why a change was not saved; `changed` is a criterion another tab deleted. */
 export type SaveFailure = 'limited' | 'changed' | 'unreachable' | 'other';
-
-interface Saved {
-  /** The answer of the latest write, newer than the read until the cache catches up. */
-  readonly answer: DestinationComparison | undefined;
-  /** The edits the API has not confirmed yet, oldest first. */
-  readonly pending: readonly Edit[];
-}
-
-interface Queue extends Saved {
-  readonly sending: boolean;
-}
-
-const idle: Queue = { answer: undefined, pending: [], sending: false };
 
 function saveFailure(error: unknown): SaveFailure {
   if (error instanceof UnreachableError) return 'unreachable';
@@ -40,57 +36,65 @@ export interface ComparisonEditor {
 
 /**
  * The comparison and the way to change it: each edit shows in the controls at once and is saved
- * as the person goes, one write at a time, the edits made meanwhile going together in the next
- * one. Every score and the order come back from the API; a failed write puts back what was saved.
+ * as the person goes (`save-queue.ts`). Every score and the order come back from the API; a
+ * failed write puts back what was saved.
  */
 export function useComparison(enabled: boolean) {
   const queryClient = useQueryClient();
   const read = useQuery({ ...comparisonQuery, enabled });
   // The queue lives in a ref so a write's callback sees the edits made after it started; the
-  // screen renders from `saved`, which takes the answer and its leftover edits in one update.
-  const queueRef = useRef<Queue>(idle);
-  const [saved, setSaved] = useState<Saved>(idle);
+  // screen renders from the state copy, which takes an answer and its leftover edits together.
+  const queueRef = useRef<SaveQueue>(emptyQueue);
+  const [queue, setQueue] = useState<SaveQueue>(emptyQueue);
   const [failure, setFailure] = useState<SaveFailure>();
-  const comparison = saved.answer ?? read.data;
+  const comparison = shownComparison(queue, read.data);
 
-  function sendNext(base: DestinationComparison) {
-    const { pending, sending } = queueRef.current;
-    if (sending || pending.length === 0) return;
-    const count = pending.length;
-    queueRef.current = { ...queueRef.current, sending: true };
-    reach(
-      api.call(routes.writeComparisonPreferences, pending.reduce(applyEdit, base.preferences)),
-    ).then(
+  const account = () => queryClient.getQueryData(sessionQuery.queryKey)?.accountId;
+
+  function update(next: SaveQueue) {
+    queueRef.current = next;
+    setQueue(next);
+  }
+
+  function sendNext(read: DestinationComparison) {
+    const write = nextWrite(queueRef.current, read);
+    if (write === undefined) return;
+    update(write.queue);
+    const writer = account();
+    reach(api.call(routes.writeComparisonPreferences, write.body)).then(
       (answer) => {
-        queueRef.current = {
-          answer,
-          pending: queueRef.current.pending.slice(count),
-          sending: false,
-        };
-        setSaved(queueRef.current);
+        // After a sign-out, or a sign-in as someone else, the answer and any queued edits are the
+        // previous account's: they never reach the cache or the next account's preferences.
+        if (account() !== writer) {
+          update(emptyQueue);
+          return;
+        }
+        update(answered(queueRef.current, answer));
         queryClient.setQueryData(comparisonQuery.queryKey, answer);
         sendNext(answer);
       },
       (error: unknown) => {
-        queueRef.current = idle;
-        setSaved(idle);
-        setFailure(saveFailure(error));
-        void queryClient.invalidateQueries({ queryKey: comparisonQuery.queryKey });
+        const reason = saveFailure(error);
+        update(emptyQueue);
+        setFailure(reason);
+        // The cache still holds the last saved answer; reading again would spend the read limit.
+        if (reason !== 'limited') {
+          void queryClient.invalidateQueries({ queryKey: comparisonQuery.queryKey });
+        }
       },
     );
   }
 
   if (comparison === undefined) return { read, editor: undefined };
   const change = (edit: Edit) => {
-    queueRef.current = { ...queueRef.current, pending: [...queueRef.current.pending, edit] };
-    setSaved(queueRef.current);
+    update(queued(queueRef.current, edit));
     setFailure(undefined);
-    sendNext(queueRef.current.answer ?? comparison);
+    sendNext(comparison);
   };
   const editor: ComparisonEditor = {
     comparison,
-    preferences: saved.pending.reduce(applyEdit, comparison.preferences),
-    saving: saved.pending.length > 0,
+    preferences: editedPreferences(queue, comparison),
+    saving: queue.pending.length > 0,
     failure,
     change,
   };

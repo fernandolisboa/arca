@@ -1,4 +1,8 @@
-import { ownCriteriaLimit, type DestinationComparison } from '@arca/api-contract/client';
+import {
+  ownCriteriaLimit,
+  ownCriterionNameLimit,
+  type DestinationComparison,
+} from '@arca/api-contract/client';
 import { Button, ScaleChoice, cardClass } from '@arca/ui';
 import { useId, useState, type SubmitEvent } from 'react';
 import { dangerLinkClass, textLinkClass } from '../forms/text-link.js';
@@ -8,8 +12,8 @@ import { measured, type CompareWords, type Criterion } from './words.js';
 
 type Change = (edit: Edit) => void;
 
-/** The longest name the API takes for an own criterion. */
-const nameLength = 60;
+/** The panel's anchor, for the link that jumps to it on phones. */
+export const weightsAnchor = 'weights';
 /** Not only spaces: the API takes the name trimmed, and an empty one is refused. */
 const notBlank = '.*\\S.*';
 
@@ -49,7 +53,7 @@ export function WeightsPanel({
     );
   return (
     <section
-      id="pesos"
+      id={weightsAnchor}
       aria-labelledby={titleId}
       className={`${cardClass} flex scroll-mt-20 flex-col gap-6 p-4 sm:p-5 lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto`}
     >
@@ -118,6 +122,7 @@ function WeightRow({
                 className={dangerLinkClass}
                 onClick={() => {
                   change({ kind: 'remove', criterion: criterion.id });
+                  setMode('view');
                 }}
               >
                 {t('compare.remove')}
@@ -235,7 +240,7 @@ function NameForm({
           setName(event.target.value);
         }}
         required
-        maxLength={nameLength}
+        maxLength={ownCriterionNameLimit}
         pattern={notBlank}
         autoComplete="off"
         autoFocus={onCancel !== undefined}

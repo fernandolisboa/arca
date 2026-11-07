@@ -169,6 +169,8 @@ test('the seed approver reviews, activates and rejects a comparison version (ADR
   page,
 }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop', 'runs once, on the desktop project');
+  // A second account builds a family and saves each comparison change, one answer at a time.
+  test.setTimeout(90_000);
   const [account] = await runSeed();
   if (account === undefined) throw new Error('the seed lists no account');
   await Promise.all([
@@ -287,7 +289,7 @@ async function memberCompares(browser: Browser) {
   await family(page);
   await page.getByRole('link', { name: 'Comparar', exact: true }).first().click();
   await expect(page.getByRole('heading', { level: 2, name: 'Comparar destinos' })).toBeVisible();
-  const ranking = page.getByRole('region', { name: 'Sua ordem' });
+  const ranking = page.getByRole('region', { name: 'Seu ranking' });
   const places = ranking.getByRole('heading', { level: 4 });
   await expect(places.first()).toHaveText(/^1º lugar /);
   // Each change is saved as it is made; the next step waits for the API's answer.
@@ -327,7 +329,7 @@ async function memberCompares(browser: Browser) {
   await rate('Portugal', '2 estrelas de 5');
   await rate('Uruguai', '5 estrelas de 5');
   await expect(places).toHaveText(['1º lugar Uruguai', '2º lugar Portugal']);
-  await expect(ranking.getByRole('article').first()).toContainText('nota 10 de 10');
+  await expect(ranking.getByRole('article').first()).toContainText('nota final 10 de 10');
   await expect(fewData).not.toContainText('Uruguai');
 
   await saved(ranking.getByRole('button', { name: 'Ocultar Uruguai' }).click());

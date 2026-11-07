@@ -33,5 +33,6 @@ Each adult ranks the countries that have a route by criteria they weigh themselv
 
 - Refreshing comparison data is a script run plus a reviewed pull request with new indicator files and a new comparison version, then one activation. The script only downloads public data into files for review; it adds no dependency or vendor, and runs no part of the app.
 - A criterion's label is its title from the data unless the interface has its own label for that ID, so adding a criterion never needs a code change.
+- The comparison answer names the indicator each objective criterion reads and the indicator's unit. The screen words a value with its own phrase for that indicator ID (such as "homicídios por 100 mil habitantes") and otherwise shows the value with the unit from the data, so pointing a criterion at another indicator never shows the wrong unit.
 - A new country in the route catalog shows "sem dado" on objective criteria until the next comparison version adds its values.
 - Criterion kinds that read case facts (such as language from the person's CEFR levels) need a schema change and a scoring change in code, reviewed like any engine change.

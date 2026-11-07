@@ -11,37 +11,35 @@ export type Reading = NonNullable<
 export const measured = (criterion: Criterion) =>
   criterion.kind === 'indicator' || criterion.kind === 'category';
 
-/** The words the comparison screen names its data with, in the screen's language. */
+/**
+ * The words the comparison screen names its data with, in the screen's language. Data the
+ * catalog has no label for yet shows as written, so a new criterion or indicator needs no code.
+ */
 export function useCompareWords() {
   const words = useKnowledgeWords();
   const { i18n } = useTranslation();
-  const { t } = words;
-  // Comparison data may name a criterion a newer catalog labels; until then it shows as written.
-  const known = (key: string) => i18n.exists(key);
-  const label = (criterion: Criterion) => {
-    if (criterion.kind === 'own') return criterion.name;
-    const key = `compare.criterion.${criterion.id}`;
-    return known(key) ? t(key as 'compare.title') : criterion.title;
-  };
+  const { t, labelled } = words;
   return {
     ...words,
-    label,
-    /** An exact decimal from the API, such as a score, in the screen's language. */
-    score: (value: string) => words.decimal(value),
+    label: (criterion: Criterion) =>
+      criterion.kind === 'own'
+        ? criterion.name
+        : labelled(`compare.criterion.${criterion.id}`, criterion.title),
     /** The value behind an objective score with its year, such as "4,49 homicídios… (2023)". */
     reading: (criterion: Criterion, { value, year }: Reading) => {
-      const tokenKey = `compare.token.${criterion.id}.${value}`;
+      const indicator = criterion.kind === 'own' ? undefined : criterion.indicator;
       const shown =
         criterion.kind === 'indicator'
           ? words.decimal(value)
-          : known(tokenKey)
-            ? t(tokenKey as 'compare.title')
-            : value;
-      const phraseKey = `compare.reading.${criterion.id}`;
-      return t('compare.inYear', {
-        reading: known(phraseKey) ? t(phraseKey as 'compare.title', { value: shown }) : shown,
-        year: String(year),
-      });
+          : labelled(`compare.token.${indicator?.id ?? ''}.${value}`, value);
+      const phraseKey = `compare.reading.${indicator?.id ?? ''}`;
+      const phrase =
+        indicator === undefined
+          ? shown
+          : i18n.exists(phraseKey)
+            ? t(phraseKey as 'compare.reading.homicides', { value: shown })
+            : t('compare.valueUnit', { value: shown, unit: indicator.unit });
+      return t('compare.inYear', { reading: phrase, year: String(year) });
     },
   };
 }

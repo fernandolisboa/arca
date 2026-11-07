@@ -167,6 +167,7 @@ describe('the destination comparison (ADR-0026, #315)', () => {
     expect(answer.criteria.find(({ id }) => id === 'safety')).toMatchObject({
       id: 'safety',
       kind: 'indicator',
+      indicator: { id: 'homicides', unit: 'per 100,000 people' },
       weight: 4,
       defaultWeight: 4,
     });

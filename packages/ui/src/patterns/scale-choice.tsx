@@ -2,8 +2,6 @@ import { useId } from 'react';
 
 export interface ScaleChoiceProps {
   readonly legend: string;
-  /** Read after the legend, such as what the ends of the scale mean. */
-  readonly description?: string;
   readonly min: number;
   readonly max: number;
   readonly value: number;
@@ -14,21 +12,12 @@ export interface ScaleChoiceProps {
  * A short whole-number scale, such as a weight from 0 to 5, as one row of native radios: arrow keys
  * move along it, and each step is a touch target that fills the row's width.
  */
-export function ScaleChoice({ legend, description, min, max, value, onChange }: ScaleChoiceProps) {
+export function ScaleChoice({ legend, min, max, value, onChange }: ScaleChoiceProps) {
   const groupId = useId();
-  const descriptionId = `${groupId}-description`;
   const steps = Array.from({ length: Math.max(max - min + 1, 0) }, (_, index) => min + index);
   return (
-    <fieldset
-      className="flex min-w-0 flex-col gap-2"
-      {...(description === undefined ? {} : { 'aria-describedby': descriptionId })}
-    >
+    <fieldset className="flex min-w-0 flex-col gap-2">
       <legend className="mb-2 font-medium break-words">{legend}</legend>
-      {description !== undefined && (
-        <p id={descriptionId} className="-mt-1 text-small text-muted">
-          {description}
-        </p>
-      )}
       <div className="grid auto-cols-fr grid-flow-col rounded-control border border-line">
         {steps.map((step) => (
           <label

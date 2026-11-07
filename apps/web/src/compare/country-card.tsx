@@ -3,20 +3,12 @@ import { Bar, StarRating, StatusChip, cardClass, formatCalendarDate } from '@arc
 import { Link } from '@tanstack/react-router';
 import { useId } from 'react';
 import { textLinkClass } from '../forms/text-link.js';
+import { resultsAnchor } from '../results/group.js';
 import { statusTones } from '../results/status-tone.js';
 import type { Edit, Preferences } from './edits.js';
 import { measured, type CompareWords, type Criterion, type Reading } from './words.js';
 
 type ComparedCountry = DestinationComparison['countries'][number];
-
-/** The host of a source's address, shown as text; the address as written if it has none. */
-function hostOf(url: string): string {
-  try {
-    return new URL(url).hostname;
-  } catch {
-    return url;
-  }
-}
 
 /**
  * One country of the comparison: its place, total and coverage as the API computed them, the
@@ -45,7 +37,7 @@ export function CountryCard({
   // The weights the person just chose decide what is listed; the scores catch up with the API.
   const weightOf = (criterion: Criterion) => preferences.weights[criterion.id] ?? criterion.weight;
   const counted = criteria.filter((criterion) => weightOf(criterion) > 0);
-  const total = country.total === null ? null : words.score(country.total);
+  const total = country.total === null ? null : words.decimal(country.total);
   return (
     <li>
       <article aria-labelledby={nameId} className={`${cardClass} flex flex-col gap-2 p-4 sm:p-5`}>
@@ -90,7 +82,11 @@ export function CountryCard({
             {t('compare.coverage', { coverage: String(country.coverage) })}
           </span>
           <div className="flex flex-wrap items-center gap-x-6 sm:ml-auto">
-            <Link to="/family/results" className={textLinkClass}>
+            <Link
+              to="/family/results"
+              hash={resultsAnchor(country.country)}
+              className={textLinkClass}
+            >
               {t('compare.routes')}
             </Link>
             <button
@@ -157,7 +153,7 @@ function CriterionLine({
   const value =
     score?.score == null
       ? t(objective ? 'compare.noData' : 'compare.notRated')
-      : words.score(score.score);
+      : words.decimal(score.score);
   return (
     <li className="flex flex-col gap-1 py-3">
       <div className="flex items-baseline justify-between gap-3">
@@ -208,9 +204,9 @@ function ReadingLines({
   return (
     <>
       <p className="text-small">{words.reading(criterion, reading)}</p>
-      <p className="text-caption break-words text-muted">
+      <p className="text-caption break-all text-muted">
         {t('compare.source', {
-          host: hostOf(reading.source.url),
+          url: reading.source.url,
           date: formatCalendarDate(reading.source.verifiedAt, words.language),
         })}
       </p>

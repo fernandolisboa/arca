@@ -51,3 +51,6 @@ export function groupResults(
           : byName(countryName(left.country), countryName(right.country)),
     );
 }
+
+/** The results screen's anchor for one country's section, so another screen can link to it. */
+export const resultsAnchor = (country: string) => `country-${country.toLowerCase()}`;
