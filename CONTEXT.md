@@ -14,6 +14,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Unit | Unidade | The group that moves together under one route: a principal applicant plus the dependents that route covers. Computed per route |
 | Principal applicant | Requerente principal | The person whose eligibility a route is evaluated on |
 | Dependent | Dependente | A person covered through the principal applicant, as defined by the route |
+| Native national | Internal, no UI label | Someone who has held a country's citizenship since birth: by birth, or by descent or another basis acquired on the birth date, never by naturalization, marriage or investment. Read by the fact `person.citizenshipsFromBirth` |
 | Destination | Destino | A country a person accepts moving to |
 | Route | Rota | A legal pathway to live in a country (a visa, residence permit or citizenship path) |
 | Route version | Versão da rota | An immutable snapshot of a route's rules, with its sources, effective date and pinned country sets and official-domain lists |

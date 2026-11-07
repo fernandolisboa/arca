@@ -1,6 +1,6 @@
 # Other destinations
 
-Checked 2026-11-01; the Uruguay section on 2026-11-07.
+Checked 2026-11-01; the Uruguay and Argentina sections on 2026-11-07.
 
 ## Spain
 
@@ -26,6 +26,20 @@ Mercosur permanent residence is now route version `uy-mercosur-permanent` 1 in `
 | Not modeled: application with a valid passport or identity document; adults sign a sworn statement of no criminal record (arts. 45 and 46 of Ley 18.250) and present records from every country lived in for more than six months in the last five years; Uruguayan vaccination certificate; minors bring a birth certificate and their parents' authorization. The case records none of these | [Decreto 45/023, art. 2](https://www.impo.com.uy/bases/decretos/45-2023), [DNM, Permanente Mercosur](https://www.gub.uy/tramites/residencia-legal-permanente-mercosur) |
 | Not modeled: the fee is 557.30 UI (indexed units) plus a 55.70 UI certificate; Brazilians and Paraguayans pay nothing under their reciprocity agreements. A cost per nationality in indexed units does not fit the cost schema yet | [DNM, Permanente Mercosur](https://www.gub.uy/tramites/residencia-legal-permanente-mercosur) |
 | Not modeled: the ministry decides within 90 business days; a duration stage counts calendar time, not business days | [Ley 18.250, art. 33](https://www.impo.com.uy/bases/leyes/18250-2008) |
+
+## Argentina
+
+Temporary residence by nationality (Mercosur) is now route version `ar-mercosur-temporary` 1 in `packages/knowledge/data/routes`, verified on 2026-11-07 against the consolidated texts and the migration directorate's page on www.argentina.gob.ar. It grants two years, renewable. Each listed national qualifies on their own nationality if it is native, so a Brazilian child born a Brazilian qualifies as a Brazilian. A family member from anywhere comes in through family reunification with the temporary resident. Accepted readings: a citizenship counts as native when it is by birth, or by descent or another basis acquired on the birth date (the new fact `person.citizenshipsFromBirth`); a Brazilian citizenship by descent recorded with a later date shows as possible. A partner counts after two years from the start of the union the case records, since the case records neither the date living together began nor the registration; the registration only proves the union (Civil and Commercial Code, art. 511), so it is read as a document, like a marriage certificate, which no route checks yet. The spouse's children are read as joining the spouse, who is a temporary resident by reunification; no other chained relative is modeled.
+
+| Fact | Source |
+| --- | --- |
+| Native nationals of the Mercosur states parties, Chile and Bolivia get temporary residence for two years, renewable with multiple entries (Ley 25.871, art. 23 l); the list of states is illustrative and covers every state party and associated state (Decreto 616/2010, art. 23 l) | [Ley 25.871](https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion), [Decreto 616/2010](https://www.argentina.gob.ar/normativa/nacional/decreto-616-2010-167004/texto) |
+| The states covered, as the migration directorate lists them: native nationals of Uruguay, Brazil, Paraguay, Bolivia, Chile, Peru, Ecuador, Colombia, Venezuela, Guyana and Suriname; or natives of another country naturalized for five years or more in Brazil, Paraguay, Uruguay, Bolivia, Chile, Colombia, Ecuador or Peru. Decreto 616/2010 counts every associated state, so an associated state the directorate does not list is not modeled | [DNM, residencia temporaria por nacionalidad Mercosur](https://www.argentina.gob.ar/servicio/obtener-una-residencia-temporaria-por-nacionalidad-mercosur) |
+| Family reunification: the spouse, parent, or unmarried child under 18 not emancipated or adult child with a disability of a temporary resident gets temporary residence for the relative's term (Ley 25.871, art. 23 ñ, added by Decreto 366/2025, art. 6, in force from 2025-05-29; Decreto 616/2010, art. 23, last paragraph; art. 10). A registered stable union counts like a marriage (Disposición DNM 4880/2015, noted in the consolidated text) and needs two years of living together (Civil and Commercial Code, art. 510 e); its registration serves only as proof (art. 511) | [Ley 25.871](https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion), [Decreto 366/2025](https://www.argentina.gob.ar/normativa/nacional/norma-413297/texto), [Código Civil y Comercial](https://www.argentina.gob.ar/normativa/nacional/ley-26994-235975/actualizacion) |
+| Ages: a minor has not turned 18 (art. 25); only marriage emancipates (art. 27); a period of years with no equivalent day in its last month ends on that month's last day (art. 6), so a 29 February birthday counts on 28 February | [Código Civil y Comercial](https://www.argentina.gob.ar/normativa/nacional/ley-26994-235975/actualizacion) |
+| Not modeled: a naturalized national's five years, since no fact reads how long a citizenship has been held, so a non-native citizenship of one of the eight states shows as possible; an adult child's disability, so adult children show as possible; a minor who married and is no longer married stays emancipated, which the case cannot tell apart from never married | [DNM](https://www.argentina.gob.ar/servicio/obtener-una-residencia-temporaria-por-nacionalidad-mercosur), [Código Civil y Comercial](https://www.argentina.gob.ar/normativa/nacional/ley-26994-235975/actualizacion) |
+| Not modeled: passport or Mercosur travel document; Argentine criminal record (over 16) and records from every country lived in for more than a year in the last three years; proof of address and regular entry; the application is made from inside Argentina; for minors, a birth certificate and a parent's authorization; at entry, a sworn statement of health insurance (Ley 25.871, art. 35, as worded by Decreto 366/2025). The fee follows the directorate's table of migration fees, which is not read yet | [DNM](https://www.argentina.gob.ar/servicio/obtener-una-residencia-temporaria-por-nacionalidad-mercosur), [Ley 25.871](https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion) |
+| After two continuous years of temporary residence, a Mercosur or associated national can apply for permanent residence (Decreto 616/2010, art. 22 c); since Decreto 366/2025 the applicant must prove enough means to live on and no disqualifying criminal record (Ley 25.871, art. 22). Not a route yet | [Decreto 616/2010](https://www.argentina.gob.ar/normativa/nacional/decreto-616-2010-167004/texto), [Ley 25.871](https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion) |
 
 ## Germany
 
@@ -53,7 +67,7 @@ Mercosur permanent residence is now route version `uy-mercosur-permanent` 1 in `
 
 | Destination | Starting point |
 | --- | --- |
-| Paraguay, Argentina, Chile | Mercosur Residence Agreement (**unverified** details per country) |
+| Paraguay, Chile | Mercosur Residence Agreement (**unverified** details per country) |
 | Canada | Express Entry points system |
 | Ireland | Critical Skills Employment Permit and general work permits |
 | Australia, New Zealand | Points-based skilled visas |
