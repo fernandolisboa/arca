@@ -131,7 +131,7 @@
     },
     {
       "id": "no-social-assistance",
-      "title": "While the permits last, neither the principal nor the family members with permits through them receive social assistance under the Active Social Policy Act",
+      "title": "Family members share the principal's home, and while the permits last none of them, the principal included, receives social assistance under the Active Social Policy Act",
       "evidence": ["unit.liquidAssets"],
       "sources": ["aliens-act-social-assistance", "aliens-act-family"]
     }
@@ -139,7 +139,7 @@
   "dependents": [
     {
       "id": "spouse",
-      "title": "Spouse who was 18 or more at the wedding, sharing the principal's home; married younger: possible after 18 months together, as a cohabiting partner",
+      "title": "Spouse who was 18 or more at the wedding; married younger, both now 18 or more: possible, as a cohabiting partner after at least 1.5 to 2 years living together",
       "path": ["spouse"],
       "condition": {
         "op": "any",
@@ -170,12 +170,15 @@
                 }
               },
               {
-                "op": "since",
-                "date": {
+                "op": "gte",
+                "left": {
                   "op": "fact",
-                  "key": "edge.start"
+                  "key": "principal.ageYears"
                 },
-                "duration": "P18M"
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
               },
               {
                 "op": "unmodeled"
@@ -188,7 +191,7 @@
     },
     {
       "id": "partner",
-      "title": "Partner, both aged 18 or more, sharing the principal's home: after 2 years together; a shorter union, which may be a registered partnership: possible",
+      "title": "Partner, both aged 18 or more: after 2 years together; a shorter union, which may be a registered partnership: possible",
       "path": ["partner"],
       "condition": {
         "op": "all",
@@ -237,7 +240,7 @@
     },
     {
       "id": "children",
-      "title": "Children under 18, sharing the principal's home",
+      "title": "Children under 18",
       "path": ["child"],
       "condition": {
         "op": "lt",

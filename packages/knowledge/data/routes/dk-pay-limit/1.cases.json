@@ -471,7 +471,7 @@
       }
     },
     {
-      "id": "brazilian-with-a-spouse-married-at-16-two-years-ago",
+      "id": "brazilian-with-a-spouse-married-at-16-now-18",
       "snapshot": {
         "recordedOn": "2026-10-01",
         "members": ["p1", "p2"],
@@ -523,7 +523,7 @@
       }
     },
     {
-      "id": "brazilian-with-a-spouse-married-at-17-a-year-ago",
+      "id": "brazilian-with-a-spouse-married-at-16-now-17",
       "snapshot": {
         "recordedOn": "2026-10-01",
         "members": ["p1", "p2"],
@@ -543,12 +543,12 @@
           },
           {
             "id": "p2",
-            "birthDate": "2008-03-03",
+            "birthDate": "2009-03-03",
             "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
             "citizenships": [
               {
                 "country": "BR",
-                "acquired": "2008-03-03",
+                "acquired": "2009-03-03",
                 "lost": "none",
                 "basis": "birth"
               }
@@ -571,6 +571,109 @@
         "status": "needs_assessment",
         "dependents": [],
         "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "brazilian-with-a-spouse-married-at-exactly-18-last-month",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p2"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "2000-02-02",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2000-02-02",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p2",
+            "birthDate": "2008-09-01",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2008-09-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "spouse",
+            "people": ["p1", "p2"],
+            "start": "2026-09-01",
+            "end": "none"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "needs_assessment",
+        "dependents": ["p2"],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "brazilian-with-a-spouse-whose-wedding-date-is-unknown",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p2"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "2000-02-02",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2000-02-02",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p2",
+            "birthDate": "2001-03-03",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2001-03-03",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "spouse",
+            "people": ["p1", "p2"],
+            "end": "none"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "needs_assessment",
+        "dependents": [],
+        "possibleDependents": ["p2"],
         "missingFacts": []
       }
     },
