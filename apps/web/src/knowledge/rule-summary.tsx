@@ -101,6 +101,7 @@ export function RuleSummaryCard({ state }: { readonly state: RuleSummaryState })
         level={4}
         icon="ai"
         defaultOpen={state.justAsked}
+        footer={<p className="text-small text-muted">{t('knowledge.summary.note')}</p>}
         className="flex flex-col gap-2 rounded-control border border-line bg-soft p-3"
       >
         <p>{overview}</p>
@@ -115,7 +116,6 @@ export function RuleSummaryCard({ state }: { readonly state: RuleSummaryState })
             ))}
           </ul>
         )}
-        <p className="text-small text-muted">{t('knowledge.summary.note')}</p>
       </Disclosure>
     );
   }

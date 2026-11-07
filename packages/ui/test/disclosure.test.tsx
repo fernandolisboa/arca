@@ -2,7 +2,12 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { Disclosure } from '../src/patterns/disclosure.js';
 
-const words = { title: 'Resumo feito pela IA', aside: 'Conferida', body: 'O corpo.' };
+const words = {
+  title: 'Resumo feito pela IA',
+  aside: 'Conferida',
+  body: 'O corpo.',
+  footer: 'A IA pode errar.',
+};
 
 const render = (defaultOpen: boolean) =>
   renderToStaticMarkup(
@@ -12,6 +17,7 @@ const render = (defaultOpen: boolean) =>
       icon="ai"
       aside={<span>{words.aside}</span>}
       defaultOpen={defaultOpen}
+      footer={<p>{words.footer}</p>}
       className="surface"
     >
       <p>{words.body}</p>
@@ -56,5 +62,9 @@ describe('Disclosure', () => {
 
   it('keeps the toggle at the touch height', () => {
     expect(render(true)).toMatch(/aria-controls="[^"]+" class="[^"]*\bmin-h-touch\b/);
+  });
+
+  it('keeps the footer outside the body, so it shows while folded', () => {
+    expect(render(false)).toMatch(/<\/p><\/div><p>A IA pode errar.<\/p><\/section>$/);
   });
 });

@@ -10,6 +10,8 @@ export interface DisclosureProps {
   readonly aside?: ReactNode;
   /** Read once, when the disclosure first renders; a different `key` starts it over. */
   readonly defaultOpen: boolean;
+  /** Shown under the body whether open or closed, such as a note that a model wrote it. */
+  readonly footer?: ReactNode;
   /** The surface classes of the whole region. */
   readonly className: string;
   readonly children: ReactNode;
@@ -26,6 +28,7 @@ export function Disclosure({
   icon,
   aside,
   defaultOpen,
+  footer,
   className,
   children,
 }: DisclosureProps) {
@@ -63,6 +66,7 @@ export function Disclosure({
       <div id={bodyId} hidden={!open} className="flex flex-col gap-2">
         {children}
       </div>
+      {footer}
     </section>
   );
 }
