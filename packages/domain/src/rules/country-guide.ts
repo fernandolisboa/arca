@@ -20,7 +20,7 @@ const plainText = (max: number) =>
     .min(1)
     .max(max)
     .refine((value) => !/[<>]/.test(value), { message: 'Guide text has no angle brackets' })
-    .refine((value) => !/\b[a-z][a-z0-9+.-]*:\S|\bwww\./i.test(value), {
+    .refine((value) => !/[a-z][a-z0-9+.-]*:\S|www\./i.test(value), {
       message: 'Guide text has no links',
     });
 const title = plainText(200);

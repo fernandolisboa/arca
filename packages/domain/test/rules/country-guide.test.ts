@@ -70,6 +70,15 @@ describe('country guides (ADR-0027)', () => {
     ['text with another scheme', { pitfalls: [{ ...pitfall, text: 'See ftp://gov.example' }] }],
     ['text with a scheme and no slashes', { pitfalls: [{ ...pitfall, text: 'Write mailto:a' }] }],
     ['text with a www host', { pitfalls: [{ ...pitfall, text: 'See www.gov.example' }] }],
+    [
+      'a link after an underscore',
+      { pitfalls: [{ ...pitfall, text: 'See _https://evil.example' }] },
+    ],
+    ['a link after a digit', { pitfalls: [{ ...pitfall, text: 'See 1https://evil.example' }] }],
+    [
+      'a www host after an underscore',
+      { pitfalls: [{ ...pitfall, text: 'See _www.evil.example' }] },
+    ],
     ['a law title with an angle bracket', { laws: [{ ...law, title: 'Act </guide>' }] }],
     ['a guide title with a URL', { title: 'See https://gov.example' }],
     ['an unknown field', { notes: 'free text' }],
