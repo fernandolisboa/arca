@@ -148,7 +148,8 @@ describe('ScaleChoice', () => {
 
 describe('StarRating', () => {
   const props = {
-    legend: 'Clima em Portugal',
+    legend: 'Sua nota para Clima em Portugal',
+    caption: 'Sua nota',
     onChange: noop,
     onClear: noop,
     starLabel: (stars: number) => `${String(stars)} de 5 estrelas`,
@@ -157,7 +158,10 @@ describe('StarRating', () => {
 
   it('names each star in words and fills the chosen one and those before it', () => {
     const html = renderToStaticMarkup(<StarRating {...props} value={3} />);
-    expect(html).toContain('<legend class="sr-only">Clima em Portugal</legend>');
+    expect(html).toContain('<legend class="sr-only">Sua nota para Clima em Portugal</legend>');
+    expect(html).toContain(
+      '<span aria-hidden="true" class="text-small text-muted">Sua nota</span>',
+    );
     expect(html.match(/type="radio"/g)).toHaveLength(5);
     expect(html).toContain('<span class="sr-only">3 de 5 estrelas</span>');
     expect(html).toMatch(/checked="" value="3"/);

@@ -59,7 +59,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Total score | Nota final | The weighted mean of a country's known scores, from 0 to 10 |
 | Coverage | Dados conhecidos | The share of an adult's weight that a country's known scores carry; under half puts the country in "Poucos dados" |
 | Few data | Poucos dados | The group of countries with less than half of an adult's weight known, listed after the ranked ones without a rank |
-| Hidden country | País oculto | A country an adult left out of their comparison; still scored, listed last without a rank, and brought back with one tap |
+| Hidden country | País oculto | A country an adult left out of their comparison; still scored, listed last without a rank, and brought back with one tap; dropped on the next write once no route covers it |
 | Country indicator | Indicador do país | A versioned, sourced knowledge file with one measured value per country, such as the homicide rate, with its year |
 | Comparison version | Versão dos dados de comparação | A versioned knowledge file with the criteria and the country indicators they read; activated or rejected as a whole, like a route version |
 | Guided tour | Tour guiado | The first-run walkthrough of the app and the hint shown the first time a screen opens; skippable and replayable |

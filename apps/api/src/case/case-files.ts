@@ -31,6 +31,7 @@ import {
   type StoredFinances,
   type StoredProfile,
   applyAnswers,
+  comparedCountries,
   comparisonPreferencesSchema,
   heldAssetChanges,
   maxCaseMembers,
@@ -792,6 +793,7 @@ export function createCaseFiles({
             await storedPreferences(tx, accountId),
             request,
             newOwnCriterionId,
+            comparedCountries(evaluation.routeIds),
           );
           if (next === undefined) return { ok: false, reason: 'case_invalid' };
           await tx.execute(sql`

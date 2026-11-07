@@ -323,7 +323,7 @@ async function memberCompares(browser: Browser) {
     await card.getByText('Ver as notas').click();
     await saved(
       card
-        .getByRole('group', { name: `Clima em ${country}` })
+        .getByRole('group', { name: `Sua nota para Clima em ${country}` })
         .getByRole('radio', { name: stars })
         .click(),
     );

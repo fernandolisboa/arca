@@ -174,7 +174,8 @@ function CriterionLine({
       )}
       {!objective && (
         <StarRating
-          legend={t('compare.starsFor', { criterion: label, country: countryName })}
+          legend={t('compare.ratingFor', { criterion: label, country: countryName })}
+          caption={t('compare.rating')}
           value={rating}
           onChange={(stars) => {
             change({ kind: 'rating', criterion: criterion.id, country, rating: stars });

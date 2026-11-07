@@ -152,6 +152,9 @@ async function family(cases: CaseFiles) {
   return { alice, bruno };
 }
 
+/** A country no route covers, so the screen could never list it to show it again. */
+const withoutRoute = 'QZ';
+
 const nothingChosen = { weights: {}, ratings: {}, ownCriteria: [], hidden: [] };
 const errorOf = async (response: Response) =>
   ((await response.json()) as { error: { code: string } }).error.code;
@@ -206,10 +209,11 @@ describe('the destination comparison (ADR-0026, #315)', () => {
       weights: { safety: 5, climate: 0 },
       ratings: { climate: { PT: 5 } },
       ownCriteria: [{ name: 'Perto da praia' }],
-      hidden: ['US'],
+      hidden: ['US', withoutRoute],
     });
     expect(response.status).toBe(200);
     const written = (await response.json()) as DestinationComparison;
+    expect(written.preferences.hidden).toEqual(['US']);
     const [own] = written.preferences.ownCriteria;
     expect(own?.id).toMatch(/^own-[0-9a-f]{8}$/);
     expect(written.criteria.at(-1)).toEqual({
