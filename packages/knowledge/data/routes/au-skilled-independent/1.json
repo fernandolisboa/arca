@@ -1,0 +1,809 @@
+{
+  "schemaVersion": 1,
+  "routeId": "au-skilled-independent",
+  "number": 1,
+  "title": "Australian Skilled Independent visa (subclass 189), points-tested stream: permanent residence for a skilled worker invited before turning 45",
+  "country": "AU",
+  "tags": ["work", "permanent-residence"],
+  "effectiveFrom": "2026-07-01",
+  "status": "open",
+  "currency": "AUD",
+  "leapDayBirthday": "march-1",
+  "leapDayBirthdaySources": ["acts-interpretation-age", "legislation-act-instruments"],
+  "sources": [
+    {
+      "id": "regs-1137-invitation",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "title": "Migration Regulations 1994, Schedule 1 item 1137(4B): invited in writing, applying within the invitation's period, not 45 at invitation, nominating a listed skilled occupation",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "regs-1137-charges",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "title": "Migration Regulations 1994, Schedule 1 item 1137(3) and (4), in force from 2026-07-01: first instalment of the visa application charge, and a second instalment for adults without functional English",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "regs-189-criteria",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "title": "Migration Regulations 1994, Schedule 2 clauses 189.221 to 189.224: invitation, skills assessment for the nominated occupation, competent English at invitation, points score",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "regs-points-test",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "title": "Migration Regulations 1994, regulation 2.26AC and Schedule 6D: the attributes and points of the points test; the Minister sets the pass mark by instrument (Migration Act, s. 96)",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "regs-competent-english",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "title": "Migration Regulations 1994, regulation 1.15C: competent English by a specified test taken in the 3 years before the invitation, or by a passport of a type the Minister specifies",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "regs-family-unit",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "title": "Migration Regulations 1994, regulation 1.12(2) and Schedule 2 clause 189.311: family members apply with the principal; children not engaged or partnered, under 18, or 18 to 22 and dependent",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "regs-de-facto",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "title": "Migration Regulations 1994, regulation 2.03A(2), (3) and (5): both partners at least 18; for a permanent visa, 12 months of de facto relationship before the application, unless registered",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "regs-dependent",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "title": "Migration Regulations 1994, regulation 1.05A(1): dependent means wholly or substantially reliant on the other person for basic needs, or reliant because incapacitated for work",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "acts-interpretation-age",
+      "url": "https://www.legislation.gov.au/C1901A00002/latest/text",
+      "title": "Acts Interpretation Act 1901, s. 37A: an age is attained at the start of the birthday's anniversary; read with s. 2G(2) on months lacking the start day, a 29 February birthday counts on 1 March",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "legislation-act-instruments",
+      "url": "https://www.legislation.gov.au/C2004A01224/latest/text",
+      "title": "Legislation Act 2003, s. 13(1)(a): the Acts Interpretation Act 1901 applies to a legislative instrument, such as the Migration Regulations 1994, as if it were an Act",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "au",
+      "number": 1
+    }
+  ],
+  "countrySets": [
+    {
+      "id": "au-pacific-regional",
+      "number": 1
+    }
+  ],
+  "requirements": [
+    {
+      "id": "under-45",
+      "title": "Under 45: the invitation to apply must come before the 45th birthday",
+      "expression": {
+        "op": "lt",
+        "left": {
+          "op": "fact",
+          "key": "principal.ageYears"
+        },
+        "right": {
+          "op": "int",
+          "value": 45
+        }
+      },
+      "sources": ["regs-1137-invitation", "acts-interpretation-age"]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "invitation",
+      "title": "An invitation in writing from the Minister to apply, and an application made within the period it states",
+      "evidence": ["principal.ageYears"],
+      "sources": ["regs-1137-invitation", "regs-189-criteria"]
+    },
+    {
+      "id": "skills-assessment",
+      "title": "A skilled occupation on the Minister's list, named in the invitation, with a positive skills assessment by its assessing authority, at most 3 years old at invitation",
+      "evidence": ["principal.educationLevel"],
+      "sources": ["regs-1137-invitation", "regs-189-criteria"]
+    },
+    {
+      "id": "competent-english",
+      "title": "Competent English at the time of invitation: a specified test score from the last 3 years, or a passport of a type the Minister specifies",
+      "evidence": ["principal.citizenships"],
+      "sources": ["regs-189-criteria", "regs-competent-english"]
+    },
+    {
+      "id": "points-score",
+      "title": "A points-test score at least the score in the invitation and the pass mark, from age, English, work experience, qualifications, the partner's skills and other attributes",
+      "evidence": ["principal.ageYears", "principal.educationLevel"],
+      "sources": ["regs-189-criteria", "regs-points-test"]
+    }
+  ],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse",
+      "path": ["spouse"],
+      "condition": {
+        "op": "bool",
+        "value": true
+      },
+      "sources": ["regs-family-unit"]
+    },
+    {
+      "id": "partner",
+      "title": "De facto partner aged 18 or more, together for at least 12 months (a shorter relationship that is registered, or with compelling reasons: possible)",
+      "path": ["partner"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "principal.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "since",
+                "date": {
+                  "op": "fact",
+                  "key": "edge.start"
+                },
+                "duration": "P1Y"
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["regs-family-unit", "regs-de-facto"]
+    },
+    {
+      "id": "children",
+      "title": "Children with no spouse or partner: under 18, or 18 to 22 and depending on the principal; others, who may depend on the principal's spouse or partner or be unable to work: possible",
+      "path": ["child"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "lt",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              },
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasSpouse"
+                    }
+                  },
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasPartner"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "lt",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 23
+                }
+              },
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasSpouse"
+                    }
+                  },
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasPartner"
+                    }
+                  }
+                ]
+              },
+              {
+                "op": "fact",
+                "key": "person.dependsOnPrincipal"
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasSpouse"
+                    }
+                  },
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasPartner"
+                    }
+                  }
+                ]
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["regs-family-unit", "regs-dependent"]
+    },
+    {
+      "id": "spouse-children",
+      "title": "The spouse's children with no spouse or partner: under 18, or 18 to 22 and depending on the principal or the spouse; others, who may be unable to work: possible",
+      "path": ["spouse", "child"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "lt",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              },
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasSpouse"
+                    }
+                  },
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasPartner"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "lt",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 23
+                }
+              },
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasSpouse"
+                    }
+                  },
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasPartner"
+                    }
+                  }
+                ]
+              },
+              {
+                "op": "any",
+                "operands": [
+                  {
+                    "op": "fact",
+                    "key": "person.dependsOnPrincipal"
+                  },
+                  {
+                    "op": "fact",
+                    "key": "edge.dependsOnLinkedPerson"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasSpouse"
+                    }
+                  },
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasPartner"
+                    }
+                  }
+                ]
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["regs-family-unit", "regs-dependent"]
+    },
+    {
+      "id": "partner-children",
+      "title": "The partner's children with no spouse or partner: under 18, or 18 to 22 and depending on the principal or the partner; others, who may be unable to work: possible",
+      "path": ["partner", "child"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "lt",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              },
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasSpouse"
+                    }
+                  },
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasPartner"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "lt",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 23
+                }
+              },
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasSpouse"
+                    }
+                  },
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasPartner"
+                    }
+                  }
+                ]
+              },
+              {
+                "op": "any",
+                "operands": [
+                  {
+                    "op": "fact",
+                    "key": "person.dependsOnPrincipal"
+                  },
+                  {
+                    "op": "fact",
+                    "key": "edge.dependsOnLinkedPerson"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasSpouse"
+                    }
+                  },
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasPartner"
+                    }
+                  }
+                ]
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["regs-family-unit", "regs-dependent"]
+    }
+  ],
+  "costs": [
+    {
+      "id": "base-charge",
+      "title": "Base application charge, first instalment",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 613500,
+        "currency": "AUD"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "not",
+        "operand": {
+          "op": "intersects",
+          "list": {
+            "op": "fact",
+            "key": "principal.citizenships"
+          },
+          "set": {
+            "op": "set",
+            "id": "au-pacific-regional"
+          }
+        }
+      },
+      "sources": ["regs-1137-charges"]
+    },
+    {
+      "id": "base-charge-pacific",
+      "title": "Base application charge, first instalment, for a principal with a passport from a Pacific-regional country",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 503000,
+        "currency": "AUD"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "intersects",
+        "list": {
+          "op": "fact",
+          "key": "principal.citizenships"
+        },
+        "set": {
+          "op": "set",
+          "id": "au-pacific-regional"
+        }
+      },
+      "sources": ["regs-1137-charges"]
+    },
+    {
+      "id": "additional-adult",
+      "title": "Additional applicant charge for each family member aged 18 or more",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 307000,
+        "currency": "AUD"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "intersects",
+              "list": {
+                "op": "fact",
+                "key": "principal.citizenships"
+              },
+              "set": {
+                "op": "set",
+                "id": "au-pacific-regional"
+              }
+            }
+          }
+        ]
+      },
+      "sources": ["regs-1137-charges"]
+    },
+    {
+      "id": "additional-minor",
+      "title": "Additional applicant charge for each family member under 18",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 154000,
+        "currency": "AUD"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "intersects",
+              "list": {
+                "op": "fact",
+                "key": "principal.citizenships"
+              },
+              "set": {
+                "op": "set",
+                "id": "au-pacific-regional"
+              }
+            }
+          }
+        ]
+      },
+      "sources": ["regs-1137-charges"]
+    },
+    {
+      "id": "additional-adult-pacific",
+      "title": "Additional applicant charge for each family member aged 18 or more, when the principal has a passport from a Pacific-regional country",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 251500,
+        "currency": "AUD"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "intersects",
+            "list": {
+              "op": "fact",
+              "key": "principal.citizenships"
+            },
+            "set": {
+              "op": "set",
+              "id": "au-pacific-regional"
+            }
+          }
+        ]
+      },
+      "sources": ["regs-1137-charges"]
+    },
+    {
+      "id": "additional-minor-pacific",
+      "title": "Additional applicant charge for each family member under 18, when the principal has a passport from a Pacific-regional country",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 126000,
+        "currency": "AUD"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "intersects",
+            "list": {
+              "op": "fact",
+              "key": "principal.citizenships"
+            },
+            "set": {
+              "op": "set",
+              "id": "au-pacific-regional"
+            }
+          }
+        ]
+      },
+      "sources": ["regs-1137-charges"]
+    },
+    {
+      "id": "second-instalment-adult",
+      "title": "Second instalment before grant, for each family member aged 18 or more assessed as not having functional English",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 488500,
+        "currency": "AUD"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["regs-1137-charges"]
+    }
+  ],
+  "durations": []
+}

@@ -247,6 +247,39 @@ describe('person.hasSpouse: edge end and the completeness marker', () => {
   });
 });
 
+describe('person.hasPartner: reads partner edges and the partners marker only', () => {
+  const people = (markers: string[]): object[] => [
+    { id: 'p1', recordedInFull: markers },
+    { id: 'p2' },
+  ];
+  const couple = (kind: string): object => ({
+    kind,
+    people: ['p1', 'p2'],
+    start: '2020-01-01',
+    end: 'none',
+  });
+
+  it.each([
+    ['partner edge', [couple('partner')], [], true],
+    ['spouse edge only, partners recorded in full', [couple('spouse')], ['partners'], false],
+    ['no edge, spouses recorded in full only', [], ['spouses'], 'unknown'],
+    ['no edge, partners recorded in full', [], ['partners'], false],
+  ])('%s', (_label, relationships, markers, expected) => {
+    const env = environment(snapshot({ people: people(markers), relationships }));
+    expect(derive('person.hasPartner', { environment: env, personId: 'p1' }).value).toEqual({
+      type: 'boolean',
+      value: expected,
+    });
+  });
+
+  it('names the partners marker when only it leaves the answer open', () => {
+    const env = environment(snapshot({ people: people([]), relationships: [] }));
+    expect(
+      derive('person.hasPartner', { environment: env, personId: 'p1' }).missingMarkers,
+    ).toEqual([{ personId: 'p1', marker: 'partners' }]);
+  });
+});
+
 describe('person.liquidAssets', () => {
   const recorded = (id: string): object => ({ id, recordedInFull: ['assets'] });
   const asset = (extra: object): object => ({

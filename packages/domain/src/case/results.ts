@@ -25,6 +25,7 @@ export const questionForFact = {
   'person.dependsOnPrincipal': 'dependsOn',
   'person.studying': 'studying',
   'person.hasSpouse': 'relationships',
+  'person.hasPartner': 'relationships',
   'person.temporaryJobOfferSectors': 'jobOffers',
   'unit.liquidAssets': 'assets',
   'edge.parentKind': 'relationships',
