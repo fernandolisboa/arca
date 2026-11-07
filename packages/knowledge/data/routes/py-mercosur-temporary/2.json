@@ -1,0 +1,343 @@
+{
+  "schemaVersion": 1,
+  "routeId": "py-mercosur-temporary",
+  "number": 2,
+  "title": "Paraguayan Mercosur temporary residence for nationals of the states in the Mercosur Residence Agreement",
+  "country": "PY",
+  "tags": ["regional-agreement", "temporary-residence"],
+  "effectiveFrom": "2022-10-19",
+  "status": "open",
+  "currency": "PYG",
+  "leapDayBirthday": "feb-28",
+  "leapDayBirthdaySources": ["codigo-civil-libro-segundo"],
+  "sources": [
+    {
+      "id": "ley-3578",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "title": "Ley N.º 3578/2008, Mercosur Residence Agreement (members, Bolivia, Chile): art. 2, nationals by origin or naturalized 5 years; art. 4, two years' residence; art. 9.2, family members",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "ley-6984",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/10973/x",
+      "title": "Ley N.º 6984/2022 (migration law), published 2022-10-18: art. 4.10, reunification with parents, spouses, unmarried minor children and adult children with a disability, married or not",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "dnm-mercosur-temporary",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "title": "Dirección Nacional de Migraciones: Mercosur temporary residence for citizens of Argentina, Brazil, Uruguay, Bolivia, Chile, Peru, Colombia and Ecuador, valid for two years",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "ley-2169",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/4845/x",
+      "title": "Ley N.º 2169/2003, art. 1: the Civil Code's art. 36 makes a person fully capable at 18",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "codigo-civil-libro-segundo",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/5299/x",
+      "title": "Civil Code (Ley N.º 1183/1985), book two, arts. 339 and 340: a period of years ends on the same day number, or on the last day of a shorter month",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "py",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "mercosur-nationality",
+      "title": "National by origin of a state the migration directorate lists (Argentina, Bolivia, Brazil, Chile, Colombia, Ecuador, Peru or Uruguay), or naturalized there for five years or more",
+      "expression": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "intersects",
+            "list": {
+              "op": "fact",
+              "key": "principal.citizenshipsFromBirth"
+            },
+            "set": {
+              "op": "tokens",
+              "values": ["AR", "BO", "BR", "CL", "CO", "EC", "PE", "UY"]
+            }
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "intersects",
+                "list": {
+                  "op": "fact",
+                  "key": "principal.citizenships"
+                },
+                "set": {
+                  "op": "tokens",
+                  "values": ["AR", "BO", "BR", "CL", "CO", "EC", "PE", "UY"]
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["ley-3578", "dnm-mercosur-temporary"]
+    }
+  ],
+  "assessments": [],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse who depends on a principal native of Argentina, Bolivia, Brazil, Chile or Uruguay; others: possible",
+      "path": ["spouse"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "intersects",
+                "list": {
+                  "op": "fact",
+                  "key": "principal.citizenshipsFromBirth"
+                },
+                "set": {
+                  "op": "tokens",
+                  "values": ["AR", "BO", "BR", "CL", "UY"]
+                }
+              },
+              {
+                "op": "fact",
+                "key": "person.dependsOnPrincipal"
+              }
+            ]
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["ley-3578", "ley-6984"]
+    },
+    {
+      "id": "children",
+      "title": "Unmarried children under 18 who depend on a principal native of Argentina, Bolivia, Brazil, Chile or Uruguay; adult children, married or not, only with a disability, which is not recorded: possible",
+      "path": ["child"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "not",
+                "operand": {
+                  "op": "fact",
+                  "key": "person.hasSpouse"
+                }
+              },
+              {
+                "op": "any",
+                "operands": [
+                  {
+                    "op": "all",
+                    "operands": [
+                      {
+                        "op": "lt",
+                        "left": {
+                          "op": "fact",
+                          "key": "person.ageYears"
+                        },
+                        "right": {
+                          "op": "int",
+                          "value": 18
+                        }
+                      },
+                      {
+                        "op": "intersects",
+                        "list": {
+                          "op": "fact",
+                          "key": "principal.citizenshipsFromBirth"
+                        },
+                        "set": {
+                          "op": "tokens",
+                          "values": ["AR", "BO", "BR", "CL", "UY"]
+                        }
+                      },
+                      {
+                        "op": "fact",
+                        "key": "person.dependsOnPrincipal"
+                      }
+                    ]
+                  },
+                  {
+                    "op": "unmodeled"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "gte",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["ley-3578", "ley-6984", "ley-2169", "codigo-civil-libro-segundo"]
+    },
+    {
+      "id": "spouse-children",
+      "title": "The spouse's unmarried children under 18 who depend on a principal native of Argentina, Bolivia, Brazil, Chile or Uruguay; others, adults married or not included: possible",
+      "path": ["spouse", "child"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "not",
+                "operand": {
+                  "op": "fact",
+                  "key": "person.hasSpouse"
+                }
+              },
+              {
+                "op": "any",
+                "operands": [
+                  {
+                    "op": "all",
+                    "operands": [
+                      {
+                        "op": "lt",
+                        "left": {
+                          "op": "fact",
+                          "key": "person.ageYears"
+                        },
+                        "right": {
+                          "op": "int",
+                          "value": 18
+                        }
+                      },
+                      {
+                        "op": "intersects",
+                        "list": {
+                          "op": "fact",
+                          "key": "principal.citizenshipsFromBirth"
+                        },
+                        "set": {
+                          "op": "tokens",
+                          "values": ["AR", "BO", "BR", "CL", "UY"]
+                        }
+                      },
+                      {
+                        "op": "fact",
+                        "key": "person.dependsOnPrincipal"
+                      }
+                    ]
+                  },
+                  {
+                    "op": "unmodeled"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "gte",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["ley-3578", "ley-6984", "ley-2169", "codigo-civil-libro-segundo"]
+    },
+    {
+      "id": "parents",
+      "title": "Parents who depend on a principal native of Argentina, Bolivia, Brazil, Chile or Uruguay; others: possible",
+      "path": ["parent"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "intersects",
+                "list": {
+                  "op": "fact",
+                  "key": "principal.citizenshipsFromBirth"
+                },
+                "set": {
+                  "op": "tokens",
+                  "values": ["AR", "BO", "BR", "CL", "UY"]
+                }
+              },
+              {
+                "op": "fact",
+                "key": "person.dependsOnPrincipal"
+              }
+            ]
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["ley-3578", "ley-6984"]
+    }
+  ],
+  "costs": [],
+  "durations": [],
+  "corrects": 1
+}
