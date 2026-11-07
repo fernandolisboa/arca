@@ -1,4 +1,5 @@
 import type { Ref } from 'react';
+import { iconButtonClass } from './button.js';
 
 export interface MenuToggleProps {
   readonly ref?: Ref<HTMLButtonElement>;
@@ -34,7 +35,7 @@ export function MenuToggle({
       aria-controls={controls}
       aria-label={open ? closeLabel : openLabel}
       onClick={onToggle}
-      className="inline-flex min-h-touch min-w-touch items-center justify-center rounded-control text-ink hover:bg-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      className={`${iconButtonClass} text-ink hover:bg-soft`}
     >
       <span aria-hidden="true" className="relative block h-3.5 w-5">
         <span

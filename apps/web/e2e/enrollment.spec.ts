@@ -104,6 +104,11 @@ test('creates the first account from the emailed link, and shows its recovery ki
   const first = await code.textContent();
   expect(await scan(page)).toEqual([]);
 
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.getByRole('button', { name: 'Copiar o código' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Copiado' })).toBeAttached();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(first);
+
   await page.getByRole('button', { name: 'Baixar como arquivo de texto' }).click();
   await expect(page.getByText(/^Um arquivo de texto pode parar/)).toBeVisible();
   const download = page.waitForEvent('download');
