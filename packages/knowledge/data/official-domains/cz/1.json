@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "cz",
+  "number": 1,
+  "issuer": "Government of the Czech Republic",
+  "hosts": [
+    {
+      "host": "e-sbirka.gov.cz",
+      "source": {
+        "id": "cz-nic-whois-gov-cz",
+        "url": "https://www.nic.cz/cs/whois/domain/gov.cz/",
+        "title": "CZ.NIC, the .cz registry: the holder of gov.cz is Digitální a informační agentura, the state Digital and Information Agency, so it controls every name under gov.cz",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    },
+    {
+      "host": "ipc.gov.cz",
+      "source": {
+        "id": "cz-nic-whois-gov-cz",
+        "url": "https://www.nic.cz/cs/whois/domain/gov.cz/",
+        "title": "CZ.NIC, the .cz registry: the holder of gov.cz is Digitální a informační agentura, the state Digital and Information Agency, so it controls every name under gov.cz",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    },
+    {
+      "host": "mv.gov.cz",
+      "source": {
+        "id": "cz-nic-whois-gov-cz",
+        "url": "https://www.nic.cz/cs/whois/domain/gov.cz/",
+        "title": "CZ.NIC, the .cz registry: the holder of gov.cz is Digitální a informační agentura, the state Digital and Information Agency, so it controls every name under gov.cz",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    }
+  ]
+}
