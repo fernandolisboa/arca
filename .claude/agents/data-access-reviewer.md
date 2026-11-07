@@ -19,7 +19,7 @@ Check:
 6. **Field encryption:** bank and document numbers stored encrypted; never selected into logs or exported in plaintext.
 7. **Deletion:** new data is covered by case deletion, account deletion and data export paths.
 8. **API authorization and storage:** every new endpoint checks the caller's access to the case and person before any read or write; stored objects (document ciphertext in Vercel Blob) are reachable only through those checks.
-9. **Knowledge-base approval flow** (ADR-0014): only approvers on the reviewed list can decide; a decision counts only once stored with its step-up; selection reads a proposed version's identity, never its content.
+9. **Knowledge-base approval flow** (ADR-0014, ADR-0027): only admins (owner list or a live grant) can decide; decisions and grants are inserted only by `app_auth`, check reports only by `app_jobs`; a `session` decision counts only when its author was an admin at its time, and an ADR-0022 decision only with its step-up re-verified; batch activation re-checks state, hash and a current clean report on the server; selection reads a proposed version's identity, never its content.
 10. **Telemetry and notices** (ADR-0016): scrubbing still runs before logs, errors, traces and analytics leave the app; no personal data in logs, error reports, analytics or notification bodies.
 
 Output: first line `PASS` or `BLOCK`. Then findings with severity (critical, high, medium, low), `file:line`, the failure scenario and the fix.

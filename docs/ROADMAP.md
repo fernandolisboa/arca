@@ -36,7 +36,7 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 - Before real family data enters: in-app account deletion and data export, retention periods ([RETENTION.md](RETENTION.md)), incident response runbook, backups on Neon, threat model for the epic ([ADR-0017](adr/0017-data-lifecycle-and-backups.md), [ADR-0021](adr/0021-stay-on-vercel-and-neon.md), spec 0004).
 - Client builds to a static bundle; no server-rendering dependency.
 - Versioned typed API; every feature goes through it.
-- Passkeys on the production host, invite-only enrollment, purpose-bound step-up (which knowledge-base decisions use, [ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)) and recovery ([ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)); cookie sessions on the web. Secure-storage tokens for native apps come with Phase 4; nothing in the design blocks them.
+- Passkeys on the production host, invite-only enrollment, purpose-bound step-up (which giving the admin role uses, [ADR-0027](adr/0027-admins-and-the-checked-batch-activation.md)) and recovery ([ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)); cookie sessions on the web. Secure-storage tokens for native apps come with Phase 4; nothing in the design blocks them.
 - `platform` port with web adapters: passkeys, vault envelopes, camera capture, file picking, notifications, secure key storage, sharing, receiving shared files, deep links.
 - Notification service with per-device channels (web push first).
 - Vault encryption format documented and platform-neutral; key recovery designed and tested.

@@ -1,6 +1,6 @@
 # ADR-0009: Background jobs with Vercel Workflows, with verified data guarantees
 
-- Status: Accepted
+- Status: Accepted; a route ID and a version number join the workflow argument kinds for the independent check ([ADR-0027](0027-admins-and-the-checked-batch-activation.md))
 - Date: 2026-11-01
 - Supersedes: [ADR-0007](0007-background-jobs.md)
 - Amends: [ADR-0008](0008-database-security-and-environments.md), "Backups and deletion" (workflow run data)

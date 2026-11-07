@@ -82,10 +82,11 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Content hash | Código do conteúdo | SHA-256 of the canonical JSON of a version and every file it pins; what a decision is bound to |
 | Passkey | Chave de acesso | The WebAuthn credential a person signs in and confirms sensitive actions with |
 | Knowledge catalog | Internal, no UI label | The validated, hashed route data that `packages/knowledge` builds and the API bundles; not the pnpm catalog of dependency versions |
+| Admin grant | Internal, no UI label | An insert-only record that an admin gave the admin role to a confirmed account sharing a case with them (with a step-up), or took it away |
 | Owner list | Internal, no UI label | The reviewed file in the repository that names, by account ID and per environment, the accounts that are always admins and cannot lose the role in the app; formerly the approver list |
 | Activation screen | Tela de ativação | Where an admin reviews a proposed version as data, with its check report apart, and activates or rejects it |
 | Independent check | Verificação independente | The model's report that compares a proposed route version, item by item, with the official sources it cites: matches, differs or could not be checked, each quote checked in code against the fetched page; advisory only, never part of the content hash |
-| Checked version | Conferida pela IA | A proposed route version whose current independent check found every item matching; admins can activate all checked versions with one tap |
+| Checked version | Conferida pela IA | A proposed route version whose current independent check report is clean: every item matches, with each quote and value checked in code; admins can activate all checked versions with one tap |
 | Flagged version | Marcada para revisão | A proposed route version whose current check found an item that differs or could not be checked; decided one by one |
 | Country guide | Internal, no UI label | The reviewed, versioned data file per country that the independent check loads, its per-country specialist: governing laws, how they change, known pitfalls; never a source and never a list of official hosts; lands in its own pull request; not a Claude Code skill |
 | Rule report | Aviso de regra errada | A person's flag that a rule they were shown may be wrong; opens a research task. The button reads "Avisar regra errada" |

@@ -1,6 +1,6 @@
 # ADR-0004: AI providers behind ports, chosen by evaluation
 
-- Status: Accepted, amended by [ADR-0023](0023-free-text-intake-sends-the-writers-own-words.md) (names in the writer's own words) and [ADR-0025](0025-rule-summary-for-the-approver.md) (the `Summarizer` port)
+- Status: Accepted, amended by [ADR-0023](0023-free-text-intake-sends-the-writers-own-words.md) (names in the writer's own words) and [ADR-0025](0025-rule-summary-for-the-approver.md) (the `Summarizer` port), and [ADR-0027](0027-admins-and-the-checked-batch-activation.md) (the `RuleChecker` port)
 - Date: 2026-11-01
 
 ## Context
@@ -9,7 +9,7 @@ Arca uses several kinds of AI (see [ARCHITECTURE.md](../ARCHITECTURE.md#ai-stack
 
 ## Decision
 
-- Each AI capability is an interface (port): `Classifier`, `Extractor`, `Writer`, `Summarizer` (added by [ADR-0025](0025-rule-summary-for-the-approver.md)), `Retriever`, `Embedder`, `DocumentReader`, `SpeechToText`, `TextToSpeech`.
+- Each AI capability is an interface (port): `Classifier`, `Extractor`, `Writer`, `Summarizer` (added by [ADR-0025](0025-rule-summary-for-the-approver.md)), `RuleChecker` (added by [ADR-0027](0027-admins-and-the-checked-batch-activation.md)), `Retriever`, `Embedder`, `DocumentReader`, `SpeechToText`, `TextToSpeech`.
 - Embeddings are computed only for the public knowledge base. Case data is queried structurally, never embedded.
 - Adapters implement those ports for specific providers (for example, a Claude adapter and a Jev adapter for `Classifier`).
 - Which adapter runs is configuration. Switching requires a run of the synthetic evaluation suite showing equal or better quality for that capability.
