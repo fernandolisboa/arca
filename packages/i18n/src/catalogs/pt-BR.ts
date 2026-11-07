@@ -1099,14 +1099,14 @@ export const ptBR = {
       'O código aparece uma vez só, então não dá para mostrar o mesmo de novo. Gerar um novo faz o anterior parar de valer. Para isso, confirme com a sua chave de acesso.',
     savedLead: 'Seu código de recuperação está guardado. Por segurança, ele não aparece de novo.',
     codeLabel: 'Código de recuperação',
-    keep: 'Imprima esta página, anote o código à mão ou salve num gerenciador de senhas. Guarde num lugar seguro, longe das suas chaves de acesso.',
+    keep: 'Imprima esta página, anote o código à mão ou salve num gerenciador de senhas diferente do que guarda as suas chaves de acesso. Guarde num lugar seguro.',
     print: 'Imprimir',
     copy: 'Copiar o código',
     copied: 'Copiado',
     copyFailure: 'Não deu para copiar. Anote à mão.',
     download: 'Baixar como arquivo de texto',
     downloadWarning:
-      'Um arquivo de texto pode parar numa pasta sincronizada, como iCloud, Google Drive ou OneDrive, e aí o código fica guardado na nuvem. Se puder, prefira imprimir ou anotar.',
+      'Um arquivo de texto pode parar numa pasta sincronizada, como iCloud, Google Drive ou OneDrive, e aí o código fica guardado na nuvem. Se puder, prefira imprimir, anotar ou salvar num gerenciador de senhas.',
     downloadAnyway: 'Baixar mesmo assim',
     fileName: 'arca-codigo-de-recuperacao.txt',
     fileText:
@@ -1219,7 +1219,7 @@ export const ptBR = {
       lead: 'Este é o segundo item do seu kit de recuperação. Ele aparece uma vez só.',
       codeLabel: 'Segredo de recuperação do cofre',
       copy: 'Copiar o segredo',
-      keep: 'Guarde junto com o código de recuperação da conta: impresso, anotado à mão ou num gerenciador de senhas, num lugar seguro e longe das suas chaves de acesso. Se você perder todas as chaves de acesso, só ele abre o cofre.',
+      keep: 'Guarde junto com o código de recuperação da conta, do mesmo jeito: impresso, anotado à mão ou num gerenciador de senhas diferente do que guarda as suas chaves de acesso. Se você perder todas elas, só este segredo abre o cofre.',
       fileName: 'arca-segredo-do-cofre.txt',
       fileText:
         'Segredo de recuperação do cofre do Arca\n\n{code}\n\nEste segredo abre o seu cofre quando nenhuma chave de acesso consegue. Quem tiver o segredo e entrar na sua conta consegue ler os seus documentos, então guarde num lugar seguro.',
