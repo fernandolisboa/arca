@@ -13,6 +13,7 @@ describe('the display catalog (spec 0007, R7)', () => {
       'cz-eu-blue-card',
       'dk-pay-limit',
       'es-non-lucrative',
+      'gb-skilled-worker',
       'ge-property-short-term',
       'is-remote-work',
       'it-descent',

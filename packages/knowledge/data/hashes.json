@@ -110,6 +110,10 @@
     {
       "path": "routes/cz-eu-blue-card/1",
       "sha256": "439a3f4a066e53d09332c0d6007272a94d623baca6fa52ae1cf75de44fb70740"
+    },
+    {
+      "path": "routes/gb-skilled-worker/1",
+      "sha256": "492205c26df7bdbba947d33780157cb4027cdc943fe4ba5ba71d058bbf63b5a0"
     }
   ]
 }
