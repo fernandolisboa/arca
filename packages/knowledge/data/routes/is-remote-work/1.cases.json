@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "closed-single",
+      "family": {
+        "id": "single-person",
+        "number": 1,
+        "sha256": "7a45d6696cb09589b8904d27134b8858cfc4b62855da90cbab4352419f2f36d8"
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "unavailable",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "closed-family-on-first-day",
+      "family": {
+        "id": "couple-young-children",
+        "number": 1,
+        "sha256": "7c953f9e6667ff6a69be1c1cf6522097496b2d99ae4dd542820de0370c9e7f11"
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-06-27",
+      "expected": {
+        "status": "unavailable",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    }
+  ]
+}
