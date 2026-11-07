@@ -316,6 +316,8 @@ async function memberCompares(browser: Browser) {
   await expect(ranking).toContainText('Nenhum país tem nota em pelo menos metade do seu peso');
 
   const fewData = page.getByRole('region', { name: 'Poucos dados' });
+  // A click, not check(): the rated country can move to another group as soon as the API
+  // answers, and its card there opens with the notes closed.
   const rate = async (country: string, stars: string) => {
     const card = page.getByRole('article', { name: new RegExp(`${country}$`) });
     await card.getByText('Ver as notas').click();
@@ -323,7 +325,7 @@ async function memberCompares(browser: Browser) {
       card
         .getByRole('group', { name: `Clima em ${country}` })
         .getByRole('radio', { name: stars })
-        .check(),
+        .click(),
     );
   };
   await rate('Portugal', '2 estrelas de 5');
