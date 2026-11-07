@@ -259,6 +259,7 @@ export {
   scriptedCheckerModel,
   verifyAnswers,
 } from './independent-check/answers.js';
+export { asDataText, maxCheckPagesText, withinTextBudget } from './independent-check/sent-pages.js';
 export {
   type CheckFailure,
   type FetchFailure,

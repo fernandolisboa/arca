@@ -1,4 +1,9 @@
-import { type CatalogEntry, routeVersionSchema, versionIdentity } from '@arca/domain';
+import {
+  type CatalogEntry,
+  maxCheckPagesText,
+  routeVersionSchema,
+  versionIdentity,
+} from '@arca/domain';
 import type { CountryGuideEntry } from '@arca/knowledge';
 import type { Logger } from '@arca/telemetry';
 import { describe, expect, it } from 'vitest';
@@ -7,7 +12,11 @@ import {
   type RuleChecker,
   RuleCheckerError,
 } from '../src/knowledge/check/checker.js';
-import type { FetchOutcome, SourceFetcher } from '../src/knowledge/check/fetcher.js';
+import {
+  type FetchOutcome,
+  type SourceFetcher,
+  textDigest,
+} from '../src/knowledge/check/fetcher.js';
 import { type CheckSubject, createVersionCheck } from '../src/knowledge/check/run.js';
 import { scriptedCheckerChoice } from '../src/knowledge/check/scripted-checker.js';
 import { memoryCheckReportStore } from '../src/knowledge/check/store.js';
@@ -293,6 +302,47 @@ describe('the independent check of one version (ADR-0027)', () => {
     const logged = JSON.stringify(lines);
     expect(logged).not.toContain('920');
     expect(logged).not.toContain('Article');
+  });
+
+  it('cuts the pages to the total budget, records it, and counts no match on a cut page', async () => {
+    const longLaw = `${lawText} ${'Further provisions. '.repeat(14_000)}`;
+    const checker = answering(matchesBoth);
+    const fetcher: SourceFetcher = {
+      fetch: (url) =>
+        Promise.resolve<FetchOutcome>({
+          ok: true,
+          status: 200,
+          text: url === law ? longLaw : feeText,
+          cut: false,
+          chain: [url],
+        }),
+    };
+    const { check, store } = setup({ checker, fetcher });
+    await check(startId, 'qm-sample', 1);
+    const sentLaw = checker.requests[0]?.pages[0]?.text ?? '';
+    expect(sentLaw.length).toBe(maxCheckPagesText - feeText.length);
+    expect(longLaw.startsWith(sentLaw)).toBe(true);
+    expect(checker.requests[0]?.pages[1]).toEqual({ url: fees, text: feeText });
+    expect(store.rows[0]?.fetchLog.map(({ cut }) => cut)).toEqual([true, false]);
+    expect(store.rows[0]?.fetchLog[0]?.sha256).toBe(textDigest(sentLaw));
+    expect(store.rows[0]?.items[0]).toMatchObject({
+      status: 'could_not_check',
+      reason: 'page_cut',
+    });
+    expect(store.rows[0]?.clean).toBe(false);
+  });
+
+  it('pays for no model call when no page was read', async () => {
+    const checker = answering(matchesBoth);
+    const fetcher: SourceFetcher = {
+      fetch: (url) =>
+        Promise.resolve({ ok: false, failure: 'network', status: null, chain: [url] }),
+    };
+    const { check, store } = setup({ checker, fetcher });
+    await check(startId, 'qm-sample', 1);
+    expect(checker.requests).toEqual([]);
+    expect(store.rows[0]).toMatchObject({ failure: null, failed: true, clean: false });
+    expect(store.rows[0]?.items.every(({ status }) => status === 'could_not_check')).toBe(true);
   });
 
   it('stores nothing for a version the catalog does not hold', async () => {

@@ -4,16 +4,26 @@ import {
   offlineFetcher,
   ruleCheckerFor,
 } from '../src/knowledge/check/environment.js';
+import { ruleCheckModel } from '../src/knowledge/check/model.js';
+import { ruleCheckPromptVersion } from '../src/knowledge/check/prompt.js';
 import { scriptedCheckerChoice } from '../src/knowledge/check/scripted-checker.js';
 
 describe('the rule checker and fetcher each deployment has (ADR-0027)', () => {
-  it.each([
-    ['production', undefined],
-    ['preview', scriptedCheckerChoice],
-    ['development', scriptedCheckerChoice],
-  ] as const)('%s checks with %o', (environment, checker) => {
-    expect(ruleCheckerFor(environment)).toBe(checker);
+  it('checks with Claude in production, and with nothing there without a key', () => {
+    expect(ruleCheckerFor('production', 'sk-ant-test')).toMatchObject({
+      model: ruleCheckModel,
+      promptVersion: ruleCheckPromptVersion,
+    });
+    expect(ruleCheckerFor('production', undefined)).toBeUndefined();
   });
+
+  it.each(['preview', 'development'] as const)(
+    '%s checks with the scripted checker, key or not',
+    (environment) => {
+      expect(ruleCheckerFor(environment, 'sk-ant-test')).toBe(scriptedCheckerChoice);
+      expect(ruleCheckerFor(environment, undefined)).toBe(scriptedCheckerChoice);
+    },
+  );
 
   it('reads nothing only on a development server that asks for it', () => {
     expect(checkFetcherFor('development', true)).toBe(offlineFetcher);

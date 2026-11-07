@@ -1,5 +1,6 @@
 import type { DeploymentEnvironment } from '../../config.js';
 import type { RuleCheckerChoice } from './checker.js';
+import { claudeRuleCheckerChoice } from './claude-checker.js';
 import { type SourceFetcher, httpsSourceFetcher } from './fetcher.js';
 import { scriptedCheckerChoice } from './scripted-checker.js';
 
@@ -17,10 +18,14 @@ export function checkFetcherFor(
 }
 
 /**
- * The checker a deployment uses: the scripted one, whose reports are never clean, outside
- * production; none in production until the Claude adapter and its evaluation land (ADR-0027), so
- * production fetches nothing and the screen says the check is off.
+ * The checker a deployment uses: Claude in production, or none there without a key, so production
+ * fetches nothing and the screen says the check is off; the scripted one, whose reports are never
+ * clean, everywhere else, so no preview or local server spends model calls (ADR-0027).
  */
-export function ruleCheckerFor(environment: DeploymentEnvironment): RuleCheckerChoice | undefined {
-  return environment === 'production' ? undefined : scriptedCheckerChoice;
+export function ruleCheckerFor(
+  environment: DeploymentEnvironment,
+  apiKey: string | undefined,
+): RuleCheckerChoice | undefined {
+  if (environment !== 'production') return scriptedCheckerChoice;
+  return apiKey === undefined ? undefined : claudeRuleCheckerChoice({ apiKey });
 }

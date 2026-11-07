@@ -1,13 +1,20 @@
 name: intake-eval
 
-# The AI evaluations: the intake's synthetic cases (spec 0008, R5) and the rule summary of every
-# bundled version (ADR-0025), against the real model, each writing its report to the job summary.
-# Started by hand only (`gh workflow run intake-eval --ref <branch>`), never a required check
-# (ADR-0019). It evaluates the commit it was dispatched on, a branch or tag of this repository,
-# with that commit's own copy of this file; there is no ref input, so no fork's code can run here
-# with the key.
+# The AI evaluations: the intake's synthetic cases (spec 0008, R5), the rule summary of every
+# bundled version (ADR-0025) and the independent check's synthetic cases (ADR-0027), against the
+# real model, each writing its report to the job summary. Started by hand only
+# (`gh workflow run intake-eval --ref <branch>`, `-f only=<evaluation>` to spend on one), never a
+# required check (ADR-0019). It evaluates the commit it was dispatched on, a branch or tag of this
+# repository, with that commit's own copy of this file; there is no ref input, so no fork's code can
+# run here with the key.
 on:
   workflow_dispatch:
+    inputs:
+      only:
+        description: Which evaluation to run
+        type: choice
+        options: [all, intake, rule-summary, independent-check]
+        default: all
 
 permissions: {}
 
@@ -41,6 +48,7 @@ jobs:
           [[ "$EVAL_REF" =~ ^[A-Za-z0-9._/-]+$ && "$EVAL_SHA" =~ ^[0-9a-f]{40}$ ]]
           echo "Evaluated \`$EVAL_REF\` at \`$EVAL_SHA\`." >> "$GITHUB_STEP_SUMMARY"
       - name: Run the intake evaluation
+        if: ${{ inputs.only == 'all' || inputs.only == 'intake' }}
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           ARCA_EVAL_REPORT: ${{ runner.temp }}/intake-eval.md
@@ -53,10 +61,10 @@ jobs:
           fi
           cat "$ARCA_EVAL_REPORT" >> "$GITHUB_STEP_SUMMARY"
           exit "$status"
-      # Runs even when the intake evaluation failed, so one run reports both, but not after a
-      # failed install or build.
+      # Each later evaluation runs even when an earlier one failed, so one run reports them all, but
+      # not after a failed install or build.
       - name: Run the rule summary evaluation
-        if: ${{ !cancelled() && steps.named.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.named.outcome == 'success' && (inputs.only == 'all' || inputs.only == 'rule-summary') }}
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           ARCA_EVAL_REPORT: ${{ runner.temp }}/rule-summary-eval.md
@@ -65,6 +73,20 @@ jobs:
           pnpm --fail-if-no-match --filter @arca/api eval:rule-summary || status=$?
           if [ ! -f "$ARCA_EVAL_REPORT" ]; then
             echo "The rule summary evaluation wrote no report." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          cat "$ARCA_EVAL_REPORT" >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+      - name: Run the independent check evaluation
+        if: ${{ !cancelled() && steps.named.outcome == 'success' && (inputs.only == 'all' || inputs.only == 'independent-check') }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ARCA_EVAL_REPORT: ${{ runner.temp }}/independent-check-eval.md
+        run: |
+          status=0
+          pnpm --fail-if-no-match --filter @arca/api eval:independent-check || status=$?
+          if [ ! -f "$ARCA_EVAL_REPORT" ]; then
+            echo "The independent check evaluation wrote no report." >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
           cat "$ARCA_EVAL_REPORT" >> "$GITHUB_STEP_SUMMARY"

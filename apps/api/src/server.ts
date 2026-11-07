@@ -294,7 +294,7 @@ const knowledgeVersions = createKnowledgeVersions({
   states: () => knowledgeDecisions().states(),
   today: () => todayInSaoPaulo(),
 });
-const ruleChecker = ruleCheckerFor(environment);
+const ruleChecker = ruleCheckerFor(environment, readAnthropicApiKey());
 const versionChecks =
   ruleChecker === undefined
     ? undefined
