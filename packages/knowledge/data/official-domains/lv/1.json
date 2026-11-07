@@ -7,9 +7,9 @@
     {
       "host": "likumi.lv",
       "source": {
-        "id": "optil-likumi",
-        "url": "https://likumi.lv/ta/id/249322-oficialo-publikaciju-un-tiesiskas-informacijas-likums",
-        "title": "Official Publications and Legal Information Law, arts. 14(2), 16(1) and 17(2): the official publisher Latvijas Vēstnesis publishes the systematized legal acts on www.likumi.lv",
+        "id": "official-publications-law",
+        "url": "https://www.vestnesis.lv/ta/id/249322",
+        "title": "Official Publications and Legal Information Law, as published in the official gazette Latvijas Vēstnesis, arts. 16(1) and 17(2): the systematized legal acts are published on www.likumi.lv",
         "kind": "official",
         "verifiedAt": "2026-11-07"
       }
