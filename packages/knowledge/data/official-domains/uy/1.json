@@ -9,7 +9,7 @@
       "source": {
         "id": "mec-site",
         "url": "https://www.gub.uy/ministerio-educacion-cultura/",
-        "title": "Ministry of Education and Culture page on the state portal www.gub.uy, linking to IMPO, the official-information center that publishes the Diario Oficial, at impo.com.uy",
+        "title": "Ministry of Education and Culture page on the state portal www.gub.uy, linking to IMPO at www.impo.com.uy under Servicios a la comunidad",
         "kind": "official",
         "verifiedAt": "2026-11-07"
       }
@@ -19,7 +19,7 @@
       "source": {
         "id": "nic-uy-rules",
         "url": "https://www.nic.uy/Registrar/reg-dns.htm",
-        "title": "Rules of the .UY registry (SeCIU, Universidad de la República), rule 6: .gub.uy is only for government institutions, registered through AGESIC",
+        "title": "Rules of the .UY registry (SeCIU, Universidad de la República), rules 6 and 12: .gub.uy is only for government institutions and is registered only through AGESIC",
         "kind": "official",
         "verifiedAt": "2026-11-07"
       }
