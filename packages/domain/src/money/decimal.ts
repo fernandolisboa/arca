@@ -66,6 +66,21 @@ export function roundQuotientHalfEven(n: bigint, d: bigint): bigint {
   return negative ? -rounded : rounded;
 }
 
+/** An exact value as a decimal string, without trailing fraction zeros: 1500 at scale 3 is `1.5`. */
+export function formatScaled({ units, scale }: Scaled): Decimal {
+  const magnitude = units < 0n ? -units : units;
+  const divisor = powerOfTen(scale);
+  const whole = (magnitude / divisor).toString();
+  const fraction = (magnitude % divisor).toString().padStart(scale, '0').replace(/0+$/, '');
+  const sign = units < 0n ? '-' : '';
+  return parseDecimal(`${sign}${fraction === '' ? whole : `${whole}.${fraction}`}`);
+}
+
+/** `n / d` rounded half-even to `places` decimal places, for a positive `d`. */
+export function roundedDecimal(n: bigint, d: bigint, places: number): Decimal {
+  return formatScaled({ units: roundQuotientHalfEven(n * powerOfTen(places), d), scale: places });
+}
+
 /** Brings two exact values to the same scale. */
 export function alignScales(left: Scaled, right: Scaled): [bigint, bigint, number] {
   const {

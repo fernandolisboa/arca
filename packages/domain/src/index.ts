@@ -58,7 +58,7 @@ export {
   minorUnitExponent,
   minorUnitExponents,
 } from './money/currency.js';
-export { type Decimal, decimalSchema, parseDecimal } from './money/decimal.js';
+export { type Decimal, decimalSchema, parseDecimal, roundedDecimal } from './money/decimal.js';
 export {
   type Conversion,
   type CurrencyPair,

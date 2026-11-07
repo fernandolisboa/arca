@@ -118,6 +118,22 @@
     {
       "path": "routes/ie-critical-skills/1",
       "sha256": "f65654cb523d4a5750724da403cbeeb04195abc52d2cd61f74097d9f94cc186c"
+    },
+    {
+      "path": "indicators/price-level/1",
+      "sha256": "55f54b54f475bd87d3876bd6f13038120d0eb0aeda81d7489d4ed3bd6c5b9004"
+    },
+    {
+      "path": "indicators/homicides/1",
+      "sha256": "1edada9d4712bc3bf464731474c6ea94c5d2786ed42b10cda23c6e9d13c93667"
+    },
+    {
+      "path": "indicators/health-coverage/1",
+      "sha256": "b41606f98617d14106d6f34c69d8cb37a788750051421254e29ad2e2d231f0b6"
+    },
+    {
+      "path": "comparisons/destinations/1",
+      "sha256": "5fd25e1b0a606f22342ce9c4beb9bd139955275c4dd95313ddf7c0ebb5634635"
     }
   ]
 }

@@ -20,6 +20,7 @@
   "scripts": {
     "catalog": "node scripts/build.ts",
     "countries:generate": "node scripts/generate-countries.ts",
+    "comparison:fetch": "node scripts/fetch-world-bank.ts",
     "build": "tsc -b tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint .",
