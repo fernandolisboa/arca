@@ -45,7 +45,8 @@ export function hostMatches(host: string, hosts: readonly string[]): boolean {
   return hosts.some((listed) => host === listed || host.endsWith(`.${listed}`));
 }
 
-function officialUrl(url: string, official: OfficialHosts): boolean {
+/** Whether a URL's host is one of the official hosts, or a subdomain of one. */
+export function officialUrl(url: string, official: OfficialHosts): boolean {
   const host = official.hostOf(url);
   return host !== undefined && hostMatches(host, official.hosts);
 }

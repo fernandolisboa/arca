@@ -1,9 +1,10 @@
 import { createRouteCatalog } from './catalog.js';
 import { createComparisonCatalog } from './comparisons.js';
 import { parseComparisons, parseEntries } from './entries.js';
+import { createGuideLookup } from './guides.js';
 import { countryCodeSchema } from '@arca/domain';
 import { z } from 'zod';
-import { catalogData, comparisonData, countryData } from './generated/catalog.js';
+import { catalogData, comparisonData, countryData, guideData } from './generated/catalog.js';
 
 const entries = parseEntries(catalogData);
 
@@ -12,6 +13,11 @@ export const routeCatalog = createRouteCatalog(entries);
 
 /** The destination comparison's versions (ADR-0026); content only for an active one. */
 export const comparisonCatalog = createComparisonCatalog(parseComparisons(comparisonData));
+
+/** A country's current guide, the specialist knowledge the independent check loads (ADR-0027). */
+export const countryGuide = createGuideLookup(guideData);
+
+export type { CountryGuideEntry, CountryGuideLookup } from './guides.js';
 
 /** Every route the catalog has a version of, in a stable order. */
 export const routeIds: readonly string[] = [

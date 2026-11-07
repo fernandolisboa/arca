@@ -19,7 +19,8 @@ export type FileKind =
   | 'country-sets'
   | 'routes'
   | 'indicators'
-  | 'comparisons';
+  | 'comparisons'
+  | 'guides';
 
 /** A versioned file as read from disk: where it is, what its path says it is, and its JSON. */
 export interface RawFile {
@@ -61,6 +62,7 @@ const layouts: readonly { kind: FileKind; pattern: RegExp; fixedId?: string }[] 
   { kind: 'routes', pattern: new RegExp(`^routes/${idPart}/${numberPart}\\.json$`) },
   { kind: 'indicators', pattern: new RegExp(`^indicators/${idPart}/${numberPart}\\.json$`) },
   { kind: 'comparisons', pattern: new RegExp(`^comparisons/${idPart}/${numberPart}\\.json$`) },
+  { kind: 'guides', pattern: new RegExp(`^guides/${idPart}/${numberPart}\\.json$`) },
 ];
 const casesPattern = new RegExp(`^routes/${idPart}/${numberPart}\\.cases\\.json$`);
 const hashesFile = 'hashes.json';
