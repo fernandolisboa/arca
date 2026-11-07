@@ -1,0 +1,201 @@
+{
+  "schemaVersion": 1,
+  "id": "dk",
+  "number": 1,
+  "title": "Danish immigration law for work permits and accompanying family",
+  "laws": [
+    {
+      "id": "aliens-act",
+      "title": "Udlændingeloven, the Aliens Act (consolidated Act No. 953 of 2026): §§ 1 and 2 Nordic and EU citizens, § 9 a work permits, § 9 h fees, § 9 m family, § 14 exemptions, § 19 revocation, § 66 territory",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by Acts of the Folketing (lov om ændring af udlændingeloven), several each year. The ministry reissues a consolidated text (lovbekendtgørelse) about once a year; LBK 953 of 2026 replaced LBK 1183 of 2025. Changes not yet in force, or whose start the minister sets, are left out of the consolidated text and listed in its notes, as Act No. 765 of 2026 is until 2027-01-01."
+    },
+    {
+      "id": "act-765-2026",
+      "title": "Act No. 765 of 2026 amending the Aliens Act: new collective-agreement pay scheme for certified employers and renumbering of § 9 a, in force 2027-01-01",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/765",
+      "verifiedAt": "2026-11-07",
+      "amendment": "An amending act, passed once; a later act changes it. It amends LBK 1183 of 2025 as amended up to Act No. 726 of 2026, and its subsection numbers agree with LBK 953 of 2026, which leaves its changes out until 2027-01-01, so until a consolidated text includes them they are read from this act. The minister sets the collective agreements, after negotiating with the employment minister and consulting the labour market parties, and publishes the list of third countries the new scheme relies on."
+    },
+    {
+      "id": "siri-pay-limit",
+      "title": "SIRI guidance on the Pay Limit Scheme: the adjusted pay limit, which pay counts, Danish standards for pay and terms, hours, bank account and what the permit allows",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Guidance, not law. SIRI edits the page itself, with no gazette; the page shows its last update (2026-09-22 when read). The pay limit figure on it changes each 1 January, so it is re-read for each year."
+    },
+    {
+      "id": "siri-accompanying-family",
+      "title": "SIRI guidance on accompanying family members of an employee: who counts, recognition of marriages, cohabitation, children, shared home, work and duration",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Guidance, not law, setting out SIRI's practice under § 9 m of the Aliens Act. SIRI edits the page itself, with no gazette; it showed a last update of 2026-08-24 when read."
+    },
+    {
+      "id": "eu-residence-order",
+      "title": "EU-opholdsbekendtgørelsen, the EU Residence Order (Order No. 1457 of 2020): who falls under the EU rules on free movement, with EEA and Swiss citizens treated like EU citizens",
+      "url": "https://www.retsinformation.dk/eli/lta/2020/1457",
+      "verifiedAt": "2026-11-07",
+      "amendment": "An executive order issued under § 2(4) and (5) of the Aliens Act, changed by amending orders rather than reissued: Retsinformation shows the 2020 text as published, and Order No. 965 of 2025 amended it from 2025-07-01."
+    },
+    {
+      "id": "eu-residence-order-amendment-2025",
+      "title": "Order No. 965 of 2025 amending the EU Residence Order, in force 2025-07-01",
+      "url": "https://www.retsinformation.dk/eli/lta/2025/965",
+      "verifiedAt": "2026-11-07",
+      "amendment": "An amending order, issued once. It changed §§ 14, 18, 24, 26, 29, 30 and 31, the headings before §§ 36 and 37, § 36, and repealed §§ 37 and 38; it left §§ 1 to 3 untouched."
+    },
+    {
+      "id": "guardianship-act",
+      "title": "Værgemålsloven, the Guardianship Act (consolidated Act No. 1122 of 2021), § 1: under-18s who have not married are minors",
+      "url": "https://www.retsinformation.dk/eli/lta/2021/1122",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by Acts of the Folketing and reconsolidated now and then; LBK 1122 of 2021 is the current consolidated text, and the 4 later amending acts Retsinformation lists for it (Acts No. 569 of 2022, 1553 of 2023, and 728 and 729 of 2025) are read beside it. None of them changes § 1."
+    },
+    {
+      "id": "aliens-order",
+      "title": "Bekendtgørelse om udlændinges adgang her til landet, the Aliens Order (Order No. 1354 of 2025): §§ 16 on permit length, 22(5) on the genuine-offer test and 26(2) on job changes",
+      "url": "https://www.retsinformation.dk/eli/lta/2025/1354",
+      "verifiedAt": "2026-11-07",
+      "amendment": "An executive order of the minister under the Aliens Act. It is reissued as a whole now and then (Order No. 1354 of 2025, in force 2025-12-01, repealed Order No. 1202 of 2025) and otherwise changed by amending orders, such as Order No. 1600 of 2025, which only added a new § 24(1)(12) from 2025-12-19. Its preamble cites § 9 a subsection numbers that Act No. 765 of 2026 changes from 2027-01-01."
+    },
+    {
+      "id": "rate-adjustment-act",
+      "title": "Lov om en satsreguleringsprocent, the Rate Adjustment Percentage Act (consolidated Act No. 237 of 2020)",
+      "url": "https://www.retsinformation.dk/eli/lta/2020/237",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by Acts of the Folketing. Under § 6 the Finance Minister announces by the end of August each year the rate adjustment, adjustment and rate alignment percentages for the next financial year, in a new order each year."
+    },
+    {
+      "id": "rate-adjustment-order-2027",
+      "title": "Order No. 701 of 2026 on the rate adjustment, adjustment and rate alignment percentages for the financial year 2027",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/701",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A yearly order of the Finance Minister under § 6 of the Rate Adjustment Percentage Act, which must announce the percentages for the next financial year by the end of August; each financial year has its own order. This one, for 2027, is dated 2026-08-24 and took effect on 2026-08-31."
+    },
+    {
+      "id": "tfeu-protocol-22",
+      "title": "Protocol (No. 22) on the position of Denmark, annexed to the TEU and the TFEU, consolidated version of 2016 (OJ C 202, p. 298): arts. 1, 2, 4 and 6, Title V of Part Three TFEU",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:12016E/PRO/22",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Annexed to the Treaty on European Union and the Treaty on the Functioning of the European Union; the text read sets no amendment procedure of its own. Denmark may at any time inform the other Member States that it no longer wishes to use all or part of it (art. 7), or notify that Part I is to consist of the provisions in its Annex, from the first day of the month after the notification (art. 8)."
+    }
+  ],
+  "pitfalls": [
+    {
+      "id": "printed-amount-is-base",
+      "text": "§ 9 a(2)(3) prints DKK 400,000 a year, but that is not the pay limit in force. § 9 a(29) adjusts it each year with the rate adjustment percentage and an adjustment percentage so that the total corresponds to wage growth, rounded to the nearest DKK 1,000, and the act states no adjusted figure. SIRI's page states DKK 552,000 at 2026 level and says it is adjusted every 1 January.",
+      "laws": ["aliens-act", "siri-pay-limit"]
+    },
+    {
+      "id": "next-figure-2027",
+      "text": "Order No. 701 of 2026 sets for 2027 a rate adjustment percentage of 2.6 and an adjustment percentage of 0.9, defined as wage growth minus 2.0 (Rate Adjustment Act § 3). § 9 a(29) adds an adjustment percentage chosen so the total corresponds to wage growth, which need not be that 0.9, and names no base year, so the 2027 pay limit cannot be computed from the order. When read, SIRI showed only the 2026 level. DKK 552,000 is the 2026 level only, and no text read states the 2027 figure. Neither text says whether a first application takes the figure of the application date or the decision date.",
+      "laws": ["aliens-act", "rate-adjustment-act", "rate-adjustment-order-2027", "siri-pay-limit"]
+    },
+    {
+      "id": "renewal-keeps-old-limit",
+      "text": "§ 9 a(14) says a § 9 a(2)(3) permit may be extended even when the annual pay no longer meets the minimum amount at the time of the extension decision, if the holder is in the same employment and the pay still meets the pay limit on which the permit was granted. So an extension in the same job is measured against the limit of the grant, not the new yearly figure; a new job needs a new permit (§ 9 a(11)). While the permit runs the holder must keep meeting the annual pay requirement (Aliens Order § 26(2)), which does not say which year's figure.",
+      "laws": ["aliens-act", "aliens-order"]
+    },
+    {
+      "id": "what-counts-as-pay",
+      "text": "The act says only annual pay. Which parts count is SIRI practice: cash pay including fixed, guaranteed supplements, labour market pension contributions by employer and employee, and paid holiday allowance, but not benefits such as canteen, car, phone, internet and housing. Holiday allowance paid only the following year does not count for the year it is earned; the 1 percent holiday supplement of a monthly paid employee counts, the 12.5 percent holiday allowance of an hourly paid one does not. The annual pay must meet the limit even with unpaid holiday.",
+      "laws": ["siri-pay-limit"]
+    },
+    {
+      "id": "hours-and-labour-disputes",
+      "text": "§ 9 a(10) requires employment of at least 30 hours a week. As its practice SIRI requires the full pay limit however many hours are worked, so there is no pro rata amount. No permit is given for a job covered by a lawful labour dispute (§ 9 a(9)); SIRI adds that other jobs in the same company that the dispute does not cover can still qualify.",
+      "laws": ["aliens-act", "siri-pay-limit"]
+    },
+    {
+      "id": "danish-standards-and-genuine-offer",
+      "text": "§ 9 a(2)(3) itself sets no Danish-standards test; SIRI applies one as practice, requiring pay and terms such as holiday and notice no worse than usual in the field, and may ask the Regional Employment Councils, which give opinions on request (§ 9 a(8)). In law, § 9 a(26) bars a permit where there is some presumption that the real employment differs from the application and would not meet the conditions, or where the decisive purpose of the offer is to obtain residence, and SIRI may weigh whether the pay is usual or unusually high or low (Aliens Order § 22(5)).",
+      "laws": ["aliens-act", "aliens-order", "siri-pay-limit"]
+    },
+    {
+      "id": "danish-bank-account",
+      "text": "§ 9 a(25) requires the pay to go into a Danish bank account. One who enters after the permit is granted opens it within 180 days of entry, otherwise within 180 days of the grant; one who already holds a permit of at least 180 days has no such period, and SIRI says the pay then goes into the Danish account from the first payment. SIRI adds that the account must be in the employee's own name at a bank operating legally in Denmark.",
+      "laws": ["aliens-act", "siri-pay-limit"]
+    },
+    {
+      "id": "renumbering-2027",
+      "text": "From 2027-01-01 Act No. 765 of 2026 inserts new subsections (15), (19) and (21) in § 9 a, so old (15) to (17) become (16) to (18), old (18) becomes (20) and old (19) to (36) become (22) to (39): old (24), (25), (26) and (29) become (27), (28), (29) and (32), while (2)(3), (4), (9) to (12) and (14) keep their numbers. § 9 m(1) then refers to § 9 a(27) instead of (24). LBK 953 of 2026 leaves these changes out, and the Aliens Order preamble still cites the old (27), (28) and (32).",
+      "laws": ["act-765-2026", "aliens-act", "aliens-order"]
+    },
+    {
+      "id": "other-grounds-same-amounts",
+      "text": "The fast-track scheme for certified employers uses the same pay limit (§ 9 a(2)(14)(a)). § 9 a(2)(13) prints a supplementary limit of DKK 375,000, adjusted the same way, only while unemployment stays below a level the minister sets and the job was advertised on Jobnet and EURES for 2 weeks. From 2027-01-01 Act No. 765 of 2026 adds § 9 a(2)(15), DKK 322,000 for a job under a collective agreement the minister names, at a certified employer, for citizens of listed third countries. Each is a separate ground with its own conditions.",
+      "laws": ["aliens-act", "act-765-2026"]
+    },
+    {
+      "id": "nordic-eu-eea-swiss-excluded",
+      "text": "Citizens of Finland, Iceland, Norway and Sweden live in Denmark without a permit (§ 1). EU and EEA citizens may enter and stay up to 3 months (§ 2(1)) and longer under the EU rules the minister implements by order (§ 2(4)); the EU Residence Order covers EEA and Swiss citizens too and treats them like EU citizens (its §§ 1(2) and 2(2)). None of them needs this permit, nor a work permit (§ 14(1)(1) and (3)). The act and Act No. 765 of 2026 do not apply to the Faroe Islands and Greenland unless a royal decree puts them in force there (§ 66; Act 765, § 3).",
+      "laws": ["aliens-act", "eu-residence-order", "act-765-2026"]
+    },
+    {
+      "id": "family-of-eu-citizens",
+      "text": "A non-EU family member of an EU, EEA or Swiss citizen with a right of residence falls under the EU Residence Order. Its family members (§ 3) are a spouse, with a registered partner or a durable partner treated as one, direct descendants of either under 21 or, if older, dependent, dependent ascendants of either, and other relatives who are dependent or in the household, and, as EU law requires, family of Danish citizens returning after free movement (§ 1(3)). That is another basis than § 9 a and § 9 m. The order is not consolidated; Order No. 965 of 2025 changed other sections, not §§ 1 to 3.",
+      "laws": ["eu-residence-order", "eu-residence-order-amendment-2025"]
+    },
+    {
+      "id": "family-is-practice",
+      "text": "§ 9 m(1) allows a permit to a foreigner with a family connection to a § 9 a(2) holder where essential business or employment interests favour it, and does not say who counts. That is SIRI practice, not the act: a spouse, a registered partner, a cohabiting partner and a child under 18; other relatives only where extraordinary circumstances and weighty considerations apply, such as lasting dependence on the sponsor. Each family member applies and pays separately. SIRI's page says an employee's family need not document financial support; the legal bar is help under the Active Social Policy Act.",
+      "laws": ["aliens-act", "siri-accompanying-family"]
+    },
+    {
+      "id": "marriage-recognition",
+      "text": "SIRI practice, not the act: a marriage or registered partnership is recognized only if it is legal where it took place, both were physically present, both had turned 18 at the wedding or registration, it is not one of convenience and it does not violate fundamental legal principles. Otherwise SIRI assesses the couple as cohabiting partners, over 18 and living together for at least 1.5 to 2 years before the application date. The age at the wedding is checked for both spouses, and the cohabitation is counted up to the application date.",
+      "laws": ["siri-accompanying-family"]
+    },
+    {
+      "id": "child-age",
+      "text": "Under SIRI practice a child qualifies when under 18, and SIRI's pay limit page adds living at home; neither SIRI's pages nor § 9 m says on which date the age is taken. A child first granted a permit before 18 may have it extended after turning 18 while still living at the sponsor's address. When parents share custody and only one comes, SIRI asks the other parent's consent. The Guardianship Act makes under-18s who have not married minors (§ 1). Neither text says when a person born on 29 February turns a year older.",
+      "laws": ["siri-accompanying-family", "siri-pay-limit", "guardianship-act"]
+    },
+    {
+      "id": "shared-home-and-social-assistance",
+      "text": "The family permit requires that the family member and the principal share a home and get no help under the Active Social Policy Act (§ 9 m(1)), and the principal's permit requires the same of the principal and of every family member with a permit through the principal (§ 9 a(4)). Such help is a ground to revoke the principal's permit (§ 19(1)(11)) and a home no longer shared the family member's (§ 19(1)(18)), so, as SIRI warns, a family member's benefits can cost the principal the permit. Only help under that act is named. As SIRI practice a child who turns 18 must still live with the sponsor.",
+      "laws": ["aliens-act", "siri-accompanying-family"]
+    },
+    {
+      "id": "family-same-employer",
+      "text": "A family member of a § 9 a(2)(3) holder needs no work permit (§ 14(1)(8)) and, SIRI says, may run a business, except for work at the principal's employer or a closely related company, judged by shared management, industry and workplace, which needs a work permit given only for at least 30 hours a week (§ 9 m(3)). Working there without one is a ground to revoke the family member's permit (§ 19(1)(19)), and the principal's permit requires that family members lose theirs on that ground no more than once (§ 9 a(4)).",
+      "laws": ["aliens-act", "siri-accompanying-family"]
+    },
+    {
+      "id": "permit-tied-to-job",
+      "text": "A new job needs a new permit, applied for no later than the new work starts, with the right to stay and work while it is decided (§ 9 a(11)); a change of duties in the same company, such as a promotion, needs none while pay and terms stay usual by Danish standards (Aliens Order § 26(2)). One who becomes unemployed through no fault of their own may get up to 6 months to seek work, applying at the latest right after the job ends (§ 9 a(12)), which SIRI reads as within 2 days. SIRI says a sideline job needs its own permit and the permit allows no work in other Schengen countries.",
+      "laws": ["aliens-act", "aliens-order", "siri-pay-limit"]
+    },
+    {
+      "id": "duration-and-passport",
+      "text": "A § 9 a(2)(3) permit is given for at most 4 years at a time, after 8 years for at most 5, and never beyond 14 days after the contract ends, unless the 6-month job search permit follows (Aliens Order § 16(4)). A family permit runs at most as long as the principal's (§ 16(15)). As SIRI practice, neither the principal's nor a family member's permit runs beyond 3 months before the passport expires. An extension must be applied for before the permit expires (Aliens Act § 9 a(7) and § 9 m(5)).",
+      "laws": ["aliens-order", "aliens-act", "siri-pay-limit", "siri-accompanying-family"]
+    },
+    {
+      "id": "fees-and-printed-amounts",
+      "text": "The fee is paid no later than with the application, or it is dismissed, unless the shortfall is at most DKK 200, the fee paid was for another category or the fee changed in between (§ 9 h(1) and (7)). The minister sets fees at cost (§ 9 h(2) and (4)). SIRI showed DKK 6,810 for the principal and DKK 3,080 per family member, and says a family member's fee is not refunded on refusal or withdrawal; § 9 h(6) refunds it less DKK 750 when an application is dismissed on listed grounds other than the fee. The DKK 200 and 750 amounts are adjusted each 1 January (§ 9 h(13)).",
+      "laws": ["aliens-act", "siri-pay-limit", "siri-accompanying-family"]
+    },
+    {
+      "id": "eu-justice-home-affairs-opt-out",
+      "text": "Under Protocol No. 22, Denmark takes no part in adopting measures under Title V of Part Three TFEU (art. 1), and no Title V provision, measure or Court of Justice ruling on them binds or applies in Denmark (art. 2), save visa lists and a uniform visa format (art. 6). A measure building on the Schengen acquis binds Denmark under international law only if it decides within 6 months to implement it in national law (art. 4). No text read names a directive that applies to a § 9 a permit, and the Aliens Act defers to EU rules where it says so (§§ 9 h(1), 9 m(1) and (3)).",
+      "laws": ["tfeu-protocol-22", "aliens-act"]
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "dk",
+      "number": 1
+    },
+    {
+      "id": "eu",
+      "number": 1
+    }
+  ]
+}
