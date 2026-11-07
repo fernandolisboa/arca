@@ -16,7 +16,7 @@
       "title": "Immigration Rules, Appendix Skilled Occupations: eligible occupations by RQF level (Tables 1 to 3a), going rates (Tables 1 to 5) and ineligible occupations (Table 6)",
       "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-occupations",
       "verifiedAt": "2026-11-07",
-      "amendment": "Changed by statements of changes. The going rates follow the ONS Annual Survey of Hours and Earnings (ASHE); the HC 997 memorandum calls the update in line with the latest ASHE data standard practice, but the rules set no date for it. Last updated on 2025-11-11 for HC 1333; the restructure into RQF 6 and RQF 3 to 5 tables came with HC 997."
+      "amendment": "Changed by statements of changes. The going rates follow the Office for National Statistics (ONS) Annual Survey of Hours and Earnings (ASHE); the HC 997 memorandum calls the update in line with the latest ASHE data standard practice, but the rules set no date for it. Last updated on 2025-11-11 for HC 1333; the restructure into RQF 6 and RQF 3 to 5 tables came with HC 997."
     },
     {
       "id": "appendix-immigration-salary-list",
@@ -167,7 +167,7 @@
       ]
     },
     {
-      "id": "salary-thresholds-and-what-counts",
+      "id": "salary-thresholds",
       "text": "GBP 41,700 and the going rates are fixed figures that statements of changes update from the Annual Survey of Hours and Earnings (ASHE); the texts set no date for the next update. A Table 1 going rate is the higher of the median ASHE rate and GBP 17.13 an hour, a floor that also holds for the 70, 80 and 90 percent figures, for a 37.5-hour week pro-rated to the stated hours.",
       "laws": [
         "appendix-skilled-occupations",

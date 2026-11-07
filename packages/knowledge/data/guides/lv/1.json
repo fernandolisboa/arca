@@ -110,7 +110,7 @@
     },
     {
       "id": "payment-not-refunded",
-      "text": "The EUR 10,000 is a one-off payment and is not refunded except in cases the Cabinet sets (art. 30). Regulation 564, point 73 superscript 2, refunds the payment named in its point 73 superscript 1, wholly or in part, on a written request within 4 months of the decision to grant the permit if it was overpaid or paid wrongly or the permit was not received in that time, or to an heir if the foreigner died or went missing before receiving it. Point 73.1 still names the 2002 law's art. 23(1) points 28 to 30 and art. 23(8), so applying it to a point 10 payment rests on transitional provision 3.",
+      "text": "The EUR 10,000 is a one-off payment and is not refunded except in cases the Cabinet sets (art. 30). Regulation 564, point 73², refunds the payment named in its point 73¹, wholly or in part, on a written request within 4 months of the decision to grant the permit if it was overpaid or paid wrongly or the permit was not received in that time, or to an heir if the foreigner died or went missing before receiving it. Point 73¹ still names the 2002 law's art. 23(1) points 28 to 30 and art. 23(8), so applying it to a point 10 payment rests on transitional provision 3.",
       "laws": ["immigration-law-2026", "cabinet-regulation-564-2010"]
     },
     {
@@ -187,8 +187,13 @@
       ]
     },
     {
-      "id": "fund-investment-and-permanent-residence",
-      "text": "Art. 27(1) point 36 gives a permit of up to 5 years for a contract and transfer of at least EUR 150,000 invested for at least 5 years with an alternative investment fund manager established by the state, plus EUR 10,000; the law does not say whether such a manager exists. Permanent residence (EU long-term resident status, art. 24(1) point 2) may be requested after 5 years of continuous residence with a permit, with enough means, Latvian at level A2 and a culture and history course (art. 31(1)); absences may not exceed 6 consecutive months or 10 in all (art. 31(3)).",
+      "id": "fund-investment",
+      "text": "Art. 27(1) point 36 gives a permit of up to 5 years for a contract and transfer of at least EUR 150,000 invested for at least 5 years with an alternative investment fund manager established by the state, plus EUR 10,000; the law does not say whether such a manager exists.",
+      "laws": ["immigration-law-2026"]
+    },
+    {
+      "id": "permanent-residence-after-5-years",
+      "text": "Permanent residence (EU long-term resident status, art. 24(1) point 2) may be requested after 5 years of continuous residence with a permit, with enough means, Latvian at level A2 and a culture and history course (art. 31(1)); absences may not exceed 6 consecutive months or 10 in all, save justified ones beyond the person's control (art. 31(3)).",
       "laws": ["immigration-law-2026"]
     }
   ],

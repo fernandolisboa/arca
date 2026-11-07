@@ -142,7 +142,7 @@
     },
     {
       "id": "dual-citizenship-and-loss",
-      "text": "A Polish citizen who also holds another citizenship has the same rights and duties towards Poland as one who holds only Polish citizenship, and cannot rely on the other one before Polish authorities (2009 act art. 3). Since 1997-10-17 the Constitution says a Polish citizen cannot lose citizenship unless he or she renounces it (art. 34(2)), yet the 1962 act's art. 13 was rewritten and art. 14 and 15 struck only from 1999-01-01. Today loss takes the President's consent and follows 30 days after it unless a shorter time is set (art. 46 and 51).",
+      "text": "A Polish citizen who also holds another citizenship has the same rights and duties towards Poland as one who holds only Polish citizenship, and cannot rely on the other one before Polish authorities (2009 act art. 3). Since 1997-10-17 the Constitution says a Polish citizen cannot lose citizenship unless he or she renounces it (art. 34(2)), yet the 1962 act's art. 13 was rewritten and art. 14 and 15 struck only from 1999-01-01. Under the 2009 act, loss takes the President's consent and follows 30 days after it unless a shorter time is set (art. 46 and 51).",
       "laws": [
         "citizenship-act-2009",
         "constitution-1997",
@@ -196,7 +196,7 @@
     },
     {
       "id": "form-contents",
-      "text": "The official form asks about the person, the parents and the grandparents and, when the applicant relies on their Polish citizenship, more distant ascendants such as great-grandparents. A copy of a valid Polish identity card or passport, or of a voivode's confirmation decision, for the person spares parts II and III, and one for a parent spares part III. Part II asks whether the parents of a child born under the 1962 act chose a foreign citizenship under its art. 6(1). Birth and marriage records should be attached. No act read limits the generations.",
+      "text": "The official form asks about the person, the parents and the grandparents and, when the applicant relies on their Polish citizenship, more distant ascendants such as great-grandparents. A copy of a valid Polish identity card or passport, or of a voivode's confirmation decision, for the person spares parts II and III, and one for a parent spares part III. Part II asks whether the parents of a child born under the 1962 act chose a foreign citizenship under its art. 6(1). The form asks for birth and marriage records to be attached. No act read limits the generations.",
       "laws": ["confirmation-form-2012", "citizenship-act-2009"]
     },
     {

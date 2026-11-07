@@ -181,11 +181,11 @@
     },
     {
       "path": "guides/gb/1",
-      "sha256": "a363930219abd5e14b0e8d8dddefdfec3d09badd7e89a2eca076a36270fa15ac"
+      "sha256": "417dc1d17806a85c02c074391deb53cf8528c90bcb916f9e82548f50d879a70f"
     },
     {
       "path": "guides/ie/1",
-      "sha256": "773caf61cef75d6b8d55a3a83efa768d26e366298e8609e35e32726042c8a28a"
+      "sha256": "dd4e8151e9c80d6ca46c6569f5d02c21a786e4c7029034163854822e71275344"
     },
     {
       "path": "guides/it/1",
@@ -193,15 +193,15 @@
     },
     {
       "path": "guides/lv/1",
-      "sha256": "3e247376b7c7b48e1ec7f9076d6f4819efc411a637f3f4f9a0521cc7ccd24ad1"
+      "sha256": "0d2ae7e5c473985a8515208f120f9021606669c99624e51a29263ecb32636a55"
     },
     {
       "path": "guides/pl/1",
-      "sha256": "87f69313bc0316426bc0bce930f61b99c0f71d1ad35997540ff7d979ec74f480"
+      "sha256": "c030de18a4f0c1bf78ad2406b8a206bee766027304a440c7e874eee9dee336be"
     },
     {
       "path": "guides/pt/1",
-      "sha256": "22a35316cde8f536af576a18cca26e0ce1a8a01fd2ce2e33ee3c84f8afa0caa8"
+      "sha256": "26a8e7dea258168093b01fca11a718243e9002bb8694ab61aaa40364d5724585"
     },
     {
       "path": "guides/py/1",
