@@ -1,0 +1,261 @@
+{
+  "schemaVersion": 1,
+  "routeId": "dk-pay-limit",
+  "number": 1,
+  "title": "Danish residence and work permit under the Pay Limit Scheme: a job offer with annual pay of at least DKK 552,000 (2026)",
+  "country": "DK",
+  "tags": ["work", "temporary-residence"],
+  "effectiveFrom": "2026-01-01",
+  "status": "open",
+  "currency": "DKK",
+  "leapDayBirthday": "feb-28",
+  "leapDayBirthdaySources": ["guardianship-act-minors"],
+  "sources": [
+    {
+      "id": "aliens-act-pay-limit",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "title": "Aliens Act (consolidated Act No. 953 of 2026), § 9 a(2)(3) and (29): a job offer with annual pay of at least DKK 400,000, adjusted each year in line with wage growth and rounded to DKK 1,000",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "siri-pay-limit",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "title": "SIRI, the Pay Limit Scheme: the pay limit is DKK 552,000 a year for 2026, set each 1 January; only cash pay, pension and paid holiday allowance count; pay and terms usual in Denmark",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "aliens-act-employment-terms",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "title": "Aliens Act, § 9 a(9), (10), (25) and (26): at least 30 hours a week; pay into a Danish bank account; no permit for a job in a lawful labour dispute or for an offer that is not genuine",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "aliens-act-social-assistance",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "title": "Aliens Act, § 9 a(4): the permit requires that the principal and the family members who get permits through them receive no assistance under the Active Social Policy Act",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "aliens-act-family",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "title": "Aliens Act, § 9 m(1): where essential business or employment interests favour it, a family member of a foreigner with a § 9 a(2) permit may get one, if they share a home",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "siri-accompanying-family",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "title": "SIRI, accompanying family of employees: a spouse or registered partner, a cohabiting partner over 18 after at least 1.5 to 2 years living together, and a child under 18",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "aliens-act-free-movement",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "title": "Aliens Act, §§ 1 and 2: citizens of Finland, Iceland, Norway and Sweden live in Denmark without a permit; EU and EEA citizens fall under the EU rules on free movement",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "eu-residence-order",
+      "url": "https://www.retsinformation.dk/eli/lta/2020/1457",
+      "title": "EU Residence Order (Order No. 1457 of 2020), §§ 1(2) and 2(2): Swiss citizens are treated like EU citizens under the EU rules on free movement",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "guardianship-act-minors",
+      "url": "https://www.retsinformation.dk/eli/lta/2021/1122",
+      "title": "Guardianship Act (Act No. 1122 of 2021), § 1: under-18s who have not married are minors; no Danish rule for a 29 February birthday was found, so 28 February is assumed",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "dk",
+      "number": 1
+    }
+  ],
+  "countrySets": [
+    {
+      "id": "eu-free-movement",
+      "number": 1
+    }
+  ],
+  "requirements": [
+    {
+      "id": "not-nordic-eu-eea-or-swiss-citizen",
+      "title": "Not a citizen of Denmark, another Nordic country, an EU or EEA state or Switzerland: they live and work in Denmark without this permit",
+      "expression": {
+        "op": "not",
+        "operand": {
+          "op": "intersects",
+          "list": {
+            "op": "fact",
+            "key": "principal.citizenships"
+          },
+          "set": {
+            "op": "set",
+            "id": "eu-free-movement"
+          }
+        }
+      },
+      "sources": ["aliens-act-free-movement", "eu-residence-order"]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "pay-limit",
+      "title": "A job offer in Denmark with annual pay of at least the pay limit: DKK 400,000 in the act, adjusted each year for wage growth; DKK 552,000 for 2026 as SIRI publishes it",
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["aliens-act-pay-limit", "siri-pay-limit"]
+    },
+    {
+      "id": "employment-terms",
+      "title": "At least 30 hours a week; pay and terms usual for the field in Denmark; pay into a Danish bank account opened within 180 days; a genuine offer; no lawful labour dispute",
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["aliens-act-employment-terms", "siri-pay-limit"]
+    },
+    {
+      "id": "no-social-assistance",
+      "title": "Family members share the principal's home, and while the permits last none of them, the principal included, receives social assistance under the Active Social Policy Act",
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["aliens-act-social-assistance", "aliens-act-family"]
+    }
+  ],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse who was 18 or more at the wedding; married younger, both now 18 or more: possible, as a cohabiting partner after at least 1.5 to 2 years living together",
+      "path": ["spouse"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "edge.ageAtStart"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "gte",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              },
+              {
+                "op": "gte",
+                "left": {
+                  "op": "fact",
+                  "key": "principal.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["aliens-act-family", "siri-accompanying-family"]
+    },
+    {
+      "id": "partner",
+      "title": "Partner, both aged 18 or more: after 2 years together; a shorter union, which may be a registered partnership: possible",
+      "path": ["partner"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "principal.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "since",
+                "date": {
+                  "op": "fact",
+                  "key": "edge.start"
+                },
+                "duration": "P2Y"
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["aliens-act-family", "siri-accompanying-family", "guardianship-act-minors"]
+    },
+    {
+      "id": "children",
+      "title": "Children under 18",
+      "path": ["child"],
+      "condition": {
+        "op": "lt",
+        "left": {
+          "op": "fact",
+          "key": "person.ageYears"
+        },
+        "right": {
+          "op": "int",
+          "value": 18
+        }
+      },
+      "sources": ["aliens-act-family", "siri-accompanying-family", "guardianship-act-minors"]
+    }
+  ],
+  "costs": [],
+  "durations": []
+}
