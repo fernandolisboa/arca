@@ -77,7 +77,11 @@ test('starts a case, adds people, shares a child with a member and tells them', 
     .getByRole('group', { name: /^Dados pessoais/ })
     .getByLabel('Bruno')
     .uncheck();
+  const saved = page.waitForResponse(
+    (response) => response.url().endsWith('/v1/case/people/shares') && response.ok(),
+  );
   await child.getByRole('button', { name: 'Salvar compartilhamento' }).click();
+  await saved;
   await relativePage.reload();
   await expect(relativePage.getByText('Você não vê mais os dados de Criança.')).toBeVisible();
 

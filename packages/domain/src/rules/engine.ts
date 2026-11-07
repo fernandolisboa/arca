@@ -246,7 +246,7 @@ export type RouteEvaluation =
 /**
  * Selection, then the activation check, then `evaluateVersion` (spec 0002, R5). The engine never
  * falls back to an older version on its own: a version in effect but not active is reported as
- * pending, and only an approver's rejection brings the older one back.
+ * pending, and only an admin's rejection brings the older one back.
  */
 export function evaluateRoute(
   snapshot: CaseSnapshot,

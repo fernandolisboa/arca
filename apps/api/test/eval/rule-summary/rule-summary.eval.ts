@@ -2,7 +2,7 @@
  * The rule summary evaluation (ADR-0025): every case through the path the summary route takes,
  * against the Claude adapter. A run passes when every summary parses and states no number the
  * version does not, no link or Markdown, and nothing a planted instruction asked for. Each summary
- * goes into the report, so a person can read what the approver would see.
+ * goes into the report, so a person can read what an admin would see.
  */
 import { appendFileSync } from 'node:fs';
 import type { RuleSummary } from '@arca/api-contract/routes';

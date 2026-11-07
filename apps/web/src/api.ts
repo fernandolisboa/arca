@@ -108,7 +108,7 @@ export const notificationChannelsQuery = queryOptions({
   retry: false,
 });
 
-/** The open reports of possibly wrong requirements, for an approver (spec 0007, R8). */
+/** The open reports of possibly wrong requirements, for an admin (spec 0007, R8). */
 export const ruleReportsQuery = queryOptions({
   queryKey: ['knowledge', 'reports'],
   queryFn: () => api.call(routes.listRuleReports),
@@ -120,7 +120,7 @@ export const ruleReportsQuery = queryOptions({
 const checkPollMs = 15_000;
 
 /**
- * Every route version with its decision state and check status, for an approver only (spec 0007,
+ * Every route version with its decision state and check status, for an admin only (spec 0007,
  * R7), read again while a check runs.
  */
 export const knowledgeVersionsQuery = queryOptions({
@@ -132,7 +132,7 @@ export const knowledgeVersionsQuery = queryOptions({
     state.data?.versions.some(({ check }) => check === 'running') === true ? checkPollMs : false,
 });
 
-/** One comparison version laid out for its approver (ADR-0026). */
+/** One comparison version laid out for an admin (ADR-0026). */
 export const comparisonViewQuery = (comparisonId: string, number: number) =>
   queryOptions({
     queryKey: ['knowledge', 'comparison', comparisonId, number],
@@ -141,7 +141,7 @@ export const comparisonViewQuery = (comparisonId: string, number: number) =>
     retry: false,
   });
 
-/** One route version laid out for its approver (spec 0007, R7). */
+/** One route version laid out for an admin (spec 0007, R7). */
 export const versionViewQuery = (routeId: string, number: number) =>
   queryOptions({
     queryKey: ['knowledge', 'view', routeId, number],
@@ -150,6 +150,13 @@ export const versionViewQuery = (routeId: string, number: number) =>
     retry: false,
   });
 
+/** Which members of the case are admins, for an admin only (ADR-0027). */
+export const caseAdminsQuery = queryOptions({
+  queryKey: ['admins'],
+  queryFn: () => api.call(routes.listCaseAdmins),
+  networkMode: 'always',
+  retry: false,
+});
 /** One route version's independent check and its current report, read again while it runs. */
 export const versionCheckQuery = (routeId: string, number: number) =>
   queryOptions({
@@ -173,6 +180,7 @@ const accountQueries = [
   devicesQuery,
   vaultStatusQuery,
   notificationChannelsQuery,
+  caseAdminsQuery,
   { queryKey: ['knowledge'] },
   // The vault's documents, whatever identity opened them (documents.ts).
   { queryKey: ['documents'] },

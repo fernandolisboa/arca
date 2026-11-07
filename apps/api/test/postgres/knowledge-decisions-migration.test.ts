@@ -4,6 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { auditLog } from '../../src/audit/log.js';
 import { credentialStore } from '../../src/auth/auth.js';
 import { createStepUp } from '../../src/auth/step-up.js';
+import { adminRole } from '../../src/knowledge/admins.js';
 import { createKnowledgeDecisions } from '../../src/knowledge/decisions.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
 import { legacyStepUp, routeAction } from './knowledge-decision-legacy.js';
@@ -71,7 +72,7 @@ describe('the session-decision migration (ADR-0027)', () => {
       audit: auditLog(auditDb),
       catalog: { identities: (routeId) => (routeId === version.routeId ? [version] : []) },
       comparisons: { identities: () => [] },
-      approvers: [approver.signedIn.accountId],
+      role: adminRole(() => apiDb, [approver.signedIn.accountId]),
       origin,
       logger: {
         info: () => undefined,

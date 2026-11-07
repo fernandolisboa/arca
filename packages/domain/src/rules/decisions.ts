@@ -20,7 +20,7 @@ export type DecidedVersion =
   | { readonly subject: 'comparison'; readonly identity: ComparisonIdentity };
 
 /**
- * A stored decision on one version identity, with whether its approver and assertion check out.
+ * A stored decision on one version identity, with whether its admin and assertion check out.
  * Each subject kind carries its own identity, so a comparison ID never lands in a route slot.
  */
 export type CheckedDecision = DecidedVersion & {

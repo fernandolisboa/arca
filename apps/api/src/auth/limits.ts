@@ -83,7 +83,7 @@ export const intakeLimits = {
 } as const satisfies Record<string, RateLimitRule>;
 
 /**
- * Rule summaries per approver (ADR-0025): a request the cache misses is one model call, two when
+ * Rule summaries per admin (ADR-0025): a request the cache misses is one model call, two when
  * the first reply does not parse.
  */
 export const ruleSummaryLimits = {

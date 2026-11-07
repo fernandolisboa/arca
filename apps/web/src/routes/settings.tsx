@@ -181,7 +181,7 @@ function AccountPanel() {
   );
 }
 
-/** The way to the activation screen, for an approver only (spec 0007, R7). */
+/** The way to the activation screen, for an admin only (spec 0007, R7). */
 function KnowledgePanel() {
   const { t } = useTranslation();
   return (
@@ -193,11 +193,11 @@ function KnowledgePanel() {
 
 type IntroKey = 'settings.appearance.intro' | 'knowledge.settings.intro';
 
-/** What each category shows under its heading; the approver's category only to an approver. */
+/** What each category shows under its heading; the admins' category only to an admin. */
 interface PanelEntry {
   readonly intro?: IntroKey;
   readonly Panel: () => ReactNode;
-  readonly approverOnly?: true;
+  readonly adminOnly?: true;
 }
 
 const axisPanels = Object.fromEntries(
@@ -210,7 +210,7 @@ const axisPanels = Object.fromEntries(
 const panels: Record<SettingsSection, PanelEntry> = {
   ...axisPanels,
   account: { Panel: AccountPanel },
-  knowledge: { intro: 'knowledge.settings.intro', Panel: KnowledgePanel, approverOnly: true },
+  knowledge: { intro: 'knowledge.settings.intro', Panel: KnowledgePanel, adminOnly: true },
 };
 
 /** Settings in categories: a side menu on wide screens, a row of buttons on top on phones. */
@@ -219,7 +219,7 @@ function Settings() {
   const { section: asked } = Route.useSearch();
   const session = useQuery(sessionQuery);
   const visible = settingsSections.filter(
-    (section) => panels[section].approverOnly !== true || session.data?.approver === true,
+    (section) => panels[section].adminOnly !== true || session.data?.admin === true,
   );
   const current = asked !== undefined && visible.includes(asked) ? asked : settingsSections[0];
   const { intro, Panel } = panels[current];

@@ -50,8 +50,8 @@ function Knowledge() {
   const words = useKnowledgeWords();
   const { t } = words;
   const session = useQuery(sessionQuery);
-  const approver = session.data?.approver === true;
-  const versions = useQuery({ ...knowledgeVersionsQuery, enabled: approver });
+  const admin = session.data?.admin === true;
+  const versions = useQuery({ ...knowledgeVersionsQuery, enabled: admin });
   const [picked, setPicked] = useState<Picked | null>(null);
   useStartChecks(versions.isSuccess);
   const title = t('knowledge.title');
@@ -66,12 +66,12 @@ function Knowledge() {
     );
   }
   if (
-    (session.isSuccess && !approver) ||
+    (session.isSuccess && !admin) ||
     (versions.error instanceof ApiError && versions.error.status === 403)
   ) {
     return (
       <Page title={title}>
-        <p>{t('knowledge.notApprover')}</p>
+        <p>{t('knowledge.notAdmin')}</p>
       </Page>
     );
   }

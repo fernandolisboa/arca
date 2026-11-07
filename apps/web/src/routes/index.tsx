@@ -55,7 +55,7 @@ function Home() {
       )}
       <KitNotice />
       {data.confirmed ? (
-        <Overview approver={data.approver} />
+        <Overview admin={data.admin} />
       ) : (
         <>
           <Greeting name={undefined} lead={undefined} />
@@ -88,7 +88,7 @@ function SignedOut() {
 }
 
 /** The signed-in, confirmed home. */
-function Overview({ approver }: { readonly approver: boolean }) {
+function Overview({ admin }: { readonly admin: boolean }) {
   const familyCase = useQuery(caseQuery);
   const view = familyCase.data?.case;
   const questions = useQuery({
@@ -104,7 +104,7 @@ function Overview({ approver }: { readonly approver: boolean }) {
       <Shortcuts>
         <VaultCard />
         <FamilyCard view={view} />
-        {approver && <RulesCard />}
+        {admin && <RulesCard />}
       </Shortcuts>
     </>
   );

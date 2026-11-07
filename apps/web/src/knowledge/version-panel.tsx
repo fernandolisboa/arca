@@ -253,7 +253,7 @@ function StepContent({
           render={(source) => (
             <>
               <p className="font-medium">{source.title}</p>
-              {/* Plain text, never a link: the approver reads the full address before opening it. */}
+              {/* Plain text, never a link: the admin reads the full address before opening it. */}
               <p className="font-mono text-small break-all">{source.url}</p>
               <p className="text-small">
                 {source.host === null
@@ -354,7 +354,7 @@ function DecisionStep({
 
 /**
  * One version as data (spec 0007, R7), reviewed as a wizard: a step per section of the version,
- * named in a step list the approver can jump through, with Back and Next, and the decision last.
+ * named in a step list the admin can jump through, with Back and Next, and the decision last.
  */
 export function VersionPanel({ view }: { readonly view: VersionView }) {
   const words = useKnowledgeWords();

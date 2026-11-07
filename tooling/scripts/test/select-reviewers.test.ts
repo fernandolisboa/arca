@@ -100,10 +100,12 @@ describe('reviewer selection', () => {
     ['sharing', ['apps/web/src/sharing.ts'], [...core, 'data-access', 'auth-crypto']],
     ['a knowledge-base decision', ['apps/api/src/knowledge/decisions.ts'], api],
     [
-      'the approver screen',
+      'the admin decision screen',
       ['apps/web/src/knowledge/decision.tsx'],
       [...core, 'data-access', 'auth-crypto'],
     ],
+    ['the admin role', ['apps/web/src/admins.ts'], [...core, 'data-access', 'auth-crypto']],
+    ['the owner list', ['apps/api/src/knowledge/owner-list.ts'], api],
     ['the access matrix', ['apps/api/test/postgres/every-table.ts'], api],
     [
       'a database e2e test',
@@ -227,6 +229,9 @@ const sensitive: readonly (readonly [string, Reviewer])[] = [
   ['docs/adr/0018-vault-encryption.md', 'auth-crypto'],
   ['packages/db/migrations/20261104044314_step_up/migration.sql', 'auth-crypto'],
   ['apps/web/src/sign-in.ts', 'auth-crypto'],
+  ['apps/api/src/knowledge/admin-grants.ts', 'auth-crypto'],
+  ['apps/api/src/knowledge/admin-grants.ts', 'data-access'],
+  ['apps/web/src/admins.ts', 'auth-crypto'],
 ];
 
 describe('sensitive files in this repository', () => {

@@ -3,9 +3,9 @@ import type { Database } from '@arca/db';
 import { sql } from 'drizzle-orm';
 
 /**
- * Members' reports of possibly wrong requirements as approvers see them (spec 0007, R8): through
+ * Members' reports of possibly wrong requirements as admins see them (spec 0007, R8): through
  * the two reviewed definer functions, which name no note, case or reporter. The API calls them
- * for an approver only.
+ * for an admin only.
  */
 export interface RuleReportReview {
   readonly open: () => Promise<RuleReports['reports']>;

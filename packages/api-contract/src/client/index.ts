@@ -5,6 +5,7 @@ import { apiBasePath, ErrorResponse, type RouteDefinition } from '../routes/inde
 
 export {
   addCaseMemberAction,
+  grantAdminAction,
   decideComparisonAction,
   decideVersionAction,
   apiBasePath,
@@ -56,6 +57,8 @@ export type {
   AuditEventCode,
   AuditEventsQuery,
   AuditEventsResponse,
+  CaseAdmin,
+  CaseAdmins,
   CasePerson,
   CaseEvaluations,
   CaseIntakeDraftResponse,

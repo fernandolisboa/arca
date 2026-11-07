@@ -194,7 +194,7 @@ describe('Better Auth on the app_auth pool', () => {
       pendingPasskeyUntil: null,
       recoveryPending: false,
       deletionDueAt: null,
-      approver: false,
+      admin: false,
     });
     const stored = await asAdmin(async (client) => {
       const sessions = await client.query(

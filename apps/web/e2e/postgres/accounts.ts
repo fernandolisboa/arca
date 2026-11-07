@@ -196,6 +196,17 @@ export async function clearKnowledgeDecisions(): Promise<void> {
 }
 
 /**
+ * Starts the admin role over for an owner-list account (ADR-0027): no grant history, which no role
+ * may delete, and the account in no case, so it can start one.
+ */
+export async function startOverAdmins(ownerId: string): Promise<void> {
+  await asAdmin(async (client) => {
+    await client.query('TRUNCATE knowledge.admin_grant');
+    await client.query('DELETE FROM cases.member WHERE account_id = $1', [ownerId]);
+  });
+}
+
+/**
  * The first account is created once per database, so the enrollment tests start from one with no
  * account, no spent enrollment code and no pending link, and run before any test seeds an account.
  */
