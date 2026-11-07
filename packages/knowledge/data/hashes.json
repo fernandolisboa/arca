@@ -141,7 +141,7 @@
     },
     {
       "path": "guides/ar/1",
-      "sha256": "c78094e2591487ffebeabe31a08f19f14813827acbdec257b70d50879c427ee5"
+      "sha256": "5927cd1da52d759bb7d7c9841353e52967a2cf06dbc434ecd085a38c1f62cb9d"
     },
     {
       "path": "guides/cl/1",
@@ -149,7 +149,7 @@
     },
     {
       "path": "guides/dk/1",
-      "sha256": "972f39986f9011609362945a4c9f75ea6e6274863f9d0adc51fb028d9eec4325"
+      "sha256": "088b830e4cc733a882395d1246f4cdfea4ca36760c2385f6f15ea4ccd9b6bc32"
     },
     {
       "path": "guides/es/1",
@@ -169,7 +169,7 @@
     },
     {
       "path": "guides/uy/1",
-      "sha256": "c1aa7878ff31d913aaed3877af7fa7611d9e3a22f3e3439d7f86917d136826c6"
+      "sha256": "a5d848e17e6ed8ba7ed93b660869b3b34877cc616796a80759928dc8bbac31ff"
     }
   ]
 }

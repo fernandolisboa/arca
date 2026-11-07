@@ -104,7 +104,7 @@
     },
     {
       "id": "start-date-and-earlier-wording",
-      "text": "Ley 20.075, art. 169, makes the current art. 33 apply from 120 days after the law's promulgation on 2022-10-20, which is 2023-02-17 by a plain count, not from 2023-01-01 like most of that law (art. 5). The same right already existed under the wording of Ley 19.254 (published 2014-09-04): application to the Foreign Ministry or a consulate, criminal records reported by the Ministry of the Interior within 15 business days, a Foreign Ministry decision within 30 business days, and requirements no stricter than for temporary residence. Dates before 2023-02-17 fall under the Ley 19.254 wording.",
+      "text": "Ley 20.075, art. 169, makes the current art. 33 apply from 120 days after the law's promulgation on 2022-10-20, which is 2023-02-17 by a plain count, not from 2023-01-01 like most of that law (art. 5). The same right already existed under the wording of Ley 19.254 (published 2014-09-04): application to the Foreign Ministry or a consulate, criminal records reported by the Ministry of the Interior within 15 business days, a Foreign Ministry decision within 30 business days, and requirements no stricter than for temporary residence. Dates from Ley 19.254 until 2023-02-16 fall under its wording.",
       "laws": ["ley-20075", "ley-19254", "ley-18250"]
     },
     {
@@ -165,7 +165,7 @@
     {
       "id": "fees-in-indexed-units",
       "text": "The directorate prices the residence at 557.30 UI plus a 55.70 UI migration certificate for the identity card, and 225.60 UI for each re-entry permit needed when leaving Uruguay before the residence is granted (Decreto 394/009, art. 15, provides the permit). Ley 17.761 makes the UI vary daily with the consumer price index (art. 2) and has the statistics institute publish the daily value (art. 4); the page says the amounts are based on UI whose value is readjusted every 6 months. Only the page says that Brazilians and Paraguayans pay nothing for permanent residence, by reciprocity.",
-      "laws": ["dnm-permanente-mercosur", "ley-17761", "decreto-394-2009", "ley-20019"]
+      "laws": ["dnm-permanente-mercosur", "ley-17761", "decreto-394-2009"]
     },
     {
       "id": "reciprocity",

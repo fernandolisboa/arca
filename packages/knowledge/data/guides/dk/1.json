@@ -125,7 +125,7 @@
     },
     {
       "id": "other-grounds-same-amounts",
-      "text": "The fast-track scheme for certified employers uses the same pay limit (§ 9 a(2)(14)(a)). § 9 a(2)(13) prints a supplementary limit of DKK 375,000, adjusted the same way, only while unemployment stays below a level the minister sets and the job was advertised on Jobnet and EURES for 2 weeks. From 2027-01-01 Act No. 765 of 2026 adds § 9 a(2)(15), DKK 322,000 (2026 level, per SIRI) for a job under a collective agreement the minister names, at a certified employer, for citizens of listed third countries. Each is a separate ground with its own conditions.",
+      "text": "The fast-track scheme for certified employers uses the same pay limit (§ 9 a(2)(14)(a)). § 9 a(2)(13) prints a supplementary limit of DKK 375,000, adjusted the same way, only while unemployment stays below a level the minister sets and the job was advertised on Jobnet and EURES for 2 weeks. From 2027-01-01 Act No. 765 of 2026 adds § 9 a(2)(15), DKK 322,000 for a job under a collective agreement the minister names, at a certified employer, for citizens of listed third countries. Each is a separate ground with its own conditions.",
       "laws": ["aliens-act", "act-765-2026"]
     },
     {
@@ -180,7 +180,7 @@
     },
     {
       "id": "eu-justice-home-affairs-opt-out",
-      "text": "Under Protocol No. 22, Denmark takes no part in adopting measures under Title V of Part Three TFEU (art. 1), and no such provision, measure or Court of Justice ruling binds or applies in Denmark (art. 2), except measures on visa lists and a uniform visa format (art. 6). For a measure building on the Schengen acquis, Denmark decides within 6 months whether to implement it in national law, and it then binds Denmark under international law (art. 4). The protocol names no directive; any directive adopted under Title V is such a measure, so the § 9 a scheme stands on national law alone.",
+      "text": "Under Protocol No. 22, Denmark takes no part in adopting measures under Title V of Part Three TFEU (art. 1), and no Title V provision, measure or Court of Justice ruling on them binds or applies in Denmark (art. 2), save visa lists and a uniform visa format (art. 6). A measure building on the Schengen acquis binds Denmark under international law only if it decides within 6 months to implement it in national law (art. 4). So no Title V directive governs a § 9 a permit, though the Aliens Act defers to EU rules where it says so (§§ 9 h(1), 9 m(1) and (3)).",
       "laws": ["tfeu-protocol-22", "aliens-act"]
     }
   ],
