@@ -18,6 +18,7 @@ import {
   PanelsTopLeft,
   Route,
   Settings,
+  Sparkles,
   TriangleAlert,
   UserRound,
   UsersRound,
@@ -47,6 +48,7 @@ const icons = {
   alert: TriangleAlert,
   vault: LockKeyhole,
   next: ArrowRight,
+  ai: Sparkles,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof icons;

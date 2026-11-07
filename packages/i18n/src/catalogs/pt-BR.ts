@@ -834,7 +834,7 @@ export const ptBR = {
     closed: 'Rota encerrada',
     corrects: 'Corrige a versão {number}.',
     currency: 'Valores em {currency}.',
-    tags: 'Etiquetas: {tags}',
+    tags: 'Etiquetas',
     hash: 'Código do conteúdo (SHA-256)',
     section: {
       settings: 'Configurações da versão',
@@ -921,7 +921,7 @@ export const ptBR = {
       'Regras de {date} · {dependents, plural, =0 {nenhum dependente} one {# dependente} other {# dependentes}} · {possible, plural, =0 {nenhum possível dependente} one {# possível dependente} other {# possíveis dependentes}}',
     caseMissing: 'Faltam: {facts}',
     summary: {
-      button: 'Resumir esta regra',
+      button: 'Resumir regra',
       pending: 'Lendo a regra…',
       title: 'Resumo feito pela IA',
       watchPoints: 'Pontos de atenção',

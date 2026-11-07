@@ -97,10 +97,19 @@ test('the seed approver activates a version, reads and closes its reports, then 
   await expect(page.getByRole('region', { name: 'Verificação independente' })).toContainText(
     'ainda não existe',
   );
-  await page.getByRole('button', { name: 'Resumir esta regra' }).click();
+  await page.getByRole('button', { name: 'Resumir regra' }).click();
   const summary = page.getByRole('region', { name: 'Resumo feito pela IA' });
   await expect(summary).toContainText('Resumo de teste de EB-5');
   await expect(summary).toContainText('A IA pode errar.');
+  // The server keeps the summary, so it is still there after a reload, with no button to ask again.
+  await page.reload();
+  await proposed
+    .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
+    .click();
+  await expect(summary).toContainText('Resumo de teste de EB-5');
+  await expect(page.getByRole('button', { name: 'Resumir regra' })).toHaveCount(0);
+  await expect(page.getByRole('list', { name: 'Etiquetas' })).toContainText('investment');
+  await reviewStep(page, 'Decisão');
   const { violations } = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
     .analyze();

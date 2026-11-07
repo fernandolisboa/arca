@@ -31,6 +31,8 @@ import { todayInSaoPaulo } from './calendar.js';
 import { createRuleReportReview } from './knowledge/reports.js';
 import { createRuleSummaries } from './knowledge/summaries.js';
 import { summarizerFor } from './knowledge/summary/environment.js';
+import { ruleSummaryPromptVersion } from './knowledge/summary/prompt.js';
+import { postgresSummaryStore } from './knowledge/summary/store.js';
 import { createKnowledgeVersions } from './knowledge/versions.js';
 import {
   databaseTargetFrom,
@@ -289,7 +291,9 @@ const ruleSummaries =
     ? undefined
     : createRuleSummaries({
         versions: knowledgeVersions,
-        summarizer,
+        ...summarizer,
+        store: postgresSummaryStore(() => connected().db),
+        promptVersion: ruleSummaryPromptVersion,
         logger,
         now: () => performance.now(),
       });

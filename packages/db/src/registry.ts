@@ -450,6 +450,12 @@ export const registry: Registry = {
   ],
   unowned: [
     {
+      table: 'knowledge.rule_summary',
+      personalData: 'none',
+      reason:
+        "A model's summary of a route version's public content for the approver (ADR-0025), keyed by the version's hash, prompt and model; it names no account.",
+    },
+    {
       table: 'cases.case_file',
       personalData: 'none',
       reason: 'A case: its ID and creation time only; it ends with its last member.',

@@ -23,7 +23,7 @@
 
 | Role | Purpose | Privileges |
 | --- | --- | --- |
-| `app_api` | API requests | `NOBYPASSRLS`; DML on case tables, always under RLS; `SELECT` only on knowledge decisions |
+| `app_api` | API requests | `NOBYPASSRLS`; DML on case tables, always under RLS; `SELECT` only on knowledge decisions; `SELECT` and `INSERT` on rule summaries, which hold public rule content ([ADR-0025](0025-rule-summary-for-the-approver.md)) |
 | `app_jobs` | Workflow steps | `NOBYPASSRLS`; only the tables its jobs need |
 | `app_auth` | Better Auth | Only the auth tables (users, sessions, passkeys), which are not under per-person RLS, and `INSERT` on knowledge decisions, each a copy of a step-up it spends ([spec 0007](../specs/0007-case-model-and-guided-intake.md#r7-activation-and-rejection-adr-0022)) |
 | `app_audit` | Audit writer | `INSERT` only on the audit log; no `UPDATE` or `DELETE` for anyone but the migrator |
