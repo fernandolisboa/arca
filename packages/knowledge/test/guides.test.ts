@@ -3,6 +3,15 @@ import { buildKnowledge, catalogModule, formatIssue } from '../scripts/build.ts'
 import { createGuideLookup } from '../src/guides.ts';
 import { baseTree, buildDate, emptyHashes, fixtures, writeTree } from './data.ts';
 
+const law = (overrides: Record<string, unknown> = {}): Record<string, unknown> => ({
+  id: 'residence-act',
+  title: 'Residence act',
+  url: 'https://www.gov.example/residence-act',
+  verifiedAt: '2026-10-01',
+  amendment: 'Amended by acts of parliament, published in the official gazette.',
+  ...overrides,
+});
+
 /** A synthetic guide for the fixture country QM. */
 function guide(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
@@ -10,15 +19,7 @@ function guide(overrides: Record<string, unknown> = {}): Record<string, unknown>
     id: 'qm',
     number: 1,
     title: 'QM immigration law',
-    laws: [
-      {
-        id: 'residence-act',
-        title: 'Residence act',
-        url: 'https://www.gov.example/residence-act',
-        verifiedAt: '2026-10-01',
-        amendment: 'Amended by acts of parliament, published in the official gazette.',
-      },
-    ],
+    laws: [law()],
     pitfalls: [
       {
         id: 'old-amounts',
@@ -75,15 +76,7 @@ describe('country guides in the build (ADR-0027)', () => {
     [
       'a law off the pinned official hosts',
       guide({
-        laws: [
-          {
-            id: 'residence-act',
-            title: 'Residence act',
-            url: 'https://blog.example/residence-act',
-            verifiedAt: '2026-10-01',
-            amendment: 'Amended by acts of parliament.',
-          },
-        ],
+        laws: [law({ url: 'https://blog.example/residence-act' })],
         pitfalls: [],
       }),
       'guides/qm/1.json /laws/0/url: A law is on a host of a pinned official-domain list',
@@ -91,15 +84,7 @@ describe('country guides in the build (ADR-0027)', () => {
     [
       'a law verified after the build date',
       guide({
-        laws: [
-          {
-            id: 'residence-act',
-            title: 'Residence act',
-            url: 'https://www.gov.example/residence-act',
-            verifiedAt: '2026-12-01',
-            amendment: 'Amended by acts of parliament.',
-          },
-        ],
+        laws: [law({ verifiedAt: '2026-12-01' })],
         pitfalls: [],
       }),
       'guides/qm/1.json /laws/0/verifiedAt: A source is not verified after the build date',

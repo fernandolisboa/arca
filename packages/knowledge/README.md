@@ -25,7 +25,7 @@ test/history.test.ts                        selection over the fixture version h
 test/performance.test.ts                    the engine's trace-size bound over every fixture route (R5)
 ```
 
-Every file in `data` is immutable once on `main`. A change is a new numbered file; `hashes.json` and cases files only gain entries. The required check `knowledge-immutable` enforces this from `main` on every pull request (`tooling/scripts/src/check-knowledge-immutable.ts`, which reads hosts with the same `hostOf` the build uses, from `@arca/scripts/host`; run it locally with `pnpm check:knowledge-immutable`). It also keeps official-domain lists, and country guides, in pull requests of their own and admits a file under `vendor` only once `.github/policy/vendored.json` on `main` approves it.
+Every file in `data` is immutable once on `main`. A change is a new numbered file; `hashes.json` and cases files only gain entries. The required check `knowledge-immutable` enforces this from `main` on every pull request (the rules in `tooling/scripts/src/knowledge-immutable.ts`, run by `check-knowledge-immutable.ts`; it reads hosts with the same `hostOf` the build uses, from `@arca/scripts/host`; run it locally with `pnpm check:knowledge-immutable`). It also keeps official-domain lists, and country guides, in pull requests of their own and admits a file under `vendor` only once `.github/policy/vendored.json` on `main` approves it.
 
 ## Building
 

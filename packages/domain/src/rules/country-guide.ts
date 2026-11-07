@@ -1,28 +1,30 @@
 import { z } from 'zod';
 import { calendarDateSchema } from '../calendar/calendar-date.js';
+import type { CountryCode } from '../case/snapshot.js';
 import type { CheckIssue } from './check.js';
 import { slugSchema } from './expression.js';
-import {
-  knowledgeTextSchema as text,
-  pinSchema,
-  sourceSchema,
-  versionNumberSchema,
-} from './route-version.js';
+import { pinSchema, sourceSchema, versionNumberSchema } from './route-version.js';
 import { type OfficialHosts, officialUrl } from './validate.js';
 
 /** The longest piece of free text in a guide: a paragraph, never a law's text. */
 export const maxGuideTextLength = 600;
 
 /**
- * A guide's free text: plain prose the independent check reads as data. No angle brackets and no
- * URLs, so it can neither open a markup or delimiter of its own nor point anywhere but its laws.
+ * Every text in a guide is plain prose the independent check reads as data. No angle brackets and
+ * nothing shaped like a link (a scheme such as `https:` or `mailto:`, or a `www.` host), so it can
+ * neither open a markup or delimiter of its own nor point anywhere but its laws' URLs.
  */
-const guideTextSchema = z
-  .string()
-  .min(1)
-  .max(maxGuideTextLength)
-  .refine((value) => !/[<>]/.test(value), { message: 'Guide text has no angle brackets' })
-  .refine((value) => !/[a-z][a-z0-9+.-]*:\/\//i.test(value), { message: 'Guide text has no URLs' });
+const plainText = (max: number) =>
+  z
+    .string()
+    .min(1)
+    .max(max)
+    .refine((value) => !/[<>]/.test(value), { message: 'Guide text has no angle brackets' })
+    .refine((value) => !/\b[a-z][a-z0-9+.-]*:\S|\bwww\./i.test(value), {
+      message: 'Guide text has no links',
+    });
+const title = plainText(200);
+const guideTextSchema = plainText(maxGuideTextLength);
 
 /**
  * What a specialist in one country knows (ADR-0014, ADR-0027): the laws that govern its routes,
@@ -34,12 +36,12 @@ export const countryGuideSchema = z.strictObject({
   /** The country, as its ISO 3166-1 alpha-2 code in lowercase, which is also its directory. */
   id: z.string().regex(/^[a-z]{2}$/),
   number: versionNumberSchema,
-  title: text,
+  title,
   laws: z
     .array(
       z.strictObject({
         id: slugSchema,
-        title: text,
+        title,
         url: sourceSchema.shape.url,
         verifiedAt: calendarDateSchema,
         amendment: guideTextSchema,
@@ -64,7 +66,7 @@ export const countryGuideSchema = z.strictObject({
 export type CountryGuide = z.infer<typeof countryGuideSchema>;
 
 /** The country a guide is for, as an uppercase alpha-2 code. */
-export function guideCountry(guide: Pick<CountryGuide, 'id'>): string {
+export function guideCountry(guide: Pick<CountryGuide, 'id'>): CountryCode {
   return guide.id.toUpperCase();
 }
 

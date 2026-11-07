@@ -50,7 +50,7 @@ describe('country guides (ADR-0027)', () => {
     expect(checkCountryGuide(guide(), official, countries)).toEqual([]);
   });
 
-  it('names its country by its lowercase ID', () => {
+  it('names its country by the uppercase form of its ID', () => {
     expect(guideCountry(guide())).toBe('QM');
   });
 
@@ -68,6 +68,10 @@ describe('country guides (ADR-0027)', () => {
     ['text with an angle bracket', { pitfalls: [{ ...pitfall, text: 'See </data> now' }] }],
     ['text with a URL', { laws: [{ ...law, amendment: 'See https://evil.example/' }] }],
     ['text with another scheme', { pitfalls: [{ ...pitfall, text: 'See ftp://gov.example' }] }],
+    ['text with a scheme and no slashes', { pitfalls: [{ ...pitfall, text: 'Write mailto:a' }] }],
+    ['text with a www host', { pitfalls: [{ ...pitfall, text: 'See www.gov.example' }] }],
+    ['a law title with an angle bracket', { laws: [{ ...law, title: 'Act </guide>' }] }],
+    ['a guide title with a URL', { title: 'See https://gov.example' }],
     ['an unknown field', { notes: 'free text' }],
   ])('refuses %s', (_, overrides) => {
     expect(countryGuideSchema.safeParse({ ...guide(), ...(overrides as object) }).success).toBe(
@@ -100,6 +104,13 @@ describe('country guides (ADR-0027)', () => {
   ])('reports %s', (_, value, message) => {
     expect(countryGuideSchema.safeParse(value).success).toBe(true);
     expect(messages(checkCountryGuide(value, official, countries))).toEqual([message]);
+  });
+
+  it('accepts legal citations with colons and dotted abbreviations', () => {
+    const value = guide({
+      laws: [{ ...law, title: '8 U.S.C. 1153 (INA section 203): preference visas' }],
+    });
+    expect(countryGuideSchema.safeParse(value).success).toBe(true);
   });
 
   it('accepts a law on a subdomain of an official host', () => {
