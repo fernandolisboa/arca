@@ -43,6 +43,7 @@
     "better-auth": "catalog:",
     "drizzle-orm": "catalog:",
     "hono": "catalog:",
+    "parse5": "catalog:",
     "workflow": "catalog:",
     "zod": "catalog:"
   }

@@ -10,6 +10,7 @@ import {
 } from '../ai/model-call.js';
 import type { RuleSummaryStore, SummaryKey } from './summary/store.js';
 import { type Summarizer, SummarizerError, type SummarizerFailure } from './summary/summarizer.js';
+import { summaryContent } from './version-content.js';
 import type { KnowledgeVersions } from './versions.js';
 
 export type RuleSummaryOutcome =
@@ -43,41 +44,6 @@ const route = '/v1/knowledge/versions/summary';
 
 /** Model calls one summary may take: the first and one retry on an unparsable reply. */
 export const summaryAttempts = modelAttempts;
-
-/**
- * What the model reads: the version's content alone, field by field. Its hash, its state and what
- * rejecting it would do to today's selection stay out; a field added to the view stays out until
- * it is listed here.
- */
-const summaryFields = [
-  'routeId',
-  'number',
-  'title',
-  'country',
-  'tags',
-  'effectiveFrom',
-  'corrects',
-  'status',
-  'currency',
-  'leapDayBirthday',
-  'leapDayBirthdaySources',
-  'referenceDates',
-  'closureSources',
-  'pins',
-  'requirements',
-  'assessments',
-  'dependents',
-  'costs',
-  'durations',
-  'countrySets',
-  'sources',
-  'replaces',
-  'cases',
-] as const satisfies readonly Exclude<keyof VersionView, 'hash' | 'state' | 'rejection'>[];
-
-export function summaryContent(view: VersionView): string {
-  return JSON.stringify(Object.fromEntries(summaryFields.map((field) => [field, view[field]])));
-}
 
 /** The summary of `content`, asked for again once when the reply does not parse. */
 export function readRuleSummary(

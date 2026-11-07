@@ -1,4 +1,4 @@
-import { parseCalendarDate, versionView } from '@arca/domain';
+import { hostMatches, parseCalendarDate, versionView } from '@arca/domain';
 import { describe, expect, it } from 'vitest';
 import { displayCatalog } from '../src/display.ts';
 
@@ -68,4 +68,24 @@ describe('the display catalog (spec 0007, R7)', () => {
       expect(view?.cases.length).toBeGreaterThan(0);
     },
   );
+
+  it.each(routes)(
+    'has the hosts of every official-domain list %s and its country sets pin (ADR-0027)',
+    (routeId) => {
+      for (const { version, countrySets } of displayCatalog.versions(routeId)) {
+        const hosts = displayCatalog.officialHosts(version.officialDomains);
+        expect(hosts?.length).toBeGreaterThan(0);
+        for (const source of version.sources.filter(({ kind }) => kind === 'official')) {
+          expect(hostMatches(displayCatalog.hostOf(source.url) ?? '', hosts ?? [])).toBe(true);
+        }
+        for (const set of countrySets) {
+          expect(displayCatalog.officialHosts(set.officialDomains)?.length).toBeGreaterThan(0);
+        }
+      }
+    },
+  );
+
+  it('answers no hosts when a pinned list is missing', () => {
+    expect(displayCatalog.officialHosts([{ id: 'no-such-list', number: 1 }])).toBeUndefined();
+  });
 });

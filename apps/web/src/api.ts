@@ -116,12 +116,20 @@ export const ruleReportsQuery = queryOptions({
   retry: false,
 });
 
-/** Every route version with its decision state, for an approver only (spec 0007, R7). */
+/** How often a screen reads again while a version's independent check runs (ADR-0027). */
+const checkPollMs = 15_000;
+
+/**
+ * Every route version with its decision state and check status, for an approver only (spec 0007,
+ * R7), read again while a check runs.
+ */
 export const knowledgeVersionsQuery = queryOptions({
   queryKey: ['knowledge', 'versions'],
   queryFn: () => api.call(routes.listKnowledgeVersions),
   networkMode: 'always',
   retry: false,
+  refetchInterval: ({ state }) =>
+    state.data?.versions.some(({ check }) => check === 'running') === true ? checkPollMs : false,
 });
 
 /** One comparison version laid out for its approver (ADR-0026). */
@@ -140,6 +148,16 @@ export const versionViewQuery = (routeId: string, number: number) =>
     queryFn: () => api.call(routes.getVersionView, { routeId, number }),
     networkMode: 'always',
     retry: false,
+  });
+
+/** One route version's independent check and its current report, read again while it runs. */
+export const versionCheckQuery = (routeId: string, number: number) =>
+  queryOptions({
+    queryKey: ['knowledge', 'check', routeId, number],
+    queryFn: () => api.call(routes.getVersionCheck, { routeId, number }),
+    networkMode: 'always',
+    retry: false,
+    refetchInterval: ({ state }) => (state.data?.status === 'running' ? checkPollMs : false),
   });
 
 /**

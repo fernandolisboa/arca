@@ -228,6 +228,61 @@ export {
   versionView,
   viewSections,
 } from './rules/version-view.js';
+export {
+  type CheckValue,
+  canonicalNumber,
+  numbersIn,
+  statesValue,
+} from './independent-check/values.js';
+export {
+  type CheckItem,
+  type CheckItemKind,
+  checkItemKinds,
+  checkItems,
+  expressionValues,
+  maxCheckItemKeyLength,
+} from './independent-check/items.js';
+export {
+  type CheckAnswer,
+  type CheckReason,
+  type CheckStatus,
+  type CheckedItem,
+  type ReadPage,
+  checkReasons,
+  checkStatuses,
+  maxNoteLength,
+  maxQuoteLength,
+  minQuoteLength,
+  normalizeWhitespace,
+  plainNote,
+  reportClean,
+  scriptedCheckerModel,
+  verifyAnswers,
+} from './independent-check/answers.js';
+export {
+  type CheckFailure,
+  type FetchFailure,
+  checkFailures,
+  fetchFailures,
+  fetchOutcomes,
+  versionKey,
+  type CheckStart,
+  type ListedCheckStatus,
+  type ReportKey,
+  type ReportMeta,
+  type StartCandidate,
+  currentReport,
+  failedReportLifetime,
+  listedCheckStatus,
+  listedCheckStatuses,
+  liveStart,
+  maxStartsPerDay,
+  noGuide,
+  reportLifetime,
+  startLifetime,
+  startWindow,
+  versionsToStart,
+} from './independent-check/reports.js';
 export { type VersionDates, checkVersionOrder } from './rules/version-order.js';
 export { type EvaluationContext, type VersionContext } from './rules/context.js';
 export {
