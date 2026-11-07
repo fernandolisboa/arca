@@ -186,6 +186,13 @@ export {
   hostMatches,
 } from './rules/validate.js';
 export {
+  type CountryGuide,
+  checkCountryGuide,
+  countryGuideSchema,
+  guideCountry,
+  maxGuideTextLength,
+} from './rules/country-guide.js';
+export {
   type CatalogEntry,
   type DecisionState,
   type DecisionStates,
