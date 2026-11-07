@@ -114,6 +114,10 @@
     {
       "path": "routes/gb-skilled-worker/1",
       "sha256": "492205c26df7bdbba947d33780157cb4027cdc943fe4ba5ba71d058bbf63b5a0"
+    },
+    {
+      "path": "routes/ie-critical-skills/1",
+      "sha256": "f65654cb523d4a5750724da403cbeeb04195abc52d2cd61f74097d9f94cc186c"
     }
   ]
 }
