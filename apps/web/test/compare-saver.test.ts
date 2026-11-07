@@ -1,6 +1,7 @@
 import { ApiError, type DestinationComparison } from '@arca/api-contract/client';
 import { describe, expect, it } from 'vitest';
 import type { Edit, Preferences } from '../src/compare/edits.js';
+import { emptyQueue, shownComparison } from '../src/compare/save-queue.js';
 import { comparisonSaver, saveFailure, type SaverState } from '../src/compare/saver.js';
 import { UnreachableError } from '../src/requests.js';
 
@@ -27,21 +28,22 @@ function harness() {
   }[] = [];
   const shown: SaverState[] = [];
   const saved: DestinationComparison[] = [];
-  const signedIn = { account: 'account-a' as string | undefined, refetches: 0 };
+  const session = { account: 'account-a' as string | undefined };
+  const refetches = { count: 0 };
   const saver = comparisonSaver({
     write: (body) =>
       new Promise((answer, fail) => {
         writes.push({ body, answer, fail });
       }),
-    account: () => signedIn.account,
+    account: () => session.account,
     show: (state) => shown.push(state),
     saved: (answer) => saved.push(answer),
     refetch: () => {
-      signedIn.refetches += 1;
+      refetches.count += 1;
     },
   });
   const last = () => shown.at(-1);
-  return { saver, writes, saved, signedIn, last };
+  return { saver, writes, saved, session, refetches, last };
 }
 
 describe('Comparison saver', () => {
@@ -69,10 +71,10 @@ describe('Comparison saver', () => {
   });
 
   it('drops an answer that arrives after someone else signed in, with the edits queued behind it', async () => {
-    const { saver, writes, saved, signedIn, last } = harness();
+    const { saver, writes, saved, session, last } = harness();
     saver.change(weigh('safety', 5), read);
     saver.change(weigh('climate', 1), read);
-    signedIn.account = 'account-b';
+    session.account = 'account-b';
     writes[0]?.answer(comparison({ safety: 5 }));
     await settle();
     expect(saved).toEqual([]);
@@ -81,16 +83,19 @@ describe('Comparison saver', () => {
   });
 
   it('drops an answer that arrives after a sign-out', async () => {
-    const { saver, writes, saved, signedIn } = harness();
+    const { saver, writes, saved, session, last } = harness();
     saver.change(weigh('safety', 5), read);
-    signedIn.account = undefined;
+    saver.change(weigh('climate', 1), read);
+    session.account = undefined;
     writes[0]?.answer(comparison({ safety: 5 }));
     await settle();
     expect(saved).toEqual([]);
+    expect(writes).toHaveLength(1);
+    expect(last()?.queue).toEqual({ answer: undefined, pending: [], sending: 0 });
   });
 
   it('puts back what was saved and reads again when a write fails', async () => {
-    const { saver, writes, signedIn, last } = harness();
+    const { saver, writes, refetches, last } = harness();
     saver.change(weigh('safety', 5), read);
     saver.change(weigh('climate', 1), read);
     writes[0]?.fail(new ApiError(409, 'case_invalid'));
@@ -99,17 +104,18 @@ describe('Comparison saver', () => {
       queue: { answer: undefined, pending: [], sending: 0 },
       failure: 'changed',
     });
-    expect(signedIn.refetches).toBe(1);
+    expect(shownComparison(last()?.queue ?? emptyQueue, read)).toBe(read);
+    expect(refetches.count).toBe(1);
     expect(writes).toHaveLength(1);
   });
 
   it('keeps the cached answer instead of spending a read when the writes are limited', async () => {
-    const { saver, writes, signedIn, last } = harness();
+    const { saver, writes, refetches, last } = harness();
     saver.change(weigh('safety', 5), read);
     writes[0]?.fail(new ApiError(429, 'rate_limited'));
     await settle();
     expect(last()?.failure).toBe('limited');
-    expect(signedIn.refetches).toBe(0);
+    expect(refetches.count).toBe(0);
   });
 
   it('clears the failure with the next edit', async () => {
