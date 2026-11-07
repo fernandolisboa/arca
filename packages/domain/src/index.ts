@@ -149,6 +149,7 @@ export {
   jsonDepthWithin,
   maxKnowledgeJsonDepth,
   officialDomainListSchema,
+  routeCountry,
   routeIdSchema,
   routeVersionJsonSchema,
   routeVersionSchema,
@@ -335,7 +336,6 @@ export {
   type PersonRouteResult,
   bestRouteStatuses,
   comparedCountries,
-  routeCountry,
 } from './comparison/countries.js';
 export { nextPreferences } from './comparison/preferences.js';
 export {

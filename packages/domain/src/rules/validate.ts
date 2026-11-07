@@ -9,7 +9,7 @@ import {
 } from './check.js';
 import { type Expression, maxNodesPerVersion, nodeCount } from './expression.js';
 import { resolveFactReference } from './fact-reference.js';
-import type { CountrySet, RouteVersion, Source } from './route-version.js';
+import { type CountrySet, type RouteVersion, type Source, routeCountry } from './route-version.js';
 
 const requirementScope: CheckScope = { current: true, unit: true, edge: false };
 const dependentScope: CheckScope = { current: true, unit: false, edge: true, firstEdge: true };
@@ -93,7 +93,7 @@ export function checkRouteVersion(
   const isOfficial = (source: Source | undefined): boolean =>
     source?.kind === 'official' && officialUrl(source.url, official);
 
-  if (version.routeId.slice(0, 2) !== version.country.toLowerCase()) {
+  if (routeCountry(version.routeId) !== version.country) {
     issue('/routeId', 'A route ID starts with its country code in lowercase');
   }
   for (const [kind, ids] of [

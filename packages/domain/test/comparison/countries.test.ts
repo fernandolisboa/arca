@@ -3,8 +3,8 @@ import {
   type PersonRouteResult,
   bestRouteStatuses,
   comparedCountries,
-  routeCountry,
 } from '../../src/comparison/countries.js';
+import { routeCountry } from '../../src/rules/route-version.js';
 
 describe('the compared countries', () => {
   it('reads a route’s country from its ID', () => {

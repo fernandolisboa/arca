@@ -51,7 +51,11 @@ import { randomBytes } from 'node:crypto';
 import { type SQL, sql } from 'drizzle-orm';
 import type { z } from 'zod';
 import type { AuditLog, AuditRecord } from '../audit/log.js';
-import { type DestinationComparisonView, destinationComparison } from './comparison.js';
+import {
+  type DestinationComparisonView,
+  type EvaluatedAsOf,
+  destinationComparison,
+} from './comparison.js';
 import { caseQuestions, questionState } from './questions.js';
 import { type CaseEvaluationsView, caseEvaluations } from './evaluations.js';
 import { casePlayback } from './playback.js';
@@ -416,7 +420,7 @@ export function createCaseFiles({
       tx: Transaction,
       rows: CaseRows,
       evaluated: CaseEvaluationsView,
-      asOf: { readonly states: DecisionStates; readonly today: CalendarDate },
+      asOf: EvaluatedAsOf,
     ) => Promise<T>,
   ): Promise<T | null> => {
     const states = await evaluation.states();
@@ -445,7 +449,7 @@ export function createCaseFiles({
     accountId: string,
     evaluated: CaseEvaluationsView,
     preferences: ComparisonPreferences,
-    asOf: { readonly states: DecisionStates; readonly today: CalendarDate },
+    asOf: EvaluatedAsOf,
   ) =>
     destinationComparison(rows, accountId, evaluated, preferences, {
       catalog: evaluation.comparisons,

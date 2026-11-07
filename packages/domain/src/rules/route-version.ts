@@ -79,6 +79,11 @@ export const durationStageSchema = z.strictObject({
 
 export const routeIdSchema = z.string().regex(/^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$/);
 
+/** A route's country, from its ID alone: a valid version's ID starts with it in lowercase. */
+export function routeCountry(routeId: string): string {
+  return routeId.slice(0, 2).toUpperCase();
+}
+
 /**
  * One immutable version of a route (spec 0002, R4). Country and tags are fields of every version,
  * so they are hashed and activated with it. A closed version carries no rules, only the official

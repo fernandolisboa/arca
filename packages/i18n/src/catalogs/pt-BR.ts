@@ -1484,7 +1484,7 @@ export const ptBR = {
       caseShares: 'Com quem você compartilhou dados',
       ruleReports: 'Avisos de regra errada que você enviou',
       comparisonPreferences:
-        'Suas escolhas em Comparar destinos: pesos, notas, critérios e países escondidos',
+        'Suas escolhas em Comparar destinos: pesos, suas notas, critérios próprios e países ocultos',
     },
   },
   /**
