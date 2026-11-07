@@ -76,7 +76,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Stale source | Fonte desatualizada | A source not re-verified in the last 90 days; evaluations that cite it say the rule needs re-checking |
 | Activation | Ativação | An admin's approval of one route version or comparison version, bound to its content hash; counts once stored ([ADR-0027](docs/adr/0027-admins-and-the-checked-batch-activation.md); earlier ones carry a step-up, [ADR-0022](docs/adr/0022-single-approver-activation.md)) |
 | Rejection | Recusa | An admin's decision that a version, proposed or active, will never be used; once it counts, selection skips it |
-| Admin | Administrador | An account that may activate or reject knowledge-base versions and give or take away the admin role; on the owner list, or holding a grant another admin gave from the family area. Replaces "approver" |
+| Admin | Administrador | An account that may activate or reject knowledge-base versions and give or take away the admin role; on the owner list, or holding an admin grant another admin gave from the family area. Replaces "approver" |
 | Decision | Decisão | An admin's activation or rejection, stored with its author; decisions made before ADR-0027 also keep the step-up they consumed |
 | Step-up | Confirmação com chave de acesso | A fresh passkey verification for one sensitive action, bound to that action |
 | Content hash | Código do conteúdo | SHA-256 of the canonical JSON of a version and every file it pins; what a decision is bound to |
@@ -85,9 +85,9 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Admin grant | Internal, no UI label | An insert-only record that an admin gave the admin role to a confirmed account sharing a case with them (with a step-up), or took it away |
 | Owner list | Internal, no UI label | The reviewed file in the repository that names, by account ID and per environment, the accounts that are always admins and cannot lose the role in the app; formerly the approver list |
 | Activation screen | Tela de ativação | Where an admin reviews a proposed version as data, with its check report apart, and activates or rejects it |
-| Independent check | Verificação independente | The model's report that compares a proposed route version, item by item, with the official sources it cites: matches, differs or could not be checked, each quote checked in code against the fetched page; advisory only, never part of the content hash |
+| Independent check | Verificação independente | The model's report that compares a proposed route version, item by item, with the official sources it cites: matches, differs or could not be checked, each quote and value checked in code against the fetched page; never activates a version by itself and is never part of the content hash |
 | Checked version | Conferida pela IA | A proposed route version whose current independent check report is clean: every item matches, with each quote and value checked in code; admins can activate all checked versions with one tap |
-| Flagged version | Marcada para revisão | A proposed route version whose current check found an item that differs or could not be checked; decided one by one |
+| Flagged version | Marcada para revisão | A proposed route version whose current check report is not clean: an item differs or could not be checked; decided one by one |
 | Country guide | Internal, no UI label | The reviewed, versioned data file per country that the independent check loads, its per-country specialist: governing laws, how they change, known pitfalls; never a source and never a list of official hosts; lands in its own pull request; not a Claude Code skill |
 | Rule report | Aviso de regra errada | A person's flag that a rule they were shown may be wrong; opens a research task. The button reads "Avisar regra errada" |
 | Research task | Pesquisa pendente | The request opened when the knowledge base cannot answer a question; a research agent works it into a proposal |

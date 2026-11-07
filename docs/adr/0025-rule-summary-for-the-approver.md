@@ -1,6 +1,6 @@
 # ADR-0025: A model summarizes a rule version for the approver
 
-- Status: Accepted
+- Status: Accepted; since [ADR-0027](0027-admins-and-the-checked-batch-activation.md), admins (the owner list or an in-app admin grant) take the approver's place here
 - Date: 2026-11-06; amended the same day: summaries are stored, after the owner lost one on reload
 - Amends: [ADR-0004](0004-ai-providers-behind-ports.md) (a `Summarizer` port), [ADR-0023](0023-free-text-intake-sends-the-writers-own-words.md) and [ADR-0016](0016-observability-and-scrubbing.md) (when Langfuse comes in)
 
