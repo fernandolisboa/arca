@@ -183,7 +183,7 @@ Family members of a Blue Card holder get long-term residence for family reunific
 
 | Fact | Source |
 | --- | --- |
-| Blue Card for a highly qualified job a non-EU foreigner may fill, in the central register of vacancies open to Blue Card holders; a degree, higher vocational study of 3 years or more, or professional skill comparable to a degree; refusal grounds include false documents and an employer whose main purpose is to bring in third-country nationals | [Aliens Act](https://e-sbirka.gov.cz/sb/1999/326), § 42i(1), (2), (6), (11)(b) |
+| Blue Card for a highly qualified job a non-EU foreigner may fill, in the central register of vacancies open to Blue Card holders; a degree or higher vocational study from a programme of 3 years or more, or professional skill comparable to a degree; refusal grounds include false documents and an employer whose main purpose is to bring in third-country nationals | [Aliens Act](https://e-sbirka.gov.cz/sb/1999/326), § 42i(1), (2), (6), (11)(b) |
 | A contract of at least 6 months at the statutory full weekly hours, with gross pay of at least 1.5 times the average gross annual wage the Ministry of Labour announces; proof of qualification; recognition for a regulated profession | [Aliens Act](https://e-sbirka.gov.cz/sb/1999/326), § 42j(1)(b) to (d) |
 | Average gross annual wage for Blue Cards: CZK 590,580, from 1 May 2026 to 30 April 2027 | [Communication No. 44/2026 Sb.](https://e-sbirka.gov.cz/sb/2026/44) |
 | Professional skill: at least 3 years of practice in the 7 years before applying, only for ICT managers and specialists (CZ-ISCO 133 and 25) | [Decree No. 205/2023 Sb.](https://e-sbirka.gov.cz/sb/2023/205), §§ 1 and 2 |
