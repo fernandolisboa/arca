@@ -81,6 +81,20 @@ type AdminBasis = (typeof adminBases)[number];
  */
 const adminLockKey = (accountId: string) => `knowledge.admin:${accountId}`;
 
+/** Whether a `session` row's recorded basis counts; a new basis must be handled here to compile. */
+function sessionCounts({ adminBasis }: DecisionRow): boolean {
+  switch (adminBasis) {
+    case 'owner_list':
+      return true;
+    case null:
+      return false;
+    default: {
+      const unhandled: never = adminBasis;
+      return unhandled;
+    }
+  }
+}
+
 /** A version from the bundled catalog with its subject kind; a route's carries what it corrects. */
 type BundledVersion =
   | { readonly subject: 'route'; readonly identity: VersionIdentity }
@@ -212,11 +226,8 @@ export function createKnowledgeDecisions({
   const check = async (row: DecisionRow): Promise<CheckedDecision | undefined> => {
     const decided = rowVersion(row);
     if (decided === undefined) return undefined;
-    if (row.proof === 'session') {
-      return row.adminBasis === 'owner_list'
-        ? { ...decided, kind: row.kind, verified: true }
-        : undefined;
-    }
+    if (row.proof === 'session')
+      return sessionCounts(row) ? { ...decided, kind: row.kind, verified: true } : undefined;
     const verified = await assertionVerifies(row, decided);
     if (!verified && row.kind === 'activate') {
       logger.error({ errorName: 'KnowledgeActivationIgnored' });
