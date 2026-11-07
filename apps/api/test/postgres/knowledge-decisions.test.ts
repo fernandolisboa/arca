@@ -4,6 +4,7 @@ import { withIdentity } from '@arca/db';
 import {
   type ComparisonIdentity,
   comparisonIdentityKey,
+  comparisonSeriesId,
   parseCalendarDate,
   selectComparisonVersion,
   type VersionIdentity,
@@ -39,8 +40,8 @@ const catalog = {
   identities: (routeId: string) => (routeId === version.routeId ? [version] : []),
 };
 const comparisonVersions: readonly ComparisonIdentity[] = [
-  { comparisonId: 'destinations', number: 1, hash: 'c'.repeat(64) },
-  { comparisonId: 'destinations', number: 2, hash: 'd'.repeat(64) },
+  { comparisonId: comparisonSeriesId, number: 1, hash: 'c'.repeat(64) },
+  { comparisonId: comparisonSeriesId, number: 2, hash: 'd'.repeat(64) },
 ];
 const comparisons = { identities: () => comparisonVersions };
 
@@ -492,7 +493,7 @@ describe('decisions on comparison versions (ADR-0026)', () => {
         code: 'comparison_activated',
         details: {
           decisionId: 'decided' in outcome ? outcome.decided : '',
-          comparisonId: 'destinations',
+          comparisonId: comparisonSeriesId,
           number: 1,
         },
       },
@@ -507,7 +508,7 @@ describe('decisions on comparison versions (ADR-0026)', () => {
     expect(row).toEqual({
       subject_kind: 'comparison',
       route_id: null,
-      comparison_id: 'destinations',
+      comparison_id: comparisonSeriesId,
     });
   });
 
@@ -594,14 +595,14 @@ describe('decisions on comparison versions (ADR-0026)', () => {
           [subject, routeId, comparisonId],
         ),
       );
-    await copy('comparison', null, 'destinations');
+    await copy('comparison', null, comparisonSeriesId);
     expect(await decisions().states()).toEqual(new Map([[identityKey, 'active']]));
     expect(errors).toEqual(['KnowledgeActivationIgnored']);
     // Each kind keeps its own shape: no route ID on a comparison row, only the one series.
-    await expect(copy('comparison', 'qm-sample', 'destinations')).rejects.toThrow();
+    await expect(copy('comparison', 'qm-sample', comparisonSeriesId)).rejects.toThrow();
     await expect(copy('comparison', null, 'homicides')).rejects.toThrow();
     await expect(copy('comparison', null, null)).rejects.toThrow();
-    await expect(copy('route', 'qm-sample', 'destinations')).rejects.toThrow();
+    await expect(copy('route', 'qm-sample', comparisonSeriesId)).rejects.toThrow();
     await expect(copy('route', null, null)).rejects.toThrow();
     await expect(copy('other', 'qm-sample', null)).rejects.toThrow();
   });

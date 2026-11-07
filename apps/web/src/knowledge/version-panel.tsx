@@ -3,7 +3,7 @@ import type { Messages } from '@arca/i18n';
 import { Button, Icon, StatusChip, menuItemClass } from '@arca/ui';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Decision, decideVersion } from './decision.js';
-import { ChangeList, CheckAndHash, card, changeLine, surface } from './review-parts.js';
+import { ChangeList, CheckAndHash, card, changeLines, surface } from './review-parts.js';
 import { ExpressionTree } from './expression-tree.js';
 import { RuleSummaryButton, RuleSummaryCard, useRuleSummary } from './rule-summary.js';
 import { stateTone } from './state-tone.js';
@@ -65,7 +65,7 @@ function Changes({ view, words }: { readonly view: VersionView; readonly words: 
   if (replaces === null) return <p className="text-muted">{words.t('knowledge.firstVersion')}</p>;
   const lines = Object.entries(replaces.changes).flatMap(([section, change]) =>
     // Settings are named by their field; every other section by its items' IDs.
-    changeLine(words.t(`knowledge.section.${section as SectionKey}`), change, words, (ids) =>
+    changeLines(words.t(`knowledge.section.${section as SectionKey}`), change, words, (ids) =>
       words.list(section === 'settings' ? ids.map(words.field) : ids),
     ),
   );

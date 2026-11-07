@@ -2,7 +2,7 @@ import type { ComparisonVersionView } from '@arca/api-contract/client';
 import { StatusChip } from '@arca/ui';
 import { useId, type ReactNode } from 'react';
 import { Decision, decideComparison } from './decision.js';
-import { ChangeList, CheckAndHash, card, changeLine } from './review-parts.js';
+import { ChangeList, CheckAndHash, card, changeLines } from './review-parts.js';
 import { stateTone } from './state-tone.js';
 import { type KnowledgeWords, useKnowledgeWords } from './words.js';
 
@@ -33,8 +33,8 @@ function Changes({
     return <p className="text-muted">{words.t('knowledge.comparison.firstVersion')}</p>;
   }
   const lines = [
-    ...changeLine(words.t('knowledge.comparison.criteria'), replaces.criteria, words),
-    ...changeLine(words.t('knowledge.comparison.indicators'), replaces.indicators, words),
+    ...changeLines(words.t('knowledge.comparison.criteria'), replaces.criteria, words),
+    ...changeLines(words.t('knowledge.comparison.indicators'), replaces.indicators, words),
   ];
   return <ChangeList number={replaces.number} lines={lines} words={words} />;
 }

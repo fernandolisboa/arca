@@ -13,7 +13,7 @@ export interface SectionChange {
 }
 
 /** One line for a section that changed, none for one that did not. */
-export function changeLine(
+export function changeLines(
   section: string,
   change: SectionChange,
   words: KnowledgeWords,
