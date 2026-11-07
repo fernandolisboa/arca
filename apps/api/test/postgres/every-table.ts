@@ -228,6 +228,11 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
       [caseId, accountId],
     );
     await insert(
+      `INSERT INTO cases.comparison_preferences (account_id, case_id, preferences)
+       VALUES ($1, $2, '{"weights": {"climate": 4}, "ratings": {}, "ownCriteria": [], "hidden": []}')`,
+      [accountId, caseId],
+    );
+    await insert(
       `INSERT INTO audit.event (subject_account_id, actor_account_id, code) VALUES ($1, $2, 'sign_in')`,
       [accountId, accountId],
     );

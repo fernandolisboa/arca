@@ -149,6 +149,7 @@ export {
   jsonDepthWithin,
   maxKnowledgeJsonDepth,
   officialDomainListSchema,
+  routeCountry,
   routeIdSchema,
   routeVersionJsonSchema,
   routeVersionSchema,
@@ -314,9 +315,11 @@ export { type DescribedDraft, describeDraft } from './intake/playback.js';
 export {
   type ComparisonCriterion,
   type ComparisonPreferences,
+  type ComparisonPreferencesRequest,
   type ComparisonVersion,
   type CountryIndicator,
   comparisonCriterionSchema,
+  comparisonPreferencesRequestSchema,
   comparisonPreferencesSchema,
   comparisonVersionSchema,
   countryIndicatorSchema,
@@ -329,6 +332,12 @@ export {
   weightSchema,
 } from './comparison/schema.js';
 export { checkComparisonVersion, checkCountryIndicator } from './comparison/check.js';
+export {
+  type PersonRouteResult,
+  bestRouteStatuses,
+  comparedCountries,
+} from './comparison/countries.js';
+export { nextPreferences } from './comparison/preferences.js';
 export {
   type ComparedCriterion,
   type ComparisonInput,

@@ -72,6 +72,8 @@ export type {
   SentenceKind,
   CaseView,
   DataExport,
+  DestinationComparison,
+  WriteComparisonPreferencesRequest,
   ComparisonVersionView,
   DecideComparisonRequest,
   DecideVersionRequest,

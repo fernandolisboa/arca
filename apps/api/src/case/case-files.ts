@@ -7,6 +7,7 @@ import type {
   CaseView,
   HandOverCasePersonRequest,
   ReportRuleRequest,
+  WriteComparisonPreferencesRequest,
 } from '@arca/api-contract/routes';
 import type {
   AddCaseAssetRequest,
@@ -22,15 +23,20 @@ import type {
 import { withIdentity, type Database, type Transaction } from '@arca/db';
 import {
   type CalendarDate,
+  type ComparisonCatalog,
+  type ComparisonPreferences,
   type DecisionStates,
   type HeldAsset,
   type RouteCatalog,
   type StoredFinances,
   type StoredProfile,
   applyAnswers,
+  comparisonPreferencesSchema,
   heldAssetChanges,
   maxCaseMembers,
   maxCasePeople,
+  nextPreferences,
+  noPreferences,
   maxCaseRelationships,
   type ShareScope,
   type StoredAsset,
@@ -41,9 +47,15 @@ import {
   validCaseStructure,
 } from '@arca/domain';
 import type { PinnedCountries } from '@arca/knowledge';
+import { randomBytes } from 'node:crypto';
 import { type SQL, sql } from 'drizzle-orm';
 import type { z } from 'zod';
 import type { AuditLog, AuditRecord } from '../audit/log.js';
+import {
+  type DestinationComparisonView,
+  type EvaluatedAsOf,
+  destinationComparison,
+} from './comparison.js';
 import { caseQuestions, questionState } from './questions.js';
 import { type CaseEvaluationsView, caseEvaluations } from './evaluations.js';
 import { casePlayback } from './playback.js';
@@ -58,6 +70,11 @@ export type CaseWritten =
       readonly ok: false;
       readonly reason: CaseRefusal;
     };
+
+/** A comparison write's answer: the recomputed comparison, or why it was refused. */
+export type ComparisonWritten =
+  | { readonly ok: true; readonly view: DestinationComparisonView }
+  | { readonly ok: false; readonly reason: 'not_found' | 'case_invalid' };
 
 type Request<Schema extends z.ZodType> = z.infer<Schema>;
 
@@ -141,6 +158,16 @@ export interface CaseFiles {
     accountId: string,
     request: AnswerCaseQuestionsRequest,
   ) => Promise<CaseWritten>;
+  /** The viewer's destination comparison (ADR-0026); null outside a case. */
+  readonly comparison: (accountId: string) => Promise<DestinationComparisonView | null>;
+  /**
+   * Replaces the viewer's comparison preferences and answers the comparison they give;
+   * `case_invalid` for an own criterion ID the viewer does not have.
+   */
+  readonly writeComparisonPreferences: (
+    accountId: string,
+    request: WriteComparisonPreferencesRequest,
+  ) => Promise<ComparisonWritten>;
   /** Deletes the account's member row, and with it every person it keeps. */
   readonly leave: (accountId: string) => Promise<'left' | 'not_found'>;
 }
@@ -156,6 +183,8 @@ export interface CaseFilesSettings {
   readonly evaluation: {
     readonly catalog: RouteCatalog;
     readonly routeIds: readonly string[];
+    /** The destination comparison's versions (ADR-0026). */
+    readonly comparisons: ComparisonCatalog;
     readonly states: () => Promise<DecisionStates>;
     /** Today in São Paulo, which evaluations select versions and compute facts as of. */
     readonly today: () => CalendarDate;
@@ -387,19 +416,46 @@ export function createCaseFiles({
   /** Evaluates the viewer's case under its identity, the decision states read first; null outside a case. */
   const withEvaluations = async <T>(
     accountId: string,
-    work: (tx: Transaction, rows: CaseRows, evaluated: CaseEvaluationsView) => Promise<T>,
+    work: (
+      tx: Transaction,
+      rows: CaseRows,
+      evaluated: CaseEvaluationsView,
+      asOf: EvaluatedAsOf,
+    ) => Promise<T>,
   ): Promise<T | null> => {
     const states = await evaluation.states();
+    const today = evaluation.today();
     return withIdentity(db(), { accountId }, async (tx) => {
       const rows = await readCase(tx, accountId);
       if (rows === undefined) return null;
-      return work(
-        tx,
-        rows,
-        caseEvaluations(rows, { ...evaluation, states, today: evaluation.today() }),
-      );
+      return work(tx, rows, caseEvaluations(rows, { ...evaluation, states, today }), {
+        states,
+        today,
+      });
     });
   };
+
+  /** The viewer's stored preferences, or none chosen yet; row-level security shows only theirs. */
+  const storedPreferences = async (tx: Transaction, accountId: string) => {
+    const stored = await tx.execute<{ preferences: unknown }>(
+      sql`SELECT preferences FROM cases.comparison_preferences WHERE account_id = ${accountId}`,
+    );
+    const row = stored.rows[0];
+    return row === undefined ? noPreferences : comparisonPreferencesSchema.parse(row.preferences);
+  };
+
+  const comparisonOf = (
+    rows: CaseRows,
+    accountId: string,
+    evaluated: CaseEvaluationsView,
+    preferences: ComparisonPreferences,
+    asOf: EvaluatedAsOf,
+  ) =>
+    destinationComparison(rows, accountId, evaluated, preferences, {
+      catalog: evaluation.comparisons,
+      routeIds: evaluation.routeIds,
+      ...asOf,
+    });
 
   const keptPerson = (rows: CaseRows, personId: string) => {
     const person = rows.people.find((row) => row.id === personId && row.keptByMe);
@@ -723,6 +779,32 @@ export function createCaseFiles({
         return [];
       }),
 
+    comparison: (accountId) =>
+      withEvaluations(accountId, async (tx, rows, evaluated, asOf) =>
+        comparisonOf(rows, accountId, evaluated, await storedPreferences(tx, accountId), asOf),
+      ),
+
+    async writeComparisonPreferences(accountId, request) {
+      const written = await withEvaluations(
+        accountId,
+        async (tx, rows, evaluated, asOf): Promise<ComparisonWritten> => {
+          const next = nextPreferences(
+            await storedPreferences(tx, accountId),
+            request,
+            newOwnCriterionId,
+          );
+          if (next === undefined) return { ok: false, reason: 'case_invalid' };
+          await tx.execute(sql`
+            INSERT INTO cases.comparison_preferences (account_id, case_id, preferences)
+            VALUES (${accountId}, ${rows.caseId}, ${JSON.stringify(next)}::jsonb)
+            ON CONFLICT (account_id) DO UPDATE
+              SET preferences = excluded.preferences, updated_at = now()`);
+          return { ok: true, view: comparisonOf(rows, accountId, evaluated, next, asOf) };
+        },
+      );
+      return written ?? { ok: false, reason: 'not_found' };
+    },
+
     async leave(accountId) {
       const caseId = await withIdentity(db(), { accountId }, async (tx) => {
         const found = await memberCase(tx, accountId);
@@ -737,6 +819,9 @@ export function createCaseFiles({
     },
   };
 }
+
+/** An own criterion's ID: `own-` and 32 random bits, which the domain checks for collisions. */
+const newOwnCriterionId = () => `own-${randomBytes(4).toString('hex')}`;
 
 function shareEvent(
   code: 'share_granted' | 'share_revoked',

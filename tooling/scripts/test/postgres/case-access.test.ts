@@ -25,6 +25,7 @@ const tables = [
   'asset',
   'asset_owner',
   'case_file',
+  'comparison_preferences',
   'dependence',
   'member',
   'person',
@@ -282,6 +283,8 @@ describe('the case schema access matrix (spec 0007, R1)', () => {
         'updated_at',
       ],
       'asset_owner UPDATE': ['confirmed'],
+      'comparison_preferences INSERT': ['account_id', 'case_id', 'preferences'],
+      'comparison_preferences UPDATE': ['preferences', 'updated_at'],
       'dependence INSERT': ['case_id', 'person_id', 'depends_on_id'],
       'person INSERT': ['id', 'case_id', 'keeper_account_id', 'display_name', 'case_member'],
       'person UPDATE': ['display_name', 'case_member'],
@@ -304,7 +307,7 @@ describe('the case schema access matrix (spec 0007, R1)', () => {
     });
   });
 
-  it('lets app_jobs read and delete only members, people and rule reports, and the other roles nothing', async () => {
+  it('lets app_jobs read and delete only members, people, rule reports and comparison preferences, and the other roles nothing', async () => {
     const access = await withClient(adminTarget(database), async (client) => {
       const result = await client.query<{ role: string; table: string; privilege: string }>(
         `SELECT r.role, c.relname AS table, p.privilege
@@ -324,6 +327,8 @@ describe('the case schema access matrix (spec 0007, R1)', () => {
       return result.rows.map(({ role, table, privilege }) => `${role} ${table} ${privilege}`);
     });
     expect(access).toEqual([
+      'app_jobs comparison_preferences DELETE',
+      'app_jobs comparison_preferences SELECT',
       'app_jobs member DELETE',
       'app_jobs member SELECT',
       'app_jobs person DELETE',
@@ -1001,6 +1006,112 @@ describe('rule reports (spec 0007, R8)', () => {
     expect(await reportsOf(alice)).toBe(1);
   });
 });
+
+describe('comparison preferences (ADR-0026)', () => {
+  const preferences = (weight: number) =>
+    JSON.stringify({ weights: { climate: weight }, ratings: {}, ownCriteria: [], hidden: [] });
+  const save = (client: pg.Client, caseId: string, account: string, weight: number) =>
+    client.query(
+      `INSERT INTO cases.comparison_preferences (account_id, case_id, preferences)
+       VALUES ($1, $2, $3::jsonb)
+       ON CONFLICT (account_id) DO UPDATE SET preferences = excluded.preferences, updated_at = now()`,
+      [account, caseId, preferences(weight)],
+    );
+  const weights = (client: pg.Client) =>
+    ids(
+      client,
+      `SELECT account_id || ':' || (preferences->'weights'->>'climate') AS id
+         FROM cases.comparison_preferences`,
+    );
+
+  it('lets a member write only their own row, and shows each row to its member alone', async () => {
+    const { caseId, otherCaseId, alice, bruno, diana } = await seedFamily();
+    await as('app_api', alice, (client) => save(client, caseId, alice, 4), { commit: true });
+    await as('app_api', bruno, (client) => save(client, caseId, bruno, 1), { commit: true });
+    await as('app_api', diana, (client) => save(client, otherCaseId, diana, 2), { commit: true });
+    await as('app_api', alice, async (client) => {
+      expect(await weights(client)).toEqual([`${alice}:4`]);
+      expect(await refused(client, ...insertPreferencesAs(caseId, bruno))).toBe(
+        insufficientPrivilege,
+      );
+      expect(await refused(client, ...insertPreferencesAs(otherCaseId, alice))).toBe(
+        insufficientPrivilege,
+      );
+      const updated = await client.query(
+        `UPDATE cases.comparison_preferences SET preferences = '{}' WHERE account_id <> $1`,
+        [alice],
+      );
+      expect(updated.rowCount).toBe(0);
+      expect(
+        await refused(client, `UPDATE cases.comparison_preferences SET account_id = $1`, [bruno]),
+      ).toBe(insufficientPrivilege);
+      expect(await refused(client, 'DELETE FROM cases.comparison_preferences')).toBe(
+        insufficientPrivilege,
+      );
+      expect(
+        await refused(
+          client,
+          `UPDATE cases.comparison_preferences SET preferences = '[]'::jsonb WHERE account_id = $1`,
+          [alice],
+        ),
+      ).toBe(checkViolation);
+    });
+    for (const [account, expected] of [
+      [bruno, `${bruno}:1`],
+      [diana, `${diana}:2`],
+    ] as const) {
+      expect(await as('app_api', account, weights)).toEqual([expected]);
+    }
+    expect(await as('app_api', undefined, weights)).toEqual([]);
+  });
+
+  it('lets app_jobs erase only the identity’s row', async () => {
+    const { caseId, alice, bruno } = await seedFamily();
+    for (const account of [alice, bruno]) {
+      await as('app_api', account, (client) => save(client, caseId, account, 3), { commit: true });
+    }
+    await as(
+      'app_jobs',
+      alice,
+      async (client) => {
+        expect(await weights(client)).toEqual([`${alice}:3`]);
+        await client.query('DELETE FROM cases.comparison_preferences');
+      },
+      { commit: true },
+    );
+    const rowsOf = (account: string) =>
+      countAsAdmin('FROM cases.comparison_preferences WHERE account_id = $1', [account]);
+    expect(await rowsOf(alice)).toBe(0);
+    expect(await rowsOf(bruno)).toBe(1);
+  });
+
+  it('takes a member’s row when they leave, and keeps the others’', async () => {
+    const { caseId, alice, bruno } = await seedFamily();
+    for (const account of [alice, bruno]) {
+      await as('app_api', account, (client) => save(client, caseId, account, 3), { commit: true });
+    }
+    await as(
+      'app_api',
+      bruno,
+      async (client) => {
+        await client.query('DELETE FROM cases.member WHERE account_id = $1', [bruno]);
+      },
+      { commit: true },
+    );
+    const rowsOf = (account: string) =>
+      countAsAdmin('FROM cases.comparison_preferences WHERE account_id = $1', [account]);
+    expect(await rowsOf(bruno)).toBe(0);
+    expect(await rowsOf(alice)).toBe(1);
+  });
+});
+
+function insertPreferencesAs(caseId: string, account: string): [string, unknown[]] {
+  return [
+    `INSERT INTO cases.comparison_preferences (account_id, case_id, preferences)
+     VALUES ($1, $2, '{}')`,
+    [account, caseId],
+  ];
+}
 
 function insertAs(caseId: string, reporter: string): [string, unknown[]] {
   return [

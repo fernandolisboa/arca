@@ -69,7 +69,8 @@ export interface DestinationComparison {
 }
 
 export interface ComparisonInput {
-  readonly entry: ComparisonEntry;
+  /** The active comparison version; without one, only the person's own criteria are scored. */
+  readonly entry: ComparisonEntry | undefined;
   readonly preferences: ComparisonPreferences;
   /** The countries to compare: those with a route in the catalog. */
   readonly countries: readonly string[];
@@ -176,8 +177,9 @@ export function compareDestinations({
   countries,
   today,
 }: ComparisonInput): DestinationComparison {
+  const versionCriteria = entry?.version.criteria ?? [];
   const criteria: ComparedCriterion[] = [
-    ...entry.version.criteria.map(({ id, kind, title, defaultWeight }) => ({
+    ...versionCriteria.map(({ id, kind, title, defaultWeight }) => ({
       id,
       kind,
       title,
@@ -192,8 +194,10 @@ export function compareDestinations({
       defaultWeight: ownDefaultWeight,
     })),
   ];
-  const indicators = new Map(entry.indicators.map((indicator) => [indicator.id, indicator]));
-  const knowledge = new Map(entry.version.criteria.map((criterion) => [criterion.id, criterion]));
+  const indicators = new Map(
+    (entry?.indicators ?? []).map((indicator) => [indicator.id, indicator]),
+  );
+  const knowledge = new Map(versionCriteria.map((criterion) => [criterion.id, criterion]));
   const hidden = new Set(preferences.hidden);
 
   const scoreOf = (criterion: ComparedCriterion, country: string): Scored => {

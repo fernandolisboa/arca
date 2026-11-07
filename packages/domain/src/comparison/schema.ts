@@ -119,53 +119,70 @@ export const ownCriterionSchema = z.strictObject({
 
 const anyCriterionId = z.union([criterionIdSchema, ownCriterionIdSchema]);
 
+/** The preferences' schema, with the given shape of an own criterion. */
+function preferencesSchema<
+  Own extends z.ZodType<{ readonly id?: string | undefined; readonly name: string }>,
+>(ownCriterion: Own) {
+  return z
+    .strictObject({
+      weights: z
+        .record(anyCriterionId, weightSchema)
+        .refine((weights) => Object.keys(weights).length <= maxCriterionKeys, {
+          message: `At most ${String(maxCriterionKeys)} weights`,
+        }),
+      ratings: z
+        .record(
+          anyCriterionId,
+          z
+            .record(countryCodeSchema, z.number().int().min(1).max(5))
+            .refine((byCountry) => Object.keys(byCountry).length > 0, {
+              message: 'A criterion with no ratings is left out',
+            }),
+        )
+        .refine((ratings) => Object.keys(ratings).length <= maxCriterionKeys, {
+          message: `At most ${String(maxCriterionKeys)} rated criteria`,
+        }),
+      ownCriteria: z.array(ownCriterion).max(maxOwnCriteria),
+      hidden: z.array(countryCodeSchema).max(300),
+    })
+    .superRefine((preferences, context) => {
+      const ids = preferences.ownCriteria.flatMap(({ id }) => (id === undefined ? [] : [id]));
+      if (new Set(ids).size !== ids.length) {
+        context.addIssue({ code: 'custom', path: ['ownCriteria'], message: 'IDs are unique' });
+      }
+      if (new Set(preferences.hidden).size !== preferences.hidden.length) {
+        context.addIssue({ code: 'custom', path: ['hidden'], message: 'Countries are unique' });
+      }
+      const ratings = Object.values(preferences.ratings).reduce(
+        (count, byCountry) => count + Object.keys(byCountry).length,
+        0,
+      );
+      if (ratings > maxRatings) {
+        context.addIssue({
+          code: 'custom',
+          path: ['ratings'],
+          message: `At most ${String(maxRatings)} ratings`,
+        });
+      }
+    });
+}
+
 /**
  * A person's comparison preferences (ADR-0026): weights by criterion, ratings from 1 to 5 stars by
  * criterion and country, their own criteria, and the countries they hid. Entries for a criterion
  * the active version no longer has are kept and ignored.
  */
-export const comparisonPreferencesSchema = z
-  .strictObject({
-    weights: z
-      .record(anyCriterionId, weightSchema)
-      .refine((weights) => Object.keys(weights).length <= maxCriterionKeys, {
-        message: `At most ${String(maxCriterionKeys)} weights`,
-      }),
-    ratings: z
-      .record(
-        anyCriterionId,
-        z
-          .record(countryCodeSchema, z.number().int().min(1).max(5))
-          .refine((byCountry) => Object.keys(byCountry).length > 0, {
-            message: 'A criterion with no ratings is left out',
-          }),
-      )
-      .refine((ratings) => Object.keys(ratings).length <= maxCriterionKeys, {
-        message: `At most ${String(maxCriterionKeys)} rated criteria`,
-      }),
-    ownCriteria: z.array(ownCriterionSchema).max(maxOwnCriteria),
-    hidden: z.array(countryCodeSchema).max(300),
-  })
-  .superRefine((preferences, context) => {
-    const ids = preferences.ownCriteria.map((criterion) => criterion.id);
-    if (new Set(ids).size !== ids.length) {
-      context.addIssue({ code: 'custom', path: ['ownCriteria'], message: 'IDs are unique' });
-    }
-    if (new Set(preferences.hidden).size !== preferences.hidden.length) {
-      context.addIssue({ code: 'custom', path: ['hidden'], message: 'Countries are unique' });
-    }
-    const ratings = Object.values(preferences.ratings).reduce(
-      (count, byCountry) => count + Object.keys(byCountry).length,
-      0,
-    );
-    if (ratings > maxRatings) {
-      context.addIssue({
-        code: 'custom',
-        path: ['ratings'],
-        message: `At most ${String(maxRatings)} ratings`,
-      });
-    }
-  });
+export const comparisonPreferencesSchema = preferencesSchema(ownCriterionSchema);
+
+/**
+ * The preferences a person writes: an own criterion without an ID is a new one, which the API
+ * names (`nextPreferences`).
+ */
+export const comparisonPreferencesRequestSchema = preferencesSchema(
+  ownCriterionSchema.extend({ id: ownCriterionIdSchema.optional() }),
+);
+
+export type ComparisonPreferencesRequest = z.infer<typeof comparisonPreferencesRequestSchema>;
 
 export type ComparisonPreferences = z.infer<typeof comparisonPreferencesSchema>;
 

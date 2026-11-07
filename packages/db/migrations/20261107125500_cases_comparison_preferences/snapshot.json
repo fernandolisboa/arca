@@ -1,0 +1,350 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "2cd1308b-97a4-4625-bb3c-21715d49a2d8",
+  "prevIds": [
+    "969ec0a5-26a5-4c2f-87ea-5dc5be0eb766"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "cases",
+        "comparison_preferences"
+      ],
+      "writes": [
+        "s|tbl|cases.comparison_preferences",
+        "n|tbl|cases.comparison_preferences",
+        "e|tbl|cases.comparison_preferences",
+        "n|rel|cases.comparison_preferences",
+        "n|type|cases.comparison_preferences",
+        "n|rel|cases.comparison_preferences_pkey"
+      ],
+      "reads": [
+        "n|sch|cases"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "cases",
+        "comparison_preferences"
+      ],
+      "writes": [
+        "s|fk|cases.comparison_preferences.comparison_preferences_member_fkey",
+        "n|fk|cases.comparison_preferences.comparison_preferences_member_fkey",
+        "e|fk|cases.comparison_preferences.comparison_preferences_member_fkey",
+        "n|con|cases.comparison_preferences.comparison_preferences_member_fkey"
+      ],
+      "reads": [
+        "n|tbl|cases.comparison_preferences",
+        "n|sch|cases",
+        "n|tbl|cases.member",
+        "n|sch|cases",
+        "n|col|cases.comparison_preferences.case_id",
+        "n|col|cases.comparison_preferences.account_id",
+        "n|col|cases.member.case_id",
+        "n|col|cases.member.account_id",
+        "e|uniqueness|cases.member.account_id.case_id"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "comparison_preferences"
+      ],
+      "writes": [
+        "s|pol|cases.comparison_preferences.comparison_preferences_select_own",
+        "n|pol|cases.comparison_preferences.comparison_preferences_select_own",
+        "e|pol|cases.comparison_preferences.comparison_preferences_select_own"
+      ],
+      "reads": [
+        "n|tbl|cases.comparison_preferences",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.comparison_preferences"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "comparison_preferences"
+      ],
+      "writes": [
+        "s|pol|cases.comparison_preferences.comparison_preferences_insert_own",
+        "n|pol|cases.comparison_preferences.comparison_preferences_insert_own",
+        "e|pol|cases.comparison_preferences.comparison_preferences_insert_own"
+      ],
+      "reads": [
+        "n|tbl|cases.comparison_preferences",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.comparison_preferences"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "comparison_preferences"
+      ],
+      "writes": [
+        "s|pol|cases.comparison_preferences.comparison_preferences_update_own",
+        "n|pol|cases.comparison_preferences.comparison_preferences_update_own",
+        "e|pol|cases.comparison_preferences.comparison_preferences_update_own"
+      ],
+      "reads": [
+        "n|tbl|cases.comparison_preferences",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.comparison_preferences"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "comparison_preferences"
+      ],
+      "writes": [
+        "s|pol|cases.comparison_preferences.comparison_preferences_select_own_by_jobs",
+        "n|pol|cases.comparison_preferences.comparison_preferences_select_own_by_jobs",
+        "e|pol|cases.comparison_preferences.comparison_preferences_select_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|cases.comparison_preferences",
+        "n|sch|cases",
+        "n|role|app_jobs",
+        "e|rls|cases.comparison_preferences"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "comparison_preferences"
+      ],
+      "writes": [
+        "s|pol|cases.comparison_preferences.comparison_preferences_delete_own_by_jobs",
+        "n|pol|cases.comparison_preferences.comparison_preferences_delete_own_by_jobs",
+        "e|pol|cases.comparison_preferences.comparison_preferences_delete_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|cases.comparison_preferences",
+        "n|sch|cases",
+        "n|role|app_jobs",
+        "e|rls|cases.comparison_preferences"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "name": "comparison_preferences",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "comparison_preferences",
+        "name": "account_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "comparison_preferences",
+        "name": "case_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "comparison_preferences",
+        "name": "preferences",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "comparison_preferences",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "comparison_preferences",
+        "name": "comparison_preferences_member_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "case_id",
+          "account_id"
+        ],
+        "schemaTo": "cases",
+        "tableTo": "member",
+        "columnsTo": [
+          "case_id",
+          "account_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "comparison_preferences",
+        "name": "comparison_preferences_pkey",
+        "columns": [
+          "account_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "comparison_preferences",
+        "name": "comparison_preferences_shape",
+        "value": "jsonb_typeof(\"preferences\") = 'object' AND octet_length(\"preferences\"::text) <= 65536",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "comparison_preferences",
+        "name": "comparison_preferences_select_own",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"cases\".\"comparison_preferences\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "comparison_preferences",
+        "name": "comparison_preferences_insert_own",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "\"cases\".\"comparison_preferences\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid AND cases.is_member(\"cases\".\"comparison_preferences\".\"case_id\")",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "comparison_preferences",
+        "name": "comparison_preferences_update_own",
+        "as": "PERMISSIVE",
+        "for": "UPDATE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"cases\".\"comparison_preferences\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": "\"cases\".\"comparison_preferences\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "comparison_preferences",
+        "name": "comparison_preferences_select_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"cases\".\"comparison_preferences\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "comparison_preferences",
+        "name": "comparison_preferences_delete_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"cases\".\"comparison_preferences\".\"account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    }
+  ]
+}

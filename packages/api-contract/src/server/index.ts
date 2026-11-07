@@ -110,6 +110,8 @@ export const openApiRoutes = {
   reportRule: toOpenApiRoute(routes.reportRule),
   draftCaseIntake: toOpenApiRoute(routes.draftCaseIntake),
   leaveCase: toOpenApiRoute(routes.leaveCase),
+  getComparison: toOpenApiRoute(routes.getComparison),
+  writeComparisonPreferences: toOpenApiRoute(routes.writeComparisonPreferences),
   activateVersion: toOpenApiRoute(routes.activateVersion),
   rejectVersion: toOpenApiRoute(routes.rejectVersion),
   activateComparison: toOpenApiRoute(routes.activateComparison),

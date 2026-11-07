@@ -44,7 +44,9 @@ import {
   removeNotificationChannel,
   forgetPushChannel,
   CaseEvaluations,
+  DestinationComparison,
   caseRoutes,
+  comparisonRoutes,
   CloseRuleReportsRequest,
   handOverCasePersonAction,
   addCaseMemberAction,
@@ -654,6 +656,7 @@ export function createApp({
   });
   v1.use('/case', caseBodies);
   v1.use('/case/*', caseBodies);
+  v1.use('/comparison/*', caseBodies);
 
   v1.openapi(openApiRoutes.session, async (c) => {
     if (auth === undefined) return unauthorized(c);
@@ -1215,7 +1218,7 @@ export function createApp({
   // The family's case (spec 0007, R3): a confirmed account, and writes within their hourly limit.
   const caseAccount = async (
     c: Context<AppEnv>,
-    counted: 'write' | 'playback' | 'evaluations' | 'reports' | false,
+    counted: 'write' | 'playback' | 'evaluations' | 'comparison' | 'reports' | false,
   ) => {
     const current = await signedIn(c);
     if (current === null || cases === undefined || authLimits === undefined) {
@@ -1362,6 +1365,27 @@ export function createApp({
     return evaluations === null
       ? fail(c, 'not_found', 404)
       : c.json(CaseEvaluations.parse(evaluations), 200);
+  });
+  v1.openapi(openApiRoutes.getComparison, async (c) => {
+    const account = await caseAccount(c, 'comparison');
+    if ('refused' in account) return account.refused;
+    const comparison = await account.cases.comparison(account.current.accountId);
+    return comparison === null
+      ? fail(c, 'not_found', 404)
+      : c.json(DestinationComparison.parse(comparison), 200);
+  });
+  v1.openapi(openApiRoutes.writeComparisonPreferences, async (c) => {
+    const account = await caseAccount(c, 'write');
+    if ('refused' in account) return account.refused;
+    const request = comparisonRoutes.writeComparisonPreferences.body.parse(await c.req.json());
+    const outcome = await account.cases.writeComparisonPreferences(
+      account.current.accountId,
+      request,
+    );
+    if (outcome.ok) return c.json(DestinationComparison.parse(outcome.view), 200);
+    return outcome.reason === 'not_found'
+      ? fail(c, 'not_found', 404)
+      : fail(c, outcome.reason, 409);
   });
   const intakeFailures = {
     not_found: 404,

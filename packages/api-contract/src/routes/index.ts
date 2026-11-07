@@ -1,6 +1,7 @@
 import { routeIdSchema, shareScopeSchema, slugSchema } from '@arca/domain';
 import { z } from 'zod';
 import { caseRoutes } from './case.js';
+import { comparisonRoutes } from './comparison.js';
 import { knowledgeRoutes } from './knowledge.js';
 
 /** Every route lives under this prefix; clients prepend their origin, if any. */
@@ -1623,6 +1624,7 @@ export const deleteDocuments = {
 } as const satisfies RouteDefinition<typeof DeleteDocumentsResponse>;
 
 export * from './case.js';
+export * from './comparison.js';
 export * from './knowledge.js';
 
 export const routes = {
@@ -1681,6 +1683,7 @@ export const routes = {
   confirmReplacements,
   deleteDocuments,
   ...caseRoutes,
+  ...comparisonRoutes,
   ...knowledgeRoutes,
 } as const;
 

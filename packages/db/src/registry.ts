@@ -428,6 +428,14 @@ export const registry: Registry = {
       label: 'dataExport.tables.ruleReports',
     },
     {
+      table: 'cases.comparison_preferences',
+      strategy: 'delete',
+      owner: ownedByAccount('account_id'),
+      pool: 'app_jobs',
+      export: ['preferences', 'updated_at'],
+      label: 'dataExport.tables.comparisonPreferences',
+    },
+    {
       table: 'audit.event',
       strategy: 'retain',
       owner: ownedByAccount('subject_account_id'),
