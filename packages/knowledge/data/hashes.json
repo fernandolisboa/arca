@@ -98,6 +98,10 @@
     {
       "path": "routes/is-remote-work/1",
       "sha256": "da1f4ea81c6d8389f4ebcc393e1a263a278ee19e68b7618e66a8c1f8d66cb649"
+    },
+    {
+      "path": "routes/dk-pay-limit/1",
+      "sha256": "70f5c1160d8a9b9adc436e98ccae09a17454d7d49b6eead57e34953528f14b0b"
     }
   ]
 }

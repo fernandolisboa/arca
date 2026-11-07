@@ -10,6 +10,7 @@ describe('the display catalog (spec 0007, R7)', () => {
       'ar-mercosur-temporary',
       'au-skilled-independent',
       'cl-mercosur-temporary',
+      'dk-pay-limit',
       'es-non-lucrative',
       'is-remote-work',
       'it-descent',
