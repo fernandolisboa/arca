@@ -18,7 +18,7 @@ describe('the total page text one check sends (ADR-0027)', () => {
     expect(sent).toEqual(pages);
   });
 
-  it('keeps short pages whole and shares the rest equally among the long ones', () => {
+  it('keeps pages whole, shortest first, and shares the rest equally among those that do not fit', () => {
     const sent = withinTextBudget(
       [
         page('https://a.example', 500),
@@ -34,6 +34,15 @@ describe('the total page text one check sends (ADR-0027)', () => {
       'https://b.example',
       'https://c.example',
     ]);
+  });
+
+  it('keeps as many long pages whole as fit, rather than cutting them all', () => {
+    const sent = withinTextBudget(
+      [55, 55, 55, 55].map((length, i) => page(`https://p${String(i)}.example`, length)),
+      200,
+    );
+    expect(lengths(sent)).toEqual([55, 55, 55, 35]);
+    expect(sent.map(({ cut }) => cut)).toEqual([false, false, false, true]);
   });
 
   it('never sends more than the budget, whatever the pages', () => {

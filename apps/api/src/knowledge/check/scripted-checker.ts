@@ -5,8 +5,8 @@ export const scriptedCheckerPromptVersion = 'scripted-1';
 
 /**
  * The scripted checker for every environment but production, and for tests and the e2e build: for
- * each item whose first cited page was read it says the page matches,
- * quoting the page's opening words; otherwise it could not check. Nothing leaves the process, and
+ * each item whose first cited page was read it says the page matches, quoting the
+ * page's opening words; otherwise it could not check. Nothing leaves the process, and
  * a report it writes is never clean, whatever it says.
  */
 export const scriptedChecker: RuleChecker = {

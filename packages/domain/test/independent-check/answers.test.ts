@@ -166,6 +166,8 @@ describe('plainNote', () => {
     ['Picture ![x](https://evil.example/p.png) here', 'Picture here'],
     ['go to evil[.]example or evil(dot)example', 'go to or'],
     ['open (evil.example) and "www.x"', 'open and'],
+    ['get it at 203.0.113.7/law today', 'get it at today'],
+    ['visit evil\u3002example or evil\uff0eexample or evil\uff61example', 'visit or or'],
   ])('takes links and hosts out of %s', (note, plain) => {
     expect(plainNote(note)).toBe(plain);
   });

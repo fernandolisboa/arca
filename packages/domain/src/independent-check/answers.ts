@@ -95,6 +95,7 @@ function echoesAddress(quote: string, chain: readonly string[], values: readonly
 const scheme = /^[a-z][a-z0-9+.-]*$/;
 const label = /^[a-z0-9-]+$/;
 const topLevel = /^[a-z]{2,63}$/;
+const ipv4 = /^\d{1,3}(?:\.\d{1,3}){3}$/u;
 
 /**
  * Whether a word of a note is a link, an address or a host name. Checked word by word with
@@ -117,6 +118,7 @@ function pieceLinkLike(piece: string): boolean {
   if (colon > 0 && scheme.test(lower.slice(0, colon))) return true;
   if (lower.startsWith('www.')) return true;
   const host = trimmed(lower.split(/[/?#]/u)[0] ?? '', closing, 'end');
+  if (ipv4.test(host)) return true;
   const labels = host.split('.');
   return (
     labels.length > 1 &&
@@ -133,7 +135,11 @@ const defangedDots = ['[.]', '(.)', '{.}', '[dot]', '(dot)'];
  * split a word into pieces, each tested on its own, so `[text](https://…)` is caught too.
  */
 function linkLike(word: string): boolean {
-  const lower = word.toLowerCase();
+  // Full-width and ideographic dots fold to `.`, so `evil。example` reads as the host it is.
+  const lower = word
+    .normalize('NFKC')
+    .replace(/\u3002/gu, '.')
+    .toLowerCase();
   if (lower.includes('://') || lower.includes('www.')) return true;
   if (defangedDots.some((dot) => lower.includes(dot))) return true;
   return lower.split(/[[\](){}<>‹›"'!`]+/u).some((piece) => piece !== '' && pieceLinkLike(piece));

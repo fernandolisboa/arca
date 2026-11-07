@@ -14,9 +14,10 @@ function cutAt(text: string, length: number): string {
 }
 
 /**
- * The pages as the model is sent them, within `budget` characters in all: a short page keeps its
- * whole text and the longest share what is left equally, so no page loses everything to the pages
- * before it. A page the budget cuts is marked cut, so code never counts a match on it.
+ * The pages as the model is sent them, within `budget` characters in all: pages stay whole,
+ * shortest first, while they fit, so as many as can still match do; the pages that do not fit
+ * share what is left equally, so each still shows its opening for a difference. A page the budget
+ * cuts is marked cut, so code never counts a match on it.
  */
 export function withinTextBudget(
   pages: readonly ReadPage[],
@@ -26,12 +27,14 @@ export function withinTextBudget(
   let left = budget;
   const byLength = pages.map((page, index) => ({ index, length: page.text.length }));
   byLength.sort((a, b) => a.length - b.length);
-  byLength.forEach(({ index, length }, position) => {
-    const share = Math.floor(left / (byLength.length - position));
-    const given = Math.min(length, share);
-    allowance.set(index, given);
-    left -= given;
+  const fitting = byLength.findIndex(({ length }) => {
+    if (length > left) return true;
+    left -= length;
+    return false;
   });
+  const rest = fitting === -1 ? [] : byLength.slice(fitting);
+  for (const { index, length } of byLength) allowance.set(index, length);
+  for (const { index } of rest) allowance.set(index, Math.floor(left / rest.length));
   return pages.map((page, index) => {
     const given = allowance.get(index) ?? 0;
     if (given >= page.text.length) return page;

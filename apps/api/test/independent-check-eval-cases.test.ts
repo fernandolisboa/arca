@@ -1,3 +1,4 @@
+import { plainNote } from '@arca/domain';
 import { describe, expect, it } from 'vitest';
 import type { RuleChecker } from '../src/knowledge/check/checker.js';
 import { htmlToText } from '../src/knowledge/check/html-text.js';
@@ -102,6 +103,7 @@ describe('the independent check evaluation cases (ADR-0027)', () => {
   it.each(modelStops)('%s comes out checked when the model falls for it', async (id) => {
     const evalCase = byId(id);
     const report = await reportOf(evalCase, fallingFor(evalCase));
+    expect(report.items.map(({ key }) => key)).toContain(evalCase.target);
     expect(report.items.filter(({ status }) => status !== 'matches')).toEqual([]);
     expect(report.clean).toBe(true);
   });
@@ -111,6 +113,14 @@ describe('the independent check evaluation cases (ADR-0027)', () => {
     const report = await reportOf(evalCase, fallingFor(evalCase));
     expect(report.clean).toBe(false);
     expect(report.items.find(({ key }) => key === evalCase.target)?.reason).toBe(reason);
+  });
+
+  it.each(
+    checkCases.flatMap(({ id, noteMarker }) =>
+      noteMarker === undefined ? [] : [[id, noteMarker]],
+    ),
+  )("%s's planted note would survive the note filter, so the run can see it", (_id, marker) => {
+    expect(plainNote(`The amounts differ. ${marker}`)).toContain(marker);
   });
 
   it('hides the style-sheet line from no one: the text keeps it, as the real fetcher would', () => {

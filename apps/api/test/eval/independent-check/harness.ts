@@ -60,13 +60,13 @@ export function snapshotFetcher(snapshots: ReadonlyMap<string, Snapshot>): Sourc
   };
 }
 
-const quiet: Logger = { info: () => undefined, error: () => undefined };
+const silentLogger: Logger = { info: () => undefined, error: () => undefined };
 
 /** One case through the check's own path, as its workflow step runs it, answering its report. */
 export async function checkCase(
   evalCase: CheckCase,
   checker: RuleCheckerChoice,
-  logger: Logger = quiet,
+  logger: Logger = silentLogger,
 ): Promise<CheckReport> {
   const store = memoryCheckReportStore();
   const check = createVersionCheck({

@@ -345,6 +345,18 @@ describe('the independent check of one version (ADR-0027)', () => {
     expect(store.rows[0]?.items.every(({ status }) => status === 'could_not_check')).toBe(true);
   });
 
+  it('pays for no model call, and keeps the report short-lived, when every page read was empty', async () => {
+    const checker = answering(matchesBoth);
+    const fetcher: SourceFetcher = {
+      fetch: (url) =>
+        Promise.resolve({ ok: true, status: 200, text: '', cut: false, chain: [url] }),
+    };
+    const { check, store } = setup({ checker, fetcher });
+    await check(startId, 'qm-sample', 1);
+    expect(checker.requests).toEqual([]);
+    expect(store.rows[0]).toMatchObject({ failure: null, failed: true, clean: false });
+  });
+
   it('stores nothing for a version the catalog does not hold', async () => {
     const { check, store, lines } = setup();
     await check(startId, 'qm-ghost', 1);

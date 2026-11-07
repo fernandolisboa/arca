@@ -1,8 +1,6 @@
 // The evaluation's call limit (spec 0008, R5): what bounds a run's cost.
 import type { Extractor } from '../../../src/intake/extractor.js';
-import { CallLimitReached, callCounter } from '../call-limit.js';
-
-export { CallLimitReached };
+import { callCounter } from '../call-limit.js';
 
 /**
  * The most model calls one evaluation run may make. Each call's output is capped, so this bounds
