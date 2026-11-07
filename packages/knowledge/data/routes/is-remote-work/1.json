@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "routeId": "is-remote-work",
+  "number": 1,
+  "title": "Icelandic long-term visa for remote work (closed)",
+  "country": "IS",
+  "tags": ["digital-nomad"],
+  "effectiveFrom": "2026-06-27",
+  "status": "closed",
+  "currency": "ISK",
+  "sources": [
+    {
+      "id": "reg-725-2026",
+      "url": "https://adverts.stjornartidindi.is/B_nr_725_2026.pdf",
+      "title": "Regulation No. 725/2026 amending Regulation No. 540/2017 on foreign nationals, art. 1: chapter II now covers only short-term residence permits, with no ground for remote work",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "visa-act-37-2026",
+      "url": "https://adverts.stjornartidindi.is/A_nr_37_2026.pdf",
+      "title": "Visa Act No. 37/2026, art. 23(1)(c) and (d): art. 20 of the Foreign Nationals Act No. 80/2016 repealed and art. 21 replaced by the short-term residence permit",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "reg-1048-2020",
+      "url": "https://adverts.stjornartidindi.is/B_nr_1048_2020.pdf",
+      "title": "Regulation No. 1048/2020 amending Regulation No. 540/2017, art. 2: the former art. 5 a, a long-term visa of up to 180 days for remote work",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "gazette-act-15-2005",
+      "url": "https://adverts.stjornartidindi.is/A_nr_15_2005.pdf",
+      "title": "Act No. 15/2005 on the official gazette, art. 8(2): published rules bind from the day after the gazette's publication date",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "is",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [],
+  "assessments": [],
+  "dependents": [],
+  "costs": [],
+  "durations": [],
+  "closureSources": ["reg-725-2026", "visa-act-37-2026", "reg-1048-2020", "gazette-act-15-2005"]
+}

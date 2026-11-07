@@ -1,6 +1,6 @@
 # Other destinations
 
-Checked 2026-11-01; the Uruguay, Argentina, Paraguay, Chile, Latvia and Australia sections, and Spain's EU-regime rule, on 2026-11-07.
+Checked 2026-11-01; the Uruguay, Argentina, Paraguay, Chile, Latvia, Australia, Japan and Iceland sections, and Spain's EU-regime rule, on 2026-11-07.
 
 ## Spain
 
@@ -130,6 +130,18 @@ The engine checks the line of descent: the principal is a biological grandchild 
 | Majority at 18 (art. 4, since 2022-04-01 under Act No. 59 of 2018); age counts from the day of birth under art. 143, so a 29 February birthday is reached at the end of 28 February and counts from 1 March | [Civil Code](https://laws.e-gov.go.jp/law/129AC0000000089), [Act on the Calculation of Age](https://laws.e-gov.go.jp/law/135AC1000000050) |
 | The fourth generation (yonsei) has a more restricted pathway, as designated activities; not modeled | [Japan-Visa.com](https://japan-visa.com/visas/nikkei-4th-generation) |
 | Not modeled: the second generation (spouse or child of Japanese national, appended table II of the act); the yonsei programme; items 1, 2 and 8 of the notice (resettled refugees and Japanese left behind in China); the visa fee and the periods of stay | [Immigration Control and Refugee Recognition Act](https://laws.e-gov.go.jp/law/326CO0000000319), [Notice No. 132 of 1990](https://www.moj.go.jp/isa/content/001368764.pdf) |
+
+## Iceland
+
+The long-term visa for remote work is now route version `is-remote-work` 1 in `packages/knowledge/data/routes`, verified on 2026-11-07 against the official gazette Stjórnartíðindi, whose text prevails over the consolidated law collection (Act No. 15/2005, new article added by Act No. 38/2012). It is a closed version: Iceland no longer has this visa. Regulation No. 1048/2020 had added art. 5 a to the Regulation on Foreign Nationals No. 540/2017, a long-term visa of up to 180 days for a visa-exempt foreigner working remotely for a foreign employer or as self-employed, with foreign income of ISK 1,000,000 a month (ISK 1,300,000 with a spouse), and visas for the spouse and children under 18. The Visa Act No. 37/2026 (published 2026-05-11) repealed art. 20 of the Foreign Nationals Act No. 80/2016 and turned art. 21 into a short-term residence permit, and Regulation No. 725/2026 (published 2026-06-26) rewrote chapter II of Regulation No. 540/2017 for that permit, with only two grounds: a long visit to close family, and artists, scientists or athletes whose stay needs no work permit. Art. 5 a is gone. Published rules bind from the day after the gazette's date (Act No. 15/2005, art. 8(2)), so the version starts on 2026-06-27. Accepted reading: the visa may have ended already on 2026-05-12, when the act removed the long-term visa it was a kind of, but the regulation that still described it stayed in force as far as it did not conflict with the new act (Act No. 37/2026, art. 22), so the version uses the regulation's end. Whether a 180-day visa conflicted with the new act's 90-day limit for visas only changes the reason shown for those six weeks: before 2026-06-27 no version is in effect, which also reads as not available. The regulation collection on island.is still shows art. 5 a, because it has not merged the amendment yet; the gazette PDF is the binding text, since publication in the gazette is what gives a rule force (Act No. 15/2005, art. 8).
+
+| Fact | Source |
+| --- | --- |
+| Former art. 5 a: a long-term visa of up to 180 days (90 if applied for in Iceland) for a visa-exempt foreigner to work remotely, with foreign income of ISK 1,000,000 a month, or ISK 1,300,000 for one joined by a spouse; visas for the spouse and for children under 18; no work for Icelandic employers or on the Icelandic labour market. In force from 2020-10-29 | [Regulation No. 1048/2020](https://adverts.stjornartidindi.is/B_nr_1048_2020.pdf) |
+| Art. 20 of Act No. 80/2016 (visas) repealed; art. 21 now a short-term residence permit of up to 180 days, once in 12 months, for a stay whose purpose is in no residence permit category, with no right to settle; application fee ISK 12,200. Published 2026-05-11, binding from 2026-05-12 | [Visa Act No. 37/2026](https://adverts.stjornartidindi.is/A_nr_37_2026.pdf), art. 23 |
+| Chapter II of Regulation No. 540/2017 now covers only the short-term residence permit, on two grounds: close family on a long visit, and artists, scientists or athletes whose stay needs no work permit. Published 2026-06-26 | [Regulation No. 725/2026](https://adverts.stjornartidindi.is/B_nr_725_2026.pdf) |
+| Published rules bind everyone from the day after the gazette's date, unless they set their own start; the gazette text prevails over the law collection | [Act No. 15/2005](https://adverts.stjornartidindi.is/A_nr_15_2005.pdf), art. 8; [Act No. 38/2012](https://adverts.stjornartidindi.is/A_nr_38_2012.pdf) |
+| Not modeled: residence permits for work (skilled workers, Act No. 80/2016 art. 61 with the Foreign Nationals' Right to Work Act No. 97/2002), study and family reunification. The consolidated texts on althingi.is are behind a Cloudflare challenge from the sandbox, so a work route means rebuilding both acts from the gazette's original texts and every amending act | [Act No. 80/2016](https://adverts.stjornartidindi.is/A_nr_80_2016.pdf) |
 
 ## Mexico
 

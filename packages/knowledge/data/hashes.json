@@ -94,6 +94,10 @@
     {
       "path": "routes/jp-nikkei-long-term-resident/1",
       "sha256": "36d58d3158dc6d962236a43a92c431682ee0be76ca97790bb0d9679c7210567e"
+    },
+    {
+      "path": "routes/is-remote-work/1",
+      "sha256": "da1f4ea81c6d8389f4ebcc393e1a263a278ee19e68b7618e66a8c1f8d66cb649"
     }
   ]
 }

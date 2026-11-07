@@ -11,6 +11,7 @@ describe('the display catalog (spec 0007, R7)', () => {
       'au-skilled-independent',
       'cl-mercosur-temporary',
       'es-non-lucrative',
+      'is-remote-work',
       'it-descent',
       'jp-nikkei-long-term-resident',
       'lv-capital-investment',
@@ -51,7 +52,8 @@ describe('the display catalog (spec 0007, R7)', () => {
         ...(view?.dependents ?? []),
         ...(view?.costs ?? []),
       ].flatMap((item) => item.facts);
-      expect(facts.length).toBeGreaterThan(0);
+      if (view?.status === 'closed') expect(view.closureSources.length).toBeGreaterThan(0);
+      else expect(facts.length).toBeGreaterThan(0);
       expect(facts.filter(({ key }) => key === null)).toEqual([]);
       expect(
         view?.sources.every(
