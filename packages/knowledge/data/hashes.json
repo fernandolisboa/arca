@@ -106,6 +106,10 @@
     {
       "path": "routes/ge-property-short-term/1",
       "sha256": "b0f253fe6a988f8803b84903256502ab563980bae43a6802ae372a8f7d8090d3"
+    },
+    {
+      "path": "routes/cz-eu-blue-card/1",
+      "sha256": "439a3f4a066e53d09332c0d6007272a94d623baca6fa52ae1cf75de44fb70740"
     }
   ]
 }
