@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "worldbank",
+  "number": 1,
+  "issuer": "World Bank Group",
+  "hosts": [
+    {
+      "host": "api.worldbank.org",
+      "source": {
+        "id": "un-system-chart",
+        "url": "https://www.un.org/en/about-us/un-system",
+        "title": "United Nations, The United Nations System: lists the World Bank Group among the specialized agencies, with its website www.worldbank.org",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    },
+    {
+      "host": "data.worldbank.org",
+      "source": {
+        "id": "un-system-chart",
+        "url": "https://www.un.org/en/about-us/un-system",
+        "title": "United Nations, The United Nations System: lists the World Bank Group among the specialized agencies, with its website www.worldbank.org",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    }
+  ]
+}
