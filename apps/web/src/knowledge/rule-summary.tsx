@@ -60,7 +60,8 @@ export function useRuleSummary(view: VersionView): RuleSummaryState {
   });
   return {
     summary: stored.data ?? undefined,
-    justAsked: asked.isSuccess,
+    // Set from the request's start, which always comes before the summary lands in the cache.
+    justAsked: !asked.isIdle,
     canAsk: stored.data === null || stored.isError,
     asking: asked.isPending,
     failure: asked.isError

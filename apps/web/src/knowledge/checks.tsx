@@ -8,6 +8,7 @@ import { Button, Disclosure, StatusChip, type StatusTone } from '@arca/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 import { api, versionCheckQuery } from '../api.js';
+import { checkFold } from './check-fold.js';
 import { card, surface } from './review-parts.js';
 import type { KnowledgeWords } from './words.js';
 
@@ -78,16 +79,15 @@ export function CheckReport({
   const { t } = words;
   const check = useQuery(versionCheckQuery(view.routeId, view.number));
   const status = check.data?.enabled === true ? check.data.status : undefined;
+  const fold = checkFold(check.isPending, status);
   return (
-    // Folded only when the version already reads as checked once loaded; a check that finishes
-    // during the visit stays open, so its result is not hidden as it arrives.
     <Disclosure
-      key={check.isPending ? 'loading' : 'loaded'}
+      key={fold.key}
       title={t('knowledge.check.title')}
       level={5}
       icon="ai"
       aside={status !== undefined && <CheckChip status={status} words={words} />}
-      defaultOpen={status !== 'checked'}
+      defaultOpen={fold.defaultOpen}
       footer={
         status !== undefined && (
           <p className="text-small text-muted">{t('knowledge.check.footer')}</p>
