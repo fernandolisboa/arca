@@ -286,4 +286,14 @@ describe('totals, coverage and ranking', () => {
     expect(result.criteria[0]?.weight).toBe(2);
     expect(result.countries[0]?.scores[0]).toEqual({ criterion: 'constructor', score: null });
   });
+
+  it('lists a country given twice once', () => {
+    const result = compareDestinations({
+      entry: entry(criteria, [safety]),
+      preferences: preferences(),
+      countries: ['QM', 'QM'],
+      today,
+    });
+    expect(summary(result).map(({ country }) => country)).toEqual(['QM']);
+  });
 });

@@ -191,6 +191,18 @@ describe('comparison version checks', () => {
     expect(check(criteria, indicators)).toContain(message);
   });
 
+  it('reports a token without a score once, however many countries have it', () => {
+    const shared = tokenIndicator('dual', [
+      ['QM', 'restricted'],
+      ['QN', 'restricted'],
+    ]);
+    expect(
+      check([category([['allowed', 10]])], [shared]).filter(
+        (message) => message === 'The token restricted has a score',
+      ),
+    ).toHaveLength(1);
+  });
+
   it('keeps the own- prefix for criteria a person creates', () => {
     const { version } = entry([personalCriterion('own-climate')], []);
     expect(comparisonVersionSchema.safeParse(version).success).toBe(false);
