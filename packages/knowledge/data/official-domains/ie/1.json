@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "ie",
+  "number": 1,
+  "issuer": "Government of Ireland",
+  "hosts": [
+    {
+      "host": "enterprise.gov.ie",
+      "source": {
+        "id": "iedr-whois-gov-ie",
+        "url": "https://www.weare.ie/whois-result/?whois=gov",
+        "title": ".ie Domain Registry WHOIS for gov.ie: registrant Department of Public Expenditure and Reform, registrar Dept of Public Expenditure (per.gov.ie)",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    },
+    {
+      "host": "irishimmigration.ie",
+      "source": {
+        "id": "dete-csep-isd",
+        "url": "https://enterprise.gov.ie/en/what-we-do/workplace-and-skills/employment-permits/permit-types/critical-skills-employment-permit/",
+        "title": "Department of Enterprise, Tourism and Employment, Critical Skills Employment Permit: Immigration Service Delivery of the Department of Justice and Equality; visa forms on irishimmigration.ie",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    },
+    {
+      "host": "irishstatutebook.ie",
+      "source": {
+        "id": "iedr-whois-irishstatutebook",
+        "url": "https://www.weare.ie/whois-result/?whois=irishstatutebook",
+        "title": ".ie Domain Registry WHOIS for irishstatutebook.ie: registrant Office of the Attorney General, registrar Dept of Public Expenditure (per.gov.ie)",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    }
+  ]
+}
