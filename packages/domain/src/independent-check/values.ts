@@ -12,8 +12,13 @@ export type CheckValue =
 /** A non-negative decimal written with digits and at most one dot, without needless zeros. */
 export function canonicalNumber(decimal: string): string {
   const [whole = '', fraction = ''] = decimal.split('.');
-  const integer = whole.replace(/^0+(?=\d)/, '');
-  const decimals = fraction.replace(/0+$/, '');
+  // Index scans rather than patterns, so a long run of zeros never makes a pattern backtrack.
+  let start = 0;
+  while (start < whole.length - 1 && whole[start] === '0') start += 1;
+  let end = fraction.length;
+  while (end > 0 && fraction[end - 1] === '0') end -= 1;
+  const integer = whole.slice(start);
+  const decimals = fraction.slice(0, end);
   return decimals === '' ? integer : `${integer}.${decimals}`;
 }
 
@@ -73,24 +78,57 @@ export function numbersIn(text: string): ReadonlySet<string> {
   return found;
 }
 
-/** Locales whose month names a dated passage may use: those of the countries in the catalog. */
-const monthLocales = [
-  'en',
-  'pt',
-  'es',
-  'it',
-  'fr',
-  'de',
-  'pl',
+/**
+ * Languages whose month names a dated passage may use: a wide set rather than the catalog's
+ * countries, so a country added as data needs no change here. A name in another language fails
+ * closed: the item is could not be checked.
+ */
+const monthLocales = Intl.DateTimeFormat.supportedLocalesOf([
+  'ar',
+  'bg',
+  'ca',
   'cs',
+  'cy',
   'da',
-  'is',
+  'de',
+  'el',
+  'en',
+  'es',
   'et',
-  'lv',
-  'lt',
-  'ja',
+  'eu',
+  'fi',
+  'fr',
+  'ga',
+  'gl',
   'he',
-] as const;
+  'hr',
+  'hu',
+  'id',
+  'is',
+  'it',
+  'ja',
+  'ko',
+  'lt',
+  'lv',
+  'mt',
+  'nb',
+  'nl',
+  'nn',
+  'pl',
+  'pt',
+  'ro',
+  'ru',
+  'sk',
+  'sl',
+  'sq',
+  'sr',
+  'sv',
+  'th',
+  'tr',
+  'uk',
+  'vi',
+  'zh',
+]);
 
 /** Every way the month may be named, standing alone or inside a date, in lower case. */
 function monthNames(month: number): readonly string[] {
@@ -110,16 +148,63 @@ function monthNames(month: number): readonly string[] {
     .filter((name) => /\p{L}/u.test(name));
 }
 
+const isLetter = (char: string) => /\p{L}/u.test(char);
+const isDigit = (char: string) => char >= '0' && char <= '9';
+/** Hebrew writes "in" or "to" as one letter joined to the month: בינואר, לינואר. */
+const joinedPrefixes = new Set(['ב', 'ל', 'ה']);
+/** How far, in characters, the day or the year may stand from the month's name. */
+const nearby = 6;
+
+/** Where the name stands in the text as a word of its own; `12月` holds `2月` but does not state it. */
+function namePositions(text: string, name: string): number[] {
+  const positions: number[] = [];
+  for (let at = text.indexOf(name); at !== -1; at = text.indexOf(name, at + 1)) {
+    const before = text.charAt(at - 1);
+    const after = text.charAt(at + name.length);
+    const startsWithDigit = isDigit(name.charAt(0));
+    const openStart = startsWithDigit
+      ? !isDigit(before)
+      : !isLetter(before) || (joinedPrefixes.has(before) && !isLetter(text.charAt(at - 2)));
+    const endsWithLetter = isLetter(name.charAt(name.length - 1));
+    if (openStart && !(endsWithLetter && isLetter(after))) positions.push(at);
+  }
+  return positions;
+}
+
+/**
+ * Whether the text names the month beside its day or its year, so "may" the verb or a month
+ * mentioned far from the numbers does not state the date.
+ */
+function namesMonth(text: string, month: number, day: string, year: string): boolean {
+  const numbers = [...text.matchAll(/\d+/gu)].map((match) => ({
+    value: canonicalNumber(match[0]),
+    start: match.index,
+    end: match.index + match[0].length,
+  }));
+  return monthNames(month).some((name) =>
+    namePositions(text, name).some((at) =>
+      numbers.some(
+        ({ value, start, end }) =>
+          (value === day || value === year) &&
+          start - (at + name.length) <= nearby &&
+          at - end <= nearby,
+      ),
+    ),
+  );
+}
+
 const numericDate = /(\d{1,4})[./-](\d{1,2})[./-](\d{1,4})/gu;
 
-/** Whether the text writes the date with numbers only, day, month and year in a usual order. */
+/**
+ * Whether the text writes the date with numbers only: year first, or day and month in either order
+ * when only one order makes a date, since `05.03.2026` reads as March or May by country.
+ */
 function writesNumericDate(text: string, year: string, month: string, day: string): boolean {
+  const ambiguous = day !== month && Number(day) <= 12;
   for (const [, first = '', second = '', third = ''] of text.matchAll(numericDate)) {
     const [a, b, c] = [first, second, third].map(canonicalNumber);
-    if (
-      (c === year && ((a === day && b === month) || (a === month && b === day))) ||
-      (a === year && b === month && c === day)
-    ) {
+    if (a === year && b === month && c === day) return true;
+    if (c === year && !ambiguous && ((a === day && b === month) || (a === month && b === day))) {
       return true;
     }
   }
@@ -127,9 +212,8 @@ function writesNumericDate(text: string, year: string, month: string, day: strin
 }
 
 /**
- * Whether a text states the value: a number among the numbers it writes; a date in ISO form, with
- * numbers in a usual order, or by its year, its day and its month's name in one of the catalog's
- * languages.
+ * Whether a text states the value: a number among the numbers it writes; a date in ISO form, in
+ * numbers that read one way only, or by its year, its day and its month's name beside them.
  */
 export function statesValue(value: CheckValue, text: string): boolean {
   const numbers = numbersIn(text);
@@ -138,10 +222,5 @@ export function statesValue(value: CheckValue, text: string): boolean {
   const [year = '', month = '', day = ''] = value.value.split('-').map(canonicalNumber);
   if (writesNumericDate(text, year, month, day)) return true;
   if (!numbers.has(year) || !numbers.has(day)) return false;
-  const lower = text.normalize('NFC').toLowerCase();
-  return monthNames(Number(month)).some((name) =>
-    new RegExp(`(?<!\\p{L})${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?!\\p{L})`, 'u').test(
-      lower,
-    ),
-  );
+  return namesMonth(text.normalize('NFC').toLowerCase(), Number(month), day, year);
 }

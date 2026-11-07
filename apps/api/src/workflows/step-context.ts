@@ -157,7 +157,7 @@ export const checkSteps = once((): Promise<VersionCheck> => {
   const checker = ruleCheckerFor(environment);
   if (checker === undefined) {
     return Promise.resolve(() => {
-      stepLogger.error({ route: 'workflow:check-version', errorCode: 'check_unavailable' });
+      stepLogger.error({ route: 'workflow:check-version', errorCode: 'check_not_configured' });
       return Promise.resolve();
     });
   }

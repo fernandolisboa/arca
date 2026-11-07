@@ -132,7 +132,7 @@ beforeAll(async () => {
       authorization: request.headers.authorization,
     });
     const handler = routes.get(request.url ?? '');
-    if (handler === undefined) {
+    if (typeof handler !== 'function') {
       response.writeHead(500);
       response.end();
     } else handler(response);

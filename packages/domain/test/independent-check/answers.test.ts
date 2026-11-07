@@ -151,6 +151,24 @@ describe('plainNote', () => {
   it('answers null for a note that was only a link', () => {
     expect(plainNote('https://evil.example/x')).toBeNull();
   });
+
+  it.each([
+    ['The page says EUR 800 (see https://gov.example/x).', 'The page says EUR 800 (see'],
+    ['Look at www.evil.example now', 'Look at now'],
+    ['Ask evil.example, not the law.', 'Ask not the law.'],
+    ['Write to mailto:a@b.example <b>here</b>', 'Write to b here /b'],
+    ['The amount is 1.800 euros, not 1.500.', 'The amount is 1.800 euros, not 1.500.'],
+  ])('takes links and hosts out of %s', (note, plain) => {
+    expect(plainNote(note)).toBe(plain);
+  });
+
+  // A pattern that backtracks on these takes far longer than the test's time limit.
+  it.each([`${'a'.repeat(100_000)}:`, `${'a'.repeat(100_000)}!`, `${'0'.repeat(100_000)}x`])(
+    'reads a long run quickly',
+    (note) => {
+      expect(plainNote(note)?.length ?? 0).toBeLessThanOrEqual(300);
+    },
+  );
 });
 
 describe('reportClean', () => {

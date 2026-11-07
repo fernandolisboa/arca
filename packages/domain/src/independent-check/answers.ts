@@ -92,13 +92,46 @@ function echoesAddress(quote: string, chain: readonly string[], values: readonly
   );
 }
 
+const scheme = /^[a-z][a-z0-9+.-]*$/;
+const label = /^[a-z0-9-]+$/;
+const topLevel = /^[a-z]{2,63}$/;
+
+/**
+ * Whether a word of a note is a link, an address or a host name. Checked word by word with
+ * anchored patterns, so a long note never makes a pattern backtrack.
+ */
+const opening = new Set(['(', '"', "'", '[']);
+const closing = new Set(['.', ',', ';', ':', '!', '?', ')', '"', "'", ']']);
+
+function trimmed(text: string, from: ReadonlySet<string>, side: 'start' | 'end'): string {
+  let start = 0;
+  let end = text.length;
+  if (side === 'start') while (start < end && from.has(text.charAt(start))) start += 1;
+  else while (end > start && from.has(text.charAt(end - 1))) end -= 1;
+  return text.slice(start, end);
+}
+
+function linkLike(word: string): boolean {
+  const lower = trimmed(word.toLowerCase(), opening, 'start');
+  const colon = lower.indexOf(':');
+  if (colon > 0 && scheme.test(lower.slice(0, colon))) return true;
+  if (lower.startsWith('www.')) return true;
+  const host = trimmed(lower.split(/[/?#]/u)[0] ?? '', closing, 'end');
+  const labels = host.split('.');
+  return (
+    labels.length > 1 &&
+    labels.every((part) => label.test(part)) &&
+    topLevel.test(labels.at(-1) ?? '')
+  );
+}
+
 /** Links, addresses and host names out of a note, angle brackets too, then capped. */
 export function plainNote(note: string): string | null {
   const plain = normalizeWhitespace(
     note
-      .replace(/[a-z][a-z0-9+.-]*:\/{0,2}\S+/giu, ' ')
-      .replace(/\bwww\.\S+/giu, ' ')
-      .replace(/\b(?:[a-z0-9-]+\.)+[a-z]{2,63}\b\S*/giu, ' ')
+      .split(/\s+/u)
+      .filter((word) => !linkLike(word))
+      .join(' ')
       .replace(/[<>]/g, ' '),
   );
   if (plain === '') return null;

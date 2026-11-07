@@ -138,7 +138,7 @@ export function createVersionChecks({
       if (current === undefined) return { ok: true, status, report: null };
       const stored = await reports.find(current.startId);
       if (stored === undefined) {
-        // A row the report schema refuses is never shown, nor counted as checked.
+        // A row the report schema refuses is never shown; the list may still count it until it ages out.
         logger.error({
           route: '/v1/knowledge/versions/check',
           errorCode: 'check_report_unreadable',
