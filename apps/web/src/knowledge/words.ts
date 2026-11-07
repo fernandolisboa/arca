@@ -20,6 +20,7 @@ export function useKnowledgeWords() {
   return {
     t,
     language,
+    labelled,
     list,
     country,
     date: (value: string) => formatDateValue(value, language),

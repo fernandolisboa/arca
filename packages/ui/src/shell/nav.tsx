@@ -50,10 +50,19 @@ interface NavLinkProps {
   readonly shape: NavShape;
   /** Icon only, with the label as the accessible name (the top bar's gear). */
   readonly iconOnly?: boolean;
+  /** The label shows from 1024 px; narrower, it is read but not shown, so a full top bar fits. */
+  readonly compact?: boolean;
   readonly onNavigate?: () => void;
 }
 
-export function NavLink({ item, link: Link, shape, iconOnly = false, onNavigate }: NavLinkProps) {
+export function NavLink({
+  item,
+  link: Link,
+  shape,
+  iconOnly = false,
+  compact = false,
+  onNavigate,
+}: NavLinkProps) {
   const tone = item.current ? 'bg-soft text-primary' : 'text-ink hover:bg-soft';
   return (
     <Link
@@ -64,7 +73,11 @@ export function NavLink({ item, link: Link, shape, iconOnly = false, onNavigate 
       {...(onNavigate === undefined ? {} : { onClick: onNavigate })}
     >
       <Icon name={item.icon} />
-      {!iconOnly && <span className="max-w-full truncate">{item.label}</span>}
+      {!iconOnly && (
+        <span className={compact ? 'sr-only lg:not-sr-only lg:truncate' : 'max-w-full truncate'}>
+          {item.label}
+        </span>
+      )}
     </Link>
   );
 }
@@ -74,10 +87,11 @@ interface NavListProps {
   readonly link: ShellLink;
   readonly shape: NavShape;
   readonly direction: 'row' | 'column';
+  readonly compact?: boolean;
   readonly onNavigate?: () => void;
 }
 
-export function NavList({ items, link, shape, direction, onNavigate }: NavListProps) {
+export function NavList({ items, link, shape, direction, compact, onNavigate }: NavListProps) {
   return (
     <ul className={`flex gap-1 ${direction === 'row' ? 'flex-row' : 'flex-col'}`}>
       {items.map((item) => (
@@ -86,6 +100,7 @@ export function NavList({ items, link, shape, direction, onNavigate }: NavListPr
             item={item}
             link={link}
             shape={shape}
+            {...(compact === undefined ? {} : { compact })}
             {...(onNavigate === undefined ? {} : { onNavigate })}
           />
         </li>

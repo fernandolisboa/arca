@@ -5,30 +5,21 @@ import {
   type RouteResult,
   staleAfterDays,
 } from '@arca/api-contract/client';
-import { Button, SourceLine, StatusChip, type StatusTone } from '@arca/ui';
+import { Button, SourceLine, StatusChip } from '@arca/ui';
 import { useQuery } from '@tanstack/react-query';
-import { Link, createFileRoute } from '@tanstack/react-router';
-import { type ReactNode, useId } from 'react';
+import { Link, createFileRoute, useLocation } from '@tanstack/react-router';
+import { type ReactNode, useEffect, useId } from 'react';
 import { caseEvaluationsQuery, caseQuery, sessionQuery } from '../api.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { useKnowledgeWords, type KnowledgeWords } from '../knowledge/words.js';
 import { Page } from '../page.js';
-import { groupResults } from '../results/group.js';
+import { groupResults, resultsAnchor } from '../results/group.js';
 import { ReportRule } from '../results/report-rule.js';
+import { statusTones } from '../results/status-tone.js';
 
 export const Route = createFileRoute('/family_/results')({ component: Results });
 
-type Status = RouteResult['status'];
 type Source = RouteResult['requirements'][number]['sources'][number];
-
-const tones: Record<Status, StatusTone> = {
-  eligible: 'ok',
-  needs_assessment: 'warn',
-  missing_information: 'warn',
-  pending_activation: 'warn',
-  not_eligible: 'unknown',
-  unavailable: 'unknown',
-};
 
 /** The results screen (spec 0007, R6): every route for each member, and what would settle it. */
 function Results() {
@@ -113,6 +104,11 @@ function Evaluated({
   const name = (id: string) => names.get(id) ?? t('results.someone');
   const people = (ids: readonly string[]) => words.list(ids.map(name));
   const groups = groupResults(evaluations.results, words.country, words.language);
+  const { hash } = useLocation();
+  // A link from another screen, such as the comparison, lands on its country once the list exists.
+  useEffect(() => {
+    if (hash !== '') document.getElementById(hash)?.scrollIntoView();
+  }, [hash]);
   return (
     <>
       <section aria-labelledby="results-questions" className="flex flex-col gap-3">
@@ -161,7 +157,12 @@ function Evaluated({
       {groups.map(({ country, routes }) => {
         const heading = country === null ? t('results.otherRoutes') : words.country(country);
         return (
-          <section key={country ?? ''} aria-label={heading} className="flex flex-col gap-3">
+          <section
+            key={country ?? ''}
+            id={country === null ? undefined : resultsAnchor(country)}
+            aria-label={heading}
+            className="flex scroll-mt-20 flex-col gap-3"
+          >
             <h3 className="font-display text-lead">{heading}</h3>
             {routes.map((group) => {
               const routeTitle =
@@ -210,7 +211,7 @@ function PrincipalResult({
       <div className="flex flex-wrap items-center gap-2">
         <p>{t('results.principal', { name: name(result.principalId) })}</p>
         <StatusChip
-          tone={tones[result.status]}
+          tone={statusTones[result.status]}
           label={t('results.status', { status: result.status })}
         />
       </div>

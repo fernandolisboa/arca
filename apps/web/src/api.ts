@@ -74,6 +74,16 @@ export const caseEvaluationsQuery = queryOptions({
   refetchOnWindowFocus: false,
 });
 
+/** The caller's destination comparison and their own choices for it (ADR-0026). */
+export const comparisonQuery = queryOptions({
+  queryKey: ['comparison'],
+  queryFn: () => api.call(routes.getComparison),
+  networkMode: 'always',
+  retry: false,
+  // Each read counts against a per-session limit, so a tab coming back into view does not read.
+  refetchOnWindowFocus: false,
+});
+
 /** The account's passkeys, each with its sessions (spec 0003, R4). */
 export const devicesQuery = queryOptions({
   queryKey: ['devices'],
@@ -141,6 +151,7 @@ const accountQueries = [
   recoveryKitQuery,
   invitesQuery,
   caseQuery,
+  comparisonQuery,
   devicesQuery,
   vaultStatusQuery,
   notificationChannelsQuery,

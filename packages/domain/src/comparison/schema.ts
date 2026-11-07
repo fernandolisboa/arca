@@ -99,6 +99,8 @@ export const comparisonVersionSchema = z.strictObject({
 export type ComparisonVersion = z.infer<typeof comparisonVersionSchema>;
 
 export const maxOwnCriteria = 30;
+/** The longest name a person may give an own criterion. */
+export const maxOwnCriterionName = 60;
 export const maxRatings = 2000;
 /** Keys a weights or ratings record may hold: a version's 50 criteria and 30 own ones, with room. */
 export const maxCriterionKeys = 100;
@@ -110,7 +112,7 @@ export const ownCriterionSchema = z.strictObject({
     .string()
     .trim()
     .min(1)
-    .max(60)
+    .max(maxOwnCriterionName)
     .refine((name) => !/[\p{Cc}\p{Cf}]/u.test(name), {
       message: 'A name has no control or invisible characters',
     })

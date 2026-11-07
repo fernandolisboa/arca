@@ -326,6 +326,7 @@ export {
   criterionIdSchema,
   maxCriterionKeys,
   maxOwnCriteria,
+  maxOwnCriterionName,
   maxRatings,
   noPreferences,
   ownCriterionIdSchema,

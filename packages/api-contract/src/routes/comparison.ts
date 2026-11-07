@@ -5,6 +5,8 @@ import {
   criterionIdSchema,
   decimalSchema,
   maxCriterionKeys,
+  maxOwnCriteria,
+  maxOwnCriterionName,
   ownCriterionIdSchema,
   slugSchema,
   sourceSchema,
@@ -21,6 +23,11 @@ import type { RouteDefinition } from './index.js';
  * Preferences are the caller's alone: no other member, and no model, ever reads them.
  */
 
+/** How many own criteria a person may create, so the screen stops offering more. */
+export const ownCriteriaLimit = maxOwnCriteria;
+/** The longest own criterion name the API takes, for the screen's field. */
+export const ownCriterionNameLimit = maxOwnCriterionName;
+
 const weights = { weight: weightSchema, defaultWeight: weightSchema };
 
 export const ComparedCriterion = z.union([
@@ -29,13 +36,15 @@ export const ComparedCriterion = z.union([
     kind: z.enum(['indicator', 'category', 'personal']),
     /** The knowledge title; the screen shows its own label for the ID when it has one. */
     title: z.string().max(200),
+    /** The indicator an objective criterion reads, and what its values measure, such as "per 100,000 people". */
+    indicator: z.object({ id: slugSchema, unit: z.string().max(200) }).optional(),
     ...weights,
   }),
   z.object({
     id: ownCriterionIdSchema,
     kind: z.literal('own'),
     /** The caller's own name for it: case data, never logged. */
-    name: z.string().max(60),
+    name: z.string().max(maxOwnCriterionName),
     ...weights,
   }),
 ]);

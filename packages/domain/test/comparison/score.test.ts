@@ -148,6 +148,24 @@ describe('totals, coverage and ranking', () => {
     ]);
   });
 
+  it('names the indicator an objective criterion reads and its unit', () => {
+    const result = compareDestinations({
+      entry: entry(criteria, [safety]),
+      preferences: preferences({}),
+      countries: ['QM'],
+      today,
+    });
+    expect(
+      result.criteria.map(({ id, ...rest }) => ({
+        id,
+        indicator: 'indicator' in rest ? rest.indicator : undefined,
+      })),
+    ).toEqual([
+      { id: 'safety', indicator: { id: 'homicides', unit: 'per 100,000 people' } },
+      { id: 'climate', indicator: undefined },
+    ]);
+  });
+
   it('breaks an equal total by coverage before the code', () => {
     const result = compareDestinations({
       entry: entry(criteria, [safety]),

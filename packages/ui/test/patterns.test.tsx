@@ -4,7 +4,9 @@ import { CoachMark } from '../src/patterns/coach-mark.js';
 import { NextActionCard } from '../src/patterns/next-action-card.js';
 import { ProgressBar } from '../src/patterns/progress-bar.js';
 import { RankingRow } from '../src/patterns/ranking-row.js';
+import { ScaleChoice } from '../src/patterns/scale-choice.js';
 import { formatCalendarDate, SourceLine } from '../src/patterns/source-line.js';
+import { StarRating } from '../src/patterns/star-rating.js';
 import { StatusChip } from '../src/patterns/status-chip.js';
 import type { ShellLinkProps } from '../src/shell/nav.js';
 
@@ -125,6 +127,50 @@ describe('RankingRow', () => {
     expect(html).toContain('>1.234</span>');
     expect(tabStops(html)).toEqual(['a']);
     expect(html).toMatch(/<a href="\/paises\/us"[^>]*>Estados Unidos<\/a>/);
+  });
+});
+
+describe('ScaleChoice', () => {
+  const legend = 'Segurança';
+  const render = () =>
+    renderToStaticMarkup(<ScaleChoice legend={legend} min={0} max={5} value={4} onChange={noop} />);
+
+  it('is a fieldset with one native radio per step, the chosen one checked', () => {
+    const html = render();
+    expect(html).toMatch(/^<fieldset/);
+    expect(html).toContain('>Segurança</legend>');
+    expect(html.match(/type="radio"/g)).toHaveLength(6);
+    expect(new Set([...html.matchAll(/name="([^"]+)"/g)].map((match) => match[1])).size).toBe(1);
+    expect(html).toMatch(/checked="" value="4"/);
+    expect(html.match(/checked=""/g)).toHaveLength(1);
+  });
+});
+
+describe('StarRating', () => {
+  const props = {
+    legend: 'Clima em Portugal',
+    onChange: noop,
+    onClear: noop,
+    starLabel: (stars: number) => `${String(stars)} de 5 estrelas`,
+    clearLabel: 'Tirar a nota',
+  };
+
+  it('names each star in words and fills the chosen one and those before it', () => {
+    const html = renderToStaticMarkup(<StarRating {...props} value={3} />);
+    expect(html).toContain('<legend class="sr-only">Clima em Portugal</legend>');
+    expect(html.match(/type="radio"/g)).toHaveLength(5);
+    expect(html).toContain('<span class="sr-only">3 de 5 estrelas</span>');
+    expect(html).toMatch(/checked="" value="3"/);
+    expect(html.match(/fill-current/g)).toHaveLength(3);
+    expect(tabStops(html)).toEqual(['button']);
+    expect(html).toContain('>Tirar a nota</button>');
+  });
+
+  it('has no star filled and nothing to clear before a rating', () => {
+    const html = renderToStaticMarkup(<StarRating {...props} value={undefined} />);
+    expect(html).not.toContain('checked=""');
+    expect(html).not.toContain('fill-current');
+    expect(tabStops(html)).toEqual([]);
   });
 });
 

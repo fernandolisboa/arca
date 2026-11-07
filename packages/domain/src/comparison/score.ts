@@ -17,6 +17,8 @@ export type ComparedCriterion = (
       readonly kind: 'indicator' | 'category' | 'personal';
       /** The knowledge title, shown as is unless the interface has its own label for this `id`. */
       readonly title: string;
+      /** The indicator an objective criterion reads and what its values measure. */
+      readonly indicator?: { readonly id: string; readonly unit: string };
     }
   | {
       readonly kind: 'own';
@@ -178,14 +180,22 @@ export function compareDestinations({
   today,
 }: ComparisonInput): DestinationComparison {
   const versionCriteria = entry?.version.criteria ?? [];
+  const indicators = new Map(
+    (entry?.indicators ?? []).map((indicator) => [indicator.id, indicator]),
+  );
   const criteria: ComparedCriterion[] = [
-    ...versionCriteria.map(({ id, kind, title, defaultWeight }) => ({
-      id,
-      kind,
-      title,
-      weight: ownValue(preferences.weights, id) ?? defaultWeight,
-      defaultWeight,
-    })),
+    ...versionCriteria.map((criterion) => {
+      const { id, kind, title, defaultWeight } = criterion;
+      const read = kind === 'personal' ? undefined : indicators.get(criterion.indicator);
+      return {
+        id,
+        kind,
+        title,
+        ...(read === undefined ? {} : { indicator: { id: read.id, unit: read.unit } }),
+        weight: ownValue(preferences.weights, id) ?? defaultWeight,
+        defaultWeight,
+      };
+    }),
     ...preferences.ownCriteria.map(({ id, name }) => ({
       id,
       kind: 'own' as const,
@@ -194,9 +204,6 @@ export function compareDestinations({
       defaultWeight: ownDefaultWeight,
     })),
   ];
-  const indicators = new Map(
-    (entry?.indicators ?? []).map((indicator) => [indicator.id, indicator]),
-  );
   const knowledge = new Map(versionCriteria.map((criterion) => [criterion.id, criterion]));
   const hidden = new Set(preferences.hidden);
 
