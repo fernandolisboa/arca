@@ -49,6 +49,16 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Case stage | Etapa do caso | Where a case stands on the home: telling about the family, the guided questions, then the routes; counted in the client from the case and its answers, never an eligibility decision |
 | Progress | Progresso | Documents obtained and steps done out of what a person's or the family's chosen routes need, computed in code; unknowns shown apart |
 | Shared analysis | Análise compartilhada | A comparison or recommendation an adult shares, read-only and revocable, with chosen people in the case; not a document share |
+| Destination comparison | Comparar destinos | One adult's ranking of the countries that have a route, by criteria they weigh themselves; computed in code, private to that adult ([ADR-0026](docs/adr/0026-destination-comparison-data.md)) |
+| Criterion | Critério | One thing a destination comparison scores, such as safety or climate; knowledge data with a stable ID, scored from a country indicator or from the person's own rating |
+| Own criterion | Critério seu | A criterion an adult creates and names for their own comparison, scored only from their rating; case data |
+| Weight | Peso | How much a criterion counts in one adult's comparison, from 0 (left out) to 5 |
+| Rating | Sua nota | The one to five stars an adult gives a country on a criterion scored by the person, not by an indicator |
+| Score | Nota | A country's result on one criterion, from 0 to 10, computed in code; unknown when the value or the rating is missing, never zero |
+| Total score | Nota final | The weighted mean of a country's known scores, from 0 to 10 |
+| Coverage | Dados conhecidos | The share of an adult's weight that a country's known scores carry; under half puts the country in "Poucos dados" |
+| Country indicator | Indicador do país | A versioned, sourced knowledge file with one measured value per country, such as the homicide rate, with its year |
+| Comparison version | Versão dos dados de comparação | A versioned knowledge file with the criteria and the country indicators they read; activated or rejected as a whole, like a route version |
 | Guided tour | Tour guiado | The first-run walkthrough of the app and the hint shown the first time a screen opens; skippable and replayable |
 | Fact | Dado | A typed value about a person or unit that rules read, such as an age at a date; derived from the case in code |
 | Requirement | Requisito | A condition of a route version, evaluated as true, false or unknown, with a source |

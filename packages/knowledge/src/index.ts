@@ -1,13 +1,19 @@
 import { createRouteCatalog } from './catalog.js';
-import { parseEntries } from './entries.js';
+import { createComparisonCatalog } from './comparisons.js';
+import { parseComparisons, parseEntries } from './entries.js';
 import { countryCodeSchema } from '@arca/domain';
 import { z } from 'zod';
-import { catalogData, countryData } from './generated/catalog.js';
+import { catalogData, comparisonData, countryData } from './generated/catalog.js';
 
 const entries = parseEntries(catalogData);
 
 /** The built knowledge catalog. Nothing reads the data directory at runtime (spec 0002, R6). */
 export const routeCatalog = createRouteCatalog(entries);
+
+/** The destination comparison's versions (ADR-0026); content only for an active one. */
+export const comparisonCatalog = createComparisonCatalog(parseComparisons(comparisonData));
+
+export type { ComparisonCatalog } from './comparisons.js';
 
 /** Every route the catalog has a version of, in a stable order. */
 export const routeIds: readonly string[] = [

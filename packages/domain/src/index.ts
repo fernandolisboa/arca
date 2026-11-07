@@ -301,3 +301,40 @@ export {
   sharedNamePlaceholder,
 } from './intake/mask.js';
 export { type DescribedDraft, describeDraft } from './intake/playback.js';
+export {
+  type ComparisonCriterion,
+  type ComparisonPreferences,
+  type ComparisonVersion,
+  type CountryIndicator,
+  comparisonCriterionSchema,
+  comparisonPreferencesSchema,
+  comparisonVersionSchema,
+  countryIndicatorSchema,
+  criterionIdSchema,
+  maxOwnCriteria,
+  maxRatings,
+  noPreferences,
+  ownCriterionIdSchema,
+  weightSchema,
+} from './comparison/schema.js';
+export { checkComparisonVersion, checkCountryIndicator } from './comparison/check.js';
+export {
+  type ComparedCriterion,
+  type ComparedKind,
+  type ComparisonEntry,
+  type ComparisonIdentity,
+  type ComparisonInput,
+  type ComparisonSelection,
+  type CountryComparison,
+  type CriterionScore,
+  type DestinationComparison,
+  type IndicatorReading,
+  type RouteStatus,
+  bestRouteStatus,
+  compareDestinations,
+  comparisonIdentityKey,
+  comparisonStateOf,
+  ownDefaultWeight,
+  routeStatusOrder,
+  selectComparisonVersion,
+} from './comparison/score.js';

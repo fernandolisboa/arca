@@ -160,3 +160,54 @@ export async function fixtureEntries(): Promise<ReadonlyMap<string, CatalogEntry
   expect(issues.map(formatIssue)).toEqual([]);
   return parseEntries(entries);
 }
+
+export function indicatorFile(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    schemaVersion: 1,
+    id: 'homicides',
+    number: 1,
+    title: 'Intentional homicides',
+    unit: 'per 100,000 people',
+    valueType: 'decimal',
+    sources: [source('stats', 'https://stats.gov.example/homicides')],
+    values: [
+      { country: 'QM', value: '1.5', year: 2024, source: 'stats' },
+      { country: 'QN', value: '12', year: 2023, source: 'stats' },
+    ],
+    countries: { id: 'countries', number: 1 },
+    officialDomains: [{ id: 'qm-gov', number: 1 }],
+    ...overrides,
+  };
+}
+
+export function comparisonFile(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    schemaVersion: 1,
+    id: 'destinations',
+    number: 1,
+    title: 'Destination comparison',
+    indicators: [{ id: 'homicides', number: 1 }],
+    criteria: [
+      {
+        id: 'safety',
+        title: 'Safety',
+        kind: 'indicator',
+        indicator: 'homicides',
+        zeroAt: '20',
+        tenAt: '0.5',
+        defaultWeight: 4,
+      },
+      { id: 'climate', title: 'Climate', kind: 'personal', defaultWeight: 3 },
+    ],
+    ...overrides,
+  };
+}
+
+/** The base tree with one indicator and one comparison version that reads it. */
+export function comparisonTree(): Record<string, unknown> {
+  return {
+    ...baseTree(),
+    'indicators/homicides/1.json': indicatorFile(),
+    'comparisons/destinations/1.json': comparisonFile(),
+  };
+}

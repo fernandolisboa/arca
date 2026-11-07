@@ -13,7 +13,13 @@ export interface Issue {
 
 /** The kinds of versioned files, named as their directories under `data`. */
 export type FileKind =
-  'countries' | 'former-countries' | 'official-domains' | 'country-sets' | 'routes';
+  | 'countries'
+  | 'former-countries'
+  | 'official-domains'
+  | 'country-sets'
+  | 'routes'
+  | 'indicators'
+  | 'comparisons';
 
 /** A versioned file as read from disk: where it is, what its path says it is, and its JSON. */
 export interface RawFile {
@@ -53,6 +59,8 @@ const layouts: readonly { kind: FileKind; pattern: RegExp; fixedId?: string }[] 
   },
   { kind: 'country-sets', pattern: new RegExp(`^country-sets/${idPart}/${numberPart}\\.json$`) },
   { kind: 'routes', pattern: new RegExp(`^routes/${idPart}/${numberPart}\\.json$`) },
+  { kind: 'indicators', pattern: new RegExp(`^indicators/${idPart}/${numberPart}\\.json$`) },
+  { kind: 'comparisons', pattern: new RegExp(`^comparisons/${idPart}/${numberPart}\\.json$`) },
 ];
 const casesPattern = new RegExp(`^routes/${idPart}/${numberPart}\\.cases\\.json$`);
 const hashesFile = 'hashes.json';
