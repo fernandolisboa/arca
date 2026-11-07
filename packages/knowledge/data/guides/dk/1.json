@@ -16,7 +16,7 @@
       "title": "Act No. 765 of 2026 amending the Aliens Act: new collective-agreement pay scheme for certified employers and renumbering of § 9 a, in force 2027-01-01",
       "url": "https://www.retsinformation.dk/eli/lta/2026/765",
       "verifiedAt": "2026-11-07",
-      "amendment": "An amending act, passed once; a later act changes it. It amends LBK 1183 of 2025 as amended up to Act No. 726 of 2026, and its subsection numbers match LBK 953 of 2026, which leaves its changes out until 2027-01-01, so until a consolidated text includes them they are read from this act. The minister sets the collective agreements, after negotiating with the employment minister and consulting the labour market parties, and publishes the list of third countries the new scheme relies on."
+      "amendment": "An amending act, passed once; a later act changes it. It amends LBK 1183 of 2025 as amended up to Act No. 726 of 2026, and its subsection numbers agree with LBK 953 of 2026, which leaves its changes out until 2027-01-01, so until a consolidated text includes them they are read from this act. The minister sets the collective agreements, after negotiating with the employment minister and consulting the labour market parties, and publishes the list of third countries the new scheme relies on."
     },
     {
       "id": "siri-pay-limit",
@@ -76,7 +76,7 @@
     },
     {
       "id": "tfeu-protocol-22",
-      "title": "Protocol (No. 22) on the position of Denmark, annexed to the TEU and the TFEU, consolidated version of 2016 (OJ C 202, p. 298): arts. 1, 2 and 6, Title V of Part Three TFEU",
+      "title": "Protocol (No. 22) on the position of Denmark, annexed to the TEU and the TFEU, consolidated version of 2016 (OJ C 202, p. 298): arts. 1, 2, 4 and 6, Title V of Part Three TFEU",
       "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:12016E/PRO/22",
       "verifiedAt": "2026-11-07",
       "amendment": "Annexed to the Treaty on European Union and the Treaty on the Functioning of the European Union; the text read sets no amendment procedure of its own. Denmark may at any time inform the other Member States that it no longer wishes to use all or part of it (art. 7), or notify that Part I is to consist of the provisions in its Annex, from the first day of the month after the notification (art. 8)."
@@ -180,7 +180,7 @@
     },
     {
       "id": "eu-justice-home-affairs-opt-out",
-      "text": "Under Protocol No. 22, Denmark takes no part in adopting measures under Title V of Part Three TFEU (art. 1), and no Title V provision, measure or Court of Justice ruling on them binds or applies in Denmark (art. 2), save visa lists and a uniform visa format (art. 6). A measure building on the Schengen acquis binds Denmark under international law only if it decides within 6 months to implement it in national law (art. 4). So no Title V directive governs a § 9 a permit, though the Aliens Act defers to EU rules where it says so (§§ 9 h(1), 9 m(1) and (3)).",
+      "text": "Under Protocol No. 22, Denmark takes no part in adopting measures under Title V of Part Three TFEU (art. 1), and no Title V provision, measure or Court of Justice ruling on them binds or applies in Denmark (art. 2), save visa lists and a uniform visa format (art. 6). A measure building on the Schengen acquis binds Denmark under international law only if it decides within 6 months to implement it in national law (art. 4). No text read names a directive that applies to a § 9 a permit, and the Aliens Act defers to EU rules where it says so (§§ 9 h(1), 9 m(1) and (3)).",
       "laws": ["tfeu-protocol-22", "aliens-act"]
     }
   ],

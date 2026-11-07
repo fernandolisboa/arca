@@ -141,7 +141,7 @@
     },
     {
       "path": "guides/ar/1",
-      "sha256": "5927cd1da52d759bb7d7c9841353e52967a2cf06dbc434ecd085a38c1f62cb9d"
+      "sha256": "f8f54a259d9ebaa8388ccd8c2e812a013afb3374dbef6910285beec64d1e069b"
     },
     {
       "path": "guides/cl/1",
@@ -149,7 +149,7 @@
     },
     {
       "path": "guides/dk/1",
-      "sha256": "088b830e4cc733a882395d1246f4cdfea4ca36760c2385f6f15ea4ccd9b6bc32"
+      "sha256": "16d4d67b0a754e316919b604eda026a4ad8fa86a9be6f293b2a1256966dab44d"
     },
     {
       "path": "guides/es/1",
@@ -161,15 +161,15 @@
     },
     {
       "path": "guides/is/1",
-      "sha256": "090d1bd1fb25358bb88e78e1e054591529eab34a52bdf95af4ba39f2090beab7"
+      "sha256": "f015a1b48cb3c2265dc1e60cc94276aec086bff025f39b974e2aa5c9e19d75b2"
     },
     {
       "path": "guides/jp/1",
-      "sha256": "131508c504e27e949006cb01ab64387e7ab5da198888a06510f198e985d13a88"
+      "sha256": "998921b8b0e8ae833c863f446349d0f54578904ffcf7bab033d17024b4481fb8"
     },
     {
       "path": "guides/uy/1",
-      "sha256": "a5d848e17e6ed8ba7ed93b660869b3b34877cc616796a80759928dc8bbac31ff"
+      "sha256": "e4720c1aeb1a1f2415100ec9d464b5b788364d6dfe008ce4e5ceee87becf14be"
     }
   ]
 }

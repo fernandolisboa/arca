@@ -81,7 +81,7 @@
     },
     {
       "id": "notice-not-on-e-gov",
-      "text": "The notice is not on e-Gov; a title search there finds nothing. The only pinned text is the Immigration Services Agency's consolidated copy, headed with its latest amendment, Notice No. 220 of 2021-10-28, and carrying no date of its own. An amendment newer than the copy would not show in it; the agency's page on the notice is the other place an amendment would appear.",
+      "text": "The notice is not on e-Gov; a title search there finds nothing. The only pinned text is the Immigration Services Agency's consolidated copy, headed with its latest amendment, Notice No. 220 of 2021-10-28, and carrying no date of its own. An amendment newer than the copy would not show in it; the agency's page on the notice also names the latest amendment (最近改正).",
       "laws": ["teijusha-notice"]
     },
     {
