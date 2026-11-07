@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "py",
+  "number": 1,
+  "issuer": "Republic of Paraguay",
+  "hosts": [
+    {
+      "host": "migraciones.gov.py",
+      "source": {
+        "id": "nic-py-policies",
+        "url": "https://www.nic.py/politicas.php",
+        "title": "NIC-PY policies for the .py domain: .gov.py is reserved for national and municipal government institutions and decentralized bodies that depend on the State",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    },
+    {
+      "host": "www.bacn.gov.py",
+      "source": {
+        "id": "nic-py-policies",
+        "url": "https://www.nic.py/politicas.php",
+        "title": "NIC-PY policies for the .py domain: .gov.py is reserved for national and municipal government institutions and decentralized bodies that depend on the State",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    }
+  ]
+}
