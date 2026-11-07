@@ -164,7 +164,9 @@ const auditColumns = [
 const decisionColumns = [
   'id',
   'kind',
+  'subject_kind',
   'route_id',
+  'comparison_id',
   'version_number',
   'content_hash',
   'approver_account_id',

@@ -114,6 +114,15 @@ export const knowledgeVersionsQuery = queryOptions({
   retry: false,
 });
 
+/** One comparison version laid out for its approver (ADR-0026). */
+export const comparisonViewQuery = (comparisonId: string, number: number) =>
+  queryOptions({
+    queryKey: ['knowledge', 'comparison', comparisonId, number],
+    queryFn: () => api.call(routes.getComparisonView, { comparisonId, number }),
+    networkMode: 'always',
+    retry: false,
+  });
+
 /** One route version laid out for its approver (spec 0007, R7). */
 export const versionViewQuery = (routeId: string, number: number) =>
   queryOptions({

@@ -1,0 +1,137 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "99cdd6f5-2d57-47ca-a320-39f2954d2019",
+  "prevIds": [
+    "5ec4c57f-f7f2-49d7-9530-605488f9868c"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "decision",
+        "subject_kind"
+      ],
+      "writes": [
+        "s|col|knowledge.decision.subject_kind",
+        "n|col|knowledge.decision.subject_kind",
+        "e|col|knowledge.decision.subject_kind"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "decision",
+        "comparison_id"
+      ],
+      "writes": [
+        "s|col|knowledge.decision.comparison_id",
+        "n|col|knowledge.decision.comparison_id",
+        "e|col|knowledge.decision.comparison_id"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "decision",
+        "route_id"
+      ],
+      "writes": [
+        "s|colprop|knowledge.decision.route_id.notNull"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|col|knowledge.decision.route_id"
+      ],
+      "sqlHash": "cf7c5d3f5b720b28"
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "decision"
+      ],
+      "writes": [
+        "s|ck|knowledge.decision.decision_subject",
+        "n|ck|knowledge.decision.decision_subject",
+        "e|ck|knowledge.decision.decision_subject",
+        "n|con|knowledge.decision.decision_subject"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|col|knowledge.decision.subject_kind",
+        "n|col|knowledge.decision.route_id",
+        "n|col|knowledge.decision.comparison_id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "subject_kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "comparison_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "decision_subject",
+        "value": "CASE \"subject_kind\"\n        WHEN 'route' THEN \"route_id\" IS NOT NULL AND \"comparison_id\" IS NULL\n        WHEN 'comparison' THEN \"route_id\" IS NULL\n          AND \"comparison_id\" IS NOT DISTINCT FROM 'destinations'\n        ELSE false END",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"knowledge\",\"decision\",\"route_id\"]",
+      "set": {
+        "notNull": false
+      }
+    }
+  ]
+}

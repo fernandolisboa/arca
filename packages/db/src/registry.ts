@@ -442,9 +442,9 @@ export const registry: Registry = {
       strategy: 'retain',
       owner: ownedByAccount('approver_account_id'),
       reason:
-        'The record of which rule versions are in use and who decided, with the assertion that proves it; it holds no other personal data (spec 0007, R7).',
+        'The record of which rule and comparison versions are in use and who decided, with the assertion that proves it; it holds no other personal data (spec 0007, R7; ADR-0026).',
       period: 'forever',
-      export: ['decided_at', 'kind', 'route_id', 'version_number'],
+      export: ['decided_at', 'kind', 'subject_kind', 'route_id', 'comparison_id', 'version_number'],
       label: 'dataExport.tables.knowledgeDecisions',
     },
   ],

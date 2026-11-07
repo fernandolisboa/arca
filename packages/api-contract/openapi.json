@@ -3186,7 +3186,9 @@
                               "rule_reported",
                               "intake_drafted",
                               "version_activated",
-                              "version_rejected"
+                              "version_rejected",
+                              "comparison_activated",
+                              "comparison_rejected"
                             ]
                           },
                           "actorAccountId": {
@@ -30850,10 +30852,170 @@
         }
       }
     },
+    "/knowledge/comparisons/activate": {
+      "post": {
+        "operationId": "activateComparison",
+        "summary": "Activates a comparison version after a knowledge_decision step-up; it counts once its stored assertion verifies. 403 not_approver, 403 step_up_required, 404 not_found, 409 already_rejected",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "comparisonId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                  },
+                  "number": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000
+                  }
+                },
+                "required": [
+                  "comparisonId",
+                  "number"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Activated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "decisionId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "decisionId"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/comparisons/reject": {
+      "post": {
+        "operationId": "rejectComparison",
+        "summary": "Rejects a comparison version after a knowledge_decision step-up, at once and for good; the newest active version before it stays in use. 403 not_approver, 403 step_up_required, 404 not_found, 409 already_rejected",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "comparisonId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                  },
+                  "number": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000
+                  }
+                },
+                "required": [
+                  "comparisonId",
+                  "number"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "decisionId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "decisionId"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/knowledge/versions": {
       "get": {
         "operationId": "listKnowledgeVersions",
-        "summary": "Every route version the API bundles with its decision state, the newest first, for an approver; 403 not_approver",
+        "summary": "Every route and comparison version the API bundles with its decision state, the newest first, for an approver; 403 not_approver",
         "responses": {
           "200": {
             "description": "The versions",
@@ -30910,10 +31072,51 @@
                           "state"
                         ]
                       }
+                    },
+                    "comparisons": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "comparisonId": {
+                            "type": "string",
+                            "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                          },
+                          "number": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "title": {
+                            "type": "string",
+                            "maxLength": 200
+                          },
+                          "hash": {
+                            "type": "string",
+                            "pattern": "^[0-9a-f]{64}$"
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "active",
+                              "rejected",
+                              "proposed"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "comparisonId",
+                          "number",
+                          "title",
+                          "hash",
+                          "state"
+                        ]
+                      },
+                      "maxItems": 100
                     }
                   },
                   "required": [
-                    "versions"
+                    "versions",
+                    "comparisons"
                   ]
                 }
               }
@@ -31999,6 +32202,531 @@
                     "sources",
                     "replaces",
                     "cases",
+                    "rejection"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/comparisons/view": {
+      "get": {
+        "operationId": "getComparisonView",
+        "summary": "One comparison version laid out for an approver: its criteria, every indicator value with its year and source host beside the value it replaces, what changed and what rejecting it would do; 403 not_approver, 404 not_found",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+            },
+            "required": true,
+            "name": "comparisonId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "required": true,
+            "name": "number",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The comparison version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "comparisonId": {
+                      "type": "string",
+                      "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                    },
+                    "number": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "hash": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "active",
+                        "rejected",
+                        "proposed"
+                      ]
+                    },
+                    "title": {
+                      "type": "string",
+                      "maxLength": 200
+                    },
+                    "criteria": {
+                      "type": "array",
+                      "items": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                              },
+                              "title": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 200
+                              },
+                              "defaultWeight": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 5
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "indicator"
+                                ]
+                              },
+                              "indicator": {
+                                "type": "string",
+                                "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                              },
+                              "zeroAt": {
+                                "type": "string",
+                                "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                              },
+                              "tenAt": {
+                                "type": "string",
+                                "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "title",
+                              "defaultWeight",
+                              "kind",
+                              "indicator",
+                              "zeroAt",
+                              "tenAt"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                              },
+                              "title": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 200
+                              },
+                              "defaultWeight": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 5
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "category"
+                                ]
+                              },
+                              "indicator": {
+                                "type": "string",
+                                "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                              },
+                              "scores": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "token": {
+                                      "type": "string",
+                                      "pattern": "^[a-z][a-z0-9-]{0,39}$"
+                                    },
+                                    "score": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 10
+                                    }
+                                  },
+                                  "required": [
+                                    "token",
+                                    "score"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "minItems": 1,
+                                "maxItems": 20
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "title",
+                              "defaultWeight",
+                              "kind",
+                              "indicator",
+                              "scores"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                              },
+                              "title": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 200
+                              },
+                              "defaultWeight": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 5
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "personal"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "title",
+                              "defaultWeight",
+                              "kind"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "maxItems": 50
+                    },
+                    "indicators": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                          },
+                          "number": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "title": {
+                            "type": "string",
+                            "maxLength": 200
+                          },
+                          "unit": {
+                            "type": "string",
+                            "maxLength": 200
+                          },
+                          "valueType": {
+                            "type": "string",
+                            "enum": [
+                              "decimal",
+                              "token"
+                            ]
+                          },
+                          "sources": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                                },
+                                "url": {
+                                  "type": "string",
+                                  "maxLength": 2000
+                                },
+                                "title": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 200
+                                },
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "official",
+                                    "secondary"
+                                  ]
+                                },
+                                "verifiedAt": {
+                                  "type": "string",
+                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                },
+                                "host": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ],
+                                  "maxLength": 253
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "url",
+                                "title",
+                                "kind",
+                                "verifiedAt",
+                                "host"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "maxItems": 20
+                          },
+                          "values": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "country": {
+                                  "type": "string",
+                                  "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "maxLength": 40
+                                },
+                                "year": {
+                                  "type": "integer",
+                                  "minimum": 1900,
+                                  "maximum": 2200
+                                },
+                                "source": {
+                                  "type": "string",
+                                  "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                                },
+                                "host": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ],
+                                  "maxLength": 253
+                                },
+                                "previous": {
+                                  "type": [
+                                    "object",
+                                    "null"
+                                  ],
+                                  "properties": {
+                                    "value": {
+                                      "type": "string",
+                                      "maxLength": 40
+                                    },
+                                    "year": {
+                                      "type": "integer",
+                                      "minimum": 1900,
+                                      "maximum": 2200
+                                    }
+                                  },
+                                  "required": [
+                                    "value",
+                                    "year"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "country",
+                                "value",
+                                "year",
+                                "source",
+                                "host",
+                                "previous"
+                              ]
+                            },
+                            "maxItems": 300
+                          },
+                          "removed": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                            },
+                            "maxItems": 300
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "number",
+                          "title",
+                          "unit",
+                          "valueType",
+                          "sources",
+                          "values",
+                          "removed"
+                        ]
+                      },
+                      "maxItems": 20
+                    },
+                    "replaces": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "number": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "criteria": {
+                          "type": "object",
+                          "properties": {
+                            "added": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "maxLength": 96
+                              },
+                              "maxItems": 50
+                            },
+                            "removed": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "maxLength": 96
+                              },
+                              "maxItems": 50
+                            },
+                            "changed": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "maxLength": 96
+                              },
+                              "maxItems": 50
+                            }
+                          },
+                          "required": [
+                            "added",
+                            "removed",
+                            "changed"
+                          ]
+                        },
+                        "indicators": {
+                          "type": "object",
+                          "properties": {
+                            "added": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "maxLength": 96
+                              },
+                              "maxItems": 50
+                            },
+                            "removed": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "maxLength": 96
+                              },
+                              "maxItems": 50
+                            },
+                            "changed": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "maxLength": 96
+                              },
+                              "maxItems": 50
+                            }
+                          },
+                          "required": [
+                            "added",
+                            "removed",
+                            "changed"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "number",
+                        "criteria",
+                        "indicators"
+                      ]
+                    },
+                    "rejection": {
+                      "type": "object",
+                      "properties": {
+                        "selected": {
+                          "type": "boolean"
+                        },
+                        "fallback": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "number": {
+                              "type": "integer",
+                              "minimum": 1
+                            }
+                          },
+                          "required": [
+                            "number"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "selected",
+                        "fallback"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "comparisonId",
+                    "number",
+                    "hash",
+                    "state",
+                    "title",
+                    "criteria",
+                    "indicators",
+                    "replaces",
                     "rejection"
                   ]
                 }

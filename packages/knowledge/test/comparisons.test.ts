@@ -269,7 +269,7 @@ describe('comparison data (ADR-0026)', () => {
       (tree) => {
         tree['comparisons/elsewhere/1.json'] = comparisonFile({ id: 'elsewhere' });
       },
-      'comparisons/elsewhere/1.json: There is one comparison series',
+      'comparisons/elsewhere/1.json: There is one comparison series, destinations',
     ],
   ])('rejects %s', async (_name, change, message) => {
     const tree = comparisonTree();

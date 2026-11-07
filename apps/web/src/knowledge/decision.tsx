@@ -1,4 +1,10 @@
-import { routes, decideVersionAction, type VersionView } from '@arca/api-contract/client';
+import {
+  routes,
+  decideComparisonAction,
+  decideVersionAction,
+  type ComparisonVersionView,
+  type VersionView,
+} from '@arca/api-contract/client';
 import { Button } from '@arca/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
@@ -10,8 +16,8 @@ import type { KnowledgeWords } from './words.js';
 type DecisionKind = 'activate' | 'reject';
 type Failure = CommonFailure | 'rejected';
 
-/** A decision after its own `knowledge_decision` step-up, bound to the version's content hash. */
-async function decide(kind: DecisionKind, view: VersionView): Promise<void> {
+/** A route version decision after its own `knowledge_decision` step-up, bound to its hash. */
+export async function decideVersion(kind: DecisionKind, view: VersionView): Promise<void> {
   const route = kind === 'activate' ? routes.activateVersion : routes.rejectVersion;
   const request = { routeId: view.routeId, number: view.number };
   const approved = await stepUpFor(
@@ -22,12 +28,36 @@ async function decide(kind: DecisionKind, view: VersionView): Promise<void> {
   await reach(approved.call(route, request));
 }
 
-/** The approver's decision: activate, reject, or neither once rejected. */
+/** A comparison version decision, with the comparison's own step-up actions (ADR-0026). */
+export async function decideComparison(
+  kind: DecisionKind,
+  view: ComparisonVersionView,
+): Promise<void> {
+  const route = kind === 'activate' ? routes.activateComparison : routes.rejectComparison;
+  const request = { comparisonId: view.comparisonId, number: view.number };
+  const approved = await stepUpFor(
+    passkeys,
+    decideComparisonAction(route.operationId, request, view.hash),
+    'knowledge_decision',
+  );
+  await reach(approved.call(route, request));
+}
+
+/**
+ * The approver's decision on a route or comparison version: activate, reject, or neither once
+ * rejected. `rejectWarning` says what a rejection would change today, when it changes something.
+ */
 export function Decision({
-  view,
+  state: versionState,
+  decide,
+  activateLead,
+  rejectWarning,
   words,
 }: {
-  readonly view: VersionView;
+  readonly state: VersionView['state'];
+  readonly decide: (kind: DecisionKind) => Promise<void>;
+  readonly activateLead: string;
+  readonly rejectWarning: string | null;
   readonly words: KnowledgeWords;
 }) {
   const queryClient = useQueryClient();
@@ -40,7 +70,7 @@ export function Decision({
   const start = (kind: DecisionKind) => {
     setConfirming(null);
     setState('waiting');
-    decide(kind, view)
+    decide(kind)
       .then(async () => {
         setState({ done: kind });
         await queryClient.invalidateQueries({ queryKey: ['knowledge'] });
@@ -56,7 +86,6 @@ export function Decision({
         statusRef.current?.focus();
       });
   };
-  const { fallback, selected } = view.rejection;
   const message =
     state === 'waiting'
       ? words.t('knowledge.waiting')
@@ -71,7 +100,7 @@ export function Decision({
     </p>
   );
   // A rejection is for good; the status stays, so the outcome and focus survive the refetch.
-  if (view.state === 'rejected') {
+  if (versionState === 'rejected') {
     return (
       <div className="flex flex-col items-start gap-3">
         <p>{words.t('knowledge.rejectedNote')}</p>
@@ -83,7 +112,7 @@ export function Decision({
     <div className="flex flex-col items-start gap-3">
       {confirming === null ? (
         <div className="flex flex-wrap gap-3">
-          {view.state === 'proposed' && (
+          {versionState === 'proposed' && (
             <Button
               disabled={state === 'waiting'}
               onClick={() => {
@@ -106,18 +135,10 @@ export function Decision({
       ) : (
         <div className="flex flex-col items-start gap-3">
           {confirming === 'activate' ? (
-            <p>{words.t('knowledge.activateLead', { date: words.date(view.effectiveFrom) })}</p>
+            <p>{activateLead}</p>
           ) : (
             <>
-              {selected && (
-                <p className="text-danger-ink">
-                  {words.t('knowledge.rejectFallback', {
-                    current: view.state,
-                    fallback: fallback === null ? 'none' : fallback.state,
-                    number: fallback?.number ?? 0,
-                  })}
-                </p>
-              )}
+              {rejectWarning !== null && <p className="text-danger-ink">{rejectWarning}</p>}
               <p>{words.t('knowledge.rejectLead')}</p>
             </>
           )}

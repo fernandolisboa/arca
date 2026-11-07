@@ -232,10 +232,10 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
       [accountId, accountId],
     );
     await insert(
-      `INSERT INTO knowledge.decision (kind, route_id, version_number, content_hash, approver_account_id,
-         credential_id, public_key, action_nonce, server_nonce, authenticator_data, client_data_json,
-         signature, step_up_id)
-       VALUES ('reject', 'qm-sample', 1, repeat('a', 64), $1, $2, '\\x00', decode(repeat('ab', 16), 'hex'),
+      `INSERT INTO knowledge.decision (kind, subject_kind, route_id, version_number, content_hash,
+         approver_account_id, credential_id, public_key, action_nonce, server_nonce,
+         authenticator_data, client_data_json, signature, step_up_id)
+       VALUES ('reject', 'route', 'qm-sample', 1, repeat('a', 64), $1, $2, '\\x00', decode(repeat('ab', 16), 'hex'),
          decode(repeat('ab', 32), 'hex'), '\\x00', '\\x00', '\\x00', gen_random_uuid())`,
       [accountId, credentialId],
     );

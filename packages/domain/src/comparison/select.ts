@@ -1,6 +1,12 @@
 import type { DecisionState, DecisionStates } from '../rules/catalog.js';
 import type { ComparisonVersion, CountryIndicator } from './schema.js';
 
+/**
+ * The ID of the one comparison series (ADR-0026). The decision table's check names it too, so the
+ * build refuses any other and a renamed series is a reviewed schema change.
+ */
+export const comparisonSeriesId = 'destinations';
+
 /** What selection may read about any comparison version, proposed ones included. */
 export interface ComparisonIdentity {
   readonly comparisonId: string;

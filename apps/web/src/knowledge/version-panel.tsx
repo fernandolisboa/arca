@@ -2,7 +2,8 @@ import type { VersionView } from '@arca/api-contract/client';
 import type { Messages } from '@arca/i18n';
 import { Button, Icon, StatusChip, menuItemClass } from '@arca/ui';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
-import { Decision } from './decision.js';
+import { Decision, decideVersion } from './decision.js';
+import { ChangeList, CheckAndHash, card, changeLines, surface } from './review-parts.js';
 import { ExpressionTree } from './expression-tree.js';
 import { RuleSummaryButton, RuleSummaryCard, useRuleSummary } from './rule-summary.js';
 import { stateTone } from './state-tone.js';
@@ -10,9 +11,6 @@ import { reviewSteps, sectionCounts, type Step, type StepKey } from './steps.js'
 import { type KnowledgeWords, useKnowledgeWords } from './words.js';
 
 type SectionKey = keyof Messages['knowledge']['section'];
-
-const surface = 'rounded-control border border-line bg-surface p-4';
-const card = `flex min-w-0 flex-col gap-2 ${surface}`;
 
 function Cards<T>({
   items,
@@ -65,45 +63,13 @@ function Reads({
 function Changes({ view, words }: { readonly view: VersionView; readonly words: KnowledgeWords }) {
   const { replaces } = view;
   if (replaces === null) return <p className="text-muted">{words.t('knowledge.firstVersion')}</p>;
-  const lines = Object.entries(replaces.changes).flatMap(([section, change]) => {
+  const lines = Object.entries(replaces.changes).flatMap(([section, change]) =>
     // Settings are named by their field; every other section by its items' IDs.
-    const items = (ids: readonly string[]) =>
-      words.list(section === 'settings' ? ids.map(words.field) : ids);
-    const details = [
-      ...(change.added.length > 0
-        ? [words.t('knowledge.changeAdded', { items: items(change.added) })]
-        : []),
-      ...(change.removed.length > 0
-        ? [words.t('knowledge.changeRemoved', { items: items(change.removed) })]
-        : []),
-      ...(change.changed.length > 0
-        ? [words.t('knowledge.changeChanged', { items: items(change.changed) })]
-        : []),
-    ];
-    return details.length === 0
-      ? []
-      : [
-          words.t('knowledge.change', {
-            section: words.t(`knowledge.section.${section as SectionKey}`),
-            details: words.list(details),
-          }),
-        ];
-  });
-  if (lines.length === 0) {
-    return <p>{words.t('knowledge.noChanges', { number: replaces.number })}</p>;
-  }
-  return (
-    <div className="flex flex-col gap-2">
-      <p className="text-muted">{words.t('knowledge.changesSince', { number: replaces.number })}</p>
-      <ul className="flex flex-col gap-2">
-        {lines.map((line) => (
-          <li key={line} className={card}>
-            {line}
-          </li>
-        ))}
-      </ul>
-    </div>
+    changeLines(words.t(`knowledge.section.${section as SectionKey}`), change, words, (ids) =>
+      words.list(section === 'settings' ? ids.map(words.field) : ids),
+    ),
   );
+  return <ChangeList number={replaces.number} lines={lines} words={words} />;
 }
 
 function leapDayRule(rule: VersionView['leapDayBirthday']) {
@@ -351,7 +317,6 @@ function DecisionStep({
   readonly words: KnowledgeWords;
 }) {
   const { t } = words;
-  const checkId = useId();
   return (
     <div className="flex flex-col gap-6">
       <dl className="grid grid-cols-2 gap-x-6 gap-y-1 text-small sm:grid-cols-4">
@@ -362,17 +327,22 @@ function DecisionStep({
           </div>
         ))}
       </dl>
-      <section aria-labelledby={checkId} className={card}>
-        <h5 id={checkId} className="font-medium">
-          {t('knowledge.check.title')}
-        </h5>
-        <p>{t('knowledge.check.body')}</p>
-      </section>
-      <div className="flex flex-col gap-1">
-        <p className="text-small text-muted">{t('knowledge.hash')}</p>
-        <p className="font-mono text-small break-all">{view.hash}</p>
-      </div>
-      <Decision view={view} words={words} />
+      <CheckAndHash hash={view.hash} words={words} />
+      <Decision
+        state={view.state}
+        decide={(kind) => decideVersion(kind, view)}
+        activateLead={t('knowledge.activateLead', { date: words.date(view.effectiveFrom) })}
+        rejectWarning={
+          view.rejection.selected
+            ? t('knowledge.rejectFallback', {
+                current: view.state,
+                fallback: view.rejection.fallback === null ? 'none' : view.rejection.fallback.state,
+                number: view.rejection.fallback?.number ?? 0,
+              })
+            : null
+        }
+        words={words}
+      />
     </div>
   );
 }

@@ -1,14 +1,23 @@
 import { randomUUID } from 'node:crypto';
-import { decideVersionAction, type DecideVersionRequest } from '@arca/api-contract/routes';
+import {
+  type DecideComparisonRequest,
+  type DecideVersionRequest,
+  decideComparisonAction,
+  decideVersionAction,
+} from '@arca/api-contract/routes';
 import type { Database } from '@arca/db';
 import { decision } from '@arca/db/knowledge-schema';
 import {
   type CheckedDecision,
+  type ComparisonCatalog,
+  type ComparisonIdentity,
   type DecisionKind,
   type DecisionStates,
+  type DecidedVersion,
   type RouteCatalog,
+  type VersionIdentity,
+  decidedKey,
   decisionStates,
-  identityKey,
 } from '@arca/domain';
 import type { Logger } from '@arca/telemetry';
 import { sql } from 'drizzle-orm';
@@ -23,16 +32,22 @@ export type DecisionOutcome =
   | { readonly decided: string }
   | { readonly refused: 'not_approver' | 'not_found' | 'already_rejected' | 'step_up_required' };
 
+/** The version a decision is about: a route version or a comparison version (ADR-0026). */
+export type DecisionTarget =
+  | (DecideVersionRequest & { readonly subject: 'route' })
+  | (DecideComparisonRequest & { readonly subject: 'comparison' });
+
 export interface KnowledgeDecisions {
   readonly isApprover: (accountId: string) => boolean;
   /**
-   * Activates or rejects one version (spec 0007, R7) with this session's `knowledge_decision`
-   * step-up, bound to the version's hash in the bundled catalog and to the client's action nonce.
+   * Activates or rejects one version (spec 0007, R7; ADR-0026) with this session's
+   * `knowledge_decision` step-up, bound to the subject kind through its action, to the version's
+   * hash in the bundled catalog and to the client's action nonce.
    */
   readonly decide: (
     signedIn: SignedIn,
     kind: DecisionKind,
-    version: DecideVersionRequest,
+    target: DecisionTarget,
     actionNonce: Uint8Array,
   ) => Promise<DecisionOutcome>;
   /** Every decided version's state, from the decisions that count; the engine's `states`. */
@@ -46,29 +61,73 @@ export interface KnowledgeDecisionSettings {
   readonly stepUp: StepUpSpender;
   readonly audit: AuditLog;
   readonly catalog: Pick<RouteCatalog, 'identities'>;
+  /** The only place a comparison hash is taken from: an indicator's hash alone is never decided. */
+  readonly comparisons: Pick<ComparisonCatalog, 'identities'>;
   readonly approvers: readonly string[];
   /** The environment's own origin; its host is the relying-party ID, as for every step-up. */
   readonly origin: string;
   readonly logger: Logger;
 }
 
-const actions = { activate: 'activateVersion', reject: 'rejectVersion' } as const;
-const auditCodes = { activate: 'version_activated', reject: 'version_rejected' } as const;
+const routeActions = { activate: 'activateVersion', reject: 'rejectVersion' } as const;
+const comparisonActions = { activate: 'activateComparison', reject: 'rejectComparison' } as const;
 
 type DecisionRow = typeof decision.$inferSelect;
 
-/** The step-up action a decision approved, rebuilt from the decision's own fields. */
-function decidedAction(
-  row: Pick<DecisionRow, 'kind' | 'routeId' | 'versionNumber' | 'contentHash' | 'actionNonce'>,
+/** A version from the bundled catalog with its subject kind; a route's carries what it corrects. */
+type BundledVersion =
+  | { readonly subject: 'route'; readonly identity: VersionIdentity }
+  | { readonly subject: 'comparison'; readonly identity: ComparisonIdentity };
+
+/**
+ * The step-up action of a decision. Each subject kind has its own actions, so an approval of one
+ * kind never verifies as the other, and route subjects stay as they were (ADR-0026).
+ */
+function decisionAction(
+  kind: DecisionKind,
+  decided: DecidedVersion,
+  nonce: Uint8Array,
 ): CanonicalAction {
-  return {
-    ...decideVersionAction(
-      actions[row.kind],
-      { routeId: row.routeId, number: row.versionNumber },
-      row.contentHash,
-    ),
-    nonce: row.actionNonce,
-  };
+  const { number, hash } = decided.identity;
+  const action =
+    decided.subject === 'route'
+      ? decideVersionAction(routeActions[kind], { routeId: decided.identity.routeId, number }, hash)
+      : decideComparisonAction(
+          comparisonActions[kind],
+          { comparisonId: decided.identity.comparisonId, number },
+          hash,
+        );
+  return { ...action, nonce };
+}
+
+/** The audit event of a decision, naming the version it covers. */
+function decisionEvent(kind: DecisionKind, decided: DecidedVersion, decisionId: string) {
+  const { number } = decided.identity;
+  if (decided.subject === 'route') {
+    const { routeId } = decided.identity;
+    return kind === 'activate'
+      ? { code: 'version_activated' as const, details: { decisionId, routeId, number } }
+      : { code: 'version_rejected' as const, details: { decisionId, routeId, number } };
+  }
+  const { comparisonId } = decided.identity;
+  return kind === 'activate'
+    ? { code: 'comparison_activated' as const, details: { decisionId, comparisonId, number } }
+    : { code: 'comparison_rejected' as const, details: { decisionId, comparisonId, number } };
+}
+
+/**
+ * The version a stored row decided, by its own subject kind; undefined for a row whose IDs do not
+ * fit its kind, which the database's check refuses, so such a row counts for nothing.
+ */
+function rowVersion(row: DecisionRow): DecidedVersion | undefined {
+  const { versionNumber: number, contentHash: hash } = row;
+  if (row.subjectKind === 'route' && row.routeId !== null && row.comparisonId === null) {
+    return { subject: 'route', identity: { routeId: row.routeId, number, hash } };
+  }
+  if (row.subjectKind === 'comparison' && row.comparisonId !== null && row.routeId === null) {
+    return { subject: 'comparison', identity: { comparisonId: row.comparisonId, number, hash } };
+  }
+  return undefined;
 }
 
 export function createKnowledgeDecisions({
@@ -76,6 +135,7 @@ export function createKnowledgeDecisions({
   stepUp,
   audit,
   catalog,
+  comparisons,
   approvers,
   origin,
   logger,
@@ -87,9 +147,9 @@ export function createKnowledgeDecisions({
    * once. The whole checked decision is kept, built from the row that was verified, so a row
    * changed later behind the policies cannot borrow an earlier verification.
    */
-  const checkedById = new Map<string, Promise<CheckedDecision>>();
+  const checkedById = new Map<string, Promise<CheckedDecision | undefined>>();
 
-  const assertionVerifies = (row: DecisionRow) =>
+  const assertionVerifies = (row: DecisionRow, decided: DecidedVersion) =>
     reverifyStepUp(
       {
         credentialId: row.credentialId,
@@ -100,7 +160,7 @@ export function createKnowledgeDecisions({
       },
       {
         purpose: 'knowledge_decision',
-        subjectHash: subjectHash(decidedAction(row)),
+        subjectHash: subjectHash(decisionAction(row.kind, decided, row.actionNonce)),
         credentialId: row.credentialId,
         publicKey: new Uint8Array(row.publicKey),
         rpId,
@@ -108,16 +168,16 @@ export function createKnowledgeDecisions({
       },
     );
 
-  const check = async (row: DecisionRow): Promise<CheckedDecision> => {
-    const verified = listed.has(row.approverAccountId) && (await assertionVerifies(row));
+  const check = async (row: DecisionRow): Promise<CheckedDecision | undefined> => {
+    const decided = rowVersion(row);
+    const verified =
+      decided !== undefined &&
+      listed.has(row.approverAccountId) &&
+      (await assertionVerifies(row, decided));
     if (!verified && row.kind === 'activate') {
       logger.error({ errorName: 'KnowledgeActivationIgnored' });
     }
-    return {
-      kind: row.kind,
-      identity: { routeId: row.routeId, number: row.versionNumber, hash: row.contentHash },
-      verified,
-    };
+    return decided === undefined ? undefined : { ...decided, kind: row.kind, verified };
   };
 
   const checked = (row: DecisionRow) => {
@@ -131,60 +191,80 @@ export function createKnowledgeDecisions({
 
   const states = async () => {
     const rows = await db.select().from(decision).orderBy(decision.decidedAt, decision.id);
-    return decisionStates(await Promise.all(rows.map(checked)));
+    const decisions = await Promise.all(rows.map(checked));
+    return decisionStates(decisions.filter((each) => each !== undefined));
+  };
+
+  /** The target's identity in the bundled catalog: the only source of a hash to decide on. */
+  const bundled = (target: DecisionTarget): BundledVersion | undefined => {
+    if (target.subject === 'route') {
+      const identity = catalog
+        .identities(target.routeId)
+        .find(({ number }) => number === target.number);
+      return identity === undefined ? undefined : { subject: 'route', identity };
+    }
+    const identity = comparisons
+      .identities()
+      .find(
+        ({ comparisonId, number }) =>
+          comparisonId === target.comparisonId && number === target.number,
+      );
+    return identity === undefined ? undefined : { subject: 'comparison', identity };
   };
 
   return {
     isApprover: (accountId) => listed.has(accountId),
 
-    decide: async (signedIn, kind, version, actionNonce) => {
+    decide: async (signedIn, kind, target, actionNonce) => {
       const { accountId } = signedIn;
       if (!listed.has(accountId)) return { refused: 'not_approver' };
-      const identity = catalog
-        .identities(version.routeId)
-        .find(({ number }) => number === version.number);
-      if (identity === undefined) return { refused: 'not_found' };
-      if ((await states()).get(identityKey(identity)) === 'rejected') {
+      const decided = bundled(target);
+      if (decided === undefined) return { refused: 'not_found' };
+      if ((await states()).get(decidedKey(decided)) === 'rejected') {
         return { refused: 'already_rejected' };
       }
-      const action = {
-        ...decideVersionAction(actions[kind], version, identity.hash),
-        nonce: actionNonce,
-      };
+      const { identity } = decided;
+      const routeId = decided.subject === 'route' ? decided.identity.routeId : null;
+      const comparisonId = decided.subject === 'comparison' ? decided.identity.comparisonId : null;
       const decisionId = randomUUID();
       // The decision is stored on app_auth, in the transaction that spends its step-up, so only a
       // role that can already write credentials can store one (ADR-0022); app_api only reads.
       const stored = await stepUp.spend(
         signedIn,
         'knowledge_decision',
-        action,
+        decisionAction(kind, decided, actionNonce),
         async (tx, spent) => {
           // Committed first, on app_audit: a decision no event records must never be stored, so an
           // insert that fails after it leaves an event naming a decision that does not exist.
           await audit.record({
-            code: auditCodes[kind],
+            ...decisionEvent(kind, decided, decisionId),
             subjectAccountId: accountId,
             actorAccountId: accountId,
-            details: { decisionId, routeId: identity.routeId, number: identity.number },
           });
           await tx.execute(sql`
-          INSERT INTO knowledge.decision (id, kind, route_id, version_number, content_hash,
-            approver_account_id, credential_id, public_key, action_nonce, server_nonce,
-            authenticator_data, client_data_json, signature, step_up_id)
-          VALUES (${decisionId}, ${kind}, ${identity.routeId}, ${identity.number},
-            ${identity.hash}, ${accountId}, ${spent.credentialId}, ${Buffer.from(spent.publicKey)},
-            ${Buffer.from(actionNonce)}, ${Buffer.from(spent.nonce)},
-            ${Buffer.from(spent.authenticatorData)}, ${Buffer.from(spent.clientDataJson)},
-            ${Buffer.from(spent.signature)}, ${spent.id})`);
+          INSERT INTO knowledge.decision (id, kind, subject_kind, route_id, comparison_id,
+            version_number, content_hash, approver_account_id, credential_id, public_key,
+            action_nonce, server_nonce, authenticator_data, client_data_json, signature, step_up_id)
+          VALUES (${decisionId}, ${kind}, ${decided.subject}, ${routeId}, ${comparisonId},
+            ${identity.number}, ${identity.hash}, ${accountId}, ${spent.credentialId},
+            ${Buffer.from(spent.publicKey)}, ${Buffer.from(actionNonce)},
+            ${Buffer.from(spent.nonce)}, ${Buffer.from(spent.authenticatorData)},
+            ${Buffer.from(spent.clientDataJson)}, ${Buffer.from(spent.signature)}, ${spent.id})`);
         },
       );
       if (!stored) return { refused: 'step_up_required' };
       // Activating a correction answers the reports of the version it corrects (R8).
       // The decision stands either way; the approver can still close the reports by hand.
-      if (kind === 'activate' && identity.corrects !== undefined) {
-        await closeRuleReports(db, identity.routeId, identity.corrects, null).catch(() => {
-          logger.error({ errorName: 'RuleReportsNotClosed' });
-        });
+      if (
+        kind === 'activate' &&
+        decided.subject === 'route' &&
+        decided.identity.corrects !== undefined
+      ) {
+        await closeRuleReports(db, decided.identity.routeId, decided.identity.corrects, null).catch(
+          () => {
+            logger.error({ errorName: 'RuleReportsNotClosed' });
+          },
+        );
       }
       return { decided: decisionId };
     },

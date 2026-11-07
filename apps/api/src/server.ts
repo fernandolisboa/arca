@@ -1,5 +1,5 @@
 import { createI18n, type I18n } from '@arca/i18n';
-import { pinnedCountries, routeCatalog, routeIds } from '@arca/knowledge';
+import { comparisonCatalog, pinnedCountries, routeCatalog, routeIds } from '@arca/knowledge';
 import { useRuntimeConfig } from 'nitro/runtime-config';
 import { createDataExports } from './account/data-export.js';
 import { createAccountDeletion, type AccountDeletion } from './account/deletion.js';
@@ -123,6 +123,7 @@ function knowledgeDecisions(): KnowledgeDecisions {
     },
     audit: lazyAudit,
     catalog: routeCatalog,
+    comparisons: comparisonCatalog,
     approvers: approvers[environment],
     origin: readAuthOrigin(),
     logger,
@@ -457,8 +458,8 @@ const app = createApp({
   }),
   knowledge: {
     isApprover: (accountId) => knowledgeDecisions().isApprover(accountId),
-    decide: (signedIn, kind, version, nonce) =>
-      knowledgeDecisions().decide(signedIn, kind, version, nonce),
+    decide: (signedIn, kind, target, nonce) =>
+      knowledgeDecisions().decide(signedIn, kind, target, nonce),
     states: () => knowledgeDecisions().states(),
   },
   ...(intake === undefined ? {} : { intake }),

@@ -1,9 +1,12 @@
-import type { KnowledgeVersion } from '@arca/api-contract/routes';
+import type { KnowledgeComparisonVersion, KnowledgeVersion } from '@arca/api-contract/routes';
 import {
   type CalendarDate,
+  type ComparisonVersionView,
   type DecisionStates,
   type VersionView,
   compareDates,
+  comparisonStateOf,
+  comparisonVersionView,
   stateOf,
   versionView,
 } from '@arca/domain';
@@ -13,6 +16,12 @@ export interface KnowledgeVersions {
   /** Every bundled version with its state, the newest first (spec 0007, R7). */
   readonly list: () => Promise<readonly KnowledgeVersion[]>;
   readonly view: (routeId: string, number: number) => Promise<VersionView | undefined>;
+  /** Every bundled comparison version with its state, the newest first (ADR-0026). */
+  readonly comparisons: () => Promise<readonly KnowledgeComparisonVersion[]>;
+  readonly comparisonView: (
+    comparisonId: string,
+    number: number,
+  ) => Promise<ComparisonVersionView | undefined>;
 }
 
 export interface KnowledgeVersionSettings {
@@ -24,7 +33,7 @@ export interface KnowledgeVersionSettings {
 
 /**
  * The activation screen's reads, the only place the display catalog is read: its content reaches
- * the approver as a view and never an evaluation.
+ * the approver as a view and never an evaluation or a comparison.
  */
 export function createKnowledgeVersions({
   states,
@@ -63,6 +72,32 @@ export function createKnowledgeVersions({
         cases: catalog.cases(entry.identity.hash),
         states: await states(),
         today: today(),
+        hostOf: catalog.hostOf,
+      });
+    },
+
+    comparisons: async () => {
+      const decided = await states();
+      return catalog
+        .comparisons()
+        .map(({ identity, version }) => ({
+          comparisonId: identity.comparisonId,
+          number: identity.number,
+          title: version.title,
+          hash: identity.hash,
+          state: comparisonStateOf(identity, decided),
+        }))
+        .sort((left, right) => right.number - left.number);
+    },
+
+    comparisonView: async (comparisonId, number) => {
+      const entries = catalog
+        .comparisons()
+        .filter(({ identity }) => identity.comparisonId === comparisonId);
+      return comparisonVersionView({
+        entries,
+        number,
+        states: await states(),
         hostOf: catalog.hostOf,
       });
     },

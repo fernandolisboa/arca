@@ -218,7 +218,7 @@ const canonical = (value: unknown): string =>
       : inner,
   );
 
-function sectionChange(
+export function sectionChange(
   before: readonly { readonly id: string }[],
   after: readonly { readonly id: string }[],
 ): SectionChange {

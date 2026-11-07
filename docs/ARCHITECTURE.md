@@ -100,6 +100,7 @@ Entities, not final schema:
 - `country`, `destination_choice`: catalog countries and the ones each person selected, with priority and the stay-together constraint.
 - `ancestor`: parents and grandparents with country, dates, naturalization and certificates.
 - `route`, `route_version`: routes per country; declarative requirements, costs, dependents covered, `sources` (URL, kind, `verifiedAt`), effective dates, pinned country sets and official-domain lists. Files in `packages/knowledge`, not tables ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)); approvers' decisions on them are stored as the consultancy core's slice 3 specifies.
+- `country_indicator`, `comparison_version`: country data for the destination comparison and the criteria that read it. Files in `packages/knowledge`, activated as a whole; their decisions sit in `knowledge.decision` under the subject kind `comparison` ([ADR-0026](adr/0026-destination-comparison-data.md)).
 - `action_point`: where each step happens (official link, phone, consulate by jurisdiction, partner by region).
 - `evaluation`: person or unit × route version → status, missing requirements, estimated cost and time.
 - `asset`, `sale`, `gift`, `fx_transfer`: the source-of-funds trail.

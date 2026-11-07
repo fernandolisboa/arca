@@ -49,6 +49,9 @@ import {
   handOverCasePersonAction,
   addCaseMemberAction,
   leaveCaseAction,
+  ComparisonVersionView,
+  ComparisonViewQuery,
+  DecideComparisonRequest,
   DecideVersionRequest,
   VersionView,
   VersionViewQuery,
@@ -105,8 +108,8 @@ import type { NotificationChannels } from './notification/channels.js';
 import { isP256PublicKey } from './notification/push.js';
 import type { CaseFiles, CaseWritten } from './case/case-files.js';
 import type { CaseIntake } from './case/intake.js';
-import type { DecisionKind } from '@arca/domain';
-import type { DecisionOutcome, KnowledgeDecisions } from './knowledge/decisions.js';
+import type { DecisionKind, DecisionSubject } from '@arca/domain';
+import type { DecisionOutcome, DecisionTarget, KnowledgeDecisions } from './knowledge/decisions.js';
 import type { RuleReportReview } from './knowledge/reports.js';
 import type { RuleSummaries } from './knowledge/summaries.js';
 import type { KnowledgeVersions } from './knowledge/versions.js';
@@ -1413,16 +1416,24 @@ export function createApp({
     'decided' in outcome
       ? c.json({ decisionId: outcome.decided }, 200)
       : fail(c, outcome.refused, refusedDecision[outcome.refused]);
-  const decideVersion = async (c: Context<AppEnv>, kind: DecisionKind) => {
+  const decideVersion = async (
+    c: Context<AppEnv>,
+    kind: DecisionKind,
+    subject: DecisionSubject,
+  ) => {
     const current = await signedIn(c);
     if (current === null || knowledge === undefined) return unauthorized(c);
     // Before the body or the nonce is read, so anyone else learns only that they may not decide;
     // the service checks again, as the authority.
     if (!knowledge.isApprover(current.accountId)) return fail(c, 'not_approver', 403);
-    const version = DecideVersionRequest.parse(await c.req.json());
+    const body: unknown = await c.req.json();
+    const target: DecisionTarget =
+      subject === 'route'
+        ? { subject, ...DecideVersionRequest.parse(body) }
+        : { subject, ...DecideComparisonRequest.parse(body) };
     const nonce = actionNonce(c);
     if (nonce === undefined) return fail(c, 'step_up_required', 403);
-    return decided(c, await knowledge.decide(current, kind, version, nonce));
+    return decided(c, await knowledge.decide(current, kind, target, nonce));
   };
   /** The approver's reads; anyone else learns only that they may not decide. */
   const approverReads = async (c: Context<AppEnv>) => {
@@ -1438,7 +1449,11 @@ export function createApp({
   v1.openapi(openApiRoutes.listKnowledgeVersions, async (c) => {
     const reads = await approverReads(c);
     if ('refused' in reads) return reads.refused;
-    return c.json({ versions: [...(await reads.versions.list())] }, 200);
+    const [versions, comparisons] = await Promise.all([
+      reads.versions.list(),
+      reads.versions.comparisons(),
+    ]);
+    return c.json({ versions: [...versions], comparisons: [...comparisons] }, 200);
   });
   v1.openapi(openApiRoutes.getVersionView, async (c) => {
     const reads = await approverReads(c);
@@ -1446,6 +1461,15 @@ export function createApp({
     const { routeId, number } = VersionViewQuery.parse(c.req.query());
     const view = await reads.versions.view(routeId, number);
     return view === undefined ? fail(c, 'not_found', 404) : c.json(VersionView.parse(view), 200);
+  });
+  v1.openapi(openApiRoutes.getComparisonView, async (c) => {
+    const reads = await approverReads(c);
+    if ('refused' in reads) return reads.refused;
+    const { comparisonId, number } = ComparisonViewQuery.parse(c.req.query());
+    const view = await reads.versions.comparisonView(comparisonId, number);
+    return view === undefined
+      ? fail(c, 'not_found', 404)
+      : c.json(ComparisonVersionView.parse(view), 200);
   });
   const summaryFailures = {
     not_found: 404,
@@ -1502,8 +1526,10 @@ export function createApp({
     const request = CloseRuleReportsRequest.parse(await c.req.json());
     return c.json({ closed: await review.reports.close(request) }, 200);
   });
-  v1.openapi(openApiRoutes.activateVersion, (c) => decideVersion(c, 'activate'));
-  v1.openapi(openApiRoutes.rejectVersion, (c) => decideVersion(c, 'reject'));
+  v1.openapi(openApiRoutes.activateVersion, (c) => decideVersion(c, 'activate', 'route'));
+  v1.openapi(openApiRoutes.rejectVersion, (c) => decideVersion(c, 'reject', 'route'));
+  v1.openapi(openApiRoutes.activateComparison, (c) => decideVersion(c, 'activate', 'comparison'));
+  v1.openapi(openApiRoutes.rejectComparison, (c) => decideVersion(c, 'reject', 'comparison'));
 
   v1.openapi(openApiRoutes.notificationChannels, async (c) => {
     const current = await signedIn(c);

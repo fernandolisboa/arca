@@ -23,6 +23,11 @@ export function useKnowledgeWords() {
     list,
     country,
     date: (value: string) => formatDateValue(value, language),
+    // A decimal string is formatted exactly, never through a floating-point number.
+    decimal: (value: string) =>
+      new Intl.NumberFormat(language, { maximumFractionDigits: 20 }).format(
+        value as Intl.StringNumericLiteral,
+      ),
     // The view writes each amount in the currency's units, as a decimal.
     money: (amount: string, currency: string) => formatAmount({ amount, currency }, language),
     duration: (value: string) => {

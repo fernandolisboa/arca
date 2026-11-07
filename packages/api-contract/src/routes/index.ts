@@ -1,4 +1,4 @@
-import { routeIdSchema, shareScopeSchema } from '@arca/domain';
+import { routeIdSchema, shareScopeSchema, slugSchema } from '@arca/domain';
 import { z } from 'zod';
 import { caseRoutes } from './case.js';
 import { knowledgeRoutes } from './knowledge.js';
@@ -749,6 +749,12 @@ const decisionEvent = z.strictObject({
   routeId: routeIdSchema,
   number: z.int().min(1),
 });
+/** A decision on a comparison version (ADR-0026): the decision and the version it covers. */
+const comparisonDecisionEvent = z.strictObject({
+  decisionId: z.uuid(),
+  comparisonId: slugSchema,
+  number: z.int().min(1),
+});
 const casePersonEvent = z.strictObject({ personId: z.uuid() });
 /** `accountId`: the member who now sees, or no longer sees, that scope of the person. */
 const caseShareEvent = casePersonEvent.extend({
@@ -829,6 +835,8 @@ export const auditEventDetails = {
   }),
   version_activated: decisionEvent,
   version_rejected: decisionEvent,
+  comparison_activated: comparisonDecisionEvent,
+  comparison_rejected: comparisonDecisionEvent,
 } as const;
 
 export type AuditEventCode = keyof typeof auditEventDetails;

@@ -814,7 +814,7 @@ export const ptBR = {
       close: 'Já pesquisei, encerrar os avisos',
       closeFailure: 'Não deu para encerrar os avisos agora. Tente de novo.',
     },
-    lead: 'Aqui você confere cada versão de rota antes de ela entrar nas avaliações. Nenhuma versão vale antes de você ativar.',
+    lead: 'Aqui você confere cada versão de rota e dos dados que comparam os destinos antes de o app usar. Nada vale antes de você ativar.',
     signIn: 'Entre na sua conta para ver as versões.',
     notApprover: 'Só um aprovador pode abrir esta tela.',
     loadFailure: 'Não deu para carregar as versões agora.',
@@ -950,6 +950,31 @@ export const ptBR = {
     rejectedNote: 'Esta versão foi recusada e não volta a ser usada.',
     failure:
       '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} rejected {Esta versão já foi recusada, e a recusa não pode ser desfeita.} other {Não deu certo desta vez. Tente de novo.}}',
+    /** A comparison version: criteria and country data for comparing destinations (ADR-0026). */
+    comparison: {
+      meta: 'Dados da comparação de destinos',
+      firstVersion: 'É a primeira versão destes dados, então não há com o que comparar.',
+      criteria: 'Critérios',
+      indicators: 'Indicadores dos países',
+      kind: '{kind, select, indicator {nota calculada pelo indicador} category {nota por categoria} other {nota dada por cada pessoa}}',
+      defaultWeight: 'peso inicial {weight} de 5',
+      anchors:
+        'Lê {indicator}: {zeroAt} vale nota 0 e {tenAt} vale nota 10. O que fica no meio ganha nota proporcional.',
+      tokenScores: 'Lê {indicator}: {scores}.',
+      tokenScore: '{token} vale {score}',
+      valuesCaption: 'Valores de {title} por país',
+      country: 'País',
+      value: 'Valor',
+      before: 'Antes',
+      source: 'Site da fonte',
+      valueInYear: '{value} ({year})',
+      noPrevious: 'novo',
+      removed: 'Perderam o valor nesta versão: {countries}.',
+      activateLead:
+        'Ao ativar, a comparação de destinos passa a usar estes critérios e valores para todas as pessoas que usam a comparação. Para continuar, confirme com sua chave de acesso.',
+      rejectFallback:
+        '{fallback, select, none {Hoje a comparação usa esta versão. Se recusar, ela fica sem dados de países até você ativar outra.} other {Hoje a comparação usa esta versão. Se recusar, ela volta para a versão {number}.}}',
+    },
     factOf: '{fact} {target}',
     target: {
       current: 'da pessoa avaliada',
@@ -1436,7 +1461,7 @@ export const ptBR = {
       stepUpChallenges: 'Pedidos de confirmação com chave de acesso',
       invites: 'Convites enviados',
       securityHistory: 'Histórico de segurança',
-      knowledgeDecisions: 'Decisões sobre regras (ativações e recusas)',
+      knowledgeDecisions: 'Decisões sobre regras e dados de comparação (ativações e recusas)',
       accountLinks: 'Conexões entre contas',
       vaultDocuments: 'Documentos do cofre',
       vaultDocumentsSharedWithYou: 'Documentos compartilhados com você',

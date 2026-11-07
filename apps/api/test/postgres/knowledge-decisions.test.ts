@@ -1,7 +1,14 @@
 import { randomBytes, randomUUID } from 'node:crypto';
-import { decideVersionAction } from '@arca/api-contract/routes';
+import { decideComparisonAction, decideVersionAction } from '@arca/api-contract/routes';
 import { withIdentity } from '@arca/db';
-import { parseCalendarDate, type VersionIdentity } from '@arca/domain';
+import {
+  type ComparisonIdentity,
+  comparisonIdentityKey,
+  comparisonSeriesId,
+  parseCalendarDate,
+  selectComparisonVersion,
+  type VersionIdentity,
+} from '@arca/domain';
 import { sql } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { auditLog } from '../../src/audit/log.js';
@@ -32,6 +39,11 @@ const identityKey = `qm-sample/1/${'a'.repeat(64)}`;
 const catalog = {
   identities: (routeId: string) => (routeId === version.routeId ? [version] : []),
 };
+const comparisonVersions: readonly ComparisonIdentity[] = [
+  { comparisonId: comparisonSeriesId, number: 1, hash: 'c'.repeat(64) },
+  { comparisonId: comparisonSeriesId, number: 2, hash: 'd'.repeat(64) },
+];
+const comparisons = { identities: () => comparisonVersions };
 
 function decisions(
   approvers: readonly string[] = [approver.signedIn.accountId],
@@ -42,6 +54,7 @@ function decisions(
     stepUp,
     audit: auditLog(testDatabase.auditDb),
     catalog: identities,
+    comparisons,
     approvers,
     origin,
     logger: {
@@ -95,15 +108,15 @@ async function approved(who: Person, action: CanonicalAction) {
   return action.nonce;
 }
 
-const request = { routeId: version.routeId, number: version.number };
+const request = { subject: 'route', routeId: version.routeId, number: version.number } as const;
 
 async function forged(kind: 'activate' | 'reject') {
   await testDatabase.asAdmin((client) =>
     client.query(
-      `INSERT INTO knowledge.decision (kind, route_id, version_number, content_hash, approver_account_id,
-         credential_id, public_key, action_nonce, server_nonce, authenticator_data, client_data_json,
-         signature, step_up_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+      `INSERT INTO knowledge.decision (kind, subject_kind, route_id, version_number, content_hash,
+         approver_account_id, credential_id, public_key, action_nonce, server_nonce,
+         authenticator_data, client_data_json, signature, step_up_id)
+       VALUES ($1, 'route', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
       [
         kind,
         version.routeId,
@@ -146,7 +159,11 @@ describe('knowledge decisions (spec 0007, R7)', () => {
     expect(await decisionEvents(approver.signedIn.accountId)).toEqual([
       {
         code: 'version_activated',
-        details: { decisionId: 'decided' in outcome ? outcome.decided : '', ...request },
+        details: {
+          decisionId: 'decided' in outcome ? outcome.decided : '',
+          routeId: version.routeId,
+          number: version.number,
+        },
       },
     ]);
   });
@@ -187,7 +204,7 @@ describe('knowledge decisions (spec 0007, R7)', () => {
     const outcome = await service.decide(
       approver.signedIn,
       'activate',
-      { routeId: 'qm-sample', number: 2 },
+      { subject: 'route', routeId: 'qm-sample', number: 2 },
       nonce,
     );
     expect(outcome).toHaveProperty('decided');
@@ -263,10 +280,10 @@ describe('knowledge decisions (spec 0007, R7)', () => {
         ...changes,
       };
       return testDatabase.authDb.execute(sql`
-        INSERT INTO knowledge.decision (id, kind, route_id, version_number, content_hash,
-          approver_account_id, credential_id, public_key, action_nonce, server_nonce,
+        INSERT INTO knowledge.decision (id, kind, subject_kind, route_id, version_number,
+          content_hash, approver_account_id, credential_id, public_key, action_nonce, server_nonce,
           authenticator_data, client_data_json, signature, step_up_id)
-        VALUES (${randomUUID()}, 'activate', 'qm-sample', 1, ${version.hash}, ${row.account},
+        VALUES (${randomUUID()}, 'activate', 'route', 'qm-sample', 1, ${version.hash}, ${row.account},
           ${row.credential}, '\\x00', ${randomBytes(16)}, ${spent.nonce},
           ${spent.authenticator_data}, ${spent.client_data_json}, ${row.signature}, ${spent.id})`);
     };
@@ -384,10 +401,10 @@ describe('knowledge decisions (spec 0007, R7)', () => {
         [1, 'b'.repeat(64)],
       ] as const) {
         await client.query(
-          `INSERT INTO knowledge.decision (kind, route_id, version_number, content_hash,
-             approver_account_id, credential_id, public_key, action_nonce, server_nonce,
-             authenticator_data, client_data_json, signature, step_up_id)
-           SELECT kind, route_id, $1, $2, approver_account_id, credential_id, public_key,
+          `INSERT INTO knowledge.decision (kind, subject_kind, route_id, version_number,
+             content_hash, approver_account_id, credential_id, public_key, action_nonce,
+             server_nonce, authenticator_data, client_data_json, signature, step_up_id)
+           SELECT kind, subject_kind, route_id, $1, $2, approver_account_id, credential_id, public_key,
              action_nonce, server_nonce, authenticator_data, client_data_json, signature,
              gen_random_uuid()
              FROM knowledge.decision WHERE version_number = 1 AND content_hash = $3`,
@@ -402,10 +419,10 @@ describe('knowledge decisions (spec 0007, R7)', () => {
   it('lets only app_auth insert, only a copy of a spent step-up, and nobody change a decision', async () => {
     await forged('reject');
     const row = sql`
-      INSERT INTO knowledge.decision (id, kind, route_id, version_number, content_hash,
-        approver_account_id, credential_id, public_key, action_nonce, server_nonce,
+      INSERT INTO knowledge.decision (id, kind, subject_kind, route_id, version_number,
+        content_hash, approver_account_id, credential_id, public_key, action_nonce, server_nonce,
         authenticator_data, client_data_json, signature, step_up_id)
-      VALUES (${randomUUID()}, 'activate', 'qm-sample', 1, ${version.hash},
+      VALUES (${randomUUID()}, 'activate', 'route', 'qm-sample', 1, ${version.hash},
         ${approver.signedIn.accountId}, ${approver.passkey.credentialId}, '\\x00',
         ${randomBytes(16)}, ${randomBytes(32)}, '\\x00', '\\x00', '\\x00', ${randomUUID()})`;
     await expect(
@@ -422,5 +439,171 @@ describe('knowledge decisions (spec 0007, R7)', () => {
       await expect(testDatabase.authDb.execute(change)).rejects.toThrow();
     }
     expect(await decisions().states()).toEqual(new Map([[identityKey, 'rejected']]));
+  });
+});
+
+describe('decisions on comparison versions (ADR-0026)', () => {
+  const [first, second] = comparisonVersions as [ComparisonIdentity, ComparisonIdentity];
+  const target = (identity: ComparisonIdentity) =>
+    ({
+      subject: 'comparison',
+      comparisonId: identity.comparisonId,
+      number: identity.number,
+    }) as const;
+  const comparisonAction = (
+    kind: 'activate' | 'reject',
+    identity: ComparisonIdentity = first,
+    nonce: Uint8Array = randomBytes(16),
+  ): CanonicalAction => ({
+    ...decideComparisonAction(
+      kind === 'activate' ? 'activateComparison' : 'rejectComparison',
+      target(identity),
+      identity.hash,
+    ),
+    nonce,
+  });
+  const decide = async (
+    service: KnowledgeDecisions,
+    kind: 'activate' | 'reject',
+    identity: ComparisonIdentity,
+  ) =>
+    service.decide(
+      approver.signedIn,
+      kind,
+      target(identity),
+      await approved(approver, comparisonAction(kind, identity)),
+    );
+
+  it('activates with its own step-up action, keyed apart from routes, and records it', async () => {
+    const service = decisions();
+    const outcome = await decide(service, 'activate', first);
+    expect(outcome).toHaveProperty('decided');
+    expect(await decisions().states()).toEqual(new Map([[comparisonIdentityKey(first), 'active']]));
+    const events = await testDatabase.asAdmin(
+      async (client) =>
+        (
+          await client.query<{ code: string; details: Record<string, unknown> }>(
+            'SELECT code, details FROM audit.event WHERE subject_account_id = $1 AND code LIKE $2',
+            [approver.signedIn.accountId, 'comparison_%'],
+          )
+        ).rows,
+    );
+    expect(events).toEqual([
+      {
+        code: 'comparison_activated',
+        details: {
+          decisionId: 'decided' in outcome ? outcome.decided : '',
+          comparisonId: comparisonSeriesId,
+          number: 1,
+        },
+      },
+    ]);
+    const [row] = (
+      await testDatabase.asAdmin((client) =>
+        client.query<{ subject_kind: string; route_id: string | null; comparison_id: string }>(
+          'SELECT subject_kind, route_id, comparison_id FROM knowledge.decision',
+        ),
+      )
+    ).rows;
+    expect(row).toEqual({
+      subject_kind: 'comparison',
+      route_id: null,
+      comparison_id: comparisonSeriesId,
+    });
+  });
+
+  it('refuses a route step-up for a comparison, and a comparison step-up for a route', async () => {
+    const service = decisions();
+    const nonce = randomBytes(16);
+    await approved(approver, {
+      ...decideVersionAction('activateVersion', { routeId: 'destinations', number: 1 }, first.hash),
+      nonce,
+    });
+    expect(await service.decide(approver.signedIn, 'activate', target(first), nonce)).toEqual({
+      refused: 'step_up_required',
+    });
+    const comparisonNonce = randomBytes(16);
+    await approved(approver, comparisonAction('activate', first, comparisonNonce));
+    expect(await service.decide(approver.signedIn, 'activate', request, comparisonNonce)).toEqual({
+      refused: 'step_up_required',
+    });
+    expect(await service.states()).toEqual(new Map());
+    const stored = await testDatabase.asAdmin((client) =>
+      client.query('SELECT 1 FROM knowledge.decision'),
+    );
+    expect(stored.rowCount).toBe(0);
+  });
+
+  it('decides only a hash from the comparison catalog', async () => {
+    const nonce = await approved(approver, comparisonAction('activate'));
+    expect(
+      await decisions().decide(
+        approver.signedIn,
+        'activate',
+        { subject: 'comparison', comparisonId: 'homicides', number: 1 },
+        nonce,
+      ),
+    ).toEqual({ refused: 'not_found' });
+    expect(
+      await decisions().decide(
+        approver.signedIn,
+        'activate',
+        { ...target(first), number: 3 },
+        nonce,
+      ),
+    ).toEqual({ refused: 'not_found' });
+  });
+
+  it('keeps the previous active version in use when the newest is rejected', async () => {
+    const service = decisions();
+    await decide(service, 'activate', first);
+    await decide(service, 'activate', second);
+    expect(selectComparisonVersion(comparisonVersions, await service.states()).active).toEqual(
+      second,
+    );
+    expect(await decide(service, 'reject', second)).toHaveProperty('decided');
+    const states = await service.states();
+    expect(selectComparisonVersion(comparisonVersions, states)).toEqual({
+      active: first,
+      pendingNewer: false,
+    });
+    const nonce = await approved(approver, comparisonAction('activate', second));
+    expect(await service.decide(approver.signedIn, 'activate', target(second), nonce)).toEqual({
+      refused: 'already_rejected',
+    });
+  });
+
+  it('never counts a route-signed activation stored as a comparison decision', async () => {
+    const service = decisions();
+    await service.decide(
+      approver.signedIn,
+      'activate',
+      request,
+      await approved(approver, decided('activate')),
+    );
+    const copy = (subject: string, routeId: string | null, comparisonId: string | null) =>
+      testDatabase.asAdmin((client) =>
+        client.query(
+          `INSERT INTO knowledge.decision (kind, subject_kind, route_id, comparison_id,
+             version_number, content_hash, approver_account_id, credential_id, public_key,
+             action_nonce, server_nonce, authenticator_data, client_data_json, signature,
+             step_up_id)
+           SELECT kind, $1, $2, $3, version_number, content_hash, approver_account_id,
+             credential_id, public_key, action_nonce, server_nonce, authenticator_data,
+             client_data_json, signature, gen_random_uuid()
+             FROM knowledge.decision WHERE route_id = 'qm-sample'`,
+          [subject, routeId, comparisonId],
+        ),
+      );
+    await copy('comparison', null, comparisonSeriesId);
+    expect(await decisions().states()).toEqual(new Map([[identityKey, 'active']]));
+    expect(errors).toEqual(['KnowledgeActivationIgnored']);
+    // Each kind keeps its own shape: no route ID on a comparison row, only the one series.
+    await expect(copy('comparison', 'qm-sample', comparisonSeriesId)).rejects.toThrow();
+    await expect(copy('comparison', null, 'homicides')).rejects.toThrow();
+    await expect(copy('comparison', null, null)).rejects.toThrow();
+    await expect(copy('route', 'qm-sample', comparisonSeriesId)).rejects.toThrow();
+    await expect(copy('route', null, null)).rejects.toThrow();
+    await expect(copy('other', 'qm-sample', null)).rejects.toThrow();
   });
 });
