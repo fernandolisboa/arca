@@ -1,6 +1,6 @@
 # Other destinations
 
-Checked 2026-11-01; the Uruguay, Argentina, Paraguay, Chile, Latvia, Australia, Japan, Iceland, Denmark, Georgia, Czech Republic and United Kingdom sections, and Spain's EU-regime rule, on 2026-11-07.
+Checked 2026-11-01; the Uruguay, Argentina, Paraguay, Chile, Latvia, Australia, Japan, Iceland, Denmark, Georgia, Czech Republic, United Kingdom and Ireland sections, and Spain's EU-regime rule, on 2026-11-07.
 
 ## Spain
 
@@ -209,6 +209,25 @@ Dependents: a partner aged 18 or over (a spouse, a civil partner, or an unmarrie
 | Grant of up to 5 years plus 14 days; settlement after 5 continuous years | [Appendix Skilled Worker](https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker), SW 18.1 and 21.1 |
 | Not modeled: the visa fee and Immigration Health Charge, the grant's length and settlement, the Temporary Shortage List and transitional options F to K, criminal record certificates for health and education jobs (SW 16.1), tuberculosis screening, other UK routes (Global Talent, High Potential Individual, UK Ancestry, Scale-up) | [Appendix Skilled Worker](https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker) |
 
+## Ireland
+
+The Critical Skills Employment Permit is now route version `ie-critical-skills` 1 in `packages/knowledge/data/routes`, verified on 2026-11-07 against the Employment Permits Act 2024, the Employment Permits Regulations 2024 as amended, and the Policy Document on Non-EEA Family Reunification. This covers the Republic of Ireland; Northern Ireland is part of the United Kingdom (`GB`). The version starts on 2026-06-12, when the amended Family Reunification Policy took effect; the pay thresholds it reads date from 1 March 2026 (S.I. No. 643 of 2025), and the critical skills occupations list (Schedule 3) was replaced on 13 May 2026 (S.I. No. 213 of 2026) and again on 28 October 2026 (S.I. No. 558 of 2026), with ICT professionals (SOC 2133 to 2139, software developers among them) on every version.
+
+The worker needs a job offer of at least 2 years and 20 hours a week from an employer trading in Ireland, with at least half its staff EEA, Swiss or UK nationals (start-ups backed by Enterprise Ireland or IDA Ireland excepted): at least €40,904 a year for an occupation on Schedule 3 with a relevant third level degree (€36,848 for a degree from the last 12 months), or €68,911 for any other job not on the ineligible list (Schedule 4), with a relevant degree or the necessary experience. A nurse, midwife or radiographer needs a degree or diploma their registration board accepts, and a Schedule 3 job under a public sector pay agreement uses that agreement's pay instead of the thresholds. For evaluations before 28 October 2026 the version also cites S.I. No. 558 of 2026, which changes nothing it reads. The case records no job offer, so the job and the qualification are assessments. The requirement is needing an employment permit at all: citizens of Ireland, the rest of the EU and EEA and Switzerland work under free movement, and British citizens are not "foreign nationals" under the Act, since the Aliens (Exemption) Order 1999 exempts them from the Aliens Act 1935.
+
+A Critical Skills Employment Permit holder is a Category B sponsor: the nuclear family (a spouse or civil partner, a de facto partner and unmarried children under 18) may come on arrival, with no income threshold. A spouse, civil partner or de facto partner must be 18 or over when applying, and a de facto partnership needs at least 2 years of cohabitation. Children may be biological, adopted (an adoption recognised under Irish law) or stepchildren who are full-time members of the household; v1 counts the spouse's or civil partner's children as stepchildren and leaves out a de facto partner's children, since the policy does not define a step-child. Dependent parents and dependent adult children can be sponsored only after 2 years in the State, with higher income thresholds, so v1 leaves them out. No Irish rule for a 29 February birthday was found; the Age of Majority Act 1985, s. 4(1), says only that an age is reached at the start of the anniversary, so 28 February is assumed.
+
+| Fact | Source |
+| --- | --- |
+| A foreign national needs an employment permit; not those with EU treaty rights; a non-national excludes aliens exempted by order, and British citizens are exempted | [Employment Permits Act 2024](https://www.irishstatutebook.ie/eli/2024/act/17/enacted/en/html), ss. 2(1), 7(1), 8(1)(e); [Immigration Act 1999](https://www.irishstatutebook.ie/eli/1999/act/22/section/1/enacted/en/html), s. 1(1); [S.I. No. 97 of 1999](https://www.irishstatutebook.ie/eli/1999/si/97/made/en/html), art. 3; [who needs a permit](https://enterprise.gov.ie/en/what-we-do/workplace-and-skills/employment-permits/employment-permit-eligibility/who-needs-an-employment-permit-/) |
+| Critical skills purpose; the 50% EEA, Swiss or UK staff rule and its start-up exception | [Employment Permits Act 2024](https://www.irishstatutebook.ie/eli/2024/act/17/enacted/en/html), ss. 9(2)(a), 22 |
+| Relevant degree (or experience above the higher threshold), 2-year offer, 20 hours a week | [S.I. No. 444 of 2024](https://www.irishstatutebook.ie/eli/2024/si/444/made/en/html), regs. 27 to 29 |
+| €40,904 (€20.17 an hour), €36,848 for a recent graduate, €68,911 (€33.98 an hour) from 1 March 2026; next change set by the 2025 roadmap, which lists January 2027 as "to be determined" | [S.I. No. 643 of 2025](https://www.irishstatutebook.ie/eli/2025/si/643/made/en/html), regs. 2, 4 to 7 and Schedule 8, Part 1; [MAR roadmap review 2025](https://enterprise.gov.ie/en/publications/publication-files/employment-permits-minimum-annual-remuneration-outcome-of-the-roadmap-review-2025.pdf) |
+| Critical skills occupations (Schedule 3) and ineligible occupations (Schedule 4) | [S.I. No. 213 of 2026](https://www.irishstatutebook.ie/eli/2026/si/213/made/en/html), reg. 4; [S.I. No. 558 of 2026](https://www.irishstatutebook.ie/pdf/2026/en.si.2026.0558.pdf), regs. 6 and 7 |
+| Category B sponsor; nuclear family on arrival; spouse or civil partner 18+; de facto partner 18+ after 2 years of cohabitation; biological, adopted and step-children, unmarried and under 18 | [Family Reunification Policy, 12 June 2026](https://www.irishimmigration.ie/wp-content/uploads/2026/06/Family-Reunification-Policy-12-June-2026.pdf), glossary and paras. 1.5.1, 6.3, 7.5, 7.10, 7.12, 7.13, 7.21 to 7.26, 8.2, 10.8 |
+| Fee €1,000, 90% refunded on refusal; Stamp 4 after the permit's 2 years | [Critical Skills Employment Permit](https://enterprise.gov.ie/en/what-we-do/workplace-and-skills/employment-permits/permit-types/critical-skills-employment-permit/) |
+| Not modeled: the permit fee, the visa and registration fees, Stamp 4 after 2 years and later citizenship, the spouse's right to work (Stamp 1G), dependent parents and adult children after 2 years, the General Employment Permit, and which EU immigration directives Ireland takes part in (to check for the country guide, #112) | |
+
 ## Mexico
 
 | Fact | Source |
@@ -221,7 +240,7 @@ Dependents: a partner aged 18 or over (a spouse, a civil partner, or an unmarrie
 | Destination | Starting point |
 | --- | --- |
 | Canada | Express Entry points system |
-| Ireland | Critical Skills Employment Permit and general work permits |
+| Ireland | General Employment Permit; Stamp 4 after a Critical Skills Employment Permit |
 | Australia | Skilled Nominated (subclass 190) and Skilled Work Regional (subclass 491), which add a state nomination to the points test; employer-sponsored visas |
 | New Zealand | Points-based skilled visas |
 | United Arab Emirates | Long-term residence through property investment |

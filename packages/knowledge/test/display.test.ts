@@ -15,6 +15,7 @@ describe('the display catalog (spec 0007, R7)', () => {
       'es-non-lucrative',
       'gb-skilled-worker',
       'ge-property-short-term',
+      'ie-critical-skills',
       'is-remote-work',
       'it-descent',
       'jp-nikkei-long-term-resident',
