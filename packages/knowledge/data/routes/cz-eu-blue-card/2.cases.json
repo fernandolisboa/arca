@@ -1,0 +1,833 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "brazilian-family-with-children-and-parents",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1985-03-10",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1985-03-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1987-08-20",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1987-08-20",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p3",
+            "birthDate": "2015-05-05",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2015-05-05",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p4",
+            "birthDate": "2003-09-30",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2003-09-30",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "financiallyDependentOn": []
+          },
+          {
+            "id": "p5",
+            "birthDate": "2012-01-15",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "US",
+                "acquired": "2012-01-15",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p6",
+            "birthDate": "2006-04-04",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2006-04-04",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "financiallyDependentOn": []
+          },
+          {
+            "id": "p7",
+            "birthDate": "1955-10-10",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1955-10-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p8",
+            "birthDate": "1966-02-02",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1966-02-02",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "financiallyDependentOn": ["p1"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "spouse",
+            "people": ["p1", "p2"],
+            "start": "2010-06-01",
+            "end": "none"
+          },
+          {
+            "kind": "parent",
+            "parent": "p1",
+            "child": "p3",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p3",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p1",
+            "child": "p4",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p5",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p6",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p7",
+            "child": "p1",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p8",
+            "child": "p1",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "needs_assessment",
+        "dependents": ["p2", "p3", "p5", "p7"],
+        "possibleDependents": ["p8"],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "married-parents-who-do-not-depend-on-the-principal",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p2", "p3"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1985-03-10",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1985-03-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1960-01-01",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1960-01-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "financiallyDependentOn": []
+          },
+          {
+            "id": "p3",
+            "birthDate": "1958-05-05",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1958-05-05",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "financiallyDependentOn": []
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p1",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p3",
+            "child": "p1",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "spouse",
+            "people": ["p2", "p3"],
+            "start": "1980-01-01",
+            "end": "none"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "needs_assessment",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "parent-who-turned-65-today-and-lives-alone",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p2", "p3"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1990-03-10",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1990-03-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1961-10-01",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1961-10-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "financiallyDependentOn": []
+          },
+          {
+            "id": "p3",
+            "birthDate": "1961-10-02",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1961-10-02",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "financiallyDependentOn": []
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p1",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p3",
+            "child": "p1",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "needs_assessment",
+        "dependents": ["p2"],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "lone-parent-of-70-with-a-partner",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p2", "p3"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1985-03-10",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1985-03-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1956-01-01",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1956-01-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "financiallyDependentOn": []
+          },
+          {
+            "id": "p3",
+            "birthDate": "1957-01-01",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1957-01-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "financiallyDependentOn": []
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p1",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "partner",
+            "people": ["p2", "p3"],
+            "start": "2000-01-01",
+            "end": "none"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "needs_assessment",
+        "dependents": [],
+        "possibleDependents": ["p2"],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "adult-child-who-depends-on-the-principal",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p2"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1970-03-10",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1970-03-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p2",
+            "birthDate": "2000-07-07",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2000-07-07",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "financiallyDependentOn": ["p1"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p1",
+            "child": "p2",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "needs_assessment",
+        "dependents": [],
+        "possibleDependents": ["p2"],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "adult-child-whose-dependence-is-unknown",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p2"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1970-03-10",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1970-03-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p2",
+            "birthDate": "2000-07-07",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2000-07-07",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p1",
+            "child": "p2",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "needs_assessment",
+        "dependents": [],
+        "possibleDependents": ["p2"],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "brazilian-and-italian-citizen-not-eligible",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p2"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1985-03-10",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1985-03-10",
+                "lost": "none",
+                "basis": "birth"
+              },
+              {
+                "country": "IT",
+                "acquired": "1985-03-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1987-08-20",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1987-08-20",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "spouse",
+            "people": ["p1", "p2"],
+            "start": "2010-06-01",
+            "end": "none"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": ["p2"],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "czech-citizen-not-eligible",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1985-03-10",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "CZ",
+                "acquired": "1985-03-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "swiss-citizen-not-eligible",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1985-03-10",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "CH",
+                "acquired": "1985-03-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "no-citizenship-recorded",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1985-03-10",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": ["principal.citizenships@p1"]
+      }
+    },
+    {
+      "id": "partner-and-partners-child-not-covered",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p2", "p3"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1985-03-10",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1985-03-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1986-01-01",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1986-01-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p3",
+            "birthDate": "2016-01-01",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2016-01-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "partner",
+            "people": ["p1", "p2"],
+            "start": "2015-01-01",
+            "end": "none"
+          },
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p3",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "needs_assessment",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "child-born-on-a-leap-day-is-18-on-28-february",
+      "snapshot": {
+        "recordedOn": "2030-02-28",
+        "members": ["p1", "p2"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1980-01-01",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1980-01-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p2",
+            "birthDate": "2012-02-29",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2012-02-29",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "financiallyDependentOn": []
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p1",
+            "child": "p2",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2030-02-28",
+      "expected": {
+        "status": "needs_assessment",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "child-born-on-a-leap-day-is-17-on-27-february",
+      "snapshot": {
+        "recordedOn": "2030-02-27",
+        "members": ["p1", "p2"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1980-01-01",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1980-01-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p2",
+            "birthDate": "2012-02-29",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2012-02-29",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "financiallyDependentOn": []
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p1",
+            "child": "p2",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2030-02-27",
+      "expected": {
+        "status": "needs_assessment",
+        "dependents": ["p2"],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    }
+  ]
+}
