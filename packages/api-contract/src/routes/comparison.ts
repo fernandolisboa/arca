@@ -5,6 +5,7 @@ import {
   criterionIdSchema,
   decimalSchema,
   maxCriterionKeys,
+  maxOwnCriteria,
   ownCriterionIdSchema,
   slugSchema,
   sourceSchema,
@@ -20,6 +21,9 @@ import type { RouteDefinition } from './index.js';
  * confirmed account (401, 403 account_unconfirmed) and answers 404 not_found outside a case.
  * Preferences are the caller's alone: no other member, and no model, ever reads them.
  */
+
+/** How many own criteria a person may create, so the screen stops offering more. */
+export const ownCriteriaLimit = maxOwnCriteria;
 
 const weights = { weight: weightSchema, defaultWeight: weightSchema };
 

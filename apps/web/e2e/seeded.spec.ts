@@ -165,6 +165,7 @@ test('the seed approver activates a version, reads and closes its reports, then 
 
 // In this file, after the tests above, for the same reason.
 test('the seed approver reviews, activates and rejects a comparison version (ADR-0026)', async ({
+  browser,
   page,
 }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop', 'runs once, on the desktop project');
@@ -220,6 +221,8 @@ test('the seed approver reviews, activates and rejects a comparison version (ADR
   });
   await expect(page.getByText('Versão ativa', { exact: true })).toBeVisible();
 
+  await memberCompares(browser);
+
   await page.getByRole('button', { name: 'Recusar esta versão' }).click();
   await expect(
     page.getByText('Hoje a comparação usa esta versão. Se recusar, ela fica sem dados de países'),
@@ -267,6 +270,86 @@ async function memberReportsARequirement(browser: Browser) {
   await expect(
     page.getByText('Aviso enviado. Quem revisa as regras vai conferir esta regra.'),
   ).toBeVisible();
+  expect(problems).toEqual([]);
+  await context.close();
+}
+
+/**
+ * Another account, in its own browser, compares destinations on the active comparison version
+ * (#316): with weights that leave only climate counting, its stars order two countries, and hiding
+ * the first moves the second up. Every number on the screen comes from the API.
+ */
+async function memberCompares(browser: Browser) {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const problems = watchProblems(page);
+  await signedIn(page);
+  await family(page);
+  await page.getByRole('link', { name: 'Comparar', exact: true }).first().click();
+  await expect(page.getByRole('heading', { level: 2, name: 'Comparar destinos' })).toBeVisible();
+  const ranking = page.getByRole('region', { name: 'Sua ordem' });
+  const places = ranking.getByRole('heading', { level: 4 });
+  await expect(places.first()).toHaveText(/^1º lugar /);
+  // Each change is saved as it is made; the next step waits for the API's answer.
+  const saved = async (change: Promise<void>) => {
+    const answer = page.waitForResponse((response) =>
+      response.url().endsWith('/v1/comparison/preferences'),
+    );
+    await change;
+    expect((await answer).status()).toBe(200);
+  };
+
+  const weights = page.getByRole('region', { name: 'Seus pesos' });
+  const weigh = (criterion: string, weight: number) =>
+    saved(
+      weights
+        .getByRole('group', { name: criterion })
+        .getByRole('radio', { name: String(weight), exact: true })
+        .check(),
+    );
+  for (const criterion of ['Custo de vida', 'Segurança', 'Saúde', 'Idioma']) {
+    await weigh(criterion, 0);
+  }
+  await weigh('Clima', 5);
+  await expect(ranking).toContainText('Nenhum país tem nota em pelo menos metade do seu peso');
+
+  const fewData = page.getByRole('region', { name: 'Poucos dados' });
+  const rate = async (country: string, stars: string) => {
+    const card = page.getByRole('article', { name: new RegExp(`${country}$`) });
+    await card.getByText('Ver as notas').click();
+    await saved(
+      card
+        .getByRole('group', { name: `Clima em ${country}` })
+        .getByRole('radio', { name: stars })
+        .check(),
+    );
+  };
+  await rate('Portugal', '2 estrelas de 5');
+  await rate('Uruguai', '5 estrelas de 5');
+  await expect(places).toHaveText(['1º lugar Uruguai', '2º lugar Portugal']);
+  await expect(ranking.getByRole('article').first()).toContainText('nota 10 de 10');
+  await expect(fewData).not.toContainText('Uruguai');
+
+  await saved(ranking.getByRole('button', { name: 'Ocultar Uruguai' }).click());
+  await expect(places).toHaveText(['1º lugar Portugal']);
+  const hidden = page.getByRole('region', { name: 'Países ocultos' });
+  await expect(hidden).toContainText('Uruguai');
+
+  // The choices are the account's own and come back on the next visit.
+  await page.reload();
+  await expect(places).toHaveText(['1º lugar Portugal']);
+  await expect(
+    weights.getByRole('group', { name: 'Clima' }).getByRole('radio', { name: '5', exact: true }),
+  ).toBeChecked();
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await horizontalOverflow(page)).toBe(0);
+  const { violations } = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
+    .analyze();
+  expect(violations.map(({ id, nodes }) => [id, nodes.map((node) => node.target)])).toEqual([]);
+
+  await saved(hidden.getByRole('button', { name: 'Mostrar de novo: Uruguai' }).click());
+  await expect(places).toHaveText(['1º lugar Uruguai', '2º lugar Portugal']);
   expect(problems).toEqual([]);
   await context.close();
 }

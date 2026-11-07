@@ -1708,6 +1708,7 @@ export const apiPathSegments: readonly string[] = [
  */
 export const webPathSegments = [
   'assets',
+  'compare',
   'devices',
   'enroll',
   'family',

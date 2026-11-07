@@ -20,6 +20,7 @@ import {
   Route,
   Settings,
   Sparkles,
+  Star,
   TriangleAlert,
   UserRound,
   UsersRound,
@@ -51,6 +52,7 @@ const icons = {
   vault: LockKeyhole,
   next: ArrowRight,
   ai: Sparkles,
+  star: Star,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof icons;

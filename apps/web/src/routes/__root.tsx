@@ -11,6 +11,7 @@ export const Route = createRootRoute({ component: Root });
 const destinations = [
   { id: 'home', to: '/', icon: 'home', approverOnly: false },
   { id: 'family', to: '/family', icon: 'family', approverOnly: false },
+  { id: 'compare', to: '/compare', icon: 'countries', approverOnly: false },
   { id: 'vault', to: '/vault', icon: 'vault', approverOnly: false },
   { id: 'knowledge', to: '/knowledge', icon: 'knowledge', approverOnly: true },
 ] as const;

@@ -5,7 +5,7 @@ import {
   type RouteResult,
   staleAfterDays,
 } from '@arca/api-contract/client';
-import { Button, SourceLine, StatusChip, type StatusTone } from '@arca/ui';
+import { Button, SourceLine, StatusChip } from '@arca/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { type ReactNode, useId } from 'react';
@@ -15,20 +15,11 @@ import { useKnowledgeWords, type KnowledgeWords } from '../knowledge/words.js';
 import { Page } from '../page.js';
 import { groupResults } from '../results/group.js';
 import { ReportRule } from '../results/report-rule.js';
+import { statusTones } from '../results/status-tone.js';
 
 export const Route = createFileRoute('/family_/results')({ component: Results });
 
-type Status = RouteResult['status'];
 type Source = RouteResult['requirements'][number]['sources'][number];
-
-const tones: Record<Status, StatusTone> = {
-  eligible: 'ok',
-  needs_assessment: 'warn',
-  missing_information: 'warn',
-  pending_activation: 'warn',
-  not_eligible: 'unknown',
-  unavailable: 'unknown',
-};
 
 /** The results screen (spec 0007, R6): every route for each member, and what would settle it. */
 function Results() {
@@ -210,7 +201,7 @@ function PrincipalResult({
       <div className="flex flex-wrap items-center gap-2">
         <p>{t('results.principal', { name: name(result.principalId) })}</p>
         <StatusChip
-          tone={tones[result.status]}
+          tone={statusTones[result.status]}
           label={t('results.status', { status: result.status })}
         />
       </div>

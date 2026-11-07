@@ -41,6 +41,7 @@ export {
   recoveryLinkMinutes,
   replaceDocumentsAction,
   routes,
+  ownCriteriaLimit,
   ruleReportReasons,
   startsInPlan,
   stepUpNonceHeader,

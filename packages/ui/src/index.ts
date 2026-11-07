@@ -1,4 +1,5 @@
 export { AppShell, type AppShellLabels, type AppShellProps } from './app-shell.js';
+export { Bar, type BarProps } from './patterns/bar.js';
 export { Button, buttonClass, iconButtonClass, type ButtonProps } from './button.js';
 export { ChoiceGroup, type Choice, type ChoiceGroupProps } from './choice-group.js';
 export { CoachMark, type CoachMarkLabels, type CoachMarkProps } from './patterns/coach-mark.js';
@@ -12,5 +13,7 @@ export { MenuToggle, type MenuToggleProps } from './menu-toggle.js';
 export { NextActionCard, type NextActionCardProps } from './patterns/next-action-card.js';
 export { ProgressBar, type ProgressBarProps } from './patterns/progress-bar.js';
 export { RankingRow, type RankingRowProps } from './patterns/ranking-row.js';
+export { ScaleChoice, type ScaleChoiceProps } from './patterns/scale-choice.js';
 export type { SignOut } from './shell/menu-panel.js';
+export { StarRating, type StarRatingProps } from './patterns/star-rating.js';
 export { StatusChip, type StatusChipProps, type StatusTone } from './patterns/status-chip.js';
