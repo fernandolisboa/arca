@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { Logger } from '@arca/telemetry';
 import { createApp } from '../src/app.js';
 import type { SignedIn } from '../src/auth/service.js';
+import type { AdminGrants } from '../src/knowledge/admin-grants.js';
 import type { DecisionOutcome, KnowledgeDecisions } from '../src/knowledge/decisions.js';
 import type { RuleReportReview } from '../src/knowledge/reports.js';
 import type { KnowledgeVersions } from '../src/knowledge/versions.js';
@@ -10,7 +11,7 @@ import { noLimits } from './limits.js';
 
 const silentLogger: Logger = { info: () => undefined, error: () => undefined };
 const origin = 'http://arca.test';
-const approver: SignedIn = {
+const admin: SignedIn = {
   accountId: '3f2b8a4e-6c1d-4e5f-9a7b-0c1d2e3f4a5b',
   sessionId: '6a1c2d3e-4f50-4617-8a9b-0c1d2e3f4a5b',
 };
@@ -19,7 +20,7 @@ const version = { routeId: 'pt-d7', number: 2 };
 const comparison = { comparisonId: 'destinations', number: 1 };
 
 function setup({
-  signedIn = approver,
+  signedIn = admin,
   outcome = { decided: decisionId },
   listed = true,
 }: {
@@ -28,8 +29,13 @@ function setup({
   listed?: boolean;
 } = {}) {
   const calls: unknown[][] = [];
+  const admins: AdminGrants = {
+    isAdmin: () => Promise.resolve(listed),
+    list: () => Promise.resolve([]),
+    grant: () => Promise.resolve('changed'),
+    remove: () => Promise.resolve('changed'),
+  };
   const knowledge: KnowledgeDecisions = {
-    isApprover: () => listed,
     decide: (...args) => {
       calls.push(args);
       return Promise.resolve(outcome);
@@ -90,6 +96,7 @@ function setup({
     },
     authLimits: noLimits,
     knowledge,
+    admins,
     knowledgeVersions,
     ruleReports,
   });
@@ -126,12 +133,12 @@ function setup({
   };
 }
 
-describe('GET /v1/session for approvers (spec 0007, R7)', () => {
-  it('says whether the account is on the approver list', async () => {
+describe('GET /v1/session for admins (ADR-0027)', () => {
+  it('says whether the account is an admin', async () => {
     for (const listed of [true, false]) {
       const response = await setup({ listed }).app.request('/v1/session');
       expect(response.status).toBe(200);
-      expect(await response.json()).toMatchObject({ approver: listed });
+      expect(await response.json()).toMatchObject({ admin: listed });
     }
   });
 });
@@ -142,11 +149,11 @@ describe('POST /v1/knowledge/versions (spec 0007, R7; ADR-0027)', () => {
     const response = await decide(kind);
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ decisionId });
-    expect(calls).toEqual([[approver, kind, { subject: 'route', ...version }]]);
+    expect(calls).toEqual([[admin, kind, { subject: 'route', ...version }]]);
   });
 
   it.each<[Extract<DecisionOutcome, { refused: string }>['refused'], number]>([
-    ['not_approver', 403],
+    ['not_admin', 403],
     ['not_found', 404],
     ['already_rejected', 409],
   ])('answers %s with %i', async (refused, status) => {
@@ -156,13 +163,13 @@ describe('POST /v1/knowledge/versions (spec 0007, R7; ADR-0027)', () => {
     expect(await response.json()).toEqual({ error: { code: refused } });
   });
 
-  it('answers 401 signed out and 403 to an account not on the list, deciding nothing', async () => {
+  it('answers 401 signed out and 403 to an account that is not an admin, deciding nothing', async () => {
     const signedOut = setup({ signedIn: null });
     expect((await signedOut.decide('activate')).status).toBe(401);
     const other = setup({ listed: false });
     const response = await other.decide('activate');
     expect(response.status).toBe(403);
-    expect(await response.json()).toEqual({ error: { code: 'not_approver' } });
+    expect(await response.json()).toEqual({ error: { code: 'not_admin' } });
     expect([...signedOut.calls, ...other.calls]).toEqual([]);
   });
 
@@ -192,7 +199,7 @@ describe('POST /v1/knowledge/versions (spec 0007, R7; ADR-0027)', () => {
     expect(calls).toEqual([]);
   });
 
-  it('lists the route and comparison versions for an approver and refuses anyone else', async () => {
+  it('lists the route and comparison versions for an admin and refuses anyone else', async () => {
     const { read, listedVersion, listedComparison } = setup();
     const response = await read('');
     expect(response.status).toBe(200);
@@ -220,7 +227,7 @@ describe('POST /v1/knowledge/comparisons (ADR-0026)', () => {
       const response = await decide(kind, comparison, 'comparisons');
       expect(response.status).toBe(200);
       expect(await response.json()).toEqual({ decisionId });
-      expect(calls).toEqual([[approver, kind, { subject: 'comparison', ...comparison }]]);
+      expect(calls).toEqual([[admin, kind, { subject: 'comparison', ...comparison }]]);
     },
   );
 
@@ -237,7 +244,7 @@ describe('POST /v1/knowledge/comparisons (ADR-0026)', () => {
     expect(other.calls).toEqual([]);
   });
 
-  it('views a comparison version only for an approver, 404 when it is not bundled', async () => {
+  it('views a comparison version only for an admin, 404 when it is not bundled', async () => {
     const { read } = setup();
     expect((await read('/view?comparisonId=destinations&number=1', 'comparisons')).status).toBe(
       404,
@@ -253,7 +260,7 @@ describe('POST /v1/knowledge/comparisons (ADR-0026)', () => {
 describe('the rule reports (spec 0007, R8)', () => {
   const reference = { routeId: 'pt-d7', versionNumber: 2, requirementId: 'income' };
 
-  it('lists the open reports and closes one requirement’s for an approver', async () => {
+  it('lists the open reports and closes one requirement’s for an admin', async () => {
     const { reports, close, calls, openReports } = setup();
     const listed = await reports();
     expect(listed.status).toBe(200);

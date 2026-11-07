@@ -1,0 +1,194 @@
+{
+  "schemaVersion": 1,
+  "id": "pt",
+  "number": 1,
+  "title": "Portuguese immigration law for residence visas",
+  "laws": [
+    {
+      "id": "lei-23-2007",
+      "title": "Lei n.º 23/2007 (foreigners law), consolidated: scope (article 4.º), visa conditions (52.º), residence visa (58.º), remote work visas (54.º and 61.º-B) and family members (98.º to 101.º)",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2007-67564445",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended ad hoc by laws of the Assembleia da República and at times by government decree-laws, often more than once a year: Lei n.º 9/2025, Lei n.º 55-C/2025, Lei n.º 61/2025 (in force 2025-10-23) and Lei n.º 62/2026 (in force 2026-09-11) are the latest. The consolidated text on the Diário da República showed its last change as 2026-09-10. Each article lists the acts that changed it and the date from which each change applies, and an amending law may carry its own rule on pending procedures."
+    },
+    {
+      "id": "decreto-regulamentar-84-2007",
+      "title": "Decreto Regulamentar n.º 84/2007, consolidated: regulation of the foreigners law, with articles 12.º and 24.º-A (CPLP visas), 18.º-B and 31.º-A (remote work visas), 24.º and 24.º-B (residence visa)",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-regulamentar/2007-116373592",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended ad hoc, mostly by later regulatory decrees and at times by a law or decree-law (Lei n.º 71/2018, Decreto-Lei n.º 31/2014). The remote work articles were added by Decreto Regulamentar n.º 4/2022 (in force 2022-10-30), and the last change is Decreto Regulamentar n.º 1/2024 (in force 2024-01-18), so its text predates the 2025 and 2026 amendments to the law it regulates; its cross-references may not follow the current Lei n.º 23/2007."
+    },
+    {
+      "id": "portaria-1563-2007",
+      "title": "Portaria n.º 1563/2007: means of subsistence for foreigners, with the per-capita household scale (article 2.º), residence visa periods (article 5.º) and yearly update (article 13.º)",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/1563-2007-628798",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A ministerial order of 2007; Lei n.º 23/2007, article 52.º(1)(d), now calls for an order of the ministers responsible for migration and for solidarity and social security. The Diário da República shows it in force in its 2007 wording, with no consolidated version or listed amendment. Its scale is a percentage of the guaranteed minimum monthly wage (RMMG) and article 13.º updates its fixed amounts each year by the RMMG increase, so only a new order would change its percentages or periods."
+    },
+    {
+      "id": "decreto-lei-139-2025",
+      "title": "Decreto-Lei n.º 139/2025: guaranteed minimum monthly wage (RMMG) of EUR 920 in mainland Portugal from 2026-01-01",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/139-2025-992879809",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Replaced every year by a new government decree-law that sets the RMMG from 1 January, after the social partners are heard (Labour Code, article 273.º), and revokes the previous one; it sets no end date, so its amount stays until then. The last 3 were published on 2023-11-17, 2024-12-19 and 2025-12-29. When read, searches of the Diário da República found no decree for 2027, so the 2027 amount is unknown until one is published."
+    },
+    {
+      "id": "codigo-trabalho",
+      "title": "Código do Trabalho (Labour Code, Lei n.º 7/2009), consolidated, article 273.º: the minimum monthly wage is set every year by specific legislation, after social concertation is heard",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2009-34546475",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended ad hoc, mostly by laws of the Assembleia da República; the consolidated text showed its last change as 2025-03-27. Article 273.º sets no amount and lists no amendment; the yearly decree-law sets the amount."
+    },
+    {
+      "id": "codigo-civil",
+      "title": "Código Civil, consolidated: minors (article 122.º), computation of periods (articles 279.º and 296.º) and degrees of kinship (articles 1580.º and 1581.º)",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1966-34509075",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended ad hoc by laws and decree-laws; the consolidated text showed its last change as 2026-06-23. Article 122.º has read under 18 since Decreto-Lei n.º 496/77, in force 1978-04-01, and the consolidated text lists no amendment to articles 279.º, 296.º or 1581.º."
+    },
+    {
+      "id": "lei-61-2025",
+      "title": "Lei n.º 61/2025: amendment of the foreigners law, in force 2025-10-23, with its transitional rules (article 6.º), revocations (article 7.º) and rule on time (article 8.º)",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/61-2025-941547426",
+      "verifiedAt": "2026-11-07",
+      "amendment": "An amending law, published on 2025-10-22 and in force the next day (article 9.º). Its changes are merged into the consolidated Lei n.º 23/2007, which repeats its rule on time (article 8.º, which covers its articles 2.º and 3.º) as a note under each changed article but does not show its transitional article 6.º."
+    },
+    {
+      "id": "lei-37-2006",
+      "title": "Lei n.º 37/2006, consolidated: free movement and residence of EU, EEA and Swiss citizens and their family members, and of the family members of Portuguese citizens",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2006-128792849",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Transposes Directive 2004/38/EC. Amended ad hoc; the consolidated text showed its last change as 2023-06-02."
+    },
+    {
+      "id": "decreto-legislativo-regional-1-2026-m",
+      "title": "Decreto Legislativo Regional n.º 1/2026/M: guaranteed minimum monthly wage of EUR 980 in the Autonomous Region of Madeira from 2026-01-01",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-legislativo-regional/1-2026-1033291312",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Set by a regional legislative decree of the Legislative Assembly of Madeira; the 2026 decree revokes Decreto Legislativo Regional n.º 20/2024/M of 2024-12-23. It was published on 2026-02-03, after the mainland decree, with effects from 2026-01-01."
+    },
+    {
+      "id": "lei-18-2022",
+      "title": "Lei n.º 18/2022, consolidated: amendment of the foreigners law for the CPLP Mobility Agreement, which added articles 52.º-A, 61.º-B and 87.º-A and republished Lei n.º 23/2007",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2022-200268072",
+      "verifiedAt": "2026-11-07",
+      "amendment": "An amending law of the Assembleia da República, in force from 2022-08-26 (article 10.º: the day after its publication on 2022-08-25), rectified by Declaração de Retificação n.º 27/2022. Later laws changed the articles it added: Lei n.º 61/2025 revoked article 52.º-A(1)(c). This text shows the 2022 wording; the current wording is in the consolidated Lei n.º 23/2007."
+    }
+  ],
+  "pitfalls": [
+    {
+      "id": "rmmg-yearly-decree",
+      "text": "The means and remote work income thresholds are multiples or fractions of the RMMG, which a decree-law sets each year (Labour Code, article 273.º(1)); the last 3 were published on 2023-11-17, 2024-12-19 and 2025-12-29, each with effects from 1 January. Decreto-Lei n.º 139/2025 sets EUR 920 from 2026-01-01 and no end date, so the amount stays until a later decree revokes it. EUR 920 applies until a 2027 decree takes effect, and no text read states the 2027 amount: the EUR 1,020 for 2028 recalled in its preamble is a tripartite commitment, not an amount in force.",
+      "laws": ["decreto-lei-139-2025", "codigo-trabalho", "portaria-1563-2007"]
+    },
+    {
+      "id": "mainland-amount",
+      "text": "Decreto-Lei n.º 139/2025 applies to mainland Portugal only (article 2.º). Madeira sets its own minimum wage by regional decree, EUR 980 for 2026, published on 2026-02-03 with effects from 2026-01-01. The Portaria refers to the Labour Code minimum wage without naming a region; which regional amount applies, the texts do not say.",
+      "laws": [
+        "decreto-lei-139-2025",
+        "decreto-legislativo-regional-1-2026-m",
+        "portaria-1563-2007"
+      ]
+    },
+    {
+      "id": "net-of-contributions",
+      "text": "The Portaria's household scale (article 2.º(2)) takes the RMMG net of social security contributions as its reference, not the gross amount. The net amount is not in these texts. The remote work income test of 4 minimum wages (Decreto Regulamentar n.º 84/2007, article 31.º-A) does not say net.",
+      "laws": ["portaria-1563-2007", "decreto-regulamentar-84-2007"]
+    },
+    {
+      "id": "scale-follows-rmmg",
+      "text": "The Portaria, of 2007, still cites article 266.º of the Labour Code for the RMMG; the Labour Code approved by Lei n.º 7/2009 sets it in article 273.º, which the yearly decrees cite. The scale is a percentage of the RMMG, so it moves with each new decree without a new Portaria; article 13.º separately updates the amounts the Portaria fixes itself each year by the percentage increase of the RMMG.",
+      "laws": ["portaria-1563-2007", "codigo-trabalho", "decreto-lei-139-2025"]
+    },
+    {
+      "id": "household-scale",
+      "text": "The scale is per head of the household: 100 percent for the first adult, 50 percent for each further adult, and 30 percent for each child or young person under 18 and for each dependent adult child. A dependent adult child counts at 30 percent, not at the 50 percent of other adults.",
+      "laws": ["portaria-1563-2007"]
+    },
+    {
+      "id": "twelve-months",
+      "text": "Article 5.º(6) of the Portaria asks every residence visa applicant, without prejudice to its earlier paragraphs, for means assured for at least 12 months: a retiree proves the income and that its receipt is guaranteed or other income is available in Portugal; someone living on income from property, intellectual property or financial investments proves the income and its availability in Portugal. For accompanying family, article 24.º-B(1)(b) of the Decreto Regulamentar asks for 12 months or the stay requested, if shorter.",
+      "laws": ["portaria-1563-2007", "decreto-regulamentar-84-2007"]
+    },
+    {
+      "id": "remote-work-income",
+      "text": "The remote work income proof is an average monthly income from employed or self-employed work over the last 3 months of at least 4 RMMG, with proof of the employment or services and a document attesting tax residence (Decreto Regulamentar n.º 84/2007, article 31.º-A(1), for the residence visa; article 18.º-B for the temporary stay visa). That the work is for natural or legal persons domiciled or seated outside Portugal comes from Lei n.º 23/2007 (articles 61.º-B and 54.º(1)(i)). Other income does not count, and the test is a 3-month average, not one current monthly figure.",
+      "laws": ["decreto-regulamentar-84-2007", "lei-23-2007"]
+    },
+    {
+      "id": "visa-labels",
+      "text": "The labels D7 and D8 appear in none of these texts. Remote work has 2 visas: a temporary stay visa for under 1 year (Lei n.º 23/2007, article 54.º(1)(i)) and a residence visa (article 61.º-B); the Decreto Regulamentar asks the same 4-RMMG income proof for both (articles 18.º-B and 31.º-A). Lei n.º 23/2007 has no article of its own for retirees or people living on their own income: article 24.º(1)(b) to (d) of the Decreto Regulamentar names their visa applications and leaves the proof of means to the Portaria (article 5.º(6)).",
+      "laws": ["lei-23-2007", "decreto-regulamentar-84-2007", "portaria-1563-2007"]
+    },
+    {
+      "id": "accompanying-family",
+      "text": "Family members apply with the principal under article 58.º(5), which points to the family members of article 99.º(1), and allows simultaneous applications. Article 24.º-B(2) of the Decreto Regulamentar also counts the persons of article 100.º(1): the partner in a duly proven de facto union, and the partner's unmarried minor or incapable children, adopted ones included, when legally entrusted. Article 58.º does not name them.",
+      "laws": ["lei-23-2007", "decreto-regulamentar-84-2007"]
+    },
+    {
+      "id": "family-member-list",
+      "text": "Article 99.º(1) covers the spouse; minor or incapable dependent children of the couple or one spouse; minors adopted by the applicant or spouse by a recognized decision of the country of origin, if its law gives adoptees the rights and duties of natural filiation; single adult children dependent on the couple or one spouse who study at a school in Portugal, or anywhere when the resident holds an article 90.º-A permit; dependent parents of the resident or spouse (first-degree ascendants, Código Civil, article 1581.º); and minor siblings in the resident's guardianship by a recognized decision.",
+      "laws": ["lei-23-2007", "codigo-civil"]
+    },
+    {
+      "id": "spouse-age-and-recognition",
+      "text": "Article 99.º(6), as worded by Lei n.º 61/2025, makes reunification with a spouse or partner depend on a marriage or union valid and recognized under Portuguese law and on both being at least 18 at the date of the application. Whether paragraph 6 also binds family members who accompany a visa applicant under article 58.º(5), which points only to paragraph 1, the text does not say.",
+      "laws": ["lei-23-2007", "lei-61-2025"]
+    },
+    {
+      "id": "pending-procedures",
+      "text": "Lei n.º 61/2025 took effect on 2025-10-23, and its article 8.º applies its amended and added articles (its articles 2.º and 3.º) to administrative procedures and court cases begun after that; a procedure begun earlier is not governed by them. The 2-year wait in article 98.º(1), as worded by that law, binds the holder of a residence permit who brings family later, with exceptions in paragraph 3 such as dependent minors or incapable persons; article 58.º(5), which lets family members apply with the principal's visa, does not refer to article 98.º.",
+      "laws": ["lei-61-2025", "lei-23-2007"]
+    },
+    {
+      "id": "other-parent-consent",
+      "text": "Reunification with a minor or incapable child of only one spouse needs the other parent's authorization or a decision of a competent authority entrusting the child to that spouse (article 99.º(4)). A minor visa applicant who will not be accompanied during the stay by whoever exercises parental responsibilities needs parental authorization or an equivalent document (article 52.º(1)(g)).",
+      "laws": ["lei-23-2007"]
+    },
+    {
+      "id": "minor-age",
+      "text": "A minor is someone who has not yet completed 18 years (Código Civil, article 122.º). The Portaria's under-18 band and article 99.º(1) name no date at which age is measured; only paragraph 6, for spouses, names the date of the application. For a birthday on 29 February no text read names a rule; article 279.º(c) ends a period with no day of the same number on the last day of that month, but no text read applies it to ages.",
+      "laws": ["codigo-civil", "portaria-1563-2007", "lei-23-2007"]
+    },
+    {
+      "id": "scope-exclusions",
+      "text": "Save where it applies in a subsidiary way or says otherwise, Lei n.º 23/2007 does not apply to nationals of EU or EEA states or of a state with an EU free movement agreement, to refugees and beneficiaries of subsidiary or temporary protection residing in Portugal, or to third-country family members of a Portuguese citizen or of those nationals (article 4.º(2)).",
+      "laws": ["lei-23-2007"]
+    },
+    {
+      "id": "eu-family-members",
+      "text": "A third-country national who is a family member of an EU, EEA or Swiss citizen and accompanies or joins that citizen in Portugal, or of a Portuguese citizen, falls under Lei n.º 37/2006 (articles 1.º(2) and 3.º(1), (4) and (5)); Lei n.º 23/2007 excludes them save its subsidiary application (article 4.º(2)(c)). Its family members (article 2.º(e)) are the spouse, the partner, direct descendants under 21 or dependent, and dependent direct ascendants, of the citizen or of the spouse or partner; its 21 is not the minor age of Lei n.º 23/2007.",
+      "laws": ["lei-37-2006", "lei-23-2007"]
+    },
+    {
+      "id": "visa-and-permit-conditions",
+      "text": "Meeting the means test does not make a visa grantable. Article 52.º also requires no entry ban and no Schengen or national alert, a valid travel document and travel insurance, and refuses a residence visa to anyone convicted of a crime punishable in Portugal by more than 1 year of prison. The residence permit then needs, among others, presence in Portugal, accommodation and social security registration where applicable (article 77.º).",
+      "laws": ["lei-23-2007"]
+    },
+    {
+      "id": "cplp-procedure",
+      "text": "For nationals of a state where the 2021 Mobility Agreement of the Community of Portuguese Language Countries (CPLP) is in force, the visa needs no prior opinion from the Agency for Integration, Migration and Asylum (AIMA) (article 52.º-A(1)(a)). A CPLP national who holds a residence visa may apply for a temporary residence permit (article 75.º(2)) or, in Portugal, for a CPLP residence permit, which depends on the conditions for the residence visa and for that permit (article 87.º-A(1) and (2)). None of these articles mentions the means of subsistence.",
+      "laws": ["lei-23-2007"]
+    },
+    {
+      "id": "cplp-regulation-lag",
+      "text": "Lei n.º 61/2025 revoked article 52.º-A(1)(c) (its article 7.º), which in the wording of Lei n.º 18/2022 let the services refuse a CPLP visa only for a Schengen Information System (SIS) entry ban or a missing parental authorization. The Decreto Regulamentar, last changed in 2024, still exempts these applicants from the documents specific to each visa and, against a statement of responsibility, from proof of means (article 12.º(3)), and says their applications are summarily granted save an SIS alert (article 24.º-A(2)). How these provisions read after the revocation, the texts do not say.",
+      "laws": ["lei-61-2025", "lei-18-2022", "decreto-regulamentar-84-2007", "lei-23-2007"]
+    },
+    {
+      "id": "currency",
+      "text": "The means and remote work income provisions set their amounts in euros by reference to the RMMG, and neither the Portaria nor the Decreto Regulamentar gives an exchange rate or a conversion date for income received in another currency.",
+      "laws": ["portaria-1563-2007", "decreto-regulamentar-84-2007"]
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "pt",
+      "number": 1
+    }
+  ]
+}

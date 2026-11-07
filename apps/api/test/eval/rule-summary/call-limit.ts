@@ -4,10 +4,10 @@ import { callCounter } from '../call-limit.js';
 
 /**
  * The most model calls one run may make: each case and its one retry, with room for a catalog of
- * 27 versions beside the three planted cases. Each call's output is capped, so this bounds what a
+ * 37 versions beside the three planted cases. Each call's output is capped, so this bounds what a
  * run can cost.
  */
-export const maxCallsPerRun = 60;
+export const maxCallsPerRun = 80;
 
 /** The summarizer, refusing any call past the limit; a call counts before it is sent. */
 export function withCallLimit(summarizer: Summarizer, limit = maxCallsPerRun) {

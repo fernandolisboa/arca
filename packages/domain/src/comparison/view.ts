@@ -9,7 +9,7 @@ import {
   selectComparisonVersion,
 } from './select.js';
 
-/** One country's value as the approver reviews it, beside the value it replaces. */
+/** One country's value as the admin reviews it, beside the value it replaces. */
 export interface IndicatorValueView {
   readonly country: string;
   readonly value: string;
@@ -41,7 +41,7 @@ export interface ComparisonRejectionEffect {
   readonly fallback: { readonly number: number } | null;
 }
 
-/** A comparison version laid out for the approver (ADR-0026), built from its content alone. */
+/** A comparison version laid out for the admin (ADR-0026), built from its content alone. */
 export interface ComparisonVersionView {
   readonly comparisonId: string;
   readonly number: number;
@@ -106,7 +106,7 @@ function indicatorView(
 }
 
 /**
- * The approver's view of one comparison version (ADR-0026): its criteria, every indicator value it
+ * The admin's view of one comparison version (ADR-0026): its criteria, every indicator value it
  * pins with its year and source host beside the value it replaces, what changed from the version
  * before, and what a rejection would do. No model is involved.
  */

@@ -21,7 +21,7 @@ export type StoredSummaryOutcome =
   | { readonly ok: true; readonly value: RuleSummary | null }
   | { readonly ok: false; readonly reason: 'not_found' };
 
-/** A model's summary of one version for the approver (ADR-0025). */
+/** A model's summary of one version for admins (ADR-0025). */
 export interface RuleSummaries {
   /** The summary already stored for the version, with no model call. */
   readonly stored: (routeId: string, number: number) => Promise<StoredSummaryOutcome>;
@@ -114,12 +114,12 @@ export function createRuleSummaries({
     try {
       await store.save(key, summary);
     } catch {
-      // The approver still gets the summary already paid for; the error, which may carry its
+      // The admin still gets the summary already paid for; the error, which may carry its
       // text, is dropped for a fixed code.
       logger.error({ route, errorCode: 'summary_not_stored' });
       return summary;
     }
-    // Another instance may have stored its own first; every approver then reads that one.
+    // Another instance may have stored its own first; every admin then reads that one.
     try {
       return (await store.find(key)) ?? summary;
     } catch {

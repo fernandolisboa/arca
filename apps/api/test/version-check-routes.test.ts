@@ -9,6 +9,7 @@ import { memoryCheckStarts, type RecordedStart } from '../src/knowledge/check/st
 import { type NewCheckReport, memoryCheckReportStore } from '../src/knowledge/check/store.js';
 import { createVersionChecks } from '../src/knowledge/checks.js';
 import type { KnowledgeDecisions } from '../src/knowledge/decisions.js';
+import type { AdminGrants } from '../src/knowledge/admin-grants.js';
 import type { KnowledgeVersions } from '../src/knowledge/versions.js';
 import { noLimits } from './limits.js';
 
@@ -121,8 +122,13 @@ function setup({
     logger: silentLogger,
     now,
   });
+  const admins: AdminGrants = {
+    isAdmin: () => Promise.resolve(admitted),
+    list: () => Promise.resolve([]),
+    grant: () => Promise.resolve('changed'),
+    remove: () => Promise.resolve('changed'),
+  };
   const knowledge: KnowledgeDecisions = {
-    isApprover: () => admitted,
     decide: () => Promise.reject(new Error('not used')),
     states: () => Promise.resolve(new Map()),
   };
@@ -136,6 +142,7 @@ function setup({
       refresh: () => Promise.resolve({ session: null, setCookies: [] }),
     },
     authLimits: noLimits,
+    admins,
     knowledge,
     knowledgeVersions: versions,
     ...(enabled ? { versionChecks: checks } : {}),

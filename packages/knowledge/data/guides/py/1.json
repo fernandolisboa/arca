@@ -1,0 +1,230 @@
+{
+  "schemaVersion": 1,
+  "id": "py",
+  "number": 1,
+  "title": "Paraguayan immigration law: the Mercosur Residence Agreements and the migration law",
+  "laws": [
+    {
+      "id": "ley-3578-2008",
+      "title": "Ley N.º 3578/2008, approving the Residence Agreement for nationals of the Mercosur states parties, Bolivia and Chile: definitions (art. 2), residence (arts. 4 to 6), family members (art. 9.2)",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "verifiedAt": "2026-11-07",
+      "amendment": "An approving law of Congress, promulgated 2008-08-14 and published 2008-08-28. A treaty approved by law whose ratification instruments were exchanged or deposited is part of Paraguayan law (Constitution, art. 141). The agreement has no amendment or accession article. It enters into force once all 6 states notify Paraguay, the depositary, that their internal formalities are complete (arts. 14 and 15), and the text gives no date for that. A party may denounce it with effect 180 days after notice (art. 16)."
+    },
+    {
+      "id": "ley-3565-2008",
+      "title": "Ley N.º 3565/2008, approving the Residence Agreement for nationals of the 4 Mercosur states parties, signed in Brasilia on 2002-12-06, the same day as the one with Bolivia and Chile",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1096/x",
+      "verifiedAt": "2026-11-07",
+      "amendment": "An approving law of Congress, promulgated 2008-07-31 and published 2008-08-12. The agreement has no amendment or accession article. It enters into force once the 4 states parties notify Paraguay, the depositary (arts. 14 and 15), a date the text does not give. A party may denounce it with effect 180 days after notice (art. 16)."
+    },
+    {
+      "id": "ley-6984-2022",
+      "title": "Ley N.º 6984/2022, migration law, published 2022-10-18: reunification principle (art. 4.10), residence categories (arts. 44 to 47), requirements (art. 50), fees in jornales (art. 100)",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/10973/x",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Changed only by a law of Congress (Civil Code, art. 7); a title search of the Congress library, when read, found no amending law. It has no commencement article, so it binds from the day after publication (Civil Code, art. 1), 2022-10-19. It repealed Ley 978/1996 (art. 107) and told the Executive to regulate it within 180 days (art. 108). It gives the migration directorate regulatory power over accessory and complementary matters (arts. 78 and 79.3). Fees are counts of jornales (art. 100), so their guarani amount follows the jornal in force."
+    },
+    {
+      "id": "migraciones-mercosur-temporary-page",
+      "title": "Dirección Nacional de Migraciones: Mercosur temporary residence, the states that may apply, 2 years not extendable, documents, rules for minors and fee",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A page the migration directorate edits at will, with no version history; the downloadable requirements sheet it links was dated 2026-07-01 and cites Leyes 3565 and 3578. Its fee follows the directorate's fee table."
+    },
+    {
+      "id": "migraciones-fee-table",
+      "title": "Dirección Nacional de Migraciones: fee table under Ley N.º 6984/2022, art. 100, in force from 2026-07-01 (Decreto N.º 6225/2026, Resolución DNM N.º 478/2026)",
+      "url": "https://migraciones.gov.py/aranceles-migratorios/",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A table the directorate replaces when the jornal changes: its resolutions page lists fee updates of 2018 and 2021, made under the former Ley 978/1996 to apply minimum wage readjustment decrees of 2018-06-22 and 2021-06-25, and the current table took effect on 2026-07-01 with a minimum wage of PYG 3,044,000 and a jornal of PYG 117,077. It cites art. 100 of the migration law for its jornal counts, some of which add several of its items."
+    },
+    {
+      "id": "migraciones-mercosur-permanent-page",
+      "title": "Dirección Nacional de Migraciones: Mercosur permanent residence, applied for from 90 days before the Mercosur temporary card expires, with proof of economic solvency",
+      "url": "https://migraciones.gov.py/residencia-permanente-mercosur/",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A page the migration directorate edits at will. Its solvency categories are set in an annex on the page; the resolutions page lists a 2026 Resolución DNM N.º 407 that unifies the solvency criteria for permanent residence. Fees follow the fee table."
+    },
+    {
+      "id": "migraciones-temporary-ley-6984-page",
+      "title": "Dirección Nacional de Migraciones: temporary residence under Ley N.º 6984/2022, up to 2 years extendable for an equal period, with access to the Paraguayan identity card",
+      "url": "https://migraciones.gov.py/residencia-temporal/",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A page the migration directorate edits at will, with no version history. It applies Ley 6984 and its regulation."
+    },
+    {
+      "id": "ley-6774-2021",
+      "title": "Ley N.º 6774/2021, approving the agreement of 2019-07-10 between Paraguay and Uruguay on permanent residence: no prior temporary residence and no costs",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/9632/x",
+      "verifiedAt": "2026-11-07",
+      "amendment": "An approving law, promulgated 2021-08-03 and published 2021-08-04. The agreement enters into force 30 days after the last notification between the parties (art. 12), a date the text does not give. The parties may amend it by written consent, in force 30 days after the last notification (art. 14), or denounce it with effect after 180 days, sparing procedures under way (art. 13)."
+    },
+    {
+      "id": "migraciones-uruguayan-permanent-page",
+      "title": "Dirección Nacional de Migraciones: permanent residence for Uruguayan citizens under Ley N.º 6774/2021, without prior temporary residence and with no residence fee",
+      "url": "https://migraciones.gov.py/residencia-permanente-para-ciudadanos-uruguayos/",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A page the migration directorate edits at will, applying Ley 6774/2021 in reciprocity with Uruguay."
+    },
+    {
+      "id": "migraciones-ecuadorian-fees-page",
+      "title": "Dirección Nacional de Migraciones: a single fee of 2 jornales for Ecuadorian citizens' residence procedures, under the 1967 visa waiver agreement with Ecuador",
+      "url": "https://migraciones.gov.py/tramites-para-ciudadanos-de-nacionalidad-ecuatoriana/",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A page the migration directorate edits at will. It says the fee is regulated by Resoluciones DNM N.º 200 of 2023-02-22 and N.º 273 of 2023-03-10 and applied in reciprocity with Ecuador; its guarani amount follows the jornal."
+    },
+    {
+      "id": "ley-2169-2003",
+      "title": "Ley N.º 2169/2003, majority at 18: rewrote Civil Code art. 36, repealed art. 39(a) and set the ages of child, adolescent and adult in Ley 1702/2001",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/4845/x",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Published 2003-07-18. Its wording of Civil Code art. 36 was replaced by Ley 7371/2025, art. 27, which keeps full capacity at 18. Changed only by law of Congress."
+    },
+    {
+      "id": "ley-7371-2025",
+      "title": "Ley N.º 7371/2025, rights of persons with disabilities: definition (art. 2 a), new wording of Civil Code arts. 36, 37, 40 and 73 to 90 (art. 27), in force the day after promulgation (art. 30)",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/12775/x",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A law of Congress, promulgated 2025-06-30 and published 2025-07-01; by its art. 30 it took effect the day after promulgation, 2025-07-01, and the disability secretariat (SENADIS, art. 4) may issue implementing resolutions. Changed only by law."
+    },
+    {
+      "id": "codigo-civil",
+      "title": "Civil Code (Ley N.º 1183/1985), preliminary title and book one: laws bind from the day after publication (art. 1), capacity and minors (arts. 36 to 39)",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/5293/x",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended article by article by laws of Congress (art. 7: laws are repealed only by other laws), among them Ley 2169/2003 and Ley 7371/2025. The Congress library's page prints the 1985 text without those amendments, with 20 years in art. 36 and the repealed art. 39(a), so an article on that page may differ from the law in force."
+    },
+    {
+      "id": "codigo-civil-libro-segundo",
+      "title": "Civil Code (Ley N.º 1183/1985), book two: computing periods of days, months and years (arts. 337 to 342)",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/5299/x",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended only by laws of Congress (Civil Code, art. 7). The Congress library's page gives only the 1985 dates and no note of amendments. Book one's page on the same site prints the 1985 wording despite later amendments, so this page may not be consolidated either."
+    },
+    {
+      "id": "constitucion",
+      "title": "Constitution of Paraguay (1992): marriage and de facto unions (art. 51), order of precedence of treaties and laws (art. 137), treaties as internal law (art. 141)",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/9580/x",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Changed by amendment, passed by both chambers and then a referendum (art. 290), or by reform through a constituent convention (art. 289); art. 290 requires reform for chapters I to IV of Title II of Part I, and art. 51 is in chapter IV. The page attaches Enmienda N.º 1 as a separate file and marks art. 120 as modified by it."
+    }
+  ],
+  "pitfalls": [
+    {
+      "id": "two-agreements",
+      "text": "Paraguay approved 2 residence agreements signed on 2002-12-06: Ley 3565, among the 4 Mercosur states parties, where states parties means the states parties of Mercosur, and Ley 3578, adding Bolivia and Chile, where it means Mercosur members and associated countries (art. 2 of each). Their articles are numbered alike and read almost the same, and the directorate cites both, so a cited article can belong to either.",
+      "laws": ["ley-3565-2008", "ley-3578-2008", "migraciones-mercosur-temporary-page"]
+    },
+    {
+      "id": "listed-states",
+      "text": "Neither approving law names Peru, Colombia or Ecuador, and neither agreement has an accession article. The directorate lists Argentina, Brazil, Uruguay, Bolivia, Chile, Peru, Colombia and Ecuador as the states currently subscribed to the agreement, and no other state.",
+      "laws": ["ley-3578-2008", "ley-3565-2008", "migraciones-mercosur-temporary-page"]
+    },
+    {
+      "id": "naturalized-five-years",
+      "text": "A national of a party holds that nationality by origin, or by naturalization held for 5 years (art. 2 of both agreements), and an applicant shows a naturalization certificate when applicable (art. 4.1 b). The directorate's page says only citizens.",
+      "laws": ["ley-3578-2008", "ley-3565-2008", "migraciones-mercosur-temporary-page"]
+    },
+    {
+      "id": "two-years-not-extendable",
+      "text": "The agreements allow temporary residence of up to 2 years (art. 4); the directorate grants 2 years, not extendable, unlike temporary residence under Ley 6984, up to 2 years and extendable for an equal period (art. 46). Permanent residence is asked for within the 90 days before expiry (art. 5 of the agreements); the directorate says a holder who misses that window loses the Mercosur path and applies under Ley 6984. Art. 6 of the agreements subjects those who do not present themselves once their temporary residence has expired to domestic law.",
+      "laws": [
+        "ley-3578-2008",
+        "ley-6984-2022",
+        "migraciones-mercosur-temporary-page",
+        "migraciones-mercosur-permanent-page"
+      ]
+    },
+    {
+      "id": "family-same-validity",
+      "text": "Art. 9.2 gives family members who hold no party's nationality a residence of identical validity to that of the person they depend on; it says nothing of family members who hold a party's nationality, who fall under the general rule of art. 1. The article points to the documents of art. 3, though the list is in art. 4. A family member who needs a visa by nationality applies at a consulate unless domestic law waives it. The agreements do not define family members.",
+      "laws": ["ley-3578-2008", "ley-3565-2008"]
+    },
+    {
+      "id": "family-list-and-partners",
+      "text": "Ley 6984's reunification principle (art. 4.10) names parents, spouses, unmarried minor children and adult children with a disability. It names no partner, stepchild, grandchild or sibling. The Constitution gives de facto unions between a man and a woman, free of impediments to marry, stable and exclusive, effects similar to marriage on the conditions the law sets (art. 51), so whether a partner counts as a family member the texts do not settle.",
+      "laws": ["ley-6984-2022", "ley-3578-2008", "constitucion"]
+    },
+    {
+      "id": "later-parties-family",
+      "text": "Whether art. 9.2 binds Paraguay for principals from Peru, Colombia or Ecuador is not settled by the approving laws, which name only Argentina, Brazil, Paraguay, Uruguay, Bolivia and Chile, though Ley 3578 defines states parties as Mercosur members and associated countries.",
+      "laws": ["ley-3578-2008", "migraciones-mercosur-temporary-page"]
+    },
+    {
+      "id": "adult-children-disability",
+      "text": "Ley 6984 art. 4.10 covers adult children with capacidades diferentes and defines neither the term nor any proof. Ley 7371/2025 defines persons with disabilities only for its own purposes (art. 2 a). Art. 4.10 asks only minor children to be unmarried; it sets no marital condition for an adult child with a disability.",
+      "laws": ["ley-6984-2022", "ley-7371-2025"]
+    },
+    {
+      "id": "age-of-majority-text-lag",
+      "text": "Full capacity comes at 18: Civil Code art. 36 as worded by Ley 7371/2025, art. 27, which kept the age Ley 2169/2003 set. Ley 2169 also calls a person adult from 18 for the children's laws, a child up to 13 and an adolescent from 14 to 17. The Congress library's Civil Code page still prints the 1985 text, with 20 years in art. 36 and the repealed art. 39(a), so the ages on that page are not the law in force.",
+      "laws": ["codigo-civil", "ley-2169-2003", "ley-7371-2025"]
+    },
+    {
+      "id": "unmarried-minor-child",
+      "text": "Art. 4.10 says unmarried minor children. Civil Code art. 39, as printed on the unconsolidated page, ends a minor's incapacity by marriage (b) and makes emancipation irrevocable (last paragraph). Whether a minor who is divorced or widowed counts as unmarried, the texts do not settle either way.",
+      "laws": ["ley-6984-2022", "codigo-civil"]
+    },
+    {
+      "id": "leap-day-ages",
+      "text": "No text applies the Civil Code's rules for periods to ages. A period of years ends on the day with the same number in its last month (art. 339), and one that starts on the last day of a month longer than the end month ends on that month's last day (art. 340); no text read says when a person born on 29 February turns a year older. Art. 337 counts a year as 365 days and art. 342 applies these rules to periods set by laws.",
+      "laws": ["codigo-civil-libro-segundo"]
+    },
+    {
+      "id": "fee-in-jornales",
+      "text": "Ley 6984 sets fees in jornales: 10 for temporary residence and 10 for a change of category (art. 100). The directorate charges 20 for Mercosur temporary residence, change of category included, which at PYG 117,077 a jornal from 2026-07-01 is PYG 2,341,540 in cash; card payments add a provider commission of 2 to 3 percent plus VAT on it, PYG 2,393,054 to 2,418,811. The guarani amount changes with each new jornal.",
+      "laws": ["ley-6984-2022", "migraciones-fee-table", "migraciones-mercosur-temporary-page"]
+    },
+    {
+      "id": "ecuadorian-fee",
+      "text": "Ecuadorian citizens pay a single fee of 2 jornales for residence procedures, Mercosur temporary and permanent residence included, by reciprocity under the 1967 visa waiver agreement with Ecuador. The general amount does not apply to them.",
+      "laws": ["migraciones-ecuadorian-fees-page", "migraciones-fee-table"]
+    },
+    {
+      "id": "uruguayan-direct-permanent",
+      "text": "Uruguayans have another path: Ley 6774/2021 lets Paraguay grant them permanent residence with no prior temporary residence (art. 2) and free of costs (art. 4), and the directorate applies it, with no residence fee. Its text gives no entry-into-force date (art. 12).",
+      "laws": ["ley-6774-2021", "migraciones-uruguayan-permanent-page"]
+    },
+    {
+      "id": "minor-applicants",
+      "text": "For an applicant aged 0 to 17, both parents sign when both are present; with one parent, a court order or the absent parent's notarial authorization is needed; and a parent must hold residence or apply at the same time. A minor with neither parent needs a court order or homologated notarial authorization and a guardian who is Paraguayan, a resident, or applying at the same time. Record certificates are asked from age 14, with exemptions the page lists for some adolescents aged 15 to 18.",
+      "laws": ["migraciones-mercosur-temporary-page"]
+    },
+    {
+      "id": "records-periods-differ",
+      "text": "The agreements ask for records from the country of origin or where the applicant lived in the 5 years before arrival, and from Paraguay for those applying from inside (art. 4.1 c to e); Ley 6984 asks for 3 years and an Interpol certificate for its own temporary residence (art. 50), and lets the directorate refuse people prosecuted or convicted of intentional offences punishable by more than 2 years.",
+      "laws": ["ley-3578-2008", "ley-6984-2022", "migraciones-mercosur-temporary-page"]
+    },
+    {
+      "id": "treaty-precedence",
+      "text": "A treaty approved by law whose ratification instruments were exchanged or deposited ranks above laws (Constitution, arts. 137 and 141), and the migration law lists treaties before national legislation (Ley 6984, art. 23). The agreements apply without prejudice to more favourable domestic rules (art. 11). So where Ley 6984 and an agreement in force differ, the agreement governs unless domestic law is more favourable to the migrant. The texts read do not show Paraguay's ratification or entry-into-force dates.",
+      "laws": ["constitucion", "ley-6984-2022", "ley-3578-2008"]
+    },
+    {
+      "id": "commencement-dates",
+      "text": "A law binds from the day after publication unless it says otherwise (Civil Code, art. 1): Ley 6984, published 2022-10-18 with no commencement article, binds from 2022-10-19. Ley 7371/2025 took effect the day after promulgation, 2025-07-01 (art. 30). An approving law's dates are not the agreement's entry into force, which depends on notifications (art. 14).",
+      "laws": ["codigo-civil", "ley-6984-2022", "ley-7371-2025", "ley-3578-2008"]
+    },
+    {
+      "id": "identity-card-page-vs-law",
+      "text": "Ley 6984 tells the National Police to issue a Paraguayan identity card to foreigners with temporary and permanent residence (art. 62). The directorate gives it to temporary residents under Ley 6984 for the length of their residence, but its Mercosur page says a Mercosur temporary resident must first obtain Mercosur permanent residence to get one. Art. 62 does not say whether Mercosur temporary residence counts.",
+      "laws": [
+        "ley-6984-2022",
+        "migraciones-mercosur-temporary-page",
+        "migraciones-temporary-ley-6984-page",
+        "migraciones-mercosur-permanent-page"
+      ]
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "py",
+      "number": 1
+    }
+  ]
+}

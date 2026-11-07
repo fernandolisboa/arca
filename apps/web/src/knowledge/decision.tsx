@@ -25,7 +25,7 @@ export async function decideComparison(
 }
 
 /**
- * The approver's decision on a route or comparison version: activate, reject, or neither once
+ * An admin's decision on a route or comparison version: activate, reject, or neither once
  * rejected. `rejectWarning` says what a rejection would change today, when it changes something.
  */
 export function Decision({

@@ -35,7 +35,7 @@ export interface KnowledgeVersionSettings {
 
 /**
  * The activation screen's reads, the only place the display catalog is read: its content reaches
- * the approver as a view and never an evaluation or a comparison.
+ * an admin as a view and never an evaluation or a comparison.
  */
 export function createKnowledgeVersions({
   states,

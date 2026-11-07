@@ -254,7 +254,7 @@ describe('the device routes (spec 0003, R4)', () => {
       pendingPasskeyUntil: activeFrom.toISOString(),
       recoveryPending: false,
       deletionDueAt: null,
-      approver: false,
+      admin: false,
     });
     expect(pending.checked).toEqual([owner.accountId]);
     const none = await setup().app.request('/v1/session');
@@ -263,7 +263,7 @@ describe('the device routes (spec 0003, R4)', () => {
       pendingPasskeyUntil: null,
       recoveryPending: false,
       deletionDueAt: null,
-      approver: false,
+      admin: false,
     });
   });
 

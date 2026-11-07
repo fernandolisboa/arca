@@ -1,0 +1,500 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "6f7fe816-95ad-4bca-a41c-e5d4258a4260",
+  "prevIds": [
+    "c5cf183c-cbae-48a3-acd6-fb67fbfd36b3"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "admin_grant"
+      ],
+      "writes": [
+        "s|tbl|knowledge.admin_grant",
+        "n|tbl|knowledge.admin_grant",
+        "e|tbl|knowledge.admin_grant",
+        "n|rel|knowledge.admin_grant",
+        "n|type|knowledge.admin_grant",
+        "n|rel|knowledge.admin_grant_pkey",
+        "n|rel|knowledge.admin_grant_step_up_id_key"
+      ],
+      "reads": [
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "decision",
+        "admin_grant_id"
+      ],
+      "writes": [
+        "s|col|knowledge.decision.admin_grant_id",
+        "n|col|knowledge.decision.admin_grant_id",
+        "e|col|knowledge.decision.admin_grant_id"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "auth",
+        "step_up"
+      ],
+      "writes": [
+        "s|ck|auth.step_up.step_up_purpose"
+      ],
+      "reads": [
+        "n|tbl|auth.step_up",
+        "n|sch|auth",
+        "n|col|auth.step_up.purpose",
+        "e|col|auth.step_up.purpose"
+      ],
+      "sqlHash": "c34a157d362ec197"
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "auth",
+        "step_up_challenge"
+      ],
+      "writes": [
+        "s|ck|auth.step_up_challenge.step_up_challenge_purpose"
+      ],
+      "reads": [
+        "n|tbl|auth.step_up_challenge",
+        "n|sch|auth",
+        "n|col|auth.step_up_challenge.purpose",
+        "e|col|auth.step_up_challenge.purpose"
+      ],
+      "sqlHash": "c097c179d3e91f73"
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "decision"
+      ],
+      "writes": [
+        "s|ck|knowledge.decision.decision_proof"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|col|knowledge.decision.proof",
+        "n|col|knowledge.decision.admin_basis",
+        "n|col|knowledge.decision.admin_grant_id",
+        "n|col|knowledge.decision.credential_id",
+        "n|col|knowledge.decision.public_key",
+        "n|col|knowledge.decision.action_nonce",
+        "n|col|knowledge.decision.server_nonce",
+        "n|col|knowledge.decision.authenticator_data",
+        "n|col|knowledge.decision.client_data_json",
+        "n|col|knowledge.decision.signature",
+        "n|col|knowledge.decision.step_up_id",
+        "e|col|knowledge.decision.proof",
+        "e|col|knowledge.decision.admin_basis",
+        "e|col|knowledge.decision.credential_id",
+        "e|col|knowledge.decision.public_key",
+        "e|col|knowledge.decision.action_nonce",
+        "e|col|knowledge.decision.server_nonce",
+        "e|col|knowledge.decision.authenticator_data",
+        "e|col|knowledge.decision.client_data_json",
+        "e|col|knowledge.decision.signature",
+        "e|col|knowledge.decision.step_up_id"
+      ],
+      "sqlHash": "44a38435b7f73370"
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "admin_grant"
+      ],
+      "writes": [
+        "s|pol|knowledge.admin_grant.admin_grant_insert_by_admin",
+        "n|pol|knowledge.admin_grant.admin_grant_insert_by_admin",
+        "e|pol|knowledge.admin_grant.admin_grant_insert_by_admin"
+      ],
+      "reads": [
+        "n|tbl|knowledge.admin_grant",
+        "n|sch|knowledge",
+        "n|role|app_auth",
+        "e|rls|knowledge.admin_grant"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "admin_grant"
+      ],
+      "writes": [
+        "s|pol|knowledge.admin_grant.admin_grant_read_auth",
+        "n|pol|knowledge.admin_grant.admin_grant_read_auth",
+        "e|pol|knowledge.admin_grant.admin_grant_read_auth"
+      ],
+      "reads": [
+        "n|tbl|knowledge.admin_grant",
+        "n|sch|knowledge",
+        "n|role|app_auth",
+        "e|rls|knowledge.admin_grant"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "admin_grant"
+      ],
+      "writes": [
+        "s|pol|knowledge.admin_grant.admin_grant_read_api",
+        "n|pol|knowledge.admin_grant.admin_grant_read_api",
+        "e|pol|knowledge.admin_grant.admin_grant_read_api"
+      ],
+      "reads": [
+        "n|tbl|knowledge.admin_grant",
+        "n|sch|knowledge",
+        "n|role|app_api",
+        "e|rls|knowledge.admin_grant"
+      ]
+    },
+    {
+      "statementType": "alter_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "decision"
+      ],
+      "writes": [
+        "s|pol|knowledge.decision.decision_insert_session"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|role|app_auth"
+      ],
+      "sqlHash": "65eb7483e9ff0a6a"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "name": "admin_grant",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "admin_grant",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "admin_grant",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "admin_grant",
+        "name": "grantee_account_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "admin_grant",
+        "name": "actor_account_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "admin_grant",
+        "name": "actor_basis",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "admin_grant",
+        "name": "actor_grant_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "admin_grant",
+        "name": "removes_grant_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "admin_grant",
+        "name": "step_up_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "admin_grant",
+        "name": "at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "clock_timestamp()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "admin_grant_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "admin_grant",
+        "name": "admin_grant_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "admin_grant",
+        "name": "admin_grant_step_up_id_key",
+        "nameExplicit": true,
+        "columns": [
+          "step_up_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "admin_grant",
+        "name": "admin_grant_kind",
+        "value": "\"kind\" IN ('grant', 'removal')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "admin_grant",
+        "name": "admin_grant_actor_basis",
+        "value": "CASE \"actor_basis\" WHEN 'owner_list' THEN \"actor_grant_id\" IS NULL\n        WHEN 'grant' THEN \"actor_grant_id\" IS NOT NULL ELSE false END",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "admin_grant",
+        "name": "admin_grant_shape",
+        "value": "CASE \"kind\"\n        WHEN 'grant' THEN \"step_up_id\" IS NOT NULL AND \"removes_grant_id\" IS NULL\n          AND \"grantee_account_id\" <> \"actor_account_id\"\n        WHEN 'removal' THEN \"step_up_id\" IS NULL AND \"removes_grant_id\" IS NOT NULL\n        ELSE false END",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "admin_grant",
+        "name": "admin_grant_insert_by_admin",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_auth"
+        ],
+        "using": null,
+        "withCheck": "\"knowledge\".\"admin_grant\".\"actor_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid\n        AND (\"knowledge\".\"admin_grant\".\"actor_basis\" = 'owner_list' OR EXISTS (SELECT FROM \"knowledge\".\"admin_grant\" \"given\"\n        WHERE \"given\".\"id\" = \"knowledge\".\"admin_grant\".\"actor_grant_id\" AND \"given\".\"kind\" = 'grant'\n          AND \"given\".\"grantee_account_id\" = \"knowledge\".\"admin_grant\".\"actor_account_id\"))\n        AND CASE \"knowledge\".\"admin_grant\".\"kind\"\n          WHEN 'grant' THEN EXISTS (SELECT FROM \"auth\".\"step_up\"\n            WHERE \"auth\".\"step_up\".\"id\" = \"knowledge\".\"admin_grant\".\"step_up_id\"\n              AND \"auth\".\"step_up\".\"account_id\" = \"knowledge\".\"admin_grant\".\"actor_account_id\"\n              AND \"auth\".\"step_up\".\"purpose\" = 'admin_grant'\n              AND \"auth\".\"step_up\".\"consumed_at\" IS NOT NULL)\n          WHEN 'removal' THEN EXISTS (SELECT FROM \"knowledge\".\"admin_grant\" \"given\"\n        WHERE \"given\".\"id\" = \"knowledge\".\"admin_grant\".\"removes_grant_id\" AND \"given\".\"kind\" = 'grant'\n          AND \"given\".\"grantee_account_id\" = \"knowledge\".\"admin_grant\".\"grantee_account_id\")\n          ELSE false END",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "admin_grant",
+        "name": "admin_grant_read_auth",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_auth"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "admin_grant",
+        "name": "admin_grant_read_api",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"auth\",\"step_up\",\"step_up_purpose\"]",
+      "set": {
+        "value": "\"purpose\" IN ('sensitive_settings', 'account_deletion', 'data_export', 'financial_action', 'vault_unlock', 'vault_write', 'knowledge_decision', 'admin_grant')"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"auth\",\"step_up_challenge\",\"step_up_challenge_purpose\"]",
+      "set": {
+        "value": "\"purpose\" IN ('sensitive_settings', 'account_deletion', 'data_export', 'financial_action', 'vault_unlock', 'vault_write', 'knowledge_decision', 'admin_grant')"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"knowledge\",\"decision\",\"decision_proof\"]",
+      "set": {
+        "value": "CASE \"proof\"\n        WHEN 'step_up' THEN \"admin_basis\" IS NULL AND \"admin_grant_id\" IS NULL\n          AND \"credential_id\" IS NOT NULL AND \"public_key\" IS NOT NULL\n          AND \"action_nonce\" IS NOT NULL AND \"server_nonce\" IS NOT NULL\n          AND \"authenticator_data\" IS NOT NULL AND \"client_data_json\" IS NOT NULL\n          AND \"signature\" IS NOT NULL AND \"step_up_id\" IS NOT NULL\n        WHEN 'session' THEN CASE \"admin_basis\" WHEN 'owner_list' THEN \"admin_grant_id\" IS NULL\n        WHEN 'grant' THEN \"admin_grant_id\" IS NOT NULL ELSE false END\n          AND \"credential_id\" IS NULL AND \"public_key\" IS NULL\n          AND \"action_nonce\" IS NULL AND \"server_nonce\" IS NULL\n          AND \"authenticator_data\" IS NULL AND \"client_data_json\" IS NULL\n          AND \"signature\" IS NULL AND \"step_up_id\" IS NULL\n        ELSE false END"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "policies\u0000[\"knowledge\",\"decision\",\"decision_insert_session\"]",
+      "set": {
+        "withCheck": "\"knowledge\".\"decision\".\"proof\" = 'session' AND \"knowledge\".\"decision\".\"approver_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid\n        AND (\"knowledge\".\"decision\".\"admin_basis\" = 'owner_list'\n          OR EXISTS (SELECT FROM \"knowledge\".\"admin_grant\" \"given\"\n        WHERE \"given\".\"id\" = \"knowledge\".\"decision\".\"admin_grant_id\" AND \"given\".\"kind\" = 'grant'\n          AND \"given\".\"grantee_account_id\" = \"knowledge\".\"decision\".\"approver_account_id\"))"
+      }
+    }
+  ]
+}

@@ -244,6 +244,11 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
          decode(repeat('ab', 32), 'hex'), '\\x00', '\\x00', '\\x00', gen_random_uuid())`,
       [accountId, credentialId],
     );
+    await insert(
+      `INSERT INTO knowledge.admin_grant (kind, grantee_account_id, actor_account_id, actor_basis, step_up_id)
+       VALUES ('grant', $1, $2, 'owner_list', gen_random_uuid())`,
+      [accountId, sharerId],
+    );
   });
   return { accountId, email, credentialId, codeHash, sharerId };
 }

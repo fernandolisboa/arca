@@ -38,7 +38,7 @@ function byRequirement(reports: readonly Report[]): Reported[] {
 
 /**
  * Members' reports of possibly wrong requirements (spec 0007, R8): counts per reason only, never
- * a note or who reported. The approver closes a requirement's reports once it is researched.
+ * a note or who reported. An admin closes a requirement's reports once it is researched.
  */
 export function ReportsSection({
   versions,
