@@ -1,0 +1,434 @@
+{
+  "schemaVersion": 1,
+  "routeId": "jp-nikkei-long-term-resident",
+  "number": 1,
+  "title": "Japanese long-term resident status (teijusha) for the third generation of Japanese descent (sansei), with their spouse and children",
+  "country": "JP",
+  "tags": [
+    "descent",
+    "temporary-residence"
+  ],
+  "effectiveFrom": "2022-04-01",
+  "status": "open",
+  "currency": "JPY",
+  "leapDayBirthday": "march-1",
+  "leapDayBirthdaySources": [
+    "age-calculation-act",
+    "civil-code"
+  ],
+  "sources": [
+    {
+      "id": "teijusha-notice",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "title": "Ministry of Justice Notice No. 132 of 1990 on long-term resident status, last amended by Notice No. 220 of 28 October 2021: items 3 to 7",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "immigration-act",
+      "url": "https://laws.e-gov.go.jp/law/326CO0000000319",
+      "title": "Immigration Control and Refugee Recognition Act (Cabinet Order No. 319 of 1951), art. 7(1)(ii) and (iv), art. 5 and appended table II (long-term resident)",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "civil-code",
+      "url": "https://laws.e-gov.go.jp/law/129AC0000000089",
+      "title": "Civil Code (Act No. 89 of 1896), art. 4: majority at 18 since 1 April 2022 (Act No. 59 of 2018); art. 143: periods counted by the calendar",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "age-calculation-act",
+      "url": "https://laws.e-gov.go.jp/law/135AC1000000050",
+      "title": "Act on the Calculation of Age (Act No. 50 of 1902): age counts from the day of birth, applying Civil Code art. 143",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "jp",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "japanese-descent",
+      "title": "A biological grandchild of a Japanese national: the parent was born while the grandparent was Japanese, or the grandparent was born to a Japanese national and once had a Japanese family register",
+      "expression": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "some",
+            "over": "principal.ancestors",
+            "generations": 2,
+            "where": {
+              "op": "all",
+              "operands": [
+                {
+                  "op": "eq",
+                  "left": {
+                    "op": "fact",
+                    "key": "lineage.generation"
+                  },
+                  "right": {
+                    "op": "int",
+                    "value": 2
+                  }
+                },
+                {
+                  "op": "eq",
+                  "left": {
+                    "op": "fact",
+                    "key": "lineage.edgeKind"
+                  },
+                  "right": {
+                    "op": "token",
+                    "value": "biological"
+                  }
+                },
+                {
+                  "op": "intersects",
+                  "list": {
+                    "op": "fact",
+                    "key": "lineage.citizenshipsAtChildBirth"
+                  },
+                  "set": {
+                    "op": "tokens",
+                    "values": [
+                      "JP"
+                    ]
+                  }
+                },
+                {
+                  "op": "every",
+                  "over": "lineage.links",
+                  "where": {
+                    "op": "eq",
+                    "left": {
+                      "op": "fact",
+                      "key": "lineage.edgeKind"
+                    },
+                    "right": {
+                      "op": "token",
+                      "value": "biological"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "op": "some",
+            "over": "principal.ancestors",
+            "generations": 3,
+            "where": {
+              "op": "all",
+              "operands": [
+                {
+                  "op": "eq",
+                  "left": {
+                    "op": "fact",
+                    "key": "lineage.generation"
+                  },
+                  "right": {
+                    "op": "int",
+                    "value": 3
+                  }
+                },
+                {
+                  "op": "eq",
+                  "left": {
+                    "op": "fact",
+                    "key": "lineage.edgeKind"
+                  },
+                  "right": {
+                    "op": "token",
+                    "value": "biological"
+                  }
+                },
+                {
+                  "op": "intersects",
+                  "list": {
+                    "op": "fact",
+                    "key": "lineage.citizenshipsAtChildBirth"
+                  },
+                  "set": {
+                    "op": "tokens",
+                    "values": [
+                      "JP"
+                    ]
+                  }
+                },
+                {
+                  "op": "every",
+                  "over": "lineage.links",
+                  "where": {
+                    "op": "eq",
+                    "left": {
+                      "op": "fact",
+                      "key": "lineage.edgeKind"
+                    },
+                    "right": {
+                      "op": "token",
+                      "value": "biological"
+                    }
+                  }
+                },
+                {
+                  "op": "unmodeled"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "sources": [
+        "teijusha-notice",
+        "immigration-act"
+      ]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "good-conduct",
+      "title": "Good conduct, and none of the grounds for refusing landing (criminal record, earlier deportation and the others in art. 5 of the act)",
+      "evidence": [
+        "principal.visaRefusals"
+      ],
+      "sources": [
+        "teijusha-notice",
+        "immigration-act"
+      ]
+    },
+    {
+      "id": "family-conditions",
+      "title": "For the spouse and children: the principal is granted a period of stay of one year or more, and the spouse and biological children show good conduct too",
+      "evidence": [
+        "principal.hasSpouse"
+      ],
+      "sources": [
+        "teijusha-notice"
+      ]
+    }
+  ],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse",
+      "path": [
+        "spouse"
+      ],
+      "condition": {
+        "op": "bool",
+        "value": true
+      },
+      "sources": [
+        "teijusha-notice"
+      ]
+    },
+    {
+      "id": "children",
+      "title": "Unmarried biological children under 18 whom the principal supports",
+      "path": [
+        "child"
+      ],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "edge.parentKind"
+            },
+            "right": {
+              "op": "token",
+              "value": "biological"
+            }
+          },
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "fact",
+            "key": "person.dependsOnPrincipal"
+          }
+        ]
+      },
+      "sources": [
+        "teijusha-notice",
+        "civil-code"
+      ]
+    },
+    {
+      "id": "adopted-children",
+      "title": "Adopted children under 6 whom the principal supports",
+      "path": [
+        "child"
+      ],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "edge.parentKind"
+            },
+            "right": {
+              "op": "token",
+              "value": "adoptive"
+            }
+          },
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 6
+            }
+          },
+          {
+            "op": "fact",
+            "key": "person.dependsOnPrincipal"
+          }
+        ]
+      },
+      "sources": [
+        "teijusha-notice"
+      ]
+    },
+    {
+      "id": "spouse-children",
+      "title": "The spouse's unmarried biological children under 18 whom the principal or the spouse supports",
+      "path": [
+        "spouse",
+        "child"
+      ],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "edge.parentKind"
+            },
+            "right": {
+              "op": "token",
+              "value": "biological"
+            }
+          },
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "fact",
+                "key": "person.dependsOnPrincipal"
+              },
+              {
+                "op": "fact",
+                "key": "edge.dependsOnLinkedPerson"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": [
+        "teijusha-notice",
+        "civil-code"
+      ]
+    },
+    {
+      "id": "spouse-adopted-children",
+      "title": "The spouse's adopted children under 6 whom the spouse supports",
+      "path": [
+        "spouse",
+        "child"
+      ],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "edge.parentKind"
+            },
+            "right": {
+              "op": "token",
+              "value": "adoptive"
+            }
+          },
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 6
+            }
+          },
+          {
+            "op": "fact",
+            "key": "edge.dependsOnLinkedPerson"
+          }
+        ]
+      },
+      "sources": [
+        "teijusha-notice"
+      ]
+    }
+  ],
+  "costs": [],
+  "durations": []
+}

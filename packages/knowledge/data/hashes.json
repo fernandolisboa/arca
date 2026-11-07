@@ -90,6 +90,10 @@
     {
       "path": "routes/lv-capital-investment/2",
       "sha256": "e0a0991a25fcf87adc61d3a9e752a43276c3837acacf45c94ac77cd4c5eac3cc"
+    },
+    {
+      "path": "routes/jp-nikkei-long-term-resident/1",
+      "sha256": "78bd5f6125c1fb9f51d7da37166108c54dfa33f2eb06298dbb11a0bc14c9688c"
     }
   ]
 }
