@@ -94,7 +94,8 @@ export function CheckReport({
       ) : check.data === undefined ? null : !check.data.enabled ? (
         <p>{t('knowledge.check.off')}</p>
       ) : check.data.report === null ? (
-        <div role="status" className="flex flex-col gap-1">
+        // Polite, not a status: the decision below keeps the screen's one status message.
+        <div aria-live="polite" className="flex flex-col gap-1">
           <p>{t('knowledge.check.status', { status: check.data.status })}</p>
           {view.state === 'proposed' && check.data.status !== 'running' && (
             <p className="text-small text-muted">{t('knowledge.check.startsOnOpen')}</p>
