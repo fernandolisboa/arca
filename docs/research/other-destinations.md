@@ -1,6 +1,6 @@
 # Other destinations
 
-Checked 2026-11-01.
+Checked 2026-11-01; the Uruguay section on 2026-11-07.
 
 ## Spain
 
@@ -15,14 +15,17 @@ The non-lucrative residence visa is now route version `es-non-lucrative` 1 in `p
 
 ## Uruguay
 
-Mercosur permanent residence is now route version `uy-mercosur-permanent` 1 in `packages/knowledge/data/routes`, verified on 2026-11-07 against IMPO and the migration directorate's page on gub.uy. Each person applies on their own nationality, so the route has no dependents: a Brazilian child qualifies as a Brazilian, not through a parent. A spouse from outside the listed states is not covered by this route (article 33 A covers only the family of Uruguayans).
+Mercosur permanent residence is now route version `uy-mercosur-permanent` 1 in `packages/knowledge/data/routes`, verified on 2026-11-07 against IMPO and the migration directorate's pages on gub.uy. Each listed national qualifies on their own nationality, so a Brazilian child qualifies as a Brazilian. A family member from outside the listed states comes in through family reunification: a spouse, partner, unmarried child or parent who depends on a principal from a state party to the 2002 Residence Agreements (Argentina, Bolivia, Brazil, Chile, Paraguay) is a dependent; anyone else in those relationships shows as possible.
 
 | Fact | Source |
 | --- | --- |
-| Nationals of Mercosur member and associated states who prove that nationality are permanent residents (Ley 18.250, art. 33 B, as worded by Ley 20.075, art. 169, in force from 2023-02-17, 120 days after promulgation on 2022-10-20) | [Ley 18.250](https://www.impo.com.uy/bases/leyes/18250-2008), [Ley 20.075](https://www.impo.com.uy/bases/leyes/20075-2022) |
-| The states covered: Argentina, Bolivia, Brazil, Chile, Colombia, Ecuador, Guyana, Paraguay, Peru, Suriname and Venezuela | [DNM, Residencia legal](https://www.gub.uy/tramites/residencia-legal) |
-| Application with a valid passport or identity document; adults sign a sworn statement of no criminal record and present records from every country lived in for more than six months in the last five years; Uruguayan vaccination certificate. Not modeled: the case records none of these | [Decreto 45/023, art. 2](https://www.impo.com.uy/bases/decretos/45-2023) |
-| The ministry decides within 90 business days | [Ley 18.250, art. 33](https://www.impo.com.uy/bases/leyes/18250-2008) |
+| Nationals of Mercosur member and associated states who prove that nationality are permanent residents (Ley 18.250, art. 33, literal B, as worded by Ley 20.075, art. 169, in force from 2023-02-17, 120 days after promulgation on 2022-10-20; Ley 19.254 already gave the same right from 2014) | [Ley 18.250](https://www.impo.com.uy/bases/leyes/18250-2008), [Ley 20.075](https://www.impo.com.uy/bases/leyes/20075-2022) |
+| The states covered, as the migration directorate lists them: Argentina, Bolivia, Brazil, Chile, Colombia, Ecuador, Guyana, Paraguay, Peru, Suriname and Venezuela. The statute says only "member and associated states", so a later associated state (Panama is reported as one; mercosur.int refuses automated reads) is not modeled until the directorate lists it | [DNM, Residencia legal](https://www.gub.uy/tramites/residencia-legal) |
+| The procedure follows the reciprocity agreement with the applicant's state (Decreto 45/023, art. 8). The Residence Agreements give family members without a member state's nationality a residence like that of the person they depend on (art. 9.2), and the migration law guarantees reunification with parents, spouses, partners, unmarried minor children and adult children with a disability (art. 10) | [Decreto 45/023](https://www.impo.com.uy/bases/decretos/45-2023), [Ley 17.927](https://www.impo.com.uy/bases/leyes-internacional/17927-2005), [Ley 18.250](https://www.impo.com.uy/bases/leyes/18250-2008) |
+| Not modeled: the Agreements count a naturalized national only after five years (art. 2); the case does not say which citizenship rule the directorate applies to art. 33, literal B, so the route reads every listed citizenship as enough | [Ley 17.927](https://www.impo.com.uy/bases/leyes-internacional/17927-2005) |
+| Not modeled: application with a valid passport or identity document; adults sign a sworn statement of no criminal record (arts. 45 and 46 of Ley 18.250) and present records from every country lived in for more than six months in the last five years; Uruguayan vaccination certificate; minors bring a birth certificate and their parents' authorization. The case records none of these | [Decreto 45/023, art. 2](https://www.impo.com.uy/bases/decretos/45-2023), [DNM, Permanente Mercosur](https://www.gub.uy/tramites/residencia-legal-permanente-mercosur) |
+| Not modeled: the fee is 557.30 UI (indexed units) plus a 55.70 UI certificate; Brazilians and Paraguayans pay nothing under their reciprocity agreements. A cost per nationality in indexed units does not fit the cost schema yet | [DNM, Permanente Mercosur](https://www.gub.uy/tramites/residencia-legal-permanente-mercosur) |
+| Not modeled: the ministry decides within 90 business days; a duration stage counts calendar time, not business days | [Ley 18.250, art. 33](https://www.impo.com.uy/bases/leyes/18250-2008) |
 
 ## Germany
 
