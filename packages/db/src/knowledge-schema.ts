@@ -14,7 +14,9 @@ import {
 } from 'drizzle-orm/pg-core';
 
 /**
- * Decisions on route versions (spec 0007, R7; ADR-0022). Each row is self-contained: it copies the
+ * Decisions on route and comparison versions (spec 0007, R7; ADR-0022, ADR-0026). A row names its
+ * subject kind, and a database check gives each kind its own shape: a route row has a route ID and
+ * no comparison ID, a comparison row the one comparison series ID and no route ID. Each row is self-contained: it copies the
  * step-up's assertion and the passkey's public key, so it verifies again after the passkey is
  * revoked, the step-up is swept or the approver's account is erased, and no foreign key leaves this
  * schema. Insert-only, as the audit log: `app_auth` inserts a decision in the transaction that
@@ -31,7 +33,9 @@ export const decision = knowledge.table(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     kind: text('kind', { enum: ['activate', 'reject'] }).notNull(),
-    routeId: text('route_id').notNull(),
+    subjectKind: text('subject_kind', { enum: ['route', 'comparison'] }).notNull(),
+    routeId: text('route_id'),
+    comparisonId: text('comparison_id'),
     versionNumber: integer('version_number').notNull(),
     contentHash: text('content_hash').notNull(),
     approverAccountId: uuid('approver_account_id').notNull(),
@@ -52,6 +56,14 @@ export const decision = knowledge.table(
     unique('decision_step_up_id_key').on(table.stepUpId),
     check('decision_kind', sql`${table.kind} IN ('activate', 'reject')`),
     check('decision_route_id_format', sql`${table.routeId} ~ '^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$'`),
+    check(
+      'decision_subject',
+      sql`CASE ${table.subjectKind}
+        WHEN 'route' THEN ${table.routeId} IS NOT NULL AND ${table.comparisonId} IS NULL
+        WHEN 'comparison' THEN ${table.routeId} IS NULL
+          AND ${table.comparisonId} IS NOT DISTINCT FROM 'destinations'
+        ELSE false END`,
+    ),
     check('decision_version_number_positive', sql`${table.versionNumber} > 0`),
     check('decision_content_hash_format', sql`${table.contentHash} ~ '^[0-9a-f]{64}$'`),
     check('decision_action_nonce_length', sql`octet_length(${table.actionNonce}) = 16`),

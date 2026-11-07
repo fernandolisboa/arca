@@ -163,6 +163,73 @@ test('the seed approver activates a version, reads and closes its reports, then 
   expect(problems).toEqual([]);
 });
 
+// In this file, after the tests above, for the same reason.
+test('the seed approver reviews, activates and rejects a comparison version (ADR-0026)', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'runs once, on the desktop project');
+  const [account] = await runSeed();
+  if (account === undefined) throw new Error('the seed lists no account');
+  await Promise.all([
+    restartSeededCounter(account.id),
+    clearKnowledgeDecisions(),
+    resetRateLimits(),
+  ]);
+  const problems = watchProblems(page);
+  await virtualAuthenticator(page, seededCredential(account.passkey.label), {
+    userId: account.id,
+  });
+  await withoutAutofill(page);
+  await page.goto(`${databaseServer.origin}/sign-in`);
+  await page.getByRole('button', { name: 'Entrar com chave de acesso' }).click();
+  await expect(page.getByText(`Você entrou como ${account.email}.`)).toBeVisible();
+
+  await page.goto(`${databaseServer.origin}/knowledge`);
+  await page
+    .getByRole('region', { name: 'Versões propostas' })
+    .getByRole('button', { name: /^Destination comparison · versão 1\b/ })
+    .click();
+  await expect(
+    page.getByRole('heading', { level: 3, name: 'Destination comparison · versão 1' }),
+  ).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Critérios' })).toContainText('cost-of-living');
+  const indicators = page.getByRole('region', { name: 'Indicadores dos países' });
+  await expect(indicators).toContainText('Site: data.worldbank.org');
+  await expect(
+    indicators.getByRole('table', { name: /^Valores de Intentional homicides/ }),
+  ).toContainText('Argentina');
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await horizontalOverflow(page)).toBe(0);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  const { violations } = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
+    .analyze();
+  expect(
+    violations.map(({ id, nodes }) => ({ id, targets: nodes.map((node) => node.target) })),
+  ).toEqual([]);
+
+  const stepUp = page.waitForRequest((request) =>
+    request.url().endsWith('/v1/auth/step-up/options'),
+  );
+  await page.getByRole('button', { name: 'Ativar esta versão' }).click();
+  await page.getByRole('button', { name: 'Confirmar' }).click();
+  await expect(page.getByRole('status')).toHaveText('Versão ativada.');
+  expect((await stepUp).postDataJSON()).toMatchObject({
+    purpose: 'knowledge_decision',
+    target: { action: 'activateComparison', targets: ['destinations', '1'] },
+  });
+  await expect(page.getByText('Versão ativa', { exact: true })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Recusar esta versão' }).click();
+  await expect(
+    page.getByText('Hoje a comparação usa esta versão. Se recusar, ela fica sem dados de países'),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Confirmar' }).click();
+  await expect(page.getByRole('status')).toHaveText('Versão recusada.');
+  await expect(page.getByText('Esta versão foi recusada e não volta a ser usada.')).toBeVisible();
+  expect(problems).toEqual([]);
+});
+
 /** Jumps to one step of a version's review from its step list. */
 async function reviewStep(page: Page, name: string) {
   await page

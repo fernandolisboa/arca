@@ -2,7 +2,7 @@ import type { VersionView } from '@arca/api-contract/client';
 import type { Messages } from '@arca/i18n';
 import { Button, Icon, StatusChip, menuItemClass } from '@arca/ui';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
-import { Decision } from './decision.js';
+import { Decision, decideVersion } from './decision.js';
 import { ExpressionTree } from './expression-tree.js';
 import { RuleSummaryButton, RuleSummaryCard, useRuleSummary } from './rule-summary.js';
 import { stateTone } from './state-tone.js';
@@ -372,7 +372,21 @@ function DecisionStep({
         <p className="text-small text-muted">{t('knowledge.hash')}</p>
         <p className="font-mono text-small break-all">{view.hash}</p>
       </div>
-      <Decision view={view} words={words} />
+      <Decision
+        state={view.state}
+        decide={(kind) => decideVersion(kind, view)}
+        activateLead={t('knowledge.activateLead', { date: words.date(view.effectiveFrom) })}
+        rejectWarning={
+          view.rejection.selected
+            ? t('knowledge.rejectFallback', {
+                current: view.state,
+                fallback: view.rejection.fallback === null ? 'none' : view.rejection.fallback.state,
+                number: view.rejection.fallback?.number ?? 0,
+              })
+            : null
+        }
+        words={words}
+      />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { KnowledgeVersion } from '@arca/api-contract/routes';
+import { KnowledgeComparisonVersion, KnowledgeVersion } from '@arca/api-contract/routes';
 import { describe, expect, it } from 'vitest';
 import type { Logger } from '@arca/telemetry';
 import { createApp } from '../src/app.js';
@@ -17,6 +17,7 @@ const approver: SignedIn = {
 const nonce = 'MzMzMzMzMzMzMzMzMzMzMw';
 const decisionId = '0d1e2f30-4152-4637-8a9b-0c1d2e3f4a5b';
 const version = { routeId: 'pt-d7', number: 2 };
+const comparison = { comparisonId: 'destinations', number: 1 };
 
 function setup({
   signedIn = approver,
@@ -47,9 +48,17 @@ function setup({
     hash: 'a'.repeat(64),
     state: 'proposed',
   });
+  const listedComparison = KnowledgeComparisonVersion.parse({
+    ...comparison,
+    title: 'Destination comparison',
+    hash: 'b'.repeat(64),
+    state: 'proposed',
+  });
   const knowledgeVersions: KnowledgeVersions = {
     list: () => Promise.resolve([listedVersion]),
     view: () => Promise.resolve(undefined),
+    comparisons: () => Promise.resolve([listedComparison]),
+    comparisonView: () => Promise.resolve(undefined),
   };
   const openReports = [
     { routeId: 'pt-d7', versionNumber: 2, requirementId: 'income', reason: 'outdated', count: 3 },
@@ -87,8 +96,12 @@ function setup({
     knowledgeVersions,
     ruleReports,
   });
-  const decide = (kind: 'activate' | 'reject', body: unknown = version) =>
-    app.request(`/v1/knowledge/versions/${kind}`, {
+  const decide = (
+    kind: 'activate' | 'reject',
+    body: unknown = version,
+    collection: 'versions' | 'comparisons' = 'versions',
+  ) =>
+    app.request(`/v1/knowledge/${collection}/${kind}`, {
       method: 'POST',
       headers: {
         origin,
@@ -97,7 +110,8 @@ function setup({
       },
       body: JSON.stringify(body),
     });
-  const read = (path: string) => app.request(`/v1/knowledge/versions${path}`);
+  const read = (path: string, collection: 'versions' | 'comparisons' = 'versions') =>
+    app.request(`/v1/knowledge/${collection}${path}`);
   const reports = () => app.request('/v1/knowledge/reports');
   const close = (body: unknown) =>
     app.request('/v1/knowledge/reports/close', {
@@ -105,7 +119,17 @@ function setup({
       headers: { origin, 'content-type': 'application/json' },
       body: JSON.stringify(body),
     });
-  return { app, decide, read, reports, close, calls, listedVersion, openReports };
+  return {
+    app,
+    decide,
+    read,
+    reports,
+    close,
+    calls,
+    listedVersion,
+    listedComparison,
+    openReports,
+  };
 }
 
 describe('GET /v1/session for approvers (spec 0007, R7)', () => {
@@ -125,7 +149,12 @@ describe('POST /v1/knowledge/versions (spec 0007, R7)', () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ decisionId });
     expect(calls).toEqual([
-      [approver, kind, version, new Uint8Array(Buffer.from(nonce, 'base64url'))],
+      [
+        approver,
+        kind,
+        { subject: 'route', ...version },
+        new Uint8Array(Buffer.from(nonce, 'base64url')),
+      ],
     ]);
   });
 
@@ -160,11 +189,14 @@ describe('POST /v1/knowledge/versions (spec 0007, R7)', () => {
     expect([...noNonce.calls, ...malformed.calls]).toEqual([]);
   });
 
-  it('lists the versions for an approver and refuses anyone else', async () => {
-    const { read, listedVersion } = setup();
+  it('lists the route and comparison versions for an approver and refuses anyone else', async () => {
+    const { read, listedVersion, listedComparison } = setup();
     const response = await read('');
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ versions: [listedVersion] });
+    expect(await response.json()).toEqual({
+      versions: [listedVersion],
+      comparisons: [listedComparison],
+    });
     const other = setup({ listed: false });
     expect((await other.read('')).status).toBe(403);
     expect((await other.read('/view?routeId=pt-d7&number=2')).status).toBe(403);
@@ -174,6 +206,53 @@ describe('POST /v1/knowledge/versions (spec 0007, R7)', () => {
     const { read } = setup();
     expect((await read('/view?routeId=pt-d7&number=2')).status).toBe(404);
     expect((await read('/view?routeId=Nope&number=0')).status).toBe(400);
+  });
+});
+
+describe('POST /v1/knowledge/comparisons (ADR-0026)', () => {
+  it.each(['activate', 'reject'] as const)(
+    '%ss a comparison version as its own subject kind',
+    async (kind) => {
+      const { decide, calls } = setup();
+      const response = await decide(kind, comparison, 'comparisons');
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ decisionId });
+      expect(calls).toEqual([
+        [
+          approver,
+          kind,
+          { subject: 'comparison', ...comparison },
+          new Uint8Array(Buffer.from(nonce, 'base64url')),
+        ],
+      ]);
+    },
+  );
+
+  it('never takes a route version as a comparison, nor the reverse', async () => {
+    const { decide, calls } = setup();
+    expect((await decide('activate', version, 'comparisons')).status).toBe(400);
+    expect((await decide('activate', comparison, 'versions')).status).toBe(400);
+    expect(calls).toEqual([]);
+  });
+
+  it('answers 403 to an account not on the list and without the nonce, deciding nothing', async () => {
+    const other = setup({ listed: false });
+    expect((await other.decide('reject', comparison, 'comparisons')).status).toBe(403);
+    const noNonce = setup({ withNonce: false });
+    expect((await noNonce.decide('reject', comparison, 'comparisons')).status).toBe(403);
+    expect([...other.calls, ...noNonce.calls]).toEqual([]);
+  });
+
+  it('views a comparison version only for an approver, 404 when it is not bundled', async () => {
+    const { read } = setup();
+    expect((await read('/view?comparisonId=destinations&number=1', 'comparisons')).status).toBe(
+      404,
+    );
+    expect((await read('/view?comparisonId=Nope&number=0', 'comparisons')).status).toBe(400);
+    const other = setup({ listed: false });
+    expect(
+      (await other.read('/view?comparisonId=destinations&number=1', 'comparisons')).status,
+    ).toBe(403);
   });
 });
 

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { comparisonIdentityKey } from '../../src/comparison/select.js';
 import { type DecisionState, identityKey } from '../../src/rules/catalog.js';
 import {
   type CheckedDecision,
@@ -10,8 +11,18 @@ const one = { routeId: 'qm-sample', number: 1, hash: 'a'.repeat(64) };
 const other = { ...one, hash: 'b'.repeat(64) };
 
 const decided = (kind: DecisionKind, verified: boolean, identity = one): CheckedDecision => ({
+  subject: 'route',
   kind,
   identity,
+  verified,
+});
+
+const comparison = { comparisonId: 'destinations', number: 1, hash: 'a'.repeat(64) };
+
+const comparisonDecided = (kind: DecisionKind, verified: boolean): CheckedDecision => ({
+  subject: 'comparison',
+  kind,
+  identity: comparison,
   verified,
 });
 
@@ -52,5 +63,32 @@ describe('decision states (spec 0007, R7)', () => {
       [identityKey(one), 'active'],
       [identityKey(other), 'rejected'],
     ]);
+  });
+
+  it('keeps decisions on a comparison version apart from route versions (ADR-0026)', () => {
+    const lookalike = { routeId: 'destinations', number: 1, hash: 'a'.repeat(64) };
+    const states = decisionStates([
+      comparisonDecided('activate', true),
+      decided('reject', true, lookalike),
+    ]);
+    expect(states.get(comparisonIdentityKey(comparison))).toBe('active');
+    expect(states.get(identityKey(lookalike))).toBe('rejected');
+    expect(states.size).toBe(2);
+  });
+
+  it.each<[string, readonly CheckedDecision[], DecisionState | undefined]>([
+    ['a verified activation activates', [comparisonDecided('activate', true)], 'active'],
+    [
+      'an unverified activation counts for nothing',
+      [comparisonDecided('activate', false)],
+      undefined,
+    ],
+    [
+      'a rejection wins over an activation',
+      [comparisonDecided('activate', true), comparisonDecided('reject', false)],
+      'rejected',
+    ],
+  ])('comparison: %s', (_, decisions, state) => {
+    expect(decisionStates(decisions).get(comparisonIdentityKey(comparison))).toBe(state);
   });
 });

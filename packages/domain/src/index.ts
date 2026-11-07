@@ -198,7 +198,14 @@ export {
   stateOf,
   versionIdentity,
 } from './rules/catalog.js';
-export { type CheckedDecision, type DecisionKind, decisionStates } from './rules/decisions.js';
+export {
+  type CheckedDecision,
+  type DecidedVersion,
+  type DecisionKind,
+  type DecisionSubject,
+  decidedKey,
+  decisionStates,
+} from './rules/decisions.js';
 export {
   type ExpressionView,
   type FactName,
@@ -341,3 +348,11 @@ export {
   comparisonStateOf,
   selectComparisonVersion,
 } from './comparison/select.js';
+export {
+  type ComparisonRejectionEffect,
+  type ComparisonVersionView,
+  type ComparisonVersionViewInput,
+  type IndicatorValueView,
+  type IndicatorView,
+  comparisonVersionView,
+} from './comparison/view.js';

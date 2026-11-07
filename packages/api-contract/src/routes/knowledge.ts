@@ -1,5 +1,7 @@
 import {
   calendarDateSchema,
+  comparisonCriterionSchema,
+  countryCodeSchema,
   durationStageSchema,
   leapDayBirthdaySchema,
   routeIdSchema,
@@ -58,7 +60,50 @@ export function decideVersionAction(
   return { action: decision, targets: [routeId, String(number)], fields: { contentHash } };
 }
 
+/*
+ * Activating and rejecting a comparison version (ADR-0026), as for a route version but with their
+ * own step-up actions, so an approval of one kind can never be spent on the other. The targets are
+ * the comparison ID and the version number, the field the content hash over the version and every
+ * indicator it pins, which the API takes from the catalog it bundles.
+ */
+
+export const DecideComparisonRequest = z.strictObject({
+  comparisonId: slugSchema,
+  number: z.int().min(1).max(1_000_000),
+});
+export type DecideComparisonRequest = z.infer<typeof DecideComparisonRequest>;
+
+export const activateComparison = {
+  method: 'post',
+  path: '/knowledge/comparisons/activate',
+  operationId: 'activateComparison',
+  summary:
+    'Activates a comparison version after a knowledge_decision step-up; it counts once its stored assertion verifies. 403 not_approver, 403 step_up_required, 404 not_found, 409 already_rejected',
+  body: DecideComparisonRequest,
+  response: { description: 'Activated', schema: DecideVersionResponse },
+} as const satisfies RouteDefinition<typeof DecideVersionResponse>;
+
+export const rejectComparison = {
+  method: 'post',
+  path: '/knowledge/comparisons/reject',
+  operationId: 'rejectComparison',
+  summary:
+    'Rejects a comparison version after a knowledge_decision step-up, at once and for good; the newest active version before it stays in use. 403 not_approver, 403 step_up_required, 404 not_found, 409 already_rejected',
+  body: DecideComparisonRequest,
+  response: { description: 'Rejected', schema: DecideVersionResponse },
+} as const satisfies RouteDefinition<typeof DecideVersionResponse>;
+
+/** The step-up action of a comparison decision: its ID and number as targets, the hash as a field. */
+export function decideComparisonAction(
+  decision: 'activateComparison' | 'rejectComparison',
+  { comparisonId, number }: DecideComparisonRequest,
+  contentHash: string,
+) {
+  return { action: decision, targets: [comparisonId, String(number)], fields: { contentHash } };
+}
+
 const decisionState = z.enum(['active', 'rejected', 'proposed']);
+const contentHash = z.string().regex(/^[0-9a-f]{64}$/);
 // A country set is named `<id>/<number>` in the changes; a setting by its field name.
 const ids = z.array(z.string().max(96)).max(50);
 
@@ -73,7 +118,20 @@ export const KnowledgeVersion = z.object({
 });
 export type KnowledgeVersion = z.infer<typeof KnowledgeVersion>;
 
-export const KnowledgeVersions = z.object({ versions: z.array(KnowledgeVersion) });
+export const KnowledgeComparisonVersion = z.object({
+  comparisonId: slugSchema,
+  number: z.int().min(1),
+  title: z.string().max(200),
+  hash: contentHash,
+  state: decisionState,
+});
+export type KnowledgeComparisonVersion = z.infer<typeof KnowledgeComparisonVersion>;
+
+export const KnowledgeVersions = z.object({
+  versions: z.array(KnowledgeVersion),
+  /** The destination comparison's versions, the newest first (ADR-0026). */
+  comparisons: z.array(KnowledgeComparisonVersion).max(100),
+});
 export type KnowledgeVersions = z.infer<typeof KnowledgeVersions>;
 
 export const listKnowledgeVersions = {
@@ -81,7 +139,7 @@ export const listKnowledgeVersions = {
   path: '/knowledge/versions',
   operationId: 'listKnowledgeVersions',
   summary:
-    'Every route version the API bundles with its decision state, the newest first, for an approver; 403 not_approver',
+    'Every route and comparison version the API bundles with its decision state, the newest first, for an approver; 403 not_approver',
   response: { description: 'The versions', schema: KnowledgeVersions },
 } as const satisfies RouteDefinition<typeof KnowledgeVersions>;
 
@@ -205,6 +263,67 @@ export const getVersionView = {
   response: { description: 'The version', schema: VersionView },
 } as const satisfies RouteDefinition<typeof VersionView>;
 
+const year = z.int().min(1900).max(2200);
+
+/** One comparison version laid out for the approver (ADR-0026), built by the domain. */
+export const ComparisonVersionView = z.object({
+  comparisonId: slugSchema,
+  number: z.int().min(1),
+  hash: contentHash,
+  state: decisionState,
+  title: z.string().max(200),
+  criteria: z.array(comparisonCriterionSchema).max(50),
+  indicators: z
+    .array(
+      z.object({
+        id: slugSchema,
+        number: z.int().min(1),
+        title: z.string().max(200),
+        unit: z.string().max(200),
+        valueType: z.enum(['decimal', 'token']),
+        sources: z.array(sourceSchema.extend({ host: z.string().max(253).nullable() })).max(20),
+        values: z
+          .array(
+            z.object({
+              country: countryCodeSchema,
+              value: z.string().max(40),
+              year,
+              source: slugSchema,
+              host: z.string().max(253).nullable(),
+              previous: z.object({ value: z.string().max(40), year }).nullable(),
+            }),
+          )
+          .max(300),
+        removed: z.array(countryCodeSchema).max(300),
+      }),
+    )
+    .max(20),
+  replaces: z
+    .object({ number: z.int().min(1), criteria: sectionChange, indicators: sectionChange })
+    .nullable(),
+  rejection: z.object({
+    selected: z.boolean(),
+    fallback: z.object({ number: z.int().min(1) }).nullable(),
+  }),
+});
+export type ComparisonVersionView = z.infer<typeof ComparisonVersionView>;
+
+export const ComparisonViewQuery = z.object({
+  comparisonId: slugSchema,
+  number: z.coerce.number<number>().int().min(1).max(1_000_000),
+});
+export type ComparisonViewQuery = z.infer<typeof ComparisonViewQuery>;
+
+export const getComparisonView = {
+  method: 'get',
+  path: '/knowledge/comparisons/view',
+  operationId: 'getComparisonView',
+  summary:
+    'One comparison version laid out for an approver: its criteria, every indicator value with its year and source host beside the value it replaces, what changed and what rejecting it would do; 403 not_approver, 404 not_found',
+  query: ComparisonViewQuery,
+  response: { description: 'The comparison version', schema: ComparisonVersionView },
+} as const satisfies RouteDefinition<typeof ComparisonVersionView>;
+
 /**
  * A model's reading of one version for the approver (ADR-0025): an aid to review, never a decision.
  * Plain text only; the screen renders it as text, so no link or image in it is ever followed.
@@ -283,8 +402,11 @@ export const closeRuleReports = {
 export const knowledgeRoutes = {
   activateVersion,
   rejectVersion,
+  activateComparison,
+  rejectComparison,
   listKnowledgeVersions,
   getVersionView,
+  getComparisonView,
   getVersionSummary,
   summarizeVersion,
   listRuleReports,

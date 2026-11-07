@@ -5,6 +5,7 @@ import { apiBasePath, ErrorResponse, type RouteDefinition } from '../routes/inde
 
 export {
   addCaseMemberAction,
+  decideComparisonAction,
   decideVersionAction,
   apiBasePath,
   collectionNames,
@@ -71,8 +72,11 @@ export type {
   SentenceKind,
   CaseView,
   DataExport,
+  ComparisonVersionView,
+  DecideComparisonRequest,
   DecideVersionRequest,
   DecideVersionResponse,
+  KnowledgeComparisonVersion,
   KnowledgeVersion,
   KnowledgeVersions,
   ReportRuleRequest,
