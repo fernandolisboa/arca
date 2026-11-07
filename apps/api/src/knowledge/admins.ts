@@ -32,18 +32,18 @@ interface Interval {
   to?: bigint;
 }
 
-/**
- * Replays the history in time order (ADR-0027). A row counts only when its actor was an admin at
- * its time: on the owner list by the basis it records, which app_auth checked when it stored the
- * row, or by the grant it names, in force for the actor then. So a row by an account that was never
- * an admin changes nothing, and a later row never changes what an earlier time saw.
- */
 const byTime = (a: AdminGrantRow, b: AdminGrantRow): number => {
   if (a.at !== b.at) return a.at < b.at ? -1 : 1;
   if (a.id === b.id) return 0;
   return a.id < b.id ? -1 : 1;
 };
 
+/**
+ * Replays the history in time order (ADR-0027). A row counts only when its actor was an admin at
+ * its time: on the owner list by the basis it records, which app_auth checked when it stored the
+ * row, or by the grant it names, in force for the actor then. So a row by an account that was never
+ * an admin changes nothing, and a later row never changes what an earlier time saw.
+ */
 export function adminHistory(rows: readonly AdminGrantRow[]): AdminHistory {
   const ordered = [...rows].sort(byTime);
   const live = new Map<string, string>();
