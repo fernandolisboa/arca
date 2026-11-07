@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "id": "ge",
+  "number": 1,
+  "title": "Georgian law on aliens and residence permits for property owners",
+  "laws": [
+    {
+      "id": "aliens-law-en",
+      "title": "Law of Georgia on the Legal Status of Aliens and Stateless Persons (No. 2045-II of 2014-03-05), English consolidated text: residence permits and the short-term permit of art. 15(j)",
+      "url": "https://matsne.gov.ge/en/document/view/2278806",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended only by laws of the Parliament of Georgia, often several times a year: 4 amending laws in 2025 (Nos. 670, 863, 865, 930) and 3 by 2026-06-25 (Nos. 1510, 1511, 1803). Matsne then publishes a new consolidated version dated by the amending law; the final consolidated version read is of 2026-06-25 (Law No. 1803). In the versions read, a consolidated version takes in an amendment once it is published, even one that starts later, and does not mark the later start date. The amending laws are Georgian texts and change the Georgian consolidated text."
+    },
+    {
+      "id": "aliens-law-ka",
+      "title": "The same law in its Georgian consolidated text (უცხოელთა და მოქალაქეობის არმქონე პირთა სამართლებრივი მდგომარეობის შესახებ)",
+      "url": "https://matsne.gov.ge/ka/document/view/2278806",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Each amending law is a Georgian text that rewrites named articles and subparagraphs, citing them by Georgian letters, and states its own start date in its last article. Matsne consolidates it into a new Georgian version, final version read of 2026-06-25, and lists the amending laws under each article they touch."
+    },
+    {
+      "id": "law-863-2025",
+      "title": "Law No. 863-IIმს-XIმპ of 2025-06-26 amending the Aliens Law: USD 150,000 for the D5 visa and the short-term permit, from 2026-03-01",
+      "url": "https://matsne.gov.ge/ka/document/view/6543112",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Published once, on 2025-07-01, in Georgian. It has only 2 articles. Art. 1 points 1 to 3 (the D1 and D5 visas in art. 7(3), the work permit in art. 15(a), the short-term permit in art. 15(j) and a new art. 48(8)) took effect on 2026-03-01 and the rest on publication (art. 2). It has no transitional provision. Later laws change the Aliens Law, not this text; Law No. 1510 has since rewritten art. 15(a) again."
+    },
+    {
+      "id": "law-1510-2026",
+      "title": "Law No. 1510-Vმს-XIმპ of 2026-04-15 amending the Aliens Law: the work residence permit in art. 15(a) and art. 18(5)",
+      "url": "https://matsne.gov.ge/ka/document/view/6839768",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Published once, in Georgian, and in force on publication (2026-04-15). Later laws change the Aliens Law, not this text."
+    },
+    {
+      "id": "law-1511-2026",
+      "title": "Law No. 1511-Vმს-XIმპ of 2026-04-15 amending the Aliens Law: visa rules in arts. 6, 7, 8 and 11, adding the C5 visa",
+      "url": "https://matsne.gov.ge/ka/document/view/6840112",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Published once, in Georgian, and in force on publication (2026-04-15, art. 3). Its art. 2 keeps the new art. 11(3^1) rule from applying to appeals against acts issued before that date. Later laws change the Aliens Law, not this text."
+    },
+    {
+      "id": "law-1803-2026",
+      "title": "Law No. 1803-Vმს-XIმპ of 2026-06-25 amending the Aliens Law: refusal grounds, appeals and permit rules, mostly from 2026-09-01",
+      "url": "https://matsne.gov.ge/ka/document/view/6910359",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Published once, in Georgian, on 2026-06-29. Its art. 1 takes effect on 2026-09-01, except point 25 and point 30(a.g), which took effect on 2026-07-01; its arts. 2 and 3 took effect on publication. Art. 2 asks the Government to bring its ordinances into line by 2026-09-01. Later laws change the Aliens Law, not this text."
+    },
+    {
+      "id": "civil-code",
+      "title": "Civil Code of Georgia, English consolidated text: majority (art. 12), computing periods (arts. 121 to 126) and marriage (arts. 1106 to 1120)",
+      "url": "https://matsne.gov.ge/en/document/view/31702",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by laws of Parliament many times a year; the final consolidated English version read is of 2026-06-25 and cites 4 amending laws of 2026. Arts. 121 to 124 carry no amendment notes; art. 12 was last changed by Law No. 3339 of 2015, and arts. 1106 and 1120 by Law No. 4438 of 2024-09-17."
+    },
+    {
+      "id": "sda-residence-permits",
+      "title": "Public Service Development Agency, residence permits page in Georgian: documents, service fees and timeframes for each permit (guidance, not a legal act)",
+      "url": "https://sda.gov.ge/products/%e1%83%9b%e1%83%98%e1%83%92%e1%83%a0%e1%83%90%e1%83%aa%e1%83%98%e1%83%90-%e1%83%91%e1%83%98%e1%83%9c%e1%83%90%e1%83%93%e1%83%a0%e1%83%9d%e1%83%91%e1%83%98%e1%83%a1-%e1%83%9c%e1%83%94%e1%83%91%e1%83%90/",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A web page the Agency edits when the law or the Government ordinances change, with no fixed schedule; its metadata records a last change on 2026-11-03. It restates the law and ordinances; it is guidance, not a legal act."
+    }
+  ],
+  "pitfalls": [
+    {
+      "id": "georgian-subparagraph-letters",
+      "text": "Amending laws cite subparagraphs by Georgian letters, which the English text renders as Latin letters in sequence, so the labels differ. In art. 15 the Georgian k (კ) is the short-term permit, English (j); Georgian l (ლ) is the unlimited permit, English (k); Georgian m (მ) is the IT permit, English (l); Georgian t (თ) is the investment permit, English (h). Law No. 863, art. 1(2)(b), rewrites Georgian k, which is English 15(j), not 15(k).",
+      "laws": ["aliens-law-en", "aliens-law-ka", "law-863-2025"]
+    },
+    {
+      "id": "threshold-from-2026-03-01",
+      "text": "Art. 15(j) required a market value above USD 100,000 until Law No. 863 raised it to USD 150,000. Law No. 863, art. 2(2), starts its art. 1 points 1 to 3 on 2026-03-01, so USD 150,000 applies from that date and USD 100,000 before. The same law sets USD 150,000 for the D5 immigration visa (art. 7(3)(d.e)) from the same date. Law No. 863 has no transitional provision for pending applications or permits already held, and art. 16(3), which extends a permit on the conditions it was issued on, does not say which threshold an extension after 2026-03-01 meets.",
+      "laws": ["law-863-2025", "aliens-law-ka"]
+    },
+    {
+      "id": "consolidated-text-runs-ahead",
+      "text": "In the versions read, a Matsne consolidated version takes in an amendment when it is published, even one that starts later, with no sign of the later start. The version for 2025-07-02 to 2026-04-15 already prints USD 150,000 in art. 15(j), which applied only from 2026-03-01, and the final version of 2026-06-25 prints the Law No. 1803 text, most of which applies only from 2026-09-01. The start date of each amendment is in the last article of the amending law listed under the provision.",
+      "laws": ["aliens-law-en", "aliens-law-ka", "law-863-2025", "law-1803-2026"]
+    },
+    {
+      "id": "amendments-since-march-2026",
+      "text": "After 2026-03-01, 3 laws amended the Aliens Law. Laws No. 1510 and 1511, in force 2026-04-15, change the work permit in art. 15(a), art. 18(5) and visa rules in arts. 6, 7, 8 and 11. Law No. 1803 changes many articles, among them arts. 6(8), 16(3), 17, 18, 20^1, 21 and other subparagraphs of art. 15, and adds arts. 16^1 and 21^1 to 21^3, mostly from 2026-09-01. None of the 3 changes art. 14 or the wording of art. 15(j).",
+      "laws": ["law-1510-2026", "law-1511-2026", "law-1803-2026", "aliens-law-ka"]
+    },
+    {
+      "id": "criminal-record-ground-changed",
+      "text": "Until 2026-08-31, art. 18(1)(e) let the Agency refuse an alien wanted for a crime, convicted of a crime committed in the 5 years before the application unless the record was removed or expunged, or under prosecution until the proceedings end. From 2026-09-01 (Law No. 1803) it covers someone wanted, convicted by a final judgment in Georgia of a less serious offence unless the record was removed or expunged, or of a serious or exceptionally serious offence even if it was, or under prosecution. The 5-year window is gone; whether in Georgia also limits the serious offences is unclear.",
+      "laws": ["law-1803-2026", "aliens-law-ka", "aliens-law-en"]
+    },
+    {
+      "id": "security-ground-changed",
+      "text": "Until 2026-08-31, art. 18(1)(a) required a conclusion of the authorised body that the alien's residence was inadvisable for state or public security, art. 18(1)(c) an activity threatening state security or public order, and art. 18(2) listed what those interests cover. From 2026-09-01, Law No. 1803 replaces both with sufficient grounds to assume them, deletes art. 18(2) and (3) and moves the list to art. 21^1, which adds other threats to state security, certain administrative offences and systematic breaches of Georgian law.",
+      "laws": ["law-1803-2026", "aliens-law-ka", "aliens-law-en"]
+    },
+    {
+      "id": "property-value-test",
+      "text": "The test is the market value set by a certified assessor of a body accredited by the Georgian Accreditation Centre, and it must exceed the GEL equivalent of USD 150,000, so exactly that amount fails. The law speaks of one immovable thing and does not say whether several properties can be added up, whether co-owned property counts at its full value or the owner's share, or which exchange rate or date converts the amount. Agricultural land does not count. An owner who keeps the property need not submit a new valuation to extend the permit (art. 16(3)).",
+      "laws": ["aliens-law-en", "aliens-law-ka"]
+    },
+    {
+      "id": "permit-ends-with-ownership",
+      "text": "The permit ends when the alien's ownership of the property ends (arts. 16(1)(f) and 21(1^1)), and the Public Registry tells the Agency within 2 weeks (art. 20^1(4)). An investment permit held on property survives if the holder first proves ownership of a replacement of the same or higher value (art. 21(1^3)); the short-term permit has no such replacement rule.",
+      "laws": ["aliens-law-en"]
+    },
+    {
+      "id": "children-without-age",
+      "text": "Art. 15(j) gives the permit to the owner's spouse and child/children with no age limit and no dependence test. The general family member of art. 2(h) is a spouse and a minor child, among others, and arts. 15(h) and (k) define family members for those permits as a spouse, a minor child and certain fully dependent persons, but 15(j) has no such clause. The texts read do not say whether an adult child qualifies, and they name neither the spouse's children nor the owner's parents. Family members of a permit holder may also seek a family reunification permit (art. 15(c)).",
+      "laws": ["aliens-law-en", "aliens-law-ka"]
+    },
+    {
+      "id": "family-follows-holder",
+      "text": "The law says only that the permit is issued to the owner and to the spouse and children, and sets no order between them. The Agency's page (guidance) lists the documents for the spouse and children of an alien who holds a short-term permit to obtain the same type of permit, among them a copy of the holder's residence permit and a document proving the family tie. The page does not describe a family member applying before or together with the owner.",
+      "laws": ["sda-residence-permits", "aliens-law-en"]
+    },
+    {
+      "id": "majority-at-18",
+      "text": "Majority is reached at 18 (Civil Code, art. 12(2)). Art. 12(3) deems someone married before 18 to have legal capacity, but it does not say that person reaches the age of majority, which art. 12(2) defines by age. Marriage itself is allowed from 18 (art. 1108(1)).",
+      "laws": ["civil-code"]
+    },
+    {
+      "id": "age-day-count",
+      "text": "The Civil Code's period rules apply to periods in laws (art. 121). When a period starts with an event during a day, that day is not counted (art. 122), and a period in years ends on the expiry of the matching day of the last month (art. 123(2)). Art. 123(3), written for periods specified by months, ends a period on the month's last day when it lacks the matching day; the texts do not say whether it governs periods in years or a 29 February birthday. Read literally, 18 years end at the end of the 18th birthday; the texts do not settle whether someone is 18 from the start or the end of that day.",
+      "laws": ["civil-code"]
+    },
+    {
+      "id": "spouse-and-marriage",
+      "text": "Art. 15(j) names the owner's spouse without defining marriage. The Civil Code defines marriage as a union of a woman and a man registered with the Agency (art. 1106) and bars marriage between people of the same sex (art. 1120(1)(f)). The texts read do not say how the Agency treats a marriage concluded abroad, between people of the same sex or otherwise.",
+      "laws": ["aliens-law-en", "civil-code"]
+    },
+    {
+      "id": "aliens-only",
+      "text": "Residence permits go only to aliens, persons who are not citizens of Georgia, including stateless persons with that status in Georgia (arts. 2(a) and 14(1)). Someone who holds Georgian citizenship is not an alien whatever other nationality they hold, and a permit becomes invalid when its holder acquires Georgian citizenship (art. 21(6)(b)).",
+      "laws": ["aliens-law-en"]
+    },
+    {
+      "id": "lawful-stay-when-applying",
+      "text": "The permit goes to an alien staying in Georgia on a lawful ground (art. 14(1)). An asylum seeker does not count, no permit goes to someone staying on a deferred obligation to leave, and the short-term permit, unlike the investment, special and 15(i) and (l) permits, is not granted on an ordinary C visa or to someone staying under art. 10(3^1) (art. 14(1^1) to (1^4)). Visa-free stays are 90 days in any 180 (art. 10(2)) or 1 year for nationals on a Government ordinance list (art. 10(3)), which was not read.",
+      "laws": ["aliens-law-en", "aliens-law-ka"]
+    },
+    {
+      "id": "long-term-visa-first",
+      "text": "Art. 6(8) makes a long-term visa a precondition for a residence permit unless the law or a Government ordinance provides otherwise; the English says this Law and an ordinance, but the Georgian says or, and before 2026-09-01 only an ordinance could. The ordinance was not read. The D5 immigration visa goes to the same owners, spouse and children on the same USD 150,000 test (art. 7(3)(d.e)), is decided within 10 calendar days (art. 8(8)) and is issued with 1-year validity (art. 6(8)).",
+      "laws": ["aliens-law-en", "aliens-law-ka", "law-1803-2026"]
+    },
+    {
+      "id": "term-and-permanent-residence",
+      "text": "Art. 16(1)(f) says the permit may be issued and its validity extended each time by 1 year; unlike art. 16(1)(a) to (e), it states no separate first term. Art. 16(3) lets the temporary permits of paragraph 1, the short-term permit among them, be extended up to at most 12 years. Art. 15(g) grants permanent residence after the last 10 years on temporary residence permits, not counting study, medical treatment or work at a diplomatic mission.",
+      "laws": ["aliens-law-en"]
+    },
+    {
+      "id": "residence-card",
+      "text": "A holder must obtain a residence card within 1 month of the permit (art. 20(2)); not applying for one within 6 months is a ground to end the stay (art. 21(1)(k)).",
+      "laws": ["aliens-law-en"]
+    },
+    {
+      "id": "fees-and-review-period",
+      "text": "The service fee is set by Government ordinance (art. 70(2)(b)), which was not read. Until 2026-08-31, art. 17(7) capped the review of an application to obtain or extend a permit at 30 days from full submission of the documents; from 2026-09-01 (Law No. 1803) a Government ordinance sets the period. The Agency's page (guidance) lists the short-term permit at GEL 300 for service on the 30th calendar day, GEL 450 on the 20th and GEL 600 on the 10th, and says its rule to apply 40 calendar days before lawful stay ends does not apply to the short-term permit.",
+      "laws": ["aliens-law-en", "aliens-law-ka", "law-1803-2026", "sda-residence-permits"]
+    },
+    {
+      "id": "appeal-and-reapply",
+      "text": "Until 2026-08-31, art. 17(9) said only that a decision on a residence permit may be appealed under Georgian law. From 2026-09-01 (Law No. 1803, which deletes 17(9)), an Agency decision under the law goes to a court, not a higher administrative body, within 10 calendar days of service (art. 21^2(1)). After a refusal, the alien may reapply on the same basis after at least 1 month (art. 19). No permit is issued while expulsion is under review or decided, even while that decision is appealed (art. 18(4)).",
+      "laws": ["aliens-law-en", "aliens-law-ka", "law-1803-2026"]
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "ge",
+      "number": 1
+    }
+  ]
+}
