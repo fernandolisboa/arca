@@ -3,9 +3,10 @@ import type { Summarizer } from '../../../src/knowledge/summary/summarizer.js';
 
 /**
  * The most model calls one run may make: each case and its one retry, with room for a catalog of
- * twelve versions. Each call's output is capped, so this bounds what a run can cost.
+ * 27 versions beside the three planted cases. Each call's output is capped, so this bounds what a
+ * run can cost.
  */
-export const maxCallsPerRun = 28;
+export const maxCallsPerRun = 60;
 
 export class CallLimitReached extends Error {
   override name = 'CallLimitReached';

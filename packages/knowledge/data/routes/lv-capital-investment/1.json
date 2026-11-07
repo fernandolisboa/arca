@@ -21,7 +21,7 @@
     {
       "id": "immigration-law-family",
       "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
-      "title": "Immigration Law of 2026, arts. 1(8) and 27(3): a family member (the spouse, minor children of the holder or the spouse, persons under curatorship) may get a permit for the holder's term",
+      "title": "Immigration Law of 2026, arts. 1(8) and 27(3): a family member (the spouse, minor children of the principal or the spouse, persons under curatorship) may get a permit for the principal's term",
       "kind": "official",
       "verifiedAt": "2026-11-07"
     },
@@ -111,7 +111,7 @@
   "assessments": [
     {
       "id": "company-size",
-      "title": "EUR 50,000 fits a company with at most 50 employees and turnover or balance sheet of at most EUR 10 million, for at most 10 foreign investors; a larger company needs EUR 100,000",
+      "title": "EUR 50,000: a company with at most 50 employees and turnover or balance sheet of at most EUR 10 million, at most 10 foreign investors; EUR 100,000: over 50 employees and over EUR 10 million",
       "evidence": ["unit.liquidAssets"],
       "sources": ["immigration-law-investment"]
     },
@@ -135,7 +135,7 @@
     },
     {
       "id": "children",
-      "title": "Children under 18 who have not married; a child of 18 or more under the principal's curatorship, which is not recorded: possible",
+      "title": "Children under 18 who have not married; a child of 18 or more under curatorship, which is not recorded: possible",
       "path": ["child"],
       "condition": {
         "op": "any",
