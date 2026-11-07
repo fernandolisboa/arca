@@ -1081,10 +1081,10 @@ export const ptBR = {
       intro:
         '{n, plural, one {Uma versão proposta bate com as fontes oficiais em todos os itens.} other {# versões propostas batem com as fontes oficiais em todos os itens.}}',
       action: '{n, plural, one {Aprovar a versão conferida} other {Aprovar as # conferidas}}',
-      lead: 'A IA conferiu estas versões nas fontes oficiais e não achou diferença. Ao confirmar, todas ficam ativas de uma vez, e cada uma passa a valer a partir da sua data de vigência:',
+      lead: '{n, plural, one {A IA conferiu esta versão nas fontes oficiais e não achou diferença. Ao confirmar, ela fica ativa e passa a valer a partir da sua data de vigência:} other {A IA conferiu estas versões nas fontes oficiais e não achou diferença. Ao confirmar, todas ficam ativas de uma vez, e cada uma passa a valer a partir da sua data de vigência:}}',
       oneByOne:
         'As versões marcadas para revisão e os dados da comparação continuam sendo decididos um por um.',
-      confirm: 'Ativar todas',
+      confirm: '{n, plural, one {Ativar} other {Ativar todas}}',
       waiting: 'Ativando as versões…',
       activated:
         '{n, plural, =0 {Nenhuma versão foi ativada.} one {# versão ativada:} other {# versões ativadas:}}',

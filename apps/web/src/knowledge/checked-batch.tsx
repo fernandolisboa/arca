@@ -92,7 +92,7 @@ export function CheckedBatch({
       </h3>
       {state.step === 'confirming' ? (
         <div className="flex flex-col items-start gap-3">
-          <p>{t('knowledge.checkedBatch.lead')}</p>
+          <p>{t('knowledge.checkedBatch.lead', { n: state.shown.length })}</p>
           <ul className={bulleted}>
             {state.shown.map((version) => (
               <li key={versionKey(version)}>
@@ -107,7 +107,7 @@ export function CheckedBatch({
                 send(state.shown);
               }}
             >
-              {t('knowledge.checkedBatch.confirm')}
+              {t('knowledge.checkedBatch.confirm', { n: state.shown.length })}
             </Button>
             <Button
               variant="secondary"

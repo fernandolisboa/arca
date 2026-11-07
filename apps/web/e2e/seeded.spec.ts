@@ -365,7 +365,7 @@ test('the seed admin approves the checked versions with one tap, and the server 
   const activation = page.waitForRequest((request) =>
     request.url().endsWith('/v1/knowledge/versions/activate-checked'),
   );
-  await batch.getByRole('button', { name: 'Ativar todas' }).click();
+  await batch.getByRole('button', { name: 'Ativar', exact: true }).click();
   await expect(batch.getByRole('status')).toHaveText('Nenhuma versão foi ativada.');
   // Flagged once the scripted report lands, not checked while it runs: never activated either way.
   await expect(batch.getByRole('region', { name: 'Ficaram de fora' })).toContainText(
