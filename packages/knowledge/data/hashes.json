@@ -58,6 +58,10 @@
     {
       "path": "routes/cl-mercosur-temporary/1",
       "sha256": "4d882e2d62ff41346e36df13cabae52023801614754e06735d4ae7fc22fd193a"
+    },
+    {
+      "path": "routes/lv-capital-investment/1",
+      "sha256": "8dde65abb374e58382f9dda8268e828976d923c5b9974e0051250b743409f696"
     }
   ]
 }

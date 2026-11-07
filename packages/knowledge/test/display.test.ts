@@ -11,6 +11,7 @@ describe('the display catalog (spec 0007, R7)', () => {
       'cl-mercosur-temporary',
       'es-non-lucrative',
       'it-descent',
+      'lv-capital-investment',
       'pl-descent',
       'pt-d7',
       'pt-d8',
