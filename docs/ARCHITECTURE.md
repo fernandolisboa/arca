@@ -168,6 +168,7 @@ Every service that touches Arca's data, and what it may receive. A new processor
 | Service | Role | Receives | Location |
 | --- | --- | --- | --- |
 | GitHub (public repository) | Source, docs and knowledge data | Code and public rules ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)); no case data. Actions holds one secret, the evaluation's Anthropic key | Public |
+| World Bank API (`api.worldbank.org`) | Destination-comparison indicators, read by a maintainer's script, never by the app ([ADR-0026](adr/0026-destination-comparison-data.md)) | The public country codes of the route catalog; no case data | World Bank (United States) |
 | Neon (Postgres) | Primary database | All case data, under forced row-level security | São Paulo (`sa-east-1`) |
 | Vercel | Client hosting, API functions, Workflows | All case data in processing; the database owner connection string (used by the build, readable by running functions) and the runtime role passwords ([ADR-0012](adr/0012-automation-first-setup.md)); workflow run payloads holding identifiers only, with zero retention ([ADR-0009](adr/0009-background-jobs-guarantees.md)) | São Paulo (`gru1`) for functions, run payloads and queues; run metadata (names, statuses, timestamps, no personal data) is processed outside Brazil and kept up to one year |
 | Vercel Blob (private store) | Document storage ([ADR-0021](adr/0021-stay-on-vercel-and-neon.md)) | Client-side ciphertext only, under random pathnames | São Paulo |

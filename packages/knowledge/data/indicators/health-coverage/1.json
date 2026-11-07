@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "id": "health-coverage",
+  "number": 1,
+  "title": "UHC service coverage index",
+  "unit": "index from 0 to 100",
+  "valueType": "decimal",
+  "sources": [
+    {
+      "id": "wdi",
+      "url": "https://data.worldbank.org/indicator/SH_UHC_SCI",
+      "title": "World Bank, World Development Indicators: UHC service coverage index (SH_UHC_SCI)",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    }
+  ],
+  "values": [
+    {
+      "country": "AR",
+      "value": "80",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "AU",
+      "value": "89",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "CL",
+      "value": "84",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "CZ",
+      "value": "83",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "DK",
+      "value": "85",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "ES",
+      "value": "84",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "GB",
+      "value": "88",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "GE",
+      "value": "71",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "IE",
+      "value": "82",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "IS",
+      "value": "90",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "IT",
+      "value": "82",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "JP",
+      "value": "86",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "LV",
+      "value": "77",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "PL",
+      "value": "82",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "PT",
+      "value": "83",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "PY",
+      "value": "79",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "US",
+      "value": "88",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "UY",
+      "value": "85",
+      "year": 2023,
+      "source": "wdi"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "worldbank",
+      "number": 1
+    }
+  ]
+}

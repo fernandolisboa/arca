@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "id": "destinations",
+  "number": 1,
+  "title": "Destination comparison",
+  "indicators": [
+    { "id": "price-level", "number": 1 },
+    { "id": "homicides", "number": 1 },
+    { "id": "health-coverage", "number": 1 }
+  ],
+  "criteria": [
+    {
+      "id": "cost-of-living",
+      "title": "Cost of living",
+      "kind": "indicator",
+      "indicator": "price-level",
+      "zeroAt": "130",
+      "tenAt": "40",
+      "defaultWeight": 3
+    },
+    {
+      "id": "safety",
+      "title": "Safety",
+      "kind": "indicator",
+      "indicator": "homicides",
+      "zeroAt": "20",
+      "tenAt": "0.5",
+      "defaultWeight": 4
+    },
+    {
+      "id": "healthcare",
+      "title": "Healthcare",
+      "kind": "indicator",
+      "indicator": "health-coverage",
+      "zeroAt": "50",
+      "tenAt": "90",
+      "defaultWeight": 3
+    },
+    { "id": "climate", "title": "Climate", "kind": "personal", "defaultWeight": 2 },
+    { "id": "language", "title": "Language", "kind": "personal", "defaultWeight": 2 },
+    { "id": "schools", "title": "Schools", "kind": "personal", "defaultWeight": 1 },
+    { "id": "jobs", "title": "Jobs in my field", "kind": "personal", "defaultWeight": 1 },
+    { "id": "taxes", "title": "Taxes", "kind": "personal", "defaultWeight": 1 },
+    {
+      "id": "distance-to-brazil",
+      "title": "Distance to Brazil",
+      "kind": "personal",
+      "defaultWeight": 1
+    },
+    {
+      "id": "brazilian-community",
+      "title": "Brazilian community",
+      "kind": "personal",
+      "defaultWeight": 1
+    }
+  ]
+}

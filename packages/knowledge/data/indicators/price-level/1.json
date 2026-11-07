@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "id": "price-level",
+  "number": 1,
+  "title": "Price level index (Households and NPISHs Final consumption expenditure)",
+  "unit": "index, United States = 100",
+  "valueType": "decimal",
+  "sources": [
+    {
+      "id": "wdi",
+      "url": "https://data.worldbank.org/indicator/PA.NUS.PRVT.PLI",
+      "title": "World Bank, World Development Indicators: Price level index (Households and NPISHs Final consumption expenditure) (PA.NUS.PRVT.PLI)",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    }
+  ],
+  "values": [
+    {
+      "country": "AR",
+      "value": "45.25",
+      "year": 2021,
+      "source": "wdi"
+    },
+    {
+      "country": "AU",
+      "value": "94.79",
+      "year": 2025,
+      "source": "wdi"
+    },
+    {
+      "country": "CL",
+      "value": "51.18",
+      "year": 2025,
+      "source": "wdi"
+    },
+    {
+      "country": "CZ",
+      "value": "66.99",
+      "year": 2025,
+      "source": "wdi"
+    },
+    {
+      "country": "DK",
+      "value": "104.53",
+      "year": 2025,
+      "source": "wdi"
+    },
+    {
+      "country": "ES",
+      "value": "68.69",
+      "year": 2025,
+      "source": "wdi"
+    },
+    {
+      "country": "GB",
+      "value": "92.37",
+      "year": 2025,
+      "source": "wdi"
+    },
+    {
+      "country": "GE",
+      "value": "39.66",
+      "year": 2025,
+      "source": "wdi"
+    },
+    {
+      "country": "IE",
+      "value": "102.15",
+      "year": 2025,
+      "source": "wdi"
+    },
+    {
+      "country": "IS",
+      "value": "129.71",
+      "year": 2025,
+      "source": "wdi"
+    },
+    {
+      "country": "IT",
+      "value": "72.86",
+      "year": 2025,
+      "source": "wdi"
+    },
+    {
+      "country": "JP",
+      "value": "69.05",
+      "year": 2025,
+      "source": "wdi"
+    },
+    {
+      "country": "LV",
+      "value": "62.39",
+      "year": 2025,
+      "source": "wdi"
+    },
+    {
+      "country": "PL",
+      "value": "54.86",
+      "year": 2025,
+      "source": "wdi"
+    },
+    {
+      "country": "PT",
+      "value": "64.94",
+      "year": 2025,
+      "source": "wdi"
+    },
+    {
+      "country": "PY",
+      "value": "38.1",
+      "year": 2025,
+      "source": "wdi"
+    },
+    {
+      "country": "US",
+      "value": "100",
+      "year": 2025,
+      "source": "wdi"
+    },
+    {
+      "country": "UY",
+      "value": "72.48",
+      "year": 2025,
+      "source": "wdi"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "worldbank",
+      "number": 1
+    }
+  ]
+}

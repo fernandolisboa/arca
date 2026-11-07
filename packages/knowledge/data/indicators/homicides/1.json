@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "id": "homicides",
+  "number": 1,
+  "title": "Intentional homicides (per 100,000 people)",
+  "unit": "per 100,000 people",
+  "valueType": "decimal",
+  "sources": [
+    {
+      "id": "wdi",
+      "url": "https://data.worldbank.org/indicator/VC.IHR.PSRC.P5",
+      "title": "World Bank, World Development Indicators: Intentional homicides (per 100,000 people) (VC.IHR.PSRC.P5)",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    }
+  ],
+  "values": [
+    {
+      "country": "AR",
+      "value": "4.49",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "AU",
+      "value": "0.85",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "CL",
+      "value": "6.35",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "CZ",
+      "value": "0.77",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "DK",
+      "value": "0.84",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "ES",
+      "value": "0.69",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "GB",
+      "value": "1.12",
+      "year": 2021,
+      "source": "wdi"
+    },
+    {
+      "country": "GE",
+      "value": "2.03",
+      "year": 2019,
+      "source": "wdi"
+    },
+    {
+      "country": "IE",
+      "value": "0.65",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "IS",
+      "value": "1.29",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "IT",
+      "value": "0.57",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "JP",
+      "value": "0.23",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "LV",
+      "value": "2.5",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "PL",
+      "value": "0.8",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "PT",
+      "value": "0.72",
+      "year": 2022,
+      "source": "wdi"
+    },
+    {
+      "country": "PY",
+      "value": "6.78",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "US",
+      "value": "5.76",
+      "year": 2023,
+      "source": "wdi"
+    },
+    {
+      "country": "UY",
+      "value": "11.25",
+      "year": 2023,
+      "source": "wdi"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "worldbank",
+      "number": 1
+    }
+  ]
+}
