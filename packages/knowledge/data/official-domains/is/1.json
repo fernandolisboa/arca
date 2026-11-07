@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "is",
+  "number": 1,
+  "issuer": "Government of Iceland",
+  "hosts": [
+    {
+      "host": "althingi.is",
+      "source": {
+        "id": "isnic-whois-althingi",
+        "url": "https://www.isnic.is/en/whois/search?type=domain&query=althingi.is",
+        "title": "ISNIC, the .is registry: the holder of althingi.is is Alþingi, the Icelandic Parliament, which publishes the law collection (Lagasafn)",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    },
+    {
+      "host": "island.is",
+      "source": {
+        "id": "isnic-whois-island",
+        "url": "https://www.isnic.is/en/whois/search?type=domain&query=island.is",
+        "title": "ISNIC, the .is registry: the holder of island.is is Fjármála- og efnahagsráðuneyti, the Ministry of Finance, whose state portal hosts the regulation collection and the official gazette",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    },
+    {
+      "host": "stjornartidindi.is",
+      "source": {
+        "id": "isnic-whois-stjornartidindi",
+        "url": "https://www.isnic.is/en/whois/search?type=domain&query=stjornartidindi.is",
+        "title": "ISNIC, the .is registry: the holder of stjornartidindi.is is Dómsmálaráðuneyti, the Ministry of Justice, which publishes the official gazette Stjórnartíðindi",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    }
+  ]
+}
