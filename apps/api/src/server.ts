@@ -451,6 +451,7 @@ const app = createApp({
     evaluation: {
       catalog: routeCatalog,
       routeIds,
+      comparisons: comparisonCatalog,
       states: () => knowledgeDecisions().states(),
       today: () => todayInSaoPaulo(),
       engineCommit: readEngineCommit(),

@@ -276,6 +276,23 @@ describe('totals, coverage and ranking', () => {
     ]);
   });
 
+  it('scores only own criteria while no comparison version is active', () => {
+    const result = compareDestinations({
+      entry: undefined,
+      preferences: preferences({
+        ownCriteria: [{ id: 'own-0000beef', name: 'Perto da praia' }],
+        ratings: { 'own-0000beef': { QM: 3 } },
+      }),
+      countries: ['QM', 'QP'],
+      today,
+    });
+    expect(result.criteria.map(({ id }) => id)).toEqual(['own-0000beef']);
+    expect(summary(result)).toEqual([
+      { country: 'QM', rank: 1, group: 'ranked', total: '5', coverage: 100 },
+      { country: 'QP', rank: null, group: 'few-data', total: null, coverage: 0 },
+    ]);
+  });
+
   it('reads a criterion named like an Object member as an ordinary criterion', () => {
     const result = compareDestinations({
       entry: entry([personalCriterion('constructor', 2)], []),

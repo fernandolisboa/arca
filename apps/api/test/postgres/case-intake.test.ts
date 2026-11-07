@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { parseCalendarDate } from '@arca/domain';
-import { routeCatalog, routeIds } from '@arca/knowledge';
+import { comparisonCatalog, routeCatalog, routeIds } from '@arca/knowledge';
 import type { Logger } from '@arca/telemetry';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { auditLog } from '../../src/audit/log.js';
@@ -24,6 +24,7 @@ beforeAll(async () => {
     evaluation: {
       catalog: routeCatalog,
       routeIds,
+      comparisons: comparisonCatalog,
       states: () => Promise.resolve(new Map()),
       today: () => parseCalendarDate('2026-11-06'),
       engineCommit: 'test',

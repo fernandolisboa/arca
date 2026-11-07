@@ -579,3 +579,45 @@ export const ruleReport = cases.table(
     ...byDefiner('rule_report', ['select', 'update']),
   ],
 );
+
+/**
+ * One member's destination comparison preferences (ADR-0026): weights, ratings, own criteria and
+ * hidden countries, as JSON the domain's schema validates. Only the member reads or writes it;
+ * the names of own criteria are case data, never logged and never sent to a model. Deleted with
+ * the membership, or by erasure.
+ */
+export const comparisonPreferences = cases.table(
+  'comparison_preferences',
+  {
+    accountId: uuid('account_id').primaryKey(),
+    caseId: uuid('case_id').notNull(),
+    preferences: jsonb('preferences').notNull(),
+    updatedAt: updatedAt(),
+  },
+  (table) => [
+    // A member who leaves takes their preferences with them.
+    foreignKey({
+      name: 'comparison_preferences_member_fkey',
+      columns: [table.caseId, table.accountId],
+      foreignColumns: [member.caseId, member.accountId],
+    }).onDelete('cascade'),
+    jsonShape('comparison_preferences_shape', table.preferences, 'object', 65536),
+    pgPolicy('comparison_preferences_select_own', {
+      for: 'select',
+      to: 'app_api',
+      using: isIdentity(table.accountId),
+    }),
+    pgPolicy('comparison_preferences_insert_own', {
+      for: 'insert',
+      to: 'app_api',
+      withCheck: sql`${isIdentity(table.accountId)} AND ${isMember(table.caseId)}`,
+    }),
+    pgPolicy('comparison_preferences_update_own', {
+      for: 'update',
+      to: 'app_api',
+      using: isIdentity(table.accountId),
+      withCheck: isIdentity(table.accountId),
+    }),
+    ...erasedByJobs('comparison_preferences', table.accountId),
+  ],
+);
