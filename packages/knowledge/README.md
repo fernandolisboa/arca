@@ -54,7 +54,7 @@ To refresh the World Bank values, run `pnpm --filter @arca/knowledge comparison:
 
 `guides/<country>/<n>.json`, where `<country>` is the lowercase ISO 3166-1 alpha-2 code, is what a specialist in that country knows, which the independent check reads beside the pages a route version cites ([ADR-0027](../../docs/adr/0027-admins-and-the-checked-batch-activation.md)). It holds:
 
-- `laws`: the laws and regulations that govern the country's routes, each with a `title`, a `url` on a host of an official-domain list the guide pins (`officialDomains`), the date it was read (`verifiedAt`) and how it is usually amended (`amendment`).
+- `laws`: the laws and regulations that govern the country's routes, each with a `title`, a `url` on a host of an official-domain list the guide pins (`officialDomains`), the date it was read (`verifiedAt`) and how it is usually amended (`amendment`). An `amendment` may also say what the page showed when read, such as the latest amending instrument it listed, so a later reader can tell when the page has changed.
 - `pitfalls`: known traps in reading those laws, each naming the `laws` it is about.
 
 Free text (`amendment` and a pitfall's `text`) is plain prose of at most 600 characters, with no angle brackets and no URLs. A guide is never a source and never widens what counts as official: the pages a version cites stay the authority, and the check ranks the guide below them. The build validates guides, hashes each one with the files it pins like other knowledge files, and `@arca/knowledge` exports `countryGuide(code)`, which answers a country's highest guide version and its hash, by the uppercase code.

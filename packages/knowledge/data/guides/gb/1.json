@@ -1,0 +1,305 @@
+{
+  "schemaVersion": 1,
+  "id": "gb",
+  "number": 1,
+  "title": "United Kingdom immigration law: the Immigration Rules and the Immigration Act 1971",
+  "laws": [
+    {
+      "id": "appendix-skilled-worker",
+      "title": "Immigration Rules, Appendix Skilled Worker: validity, the visa brake (SW 3.3), points and salary options A to K, funds, dependants and settlement",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Changed only by statements of changes that the Home Secretary lays before Parliament under section 3(2) of the Immigration Act 1971, several a year (in 2026, HC 1691 on 2026-03-05, HC 259 on 2026-07-09 and HC 584 on 2026-09-03), each with its own implementation dates. GOV.UK republishes the consolidated appendix on each implementation date with a change note naming the statement; this appendix was last updated on 2026-10-08 for HC 584."
+    },
+    {
+      "id": "appendix-skilled-occupations",
+      "title": "Immigration Rules, Appendix Skilled Occupations: eligible occupations by RQF level (Tables 1 to 3a), going rates (Tables 1 to 5) and ineligible occupations (Table 6)",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-occupations",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Changed by statements of changes. The going rates follow the ONS Annual Survey of Hours and Earnings (ASHE); the HC 997 memorandum calls the update in line with the latest ASHE data standard practice, but the rules set no date for it. Last updated on 2025-11-11 for HC 1333; the restructure into RQF 6 and RQF 3 to 5 tables came with HC 997."
+    },
+    {
+      "id": "appendix-immigration-salary-list",
+      "title": "Immigration Rules, Appendix Immigration Salary List: occupations eligible for the lower salary floors of options D and I, by UK nation, with removal dates",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-immigration-salary-list",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Changed by statements of changes. Each entry carries a removal date, and the HC 997 memorandum says the list will be phased out in future changes. Last updated on 2025-11-11 for HC 1333."
+    },
+    {
+      "id": "appendix-english-language",
+      "title": "Immigration Rules, Appendix English Language: exemptions and the ways to meet the English requirement (EL 1.1 to EL 9.1)",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-english-language",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Changed by statements of changes; last updated on 2026-03-26 for HC 1691, which also wrote in wording that applies only to applications made on or after 2027-03-26."
+    },
+    {
+      "id": "appendix-finance",
+      "title": "Immigration Rules, Appendix Finance: how funds are held and shown, currency conversion, accounts and dates of evidence (FIN 1.1 to FIN 8.2)",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-finance",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Changed by statements of changes, rarely; last updated on 2025-04-09 for HC 733. The amounts each route requires are in the route's own appendix, not here."
+    },
+    {
+      "id": "appendix-relationship-with-partner",
+      "title": "Immigration Rules, Appendix Relationship with Partner: age, relationship, validity and genuineness requirements for a dependent partner (RWP 1.1 to RWP 7.1)",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-relationship-with-partner",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Changed by statements of changes; shared by many routes, so a change here moves them all at once. Last updated on 2025-11-11 for HC 1333."
+    },
+    {
+      "id": "appendix-children",
+      "title": "Immigration Rules, Appendix Children: age, independent life, care and relationship requirements for a dependent child (CHI 1.1 to CHI 4.4)",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-children",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Changed by statements of changes; shared by many routes. Last updated on 2025-11-11 for HC 1333."
+    },
+    {
+      "id": "rules-introduction",
+      "title": "Immigration Rules, introduction: Irish citizens (paras. 5C to 5E) and the definitions in para. 6.2, including date of application, child, parent and partner",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-introduction",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Changed by statements of changes, often; last updated on 2026-10-08 for HC 584. Para. 6.2(a) reads references to legislation as that legislation as amended from time to time."
+    },
+    {
+      "id": "immigration-act-1971",
+      "title": "Immigration Act 1971, ss. 1, 2, 3(2) and 3ZA: right of abode, the power to make and lay the Immigration Rules, and Irish citizens",
+      "url": "https://www.legislation.gov.uk/ukpga/1971/77",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by later Acts and, where an Act gives the power, by regulations: for example, words in s. 2(2) were substituted by S.I. 2019/745 and s. 3ZA was inserted by the Immigration and Social Security Co-ordination (EU Withdrawal) Act 2020. legislation.gov.uk shows it with amendments applied and lists the effects it has not yet applied."
+    },
+    {
+      "id": "statement-hc-1691-2026",
+      "title": "Statement of Changes in Immigration Rules HC 1691 (2026-03-05): the visa brake (SW 3.3) and its implementation dates",
+      "url": "https://www.gov.uk/government/publications/statement-of-changes-to-the-immigration-rules-hc-1619-5-march-2026/statement-of-changes-to-the-immigration-rules-hc-1691-5-march-2026-accessible-version",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Laid once before Parliament under section 3(2) of the 1971 Act; later statements change the rules it amended. Its implementation section sets which changes apply to applications already made."
+    },
+    {
+      "id": "memo-hc-1691-2026",
+      "title": "Explanatory memorandum to Statement of Changes HC 1691: the visa brake (paras. 5.1 to 5.4), prison officers (para. 5.31) and B2 for settlement from 2027-03-26 (paras. 5.60 to 5.62)",
+      "url": "https://www.gov.uk/government/publications/statement-of-changes-to-the-immigration-rules-hc-1619-5-march-2026/explanatory-memorandum-to-the-statement-of-changes-in-the-immigration-rules-hc-1691-5-march-2026-accessible",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Published by the Home Office with the statement and not amended afterwards; it explains the policy and dates but is not rule text."
+    },
+    {
+      "id": "statement-hc-1333-2025",
+      "title": "Statement of Changes in Immigration Rules HC 1333 (2025-10-14): implementation of English at B2 for the Skilled Worker route from 2026-01-08",
+      "url": "https://www.gov.uk/government/publications/statement-of-changes-to-the-immigration-rules-hc-1333-14-october-2025/statement-of-changes-to-the-immigration-rules-hc-1333-14-october-2025-accessible-version",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Laid once before Parliament under section 3(2) of the 1971 Act; later statements change the rules it amended."
+    },
+    {
+      "id": "memo-hc-1333-2025",
+      "title": "Explanatory memorandum to Statement of Changes HC 1333, paras. 5.22, 5.23 and 6.4: English at B2 for first grants from 2026-01-08",
+      "url": "https://www.gov.uk/government/publications/statement-of-changes-to-the-immigration-rules-hc-1333-14-october-2025/explanatory-memorandum-to-the-statement-of-changes-to-the-immigration-rules-hc-1333-14-october-2025-accessible",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Published by the Home Office with the statement and not amended afterwards; it explains the policy and dates but is not rule text."
+    },
+    {
+      "id": "statement-hc-997-2025",
+      "title": "Statement of Changes in Immigration Rules HC 997 (2025-07-01): the RQF 6 skill threshold, GBP 41,700 and new going rates from 2025-07-22",
+      "url": "https://www.gov.uk/government/publications/statement-of-changes-to-the-immigration-rules-hc-997-1-july-2025/statement-of-changes-to-the-immigration-rules-hc-997-1-july-2025-accessible-version",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Laid once before Parliament under section 3(2) of the 1971 Act; later statements change the rules it amended."
+    },
+    {
+      "id": "memo-hc-997-2025",
+      "title": "Explanatory memorandum to Statement of Changes HC 997: skill threshold, salary updates from ASHE, the Immigration Salary and Temporary Shortage Lists, dependants and care workers",
+      "url": "https://www.gov.uk/government/publications/statement-of-changes-to-the-immigration-rules-hc-997-1-july-2025/explanatory-memorandum-to-the-statement-of-changes-to-the-immigration-rules-hc-997-1-july-2025-accessible",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Published by the Home Office with the statement and not amended afterwards; it explains the policy and dates but is not rule text."
+    },
+    {
+      "id": "statement-hc-584-2026",
+      "title": "Statement of Changes in Immigration Rules HC 584 (2026-09-03): the latest statement, with changes from 2026-10-08, 2026-10-29, 2026-11-30 and 2026-12-09",
+      "url": "https://www.gov.uk/government/publications/statement-of-changes-to-the-immigration-rules-hc-584-3-september-2026/statement-of-changes-to-the-immigration-rules-hc-584-3-september-2026-accessible",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Laid once before Parliament under section 3(2) of the 1971 Act; later statements change the rules it amended. When read, it was the newest statement in the GOV.UK collection of statements of changes."
+    },
+    {
+      "id": "age-legal-capacity-scotland",
+      "title": "Age of Legal Capacity (Scotland) Act 1991, s. 6: when a person attains an age, and 1 March as the anniversary of a 29 February birth",
+      "url": "https://www.legislation.gov.uk/ukpga/1991/50/section/6",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Primary legislation, changed only by a later Act; on legislation.gov.uk section 6 extends to Scotland only."
+    },
+    {
+      "id": "family-law-reform-age",
+      "title": "Family Law Reform Act 1969, s. 9: a person attains an age at the commencement of the relevant anniversary of their birth",
+      "url": "https://www.legislation.gov.uk/ukpga/1969/46/section/9",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Primary legislation, changed only by a later Act; on legislation.gov.uk section 9 extends to England and Wales only."
+    },
+    {
+      "id": "health-charge-order-2015",
+      "title": "Immigration (Health Charge) Order 2015, art. 4 and Schedules 1 and 2: the Immigration Health Charge per year of leave, and who is exempt",
+      "url": "https://www.legislation.gov.uk/uksi/2015/792",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended ad hoc by Immigration (Health Charge) (Amendment) Orders (2016, 2017, 2018, 2020 and 2024). The current amounts date from S.I. 2024/55, in force from 2024-02-06."
+    },
+    {
+      "id": "fees-regulations-2018",
+      "title": "Immigration and Nationality (Fees) Regulations 2018, Schedule 1: fees for entry clearance, including entries 1.3.6A to 1.3.6D for Skilled Workers",
+      "url": "https://www.legislation.gov.uk/uksi/2018/330/schedule/1",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by amendment regulations, often more than once a year: Schedule 1 was changed by S.I. 2025/363 and 2025/1108, then S.I. 2026/311 and 2026/1008. legislation.gov.uk can lag: when read, Schedule 1 still listed the changes of S.I. 2026/1008, in force from 2026-10-08, as not yet applied."
+    }
+  ],
+  "pitfalls": [
+    {
+      "id": "date-of-application",
+      "text": "For entry clearance the date of application is the date the fee is paid, not the date of decision or of arrival. The applicant's 18 (SW 1.3), the partner's 18 (SW 26.3, RWP 1.1), the child's under 18 (CHI 1.1), the new entrant's under 26 (SW 12.2(a)) and the partner's 2 years (RWP 5.1) are all read on that date. The Certificate of Sponsorship must have been issued no more than 3 months (90 days where it is linked to a Sponsorship Reference Number) before it, and state a start date no more than 3 months after it.",
+      "laws": [
+        "rules-introduction",
+        "appendix-skilled-worker",
+        "appendix-relationship-with-partner",
+        "appendix-children"
+      ]
+    },
+    {
+      "id": "which-rules-apply",
+      "text": "Each statement's implementation section decides, paragraph by paragraph, whether applications already made keep the old rules. Some savings turn on the date of application (HC 1333's B2 English, 2026-01-08; HC 1691's SW 3.3, 2026-03-26), others on the date the Certificate of Sponsorship was issued (HC 997's changes of 2025-07-22; HC 1691's prison officer and pay period changes, 2026-04-08), and some changes carry no saving at all.",
+      "laws": [
+        "statement-hc-997-2025",
+        "statement-hc-1333-2025",
+        "statement-hc-1691-2026",
+        "statement-hc-584-2026"
+      ]
+    },
+    {
+      "id": "salary-thresholds-and-what-counts",
+      "text": "GBP 41,700 and the going rates are fixed figures that statements of changes update in line with ONS ASHE data, without transitional arrangements; the texts set no date for the next update. A Table 1 going rate is the higher of the median ASHE rate and GBP 17.13 an hour, a floor that also holds for the 70, 80 and 90 percent figures, for a 37.5-hour week pro-rated to the stated hours. Salary is guaranteed basic gross pay with employee pension and national insurance; overtime, bonuses, allowances, benefits in kind and employer contributions do not count, and only the first 48 hours a week count.",
+      "laws": [
+        "appendix-skilled-occupations",
+        "appendix-skilled-worker",
+        "statement-hc-997-2025",
+        "memo-hc-997-2025"
+      ]
+    },
+    {
+      "id": "salary-options",
+      "text": "Options A to E are the general ones: GBP 41,700 and the going rate; a relevant PhD, GBP 37,500 and 90 percent; a STEM PhD, GBP 33,400 and 80 percent (both PhD options need a job marked eligible for PhD points); an Immigration Salary List job, GBP 33,400 and the going rate; a new entrant, GBP 33,400 and 70 percent. Options F to J need a Health and Care ASHE salary job, or an application before 2030-04-04 with Skilled Worker permission held continuously since a grant under the rules before 2024-04-04; option K needs a Table 3 or 3a health or education job.",
+      "laws": ["appendix-skilled-worker", "appendix-skilled-occupations"]
+    },
+    {
+      "id": "new-entrant",
+      "text": "Option E (new entrant) is met by being under 26 on the date of application, a listed postdoctoral job, working towards a recognised UK professional qualification, registration or chartered status, or a most recent permission as a Student sponsored for a UK bachelor's, master's, PhD or teaching qualification, or as a Graduate, that expired less than 2 years before (a Student must also have completed the course or be close to it). In every case the grant must not take combined Skilled Worker, Graduate and Tier 2 permission past 4 years in total.",
+      "laws": ["appendix-skilled-worker"]
+    },
+    {
+      "id": "rqf-6-and-temporary-lists",
+      "text": "For certificates issued from 2025-07-22 a new Skilled Worker needs a job in Table 1, 2 or 3 of Appendix Skilled Occupations, skilled to RQF 6 or above. A job in Tables 1a, 2aa or 3a (RQF 3 to 5; SOC 6135 is RQF 2) is open only to someone granted Skilled Worker permission under the earlier rules and holding it continuously since, or if the job is on the Immigration Salary List or the Temporary Shortage List in SW 6.1A; the Table 3a note also excepts nursing auxiliaries (SOC 6131). Both lists are time-limited: see the dated cut-offs.",
+      "laws": [
+        "appendix-skilled-worker",
+        "appendix-skilled-occupations",
+        "appendix-immigration-salary-list",
+        "memo-hc-997-2025"
+      ]
+    },
+    {
+      "id": "dated-cut-offs",
+      "text": "Dates to watch, each a date the Certificate of Sponsorship must be issued before or the application made before: 2026-12-01, SW 14.5 allowances and going rates for former Tier 2 (General) migrants; 2026-12-31, the Temporary Shortage List and nearly every Immigration Salary List entry; 2027-01-01 and 2028-01-01, prison officers switching in the UK and their option F (SW 6.1(g), SW 4.2(d)); 2028-07-22, care workers on the salary list and under SW 6.1B; 2030-04-04, options F to J through pre-2024 permission.",
+      "laws": ["appendix-skilled-worker", "appendix-immigration-salary-list", "memo-hc-1691-2026"]
+    },
+    {
+      "id": "dependants-need-rqf-6-job",
+      "text": "A partner or child can join a worker only if the worker is sponsored for a job in Table 1, 2 or 3 (SW 29.1A, SW 32A.2), unless the worker has held Skilled Worker permission continuously since a grant in a listed lower-skilled code under the rules before 2025-07-22 (care workers only if granted before 2024-03-11), or is a prison officer and the application is to stay. A child is also let in if born in the UK or, applying to stay, if the worker has sole responsibility or shares it with another such worker. New workers on list jobs at RQF 3 to 5 cannot bring dependants.",
+      "laws": ["appendix-skilled-worker", "memo-hc-997-2025"]
+    },
+    {
+      "id": "care-workers-in-country-only",
+      "text": "A job as a care worker or senior care worker (SOC 6135, 6136) can only be sponsored on an application for permission to stay, never entry clearance: the applicant must have worked legally for the sponsor in one of those codes for at least the 3 months ending on the date the certificate was issued and apply before 2028-07-22, or already hold Skilled Worker permission in those codes. The jobs listed in SW 16.1, mostly health, care, education and social work, also need criminal record certificates for entry clearance, for the worker and for the partner (SW 34.1).",
+      "laws": ["appendix-skilled-worker", "memo-hc-997-2025"]
+    },
+    {
+      "id": "afghan-visa-brake",
+      "text": "SW 3.3 bars applying for entry clearance as a Skilled Worker as a national or citizen of Afghanistan, for applications made from 2026-03-26. It does not cover permission to stay, but switching inside the UK is closed to visitors, short-term students, parents of child students, seasonal workers, domestic workers and anyone with permission outside the rules (SW 1.5ZA). The memorandum speaks of main applicants who are Afghan nationals and says the brake is not permanent and will be regularly reviewed; the rule has no end date.",
+      "laws": [
+        "appendix-skilled-worker",
+        "statement-hc-1691-2026",
+        "memo-hc-1691-2026",
+        "immigration-act-1971"
+      ]
+    },
+    {
+      "id": "who-needs-no-leave",
+      "text": "British citizens, and Commonwealth citizens who kept the right of abode under section 2(1)(b) of the 1971 Act, are free to live in and come and go from the UK without leave. An Irish citizen needs no leave under section 3ZA and is outside the rules (para. 5C), unless subject to a deportation order, an exclusion direction or an exclusion under section 8B: then the citizen needs leave and the rules apply. Section 3(2) lets the rules take account of citizenship or nationality.",
+      "laws": ["immigration-act-1971", "rules-introduction"]
+    },
+    {
+      "id": "partner-requirements",
+      "text": "A partner is a spouse, a civil partner, or an unmarried partner after at least 2 years in a relationship similar to marriage or civil partnership before the date of application. Both must be 18 or over on that date, have met in person, be in a genuine and subsisting relationship and not be too closely related to marry; a marriage must be recognised where it took place, earlier relationships must have broken down, and a polygamous marriage counts only if no other partner has or seeks permission.",
+      "laws": ["rules-introduction", "appendix-relationship-with-partner"]
+    },
+    {
+      "id": "who-is-a-parent",
+      "text": "Parent means a biological parent, a legal parent (including the spouse or civil partner of the birth mother at the birth, and a person with a parental order), or an adoptive parent who adopted while habitually resident outside the UK under a decision of a country whose adoption orders the UK recognises, or whose child was granted permission under Appendix Adoption or Part 8. The definition does not include a step-parent, whom the rules list as a close relative, so a partner's child does not qualify as the worker's child on that link alone.",
+      "laws": ["rules-introduction", "appendix-children"]
+    },
+    {
+      "id": "child-requirements",
+      "text": "A child must be under 18 on the date of application, unless last granted permission as the parent's dependent child and that permission is valid or expired at most 14 days before (CHI 1.2). The child must not lead an independent life: no partner, and living with a parent, boarding school or university aside. Both parents must apply at the same time or hold permission, unless the parent with permission is the sole surviving parent or has sole responsibility, the other parent is British or free of restriction and lives or intends to live in the UK, or reasons are serious and compelling.",
+      "laws": ["appendix-children", "rules-introduction"]
+    },
+    {
+      "id": "funds-amounts",
+      "text": "From abroad, or after less than 12 months in the UK, the worker needs GBP 1,270 held for 28 days, and each dependant needs GBP 285 for a partner, GBP 315 for the first child and GBP 200 for each other child, on top of the worker's funds and any other dependant's. A dependant's money may be held collectively by the dependant, the worker or, for a child, the other parent lawfully in the UK or applying at the same time. An A-rated sponsor may instead certify it will maintain and accommodate them to those amounts up to the end of the first month.",
+      "laws": ["appendix-skilled-worker", "appendix-finance"]
+    },
+    {
+      "id": "funds-evidence",
+      "text": "Funds must be in an account that allows immediate access, in the applicant's name or that of a partner applying or holding permission, or a parent for a child. Overdrafts, shares, bonds, credit cards and pensions that cannot be withdrawn at once do not count, nor do funds at an unregulated or unverifiable institution. Foreign currency is converted at the spot rate on the date of application, the latest evidence must be dated within 31 days before it, and the 28 days count back from its closing balance.",
+      "laws": ["appendix-finance"]
+    },
+    {
+      "id": "english-b2",
+      "text": "Applications made from 2026-01-08 need English at B2 in reading, writing, speaking and listening, or B1 if the most recent permission was as a Skilled Worker granted at B1. Met by: nationality of a listed majority English-speaking country (not Ireland); a UK degree; a degree from a listed country or Ireland, or taught in English, confirmed by the qualifications provider (Canada only the latter way); an approved test passed in the 2 years before applying; an English GCSE or A level after UK schooling begun under 18; a regulator's test for doctors, dentists, nurses, midwives or vets.",
+      "laws": [
+        "appendix-english-language",
+        "appendix-skilled-worker",
+        "memo-hc-1333-2025",
+        "statement-hc-1333-2025"
+      ]
+    },
+    {
+      "id": "settlement-english-2027",
+      "text": "Settlement needs 5 continuous years with permission, not as a dependant, on the listed work routes, a sponsor still approved on the date of decision and pay of at least GBP 41,700 and the going rate in the general case. For applications made on or after 2027-03-26 the worker needs English at B2 in speaking and listening (SW 22A.1), and a dependent partner or child moves from B1 to B2 (SW 44.1). Applicants aged 65 or over or under 18 on the date of application, or whose disability prevents it, are exempt (EL 1.1).",
+      "laws": ["appendix-skilled-worker", "appendix-english-language", "memo-hc-1691-2026"]
+    },
+    {
+      "id": "leap-day-and-age",
+      "text": "The rules' definitions and the appendices the Skilled Worker route uses do not say how an age is reckoned. The Family Law Reform Act 1969, s. 9, which extends to England and Wales, makes an age attained at the start of the anniversary of the birth and says nothing of 29 February. The Age of Legal Capacity (Scotland) Act 1991, s. 6(2), which extends to Scotland only, makes the anniversary 1 March in a year that is not a leap year. The rules extend to the whole UK, and the texts do not say whether 1 March applies to applicants outside Scotland.",
+      "laws": [
+        "family-law-reform-age",
+        "age-legal-capacity-scotland",
+        "memo-hc-1691-2026",
+        "rules-introduction"
+      ]
+    },
+    {
+      "id": "texts-and-labels-can-mislead",
+      "text": "GOV.UK updates each appendix on the implementation dates, with a change note naming the statement, and the notes can be wrong: the introduction's note of 2026-03-26 was corrected from HC 1695 to HC 1691. The GOV.UK publication path for HC 1691 reads HC 1619, and its memorandum heading says presented on 2025-03-05 for a statement of 2026-03-05. On legislation.gov.uk an amendment can sit unapplied for weeks: when read, S.I. 2026/1008, in force since 2026-10-08, was still unapplied to the Fees Regulations.",
+      "laws": [
+        "rules-introduction",
+        "statement-hc-1691-2026",
+        "memo-hc-1691-2026",
+        "fees-regulations-2018"
+      ]
+    },
+    {
+      "id": "fees-and-health-charge",
+      "text": "Not in the Immigration Rules: the entry clearance fee for a Skilled Worker is GBP 819 with a certificate of 3 years or less and GBP 1,618 for longer (GBP 628 and GBP 1,235 with an Immigration Salary List certificate), reduced for a Health and Care Visa application; a dependant applying with the worker pays the worker's fee. The Health Charge is GBP 1,035 a year for a person aged 18 or over at the date of the application and GBP 776 under 18, for each year of the maximum leave, half for a final part year of 6 months or less. A Health and Care Visa worker and their dependants are exempt from it.",
+      "laws": ["fees-regulations-2018", "health-charge-order-2015"]
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "gb",
+      "number": 1
+    }
+  ]
+}

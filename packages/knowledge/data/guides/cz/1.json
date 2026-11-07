@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "id": "cz",
+  "number": 1,
+  "title": "Czech Republic: residence of foreigners, the EU Blue Card and family reunification",
+  "laws": [
+    {
+      "id": "aliens-act",
+      "title": "Aliens Act, Act No. 326/1999 Sb.: Blue Card in §§ 42i, 42j, 44, 44a, 46f and 182a(2); family reunification in §§ 42a and 42b; EU citizens in §§ 1, 15a, 87a and 87b; definitions in §§ 178a and 180f",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended only by Acts of Parliament, often and often inside bills on other subjects; e-Sbírka records 71 amending acts. e-Sbírka publishes a consolidated version for each effective date. The one in force when read dates from 2026-06-12 (Act No. 314/2025 Sb.), and no later version is recorded yet. Act No. 152/2025 Sb. (čl. XXV) rewrote the housing part and the income exclusions of the family income test in § 42b(1)(d) from 2025-10-01. The footnotes are not always updated with the text."
+    },
+    {
+      "id": "average-wage-communication-2026",
+      "title": "Ministry of Labour communication No. 44/2026 Sb.: the average gross annual wage for Blue Cards is CZK 590,580 from 2026-05-01 to 2027-04-30",
+      "url": "https://e-sbirka.gov.cz/sb/2026/44",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Not amended but replaced each year by a new communication of the Ministry of Labour and Social Affairs, which § 182a(2) of the Aliens Act has take effect on 1 May for 12 calendar months. Nos. 98/2024, 96/2025 and 44/2026 Sb. were dated 2024-03-28, 2025-03-27 and 2026-03-20, and each took the previous year's average gross monthly wage times 12: CZK 520,092, 553,980 and 590,580. The act sets no publication date. The next communication is due to take effect on 2027-05-01."
+    },
+    {
+      "id": "professional-skill-decree",
+      "title": "Decree No. 205/2023 Sb.: the occupations in which higher professional skills prove high qualification, and the minimum practice",
+      "url": "https://e-sbirka.gov.cz/sb/2023/205",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Issued by the Ministry of Labour and Social Affairs under §§ 42i(2) and 182(3) of the Aliens Act, in force since 2023-07-01 and not amended so far; a change would come as an amending or new decree. It names occupations by the CZ-ISCO classification the Czech Statistical Office publishes."
+    },
+    {
+      "id": "employment-act",
+      "title": "Employment Act, Act No. 435/2004 Sb. (zákon o zaměstnanosti): EU citizens in § 3(2); the central register of vacancies open to Blue Card holders in § 37a",
+      "url": "https://e-sbirka.gov.cz/sb/2004/435",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by Acts of Parliament, several times a year. The version in force when read dates from 2026-07-01. A version from 2027-01-01 (Act No. 360/2025 Sb.) is already recorded on e-Sbírka and does not change §§ 3 or 37a."
+    },
+    {
+      "id": "civil-code",
+      "title": "Civil Code, Act No. 89/2012 Sb.: majority at 18 in § 30 and the end of periods counted in weeks, months or years in § 605",
+      "url": "https://e-sbirka.gov.cz/sb/2012/89",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by Acts of Parliament, several times a year. The version in force when read dates from 2026-01-01; a version from 2027-01-01 is already recorded on e-Sbírka and leaves §§ 30 and 605 as they are."
+    },
+    {
+      "id": "blue-card-directive",
+      "title": "Directive (EU) 2021/1883 on the entry and residence of third-country nationals for highly qualified employment (the EU Blue Card Directive)",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32021L1883",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Changed only by a new act of the European Parliament and the Council; EUR-Lex lists no amending act, only a corrigendum to the Spanish text. Member states had to transpose it by 2023-11-18 (art. 31), and the Aliens Act cites it in note 32. The Commission reports on the Annex I occupation list by 2026-11-18 and every 2 years after, and may propose to amend it (art. 26). The text read is the one published in the Official Journal."
+    },
+    {
+      "id": "subsistence-minimum-act",
+      "title": "Act No. 110/2006 Sb. on the living and subsistence minimum: the amounts and the income that count in the family income test of § 42b(1)(d) of the Aliens Act",
+      "url": "https://e-sbirka.gov.cz/sb/2006/110",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by Acts of Parliament; the government may also raise the amounts by regulation, regularly from 1 January once consumer prices have risen at least 5 percent, or at another date (§ 9), without changing the act's text. Government Regulation No. 361/2025 Sb. set the amounts from 2025-10-01 to 2026-09-30 (No. 57/2026 Sb. moved its end from 2026-04-30). From 2026-10-01 the act's own §§ 2, 3 and 5 carry new amounts, written in by Act No. 152/2025 Sb., čl. XLVIII, whose start Act No. 35/2026 Sb. moved there from 2026-05-01."
+    },
+    {
+      "id": "state-social-assistance-act",
+      "title": "Act No. 151/2025 Sb. on the state social assistance benefit: the normative rent and energy flat rate that § 42b(1)(d) of the Aliens Act adds to the living minimums",
+      "url": "https://e-sbirka.gov.cz/sb/2025/151",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by Acts of Parliament (Nos. 360/2025, 35/2026 and 152/2026 Sb. so far). The normative rent is announced by Ministry of Labour communication for each calendar year (§§ 28, 29). Act No. 152/2026 Sb. repealed communication No. 526/2025 Sb. for 2026 from 2026-10-01 and had the Ministry announce one for 2026-10-01 to 2026-12-31, which is No. 169/2026 Sb.; another follows for 2027. The government may change the energy flat rate by regulation (§ 33)."
+    },
+    {
+      "id": "labour-code",
+      "title": "Labour Code, Act No. 262/2006 Sb., §§ 79 and 80: the statutory weekly working hours and agreed shorter hours",
+      "url": "https://e-sbirka.gov.cz/sb/2006/262",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by Acts of Parliament, several times a year. The version in force when read dates from 2026-08-29; a version from 2027-01-01 is already recorded on e-Sbírka and leaves §§ 79 and 80 as they are."
+    },
+    {
+      "id": "social-assistance-amending-act",
+      "title": "Act No. 152/2025 Sb., amending acts on the adoption of the state social assistance benefit: čl. XXV and XXVI on the Aliens Act and čl. XLVIII on the living minimum amounts",
+      "url": "https://e-sbirka.gov.cz/sb/2025/152",
+      "verifiedAt": "2026-11-07",
+      "amendment": "An amending act: its changes are written into the acts it amends, and its own text changes only by later acts. It took effect on 2025-10-01 with the exceptions in čl. LXIII. Act No. 35/2026 Sb. moved čl. XLVIII points 1 to 3, the new living minimum amounts, to 2026-10-01, and Act No. 93/2026 Sb. cancelled some points of čl. XIII."
+    },
+    {
+      "id": "normative-rent-2026-q4",
+      "title": "Ministry of Labour communication No. 169/2026 Sb.: the normative rent for the state social assistance benefit from 2026-10-01 to 2026-12-31, by district and household size",
+      "url": "https://e-sbirka.gov.cz/sb/2026/169",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Not amended but replaced. Dated 2026-09-22, it gives the amounts under §§ 28 and 29 of Act No. 151/2025 Sb. for the period that čl. IV(1) of Act No. 152/2026 Sb. set once communication No. 526/2025 Sb. for 2026 was repealed from 2026-10-01: 2026-10-01 to 2026-12-31 only. Those sections have the Ministry announce the normative rent for each calendar year, so a communication for 2027 is due."
+    }
+  ],
+  "pitfalls": [
+    {
+      "id": "threshold-yearly-communication",
+      "text": "The pay threshold is 1.5 times the average gross annual wage the Ministry of Labour announces (§ 42j(1)(b)), not a figure in the act; § 182a(2) has each communication take effect on 1 May for 12 calendar months. No. 44/2026 Sb. gives CZK 590,580 for 2026-05-01 to 2027-04-30, so the threshold is CZK 885,870 a year. The act gives no monthly figure; CZK 73,822.50 is that amount divided by 12. CZK 590,580 applies only through 2027-04-30, and no text read states the next figure. The act does not say whether the figure at filing or at decision counts.",
+      "laws": ["aliens-act", "average-wage-communication-2026"]
+    },
+    {
+      "id": "agreed-gross-pay-full-time",
+      "text": "The pay test reads the gross monthly or annual wage agreed in the contract or contract to conclude one (§ 42j(1)(b)); the Directive compares the gross annual salary resulting from it (art. 5(3)). It is not the applicant's current income. The contract must be agreed for at least 6 months at the statutory weekly working hours, which § 79 of the Labour Code sets at 40, or 37.5 or 38.75 for some mining and shift work. That a part-time contract (shorter hours agreed under § 80) does not qualify is a reading of those words; the act does not say so in terms.",
+      "laws": ["aliens-act", "blue-card-directive", "labour-code"]
+    },
+    {
+      "id": "portal-says-one-year",
+      "text": "The Ministry of the Interior's information portal for foreigners says, in its overview of who may apply, that the contract must be for at least 1 year. Its own list of documents, and § 42j(1)(b), say at least 6 months.",
+      "laws": ["aliens-act"]
+    },
+    {
+      "id": "no-lower-threshold",
+      "text": "The Directive lets a state set the threshold between 1.0 and 1.6 times the average gross annual salary, and apply a lower one of at least 80 percent of it for shortage occupations in ISCO major groups 1 and 2 or for recent graduates (art. 5(3) to (5)). The Czech act uses 1.5 times and names no lower threshold, so neither derogation applies in the Czech Republic.",
+      "laws": ["aliens-act", "blue-card-directive"]
+    },
+    {
+      "id": "skills-instead-of-degree-ict-only",
+      "text": "High qualification is a completed university or higher vocational education, if the study lasted at least 3 years, or higher professional skills (§ 42i(2)). Decree No. 205/2023 Sb. accepts skills only for CZ-ISCO 133 (ICT service managers) and 25 (ICT professionals), with at least 3 years of practice in the 7 years immediately before the application, and lists no other occupation. A regulated profession also needs the recognition authority's opinion and proof of the conditions to practise it (§§ 42i(5), 42j(1)(d)).",
+      "laws": ["aliens-act", "professional-skill-decree", "blue-card-directive"]
+    },
+    {
+      "id": "vacancy-register",
+      "text": "The job must be a vacancy in the central register of vacancies open to Blue Card holders (§ 42i(1), (6)(c) and (11)(b)). Listing needs a post requiring high qualification and the employer's consent; local government official posts and civil service posts are excluded; and if the post could be filled otherwise, the Labour Office must first offer it for 30 days, which it may cut to 10 (Employment Act § 37a(3), (4)). A post is not listed, or is removed, if it can be filled otherwise, or for an employer with certain recent fines or in bankruptcy (§ 37a(7)).",
+      "laws": ["aliens-act", "employment-act"]
+    },
+    {
+      "id": "excluded-applicants-and-refusals",
+      "text": "§ 42i(1)(a) to (d) leaves out applicants for a research permit, EU long-term residents of another state staying on a § 42c permit for work or business, people staying under a trade and investment agreement (intra-corporate transferees excepted) and workers posted by an employer from another member state. Asylum and subsidiary protection holders may apply. Where refusal is proportionate, the Ministry refuses if documents are false, if the job is not a listed highly qualified post, or if the employer's main purpose is to bring in third-country nationals, among other grounds (§ 42i(6)).",
+      "laws": ["aliens-act", "blue-card-directive"]
+    },
+    {
+      "id": "eu-eea-swiss-citizens-excluded",
+      "text": "The Directive covers only third-country nationals: anyone who is not an EU citizen (art. 2(1)), except nationals with free movement rights equal to EU citizens' by agreement (art. 3(2)(h)). The Aliens Act applies its EU-citizen rules to EEA and Swiss citizens (§ 1(3)), who may get a registration certificate under § 87a, and the Employment Act puts EU citizens on the same footing as Czech citizens (§ 3(2)). A Czech citizen is not a foreigner under the act at all (§ 1(2)).",
+      "laws": ["aliens-act", "blue-card-directive", "employment-act"]
+    },
+    {
+      "id": "family-of-eu-or-czech-citizens",
+      "text": "A third-country national who is an EU citizen's spouse, a descendant under 21 of the citizen or the spouse, a dependent descendant or ascendant of either, or the parent caring for a citizen under 21, is a family member of an EU citizen, as is one with that tie to a Czech citizen registered for permanent residence (§ 15a(1), (2)). To accompany or follow the citizen for over 3 months, such a person must apply for temporary residence (§ 87b). § 42i does not exclude them from the Blue Card, and Directive art. 17 does not apply to a holder's family members with free movement rights (art. 17(8)).",
+      "laws": ["aliens-act", "blue-card-directive"]
+    },
+    {
+      "id": "family-no-waiting-period",
+      "text": "A Blue Card holder's family members get the family permit with no minimum residence of the holder (§ 42a(7)(d); Directive art. 17(2)). The 15 months of residence and the rule that each spouse must be at least 20 belong only to § 42a(7)(a), for holders of other long-term or permanent permits, and do not apply to a Blue Card holder's family members. In a polygamous marriage, a spouse cannot get the permit if the holder already lives in the country with another wife (§ 42a(8)).",
+      "laws": ["aliens-act", "blue-card-directive"]
+    },
+    {
+      "id": "who-is-family",
+      "text": "§ 42a(1)(a) to (d) names: the spouse; a minor child of the holder or of the spouse; a minor placed in substitute family care with, adopted by or under the guardianship of the holder or the spouse, if cared for in the country; and a lone foreigner older than 65, or one of any age unable to care for themselves for health reasons, joining a parent or child with residence. Minor means under 18 (Civil Code § 30(1)). Siblings and the spouse's parents are not covered through the holder, and an adult child under 65 counts only on the health ground.",
+      "laws": ["aliens-act", "civil-code"]
+    },
+    {
+      "id": "lone-over-65-and-health-ground",
+      "text": "A lone (osamělý) foreigner is one who is single, widowed or divorced (§ 178a(1)). That is a marital status, so on the text an unmarried, divorced or widowed parent is lone even when living with an unregistered partner, and a married parent living apart is not. The act does not say how older than 65 (starší 65 let) is counted. The foreigners' information portal also attaches lone to the health ground and speaks of a financially dependent adult child, but the act asks neither there: anyone of any age unable to care for themselves for health reasons qualifies when joining a parent or child.",
+      "laws": ["aliens-act"]
+    },
+    {
+      "id": "partner-means-same-sex-union",
+      "text": "Where the act says spouse, marriage or the spouse's child, it also means a partner, a partnership and a partner's child, but a partner is only someone in an officially confirmed lasting union of 2 people of the same sex (§ 180f). An unregistered cohabiting partner is not a family member under § 42a, and the text does not cover a registered union of 2 people of different sexes.",
+      "laws": ["aliens-act"]
+    },
+    {
+      "id": "age-and-leap-day",
+      "text": "Majority comes only with the 18th birthday (§ 30(1)); marriage or a court grant before 18 gives full legal capacity (§ 30(2)) but, on the text, not majority, so age alone decides minority. For a 29 February birthday, § 605(2) ends a period counted in years on the last day of February in a common year; no text read applies it to age. The living minimum uses its own rule: the age the person reaches in the calendar month assessed (Act No. 110/2006 Sb., § 3(1)).",
+      "laws": ["civil-code", "subsistence-minimum-act"]
+    },
+    {
+      "id": "family-income-test",
+      "text": "§ 42b(1)(d) needs the family's total monthly income after reuniting to reach the members' living minimums plus the highest normative rent and the energy flat rate of the state social assistance benefit, or the actual justified housing costs shown. Income is what Act No. 110/2006 Sb. counts, net of tax and insurance (§ 7(1)), less one-off income, unemployment and retraining support, the state social assistance benefit, material need assistance and child allowance paid after 2025-09-30 (Act No. 152/2025 Sb., čl. XXVI); § 8(2) to (4) is not applied. It is a family total, not the principal's pay.",
+      "laws": [
+        "aliens-act",
+        "subsistence-minimum-act",
+        "state-social-assistance-act",
+        "social-assistance-amending-act"
+      ]
+    },
+    {
+      "id": "living-minimum-amounts",
+      "text": "From 2026-10-01 the living minimum is CZK 5,500 a month for a person assessed alone; in a household CZK 5,000 for the first person, CZK 3,750 for each further person of 15 or more who is not a dependent child, and CZK 3,490, 3,050 or 2,480 for a dependent child of 15 to 26, 6 to 15 or under 6, adults first, each oldest first (§§ 2, 3, as set by Act No. 152/2025 Sb.). From 2025-10-01 to 2026-09-30 Government Regulation No. 361/2025 Sb. set CZK 4,860 alone, 4,470 for the first person and 4,040 for a further person of 15 or more, so the assessment date decides which apply; not every amount rose.",
+      "laws": ["subsistence-minimum-act", "social-assistance-amending-act"]
+    },
+    {
+      "id": "housing-amounts-move",
+      "text": "Until 2025-09-30, § 42b(1)(d) added the highest normative housing costs of the housing allowance; since then, the state social assistance benefit's amounts. Normative rent is set per calendar year by household size and, from 2026-10-01, by district with Prague as one (before, by size of municipality); No. 169/2026 Sb. covers 2026-10-01 to 2026-12-31. § 42b(1)(d) says highest without naming a district or the table for all-vulnerable households (§ 29): which figure applies is a reading. The energy flat rate runs from CZK 2,300 for a one-person household to CZK 4,300 for 5 or more (§ 32(2)).",
+      "laws": ["aliens-act", "state-social-assistance-act", "normative-rent-2026-q4"]
+    },
+    {
+      "id": "card-validity-and-renewal",
+      "text": "The card is issued for 3 months longer than the contract, at most 3 years (§ 44(7)). A renewal must again include the documents of § 42j(1)(a) to (d), the contract with its pay among them (§ 44a(12)). The card is cancelled after more than 3 months of unemployment in the first 2 years as a holder, or more than 6 months after that, with exceptions (§ 46f(1)(e), (f)). The holder must report the end of employment, and a change of employer or post, within 3 working days (§ 42i(8), (9)).",
+      "laws": ["aliens-act"]
+    },
+    {
+      "id": "where-to-apply",
+      "text": "The application is filed at an embassy (§ 42i(3)); in the country only some may file: asylum and subsidiary protection holders, a holder of another member state's Blue Card within 1 month of entry, and one on a long-stay visa or a long-term permit for another purpose, but not for tolerated stay, with an exception after 3 years. Family members file at an embassy, or in the country on a long-stay visa or a permit for another purpose, with exceptions (§ 42a(5), (6)); one who lived in another member state as family of that state's Blue Card holder must apply within 30 days of entry (§ 42a(2)).",
+      "laws": ["aliens-act"]
+    },
+    {
+      "id": "stale-footnotes-and-bases",
+      "text": "The consolidated act's footnotes lag behind the text: note 9d, on the living minimums in § 42b(1)(d), still names Act No. 463/1991 Sb. and Regulation No. 664/2004 Sb., both repealed from 2007-01-01; the living minimum is now set under Act No. 110/2006 Sb. The 2025 and 2026 wage communications cite § 182(2) of the act as their basis, which is about publishing forms; the provision that has the Ministry announce the wage, with effect from 1 May for 12 calendar months, is § 182a(2), which the 2024 communication cites.",
+      "laws": ["aliens-act", "average-wage-communication-2026", "subsistence-minimum-act"]
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "cz",
+      "number": 1
+    },
+    {
+      "id": "eu",
+      "number": 1
+    }
+  ]
+}
