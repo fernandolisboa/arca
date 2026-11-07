@@ -1,14 +1,16 @@
-import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   type CalendarDate,
   type CountryIndicator,
+  countryCodeSchema,
   countryIndicatorSchema,
-  roundQuotientHalfEven,
+  roundedDecimal,
 } from '@arca/domain';
 import { z } from 'zod';
 import { todayUtc } from './build.ts';
+import { type RawFile, loadData } from './load.ts';
 
 /** The World Bank indicators the destination comparison reads (ADR-0026), by indicator file ID. */
 export const worldBankIndicators = [
@@ -20,6 +22,8 @@ export const worldBankIndicators = [
 export type WorldBankIndicator = (typeof worldBankIndicators)[number];
 
 const officialList = 'worldbank';
+/** The World Development Indicators database, so an archived copy of a code is never read. */
+const worldDevelopmentIndicators = '2';
 
 const rowSchema = z.object({
   indicator: z.object({ id: z.string(), value: z.string().min(1).max(160) }),
@@ -40,19 +44,12 @@ export type WorldBankRow = z.infer<typeof rowSchema>;
  * A value as a decimal string rounded half-even to two places, from the shortest decimal that
  * reads back as the API's number, so no binary floating-point digits leak into the data.
  */
-export function twoPlaces(value: number): string {
+export function roundToHundredths(value: number): string {
   const text = String(value);
   const match = /^(\d+)(?:\.(\d+))?$/.exec(text);
   if (match === null) throw new RangeError(`Not a plain non-negative decimal: ${text}`);
   const [, whole = '0', fraction = ''] = match;
-  const units = BigInt(`${whole}${fraction}`);
-  const hundredths =
-    fraction.length <= 2
-      ? units * 10n ** BigInt(2 - fraction.length)
-      : roundQuotientHalfEven(units, 10n ** BigInt(fraction.length - 2));
-  const integer = hundredths / 100n;
-  const cents = (hundredths % 100n).toString().padStart(2, '0').replace(/0+$/, '');
-  return cents === '' ? String(integer) : `${String(integer)}.${cents}`;
+  return roundedDecimal(BigInt(`${whole}${fraction}`), 10n ** BigInt(fraction.length), 2);
 }
 
 export interface IndicatorInput {
@@ -72,7 +69,9 @@ export interface IndicatorInput {
 export function indicatorFile(input: IndicatorInput): CountryIndicator {
   const { indicator, countries, rows } = input;
   const wanted = new Set(countries);
-  const kept = rows.filter((row) => row.value !== null && wanted.has(row.country.id));
+  const kept = rows.flatMap((row) =>
+    row.value !== null && wanted.has(row.country.id) ? [{ ...row, value: row.value }] : [],
+  );
   const [first] = kept;
   if (first === undefined) throw new RangeError(`${indicator.code} has no values`);
   if (kept.some((row) => row.indicator.id !== indicator.code)) {
@@ -100,7 +99,7 @@ export function indicatorFile(input: IndicatorInput): CountryIndicator {
     values: kept
       .map((row) => ({
         country: row.country.id,
-        value: twoPlaces(row.value ?? 0),
+        value: roundToHundredths(row.value),
         year: Number(row.date),
         source: 'wdi',
       }))
@@ -110,45 +109,29 @@ export function indicatorFile(input: IndicatorInput): CountryIndicator {
   });
 }
 
-async function numbersIn(dir: string): Promise<number[]> {
-  try {
-    return (await readdir(dir)).flatMap((name) => {
-      const match = /^([1-9]\d*)\.json$/.exec(name);
-      return match?.[1] === undefined ? [] : [Number(match[1])];
-    });
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
-    throw error;
-  }
-}
-
-async function latest(dir: string): Promise<number> {
-  const numbers = await numbersIn(dir);
-  if (numbers.length === 0) throw new Error(`No numbered file in ${dir}`);
-  return Math.max(...numbers);
+/** The highest number of a series in the data, or 0 when it has no file yet. */
+function latestNumber(files: readonly RawFile[], kind: RawFile['kind'], id: string): number {
+  return Math.max(0, ...files.filter((f) => f.kind === kind && f.id === id).map((f) => f.number));
 }
 
 /** Every country that has a route version in the data. */
-async function routeCountries(dataDir: string): Promise<string[]> {
-  const routesDir = join(dataDir, 'routes');
-  const countries = new Set<string>();
-  for (const route of await readdir(routesDir)) {
-    for (const number of await numbersIn(join(routesDir, route))) {
-      const file = join(routesDir, route, `${String(number)}.json`);
-      const { country } = z
-        .object({ country: z.string() })
-        .parse(JSON.parse(await readFile(file, 'utf8')));
-      countries.add(country);
-    }
-  }
-  return [...countries].sort();
+function routeCountries(files: readonly RawFile[]): string[] {
+  const countries = files
+    .filter((file) => file.kind === 'routes')
+    .map((file) => z.object({ country: countryCodeSchema }).parse(file.json).country);
+  return [...new Set(countries)].sort();
 }
 
 async function fetchRows(code: string, countries: readonly string[]): Promise<WorldBankRow[]> {
   const url = new URL(
     `https://api.worldbank.org/v2/country/${countries.join(';')}/indicator/${code}`,
   );
-  url.search = new URLSearchParams({ format: 'json', mrnev: '1', per_page: '1000' }).toString();
+  url.search = new URLSearchParams({
+    format: 'json',
+    source: worldDevelopmentIndicators,
+    mrnev: '1',
+    per_page: '1000',
+  }).toString();
   const response = await fetch(url, { redirect: 'error', signal: AbortSignal.timeout(30_000) });
   if (!response.ok) throw new Error(`${code}: HTTP ${String(response.status)}`);
   const [header, rows] = worldBankResponseSchema.parse(await response.json());
@@ -162,13 +145,16 @@ async function fetchRows(code: string, countries: readonly string[]): Promise<Wo
  */
 async function main(): Promise<void> {
   const dataDir = fileURLToPath(new URL('../data', import.meta.url));
-  const countries = await routeCountries(dataDir);
-  const countriesNumber = await latest(join(dataDir, 'countries'));
-  const listNumber = await latest(join(dataDir, 'official-domains', officialList));
+  const { files, issues } = await loadData(dataDir);
+  if (issues.length > 0) throw new Error('The data does not load; run the build first');
+  const countries = routeCountries(files);
+  const countriesNumber = latestNumber(files, 'countries', 'countries');
+  const listNumber = latestNumber(files, 'official-domains', officialList);
+  if (countriesNumber === 0 || listNumber === 0) throw new Error('A pinned file is missing');
   const verifiedAt = todayUtc();
   for (const indicator of worldBankIndicators) {
     const dir = join(dataDir, 'indicators', indicator.id);
-    const number = Math.max(0, ...(await numbersIn(dir))) + 1;
+    const number = latestNumber(files, 'indicators', indicator.id) + 1;
     const rows = await fetchRows(indicator.code, countries);
     const file = indicatorFile({
       indicator,

@@ -3,12 +3,12 @@ import { describe, expect, it } from 'vitest';
 import {
   type WorldBankRow,
   indicatorFile,
-  twoPlaces,
+  roundToHundredths,
   worldBankIndicators,
   worldBankResponseSchema,
 } from '../scripts/fetch-world-bank.ts';
 
-describe('twoPlaces', () => {
+describe('roundToHundredths', () => {
   it.each([
     [80, '80'],
     [100, '100'],
@@ -20,11 +20,11 @@ describe('twoPlaces', () => {
     [45.2, '45.2'],
     [0.001, '0'],
   ])('%d reads %s', (value, expected) => {
-    expect(twoPlaces(value)).toBe(expected);
+    expect(roundToHundredths(value)).toBe(expected);
   });
 
   it.each([1e-7, 1e21, -1])('refuses %d', (value) => {
-    expect(() => twoPlaces(value)).toThrow(RangeError);
+    expect(() => roundToHundredths(value)).toThrow(RangeError);
   });
 });
 

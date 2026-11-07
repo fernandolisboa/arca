@@ -3,7 +3,7 @@ import {
   type Decimal,
   alignAll,
   parseDecimal,
-  roundQuotientHalfEven,
+  roundedDecimal,
   scaledDecimal,
 } from '../money/decimal.js';
 import type { Source } from '../rules/route-version.js';
@@ -104,10 +104,7 @@ function add(left: Ratio, right: Ratio): Ratio {
 }
 
 function oneDecimal(value: Ratio): Decimal {
-  const tenths = roundQuotientHalfEven(value.n * 10n, value.d);
-  const whole = tenths / 10n;
-  const fraction = tenths % 10n;
-  return parseDecimal(fraction === 0n ? String(whole) : `${String(whole)}.${String(fraction)}`);
+  return roundedDecimal(value.n, value.d, 1);
 }
 
 /**
