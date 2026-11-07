@@ -149,18 +149,27 @@ export const retentionSteps = once(async (): Promise<Retention> => {
 
 /**
  * The independent check (ADR-0027) on the app_jobs pool, which reads public rule data and inserts
- * the report: no account, no case data.
+ * the report: no account, no case data. Where no checker is configured nothing starts a check, so
+ * a step that runs anyway stores nothing.
  */
-export const checkSteps = once((): Promise<VersionCheck> =>
-  Promise.resolve(
+export const checkSteps = once((): Promise<VersionCheck> => {
+  const environment = readDeploymentEnvironment();
+  const checker = ruleCheckerFor(environment);
+  if (checker === undefined) {
+    return Promise.resolve(() => {
+      stepLogger.error({ route: 'workflow:check-version', errorCode: 'check_unavailable' });
+      return Promise.resolve();
+    });
+  }
+  return Promise.resolve(
     createVersionCheck({
       subject: createCheckSubjects(),
       guide: countryGuide,
-      fetcher: checkFetcherFor(readDeploymentEnvironment(), readOfflineRuleCheck()),
-      checker: ruleCheckerFor(),
+      fetcher: checkFetcherFor(environment, readOfflineRuleCheck()),
+      checker,
       store: postgresCheckReportStore(jobsDatabase),
       logger: stepLogger,
       now: () => performance.now(),
     }),
-  ),
-);
+  );
+});

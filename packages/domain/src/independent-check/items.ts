@@ -36,8 +36,8 @@ export interface CheckItem {
 export const maxCheckItemKeyLength = 120;
 
 /**
- * Integers 0 and 1 are left out of the values: in a rule they are structure, such as "at least
- * one" or "none", which law text writes in words rather than digits.
+ * 0 and 1 are left out of the values, as integers, duration parts and factors alike: in a rule they
+ * are structure, such as "at least one", "none" or "one year", which law text writes in words.
  */
 const structuralIntegers = new Set([0, 1]);
 
@@ -48,7 +48,9 @@ const numberValue = (decimal: string): CheckValue => ({
 
 function durationValues(duration: Duration): CheckValue[] {
   const { years, months, days } = durationParts(duration);
-  return [years, months, days].filter((part) => part > 0).map((part) => numberValue(String(part)));
+  return [years, months, days]
+    .filter((part) => !structuralIntegers.has(part))
+    .map((part) => numberValue(String(part)));
 }
 
 /** The values an expression states, without repeats, in the order they appear. */
@@ -70,7 +72,7 @@ export function expressionValues(expression: Expression): CheckValue[] {
         values.push({ kind: 'date', value: node.value as CalendarDate });
         break;
       case 'mul':
-        values.push(numberValue(node.by));
+        if (!structuralIntegers.has(Number(node.by))) values.push(numberValue(node.by));
         break;
       case 'since':
         values.push(...durationValues(node.duration as Duration));

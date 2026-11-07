@@ -260,6 +260,12 @@ export {
   verifyAnswers,
 } from './independent-check/answers.js';
 export {
+  type CheckFailure,
+  type FetchFailure,
+  checkFailures,
+  fetchFailures,
+  fetchOutcomes,
+  versionKey,
   type CheckStart,
   type ListedCheckStatus,
   type ReportKey,

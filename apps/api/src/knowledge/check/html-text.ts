@@ -44,11 +44,12 @@ const blocks = new Set([
 ]);
 
 const hiddenStyle =
-  /(?:^|;)\s*(?:display\s*:\s*none|visibility\s*:\s*hidden)\s*(?:!important\s*)?(?:;|$)/i;
+  /(?:^|;)\s*(?:display\s*:\s*none|visibility\s*:\s*hidden|opacity\s*:\s*0*(?:\.0*)?|font-size\s*:\s*0*(?:\.0*)?(?:px|pt|em|rem|%)?|color\s*:\s*transparent)\s*(?:!important\s*)?(?:;|$)/i;
 
 /**
  * Hidden from a reader by the element itself: the `hidden` attribute, `aria-hidden="true"` or an
- * inline style. Text a style sheet hides stays in, and the value check in code covers it.
+ * inline style (no display, no visibility, no opacity, no size or a transparent color). Text a
+ * style sheet hides stays in, and the value check in code covers it.
  */
 function hidden(attrs: readonly { readonly name: string; readonly value: string }[]): boolean {
   return attrs.some(

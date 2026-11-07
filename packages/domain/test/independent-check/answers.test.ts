@@ -87,6 +87,12 @@ describe('verifyAnswers', () => {
       page({ chain: [law, 'https://www.gov.example/amounts/920'] }),
       'echoes_address',
     ],
+    [
+      'a difference from a page whose address states the value',
+      { status: 'differs', quote, url: law },
+      page({ chain: [law, 'https://www.gov.example/amounts/920'] }),
+      'echoes_address',
+    ],
   ])('makes %s could not be checked', (_, answer, read, reason) => {
     expect(verify(answer, read)).toMatchObject({
       status: 'could_not_check',

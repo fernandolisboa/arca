@@ -1,29 +1,14 @@
 import { createHash } from 'node:crypto';
 import { lookup as dnsLookup } from 'node:dns';
-import type { IncomingMessage, RequestOptions } from 'node:http';
-import { request as httpsRequest } from 'node:https';
+import type { IncomingMessage } from 'node:http';
+import { type RequestOptions, request as httpsRequest } from 'node:https';
 import type { LookupFunction } from 'node:net';
 import { Transform, type TransformCallback } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { createBrotliDecompress, createGunzip, createInflate } from 'node:zlib';
-import { hostMatches } from '@arca/domain';
+import { type FetchFailure, hostMatches } from '@arca/domain';
 import { globallyReachable } from './addresses.js';
 import { htmlToText } from './html-text.js';
-
-/** Why a cited page was not read. Fixed codes only: they reach the report and the logs. */
-export const fetchFailures = [
-  'refused_url',
-  'redirect_refused',
-  'too_many_redirects',
-  'address_refused',
-  'lookup_failed',
-  'http_status',
-  'unsupported_type',
-  'too_large',
-  'timeout',
-  'network',
-] as const;
-export type FetchFailure = (typeof fetchFailures)[number];
 
 export type FetchOutcome =
   | {
@@ -55,6 +40,8 @@ export interface FetchLimits {
   readonly maxBytes: number;
   /** Bytes after decompression. */
   readonly maxDecompressedBytes: number;
+  /** Characters of markup handed to the HTML parser; more is cut, as the text would be. */
+  readonly maxMarkupLength: number;
   /** Characters of text kept; a law's section fits. */
   readonly maxTextLength: number;
   /** For the whole fetch, redirects included. */
@@ -65,6 +52,7 @@ export interface FetchLimits {
 export const fetchLimits: FetchLimits = {
   maxBytes: 3_000_000,
   maxDecompressedBytes: 6_000_000,
+  maxMarkupLength: 2_000_000,
   maxTextLength: 60_000,
   timeoutMs: 20_000,
   maxRedirects: 3,
@@ -86,10 +74,18 @@ export interface FetcherSettings {
   /** Whether an address may be connected to; tests of limits and redirects allow loopback. */
   readonly allowAddress?: (address: string) => boolean;
   /** `node:https` in production; a test may pass `node:http` with its local server's port. */
-  readonly request?: typeof httpsRequest;
-  readonly port?: number;
+  readonly transport?: Transport;
   readonly limits?: FetchLimits;
 }
+
+/** How a request leaves: the client, the protocol it speaks and, for a local test server, a port. */
+export interface Transport {
+  readonly request: typeof httpsRequest;
+  readonly protocol: 'https:' | 'http:';
+  readonly port?: number;
+}
+
+const httpsTransport: Transport = { request: httpsRequest, protocol: 'https:' };
 
 class FetchError extends Error {
   override name = 'FetchError';
@@ -191,8 +187,7 @@ function contentType(response: IncomingMessage): { type: string; charset: string
 export function httpsSourceFetcher({
   resolve = systemResolve,
   allowAddress = globallyReachable,
-  request = httpsRequest,
-  port,
+  transport: { request, protocol, port } = httpsTransport,
   limits = fetchLimits,
 }: FetcherSettings = {}): SourceFetcher {
   const lookup = guardedLookup(resolve, allowAddress);
@@ -201,7 +196,7 @@ export function httpsSourceFetcher({
     new Promise<IncomingMessage>((resolveResponse, reject) => {
       const options: RequestOptions = {
         method: 'GET',
-        protocol: request === httpsRequest ? 'https:' : 'http:',
+        protocol,
         hostname: url.hostname,
         ...(port === undefined ? {} : { port }),
         path: `${url.pathname}${url.search}`,
@@ -212,6 +207,10 @@ export function httpsSourceFetcher({
         },
         lookup,
         agent: false,
+        // Explicit, so no environment variable can turn verification off for these pages.
+        rejectUnauthorized: true,
+        servername: url.hostname,
+        minVersion: 'TLSv1.2',
         signal,
       };
       const sent = request(options, resolveResponse);
@@ -221,9 +220,14 @@ export function httpsSourceFetcher({
 
   const body = async (response: IncomingMessage, charset: string): Promise<string> => {
     let text: TextDecoder;
+    let decompress: Transform | undefined;
     try {
       text = new TextDecoder(charset, { fatal: false });
-    } catch {
+      decompress = decoder(response.headers['content-encoding']);
+    } catch (error) {
+      // Nothing will read the body, so the socket closes now rather than at the time limit.
+      response.destroy();
+      if (error instanceof FetchError) throw error;
       throw new FetchError('unsupported_type', response.statusCode ?? null);
     }
     const chunks: Buffer[] = [];
@@ -233,7 +237,6 @@ export function httpsSourceFetcher({
         callback();
       },
     });
-    const decompress = decoder(response.headers['content-encoding']);
     await pipeline([
       response,
       byteLimit(limits.maxBytes),
@@ -277,9 +280,13 @@ export function httpsSourceFetcher({
         throw new FetchError('unsupported_type', status);
       }
       const raw = await body(response, charset);
-      const full = type === 'text/plain' ? raw : htmlToText(raw);
-      const cut = full.length > limits.maxTextLength;
-      return { status, text: cut ? full.slice(0, limits.maxTextLength) : full, cut };
+      const markupCut = type !== 'text/plain' && raw.length > limits.maxMarkupLength;
+      const full =
+        type === 'text/plain'
+          ? raw
+          : htmlToText(markupCut ? raw.slice(0, limits.maxMarkupLength) : raw);
+      const cut = markupCut || full.length > limits.maxTextLength;
+      return { status, text: full.slice(0, limits.maxTextLength), cut };
     }
     throw new FetchError('refused_url');
   };

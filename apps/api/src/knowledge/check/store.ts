@@ -1,8 +1,11 @@
 import {
   type CheckedItem,
   type ReportMeta,
+  type FetchFailure,
+  checkFailures,
   checkReasons,
   checkStatuses,
+  fetchOutcomes,
   maxCheckItemKeyLength,
   maxNoteLength,
   maxQuoteLength,
@@ -12,12 +15,11 @@ import { independentCheck } from '@arca/db/knowledge-schema';
 import { desc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import type { RuleCheckerFailure } from './checker.js';
-import { fetchFailures } from './fetcher.js';
 
 /** One cited URL as the run fetched it (ADR-0027). */
 export interface FetchLogEntry {
   readonly url: string;
-  readonly outcome: 'read' | (typeof fetchFailures)[number];
+  readonly outcome: 'read' | FetchFailure;
   readonly status: number | null;
   readonly durationMs: number;
   /** SHA-256 of the text sent to the model, when the page was read. */
@@ -58,7 +60,7 @@ const storedItem = z.strictObject({
 });
 const storedFetch = z.strictObject({
   url,
-  outcome: z.enum(['read', ...fetchFailures]),
+  outcome: z.enum(fetchOutcomes),
   status: z.int().min(0).max(999).nullable(),
   durationMs: z.int().min(0),
   sha256: z
@@ -67,9 +69,7 @@ const storedFetch = z.strictObject({
     .nullable(),
   cut: z.boolean(),
 });
-const storedFailure = z
-  .enum(['check_unparsable', 'check_timeout', 'check_unavailable', 'check_failed'])
-  .nullable();
+const storedFailure = z.enum(checkFailures).nullable();
 
 /** For tests: kept while the process runs. */
 export function memoryCheckReportStore(now: () => number = Date.now): CheckReportStore & {
@@ -115,7 +115,8 @@ export function memoryCheckReportStore(now: () => number = Date.now): CheckRepor
   };
 }
 
-const listingColumns = {
+/** The columns of a report's listing, for every read that needs no items. */
+export const listingColumns = {
   startId: independentCheck.startId,
   routeId: independentCheck.routeId,
   number: independentCheck.versionNumber,

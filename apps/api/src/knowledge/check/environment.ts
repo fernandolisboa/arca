@@ -17,9 +17,10 @@ export function checkFetcherFor(
 }
 
 /**
- * The checker every deployment uses: the scripted one, whose reports are never clean, until the
- * Claude adapter and its evaluation land (ADR-0027).
+ * The checker a deployment uses: the scripted one, whose reports are never clean, outside
+ * production; none in production until the Claude adapter and its evaluation land (ADR-0027), so
+ * production fetches nothing and the screen says the check is off.
  */
-export function ruleCheckerFor(): RuleCheckerChoice {
-  return scriptedCheckerChoice;
+export function ruleCheckerFor(environment: DeploymentEnvironment): RuleCheckerChoice | undefined {
+  return environment === 'production' ? undefined : scriptedCheckerChoice;
 }

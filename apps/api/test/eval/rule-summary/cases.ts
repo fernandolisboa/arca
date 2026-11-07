@@ -1,7 +1,7 @@
 // The rule summary evaluation's cases (ADR-0025): every bundled version, public rule data, and
 // copies of one carrying instructions in its own text.
 import { parseCalendarDate, type VersionView } from '@arca/domain';
-import { summaryContent } from '../../../src/knowledge/summaries.js';
+import { summaryContent } from '../../../src/knowledge/version-content.js';
 import { createKnowledgeVersions } from '../../../src/knowledge/versions.js';
 
 export interface SummaryCase {

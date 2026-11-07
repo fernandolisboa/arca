@@ -34094,6 +34094,9 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
                     "status": {
                       "type": "string",
                       "enum": [
@@ -34303,6 +34306,7 @@
                     }
                   },
                   "required": [
+                    "enabled",
                     "status",
                     "report"
                   ],

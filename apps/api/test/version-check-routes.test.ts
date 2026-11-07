@@ -1,4 +1,4 @@
-import { VersionCheck } from '@arca/api-contract/routes';
+import { VersionCheck, type VersionView } from '@arca/api-contract/routes';
 import { type CatalogEntry, routeVersionSchema, versionIdentity } from '@arca/domain';
 import type { Logger } from '@arca/telemetry';
 import { describe, expect, it } from 'vitest';
@@ -59,11 +59,17 @@ function setup({
   count = 3,
   states = new Map<number, 'proposed' | 'active' | 'rejected'>(),
   model = 'claude-test',
+  enabled = true,
+  unreadable = false,
 }: {
   admitted?: boolean;
   count?: number;
   states?: Map<number, 'proposed' | 'active' | 'rejected'>;
   model?: string;
+  /** Whether the environment runs the check at all. */
+  enabled?: boolean;
+  /** Every stored report fails the report schema on the way out. */
+  unreadable?: boolean;
 } = {}) {
   let time = 1_000_000_000;
   const now = () => time;
@@ -84,7 +90,8 @@ function setup({
           state: states.get(identity.number) ?? 'proposed',
         })),
       ),
-    view: () => Promise.resolve(undefined),
+    // Only the disabled check's read route asks; it needs to know the version exists.
+    view: (_, number) => Promise.resolve(number <= count ? ({} as VersionView) : undefined),
     comparisons: () => Promise.resolve([]),
     comparisonView: () => Promise.resolve(undefined),
   };
@@ -98,13 +105,14 @@ function setup({
   };
   const reports = memoryCheckReportStore(now);
   const starts = memoryCheckStarts(reports, now);
+  const readReports = unreadable ? { ...reports, find: () => Promise.resolve(undefined) } : reports;
   const runs: RecordedStart[] = [];
   const checks = createVersionChecks({
     versions,
     subject,
     guide: () => undefined,
     checker: { model, promptVersion: 'check-1' },
-    reports,
+    reports: readReports,
     starts,
     run: (start) => {
       runs.push(start);
@@ -130,7 +138,7 @@ function setup({
     authLimits: noLimits,
     knowledge,
     knowledgeVersions: versions,
-    versionChecks: checks,
+    ...(enabled ? { versionChecks: checks } : {}),
   });
   const start = (headers: Record<string, string> = { origin }) =>
     app.request('/v1/knowledge/checks/start', { method: 'POST', headers });
@@ -277,6 +285,7 @@ describe('GET /v1/knowledge/versions/check (ADR-0027)', () => {
     expect(response.status).toBe(200);
     const body = VersionCheck.parse(await response.json());
     expect(body).toEqual({
+      enabled: true,
       status: 'checked',
       report: {
         checkedAt: new Date(1_000_000_000).toISOString(),
@@ -303,12 +312,16 @@ describe('GET /v1/knowledge/versions/check (ADR-0027)', () => {
 
   it('answers no report while a check runs or when only a stale one exists', async () => {
     const { start, read, runs, report, advance } = setup({ count: 1 });
-    expect(await (await read(1)).json()).toEqual({ status: 'none', report: null });
+    expect(await (await read(1)).json()).toEqual({ enabled: true, status: 'none', report: null });
     await start();
-    expect(await (await read(1)).json()).toEqual({ status: 'running', report: null });
+    expect(await (await read(1)).json()).toEqual({
+      enabled: true,
+      status: 'running',
+      report: null,
+    });
     await report(runs[0], { contentHash: 'f'.repeat(64) });
     advance(31 * minute);
-    expect(await (await read(1)).json()).toEqual({ status: 'stale', report: null });
+    expect(await (await read(1)).json()).toEqual({ enabled: true, status: 'stale', report: null });
   });
 
   it('marks a scripted report as such, never clean', async () => {
@@ -319,6 +332,25 @@ describe('GET /v1/knowledge/versions/check (ADR-0027)', () => {
       status: 'flagged',
       report: { scripted: true, clean: false },
     });
+  });
+
+  it('never shows or counts as checked a report the report schema refuses', async () => {
+    const { start, read, runs, report } = setup({ count: 1, unreadable: true });
+    await start();
+    await report(runs[0]);
+    expect(await (await read(1)).json()).toEqual({ enabled: true, status: 'stale', report: null });
+  });
+
+  it('starts nothing and says the check is off where no checker is configured', async () => {
+    const { start, read, list, runs } = setup({ count: 2, enabled: false });
+    expect(await (await start()).json()).toEqual({ started: 0 });
+    expect(runs).toEqual([]);
+    expect(await list()).toEqual([
+      [1, 'none'],
+      [2, 'none'],
+    ]);
+    expect(await (await read(1)).json()).toEqual({ enabled: false, status: 'none', report: null });
+    expect((await read(9)).status).toBe(404);
   });
 
   it('answers 404 for a version the catalog does not hold, and 403 to anyone but an admin', async () => {

@@ -232,6 +232,7 @@ export const independentCheck = knowledge.table(
       'independent_check_fetch_log_array',
       sql`jsonb_typeof(${table.fetchLog}) = 'array' AND jsonb_array_length(${table.fetchLog}) <= 200`,
     ),
+    // 'fake' is `scriptedCheckerModel` in @arca/domain, which a table check cannot import.
     check(
       'independent_check_clean',
       sql`${table.clean} = (${table.model} <> 'fake'

@@ -41,8 +41,9 @@ function listedTone(status: ListedCheck): StatusTone {
   return status === 'flagged' ? 'warn' : 'unknown';
 }
 
-function itemTone(status: ReportItem['status']): StatusTone {
-  if (status === 'matches') return 'ok';
+/** A scripted report's matches are a test's, never a confirmation, so none shows as one. */
+function itemTone(status: ReportItem['status'], scripted: boolean): StatusTone {
+  if (status === 'matches') return scripted ? 'unknown' : 'ok';
   return status === 'differs' ? 'warn' : 'unknown';
 }
 
@@ -90,7 +91,9 @@ export function CheckReport({
             {t('knowledge.retry')}
           </Button>
         </div>
-      ) : check.data === undefined ? null : check.data.report === null ? (
+      ) : check.data === undefined ? null : !check.data.enabled ? (
+        <p>{t('knowledge.check.off')}</p>
+      ) : check.data.report === null ? (
         <div role="status" className="flex flex-col gap-1">
           <p>{t('knowledge.check.status', { status: check.data.status })}</p>
           {view.state === 'proposed' && check.data.status !== 'running' && (
@@ -100,7 +103,9 @@ export function CheckReport({
       ) : (
         <ReportBody report={check.data.report} country={view.country} words={words} />
       )}
-      <p className="text-small text-muted">{t('knowledge.check.footer')}</p>
+      {check.data?.enabled === true && (
+        <p className="text-small text-muted">{t('knowledge.check.footer')}</p>
+      )}
     </section>
   );
 }
@@ -147,7 +152,7 @@ function ReportBody({
         <ul className="flex flex-col gap-3">
           {report.items.map((item) => (
             <li key={item.key}>
-              <ReportItemCard item={item} words={words} />
+              <ReportItemCard item={item} scripted={report.scripted} words={words} />
             </li>
           ))}
         </ul>
@@ -173,9 +178,11 @@ function ReportBody({
 
 function ReportItemCard({
   item,
+  scripted,
   words,
 }: {
   readonly item: ReportItem;
+  readonly scripted: boolean;
   readonly words: KnowledgeWords;
 }) {
   const { t } = words;
@@ -187,7 +194,7 @@ function ReportItemCard({
         </span>
         <span className="font-medium">{item.title}</span>
         <StatusChip
-          tone={itemTone(item.status)}
+          tone={itemTone(item.status, scripted)}
           label={t('knowledge.check.itemStatus', { status: item.status })}
         />
       </div>

@@ -113,6 +113,11 @@ describe('expressionValues', () => {
       ['2', '6'],
     ],
     [
+      'no duration of one year',
+      { op: 'since', date: { op: 'fact', key: 'person.birthDate' }, duration: 'P1Y' },
+      [],
+    ],
+    [
       'a date',
       { op: 'gte', left: fact, right: { op: 'date', value: '2012-01-01' } },
       ['2012-01-01'],

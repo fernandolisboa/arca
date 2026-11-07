@@ -12,7 +12,7 @@ import {
 } from '@arca/domain';
 import { type DisplayCatalog, displayCatalog } from '@arca/knowledge/display';
 import type { CheckSubject } from './check/run.js';
-import { checkContent } from './summaries.js';
+import { checkContent } from './version-content.js';
 
 export interface KnowledgeVersions {
   /** Every bundled version with its state, the newest first (spec 0007, R7). */

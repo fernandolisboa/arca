@@ -3,6 +3,8 @@ import {
   checkItemKinds,
   checkReasons,
   checkStatuses,
+  checkFailures,
+  fetchOutcomes,
   listedCheckStatuses,
   maxCheckItemKeyLength,
   maxNoteLength,
@@ -431,29 +433,13 @@ export const startVersionChecks = {
   response: { description: 'Started', schema: StartVersionChecksResponse },
 } as const satisfies RouteDefinition<typeof StartVersionChecksResponse>;
 
-const fetchOutcomes = [
-  'read',
-  'refused_url',
-  'redirect_refused',
-  'too_many_redirects',
-  'address_refused',
-  'lookup_failed',
-  'http_status',
-  'unsupported_type',
-  'too_large',
-  'timeout',
-  'network',
-] as const;
-
 export const VersionCheckReport = z.strictObject({
   checkedAt: z.iso.datetime(),
   /** Every item matches; never for a scripted report. */
   clean: z.boolean(),
   /** Written by the scripted checker used until a model is configured, never clean. */
   scripted: z.boolean(),
-  failure: z
-    .enum(['check_unparsable', 'check_timeout', 'check_unavailable', 'check_failed'])
-    .nullable(),
+  failure: z.enum(checkFailures).nullable(),
   /** The country guide the check read, or null when the country has none. */
   guide: z
     .strictObject({ country: z.string().regex(/^[A-Z]{2}$/), number: z.int().min(1) })
@@ -486,6 +472,8 @@ export const VersionCheckReport = z.strictObject({
 export type VersionCheckReport = z.infer<typeof VersionCheckReport>;
 
 export const VersionCheck = z.strictObject({
+  /** Whether this environment runs the check; off in production until a model is configured. */
+  enabled: z.boolean(),
   status: z.enum(listedCheckStatuses),
   /** The current report, or null when the version has none (stale, running or never checked). */
   report: VersionCheckReport.nullable(),

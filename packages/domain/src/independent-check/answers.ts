@@ -132,8 +132,7 @@ function verifyOne(
   if (!normalizeWhitespace(page.text).includes(quote)) {
     return unchecked(item.key, 'quote_not_on_page');
   }
-  const values = answer.status === 'matches' ? item.values : [];
-  if (echoesAddress(quote, page.chain, values)) return unchecked(item.key, 'echoes_address');
+  if (echoesAddress(quote, page.chain, item.values)) return unchecked(item.key, 'echoes_address');
   if (answer.status === 'matches') {
     if (page.cut) return unchecked(item.key, 'page_cut');
     if (!item.values.every((value) => statesValue(value, quote))) {

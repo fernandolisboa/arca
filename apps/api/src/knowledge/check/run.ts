@@ -47,6 +47,9 @@ export type VersionCheck = (startId: string, routeId: string, number: number) =>
 
 const route = 'workflow:check-version';
 
+/** The most pages one check reads, as the report table's fetch log allows. */
+const maxFetchedPages = 200;
+
 /**
  * The hosts each cited URL may be read on: those of every item citing it, so a page two items
  * share is held to the narrower of their lists.
@@ -115,11 +118,15 @@ export function createVersionCheck({
     const guide = guideOf(subject.entry.version.country);
     const fetchLog: FetchLogEntry[] = [];
     const pages = new Map<string, ReadPage>();
-    for (const [url, hosts] of hostsByUrl(items, subject)) {
+    // The report's fetch log holds at most this many pages; items citing others go unread.
+    const cited = [...hostsByUrl(items, subject)].slice(0, maxFetchedPages);
+    for (const [url, hosts] of cited) {
       const started = now();
       const read = await fetcher.fetch(url, hosts);
       const durationMs = Math.max(0, Math.round(now() - started));
       if (read.ok) pages.set(url, { url, text: read.text, cut: read.cut, chain: read.chain });
+      // Official sites fail often and the report keeps each failure, so the log line is a code.
+      else logger.info({ route, errorCode: `check_fetch_${read.failure}` });
       fetchLog.push({
         url,
         outcome: read.ok ? 'read' : read.failure,

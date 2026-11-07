@@ -4,12 +4,13 @@ import {
   type ReportKey,
   type ReportMeta,
   startWindow,
+  versionKey,
   versionsToStart,
 } from '@arca/domain';
 import { type Database, lockKey } from '@arca/db';
 import { checkStart, independentCheck } from '@arca/db/knowledge-schema';
 import { gte, sql } from 'drizzle-orm';
-import type { CheckReportStore } from './store.js';
+import { type CheckReportStore, listingColumns } from './store.js';
 
 /** A version the screen asks to check, with what its report would answer for. */
 export interface StartRequest {
@@ -30,9 +31,6 @@ export interface CheckStarts {
   /** The starts of the last 24 hours, for the list's running status. */
   readonly recent: () => Promise<readonly RecordedStart[]>;
 }
-
-const versionKey = ({ routeId, number }: { routeId: string; number: number }) =>
-  `${routeId}/${String(number)}`;
 
 function grouped<T extends { routeId: string; number: number }>(rows: readonly T[]) {
   const groups = new Map<string, T[]>();
@@ -108,21 +106,10 @@ export function postgresCheckStarts(db: () => Database): CheckStarts {
         const starts = (
           await tx.select(startColumns).from(checkStart).where(gte(checkStart.startedAt, since))
         ).map((row) => ({ ...row, startedAt: row.startedAt.getTime() }));
-        const reports = (
-          await tx
-            .select({
-              startId: independentCheck.startId,
-              routeId: independentCheck.routeId,
-              number: independentCheck.versionNumber,
-              contentHash: independentCheck.contentHash,
-              guideHash: independentCheck.guideHash,
-              promptVersion: independentCheck.promptVersion,
-              model: independentCheck.model,
-              checkedAt: independentCheck.checkedAt,
-              failed: independentCheck.failed,
-            })
-            .from(independentCheck)
-        ).map((row) => ({ ...row, checkedAt: row.checkedAt.getTime() }));
+        const reports = (await tx.select(listingColumns).from(independentCheck)).map((row) => ({
+          ...row,
+          checkedAt: row.checkedAt.getTime(),
+        }));
         const picked = due(requests, starts, reports, now);
         if (picked.length === 0) return [];
         // Raw SQL: the role may insert the route and number only, which a builder insert would

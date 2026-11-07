@@ -8,6 +8,7 @@ import {
   listedCheckStatus,
   noGuide,
   scriptedCheckerModel,
+  versionKey,
 } from '@arca/domain';
 import type { CountryGuideEntry } from '@arca/knowledge';
 import type { Logger } from '@arca/telemetry';
@@ -63,7 +64,11 @@ export interface VersionCheckSettings {
   readonly now: () => number;
 }
 
-export const checkStatusKey = (routeId: string, number: number) => `${routeId}/${String(number)}`;
+/** Rows of one route version. */
+const ofVersion =
+  (routeId: string, number: number) =>
+  <T extends { readonly routeId: string; readonly number: number }>(rows: readonly T[]) =>
+    rows.filter((row) => row.routeId === routeId && row.number === number);
 
 export function createVersionChecks({
   versions,
@@ -110,10 +115,9 @@ export function createVersionChecks({
       const time = now();
       return new Map(
         listed.map(({ routeId, number, hash, country }) => {
-          const own = <T extends { routeId: string; number: number }>(rows: readonly T[]) =>
-            rows.filter((row) => row.routeId === routeId && row.number === number);
+          const own = ofVersion(routeId, number);
           return [
-            checkStatusKey(routeId, number),
+            versionKey({ routeId, number }),
             listedCheckStatus(own(stored), own(recent), keyOf(hash, country), time),
           ];
         }),
@@ -125,16 +129,22 @@ export function createVersionChecks({
       if (found === undefined) return { ok: false, reason: 'not_found' };
       const { identity, version } = found.entry;
       const key = keyOf(identity.hash, version.country);
-      const own = (await reports.list()).filter(
-        (row) => row.routeId === routeId && row.number === number,
-      );
-      const recent = (await starts.recent()).filter(
-        (row) => row.routeId === routeId && row.number === number,
-      );
-      const status = listedCheckStatus(own, recent, key, now());
-      const current = currentReport(own, key, now());
-      const stored = current === undefined ? undefined : await reports.find(current.startId);
-      if (stored === undefined) return { ok: true, status, report: null };
+      const own = ofVersion(routeId, number);
+      const ownReports = own(await reports.list());
+      const ownStarts = own(await starts.recent());
+      const time = now();
+      const status = listedCheckStatus(ownReports, ownStarts, key, time);
+      const current = currentReport(ownReports, key, time);
+      if (current === undefined) return { ok: true, status, report: null };
+      const stored = await reports.find(current.startId);
+      if (stored === undefined) {
+        // A row the report schema refuses is never shown, nor counted as checked.
+        logger.error({
+          route: '/v1/knowledge/versions/check',
+          errorCode: 'check_report_unreadable',
+        });
+        return { ok: true, status: 'stale', report: null };
+      }
       const items = new Map(checkItems(found.entry).map((item) => [item.key, item]));
       const countryGuide = guide(version.country);
       return {

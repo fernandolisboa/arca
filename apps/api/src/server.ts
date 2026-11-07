@@ -294,17 +294,21 @@ const knowledgeVersions = createKnowledgeVersions({
   states: () => knowledgeDecisions().states(),
   today: () => todayInSaoPaulo(),
 });
-const versionChecks = createVersionChecks({
-  versions: knowledgeVersions,
-  subject: createCheckSubjects(),
-  guide: countryGuide,
-  checker: ruleCheckerFor(),
-  reports: postgresCheckReportStore(() => connected().db),
-  starts: postgresCheckStarts(() => connected().db),
-  run: startCheck,
-  logger,
-  now: () => Date.now(),
-});
+const ruleChecker = ruleCheckerFor(environment);
+const versionChecks =
+  ruleChecker === undefined
+    ? undefined
+    : createVersionChecks({
+        versions: knowledgeVersions,
+        subject: createCheckSubjects(),
+        guide: countryGuide,
+        checker: ruleChecker,
+        reports: postgresCheckReportStore(() => connected().db),
+        starts: postgresCheckStarts(() => connected().db),
+        run: startCheck,
+        logger,
+        now: () => Date.now(),
+      });
 const summarizer = summarizerFor(environment, readAnthropicApiKey(), readScriptedRuleSummary());
 const ruleSummaries =
   summarizer === undefined
@@ -484,7 +488,7 @@ const app = createApp({
   ...(intake === undefined ? {} : { intake }),
   ruleReports: createRuleReportReview(() => connected().db),
   knowledgeVersions,
-  versionChecks,
+  ...(versionChecks === undefined ? {} : { versionChecks }),
   ...(ruleSummaries === undefined ? {} : { ruleSummaries }),
   accountConfirmed: (accountId) => accounts.isConfirmed(authConnection(), accountId),
   notifications: {

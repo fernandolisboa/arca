@@ -1,4 +1,4 @@
-import type { CheckItemKind } from '@arca/domain';
+import type { CheckFailure, CheckItemKind } from '@arca/domain';
 import type { ModelReply } from '../../ai/model-call.js';
 
 /** What the checker reads: public rule data and official pages, never case data (ADR-0027). */
@@ -33,8 +33,7 @@ export interface RuleCheckerChoice {
   readonly promptVersion: string;
 }
 
-export type RuleCheckerFailure =
-  'check_unparsable' | 'check_timeout' | 'check_unavailable' | 'check_failed';
+export type RuleCheckerFailure = CheckFailure;
 
 export class RuleCheckerError extends Error {
   override name = 'RuleCheckerError';

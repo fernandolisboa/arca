@@ -1,5 +1,6 @@
 import { request as httpRequest, createServer, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo, LookupFunction } from 'node:net';
+import type { RequestOptions, request as httpsRequest } from 'node:https';
 import { gzipSync } from 'node:zlib';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { globallyReachable } from '../src/knowledge/check/addresses.js';
@@ -151,8 +152,7 @@ function fetcher(limits: Partial<FetchLimits> = {}) {
   return httpsSourceFetcher({
     resolve: loopback,
     allowAddress: () => true,
-    request: httpRequest,
-    port,
+    transport: { request: httpRequest, protocol: 'http:', port },
     limits: { ...fetchLimits, maxBytes: 100_000, maxDecompressedBytes: 500_000, ...limits },
   });
 }
@@ -213,6 +213,11 @@ describe('the cited-source fetcher (ADR-0027)', () => {
     expect(read.ok && read.text.length).toBe(1_000);
   });
 
+  it('hands the parser no more markup than its cap, and says the page was cut', async () => {
+    const read = await fetcher({ maxMarkupLength: 20 }).fetch(page('/law'), hosts);
+    expect(read).toMatchObject({ ok: true, cut: true });
+  });
+
   it('gives up after its time limit', async () => {
     expect(await fetcher({ timeoutMs: 200 }).fetch(page('/slow'), hosts)).toMatchObject({
       ok: false,
@@ -220,11 +225,30 @@ describe('the cited-source fetcher (ADR-0027)', () => {
     });
   });
 
+  it('asks for a verified certificate for the host name, whatever the environment says', async () => {
+    let sent: RequestOptions | undefined;
+    const capture = ((options: RequestOptions) => {
+      sent = options;
+      throw new Error('not sent');
+    }) as unknown as typeof httpsRequest;
+    await httpsSourceFetcher({ transport: { request: capture, protocol: 'https:' } }).fetch(
+      'https://www.gov.example/law',
+      hosts,
+    );
+    expect(sent).toMatchObject({
+      protocol: 'https:',
+      hostname: 'www.gov.example',
+      servername: 'www.gov.example',
+      rejectUnauthorized: true,
+      minVersion: 'TLSv1.2',
+      agent: false,
+    });
+  });
+
   it('refuses a host that resolves only to addresses the guard refuses', async () => {
     const guarded = httpsSourceFetcher({
       resolve: loopback,
-      request: httpRequest,
-      port,
+      transport: { request: httpRequest, protocol: 'http:', port },
     });
     expect(await guarded.fetch(page('/law'), hosts)).toMatchObject({
       ok: false,
@@ -235,8 +259,7 @@ describe('the cited-source fetcher (ADR-0027)', () => {
   it('answers lookup_failed when the host does not resolve', async () => {
     const unresolved = httpsSourceFetcher({
       resolve: () => Promise.reject(new Error('ENOTFOUND')),
-      request: httpRequest,
-      port,
+      transport: { request: httpRequest, protocol: 'http:', port },
     });
     expect(await unresolved.fetch(page('/law'), hosts)).toMatchObject({
       ok: false,
@@ -299,6 +322,7 @@ describe('globallyReachable', () => {
     ['2002:7f00:1::', false],
     ['2001:0:4136:e378:8000:63bf:3fff:fdd2', false],
     ['2001:db8::1', false],
+    ['5f00::1', false],
     ['fc00::1', false],
     ['fd00:ec2::254', false],
     ['fe80::1', false],
@@ -321,6 +345,24 @@ describe('htmlToText', () => {
   it('keeps text a style sheet hides, which the value check covers', () => {
     expect(htmlToText('<style>.x{display:none}</style><p class="x">Kept</p>')).toBe('Kept');
   });
+
+  it.each([
+    'opacity:0',
+    'opacity: 0.0',
+    'font-size:0',
+    'font-size: 0px !important',
+    'color:transparent',
+    'display:none',
+  ])('drops an element whose inline style hides it: %s', (style) => {
+    expect(htmlToText(`<p>Shown</p><p style="${style}">Hidden</p>`)).toBe('Shown');
+  });
+
+  it.each(['opacity:0.5', 'font-size:10px', 'color:black'])(
+    'keeps an element styled %s',
+    (style) => {
+      expect(htmlToText(`<p style="${style}">Shown</p>`)).toBe('Shown');
+    },
+  );
 
   it('walks a deeply nested page without overflowing the stack', () => {
     expect(htmlToText(`${'<div>'.repeat(5_000)}deep${'</div>'.repeat(5_000)}`)).toBe('deep');

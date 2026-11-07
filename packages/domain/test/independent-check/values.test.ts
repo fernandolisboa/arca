@@ -42,6 +42,9 @@ describe('numbersIn', () => {
     ['1,80,000', '180000'],
     ['1.800,000.5', '1800000.5'],
     ['12,34,56', '123456'],
+    ['1 800', '800'],
+    ['1 800 000', '800'],
+    ['1 800 000', '0'],
   ])('does not read %s as %s', (text, unexpected) => {
     expect(numbersIn(text).has(unexpected)).toBe(false);
   });
@@ -63,6 +66,15 @@ describe('statesValue', () => {
     [date('2026-03-01'), 'a partir de 1 de março de 2026', true],
     [date('2026-03-01'), 'from 2 March 2026', false],
     [date('2026-03-01'), 'from 1 March 2025', false],
+    [date('2026-03-01'), 'from 1 January 2026, article 3', false],
+    [date('2026-03-01'), '1 de janeiro de 2026', false],
+    [date('2026-03-01'), 'od 1 marca 2026 r.', true],
+    [date('2026-03-01'), 'from 01/03/2026', true],
+    [date('2026-03-01'), 'from 03/01/2026', true],
+    [date('2026-03-01'), 'from 2026.03.01', true],
+    [date('2026-03-01'), 'from 02/03/2026', false],
+    [date('2026-05-01'), 'from 1 de maio de 2026', true],
+    [date('2026-05-01'), 'o maior valor em 1 de junho de 2026', false],
   ])('%o in %s: %s', (value, text, expected) => {
     expect(statesValue(value, text)).toBe(expected);
   });

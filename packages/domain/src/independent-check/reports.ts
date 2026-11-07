@@ -7,6 +7,35 @@ export interface ReportKey {
   readonly model: string;
 }
 
+/** Why a cited page was not read. Fixed codes only: they reach the report and the logs. */
+export const fetchFailures = [
+  'refused_url',
+  'redirect_refused',
+  'too_many_redirects',
+  'address_refused',
+  'lookup_failed',
+  'http_status',
+  'unsupported_type',
+  'too_large',
+  'timeout',
+  'network',
+] as const;
+export type FetchFailure = (typeof fetchFailures)[number];
+export const fetchOutcomes = ['read', ...fetchFailures] as const;
+
+/** Why the checker gave no answer, so every item of the report could not be checked. */
+export const checkFailures = [
+  'check_unparsable',
+  'check_timeout',
+  'check_unavailable',
+  'check_failed',
+] as const;
+export type CheckFailure = (typeof checkFailures)[number];
+
+/** A route version as one string, for maps keyed by version. */
+export const versionKey = ({ routeId, number }: { routeId: string; number: number }): string =>
+  `${routeId}/${String(number)}`;
+
 /** The guide hash a report records when the version's country has no guide. */
 export const noGuide = 'none';
 

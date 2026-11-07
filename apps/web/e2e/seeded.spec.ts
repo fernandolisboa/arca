@@ -69,8 +69,8 @@ test('the seed approver activates a version, reads and closes its reports, then 
     .click();
   await page.getByRole('link', { name: 'Abrir a tela de ativação' }).click();
   const proposed = page.getByRole('region', { name: 'Versões propostas' });
-  // The scripted checker of every environment but production never writes a clean report.
-  await expect(proposed).not.toContainText('Fontes conferidas');
+  // The scripted checker's reports are never clean, so no version reads as checked.
+  await expect(proposed).not.toContainText('Conferida pela IA');
   await proposed
     .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
     .click();
@@ -97,7 +97,7 @@ test('the seed approver activates a version, reads and closes its reports, then 
   await page.setViewportSize({ width: 1280, height: 800 });
   await reviewStep(page, 'Decisão');
   // Opening the screen started the check; running or done, the panel says a model wrote it.
-  await expect(page.getByRole('region', { name: 'Conferência das fontes pela IA' })).toContainText(
+  await expect(page.getByRole('region', { name: 'Verificação independente' })).toContainText(
     'Feita por IA, que pode errar.',
   );
   await page.getByRole('button', { name: 'Resumir regra' }).click();
