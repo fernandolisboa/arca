@@ -4,10 +4,12 @@ import {
   type CheckItem,
   type Pin,
   type ReadPage,
+  asDataText,
   checkItems,
   noGuide,
   reportClean,
   verifyAnswers,
+  withinTextBudget,
 } from '@arca/domain';
 import type { CountryGuideEntry } from '@arca/knowledge';
 import type { Logger } from '@arca/telemetry';
@@ -19,7 +21,7 @@ import {
   RuleCheckerError,
   type RuleCheckerFailure,
 } from './checker.js';
-import { type SourceFetcher, textDigest } from './fetcher.js';
+import { type FetchOutcome, type SourceFetcher, textDigest } from './fetcher.js';
 import type { CheckReportStore, FetchLogEntry } from './store.js';
 
 /** What a check reads about one bundled route version. */
@@ -116,38 +118,52 @@ export function createVersionCheck({
     }
     const items = checkItems(subject.entry);
     const guide = guideOf(subject.entry.version.country);
-    const fetchLog: FetchLogEntry[] = [];
-    const pages = new Map<string, ReadPage>();
+    const reads: { url: string; read: FetchOutcome; durationMs: number }[] = [];
     // The report's fetch log holds at most this many pages; items citing others go unread.
     const cited = [...hostsByUrl(items, subject)].slice(0, maxFetchedPages);
     for (const [url, hosts] of cited) {
       const started = now();
       const read = await fetcher.fetch(url, hosts);
-      const durationMs = Math.max(0, Math.round(now() - started));
-      if (read.ok) pages.set(url, { url, text: read.text, cut: read.cut, chain: read.chain });
       // Official sites fail often and the report keeps each failure, so the log line is a code.
-      else logger.info({ route, errorCode: `check_fetch_${read.failure}` });
-      fetchLog.push({
+      if (!read.ok) logger.info({ route, errorCode: `check_fetch_${read.failure}` });
+      reads.push({ url, read, durationMs: Math.max(0, Math.round(now() - started)) });
+    }
+    // The text sent, framed as data and within the total budget, is what quotes are checked against.
+    const sent = withinTextBudget(
+      reads.flatMap(({ url, read }) =>
+        read.ok ? [{ url, text: asDataText(read.text), cut: read.cut, chain: read.chain }] : [],
+      ),
+    );
+    const pages = new Map<string, ReadPage>(sent.map((page) => [page.url, page]));
+    const fetchLog: FetchLogEntry[] = reads.map(({ url, read, durationMs }) => {
+      const page = pages.get(url);
+      return {
         url,
         outcome: read.ok ? 'read' : read.failure,
         status: read.status,
         durationMs,
-        sha256: read.ok ? textDigest(read.text) : null,
-        cut: read.ok && read.cut,
-      });
-    }
+        sha256: page === undefined ? null : textDigest(page.text),
+        cut: page?.cut ?? false,
+      };
+    });
 
     let answers: readonly CheckAnswer[] = [];
     let failure: RuleCheckerFailure | null = null;
-    try {
-      answers = await ask({
-        version: subject.content,
-        items: items.map(({ key, kind, title, urls }) => ({ key, kind, title, urls })),
-        pages: [...pages.values()].map(({ url, text }) => ({ url, text })),
-        guide: guide === undefined ? null : JSON.stringify(guide.guide),
-      });
-    } catch (error) {
-      failure = error instanceof RuleCheckerError ? error.code : 'check_failed';
+    const pagesToSend = sent
+      .filter(({ text }) => text !== '')
+      .map(({ url, text }) => ({ url, text }));
+    // With no page text nothing could match, so no model call is paid for.
+    if (pagesToSend.length > 0) {
+      try {
+        answers = await ask({
+          version: subject.content,
+          items: items.map(({ key, kind, title, urls }) => ({ key, kind, title, urls })),
+          pages: pagesToSend,
+          guide: guide === undefined ? null : JSON.stringify(guide.guide),
+        });
+      } catch (error) {
+        failure = error instanceof RuleCheckerError ? error.code : 'check_failed';
+      }
     }
 
     const checked = verifyAnswers(items, answers, pages);
@@ -162,7 +178,11 @@ export function createVersionCheck({
       items: checked,
       fetchLog,
       failure,
-      failed: failure !== null || fetchLog.some((entry) => entry.outcome !== 'read'),
+      // A check that sent the model nothing is short-lived, like one whose fetch failed.
+      failed:
+        failure !== null ||
+        pagesToSend.length === 0 ||
+        fetchLog.some((entry) => entry.outcome !== 'read'),
       clean: reportClean(checked, model),
     });
   };

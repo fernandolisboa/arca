@@ -1,3 +1,5 @@
+import { asDataText } from '@arca/domain';
+
 /**
  * The rule summary prompt (ADR-0025). Versioned: a change bumps the version and lands only if the
  * rule summary evaluation passes.
@@ -31,6 +33,5 @@ Rules:
 /** The version, framed as data. */
 export function ruleSummaryMessage(content: string): string {
   // No tag in the rule's text can close the frame: angle brackets become look-alikes, in place.
-  const framed = content.replace(/</gu, '‹').replace(/>/gu, '›');
-  return `<rule_version>\n${framed}\n</rule_version>`;
+  return `<rule_version>\n${asDataText(content)}\n</rule_version>`;
 }

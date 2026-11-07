@@ -41,7 +41,7 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 - Notification service with per-device channels (web push first).
 - Vault encryption format documented and platform-neutral; key recovery designed and tested.
 - Responsive, touch-first layouts from phone to tablet to desktop, safe-area aware, with the themes and navigation layouts of [spec 0006](specs/0006-design-system-and-theming.md).
-- CI running unit tests, and the synthetic AI evaluation run by hand from a manual workflow (the `intake-eval` workflow for free-text intake and the rule summary), never as a required check; the multi-reviewer pass runs in the authoring session ([ADR-0019](adr/0019-reviewers-in-the-authoring-session.md)).
+- CI running unit tests, and the synthetic AI evaluation run by hand from a manual workflow (the `intake-eval` workflow for free-text intake, the rule summary and the independent check), never as a required check; the multi-reviewer pass runs in the authoring session ([ADR-0019](adr/0019-reviewers-in-the-authoring-session.md)).
 
 **Epic: consultancy core** (slices and dependencies in [specs/0002-rules-engine-and-knowledge-base.md](specs/0002-rules-engine-and-knowledge-base.md#the-epic-consultancy-core); the case model and intake wait for the foundations' identity and data-protection work above)
 

@@ -7,6 +7,7 @@ import { createRetention, type Retention } from '../account/retention.js';
 import {
   databaseTargetFrom,
   readAuditDatabasePassword,
+  readAnthropicApiKey,
   readAuthOrigin,
   readAuthSecrets,
   readDeploymentEnvironment,
@@ -154,7 +155,7 @@ export const retentionSteps = once(async (): Promise<Retention> => {
  */
 export const checkSteps = once((): Promise<VersionCheck> => {
   const environment = readDeploymentEnvironment();
-  const checker = ruleCheckerFor(environment);
+  const checker = ruleCheckerFor(environment, readAnthropicApiKey());
   if (checker === undefined) {
     return Promise.resolve(() => {
       stepLogger.error({ route: 'workflow:check-version', errorCode: 'check_not_configured' });

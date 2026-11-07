@@ -4,9 +4,9 @@ import type { RuleChecker, RuleCheckerChoice } from './checker.js';
 export const scriptedCheckerPromptVersion = 'scripted-1';
 
 /**
- * A scripted checker for every environment until the Claude adapter lands, and for tests and the
- * e2e build after: for each item whose first cited page was read it says the page matches,
- * quoting the page's opening words; otherwise it could not check. Nothing leaves the process, and
+ * The scripted checker for every environment but production, and for tests and the e2e build: for
+ * each item whose first cited page was read it says the page matches, quoting the
+ * page's opening words; otherwise it could not check. Nothing leaves the process, and
  * a report it writes is never clean, whatever it says.
  */
 export const scriptedChecker: RuleChecker = {

@@ -1,3 +1,5 @@
+import { asDataText } from '@arca/domain';
+
 /**
  * The intake extraction prompt (spec 0008, R1). Versioned: a change bumps the version, runs the
  * intake evaluation and lands only if precision holds.
@@ -37,7 +39,7 @@ export function intakeMessage(
   const known = knownPlaceholders.length === 0 ? 'none' : knownPlaceholders.join(', ');
   // No tag the member typed can close the frame: angle brackets become look-alikes, in place, so
   // no two tokens join and the dates the API checks keep their places.
-  const framed = maskedText.replace(/</gu, '‹').replace(/>/gu, '›');
+  const framed = asDataText(maskedText);
   const writer = writerPlaceholder === undefined ? '' : `\nThe writer is ${writerPlaceholder}.`;
   return `<description>\n${framed}\n</description>\n\nPlaceholders of people already in the case: ${known}.${writer}`;
 }

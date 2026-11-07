@@ -1,5 +1,6 @@
 // The evaluation's call limit (spec 0008, R5): what bounds a run's cost.
 import type { Extractor } from '../../../src/intake/extractor.js';
+import { callCounter } from '../call-limit.js';
 
 /**
  * The most model calls one evaluation run may make. Each call's output is capped, so this bounds
@@ -7,19 +8,14 @@ import type { Extractor } from '../../../src/intake/extractor.js';
  */
 export const maxCallsPerRun = 60;
 
-export class CallLimitReached extends Error {
-  override name = 'CallLimitReached';
-}
-
-/** The extractor, refusing any call past the limit. */
+/** The extractor, refusing any call past the limit; a call counts before it is sent. */
 export function withCallLimit(extractor: Extractor, limit = maxCallsPerRun) {
-  let calls = 0;
+  const counter = callCounter(limit);
   const limited: Extractor = {
     async draft(masked, known, writer) {
-      if (calls >= limit) throw new CallLimitReached(`The run reached its ${String(limit)} calls`);
-      calls += 1;
+      counter.take();
       return extractor.draft(masked, known, writer);
     },
   };
-  return { extractor: limited, calls: () => calls };
+  return { extractor: limited, calls: counter.calls };
 }
