@@ -3,6 +3,7 @@ import {
   comparisonIdentityKey,
   comparisonSeriesId,
   parseCalendarDate,
+  stateOf,
   type VersionIdentity,
 } from '@arca/domain';
 import { withIdentity } from '@arca/db';
@@ -11,6 +12,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { auditLog } from '../../src/audit/log.js';
 import { createStepUp } from '../../src/auth/step-up.js';
 import { adminRole } from '../../src/knowledge/admins.js';
+import { createCheckedActivation } from '../../src/knowledge/checked-activation.js';
 import {
   createKnowledgeDecisions,
   type KnowledgeDecisions,
@@ -279,6 +281,79 @@ describe('knowledge decisions by a signed-in admin (spec 0007, R7; ADR-0027)', (
     // A rejected version never comes back because its author lost the role.
     expect(await decisions([]).states()).toEqual(new Map([[identityKey, 'rejected']]));
     expect(errors).toEqual([]);
+  });
+});
+
+describe('activating the checked versions together (ADR-0027)', () => {
+  const second: VersionIdentity = { ...version, number: 2, hash: 'b'.repeat(64) };
+  const both = {
+    identities: (routeId: string) => (routeId === version.routeId ? [version, second] : []),
+  };
+  const shown = [version, second].map(({ routeId, number, hash }) => ({ routeId, number, hash }));
+
+  /** Both versions listed with their states now, and both checked. */
+  function batch(service: KnowledgeDecisions) {
+    return createCheckedActivation({
+      listed: async () => {
+        const states = await service.states();
+        return [version, second].map((identity) => ({
+          routeId: identity.routeId,
+          number: identity.number,
+          hash: identity.hash,
+          state: stateOf(identity, states),
+          check: 'checked' as const,
+        }));
+      },
+      decisions: service,
+    });
+  }
+
+  it('stores one session row and one audit event per version, as one decision would', async () => {
+    const service = decisions(undefined, both);
+    const outcome = await batch(service).activate(admin.signedIn, shown);
+    expect(outcome.skipped).toEqual([]);
+    const ids = outcome.activated.map(({ decisionId }) => decisionId);
+    expect(outcome.activated.map(({ number }) => number)).toEqual([1, 2]);
+    expect(await rows()).toMatchObject(
+      [version, second].map(({ number, hash }, index) => ({
+        id: ids[index],
+        kind: 'activate',
+        subject_kind: 'route',
+        version_number: number,
+        content_hash: hash,
+        approver_account_id: admin.signedIn.accountId,
+        proof: 'session',
+        admin_basis: 'owner_list',
+      })),
+    );
+    expect(await decisionEvents(admin.signedIn.accountId)).toEqual(
+      [version, second].map(({ routeId, number }, index) => ({
+        code: 'version_activated',
+        details: { decisionId: ids[index], routeId, number },
+      })),
+    );
+    // Once active, a second tap activates nothing again.
+    expect(await batch(service).activate(admin.signedIn, shown)).toEqual({
+      activated: [],
+      skipped: [
+        { routeId: 'qm-sample', number: 1, reason: 'already_active' },
+        { routeId: 'qm-sample', number: 2, reason: 'already_active' },
+      ],
+    });
+    expect(await rows()).toHaveLength(2);
+  });
+
+  it('stores nothing for an account that is not an admin', async () => {
+    const other = await person(testDatabase);
+    expect(await batch(decisions(undefined, both)).activate(other.signedIn, shown)).toEqual({
+      activated: [],
+      skipped: [
+        { routeId: 'qm-sample', number: 1, reason: 'not_admin' },
+        { routeId: 'qm-sample', number: 2, reason: 'not_admin' },
+      ],
+    });
+    expect(await rows()).toEqual([]);
+    expect(await decisionEvents(other.signedIn.accountId)).toEqual([]);
   });
 });
 

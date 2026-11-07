@@ -52,6 +52,7 @@ import {
   handOverCasePersonAction,
   addCaseMemberAction,
   leaveCaseAction,
+  ActivateCheckedRequest,
   ComparisonVersionView,
   ComparisonViewQuery,
   DecideComparisonRequest,
@@ -112,11 +113,12 @@ import type { NotificationChannels } from './notification/channels.js';
 import { isP256PublicKey } from './notification/push.js';
 import type { CaseFiles, CaseWritten } from './case/case-files.js';
 import type { CaseIntake } from './case/intake.js';
-import { type DecisionKind, type DecisionSubject, versionKey } from '@arca/domain';
+import { type DecisionKind, type DecisionSubject } from '@arca/domain';
 import type { AdminChangeOutcome, AdminGrants } from './knowledge/admin-grants.js';
+import { createCheckedActivation } from './knowledge/checked-activation.js';
 import type { DecisionOutcome, DecisionTarget, KnowledgeDecisions } from './knowledge/decisions.js';
 import type { RuleReportReview } from './knowledge/reports.js';
-import type { VersionChecks } from './knowledge/checks.js';
+import { type VersionChecks, versionsWithChecks } from './knowledge/checks.js';
 import type { RuleSummaries } from './knowledge/summaries.js';
 import type { KnowledgeVersions } from './knowledge/versions.js';
 import type { DocumentRequests } from './vault/documents.js';
@@ -1489,21 +1491,11 @@ export function createApp({
   v1.openapi(openApiRoutes.listKnowledgeVersions, async (c) => {
     const reads = await adminReads(c);
     if ('refused' in reads) return reads.refused;
-    const [versions, comparisons, checks] = await Promise.all([
-      reads.versions.list(),
+    const [versions, comparisons] = await Promise.all([
+      versionsWithChecks(reads.versions, versionChecks),
       reads.versions.comparisons(),
-      versionChecks?.statuses() ?? new Map<string, never>(),
     ]);
-    return c.json(
-      {
-        versions: versions.map((version) => ({
-          ...version,
-          check: checks.get(versionKey(version)) ?? 'none',
-        })),
-        comparisons: [...comparisons],
-      },
-      200,
-    );
+    return c.json({ versions, comparisons: [...comparisons] }, 200);
   });
   v1.openapi(openApiRoutes.startVersionChecks, async (c) => {
     const reads = await adminReads(c);
@@ -1614,6 +1606,24 @@ export function createApp({
     if ('refused' in review) return review.refused;
     const request = CloseRuleReportsRequest.parse(await c.req.json());
     return c.json({ closed: await review.reports.close(request) }, 200);
+  });
+  const checkedActivation =
+    knowledge === undefined || knowledgeVersions === undefined
+      ? undefined
+      : createCheckedActivation({
+          listed: () => versionsWithChecks(knowledgeVersions, versionChecks),
+          decisions: knowledge,
+        });
+  v1.openapi(openApiRoutes.activateCheckedVersions, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || checkedActivation === undefined || admins === undefined) {
+      return unauthorized(c);
+    }
+    // As for one decision: anyone else learns only that they may not decide, and each decision
+    // checks the role again in the transaction that stores it (ADR-0027).
+    if (!(await admins.isAdmin(current.accountId))) return fail(c, 'not_admin', 403);
+    const { versions } = ActivateCheckedRequest.parse(await c.req.json());
+    return c.json(await checkedActivation.activate(current, versions), 200);
   });
   v1.openapi(openApiRoutes.activateVersion, (c) => decideVersion(c, 'activate', 'route'));
   v1.openapi(openApiRoutes.rejectVersion, (c) => decideVersion(c, 'reject', 'route'));

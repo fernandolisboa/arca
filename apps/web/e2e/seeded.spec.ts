@@ -302,6 +302,97 @@ test('the seed admin gives a member of the case the admin role and takes it away
   expect(problems).toEqual([]);
 });
 
+// In this file, after the tests above, for the same reason.
+test('the seed admin approves the checked versions with one tap, and the server skips one its reports do not back (ADR-0027)', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'runs once, on the desktop project');
+  const [account] = await runSeed();
+  if (account === undefined) throw new Error('the seed lists no account');
+  await Promise.all([
+    restartSeededCounter(account.id),
+    clearKnowledgeDecisions(),
+    resetRateLimits(),
+  ]);
+  const problems = watchProblems(page);
+  await virtualAuthenticator(page, seededCredential(account.passkey.label), {
+    userId: account.id,
+  });
+  await withoutAutofill(page);
+  await page.goto(`${databaseServer.origin}/sign-in`);
+  await page.getByRole('button', { name: 'Entrar com chave de acesso' }).click();
+  await expect(page.getByText(`Você entrou como ${account.email}.`)).toBeVisible();
+
+  await page.goto(`${databaseServer.origin}/knowledge`);
+  await expect(page.getByRole('region', { name: 'Versões propostas' })).toBeVisible();
+  // The scripted checker's reports are never clean, so the action is not offered.
+  await expect(page.getByRole('region', { name: 'Conferidas pela IA' })).toHaveCount(0);
+
+  // The screen is told one EB-5 version is checked; the server reads its own reports instead.
+  const { version } = await eb5InEffect(page);
+  await page.route('**/v1/knowledge/versions', async (route) => {
+    const response = await route.fetch();
+    const listed = (await response.json()) as KnowledgeVersions;
+    await route.fulfill({
+      response,
+      json: {
+        ...listed,
+        versions: listed.versions.map((each) =>
+          each.routeId === 'us-eb5' && String(each.number) === version
+            ? { ...each, check: 'checked' }
+            : each,
+        ),
+      },
+    });
+  });
+  await page.reload();
+  const batch = page.getByRole('region', { name: 'Conferidas pela IA' });
+  await batch.getByRole('button', { name: 'Aprovar a versão conferida' }).click();
+  await expect(batch.getByRole('listitem')).toHaveText([
+    new RegExp(`^EB-5 immigrant investor .* versão ${version} · `),
+  ]);
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await horizontalOverflow(page)).toBe(0);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  const { violations } = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
+    .analyze();
+  expect(
+    violations.map(({ id, nodes }) => ({ id, targets: nodes.map((node) => node.target) })),
+  ).toEqual([]);
+
+  const stepUps = watchStepUps(page);
+  const activation = page.waitForRequest((request) =>
+    request.url().endsWith('/v1/knowledge/versions/activate-checked'),
+  );
+  await batch.getByRole('button', { name: 'Ativar', exact: true }).click();
+  await expect(batch.getByRole('status')).toHaveText('Nenhuma versão foi ativada.');
+  // Flagged once the scripted report lands, not checked while it runs: never activated either way.
+  await expect(batch.getByRole('region', { name: 'Ficaram de fora' })).toContainText(
+    new RegExp(
+      `EB-5 immigrant investor .* versão ${version}: (a nova verificação não confirmou todos os itens|a verificação venceu ou ainda não terminou)`,
+    ),
+  );
+  expect((await activation).postDataJSON()).toEqual({
+    versions: [
+      {
+        routeId: 'us-eb5',
+        number: Number(version),
+        hash: expect.stringMatching(/^[0-9a-f]{64}$/) as unknown,
+      },
+    ],
+  });
+  await page.unroute('**/v1/knowledge/versions');
+  await page.reload();
+  await expect(
+    page.getByRole('region', { name: 'Versões propostas' }).getByRole('button', {
+      name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`),
+    }),
+  ).toBeVisible();
+  expect(stepUps).toEqual([]);
+  expect(problems).toEqual([]);
+});
+
 /**
  * Reloads the home page and answers whether the session says admin and the navigation shows
  * Regras; the two must agree.

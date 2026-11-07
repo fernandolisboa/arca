@@ -99,7 +99,7 @@ A quote that fails, a missing item and a match from a page cut by the size cap a
 ### Activating the checked versions together
 
 - A **checked version** is a proposed route version whose current report is clean; a **flagged version** has a current report that is not clean.
-- The activation screen offers one action for every checked version. The client sends the identities (route, number, content hash) it showed; the server activates only those that are still proposed, still checked under a current report and still match the bundled hash, and answers which were activated and which were skipped, with a reason code each. Each activation is its own decision row and audit event.
+- The activation screen offers one action for every checked version. The client sends the identities (route, number, content hash) it showed; the server activates only those that are still proposed, still checked under a current report and still match the bundled hash, and answers which were activated and which were skipped, with a reason code each. Each activation is its own decision row and audit event. The statuses are read once, before the decisions and outside their transactions, so a report written while a batch runs is not seen; one decision accepts the same window for a rejection stored after it read the states (#331).
 - This reverses ADR-0014's rule that a report never enables or shortens the activate action, for checked versions only. Flagged versions, versions with no current report and every comparison version are decided one at a time, with no step-up either.
 
 ### Evaluation

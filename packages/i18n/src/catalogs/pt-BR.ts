@@ -1075,6 +1075,23 @@ export const ptBR = {
       footer:
         'Feita por IA, que pode errar. O Arca confere no código se cada trecho está mesmo na página citada, mas quem decide é você. A verificação não cobre o que não tem fonte própria, como datas de vigência, moeda e datas de referência.',
     },
+    /** Activating every version the independent check found clean, with one tap (ADR-0027). */
+    checkedBatch: {
+      title: 'Conferidas pela IA',
+      intro:
+        '{n, plural, one {Uma versão proposta bate com as fontes oficiais em todos os itens.} other {# versões propostas batem com as fontes oficiais em todos os itens.}}',
+      action: '{n, plural, one {Aprovar a versão conferida} other {Aprovar as # conferidas}}',
+      lead: '{n, plural, one {A IA conferiu esta versão nas fontes oficiais e não achou diferença. Ao confirmar, ela fica ativa e passa a valer a partir da sua data de vigência:} other {A IA conferiu estas versões nas fontes oficiais e não achou diferença. Ao confirmar, todas ficam ativas de uma vez, e cada uma passa a valer a partir da sua data de vigência:}}',
+      oneByOne:
+        'As versões marcadas para revisão e os dados da comparação continuam sendo decididos um por um.',
+      confirm: '{n, plural, one {Ativar} other {Ativar todas}}',
+      waiting: 'Ativando as versões…',
+      activated:
+        '{n, plural, =0 {Nenhuma versão foi ativada.} one {# versão ativada:} other {# versões ativadas:}}',
+      skippedTitle: 'Ficaram de fora',
+      skipped:
+        '{version}: {reason, select, not_found {o app não tem mais esta versão.} changed {a versão mudou depois que você abriu a tela.} rejected {ela já tinha sido recusada.} already_active {ela já estava ativa.} flagged {a nova verificação não confirmou todos os itens. Abra a versão e decida.} not_admin {você não é mais administrador.} other {a verificação venceu ou ainda não terminou. Abra a versão e decida.}}',
+    },
     activate: 'Ativar esta versão',
     reject: 'Recusar esta versão',
     activateLead:
