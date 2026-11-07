@@ -83,7 +83,7 @@ Initial suggestions, pre-researched because they offer something concrete to Bra
 | Uruguay, Paraguay, Argentina, Chile | Residence under the Mercosur Residence Agreement | Overview |
 | Mexico | Temporary residence by economic solvency | To research |
 | Italy | Citizenship by descent for children and grandchildren, under Law 74/2025 | Via ancestry |
-| Japan | Long-term resident visa for descendants up to the third generation | Via ancestry |
+| Japan | Long-term resident visa for descendants up to the third generation; the sansei status is in the knowledge base | Via ancestry |
 | Germany | Opportunity Card; Blue Card; naturalization in 5 years | To research |
 | Canada | Express Entry points system | Overview |
 | Ireland | English-speaking EU country with a strong tech market | To research |
