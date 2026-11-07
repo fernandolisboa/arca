@@ -102,16 +102,28 @@ test('the seed admin activates a version, reads and closes its reports, then rej
   await expect(page.getByRole('region', { name: 'Verificação independente' })).toContainText(
     'Feita por IA, que pode errar.',
   );
+  // A report short of clean stays open, so nothing flagged hides behind its title.
+  await expect(
+    page
+      .getByRole('region', { name: 'Verificação independente' })
+      .getByRole('button', { name: 'Verificação independente' }),
+  ).toHaveAttribute('aria-expanded', 'true');
   await page.getByRole('button', { name: 'Resumir regra' }).click();
   const summary = page.getByRole('region', { name: 'Resumo feito pela IA' });
-  await expect(summary).toContainText('Resumo de teste de EB-5');
+  await expect(summary.getByText('Resumo de teste de EB-5')).toBeVisible();
   await expect(summary).toContainText('A IA pode errar.');
   // The server keeps the summary, so it is still there after a reload, with no button to ask again.
+  // A stored summary starts folded under its title, and the title opens it.
   await page.reload();
   await proposed
     .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
     .click();
-  await expect(summary).toContainText('Resumo de teste de EB-5');
+  const summaryToggle = summary.getByRole('button', { name: 'Resumo feito pela IA' });
+  await expect(summaryToggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(summary.getByText('Resumo de teste de EB-5')).toBeHidden();
+  await summaryToggle.click();
+  await expect(summaryToggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(summary.getByText('Resumo de teste de EB-5')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Resumir regra' })).toHaveCount(0);
   await expect(page.getByRole('list', { name: 'Etiquetas' })).toContainText('investment');
   await reviewStep(page, 'Decisão');

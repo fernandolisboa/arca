@@ -3,6 +3,7 @@ export { Bar, type BarProps } from './patterns/bar.js';
 export { Button, buttonClass, iconButtonClass, type ButtonProps } from './button.js';
 export { ChoiceGroup, type Choice, type ChoiceGroupProps } from './choice-group.js';
 export { CoachMark, type CoachMarkLabels, type CoachMarkProps } from './patterns/coach-mark.js';
+export { Disclosure, type DisclosureProps } from './patterns/disclosure.js';
 export type { DockEdge, NavItem, ShellLayout, ShellLink, ShellLinkProps } from './shell/nav.js';
 export { formatCalendarDate, SourceLine, type SourceLineProps } from './patterns/source-line.js';
 export { Icon, iconNames, type IconName, type IconProps } from './icon.js';
