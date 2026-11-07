@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "jp",
+  "number": 1,
+  "issuer": "Government of Japan",
+  "hosts": [
+    {
+      "host": "laws.e-gov.go.jp",
+      "source": {
+        "id": "jprs-go-jp",
+        "url": "https://jprs.jp/doc/rule/rule.html",
+        "title": "JPRS .jp registry rules, annex 1, 1.3: GO.JP names only for government agencies, ministry research institutes, incorporated administrative agencies and special corporations",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    },
+    {
+      "host": "moj.go.jp",
+      "source": {
+        "id": "jprs-go-jp",
+        "url": "https://jprs.jp/doc/rule/rule.html",
+        "title": "JPRS .jp registry rules, annex 1, 1.3: GO.JP names only for government agencies, ministry research institutes, incorporated administrative agencies and special corporations",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    }
+  ]
+}
