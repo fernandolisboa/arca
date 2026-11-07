@@ -74,7 +74,7 @@ describe('the Claude rule checker (ADR-0027)', () => {
     expect(bodies).toHaveLength(1);
     const [body] = bodies;
     expect(body?.['model']).toBe('claude-sonnet-5-5');
-    expect(body?.['max_tokens']).toBe(16_000);
+    expect(body?.['max_tokens']).toBe(12_000);
     expect(body?.['tools']).toBeUndefined();
     expect(body?.['output_config']).toMatchObject({
       effort: 'medium',

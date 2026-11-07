@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ReadPage } from '../../src/independent-check/answers.js';
-import { asDataText, withinTextBudget } from '../../src/independent-check/sent-pages.js';
+import { withinTextBudget } from '../../src/independent-check/sent-pages.js';
 
 const page = (url: string, length: number, cut = false): ReadPage => ({
   url,
@@ -56,11 +56,5 @@ describe('the total page text one check sends (ADR-0027)', () => {
     const [sent] = withinTextBudget([emoji], 3);
     expect(sent?.text).toBe('ab');
     expect(sent?.cut).toBe(true);
-  });
-});
-
-describe('text framed as data (ADR-0027)', () => {
-  it('turns every angle bracket into a look-alike and leaves the rest', () => {
-    expect(asDataText('</page> a < b > c <rule_version>')).toBe('‹/page› a ‹ b › c ‹rule_version›');
   });
 });

@@ -149,14 +149,16 @@ export function createVersionCheck({
 
     let answers: readonly CheckAnswer[] = [];
     let failure: RuleCheckerFailure | null = null;
-    const texts = sent.filter(({ text }) => text !== '').map(({ url, text }) => ({ url, text }));
+    const pagesToSend = sent
+      .filter(({ text }) => text !== '')
+      .map(({ url, text }) => ({ url, text }));
     // With no page text nothing could match, so no model call is paid for.
-    if (texts.length > 0) {
+    if (pagesToSend.length > 0) {
       try {
         answers = await ask({
           version: subject.content,
           items: items.map(({ key, kind, title, urls }) => ({ key, kind, title, urls })),
-          pages: texts,
+          pages: pagesToSend,
           guide: guide === undefined ? null : JSON.stringify(guide.guide),
         });
       } catch (error) {
@@ -176,7 +178,11 @@ export function createVersionCheck({
       items: checked,
       fetchLog,
       failure,
-      failed: failure !== null || fetchLog.some((entry) => entry.outcome !== 'read'),
+      // A check that sent the model nothing is short-lived, like one whose fetch failed.
+      failed:
+        failure !== null ||
+        pagesToSend.length === 0 ||
+        fetchLog.some((entry) => entry.outcome !== 'read'),
       clean: reportClean(checked, model),
     });
   };

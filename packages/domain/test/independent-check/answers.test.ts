@@ -158,6 +158,14 @@ describe('plainNote', () => {
     ['Ask evil.example, not the law.', 'Ask not the law.'],
     ['Write to mailto:a@b.example <b>here</b>', 'Write to b here /b'],
     ['The amount is 1.800 euros, not 1.500.', 'The amount is 1.800 euros, not 1.500.'],
+    [
+      'See [the new act](https://gov-example.example/act) for details.',
+      'See [the new for details.',
+    ],
+    ['see‹https://evil.example› now', 'now'],
+    ['Picture ![x](https://evil.example/p.png) here', 'Picture here'],
+    ['go to evil[.]example or evil(dot)example', 'go to or'],
+    ['open (evil.example) and "www.x"', 'open and'],
   ])('takes links and hosts out of %s', (note, plain) => {
     expect(plainNote(note)).toBe(plain);
   });

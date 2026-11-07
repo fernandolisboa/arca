@@ -111,8 +111,8 @@ function trimmed(text: string, from: ReadonlySet<string>, side: 'start' | 'end')
   return text.slice(start, end);
 }
 
-function linkLike(word: string): boolean {
-  const lower = trimmed(word.toLowerCase(), opening, 'start');
+function pieceLinkLike(piece: string): boolean {
+  const lower = trimmed(piece, opening, 'start');
   const colon = lower.indexOf(':');
   if (colon > 0 && scheme.test(lower.slice(0, colon))) return true;
   if (lower.startsWith('www.')) return true;
@@ -123,6 +123,20 @@ function linkLike(word: string): boolean {
     labels.every((part) => label.test(part)) &&
     topLevel.test(labels.at(-1) ?? '')
   );
+}
+
+/** Written-out or bracketed dots, as in `evil[.]example`, which people use to hide a host. */
+const defangedDots = ['[.]', '(.)', '{.}', '[dot]', '(dot)'];
+
+/**
+ * Whether a word holds a link, an address or a host name anywhere in it: Markdown and brackets
+ * split a word into pieces, each tested on its own, so `[text](https://…)` is caught too.
+ */
+function linkLike(word: string): boolean {
+  const lower = word.toLowerCase();
+  if (lower.includes('://') || lower.includes('www.')) return true;
+  if (defangedDots.some((dot) => lower.includes(dot))) return true;
+  return lower.split(/[[\](){}<>‹›"'!`]+/u).some((piece) => piece !== '' && pieceLinkLike(piece));
 }
 
 /** Links, addresses and host names out of a note, angle brackets too, then capped. */

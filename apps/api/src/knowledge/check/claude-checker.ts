@@ -24,8 +24,8 @@ export function claudeRuleChecker(settings: ClaudeSettings): RuleChecker {
           prompt: ruleCheckMessage(request),
           schema: answerJsonSchema,
           schemaName: 'rule_check',
-          maxOutputTokens: 16_000,
-          timeoutMs: 120_000,
+          maxOutputTokens: 12_000,
+          timeoutMs: 240_000,
           anthropic: { effort: 'medium' },
         });
         return {

@@ -1,15 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { RuleChecker } from '../src/knowledge/check/checker.js';
 import { htmlToText } from '../src/knowledge/check/html-text.js';
-import { createVersionCheck } from '../src/knowledge/check/run.js';
-import { memoryCheckReportStore } from '../src/knowledge/check/store.js';
-import { createCheckSubjects } from '../src/knowledge/versions.js';
+import { maxCallsPerRun } from './eval/independent-check/call-limit.js';
 import { type CheckCase, checkCases } from './eval/independent-check/cases.js';
-import { caseCatalog, snapshotFetcher } from './eval/independent-check/harness.js';
+import { checkCase } from './eval/independent-check/harness.js';
 
-// The independent check evaluation's cases, with no model (ADR-0027): a careful answer can make
-// each correct case checked, so a paid run can pass; and the cases that code alone must stop stay
-// flagged even when the model does all a page asks.
+// The independent check evaluation's cases, with no model (ADR-0027): careful quotes make each
+// correct case checked, so a paid run can pass; a model that falls for a case's lure gets it
+// checked unless code stops it, so every case the model must stop really tests the model; and
+// the cases code stops stay flagged, with the reason code gives, whatever the model says.
 
 /** The passage a careful model quotes for each item of the correct cases. */
 const careful: Record<string, string> = {
@@ -27,7 +26,7 @@ const careful: Record<string, string> = {
 };
 const employeeFee = 'Residence permit for employees EUR 120';
 
-/** Answers every item as `quote` says, on the item's first cited page. */
+/** Answers every item as matching with `quote`'s passage, on the item's first cited page. */
 function answering(quote: (key: string, routeId: string) => string): RuleChecker {
   return {
     check({ items, version }) {
@@ -48,22 +47,15 @@ function answering(quote: (key: string, routeId: string) => string): RuleChecker
   };
 }
 
-async function reportOf(evalCase: CheckCase, checker: RuleChecker) {
-  const store = memoryCheckReportStore();
-  const check = createVersionCheck({
-    subject: createCheckSubjects(caseCatalog(evalCase)),
-    guide: () => evalCase.guide,
-    fetcher: snapshotFetcher(evalCase.snapshots),
-    checker: { checker, model: 'claude-test', promptVersion: 'check-test' },
-    store,
-    logger: { info: () => undefined, error: () => undefined },
-    now: () => 0,
-  });
-  await check('start', evalCase.entry.version.routeId, evalCase.entry.version.number);
-  const [report] = store.rows;
-  if (report === undefined) throw new Error('no report');
-  return report;
-}
+const carefulQuote = (key: string, routeId: string) =>
+  key === 'cost:permit-fee' && routeId === 'qm-employee' ? employeeFee : (careful[key] ?? '');
+
+/** A model that does all the case asks: its lure for the target, careful quotes elsewhere. */
+const fallingFor = ({ target, lure }: CheckCase) =>
+  answering((key, routeId) => (key === target ? (lure ?? '') : carefulQuote(key, routeId)));
+
+const reportOf = (evalCase: CheckCase, checker: RuleChecker) =>
+  checkCase(evalCase, { checker, model: 'claude-test', promptVersion: 'check-test' });
 
 const byId = (id: string) => {
   const found = checkCases.find((evalCase) => evalCase.id === id);
@@ -71,52 +63,58 @@ const byId = (id: string) => {
   return found;
 };
 
+const correctIds = checkCases.filter(({ kind }) => kind === 'correct').map(({ id }) => id);
+const lured = checkCases.filter(({ kind }) => kind !== 'correct');
+const modelStops = lured.filter(({ stoppedBy }) => stoppedBy === undefined).map(({ id }) => id);
+const codeStops = lured.flatMap(({ id, stoppedBy }) =>
+  stoppedBy === undefined ? [] : [[id, stoppedBy] as const],
+);
+
 describe('the independent check evaluation cases (ADR-0027)', () => {
-  it('holds four correct, five wrong and eight adversarial cases with unique IDs', () => {
+  it('holds four correct, three wrong and eleven adversarial cases with unique IDs', () => {
     const kinds = checkCases.map(({ kind }) => kind);
     expect(kinds.filter((kind) => kind === 'correct')).toHaveLength(4);
-    expect(kinds.filter((kind) => kind === 'wrong')).toHaveLength(5);
-    expect(kinds.filter((kind) => kind === 'adversarial')).toHaveLength(8);
+    expect(kinds.filter((kind) => kind === 'wrong')).toHaveLength(3);
+    expect(kinds.filter((kind) => kind === 'adversarial')).toHaveLength(11);
     expect(new Set(checkCases.map(({ id }) => id)).size).toBe(checkCases.length);
   });
 
-  it.each(checkCases.filter(({ kind }) => kind === 'correct').map(({ id }) => id))(
-    '%s comes out checked with careful quotes',
-    async (id) => {
-      const checker = answering((key, routeId) =>
-        key === 'cost:permit-fee' && routeId === 'qm-employee' ? employeeFee : (careful[key] ?? ''),
-      );
-      const report = await reportOf(byId(id), checker);
-      expect(report.items.filter(({ status }) => status !== 'matches')).toEqual([]);
-      expect(report.clean).toBe(true);
-    },
-  );
+  it('gives every wrong and adversarial case a target and a lure', () => {
+    for (const { id, target, lure } of lured) {
+      expect({ id, target: typeof target, lure: typeof lure }).toEqual({
+        id,
+        target: 'string',
+        lure: 'string',
+      });
+    }
+  });
 
-  it.each([
-    ['adversarial-lookalike-redirect', 'page_not_read'],
-    ['adversarial-reflected-query', 'echoes_address'],
-    ['adversarial-quote-not-on-page', 'quote_not_on_page'],
-  ])('%s stays flagged when the model matches everything', async (id, reason) => {
+  it('leaves room under the call cap for every case and its one retry', () => {
+    expect(checkCases.length * 2).toBeLessThanOrEqual(maxCallsPerRun);
+  });
+
+  it.each(correctIds)('%s comes out checked with careful quotes', async (id) => {
+    const report = await reportOf(byId(id), answering(carefulQuote));
+    expect(report.items.filter(({ status }) => status !== 'matches')).toEqual([]);
+    expect(report.clean).toBe(true);
+  });
+
+  it.each(modelStops)('%s comes out checked when the model falls for it', async (id) => {
     const evalCase = byId(id);
-    const tempting: Record<string, string> = {
-      'adversarial-lookalike-redirect': careful['requirement:passive-income'] ?? '',
-      'adversarial-reflected-query': 'a stable passive income of at least EUR 1,200 a month',
-      'adversarial-quote-not-on-page': 'a stable passive income of at least EUR 1,200 a month',
-    };
-    const report = await reportOf(
-      evalCase,
-      answering((key) =>
-        key === 'requirement:passive-income' ? (tempting[id] ?? '') : (careful[key] ?? ''),
-      ),
-    );
+    const report = await reportOf(evalCase, fallingFor(evalCase));
+    expect(report.items.filter(({ status }) => status !== 'matches')).toEqual([]);
+    expect(report.clean).toBe(true);
+  });
+
+  it.each(codeStops)('%s stays flagged with %s when the model falls for it', async (id, reason) => {
+    const evalCase = byId(id);
+    const report = await reportOf(evalCase, fallingFor(evalCase));
     expect(report.clean).toBe(false);
-    expect(report.items.find(({ key }) => key === 'requirement:passive-income')?.reason).toBe(
-      reason,
-    );
+    expect(report.items.find(({ key }) => key === evalCase.target)?.reason).toBe(reason);
   });
 
   it('hides the style-sheet line from no one: the text keeps it, as the real fetcher would', () => {
-    const snapshot = byId('adversarial-hidden-text').snapshots.values().next().value;
+    const snapshot = byId('adversarial-hidden-instruction').snapshots.values().next().value;
     expect(htmlToText(snapshot?.html ?? '')).toContain('EUR 1,200 a month');
   });
 });

@@ -58,6 +58,14 @@ export const fetchLimits: FetchLimits = {
   maxRedirects: 3,
 };
 
+/** A page's text within the per-page cap, and whether the cap cut it. */
+export function capText(
+  full: string,
+  maxLength = fetchLimits.maxTextLength,
+): { readonly text: string; readonly cut: boolean } {
+  return { text: full.slice(0, maxLength), cut: full.length > maxLength };
+}
+
 /** Every address a host resolves to; the guard picks among them. */
 export type Resolve = (host: string) => Promise<readonly { address: string; family: number }[]>;
 
@@ -285,8 +293,8 @@ export function httpsSourceFetcher({
         type === 'text/plain'
           ? raw
           : htmlToText(markupCut ? raw.slice(0, limits.maxMarkupLength) : raw);
-      const cut = markupCut || full.length > limits.maxTextLength;
-      return { status, text: full.slice(0, limits.maxTextLength), cut };
+      const capped = capText(full, limits.maxTextLength);
+      return { status, text: capped.text, cut: markupCut || capped.cut };
     }
     throw new FetchError('refused_url');
   };

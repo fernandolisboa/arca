@@ -11,7 +11,10 @@ export interface RuleCheckRequest {
     readonly title: string;
     readonly urls: readonly string[];
   }[];
-  /** Each page read, as the exact text code later checks quotes against. */
+  /**
+   * Each page read, as the exact text code later checks quotes against: already framed as data
+   * and within the check's budget, so an adapter sends it unchanged.
+   */
   readonly pages: readonly { readonly url: string; readonly text: string }[];
   /** The country guide as JSON, or null when the country has none. */
   readonly guide: string | null;

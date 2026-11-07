@@ -1,12 +1,16 @@
 // What the independent check evaluation reads a case through, shared with its offline test.
 import { hostMatches } from '@arca/domain';
+import type { Logger } from '@arca/telemetry';
+import type { RuleCheckerChoice } from '../../../src/knowledge/check/checker.js';
 import {
   type FetchOutcome,
   type SourceFetcher,
-  fetchLimits,
+  capText,
 } from '../../../src/knowledge/check/fetcher.js';
 import { htmlToText } from '../../../src/knowledge/check/html-text.js';
-import type { createCheckSubjects } from '../../../src/knowledge/versions.js';
+import { createVersionCheck } from '../../../src/knowledge/check/run.js';
+import { type CheckReport, memoryCheckReportStore } from '../../../src/knowledge/check/store.js';
+import { createCheckSubjects } from '../../../src/knowledge/versions.js';
 import { type CheckCase, type Snapshot, officialHosts } from './cases.js';
 
 /** The catalog shape the check reads a version through, without importing the display catalog. */
@@ -46,14 +50,37 @@ export function snapshotFetcher(snapshots: ReadonlyMap<string, Snapshot>): Sourc
           });
         }
       }
-      const text = htmlToText(snapshot.html);
       return Promise.resolve<FetchOutcome>({
         ok: true,
         status: 200,
-        text: text.slice(0, fetchLimits.maxTextLength),
-        cut: text.length > fetchLimits.maxTextLength,
+        ...capText(htmlToText(snapshot.html)),
         chain,
       });
     },
   };
+}
+
+const quiet: Logger = { info: () => undefined, error: () => undefined };
+
+/** One case through the check's own path, as its workflow step runs it, answering its report. */
+export async function checkCase(
+  evalCase: CheckCase,
+  checker: RuleCheckerChoice,
+  logger: Logger = quiet,
+): Promise<CheckReport> {
+  const store = memoryCheckReportStore();
+  const check = createVersionCheck({
+    subject: createCheckSubjects(caseCatalog(evalCase)),
+    guide: () => evalCase.guide,
+    fetcher: snapshotFetcher(evalCase.snapshots),
+    checker,
+    store,
+    logger,
+    now: () => performance.now(),
+  });
+  const { routeId, number } = evalCase.entry.version;
+  await check(`eval-${evalCase.id}`, routeId, number);
+  const [report] = store.rows;
+  if (report === undefined) throw new Error(`${evalCase.id} stored no report`);
+  return report;
 }

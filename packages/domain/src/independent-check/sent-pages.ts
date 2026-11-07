@@ -4,15 +4,7 @@ import type { ReadPage } from './answers.js';
  * The most characters of page text one check sends the model, across every page it read: what
  * bounds the input of a call, and so its cost (ADR-0027). Each page is already capped on its own.
  */
-export const maxCheckPagesText = 240_000;
-
-/**
- * Text framed as data for a model: angle brackets become look-alikes, so nothing in it can close
- * or open a delimiter of the prompt. A page's text is sent, and its quotes checked, in this form.
- */
-export function asDataText(text: string): string {
-  return text.replace(/</gu, '‹').replace(/>/gu, '›');
-}
+export const maxCheckPagesText = 200_000;
 
 /** `text` cut to at most `length` code units, never inside a surrogate pair. */
 function cutAt(text: string, length: number): string {
