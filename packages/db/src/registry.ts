@@ -468,6 +468,18 @@ export const registry: Registry = {
   ],
   unowned: [
     {
+      table: 'knowledge.check_start',
+      personalData: 'none',
+      reason:
+        'A start of the independent check of a route version (ADR-0027): its route, number and time only; it names no account.',
+    },
+    {
+      table: 'knowledge.independent_check',
+      personalData: 'none',
+      reason:
+        "The independent check's report on a route version's public content against its official sources (ADR-0027), with model output and a fetch log of official URLs; it names no account.",
+    },
+    {
       table: 'knowledge.rule_summary',
       personalData: 'none',
       reason:

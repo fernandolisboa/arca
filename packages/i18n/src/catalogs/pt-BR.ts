@@ -1036,9 +1036,44 @@ export const ptBR = {
         '{reason, select, summary_unavailable {O resumo não está disponível agora. A regra continua aqui para você ler.} summary_timeout {A IA demorou demais. Tente de novo.} summary_unparsable {A IA não conseguiu montar um resumo desta vez. Tente de novo.} limited {Você pediu muitos resumos. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
       retry: 'Tentar de novo',
     },
+    /** The independent check of a route version against its official pages (ADR-0027). */
     check: {
       title: 'Verificação independente',
-      body: 'A verificação independente ainda não existe. Por enquanto, abra as fontes e confira por conta própria antes de decidir.',
+      comparisonNote:
+        'A verificação independente não lê comparações. Abra as fontes e confira por conta própria antes de decidir.',
+      off: 'A verificação independente ainda não está ligada. Abra as fontes e confira por conta própria antes de decidir.',
+      listStatus:
+        '{status, select, checked {Conferida pela IA} flagged {Marcada para revisão} running {Verificando} stale {Verificação vencida} other {Sem verificação}}',
+      status:
+        '{status, select, running {A IA está lendo as fontes desta versão. Leva alguns minutos, e a tela se atualiza sozinha.} stale {A última verificação não vale mais: a versão, o guia do país ou a IA mudaram, ou ela passou da validade.} other {Esta versão ainda não foi verificada.}}',
+      startsOnOpen:
+        'As versões propostas são verificadas sozinhas quando você abre a lista de versões, até 20 por dia.',
+      loadFailure: 'Não conseguimos carregar a verificação.',
+      clean:
+        '{n, plural, one {O único item bate} other {Os # itens batem}} com as fontes oficiais.',
+      flagged:
+        'Itens que batem com as fontes oficiais: {matches} de {total}. Leia com atenção antes de decidir.',
+      noItems: 'Esta versão não tem nenhum item com fonte oficial para verificar.',
+      scripted:
+        'Verificação de teste: nenhuma IA leu as fontes, então ela não vale como verificação.',
+      failure:
+        '{failure, select, check_timeout {A IA demorou demais para responder.} check_unavailable {A IA estava fora do ar.} check_unparsable {A IA respondeu num formato que o Arca não entende.} other {A verificação falhou.}} Nenhum item foi confirmado. Depois de um dia, ela roda de novo quando você abrir a lista.',
+      checkedAt: 'Verificada em {date}',
+      guide: 'Guia usado: {country}, versão {number}',
+      noGuide: 'Sem guia para este país ({country}): a IA leu as fontes sem orientações extras.',
+      kind: '{kind, select, requirement {Requisito} assessment {Critério subjetivo} dependent {Dependente} cost {Custo} duration {Prazo} leapDayBirthday {Aniversário em 29 de fevereiro} closure {Encerramento da rota} countrySet {Grupo de países} other {Item}}',
+      itemStatus:
+        '{status, select, matches {Bate com a fonte} differs {Diferente da fonte} other {Não deu para conferir}}',
+      quote: 'Trecho da página',
+      page: 'Página',
+      note: 'Observação da IA: {note}',
+      reason:
+        '{reason, select, not_answered {A IA não respondeu sobre este item.} model_could_not_check {A IA disse que não conseguiu conferir.} url_not_cited {A IA citou uma página que este item não usa.} page_not_read {A página não abriu.} page_cut {A página foi cortada por ser grande demais, então um trecho que bate não basta.} quote_length {O trecho citado é curto ou longo demais.} quote_not_on_page {O trecho citado não está na página.} echoes_address {O trecho repete o endereço da página, então não prova nada.} value_not_in_quote {O trecho não traz os valores deste item.} other {Não deu para conferir.}}',
+      pages: 'Páginas com problema',
+      outcome:
+        '{outcome, select, read {Lida, mas cortada no limite de tamanho} refused_url {Endereço fora dos sites oficiais} redirect_refused {Redirecionou para fora dos sites oficiais} too_many_redirects {Redirecionou vezes demais} address_refused {Endereço de rede recusado} lookup_failed {Site não encontrado} http_status {O site respondeu com erro {status}} unsupported_type {Não é uma página de texto, como um PDF} too_large {Página grande demais} timeout {O site demorou demais} network {Falha de rede} other {Não deu para ler}}',
+      footer:
+        'Feita por IA, que pode errar. O Arca confere no código se cada trecho está mesmo na página citada, mas quem decide é você. A verificação não cobre o que não tem fonte própria, como datas de vigência, moeda e datas de referência.',
     },
     activate: 'Ativar esta versão',
     reject: 'Recusar esta versão',

@@ -249,6 +249,28 @@ const summaryColumns = ['content_hash', 'prompt_version', 'model', 'overview', '
 const summaryPrivileges = (role: string) =>
   columnPrivileges(role, 'knowledge.rule_summary', summaryColumns);
 
+const startColumns = ['id', 'route_id', 'version_number', 'started_at'];
+const startPrivileges = (role: string) =>
+  columnPrivileges(role, 'knowledge.check_start', startColumns);
+const reportColumns = [
+  'id',
+  'start_id',
+  'route_id',
+  'version_number',
+  'content_hash',
+  'guide_hash',
+  'prompt_version',
+  'model',
+  'checked_at',
+  'items',
+  'fetch_log',
+  'failure',
+  'failed',
+  'clean',
+];
+const reportPrivileges = (role: string) =>
+  columnPrivileges(role, 'knowledge.independent_check', reportColumns);
+
 const onEvery = (columns: readonly string[], privileges: string[]) =>
   Object.fromEntries(columns.map((column) => [column, privileges]));
 const onEveryColumn = (privileges: string[]) => onEvery(auditColumns, privileges);
@@ -316,11 +338,13 @@ describe('the audit schema access matrix (spec 0003, R7)', () => {
 });
 
 describe('the knowledge schema access matrix (spec 0007, R7)', () => {
-  it('has only the admin grant, decision and rule summary tables, with no foreign keys and forced row-level security', async () => {
+  it('has only the admin grant, decision, rule summary, check start and check report tables, with no foreign keys and forced row-level security', async () => {
     expect(await schemaShape('knowledge')).toEqual({
       tables: [
         { name: 'admin_grant', forced: true },
+        { name: 'check_start', forced: true },
         { name: 'decision', forced: true },
+        { name: 'independent_check', forced: true },
         { name: 'rule_summary', forced: true },
       ],
       foreignKeys: 0,
@@ -381,8 +405,65 @@ describe('the knowledge schema access matrix (spec 0007, R7)', () => {
     expect((await summaryPrivileges('app_auth')).table).toEqual([]);
   });
 
+  it('lets app_api read check starts and insert their route and number only (ADR-0027)', async () => {
+    expect(await startPrivileges('app_api')).toEqual({
+      usage: true,
+      create: false,
+      columns: {
+        ...onEvery(startColumns, ['SELECT']),
+        route_id: ['SELECT', 'INSERT'],
+        version_number: ['SELECT', 'INSERT'],
+      },
+      table: [],
+    });
+  });
+
+  it('lets app_jobs insert check reports but their ID and time, and read them (ADR-0027)', async () => {
+    expect(await reportPrivileges('app_jobs')).toEqual({
+      usage: true,
+      create: false,
+      columns: {
+        ...onEvery(reportColumns, ['SELECT', 'INSERT']),
+        id: ['SELECT'],
+        checked_at: ['SELECT'],
+      },
+      table: [],
+    });
+  });
+
+  it.each(['app_api', 'app_auth'])('lets %s only read check reports (ADR-0027)', async (role) => {
+    expect(await reportPrivileges(role)).toEqual({
+      usage: true,
+      create: false,
+      columns: onEvery(reportColumns, ['SELECT']),
+      table: [],
+    });
+  });
+
+  it.each(runtimeRoles.filter((role) => role !== 'app_api'))(
+    'gives %s no access to check starts',
+    async (role) => {
+      const privileges = await startPrivileges(role);
+      expect(privileges.columns).toEqual(onEvery(startColumns, []));
+      expect(privileges.table).toEqual([]);
+    },
+  );
+
+  it('gives app_jobs no access to decisions, admin grants or rule summaries', async () => {
+    for (const privileges of [
+      await decisionPrivileges('app_jobs'),
+      await adminGrantPrivileges('app_jobs'),
+      await summaryPrivileges('app_jobs'),
+    ]) {
+      expect(privileges.columns).toEqual(
+        Object.fromEntries(Object.keys(privileges.columns).map((column) => [column, []])),
+      );
+      expect(privileges.table).toEqual([]);
+    }
+  });
+
   it.each([
-    ...runtimeRoles.filter((role) => !['app_auth', 'app_api'].includes(role)),
+    ...runtimeRoles.filter((role) => !['app_auth', 'app_api', 'app_jobs'].includes(role)),
     ...retiredRoles,
   ])('gives %s no access to the knowledge schema', async (role) => {
     expect(await decisionPrivileges(role)).toEqual({
@@ -395,6 +476,12 @@ describe('the knowledge schema access matrix (spec 0007, R7)', () => {
       usage: false,
       create: false,
       columns: onEvery(summaryColumns, []),
+      table: [],
+    });
+    expect(await reportPrivileges(role)).toEqual({
+      usage: false,
+      create: false,
+      columns: onEvery(reportColumns, []),
       table: [],
     });
     expect(await adminGrantPrivileges(role)).toEqual({

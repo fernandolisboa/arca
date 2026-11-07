@@ -1,5 +1,14 @@
 import {
   calendarDateSchema,
+  checkItemKinds,
+  checkReasons,
+  checkStatuses,
+  checkFailures,
+  fetchOutcomes,
+  listedCheckStatuses,
+  maxCheckItemKeyLength,
+  maxNoteLength,
+  maxQuoteLength,
   comparisonCriterionSchema,
   countryCodeSchema,
   durationStageSchema,
@@ -119,6 +128,8 @@ export const KnowledgeVersion = z.object({
   effectiveFrom: calendarDateSchema,
   hash: contentHash,
   state: decisionState,
+  /** The independent check's status (ADR-0027); `none` where no check runs. */
+  check: z.enum(listedCheckStatuses),
 });
 export type KnowledgeVersion = z.infer<typeof KnowledgeVersion>;
 
@@ -403,6 +414,82 @@ export const closeRuleReports = {
   response: { description: 'Closed', schema: CloseRuleReportsResponse },
 } as const satisfies RouteDefinition<typeof CloseRuleReportsResponse>;
 
+/*
+ * The independent check (ADR-0027). The activation screen asks, when it opens, for checks of every
+ * proposed route version that has no current report and no live start, at most 20 starts in any 24
+ * hours per environment; listing versions starts nothing. A report is model output that code
+ * checked against the cited official pages: plain text, quotes and URLs included, never links.
+ */
+
+export const StartVersionChecksResponse = z.strictObject({ started: z.int().min(0).max(20) });
+export type StartVersionChecksResponse = z.infer<typeof StartVersionChecksResponse>;
+
+export const startVersionChecks = {
+  method: 'post',
+  path: '/knowledge/checks/start',
+  operationId: 'startVersionChecks',
+  summary:
+    'Starts the independent check of every proposed route version with no current report and no check running, within 20 starts in any 24 hours per environment; answers how many started. 403 not_admin',
+  response: { description: 'Started', schema: StartVersionChecksResponse },
+} as const satisfies RouteDefinition<typeof StartVersionChecksResponse>;
+
+export const VersionCheckReport = z.strictObject({
+  checkedAt: z.iso.datetime(),
+  /** Every item matches; never for a scripted report. */
+  clean: z.boolean(),
+  /** Written by the scripted checker used until a model is configured, never clean. */
+  scripted: z.boolean(),
+  failure: z.enum(checkFailures).nullable(),
+  /** The country guide the check read, or null when the country has none. */
+  guide: z
+    .strictObject({ country: z.string().regex(/^[A-Z]{2}$/), number: z.int().min(1) })
+    .nullable(),
+  items: z
+    .array(
+      z.strictObject({
+        key: z.string().max(maxCheckItemKeyLength),
+        kind: z.enum(checkItemKinds),
+        title: z.string().max(200),
+        status: z.enum(checkStatuses),
+        quote: z.string().max(maxQuoteLength).nullable(),
+        url: z.string().max(2_000).nullable(),
+        note: z.string().max(maxNoteLength).nullable(),
+        reason: z.enum(checkReasons).nullable(),
+      }),
+    )
+    .max(200),
+  fetchLog: z
+    .array(
+      z.strictObject({
+        url: z.string().max(2_000),
+        outcome: z.enum(fetchOutcomes),
+        status: z.int().min(0).max(999).nullable(),
+        cut: z.boolean(),
+      }),
+    )
+    .max(200),
+});
+export type VersionCheckReport = z.infer<typeof VersionCheckReport>;
+
+export const VersionCheck = z.strictObject({
+  /** Whether this environment runs the check; off in production until a model is configured. */
+  enabled: z.boolean(),
+  status: z.enum(listedCheckStatuses),
+  /** The current report, or null when the version has none (stale, running or never checked). */
+  report: VersionCheckReport.nullable(),
+});
+export type VersionCheck = z.infer<typeof VersionCheck>;
+
+export const getVersionCheck = {
+  method: 'get',
+  path: '/knowledge/versions/check',
+  operationId: 'getVersionCheck',
+  summary:
+    "One route version's independent check status and its current report, model output checked in code against the cited official pages; never starts a check. 403 not_admin, 404 not_found",
+  query: VersionViewQuery,
+  response: { description: 'The check', schema: VersionCheck },
+} as const satisfies RouteDefinition<typeof VersionCheck>;
+
 export const knowledgeRoutes = {
   activateVersion,
   rejectVersion,
@@ -415,6 +502,8 @@ export const knowledgeRoutes = {
   summarizeVersion,
   listRuleReports,
   closeRuleReports,
+  startVersionChecks,
+  getVersionCheck,
 } as const;
 
 export {

@@ -11,10 +11,12 @@ import {
   versionView,
 } from '@arca/domain';
 import { type DisplayCatalog, displayCatalog } from '@arca/knowledge/display';
+import type { CheckSubject } from './check/run.js';
+import { checkContent } from './version-content.js';
 
 export interface KnowledgeVersions {
   /** Every bundled version with its state, the newest first (spec 0007, R7). */
-  readonly list: () => Promise<readonly KnowledgeVersion[]>;
+  readonly list: () => Promise<readonly Omit<KnowledgeVersion, 'check'>[]>;
   readonly view: (routeId: string, number: number) => Promise<VersionView | undefined>;
   /** Every bundled comparison version with its state, the newest first (ADR-0026). */
   readonly comparisons: () => Promise<readonly KnowledgeComparisonVersion[]>;
@@ -101,5 +103,31 @@ export function createKnowledgeVersions({
         hostOf: catalog.hostOf,
       });
     },
+  };
+}
+
+/**
+ * What the independent check reads about a bundled route version (ADR-0027): its entry, its
+ * content as the activation view lays it out, and the hosts of the lists it pins. Read here, where
+ * the display catalog may be, since a proposed version's content is what the check is for. The
+ * view needs no decision states: the content the check reads leaves the state out.
+ */
+export function createCheckSubjects(
+  catalog: DisplayCatalog = displayCatalog,
+): (routeId: string, number: number) => CheckSubject | undefined {
+  return (routeId, number) => {
+    const versions = catalog.versions(routeId);
+    const entry = versions.find(({ identity }) => identity.number === number);
+    if (entry === undefined) return undefined;
+    const view = versionView({
+      versions,
+      number,
+      cases: [],
+      states: new Map(),
+      today: entry.version.effectiveFrom,
+      hostOf: catalog.hostOf,
+    });
+    if (view === undefined) return undefined;
+    return { entry, content: checkContent(view), officialHosts: catalog.officialHosts };
   };
 }

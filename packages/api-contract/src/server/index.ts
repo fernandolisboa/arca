@@ -123,6 +123,8 @@ export const openApiRoutes = {
   summarizeVersion: toOpenApiRoute(routes.summarizeVersion),
   listRuleReports: toOpenApiRoute(routes.listRuleReports),
   closeRuleReports: toOpenApiRoute(routes.closeRuleReports),
+  startVersionChecks: toOpenApiRoute(routes.startVersionChecks),
+  getVersionCheck: toOpenApiRoute(routes.getVersionCheck),
   listCaseAdmins: toOpenApiRoute(routes.listCaseAdmins),
   grantAdmin: toOpenApiRoute(routes.grantAdmin),
   removeAdmin: toOpenApiRoute(routes.removeAdmin),

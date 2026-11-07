@@ -575,7 +575,7 @@ export const ruleReport = cases.table(
       withCheck: sql`${isIdentity(table.reporterAccountId)} AND ${isMember(table.caseId)}`,
     }),
     ...erasedByJobs('rule_report', table.reporterAccountId),
-    // Approvers read the open reports and close them only through the definer functions.
+    // Admins read the open reports and close them only through the definer functions.
     ...byDefiner('rule_report', ['select', 'update']),
   ],
 );

@@ -56,6 +56,7 @@ import {
   ComparisonViewQuery,
   DecideComparisonRequest,
   DecideVersionRequest,
+  VersionCheck,
   VersionView,
   VersionViewQuery,
   StepUpAction,
@@ -111,10 +112,11 @@ import type { NotificationChannels } from './notification/channels.js';
 import { isP256PublicKey } from './notification/push.js';
 import type { CaseFiles, CaseWritten } from './case/case-files.js';
 import type { CaseIntake } from './case/intake.js';
-import type { DecisionKind, DecisionSubject } from '@arca/domain';
+import { type DecisionKind, type DecisionSubject, versionKey } from '@arca/domain';
 import type { AdminChangeOutcome, AdminGrants } from './knowledge/admin-grants.js';
 import type { DecisionOutcome, DecisionTarget, KnowledgeDecisions } from './knowledge/decisions.js';
 import type { RuleReportReview } from './knowledge/reports.js';
+import type { VersionChecks } from './knowledge/checks.js';
 import type { RuleSummaries } from './knowledge/summaries.js';
 import type { KnowledgeVersions } from './knowledge/versions.js';
 import type { DocumentRequests } from './vault/documents.js';
@@ -215,6 +217,11 @@ export interface AppDependencies {
    * the route answers 503 `summary_unavailable` and the version reads as before.
    */
   readonly ruleSummaries?: RuleSummaries;
+  /**
+   * The independent check (ADR-0027); absent, nothing starts, every version lists `none` and a
+   * version's check reads as never run.
+   */
+  readonly versionChecks?: VersionChecks;
   /** Admins' view of members' rule reports (spec 0007, R8); absent, its routes answer 401. */
   readonly ruleReports?: RuleReportReview;
   /** Whether the account's inviter confirmed it, read on the app_auth pool (spec 0003, R2). */
@@ -431,6 +438,7 @@ export function createApp({
   admins,
   knowledgeVersions,
   ruleSummaries,
+  versionChecks,
   ruleReports,
   accountConfirmed,
   memoryObjects,
@@ -1481,11 +1489,60 @@ export function createApp({
   v1.openapi(openApiRoutes.listKnowledgeVersions, async (c) => {
     const reads = await adminReads(c);
     if ('refused' in reads) return reads.refused;
-    const [versions, comparisons] = await Promise.all([
+    const [versions, comparisons, checks] = await Promise.all([
       reads.versions.list(),
       reads.versions.comparisons(),
+      versionChecks?.statuses() ?? new Map<string, never>(),
     ]);
-    return c.json({ versions: [...versions], comparisons: [...comparisons] }, 200);
+    return c.json(
+      {
+        versions: versions.map((version) => ({
+          ...version,
+          check: checks.get(versionKey(version)) ?? 'none',
+        })),
+        comparisons: [...comparisons],
+      },
+      200,
+    );
+  });
+  v1.openapi(openApiRoutes.startVersionChecks, async (c) => {
+    const reads = await adminReads(c);
+    if ('refused' in reads) return reads.refused;
+    return c.json({ started: versionChecks === undefined ? 0 : await versionChecks.start() }, 200);
+  });
+  v1.openapi(openApiRoutes.getVersionCheck, async (c) => {
+    const reads = await adminReads(c);
+    if ('refused' in reads) return reads.refused;
+    const { routeId, number } = VersionViewQuery.parse(c.req.query());
+    if (versionChecks === undefined) {
+      const view = await reads.versions.view(routeId, number);
+      return view === undefined
+        ? fail(c, 'not_found', 404)
+        : c.json({ enabled: false, status: 'none' as const, report: null }, 200);
+    }
+    const outcome = await versionChecks.report(routeId, number);
+    if (!outcome.ok) return fail(c, outcome.reason, 404);
+    const { report } = outcome;
+    return c.json(
+      VersionCheck.parse({
+        enabled: true,
+        status: outcome.status,
+        report:
+          report === null
+            ? null
+            : {
+                ...report,
+                checkedAt: new Date(report.checkedAt).toISOString(),
+                fetchLog: report.fetchLog.map(({ url, outcome: read, status, cut }) => ({
+                  url,
+                  outcome: read,
+                  status,
+                  cut,
+                })),
+              },
+      }),
+      200,
+    );
   });
   v1.openapi(openApiRoutes.getVersionView, async (c) => {
     const reads = await adminReads(c);

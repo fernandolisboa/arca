@@ -90,6 +90,8 @@ export type {
   RuleReports,
   RuleSummary,
   StoredRuleSummary,
+  VersionCheck,
+  VersionCheckReport,
   VersionView,
   DeviceDescription,
   DevicePasskey,

@@ -1,12 +1,19 @@
 import {
   type CatalogEntry,
   type ComparisonEntry,
+  type Pin,
   type RuleCaseSummary,
   ruleCaseSummarySchema,
 } from '@arca/domain';
 import { z } from 'zod';
 import { parseComparisons, parseEntries, sha256Schema } from './entries.js';
-import { caseData, catalogData, comparisonData, hostData } from './generated/catalog.js';
+import {
+  caseData,
+  catalogData,
+  comparisonData,
+  hostData,
+  officialDomainData,
+} from './generated/catalog.js';
 
 /**
  * Every version of a route, whatever its decision state, with each version's cases; and every
@@ -19,6 +26,11 @@ export interface DisplayCatalog {
   readonly cases: (hash: string) => readonly RuleCaseSummary[];
   /** A cited URL's host as the build's official-source matching read it, if it has one. */
   readonly hostOf: (url: string) => string | undefined;
+  /**
+   * The hosts of the pinned official-domain lists, which the independent check may fetch on
+   * (ADR-0027), or undefined when the catalog lacks one of them.
+   */
+  readonly officialHosts: (pins: readonly Pin[]) => readonly string[] | undefined;
 }
 
 const caseDataSchema = z.array(
@@ -27,22 +39,45 @@ const caseDataSchema = z.array(
 
 const hostDataSchema = z.record(z.string(), z.string().nullable());
 
+const officialDomainDataSchema = z.array(
+  z.strictObject({
+    id: z.string(),
+    number: z.int().min(1),
+    hosts: z.array(z.string().min(1).max(253)).min(1),
+  }),
+);
+
 export function createDisplayCatalog(
   entries: ReadonlyMap<string, CatalogEntry>,
   cases: unknown,
   hosts: unknown,
   comparisons: ReadonlyMap<string, ComparisonEntry>,
+  officialDomains: unknown = [],
 ): DisplayCatalog {
   const all = [...entries.values()];
   const allComparisons = [...comparisons.values()];
   const byHash = new Map(caseDataSchema.parse(cases).map((entry) => [entry.hash, entry.cases]));
   const byUrl = new Map(Object.entries(hostDataSchema.parse(hosts)));
+  const lists = new Map(
+    officialDomainDataSchema
+      .parse(officialDomains)
+      .map((list) => [`${list.id}/${String(list.number)}`, list.hosts]),
+  );
   return {
     entries: () => all,
     comparisons: () => allComparisons,
     versions: (routeId) => all.filter(({ identity }) => identity.routeId === routeId),
     cases: (hash) => byHash.get(hash) ?? [],
     hostOf: (url) => byUrl.get(url) ?? undefined,
+    officialHosts: (pins) => {
+      const hosts: string[] = [];
+      for (const pin of pins) {
+        const listed = lists.get(`${pin.id}/${String(pin.number)}`);
+        if (listed === undefined) return undefined;
+        hosts.push(...listed);
+      }
+      return hosts;
+    },
   };
 }
 
@@ -57,4 +92,5 @@ export const displayCatalog = createDisplayCatalog(
   caseData,
   hostData,
   parseComparisons(comparisonData),
+  officialDomainData,
 );
