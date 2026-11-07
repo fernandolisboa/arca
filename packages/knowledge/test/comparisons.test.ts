@@ -127,6 +127,15 @@ describe('comparison data (ADR-0026)', () => {
       'indicators/homicides/1.json /values/0/country: The country is in the pinned countries file',
     ],
     [
+      'a value from after the build year',
+      (tree) => {
+        tree['indicators/homicides/1.json'] = indicatorFile({
+          values: [{ country: 'QM', value: '1', year: 2099, source: 'stats' }],
+        });
+      },
+      'indicators/homicides/1.json /values/0/year: A value is not from after the build year',
+    ],
+    [
       'a pin to a missing indicator version',
       (tree) => {
         tree['comparisons/destinations/1.json'] = comparisonFile({

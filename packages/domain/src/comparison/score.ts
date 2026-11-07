@@ -15,7 +15,7 @@ import type { ComparisonEntry } from './select.js';
 export type ComparedCriterion = (
   | {
       readonly kind: 'indicator' | 'category' | 'personal';
-      /** The knowledge title, in English; the screen shows its pt-BR label by `id`. */
+      /** The knowledge title, shown as is unless the interface has its own label for this `id`. */
       readonly title: string;
     }
   | {
@@ -138,7 +138,7 @@ function starScore(stars: number): Ratio {
 }
 
 /** An own property only, so a criterion named like an `Object` member never reads one. */
-function own<T>(record: Readonly<Record<string, T>>, key: string): T | undefined {
+function ownValue<T>(record: Readonly<Record<string, T>>, key: string): T | undefined {
   return Object.hasOwn(record, key) ? record[key] : undefined;
 }
 
@@ -151,7 +151,7 @@ interface Totalled {
   readonly country: string;
   readonly total: Ratio | null;
   readonly coverage: Ratio;
-  readonly enough: boolean;
+  readonly halfKnown: boolean;
   readonly scores: readonly CriterionScore[];
 }
 
@@ -184,14 +184,14 @@ export function compareDestinations({
       id,
       kind,
       title,
-      weight: own(preferences.weights, id) ?? defaultWeight,
+      weight: ownValue(preferences.weights, id) ?? defaultWeight,
       defaultWeight,
     })),
     ...preferences.ownCriteria.map(({ id, name }) => ({
       id,
       kind: 'own' as const,
       name,
-      weight: own(preferences.weights, id) ?? ownDefaultWeight,
+      weight: ownValue(preferences.weights, id) ?? ownDefaultWeight,
       defaultWeight: ownDefaultWeight,
     })),
   ];
@@ -202,8 +202,8 @@ export function compareDestinations({
   const scoreOf = (criterion: ComparedCriterion, country: string): Scored => {
     const definition = knowledge.get(criterion.id);
     if (definition === undefined || definition.kind === 'personal') {
-      const byCountry = own(preferences.ratings, criterion.id);
-      const rating = byCountry === undefined ? undefined : own(byCountry, country);
+      const byCountry = ownValue(preferences.ratings, criterion.id);
+      const rating = byCountry === undefined ? undefined : ownValue(byCountry, country);
       if (rating === undefined) return { score: { criterion: criterion.id, score: null } };
       const exact = starScore(rating);
       return { score: { criterion: criterion.id, score: oneDecimal(exact), rating }, exact };
@@ -233,7 +233,7 @@ export function compareDestinations({
   };
 
   const weightTotal = BigInt(criteria.reduce((sum, criterion) => sum + criterion.weight, 0));
-  const totalled = countries.map((country): Totalled => {
+  const totalled = [...new Set(countries)].map((country): Totalled => {
     const scored = criteria.map((criterion) => ({ criterion, ...scoreOf(criterion, country) }));
     let weighted = zero;
     let known = 0n;
@@ -247,7 +247,7 @@ export function compareDestinations({
       country,
       total: known === 0n ? null : ratio(weighted.n, weighted.d * known),
       coverage: weightTotal === 0n ? zero : ratio(known, weightTotal),
-      enough: weightTotal > 0n && 2n * known >= weightTotal,
+      halfKnown: weightTotal > 0n && 2n * known >= weightTotal,
       scores: scored.map(({ score }) => score),
     };
   });
@@ -263,11 +263,11 @@ export function compareDestinations({
     criteria,
     countries: [
       ...visible
-        .filter((each) => each.enough)
+        .filter((each) => each.halfKnown)
         .sort(byRanking)
         .map((each, index) => ({ ...shown(each), group: 'ranked' as const, rank: index + 1 })),
       ...visible
-        .filter((each) => !each.enough)
+        .filter((each) => !each.halfKnown)
         .sort(byRanking)
         .map((each) => ({ ...shown(each), group: 'few-data' as const, rank: null })),
       ...totalled

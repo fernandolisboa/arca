@@ -68,12 +68,11 @@ export function roundQuotientHalfEven(n: bigint, d: bigint): bigint {
 
 /** Brings two exact values to the same scale. */
 export function alignScales(left: Scaled, right: Scaled): [bigint, bigint, number] {
-  const scale = Math.max(left.scale, right.scale);
-  return [
-    left.units * powerOfTen(scale - left.scale),
-    right.units * powerOfTen(scale - right.scale),
+  const {
+    units: [a = 0n, b = 0n],
     scale,
-  ];
+  } = alignAll([left, right]);
+  return [a, b, scale];
 }
 
 export function compareScaled(left: Scaled, right: Scaled): number {

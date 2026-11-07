@@ -58,4 +58,11 @@ describe('comparison version selection', () => {
       identityKey({ routeId: identity.comparisonId, number: 1, hash: identity.hash }),
     );
   });
+
+  it('refuses versions that share a number or span more than one comparison', () => {
+    expect(() => selectComparisonVersion([version(1), version(1)], new Map())).toThrow(RangeError);
+    expect(() =>
+      selectComparisonVersion([version(1), { ...version(2), comparisonId: 'other' }], new Map()),
+    ).toThrow(RangeError);
+  });
 });

@@ -56,6 +56,12 @@ export function selectComparisonVersion(
   identities: readonly ComparisonIdentity[],
   states: DecisionStates,
 ): ComparisonSelection {
+  if (new Set(identities.map((identity) => identity.number)).size !== identities.length) {
+    throw new RangeError('Two versions share a number');
+  }
+  if (new Set(identities.map((identity) => identity.comparisonId)).size > 1) {
+    throw new RangeError('Versions of more than one comparison');
+  }
   const newestFirst = [...identities].sort((left, right) => right.number - left.number);
   const active = newestFirst.find((identity) => comparisonStateOf(identity, states) === 'active');
   const pendingNewer = newestFirst.some(

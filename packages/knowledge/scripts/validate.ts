@@ -308,6 +308,16 @@ class Validation {
   private checkIndicator(file: ParsedOf<'indicators'>): void {
     const { data, raw } = file;
     this.checkVerified(raw, data.sources, '/sources');
+    const buildYear = Number(this.buildDate.slice(0, 4));
+    data.values.forEach((value, index) => {
+      if (value.year > buildYear) {
+        this.report(
+          raw,
+          'A value is not from after the build year',
+          `/values/${String(index)}/year`,
+        );
+      }
+    });
     const countries = this.resolve(raw, 'countries', data.countries, '/countries');
     const official = this.officialHosts(raw, data.officialDomains);
     if (countries === undefined || official === undefined) return;

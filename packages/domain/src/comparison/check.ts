@@ -100,7 +100,7 @@ export function checkComparisonVersion(
     if (new Set(scored).size !== scored.length) {
       issue(`${path}/scores`, 'Each token is scored once');
     }
-    for (const { value } of indicator.values) {
+    for (const value of new Set(indicator.values.map((each) => each.value))) {
       if (!scored.includes(value)) issue(`${path}/scores`, `The token ${value} has a score`);
     }
   });

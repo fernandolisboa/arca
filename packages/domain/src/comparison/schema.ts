@@ -6,7 +6,7 @@ import {
   knowledgeTextSchema as text,
   pinSchema,
   sourceSchema,
-  versionNumberSchema as number,
+  versionNumberSchema,
 } from '../rules/route-version.js';
 
 /** A token value of a category indicator, such as `allowed`. */
@@ -27,7 +27,7 @@ export const criterionIdSchema = slugSchema.refine((id) => !id.startsWith('own-'
 export const countryIndicatorSchema = z.strictObject({
   schemaVersion: z.literal(1),
   id: slugSchema,
-  number,
+  number: versionNumberSchema,
   title: text,
   /** What a value measures, such as "per 100,000 people". */
   unit: text,
@@ -90,7 +90,7 @@ export type ComparisonCriterion = z.infer<typeof comparisonCriterionSchema>;
 export const comparisonVersionSchema = z.strictObject({
   schemaVersion: z.literal(1),
   id: slugSchema,
-  number,
+  number: versionNumberSchema,
   title: text,
   indicators: z.array(pinSchema).max(20),
   criteria: z.array(comparisonCriterionSchema).min(1).max(50),
