@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { decisiveQuestions, questionForFact, routeResult } from '../../src/case/results.js';
+import {
+  type RouteStatus,
+  bestRouteStatus,
+  decisiveQuestions,
+  questionForFact,
+  routeResult,
+} from '../../src/case/results.js';
 import { factKeys } from '../../src/case/facts.js';
 import { questionIds } from '../../src/case/questions.js';
 import { identityKey, type RouteCatalog } from '../../src/rules/catalog.js';
@@ -197,5 +203,17 @@ describe('routeResult (spec 0007, R6)', () => {
     );
     expect(shown.missingRates).toEqual([{ from: 'BRL', to: 'EUR' }]);
     expect(shown.missingDates).toEqual([]);
+  });
+});
+
+describe('best route status', () => {
+  it.each<[readonly RouteStatus[], RouteStatus | undefined]>([
+    [[], undefined],
+    [['not_eligible', 'missing_information'], 'missing_information'],
+    [['pending_activation', 'not_eligible'], 'pending_activation'],
+    [['unavailable', 'eligible', 'needs_assessment'], 'eligible'],
+    [['unavailable'], 'unavailable'],
+  ])('%j gives %s', (statuses, expected) => {
+    expect(bestRouteStatus(statuses)).toBe(expected);
   });
 });

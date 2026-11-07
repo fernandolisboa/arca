@@ -52,8 +52,16 @@ function officialUrl(url: string, official: OfficialHosts): boolean {
 
 /** Checks a country set's sources: each official one on a pinned host, and at least one. */
 export function checkCountrySet(set: CountrySet, official: OfficialHosts): CheckIssue[] {
+  return checkOfficialSources(set.sources, official);
+}
+
+/** Checks a file's own sources: each official one on a pinned host, and at least one. */
+export function checkOfficialSources(
+  sources: readonly Source[],
+  official: OfficialHosts,
+): CheckIssue[] {
   const issues: CheckIssue[] = [];
-  set.sources.forEach((source, index) => {
+  sources.forEach((source, index) => {
     if (source.kind === 'official' && !officialUrl(source.url, official)) {
       issues.push({
         path: `/sources/${String(index)}`,
@@ -61,9 +69,7 @@ export function checkCountrySet(set: CountrySet, official: OfficialHosts): Check
       });
     }
   });
-  if (
-    !set.sources.some((source) => source.kind === 'official' && officialUrl(source.url, official))
-  ) {
+  if (!sources.some((source) => source.kind === 'official' && officialUrl(source.url, official))) {
     issues.push({ path: '/sources', message: 'At least one source is official' });
   }
   return issues;

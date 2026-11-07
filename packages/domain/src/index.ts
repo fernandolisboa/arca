@@ -167,10 +167,13 @@ export { type FactKey, factKeys } from './case/facts.js';
 export {
   type DecisiveQuestion,
   type RouteResult,
+  type RouteStatus,
   type UnitsMoney,
+  bestRouteStatus,
   decisiveQuestions,
   questionForFact,
   routeResult,
+  routeStatusOrder,
 } from './case/results.js';
 export { relationshipSteps } from './case/paths.js';
 export { type CheckIssue } from './rules/check.js';
@@ -301,3 +304,40 @@ export {
   sharedNamePlaceholder,
 } from './intake/mask.js';
 export { type DescribedDraft, describeDraft } from './intake/playback.js';
+export {
+  type ComparisonCriterion,
+  type ComparisonPreferences,
+  type ComparisonVersion,
+  type CountryIndicator,
+  comparisonCriterionSchema,
+  comparisonPreferencesSchema,
+  comparisonVersionSchema,
+  countryIndicatorSchema,
+  criterionIdSchema,
+  maxCriterionKeys,
+  maxOwnCriteria,
+  maxRatings,
+  noPreferences,
+  ownCriterionIdSchema,
+  weightSchema,
+} from './comparison/schema.js';
+export { checkComparisonVersion, checkCountryIndicator } from './comparison/check.js';
+export {
+  type ComparedCriterion,
+  type ComparisonInput,
+  type CountryComparison,
+  type CriterionScore,
+  type DestinationComparison,
+  type IndicatorReading,
+  compareDestinations,
+  ownDefaultWeight,
+} from './comparison/score.js';
+export {
+  type ComparisonCatalog,
+  type ComparisonEntry,
+  type ComparisonIdentity,
+  type ComparisonSelection,
+  comparisonIdentityKey,
+  comparisonStateOf,
+  selectComparisonVersion,
+} from './comparison/select.js';

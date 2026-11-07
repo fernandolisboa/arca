@@ -7,6 +7,7 @@ import {
   compareScaled,
   normalizeScaled,
   powerOfTen,
+  roundQuotientHalfEven,
   scaledDecimal,
 } from './decimal.js';
 
@@ -72,14 +73,7 @@ export function maxExact(left: ExactAmount, right: ExactAmount): ExactAmount {
 
 /** Rounds to whole minor units, half to even. Used once, on a reported amount. */
 export function roundHalfEven(amount: ExactAmount): Money {
-  const divisor = powerOfTen(amount.scale);
-  const negative = amount.units < 0n;
-  const magnitude = negative ? -amount.units : amount.units;
-  const quotient = magnitude / divisor;
-  const twiceRemainder = (magnitude % divisor) * 2n;
-  const roundsUp = twiceRemainder > divisor || (twiceRemainder === divisor && quotient % 2n === 1n);
-  const rounded = roundsUp ? quotient + 1n : quotient;
-  const units = negative ? -rounded : rounded;
+  const units = roundQuotientHalfEven(amount.units, powerOfTen(amount.scale));
   if (units > BigInt(Number.MAX_SAFE_INTEGER) || units < BigInt(Number.MIN_SAFE_INTEGER)) {
     throw new RangeError('Amount is outside the safe integer range');
   }

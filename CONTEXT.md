@@ -49,19 +49,32 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Case stage | Etapa do caso | Where a case stands on the home: telling about the family, the guided questions, then the routes; counted in the client from the case and its answers, never an eligibility decision |
 | Progress | Progresso | Documents obtained and steps done out of what a person's or the family's chosen routes need, computed in code; unknowns shown apart |
 | Shared analysis | Análise compartilhada | A comparison or recommendation an adult shares, read-only and revocable, with chosen people in the case; not a document share |
+| Destination comparison | Comparar destinos | One adult's ranking of the countries that have a route, by criteria they weigh themselves; computed in code, private to that adult unless shared as a shared analysis ([ADR-0026](docs/adr/0026-destination-comparison-data.md)) |
+| Criterion | Critério | One thing a destination comparison scores, such as safety or climate; knowledge data with a stable ID, scored from a country indicator or from the person's own rating |
+| Personal criterion | Critério pessoal | A criterion of a comparison version that each adult scores with their own rating, such as climate; knowledge data, unlike an own criterion. Avoid "subjective criterion" |
+| Own criterion | Critério próprio | A criterion an adult creates and names for their own comparison, scored only from their rating; case data, unlike a personal criterion. Avoid "custom criterion" |
+| Weight | Peso | How much a criterion counts in one adult's comparison, from 0 (left out) to 5 |
+| Rating | Sua nota | The one to five stars an adult gives a country on a personal criterion or an own criterion |
+| Score | Nota | A country's result on one criterion, from 0 to 10, computed in code; unknown when the value or the rating is missing, never zero |
+| Total score | Nota final | The weighted mean of a country's known scores, from 0 to 10 |
+| Coverage | Dados conhecidos | The share of an adult's weight that a country's known scores carry; under half puts the country in "Poucos dados" |
+| Few data | Poucos dados | The group of countries with less than half of an adult's weight known, listed after the ranked ones without a rank |
+| Hidden country | País oculto | A country an adult left out of their comparison; still scored, listed last without a rank, and brought back with one tap |
+| Country indicator | Indicador do país | A versioned, sourced knowledge file with one measured value per country, such as the homicide rate, with its year |
+| Comparison version | Versão dos dados de comparação | A versioned knowledge file with the criteria and the country indicators they read; activated or rejected as a whole, like a route version |
 | Guided tour | Tour guiado | The first-run walkthrough of the app and the hint shown the first time a screen opens; skippable and replayable |
 | Fact | Dado | A typed value about a person or unit that rules read, such as an age at a date; derived from the case in code |
 | Requirement | Requisito | A condition of a route version, evaluated as true, false or unknown, with a source |
 | Assessment | Critério subjetivo | A judgment factor of a route version, such as national importance; shown with its evidence, never as pass or fail |
 | Country set | Grupo de países | A versioned, sourced list of countries a rule refers to, such as treaty countries |
 | Proposed version | Versão proposta | A route version in the knowledge catalog that is neither active nor rejected |
-| Decision state | Internal, no UI label | Per version identity (route, number, content hash): active, rejected or proposed. A version with no counted decision is proposed |
+| Decision state | Internal, no UI label | Per version identity (route, number, content hash; or comparison, number, content hash, under a key no route can take): active, rejected or proposed. A version with no counted decision is proposed |
 | Newer proposed version | Nova versão proposta | A version not yet active that selection would pick, at the evaluation date or later, instead of the version evaluated |
 | Correction | Correção | A route version that fixes a data error in an earlier one, named by its `corrects` field; once in effect, the version it fixes is no longer selected |
 | Official source | Fonte oficial | A source on a host the knowledge base lists as official for a country or an international body |
 | Secondary source | Fonte secundária | A non-official source cited beside an official one, never instead of it |
 | Stale source | Fonte desatualizada | A source not re-verified in the last 90 days; evaluations that cite it say the rule needs re-checking |
-| Activation | Ativação | An approver's passkey approval of one route version, bound to its content hash; counts once stored ([ADR-0022](docs/adr/0022-single-approver-activation.md)) |
+| Activation | Ativação | An approver's passkey approval of one route version or comparison version, bound to its content hash; counts once stored ([ADR-0022](docs/adr/0022-single-approver-activation.md)) |
 | Rejection | Recusa | An approver's passkey decision that a version, proposed or active, will never be used; once it counts, selection skips it |
 | Approver | Aprovador | An account on the reviewed approver list who may activate or reject knowledge-base versions with a step-up |
 | Decision | Decisão | An approver's activation or rejection, stored with the step-up it consumed |

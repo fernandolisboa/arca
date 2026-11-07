@@ -11,6 +11,8 @@ data/official-domains/<id>/<n>.json         official source hosts per country or
 data/country-sets/<id>/<n>.json             versioned country sets
 data/routes/<route-id>/<n>.json             one file per route version
 data/routes/<route-id>/<n>.cases.json       table-driven cases for that version (R8)
+data/indicators/<id>/<n>.json               country indicators for the destination comparison (ADR-0026)
+data/comparisons/<id>/<n>.json              comparison versions: criteria and the indicators they pin
 data/hashes.json                            committed content hashes, append-only
 scripts/                                    load, validate, hash and write the catalog; generate countries
 vendor/cldr/<release>/                      the pinned CLDR territories file, its license and manifest
@@ -31,7 +33,7 @@ Every file in `data` is immutable once on `main`. A change is a new numbered fil
 1. Reads every file under `data`. A file outside the layout, a symbolic link or a file over 1 MB is an issue.
 2. Parses each one in the accepted JSON subset: UTF-8 without a byte order mark, integers only and within ±(2^53 − 1), strings in NFC (checked, never normalized) with no control, format or invisible characters, no duplicate keys, bounded nesting.
 3. Validates it against the schemas in `@arca/domain` and the rules of spec 0002 R6: IDs and numbers match the path, numbers are contiguous, pins resolve to valid files, official sources sit on a pinned official host, members and route countries are in the pinned countries files, `verifiedAt` is not after the build date, and version dates and corrections stay inside their bounds.
-4. Hashes each route version and country set: SHA-256 over the RFC 8785 canonical JSON of `{ "version": <file>, "pinned": { "<kind>/<id>/<number>": <file>, … } }`, holding every file it pins, transitively.
+4. Hashes each route version, country set, country indicator and comparison version: SHA-256 over the RFC 8785 canonical JSON of `{ "version": <file>, "pinned": { "<kind>/<id>/<number>": <file>, … } }`, holding every file it pins, transitively.
 5. Compares every hash, and the hashes of the RFC 8785 test vectors, with `data/hashes.json`.
 6. Writes `src/generated/catalog.ts`. Any issue fails the build and deletes the module, so no tool keeps serving an earlier catalog.
 
@@ -40,6 +42,10 @@ Every file in `data` is immutable once on `main`. A change is a new numbered fil
 `data/countries/<n>.json` is generated, never written by hand. `pnpm --filter @arca/knowledge countries:generate` runs `scripts/generate-countries.ts`, which only a maintainer runs and never `pnpm check` or the build. It checks the vendored CLDR file and license against the pins in `scripts/countries.ts`, keeps every alpha-2 region CLDR lists except the exclusions there (`XK` stays), and writes the next numbered file. It fails on any code that is neither excluded, admitted nor in the previous countries file, and on any code of the previous file the release drops unless it is withdrawn, so a new CLDR release's changes are classified in `reclassification` (in `scripts/countries.ts`) by a reviewed change first. A new release is vendored after its entry is approved in `.github/policy/vendored.json`; then update the pins and regenerate.
 
 `data/former-countries/<n>.json` lists ISO 3166-3 codes, with sources; their names live in the i18n catalogs (`formerCountries`), because `Intl.DisplayNames` names only current countries. A test in `@arca/i18n` fails when a code has no name. User-assigned codes `QM` to `QZ` (except `QO` and `QU`) are for test fixtures only, and the real build rejects them.
+
+## Comparison data
+
+The destination comparison reads `comparisons/<id>/<n>.json`, which pins the `indicators/<id>/<n>.json` it scores ([ADR-0026](../../docs/adr/0026-destination-comparison-data.md)). An indicator holds one value per country (a decimal string or a token), its year and the source it comes from; a country without a value is unknown. A criterion is `indicator` (scored linearly from `zeroAt` to `tenAt`, so the anchors also give the direction), `category` (a score per token, every token scored) or `personal` (rated by each person). Refreshing values or adding a criterion is a new indicator version and a new comparison version, activated as a whole (an indicator's hash is recorded in `hashes.json` but never activated alone, and the build allows exactly one comparison series); criterion IDs stay stable across versions, since people's weights and ratings point at them. `@arca/knowledge` exports `comparisonCatalog`, which hands out a full entry only for an active version, like `routeCatalog`.
 
 ## Tags
 

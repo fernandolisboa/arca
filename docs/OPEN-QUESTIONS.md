@@ -20,6 +20,7 @@ Made by agents, tracked here so they are not lost.
 
 - [ ] Delete the unused Preview copy of `RESEND_API_KEY` (only production sends email) and the unused `ARCA_GITHUB_TOKEN` in the agent environment ([SETUP.md](SETUP.md)); each needs the owner's OK or click.
 - [ ] Rotate `ARCA_RATE_LIMIT_KEY` monthly in Production and Preview ([spec 0003, R10](specs/0003-identity-and-access.md#r10-rate-limits)). Created by an agent on 2026-11-04; rotation is not automated yet: an agent writes a new value through the Vercel API, which resets the counters.
+- [ ] Whether a missing destination-comparison value should ever open a research task; for now it shows "sem dado" and waits for the next comparison version ([ADR-0026](adr/0026-destination-comparison-data.md)).
 - [ ] Audit-log purge: an ADR before the first `audit.event` record turns 5 years old (2031), since it changes ADR-0008's insert-only log ([ADR-0017](adr/0017-data-lifecycle-and-backups.md)).
 - [x] Resend's log and body retention for the plan: 30 days on the Free, Pro and Scale plans, recorded in [RETENTION.md](RETENTION.md) (checked 2026-11-04).
 - [x] License exception for Sentry's build tooling (FSL-1.1-Apache-2.0), or keeping it out: kept out by a pnpm override, with no source-map upload (#67, [ADR-0016](adr/0016-observability-and-scrubbing.md)).

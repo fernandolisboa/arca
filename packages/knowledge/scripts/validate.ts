@@ -1,16 +1,22 @@
 import {
   type CalendarDate,
   type CheckIssue,
+  type ComparisonVersion,
+  type CountryIndicator,
   type CountrySet,
   type OfficialDomainList,
   type OfficialHosts,
   type Pin,
   type RouteVersion,
   type Source,
+  checkComparisonVersion,
+  checkCountryIndicator,
   checkCountrySet,
   checkRouteVersion,
   checkVersionOrder,
   compareDates,
+  comparisonVersionSchema,
+  countryIndicatorSchema,
   countrySetSchema,
   officialDomainListSchema,
   routeVersionSchema,
@@ -34,11 +40,19 @@ export interface BuiltEntry {
   readonly countrySets: readonly Json[];
 }
 
+/** A comparison version as the catalog carries it, with exactly the indicators it pins. */
+export interface BuiltComparison {
+  readonly hash: string;
+  readonly version: Json;
+  readonly indicators: readonly Json[];
+}
+
 export interface ValidatedData {
   readonly entries: readonly BuiltEntry[];
-  /** Content hash of each valid route version and country set, by path without the extension. */
+  readonly comparisons: readonly BuiltComparison[];
+  /** Content hash of each valid hashed file, by path without the extension. */
   readonly hashes: ReadonlyMap<string, string>;
-  /** Every route version and country set path that would have a hash, valid or not. */
+  /** Every path of a hashed kind, valid or not. */
   readonly hashable: ReadonlySet<string>;
   /** The latest countries and former countries, which the guided questions offer (spec 0007, R4). */
   readonly countries: PinnedCountries;
@@ -55,7 +69,9 @@ type Parsed =
   | { readonly kind: 'former-countries'; readonly raw: RawFile; readonly data: FormerCountriesFile }
   | { readonly kind: 'official-domains'; readonly raw: RawFile; readonly data: OfficialDomainList }
   | { readonly kind: 'country-sets'; readonly raw: RawFile; readonly data: CountrySet }
-  | { readonly kind: 'routes'; readonly raw: RawFile; readonly data: RouteVersion };
+  | { readonly kind: 'routes'; readonly raw: RawFile; readonly data: RouteVersion }
+  | { readonly kind: 'indicators'; readonly raw: RawFile; readonly data: CountryIndicator }
+  | { readonly kind: 'comparisons'; readonly raw: RawFile; readonly data: ComparisonVersion };
 
 type ParsedOf<K extends FileKind> = Extract<Parsed, { kind: K }>;
 
@@ -65,7 +81,17 @@ const schemas: { readonly [K in FileKind]: z.ZodType<ParsedOf<K>['data']> } = {
   'official-domains': officialDomainListSchema,
   'country-sets': countrySetSchema,
   routes: routeVersionSchema,
+  indicators: countryIndicatorSchema,
+  comparisons: comparisonVersionSchema,
 };
+
+/** The kinds that get a content hash, recorded in `hashes.json`. */
+const hashedKinds: ReadonlySet<FileKind> = new Set([
+  'country-sets',
+  'routes',
+  'indicators',
+  'comparisons',
+]);
 
 export interface ValidationOptions {
   /** Accept the user-assigned codes fixtures use (`QM` to `QZ`, except `QO` and `QU`). */
@@ -122,14 +148,26 @@ class Validation {
     }
     for (const file of this.parsed.values()) {
       if (file.kind === 'routes') this.checkRoute(file);
+      if (file.kind === 'indicators') this.checkIndicator(file);
+    }
+    for (const file of this.parsed.values()) {
+      if (file.kind === 'comparisons') this.checkComparison(file);
     }
     this.checkRouteOrder();
     const entries: BuiltEntry[] = [];
+    const comparisons: BuiltComparison[] = [];
     for (const file of this.parsed.values()) {
-      if (file.kind !== 'country-sets' && file.kind !== 'routes') continue;
+      if (!hashedKinds.has(file.kind)) continue;
       if (this.failed.has(file.raw.file)) continue;
       const hash = contentHash({ version: file.raw.json, pinned: this.pinnedContent(file) });
       hashes.set(withoutExtension(file.raw.file), hash);
+      if (file.kind === 'comparisons') {
+        comparisons.push({
+          hash,
+          version: file.raw.json,
+          indicators: file.data.indicators.map((pin) => this.require('indicators', pin).raw.json),
+        });
+      }
       if (file.kind === 'routes') {
         entries.push({
           hash,
@@ -142,10 +180,17 @@ class Validation {
     }
     const hashable = new Set(
       this.raw.files
-        .filter((file) => file.kind === 'country-sets' || file.kind === 'routes')
+        .filter((file) => hashedKinds.has(file.kind))
         .map((file) => withoutExtension(file.file)),
     );
-    return { entries, hashes, hashable, countries: this.latestCountries(), issues: this.issues };
+    return {
+      entries,
+      comparisons,
+      hashes,
+      hashable,
+      countries: this.latestCountries(),
+      issues: this.issues,
+    };
   }
 
   private latestCountries(): PinnedCountries {
@@ -260,6 +305,42 @@ class Validation {
     }
   }
 
+  private checkIndicator(file: ParsedOf<'indicators'>): void {
+    const { data, raw } = file;
+    this.checkVerified(raw, data.sources, '/sources');
+    const buildYear = Number(this.buildDate.slice(0, 4));
+    data.values.forEach((value, index) => {
+      if (value.year > buildYear) {
+        this.report(
+          raw,
+          'A value is not from after the build year',
+          `/values/${String(index)}/year`,
+        );
+      }
+    });
+    const countries = this.resolve(raw, 'countries', data.countries, '/countries');
+    const official = this.officialHosts(raw, data.officialDomains);
+    if (countries === undefined || official === undefined) return;
+    this.reportChecks(raw, checkCountryIndicator(data, official, new Set(countries.data.codes)));
+  }
+
+  private checkComparison(file: ParsedOf<'comparisons'>): void {
+    const { data, raw } = file;
+    const series = new Set(
+      this.raw.files.filter((each) => each.kind === 'comparisons').map((each) => each.id),
+    );
+    if (series.size > 1) this.report(raw, 'There is one comparison series');
+    const resolved = data.indicators.map((pin, index) =>
+      this.resolve(raw, 'indicators', pin, `/indicators/${String(index)}`),
+    );
+    const indicators = new Map<string, CountryIndicator>();
+    for (const indicator of resolved) {
+      if (indicator === undefined) return;
+      indicators.set(indicator.data.id, indicator.data);
+    }
+    this.reportChecks(raw, checkComparisonVersion(data, indicators));
+  }
+
   private checkRouteOrder(): void {
     const routes = new Map<string, ParsedOf<'routes'>[]>();
     for (const file of this.parsed.values()) {
@@ -322,7 +403,7 @@ class Validation {
   }
 
   /** Every file the version pins, transitively, keyed `<kind>/<id>/<number>` (spec 0002, R6). */
-  private pinnedContent(file: ParsedOf<'country-sets'> | ParsedOf<'routes'>): Record<string, Json> {
+  private pinnedContent(file: Parsed): Record<string, Json> {
     const pinned: Record<string, Json> = {};
     const add = (kind: FileKind, pin: Pin): Parsed => {
       const target = this.require(kind, pin);
@@ -334,11 +415,22 @@ class Validation {
       add('former-countries', data.formerCountries);
       for (const pin of data.officialDomains) add('official-domains', pin);
     };
-    addCommon(file.data);
+    const addIndicator = (data: CountryIndicator): void => {
+      add('countries', data.countries);
+      for (const pin of data.officialDomains) add('official-domains', pin);
+    };
+    if (file.kind === 'country-sets' || file.kind === 'routes') addCommon(file.data);
     if (file.kind === 'routes') {
       for (const pin of file.data.countrySets) {
         const set = add('country-sets', pin) as ParsedOf<'country-sets'>;
         addCommon(set.data);
+      }
+    }
+    if (file.kind === 'indicators') addIndicator(file.data);
+    if (file.kind === 'comparisons') {
+      for (const pin of file.data.indicators) {
+        const indicator = add('indicators', pin) as ParsedOf<'indicators'>;
+        addIndicator(indicator.data);
       }
     }
     return pinned;

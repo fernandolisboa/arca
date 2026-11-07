@@ -151,11 +151,33 @@ export interface UnitsMoney {
   readonly currency: string;
 }
 
+/** A route's result for one person: an evaluation status, or a version waiting for activation. */
+export type RouteStatus = EvaluationStatus | 'pending_activation';
+
+const routeStatusRank: Readonly<Record<RouteStatus, number>> = {
+  eligible: 0,
+  needs_assessment: 1,
+  missing_information: 2,
+  pending_activation: 3,
+  not_eligible: 4,
+  unavailable: 5,
+};
+
+/** From the best a person can have in a country to the worst; the comparison shows the first. */
+export const routeStatusOrder: readonly RouteStatus[] = (
+  Object.keys(routeStatusRank) as RouteStatus[]
+).sort((left, right) => routeStatusRank[left] - routeStatusRank[right]);
+
+/** The best of a country's route statuses for one person, or undefined when there are none. */
+export function bestRouteStatus(statuses: readonly RouteStatus[]): RouteStatus | undefined {
+  return routeStatusOrder.find((status) => statuses.includes(status));
+}
+
 /** One route for one principal as the results screen shows it, without traces (spec 0007, R6). */
 export interface RouteResult {
   readonly routeId: string;
   readonly principalId: string;
-  readonly status: EvaluationStatus | 'pending_activation';
+  readonly status: RouteStatus;
   /** The version evaluated, or the one waiting for activation; null when none is in effect. */
   readonly version: { readonly number: number; readonly hash: string } | null;
   readonly stale: boolean;
