@@ -1,5 +1,6 @@
 import type { ComponentType, ReactNode } from 'react';
 import type { AxisValue } from '../theme/ids.js';
+import { iconButtonClass } from '../button.js';
 import { Icon, type IconName } from '../icon.js';
 
 /** One destination. The app builds the list, so only pages that exist appear (spec 0006, R8). */
@@ -57,7 +58,7 @@ export function NavLink({ item, link: Link, shape, iconOnly = false, onNavigate 
   return (
     <Link
       href={item.href}
-      className={`${iconOnly ? 'inline-flex min-h-touch min-w-touch items-center justify-center rounded-control' : shapes[shape]} ${tone} transition-colors ${focusRing}`}
+      className={`${iconOnly ? iconButtonClass : `${shapes[shape]} ${focusRing}`} ${tone} transition-colors`}
       {...(item.current ? { 'aria-current': 'page' as const } : {})}
       {...(iconOnly ? { 'aria-label': item.label } : {})}
       {...(onNavigate === undefined ? {} : { onClick: onNavigate })}

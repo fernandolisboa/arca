@@ -1,4 +1,4 @@
-import { Button, Icon } from '@arca/ui';
+import { Button, Icon, iconButtonClass } from '@arca/ui';
 import { useEffect, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { download } from './download.js';
@@ -81,12 +81,12 @@ export function RecoveryCodeSheet({
   const [finishing, setFinishing] = useState(false);
   const [failure, setFailure] = useState<CommonFailure>();
   const grouped = groupCode(code);
-  const copy = useCopy(grouped);
+  const clipboard = useCopy(grouped);
   const copyStatus = {
     idle: '',
     copied: t('recoveryKit.copied'),
     failed: t('recoveryKit.copyFailure'),
-  }[copy.state];
+  }[clipboard.state];
 
   const finish = () => {
     setFailure(undefined);
@@ -118,13 +118,16 @@ export function RecoveryCodeSheet({
             type="button"
             aria-label={t(labels.copy)}
             title={t(labels.copy)}
-            onClick={copy.copy}
-            className="inline-flex min-h-touch min-w-touch shrink-0 items-center justify-center rounded-control text-muted hover:bg-soft hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary print:hidden"
+            onClick={clipboard.copy}
+            className={`${iconButtonClass} text-muted hover:bg-soft hover:text-ink print:hidden`}
           >
-            <Icon name={copy.state === 'copied' ? 'check' : 'copy'} />
+            <Icon name={clipboard.state === 'copied' ? 'check' : 'copy'} />
           </button>
         </div>
-        <span role="status" className={copy.state === 'failed' ? 'text-muted' : 'sr-only'}>
+        <span
+          role="status"
+          className={clipboard.state === 'failed' ? 'text-muted print:hidden' : 'sr-only'}
+        >
           {copyStatus}
         </span>
       </div>

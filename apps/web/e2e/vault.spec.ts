@@ -68,6 +68,9 @@ async function keepSecret(page: Page): Promise<string> {
   const secret = (await sheet.locator('p').nth(1).innerText()).trim();
   expect(secret).toMatch(/^[0-9A-Z]{4}( [0-9A-Z]{1,4}){6}$/);
   await expectAccessible(page);
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+  await sheet.getByRole('button', { name: 'Copiar o segredo' }).click();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(secret);
   await page.getByLabel('Guardei o segredo num lugar seguro').check();
   await page.getByRole('button', { name: 'Continuar' }).click();
   await expect(opened(page)).toBeVisible();
