@@ -62,6 +62,14 @@
     {
       "path": "routes/lv-capital-investment/1",
       "sha256": "8dde65abb374e58382f9dda8268e828976d923c5b9974e0051250b743409f696"
+    },
+    {
+      "path": "country-sets/au-pacific-regional/1",
+      "sha256": "ea78e495170d465a50848dc41191d3830d91db297bd23d4246bdeeaf261d291d"
+    },
+    {
+      "path": "routes/au-skilled-independent/1",
+      "sha256": "d42bd56fe61a88fffd1a0be520f70c69b2fa5455bc5a56ea5255fbfdddc0751f"
     }
   ]
 }

@@ -1,6 +1,6 @@
 # Other destinations
 
-Checked 2026-11-01; the Uruguay, Argentina, Paraguay, Chile and Latvia sections on 2026-11-07.
+Checked 2026-11-01; the Uruguay, Argentina, Paraguay, Chile, Latvia and Australia sections on 2026-11-07.
 
 ## Spain
 
@@ -90,6 +90,22 @@ A family member gets a permit for the principal's term: the spouse, the minor ch
 | A period counted in months whose last month lacks the start date ends on that month's last day (art. 43(1)) | [Administratīvā procesa likums](https://likumi.lv/ta/id/55567-administrativa-procesa-likums) |
 | Not modeled: the fund route (art. 27(1) point 36), reported as not usable yet and proposed for deletion; the state fee for examining the documents, set by the Cabinet (art. 13); the early integration programme, required once permits reach 18 months (art. 48, in force from 2027-12-31 under transitional provision 20); the long-stay visa for remote work for an employer, or as self-employed, registered in an OECD member state (arts. 17 point 6 and 18(2)), left for a later version | [Imigrācijas likums](https://likumi.lv/ta/id/370622-imigracijas-likums) |
 
+## Australia
+
+The Skilled Independent visa (subclass 189), points-tested stream, is now route version `au-skilled-independent` 1 in `packages/knowledge/data/routes`, verified on 2026-11-07 against the Migration Regulations 1994 on the Federal Register of Legislation. It is a permanent visa for a skilled worker the Minister invites to apply, with no employer or state sponsor. The version starts on 2026-07-01, when the current visa application charges took effect; the clauses it reads are the same in the compilations in force from 2026-07-01 and 2026-10-02, and the amendments in force from 2026-11-01, 2026-11-03 and 2026-11-12, not yet compiled, touch other visas only.
+
+The only check the engine makes is the age limit: the principal must not have turned 45 when invited, so the version reads a principal of 45 or more on the evaluation date as not eligible, and one under 45 must be invited before the 45th birthday. Accepted reading: the invitation date is not known in advance, so someone invited at 44 who turns 45 before applying still shows as not eligible on a later date. The invitation, the skilled occupation and its skills assessment, competent English and the points score are assessments: the case records none of them. The family unit applies together: the spouse, a de facto partner, and the children and stepchildren the regulations count (reg. 1.12(2)). A child with a recorded spouse or partner is not a family member, read through `person.hasSpouse` and the generic fact `person.hasPartner`, which reads the partner edges the case records. Accepted readings: an engaged child is not a family member either, and the case does not record an engagement; an unmarried child who may depend on the principal's spouse or partner, or who is 23 or more and cannot work, shows as possible; a citizenship of a Pacific-regional country is read as holding its passport, for the lower charges (the 13 countries are the country set `au-pacific-regional` 1, from reg. 1.03); and a 29 February birthday counts on 1 March, reading the Acts Interpretation Act's rule for ages (s. 37A) with its rule for a period that ends in a month without the start day (s. 2G(2)). The second instalment of the charge is listed for adult family members only: the principal must have competent English, a higher level than the functional English that avoids it.
+
+| Fact | Source |
+| --- | --- |
+| A primary applicant must be invited in writing, apply within the invitation's period, not have turned 45 at the time of invitation, and nominate a skilled occupation the Minister lists and the invitation names (Schedule 1 item 1137(4B)) | [Migration Regulations 1994](https://www.legislation.gov.au/F1996B03551/latest/text) |
+| At invitation: a suitable skills assessment for the occupation, not for a subclass 485 visa and at most 3 years old (or within its own shorter validity), and competent English; a points score at least the invitation's and the pass mark (Schedule 2 clauses 189.221 to 189.224). Competent English is a specified test from the 3 years before the invitation, or a passport of a type the Minister specifies (reg. 1.15C) | [Migration Regulations 1994](https://www.legislation.gov.au/F1996B03551/latest/text) |
+| First instalment from 2026-07-01: AUD 6,135 base, AUD 3,070 for each other applicant of 18 or more, AUD 1,540 for each under 18; AUD 5,030, 2,515 and 1,260 when the primary applicant has a passport from a Pacific-regional country. Second instalment of AUD 4,885 for each applicant of 18 or more assessed as not having functional English (item 1137(3) and (4)). Until 2026-06-30 the first instalment was AUD 4,910, 2,455 and 1,230 | [Migration Regulations 1994](https://www.legislation.gov.au/F1996B03551/latest/text) |
+| Family unit: the spouse or de facto partner; a child or stepchild of the principal or the partner, not engaged and without a spouse or de facto partner, who is under 18, or 18 to 22 and dependent on the principal or the partner, or 23 or more and dependent because unable to work; and a dependent child of such a child (reg. 1.12(2)). Dependent means wholly or substantially reliant on the person for basic needs (reg. 1.05A) | [Migration Regulations 1994](https://www.legislation.gov.au/F1996B03551/latest/text) |
+| De facto partners: both at least 18; for a permanent visa, 12 months in the relationship before the application, unless it is registered or there are compelling and compassionate circumstances (reg. 2.03A) | [Migration Regulations 1994](https://www.legislation.gov.au/F1996B03551/latest/text) |
+| A person attains an age at the start of the anniversary of the birth date (s. 37A); a period of months that ends in a month without the start day ends at that month's end (s. 2G(2)). The Act applies to legislative instruments such as the regulations (Legislation Act 2003, s. 13(1)(a)) | [Acts Interpretation Act 1901](https://www.legislation.gov.au/C1901A00002/latest/text) |
+| Not modeled: the grandchildren of reg. 1.12(2)(c), since a rule cannot test the child they are reached through; the New Zealand stream (closed to applications from 10 December 2022) and the Hong Kong stream (holders of certain Australian visas); the points table (Schedule 6D) and the pass mark the Minister sets; health and character criteria; the skilled occupation list; the 3 years a holder of a subclass 491 or 494 visa must first hold it (clause 189.224A); the substantive or bridging A, B or C visa an applicant in Australia must hold (item 1137(4A)(c)) | [Migration Regulations 1994](https://www.legislation.gov.au/F1996B03551/latest/text) |
+
 ## Germany
 
 | Fact | Source |
@@ -118,5 +134,6 @@ A family member gets a permit for the principal's term: the spouse, the minor ch
 | --- | --- |
 | Canada | Express Entry points system |
 | Ireland | Critical Skills Employment Permit and general work permits |
-| Australia, New Zealand | Points-based skilled visas |
+| Australia | Skilled Nominated (subclass 190) and Skilled Work Regional (subclass 491), which add a state nomination to the points test; employer-sponsored visas |
+| New Zealand | Points-based skilled visas |
 | United Arab Emirates | Long-term residence through property investment |

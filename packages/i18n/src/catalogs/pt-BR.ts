@@ -975,6 +975,7 @@ export const ptBR = {
         dependsOnPrincipal: 'depende do requerente principal',
         studying: 'está estudando',
         hasSpouse: 'tem cônjuge',
+        hasPartner: 'tem companheiro ou companheira',
         temporaryJobOfferSectors: 'setores das ofertas de trabalho temporário',
       },
       unit: {

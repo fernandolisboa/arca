@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "au-pacific-regional",
+  "number": 1,
+  "title": "Pacific-regional countries, whose passport holders pay lower charges for some Australian visas",
+  "members": ["FJ", "FM", "KI", "MH", "NR", "PG", "PW", "SB", "TL", "TO", "TV", "VU", "WS"],
+  "sources": [
+    {
+      "id": "regs-pacific-regional",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "title": "Migration Regulations 1994, regulation 1.03, definition of Pacific-regional country: thirteen countries, from the Federated States of Micronesia to Vanuatu",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "au",
+      "number": 1
+    }
+  ]
+}

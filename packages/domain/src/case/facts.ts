@@ -16,6 +16,7 @@ import type { Decimal } from '../money/decimal.js';
 import { type CurrencyPair, type FxRate, type FxTable, convert } from '../money/fx.js';
 import { type ExactAmount, type Money, addExact, multiplyExact, toExact } from '../money/money.js';
 import {
+  type CoupleKind,
   type IndexedSnapshot,
   type MissingMarker,
   assertRecordedBy,
@@ -25,6 +26,7 @@ import {
 } from './graph.js';
 import {
   type Citizenship,
+  type CompletenessMarker,
   type CountryCode,
   type Person,
   type Relationship,
@@ -215,16 +217,12 @@ export const factCatalog = {
   'person.hasSpouse': {
     type: { kind: 'boolean' },
     scope: 'person',
-    derive: ({ environment, personId }, at) => {
-      const spouses = couples(environment.snapshot, personId, 'spouse', at);
-      const any = or(spouses.map((spouse) => spouse.valid));
-      const complete = isRecordedInFull(person(environment, personId), 'spouses');
-      if (any !== false || complete) return { value: booleanValue(any) };
-      return {
-        value: booleanValue('unknown'),
-        missingMarkers: [{ personId, marker: 'spouses' }],
-      };
-    },
+    derive: (binding, at) => hasCouple(binding, 'spouse', at),
+  },
+  'person.hasPartner': {
+    type: { kind: 'boolean' },
+    scope: 'person',
+    derive: (binding, at) => hasCouple(binding, 'partner', at),
   },
   'person.temporaryJobOfferSectors': {
     type: { kind: 'enum-list', values: isicSections },
@@ -380,6 +378,24 @@ function person(environment: FactEnvironment, id: string): Person {
 
 function dateFact(value: DateValue | undefined): Derived {
   return { value: value === undefined ? unknownDate() : { type: 'date', ...dateRange(value) } };
+}
+
+const relationshipMarkers: Record<CoupleKind, CompletenessMarker> = {
+  spouse: 'spouses',
+  partner: 'partners',
+};
+
+function hasCouple(
+  { environment, personId }: FactBinding,
+  kind: CoupleKind,
+  at: CalendarDate,
+): Derived {
+  const any = or(couples(environment.snapshot, personId, kind, at).map((edge) => edge.valid));
+  const marker = relationshipMarkers[kind];
+  if (any !== false || isRecordedInFull(person(environment, personId), marker)) {
+    return { value: booleanValue(any) };
+  }
+  return { value: booleanValue('unknown'), missingMarkers: [{ personId, marker }] };
 }
 
 function dependsOn(subject: Person, on: string): Value {
