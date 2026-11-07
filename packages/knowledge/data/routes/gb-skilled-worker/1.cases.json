@@ -418,6 +418,102 @@
       }
     },
     {
+      "id": "married-child-under-18-not-covered",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p2", "p3", "p4"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1985-03-10",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1985-03-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1987-08-20",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1987-08-20",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p3",
+            "birthDate": "2009-05-05",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2009-05-05",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p4",
+            "birthDate": "2008-01-01",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2008-01-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "spouse",
+            "people": ["p1", "p2"],
+            "start": "2010-06-01",
+            "end": "none"
+          },
+          {
+            "kind": "parent",
+            "parent": "p1",
+            "child": "p3",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p3",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "spouse",
+            "people": ["p3", "p4"],
+            "start": "2026-06-01",
+            "end": "none"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "needs_assessment",
+        "dependents": ["p2"],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
       "id": "spouses-child-not-covered",
       "snapshot": {
         "recordedOn": "2026-10-01",

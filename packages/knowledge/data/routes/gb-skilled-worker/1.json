@@ -75,7 +75,7 @@
       "verifiedAt": "2026-11-07"
     },
     {
-      "id": "sw-dependants",
+      "id": "sw-dependents",
       "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
       "title": "Appendix Skilled Worker, SW 26.3, 29.1, 29.1A, 29.2 and 32A.1 to 32A.2: a dependent partner aged 18 or over and dependent children of a Skilled Worker sponsored for a job in Table 1, 2 or 3",
       "kind": "official",
@@ -98,7 +98,7 @@
     {
       "id": "appendix-children",
       "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-children",
-      "title": "Appendix Children, CHI 1.1, 1.2, 1A.1 and 3.2: under 18, or older if last granted permission as a dependent child; no independent life; both parents come, unless one has sole responsibility",
+      "title": "Appendix Children, CHI 1.1, 1.2, 1A.1 and 3.2: under 18, or older after permission as a dependent child; no partner, living with a parent; both parents come unless one has sole responsibility",
       "kind": "official",
       "verifiedAt": "2026-11-07"
     },
@@ -184,7 +184,7 @@
     },
     {
       "id": "not-applying-from-abroad-as-afghan",
-      "title": "Not applying from abroad as a citizen of Afghanistan only, refused since 26 March 2026; someone living in the UK who switches from another permission: possible",
+      "title": "Not applying from abroad as a citizen of Afghanistan only (refused since 26 March 2026); switching from another permission inside the UK: possible",
       "expression": {
         "op": "any",
         "operands": [
@@ -276,7 +276,7 @@
           "value": 18
         }
       },
-      "sources": ["sw-dependants", "relationship-with-partner", "rules-introduction"]
+      "sources": ["sw-dependents", "relationship-with-partner", "rules-introduction"]
     },
     {
       "id": "partner",
@@ -314,41 +314,60 @@
           }
         ]
       },
-      "sources": ["sw-dependants", "relationship-with-partner", "rules-introduction"]
+      "sources": ["sw-dependents", "relationship-with-partner", "rules-introduction"]
     },
     {
       "id": "children",
-      "title": "Children under 18 whose other parent comes too, unless the principal has sole responsibility; an adult child who depends on the principal: possible, only after UK permission as their child",
+      "title": "Children under 18 with no spouse or partner; living with the principal and the other parent coming too are not checked; an adult child who depends on the principal: possible",
       "path": ["child"],
       "condition": {
-        "op": "any",
+        "op": "all",
         "operands": [
           {
-            "op": "lt",
-            "left": {
+            "op": "not",
+            "operand": {
               "op": "fact",
-              "key": "person.ageYears"
-            },
-            "right": {
-              "op": "int",
-              "value": 18
+              "key": "person.hasSpouse"
             }
           },
           {
-            "op": "all",
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasPartner"
+            }
+          },
+          {
+            "op": "any",
             "operands": [
               {
-                "op": "fact",
-                "key": "person.dependsOnPrincipal"
+                "op": "lt",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
               },
               {
-                "op": "unmodeled"
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "fact",
+                    "key": "person.dependsOnPrincipal"
+                  },
+                  {
+                    "op": "unmodeled"
+                  }
+                ]
               }
             ]
           }
         ]
       },
-      "sources": ["sw-dependants", "appendix-children", "rules-introduction"]
+      "sources": ["sw-dependents", "appendix-children", "rules-introduction"]
     }
   ],
   "costs": [],
