@@ -50,6 +50,10 @@
     {
       "path": "routes/ar-mercosur-temporary/1",
       "sha256": "4ec19ff292184f8dcad663aff2c0382600da95e02013fee3cee7e0439fc73a71"
+    },
+    {
+      "path": "routes/py-mercosur-temporary/1",
+      "sha256": "11eb39818c8734d2a096ae03ed91ac2469dd0f192085029cd02d0a7066ccbeaa"
     }
   ]
 }
