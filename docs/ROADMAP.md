@@ -36,7 +36,7 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 - Before real family data enters: in-app account deletion and data export, retention periods ([RETENTION.md](RETENTION.md)), incident response runbook, backups on Neon, threat model for the epic ([ADR-0017](adr/0017-data-lifecycle-and-backups.md), [ADR-0021](adr/0021-stay-on-vercel-and-neon.md), spec 0004).
 - Client builds to a static bundle; no server-rendering dependency.
 - Versioned typed API; every feature goes through it.
-- Passkeys on the production host, invite-only enrollment, purpose-bound step-up (which knowledge-base decisions use, [ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)) and recovery ([ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)); cookie sessions on the web. Secure-storage tokens for native apps come with Phase 4; nothing in the design blocks them.
+- Passkeys on the production host, invite-only enrollment, purpose-bound step-up (which giving the admin role uses, [ADR-0027](adr/0027-admins-and-the-checked-batch-activation.md)) and recovery ([ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)); cookie sessions on the web. Secure-storage tokens for native apps come with Phase 4; nothing in the design blocks them.
 - `platform` port with web adapters: passkeys, vault envelopes, camera capture, file picking, notifications, secure key storage, sharing, receiving shared files, deep links.
 - Notification service with per-device channels (web push first).
 - Vault encryption format documented and platform-neutral; key recovery designed and tested.
@@ -45,9 +45,10 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 
 **Epic: consultancy core** (slices and dependencies in [specs/0002-rules-engine-and-knowledge-base.md](specs/0002-rules-engine-and-knowledge-base.md#the-epic-consultancy-core); the case model and intake wait for the foundations' identity and data-protection work above)
 
-- Rules engine and knowledge base, specified in [specs/0002-rules-engine-and-knowledge-base.md](specs/0002-rules-engine-and-knowledge-base.md), with the knowledge base as reviewed data activated by the owner's passkey ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)).
+- Rules engine and knowledge base, specified in [specs/0002-rules-engine-and-knowledge-base.md](specs/0002-rules-engine-and-knowledge-base.md), with the knowledge base as reviewed data activated by an admin ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md), [ADR-0027](adr/0027-admins-and-the-checked-batch-activation.md)).
 - Knowledge seed for the first countries, from official sources.
 - Case model with guided questions first, then AI intake from free text ([spec 0007](specs/0007-case-model-and-guided-intake.md), [spec 0008](specs/0008-free-text-intake.md)), with playback and correction; who sees what, per person; audit log.
+- Admin role, decisions without a passkey prompt, and the AI independent check with country guides and one-tap activation of checked versions ([#325](https://github.com/fernandolisboa/arca/issues/325), [ADR-0027](adr/0027-admins-and-the-checked-batch-activation.md)).
 - Destination comparison weighted by each person ([#310](https://github.com/fernandolisboa/arca/issues/310), [ADR-0026](adr/0026-destination-comparison-data.md)).
 - Strategy recommendation with alternatives, pros, cons, risks, cost and time.
 - Personalized document checklist.

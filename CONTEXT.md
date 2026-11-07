@@ -21,7 +21,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Rule | Regra | The requirements, assessments, dependents, costs and durations of one route version |
 | Ancestor | Ascendente | A parent, grandparent or earlier forebear of the principal, whether or not in the case; read in descent rules |
 | Lineage | Linha de ascendência | The chain of people from an ancestor down to the principal |
-| Rule summary | Resumo feito pela IA | A model's plain-text reading of one route version for the approver, with points to check; an aid to review that never decides and never reaches members; stored once per content, prompt and model, and shared by approvers |
+| Rule summary | Resumo feito pela IA | A model's plain-text reading of one route version for an admin, with points to check; an aid to review that never decides and never reaches members; stored once per content, prompt and model, and shared by admins |
 | Rule case | Caso de teste da regra | One table-driven test entry for a route version, in its cases file; not a family's case |
 | Official-domain list | Lista de sites oficiais | A versioned list of hosts that count as official for a country or international body |
 | Evaluation | Avaliação | The result of applying a route version to a person or unit |
@@ -74,18 +74,21 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Official source | Fonte oficial | A source on a host the knowledge base lists as official for a country or an international body |
 | Secondary source | Fonte secundária | A non-official source cited beside an official one, never instead of it |
 | Stale source | Fonte desatualizada | A source not re-verified in the last 90 days; evaluations that cite it say the rule needs re-checking |
-| Activation | Ativação | An approver's passkey approval of one route version or comparison version, bound to its content hash; counts once stored ([ADR-0022](docs/adr/0022-single-approver-activation.md)) |
-| Rejection | Recusa | An approver's passkey decision that a version, proposed or active, will never be used; once it counts, selection skips it |
-| Approver | Aprovador | An account on the reviewed approver list who may activate or reject knowledge-base versions with a step-up |
-| Decision | Decisão | An approver's activation or rejection, stored with the step-up it consumed |
+| Activation | Ativação | An admin's approval of one route version or comparison version, bound to its content hash; counts once stored ([ADR-0027](docs/adr/0027-admins-and-the-checked-batch-activation.md); earlier ones carry a step-up, [ADR-0022](docs/adr/0022-single-approver-activation.md)) |
+| Rejection | Recusa | An admin's decision that a version, proposed or active, will never be used; once it counts, selection skips it |
+| Admin | Administrador | An account that may activate or reject knowledge-base versions and give or take away the admin role; on the owner list, or holding an admin grant another admin gave from the family area. Replaces "approver" |
+| Decision | Decisão | An admin's activation or rejection, stored with its author; decisions made before ADR-0027 also keep the step-up they consumed |
 | Step-up | Confirmação com chave de acesso | A fresh passkey verification for one sensitive action, bound to that action |
 | Content hash | Código do conteúdo | SHA-256 of the canonical JSON of a version and every file it pins; what a decision is bound to |
 | Passkey | Chave de acesso | The WebAuthn credential a person signs in and confirms sensitive actions with |
 | Knowledge catalog | Internal, no UI label | The validated, hashed route data that `packages/knowledge` builds and the API bundles; not the pnpm catalog of dependency versions |
-| Approver list | Internal, no UI label | The reviewed file in the repository that names the approvers by account ID, per environment |
-| Activation screen | Tela de ativação | Where an approver reviews a proposed version as data and activates or rejects it |
-| Independent check | Verificação independente | The agent report that compares a proposed version with its official sources before the owner decides; advisory only |
-| Country guide | Internal, no UI label | The reviewed data file per country that the independent check loads: governing laws, how they change, known pitfalls; never a source and never a list of official hosts; not a Claude Code skill |
+| Admin grant | Internal, no UI label | An insert-only record that an admin gave the admin role to a confirmed account sharing a case with them (with a step-up), or took it away |
+| Owner list | Internal, no UI label | The reviewed file in the repository that names, by account ID and per environment, the accounts that are always admins and cannot lose the role in the app; formerly the approver list |
+| Activation screen | Tela de ativação | Where an admin reviews a proposed version as data, with its check report apart, and activates or rejects it |
+| Independent check | Verificação independente | The model's report that compares a proposed route version, item by item, with the official sources it cites: matches, differs or could not be checked, each quote and value checked in code against the fetched page; never activates a version by itself and is never part of the content hash |
+| Checked version | Conferida pela IA | A proposed route version whose current independent check report is clean: every item matches, with each quote and value checked in code; admins can activate all checked versions with one tap |
+| Flagged version | Marcada para revisão | A proposed route version whose current check report is not clean: an item differs or could not be checked; decided one by one |
+| Country guide | Internal, no UI label | The reviewed, versioned data file per country that the independent check loads, its per-country specialist: governing laws, how they change, known pitfalls; never a source and never a list of official hosts; lands in its own pull request; not a Claude Code skill |
 | Rule report | Aviso de regra errada | A person's flag that a rule they were shown may be wrong; opens a research task. The button reads "Avisar regra errada" |
 | Research task | Pesquisa pendente | The request opened when the knowledge base cannot answer a question; a research agent works it into a proposal |
 | Possible dependent | Possível dependente | A person a route might cover, pending unknown facts |
@@ -93,7 +96,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Expression | Internal, no UI label | The JSON tree of a requirement, cost or condition, evaluated by the engine |
 | Closed route version | Rota encerrada | A route version with status `closed`: the route no longer accepts applications, cited by its `closureSources` |
 | Former country | País extinto | A state that no longer exists, with an ISO 3166-3 code, allowed only in citizenship and ancestry facts |
-| Owner | Responsável | The founder, who owns the repository and is the first approver; "founder" in product docs means the same person |
+| Owner | Responsável | The founder, who owns the repository and is the first admin; "founder" in product docs means the same person |
 | Active version | Versão ativa | A route version with a counted activation and no rejection; the only kind the engine evaluates for a case |
 | Rejected version | Versão recusada | A route version with a counted rejection; selection skips it for good |
 | Version settings | Configurações da versão | The fields of a route version other than its items: dates, currency, leap-day rule, reference dates, closure sources, tags and pins |
@@ -106,7 +109,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Needs assessment | Depende de critério subjetivo | Evaluation status: every requirement holds and the route has judgment factors |
 | Pending activation | Versão aguardando ativação | Evaluation status: the version in effect has not been activated yet |
 | Unavailable | Indisponível | Evaluation status: no version in effect, or the route is closed |
-| Knowledge base | Base de conhecimento | Sourced, versioned rules and information about routes, documents, steps and pitfalls; the approver's area for it is labelled "Regras" in navigation |
+| Knowledge base | Base de conhecimento | Sourced, versioned rules and information about routes, documents, steps and pitfalls; the admins' area for it is labelled "Regras" in navigation |
 | Knowledge item | Item da base | One sourced entry in the knowledge base |
 | Research agent | Internal, no UI label | The agent that proposes route versions from official sources as pull requests |
 | Rule watcher | Vigia de regras | Scheduled job that detects rule changes and proposes updates |

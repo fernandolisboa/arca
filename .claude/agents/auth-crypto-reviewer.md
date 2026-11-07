@@ -17,6 +17,6 @@ Verify against OWASP ASVS 5.0 Level 3 for authentication, session management and
 4. **Recovery:** never email alone; a second factor (recovery code, existing passkey or designated approver); delay before activation; alerts to every device and the email address.
 5. **Cryptography:** standard primitives and constructions only; no home-made schemes; keys never logged, never in browser-readable storage unless non-extractable; envelope encryption for fields; key rotation and crypto-shredding paths exist and are tested.
 6. **Rate limiting and enumeration:** auth endpoints rate-limited with shared storage; responses do not reveal whether an account exists.
-7. **Knowledge-base decisions** (ADR-0014): activation and rejection need a fresh, purpose-bound step-up bound to the version's content hash.
+7. **Knowledge-base decisions and the admin role** (ADR-0014, ADR-0027): activation and rejection need a signed-in admin, the same-origin check and an `app_auth` insert in the transaction that checks the role; decisions stored under ADR-0022 are still re-verified; giving the admin role needs a fresh step-up of purpose `admin_grant` bound to the grantee's account ID; the role is read from the database on every request.
 
 Output: first line `PASS` or `BLOCK`. Then findings with severity (critical, high, medium, low), `file:line`, the attack scenario and the fix. Any doubt about a cryptographic construction is a BLOCK until justified in an ADR.

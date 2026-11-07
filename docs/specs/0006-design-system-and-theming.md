@@ -135,9 +135,9 @@ Added 2026-11-06 with the "Papel" direction. The home leads with where the case 
 - **Notices first.** A pending passkey, an unsaved recovery kit, a pending recovery or a pending deletion shows as a strip in the warn colors at the top. While a recovery or a deletion waits, the home shows only that, as before.
 - **Greeting.** The weekday and date, then "Bom dia", "Boa tarde" or "Boa noite" by the device's hour, with the person's name in the case when there is one.
 - **Next step card.** One card with the step title, a short body and one primary action, beside the case's stages as a numbered list: "Contar sobre a família" (done once a case exists), "Perguntas guiadas" (with "x de y" answered, "Não sei" included) and "Ver as rotas que servem" (once every question has an answer). The current stage carries `aria-current="step"` and the accent color; a done stage shows a check and says "(feita)" to screen readers. `nextStep` in `apps/web/src/home/next-step.ts` derives the stage from the case and its questions; it counts answers and decides nothing about eligibility.
-- **Shortcut cards.** Cofre, Família (people in the case and how many others have an account, with "Convidar alguém") and, for an approver, Regras (versions waiting for a decision). Each card has an icon tile, a title, at most one figure, a short body and one link.
+- **Shortcut cards.** Cofre, Família (people in the case and how many others have an account, with "Convidar alguém") and, for an admin, Regras (versions waiting for a decision). Each card has an icon tile, a title, at most one figure, a short body and one link.
 - **Footer.** Who is signed in, Dispositivos and the service status, as a colored dot and text with a visually hidden "Status do serviço" heading.
-- **Navigation.** The shell lists Início, Família, Cofre and, for an approver, Regras.
+- **Navigation.** The shell lists Início, Família, Cofre and, for an admin, Regras.
 
 ## Shell and navigation
 
