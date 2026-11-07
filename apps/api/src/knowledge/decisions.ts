@@ -5,8 +5,8 @@ import {
   decideComparisonAction,
   decideVersionAction,
 } from '@arca/api-contract/routes';
-import type { Database } from '@arca/db';
-import { decision } from '@arca/db/knowledge-schema';
+import { type Database, type Transaction, lockKey, withIdentity } from '@arca/db';
+import { type adminBases, decision } from '@arca/db/knowledge-schema';
 import {
   type CheckedDecision,
   type ComparisonCatalog,
@@ -23,14 +23,13 @@ import type { Logger } from '@arca/telemetry';
 import { sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import type { SignedIn } from '../auth/service.js';
-import type { StepUpSpender } from '../auth/step-up.js';
 import { subjectHash, type CanonicalAction } from '../auth/step-up-encoding.js';
-import { reverifyStepUp } from '../auth/step-up-reverify.js';
+import { reverifyStepUp, type StoredAssertion } from '../auth/step-up-reverify.js';
 import { closeRuleReports } from './reports.js';
 
 export type DecisionOutcome =
   | { readonly decided: string }
-  | { readonly refused: 'not_approver' | 'not_found' | 'already_rejected' | 'step_up_required' };
+  | { readonly refused: 'not_approver' | 'not_found' | 'already_rejected' };
 
 /** The version a decision is about: a route version or a comparison version (ADR-0026). */
 export type DecisionTarget =
@@ -40,15 +39,13 @@ export type DecisionTarget =
 export interface KnowledgeDecisions {
   readonly isApprover: (accountId: string) => boolean;
   /**
-   * Activates or rejects one version (spec 0007, R7; ADR-0026) with this session's
-   * `knowledge_decision` step-up, bound to the subject kind through its action, to the version's
-   * hash in the bundled catalog and to the client's action nonce.
+   * Activates or rejects one version (spec 0007, R7; ADR-0026) for a signed-in admin, with no
+   * step-up (ADR-0027), on the version's hash in the bundled catalog.
    */
   readonly decide: (
     signedIn: SignedIn,
     kind: DecisionKind,
     target: DecisionTarget,
-    actionNonce: Uint8Array,
   ) => Promise<DecisionOutcome>;
   /** Every decided version's state, from the decisions that count; the engine's `states`. */
   readonly states: () => Promise<DecisionStates>;
@@ -57,14 +54,17 @@ export interface KnowledgeDecisions {
 export interface KnowledgeDecisionSettings {
   /** A database on the app_api pool, which reads the decisions. */
   readonly db: Database;
-  /** Spends the step-up and stores the decision in one app_auth transaction. */
-  readonly stepUp: StepUpSpender;
+  /**
+   * The app_auth pool, the only role that stores a decision; opened on the first decision, so
+   * reading the states never needs the auth role's settings.
+   */
+  readonly authDb: () => Database;
   readonly audit: AuditLog;
   readonly catalog: Pick<RouteCatalog, 'identities'>;
   /** The only place a comparison hash is taken from: an indicator's hash alone is never decided. */
   readonly comparisons: Pick<ComparisonCatalog, 'identities'>;
   readonly approvers: readonly string[];
-  /** The environment's own origin; its host is the relying-party ID, as for every step-up. */
+  /** The environment's own origin, which ADR-0022 decisions are re-verified against. */
   readonly origin: string;
   readonly logger: Logger;
 }
@@ -73,6 +73,27 @@ const routeActions = { activate: 'activateVersion', reject: 'rejectVersion' } as
 const comparisonActions = { activate: 'activateComparison', reject: 'rejectComparison' } as const;
 
 type DecisionRow = typeof decision.$inferSelect;
+type AdminBasis = (typeof adminBases)[number];
+
+/**
+ * The advisory lock a decision's transaction holds on its author, so a change to the author's
+ * admin role (ADR-0027) is ordered before or after the decision, never in between.
+ */
+const adminLockKey = (accountId: string) => `knowledge.admin:${accountId}`;
+
+/** Whether a `session` row's recorded basis counts; a new basis must be handled here to compile. */
+function sessionCounts({ adminBasis }: DecisionRow): boolean {
+  switch (adminBasis) {
+    case 'owner_list':
+      return true;
+    case null:
+      return false;
+    default: {
+      const unhandled: never = adminBasis;
+      return unhandled;
+    }
+  }
+}
 
 /** A version from the bundled catalog with its subject kind; a route's carries what it corrects. */
 type BundledVersion =
@@ -80,8 +101,8 @@ type BundledVersion =
   | { readonly subject: 'comparison'; readonly identity: ComparisonIdentity };
 
 /**
- * The step-up action of a decision. Each subject kind has its own actions, so an approval of one
- * kind never verifies as the other, and route subjects stay as they were (ADR-0026).
+ * The step-up action an ADR-0022 decision was approved with. Each subject kind has its own
+ * actions, so an approval of one kind never verifies as the other (ADR-0026).
  */
 function decisionAction(
   kind: DecisionKind,
@@ -115,6 +136,35 @@ function decisionEvent(kind: DecisionKind, decided: DecidedVersion, decisionId: 
     : { code: 'comparison_rejected' as const, details: { decisionId, comparisonId, number } };
 }
 
+/** What an ADR-0022 row copied from its step-up; undefined on any other row. */
+interface StoredStepUp {
+  readonly assertion: StoredAssertion;
+  readonly publicKey: Uint8Array<ArrayBuffer>;
+  readonly actionNonce: Uint8Array;
+}
+
+function storedStepUp(row: DecisionRow): StoredStepUp | undefined {
+  const { credentialId, serverNonce, authenticatorData, clientDataJson, signature } = row;
+  const { publicKey, actionNonce } = row;
+  if (
+    row.proof !== 'step_up' ||
+    credentialId === null ||
+    serverNonce === null ||
+    authenticatorData === null ||
+    clientDataJson === null ||
+    signature === null ||
+    publicKey === null ||
+    actionNonce === null
+  ) {
+    return undefined;
+  }
+  return {
+    assertion: { credentialId, nonce: serverNonce, authenticatorData, clientDataJson, signature },
+    publicKey: new Uint8Array(publicKey),
+    actionNonce,
+  };
+}
+
 /**
  * The version a stored row decided, by its own subject kind; undefined for a row whose IDs do not
  * fit its kind, which the database's check refuses, so such a row counts for nothing.
@@ -132,7 +182,7 @@ function rowVersion(row: DecisionRow): DecidedVersion | undefined {
 
 export function createKnowledgeDecisions({
   db,
-  stepUp,
+  authDb,
   audit,
   catalog,
   comparisons,
@@ -149,35 +199,40 @@ export function createKnowledgeDecisions({
    */
   const checkedById = new Map<string, Promise<CheckedDecision | undefined>>();
 
-  const assertionVerifies = (row: DecisionRow, decided: DecidedVersion) =>
-    reverifyStepUp(
-      {
-        credentialId: row.credentialId,
-        nonce: row.serverNonce,
-        authenticatorData: row.authenticatorData,
-        clientDataJson: row.clientDataJson,
-        signature: row.signature,
-      },
-      {
-        purpose: 'knowledge_decision',
-        subjectHash: subjectHash(decisionAction(row.kind, decided, row.actionNonce)),
-        credentialId: row.credentialId,
-        publicKey: new Uint8Array(row.publicKey),
-        rpId,
-        origin,
-      },
-    );
+  /** Why the account may decide now, read in the deciding transaction; undefined if it may not. */
+  const adminBasis = (accountId: string): AdminBasis | undefined =>
+    listed.has(accountId) ? 'owner_list' : undefined;
 
+  const assertionVerifies = async (row: DecisionRow, decided: DecidedVersion) => {
+    const stored = storedStepUp(row);
+    if (stored === undefined || !listed.has(row.approverAccountId)) return false;
+    return reverifyStepUp(stored.assertion, {
+      purpose: 'knowledge_decision',
+      subjectHash: subjectHash(decisionAction(row.kind, decided, stored.actionNonce)),
+      credentialId: stored.assertion.credentialId,
+      publicKey: stored.publicKey,
+      rpId,
+      origin,
+    });
+  };
+
+  /**
+   * A stored decision as it counts (ADR-0027). A `session` row counts by the basis it records: the
+   * owner list keeps no history, so an `owner_list` row, checked against the list when app_auth
+   * stored it, keeps counting after its author leaves the list, and losing the role never revives
+   * a version its author rejected. A `step_up` row is re-verified as ADR-0022 says, and its
+   * rejection counts even when it does not verify.
+   */
   const check = async (row: DecisionRow): Promise<CheckedDecision | undefined> => {
     const decided = rowVersion(row);
-    const verified =
-      decided !== undefined &&
-      listed.has(row.approverAccountId) &&
-      (await assertionVerifies(row, decided));
+    if (decided === undefined) return undefined;
+    if (row.proof === 'session')
+      return sessionCounts(row) ? { ...decided, kind: row.kind, verified: true } : undefined;
+    const verified = await assertionVerifies(row, decided);
     if (!verified && row.kind === 'activate') {
       logger.error({ errorName: 'KnowledgeActivationIgnored' });
     }
-    return decided === undefined ? undefined : { ...decided, kind: row.kind, verified };
+    return { ...decided, kind: row.kind, verified };
   };
 
   const checked = (row: DecisionRow) => {
@@ -212,47 +267,47 @@ export function createKnowledgeDecisions({
     return identity === undefined ? undefined : { subject: 'comparison', identity };
   };
 
-  return {
-    isApprover: (accountId) => listed.has(accountId),
+  /**
+   * Stores one decision as the author's own `session` row, in one app_auth transaction under the
+   * author's identity: the lock on the author, the admin check, the audit event, then the row,
+   * whose time the database sets after the lock. False, with nothing stored, for a non-admin.
+   */
+  const store = (accountId: string, kind: DecisionKind, decided: DecidedVersion, id: string) =>
+    withIdentity(authDb(), { accountId }, async (tx: Transaction) => {
+      await lockKey(tx, adminLockKey(accountId));
+      const basis = adminBasis(accountId);
+      if (basis === undefined) return false;
+      const { identity } = decided;
+      const routeId = decided.subject === 'route' ? decided.identity.routeId : null;
+      const comparisonId = decided.subject === 'comparison' ? decided.identity.comparisonId : null;
+      // Committed first, on app_audit: a decision no event records must never be stored, so an
+      // insert that fails after it leaves an event naming a decision that does not exist.
+      await audit.record({
+        ...decisionEvent(kind, decided, id),
+        subjectAccountId: accountId,
+        actorAccountId: accountId,
+      });
+      await tx.execute(sql`
+        INSERT INTO knowledge.decision (id, kind, subject_kind, route_id, comparison_id,
+          version_number, content_hash, approver_account_id, proof, admin_basis)
+        VALUES (${id}, ${kind}, ${decided.subject}, ${routeId}, ${comparisonId},
+          ${identity.number}, ${identity.hash}, ${accountId}, 'session', ${basis})`);
+      return true;
+    });
 
-    decide: async (signedIn, kind, target, actionNonce) => {
-      const { accountId } = signedIn;
-      if (!listed.has(accountId)) return { refused: 'not_approver' };
+  return {
+    isApprover: (accountId) => adminBasis(accountId) !== undefined,
+
+    decide: async ({ accountId }, kind, target) => {
+      // Anyone else learns nothing about the catalog; the storing transaction checks again.
+      if (adminBasis(accountId) === undefined) return { refused: 'not_approver' };
       const decided = bundled(target);
       if (decided === undefined) return { refused: 'not_found' };
       if ((await states()).get(decidedKey(decided)) === 'rejected') {
         return { refused: 'already_rejected' };
       }
-      const { identity } = decided;
-      const routeId = decided.subject === 'route' ? decided.identity.routeId : null;
-      const comparisonId = decided.subject === 'comparison' ? decided.identity.comparisonId : null;
       const decisionId = randomUUID();
-      // The decision is stored on app_auth, in the transaction that spends its step-up, so only a
-      // role that can already write credentials can store one (ADR-0022); app_api only reads.
-      const stored = await stepUp.spend(
-        signedIn,
-        'knowledge_decision',
-        decisionAction(kind, decided, actionNonce),
-        async (tx, spent) => {
-          // Committed first, on app_audit: a decision no event records must never be stored, so an
-          // insert that fails after it leaves an event naming a decision that does not exist.
-          await audit.record({
-            ...decisionEvent(kind, decided, decisionId),
-            subjectAccountId: accountId,
-            actorAccountId: accountId,
-          });
-          await tx.execute(sql`
-          INSERT INTO knowledge.decision (id, kind, subject_kind, route_id, comparison_id,
-            version_number, content_hash, approver_account_id, credential_id, public_key,
-            action_nonce, server_nonce, authenticator_data, client_data_json, signature, step_up_id)
-          VALUES (${decisionId}, ${kind}, ${decided.subject}, ${routeId}, ${comparisonId},
-            ${identity.number}, ${identity.hash}, ${accountId}, ${spent.credentialId},
-            ${Buffer.from(spent.publicKey)}, ${Buffer.from(actionNonce)},
-            ${Buffer.from(spent.nonce)}, ${Buffer.from(spent.authenticatorData)},
-            ${Buffer.from(spent.clientDataJson)}, ${Buffer.from(spent.signature)}, ${spent.id})`);
-        },
-      );
-      if (!stored) return { refused: 'step_up_required' };
+      if (!(await store(accountId, kind, decided, decisionId))) return { refused: 'not_approver' };
       // Activating a correction answers the reports of the version it corrects (R8).
       // The decision stands either way; the approver can still close the reports by hand.
       if (

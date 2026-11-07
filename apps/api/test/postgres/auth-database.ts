@@ -40,11 +40,16 @@ export interface AuthTestDatabase {
   readonly jobsDb: Database;
   /** Runs as the server's admin on the test database, for setup and checks the roles may not do. */
   readonly asAdmin: <T>(use: (client: pg.Client) => Promise<T>) => Promise<T>;
+  /** Applies the migrations a `stopBefore` left out, as the runner would on the next deploy. */
+  readonly migrateRest: () => Promise<void>;
   /** Closes the pools and drops the database. */
   readonly drop: () => Promise<void>;
 }
 
-export async function authTestDatabase(): Promise<AuthTestDatabase> {
+/** `stopBefore` names the first migration left out, to test rows stored before it. */
+export async function authTestDatabase({
+  stopBefore,
+}: { readonly stopBefore?: string } = {}): Promise<AuthTestDatabase> {
   if (adminPassword === '') throw new Error('ARCA_TEST_DB_ADMIN_PASSWORD is not set');
   const database = `arca_auth_${randomBytes(6).toString('hex')}`;
   const passwords = {
@@ -76,17 +81,24 @@ export async function authTestDatabase(): Promise<AuthTestDatabase> {
       );
     }
   });
+  const migrations = (await readdir(migrationsDir)).sort();
+  const cut = stopBefore === undefined ? migrations.length : migrations.indexOf(stopBefore);
+  if (cut < 0) throw new Error(`no migration named ${String(stopBefore)}`);
+  const apply = (names: readonly string[]) =>
+    asAdminOn(database, async (client) => {
+      for (const name of names) {
+        const sql = await readFile(join(migrationsDir, name, 'migration.sql'), 'utf8');
+        for (const statement of sql.split('--> statement-breakpoint')) {
+          await client.query(statement);
+        }
+      }
+    });
   // The runner's checks are tested in tooling/scripts; here the migrations only need to exist.
-  await asAdminOn(database, async (client) => {
-    // The runner creates its journal before the first migration; a stand-in is enough here.
-    await client.query(
-      'CREATE SCHEMA arca_migrations; CREATE TABLE arca_migrations.journal (name text)',
-    );
-    for (const name of (await readdir(migrationsDir)).sort()) {
-      const sql = await readFile(join(migrationsDir, name, 'migration.sql'), 'utf8');
-      for (const statement of sql.split('--> statement-breakpoint')) await client.query(statement);
-    }
-  });
+  // The runner creates its journal before the first migration; a stand-in is enough here.
+  await asAdminOn(database, (client) =>
+    client.query('CREATE SCHEMA arca_migrations; CREATE TABLE arca_migrations.journal (name text)'),
+  );
+  await apply(migrations.slice(0, cut));
   const target = { host, port, database, ssl: false };
   const pools = [
     authDatabase(target, passwords.app_auth, silentLogger),
@@ -102,6 +114,7 @@ export async function authTestDatabase(): Promise<AuthTestDatabase> {
     apiDb: apiPool.db,
     jobsDb: jobsPool.db,
     asAdmin: (use) => asAdminOn(database, use),
+    migrateRest: () => apply(migrations.slice(cut)),
     drop: async () => {
       await Promise.all(pools.map((pool) => pool.close()));
       await asAdminOn('postgres', (client) =>

@@ -225,11 +225,15 @@ export type StepUpAction = z.infer<typeof StepUpAction>;
 /** The header a guarded route reads the action's nonce from. */
 export const stepUpNonceHeader = 'arca-step-up-nonce';
 
-/** `vault_unlock` approves a window, not an action, so it alone carries no target. */
+/**
+ * `vault_unlock` approves a window, not an action, so it alone carries no target.
+ * `knowledge_decision` is no longer offered: decisions need no step-up since ADR-0027, and the
+ * purpose stays in the enum only so the decisions it approved before verify again.
+ */
 export const StepUpOptionsRequest = z.union([
   z.strictObject({ purpose: z.literal('vault_unlock') }),
   z.strictObject({
-    purpose: StepUpPurpose.exclude(['vault_unlock']),
+    purpose: StepUpPurpose.exclude(['vault_unlock', 'knowledge_decision']),
     target: StepUpAction,
   }),
 ]);

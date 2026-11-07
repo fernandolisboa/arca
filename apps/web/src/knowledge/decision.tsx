@@ -1,46 +1,27 @@
-import {
-  routes,
-  decideComparisonAction,
-  decideVersionAction,
-  type ComparisonVersionView,
-  type VersionView,
-} from '@arca/api-contract/client';
+import { routes, type ComparisonVersionView, type VersionView } from '@arca/api-contract/client';
 import { Button } from '@arca/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
-import { passkeys } from '../platform.js';
+import { api } from '../api.js';
 import { commonFailure, reach, type CommonFailure } from '../requests.js';
-import { stepUpFor } from '../step-up.js';
 import type { KnowledgeWords } from './words.js';
 
 type DecisionKind = 'activate' | 'reject';
 type Failure = CommonFailure | 'rejected';
 
-/** A route version decision after its own `knowledge_decision` step-up, bound to its hash. */
+/** A route version decision: one request, with no passkey prompt (ADR-0027). */
 export async function decideVersion(kind: DecisionKind, view: VersionView): Promise<void> {
   const route = kind === 'activate' ? routes.activateVersion : routes.rejectVersion;
-  const request = { routeId: view.routeId, number: view.number };
-  const approved = await stepUpFor(
-    passkeys,
-    decideVersionAction(route.operationId, request, view.hash),
-    'knowledge_decision',
-  );
-  await reach(approved.call(route, request));
+  await reach(api.call(route, { routeId: view.routeId, number: view.number }));
 }
 
-/** A comparison version decision, with the comparison's own step-up actions (ADR-0026). */
+/** A comparison version decision, as for a route version (ADR-0026, ADR-0027). */
 export async function decideComparison(
   kind: DecisionKind,
   view: ComparisonVersionView,
 ): Promise<void> {
   const route = kind === 'activate' ? routes.activateComparison : routes.rejectComparison;
-  const request = { comparisonId: view.comparisonId, number: view.number };
-  const approved = await stepUpFor(
-    passkeys,
-    decideComparisonAction(route.operationId, request, view.hash),
-    'knowledge_decision',
-  );
-  await reach(approved.call(route, request));
+  await reach(api.call(route, { comparisonId: view.comparisonId, number: view.number }));
 }
 
 /**

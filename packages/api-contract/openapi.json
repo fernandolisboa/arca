@@ -541,8 +541,7 @@
                           "account_deletion",
                           "data_export",
                           "financial_action",
-                          "vault_write",
-                          "knowledge_decision"
+                          "vault_write"
                         ]
                       },
                       "target": {
@@ -31561,7 +31560,7 @@
     "/knowledge/versions/activate": {
       "post": {
         "operationId": "activateVersion",
-        "summary": "Activates a route version after a knowledge_decision step-up; it counts once its stored assertion verifies. 403 not_approver, 403 step_up_required, 404 not_found, 409 already_rejected",
+        "summary": "Activates a route version for a signed-in approver, with no step-up. 403 not_approver, 404 not_found, 409 already_rejected",
         "requestBody": {
           "required": true,
           "content": {
@@ -31641,7 +31640,7 @@
     "/knowledge/versions/reject": {
       "post": {
         "operationId": "rejectVersion",
-        "summary": "Rejects a route version after a knowledge_decision step-up, at once and for good. 403 not_approver, 403 step_up_required, 404 not_found, 409 already_rejected",
+        "summary": "Rejects a route version for a signed-in approver, with no step-up, at once and for good. 403 not_approver, 404 not_found, 409 already_rejected",
         "requestBody": {
           "required": true,
           "content": {
@@ -31721,7 +31720,7 @@
     "/knowledge/comparisons/activate": {
       "post": {
         "operationId": "activateComparison",
-        "summary": "Activates a comparison version after a knowledge_decision step-up; it counts once its stored assertion verifies. 403 not_approver, 403 step_up_required, 404 not_found, 409 already_rejected",
+        "summary": "Activates a comparison version for a signed-in approver, with no step-up. 403 not_approver, 404 not_found, 409 already_rejected",
         "requestBody": {
           "required": true,
           "content": {
@@ -31801,7 +31800,7 @@
     "/knowledge/comparisons/reject": {
       "post": {
         "operationId": "rejectComparison",
-        "summary": "Rejects a comparison version after a knowledge_decision step-up, at once and for good; the newest active version before it stays in use. 403 not_approver, 403 step_up_required, 404 not_found, 409 already_rejected",
+        "summary": "Rejects a comparison version for a signed-in approver, with no step-up, at once and for good; the newest active version before it stays in use. 403 not_approver, 404 not_found, 409 already_rejected",
         "requestBody": {
           "required": true,
           "content": {

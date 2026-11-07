@@ -14,7 +14,6 @@ const approver: SignedIn = {
   accountId: '3f2b8a4e-6c1d-4e5f-9a7b-0c1d2e3f4a5b',
   sessionId: '6a1c2d3e-4f50-4617-8a9b-0c1d2e3f4a5b',
 };
-const nonce = 'MzMzMzMzMzMzMzMzMzMzMw';
 const decisionId = '0d1e2f30-4152-4637-8a9b-0c1d2e3f4a5b';
 const version = { routeId: 'pt-d7', number: 2 };
 const comparison = { comparisonId: 'destinations', number: 1 };
@@ -22,12 +21,10 @@ const comparison = { comparisonId: 'destinations', number: 1 };
 function setup({
   signedIn = approver,
   outcome = { decided: decisionId },
-  withNonce = true,
   listed = true,
 }: {
   signedIn?: SignedIn | null;
   outcome?: DecisionOutcome;
-  withNonce?: boolean;
   listed?: boolean;
 } = {}) {
   const calls: unknown[][] = [];
@@ -100,14 +97,11 @@ function setup({
     kind: 'activate' | 'reject',
     body: unknown = version,
     collection: 'versions' | 'comparisons' = 'versions',
+    headers: Record<string, string> = { origin },
   ) =>
     app.request(`/v1/knowledge/${collection}/${kind}`, {
       method: 'POST',
-      headers: {
-        origin,
-        'content-type': 'application/json',
-        ...(withNonce ? { 'arca-step-up-nonce': nonce } : {}),
-      },
+      headers: { 'content-type': 'application/json', ...headers },
       body: JSON.stringify(body),
     });
   const read = (path: string, collection: 'versions' | 'comparisons' = 'versions') =>
@@ -142,24 +136,17 @@ describe('GET /v1/session for approvers (spec 0007, R7)', () => {
   });
 });
 
-describe('POST /v1/knowledge/versions (spec 0007, R7)', () => {
-  it.each(['activate', 'reject'] as const)('%ss with the nonce the client sent', async (kind) => {
+describe('POST /v1/knowledge/versions (spec 0007, R7; ADR-0027)', () => {
+  it.each(['activate', 'reject'] as const)('%ss with no step-up', async (kind) => {
     const { decide, calls } = setup();
     const response = await decide(kind);
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ decisionId });
-    expect(calls).toEqual([
-      [
-        approver,
-        kind,
-        { subject: 'route', ...version },
-        new Uint8Array(Buffer.from(nonce, 'base64url')),
-      ],
-    ]);
+    expect(calls).toEqual([[approver, kind, { subject: 'route', ...version }]]);
   });
 
   it.each<[Extract<DecisionOutcome, { refused: string }>['refused'], number]>([
-    ['step_up_required', 403],
+    ['not_approver', 403],
     ['not_found', 404],
     ['already_rejected', 409],
   ])('answers %s with %i', async (refused, status) => {
@@ -179,14 +166,30 @@ describe('POST /v1/knowledge/versions (spec 0007, R7)', () => {
     expect([...signedOut.calls, ...other.calls]).toEqual([]);
   });
 
-  it('answers 403 without the nonce header and 400 for a malformed version', async () => {
-    const noNonce = setup({ withNonce: false });
-    expect((await noNonce.decide('reject')).status).toBe(403);
-    const malformed = setup();
-    expect((await malformed.decide('reject', { routeId: 'Not a route', number: 0 })).status).toBe(
-      400,
-    );
-    expect([...noNonce.calls, ...malformed.calls]).toEqual([]);
+  it('answers 400 for a malformed version or a body with more than the version', async () => {
+    const { decide, calls } = setup();
+    expect((await decide('reject', { routeId: 'Not a route', number: 0 })).status).toBe(400);
+    expect((await decide('reject', { ...version, contentHash: 'a'.repeat(64) })).status).toBe(400);
+    expect(calls).toEqual([]);
+  });
+
+  it.each([
+    ['another origin', { origin: 'https://evil.test' }],
+    ['a cross-site fetch with no origin', { 'sec-fetch-site': 'cross-site' }],
+    ['no origin at all', {}],
+  ])('refuses a decision from %s, deciding nothing', async (_name, headers) => {
+    const { decide, calls } = setup();
+    for (const collection of ['versions', 'comparisons'] as const) {
+      const response = await decide(
+        'activate',
+        collection === 'versions' ? version : comparison,
+        collection,
+        headers,
+      );
+      expect(response.status).toBe(403);
+      expect(await response.json()).toEqual({ error: { code: 'cross_origin' } });
+    }
+    expect(calls).toEqual([]);
   });
 
   it('lists the route and comparison versions for an approver and refuses anyone else', async () => {
@@ -217,14 +220,7 @@ describe('POST /v1/knowledge/comparisons (ADR-0026)', () => {
       const response = await decide(kind, comparison, 'comparisons');
       expect(response.status).toBe(200);
       expect(await response.json()).toEqual({ decisionId });
-      expect(calls).toEqual([
-        [
-          approver,
-          kind,
-          { subject: 'comparison', ...comparison },
-          new Uint8Array(Buffer.from(nonce, 'base64url')),
-        ],
-      ]);
+      expect(calls).toEqual([[approver, kind, { subject: 'comparison', ...comparison }]]);
     },
   );
 
@@ -235,12 +231,10 @@ describe('POST /v1/knowledge/comparisons (ADR-0026)', () => {
     expect(calls).toEqual([]);
   });
 
-  it('answers 403 to an account not on the list and without the nonce, deciding nothing', async () => {
+  it('answers 403 to an account not on the list, deciding nothing', async () => {
     const other = setup({ listed: false });
     expect((await other.decide('reject', comparison, 'comparisons')).status).toBe(403);
-    const noNonce = setup({ withNonce: false });
-    expect((await noNonce.decide('reject', comparison, 'comparisons')).status).toBe(403);
-    expect([...other.calls, ...noNonce.calls]).toEqual([]);
+    expect(other.calls).toEqual([]);
   });
 
   it('views a comparison version only for an approver, 404 when it is not bundled', async () => {

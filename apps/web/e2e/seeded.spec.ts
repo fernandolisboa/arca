@@ -117,16 +117,16 @@ test('the seed approver activates a version, reads and closes its reports, then 
     violations.map(({ id, nodes }) => ({ id, targets: nodes.map((node) => node.target) })),
   ).toEqual([]);
 
-  const stepUp = page.waitForRequest((request) =>
-    request.url().endsWith('/v1/auth/step-up/options'),
+  const stepUps = watchStepUps(page);
+  const activation = page.waitForRequest((request) =>
+    request.url().endsWith('/v1/knowledge/versions/activate'),
   );
   await page.getByRole('button', { name: 'Ativar esta versão' }).click();
+  await expect(page.getByText('confirme com sua chave de acesso')).toHaveCount(0);
   await page.getByRole('button', { name: 'Confirmar' }).click();
   await expect(page.getByRole('status')).toHaveText('Versão ativada.');
-  expect((await stepUp).postDataJSON()).toMatchObject({
-    purpose: 'knowledge_decision',
-    target: { action: 'activateVersion', targets: ['us-eb5', version] },
-  });
+  // One request with the version alone, and no passkey prompt (ADR-0027).
+  expect((await activation).postDataJSON()).toEqual({ routeId: 'us-eb5', number: Number(version) });
   await expect(page.getByText('Versão ativa', { exact: true })).toBeVisible();
 
   await memberReportsARequirement(browser);
@@ -160,6 +160,7 @@ test('the seed approver activates a version, reads and closes its reports, then 
   await page.getByRole('button', { name: 'Confirmar' }).click();
   await expect(page.getByRole('status')).toHaveText('Versão recusada.');
   await expect(page.getByText('Esta versão foi recusada e não volta a ser usada.')).toBeVisible();
+  expect(stepUps).toEqual([]);
   expect(problems).toEqual([]);
 });
 
@@ -211,16 +212,14 @@ test('the seed approver reviews, activates and rejects a comparison version (ADR
     violations.map(({ id, nodes }) => ({ id, targets: nodes.map((node) => node.target) })),
   ).toEqual([]);
 
-  const stepUp = page.waitForRequest((request) =>
-    request.url().endsWith('/v1/auth/step-up/options'),
+  const stepUps = watchStepUps(page);
+  const activation = page.waitForRequest((request) =>
+    request.url().endsWith('/v1/knowledge/comparisons/activate'),
   );
   await page.getByRole('button', { name: 'Ativar esta versão' }).click();
   await page.getByRole('button', { name: 'Confirmar' }).click();
   await expect(page.getByRole('status')).toHaveText('Versão ativada.');
-  expect((await stepUp).postDataJSON()).toMatchObject({
-    purpose: 'knowledge_decision',
-    target: { action: 'activateComparison', targets: ['destinations', '1'] },
-  });
+  expect((await activation).postDataJSON()).toEqual({ comparisonId: 'destinations', number: 1 });
   await expect(page.getByText('Versão ativa', { exact: true })).toBeVisible();
 
   await memberCompares(browser);
@@ -232,8 +231,18 @@ test('the seed approver reviews, activates and rejects a comparison version (ADR
   await page.getByRole('button', { name: 'Confirmar' }).click();
   await expect(page.getByRole('status')).toHaveText('Versão recusada.');
   await expect(page.getByText('Esta versão foi recusada e não volta a ser usada.')).toBeVisible();
+  expect(stepUps).toEqual([]);
   expect(problems).toEqual([]);
 });
+
+/** Every step-up the page asks for from now on; a decision asks for none (ADR-0027). */
+function watchStepUps(page: Page): string[] {
+  const asked: string[] = [];
+  page.on('request', (request) => {
+    if (request.url().includes('/v1/auth/step-up/')) asked.push(request.url());
+  });
+  return asked;
+}
 
 /** Jumps to one step of a version's review from its step list. */
 async function reviewStep(page: Page, name: string) {

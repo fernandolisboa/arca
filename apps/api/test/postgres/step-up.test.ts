@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { auditLog } from '../../src/audit/log.js';
 import { credentialStore } from '../../src/auth/auth.js';
 import type { SignedIn } from '../../src/auth/service.js';
-import { createStepUp, type StepUpService } from '../../src/auth/step-up.js';
+import { createStepUp } from '../../src/auth/step-up.js';
 import type { CanonicalAction } from '../../src/auth/step-up-encoding.js';
 import { reverifyStepUp } from '../../src/auth/step-up-reverify.js';
 import { softwarePasskey, type SoftwarePasskey } from '../software-passkey.js';
@@ -23,7 +23,7 @@ import {
 // Step-up on the real migrations and the app_auth pool (spec 0003, R5). Synthetic data only.
 
 let testDatabase: AuthTestDatabase;
-let stepUp: StepUpService;
+let stepUp: ReturnType<typeof createStepUp>;
 
 beforeAll(async () => {
   testDatabase = await authTestDatabase();
@@ -176,6 +176,26 @@ describe('a step-up (spec 0003, R5)', () => {
       stepUp.consume(owner.signedIn, 'sensitive_settings', action),
     ]);
     expect(spent.filter(Boolean)).toHaveLength(1);
+  });
+
+  it('spends a step-up for a consumer that keeps its copy only if the copy commits', async () => {
+    const owner = await person();
+    const action = revokeSession(randomUUID());
+    await ceremony(owner, sensitive(action));
+    await expect(
+      stepUp.spend(owner.signedIn, 'sensitive_settings', action, () =>
+        Promise.reject(new Error('storage failed')),
+      ),
+    ).rejects.toThrow('storage failed');
+    const copied: string[] = [];
+    expect(
+      await stepUp.spend(owner.signedIn, 'sensitive_settings', action, (_tx, spent) => {
+        copied.push(spent.credentialId);
+        return Promise.resolve();
+      }),
+    ).toBe(true);
+    expect(copied).toEqual([owner.passkey.credentialId]);
+    expect(await stepUp.consume(owner.signedIn, 'sensitive_settings', action)).toBe(false);
   });
 });
 

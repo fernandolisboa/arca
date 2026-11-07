@@ -1,5 +1,4 @@
 import { sql } from 'drizzle-orm';
-import { stepUp } from './step-up-schema.js';
 import {
   bytea,
   check,
@@ -14,19 +13,28 @@ import {
 } from 'drizzle-orm/pg-core';
 
 /**
- * Decisions on route and comparison versions (spec 0007, R7; ADR-0022, ADR-0026). A row names its
- * subject kind, and a database check gives each kind its own shape: a route row has a route ID and
- * no comparison ID, a comparison row the one comparison series ID and no route ID. Each row is
- * self-contained: it copies the step-up's assertion and the passkey's public key, so it verifies
- * again after the passkey is revoked, the step-up is swept or the approver's account is erased, and
- * no foreign key leaves this schema. Insert-only, as the audit log: `app_auth` inserts a decision
- * in the transaction that spends its step-up, and only one matching a spent `knowledge_decision`
- * step-up of the approver, since a row carries its own key and whoever may insert could otherwise
- * sign one; `app_api` reads them all, since every evaluation needs the states. With no update or
- * delete policy under forced row-level security nobody updates or deletes. Kept for good, as the
- * record of which rule and comparison versions are in use.
+ * Decisions on route and comparison versions (spec 0007, R7; ADR-0022, ADR-0026, ADR-0027). A row
+ * names its subject kind, and a database check gives each kind its own shape: a route row has a
+ * route ID and no comparison ID, a comparison row the one comparison series ID and no route ID.
+ *
+ * A row also names its proof. A `step_up` row was stored under ADR-0022: it copies the step-up's
+ * assertion and the passkey's public key, so it verifies again after the passkey is revoked, the
+ * step-up is swept or the approver's account is erased. A `session` row (ADR-0027) was made by a
+ * signed-in admin with no step-up, so it has none of those fields and instead records why its
+ * author was an admin. A database check keeps the proof and those fields consistent, and no
+ * foreign key leaves this schema.
+ *
+ * Insert-only, as the audit log: `app_auth` inserts only `session` rows, by the transaction's own
+ * account, with the time the database sets; `app_api` reads them all, since every evaluation needs
+ * the states. With no update or delete policy under forced row-level security nobody updates or
+ * deletes. Kept for good, as the record of which rule and comparison versions are in use.
  */
 export const knowledge = pgSchema('knowledge');
+
+/** How a decision proves a person made it: a step-up (ADR-0022) or an admin's session (ADR-0027). */
+export const decisionProofs = ['step_up', 'session'] as const;
+/** Why a `session` decision's author was an admin (ADR-0027). */
+export const adminBases = ['owner_list'] as const;
 
 export const decision = knowledge.table(
   'decision',
@@ -39,18 +47,24 @@ export const decision = knowledge.table(
     versionNumber: integer('version_number').notNull(),
     contentHash: text('content_hash').notNull(),
     approverAccountId: uuid('approver_account_id').notNull(),
-    credentialId: text('credential_id').notNull(),
+    proof: text('proof', { enum: decisionProofs }).notNull(),
+    /** Why a `session` row's author was an admin; null on a `step_up` row. */
+    adminBasis: text('admin_basis', { enum: adminBases }),
+    credentialId: text('credential_id'),
     /** The COSE public key, copied when the step-up was consumed. */
-    publicKey: bytea('public_key').notNull(),
+    publicKey: bytea('public_key'),
     /** The client's 16-byte action nonce, inside the subject hash. */
-    actionNonce: bytea('action_nonce').notNull(),
+    actionNonce: bytea('action_nonce'),
     /** The step-up's 32-byte server nonce, inside the challenge. */
-    serverNonce: bytea('server_nonce').notNull(),
-    authenticatorData: bytea('authenticator_data').notNull(),
-    clientDataJson: bytea('client_data_json').notNull(),
-    signature: bytea('signature').notNull(),
-    stepUpId: uuid('step_up_id').notNull(),
-    decidedAt: timestamp('decided_at', { withTimezone: true }).notNull().defaultNow(),
+    serverNonce: bytea('server_nonce'),
+    authenticatorData: bytea('authenticator_data'),
+    clientDataJson: bytea('client_data_json'),
+    signature: bytea('signature'),
+    stepUpId: uuid('step_up_id'),
+    /** Set by the database when the row is inserted, after the inserting transaction's lock. */
+    decidedAt: timestamp('decided_at', { withTimezone: true })
+      .notNull()
+      .default(sql`clock_timestamp()`),
   },
   (table) => [
     unique('decision_step_up_id_key').on(table.stepUpId),
@@ -69,19 +83,26 @@ export const decision = knowledge.table(
     check('decision_content_hash_format', sql`${table.contentHash} ~ '^[0-9a-f]{64}$'`),
     check('decision_action_nonce_length', sql`octet_length(${table.actionNonce}) = 16`),
     check('decision_server_nonce_length', sql`octet_length(${table.serverNonce}) = 32`),
-    pgPolicy('decision_insert_spent_step_up', {
+    check(
+      'decision_proof',
+      sql`CASE ${table.proof}
+        WHEN 'step_up' THEN ${table.adminBasis} IS NULL
+          AND ${table.credentialId} IS NOT NULL AND ${table.publicKey} IS NOT NULL
+          AND ${table.actionNonce} IS NOT NULL AND ${table.serverNonce} IS NOT NULL
+          AND ${table.authenticatorData} IS NOT NULL AND ${table.clientDataJson} IS NOT NULL
+          AND ${table.signature} IS NOT NULL AND ${table.stepUpId} IS NOT NULL
+        WHEN 'session' THEN ${table.adminBasis} IS NOT DISTINCT FROM 'owner_list'
+          AND ${table.credentialId} IS NULL AND ${table.publicKey} IS NULL
+          AND ${table.actionNonce} IS NULL AND ${table.serverNonce} IS NULL
+          AND ${table.authenticatorData} IS NULL AND ${table.clientDataJson} IS NULL
+          AND ${table.signature} IS NULL AND ${table.stepUpId} IS NULL
+        ELSE false END`,
+    ),
+    pgPolicy('decision_insert_session', {
       for: 'insert',
       to: 'app_auth',
-      withCheck: sql`EXISTS (SELECT FROM ${stepUp}
-        WHERE ${stepUp.id} = ${table.stepUpId}
-          AND ${stepUp.accountId} = ${table.approverAccountId}
-          AND ${stepUp.purpose} = 'knowledge_decision'
-          AND ${stepUp.consumedAt} IS NOT NULL
-          AND ${stepUp.credentialId} = ${table.credentialId}
-          AND ${stepUp.nonce} = ${table.serverNonce}
-          AND ${stepUp.authenticatorData} = ${table.authenticatorData}
-          AND ${stepUp.clientDataJson} = ${table.clientDataJson}
-          AND ${stepUp.signature} = ${table.signature})`,
+      withCheck: sql`${table.proof} = 'session'
+        AND ${table.approverAccountId} = nullif(current_setting('app.account_id', true), '')::uuid`,
     }),
     pgPolicy('decision_read', { for: 'select', to: 'app_api', using: sql`true` }),
   ],

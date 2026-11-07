@@ -111,16 +111,13 @@ const lazyAudit: Pick<AuditLog, 'record'> = {
 let knowledgeInstance: KnowledgeDecisions | undefined;
 
 /**
- * One service for the process, since it caches which decisions verify; it spends step-ups and
- * stores decisions on the app_auth pool and reads them on the app_api pool.
+ * One service for the process, since it caches which decisions count; it stores decisions on the
+ * app_auth pool and reads them on the app_api pool.
  */
 function knowledgeDecisions(): KnowledgeDecisions {
   knowledgeInstance ??= createKnowledgeDecisions({
     db: connected().db,
-    stepUp: {
-      spend: async (signedIn, purpose, action, record) =>
-        (await authParts()).stepUp.spend(signedIn, purpose, action, record),
-    },
+    authDb: authConnection,
     audit: lazyAudit,
     catalog: routeCatalog,
     comparisons: comparisonCatalog,
@@ -459,8 +456,7 @@ const app = createApp({
   }),
   knowledge: {
     isApprover: (accountId) => knowledgeDecisions().isApprover(accountId),
-    decide: (signedIn, kind, target, nonce) =>
-      knowledgeDecisions().decide(signedIn, kind, target, nonce),
+    decide: (signedIn, kind, target) => knowledgeDecisions().decide(signedIn, kind, target),
     states: () => knowledgeDecisions().states(),
   },
   ...(intake === undefined ? {} : { intake }),

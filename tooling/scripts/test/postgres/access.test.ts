@@ -161,6 +161,18 @@ const auditColumns = [
   'details',
 ];
 
+/** The assertion an ADR-0022 decision copies; no role writes one since ADR-0027. */
+const decisionStepUpColumns = [
+  'credential_id',
+  'public_key',
+  'action_nonce',
+  'server_nonce',
+  'authenticator_data',
+  'client_data_json',
+  'signature',
+  'step_up_id',
+];
+
 const decisionColumns = [
   'id',
   'kind',
@@ -170,14 +182,9 @@ const decisionColumns = [
   'version_number',
   'content_hash',
   'approver_account_id',
-  'credential_id',
-  'public_key',
-  'action_nonce',
-  'server_nonce',
-  'authenticator_data',
-  'client_data_json',
-  'signature',
-  'step_up_id',
+  'proof',
+  'admin_basis',
+  ...decisionStepUpColumns,
   'decided_at',
 ];
 
@@ -303,11 +310,15 @@ describe('the knowledge schema access matrix (spec 0007, R7)', () => {
     });
   });
 
-  it('lets app_auth insert every column but the time, and nothing else', async () => {
+  it('lets app_auth insert a session decision, with no step-up field and no time, and nothing else (ADR-0027)', async () => {
     expect(await decisionPrivileges('app_auth')).toEqual({
       usage: true,
       create: false,
-      columns: { ...onEvery(decisionColumns, ['INSERT']), decided_at: [] },
+      columns: {
+        ...onEvery(decisionColumns, ['INSERT']),
+        ...onEvery(decisionStepUpColumns, []),
+        decided_at: [],
+      },
       table: [],
     });
   });
