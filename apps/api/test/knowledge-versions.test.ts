@@ -5,8 +5,13 @@ import { ComparisonVersionView, VersionView } from '@arca/api-contract/routes';
 import { todayInSaoPaulo } from '../src/calendar.js';
 import { createKnowledgeVersions } from '../src/knowledge/versions.js';
 
-const [first] = displayCatalog.entries();
-if (first === undefined) throw new Error('the catalog is empty');
+const entries = displayCatalog.entries();
+/** A route with one version, so rejecting it leaves no fallback whatever other routes hold. */
+const first = entries.find(
+  ({ identity }) =>
+    entries.filter(({ identity: other }) => other.routeId === identity.routeId).length === 1,
+);
+if (first === undefined) throw new Error('the catalog has no route with a single version');
 const versions = createKnowledgeVersions({
   states: () => Promise.resolve(new Map([[identityKey(first.identity), 'active' as const]])),
   today: () => parseCalendarDate('2026-11-06'),
