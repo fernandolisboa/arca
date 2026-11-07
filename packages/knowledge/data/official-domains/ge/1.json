@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "ge",
+  "number": 1,
+  "issuer": "Government of Georgia",
+  "hosts": [
+    {
+      "host": "matsne.gov.ge",
+      "source": {
+        "id": "ge-domain-rules-gov-ge",
+        "url": "https://nic.ge/_cdn/f/24/38/SLIPhFp7p0acMj1jVbr5Hw/2025.08.07.Domain_Regulation_Amendments_ENG_%20V.5.0_FINAL.pdf",
+        "title": ".GE Domain Registration and Administration Rules, version 6.0, 3.3.1(xi): .gov.ge names only for state entities, local self-government units and legal entities under public law",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    },
+    {
+      "host": "sda.gov.ge",
+      "source": {
+        "id": "ge-domain-rules-gov-ge",
+        "url": "https://nic.ge/_cdn/f/24/38/SLIPhFp7p0acMj1jVbr5Hw/2025.08.07.Domain_Regulation_Amendments_ENG_%20V.5.0_FINAL.pdf",
+        "title": ".GE Domain Registration and Administration Rules, version 6.0, 3.3.1(xi): .gov.ge names only for state entities, local self-government units and legal entities under public law",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    }
+  ]
+}
