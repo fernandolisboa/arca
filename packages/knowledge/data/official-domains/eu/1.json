@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "eu",
+  "number": 1,
+  "issuer": "European Union",
+  "hosts": [
+    {
+      "host": "eur-lex.europa.eu",
+      "source": {
+        "id": "europa-domain-governance",
+        "url": "https://commission.europa.eu/resources/europa-web-guide/governance-europa-domain/europa-domain-and-subdomains/europa-domain-and-subdomains-overview_en",
+        "title": "European Commission, Europa web guide: europa.eu is managed by DG Communication on behalf of all EU institutions, whose websites sit on its third- or fourth-level subdomains",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    },
+    {
+      "host": "european-union.europa.eu",
+      "source": {
+        "id": "europa-domain-governance",
+        "url": "https://commission.europa.eu/resources/europa-web-guide/governance-europa-domain/europa-domain-and-subdomains/europa-domain-and-subdomains-overview_en",
+        "title": "European Commission, Europa web guide: europa.eu is managed by DG Communication on behalf of all EU institutions, whose websites sit on its third- or fourth-level subdomains",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    },
+    {
+      "host": "trade.ec.europa.eu",
+      "source": {
+        "id": "europa-domain-governance",
+        "url": "https://commission.europa.eu/resources/europa-web-guide/governance-europa-domain/europa-domain-and-subdomains/europa-domain-and-subdomains-overview_en",
+        "title": "European Commission, Europa web guide: europa.eu is managed by DG Communication on behalf of all EU institutions, whose websites sit on its third- or fourth-level subdomains",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    }
+  ]
+}
