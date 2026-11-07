@@ -15,6 +15,10 @@ export function buttonClass(variant: NonNullable<ButtonProps['variant']> = 'prim
   return `inline-flex min-h-touch min-w-touch items-center justify-center gap-2 rounded-control px-4 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-60 ${variants[variant]}`;
 }
 
+/** An icon-only button's shape and focus ring: the 44 px touch target, with no colour of its own. */
+export const iconButtonClass =
+  'inline-flex min-h-touch min-w-touch shrink-0 items-center justify-center rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
+
 /** A button, never smaller than the 44 px touch target. */
 export function Button({ type = 'button', variant = 'primary', ...props }: ButtonProps) {
   return <button type={type} className={buttonClass(variant)} {...props} />;
