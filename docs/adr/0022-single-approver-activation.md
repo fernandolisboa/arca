@@ -1,6 +1,6 @@
 # ADR-0022: Single-approver activation through a purpose-bound step-up
 
-- Status: Accepted
+- Status: Accepted, amended by [ADR-0026](0026-destination-comparison-data.md) (decisions gain a subject kind)
 - Date: 2026-11-05
 - Amends: [ADR-0014](0014-knowledge-base-as-reviewed-data.md), replacing its section "Decisions: required properties"; [ADR-0015](0015-identity-enrollment-step-up-and-recovery.md) (a new step-up purpose)
 

@@ -1,15 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import {
-  type ComparisonIdentity,
-  type RouteStatus,
-  bestRouteStatus,
-  compareDestinations,
-  comparisonIdentityKey,
-  selectComparisonVersion,
-} from '../../src/comparison/score.js';
+import { compareDestinations } from '../../src/comparison/score.js';
 import type { ComparisonCriterion } from '../../src/comparison/schema.js';
 import { parseCalendarDate } from '../../src/calendar/calendar-date.js';
-import { type DecisionState, identityKey } from '../../src/rules/catalog.js';
 import {
   decimalIndicator,
   entry,
@@ -148,8 +140,8 @@ describe('totals, coverage and ranking', () => {
       today,
     });
     expect(summary(result)).toEqual([
-      // Safety 7.5 alone: climate is unrated, so 4 of the 6 weight is known.
-      { country: 'QP', rank: 1, group: 'ranked', total: '7.5', coverage: 67 },
+      // Safety 7.5 alone: climate is unrated, so 4 of the 6 weight is known, shown rounded down.
+      { country: 'QP', rank: 1, group: 'ranked', total: '7.5', coverage: 66 },
       // 10 × 4 + 0 × 2 and 5 × 4 + 10 × 2 are both 40 over 6: the code breaks the tie.
       { country: 'QM', rank: 2, group: 'ranked', total: '6.7', coverage: 100 },
       { country: 'QN', rank: 3, group: 'ranked', total: '6.7', coverage: 100 },
@@ -227,15 +219,28 @@ describe('totals, coverage and ranking', () => {
     ]);
   });
 
-  it('keeps hidden countries out of the ranking and lists them', () => {
+  it('keeps hidden countries out of the ranking and lists them last, still scored', () => {
     const result = compareDestinations({
       entry: entry(criteria, [safety]),
-      preferences: preferences({ hidden: ['QN', 'QZ'] }),
+      preferences: preferences({ hidden: ['QM', 'QZ'], ratings: { climate: { QN: 5 } } }),
       countries: ['QM', 'QN'],
       today,
     });
-    expect(result.countries.map(({ country }) => country)).toEqual(['QM']);
-    expect(result.hidden).toEqual(['QN']);
+    expect(summary(result)).toEqual([
+      { country: 'QN', rank: 1, group: 'ranked', total: '6.7', coverage: 100 },
+      { country: 'QM', rank: null, group: 'hidden', total: '10', coverage: 66 },
+    ]);
+  });
+
+  it('never moves a score when another country is hidden', () => {
+    const scores = (hidden: string[]) =>
+      compareDestinations({
+        entry: entry(criteria, [safety]),
+        preferences: preferences({ hidden }),
+        countries: ['QM', 'QN'],
+        today,
+      }).countries.find(({ country }) => country === 'QN')?.scores;
+    expect(scores(['QM'])).toEqual(scores([]));
   });
 
   it('marks a reading whose source is older than 90 days', () => {
@@ -270,70 +275,15 @@ describe('totals, coverage and ranking', () => {
       { country: 'QM', rank: 1, group: 'ranked', total: '10', coverage: 100 },
     ]);
   });
-});
 
-describe('comparison version selection', () => {
-  const version = (number: number): ComparisonIdentity => ({
-    comparisonId: 'destinations',
-    number,
-    hash: String(number).repeat(64),
-  });
-  const states = (decided: readonly (readonly [number, DecisionState])[]) =>
-    new Map(decided.map(([number, state]) => [comparisonIdentityKey(version(number)), state]));
-
-  it.each<[string, readonly (readonly [number, DecisionState])[], number | undefined, boolean]>([
-    ['nothing decided', [], undefined, true],
-    [
-      'the newest active wins',
-      [
-        [1, 'active'],
-        [2, 'active'],
-      ],
-      2,
-      false,
-    ],
-    ['a newer proposed one is pending, not used', [[1, 'active']], 1, true],
-    [
-      'a rejected newer one is skipped for good',
-      [
-        [1, 'active'],
-        [2, 'rejected'],
-      ],
-      1,
-      false,
-    ],
-    ['an older proposed one is not pending', [[2, 'active']], 2, false],
-    [
-      'everything rejected',
-      [
-        [1, 'rejected'],
-        [2, 'rejected'],
-      ],
-      undefined,
-      false,
-    ],
-  ])('%s', (_name, decided, active, pendingNewer) => {
-    const selection = selectComparisonVersion([version(1), version(2)], states(decided));
-    expect(selection.active?.number).toBe(active);
-    expect(selection.pendingNewer).toBe(pendingNewer);
-  });
-
-  it('never shares a key with a route version', () => {
-    const identity = version(1);
-    expect(comparisonIdentityKey(identity)).not.toBe(
-      identityKey({ routeId: identity.comparisonId, number: 1, hash: identity.hash }),
-    );
-  });
-});
-
-describe('best route status', () => {
-  it.each<[readonly RouteStatus[], RouteStatus | undefined]>([
-    [[], undefined],
-    [['not_eligible', 'missing_information'], 'missing_information'],
-    [['pending_activation', 'not_eligible'], 'pending_activation'],
-    [['unavailable', 'eligible', 'needs_assessment'], 'eligible'],
-    [['unavailable'], 'unavailable'],
-  ])('%j gives %s', (statuses, expected) => {
-    expect(bestRouteStatus(statuses)).toBe(expected);
+  it('reads a criterion named like an Object member as an ordinary criterion', () => {
+    const result = compareDestinations({
+      entry: entry([personalCriterion('constructor', 2)], []),
+      preferences: preferences(),
+      countries: ['QM'],
+      today,
+    });
+    expect(result.criteria[0]?.weight).toBe(2);
+    expect(result.countries[0]?.scores[0]).toEqual({ criterion: 'constructor', score: null });
   });
 });

@@ -5,6 +5,11 @@ import type { Source } from './route-version.js';
 /** A source is stale when it was verified more than this many days before `today` (spec 0002, R9). */
 export const staleAfterDays = 90;
 
+/** Whether a source was verified more than `staleAfterDays` before `today`. */
+export function isStale(source: Source, today: CalendarDate): boolean {
+  return daysBetween(source.verifiedAt, today) > staleAfterDays;
+}
+
 export interface StaleSource {
   readonly source: Source;
   readonly daysSinceVerified: number;
@@ -28,10 +33,10 @@ export function staleSources(entry: CatalogEntry, today: CalendarDate): StaleSou
     ...(version.closureSources ?? []),
     ...(version.leapDayBirthdaySources ?? []),
   ]);
-  const stale = (source: Source) => {
-    const daysSinceVerified = daysBetween(source.verifiedAt, today);
-    return daysSinceVerified > staleAfterDays ? [{ source, daysSinceVerified }] : [];
-  };
+  const stale = (source: Source) =>
+    isStale(source, today)
+      ? [{ source, daysSinceVerified: daysBetween(source.verifiedAt, today) }]
+      : [];
   return [
     ...version.sources.filter((source) => cited.has(source.id)).flatMap(stale),
     ...entry.countrySets.flatMap(({ id, number, sources }) =>

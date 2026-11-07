@@ -48,6 +48,24 @@ export function powerOfTen(exponent: number): bigint {
   return 10n ** BigInt(exponent);
 }
 
+/** Brings exact values to one scale: the units of each, in order, and that scale. */
+export function alignAll(values: readonly Scaled[]): { units: bigint[]; scale: number } {
+  const scale = Math.max(0, ...values.map((value) => value.scale));
+  return { units: values.map((value) => value.units * powerOfTen(scale - value.scale)), scale };
+}
+
+/** `n / d` rounded half to even, for a positive `d`. */
+export function roundQuotientHalfEven(n: bigint, d: bigint): bigint {
+  if (d <= 0n) throw new RangeError('The divisor is positive');
+  const negative = n < 0n;
+  const magnitude = negative ? -n : n;
+  const quotient = magnitude / d;
+  const twiceRemainder = (magnitude % d) * 2n;
+  const roundsUp = twiceRemainder > d || (twiceRemainder === d && quotient % 2n === 1n);
+  const rounded = roundsUp ? quotient + 1n : quotient;
+  return negative ? -rounded : rounded;
+}
+
 /** Brings two exact values to the same scale. */
 export function alignScales(left: Scaled, right: Scaled): [bigint, bigint, number] {
   const scale = Math.max(left.scale, right.scale);

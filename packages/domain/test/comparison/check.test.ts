@@ -6,6 +6,7 @@ import {
   comparisonPreferencesSchema,
   comparisonVersionSchema,
   countryIndicatorSchema,
+  maxCriterionKeys,
   maxRatings,
 } from '../../src/comparison/schema.js';
 import type { OfficialHosts } from '../../src/rules/validate.js';
@@ -76,6 +77,14 @@ describe('country indicator checks (ADR-0026)', () => {
         sources: [{ ...freshSource, url: 'https://evil.example/data' }],
       },
       'An official source is on a pinned official host',
+    ],
+    [
+      'a secondary source',
+      {
+        ...decimalIndicator('x', []),
+        sources: [{ ...freshSource, kind: 'secondary' }],
+      },
+      'An indicator cites official sources only',
     ],
   ])('rejects %s', (_name, indicator, message) => {
     expect(messages(checkCountryIndicator(indicator, official, countries))).toContain(message);
@@ -218,6 +227,17 @@ describe('comparison preferences', () => {
       false,
     ],
     [
+      'a name with an invisible character',
+      { ...base, ownCriteria: [{ id: 'own-0123abcd', name: 'Pra\u200bia' }] },
+      false,
+    ],
+    [
+      'a name not in NFC',
+      { ...base, ownCriteria: [{ id: 'own-0123abcd', name: 'Sa\u0303o Paulo' }] },
+      false,
+    ],
+    ['a criterion with no ratings', { ...base, ratings: { climate: {} } }, false],
+    [
       'the same own ID twice',
       {
         ...base,
@@ -242,12 +262,25 @@ describe('comparison preferences', () => {
     expect(Object.getPrototypeOf(parsed.data?.weights)).toBe(Object.prototype);
   });
 
-  it('caps the ratings', () => {
-    const many = (count: number) =>
+  it('caps the weights, the rated criteria and the ratings', () => {
+    const keys = (count: number) =>
+      Array.from({ length: count }, (_, index) => `c${String(index)}`);
+    const countryCodes = (count: number) =>
+      Array.from({ length: count }, (_, index) => `A${String.fromCharCode(65 + index)}`);
+    const ratings = (criteria: number, perCriterion: number) =>
       Object.fromEntries(
-        Array.from({ length: count }, (_, index) => [`c${String(index)}`, { PT: 3 }]),
+        keys(criteria).map((key) => [
+          key,
+          Object.fromEntries(countryCodes(perCriterion).map((code) => [code, 3])),
+        ]),
       );
-    expect(parse({ ...base, ratings: many(maxRatings) })).toBe(true);
-    expect(parse({ ...base, ratings: many(maxRatings + 1) })).toBe(false);
+    const weights = (count: number) => Object.fromEntries(keys(count).map((key) => [key, 3]));
+    const perCriterion = maxRatings / maxCriterionKeys;
+
+    expect(parse({ ...base, weights: weights(maxCriterionKeys) })).toBe(true);
+    expect(parse({ ...base, weights: weights(maxCriterionKeys + 1) })).toBe(false);
+    expect(parse({ ...base, ratings: ratings(maxCriterionKeys + 1, 1) })).toBe(false);
+    expect(parse({ ...base, ratings: ratings(maxCriterionKeys, perCriterion) })).toBe(true);
+    expect(parse({ ...base, ratings: ratings(maxCriterionKeys, perCriterion + 1) })).toBe(false);
   });
 });

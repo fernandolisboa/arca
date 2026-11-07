@@ -12,11 +12,16 @@ import {
   slugSchema,
 } from './expression.js';
 
-const text = z.string().min(1).max(200);
+/** A title or name in knowledge data: plain text, rendered escaped (spec 0002, R4). */
+export const knowledgeTextSchema = z.string().min(1).max(200);
+/** A version or pin number: contiguous from 1. */
+export const versionNumberSchema = z.number().int().min(1);
+
+const text = knowledgeTextSchema;
 const sourceIds = z.array(slugSchema).min(1).max(20);
 
 /** A reference to an exact version of another knowledge file. */
-export const pinSchema = z.strictObject({ id: slugSchema, number: z.number().int().min(1) });
+export const pinSchema = z.strictObject({ id: slugSchema, number: versionNumberSchema });
 
 export const sourceSchema = z.strictObject({
   id: slugSchema,
@@ -83,13 +88,13 @@ export const routeVersionSchema = z
   .strictObject({
     schemaVersion: z.literal(1),
     routeId: routeIdSchema,
-    number: z.number().int().min(1),
+    number: versionNumberSchema,
     title: text,
     /** A current country: ISO 3166-1 alpha-2. */
     country: z.string().regex(/^[A-Z]{2}$/),
     tags: z.array(z.string().regex(/^[a-z][a-z0-9-]{0,39}$/)).max(20),
     effectiveFrom: calendarDateSchema,
-    corrects: z.number().int().min(1).optional(),
+    corrects: versionNumberSchema.optional(),
     status: z.enum(['open', 'closed']),
     currency: currencyCodeSchema,
     leapDayBirthday: leapDayBirthdaySchema.optional(),
@@ -125,7 +130,7 @@ export type Pin = z.infer<typeof pinSchema>;
 export const countrySetSchema = z.strictObject({
   schemaVersion: z.literal(1),
   id: slugSchema,
-  number: z.number().int().min(1),
+  number: versionNumberSchema,
   title: text,
   members: z.array(countryCodeSchema).min(1).max(300),
   sources: z.array(sourceSchema).min(1).max(20),
@@ -140,7 +145,7 @@ export type CountrySet = z.infer<typeof countrySetSchema>;
 export const officialDomainListSchema = z.strictObject({
   schemaVersion: z.literal(1),
   id: slugSchema,
-  number: z.number().int().min(1),
+  number: versionNumberSchema,
   issuer: text,
   hosts: z
     .array(

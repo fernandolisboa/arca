@@ -316,12 +316,18 @@ class Validation {
 
   private checkComparison(file: ParsedOf<'comparisons'>): void {
     const { data, raw } = file;
+    const series = new Set(
+      this.raw.files.filter((each) => each.kind === 'comparisons').map((each) => each.id),
+    );
+    if (series.size > 1) this.report(raw, 'There is one comparison series');
+    const resolved = data.indicators.map((pin, index) =>
+      this.resolve(raw, 'indicators', pin, `/indicators/${String(index)}`),
+    );
     const indicators = new Map<string, CountryIndicator>();
-    data.indicators.forEach((pin, index) => {
-      const indicator = this.resolve(raw, 'indicators', pin, `/indicators/${String(index)}`);
-      if (indicator !== undefined) indicators.set(pin.id, indicator.data);
-    });
-    if (indicators.size !== data.indicators.length) return;
+    for (const indicator of resolved) {
+      if (indicator === undefined) return;
+      indicators.set(indicator.data.id, indicator.data);
+    }
     this.reportChecks(raw, checkComparisonVersion(data, indicators));
   }
 

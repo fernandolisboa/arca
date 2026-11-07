@@ -13,8 +13,6 @@ export const routeCatalog = createRouteCatalog(entries);
 /** The destination comparison's versions (ADR-0026); content only for an active one. */
 export const comparisonCatalog = createComparisonCatalog(parseComparisons(comparisonData));
 
-export type { ComparisonCatalog } from './comparisons.js';
-
 /** Every route the catalog has a version of, in a stable order. */
 export const routeIds: readonly string[] = [
   ...new Set([...entries.values()].map(({ identity }) => identity.routeId)),

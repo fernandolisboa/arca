@@ -2,10 +2,12 @@ import { z } from 'zod';
 import { countryCodeSchema } from '../case/snapshot.js';
 import { decimalSchema } from '../money/decimal.js';
 import { slugSchema } from '../rules/expression.js';
-import { pinSchema, sourceSchema } from '../rules/route-version.js';
-
-const text = z.string().min(1).max(200);
-const number = z.number().int().min(1);
+import {
+  knowledgeTextSchema as text,
+  pinSchema,
+  sourceSchema,
+  versionNumberSchema as number,
+} from '../rules/route-version.js';
 
 /** A token value of a category indicator, such as `allowed`. */
 export const indicatorTokenSchema = z.string().regex(/^[a-z][a-z0-9-]{0,39}$/);
@@ -98,6 +100,8 @@ export type ComparisonVersion = z.infer<typeof comparisonVersionSchema>;
 
 export const maxOwnCriteria = 30;
 export const maxRatings = 2000;
+/** Keys a weights or ratings record may hold: a version's 50 criteria and 30 own ones, with room. */
+export const maxCriterionKeys = 100;
 
 /** A person's own criterion, named by them; case data, never logged and never sent to a model. */
 export const ownCriterionSchema = z.strictObject({
@@ -107,7 +111,10 @@ export const ownCriterionSchema = z.strictObject({
     .trim()
     .min(1)
     .max(60)
-    .refine((name) => !/\p{Cc}/u.test(name), { message: 'A name has no control characters' }),
+    .refine((name) => !/[\p{Cc}\p{Cf}]/u.test(name), {
+      message: 'A name has no control or invisible characters',
+    })
+    .refine((name) => name === name.normalize('NFC'), { message: 'A name is in NFC' }),
 });
 
 const anyCriterionId = z.union([criterionIdSchema, ownCriterionIdSchema]);
@@ -119,8 +126,23 @@ const anyCriterionId = z.union([criterionIdSchema, ownCriterionIdSchema]);
  */
 export const comparisonPreferencesSchema = z
   .strictObject({
-    weights: z.record(anyCriterionId, weightSchema),
-    ratings: z.record(anyCriterionId, z.record(countryCodeSchema, z.number().int().min(1).max(5))),
+    weights: z
+      .record(anyCriterionId, weightSchema)
+      .refine((weights) => Object.keys(weights).length <= maxCriterionKeys, {
+        message: `At most ${String(maxCriterionKeys)} weights`,
+      }),
+    ratings: z
+      .record(
+        anyCriterionId,
+        z
+          .record(countryCodeSchema, z.number().int().min(1).max(5))
+          .refine((byCountry) => Object.keys(byCountry).length > 0, {
+            message: 'A criterion with no ratings is left out',
+          }),
+      )
+      .refine((ratings) => Object.keys(ratings).length <= maxCriterionKeys, {
+        message: `At most ${String(maxCriterionKeys)} rated criteria`,
+      }),
     ownCriteria: z.array(ownCriterionSchema).max(maxOwnCriteria),
     hidden: z.array(countryCodeSchema).max(300),
   })

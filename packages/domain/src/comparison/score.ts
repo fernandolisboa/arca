@@ -1,97 +1,33 @@
-import { type CalendarDate, daysBetween } from '../calendar/calendar-date.js';
-import { type Decimal, parseDecimal, powerOfTen, scaledDecimal } from '../money/decimal.js';
-import type { DecisionState, DecisionStates } from '../rules/catalog.js';
-import type { EvaluationStatus } from '../rules/engine.js';
+import type { CalendarDate } from '../calendar/calendar-date.js';
+import {
+  type Decimal,
+  alignAll,
+  parseDecimal,
+  roundQuotientHalfEven,
+  scaledDecimal,
+} from '../money/decimal.js';
 import type { Source } from '../rules/route-version.js';
-import { staleAfterDays } from '../rules/staleness.js';
-import type {
-  ComparisonCriterion,
-  ComparisonPreferences,
-  ComparisonVersion,
-  CountryIndicator,
-} from './schema.js';
+import { isStale } from '../rules/staleness.js';
+import type { ComparisonPreferences } from './schema.js';
+import type { ComparisonEntry } from './select.js';
 
-/** What selection may read about any comparison version, proposed ones included. */
-export interface ComparisonIdentity {
-  readonly comparisonId: string;
-  readonly number: number;
-  /** The content hash over the version and every indicator it pins (ADR-0026). */
-  readonly hash: string;
-}
-
-/** A validated comparison version with exactly the indicators it pins. */
-export interface ComparisonEntry {
-  readonly identity: ComparisonIdentity;
-  readonly version: ComparisonVersion;
-  readonly indicators: readonly CountryIndicator[];
-}
-
-/**
- * The key of a comparison version in `DecisionStates`. It has four segments where a route's has
- * three, so a comparison decision can never count for a route version, nor the reverse.
- */
-export function comparisonIdentityKey(identity: ComparisonIdentity): string {
-  return `comparison/${identity.comparisonId}/${String(identity.number)}/${identity.hash}`;
-}
-
-export function comparisonStateOf(
-  identity: ComparisonIdentity,
-  states: DecisionStates,
-): DecisionState {
-  return states.get(comparisonIdentityKey(identity)) ?? 'proposed';
-}
-
-export interface ComparisonSelection {
-  /** The highest-numbered active version, if any. */
-  readonly active?: ComparisonIdentity;
-  /** Whether a higher-numbered version waits for a decision: its identity read, never its content. */
-  readonly pendingNewer: boolean;
-}
-
-/** Picks the comparison version to use (ADR-0026): no effective dates, the newest active one wins. */
-export function selectComparisonVersion(
-  identities: readonly ComparisonIdentity[],
-  states: DecisionStates,
-): ComparisonSelection {
-  const newestFirst = [...identities].sort((left, right) => right.number - left.number);
-  const active = newestFirst.find((identity) => comparisonStateOf(identity, states) === 'active');
-  const pendingNewer = newestFirst.some(
-    (identity) =>
-      comparisonStateOf(identity, states) === 'proposed' &&
-      (active === undefined || identity.number > active.number),
-  );
-  return active === undefined ? { pendingNewer } : { active, pendingNewer };
-}
-
-export type RouteStatus = EvaluationStatus | 'pending_activation';
-
-/** From the best a person can have in a country to the worst; the comparison shows the first. */
-export const routeStatusOrder: readonly RouteStatus[] = [
-  'eligible',
-  'needs_assessment',
-  'missing_information',
-  'pending_activation',
-  'not_eligible',
-  'unavailable',
-];
-
-/** The best of a country's route statuses for one person, or undefined when there are none. */
-export function bestRouteStatus(statuses: readonly RouteStatus[]): RouteStatus | undefined {
-  return routeStatusOrder.find((status) => statuses.includes(status));
-}
-
-export type ComparedKind = ComparisonCriterion['kind'] | 'own';
-
-export interface ComparedCriterion {
+/** A criterion as one person's comparison counts it: from the version, or one they created. */
+export type ComparedCriterion = (
+  | {
+      readonly kind: 'indicator' | 'category' | 'personal';
+      /** The knowledge title, in English; the screen shows its pt-BR label by `id`. */
+      readonly title: string;
+    }
+  | {
+      readonly kind: 'own';
+      /** The person's own name for it: case data, never logged and never sent to a model. */
+      readonly name: string;
+    }
+) & {
   readonly id: string;
-  readonly kind: ComparedKind;
-  /** The knowledge title, in English, for a criterion of the version; absent for an own one. */
-  readonly title?: string;
-  /** The person's own name for an own criterion. */
-  readonly name?: string;
   readonly weight: number;
   readonly defaultWeight: number;
-}
+};
 
 /** What an objective score was computed from. */
 export interface IndicatorReading {
@@ -111,24 +47,25 @@ export interface CriterionScore {
   readonly rating?: number;
 }
 
-export interface CountryComparison {
+export type CountryComparison = (
+  | { readonly group: 'ranked'; readonly rank: number }
+  | { readonly group: 'few-data' | 'hidden'; readonly rank: null }
+) & {
   readonly country: string;
-  /** Position among countries with enough data, from 1; null for the "Poucos dados" group. */
-  readonly rank: number | null;
-  readonly group: 'ranked' | 'few-data';
   /** The weighted mean of the known scores, rounded half-even to one decimal place. */
   readonly total: Decimal | null;
-  /** The known weight over all weight, as a whole percentage rounded half-even. */
+  /** The known weight over all weight, as a whole percentage rounded down. */
   readonly coverage: number;
   readonly scores: readonly CriterionScore[];
-}
+};
 
 export interface DestinationComparison {
   readonly criteria: readonly ComparedCriterion[];
-  /** Ranked countries first, then the "Poucos dados" group, each in ranking order. */
+  /**
+   * Ranked countries first, then the "Poucos dados" group, each in ranking order, then the
+   * countries the person hid, in the order given.
+   */
   readonly countries: readonly CountryComparison[];
-  /** Countries the person hid, in the order given. */
-  readonly hidden: readonly string[];
 }
 
 export interface ComparisonInput {
@@ -139,7 +76,7 @@ export interface ComparisonInput {
   readonly today: CalendarDate;
 }
 
-/** The weight an own criterion has until the person sets one. */
+/** The weight an own criterion has until the person sets one: the middle of the scale. */
 export const ownDefaultWeight = 3;
 
 /** An exact non-negative ratio; the denominator is always positive. */
@@ -166,28 +103,19 @@ function add(left: Ratio, right: Ratio): Ratio {
   return ratio(left.n * right.d + right.n * left.d, left.d * right.d);
 }
 
-function times(value: Ratio, factor: bigint): Ratio {
-  return ratio(value.n * factor, value.d);
-}
-
-function divide(left: Ratio, right: Ratio): Ratio {
-  return ratio(left.n * right.d, left.d * right.n);
-}
-
-/** Rounds `n / d` half-even to an integer; `d` is positive. */
-function roundHalfEven(n: bigint, d: bigint): bigint {
-  const floor = n >= 0n ? n / d : -((-n + d - 1n) / d);
-  const twice = 2n * (n - floor * d);
-  if (twice < d) return floor;
-  if (twice > d) return floor + 1n;
-  return floor % 2n === 0n ? floor : floor + 1n;
-}
-
 function oneDecimal(value: Ratio): Decimal {
-  const tenths = roundHalfEven(value.n * 10n, value.d);
+  const tenths = roundQuotientHalfEven(value.n * 10n, value.d);
   const whole = tenths / 10n;
   const fraction = tenths % 10n;
   return parseDecimal(fraction === 0n ? String(whole) : `${String(whole)}.${String(fraction)}`);
+}
+
+/**
+ * A percentage rounded down, so a share just under one half never reads as 50 while the country
+ * sits in "Poucos dados".
+ */
+function wholePercentDown(value: Ratio): number {
+  return Number((value.n * 100n) / value.d);
 }
 
 function clampToScale(value: Ratio): Ratio {
@@ -198,9 +126,9 @@ function clampToScale(value: Ratio): Ratio {
 
 /** `10 × (value − zeroAt) / (tenAt − zeroAt)`, clamped to 0..10; exact. */
 function anchoredScore(value: Decimal, zeroAt: Decimal, tenAt: Decimal): Ratio {
-  const parts = [value, zeroAt, tenAt].map(scaledDecimal);
-  const scale = Math.max(...parts.map((part) => part.scale));
-  const [v = 0n, z = 0n, t = 0n] = parts.map((part) => part.units * powerOfTen(scale - part.scale));
+  const {
+    units: [v = 0n, z = 0n, t = 0n],
+  } = alignAll([value, zeroAt, tenAt].map(scaledDecimal));
   return clampToScale(ratio(10n * (v - z), t - z));
 }
 
@@ -209,9 +137,35 @@ function starScore(stars: number): Ratio {
   return ratio(BigInt(stars - 1) * 5n, 2n);
 }
 
+/** An own property only, so a criterion named like an `Object` member never reads one. */
+function own<T>(record: Readonly<Record<string, T>>, key: string): T | undefined {
+  return Object.hasOwn(record, key) ? record[key] : undefined;
+}
+
 interface Scored {
   readonly score: CriterionScore;
   readonly exact?: Ratio;
+}
+
+interface Totalled {
+  readonly country: string;
+  readonly total: Ratio | null;
+  readonly coverage: Ratio;
+  readonly enough: boolean;
+  readonly scores: readonly CriterionScore[];
+}
+
+function byRanking(left: Totalled, right: Totalled): number {
+  if (left.total !== null && right.total !== null) {
+    const totals = compareRatios(right.total, left.total);
+    if (totals !== 0) return totals;
+  } else if (left.total !== right.total) {
+    return left.total === null ? 1 : -1;
+  }
+  const coverage = compareRatios(right.coverage, left.coverage);
+  if (coverage !== 0) return coverage;
+  if (left.country === right.country) return 0;
+  return left.country < right.country ? -1 : 1;
 }
 
 /**
@@ -226,18 +180,18 @@ export function compareDestinations({
   today,
 }: ComparisonInput): DestinationComparison {
   const criteria: ComparedCriterion[] = [
-    ...entry.version.criteria.map((criterion) => ({
-      id: criterion.id,
-      kind: criterion.kind,
-      title: criterion.title,
-      weight: preferences.weights[criterion.id] ?? criterion.defaultWeight,
-      defaultWeight: criterion.defaultWeight,
+    ...entry.version.criteria.map(({ id, kind, title, defaultWeight }) => ({
+      id,
+      kind,
+      title,
+      weight: own(preferences.weights, id) ?? defaultWeight,
+      defaultWeight,
     })),
     ...preferences.ownCriteria.map(({ id, name }) => ({
       id,
       kind: 'own' as const,
       name,
-      weight: preferences.weights[id] ?? ownDefaultWeight,
+      weight: own(preferences.weights, id) ?? ownDefaultWeight,
       defaultWeight: ownDefaultWeight,
     })),
   ];
@@ -248,28 +202,29 @@ export function compareDestinations({
   const scoreOf = (criterion: ComparedCriterion, country: string): Scored => {
     const definition = knowledge.get(criterion.id);
     if (definition === undefined || definition.kind === 'personal') {
-      const rating = preferences.ratings[criterion.id]?.[country];
+      const byCountry = own(preferences.ratings, criterion.id);
+      const rating = byCountry === undefined ? undefined : own(byCountry, country);
       if (rating === undefined) return { score: { criterion: criterion.id, score: null } };
       const exact = starScore(rating);
       return { score: { criterion: criterion.id, score: oneDecimal(exact), rating }, exact };
     }
     const indicator = indicators.get(definition.indicator);
-    const entryValue = indicator?.values.find((value) => value.country === country);
-    const source = indicator?.sources.find((each) => each.id === entryValue?.source);
-    if (entryValue === undefined || source === undefined) {
+    const countryValue = indicator?.values.find((value) => value.country === country);
+    const source = indicator?.sources.find((each) => each.id === countryValue?.source);
+    if (countryValue === undefined || source === undefined) {
       return { score: { criterion: criterion.id, score: null } };
     }
     const reading: IndicatorReading = {
-      value: entryValue.value,
-      year: entryValue.year,
+      value: countryValue.value,
+      year: countryValue.year,
       source,
-      stale: daysBetween(source.verifiedAt, today) > staleAfterDays,
+      stale: isStale(source, today),
     };
     let exact: Ratio | undefined;
     if (definition.kind === 'indicator') {
-      exact = anchoredScore(parseDecimal(entryValue.value), definition.zeroAt, definition.tenAt);
+      exact = anchoredScore(parseDecimal(countryValue.value), definition.zeroAt, definition.tenAt);
     } else {
-      const token = definition.scores.find((each) => each.token === entryValue.value);
+      const token = definition.scores.find((each) => each.token === countryValue.value);
       exact = token === undefined ? undefined : ratio(BigInt(token.score), 1n);
     }
     return exact === undefined
@@ -278,57 +233,46 @@ export function compareDestinations({
   };
 
   const weightTotal = BigInt(criteria.reduce((sum, criterion) => sum + criterion.weight, 0));
-  const compared = countries
-    .filter((country) => !hidden.has(country))
-    .map((country) => {
-      const scored = criteria.map((criterion) => ({ criterion, ...scoreOf(criterion, country) }));
-      let weighted = zero;
-      let known = 0n;
-      for (const { criterion, exact } of scored) {
-        if (exact === undefined || criterion.weight === 0) continue;
-        weighted = add(weighted, times(exact, BigInt(criterion.weight)));
-        known += BigInt(criterion.weight);
-      }
-      const total = known === 0n ? null : divide(weighted, ratio(known, 1n));
-      const coverage = weightTotal === 0n ? zero : ratio(known, weightTotal);
-      return {
-        country,
-        total,
-        coverage,
-        enough: weightTotal > 0n && 2n * known >= weightTotal,
-        scores: scored.map(({ score }) => score),
-      };
-    });
-
-  const byRanking = (left: (typeof compared)[number], right: (typeof compared)[number]) => {
-    if (left.total !== null && right.total !== null) {
-      const totals = compareRatios(right.total, left.total);
-      if (totals !== 0) return totals;
-    } else if (left.total !== right.total) {
-      return left.total === null ? 1 : -1;
+  const totalled = countries.map((country): Totalled => {
+    const scored = criteria.map((criterion) => ({ criterion, ...scoreOf(criterion, country) }));
+    let weighted = zero;
+    let known = 0n;
+    for (const { criterion, exact } of scored) {
+      if (exact === undefined || criterion.weight === 0) continue;
+      const weight = BigInt(criterion.weight);
+      weighted = add(weighted, ratio(exact.n * weight, exact.d));
+      known += weight;
     }
-    const coverage = compareRatios(right.coverage, left.coverage);
-    if (coverage !== 0) return coverage;
-    return left.country < right.country ? -1 : left.country > right.country ? 1 : 0;
-  };
-  const ranked = compared.filter((each) => each.enough).sort(byRanking);
-  const fewData = compared.filter((each) => !each.enough).sort(byRanking);
-
-  const present = (each: (typeof compared)[number], rank: number | null): CountryComparison => ({
-    country: each.country,
-    rank,
-    group: rank === null ? 'few-data' : 'ranked',
-    total: each.total === null ? null : oneDecimal(each.total),
-    coverage: Number(roundHalfEven(each.coverage.n * 100n, each.coverage.d)),
-    scores: each.scores,
+    return {
+      country,
+      total: known === 0n ? null : ratio(weighted.n, weighted.d * known),
+      coverage: weightTotal === 0n ? zero : ratio(known, weightTotal),
+      enough: weightTotal > 0n && 2n * known >= weightTotal,
+      scores: scored.map(({ score }) => score),
+    };
   });
 
+  const shown = (each: Totalled) => ({
+    country: each.country,
+    total: each.total === null ? null : oneDecimal(each.total),
+    coverage: wholePercentDown(each.coverage),
+    scores: each.scores,
+  });
+  const visible = totalled.filter((each) => !hidden.has(each.country));
   return {
     criteria,
     countries: [
-      ...ranked.map((each, index) => present(each, index + 1)),
-      ...fewData.map((each) => present(each, null)),
+      ...visible
+        .filter((each) => each.enough)
+        .sort(byRanking)
+        .map((each, index) => ({ ...shown(each), group: 'ranked' as const, rank: index + 1 })),
+      ...visible
+        .filter((each) => !each.enough)
+        .sort(byRanking)
+        .map((each) => ({ ...shown(each), group: 'few-data' as const, rank: null })),
+      ...totalled
+        .filter((each) => hidden.has(each.country))
+        .map((each) => ({ ...shown(each), group: 'hidden' as const, rank: null })),
     ],
-    hidden: countries.filter((country) => hidden.has(country)),
   };
 }

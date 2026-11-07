@@ -1,4 +1,4 @@
-import type { ComparisonEntry } from '../../src/comparison/score.js';
+import type { ComparisonEntry } from '../../src/comparison/select.js';
 import type {
   ComparisonCriterion,
   ComparisonPreferences,

@@ -13,6 +13,14 @@ export function checkCountryIndicator(
   countries: ReadonlySet<string>,
 ): CheckIssue[] {
   const issues = checkOfficialSources(indicator.sources, official);
+  indicator.sources.forEach((source, index) => {
+    if (source.kind !== 'official') {
+      issues.push({
+        path: `/sources/${String(index)}/kind`,
+        message: 'An indicator cites official sources only',
+      });
+    }
+  });
   const sourceIds = new Set(indicator.sources.map((source) => source.id));
   if (sourceIds.size !== indicator.sources.length) {
     issues.push({ path: '/sources', message: 'Source IDs are unique' });
@@ -24,8 +32,9 @@ export function checkCountryIndicator(
       indicator.valueType === 'decimal'
         ? decimalSchema.safeParse(value).success
         : indicatorTokenSchema.safeParse(value).success;
-    if (!typed)
+    if (!typed) {
       issues.push({ path: `${path}/value`, message: `A value is a ${indicator.valueType}` });
+    }
     if (!sourceIds.has(source)) {
       issues.push({ path: `${path}/source`, message: 'A value cites one of the sources' });
     }
@@ -61,8 +70,9 @@ export function checkComparisonVersion(
     issue('/indicators', 'An indicator is pinned once');
   }
   const criterionIds = version.criteria.map((criterion) => criterion.id);
-  if (new Set(criterionIds).size !== criterionIds.length)
+  if (new Set(criterionIds).size !== criterionIds.length) {
     issue('/criteria', 'Criterion IDs are unique');
+  }
   const read = new Set<string>();
   version.criteria.forEach((criterion, index) => {
     const path = `/criteria/${String(index)}`;
@@ -87,8 +97,9 @@ export function checkComparisonVersion(
       return;
     }
     const scored = criterion.scores.map((entry) => entry.token);
-    if (new Set(scored).size !== scored.length)
+    if (new Set(scored).size !== scored.length) {
       issue(`${path}/scores`, 'Each token is scored once');
+    }
     for (const { value } of indicator.values) {
       if (!scored.includes(value)) issue(`${path}/scores`, `The token ${value} has a score`);
     }

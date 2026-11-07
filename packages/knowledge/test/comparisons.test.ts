@@ -12,6 +12,17 @@ import {
   writeTree,
 } from './data.ts';
 
+const dualIndicator = indicatorFile({
+  id: 'dual',
+  title: 'Dual citizenship',
+  unit: 'policy',
+  valueType: 'token',
+  values: [
+    { country: 'QM', value: 'allowed', year: 2024, source: 'stats' },
+    { country: 'QN', value: 'restricted', year: 2024, source: 'stats' },
+  ],
+});
+
 async function build(tree: Record<string, unknown>, hashes?: unknown) {
   return buildKnowledge(await writeTree(tree, hashes), buildDate, fixtures);
 }
@@ -50,6 +61,15 @@ describe('comparison data (ADR-0026)', () => {
     });
     const [before, after] = await Promise.all([build(comparisonTree()), build(changed)]);
     expect(before.comparisons[0]?.hash).toMatch(/^[0-9a-f]{64}$/);
+    expect(after.comparisons[0]?.hash).not.toBe(before.comparisons[0]?.hash);
+  });
+
+  it('hashes a comparison version over the files its indicators pin, transitively', async () => {
+    const changed = comparisonTree();
+    const countries = changed['countries/1.json'] as Record<string, unknown>;
+    changed['countries/1.json'] = { ...countries, codes: ['QM', 'QN', 'QP'] };
+    const [before, after] = await Promise.all([build(comparisonTree()), build(changed)]);
+    expect(after.issues.map(formatIssue)).not.toContainEqual(expect.stringMatching(/^comparisons/));
     expect(after.comparisons[0]?.hash).not.toBe(before.comparisons[0]?.hash);
   });
 
@@ -160,6 +180,88 @@ describe('comparison data (ADR-0026)', () => {
       },
       'comparisons/destinations/1.json: The ID and number match the file path',
     ],
+    [
+      'a secondary indicator source',
+      (tree) => {
+        tree['indicators/homicides/1.json'] = indicatorFile({
+          sources: [
+            ...(indicatorFile()['sources'] as unknown[]),
+            {
+              id: 'press',
+              url: 'https://news.example/homicides',
+              title: 'Press report',
+              kind: 'secondary',
+              verifiedAt: '2026-10-01',
+            },
+          ],
+          values: [{ country: 'QM', value: '1.5', year: 2024, source: 'press' }],
+        });
+      },
+      'indicators/homicides/1.json /sources/1/kind: An indicator cites official sources only',
+    ],
+    [
+      'a criterion reading an indicator the version does not pin',
+      (tree) => {
+        tree['comparisons/destinations/1.json'] = comparisonFile({
+          criteria: [
+            ...(comparisonFile()['criteria'] as unknown[]),
+            {
+              id: 'gdp',
+              title: 'Income',
+              kind: 'indicator',
+              indicator: 'gdp',
+              zeroAt: '0',
+              tenAt: '100000',
+              defaultWeight: 2,
+            },
+          ],
+        });
+      },
+      'comparisons/destinations/1.json /criteria/2/indicator: The criterion reads a pinned indicator',
+    ],
+    [
+      'a token without a score',
+      (tree) => {
+        tree['indicators/dual/1.json'] = dualIndicator;
+        tree['comparisons/destinations/1.json'] = comparisonFile({
+          indicators: [
+            { id: 'homicides', number: 1 },
+            { id: 'dual', number: 1 },
+          ],
+          criteria: [
+            ...(comparisonFile()['criteria'] as unknown[]),
+            {
+              id: 'dual-citizenship',
+              title: 'Dual citizenship',
+              kind: 'category',
+              indicator: 'dual',
+              scores: [{ token: 'allowed', score: 10 }],
+              defaultWeight: 2,
+            },
+          ],
+        });
+      },
+      'comparisons/destinations/1.json /criteria/2/scores: The token restricted has a score',
+    ],
+    [
+      'an indicator pinned twice',
+      (tree) => {
+        tree['comparisons/destinations/1.json'] = comparisonFile({
+          indicators: [
+            { id: 'homicides', number: 1 },
+            { id: 'homicides', number: 1 },
+          ],
+        });
+      },
+      'comparisons/destinations/1.json /indicators: An indicator is pinned once',
+    ],
+    [
+      'a second comparison series',
+      (tree) => {
+        tree['comparisons/elsewhere/1.json'] = comparisonFile({ id: 'elsewhere' });
+      },
+      'comparisons/elsewhere/1.json: There is one comparison series',
+    ],
   ])('rejects %s', async (_name, change, message) => {
     const tree = comparisonTree();
     change(tree);
@@ -176,7 +278,7 @@ describe('comparison data (ADR-0026)', () => {
     const catalog = createComparisonCatalog(
       parseComparisons(JSON.parse(JSON.parse(literal ?? '') as string)),
     );
-    const [identity] = catalog.identities('destinations');
+    const [identity] = catalog.identities();
     expect(identity).toEqual({
       comparisonId: 'destinations',
       number: 1,

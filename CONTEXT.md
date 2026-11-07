@@ -51,9 +51,10 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Shared analysis | Análise compartilhada | A comparison or recommendation an adult shares, read-only and revocable, with chosen people in the case; not a document share |
 | Destination comparison | Comparar destinos | One adult's ranking of the countries that have a route, by criteria they weigh themselves; computed in code, private to that adult ([ADR-0026](docs/adr/0026-destination-comparison-data.md)) |
 | Criterion | Critério | One thing a destination comparison scores, such as safety or climate; knowledge data with a stable ID, scored from a country indicator or from the person's own rating |
-| Own criterion | Critério seu | A criterion an adult creates and names for their own comparison, scored only from their rating; case data |
+| Personal criterion | Critério pessoal | A criterion of a comparison version that each adult scores with their own rating, such as climate; knowledge data, unlike an own criterion. Avoid "subjective criterion" |
+| Own criterion | Critério seu | A criterion an adult creates and names for their own comparison, scored only from their rating; case data, unlike a personal criterion. Avoid "custom criterion" |
 | Weight | Peso | How much a criterion counts in one adult's comparison, from 0 (left out) to 5 |
-| Rating | Sua nota | The one to five stars an adult gives a country on a criterion scored by the person, not by an indicator |
+| Rating | Sua nota | The one to five stars an adult gives a country on a personal criterion or an own criterion |
 | Score | Nota | A country's result on one criterion, from 0 to 10, computed in code; unknown when the value or the rating is missing, never zero |
 | Total score | Nota final | The weighted mean of a country's known scores, from 0 to 10 |
 | Coverage | Dados conhecidos | The share of an adult's weight that a country's known scores carry; under half puts the country in "Poucos dados" |
