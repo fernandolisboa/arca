@@ -4,7 +4,7 @@ import { auth, session, user } from './auth-schema.js';
 
 /** The step-up purposes the database accepts; the contract's closed enum (spec 0003, R5). */
 const purposeCheck = (column: unknown) =>
-  sql`${column} IN ('sensitive_settings', 'account_deletion', 'data_export', 'financial_action', 'vault_unlock', 'vault_write', 'knowledge_decision')`;
+  sql`${column} IN ('sensitive_settings', 'account_deletion', 'data_export', 'financial_action', 'vault_unlock', 'vault_write', 'knowledge_decision', 'admin_grant')`;
 
 /** `vault_unlock` alone carries no subject; every other purpose carries a 32-byte one. */
 const subjectCheck = (purpose: unknown, subject: unknown) =>

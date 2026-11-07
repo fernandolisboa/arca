@@ -2,6 +2,7 @@ import { routeIdSchema, shareScopeSchema, slugSchema } from '@arca/domain';
 import { z } from 'zod';
 import { caseRoutes } from './case.js';
 import { comparisonRoutes } from './comparison.js';
+import { adminRoutes } from './admins.js';
 import { knowledgeRoutes } from './knowledge.js';
 
 /** Every route lives under this prefix; clients prepend their origin, if any. */
@@ -100,8 +101,11 @@ export const SessionResponse = z.object({
    * may only show so and cancel it; every other route answers 403 deletion_pending. Null otherwise.
    */
   deletionDueAt: z.iso.datetime({ offset: true }).nullable(),
-  /** The account is on this environment's approver list (spec 0007, R7). */
-  approver: z.boolean(),
+  /**
+   * The account is an admin (ADR-0027): on this environment's owner list or holding a grant in
+   * force, read from the database on every request.
+   */
+  admin: z.boolean(),
 });
 export type SessionResponse = z.infer<typeof SessionResponse>;
 
@@ -196,6 +200,7 @@ export const stepUpPurposes = [
   'vault_unlock',
   'vault_write',
   'knowledge_decision',
+  'admin_grant',
 ] as const;
 
 export const StepUpPurpose = z.enum(stepUpPurposes);
@@ -842,6 +847,12 @@ export const auditEventDetails = {
   version_rejected: decisionEvent,
   comparison_activated: comparisonDecisionEvent,
   comparison_rejected: comparisonDecisionEvent,
+  /**
+   * The admin role was given or taken away (ADR-0027): the history row and the account it names;
+   * the actor is the admin who changed it. Recorded for both accounts.
+   */
+  admin_granted: z.strictObject({ grantId: z.uuid(), accountId: z.uuid() }),
+  admin_removed: z.strictObject({ grantId: z.uuid(), accountId: z.uuid() }),
 } as const;
 
 export type AuditEventCode = keyof typeof auditEventDetails;
@@ -1630,6 +1641,7 @@ export const deleteDocuments = {
 export * from './case.js';
 export * from './comparison.js';
 export * from './knowledge.js';
+export * from './admins.js';
 
 export const routes = {
   health,
@@ -1689,6 +1701,7 @@ export const routes = {
   ...caseRoutes,
   ...comparisonRoutes,
   ...knowledgeRoutes,
+  ...adminRoutes,
 } as const;
 
 /** The Better Auth endpoints the API lets through; every other path under /v1/auth is a 404. */

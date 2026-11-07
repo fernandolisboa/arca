@@ -45,6 +45,7 @@ import {
   forgetPushChannel,
   CaseEvaluations,
   DestinationComparison,
+  adminRoutes,
   caseRoutes,
   comparisonRoutes,
   CloseRuleReportsRequest,
@@ -111,6 +112,7 @@ import { isP256PublicKey } from './notification/push.js';
 import type { CaseFiles, CaseWritten } from './case/case-files.js';
 import type { CaseIntake } from './case/intake.js';
 import type { DecisionKind, DecisionSubject } from '@arca/domain';
+import type { AdminChangeOutcome, AdminGrants } from './knowledge/admin-grants.js';
 import type { DecisionOutcome, DecisionTarget, KnowledgeDecisions } from './knowledge/decisions.js';
 import type { RuleReportReview } from './knowledge/reports.js';
 import type { RuleSummaries } from './knowledge/summaries.js';
@@ -201,14 +203,19 @@ export interface AppDependencies {
   readonly intake?: CaseIntake;
   /** Decisions on route versions (spec 0007, R7); absent, their routes answer 401. */
   readonly knowledge?: KnowledgeDecisions;
+  /**
+   * The admin role (ADR-0027), read on every request; absent, nobody is an admin and the
+   * knowledge and admin routes answer 401.
+   */
+  readonly admins?: AdminGrants;
   /** The activation screen's reads (spec 0007, R7); absent, their routes answer 401. */
   readonly knowledgeVersions?: KnowledgeVersions;
   /**
-   * A model's summary of one version for the approver (ADR-0025); absent, as without a model key,
+   * A model's summary of one version for an admin (ADR-0025); absent, as without a model key,
    * the route answers 503 `summary_unavailable` and the version reads as before.
    */
   readonly ruleSummaries?: RuleSummaries;
-  /** Approvers' view of members' rule reports (spec 0007, R8); absent, its routes answer 401. */
+  /** Admins' view of members' rule reports (spec 0007, R8); absent, its routes answer 401. */
   readonly ruleReports?: RuleReportReview;
   /** Whether the account's inviter confirmed it, read on the app_auth pool (spec 0003, R2). */
   readonly accountConfirmed?: (accountId: string) => Promise<boolean>;
@@ -284,7 +291,8 @@ export type ErrorCode =
   | 'case_limit'
   | 'case_invalid'
   | 'too_many_push_channels'
-  | 'not_approver'
+  | 'not_admin'
+  | 'owner_list_admin'
   | 'already_rejected'
   | 'accounts_closed'
   | 'too_large'
@@ -420,6 +428,7 @@ export function createApp({
   cases,
   intake,
   knowledge,
+  admins,
   knowledgeVersions,
   ruleSummaries,
   ruleReports,
@@ -671,7 +680,7 @@ export function createApp({
         pendingPasskeyUntil: status?.pendingUntil?.toISOString() ?? null,
         recoveryPending: status?.recoveryPending ?? false,
         deletionDueAt: status?.deletionDueAt?.toISOString() ?? null,
-        approver: knowledge?.isApprover(session.accountId) ?? false,
+        admin: (await admins?.isAdmin(session.accountId)) ?? false,
       },
       200,
     );
@@ -1431,7 +1440,7 @@ export function createApp({
   });
 
   const refusedDecision = {
-    not_approver: 403,
+    not_admin: 403,
     not_found: 404,
     already_rejected: 409,
   } as const;
@@ -1445,10 +1454,12 @@ export function createApp({
     subject: DecisionSubject,
   ) => {
     const current = await signedIn(c);
-    if (current === null || knowledge === undefined) return unauthorized(c);
+    if (current === null || knowledge === undefined || admins === undefined) {
+      return unauthorized(c);
+    }
     // Before the body is read, so anyone else learns only that they may not decide; the service
     // checks again in the transaction that stores the decision, as the authority (ADR-0027).
-    if (!knowledge.isApprover(current.accountId)) return fail(c, 'not_approver', 403);
+    if (!(await admins.isAdmin(current.accountId))) return fail(c, 'not_admin', 403);
     const body: unknown = await c.req.json();
     const target: DecisionTarget =
       subject === 'route'
@@ -1456,19 +1467,19 @@ export function createApp({
         : { subject, ...DecideComparisonRequest.parse(body) };
     return decided(c, await knowledge.decide(current, kind, target));
   };
-  /** The approver's reads; anyone else learns only that they may not decide. */
-  const approverReads = async (c: Context<AppEnv>) => {
+  /** An admin's reads; anyone else learns only that they may not decide. */
+  const adminReads = async (c: Context<AppEnv>) => {
     const current = await signedIn(c);
-    if (current === null || knowledge === undefined || knowledgeVersions === undefined) {
+    if (current === null || admins === undefined || knowledgeVersions === undefined) {
       return { refused: unauthorized(c) };
     }
-    if (!knowledge.isApprover(current.accountId)) {
-      return { refused: fail(c, 'not_approver', 403) };
+    if (!(await admins.isAdmin(current.accountId))) {
+      return { refused: fail(c, 'not_admin', 403) };
     }
     return { versions: knowledgeVersions, current };
   };
   v1.openapi(openApiRoutes.listKnowledgeVersions, async (c) => {
-    const reads = await approverReads(c);
+    const reads = await adminReads(c);
     if ('refused' in reads) return reads.refused;
     const [versions, comparisons] = await Promise.all([
       reads.versions.list(),
@@ -1477,14 +1488,14 @@ export function createApp({
     return c.json({ versions: [...versions], comparisons: [...comparisons] }, 200);
   });
   v1.openapi(openApiRoutes.getVersionView, async (c) => {
-    const reads = await approverReads(c);
+    const reads = await adminReads(c);
     if ('refused' in reads) return reads.refused;
     const { routeId, number } = VersionViewQuery.parse(c.req.query());
     const view = await reads.versions.view(routeId, number);
     return view === undefined ? fail(c, 'not_found', 404) : c.json(VersionView.parse(view), 200);
   });
   v1.openapi(openApiRoutes.getComparisonView, async (c) => {
-    const reads = await approverReads(c);
+    const reads = await adminReads(c);
     if ('refused' in reads) return reads.refused;
     const { comparisonId, number } = ComparisonViewQuery.parse(c.req.query());
     const view = await reads.versions.comparisonView(comparisonId, number);
@@ -1500,7 +1511,7 @@ export function createApp({
     summary_timeout: 504,
   } as const;
   v1.openapi(openApiRoutes.getVersionSummary, async (c) => {
-    const reads = await approverReads(c);
+    const reads = await adminReads(c);
     if ('refused' in reads) return reads.refused;
     const { routeId, number } = VersionViewQuery.parse(c.req.query());
     if (ruleSummaries === undefined) {
@@ -1513,7 +1524,7 @@ export function createApp({
       : fail(c, outcome.reason, summaryFailures[outcome.reason]);
   });
   v1.openapi(openApiRoutes.summarizeVersion, async (c) => {
-    const reads = await approverReads(c);
+    const reads = await adminReads(c);
     if ('refused' in reads) return reads.refused;
     const { routeId, number } = DecideVersionRequest.parse(await c.req.json());
     if (ruleSummaries === undefined || authLimits === undefined) {
@@ -1532,7 +1543,7 @@ export function createApp({
       : fail(c, outcome.reason, summaryFailures[outcome.reason]);
   });
   const reportReview = async (c: Context<AppEnv>) => {
-    const reads = await approverReads(c);
+    const reads = await adminReads(c);
     if ('refused' in reads) return { refused: reads.refused };
     return ruleReports === undefined ? { refused: unauthorized(c) } : { reports: ruleReports };
   };
@@ -1551,6 +1562,52 @@ export function createApp({
   v1.openapi(openApiRoutes.rejectVersion, (c) => decideVersion(c, 'reject', 'route'));
   v1.openapi(openApiRoutes.activateComparison, (c) => decideVersion(c, 'activate', 'comparison'));
   v1.openapi(openApiRoutes.rejectComparison, (c) => decideVersion(c, 'reject', 'comparison'));
+
+  const changedAdmin = (c: Context<AppEnv>, outcome: AdminChangeOutcome) => {
+    switch (outcome) {
+      case 'changed':
+      case 'unchanged':
+        return c.json({}, 200);
+      case 'not_admin':
+      case 'step_up_required':
+        return fail(c, outcome, 403);
+      case 'not_found':
+        return fail(c, outcome, 404);
+      case 'owner_list_admin':
+        return fail(c, outcome, 409);
+    }
+  };
+  /** The admin role from the family area (ADR-0027): a confirmed account's own, signed in. */
+  const adminAccount = async (c: Context<AppEnv>) => {
+    const current = await signedIn(c);
+    if (current === null || admins === undefined) return { refused: unauthorized(c) };
+    if (accountConfirmed === undefined || !(await accountConfirmed(current.accountId))) {
+      return { refused: fail(c, 'account_unconfirmed', 403) };
+    }
+    return { current, admins };
+  };
+  v1.openapi(openApiRoutes.listCaseAdmins, async (c) => {
+    const account = await adminAccount(c);
+    if ('refused' in account) return account.refused;
+    const listed = await account.admins.list(account.current.accountId);
+    if (listed === 'not_admin') return fail(c, listed, 403);
+    if (listed === 'not_found') return fail(c, listed, 404);
+    return c.json({ admins: [...listed] }, 200);
+  });
+  v1.openapi(openApiRoutes.grantAdmin, async (c) => {
+    const account = await adminAccount(c);
+    if ('refused' in account) return account.refused;
+    const { accountId } = adminRoutes.grantAdmin.body.parse(await c.req.json());
+    const nonce = actionNonce(c);
+    if (nonce === undefined) return fail(c, 'step_up_required', 403);
+    return changedAdmin(c, await account.admins.grant(account.current, accountId, nonce));
+  });
+  v1.openapi(openApiRoutes.removeAdmin, async (c) => {
+    const account = await adminAccount(c);
+    if ('refused' in account) return account.refused;
+    const { accountId } = adminRoutes.removeAdmin.body.parse(await c.req.json());
+    return changedAdmin(c, await account.admins.remove(account.current, accountId));
+  });
 
   v1.openapi(openApiRoutes.notificationChannels, async (c) => {
     const current = await signedIn(c);

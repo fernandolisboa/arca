@@ -5,8 +5,8 @@ import {
   decideComparisonAction,
   decideVersionAction,
 } from '@arca/api-contract/routes';
-import { type Database, type Transaction, lockKey, withIdentity } from '@arca/db';
-import { type adminBases, decision } from '@arca/db/knowledge-schema';
+import { type Database, type Transaction, withIdentity } from '@arca/db';
+import { decision } from '@arca/db/knowledge-schema';
 import {
   type CheckedDecision,
   type ComparisonCatalog,
@@ -20,16 +20,23 @@ import {
   decisionStates,
 } from '@arca/domain';
 import type { Logger } from '@arca/telemetry';
-import { sql } from 'drizzle-orm';
+import { getTableColumns, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import type { SignedIn } from '../auth/service.js';
 import { subjectHash, type CanonicalAction } from '../auth/step-up-encoding.js';
 import { reverifyStepUp, type StoredAssertion } from '../auth/step-up-reverify.js';
+import {
+  type AdminHistory,
+  type AdminRole,
+  epochMicros,
+  lockAdmins,
+  readAdminHistory,
+} from './admins.js';
 import { closeRuleReports } from './reports.js';
 
 export type DecisionOutcome =
   | { readonly decided: string }
-  | { readonly refused: 'not_approver' | 'not_found' | 'already_rejected' };
+  | { readonly refused: 'not_admin' | 'not_found' | 'already_rejected' };
 
 /** The version a decision is about: a route version or a comparison version (ADR-0026). */
 export type DecisionTarget =
@@ -37,7 +44,6 @@ export type DecisionTarget =
   | (DecideComparisonRequest & { readonly subject: 'comparison' });
 
 export interface KnowledgeDecisions {
-  readonly isApprover: (accountId: string) => boolean;
   /**
    * Activates or rejects one version (spec 0007, R7; ADR-0026) for a signed-in admin, with no
    * step-up (ADR-0027), on the version's hash in the bundled catalog.
@@ -63,7 +69,10 @@ export interface KnowledgeDecisionSettings {
   readonly catalog: Pick<RouteCatalog, 'identities'>;
   /** The only place a comparison hash is taken from: an indicator's hash alone is never decided. */
   readonly comparisons: Pick<ComparisonCatalog, 'identities'>;
-  readonly approvers: readonly string[];
+  /** Who is an admin: the owner list and the role's history (ADR-0027). */
+  readonly role: AdminRole;
+  /** The owner list, which ADR-0022 decisions are re-verified against. */
+  readonly ownerList: readonly string[];
   /** The environment's own origin, which ADR-0022 decisions are re-verified against. */
   readonly origin: string;
   readonly logger: Logger;
@@ -72,20 +81,24 @@ export interface KnowledgeDecisionSettings {
 const routeActions = { activate: 'activateVersion', reject: 'rejectVersion' } as const;
 const comparisonActions = { activate: 'activateComparison', reject: 'rejectComparison' } as const;
 
-type DecisionRow = typeof decision.$inferSelect;
-type AdminBasis = (typeof adminBases)[number];
+/** A stored decision, with its time in microseconds to compare with the role's history. */
+type DecisionRow = typeof decision.$inferSelect & { readonly decidedMicros: string };
 
 /**
- * The advisory lock a decision's transaction holds on its author, so a change to the author's
- * admin role (ADR-0027) is ordered before or after the decision, never in between.
+ * Whether a `session` row's recorded basis counts (ADR-0027): the owner list, checked when the
+ * row was stored, or the grant it names, in force for its author at its time by the history. A
+ * new basis must be handled here to compile.
  */
-const adminLockKey = (accountId: string) => `knowledge.admin:${accountId}`;
-
-/** Whether a `session` row's recorded basis counts; a new basis must be handled here to compile. */
-function sessionCounts({ adminBasis }: DecisionRow): boolean {
+function sessionCounts(row: DecisionRow, history: AdminHistory): boolean {
+  const { adminBasis } = row;
   switch (adminBasis) {
     case 'owner_list':
       return true;
+    case 'grant':
+      return (
+        row.adminGrantId !== null &&
+        history.inForce(row.adminGrantId, row.approverAccountId, BigInt(row.decidedMicros))
+      );
     case null:
       return false;
     default: {
@@ -186,22 +199,19 @@ export function createKnowledgeDecisions({
   audit,
   catalog,
   comparisons,
-  approvers,
+  role,
+  ownerList,
   origin,
   logger,
 }: KnowledgeDecisionSettings): KnowledgeDecisions {
   const rpId = new URL(origin).hostname;
-  const listed = new Set(approvers);
+  const listed = new Set(ownerList);
   /**
-   * Decisions never change, and the list is fixed for the process, so each decision is checked
-   * once. The whole checked decision is kept, built from the row that was verified, so a row
+   * Decisions never change, the list is fixed for the process, and the history only grows after
+   * the times a stored row looks at, so each decision is checked once. The whole checked decision is kept, built from the row that was verified, so a row
    * changed later behind the policies cannot borrow an earlier verification.
    */
   const checkedById = new Map<string, Promise<CheckedDecision | undefined>>();
-
-  /** Why the account may decide now, read in the deciding transaction; undefined if it may not. */
-  const adminBasis = (accountId: string): AdminBasis | undefined =>
-    listed.has(accountId) ? 'owner_list' : undefined;
 
   const assertionVerifies = async (row: DecisionRow, decided: DecidedVersion) => {
     const stored = storedStepUp(row);
@@ -223,11 +233,16 @@ export function createKnowledgeDecisions({
    * a version its author rejected. A `step_up` row is re-verified as ADR-0022 says, and its
    * rejection counts even when it does not verify.
    */
-  const check = async (row: DecisionRow): Promise<CheckedDecision | undefined> => {
+  const check = async (
+    row: DecisionRow,
+    history: AdminHistory,
+  ): Promise<CheckedDecision | undefined> => {
     const decided = rowVersion(row);
     if (decided === undefined) return undefined;
     if (row.proof === 'session')
-      return sessionCounts(row) ? { ...decided, kind: row.kind, verified: true } : undefined;
+      return sessionCounts(row, history)
+        ? { ...decided, kind: row.kind, verified: true }
+        : undefined;
     const verified = await assertionVerifies(row, decided);
     if (!verified && row.kind === 'activate') {
       logger.error({ errorName: 'KnowledgeActivationIgnored' });
@@ -235,18 +250,28 @@ export function createKnowledgeDecisions({
     return { ...decided, kind: row.kind, verified };
   };
 
-  const checked = (row: DecisionRow) => {
+  const checked = (row: DecisionRow, history: AdminHistory) => {
     let known = checkedById.get(row.id);
     if (known === undefined) {
-      known = check(row);
+      known = check(row, history);
       checkedById.set(row.id, known);
     }
     return known;
   };
 
   const states = async () => {
-    const rows = await db.select().from(decision).orderBy(decision.decidedAt, decision.id);
-    const decisions = await Promise.all(rows.map(checked));
+    // One snapshot, so every grant a decision names is read with it.
+    const { rows, history } = await db.transaction(
+      async (tx) => ({
+        rows: await tx
+          .select({ ...getTableColumns(decision), decidedMicros: epochMicros(decision.decidedAt) })
+          .from(decision)
+          .orderBy(decision.decidedAt, decision.id),
+        history: await readAdminHistory(tx),
+      }),
+      { isolationLevel: 'repeatable read', accessMode: 'read only' },
+    );
+    const decisions = await Promise.all(rows.map((row) => checked(row as DecisionRow, history)));
     return decisionStates(decisions.filter((each) => each !== undefined));
   };
 
@@ -270,13 +295,15 @@ export function createKnowledgeDecisions({
   /**
    * Stores one decision as the author's own `session` row, in one app_auth transaction under the
    * author's identity: the lock on the author, the admin check, the audit event, then the row,
-   * whose time the database sets after the lock. False, with nothing stored, for a non-admin.
+   * whose time the database sets after the lock and which names why its author was an admin.
+   * False, with nothing stored, for a non-admin.
    */
   const store = (accountId: string, kind: DecisionKind, decided: DecidedVersion, id: string) =>
     withIdentity(authDb(), { accountId }, async (tx: Transaction) => {
-      await lockKey(tx, adminLockKey(accountId));
-      const basis = adminBasis(accountId);
-      if (basis === undefined) return false;
+      await lockAdmins(tx, [accountId]);
+      const held = role.basisOf(await readAdminHistory(tx), accountId);
+      if (held === undefined) return false;
+      const grantId = held.basis === 'grant' ? held.grantId : null;
       const { identity } = decided;
       const routeId = decided.subject === 'route' ? decided.identity.routeId : null;
       const comparisonId = decided.subject === 'comparison' ? decided.identity.comparisonId : null;
@@ -289,27 +316,25 @@ export function createKnowledgeDecisions({
       });
       await tx.execute(sql`
         INSERT INTO knowledge.decision (id, kind, subject_kind, route_id, comparison_id,
-          version_number, content_hash, approver_account_id, proof, admin_basis)
+          version_number, content_hash, approver_account_id, proof, admin_basis, admin_grant_id)
         VALUES (${id}, ${kind}, ${decided.subject}, ${routeId}, ${comparisonId},
-          ${identity.number}, ${identity.hash}, ${accountId}, 'session', ${basis})`);
+          ${identity.number}, ${identity.hash}, ${accountId}, 'session', ${held.basis}, ${grantId})`);
       return true;
     });
 
   return {
-    isApprover: (accountId) => adminBasis(accountId) !== undefined,
-
     decide: async ({ accountId }, kind, target) => {
       // Anyone else learns nothing about the catalog; the storing transaction checks again.
-      if (adminBasis(accountId) === undefined) return { refused: 'not_approver' };
+      if (!(await role.isAdmin(accountId))) return { refused: 'not_admin' };
       const decided = bundled(target);
       if (decided === undefined) return { refused: 'not_found' };
       if ((await states()).get(decidedKey(decided)) === 'rejected') {
         return { refused: 'already_rejected' };
       }
       const decisionId = randomUUID();
-      if (!(await store(accountId, kind, decided, decisionId))) return { refused: 'not_approver' };
+      if (!(await store(accountId, kind, decided, decisionId))) return { refused: 'not_admin' };
       // Activating a correction answers the reports of the version it corrects (R8).
-      // The decision stands either way; the approver can still close the reports by hand.
+      // The decision stands either way; an admin can still close the reports by hand.
       if (
         kind === 'activate' &&
         decided.subject === 'route' &&

@@ -184,8 +184,22 @@ const decisionColumns = [
   'approver_account_id',
   'proof',
   'admin_basis',
+  'admin_grant_id',
   ...decisionStepUpColumns,
   'decided_at',
+];
+
+/** The admin role's history (ADR-0027); the database sets `at`. */
+const adminGrantColumns = [
+  'id',
+  'kind',
+  'grantee_account_id',
+  'actor_account_id',
+  'actor_basis',
+  'actor_grant_id',
+  'removes_grant_id',
+  'step_up_id',
+  'at',
 ];
 
 /** Per column, the privileges a role holds on one table, table-level grants included. */
@@ -229,6 +243,8 @@ async function columnPrivileges(role: string, table: string, columns: readonly s
 const auditPrivileges = (role: string) => columnPrivileges(role, 'audit.event', auditColumns);
 const decisionPrivileges = (role: string) =>
   columnPrivileges(role, 'knowledge.decision', decisionColumns);
+const adminGrantPrivileges = (role: string) =>
+  columnPrivileges(role, 'knowledge.admin_grant', adminGrantColumns);
 const summaryColumns = ['content_hash', 'prompt_version', 'model', 'overview', 'watch_points'];
 const summaryPrivileges = (role: string) =>
   columnPrivileges(role, 'knowledge.rule_summary', summaryColumns);
@@ -300,9 +316,10 @@ describe('the audit schema access matrix (spec 0003, R7)', () => {
 });
 
 describe('the knowledge schema access matrix (spec 0007, R7)', () => {
-  it('has only the decision and rule summary tables, with no foreign keys and forced row-level security', async () => {
+  it('has only the admin grant, decision and rule summary tables, with no foreign keys and forced row-level security', async () => {
     expect(await schemaShape('knowledge')).toEqual({
       tables: [
+        { name: 'admin_grant', forced: true },
         { name: 'decision', forced: true },
         { name: 'rule_summary', forced: true },
       ],
@@ -328,6 +345,24 @@ describe('the knowledge schema access matrix (spec 0007, R7)', () => {
       usage: true,
       create: false,
       columns: onEvery(decisionColumns, ['SELECT']),
+      table: [],
+    });
+  });
+
+  it('lets app_auth read the admin grants and insert every column but the time, and nothing else (ADR-0027)', async () => {
+    expect(await adminGrantPrivileges('app_auth')).toEqual({
+      usage: true,
+      create: false,
+      columns: { ...onEvery(adminGrantColumns, ['SELECT', 'INSERT']), at: ['SELECT'] },
+      table: [],
+    });
+  });
+
+  it('lets app_api only read the admin grants', async () => {
+    expect(await adminGrantPrivileges('app_api')).toEqual({
+      usage: true,
+      create: false,
+      columns: onEvery(adminGrantColumns, ['SELECT']),
       table: [],
     });
   });
@@ -360,6 +395,12 @@ describe('the knowledge schema access matrix (spec 0007, R7)', () => {
       usage: false,
       create: false,
       columns: onEvery(summaryColumns, []),
+      table: [],
+    });
+    expect(await adminGrantPrivileges(role)).toEqual({
+      usage: false,
+      create: false,
+      columns: onEvery(adminGrantColumns, []),
       table: [],
     });
   });

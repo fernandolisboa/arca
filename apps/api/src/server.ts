@@ -24,8 +24,11 @@ import { recoveryKits, type RecoveryKits } from './auth/recovery-kit.js';
 import { createRecovery, type Recovery } from './auth/recovery.js';
 import { registration, registrationHooks, type Registration } from './auth/registration.js';
 import { authService, type AuthService } from './auth/service.js';
+import { accountNotice, type AccountNotice } from './auth/account-notices.js';
 import { createStepUp, type StepUpService, type StepUpSpender } from './auth/step-up.js';
-import { approvers } from './knowledge/approvers.js';
+import { createAdminGrants } from './knowledge/admin-grants.js';
+import { adminRole } from './knowledge/admins.js';
+import { ownerList } from './knowledge/owner-list.js';
 import { createKnowledgeDecisions, type KnowledgeDecisions } from './knowledge/decisions.js';
 import { todayInSaoPaulo } from './calendar.js';
 import { createRuleReportReview } from './knowledge/reports.js';
@@ -108,6 +111,9 @@ const lazyAudit: Pick<AuditLog, 'record'> = {
   record: async (entry) => (await authParts()).audit.record(entry),
 };
 
+/** Who is an admin (ADR-0027): the owner list, then the role's history on the app_api pool. */
+const role = adminRole(() => connected().db, ownerList[environment]);
+
 let knowledgeInstance: KnowledgeDecisions | undefined;
 
 /**
@@ -121,7 +127,8 @@ function knowledgeDecisions(): KnowledgeDecisions {
     audit: lazyAudit,
     catalog: routeCatalog,
     comparisons: comparisonCatalog,
-    approvers: approvers[environment],
+    role,
+    ownerList: ownerList[environment],
     origin: readAuthOrigin(),
     logger,
   });
@@ -156,6 +163,7 @@ interface AuthParts {
   readonly audit: AuditLog;
   readonly i18n: I18n;
   readonly accountDeletion: AccountDeletion;
+  readonly adminNotice: AccountNotice<'admin_role_changed'>;
 }
 
 let parts: Promise<AuthParts> | undefined;
@@ -217,6 +225,11 @@ function authParts(): Promise<AuthParts> {
       audit,
       i18n,
       accountDeletion: createAccountDeletion({ db, audit, notifier, logger }),
+      adminNotice: accountNotice<'admin_role_changed'>({
+        notifier,
+        logger,
+        label: 'AdminRoleNotice',
+      }),
     };
   })();
   // A failed build is retried on the next request instead of being cached.
@@ -454,8 +467,19 @@ const app = createApp({
       engineCommit: readEngineCommit(),
     },
   }),
+  admins: createAdminGrants({
+    db: () => connected().db,
+    authDb: authConnection,
+    role,
+    stepUp: {
+      spend: async (signedIn, purpose, action, record) =>
+        (await authParts()).stepUp.spend(signedIn, purpose, action, record),
+    },
+    audit: lazyAudit,
+    notify: async (accountId, kind) => (await authParts()).adminNotice(accountId, kind),
+    ownerList: ownerList[environment],
+  }),
   knowledge: {
-    isApprover: (accountId) => knowledgeDecisions().isApprover(accountId),
     decide: (signedIn, kind, target) => knowledgeDecisions().decide(signedIn, kind, target),
     states: () => knowledgeDecisions().states(),
   },

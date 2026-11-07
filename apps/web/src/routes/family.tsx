@@ -2,6 +2,7 @@ import {
   maxCaseMembers,
   maxCasePeople,
   routes,
+  type CaseAdmin,
   type CasePerson,
   type CaseRelationship,
   type CaseView,
@@ -11,7 +12,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useId, useState, type ReactNode, type SubmitEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { caseQuery, invitesQuery, sessionQuery } from '../api.js';
+import { adminFailure, grantAdmin, removeAdmin, type AdminFailure } from '../admins.js';
+import { caseAdminsQuery, caseQuery, invitesQuery, sessionQuery } from '../api.js';
 import { caseFailure, handOverPerson, leaveCase, writeCase, type CaseFailure } from '../case.js';
 import { newsOf, readSeen, seenOf, writeSeen } from '../family-news.js';
 import { CheckRow } from '../forms/check-row.js';
@@ -68,7 +70,7 @@ function Family() {
       {view === null ? (
         <StartCase />
       ) : (
-        <FamilyCase view={view} accountId={session.data.accountId} />
+        <FamilyCase view={view} accountId={session.data.accountId} admin={session.data.admin} />
       )}
     </Page>
   );
@@ -151,10 +153,20 @@ function StartCase() {
   );
 }
 
-function FamilyCase({ view, accountId }: { readonly view: CaseView; readonly accountId: string }) {
+function FamilyCase({
+  view,
+  accountId,
+  admin,
+}: {
+  readonly view: CaseView;
+  readonly accountId: string;
+  readonly admin: boolean;
+}) {
   const { t } = useTranslation();
   /** The person just added, whose sharing the screen asks about first (R2). */
   const [justAdded, setJustAdded] = useState<string>();
+  // Only an admin sees who is one, and only an admin may change it (ADR-0027).
+  const admins = useQuery({ ...caseAdminsQuery, enabled: admin });
   const names = new Map(view.people.map((person) => [person.id, person.displayName]));
   return (
     <>
@@ -178,6 +190,7 @@ function FamilyCase({ view, accountId }: { readonly view: CaseView; readonly acc
             view={view}
             names={names}
             askSharing={person.id === justAdded}
+            admins={admin ? admins.data?.admins : undefined}
           />
         ))}
       </ul>
@@ -279,14 +292,18 @@ function PersonCard({
   view,
   names,
   askSharing,
+  admins,
 }: {
   readonly person: CasePerson;
   readonly view: CaseView;
   readonly names: ReadonlyMap<string, string>;
   readonly askSharing: boolean;
+  /** The case's admins, known only to an admin. */
+  readonly admins: readonly CaseAdmin[] | undefined;
 }) {
   const { t } = useTranslation();
   const isMe = person.id === view.me;
+  const role = admins?.find(({ accountId }) => accountId === person.accountId);
   const relations = relationsOf(person, view.relationships, names).map(({ role, name }) =>
     t(`family.relation.${role}`, { name }),
   );
@@ -312,6 +329,7 @@ function PersonCard({
           tone={person.accountId === null ? 'unknown' : 'ok'}
           label={t(person.accountId === null ? 'family.noAccount' : 'family.hasAccount')}
         />
+        {role !== undefined && <StatusChip tone="ok" label={t('family.admin.badge')} />}
       </div>
       {relations.length > 0 && <p className="text-small text-muted">{relations.join(' · ')}</p>}
       {person.shares === null ? (
@@ -331,7 +349,75 @@ function PersonCard({
       {person.keptByMe && (
         <KeptActions person={person} isMe={isMe} others={others} askSharing={askSharing} />
       )}
+      {admins !== undefined && person.accountId !== null && !isMe && (
+        <AdminRole name={person.displayName} accountId={person.accountId} role={role} />
+      )}
     </li>
+  );
+}
+
+/**
+ * Gives or takes away another member's admin role (ADR-0027): giving it asks for a passkey, taking
+ * it away does not, and an account the owner list names keeps it.
+ */
+function AdminRole({
+  name,
+  accountId,
+  role,
+}: {
+  readonly name: string;
+  readonly accountId: string;
+  readonly role: CaseAdmin | undefined;
+}) {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const [pending, setPending] = useState(false);
+  const [failure, setFailure] = useState<AdminFailure>();
+  const run = (change: () => Promise<void>) => {
+    setFailure(undefined);
+    setPending(true);
+    change()
+      .catch((error: unknown) => {
+        setFailure(adminFailure(error));
+      })
+      .finally(() => {
+        setPending(false);
+        void queryClient.invalidateQueries({ queryKey: caseAdminsQuery.queryKey });
+      });
+  };
+  if (role?.owner === true) return null;
+  return (
+    <div className="flex flex-col gap-2">
+      {role === undefined ? (
+        <Confirmed
+          label={t('family.admin.grant')}
+          warning={t('family.admin.grantConfirm', { name })}
+          confirm={t('family.admin.grantYes')}
+          disabled={pending}
+          tone="plain"
+          onConfirm={() => {
+            run(() => grantAdmin(passkeys, accountId));
+          }}
+        />
+      ) : (
+        <Confirmed
+          label={t('family.admin.remove')}
+          warning={t('family.admin.removeConfirm', { name })}
+          confirm={t('family.admin.removeYes')}
+          disabled={pending}
+          onConfirm={() => {
+            run(() => removeAdmin(accountId));
+          }}
+        />
+      )}
+      <p role="status" className={failure === undefined && !pending ? 'text-muted' : 'text-ink'}>
+        {pending
+          ? t(role === undefined ? 'family.waiting' : 'family.saving')
+          : failure === undefined
+            ? ''
+            : t('family.admin.failure', { reason: failure })}
+      </p>
+    </div>
   );
 }
 
@@ -897,27 +983,32 @@ function Leave() {
   );
 }
 
-/** A destructive action that asks once more, in the page, before it runs. */
+/**
+ * An action that asks once more, in the page, before it runs; destructive unless `tone` is plain.
+ */
 function Confirmed({
   label,
   warning,
   confirm,
   disabled,
   onConfirm,
+  tone = 'danger',
 }: {
   readonly label: string;
   readonly warning: string;
   readonly confirm: string;
   readonly disabled: boolean;
   readonly onConfirm: () => void;
+  readonly tone?: 'danger' | 'plain';
 }) {
   const { t } = useTranslation();
   const [asking, setAsking] = useState(false);
+  const actionClass = tone === 'danger' ? dangerLinkClass : textLinkClass;
   if (!asking) {
     return (
       <button
         type="button"
-        className={dangerLinkClass}
+        className={actionClass}
         disabled={disabled}
         onClick={() => {
           setAsking(true);
@@ -933,7 +1024,7 @@ function Confirmed({
       <div className="flex flex-wrap gap-x-4">
         <button
           type="button"
-          className={dangerLinkClass}
+          className={actionClass}
           disabled={disabled}
           onClick={() => {
             setAsking(false);

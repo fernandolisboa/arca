@@ -15,8 +15,8 @@ import { ruleReportReasons } from './case.js';
 import type { RouteDefinition } from './index.js';
 
 /*
- * Activating and rejecting a route version (spec 0007, R7; ADR-0027). Only an approver may decide
- * (403 not_approver), signed in, with no step-up; the body names the version and nothing else, and
+ * Activating and rejecting a route version (spec 0007, R7; ADR-0027). Only an admin may decide
+ * (403 not_admin), signed in, with no step-up; the body names the version and nothing else, and
  * the API takes its hash from the catalog it bundles. 404 not_found for a version the catalog does
  * not hold, 409 already_rejected for one already rejected.
  *
@@ -39,7 +39,7 @@ export const activateVersion = {
   path: '/knowledge/versions/activate',
   operationId: 'activateVersion',
   summary:
-    'Activates a route version for a signed-in approver, with no step-up. 403 not_approver, 404 not_found, 409 already_rejected',
+    'Activates a route version for a signed-in admin, with no step-up. 403 not_admin, 404 not_found, 409 already_rejected',
   body: DecideVersionRequest,
   response: { description: 'Activated', schema: DecideVersionResponse },
 } as const satisfies RouteDefinition<typeof DecideVersionResponse>;
@@ -49,7 +49,7 @@ export const rejectVersion = {
   path: '/knowledge/versions/reject',
   operationId: 'rejectVersion',
   summary:
-    'Rejects a route version for a signed-in approver, with no step-up, at once and for good. 403 not_approver, 404 not_found, 409 already_rejected',
+    'Rejects a route version for a signed-in admin, with no step-up, at once and for good. 403 not_admin, 404 not_found, 409 already_rejected',
   body: DecideVersionRequest,
   response: { description: 'Rejected', schema: DecideVersionResponse },
 } as const satisfies RouteDefinition<typeof DecideVersionResponse>;
@@ -83,7 +83,7 @@ export const activateComparison = {
   path: '/knowledge/comparisons/activate',
   operationId: 'activateComparison',
   summary:
-    'Activates a comparison version for a signed-in approver, with no step-up. 403 not_approver, 404 not_found, 409 already_rejected',
+    'Activates a comparison version for a signed-in admin, with no step-up. 403 not_admin, 404 not_found, 409 already_rejected',
   body: DecideComparisonRequest,
   response: { description: 'Activated', schema: DecideVersionResponse },
 } as const satisfies RouteDefinition<typeof DecideVersionResponse>;
@@ -93,7 +93,7 @@ export const rejectComparison = {
   path: '/knowledge/comparisons/reject',
   operationId: 'rejectComparison',
   summary:
-    'Rejects a comparison version for a signed-in approver, with no step-up, at once and for good; the newest active version before it stays in use. 403 not_approver, 404 not_found, 409 already_rejected',
+    'Rejects a comparison version for a signed-in admin, with no step-up, at once and for good; the newest active version before it stays in use. 403 not_admin, 404 not_found, 409 already_rejected',
   body: DecideComparisonRequest,
   response: { description: 'Rejected', schema: DecideVersionResponse },
 } as const satisfies RouteDefinition<typeof DecideVersionResponse>;
@@ -143,7 +143,7 @@ export const listKnowledgeVersions = {
   path: '/knowledge/versions',
   operationId: 'listKnowledgeVersions',
   summary:
-    'Every route and comparison version the API bundles with its decision state, the newest first, for an approver; 403 not_approver',
+    'Every route and comparison version the API bundles with its decision state, the newest first, for an admin; 403 not_admin',
   response: { description: 'The versions', schema: KnowledgeVersions },
 } as const satisfies RouteDefinition<typeof KnowledgeVersions>;
 
@@ -159,7 +159,7 @@ const sourceIds = z.array(z.string().max(64)).max(20);
 const sectionChange = z.object({ added: ids, removed: ids, changed: ids });
 const pin = z.object({ id: z.string().max(64), number: z.int().min(1) });
 
-/** One version laid out for the approver (spec 0007, R7), built by `versionView` in the domain. */
+/** One version laid out for an admin (spec 0007, R7), built by `versionView` in the domain. */
 export const VersionView = z.object({
   routeId: routeIdSchema,
   number: z.int().min(1),
@@ -262,14 +262,14 @@ export const getVersionView = {
   path: '/knowledge/versions/view',
   operationId: 'getVersionView',
   summary:
-    "One route version laid out for an approver, from its content alone, with what changed, its sources, its cases and what rejecting it would do to today's selection; 403 not_approver, 404 not_found",
+    "One route version laid out for an admin, from its content alone, with what changed, its sources, its cases and what rejecting it would do to today's selection; 403 not_admin, 404 not_found",
   query: VersionViewQuery,
   response: { description: 'The version', schema: VersionView },
 } as const satisfies RouteDefinition<typeof VersionView>;
 
 const year = z.int().min(1900).max(2200);
 
-/** One comparison version laid out for the approver (ADR-0026), built by the domain. */
+/** One comparison version laid out for an admin (ADR-0026), built by the domain. */
 export const ComparisonVersionView = z.object({
   comparisonId: slugSchema,
   number: z.int().min(1),
@@ -323,13 +323,13 @@ export const getComparisonView = {
   path: '/knowledge/comparisons/view',
   operationId: 'getComparisonView',
   summary:
-    'One comparison version laid out for an approver: its criteria, every indicator value with its year and source host beside the value it replaces, what changed and what rejecting it would do; 403 not_approver, 404 not_found',
+    'One comparison version laid out for an admin: its criteria, every indicator value with its year and source host beside the value it replaces, what changed and what rejecting it would do; 403 not_admin, 404 not_found',
   query: ComparisonViewQuery,
   response: { description: 'The comparison version', schema: ComparisonVersionView },
 } as const satisfies RouteDefinition<typeof ComparisonVersionView>;
 
 /**
- * A model's reading of one version for the approver (ADR-0025): an aid to review, never a decision.
+ * A model's reading of one version for an admin (ADR-0025): an aid to review, never a decision.
  * Plain text only; the screen renders it as text, so no link or image in it is ever followed.
  */
 export const RuleSummary = z.strictObject({
@@ -343,7 +343,7 @@ export const summarizeVersion = {
   path: '/knowledge/versions/summary',
   operationId: 'summarizeVersion',
   summary:
-    "Sends one version's content (public rule data, no case data) to a model and answers a short summary with points to check, for an approver; the summary is stored, so the same content, prompt and model answer it again without a model call. 30 per account per day and 5 per minute (429 rate_limited); 403 not_approver; 404 not_found; 502 summary_unparsable or summary_failed; 503 summary_unavailable when no model can be reached; 504 summary_timeout",
+    "Sends one version's content (public rule data, no case data) to a model and answers a short summary with points to check, for an admin; the summary is stored, so the same content, prompt and model answer it again without a model call. 30 per account per day and 5 per minute (429 rate_limited); 403 not_admin; 404 not_found; 502 summary_unparsable or summary_failed; 503 summary_unavailable when no model can be reached; 504 summary_timeout",
   body: DecideVersionRequest,
   response: { description: 'The summary', schema: RuleSummary },
 } as const satisfies RouteDefinition<typeof RuleSummary>;
@@ -356,7 +356,7 @@ export const getVersionSummary = {
   path: '/knowledge/versions/summary',
   operationId: 'getVersionSummary',
   summary:
-    "The summary already stored for one version under today's prompt and model, or null when none was asked for yet; never calls a model. 403 not_approver; 404 not_found",
+    "The summary already stored for one version under today's prompt and model, or null when none was asked for yet; never calls a model. 403 not_admin; 404 not_found",
   query: VersionViewQuery,
   response: { description: 'The stored summary, or null', schema: StoredRuleSummary },
 } as const satisfies RouteDefinition<typeof StoredRuleSummary>;
@@ -384,7 +384,7 @@ export const listRuleReports = {
   path: '/knowledge/reports',
   operationId: 'listRuleReports',
   summary:
-    'The open reports of possibly wrong requirements, counted per requirement and reason, for an approver; 403 not_approver',
+    'The open reports of possibly wrong requirements, counted per requirement and reason, for an admin; 403 not_admin',
   response: { description: 'The open reports', schema: RuleReports },
 } as const satisfies RouteDefinition<typeof RuleReports>;
 
@@ -398,7 +398,7 @@ export const closeRuleReports = {
   path: '/knowledge/reports/close',
   operationId: 'closeRuleReports',
   summary:
-    'Closes the open reports of one requirement of a version once it is researched, for an approver; answers how many it closed; 403 not_approver',
+    'Closes the open reports of one requirement of a version once it is researched, for an admin; answers how many it closed; 403 not_admin',
   body: CloseRuleReportsRequest,
   response: { description: 'Closed', schema: CloseRuleReportsResponse },
 } as const satisfies RouteDefinition<typeof CloseRuleReportsResponse>;

@@ -108,7 +108,7 @@ export const notificationChannelsQuery = queryOptions({
   retry: false,
 });
 
-/** The open reports of possibly wrong requirements, for an approver (spec 0007, R8). */
+/** The open reports of possibly wrong requirements, for an admin (spec 0007, R8). */
 export const ruleReportsQuery = queryOptions({
   queryKey: ['knowledge', 'reports'],
   queryFn: () => api.call(routes.listRuleReports),
@@ -116,7 +116,7 @@ export const ruleReportsQuery = queryOptions({
   retry: false,
 });
 
-/** Every route version with its decision state, for an approver only (spec 0007, R7). */
+/** Every route version with its decision state, for an admin only (spec 0007, R7). */
 export const knowledgeVersionsQuery = queryOptions({
   queryKey: ['knowledge', 'versions'],
   queryFn: () => api.call(routes.listKnowledgeVersions),
@@ -124,7 +124,7 @@ export const knowledgeVersionsQuery = queryOptions({
   retry: false,
 });
 
-/** One comparison version laid out for its approver (ADR-0026). */
+/** One comparison version laid out for an admin (ADR-0026). */
 export const comparisonViewQuery = (comparisonId: string, number: number) =>
   queryOptions({
     queryKey: ['knowledge', 'comparison', comparisonId, number],
@@ -133,7 +133,7 @@ export const comparisonViewQuery = (comparisonId: string, number: number) =>
     retry: false,
   });
 
-/** One route version laid out for its approver (spec 0007, R7). */
+/** One route version laid out for an admin (spec 0007, R7). */
 export const versionViewQuery = (routeId: string, number: number) =>
   queryOptions({
     queryKey: ['knowledge', 'view', routeId, number],
@@ -141,6 +141,14 @@ export const versionViewQuery = (routeId: string, number: number) =>
     networkMode: 'always',
     retry: false,
   });
+
+/** Which members of the case are admins, for an admin only (ADR-0027). */
+export const caseAdminsQuery = queryOptions({
+  queryKey: ['admins'],
+  queryFn: () => api.call(routes.listCaseAdmins),
+  networkMode: 'always',
+  retry: false,
+});
 
 /**
  * Everything cached for one account, the session first; a new query that is the account's own
@@ -155,6 +163,7 @@ const accountQueries = [
   devicesQuery,
   vaultStatusQuery,
   notificationChannelsQuery,
+  caseAdminsQuery,
   { queryKey: ['knowledge'] },
   // The vault's documents, whatever identity opened them (documents.ts).
   { queryKey: ['documents'] },

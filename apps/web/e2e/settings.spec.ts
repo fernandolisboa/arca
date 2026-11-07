@@ -33,7 +33,7 @@ test('splits the settings into categories and labels every control', async ({ pa
   const problems = watchProblems(page);
   await openSettings(page);
   const categories = page.getByRole('navigation', { name: 'Categorias' }).getByRole('link');
-  // No session: no approver category. This server has no database, so the account can't load.
+  // No session: no admin category. This server has no database, so the account can't load.
   await expect(categories).toHaveText(['Aparência', 'Navegação', 'Acessibilidade', 'Conta']);
   await expect(page.getByRole('heading', { level: 3, name: 'Aparência' })).toBeVisible();
 

@@ -1,13 +1,15 @@
 import AxeBuilder from '@axe-core/playwright';
 import type { KnowledgeVersions, VersionView } from '@arca/api-contract/client';
 import { expect, test, type Browser, type Page } from '@playwright/test';
-import { family, signedIn } from './case-accounts.js';
+import { card, family, signedIn } from './case-accounts.js';
 import { seededCredential, virtualAuthenticator, withoutAutofill } from './passkeys.js';
 import {
   clearKnowledgeDecisions,
+  linkAccounts,
   resetRateLimits,
   restartSeededCounter,
   runSeed,
+  startOverAdmins,
 } from './postgres/accounts.js';
 import { horizontalOverflow } from './layouts.js';
 import { reportViolations, watchProblems } from './problems.js';
@@ -40,7 +42,7 @@ test('a seeded account signs in with its passkey (spec 0004, R2)', async ({ page
 });
 
 // In this file, after the sign-in above: both use the seed passkey, whose counter one shares.
-test('the seed approver activates a version, reads and closes its reports, then rejects it (spec 0007, R7 and R8)', async ({
+test('the seed admin activates a version, reads and closes its reports, then rejects it (spec 0007, R7 and R8)', async ({
   browser,
   page,
 }, testInfo) => {
@@ -165,7 +167,7 @@ test('the seed approver activates a version, reads and closes its reports, then 
 });
 
 // In this file, after the tests above, for the same reason.
-test('the seed approver reviews, activates and rejects a comparison version (ADR-0026)', async ({
+test('the seed admin reviews, activates and rejects a comparison version (ADR-0026)', async ({
   browser,
   page,
 }, testInfo) => {
@@ -234,6 +236,83 @@ test('the seed approver reviews, activates and rejects a comparison version (ADR
   expect(stepUps).toEqual([]);
   expect(problems).toEqual([]);
 });
+
+// In this file, after the tests above, for the same reason.
+test('the seed admin gives a member of the case the admin role and takes it away (ADR-0027)', async ({
+  browser,
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'runs once, on the desktop project');
+  const [account] = await runSeed();
+  if (account === undefined) throw new Error('the seed lists no account');
+  await Promise.all([
+    restartSeededCounter(account.id),
+    resetRateLimits(),
+    startOverAdmins(account.id),
+  ]);
+  const problems = watchProblems(page);
+  await virtualAuthenticator(page, seededCredential(account.passkey.label), {
+    userId: account.id,
+  });
+  await withoutAutofill(page);
+  await page.goto(`${databaseServer.origin}/sign-in`);
+  await page.getByRole('button', { name: 'Entrar com chave de acesso' }).click();
+  await expect(page.getByText(`Você entrou como ${account.email}.`)).toBeVisible();
+
+  const memberContext = await browser.newContext();
+  const memberPage = await memberContext.newPage();
+  const member = await signedIn(memberPage);
+  await linkAccounts(account.id, member);
+  await page.goto(`${databaseServer.origin}/family`);
+  await page.getByLabel('Seu nome').fill('Ana');
+  await page.getByRole('button', { name: 'Começar o caso' }).click();
+  await expect(page.getByText('Ana (você)')).toBeVisible();
+  const joined = await page.request.post(`${databaseServer.origin}/v1/case/members`, {
+    headers: { origin: databaseServer.origin },
+    data: { accountId: member, displayName: 'Bruno' },
+  });
+  expect(joined.status()).toBe(200);
+  expect(await rulesLinkAfterReload(memberPage)).toBe(false);
+
+  await page.reload();
+  await expect(card(page, 'Ana (você)').getByText('Administrador', { exact: true })).toBeVisible();
+  const bruno = card(page, 'Bruno');
+  await expect(bruno.getByText('Administrador', { exact: true })).toHaveCount(0);
+  const stepUp = page.waitForRequest((request) =>
+    request.url().endsWith('/v1/auth/step-up/options'),
+  );
+  await bruno.getByRole('button', { name: 'Tornar administrador' }).click();
+  await bruno.getByRole('button', { name: 'Sim, tornar administrador' }).click();
+  await expect(bruno.getByText('Administrador', { exact: true })).toBeVisible();
+  expect((await stepUp).postDataJSON()).toMatchObject({
+    purpose: 'admin_grant',
+    target: { action: 'grantAdmin', targets: [member] },
+  });
+  expect(await rulesLinkAfterReload(memberPage)).toBe(true);
+
+  await bruno.getByRole('button', { name: 'Tirar o papel de administrador' }).click();
+  await bruno.getByRole('button', { name: 'Sim, tirar o papel de administrador' }).click();
+  await expect(bruno.getByRole('button', { name: 'Tornar administrador' })).toBeVisible();
+  await expect(bruno.getByText('Administrador', { exact: true })).toHaveCount(0);
+  expect(await rulesLinkAfterReload(memberPage)).toBe(false);
+  await memberContext.close();
+  expect(problems).toEqual([]);
+});
+
+/**
+ * Reloads the home page and answers whether the session says admin and the navigation shows
+ * Regras; the two must agree.
+ */
+async function rulesLinkAfterReload(page: Page): Promise<boolean> {
+  const [session] = await Promise.all([
+    page.waitForResponse((response) => response.url().endsWith('/v1/session')),
+    page.goto(`${databaseServer.origin}/`),
+  ]);
+  const { admin } = (await session.json()) as { admin: boolean };
+  const rules = page.getByRole('link', { name: 'Regras', exact: true });
+  await (admin ? expect(rules.first()).toBeVisible() : expect(rules).toHaveCount(0));
+  return admin;
+}
 
 /** Every step-up the page asks for from now on; a decision asks for none (ADR-0027). */
 function watchStepUps(page: Page): string[] {
@@ -369,7 +448,7 @@ async function memberCompares(browser: Browser) {
 
 /**
  * The EB-5 version the server selects today and the one it would fall back to on rejection, from
- * the approver's own API: evaluations run on the real clock, so a version dated in the future takes
+ * the admin's own API: evaluations run on the real clock, so a version dated in the future takes
  * over on its date.
  */
 async function eb5InEffect(page: Page): Promise<{ version: string; fallback: string | null }> {

@@ -10,6 +10,7 @@ import { sql } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { auditLog } from '../../src/audit/log.js';
 import { createStepUp } from '../../src/auth/step-up.js';
+import { adminRole } from '../../src/knowledge/admins.js';
 import {
   createKnowledgeDecisions,
   type KnowledgeDecisions,
@@ -48,7 +49,7 @@ const comparisonKey = comparisonIdentityKey({
 const denied = { cause: { message: expect.stringMatching(/^permission denied/) as unknown } };
 
 function decisions(
-  approvers: readonly string[] = [approver.signedIn.accountId],
+  owners: readonly string[] = [approver.signedIn.accountId],
   identities: typeof catalog = catalog,
 ): KnowledgeDecisions {
   return createKnowledgeDecisions({
@@ -57,7 +58,8 @@ function decisions(
     audit: auditLog(testDatabase.auditDb),
     catalog: identities,
     comparisons,
-    approvers,
+    role: adminRole(() => testDatabase.apiDb, owners),
+    ownerList: owners,
     origin,
     logger: {
       info: () => undefined,
@@ -242,7 +244,7 @@ describe('knowledge decisions by a signed-in admin (spec 0007, R7; ADR-0027)', (
     const other = await person(testDatabase);
     for (const kind of ['activate', 'reject'] as const) {
       expect(await decisions().decide(other.signedIn, kind, request)).toEqual({
-        refused: 'not_approver',
+        refused: 'not_admin',
       });
     }
     expect(await rows()).toEqual([]);

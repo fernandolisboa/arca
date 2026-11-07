@@ -475,6 +475,20 @@ export const ptBR = {
       yes: 'Sim, sair do caso',
       submit: 'Sair do caso',
     },
+    /** The admin role (ADR-0027): shown and changed only by admins. */
+    admin: {
+      badge: 'Administrador',
+      grant: 'Tornar administrador',
+      grantConfirm:
+        '{name} vai poder aprovar e recusar as regras que o Arca usa nas análises, e também tornar outras pessoas do caso administradoras ou tirar esse papel delas. Você confirma com a sua chave de acesso.',
+      grantYes: 'Sim, tornar administrador',
+      remove: 'Tirar o papel de administrador',
+      removeConfirm:
+        '{name} deixa de ver a área Regras e não aprova mais regras. As decisões que essa pessoa já tomou continuam valendo.',
+      removeYes: 'Sim, tirar o papel de administrador',
+      failure:
+        '{reason, select, not_found {Essa pessoa não está mais no caso. Atualize a página.} not_admin {Você não é mais administrador.} owner_list_admin {Essa pessoa é administradora fixa e não perde o papel pelo app.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas tentativas em pouco tempo. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+    },
     news: {
       title: 'Novidades na família',
       joined: '{name} entrou no caso.',
@@ -891,7 +905,7 @@ export const ptBR = {
     valueUnit: '{value} · {unit}',
     inYear: '{reading} ({year})',
   },
-  /** The activation screen (spec 0007, R7), shown to approvers only. */
+  /** The activation screen (spec 0007, R7), shown to admins only. */
   knowledge: {
     title: 'Tela de ativação',
     reports: {
@@ -1467,6 +1481,10 @@ export const ptBR = {
         subject: 'Recuperação bloqueada por 24 horas',
         body: 'O código de recuperação da sua conta Arca foi digitado errado várias vezes em {when} (horário de Brasília). Por segurança, a recuperação fica bloqueada pelas próximas 24 horas.',
       },
+      admin_role_changed: {
+        subject: 'Mudança nos administradores do Arca',
+        body: 'Em {when} (horário de Brasília), uma conta ganhou ou perdeu o papel de administrador no Arca. Quem administra aprova as regras usadas nas análises. Se você não esperava por isso, entre no Arca e confira os administradores na área da família.',
+      },
       sessions_revoked: {
         subject: 'Suas outras sessões foram encerradas',
         body: 'Todas as outras sessões da sua conta Arca foram encerradas em {when} (horário de Brasília). Só o dispositivo que fez isso continua conectado. Se não foi você, entre no Arca e confira seus dispositivos.',
@@ -1511,6 +1529,10 @@ export const ptBR = {
       title: 'Sua conta Arca vai ser apagada por falta de uso',
       body: 'Para manter a conta, entre no Arca com sua chave de acesso. A data está no email que mandamos.',
     },
+    admin_role_changed: {
+      title: 'Mudança nos administradores do Arca',
+      body: 'Uma conta ganhou ou perdeu o papel de administrador. Se não esperava por isso, confira na área da família.',
+    },
     recovery_kit_regenerated: {
       title: 'Novo kit de recuperação',
       body: 'O código de recuperação antigo deixou de valer. Se não foi você, confira seus dispositivos.',
@@ -1552,6 +1574,7 @@ export const ptBR = {
       invites: 'Convites enviados',
       securityHistory: 'Histórico de segurança',
       knowledgeDecisions: 'Decisões sobre regras e dados de comparação (ativações e recusas)',
+      adminGrants: 'Quando você virou administrador ou deixou de ser',
       accountLinks: 'Conexões entre contas',
       vaultDocuments: 'Documentos do cofre',
       vaultDocumentsSharedWithYou: 'Documentos compartilhados com você',

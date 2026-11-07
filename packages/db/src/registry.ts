@@ -455,6 +455,16 @@ export const registry: Registry = {
       export: ['decided_at', 'kind', 'subject_kind', 'route_id', 'comparison_id', 'version_number'],
       label: 'dataExport.tables.knowledgeDecisions',
     },
+    {
+      table: 'knowledge.admin_grant',
+      strategy: 'retain',
+      owner: ownedByAccount('grantee_account_id'),
+      reason:
+        'The history of the admin role, which decisions rely on: who gave or took away the role from whom and when, with account IDs only (ADR-0027).',
+      period: 'forever',
+      export: ['kind', 'at'],
+      label: 'dataExport.tables.adminGrants',
+    },
   ],
   unowned: [
     {

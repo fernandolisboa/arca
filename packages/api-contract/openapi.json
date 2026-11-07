@@ -170,7 +170,7 @@
                       ],
                       "format": "date-time"
                     },
-                    "approver": {
+                    "admin": {
                       "type": "boolean"
                     }
                   },
@@ -182,7 +182,7 @@
                     "pendingPasskeyUntil",
                     "recoveryPending",
                     "deletionDueAt",
-                    "approver"
+                    "admin"
                   ]
                 }
               }
@@ -541,7 +541,8 @@
                           "account_deletion",
                           "data_export",
                           "financial_action",
-                          "vault_write"
+                          "vault_write",
+                          "admin_grant"
                         ]
                       },
                       "target": {
@@ -3187,7 +3188,9 @@
                               "version_activated",
                               "version_rejected",
                               "comparison_activated",
-                              "comparison_rejected"
+                              "comparison_rejected",
+                              "admin_granted",
+                              "admin_removed"
                             ]
                           },
                           "actorAccountId": {
@@ -31560,7 +31563,7 @@
     "/knowledge/versions/activate": {
       "post": {
         "operationId": "activateVersion",
-        "summary": "Activates a route version for a signed-in approver, with no step-up. 403 not_approver, 404 not_found, 409 already_rejected",
+        "summary": "Activates a route version for a signed-in admin, with no step-up. 403 not_admin, 404 not_found, 409 already_rejected",
         "requestBody": {
           "required": true,
           "content": {
@@ -31640,7 +31643,7 @@
     "/knowledge/versions/reject": {
       "post": {
         "operationId": "rejectVersion",
-        "summary": "Rejects a route version for a signed-in approver, with no step-up, at once and for good. 403 not_approver, 404 not_found, 409 already_rejected",
+        "summary": "Rejects a route version for a signed-in admin, with no step-up, at once and for good. 403 not_admin, 404 not_found, 409 already_rejected",
         "requestBody": {
           "required": true,
           "content": {
@@ -31720,7 +31723,7 @@
     "/knowledge/comparisons/activate": {
       "post": {
         "operationId": "activateComparison",
-        "summary": "Activates a comparison version for a signed-in approver, with no step-up. 403 not_approver, 404 not_found, 409 already_rejected",
+        "summary": "Activates a comparison version for a signed-in admin, with no step-up. 403 not_admin, 404 not_found, 409 already_rejected",
         "requestBody": {
           "required": true,
           "content": {
@@ -31800,7 +31803,7 @@
     "/knowledge/comparisons/reject": {
       "post": {
         "operationId": "rejectComparison",
-        "summary": "Rejects a comparison version for a signed-in approver, with no step-up, at once and for good; the newest active version before it stays in use. 403 not_approver, 404 not_found, 409 already_rejected",
+        "summary": "Rejects a comparison version for a signed-in admin, with no step-up, at once and for good; the newest active version before it stays in use. 403 not_admin, 404 not_found, 409 already_rejected",
         "requestBody": {
           "required": true,
           "content": {
@@ -31880,7 +31883,7 @@
     "/knowledge/versions": {
       "get": {
         "operationId": "listKnowledgeVersions",
-        "summary": "Every route and comparison version the API bundles with its decision state, the newest first, for an approver; 403 not_approver",
+        "summary": "Every route and comparison version the API bundles with its decision state, the newest first, for an admin; 403 not_admin",
         "responses": {
           "200": {
             "description": "The versions",
@@ -32020,7 +32023,7 @@
     "/knowledge/versions/view": {
       "get": {
         "operationId": "getVersionView",
-        "summary": "One route version laid out for an approver, from its content alone, with what changed, its sources, its cases and what rejecting it would do to today's selection; 403 not_approver, 404 not_found",
+        "summary": "One route version laid out for an admin, from its content alone, with what changed, its sources, its cases and what rejecting it would do to today's selection; 403 not_admin, 404 not_found",
         "parameters": [
           {
             "schema": {
@@ -33106,7 +33109,7 @@
     "/knowledge/comparisons/view": {
       "get": {
         "operationId": "getComparisonView",
-        "summary": "One comparison version laid out for an approver: its criteria, every indicator value with its year and source host beside the value it replaces, what changed and what rejecting it would do; 403 not_approver, 404 not_found",
+        "summary": "One comparison version laid out for an admin: its criteria, every indicator value with its year and source host beside the value it replaces, what changed and what rejecting it would do; 403 not_admin, 404 not_found",
         "parameters": [
           {
             "schema": {
@@ -33631,7 +33634,7 @@
     "/knowledge/versions/summary": {
       "get": {
         "operationId": "getVersionSummary",
-        "summary": "The summary already stored for one version under today's prompt and model, or null when none was asked for yet; never calls a model. 403 not_approver; 404 not_found",
+        "summary": "The summary already stored for one version under today's prompt and model, or null when none was asked for yet; never calls a model. 403 not_admin; 404 not_found",
         "parameters": [
           {
             "schema": {
@@ -33728,7 +33731,7 @@
       },
       "post": {
         "operationId": "summarizeVersion",
-        "summary": "Sends one version's content (public rule data, no case data) to a model and answers a short summary with points to check, for an approver; the summary is stored, so the same content, prompt and model answer it again without a model call. 30 per account per day and 5 per minute (429 rate_limited); 403 not_approver; 404 not_found; 502 summary_unparsable or summary_failed; 503 summary_unavailable when no model can be reached; 504 summary_timeout",
+        "summary": "Sends one version's content (public rule data, no case data) to a model and answers a short summary with points to check, for an admin; the summary is stored, so the same content, prompt and model answer it again without a model call. 30 per account per day and 5 per minute (429 rate_limited); 403 not_admin; 404 not_found; 502 summary_unparsable or summary_failed; 503 summary_unavailable when no model can be reached; 504 summary_timeout",
         "requestBody": {
           "required": true,
           "content": {
@@ -33820,7 +33823,7 @@
     "/knowledge/reports": {
       "get": {
         "operationId": "listRuleReports",
-        "summary": "The open reports of possibly wrong requirements, counted per requirement and reason, for an approver; 403 not_approver",
+        "summary": "The open reports of possibly wrong requirements, counted per requirement and reason, for an admin; 403 not_admin",
         "responses": {
           "200": {
             "description": "The open reports",
@@ -33912,7 +33915,7 @@
     "/knowledge/reports/close": {
       "post": {
         "operationId": "closeRuleReports",
-        "summary": "Closes the open reports of one requirement of a version once it is researched, for an approver; answers how many it closed; 403 not_approver",
+        "summary": "Closes the open reports of one requirement of a version once it is researched, for an admin; answers how many it closed; 403 not_admin",
         "requestBody": {
           "required": true,
           "content": {
@@ -33960,6 +33963,207 @@
                   "required": [
                     "closed"
                   ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admins": {
+      "get": {
+        "operationId": "listCaseAdmins",
+        "summary": "Which members of the admin's case are admins, and which of them the owner list names; 403 not_admin, 404 not_found outside a case",
+        "responses": {
+          "200": {
+            "description": "The case members who are admins",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "admins": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "accountId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "owner": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "accountId",
+                          "owner"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "admins"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admins/grant": {
+      "post": {
+        "operationId": "grantAdmin",
+        "summary": "Gives the admin role to a confirmed member of the admin's case; needs a consumed admin_grant step-up of grantAdmin with the account as its target; an account that already is an admin is left as it is. 403 not_admin or step_up_required, 404 not_found",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "accountId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "accountId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The account is an admin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admins/remove": {
+      "post": {
+        "operationId": "removeAdmin",
+        "summary": "Takes the admin role away from a member of the admin's case, with no step-up; an account that is not an admin is left as it is. 403 not_admin, 404 not_found, 409 owner_list_admin for an account the owner list names",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "accountId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "accountId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The account is not an admin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
                 }
               }
             }

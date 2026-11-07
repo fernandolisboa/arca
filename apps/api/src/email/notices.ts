@@ -18,6 +18,7 @@ export const noticeKinds = [
   'deletion_cancelled',
   'account_erased',
   'inactivity_warning',
+  'admin_role_changed',
 ] as const;
 export type NoticeKind = (typeof noticeKinds)[number];
 

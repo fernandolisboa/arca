@@ -55,7 +55,7 @@ const knowledgeBaseScreens = /^apps\/[^/]+\/(src|test|e2e)\/(.*\/)?knowledge/;
 const databaseTests =
   /^(apps\/[^/]+\/(test|e2e)\/postgres\/|packages\/db\/test\/|tooling\/scripts\/test\/(postgres\/|db-))/;
 // Who may see or decide what: both the access rules and the step-ups behind them.
-const accessKeywords = ['shar', 'invite', 'approver', 'decision'];
+const accessKeywords = ['shar', 'invite', 'admin', 'owner-list', 'decision'];
 
 // A path takes the reviewers of every rule it matches; a path no rule matches takes them all,
 // so a new kind of file is over-reviewed rather than slipping through. Sensitive packages carry

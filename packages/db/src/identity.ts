@@ -20,6 +20,21 @@ function requireUuid(field: string, value: unknown): string {
   return value;
 }
 
+async function setIdentity(tx: Transaction, accountId: string, caseId: string) {
+  await tx.execute(
+    sql`SELECT pg_catalog.set_config('app.account_id', ${accountId}, true), pg_catalog.set_config('app.case_id', ${caseId}, true)`,
+  );
+}
+
+/**
+ * Sets the request's account as the identity of a transaction someone else opened, such as the
+ * one that spends a step-up, as {@link withIdentity} does for its own; validated the same way and
+ * cleared when that transaction ends.
+ */
+export async function actAs(tx: Transaction, accountId: string): Promise<void> {
+  await setIdentity(tx, requireUuid('accountId', accountId), '');
+}
+
 /**
  * Runs `work` in a transaction whose `app.account_id` and `app.case_id` settings are the request's
  * identity. The IDs are validated before any SQL runs and sent as bind parameters; `set_config`
@@ -35,9 +50,7 @@ export async function withIdentity<T>(
   const accountId = requireUuid('accountId', identity.accountId);
   const caseId = identity.caseId === undefined ? '' : requireUuid('caseId', identity.caseId);
   return db.transaction(async (tx) => {
-    await tx.execute(
-      sql`SELECT pg_catalog.set_config('app.account_id', ${accountId}, true), pg_catalog.set_config('app.case_id', ${caseId}, true)`,
-    );
+    await setIdentity(tx, accountId, caseId);
     const result = await work(tx);
     // If work swallowed a database error, the transaction is aborted and COMMIT would quietly
     // roll back; this statement fails instead, so the caller sees the error.

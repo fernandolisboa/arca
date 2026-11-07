@@ -10,11 +10,11 @@ const SessionOfAuth = SessionResponse.omit({
   pendingPasskeyUntil: true,
   recoveryPending: true,
   deletionDueAt: true,
-  approver: true,
+  admin: true,
 });
 export type SessionOfAuth = Omit<
   SessionResponse,
-  'pendingPasskeyUntil' | 'recoveryPending' | 'deletionDueAt' | 'approver'
+  'pendingPasskeyUntil' | 'recoveryPending' | 'deletionDueAt' | 'admin'
 >;
 
 export interface RefreshedSession {

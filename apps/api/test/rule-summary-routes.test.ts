@@ -2,6 +2,7 @@ import type { Logger } from '@arca/telemetry';
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import type { SignedIn } from '../src/auth/service.js';
+import type { AdminGrants } from '../src/knowledge/admin-grants.js';
 import type { KnowledgeDecisions } from '../src/knowledge/decisions.js';
 import type {
   RuleSummaries,
@@ -15,7 +16,7 @@ import { noLimits } from './limits.js';
 // The rule summary route with a fake service (ADR-0025).
 const silentLogger: Logger = { info: () => undefined, error: () => undefined };
 const origin = 'http://arca.test';
-const approver: SignedIn = {
+const admin: SignedIn = {
   accountId: '3f2b8a4e-6c1d-4e5f-9a7b-0c1d2e3f4a5b',
   sessionId: '6a1c2d3e-4f50-4617-8a9b-0c1d2e3f4a5b',
 };
@@ -25,7 +26,7 @@ function setup({
   outcome = { ok: true, value: summary },
   stored = { ok: true, value: null },
   listed = true,
-  signedIn = approver,
+  signedIn = admin,
   withSummaries = true,
   blocked = '',
 }: {
@@ -69,8 +70,13 @@ function setup({
         },
       },
     },
+    admins: {
+      isAdmin: () => Promise.resolve(listed),
+      list: () => Promise.reject(new Error('not used')),
+      grant: () => Promise.reject(new Error('not used')),
+      remove: () => Promise.reject(new Error('not used')),
+    } satisfies AdminGrants,
     knowledge: {
-      isApprover: () => listed,
       decide: () => Promise.reject(new Error('not used')),
       states: () => Promise.resolve(new Map()),
     } satisfies KnowledgeDecisions,
@@ -97,15 +103,15 @@ const errorOf = async (response: Response) =>
   ((await response.json()) as { error: { code: string } }).error.code;
 
 describe('POST /v1/knowledge/versions/summary (ADR-0025)', () => {
-  it('summarizes a version for an approver under the per-minute and per-day limits', async () => {
+  it('summarizes a version for an admin under the per-minute and per-day limits', async () => {
     const { post, asked, limited } = setup();
     const response = await post();
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual(summary);
     expect(asked).toEqual([['pt-d7', 2]]);
     expect(limited).toEqual([
-      ['rule_summary_minute', approver.accountId],
-      ['rule_summary_day', approver.accountId],
+      ['rule_summary_minute', admin.accountId],
+      ['rule_summary_day', admin.accountId],
     ]);
   });
 
@@ -117,11 +123,11 @@ describe('POST /v1/knowledge/versions/summary (ADR-0025)', () => {
     expect([asked, limited]).toEqual([[], []]);
   });
 
-  it('refuses anyone off the approver list before counting or calling', async () => {
+  it('refuses anyone who is not an admin before counting or calling', async () => {
     const { post, asked, limited } = setup({ listed: false });
     const response = await post();
     expect(response.status).toBe(403);
-    expect(await errorOf(response)).toBe('not_approver');
+    expect(await errorOf(response)).toBe('not_admin');
     expect([asked, limited]).toEqual([[], []]);
   });
 
@@ -197,7 +203,7 @@ describe('GET /v1/knowledge/versions/summary (ADR-0025)', () => {
     expect((await get('routeId=pt-d7&number=3')).status).toBe(404);
   });
 
-  it('refuses anyone off the approver list, or with no session', async () => {
+  it('refuses anyone who is not an admin, or with no session', async () => {
     const refused = setup({ listed: false });
     expect((await refused.get()).status).toBe(403);
     expect((await setup({ signedIn: null }).get()).status).toBe(401);
