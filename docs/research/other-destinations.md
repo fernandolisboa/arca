@@ -1,6 +1,6 @@
 # Other destinations
 
-Checked 2026-11-01; the Uruguay, Argentina, Paraguay and Chile sections on 2026-11-07.
+Checked 2026-11-01; the Uruguay, Argentina, Paraguay, Chile and Latvia sections on 2026-11-07.
 
 ## Spain
 
@@ -72,6 +72,23 @@ The law took effect when its regulation was published, on 2022-02-12, and the ve
 | Dependents: spouse or partner; child of the principal, spouse or partner under 18, with a disability, or 18 to 23 and studying at an institution recognized by the Chilean state; documents for each | [SERMIG, calidad de dependiente](https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/), [Ley 21.325](https://www.bcn.cl/leychile/navegar?idNorma=1158549) |
 | Ages: of age at 18 (art. 26). A period of years whose start month has more days than its end month, and which starts on one of the extra days, ends on the end month's last day, and the rule covers ages (art. 48) | [Código Civil](https://www.bcn.cl/leychile/navegar?idNorma=172986) |
 | Not modeled: the principal's means for the dependents; an adult child's disability or studies; a naturalized national's five years; the fee, which depends on nationality; the documents above | [SERMIG, aranceles migratorios](https://serviciomigraciones.cl/aranceles-migratorios/) |
+
+## Latvia
+
+Temporary residence for an investment in a company's share capital is now route version `lv-capital-investment` 1 in `packages/knowledge/data/routes`, verified on 2026-11-07 against the laws on likumi.lv. Latvia replaced its Immigration Law: the new one, adopted again on 2026-08-20 after the President returned it, took effect on 2026-09-15, which is the version's start. The old law lost force that day. The investor grounds changed with it: buying real estate no longer gives a residence permit; the share-capital route stays, with the same amounts but a permit of up to two years instead of five; and a new route for EUR 150,000 placed for five years with a state-established alternative investment fund manager (art. 27(1) point 36) is not modeled: press reports quote the migration office saying the fund does not exist yet (**unverified**, pmlp.gov.lv did not answer the sandbox), and a bill sent to committee on 2026-09-10 would delete it ([LV portāls](https://lvportals.lv/skaidrojumi/394430-stajas-speka-jaunais-imigracijas-likums-2026), run by the official publisher).
+
+The share-capital route needs EUR 50,000 invested in a company with at most 50 employees and turnover or balance sheet of at most EUR 10 million (at most 10 foreign investors per company), or EUR 100,000 in a larger one, plus EUR 10,000 paid once to the state budget. The requirement reads the smaller tier: liquid assets of at least EUR 60,000, which the engine adds from the two amounts. The company's size and the yearly taxes it must pay for the permit to stay valid (EUR 40,000, or EUR 100,000 for the larger tier) are assessments, since the case records no company. Citizens of Russia and Belarus have no right to this permit; a dual citizen of either is read as excluded.
+
+A family member gets a permit for the holder's term: the spouse, the minor children of the holder or the spouse (children under guardianship included), and persons under curatorship. Partners are not family members. A minor is under 18 (Civil Law, art. 219), and a person who married before 18 is of age (art. 221), so a married minor is not a minor child. Adults under curatorship (a court-limited capacity, art. 217) are not recorded, so adult children show as possible. Accepted reading: Latvian law has no rule for a 29 February birthday; the Administrative Procedure Law (art. 43(1)) ends a period whose last month lacks the date on that month's last day, and the version reads ages the same way (feb-28).
+
+| Fact | Source |
+| --- | --- |
+| Temporary residence of up to two years for an investment in a company's share capital, by raising it or founding a company, with EUR 10,000 paid to the state budget: EUR 50,000 in a company with at most 50 employees and turnover or balance sheet of at most EUR 10 million (at most 10 foreigners per company; the company then pays EUR 40,000 in taxes each reporting year), or EUR 100,000 in a larger one (EUR 100,000 in taxes a year) (art. 27(1) point 10). The law took effect on 2026-09-15 | [Imigrācijas likums](https://likumi.lv/ta/id/370622-imigracijas-likums) |
+| A family member is the spouse, the minor children of the holder or the spouse (also under guardianship) and persons under curatorship (art. 1(8)); they may ask for a permit for the holder's term (art. 27(3)). Citizens of Belarus and Russia have no right to a permit under point 10 (art. 27(7) and (8)) | [Imigrācijas likums](https://likumi.lv/ta/id/370622-imigracijas-likums) |
+| The Cabinet may suspend point 10 permits for nationals of named third countries for up to five years (art. 28). No such regulation was found on 2026-11-07, so the version reads none | [Imigrācijas likums](https://likumi.lv/ta/id/370622-imigracijas-likums) |
+| Ages: a minor has not reached 18 (art. 219); a person who married before 18 is of age (art. 221); curatorship is set over adults whose capacity a court limited (art. 217) | [Civillikums, Ģimenes tiesības](https://likumi.lv/ta/id/90223) |
+| A period counted in months whose last month lacks the start date ends on that month's last day (art. 43(1)) | [Administratīvā procesa likums](https://likumi.lv/ta/id/55567-administrativa-procesa-likums) |
+| Not modeled: the fund route (art. 27(1) point 36), reported as not usable yet and proposed for deletion; the state fee for examining the documents, set by the Cabinet (art. 13); the early integration programme, required once permits reach 18 months (art. 48); the remote-work long-stay visa (art. 17), for employers or the self-employed registered in an OECD member state, which Brazil is not | [Imigrācijas likums](https://likumi.lv/ta/id/370622-imigracijas-likums) |
 
 ## Germany
 
