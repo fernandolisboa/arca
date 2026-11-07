@@ -5,7 +5,7 @@ import {
   decideComparisonAction,
   decideVersionAction,
 } from '@arca/api-contract/routes';
-import { type Database, type Transaction, withIdentity } from '@arca/db';
+import { type Database, type Transaction, lockKey, withIdentity } from '@arca/db';
 import { type adminBases, decision } from '@arca/db/knowledge-schema';
 import {
   type CheckedDecision,
@@ -185,7 +185,7 @@ export function createKnowledgeDecisions({
    */
   const checkedById = new Map<string, Promise<CheckedDecision | undefined>>();
 
-  /** Why the account may decide now, read inside the deciding transaction; undefined if it may not. */
+  /** Why the account may decide now, read in the deciding transaction; undefined if it may not. */
   const adminBasis = (accountId: string): AdminBasis | undefined =>
     listed.has(accountId) ? 'owner_list' : undefined;
 
@@ -203,24 +203,19 @@ export function createKnowledgeDecisions({
   };
 
   /**
-   * A stored decision as it counts (ADR-0027). A `session` row counts when the reason it records
-   * still holds, and otherwise counts for nothing, a rejection included, so an account that was
-   * never an admin cannot take a version out of use. A `step_up` row is re-verified as ADR-0022
-   * says, and its rejection counts even when it does not verify.
+   * A stored decision as it counts (ADR-0027). A `session` row counts by the basis it records: the
+   * owner list keeps no history, so an `owner_list` row, checked against the list when app_auth
+   * stored it, keeps counting after its author leaves the list, and losing the role never revives
+   * a version its author rejected. A `step_up` row is re-verified as ADR-0022 says, and its
+   * rejection counts even when it does not verify.
    */
   const check = async (row: DecisionRow): Promise<CheckedDecision | undefined> => {
     const decided = rowVersion(row);
     if (decided === undefined) return undefined;
     if (row.proof === 'session') {
-      const counts = row.adminBasis === 'owner_list' && listed.has(row.approverAccountId);
-      if (!counts) {
-        logger.error({
-          errorName:
-            row.kind === 'activate' ? 'KnowledgeActivationIgnored' : 'KnowledgeRejectionIgnored',
-        });
-        return undefined;
-      }
-      return { ...decided, kind: row.kind, verified: true };
+      return row.adminBasis === 'owner_list'
+        ? { ...decided, kind: row.kind, verified: true }
+        : undefined;
     }
     const verified = await assertionVerifies(row, decided);
     if (!verified && row.kind === 'activate') {
@@ -268,9 +263,7 @@ export function createKnowledgeDecisions({
    */
   const store = (accountId: string, kind: DecisionKind, decided: DecidedVersion, id: string) =>
     withIdentity(authDb(), { accountId }, async (tx: Transaction) => {
-      await tx.execute(
-        sql`SELECT pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(${adminLockKey(accountId)}, 0))`,
-      );
+      await lockKey(tx, adminLockKey(accountId));
       const basis = adminBasis(accountId);
       if (basis === undefined) return false;
       const { identity } = decided;
@@ -295,6 +288,8 @@ export function createKnowledgeDecisions({
     isApprover: (accountId) => adminBasis(accountId) !== undefined,
 
     decide: async ({ accountId }, kind, target) => {
+      // Anyone else learns nothing about the catalog; the storing transaction checks again.
+      if (adminBasis(accountId) === undefined) return { refused: 'not_approver' };
       const decided = bundled(target);
       if (decided === undefined) return { refused: 'not_found' };
       if ((await states()).get(decidedKey(decided)) === 'rejected') {

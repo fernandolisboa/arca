@@ -270,14 +270,14 @@ describe('knowledge decisions by a signed-in admin (spec 0007, R7; ADR-0027)', (
     ]);
   });
 
-  it('counts a session row only while its author is on the list, a rejection included', async () => {
-    await stored('reject', approver.signedIn.accountId);
-    expect(await decisions([]).states()).toEqual(new Map());
-    expect(errors).toEqual(['KnowledgeRejectionIgnored']);
-    await testDatabase.asAdmin((client) => client.query('TRUNCATE knowledge.decision'));
-    await stored('activate', randomUUID());
-    expect(await decisions().states()).toEqual(new Map());
-    expect(errors).toEqual(['KnowledgeRejectionIgnored', 'KnowledgeActivationIgnored']);
+  it('keeps counting a session row after its author leaves the list, a rejection included', async () => {
+    const service = decisions();
+    await service.decide(approver.signedIn, 'activate', request);
+    expect(await decisions([]).states()).toEqual(new Map([[identityKey, 'active']]));
+    await service.decide(approver.signedIn, 'reject', request);
+    // A rejected version never comes back because its author lost the role.
+    expect(await decisions([]).states()).toEqual(new Map([[identityKey, 'rejected']]));
+    expect(errors).toEqual([]);
   });
 });
 
