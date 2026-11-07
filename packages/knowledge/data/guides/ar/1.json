@@ -9,7 +9,7 @@
       "title": "Ley 25.871 (Migration Law), consolidated text: categories of residence, art. 23 l nationality and art. 23 ñ family reunification, impediments, cancellation of residence, fees",
       "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
       "verifiedAt": "2026-11-07",
-      "amendment": "An Act of Congress, also amended by executive decrees of necessity and urgency, lately DNU 366/2025 and DNU 681/2026; changes come ad hoc, with no yearly cycle. The page is the consolidated text on the national normativa site; each changed article carries a note with the amending instrument and the date it took effect. When read it ran through DNU 681/2026 (published 2026-07-30) and Decreto 793/2025, which makes references to the Ministry of the Interior read as the Ministry of National Security. Check the site's list of modifying norms for anything newer."
+      "amendment": "An Act of Congress, also amended by executive decrees of necessity and urgency, lately DNU 366/2025 and DNU 681/2026; changes come ad hoc, with no yearly cycle. The page is the consolidated text on the national normativa site; each changed article carries a note with the amending instrument and the date it took effect. When read it ran through DNU 681/2026 (published 2026-07-30) and Decreto 793/2025, which makes references to the Ministry of the Interior read as the Ministry of National Security. The site keeps a list of the norms that modify the law."
     },
     {
       "id": "decreto-616-2010",
@@ -138,7 +138,7 @@
     },
     {
       "id": "age-counting",
-      "text": "Code art. 6 counts periods of months or years from date to date; when the end month has no day matching the start, the period ends on that month's last day, so a 29 February birthday falls on 28 February in a common year. The same article says a period expires at the end of its last day; the texts read do not say whether an age is reached on the anniversary itself or at the end of that day.",
+      "text": "Code art. 6 counts periods of months or years from date to date; when the end month has no day matching the start, the period ends on that month's last day. The same article says a period expires at the end of its last day. The texts read do not say whether art. 6 governs ages, when a person born on 29 February turns a year older in a common year, or whether an age is reached on the anniversary itself or at the end of that day.",
       "laws": ["codigo-civil-comercial"]
     },
     {
@@ -153,7 +153,7 @@
     },
     {
       "id": "stepchildren",
-      "text": "The texts name a child of a resident, not a stepchild. Since art. 23 ñ covers the child of any temporary resident, a spouse's child can be read to join as the child of the spouse once the spouse holds temporary residence under it; that is an inference, as no text read says so expressly.",
+      "text": "The texts name a child of a resident, not a stepchild. Art. 23 ñ covers the child of any temporary resident; no text read names a spouse's child, and none says whether one joins through the spouse once the spouse holds temporary residence.",
       "laws": ["ley-25871", "decreto-616-2010"]
     },
     {

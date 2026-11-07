@@ -85,12 +85,12 @@
   "pitfalls": [
     {
       "id": "printed-amount-is-base",
-      "text": "§ 9 a(2)(3) prints DKK 400,000 a year, but that is not the pay limit in force. § 9 a(29) adjusts it each year with the rate adjustment percentage and an adjustment percentage so that the total matches wage growth, rounded to the nearest DKK 1,000, and the act states no adjusted figure. SIRI's page states DKK 552,000 at 2026 level and says it is adjusted every 1 January.",
+      "text": "§ 9 a(2)(3) prints DKK 400,000 a year, but that is not the pay limit in force. § 9 a(29) adjusts it each year with the rate adjustment percentage and an adjustment percentage so that the total corresponds to wage growth, rounded to the nearest DKK 1,000, and the act states no adjusted figure. SIRI's page states DKK 552,000 at 2026 level and says it is adjusted every 1 January.",
       "laws": ["aliens-act", "siri-pay-limit"]
     },
     {
       "id": "next-figure-2027",
-      "text": "Order No. 701 of 2026 sets for 2027 a rate adjustment percentage of 2.6 and an adjustment percentage of 0.9, defined as wage growth minus 2.0 (Rate Adjustment Act § 3). § 9 a(29) adds an adjustment percentage chosen so the total matches wage growth, which need not be that 0.9, and names no base year, so the 2027 pay limit cannot be computed from the order. When read, SIRI showed only the 2026 level. A version with DKK 552,000 must end by 2027-01-01, and none may guess the new figure. Neither text says whether a first application takes the figure of the application date or the decision date.",
+      "text": "Order No. 701 of 2026 sets for 2027 a rate adjustment percentage of 2.6 and an adjustment percentage of 0.9, defined as wage growth minus 2.0 (Rate Adjustment Act § 3). § 9 a(29) adds an adjustment percentage chosen so the total corresponds to wage growth, which need not be that 0.9, and names no base year, so the 2027 pay limit cannot be computed from the order. When read, SIRI showed only the 2026 level. DKK 552,000 is the 2026 level only, and no text read states the 2027 figure. Neither text says whether a first application takes the figure of the application date or the decision date.",
       "laws": ["aliens-act", "rate-adjustment-act", "rate-adjustment-order-2027", "siri-pay-limit"]
     },
     {
@@ -180,7 +180,7 @@
     },
     {
       "id": "eu-justice-home-affairs-opt-out",
-      "text": "Under Protocol No. 22, Denmark takes no part in the Council's adoption of proposed measures under Title V of Part Three TFEU (art. 1), and none of that Title's provisions, no measure adopted under it and no Court of Justice ruling interpreting them binds or applies in Denmark (art. 2). Art. 6 excepts measures listing the third countries whose nationals need a visa and on a uniform visa format. The protocol names no directive; any directive adopted under Title V is such a measure, so the § 9 a scheme stands on national law alone.",
+      "text": "Under Protocol No. 22, Denmark takes no part in adopting measures under Title V of Part Three TFEU (art. 1), and no such provision, measure or Court of Justice ruling binds or applies in Denmark (art. 2), except measures on visa lists and a uniform visa format (art. 6). For a measure building on the Schengen acquis, Denmark decides within 6 months whether to implement it in national law, and it then binds Denmark under international law (art. 4). The protocol names no directive; any directive adopted under Title V is such a measure, so the § 9 a scheme stands on national law alone.",
       "laws": ["tfeu-protocol-22", "aliens-act"]
     }
   ],

@@ -78,7 +78,7 @@
   "pitfalls": [
     {
       "id": "iprem-2023-budget-extended",
-      "text": "Additional provision 90 of Ley 31/2022 sets the IPREM at EUR 600 a month for 2023 only. A budget not approved by the first day of the year is extended until a new one is approved (Constitution, article 134.4), and the title of Orden EFD/581/2026 calls the 2023 budget extended for 2024, 2025 and 2026 (its single article says 2024 and 2025). EUR 600 is the 2023 amount that this extension reads as still applying; no text read states a later amount. When a new law sets the IPREM, the means change from the date it takes effect, and a version with EUR 600 must end there.",
+      "text": "Additional provision 90 of Ley 31/2022 sets the IPREM at EUR 600 a month for 2023 only. A budget not approved by the first day of the year is extended until a new one is approved (Constitution, article 134.4), and the title of Orden EFD/581/2026 calls the 2023 budget extended for 2024, 2025 and 2026 (its single article says 2024 and 2025). EUR 600 is the 2023 amount that this extension reads as still applying; no text read states a later amount. When a new law sets the IPREM, the means change from the date it takes effect.",
       "laws": ["ley-31-2022", "orden-efd-581-2026", "constitucion", "rdl-3-2004"]
     },
     {
@@ -103,7 +103,7 @@
     },
     {
       "id": "family-defined-for-this-permit",
-      "text": "Article 61.3 defines family members for the non-lucrative permit only: the spouse, registered partner or duly proven stable partner; the minor children of the applicant or of that spouse or partner; and their adult children with a disability that needs support or who cannot provide for themselves because of their health. Parents are not included. The family reunification rules of article 66, such as a spouse over 18, one spouse only, parents over 65 in the applicant's charge, and sole custody or consent for a child of only one partner, are not in article 61.3 and must not be read into it.",
+      "text": "Article 61.3 defines family members for the non-lucrative permit only: the spouse, registered partner or duly proven stable partner; the minor children of the applicant or of that spouse or partner; and their adult children with a disability that needs support or who cannot provide for themselves because of their health. Parents are not included. The family reunification rules of article 66, such as a spouse over 18, one spouse only, parents over 65 in the applicant's charge, and sole custody or consent for a child of only one partner, are not in article 61.3.",
       "laws": ["rd-1155-2024"]
     },
     {
@@ -118,7 +118,7 @@
     },
     {
       "id": "leap-day-birthday",
-      "text": "Código Civil article 5.1 runs periods in months or years from date to date and, when the final month has no matching day, ends them on the last day of that month. Article 240 itself says nothing about leap days, so applying article 5.1 to an age is an inference; applied to a birthday on 29 February, it gives 28 February in a common year.",
+      "text": "Código Civil article 5.1 runs periods in months or years from date to date and, when the final month has no matching day, ends them on the last day of that month. Article 240 itself says nothing about leap days, and no text read applies article 5.1 to ages, so the texts do not settle when a person born on 29 February reaches an age in a common year.",
       "laws": ["codigo-civil"]
     },
     {
@@ -133,7 +133,7 @@
     },
     {
       "id": "annulled-words-still-printed",
-      "text": "These BOE consolidated texts keep annulled words in place. In Real Decreto 240/2007 article 2, the judgment of 2010-06-01 annulled the words otro Estado miembro in the opening sentence, the words separación legal, and the clause on 2 simultaneous registrations; they stay, highlighted, under a note. The judgment of 2026-07-08 annulled article 197.2 of Real Decreto 1155/2024 and parts of other articles; phrases it quoted are highlighted, while article 197.2 and the parts it only described, in articles 97.4, 98.1 and 101.1, stay unmarked under a note. Read the notes.",
+      "text": "These BOE consolidated texts keep annulled words in place. In Real Decreto 240/2007 article 2, the judgment of 2010-06-01 annulled the words otro Estado miembro in the opening sentence, the words separación legal, and the clause on 2 simultaneous registrations; they stay, highlighted, under a note. The judgment of 2026-07-08 annulled article 197.2 of Real Decreto 1155/2024 and parts of other articles; phrases it quoted are highlighted, while article 197.2 and the parts it only described, in articles 97.4, 98.1 and 101.1, stay unmarked under a note.",
       "laws": ["rd-240-2007", "rd-1155-2024", "ts-868-2026"]
     },
     {

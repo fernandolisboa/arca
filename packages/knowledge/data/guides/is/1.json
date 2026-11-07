@@ -98,12 +98,12 @@
     },
     {
       "id": "header-date-not-publication",
-      "text": "In these gazette PDFs the date printed beside the number at the top is the date of signature or confirmation, not publication: Act No. 37/2026 is headed 2026-05-04 and Regulation No. 725/2026 is headed 2026-06-11, but their publication dates, printed at the foot after Útgáfudagur, are 2026-05-11 and 2026-06-26. Count effect from the publication date.",
+      "text": "In these gazette PDFs the date printed beside the number at the top is the date of signature or confirmation, not publication: Act No. 37/2026 is headed 2026-05-04 and Regulation No. 725/2026 is headed 2026-06-11, but their publication dates, printed at the foot after Útgáfudagur, are 2026-05-11 and 2026-06-26. Publication, not signature, is the date that counts for effect.",
       "laws": ["visa-act-37-2026", "reg-725-2026", "gazette-act-15-2005"]
     },
     {
       "id": "consolidated-texts-lag",
-      "text": "When read, the regulation collection still printed art. 5 a and the old chapter II, and listed No. 725/2026 as pending, along with amendments as old as No. 1137/2025, published 2025-11-04. A rule binds by gazette publication, not by the collection, so read every pending amendment in the gazette. For acts, the law collection (Lagasafn) yields to the text in the A department of the gazette where they differ.",
+      "text": "When read, the regulation collection still printed art. 5 a and the old chapter II, and listed No. 725/2026 as pending, along with amendments as old as No. 1137/2025, published 2025-11-04. A rule binds by gazette publication, not by the collection, so the collection can lag behind amendments already in force. For acts, the law collection (Lagasafn) yields to the text in the A department of the gazette where they differ.",
       "laws": ["reg-540-2017", "reg-725-2026", "gazette-act-15-2005", "act-38-2012"]
     },
     {
@@ -113,12 +113,12 @@
     },
     {
       "id": "grounds-now-closed-list",
-      "text": "The old art. 5 of Regulation No. 540/2017 allowed a long-term visa among others in the cases it listed, so the list was open. The new art. 5 from Regulation No. 725/2026 allows the short-term permit in the following cases with no such words, only close family on a longer visit and artists, scientists or athletes whose stay needs no work permit. Do not read other purposes into it.",
+      "text": "The old art. 5 of Regulation No. 540/2017 allowed a long-term visa among others in the cases it listed, so the list was open. The new art. 5 from Regulation No. 725/2026 allows the short-term permit in the following cases with no such words, only close family on a longer visit and artists, scientists or athletes whose stay needs no work permit.",
       "laws": ["reg-725-2026", "reg-540-2017"]
     },
     {
       "id": "family-definitions-differ",
-      "text": "Close family for the short-term permit means a married spouse, parent, child and sibling; the list sets no age limit and names no cohabiting partner, though the new art. 4 wants an applicant aged 18 or a minor joining a parent's or guardian's application. The old family-visit ground pointed instead to art. 69(1) of Act No. 80/2016: spouse, cohabiting partner, children under 18 in the person's custody and support, and parents 67 or older, the list the Visa Act also uses to define a relative. Check which definition a rule uses.",
+      "text": "Close family for the short-term permit means a married spouse, parent, child and sibling; the list sets no age limit and names no cohabiting partner, though the new art. 4 wants an applicant aged 18 or a minor joining a parent's or guardian's application. The old family-visit ground pointed instead to art. 69(1) of Act No. 80/2016: spouse, cohabiting partner, children under 18 in the person's custody and support, and parents 67 or older, the list the Visa Act also uses to define a relative.",
       "laws": ["reg-725-2026", "reg-540-2017", "visa-act-37-2026", "foreign-nationals-act-80-2016"]
     },
     {

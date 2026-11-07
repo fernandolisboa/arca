@@ -30,7 +30,7 @@
       "title": "Decreto N.º 45/023: regulation of art. 33 of Ley 18.250, requirements for Mercosur nationals (art. 2), consular applications (art. 4), transition (arts. 5 and 7), reciprocity (art. 8)",
       "url": "https://www.impo.com.uy/bases/decretos/45-2023",
       "verifiedAt": "2026-11-07",
-      "amendment": "An Executive decree, promulgated on 2023-02-08 and published on 2023-02-14; it repealed Decreto 312/015. A new decree amends or replaces it, with no fixed schedule; check IMPO's notes on art. 33 of Ley 18.250, which list the decrees that regulate it."
+      "amendment": "An Executive decree, promulgated on 2023-02-08 and published on 2023-02-14; it repealed Decreto 312/015. A new decree amends or replaces it, with no fixed schedule; IMPO's notes on art. 33 of Ley 18.250 list the decrees that regulate it."
     },
     {
       "id": "decreto-394-2009",
@@ -109,7 +109,7 @@
     },
     {
       "id": "foreign-ministry-transition",
-      "text": "Under the current wording of art. 33 (from 2023-02-17) the Ministry of the Interior decides, and an application may be filed with it or a Uruguayan consulate, which passes it on through the Foreign Ministry. Applications begun at the Foreign Ministry before the transfer are finished there (Decreto 45/023, arts. 5 and 7; art. 7 excludes those begun at consulates). The Uruguay and Paraguay agreement still names the Foreign Ministry for Uruguay (art. 3), which no longer matches the law.",
+      "text": "Under the current wording of art. 33 (from 2023-02-17) the Ministry of the Interior decides, and an application may be filed with it or a Uruguayan consulate, which passes it on through the Foreign Ministry. Applications begun at the Foreign Ministry before the transfer are finished there (Decreto 45/023, arts. 5 and 7; art. 7 excludes those begun at consulates). The Uruguay and Paraguay agreement still names the Foreign Ministry for Uruguay (art. 3), which no longer agrees with the law.",
       "laws": ["ley-18250", "decreto-45-2023", "ley-20019"]
     },
     {
@@ -169,7 +169,7 @@
     },
     {
       "id": "reciprocity",
-      "text": "The procedure follows the reciprocity agreement between Uruguay and the applicant's state (Decreto 45/023, art. 8), so fees and documents may differ by nationality. The Uruguay and Paraguay agreement, if in force, exempts permanent residence from costs (art. 4), which matches the directorate's exemption for Paraguayans; no Uruguay and Brazil agreement was read, so the Brazilian exemption rests on the directorate's page alone. The Executive may also suspend the benefits of the migration law for nationals of a state that restricts Uruguayans who settle there (art. 72).",
+      "text": "The procedure follows the reciprocity agreement between Uruguay and the applicant's state (Decreto 45/023, art. 8), so fees and documents may differ by nationality. The Uruguay and Paraguay agreement, if in force, exempts permanent residence from costs (art. 4), which agrees with the directorate's exemption for Paraguayans; no Uruguay and Brazil agreement was read, so the Brazilian exemption rests on the directorate's page alone. The Executive may also suspend the benefits of the migration law for nationals of a state that restricts Uruguayans who settle there (art. 72).",
       "laws": ["decreto-45-2023", "ley-20019", "ley-18250", "dnm-permanente-mercosur"]
     },
     {
@@ -179,7 +179,7 @@
     },
     {
       "id": "amending-page-is-empty",
-      "text": "On IMPO an amending article such as Ley 20.075, art. 169, shows only an asterisk and a note, because the new wording is printed in the amended article of Ley 18.250. Read the consolidated article and its notes, and the original-document page for an earlier wording.",
+      "text": "On IMPO an amending article such as Ley 20.075, art. 169, shows only an asterisk and a note, because the new wording is printed in the amended article of Ley 18.250. An earlier wording is on the original-document page.",
       "laws": ["ley-20075", "ley-18250", "ley-19254"]
     }
   ],

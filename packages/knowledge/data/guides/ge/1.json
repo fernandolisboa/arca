@@ -74,7 +74,7 @@
     },
     {
       "id": "consolidated-text-runs-ahead",
-      "text": "In the versions read, a Matsne consolidated version takes in an amendment when it is published, even one that starts later, with no sign of the later start. The version for 2025-07-02 to 2026-04-15 already prints USD 150,000 in art. 15(j), which applied only from 2026-03-01, and the final version of 2026-06-25 prints the Law No. 1803 text, most of which applies only from 2026-09-01. To know what applied on a date, read the last article of each amending law listed under the provision.",
+      "text": "In the versions read, a Matsne consolidated version takes in an amendment when it is published, even one that starts later, with no sign of the later start. The version for 2025-07-02 to 2026-04-15 already prints USD 150,000 in art. 15(j), which applied only from 2026-03-01, and the final version of 2026-06-25 prints the Law No. 1803 text, most of which applies only from 2026-09-01. The start date of each amendment is in the last article of the amending law listed under the provision.",
       "laws": ["aliens-law-en", "aliens-law-ka", "law-863-2025", "law-1803-2026"]
     },
     {
@@ -119,7 +119,7 @@
     },
     {
       "id": "age-day-count",
-      "text": "The Civil Code's period rules apply to periods in laws (art. 121). When a period starts with an event during a day, that day is not counted (art. 122), and a period in years ends on the expiry of the matching day of the last month (art. 123(2)). Art. 123(3), written for periods specified by months, ends a period on the month's last day when it lacks the matching day; read the same way for years, a 29 February birthday falls on 28 February. Read literally, 18 years end at the end of the 18th birthday; the texts read do not settle whether someone is 18 from the start or the end of that day.",
+      "text": "The Civil Code's period rules apply to periods in laws (art. 121). When a period starts with an event during a day, that day is not counted (art. 122), and a period in years ends on the expiry of the matching day of the last month (art. 123(2)). Art. 123(3), written for periods specified by months, ends a period on the month's last day when it lacks the matching day; the texts do not say whether it governs periods in years or a 29 February birthday. Read literally, 18 years end at the end of the 18th birthday; the texts do not settle whether someone is 18 from the start or the end of that day.",
       "laws": ["civil-code"]
     },
     {
