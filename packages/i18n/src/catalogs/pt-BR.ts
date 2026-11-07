@@ -1101,6 +1101,9 @@ export const ptBR = {
     codeLabel: 'Código de recuperação',
     keep: 'Imprima esta página ou anote o código à mão, e guarde num lugar seguro, fora do computador.',
     print: 'Imprimir',
+    copy: 'Copiar o código',
+    copied: 'Copiado',
+    copyFailure: 'Não deu para copiar. Anote à mão.',
     download: 'Baixar como arquivo de texto',
     downloadWarning:
       'Um arquivo de texto pode parar numa pasta sincronizada, como iCloud, Google Drive ou OneDrive, e aí o código fica guardado na nuvem. Se puder, prefira imprimir ou anotar.',
@@ -1215,6 +1218,7 @@ export const ptBR = {
     kit: {
       lead: 'Este é o segundo item do seu kit de recuperação. Ele aparece uma vez só.',
       codeLabel: 'Segredo de recuperação do cofre',
+      copy: 'Copiar o segredo',
       keep: 'Guarde junto com o código de recuperação da conta: impresso ou anotado à mão, num lugar seguro, fora do computador. Se você perder todas as chaves de acesso, só ele abre o cofre.',
       fileName: 'arca-segredo-do-cofre.txt',
       fileText:

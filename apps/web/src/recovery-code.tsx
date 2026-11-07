@@ -1,5 +1,5 @@
-import { Button } from '@arca/ui';
-import { useId, useState } from 'react';
+import { Button, Icon } from '@arca/ui';
+import { useEffect, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { download } from './download.js';
 import { groupCode } from './enrollment.js';
@@ -9,6 +9,7 @@ import { commonFailure, type CommonFailure } from './requests.js';
 const partLabels = {
   account: {
     codeLabel: 'recoveryKit.codeLabel',
+    copy: 'recoveryKit.copy',
     keep: 'recoveryKit.keep',
     fileName: 'recoveryKit.fileName',
     fileText: 'recoveryKit.fileText',
@@ -16,6 +17,7 @@ const partLabels = {
   },
   vault: {
     codeLabel: 'vault.kit.codeLabel',
+    copy: 'vault.kit.copy',
     keep: 'vault.kit.keep',
     fileName: 'vault.kit.fileName',
     fileText: 'vault.kit.fileText',
@@ -23,9 +25,42 @@ const partLabels = {
   },
 } as const;
 
+type CopyState = 'idle' | 'copied' | 'failed';
+
+/** Copies the text to the clipboard; `copied` falls back to `idle` after two seconds. */
+function useCopy(text: string) {
+  const [state, setState] = useState<CopyState>('idle');
+
+  useEffect(() => {
+    if (state !== 'copied') return;
+    const timer = setTimeout(() => {
+      setState('idle');
+    }, 2000);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [state]);
+
+  const copy = () => {
+    // Inside the promise, so a browser without the clipboard API lands in `failed` too.
+    Promise.resolve()
+      .then(() => navigator.clipboard.writeText(text))
+      .then(
+        () => {
+          setState('copied');
+        },
+        () => {
+          setState('failed');
+        },
+      );
+  };
+
+  return { state, copy };
+}
+
 /**
  * One part of the recovery kit, shown once (spec 0003, R6): the account recovery code or the vault
- * recovery secret, with print, a text file behind its warning, and a checkbox before `onSaved`,
+ * recovery secret, with copy, print, a text file behind its warning, and a checkbox before `onSaved`,
  * which the screen that issued it supplies.
  */
 export function RecoveryCodeSheet({
@@ -46,6 +81,12 @@ export function RecoveryCodeSheet({
   const [finishing, setFinishing] = useState(false);
   const [failure, setFailure] = useState<CommonFailure>();
   const grouped = groupCode(code);
+  const copy = useCopy(grouped);
+  const copyStatus = {
+    idle: '',
+    copied: t('recoveryKit.copied'),
+    failed: t('recoveryKit.copyFailure'),
+  }[copy.state];
 
   const finish = () => {
     setFailure(undefined);
@@ -66,9 +107,26 @@ export function RecoveryCodeSheet({
         <p id={labelId} className="font-medium">
           {t(labels.codeLabel)}
         </p>
-        <p className="font-mono text-lead tracking-wider break-all text-ink" translate="no">
-          {grouped}
-        </p>
+        <div className="flex items-center justify-between gap-2">
+          <p
+            className="min-w-0 font-mono text-lead tracking-wider break-all text-ink"
+            translate="no"
+          >
+            {grouped}
+          </p>
+          <button
+            type="button"
+            aria-label={t(labels.copy)}
+            title={t(labels.copy)}
+            onClick={copy.copy}
+            className="inline-flex min-h-touch min-w-touch shrink-0 items-center justify-center rounded-control text-muted hover:bg-soft hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary print:hidden"
+          >
+            <Icon name={copy.state === 'copied' ? 'check' : 'copy'} />
+          </button>
+        </div>
+        <span role="status" className={copy.state === 'failed' ? 'text-muted' : 'sr-only'}>
+          {copyStatus}
+        </span>
       </div>
       <p>{t(labels.keep)}</p>
       <div className="flex flex-col gap-2 print:hidden">
