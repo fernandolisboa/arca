@@ -1,0 +1,295 @@
+{
+  "schemaVersion": 1,
+  "routeId": "uy-mercosur-permanent",
+  "number": 1,
+  "title": "Uruguayan permanent residence for nationals of Mercosur member and associated states",
+  "country": "UY",
+  "tags": ["regional-agreement", "permanent-residence"],
+  "effectiveFrom": "2023-02-17",
+  "status": "open",
+  "currency": "UYU",
+  "sources": [
+    {
+      "id": "ley-18250",
+      "url": "https://www.impo.com.uy/bases/leyes/18250-2008",
+      "title": "Ley N.º 18.250 (migration law): art. 33, literal B, permanent residence for nationals of Mercosur member and associated states who prove it; art. 10, family reunification",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "ley-20075",
+      "url": "https://www.impo.com.uy/bases/leyes/20075-2022",
+      "title": "Ley N.º 20.075, article 169: the current text of article 33, in force 120 days after its promulgation on 2022-10-20",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "decreto-45-2023",
+      "url": "https://www.impo.com.uy/bases/decretos/45-2023",
+      "title": "Decreto N.º 45/023, art. 2: application with a valid passport or identity document; art. 8: the procedure follows the reciprocity agreement with the applicant's state",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "ley-17927",
+      "url": "https://www.impo.com.uy/bases/leyes-internacional/17927-2005",
+      "title": "Ley N.º 17.927, approving the Mercosur Residence Agreements (members, Bolivia and Chile); art. 9.2: family members get a residence like the person they depend on",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "dnm-residencia-legal",
+      "url": "https://www.gub.uy/tramites/residencia-legal",
+      "title": "Dirección Nacional de Migración, Residencia legal: Mercosur permanent residence for nationals of AR, BO, BR, CL, CO, EC, GY, PE, PY, SR and VE",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "ley-18246",
+      "url": "https://www.impo.com.uy/bases/leyes/18246-2007",
+      "title": "Ley N.º 18.246 (unión concubinaria), article 1: the rights of a stable union arise after at least five years of uninterrupted living together",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "uy",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "mercosur-nationality",
+      "title": "Holds the nationality of a Mercosur member or associated state: Argentina, Bolivia, Brazil, Chile, Colombia, Ecuador, Guyana, Paraguay, Peru, Suriname or Venezuela",
+      "expression": {
+        "op": "intersects",
+        "list": {
+          "op": "fact",
+          "key": "principal.citizenships"
+        },
+        "set": {
+          "op": "tokens",
+          "values": ["AR", "BO", "BR", "CL", "CO", "EC", "GY", "PE", "PY", "SR", "VE"]
+        }
+      },
+      "sources": ["ley-18250", "ley-20075", "decreto-45-2023", "dnm-residencia-legal"]
+    }
+  ],
+  "assessments": [],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse who depends on a principal from Argentina, Bolivia, Brazil, Chile or Paraguay; others: possible",
+      "path": ["spouse"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "intersects",
+                "list": {
+                  "op": "fact",
+                  "key": "principal.citizenships"
+                },
+                "set": {
+                  "op": "tokens",
+                  "values": ["AR", "BO", "BR", "CL", "PY"]
+                }
+              },
+              {
+                "op": "fact",
+                "key": "person.dependsOnPrincipal"
+              }
+            ]
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["ley-17927", "decreto-45-2023", "ley-18250"]
+    },
+    {
+      "id": "partner",
+      "title": "Partner of five years or more who depends on a principal from Argentina, Bolivia, Brazil, Chile or Paraguay; others: possible",
+      "path": ["partner"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "intersects",
+                "list": {
+                  "op": "fact",
+                  "key": "principal.citizenships"
+                },
+                "set": {
+                  "op": "tokens",
+                  "values": ["AR", "BO", "BR", "CL", "PY"]
+                }
+              },
+              {
+                "op": "fact",
+                "key": "person.dependsOnPrincipal"
+              },
+              {
+                "op": "since",
+                "date": {
+                  "op": "fact",
+                  "key": "edge.start"
+                },
+                "duration": "P5Y"
+              }
+            ]
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["ley-17927", "decreto-45-2023", "ley-18250", "ley-18246"]
+    },
+    {
+      "id": "children",
+      "title": "Unmarried children who depend on a principal from Argentina, Bolivia, Brazil, Chile or Paraguay; others: possible",
+      "path": ["child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "intersects",
+                    "list": {
+                      "op": "fact",
+                      "key": "principal.citizenships"
+                    },
+                    "set": {
+                      "op": "tokens",
+                      "values": ["AR", "BO", "BR", "CL", "PY"]
+                    }
+                  },
+                  {
+                    "op": "fact",
+                    "key": "person.dependsOnPrincipal"
+                  }
+                ]
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["ley-17927", "decreto-45-2023", "ley-18250"]
+    },
+    {
+      "id": "spouse-children",
+      "title": "The spouse's unmarried children who depend on a principal from Argentina, Bolivia, Brazil, Chile or Paraguay; others: possible",
+      "path": ["spouse", "child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "intersects",
+                    "list": {
+                      "op": "fact",
+                      "key": "principal.citizenships"
+                    },
+                    "set": {
+                      "op": "tokens",
+                      "values": ["AR", "BO", "BR", "CL", "PY"]
+                    }
+                  },
+                  {
+                    "op": "fact",
+                    "key": "person.dependsOnPrincipal"
+                  }
+                ]
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["ley-17927", "decreto-45-2023", "ley-18250"]
+    },
+    {
+      "id": "parents",
+      "title": "Parents who depend on a principal from Argentina, Bolivia, Brazil, Chile or Paraguay; others: possible",
+      "path": ["parent"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "intersects",
+                "list": {
+                  "op": "fact",
+                  "key": "principal.citizenships"
+                },
+                "set": {
+                  "op": "tokens",
+                  "values": ["AR", "BO", "BR", "CL", "PY"]
+                }
+              },
+              {
+                "op": "fact",
+                "key": "person.dependsOnPrincipal"
+              }
+            ]
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["ley-17927", "decreto-45-2023", "ley-18250"]
+    }
+  ],
+  "costs": [],
+  "durations": []
+}

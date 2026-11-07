@@ -13,6 +13,7 @@ describe('the display catalog (spec 0007, R7)', () => {
       'pt-d7',
       'pt-d8',
       'us-eb5',
+      'uy-mercosur-permanent',
     ]);
     for (const { identity } of displayCatalog.entries()) {
       expect(displayCatalog.cases(identity.hash).length).toBeGreaterThan(0);
