@@ -108,7 +108,7 @@ import type { NotificationChannels } from './notification/channels.js';
 import { isP256PublicKey } from './notification/push.js';
 import type { CaseFiles, CaseWritten } from './case/case-files.js';
 import type { CaseIntake } from './case/intake.js';
-import type { DecisionKind } from '@arca/domain';
+import type { DecisionKind, DecisionSubject } from '@arca/domain';
 import type { DecisionOutcome, DecisionTarget, KnowledgeDecisions } from './knowledge/decisions.js';
 import type { RuleReportReview } from './knowledge/reports.js';
 import type { RuleSummaries } from './knowledge/summaries.js';
@@ -1419,7 +1419,7 @@ export function createApp({
   const decideVersion = async (
     c: Context<AppEnv>,
     kind: DecisionKind,
-    subject: DecisionTarget['subject'],
+    subject: DecisionSubject,
   ) => {
     const current = await signedIn(c);
     if (current === null || knowledge === undefined) return unauthorized(c);

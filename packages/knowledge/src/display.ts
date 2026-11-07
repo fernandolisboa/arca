@@ -48,8 +48,9 @@ export function createDisplayCatalog(
 
 /**
  * The content of every route and comparison version for the activation screen (spec 0007, R7;
- * ADR-0026), proposed and rejected ones included. Lint allows importing this entry point only where that screen's view is built,
- * never where `evaluateRoute` runs, so nothing read here reaches an evaluation (spec 0002, R5).
+ * ADR-0026), proposed and rejected ones included. Lint allows importing this entry point only where
+ * that screen's view is built, never where `evaluateRoute` runs, so nothing read here reaches an
+ * evaluation (spec 0002, R5).
  */
 export const displayCatalog = createDisplayCatalog(
   parseEntries(catalogData),

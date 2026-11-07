@@ -60,6 +60,8 @@ export function decideVersionAction(
   return { action: decision, targets: [routeId, String(number)], fields: { contentHash } };
 }
 
+const contentHash = z.string().regex(/^[0-9a-f]{64}$/);
+
 /*
  * Activating and rejecting a comparison version (ADR-0026), as for a route version but with their
  * own step-up actions, so an approval of one kind can never be spent on the other. The targets are
@@ -103,7 +105,6 @@ export function decideComparisonAction(
 }
 
 const decisionState = z.enum(['active', 'rejected', 'proposed']);
-const contentHash = z.string().regex(/^[0-9a-f]{64}$/);
 // A country set is named `<id>/<number>` in the changes; a setting by its field name.
 const ids = z.array(z.string().max(96)).max(50);
 
@@ -113,7 +114,7 @@ export const KnowledgeVersion = z.object({
   title: z.string().max(200),
   country: z.string().regex(/^[A-Z]{2}$/),
   effectiveFrom: calendarDateSchema,
-  hash: z.string().regex(/^[0-9a-f]{64}$/),
+  hash: contentHash,
   state: decisionState,
 });
 export type KnowledgeVersion = z.infer<typeof KnowledgeVersion>;
@@ -159,7 +160,7 @@ const pin = z.object({ id: z.string().max(64), number: z.int().min(1) });
 export const VersionView = z.object({
   routeId: routeIdSchema,
   number: z.int().min(1),
-  hash: z.string().regex(/^[0-9a-f]{64}$/),
+  hash: contentHash,
   state: decisionState,
   title: z.string().max(200),
   country: z.string().regex(/^[A-Z]{2}$/),

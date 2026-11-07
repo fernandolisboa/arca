@@ -971,7 +971,7 @@ export const ptBR = {
       noPrevious: 'novo',
       removed: 'Perderam o valor nesta versão: {countries}.',
       activateLead:
-        'Ao ativar, a comparação de destinos passa a usar estes critérios e valores para todo mundo da família. Para continuar, confirme com sua chave de acesso.',
+        'Ao ativar, a comparação de destinos passa a usar estes critérios e valores para todas as pessoas que usam a comparação. Para continuar, confirme com sua chave de acesso.',
       rejectFallback:
         '{fallback, select, none {Hoje a comparação usa esta versão. Se recusar, ela fica sem dados de países até você ativar outra.} other {Hoje a comparação usa esta versão. Se recusar, ela volta para a versão {number}.}}',
     },

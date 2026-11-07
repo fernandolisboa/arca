@@ -2,14 +2,12 @@ import type { ComparisonVersionView } from '@arca/api-contract/client';
 import { StatusChip } from '@arca/ui';
 import { useId, type ReactNode } from 'react';
 import { Decision, decideComparison } from './decision.js';
+import { ChangeList, CheckAndHash, card, changeLine } from './review-parts.js';
 import { stateTone } from './state-tone.js';
 import { type KnowledgeWords, useKnowledgeWords } from './words.js';
 
 type Criterion = ComparisonVersionView['criteria'][number];
 type Indicator = ComparisonVersionView['indicators'][number];
-type Change = NonNullable<ComparisonVersionView['replaces']>['criteria'];
-
-const card = 'flex min-w-0 flex-col gap-2 rounded-control border border-line bg-surface p-4';
 
 function Section({ title, children }: { readonly title: string; readonly children: ReactNode }) {
   const headingId = useId();
@@ -21,23 +19,6 @@ function Section({ title, children }: { readonly title: string; readonly childre
       {children}
     </section>
   );
-}
-
-function changeLines(section: string, change: Change, words: KnowledgeWords): readonly string[] {
-  const details = [
-    ...(change.added.length > 0
-      ? [words.t('knowledge.changeAdded', { items: words.list(change.added) })]
-      : []),
-    ...(change.removed.length > 0
-      ? [words.t('knowledge.changeRemoved', { items: words.list(change.removed) })]
-      : []),
-    ...(change.changed.length > 0
-      ? [words.t('knowledge.changeChanged', { items: words.list(change.changed) })]
-      : []),
-  ];
-  return details.length === 0
-    ? []
-    : [words.t('knowledge.change', { section, details: words.list(details) })];
 }
 
 function Changes({
@@ -52,31 +33,20 @@ function Changes({
     return <p className="text-muted">{words.t('knowledge.comparison.firstVersion')}</p>;
   }
   const lines = [
-    ...changeLines(words.t('knowledge.comparison.criteria'), replaces.criteria, words),
-    ...changeLines(words.t('knowledge.comparison.indicators'), replaces.indicators, words),
+    ...changeLine(words.t('knowledge.comparison.criteria'), replaces.criteria, words),
+    ...changeLine(words.t('knowledge.comparison.indicators'), replaces.indicators, words),
   ];
-  if (lines.length === 0) {
-    return <p>{words.t('knowledge.noChanges', { number: replaces.number })}</p>;
-  }
-  return (
-    <div className="flex flex-col gap-2">
-      <p className="text-muted">{words.t('knowledge.changesSince', { number: replaces.number })}</p>
-      <ul className="flex flex-col gap-2">
-        {lines.map((line) => (
-          <li key={line} className={card}>
-            {line}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+  return <ChangeList number={replaces.number} lines={lines} words={words} />;
 }
 
 function CriterionCard({
   criterion,
+  indicatorTitle,
   words,
 }: {
   readonly criterion: Criterion;
+  /** The title of an indicator the version pins, by ID; the ID when it pins none by that ID. */
+  readonly indicatorTitle: (id: string) => string;
   readonly words: KnowledgeWords;
 }) {
   const { t } = words;
@@ -93,7 +63,7 @@ function CriterionCard({
       {criterion.kind === 'indicator' && (
         <p>
           {t('knowledge.comparison.anchors', {
-            indicator: criterion.indicator,
+            indicator: indicatorTitle(criterion.indicator),
             zeroAt: words.decimal(criterion.zeroAt),
             tenAt: words.decimal(criterion.tenAt),
           })}
@@ -102,7 +72,7 @@ function CriterionCard({
       {criterion.kind === 'category' && (
         <p>
           {t('knowledge.comparison.tokenScores', {
-            indicator: criterion.indicator,
+            indicator: indicatorTitle(criterion.indicator),
             scores: words.list(
               criterion.scores.map(({ token, score }) =>
                 t('knowledge.comparison.tokenScore', { token, score }),
@@ -220,8 +190,9 @@ function IndicatorCard({
 export function ComparisonPanel({ view }: { readonly view: ComparisonVersionView }) {
   const words = useKnowledgeWords();
   const { t } = words;
-  const checkId = useId();
   const { selected, fallback } = view.rejection;
+  const titles = new Map(view.indicators.map(({ id, title }) => [id, title]));
+  const indicatorTitle = (id: string) => titles.get(id) ?? id;
   return (
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-2">
@@ -242,7 +213,12 @@ export function ComparisonPanel({ view }: { readonly view: ComparisonVersionView
       <Section title={t('knowledge.comparison.criteria')}>
         <ul className="grid gap-3 md:grid-cols-2">
           {view.criteria.map((criterion) => (
-            <CriterionCard key={criterion.id} criterion={criterion} words={words} />
+            <CriterionCard
+              key={criterion.id}
+              criterion={criterion}
+              indicatorTitle={indicatorTitle}
+              words={words}
+            />
           ))}
         </ul>
       </Section>
@@ -254,16 +230,7 @@ export function ComparisonPanel({ view }: { readonly view: ComparisonVersionView
         </ul>
       </Section>
       <Section title={t('knowledge.wizard.decision')}>
-        <section aria-labelledby={checkId} className={card}>
-          <h5 id={checkId} className="font-medium">
-            {t('knowledge.check.title')}
-          </h5>
-          <p>{t('knowledge.check.body')}</p>
-        </section>
-        <div className="flex flex-col gap-1">
-          <p className="text-small text-muted">{t('knowledge.hash')}</p>
-          <p className="font-mono text-small break-all">{view.hash}</p>
-        </div>
+        <CheckAndHash hash={view.hash} words={words} />
         <Decision
           state={view.state}
           decide={(kind) => decideComparison(kind, view)}

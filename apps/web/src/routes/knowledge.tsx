@@ -192,7 +192,7 @@ function VersionList({
 
 function PickedVersion({ routeId, number }: { readonly routeId: string; readonly number: number }) {
   const view = useQuery(versionViewQuery(routeId, number));
-  if (view.data === undefined) return <ViewState query={view} />;
+  if (view.isError || view.data === undefined) return <ViewState query={view} />;
   return <VersionPanel view={view.data} />;
 }
 
@@ -204,7 +204,7 @@ function PickedComparison({
   readonly number: number;
 }) {
   const view = useQuery(comparisonViewQuery(comparisonId, number));
-  if (view.data === undefined) return <ViewState query={view} />;
+  if (view.isError || view.data === undefined) return <ViewState query={view} />;
   return <ComparisonPanel view={view.data} />;
 }
 

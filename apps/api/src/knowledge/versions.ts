@@ -94,7 +94,6 @@ export function createKnowledgeVersions({
       const entries = catalog
         .comparisons()
         .filter(({ identity }) => identity.comparisonId === comparisonId);
-      if (!entries.some(({ identity }) => identity.number === number)) return undefined;
       return comparisonVersionView({
         entries,
         number,

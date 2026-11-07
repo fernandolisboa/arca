@@ -16,15 +16,15 @@ import {
 /**
  * Decisions on route and comparison versions (spec 0007, R7; ADR-0022, ADR-0026). A row names its
  * subject kind, and a database check gives each kind its own shape: a route row has a route ID and
- * no comparison ID, a comparison row the one comparison series ID and no route ID. Each row is self-contained: it copies the
- * step-up's assertion and the passkey's public key, so it verifies again after the passkey is
- * revoked, the step-up is swept or the approver's account is erased, and no foreign key leaves this
- * schema. Insert-only, as the audit log: `app_auth` inserts a decision in the transaction that
- * spends its step-up, and only one matching a spent `knowledge_decision` step-up of the approver,
- * since a row carries its own key and whoever may insert could otherwise sign one; `app_api` reads
- * them all, since every evaluation needs the states. With no update or delete policy under forced
- * row-level security nobody updates or deletes. Kept for good, as the record of which rules are in
- * use.
+ * no comparison ID, a comparison row the one comparison series ID and no route ID. Each row is
+ * self-contained: it copies the step-up's assertion and the passkey's public key, so it verifies
+ * again after the passkey is revoked, the step-up is swept or the approver's account is erased, and
+ * no foreign key leaves this schema. Insert-only, as the audit log: `app_auth` inserts a decision
+ * in the transaction that spends its step-up, and only one matching a spent `knowledge_decision`
+ * step-up of the approver, since a row carries its own key and whoever may insert could otherwise
+ * sign one; `app_api` reads them all, since every evaluation needs the states. With no update or
+ * delete policy under forced row-level security nobody updates or deletes. Kept for good, as the
+ * record of which rule and comparison versions are in use.
  */
 export const knowledge = pgSchema('knowledge');
 
@@ -56,6 +56,7 @@ export const decision = knowledge.table(
     unique('decision_step_up_id_key').on(table.stepUpId),
     check('decision_kind', sql`${table.kind} IN ('activate', 'reject')`),
     check('decision_route_id_format', sql`${table.routeId} ~ '^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$'`),
+    // 'destinations' is the domain's `comparisonSeriesId`; the knowledge build refuses any other.
     check(
       'decision_subject',
       sql`CASE ${table.subjectKind}

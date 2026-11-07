@@ -345,6 +345,7 @@ export {
   type ComparisonIdentity,
   type ComparisonSelection,
   comparisonIdentityKey,
+  comparisonSeriesId,
   comparisonStateOf,
   selectComparisonVersion,
 } from './comparison/select.js';

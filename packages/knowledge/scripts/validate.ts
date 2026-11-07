@@ -15,6 +15,7 @@ import {
   checkRouteVersion,
   checkVersionOrder,
   compareDates,
+  comparisonSeriesId,
   comparisonVersionSchema,
   countryIndicatorSchema,
   countrySetSchema,
@@ -326,10 +327,9 @@ class Validation {
 
   private checkComparison(file: ParsedOf<'comparisons'>): void {
     const { data, raw } = file;
-    const series = new Set(
-      this.raw.files.filter((each) => each.kind === 'comparisons').map((each) => each.id),
-    );
-    if (series.size > 1) this.report(raw, 'There is one comparison series');
+    if (data.id !== comparisonSeriesId) {
+      this.report(raw, `There is one comparison series, ${comparisonSeriesId}`);
+    }
     const resolved = data.indicators.map((pin, index) =>
       this.resolve(raw, 'indicators', pin, `/indicators/${String(index)}`),
     );

@@ -527,6 +527,10 @@ describe('decisions on comparison versions (ADR-0026)', () => {
       refused: 'step_up_required',
     });
     expect(await service.states()).toEqual(new Map());
+    const stored = await testDatabase.asAdmin((client) =>
+      client.query('SELECT 1 FROM knowledge.decision'),
+    );
+    expect(stored.rowCount).toBe(0);
   });
 
   it('decides only a hash from the comparison catalog', async () => {
