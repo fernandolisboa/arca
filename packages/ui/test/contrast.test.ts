@@ -58,9 +58,8 @@ function fromOklab([lightness, a, b]: [number, number, number]): string {
 /** `color-mix(in oklab, a weight, b)`, as the hover and pressed fills use it. */
 function mix(a: string, weight: number, b: string): string {
   const [x, y] = [toOklab(a), toOklab(b)];
-  return fromOklab(
-    x.map((value, index) => value * weight + (y[index] ?? 0) * (1 - weight)) as never,
-  );
+  const blend = (index: 0 | 1 | 2) => x[index] * weight + y[index] * (1 - weight);
+  return fromOklab([blend(0), blend(1), blend(2)]);
 }
 
 type Pair = readonly [foreground: keyof Palette, background: keyof Palette];

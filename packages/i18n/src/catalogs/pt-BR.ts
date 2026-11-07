@@ -209,9 +209,7 @@ export const ptBR = {
     kitLink: 'Guardar o kit agora',
     unconfirmed:
       'Sua conta está aguardando a confirmação de quem convidou você. Até lá, você não consegue convidar ninguém nem enviar documentos.',
-    invites: 'Convidar alguém',
     devices: 'Dispositivos',
-    vault: 'Cofre',
     pendingPasskey:
       'Uma chave de acesso nova foi criada na sua conta. Ela passa a valer em {activeFrom}. Se não foi você, cancele agora.',
     pendingLink: 'Ver a chave nova',
@@ -222,14 +220,13 @@ export const ptBR = {
       'Alguém pediu a recuperação da sua conta e criou uma chave de acesso nova. Quando ela passar a valer, este dispositivo é desconectado. Até lá, você só pode ver este aviso e cancelar a recuperação. Se não foi você, cancele agora.',
     recoveryLink: 'Cancelar a recuperação',
   },
-  /** Creating the first account (spec 0003, R2): the owner's link request, then the passkey. */
   home: {
     greeting: '{part, select, morning {Bom dia.} afternoon {Boa tarde.} other {Boa noite.}}',
     greetingNamed:
       '{part, select, morning {Bom dia, {name}.} afternoon {Boa tarde, {name}.} other {Boa noite, {name}.}}',
     lead: {
       family: 'Comece contando quem vai com você.',
-      questions: 'Falta pouco para ver as rotas que servem para a sua família.',
+      questions: 'Responda às perguntas para ver as rotas que servem para a sua família.',
       routes: 'As rotas da sua família já podem ser vistas.',
     },
     nextStep: 'Próximo passo',
@@ -261,26 +258,26 @@ export const ptBR = {
     shortcuts: 'Atalhos',
     vault: {
       title: 'Cofre',
-      body: 'Os documentos da família, cifrados no seu aparelho antes de subir.',
+      body: 'Os documentos da família, protegidos no seu dispositivo antes do envio.',
       open: 'Abrir o cofre',
     },
     family: {
       title: 'Família',
       people: '{count, plural, one {pessoa no caso} other {pessoas no caso}}',
       accounts:
-        '{count, plural, =0 {Ninguém tem conta ainda.} one {# já tem conta.} other {# já têm conta.}} Convide quem vai junto para cada um cuidar dos próprios dados.',
+        '{count, plural, =0 {Ninguém mais tem conta ainda.} one {Mais 1 pessoa já tem conta.} other {Mais # pessoas já têm conta.}} Convide quem vai junto para cada um cuidar dos próprios dados.',
       empty: 'O caso ainda não começou.',
       invite: 'Convidar alguém',
     },
     rules: {
       title: 'Regras',
-      pending: '{count, plural, one {versão para revisar} other {versões para revisar}}',
+      pending: '{count, plural, one {versão proposta} other {versões propostas}}',
       body: 'Nenhuma regra muda sem a sua aprovação.',
       open: 'Revisar',
     },
-    statusTitle: 'Status do serviço',
     signedOut: 'Entre com a sua chave de acesso para continuar.',
   },
+  /** Creating the first account (spec 0003, R2): the owner's link request, then the passkey. */
   enroll: {
     request: {
       title: 'Criar a primeira conta',

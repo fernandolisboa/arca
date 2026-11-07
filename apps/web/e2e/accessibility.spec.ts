@@ -7,10 +7,10 @@ test.beforeEach(async ({ page }) => {
   await reportViolations(page);
 });
 
-/** The default theme, and one light theme with a different palette (spec 0006, R11). */
+/** The default theme, and one dark theme (spec 0006, R11). */
 const themes = [
   { name: 'the default theme', axes: {} },
-  { name: 'Sereno, light', axes: { theme: 'serene', mode: 'light' } },
+  { name: 'Papel, dark', axes: { theme: 'paper', mode: 'dark' } },
 ] as const;
 
 async function scan(page: Page) {

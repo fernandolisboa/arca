@@ -45,6 +45,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | In the planning | Entra no planejamento | A person of the case the routes are evaluated for (`caseMember` in the code); a relative outside it, such as a grandparent who stays, is only described |
 | Asset | Bem | Something of value owned by one or more people of the case, with each owner's share; a co-owner named by another keeper stays pending until their keeper confirms |
 | Profile share | Compartilhamento de dados | A keeper letting a chosen member see a person's profile or, separately, their finances; not a document share |
+| Case stage | Etapa do caso | Where a case stands on the home: telling about the family, the guided questions, then the routes; counted in the client from the case and its answers, never an eligibility decision |
 | Progress | Progresso | Documents obtained and steps done out of what a person's or the family's chosen routes need, computed in code; unknowns shown apart |
 | Shared analysis | Análise compartilhada | A comparison or recommendation an adult shares, read-only and revocable, with chosen people in the case; not a document share |
 | Guided tour | Tour guiado | The first-run walkthrough of the app and the hint shown the first time a screen opens; skippable and replayable |
@@ -91,7 +92,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Needs assessment | Depende de critério subjetivo | Evaluation status: every requirement holds and the route has judgment factors |
 | Pending activation | Versão aguardando ativação | Evaluation status: the version in effect has not been activated yet |
 | Unavailable | Indisponível | Evaluation status: no version in effect, or the route is closed |
-| Knowledge base | Base de conhecimento | Sourced, versioned rules and information about routes, documents, steps and pitfalls |
+| Knowledge base | Base de conhecimento | Sourced, versioned rules and information about routes, documents, steps and pitfalls; the approver's area for it is labelled "Regras" in navigation |
 | Knowledge item | Item da base | One sourced entry in the knowledge base |
 | Research agent | Internal, no UI label | The agent that proposes route versions from official sources as pull requests |
 | Rule watcher | Vigia de regras | Scheduled job that detects rule changes and proposes updates |

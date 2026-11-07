@@ -1,5 +1,5 @@
 export { AppShell, type AppShellLabels, type AppShellProps } from './app-shell.js';
-export { Button, type ButtonProps } from './button.js';
+export { Button, buttonClass, type ButtonProps } from './button.js';
 export { ChoiceGroup, type Choice, type ChoiceGroupProps } from './choice-group.js';
 export { CoachMark, type CoachMarkLabels, type CoachMarkProps } from './patterns/coach-mark.js';
 export type { DockEdge, NavItem, ShellLayout, ShellLink, ShellLinkProps } from './shell/nav.js';

@@ -1,5 +1,5 @@
 import type { CaseView } from '@arca/api-contract/client';
-import { Button, Icon, cardClass as card, type IconName } from '@arca/ui';
+import { Button, Icon, buttonClass, cardClass as card, type IconName } from '@arca/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useId, useState, type ReactNode } from 'react';
@@ -22,8 +22,7 @@ export const Route = createFileRoute('/')({ component: Home });
 const column = 'mx-auto flex w-full max-w-[1120px] flex-col gap-8 sm:gap-10';
 const heroTitle =
   'font-display text-hero tracking-tight break-words hyphens-auto sm:text-[3rem] sm:leading-[1.05]';
-const primaryLink =
-  'inline-flex min-h-touch items-center gap-2 self-start rounded-control bg-primary px-4 font-medium text-on-primary hover:bg-primary-hover active:bg-primary-pressed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
+const primaryLink = `${buttonClass('primary')} self-start`;
 const cardLink = `${textLinkClass} mt-auto`;
 const noticeLink = `${textLinkClass} text-warn-ink decoration-warn-ink`;
 
@@ -156,16 +155,17 @@ function Greeting({
 function NextStepCard({ step }: { readonly step: NextStep }) {
   const { t } = useTranslation();
   const current = stages.indexOf(step.stage);
+  const titleId = useId();
   return (
     <section
-      aria-labelledby="next-step-title"
+      aria-labelledby={titleId}
       className={`${card} flex flex-wrap gap-8 p-6 sm:gap-10 sm:p-8`}
     >
       <div className="flex min-w-0 flex-[3_1_20rem] flex-col gap-3">
         <p className="text-small font-semibold tracking-wide text-accent uppercase">
           {t('home.nextStep')}
         </p>
-        <h3 id="next-step-title" className="font-display text-page-title tracking-tight">
+        <h3 id={titleId} className="font-display text-page-title tracking-tight">
           {t(`home.next.${step.stage}.title`)}
         </h3>
         <p className="max-w-xl text-muted">
@@ -353,7 +353,7 @@ function Footer({ email }: { readonly email: string | undefined }) {
       )}
       <section aria-labelledby="health-title" className="flex flex-wrap items-center gap-3">
         <h2 id="health-title" className="sr-only">
-          {t('home.statusTitle')}
+          {t('health.title')}
         </h2>
         <HealthStatus />
       </section>
