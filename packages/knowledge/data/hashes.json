@@ -70,6 +70,26 @@
     {
       "path": "routes/au-skilled-independent/1",
       "sha256": "d42bd56fe61a88fffd1a0be520f70c69b2fa5455bc5a56ea5255fbfdddc0751f"
+    },
+    {
+      "path": "country-sets/eu-free-movement/1",
+      "sha256": "c5768f65226f1adc89090a248b93bf2ab6b18c1710677a03b44c785cb2dc3e5a"
+    },
+    {
+      "path": "routes/es-non-lucrative/2",
+      "sha256": "1d273a8801b1d9ca02b6aeac89137dc2003d642586375fd1ee28ae4f728d7140"
+    },
+    {
+      "path": "routes/pt-d7/2",
+      "sha256": "06d1990c3b46ee735cd51930baaf6615a464027af5e85c88151aa59f8ef47b6f"
+    },
+    {
+      "path": "routes/pt-d8/2",
+      "sha256": "d4ddfb7dc7c578c2c83da02aa8178f11fe1d4e08ad855be076dbab48e08b2128"
+    },
+    {
+      "path": "routes/lv-capital-investment/2",
+      "sha256": "e0a0991a25fcf87adc61d3a9e752a43276c3837acacf45c94ac77cd4c5eac3cc"
     }
   ]
 }
