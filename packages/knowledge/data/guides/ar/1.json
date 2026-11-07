@@ -1,0 +1,211 @@
+{
+  "schemaVersion": 1,
+  "id": "ar",
+  "number": 1,
+  "title": "Argentine migration law",
+  "laws": [
+    {
+      "id": "ley-25871",
+      "title": "Ley 25.871 (Migration Law), consolidated text: categories of residence, art. 23 l nationality and art. 23 ñ family reunification, impediments, cancellation of residence, fees",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "verifiedAt": "2026-11-07",
+      "amendment": "An Act of Congress, also amended by executive decrees of necessity and urgency, lately DNU 366/2025 and DNU 681/2026; changes come ad hoc, with no yearly cycle. The page is the consolidated text on the national normativa site; each changed article carries a note with the amending instrument and the date it took effect. When read it ran through DNU 681/2026 (published 2026-07-30) and Decreto 793/2025, which makes references to the Ministry of the Interior read as the Ministry of National Security. Check the site's list of modifying norms for anything newer."
+    },
+    {
+      "id": "decreto-616-2010",
+      "title": "Decreto 616/2010, regulation of the Migration Law, original text: art. 20 c disability, art. 22 permanent residence, art. 23 temporary subcategories and reunification, art. 29 definitions, Annex II",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/decreto-616-2010-167004/texto",
+      "verifiedAt": "2026-11-07",
+      "amendment": "An executive decree, also complemented by dispositions of the National Migration Directorate (DNM), which Annex II art. 1 lets set the requirements and procedures for Mercosur natives. Only the original 2010 text is published, with no consolidated version; the site lists 69 complementing or modifying norms, the latest dated 2024-10-04 when read, so nothing there adapts it to the 2025 and 2026 changes to the law."
+    },
+    {
+      "id": "decreto-366-2025",
+      "title": "Decreto DNU 366/2025, decree of necessity and urgency amending Ley 25.871: art. 6 adds art. 23 ñ (family reunification); art. 44, pending applications; in force 2025-05-29",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-413297/texto",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A decree of necessity and urgency, in force from its publication on 2025-05-29 (art. 47) and reported to Congress's Permanent Bicameral Commission (art. 48), which its recitals say rules on the validity of such decrees. Its changes to the Migration Law are folded into the consolidated text of Ley 25.871. When read, the site listed 2 complementing norms (Decreto 524/2025 and a 2026 Ministry of Health resolution) and no repeal."
+    },
+    {
+      "id": "decreto-681-2026",
+      "title": "Decreto DNU 681/2026, decree of necessity and urgency adding art. 29 m) (impediment) and art. 62 h) (cancellation) to Ley 25.871 and replacing its art. 63 c)",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-428321/texto",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A decree of necessity and urgency published 2026-07-30, in force from the next day (art. 4) and reported to the Permanent Bicameral Commission (art. 5). Its text is folded into the consolidated text of Ley 25.871."
+    },
+    {
+      "id": "ley-25902",
+      "title": "Ley 25.902 approving the Agreement on Residence for Nationals of the States Parties of Mercosur, Bolivia and Chile (Brasilia, 2002-12-06), with the agreement's text",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-96649/texto",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A treaty approved by an Act of Congress (published 2004-07-16). It changes only by a new agreement among the parties; a party may denounce it, with effect 180 days after notice to Paraguay, the depositary (art. 16). It takes effect once all 6 parties have notified Paraguay (art. 14); the date is not in this text. Ley 25.903 approved the parallel agreement for nationals of the Mercosur states parties."
+    },
+    {
+      "id": "codigo-civil-comercial",
+      "title": "Civil and Commercial Code (Ley 26.994), consolidated text: art. 6 periods, arts. 25 and 27 minors and emancipation, arts. 509 to 512 cohabiting unions, art. 402 equal marriage, art. 2616 capacity",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-26994-235975/actualizacion",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended only by Acts of Congress, ad hoc; the page is the consolidated text with notes on each change. In force since 2015-08-01, as DNM Disposición 4880/2015 records."
+    },
+    {
+      "id": "disp-dnm-4880-2015",
+      "title": "DNM Disposición 4880/2015: a registered cohabiting union with an Argentine or a temporary or permanent resident counts like a marriage for admission",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-253078/texto",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A disposition of the National Migration Directorate, which can replace it at any time by another disposition. Its art. 1 was replaced by Disposición 6206/2017; the page is the original 2015 text, so read art. 1 as worded in 2017. In force from 2015-10-01 (art. 5)."
+    },
+    {
+      "id": "disp-dnm-6206-2017",
+      "title": "DNM Disposición 6206/2017, replacing art. 1 of Disposición 4880/2015 on cohabiting unions",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-287287/texto",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A disposition of the National Migration Directorate, changed only by a later disposition."
+    },
+    {
+      "id": "disp-dnm-29929-2004",
+      "title": "DNM Disposición 29.929/2004: the states named in art. 23 l of Ley 25.871 are illustrative and include every Mercosur state party and associated state",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-98822/texto",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A disposition of the National Migration Directorate; Decreto 616/2010, art. 23 l, later wrote the same rule into the regulation."
+    },
+    {
+      "id": "disp-dnm-1637-2022",
+      "title": "DNM Disposición 1637/2022: requirements for residence applications of nationals of Mercosur states parties and associated states, in Argentina and at consulates",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-369202/texto",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A disposition of the National Migration Directorate under Decreto 616/2010, Annex II art. 1, in force from its publication on 2022-08-04 (art. 3); it repealed Disposiciones 4871/2007, 2529/2009 and 1488/2010 (art. 2). The directorate changes it by a later disposition, with no schedule. The page is the original text with its annex; it predates DNU 366/2025 and still cites Decreto 231/2009 for fees, which Decreto 584/2024 repealed."
+    },
+    {
+      "id": "decreto-584-2024",
+      "title": "Decreto 584/2024: migration fees in units (UMSM), the value of the unit and the exemptions",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-401218/texto",
+      "verifiedAt": "2026-11-07",
+      "amendment": "An executive decree under art. 99 of Ley 25.871 that replaced Decreto 231/2009 (art. 17), in force from the day after its publication on 2024-07-05 (art. 18). The fee table in art. 1 is published only as images. The unit's value, ARS 1,000 (art. 2), may be changed at any time by the Chief of Cabinet's office through the Vice-Chief for the Interior on a DNM report (art. 3); there is no schedule. When read, the site listed 3 complementing DNM dispositions of 2024, none changing the unit's value, and the DNM fee table page still gave ARS 1,000."
+    },
+    {
+      "id": "dnm-mercosur",
+      "title": "National Migration Directorate service page: temporary residence by nationality (Mercosur), who can apply, documents, procedure and term",
+      "url": "https://www.argentina.gob.ar/servicio/obtener-una-residencia-temporaria-por-nacionalidad-mercosur",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Guidance edited by the directorate without notice or version history; it is not a legal text. It names its basis as art. 23 l of Ley 25.871, Decreto 616/2010 and DNM Disposición 1637/2022, and links the fee table for the amounts."
+    }
+  ],
+  "pitfalls": [
+    {
+      "id": "states-listed-vs-law",
+      "text": "Art. 23 l names native citizens of the Mercosur states parties, Chile and Bolivia. Decreto 616/2010, art. 23 l, and Disposición 29.929/2004 make that list illustrative, covering every state party and associated state. Disposición 1637/2022, art. 2, and the directorate's page list the natives accepted: Uruguay, Brazil, Paraguay, Bolivia, Chile, Peru, Ecuador, Colombia, Venezuela, Guyana and Suriname. An associated state missing from those lists is covered by the regulation's words but named in neither the disposition nor the page.",
+      "laws": [
+        "ley-25871",
+        "decreto-616-2010",
+        "disp-dnm-29929-2004",
+        "disp-dnm-1637-2022",
+        "dnm-mercosur"
+      ]
+    },
+    {
+      "id": "naturalized-five-years",
+      "text": "The law asks for a native citizen and none of the texts defines native; the agreement counts nationality of origin, or nationality by naturalization held for 5 years (art. 2). Disposición 1637/2022, art. 2, and the directorate's page also accept a person naturalized for 5 years or more, but only in Brazil, Paraguay, Uruguay, Bolivia, Chile, Peru, Ecuador or Colombia, the agreement's signatories and later adherents, so not in Venezuela, Guyana or Suriname; the page adds that the person be a native of a non-Mercosur country. A nationality alone does not show how long it has been held.",
+      "laws": ["ley-25871", "ley-25902", "disp-dnm-1637-2022", "dnm-mercosur"]
+    },
+    {
+      "id": "foreigners-only",
+      "text": "The categories of residence are for foreigners: an immigrant is a foreigner who wishes to enter, transit, reside or settle (art. 2), and art. 23 lists the subcategories for foreigners. A person who is only Argentine is not a foreigner under these categories. A child born abroad to a native, naturalized or by-option Argentine is recognized as a permanent resident instead (art. 22, last paragraph).",
+      "laws": ["ley-25871"]
+    },
+    {
+      "id": "term-and-permanence",
+      "text": "Art. 23 l grants 2 years, extendable; the agreement says up to 2 years (art. 4). After 2 continuous years of temporary residence a Mercosur or associated national may seek permanent residence (Decreto 616/2010, art. 22 c), proving since 2025 enough means and no criminal record that could justify refusal (law, art. 22). The agreement asks for the request in the 90 days before expiry (art. 5); the directorate takes it from 60 days before to 30 days after, with a 50 percent surcharge after expiry, and asks for presence in Argentina over half the term (Disposición 1637/2022, art. 5 c).",
+      "laws": ["ley-25871", "decreto-616-2010", "ley-25902", "disp-dnm-1637-2022"]
+    },
+    {
+      "id": "provisional-residence",
+      "text": "While an application is pending the directorate may grant a provisional residence (residencia precaria) of up to 90 days, renewable by a reasoned decision, which allows work and study. Neither it nor its renewals count as residence toward the time needed for permanent residence or for naturalization (art. 20).",
+      "laws": ["ley-25871"]
+    },
+    {
+      "id": "reunification-2025",
+      "text": "Art. 23 ñ, added by DNU 366/2025, art. 6, in force from 2025-05-29, covers the spouse, a parent, and an unmarried child under 18 not emancipated or an adult child with a disability, of a permanent or temporary resident, for up to 3 years or the resident's authorized term. Decreto 616/2010, art. 23, last paragraph, already granted temporary residence to the same relatives of a temporary resident before then. Residence applications started before 2025-05-29 keep the rules in force when they began (DNU art. 44).",
+      "laws": ["ley-25871", "decreto-366-2025", "decreto-616-2010"]
+    },
+    {
+      "id": "relatives-covered",
+      "text": "Art. 23 ñ asks for no dependence and no nationality of the relative; the agreement separately gives family members without a party's nationality a residence as long as that of the person they depend on (art. 9.2), without listing who they are. The law's reunification right covers parents, spouses, unmarried minor children and adult children with a disability (art. 10). Siblings, grandparents and other relatives are in neither art. 10 nor art. 23 ñ. The spouse may be of either sex (Civil and Commercial Code, art. 402).",
+      "laws": ["ley-25871", "ley-25902", "codigo-civil-comercial"]
+    },
+    {
+      "id": "minor-and-emancipation",
+      "text": "A minor is a person who has not turned 18 (Code art. 25). Marriage before 18 emancipates, and emancipation is irrevocable; annulling the marriage does not undo it except for a spouse in bad faith (art. 27). So a child who married before 18 stays outside art. 23 ñ even once no longer married. Capacity is governed by the law of the person's domicile (art. 2616), so for a child domiciled abroad that law decides.",
+      "laws": ["codigo-civil-comercial", "ley-25871"]
+    },
+    {
+      "id": "age-counting",
+      "text": "Code art. 6 counts periods of months or years from date to date; when the end month has no day matching the start, the period ends on that month's last day, so a 29 February birthday falls on 28 February in a common year. The same article says a period expires at the end of its last day; the texts read do not say whether an age is reached on the anniversary itself or at the end of that day.",
+      "laws": ["codigo-civil-comercial"]
+    },
+    {
+      "id": "adult-child-disability",
+      "text": "An adult child qualifies only with a disability (art. 23 ñ and art. 10), with no upper age. Decreto 616/2010, art. 20 c, gives a foreigner with a disability, of any age, the same residence category as their parents, children or spouse.",
+      "laws": ["ley-25871", "decreto-616-2010"]
+    },
+    {
+      "id": "cohabiting-union",
+      "text": "The directorate treats as a marriage, for admission under the law's art. 22 and Decreto 616/2010, arts. 22 and 23, last paragraph, a cohabiting union with an Argentine or a temporary or permanent resident registered in the local registry (Disposición 4880/2015, art. 1 as replaced in 2017). The Code gives a union effects only if both are adults, neither is married or in another registered union, they are not close relatives, and they have lived together at least 2 years (art. 510); registration only proves it (arts. 511 and 512). The 2 years run from living together, not from registering.",
+      "laws": ["disp-dnm-4880-2015", "disp-dnm-6206-2017", "codigo-civil-comercial"]
+    },
+    {
+      "id": "stepchildren",
+      "text": "The texts name a child of a resident, not a stepchild. Since art. 23 ñ covers the child of any temporary resident, a spouse's child can be read to join as the child of the spouse once the spouse holds temporary residence under it; that is an inference, as no text read says so expressly.",
+      "laws": ["ley-25871", "decreto-616-2010"]
+    },
+    {
+      "id": "criminal-impediments",
+      "text": "Since 2025, art. 29 counts any conviction, final or not, and an indictment or committal to trial as a record; the 2010 regulation (art. 29) means a final one. A conviction anywhere for a crime punishable by prison under Argentine law is an impediment (art. 29 c, d). DNU 681/2026 added art. 29 m) from 2026-07-31: hate messages or incitement to violence against Argentines for being Argentine, and insulting national symbols. A family waiver needs proof of living together and emotional and economic ties; it is barred for intentional crimes against life, sexual integrity or constitutional order.",
+      "laws": ["ley-25871", "decreto-616-2010", "decreto-681-2026"]
+    },
+    {
+      "id": "records-period",
+      "text": "The directorate asks applicants aged 16 or more for an Argentine criminal record certificate and for certificates from every country lived in for more than 1 year during the last 3 years (Disposición 1637/2022, art. 4 a, items V and VI, and its page); Decreto 616/2010, Annex II art. 9, says the same for non-Mercosur natives. The agreement instead names the country of origin or those lived in during the 5 years before arrival (art. 4.1 c); the law applies whichever of the agreement and the law is more favorable (art. 28).",
+      "laws": ["disp-dnm-1637-2022", "dnm-mercosur", "decreto-616-2010", "ley-25902", "ley-25871"]
+    },
+    {
+      "id": "where-to-apply",
+      "text": "The directorate's page covers only applications from inside Argentina, started online in RaDEX and finished at an in-person appointment. Disposición 1637/2022 also sets the consular procedure from abroad (arts. 8 to 12), as the regulation allows (Annex II art. 1) and the agreement provides (art. 3). The disposition asks for proof of regular entry (art. 4 a III); the agreement's in-country procedure applies whatever the status of entry (art. 3). Entering by evading migration controls is an impediment (law art. 29 i), which the regulation asks to weigh specially for Mercosur natives (art. 29).",
+      "laws": ["dnm-mercosur", "disp-dnm-1637-2022", "decreto-616-2010", "ley-25902", "ley-25871"]
+    },
+    {
+      "id": "absence-cancels",
+      "text": "The directorate cancels a temporary residence when the holder stays outside Argentina for 6 months or more (1 year for a permanent residence), unless the absence was for Argentine public service, for activities the directorate deems of interest to Argentina, or was expressly authorized, which can be asked through an Argentine consulate (art. 62 e). For an absence, cancellation leads to a demand to regularize or an order to leave within a set term, weighing personal circumstances (art. 63 b), not to the expulsion art. 62 names for other grounds.",
+      "laws": ["ley-25871"]
+    },
+    {
+      "id": "health-insurance-statement",
+      "text": "Since DNU 366/2025, art. 34 asks every foreigner seeking admission to sign at entry a sworn statement of the purpose of entry and of having health insurance; art. 123 bis makes it enforceable only once its implementation is regulated. It is art. 34, not art. 35, which governs refusal at the border. Separately, art. 8 now lets health facilities run by the national state give routine care to foreigners who are not permanent residents only against health insurance or prior payment, on Ministry of Health conditions.",
+      "laws": ["ley-25871", "decreto-366-2025"]
+    },
+    {
+      "id": "fees-in-units",
+      "text": "Fees are set in units (UMSM), not pesos: a permanent or temporary residence for a Mercosur or associated national costs 50 UMSM (100 for others), an extension or change to permanent residence 50 UMSM, an application at a consulate 300 consular units, and a preferential appointment 50 UMSM more. One UMSM is ARS 1,000, so 50 UMSM is ARS 50,000, until the unit's value is changed under art. 3. Unmarried children under 18 applying with a parent, and people proving indigence, are exempt from the residence fees (arts. 4 and 5), not from the preferential appointment fee.",
+      "laws": ["decreto-584-2024"]
+    },
+    {
+      "id": "original-vs-consolidated",
+      "text": "Only Ley 25.871 and the Code are read as consolidated texts. Decreto 616/2010, the DNUs and the DNM dispositions are published as originals, so their wording may be out of date: Disposición 4880/2015 shows its 2015 art. 1, Disposición 1637/2022 cites the repealed fee decree, and the 2010 regulation still names the Ministry of the Interior and regulates the law as it stood before 2025; its art. 22 a and b still give permanent residence to relatives that the law since 2025 lists under temporary art. 23 ñ.",
+      "laws": [
+        "ley-25871",
+        "decreto-616-2010",
+        "disp-dnm-4880-2015",
+        "disp-dnm-1637-2022",
+        "decreto-366-2025"
+      ]
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "ar",
+      "number": 1
+    }
+  ]
+}

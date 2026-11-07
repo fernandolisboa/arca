@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "id": "es",
+  "number": 1,
+  "title": "Spanish law on foreigners and non-lucrative residence",
+  "laws": [
+    {
+      "id": "rd-1155-2024",
+      "title": "Real Decreto 1155/2024, approving the Regulation of Ley Orgánica 4/2000 (the foreigners regulation), in force from 2025-05-20, including articles 38, 39 and 61 to 64 on non-lucrative residence",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by royal decrees of the Government, ad hoc; Real Decreto 316/2026 changed other articles from 2026-04-16. The Supreme Court can annul parts of it, as its judgment of 2026-07-08 did, published 2026-09-22 together with a judgment of 2026-07-29 that repeated the annulment of article 197.2. The BOE consolidated text, last updated 2026-09-22, notes each change but is informative only. Articles 38, 39 and 61 to 64 carry no amendment or annulment note. The means in article 62 are percentages of the IPREM, so they change whenever the IPREM changes, with no amendment to the regulation."
+    },
+    {
+      "id": "lo-4-2000",
+      "title": "Ley Orgánica 4/2000 on the rights and freedoms of foreigners in Spain and their social integration, articles 1 (scope and EU citizens), 2 (exclusions) and 31 (temporary residence)",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "verifiedAt": "2026-11-07",
+      "amendment": "An organic law, so changing it needs an absolute majority of the Congress in a final vote (Constitution, article 81.2). Articles 1, 2 and 31 were last amended by Ley Orgánica 2/2009, in force from 2009-12-13; the consolidated text was last updated 2025-03-19. Article 31.2 leaves the criteria for sufficient means to the regulation."
+    },
+    {
+      "id": "rd-240-2007",
+      "title": "Real Decreto 240/2007 on entry, free movement and residence in Spain of citizens of other EU and EEA states, articles 1, 2 and 2 bis and third additional provision (Swiss citizens)",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2007-4184",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by royal decrees, such as Real Decreto 1710/2011 and Real Decreto 987/2015, which added article 2 bis from 2015-12-09, and once by a decree-law, Real Decreto-ley 16/2012, on article 7. The consolidated text was last updated 2015-11-09. A Supreme Court judgment of 2010-06-01 annulled phrases of article 2 and parts of other articles; article 2 still prints its annulled phrases, highlighted, under a note."
+    },
+    {
+      "id": "ley-31-2022",
+      "title": "Ley 31/2022, State Budget for 2023, additional provision 90: the IPREM (public income index of multiple effects) for 2023, EUR 600 a month",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2022-22128",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A yearly budget law. With no new budget approved, the budget stays automatically extended (Constitution, article 134.4); the title of Orden EFD/581/2026 calls it extended for 2024, 2025 and 2026. Other provisions were amended by later decree-laws, such as Real Decreto-ley 25/2026, but the consolidated text, updated 2026-09-30, shows no amendment to additional provision 90. Real Decreto-ley 3/2004 article 2.2 has the yearly budget law set the IPREM, but for 2008 a decree-law, Real Decreto-ley 1/2008, set it instead."
+    },
+    {
+      "id": "orden-efd-581-2026",
+      "title": "Orden EFD/581/2026 of 2026-06-08, whose title states that the 2023 State Budget (Ley 31/2022) stays extended for 2024, 2025 and 2026",
+      "url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-12521",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A ministerial order that updates annex V of Ley 31/2022 (teaching staff pay in subsidised schools in Ceuta and Melilla), cited here only for what its title says about the extended budget. Its title says extended for 2024, 2025 and 2026, while its single article says extended for 2024 and 2025. Annex V is updated by a new order each time (Orden EFD/525/2024, Orden EFD/1392/2024, then this one), not by amending an earlier order."
+    },
+    {
+      "id": "rdl-3-2004",
+      "title": "Real Decreto-ley 3/2004, article 2: creates the IPREM and has the yearly State Budget law set its amount",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2004-12010",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Article 2 shows no amendment note; the consolidated text was last updated 2019-03-02, when Ley 2/2019 added an additional provision. Article 2.2 has each yearly State Budget law set the IPREM, taking into account at least the inflation forecast or target it uses, after the Government consults the most representative employer and union organisations."
+    },
+    {
+      "id": "constitucion",
+      "title": "Spanish Constitution of 1978, article 134 (yearly State Budget and its automatic extension) and article 81 (organic laws)",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-1978-31229",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended only by constitutional reform under its Title X. Article 167 needs three fifths of each chamber or, failing that, an absolute majority of the Senate and two thirds of the Congress; article 168 sets a harder procedure for some parts, which do not include articles 81 or 134. The consolidated text, last updated 2026-05-20, shows no amendment to article 81 or article 134."
+    },
+    {
+      "id": "codigo-civil",
+      "title": "Código Civil (Civil Code), article 5.1 (periods in months or years run from date to date) and article 240 (majority at 18 completed years, the birth day counted whole)",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-1889-4763",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended mostly by laws of the Cortes Generales. Article 240 has its current wording from Ley 8/2021, with effect from 2021-09-03; article 5 has its wording from Decreto 1836/1974, in force from 1974-07-29. The consolidated text was last updated 2025-01-03."
+    },
+    {
+      "id": "rd-316-2026",
+      "title": "Real Decreto 316/2026, amending the foreigners regulation of Real Decreto 1155/2024 from 2026-04-16",
+      "url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-8284",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A one-off amending decree, published 2026-04-15 and in force the day after, 2026-04-16. It changed articles 97, 126, 127, 130, 132, 172, 190 and 191 of the regulation and its additional provisions 2 and 19, added additional provisions 20 and 21, rewrote its single transitional provision, and repealed the fifth transitional provision of Real Decreto 1155/2024 itself; it did not change articles 38, 39 or 61 to 64. Its changes are merged into the consolidated text of Real Decreto 1155/2024."
+    },
+    {
+      "id": "ts-868-2026",
+      "title": "Supreme Court judgment 868/2026 of 2026-07-08, published 2026-09-22, annulling parts of the foreigners regulation, with its rectification order of 2026-09-01",
+      "url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-19632",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A court ruling published once in the BOE, with the order of 2026-09-01 that rectified it by adding an interpretive ruling on article 159.1. It annulled article 197.2 in full, the third paragraph of article 101.1 in part, and phrases of articles 94.1 f), 196 (economic dependence), 97.4, 98.1, 159.1, 160.1 and 2, and 166.1, none of them in articles 38, 39 or 61 to 64. It dismissed the other claims it decided, and closed the challenges to the repealed fifth transitional provision and to points withdrawn or changed by Real Decreto 316/2026."
+    }
+  ],
+  "pitfalls": [
+    {
+      "id": "iprem-2023-budget-extended",
+      "text": "Additional provision 90 of Ley 31/2022 sets the IPREM at EUR 600 a month for 2023 only. A budget not approved by the first day of the year is extended until a new one is approved (Constitution, article 134.4), and the title of Orden EFD/581/2026 calls the 2023 budget extended for 2024, 2025 and 2026 (its single article says 2024 and 2025). EUR 600 is the 2023 amount that this extension reads as still applying; no text read states a later amount. When a new law sets the IPREM, the means change from the date it takes effect, and a version with EUR 600 must end there.",
+      "laws": ["ley-31-2022", "orden-efd-581-2026", "constitucion", "rdl-3-2004"]
+    },
+    {
+      "id": "iprem-monthly-figure",
+      "text": "Article 62 counts in the monthly IPREM, EUR 600. Additional provision 90 of Ley 31/2022 also prints a daily IPREM of EUR 20 and annual amounts of EUR 7,200 and EUR 8,400. The EUR 8,400 figure applies only where Real Decreto-ley 3/2004 replaced a reference to the minimum wage with the IPREM and the rule counts the minimum wage per year, unless it excludes the extra payments. Article 62 refers to the monthly IPREM directly, so it is not such a rule.",
+      "laws": ["ley-31-2022", "rd-1155-2024", "rdl-3-2004"]
+    },
+    {
+      "id": "means-amount-and-period",
+      "text": "Article 62.1 asks, each month, 400 percent of the IPREM for the applicant plus 100 percent for each family member in their charge, so EUR 2,400 and EUR 600. Article 62.2 counts that monthly amount over the validity of the permit applied for. The initial permit lasts 1 year (article 61.4), so EUR 28,800 plus EUR 7,200 per family member. A renewed permit lasts 2 years unless a long-term permit is due (article 64.7), and article 64.2 b) asks means for that period, so twice that. The amounts are minimums, in euros or the equivalent in foreign currency, at the visa application or renewal.",
+      "laws": ["rd-1155-2024"]
+    },
+    {
+      "id": "means-or-regular-income",
+      "text": "Article 62.1 accepts sufficient means for the period of the permit or a source of regular income, and article 61.2 a) wants them to cover living costs with no need for any work or professional activity. The regulation does not say how funds and income combine; adding a year of passive income to liquid assets is a reading. For accounts abroad, article 62.3 asks for the balances at 31 December of the year before the application and the average balance of the last year; for shares in companies in Spain, a certificate and a declaración responsable that the holder does not work in them.",
+      "laws": ["rd-1155-2024"]
+    },
+    {
+      "id": "per-family-member-in-charge",
+      "text": "The extra 100 percent of article 62.1 b) is for each family member in the applicant's charge (a su cargo), added to the applicant's own amount, so it is per person and not per household. Article 196.1 defines being in someone's charge, for the whole regulation, as a factual situation of material help or support showing economic or physical dependence, real and stable and not created to obtain a permit. Article 196.2 adds that economic dependence must be sustained over time and exist before the application is filed.",
+      "laws": ["rd-1155-2024"]
+    },
+    {
+      "id": "family-defined-for-this-permit",
+      "text": "Article 61.3 defines family members for the non-lucrative permit only: the spouse, registered partner or duly proven stable partner; the minor children of the applicant or of that spouse or partner; and their adult children with a disability that needs support or who cannot provide for themselves because of their health. Parents are not included. The family reunification rules of article 66, such as a spouse over 18, one spouse only, parents over 65 in the applicant's charge, and sole custody or consent for a child of only one partner, are not in article 61.3 and must not be read into it.",
+      "laws": ["rd-1155-2024"]
+    },
+    {
+      "id": "stable-partner-cohabitation",
+      "text": "Article 61.3 a) sets no minimum length for a registered partner. A stable partner must show a lasting bond; 1 year of continuous marital cohabitation proves it in every case, and with children in common duly proven stable cohabitation is enough. The year counts living together, not the length of the relationship, and it is one way to prove the bond, not the only one.",
+      "laws": ["rd-1155-2024"]
+    },
+    {
+      "id": "minor-children-wording",
+      "text": "Article 61.3 b) covers minor children who are not married, or who have not formed their own family unit, and does not define a family unit. It does not say on which date the child must be a minor, while article 66.1 c), for family reunification, takes the date of the application. Majority starts at 18 completed years, and the day of birth counts as a whole day (Código Civil, article 240).",
+      "laws": ["rd-1155-2024", "codigo-civil"]
+    },
+    {
+      "id": "leap-day-birthday",
+      "text": "Código Civil article 5.1 runs periods in months or years from date to date and, when the final month has no matching day, ends them on the last day of that month. Article 240 itself says nothing about leap days, so applying article 5.1 to an age is an inference; applied to a birthday on 29 February, it gives 28 February in a common year.",
+      "laws": ["codigo-civil"]
+    },
+    {
+      "id": "eu-regime-excluded",
+      "text": "Spanish nationals are not foreigners under Ley Orgánica 4/2000 (article 1.1). EU citizens and others under the EU regime follow it; the law applies to them where more favourable (article 1.3), and its regulation as a supplement or where more favourable (Real Decreto 1155/2024, article único 2). Real Decreto 240/2007 covers citizens of other EU and EEA states (article 1) and of Switzerland (third additional provision). Article 2 of the law excludes accredited diplomats and consuls, members of missions to international bodies and some international officials, and their families on its terms.",
+      "laws": ["lo-4-2000", "rd-240-2007", "rd-1155-2024"]
+    },
+    {
+      "id": "family-of-eu-or-spanish-citizens",
+      "text": "A family member of an EU or EEA citizen who accompanies or joins them falls under Real Decreto 240/2007 article 2, whatever their nationality: the spouse, a registered partner, descendants of the citizen or of the spouse or partner who are under 21, dependent or incapacitated, and dependent ascendants. Since 2025-05-20, articles 93 and 94 of the regulation give non-EU family members of Spanish nationals their own permit, covering for example children under 26 and children of a parent who is or was Spanish by origin. Such a family member may have a basis for residence under those rules instead.",
+      "laws": ["rd-240-2007", "rd-1155-2024"]
+    },
+    {
+      "id": "annulled-words-still-printed",
+      "text": "These BOE consolidated texts keep annulled words in place. In Real Decreto 240/2007 article 2, the judgment of 2010-06-01 annulled the words otro Estado miembro in the opening sentence, the words separación legal, and the clause on 2 simultaneous registrations; they stay, highlighted, under a note. The judgment of 2026-07-08 annulled article 197.2 of Real Decreto 1155/2024 and parts of other articles; phrases it quoted are highlighted, while article 197.2 and the parts it only described, in articles 97.4, 98.1 and 101.1, stay unmarked under a note. Read the notes.",
+      "laws": ["rd-240-2007", "rd-1155-2024", "ts-868-2026"]
+    },
+    {
+      "id": "transitional-old-regulation",
+      "text": "Real Decreto 1155/2024 and its regulation apply from 2025-05-20 and repeal the former regulation of Real Decreto 557/2011. Applications filed before that date are decided under the rules in force when they were filed, unless the applicant asks for the new regulation and meets its requirements (second transitional provision), and permits valid on that date keep their validity (first transitional provision).",
+      "laws": ["rd-1155-2024"]
+    },
+    {
+      "id": "other-requirements",
+      "text": "Article 61.2 also requires health insurance, no pending no-return pledge from a voluntary return, no threat to public order, security or health, and the fee. Article 38 adds not being irregularly in Spain, a passport valid for at least 1 year, a medical certificate and, for an applicant of criminal majority age, no record of offences under Spanish law in countries of residence in the last 5 years. The visa is sought at the competent consulate (article 63.1); silence for 1 month from receipt of the consulate's notice is refusal (article 63.4).",
+      "laws": ["rd-1155-2024"]
+    },
+    {
+      "id": "renewal-conditions",
+      "text": "A renewal is filed with the foreigners office in the 2 months before expiry, or up to 3 months after it, without prejudice to a sanction procedure (article 64.1). It needs means for the renewal period, health insurance kept throughout, schooling of minors of compulsory school age, the fee, and real and effective residence in Spain for more than 183 days in the calendar year (article 64.2). With no answer within 3 months it is granted (article 64.8). Article 197.2 b), which made these renewals electronic only, was annulled.",
+      "laws": ["rd-1155-2024", "ts-868-2026"]
+    },
+    {
+      "id": "no-work-allowed",
+      "text": "The permit allows residence without work or professional activity (article 61.1; Ley Orgánica 4/2000 article 31.2 gives a temporary residence without work to those with sufficient means). A holder may apply in Spain, without a visa, for a residence and work permit if they meet its requirements (article 191.1). With at least 1 year of residence, article 191.4 waives the national employment situation test of article 74.1 a); the new 1-year permit takes effect only once the worker is registered with Social Security, within 1 month of notice of the grant.",
+      "laws": ["rd-1155-2024", "lo-4-2000"]
+    },
+    {
+      "id": "consolidated-text-informative",
+      "text": "Each BOE consolidated text says it is informative and has no legal value, and that for legal purposes the official publication must be consulted. A changed article carries a note naming the instrument, and its versions can be selected. When read, the consolidated Real Decreto 1155/2024 was last updated 2026-09-22, after Real Decreto 316/2026 and the judgment of 2026-07-08, with no change to articles 38, 39 or 61 to 64.",
+      "laws": ["rd-1155-2024", "rd-316-2026", "ts-868-2026", "lo-4-2000", "ley-31-2022"]
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "es",
+      "number": 1
+    }
+  ]
+}

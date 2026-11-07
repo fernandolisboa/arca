@@ -1,0 +1,181 @@
+{
+  "schemaVersion": 1,
+  "id": "is",
+  "number": 1,
+  "title": "Icelandic law on foreign nationals, visas and the official gazette",
+  "laws": [
+    {
+      "id": "visa-act-37-2026",
+      "title": "Lög um vegabréfsáritanir nr. 37/2026 (Visa Act No. 37/2026), published 2026-05-11: visas, transition and art. 23 amending the Foreign Nationals Act",
+      "url": "https://adverts.stjornartidindi.is/A_nr_37_2026.pdf",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended only by Acts of the Althingi, published in the A department of the gazette Stjórnartíðindi; a gazette search found no amending act when read. Art. 20 leaves the details to regulations by the minister; until those are issued, visa regulations made under the Foreign Nationals Act stay in force as far as they do not conflict with the act (art. 22). Its art. 23 amended other acts on entry into force, among them Act No. 80/2016 and the fee act No. 88/1991."
+    },
+    {
+      "id": "reg-725-2026",
+      "title": "Reglugerð nr. 725/2026 (Regulation No. 725/2026), published 2026-06-26: chapter II of Regulation No. 540/2017 rewritten as the short-term residence permit",
+      "url": "https://adverts.stjornartidindi.is/B_nr_725_2026.pdf",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A one-off amending regulation of the Ministry of Justice, made under art. 21 of Act No. 80/2016 and published in the B department of the gazette. Chapter II changes again only by a later regulation amending Regulation No. 540/2017, issued ad hoc."
+    },
+    {
+      "id": "reg-1048-2020",
+      "title": "Reglugerð nr. 1048/2020 (Regulation No. 1048/2020), published 2020-10-28: the former art. 5 a of Regulation No. 540/2017, the long-term visa for remote work",
+      "url": "https://adverts.stjornartidindi.is/B_nr_1048_2020.pdf",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A one-off amending regulation of the Ministry of Justice, made under art. 21(4) of Act No. 80/2016 as then worded. When read, the consolidated art. 5 a in the regulation collection matched its text word for word; Regulation No. 725/2026 removed it by rewriting the whole of chapter II."
+    },
+    {
+      "id": "reg-540-2017",
+      "title": "Reglugerð um útlendinga nr. 540/2017 (Regulation on Foreign Nationals No. 540/2017), consolidated text and amendment history in the regulation collection",
+      "url": "https://island.is/reglugerdir/nr/0540-2017",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended ad hoc by amending regulations of the responsible ministry, published in the B department of the gazette: most by the Ministry of Justice, but No. 1137/2025 came from the Ministry of Social Affairs and Housing. The collection merges amendments into its consolidated text with a delay and lists unmerged ones as pending; when read its last merged amendment was No. 649/2025 and No. 1137/2025, 669/2026, 724/2026 and 725/2026 were pending."
+    },
+    {
+      "id": "foreign-nationals-act-80-2016",
+      "title": "Lög um útlendinga nr. 80/2016 (Foreign Nationals Act No. 80/2016), original text as published 2016-06-30",
+      "url": "https://adverts.stjornartidindi.is/A_nr_80_2016.pdf",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by Acts of the Althingi in the A department of the gazette, often several a year (in 2026 Acts No. 12/2026, 37/2026, 49/2026 and 79/2026). This file is the 2016 original with no amendments, so each amending act must be read for the current wording. The consolidated text is the law collection (Lagasafn); where it differs from the text published in the A department, the gazette text prevails."
+    },
+    {
+      "id": "act-56-2023",
+      "title": "Lög nr. 56/2023 (Act No. 56/2023) amending the Foreign Nationals Act on residence permits, including arts. 69, 70 and 71, published 2023-07-06",
+      "url": "https://adverts.stjornartidindi.is/A_nr_56_2023.pdf",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A one-off amending act; it took effect at once and its changes now live in the text of Act No. 80/2016, where later acts may change them again."
+    },
+    {
+      "id": "act-68-2024",
+      "title": "Lög nr. 68/2024 (Act No. 68/2024) amending the Foreign Nationals Act on international protection, including arts. 69 and 70, published 2024-07-03",
+      "url": "https://adverts.stjornartidindi.is/A_nr_68_2024.pdf",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A one-off amending act. It took effect at once, but under its art. 14 arts. 1 and 2 applied only 6 months later, and arts. 5 to 7, including the change to art. 69, do not govern applications received before it took effect. Its changes now live in the text of Act No. 80/2016, where later acts may change them again."
+    },
+    {
+      "id": "act-79-2026",
+      "title": "Lög nr. 79/2026 (Act No. 79/2026) amending the Foreign Nationals Act and the Right to Work Act No. 97/2002, including art. 69(1), published 2026-07-07",
+      "url": "https://adverts.stjornartidindi.is/A_nr_79_2026.pdf",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A one-off amending act; it took effect at once, moved temporary work permits from Vinnumálastofnun to Útlendingastofnun, and its changes now live in the texts of Acts No. 80/2016 and 97/2002."
+    },
+    {
+      "id": "gazette-act-15-2005",
+      "title": "Lög um Stjórnartíðindi og Lögbirtingablað nr. 15/2005 (Act No. 15/2005 on the official gazette), art. 8: legal effect of publication",
+      "url": "https://adverts.stjornartidindi.is/A_nr_15_2005.pdf",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended only by Acts of the Althingi; Act No. 38/2012 added the article on the law collection after art. 8, and its title already calls the act amended. This file is the 2005 original; a gazette search found no act changing art. 8 when read, but the search is fuzzy."
+    },
+    {
+      "id": "act-38-2012",
+      "title": "Lög nr. 38/2012 (Act No. 38/2012) adding the law collection article to Act No. 15/2005: the gazette text prevails over the law collection",
+      "url": "https://adverts.stjornartidindi.is/A_nr_38_2012.pdf",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A one-off amending act, published 2012-05-25, which took effect at once; its rule now lives in Act No. 15/2005 as the article after art. 8."
+    }
+  ],
+  "pitfalls": [
+    {
+      "id": "remote-work-visa-abolished",
+      "text": "Iceland no longer has a remote-work visa. Act No. 37/2026 repealed art. 20 of Act No. 80/2016 and turned art. 21, the long-term visa that art. 5 a of Regulation No. 540/2017 was a kind of, into a short-term residence permit. Regulation No. 725/2026 rewrote chapter II, where art. 5 a sat, with only 2 grounds, and remote work is not one. No text read keeps a remote-work visa open or makes remote work a ground for the new permit.",
+      "laws": ["visa-act-37-2026", "reg-725-2026", "reg-1048-2020", "reg-540-2017"]
+    },
+    {
+      "id": "closure-date",
+      "text": "Act No. 37/2026 was published 2026-05-11 and Regulation No. 725/2026 on 2026-06-26, and each says it takes effect at once. Art. 8 of Act No. 15/2005 bars applying a rule before gazette publication and binds everyone from the day after the publication date unless the rule contains another decision on its entry into force. The texts do not say whether at once is such a decision. The regulation collection follows the day after, dating No. 725/2026 at 2026-06-27 and No. 1048/2020, published 2020-10-28, at 2020-10-29.",
+      "laws": ["gazette-act-15-2005", "visa-act-37-2026", "reg-725-2026", "reg-540-2017"]
+    },
+    {
+      "id": "gap-before-regulation",
+      "text": "From the act's entry into force, 2026-05-12 on the day-after reading, to 2026-06-26, art. 5 a still stood in the regulation. Art. 22 of Act No. 37/2026 keeps visa regulations made under the Foreign Nationals Act in force, until new ones are issued, only as far as they do not conflict with it, and the act defines a visa as a stay of up to 90 days in a 180-day period. Whether a 180-day remote-work visa survived those weeks is a reading the texts do not settle.",
+      "laws": ["visa-act-37-2026", "reg-1048-2020"]
+    },
+    {
+      "id": "granted-and-pending",
+      "text": "Art. 22 of Act No. 37/2026 keeps decisions taken under the repealed provisions valid, naming grants of long-term visas, so a remote-work visa granted before the act took effect stayed valid. Its transitional provision applies the new act to visa applications received before entry into force and not yet decided; it has no separate rule keeping the old provisions for pending long-term visa applications.",
+      "laws": ["visa-act-37-2026"]
+    },
+    {
+      "id": "header-date-not-publication",
+      "text": "In these gazette PDFs the date printed beside the number at the top is the date of signature or confirmation, not publication: Act No. 37/2026 is headed 2026-05-04 and Regulation No. 725/2026 is headed 2026-06-11, but their publication dates, printed at the foot after Útgáfudagur, are 2026-05-11 and 2026-06-26. Count effect from the publication date.",
+      "laws": ["visa-act-37-2026", "reg-725-2026", "gazette-act-15-2005"]
+    },
+    {
+      "id": "consolidated-texts-lag",
+      "text": "When read, the regulation collection still printed art. 5 a and the old chapter II, and listed No. 725/2026 as pending, along with amendments as old as No. 1137/2025, published 2025-11-04. A rule binds by gazette publication, not by the collection, so read every pending amendment in the gazette. For acts, the law collection (Lagasafn) yields to the text in the A department of the gazette where they differ.",
+      "laws": ["reg-540-2017", "reg-725-2026", "gazette-act-15-2005", "act-38-2012"]
+    },
+    {
+      "id": "successor-permit-is-not-remote-work",
+      "text": "The short-term residence permit in the new art. 21 lasts at most 180 days, once in 12 months, for a stay over 90 days whose purpose fits no residence permit category and with no intent to settle. It grounds neither a permanent residence permit nor a legal domicile, may be revoked for working on the Icelandic labour market without authorisation, and is refused when the stay calls for a permit on another ground. The application fee is ISK 12,200.",
+      "laws": ["visa-act-37-2026", "reg-725-2026"]
+    },
+    {
+      "id": "grounds-now-closed-list",
+      "text": "The old art. 5 of Regulation No. 540/2017 allowed a long-term visa among others in the cases it listed, so the list was open. The new art. 5 from Regulation No. 725/2026 allows the short-term permit in the following cases with no such words, only close family on a longer visit and artists, scientists or athletes whose stay needs no work permit. Do not read other purposes into it.",
+      "laws": ["reg-725-2026", "reg-540-2017"]
+    },
+    {
+      "id": "family-definitions-differ",
+      "text": "Close family for the short-term permit means a married spouse, parent, child and sibling; the list sets no age limit and names no cohabiting partner, though the new art. 4 wants an applicant aged 18 or a minor joining a parent's or guardian's application. The old family-visit ground pointed instead to art. 69(1) of Act No. 80/2016: spouse, cohabiting partner, children under 18 in the person's custody and support, and parents 67 or older, the list the Visa Act also uses to define a relative. Check which definition a rule uses.",
+      "laws": ["reg-725-2026", "reg-540-2017", "visa-act-37-2026", "foreign-nationals-act-80-2016"]
+    },
+    {
+      "id": "income-threshold",
+      "text": "The former art. 5 a required, besides the general conditions, foreign income corresponding to ISK 1,000,000 a month for the remote worker. A spouse's visa required proof that the remote worker, not the spouse, had foreign income corresponding to ISK 1,300,000 a month, so the figure is the worker's own income, not an amount on top of ISK 1,000,000. The child rule set no amount, only proof of schooling. The text says neither gross nor net, and the amounts sat fixed in the regulation with no index.",
+      "laws": ["reg-1048-2020"]
+    },
+    {
+      "id": "visa-exempt-and-length",
+      "text": "Art. 5 a was open only to foreigners exempt from the visa requirement, and the spouse and each child had to be visa-exempt too. It gave the remote worker up to 180 days when applied for before arrival and up to 90 days when the applicant was already in Iceland, and art. 3 allowed a long-term visa only once in each 12-month period.",
+      "laws": ["reg-1048-2020", "reg-540-2017"]
+    },
+    {
+      "id": "remote-work-meaning",
+      "text": "Remote work meant work done by information technology in Iceland that could also be done at a workplace abroad. The holder could not work for Icelandic parties or otherwise on the Icelandic labour market. A worker for a foreign employer had to show the employer's confirmation that the worker was allowed to do the job in Iceland, and a self-employed person had to show self-employment in the country of permanent residence or usual work.",
+      "laws": ["reg-1048-2020"]
+    },
+    {
+      "id": "spouse-definition",
+      "text": "Art. 5 a took who counts as a spouse from art. 69, cf. art. 70, of Act No. 80/2016. Art. 70(1) asks for a marriage or a cohabitation that has lasted more than 1 year, each party older than 18 when it began, registrable under the legal domicile act; art. 70(2) allows less than 1 year for special reasons and names both, but para 1 does not say plainly whether the year binds a marriage. A marriage or cohabitation suspected on reasoned grounds of aiming at a permit gives no right unless the contrary is shown beyond doubt. Which of these define a spouse for art. 5 a is not stated.",
+      "laws": ["reg-1048-2020", "foreign-nationals-act-80-2016", "act-56-2023", "act-68-2024"]
+    },
+    {
+      "id": "child-definition-and-age",
+      "text": "A child had to be under 18, with a parent staying under art. 5 a(1) or (2), so a child of the accompanying spouse qualified too. Art. 5 a took who is a child from art. 69, cf. art. 71: art. 69(1) counts children under 18 in the person's custody and support, and art. 71 wants custody by that parent, consent of both custodial parents where there are two unless special circumstances allow otherwise, and a completed adoption lawful under Icelandic law. Act No. 56/2023 lets an art. 71 permit go to someone who reached 18 after applying, but art. 5 a set its own limit of under 18.",
+      "laws": ["reg-1048-2020", "foreign-nationals-act-80-2016", "act-56-2023"]
+    },
+    {
+      "id": "no-family-reunification",
+      "text": "A remote-work visa holder could not sponsor family reunification permits: art. 69(1) lists the permits whose holders' family may get one, and art. 21 is not among them in the 2016 text or as amended by Acts No. 56/2023, 68/2024 and 79/2026. Art. 5 a gave the family its own visas instead, and a stay under art. 21 could not ground a permanent residence permit.",
+      "laws": [
+        "foreign-nationals-act-80-2016",
+        "act-56-2023",
+        "act-68-2024",
+        "act-79-2026",
+        "reg-1048-2020"
+      ]
+    },
+    {
+      "id": "who-the-rules-do-not-cover",
+      "text": "EEA and EFTA nationals fall under the special rules of chapter XI of Act No. 80/2016, Nordic citizens may stay in Iceland without a residence permit, and the Visa Act exempts Nordic citizens and citizens of other Schengen states from the visa requirement.",
+      "laws": ["foreign-nationals-act-80-2016", "visa-act-37-2026"]
+    },
+    {
+      "id": "regulation-drafting-slips",
+      "text": "Regulation No. 725/2026 letters its new articles a, b, c, c and e, so cite them by article number, 3 to 7. It names paragraph 6 of art. 21 of Act No. 80/2016 as its authority, while art. 21 as worded by Act No. 37/2026 has 5 paragraphs, the last giving the minister the power to regulate; none of the amending acts read adds a sixth.",
+      "laws": ["reg-725-2026", "visa-act-37-2026", "act-79-2026"]
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "is",
+      "number": 1
+    }
+  ]
+}
