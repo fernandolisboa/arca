@@ -17,6 +17,7 @@ import {
   type BuiltComparison,
   type BuiltEntry,
   type BuiltGuide,
+  type BuiltOfficialDomains,
   type PinnedCountries,
   type ValidationOptions,
   validateData,
@@ -33,6 +34,7 @@ export interface CatalogParts {
   readonly entries: readonly BuiltEntry[];
   readonly comparisons: readonly BuiltComparison[];
   readonly guides: readonly BuiltGuide[];
+  readonly officialDomains: readonly BuiltOfficialDomains[];
   readonly countries: PinnedCountries;
   readonly cases: readonly BuiltCases[];
 }
@@ -88,6 +90,7 @@ export async function buildKnowledge(
     entries: validated.entries,
     comparisons: validated.comparisons,
     guides: validated.guides,
+    officialDomains: validated.officialDomains,
     countries: validated.countries,
     cases: await caseSummaries(dataDir, raw, validated.hashes),
     issues: [...validated.issues, ...checkHashes(raw.hashes, validated.hashes, validated.hashable)],
@@ -121,6 +124,7 @@ export function catalogModule({
   cases = [],
   comparisons = [],
   guides = [],
+  officialDomains = [],
 }: Pick<CatalogParts, 'entries'> & Partial<CatalogParts>): string {
   const exportedJson = (name: string, value: unknown): string =>
     `export const ${name}: unknown = JSON.parse(${JSON.stringify(JSON.stringify(value))});`;
@@ -132,6 +136,7 @@ export function catalogModule({
     exportedJson('hostData', sourceHosts(entries, comparisons)),
     exportedJson('comparisonData', comparisons),
     exportedJson('guideData', guides),
+    exportedJson('officialDomainData', officialDomains),
     '',
   ].join('\n');
 }

@@ -168,6 +168,14 @@ export function readScriptedRuleSummary(): boolean {
 }
 
 /**
+ * Whether a local server's independent check reads no page at all (ADR-0027), which the end-to-end
+ * build turns on with `ARCA_RULE_CHECK_FETCH=offline`; only development honours it.
+ */
+export function readOfflineRuleCheck(): boolean {
+  return process.env['ARCA_RULE_CHECK_FETCH'] === 'offline';
+}
+
+/**
  * The environment's private Vercel Blob store, as the project connects it: production with the
  * `BLOB` prefix, previews with `BLOB_PREVIEW` (spec 0005, R3). Undefined until it is connected.
  */

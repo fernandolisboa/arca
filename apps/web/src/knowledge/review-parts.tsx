@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { type ReactNode, useId } from 'react';
 import type { KnowledgeWords } from './words.js';
 
 /** The surface of one item under review, and the card that lays one out. */
@@ -60,24 +60,31 @@ export function ChangeList({
   );
 }
 
-/** The independent-check note and the content hash, read before deciding. */
+/**
+ * The independent check and the content hash, read before deciding: a route version's report, or,
+ * for a comparison, which the check never reads, a note saying so.
+ */
 export function CheckAndHash({
   hash,
+  check,
   words,
 }: {
   readonly hash: string;
+  readonly check?: ReactNode;
   readonly words: KnowledgeWords;
 }) {
   const { t } = words;
   const checkId = useId();
   return (
     <>
-      <section aria-labelledby={checkId} className={card}>
-        <h5 id={checkId} className="font-medium">
-          {t('knowledge.check.title')}
-        </h5>
-        <p>{t('knowledge.check.body')}</p>
-      </section>
+      {check ?? (
+        <section aria-labelledby={checkId} className={card}>
+          <h5 id={checkId} className="font-medium">
+            {t('knowledge.check.title')}
+          </h5>
+          <p>{t('knowledge.check.comparisonNote')}</p>
+        </section>
+      )}
       <div className="flex flex-col gap-1">
         <p className="text-small text-muted">{t('knowledge.hash')}</p>
         <p className="font-mono text-small break-all">{hash}</p>

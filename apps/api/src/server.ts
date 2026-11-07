@@ -1,5 +1,11 @@
 import { createI18n, type I18n } from '@arca/i18n';
-import { comparisonCatalog, pinnedCountries, routeCatalog, routeIds } from '@arca/knowledge';
+import {
+  comparisonCatalog,
+  countryGuide,
+  pinnedCountries,
+  routeCatalog,
+  routeIds,
+} from '@arca/knowledge';
 import { useRuntimeConfig } from 'nitro/runtime-config';
 import { createDataExports } from './account/data-export.js';
 import { createAccountDeletion, type AccountDeletion } from './account/deletion.js';
@@ -33,7 +39,11 @@ import { createRuleSummaries } from './knowledge/summaries.js';
 import { summarizerFor } from './knowledge/summary/environment.js';
 import { ruleSummaryPromptVersion } from './knowledge/summary/prompt.js';
 import { postgresSummaryStore } from './knowledge/summary/store.js';
-import { createKnowledgeVersions } from './knowledge/versions.js';
+import { createCheckSubjects, createKnowledgeVersions } from './knowledge/versions.js';
+import { createVersionChecks } from './knowledge/checks.js';
+import { ruleCheckerFor } from './knowledge/check/environment.js';
+import { postgresCheckStarts } from './knowledge/check/starts.js';
+import { postgresCheckReportStore } from './knowledge/check/store.js';
 import {
   databaseTargetFrom,
   readAnthropicApiKey,
@@ -66,6 +76,7 @@ import { monitorRequests, sendToSentry, startMonitoring, tunnelFor } from './mon
 import { enforceRetention } from './workflows/enforce-retention.js';
 import { eraseAccount } from './workflows/erase-account.js';
 import { heartbeat } from './workflows/heartbeat.js';
+import { startCheck } from './workflows/start-check.js';
 import { startDelivery } from './workflows/start-delivery.js';
 import { startWorkflow } from './workflows/start-workflow.js';
 import { entityId } from './workflows/workflow-arguments.js';
@@ -283,6 +294,21 @@ const knowledgeVersions = createKnowledgeVersions({
   states: () => knowledgeDecisions().states(),
   today: () => todayInSaoPaulo(),
 });
+const ruleChecker = ruleCheckerFor(environment);
+const versionChecks =
+  ruleChecker === undefined
+    ? undefined
+    : createVersionChecks({
+        versions: knowledgeVersions,
+        subject: createCheckSubjects(),
+        guide: countryGuide,
+        checker: ruleChecker,
+        reports: postgresCheckReportStore(() => connected().db),
+        starts: postgresCheckStarts(() => connected().db),
+        run: startCheck,
+        logger,
+        now: () => Date.now(),
+      });
 const summarizer = summarizerFor(environment, readAnthropicApiKey(), readScriptedRuleSummary());
 const ruleSummaries =
   summarizer === undefined
@@ -462,6 +488,7 @@ const app = createApp({
   ...(intake === undefined ? {} : { intake }),
   ruleReports: createRuleReportReview(() => connected().db),
   knowledgeVersions,
+  ...(versionChecks === undefined ? {} : { versionChecks }),
   ...(ruleSummaries === undefined ? {} : { ruleSummaries }),
   accountConfirmed: (accountId) => accounts.isConfirmed(authConnection(), accountId),
   notifications: {

@@ -1,8 +1,11 @@
 import { sql } from 'drizzle-orm';
 import {
+  boolean,
   bytea,
   check,
+  index,
   integer,
+  jsonb,
   pgPolicy,
   primaryKey,
   pgSchema,
@@ -142,5 +145,105 @@ export const ruleSummary = knowledge.table(
     ),
     pgPolicy('rule_summary_read', { for: 'select', to: 'app_api', using: sql`true` }),
     pgPolicy('rule_summary_insert', { for: 'insert', to: 'app_api', withCheck: sql`true` }),
+  ],
+);
+
+const routeIdFormat = (column: unknown) => sql`${column} ~ '^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$'`;
+const slugFormat = (column: unknown) => sql`${column} ~ '^[a-z0-9][a-z0-9.-]{0,63}$'`;
+
+/**
+ * Starts of the independent check (ADR-0027): one row each time the activation screen starts a
+ * check of a route version, so concurrent screens neither pass 20 starts in any 24 hours per
+ * environment nor start one version twice. Public rule identities only, with no account. `app_api`
+ * reads and inserts them under an environment-wide advisory lock; the database sets the time;
+ * nobody updates or deletes. Kept, as the record of what the checks cost.
+ */
+export const checkStart = knowledge.table(
+  'check_start',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    routeId: text('route_id').notNull(),
+    versionNumber: integer('version_number').notNull(),
+    startedAt: timestamp('started_at', { withTimezone: true })
+      .notNull()
+      .default(sql`clock_timestamp()`),
+  },
+  (table) => [
+    check('check_start_route_id_format', routeIdFormat(table.routeId)),
+    check('check_start_version_number_positive', sql`${table.versionNumber} > 0`),
+    index('check_start_started_at_idx').on(table.startedAt),
+    pgPolicy('check_start_read', { for: 'select', to: 'app_api', using: sql`true` }),
+    pgPolicy('check_start_insert', { for: 'insert', to: 'app_api', withCheck: sql`true` }),
+  ],
+);
+
+/**
+ * Reports of the independent check (ADR-0027), one per start: what code concluded about each item
+ * of a route version from a model's answer and the official pages it cites, with the fetch log.
+ * Public rule data with no account, so every admin reads the same one. `app_jobs` inserts them from
+ * the check's workflow step; `app_api` and `app_auth` read them; nobody updates or deletes, so a
+ * later check writes a new row. `clean` is computed in code and the database refuses a row where it
+ * disagrees with the items: a scripted report, an empty one or one with an item that does not match
+ * is never clean.
+ */
+export const independentCheck = knowledge.table(
+  'independent_check',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    startId: uuid('start_id').notNull(),
+    routeId: text('route_id').notNull(),
+    versionNumber: integer('version_number').notNull(),
+    contentHash: text('content_hash').notNull(),
+    /** The country guide's content hash, or `none`. */
+    guideHash: text('guide_hash').notNull(),
+    promptVersion: text('prompt_version').notNull(),
+    model: text('model').notNull(),
+    checkedAt: timestamp('checked_at', { withTimezone: true })
+      .notNull()
+      .default(sql`clock_timestamp()`),
+    items: jsonb('items').notNull(),
+    fetchLog: jsonb('fetch_log').notNull(),
+    /** A fixed code when the model call failed; fetch failures are in the fetch log. */
+    failure: text('failure'),
+    failed: boolean('failed').notNull(),
+    clean: boolean('clean').notNull(),
+  },
+  (table) => [
+    unique('independent_check_start_id_key').on(table.startId),
+    index('independent_check_version_idx').on(table.routeId, table.versionNumber),
+    check('independent_check_route_id_format', routeIdFormat(table.routeId)),
+    check('independent_check_version_number_positive', sql`${table.versionNumber} > 0`),
+    check('independent_check_content_hash_format', sql`${table.contentHash} ~ '^[0-9a-f]{64}$'`),
+    check(
+      'independent_check_guide_hash_format',
+      sql`${table.guideHash} = 'none' OR ${table.guideHash} ~ '^[0-9a-f]{64}$'`,
+    ),
+    check('independent_check_prompt_version_format', slugFormat(table.promptVersion)),
+    check('independent_check_model_format', slugFormat(table.model)),
+    check(
+      'independent_check_failure_format',
+      sql`${table.failure} IS NULL OR ${table.failure} ~ '^[a-z][a-z_]{0,39}$'`,
+    ),
+    check(
+      'independent_check_items_array',
+      sql`jsonb_typeof(${table.items}) = 'array' AND jsonb_array_length(${table.items}) <= 200`,
+    ),
+    check(
+      'independent_check_fetch_log_array',
+      sql`jsonb_typeof(${table.fetchLog}) = 'array' AND jsonb_array_length(${table.fetchLog}) <= 200`,
+    ),
+    // 'fake' is `scriptedCheckerModel` in @arca/domain, which a table check cannot import.
+    check(
+      'independent_check_clean',
+      sql`${table.clean} = (${table.model} <> 'fake'
+        AND jsonb_array_length(${table.items}) > 0
+        AND NOT jsonb_path_exists(${table.items}, '$[*] ? (!exists(@.status ? (@ == "matches")))'))`,
+    ),
+    pgPolicy('independent_check_read', {
+      for: 'select',
+      to: ['app_api', 'app_auth', 'app_jobs'],
+      using: sql`true`,
+    }),
+    pgPolicy('independent_check_insert', { for: 'insert', to: 'app_jobs', withCheck: sql`true` }),
   ],
 );

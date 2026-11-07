@@ -119,6 +119,7 @@ catalog:
   libpg-query: 18.2.1
   lucide-react: 1.62.0
   nitro: 3.0.260903-beta
+  parse5: 8.0.1
   pg: 8.23.1
   prettier: 3.9.10
   react-dom: 19.3.1
