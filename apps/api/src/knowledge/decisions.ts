@@ -25,12 +25,7 @@ import type { AuditLog } from '../audit/log.js';
 import type { SignedIn } from '../auth/service.js';
 import { subjectHash, type CanonicalAction } from '../auth/step-up-encoding.js';
 import { reverifyStepUp, type StoredAssertion } from '../auth/step-up-reverify.js';
-import {
-  type AdminHistory,
-  type AdminRole,
-  epochMicros,
-  readAdminHistory,
-} from './admins.js';
+import { type AdminHistory, type AdminRole, epochMicros, readAdminHistory } from './admins.js';
 import { closeRuleReports } from './reports.js';
 
 export type DecisionOutcome =

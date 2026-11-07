@@ -251,9 +251,9 @@ describe('knowledge decisions by a signed-in admin (spec 0007, R7; ADR-0027)', (
   });
 
   it('refuses a version the catalog does not hold', async () => {
-    expect(
-      await decisions().decide(admin.signedIn, 'activate', { ...request, number: 2 }),
-    ).toEqual({ refused: 'not_found' });
+    expect(await decisions().decide(admin.signedIn, 'activate', { ...request, number: 2 })).toEqual(
+      { refused: 'not_found' },
+    );
     expect(await rows()).toEqual([]);
   });
 
@@ -292,9 +292,7 @@ describe('decisions stored under ADR-0022', () => {
       await client.query('DELETE FROM auth.step_up WHERE account_id = $1', [
         admin.signedIn.accountId,
       ]);
-      await client.query('DELETE FROM auth.passkey WHERE user_id = $1', [
-        admin.signedIn.accountId,
-      ]);
+      await client.query('DELETE FROM auth.passkey WHERE user_id = $1', [admin.signedIn.accountId]);
     });
     expect(await decisions().states()).toEqual(new Map([[identityKey, 'active']]));
     expect(errors).toEqual([]);
