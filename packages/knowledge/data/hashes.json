@@ -134,6 +134,10 @@
     {
       "path": "comparisons/destinations/1",
       "sha256": "5fd25e1b0a606f22342ce9c4beb9bd139955275c4dd95313ddf7c0ebb5634635"
+    },
+    {
+      "path": "guides/us/1",
+      "sha256": "9dd03ec5b30ec2afb7fba6e8e8e03b19dd61e30b72bfeebffa9ad226a8d45d6a"
     }
   ]
 }
