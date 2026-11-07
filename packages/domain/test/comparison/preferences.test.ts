@@ -17,6 +17,9 @@ function ids(...values: string[]) {
   };
 }
 
+/** The countries the comparison scores, as the API derives them from the route catalog. */
+const compared = ['QM', 'QN'];
+
 const request = (overrides: Partial<ComparisonPreferencesRequest> = {}) => ({
   ...preferences(),
   ...overrides,
@@ -32,6 +35,7 @@ describe('writing comparison preferences (ADR-0026)', () => {
         weights: { 'own-00000001': 5, climate: 2 },
       }),
       ids('own-00000002'),
+      compared,
     );
     expect(next).toEqual({
       ...stored,
@@ -52,6 +56,7 @@ describe('writing comparison preferences (ADR-0026)', () => {
         weights: { 'own-00000002': 4 },
       }),
       ids('own-00000001', 'own-00000002', 'own-00000003'),
+      compared,
     );
     expect(next?.ownCriteria.map(({ id }) => id)).toEqual(['own-00000001', 'own-00000003']);
     expect(next?.weights).toEqual({});
@@ -66,10 +71,16 @@ describe('writing comparison preferences (ADR-0026)', () => {
         ratings: { 'own-00000001': { QM: 4 }, climate: { QM: 2 } },
       }),
       ids(),
+      compared,
     );
     expect(next).toEqual(
       preferences({ weights: { 'gone-criterion': 1 }, ratings: { climate: { QM: 2 } } }),
     );
+  });
+
+  it('drops a hidden country the comparison no longer has, and keeps the others', () => {
+    const next = nextPreferences(preferences(), request({ hidden: ['QN', 'QZ'] }), ids(), compared);
+    expect(next?.hidden).toEqual(['QN']);
   });
 
   it('refuses an own criterion ID the person does not have', () => {
@@ -78,6 +89,7 @@ describe('writing comparison preferences (ADR-0026)', () => {
         preferences(),
         request({ ownCriteria: [{ id: 'own-0000beef', name: 'Praia' }] }),
         ids(),
+        compared,
       ),
     ).toBeUndefined();
   });

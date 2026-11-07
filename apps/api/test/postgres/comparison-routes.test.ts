@@ -206,10 +206,12 @@ describe('the destination comparison (ADR-0026, #315)', () => {
       weights: { safety: 5, climate: 0 },
       ratings: { climate: { PT: 5 } },
       ownCriteria: [{ name: 'Perto da praia' }],
-      hidden: ['US'],
+      // QZ has no route, so the screen could never show it again: it is not kept.
+      hidden: ['US', 'QZ'],
     });
     expect(response.status).toBe(200);
     const written = (await response.json()) as DestinationComparison;
+    expect(written.preferences.hidden).toEqual(['US']);
     const [own] = written.preferences.ownCriteria;
     expect(own?.id).toMatch(/^own-[0-9a-f]{8}$/);
     expect(written.criteria.at(-1)).toEqual({

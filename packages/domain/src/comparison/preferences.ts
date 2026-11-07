@@ -15,13 +15,16 @@ function keptKeys<T>(record: Readonly<Record<string, T>>, own: ReadonlySet<strin
 
 /**
  * The preferences a write leaves (ADR-0026): a new own criterion gets an ID from `newId`, and the
- * weights and ratings of an own criterion the request drops go with it. Undefined when the request
- * names an own criterion the person does not have, so a client never picks an ID itself.
+ * weights and ratings of an own criterion the request drops go with it. A hidden country that is
+ * no longer among `countries`, the ones the comparison scores, goes too, since the screen cannot
+ * show it again. Undefined when the request names an own criterion the person does not have, so a
+ * client never picks an ID itself.
  */
 export function nextPreferences(
   stored: ComparisonPreferences,
   request: ComparisonPreferencesRequest,
   newId: () => string,
+  countries: readonly string[],
 ): ComparisonPreferences | undefined {
   const known = new Set(stored.ownCriteria.map(({ id }) => id));
   if (request.ownCriteria.some(({ id }) => id !== undefined && !known.has(id))) return undefined;
@@ -38,11 +41,12 @@ export function nextPreferences(
     return { id: fresh, name };
   });
   const own = new Set(ownCriteria.map(({ id }) => id));
+  const compared = new Set(countries);
   const parsed = comparisonPreferencesSchema.safeParse({
     weights: keptKeys(request.weights, own),
     ratings: keptKeys(request.ratings, own),
     ownCriteria,
-    hidden: request.hidden,
+    hidden: request.hidden.filter((country) => compared.has(country)),
   });
   return parsed.success ? parsed.data : undefined;
 }

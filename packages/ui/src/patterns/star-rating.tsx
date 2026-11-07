@@ -2,8 +2,10 @@ import { useId } from 'react';
 import { Icon } from '../icon.js';
 
 export interface StarRatingProps {
-  /** What is rated, for screen readers, such as "Clima em Portugal". */
+  /** What is rated, for screen readers, such as "Sua nota para Clima em Portugal". */
   readonly legend: string;
+  /** The short label shown beside the stars, such as "Sua nota"; the legend says it in full. */
+  readonly caption: string;
   /** From 1 to 5; undefined while not rated. */
   readonly value: number | undefined;
   readonly onChange: (value: number) => void;
@@ -22,6 +24,7 @@ const stars = [1, 2, 3, 4, 5] as const;
  */
 export function StarRating({
   legend,
+  caption,
   value,
   onChange,
   onClear,
@@ -32,6 +35,9 @@ export function StarRating({
   return (
     <fieldset className="flex flex-wrap items-center gap-x-2">
       <legend className="sr-only">{legend}</legend>
+      <span aria-hidden="true" className="text-small text-muted">
+        {caption}
+      </span>
       <div className="flex">
         {stars.map((star) => (
           <label
