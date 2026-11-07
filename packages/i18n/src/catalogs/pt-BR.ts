@@ -16,6 +16,8 @@ export const ptBR = {
     nav: {
       home: 'Início',
       family: 'Família',
+      vault: 'Cofre',
+      knowledge: 'Regras',
       settings: 'Configurações',
     },
   },
@@ -99,6 +101,7 @@ export const ptBR = {
       cleared: 'Estas opções voltaram ao padrão.',
       theme: {
         legend: 'Cores',
+        paper: 'Papel',
         notebook: 'Caderno',
         serene: 'Sereno',
         panel: 'Painel',
@@ -206,9 +209,7 @@ export const ptBR = {
     kitLink: 'Guardar o kit agora',
     unconfirmed:
       'Sua conta está aguardando a confirmação de quem convidou você. Até lá, você não consegue convidar ninguém nem enviar documentos.',
-    invites: 'Convidar alguém',
     devices: 'Dispositivos',
-    vault: 'Cofre',
     pendingPasskey:
       'Uma chave de acesso nova foi criada na sua conta. Ela passa a valer em {activeFrom}. Se não foi você, cancele agora.',
     pendingLink: 'Ver a chave nova',
@@ -218,6 +219,63 @@ export const ptBR = {
     recoveryPending:
       'Alguém pediu a recuperação da sua conta e criou uma chave de acesso nova. Quando ela passar a valer, este dispositivo é desconectado. Até lá, você só pode ver este aviso e cancelar a recuperação. Se não foi você, cancele agora.',
     recoveryLink: 'Cancelar a recuperação',
+  },
+  home: {
+    greeting: '{part, select, morning {Bom dia.} afternoon {Boa tarde.} other {Boa noite.}}',
+    greetingNamed:
+      '{part, select, morning {Bom dia, {name}.} afternoon {Boa tarde, {name}.} other {Boa noite, {name}.}}',
+    lead: {
+      family: 'Comece contando quem vai com você.',
+      questions: 'Responda às perguntas para ver as rotas que servem para a sua família.',
+      routes: 'As rotas da sua família já podem ser vistas.',
+    },
+    nextStep: 'Próximo passo',
+    next: {
+      family: {
+        title: 'Começar o caso',
+        body: 'Coloque as pessoas da família. Cada uma decide depois quem vê os dados dela.',
+        action: 'Começar',
+      },
+      questions: {
+        title: 'Responder às perguntas guiadas',
+        body: '{left, plural, =0 {Com as respostas, o Arca compara os destinos e mostra as rotas que servem para vocês.} one {Falta # pergunta. Com as respostas, o Arca compara os destinos e mostra as rotas que servem para vocês.} other {Faltam # perguntas. Com as respostas, o Arca compara os destinos e mostra as rotas que servem para vocês.}}',
+        action: 'Continuar',
+      },
+      routes: {
+        title: 'Ver as rotas que servem',
+        body: 'As perguntas estão respondidas. Veja quais rotas servem para cada pessoa e o que falta em cada uma.',
+        action: 'Ver as rotas',
+      },
+    },
+    stages: {
+      label: 'Etapas do caso',
+      family: 'Contar sobre a família',
+      questions: 'Perguntas guiadas',
+      routes: 'Ver as rotas que servem',
+      progress: '{answered} de {total}',
+      done: '(feita)',
+    },
+    shortcuts: 'Atalhos',
+    vault: {
+      title: 'Cofre',
+      body: 'Os documentos da família, protegidos no seu dispositivo antes do envio.',
+      open: 'Abrir o cofre',
+    },
+    family: {
+      title: 'Família',
+      people: '{count, plural, one {pessoa no caso} other {pessoas no caso}}',
+      accounts:
+        '{count, plural, =0 {Ninguém mais tem conta ainda.} one {Mais 1 pessoa já tem conta.} other {Mais # pessoas já têm conta.}} Convide quem vai junto para cada um cuidar dos próprios dados.',
+      empty: 'O caso ainda não começou.',
+      invite: 'Convidar alguém',
+    },
+    rules: {
+      title: 'Regras',
+      pending: '{count, plural, one {versão proposta} other {versões propostas}}',
+      body: 'Nenhuma regra muda sem a sua aprovação.',
+      open: 'Revisar',
+    },
+    signedOut: 'Entre com a sua chave de acesso para continuar.',
   },
   /** Creating the first account (spec 0003, R2): the owner's link request, then the passkey. */
   enroll: {

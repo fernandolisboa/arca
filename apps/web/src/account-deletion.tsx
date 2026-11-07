@@ -181,15 +181,15 @@ export function DeletionPendingNotice({ dueAt }: { readonly dueAt: string }) {
   return (
     <section
       aria-labelledby="deletion-pending-title"
-      className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-4"
+      className="flex flex-col items-start gap-3 rounded-card border border-line bg-warn-bg p-4 text-warn-ink"
     >
-      <p id="deletion-pending-title" className="text-warn-ink">
+      <p id="deletion-pending-title" className="font-medium">
         {t('session.deletionPending', { dueAt: when.format(new Date(dueAt)) })}
       </p>
       <Button disabled={waiting} aria-busy={waiting} onClick={cancel}>
         {t('session.deletionCancel')}
       </Button>
-      <p role="status" className="text-ink">
+      <p role="status">
         {waiting
           ? t('settings.accountDeletion.waiting')
           : failure === undefined

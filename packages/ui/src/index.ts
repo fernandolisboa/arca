@@ -1,11 +1,12 @@
 export { AppShell, type AppShellLabels, type AppShellProps } from './app-shell.js';
-export { Button, type ButtonProps } from './button.js';
+export { Button, buttonClass, type ButtonProps } from './button.js';
 export { ChoiceGroup, type Choice, type ChoiceGroupProps } from './choice-group.js';
 export { CoachMark, type CoachMarkLabels, type CoachMarkProps } from './patterns/coach-mark.js';
 export type { DockEdge, NavItem, ShellLayout, ShellLink, ShellLinkProps } from './shell/nav.js';
 export { formatCalendarDate, SourceLine, type SourceLineProps } from './patterns/source-line.js';
 export { Icon, iconNames, type IconName, type IconProps } from './icon.js';
 export { Mark, type MarkProps } from './mark.js';
+export { cardClass } from './patterns/card.js';
 export { menuItemClass } from './patterns/menu-item.js';
 export { MenuToggle, type MenuToggleProps } from './menu-toggle.js';
 export { NextActionCard, type NextActionCardProps } from './patterns/next-action-card.js';

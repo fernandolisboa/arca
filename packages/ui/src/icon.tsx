@@ -1,5 +1,6 @@
 import {
   Accessibility,
+  ArrowRight,
   Bell,
   BookOpenCheck,
   Check,
@@ -11,6 +12,7 @@ import {
   Flag,
   House,
   KeyRound,
+  LockKeyhole,
   LogOut,
   Palette,
   PanelsTopLeft,
@@ -44,6 +46,8 @@ const icons = {
   back: ChevronLeft,
   check: Check,
   alert: TriangleAlert,
+  vault: LockKeyhole,
+  next: ArrowRight,
   ai: Sparkles,
 } as const satisfies Record<string, LucideIcon>;
 

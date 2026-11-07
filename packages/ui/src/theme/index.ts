@@ -11,4 +11,4 @@ export {
   palettes,
   withHighContrast,
 } from './palettes.js';
-export { type Radii, radii, textSizes } from './shape.js';
+export { type Radii, radii, shadows, textSizes } from './shape.js';

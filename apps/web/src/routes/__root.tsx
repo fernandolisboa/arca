@@ -1,14 +1,18 @@
 import { AppShell, type DockEdge, type NavItem, type ShellLinkProps } from '@arca/ui';
+import { useQuery } from '@tanstack/react-query';
 import { Link, Outlet, createRootRoute, useLocation } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
+import { sessionQuery } from '../api.js';
 import { appearance, useAppearance } from '../appearance/store.js';
 
 export const Route = createRootRoute({ component: Root });
 
 /** Only pages that exist get an item (spec 0006, R8); the list grows as features land. */
 const destinations = [
-  { id: 'home', to: '/', icon: 'home' },
-  { id: 'family', to: '/family', icon: 'family' },
+  { id: 'home', to: '/', icon: 'home', approverOnly: false },
+  { id: 'family', to: '/family', icon: 'family', approverOnly: false },
+  { id: 'vault', to: '/vault', icon: 'vault', approverOnly: false },
+  { id: 'knowledge', to: '/knowledge', icon: 'knowledge', approverOnly: true },
 ] as const;
 const settingsPage = { id: 'settings', to: '/settings', icon: 'settings' } as const;
 
@@ -20,14 +24,18 @@ function Root() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const { resolved } = useAppearance();
+  const session = useQuery(sessionQuery);
+  const approver = session.data?.approver === true;
 
-  const items: NavItem[] = destinations.map((destination) => ({
-    id: destination.id,
-    label: t(`shell.nav.${destination.id}`),
-    icon: destination.icon,
-    href: destination.to,
-    current: pathname === destination.to,
-  }));
+  const items: NavItem[] = destinations
+    .filter((destination) => approver || !destination.approverOnly)
+    .map((destination) => ({
+      id: destination.id,
+      label: t(`shell.nav.${destination.id}`),
+      icon: destination.icon,
+      href: destination.to,
+      current: pathname === destination.to,
+    }));
 
   function onDockEdgeChange(dockEdge: DockEdge) {
     appearance.set('dockEdge', dockEdge);

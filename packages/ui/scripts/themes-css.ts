@@ -13,6 +13,7 @@ import {
   motion,
   palettes,
   radii,
+  shadows,
   textSizes,
   withHighContrast,
 } from '../src/theme/index.js';
@@ -47,8 +48,8 @@ function paletteDeclarations(palette: Palette, mode: ResolvedMode): Declarations
 
 function highContrastDeclarations(theme: ThemeId, mode: ResolvedMode): Declarations {
   const palette = withHighContrast(palettes[theme][mode], highContrast[theme][mode]);
-  const { muted, line, second, primary, okInk, warnInk, dangerInk } = palette;
-  return prefixed({ muted, line, second, primary, okInk, warnInk, dangerInk });
+  const { muted, line, second, primary, accent, okInk, warnInk, dangerInk } = palette;
+  return prefixed({ muted, line, second, primary, accent, okInk, warnInk, dangerInk });
 }
 
 const stack = (role: FontRole) => `'${role.family}', ${role.fallback}`;
@@ -135,6 +136,7 @@ export function renderThemesCss(): string {
       ...paletteDeclarations(palettes[defaults.theme][defaults.mode], defaults.mode),
       ...fontDeclarations(defaults.font),
       ...prefixed({ ...radii[defaults.corners] }, 'radius-'),
+      ...prefixed({ ...shadows }, 'shadow-'),
       ...prefixed({ ...motion }),
     }),
   ];

@@ -3,11 +3,16 @@
  * module imports nothing, so the boot script and the build config can use it without React or CSS.
  */
 export const axes = {
-  theme: { attribute: 'data-theme', values: ['notebook', 'serene', 'panel'], default: 'notebook' },
-  mode: { attribute: 'data-mode', values: ['dark', 'light', 'system'], default: 'dark' },
+  theme: {
+    attribute: 'data-theme',
+    values: ['paper', 'notebook', 'serene', 'panel'],
+    default: 'paper',
+  },
+  mode: { attribute: 'data-mode', values: ['light', 'dark', 'system'], default: 'light' },
   font: {
     attribute: 'data-font',
     values: [
+      'clean',
       'retro',
       'expressive',
       'editorial',
@@ -15,16 +20,15 @@ export const axes = {
       'geometric',
       'friendly',
       'readable',
-      'clean',
       'technical',
     ],
-    default: 'retro',
+    default: 'clean',
   },
-  corners: { attribute: 'data-corners', values: ['square', 'soft', 'round'], default: 'square' },
+  corners: { attribute: 'data-corners', values: ['soft', 'square', 'round'], default: 'soft' },
   navWide: {
     attribute: 'data-nav-wide',
-    values: ['menu', 'top', 'side', 'floating-dock'],
-    default: 'menu',
+    values: ['top', 'menu', 'side', 'floating-dock'],
+    default: 'top',
   },
   navNarrow: {
     attribute: 'data-nav-narrow',

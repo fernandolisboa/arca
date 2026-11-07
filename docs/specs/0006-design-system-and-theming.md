@@ -8,7 +8,7 @@
 
 ## Goal
 
-One visual language for every screen, with the choices the owner asked for: three color themes, light and dark, nine font pairs, three corner shapes, four navigation layouts on wide screens and three on phones, the floating dock's edge, text size and high contrast, chosen per person in Settings. Components read tokens only, so a new theme is a data change.
+One visual language for every screen, with the choices the owner asked for: four color themes, light and dark, nine font pairs, three corner shapes, four navigation layouts on wide screens and three on phones, the floating dock's edge, text size and high contrast, chosen per person in Settings. Components read tokens only, so a new theme is a data change.
 
 ## Scope
 
@@ -18,15 +18,15 @@ One visual language for every screen, with the choices the owner asked for: thre
 
 ## Defaults
 
-The owner picked these on 2026-11-03. Identifiers are English; the pt-BR labels come from the i18n catalog.
+The owner picked these on 2026-11-03 and revised them on 2026-11-06, when the first round of the visual refresh chose the "Papel" direction (the canvas [Arca: novo visual](https://claude.ai/artifact/Ta6giPWVFMYQnv5UFiyjEM), private to the owner): a white page, near-black type, color only in small details, soft cards and a top bar on wide screens. Identifiers are English; the pt-BR labels come from the i18n catalog.
 
 | Axis | Default | Other options |
 | --- | --- | --- |
-| Color theme | `notebook` | `serene`, `panel` |
-| Mode | `dark` | `light`, `system` |
-| Font pair | `retro` | `expressive`, `editorial`, `elegant`, `geometric`, `friendly`, `readable`, `clean`, `technical` |
-| Corners | `square` | `soft`, `round` |
-| Navigation from 768 px | `menu` | `top`, `side`, `floating-dock` |
+| Color theme | `paper` | `notebook`, `serene`, `panel` |
+| Mode | `light` | `dark`, `system` |
+| Font pair | `clean` | `retro`, `expressive`, `editorial`, `elegant`, `geometric`, `friendly`, `readable`, `technical` |
+| Corners | `soft` | `square`, `round` |
+| Navigation from 768 px | `top` | `menu`, `side`, `floating-dock` |
 | Navigation below 768 px | `menu` | `fixed-dock`, `floating-dock` |
 | Dock edge (floating dock only) | `bottom` | `left`, `right` |
 | Text size | `100` | `112`, `125`, `150` (percent of the root size) |
@@ -41,7 +41,20 @@ These ten axes are the whole preference set. Each is one attribute on `<html>`: 
 
 ### Color
 
-Every palette defines the same keys. `second` is the fill for non-leading bars.
+Every palette defines the same keys. `second` is the fill for non-leading bars. `accent` colors eyebrows, link underlines and the current step; it equals `primary` in every theme except `paper`, whose `primary` is its ink and whose accent is a warm amber.
+
+The `paper` theme (added 2026-11-06):
+
+| Key | paper light | paper dark |
+| --- | --- | --- |
+| `bg` / `surface` | `#FFFFFF` / `#FFFFFF` | `#141312` / `#1B1A18` |
+| `ink` / `muted` | `#1A1A1D` / `#5C5959` | `#F3F1EE` / `#B5AFA9` |
+| `line` / `soft` / `track` / `second` | `#ECEBEA` / `#F5F4F3` / `#ECEBEA` / `#A7A2A1` | `#2B2926` / `#24221F` / `#2B2926` / `#78716C` |
+| `primary` / `onPrimary` / `accent` | `#1A1A1D` / `#FFFFFF` / `#945424` | `#F3F1EE` / `#141312` / `#F2B866` |
+| `okBg` / `okInk` | `#E9F6EC` / `#166534` | `#12301F` / `#86EFAC` |
+| `warnBg` / `warnInk` | `#FFFBEB` / `#945424` | `#2A2114` / `#F2C47E` |
+
+On a white page, cards are told apart by a `line` border and the card shadow (`shadows.card` in the theme data, `0 1px 2px` at 4% black), not by a different fill. `cardClass` in `packages/ui` puts the two together, and new cards use it.
 
 | Key | notebook light | notebook dark | serene light | serene dark | panel light | panel dark |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -60,11 +73,11 @@ Every palette defines the same keys. `second` is the fill for non-leading bars.
 
 Every palette also has `dangerBg` / `dangerInk`: `#FBE3E0` / `#9B1C1C` in light modes and `#3E1A19` / `#FFB4A8` in dark modes. `dangerInk` is also the color of error text on `bg` and `surface`.
 
-Hover and pressed states on `primary` fills use `color-mix(in oklab, var(--primary) 88%, var(--ink))` and 76%, so no extra token is needed and contrast with `onPrimary` only grows.
+Hover and pressed states on `primary` fills use `color-mix(in oklab, var(--primary) 88%, var(--primaryShift))` and 76%. `primaryShift` is the palette's `ink` in every theme but `paper`, where `primary` is the ink itself, so the fill moves toward `bg` instead. The contrast test computes both mixes and checks that `onPrimary` stays at 4.5:1 on them (7:1 with high contrast) and that the pressed fill differs visibly from `primary`.
 
 **Rename from spec 0001.** `surface` (page) becomes `bg`; `surface-raised` (card) becomes `surface`; `brand` becomes `primary`; `brand-strong` becomes the hover rule above; `on-brand` becomes `onPrimary`; `ink-muted` becomes `muted`; `ok`, `warning` and `danger` as text become `okInk`, `warnInk` and `dangerInk`; `line` and `ink` keep their names.
 
-**Contrast pairs** the test checks, each at least 4.5:1 in every palette: `ink` on `bg`, `surface`; `muted` on `bg`, `surface`, `soft`; `primary` on `bg`, `surface`, `soft`; `onPrimary` on `primary`; `okInk` on `okBg`; `warnInk` on `warnBg`; `dangerInk` on `dangerBg`, `bg`, `surface`. The values above pass; the lowest is 4.86:1, `primary` on `soft` in notebook light.
+**Contrast pairs** the test checks, each at least 4.5:1 in every palette: `ink` on `bg`, `surface`; `muted` on `bg`, `surface`, `soft`; `primary` on `bg`, `surface`, `soft`; `onPrimary` on `primary`; `accent` on `bg`, `surface`, `soft`; `okInk` on `okBg`; `warnInk` on `warnBg`; `dangerInk` on `dangerBg`, `bg`, `surface`. The values above pass; the lowest is 4.86:1, `primary` on `soft` in notebook light.
 
 Non-text cues (bars on `track`, the dashed `line` border of unknown items) are below 3:1 in some palettes. That is acceptable only because each one repeats information the text already gives (the score, the words "Ainda não sabemos"); a cue that carries meaning alone must reach 3:1 and joins the test.
 
@@ -86,14 +99,14 @@ Scale (rem at 16 px): 0.75 caption, 0.875 small, 1 body, 1.125 lead, 1.375 title
 
 ### High contrast
 
-`data-contrast="high"` overrides, in every palette: `muted` becomes `ink`; `line` and `second` reach 3:1 against `bg` and `surface`; text on `soft` uses `ink`; `primary` used as text or as a fill switches to a per-palette `primaryHigh`; and `okInk`, `warnInk` and `dangerInk` switch to per-palette high-contrast values. All are chosen so every text pair reaches 7:1 (WCAG AAA). R1 holds the values and R3 checks them.
+`data-contrast="high"` overrides, in every palette: `muted` becomes `ink`; `line` and `second` reach 3:1 against `bg` and `surface`; text on `soft` uses `ink`; `primary` used as text or as a fill switches to a per-palette `primaryHigh`, and `accent` to its own high value; and `okInk`, `warnInk` and `dangerInk` switch to per-palette high-contrast values. All are chosen so every text pair reaches 7:1 (WCAG AAA). R1 holds the values and R3 checks them.
 
 ### Shape, space and motion
 
 | Token | `square` | `soft` | `round` |
 | --- | --- | --- | --- |
 | `radius-card` | 4 px | 16 px | 28 px |
-| `radius-control` | 4 px | 12 px | 999 px |
+| `radius-control` | 4 px | 8 px | 999 px |
 | `radius-chip` | 4 px | 999 px | 999 px |
 | `radius-dock` | 6 px | 18 px | 999 px |
 
@@ -115,9 +128,20 @@ The mark is a house on a straight hull with a ramp down from an arched door, cho
 
 The door is a hole, so the background shows through. At 32 px and below the windows are dropped, as in `apps/web/public/favicon.svg`, which carries the light palette as fill attributes and switches to the dark one with a `prefers-color-scheme` style, so it still shows the light mark where that style is blocked. The PWA icons in `apps/web/public/icons/` put the light mark on a `#F7F1E8` tile; the maskable icon keeps it inside the safe zone, a centered circle 80% of the icon's width across. The mark palette lives in `packages/ui/src/theme/` as a fixed `mark` entry outside the per-palette keys. The shell renders the mark with a `Mark` component in `packages/ui` (R8), picking the light or dark palette from the resolved mode, `aria-hidden` because the name "Arca" sits beside it in the display font. Native icons and splash screens stay out of scope (Phase 4).
 
+## Home
+
+Added 2026-11-06 with the "Papel" direction. The home leads with where the case stands, then the way into each area:
+
+- **Notices first.** A pending passkey, an unsaved recovery kit, a pending recovery or a pending deletion shows as a strip in the warn colors at the top. While a recovery or a deletion waits, the home shows only that, as before.
+- **Greeting.** The weekday and date, then "Bom dia", "Boa tarde" or "Boa noite" by the device's hour, with the person's name in the case when there is one.
+- **Next step card.** One card with the step title, a short body and one primary action, beside the case's stages as a numbered list: "Contar sobre a família" (done once a case exists), "Perguntas guiadas" (with "x de y" answered, "Não sei" included) and "Ver as rotas que servem" (once every question has an answer). The current stage carries `aria-current="step"` and the accent color; a done stage shows a check and says "(feita)" to screen readers. `nextStep` in `apps/web/src/home/next-step.ts` derives the stage from the case and its questions; it counts answers and decides nothing about eligibility.
+- **Shortcut cards.** Cofre, Família (people in the case and how many others have an account, with "Convidar alguém") and, for an approver, Regras (versions waiting for a decision). Each card has an icon tile, a title, at most one figure, a short body and one link.
+- **Footer.** Who is signed in, Dispositivos and the service status, as a colored dot and text with a visually hidden "Status do serviço" heading.
+- **Navigation.** The shell lists Início, Família, Cofre and, for an approver, Regras.
+
 ## Shell and navigation
 
-- Four navigation items: home, countries, plan and documents. Their labels and icons are defined once and every layout renders the same list.
+- The navigation items are the ones the Home section lists, growing as areas ship (R8). Their labels and icons are defined once and every layout renders the same list.
 - **Below 768 px:** `fixed-dock` is attached to the bottom edge, icon over label. `floating-dock` sits 14 px from the screen edges with `radius-dock` and a shadow. `menu` is a top bar with the mark and a menu button. Content gets padding equal to the dock size plus the safe-area inset on the dock's side, so nothing hides behind it.
 - **From 768 px:** `top` is a bar with the mark and the navigation items in a row; `side` is a 216 px column with the mark on top; `floating-dock` is a bar centered on its edge; `menu` is the same top bar as on phones. The active item uses `primary` on `soft`.
 - **Floating dock edge.** The person drags the dock and it snaps to the nearest of bottom, left and right, with the edge saved as the `dock-edge` axis. On the left or right it stacks the items vertically. Dragging is never the only way: the same choice is in Settings, so keyboard and screen-reader users can make it.
@@ -131,7 +155,7 @@ The door is a hole, so the background shows through. At 32 px and below the wind
 
 These come from the mockups and every feature reuses them:
 
-- **Next action card:** `primary` background, a route line from origin city to destination with a moving dot (static with motion off), the step title in the display font, one line of where, how long and what it needs, and one button.
+- **Next action card** (for plan steps; the home's next-step card is its own layout, above): `primary` background, a route line from origin city to destination with a moving dot (static with motion off), the step title in the display font, one line of where, how long and what it needs, and one button.
 - **Ranking row:** position in the display font (`primary` for first), country flag, name, a bar on `track` (`primary` for first, `second` for the rest), score with tabular figures, formatted for the locale with `Intl.NumberFormat`.
 - **Source line:** "Fonte: domain · verificado em" and the verification date, in caption size, under any requirement, fee, threshold or deadline (CLAUDE.md rule 1). The date is a plain calendar date from `packages/domain`, formatted for the locale with `Intl.DateTimeFormat` and no time-zone conversion, so it never shifts a day.
 - **Status chips:** active version (`ok`), pending activation (`warn`), unknown (`soft` with `muted` text). Unknown items use a dashed border on their card and say a research task is open. Labels follow [CONTEXT.md](../../CONTEXT.md).
@@ -163,7 +187,7 @@ When the authoring session has the `/super-copy` skill, it runs its pass that re
 - **R8 AppShell.** `AppShell` takes the navigation items and the layout preferences (wide, narrow, dock edge), including dragging the floating dock with snap and the menu panel, and renders the layouts in [Shell and navigation](#shell-and-navigation), switching at 768 px with CSS only. Its bars show the `Mark` described in [Mark](#mark); a test checks that the component's paths match `docs/brand/arca-mark.svg`. It shows only the items whose page exists, so until the features land it shows home alone and grows as pages are added; no placeholder pages.
 - **R9 Settings screen.** Creates the Settings page, reached from the Settings entry in every layout, with appearance controls in categories (see the revision below): one control group per axis with a live preview and a "use default" option that clears the person's choice for that axis, plus one action per category that clears that category's axes; the narrow-screen group offers the docks and the menu, and the dock-edge group appears with the floating dock. Strings in the pt-BR catalog. Revised 2026-11-06: the page is split into categories, Aparência (colors, mode, fonts, corners), Navegação (narrow, wide, dock edge), Acessibilidade (text size, contrast, motion), Conta (security notices, data export, account deletion) and, for an approver, Base de conhecimento; a side menu from 1024 px and a wrapping row of buttons below it picks one, and `?section=` keeps the choice in the address. `apps/web/src/settings/sections.ts` places each axis in exactly one category, and a test checks none is left out.
 - **R10 Patterns.** `NextActionCard`, `RankingRow`, `ProgressBar`, `SourceLine`, `StatusChip` and `CoachMark` in `packages/ui`, each with one Vitest render test that checks its content, keyboard reachability and screen-reader labels. Themes are covered by R3 and R11, not per component.
-- **R11 End-to-end.** Playwright opens the home screen at 390, 820 and 1280 px in each navigation layout and dock edge, and at text size 150%, and checks: every navigation item, the Settings entry and the menu reachable by keyboard, the menu closing from its button by keyboard and on Escape, with focus returned, no horizontal scroll, nothing behind the dock, and `@axe-core/playwright` reports no violations in the default theme and in one light theme.
+- **R11 End-to-end.** Playwright opens the home screen at 390, 820 and 1280 px in each navigation layout and dock edge, and at text size 150%, and checks: every navigation item, the Settings entry and the menu reachable by keyboard, the menu closing from its button by keyboard and on Escape, with focus returned, no horizontal scroll, nothing behind the dock, and `@axe-core/playwright` reports no violations in the default theme and in one dark theme.
 
 ## Threat model for this slice
 
