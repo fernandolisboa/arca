@@ -814,7 +814,7 @@ export const ptBR = {
       close: 'Já pesquisei, encerrar os avisos',
       closeFailure: 'Não deu para encerrar os avisos agora. Tente de novo.',
     },
-    lead: 'Aqui você confere cada versão de rota e dos dados da comparação de destinos antes de o app usar. Nenhuma versão vale antes de você ativar.',
+    lead: 'Aqui você confere cada versão de rota e dos dados que comparam os destinos antes de o app usar. Nada vale antes de você ativar.',
     signIn: 'Entre na sua conta para ver as versões.',
     notApprover: 'Só um aprovador pode abrir esta tela.',
     loadFailure: 'Não deu para carregar as versões agora.',
@@ -953,13 +953,13 @@ export const ptBR = {
     /** A comparison version: criteria and country data for comparing destinations (ADR-0026). */
     comparison: {
       meta: 'Dados da comparação de destinos',
-      firstVersion: 'Primeira versão dos dados da comparação, então não há o que comparar.',
+      firstVersion: 'É a primeira versão destes dados, então não há com o que comparar.',
       criteria: 'Critérios',
       indicators: 'Indicadores dos países',
       kind: '{kind, select, indicator {nota calculada pelo indicador} category {nota por categoria} other {nota dada por cada pessoa}}',
       defaultWeight: 'peso inicial {weight} de 5',
       anchors:
-        'Lê {indicator}: nota 0 com {zeroAt} e nota 10 com {tenAt}, em linha reta entre os dois.',
+        'Lê {indicator}: {zeroAt} vale nota 0 e {tenAt} vale nota 10. O que fica no meio ganha nota proporcional.',
       tokenScores: 'Lê {indicator}: {scores}.',
       tokenScore: '{token} vale {score}',
       valuesCaption: 'Valores de {title} por país',
@@ -969,7 +969,7 @@ export const ptBR = {
       source: 'Site da fonte',
       valueInYear: '{value} ({year})',
       noPrevious: 'novo',
-      removed: 'Sem valor nesta versão, mas tinham antes: {countries}.',
+      removed: 'Perderam o valor nesta versão: {countries}.',
       activateLead:
         'Ao ativar, a comparação de destinos passa a usar estes critérios e valores para todo mundo da família. Para continuar, confirme com sua chave de acesso.',
       rejectFallback:
