@@ -835,6 +835,60 @@
         "possibleDependents": ["p2"],
         "missingFacts": []
       }
+    },
+    {
+      "id": "brazilian-with-a-spouse-who-does-not-depend",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p2"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1984-01-01",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1984-01-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "financiallyDependentOn": [],
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1985-02-02",
+            "citizenships": [
+              {
+                "country": "US",
+                "acquired": "1985-02-02",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "financiallyDependentOn": [],
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "spouse",
+            "people": ["p1", "p2"],
+            "start": "2011-01-01",
+            "end": "none"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "eligible",
+        "dependents": [],
+        "possibleDependents": ["p2"],
+        "missingFacts": []
+      }
     }
   ]
 }
