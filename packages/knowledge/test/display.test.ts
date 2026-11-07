@@ -12,6 +12,7 @@ describe('the display catalog (spec 0007, R7)', () => {
       'cl-mercosur-temporary',
       'dk-pay-limit',
       'es-non-lucrative',
+      'ge-property-short-term',
       'is-remote-work',
       'it-descent',
       'jp-nikkei-long-term-resident',
