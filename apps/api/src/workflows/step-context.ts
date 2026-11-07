@@ -1,4 +1,5 @@
 import { createI18n } from '@arca/i18n';
+import { countryGuide } from '@arca/knowledge';
 import { useRuntimeConfig } from 'nitro/runtime-config';
 import { auditLog } from '../audit/log.js';
 import { createErasure, type Erasure } from '../account/erasure.js';
@@ -10,12 +11,17 @@ import {
   readAuthSecrets,
   readDeploymentEnvironment,
   readJobsDatabasePassword,
+  readOfflineRuleCheck,
   readOwnOrigin,
   readVapidPrivateKey,
 } from '../config.js';
 import { roleDatabase } from '../database.js';
 import { emailRouteFor, emailSenderFor } from '../email/environment.js';
 import { createNotices } from '../email/notices.js';
+import { checkFetcherFor, ruleCheckerFor } from '../knowledge/check/environment.js';
+import { type VersionCheck, createVersionCheck } from '../knowledge/check/run.js';
+import { postgresCheckReportStore } from '../knowledge/check/store.js';
+import { createCheckSubjects } from '../knowledge/versions.js';
 import { createDelivery, deliverNow, type Delivery } from '../notification/delivery.js';
 import { createNotifier } from '../notification/notifier.js';
 import { vapidPushSender } from '../notification/push.js';
@@ -140,3 +146,21 @@ export const retentionSteps = once(async (): Promise<Retention> => {
     }),
   });
 });
+
+/**
+ * The independent check (ADR-0027) on the app_jobs pool, which reads public rule data and inserts
+ * the report: no account, no case data.
+ */
+export const checkSteps = once((): Promise<VersionCheck> =>
+  Promise.resolve(
+    createVersionCheck({
+      subject: createCheckSubjects(),
+      guide: countryGuide,
+      fetcher: checkFetcherFor(readDeploymentEnvironment(), readOfflineRuleCheck()),
+      checker: ruleCheckerFor(),
+      store: postgresCheckReportStore(jobsDatabase),
+      logger: stepLogger,
+      now: () => performance.now(),
+    }),
+  ),
+);

@@ -75,8 +75,22 @@ const summaryFields = [
   'cases',
 ] as const satisfies readonly Exclude<keyof VersionView, 'hash' | 'state' | 'rejection'>[];
 
+const contentOf = (view: VersionView, fields: readonly (keyof VersionView)[]) =>
+  JSON.stringify(Object.fromEntries(fields.map((field) => [field, view[field]])));
+
 export function summaryContent(view: VersionView): string {
-  return JSON.stringify(Object.fromEntries(summaryFields.map((field) => [field, view[field]])));
+  return contentOf(view, summaryFields);
+}
+
+/**
+ * What the independent check's model reads of a version (ADR-0027): the summary's fields without
+ * the rule cases, which are tests of the rule rather than what the law says.
+ */
+export function checkContent(view: VersionView): string {
+  return contentOf(
+    view,
+    summaryFields.filter((field) => field !== 'cases'),
+  );
 }
 
 /** The summary of `content`, asked for again once when the reply does not parse. */

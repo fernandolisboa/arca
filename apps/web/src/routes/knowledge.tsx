@@ -15,6 +15,7 @@ import {
   versionViewQuery,
 } from '../api.js';
 import { textLinkClass } from '../forms/text-link.js';
+import { CheckChip, useStartChecks } from '../knowledge/checks.js';
 import { ComparisonPanel } from '../knowledge/comparison-panel.js';
 import { ReportsSection } from '../knowledge/reports-section.js';
 import { stateTone } from '../knowledge/state-tone.js';
@@ -35,6 +36,8 @@ interface Listed {
   readonly title: string;
   readonly meta: string;
   readonly state: KnowledgeVersion['state'];
+  /** A route version's independent check; comparisons are never checked. */
+  readonly check?: KnowledgeVersion['check'];
 }
 
 const pickedKey = (picked: Picked) =>
@@ -50,6 +53,7 @@ function Knowledge() {
   const approver = session.data?.approver === true;
   const versions = useQuery({ ...knowledgeVersionsQuery, enabled: approver });
   const [picked, setPicked] = useState<Picked | null>(null);
+  useStartChecks(versions.isSuccess);
   const title = t('knowledge.title');
   if (session.isError) {
     return (
@@ -136,6 +140,7 @@ function routeItem(version: KnowledgeVersion, words: KnowledgeWords): Listed {
       date: words.date(version.effectiveFrom),
     }),
     state: version.state,
+    check: version.check,
   };
 }
 
@@ -178,10 +183,13 @@ function VersionList({
                 })}
               </span>
               <span className="text-small text-muted">{version.meta}</span>
-              <StatusChip
-                tone={stateTone(version.state)}
-                label={words.t('knowledge.state', { state: version.state })}
-              />
+              <span className="flex flex-wrap gap-2">
+                <StatusChip
+                  tone={stateTone(version.state)}
+                  label={words.t('knowledge.state', { state: version.state })}
+                />
+                {version.check !== undefined && <CheckChip status={version.check} words={words} />}
+              </span>
             </button>
           </li>
         ))}

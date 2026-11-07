@@ -31925,6 +31925,16 @@
                               "rejected",
                               "proposed"
                             ]
+                          },
+                          "check": {
+                            "type": "string",
+                            "enum": [
+                              "checked",
+                              "flagged",
+                              "running",
+                              "stale",
+                              "none"
+                            ]
                           }
                         },
                         "required": [
@@ -31934,7 +31944,8 @@
                           "country",
                           "effectiveFrom",
                           "hash",
-                          "state"
+                          "state",
+                          "check"
                         ]
                       }
                     },
@@ -33960,6 +33971,342 @@
                   "required": [
                     "closed"
                   ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/checks/start": {
+      "post": {
+        "operationId": "startVersionChecks",
+        "summary": "Starts the independent check of every proposed route version with no current report and no check running, within 20 starts in any 24 hours per environment; answers how many started. 403 not_approver",
+        "responses": {
+          "200": {
+            "description": "Started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "started": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 20
+                    }
+                  },
+                  "required": [
+                    "started"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/versions/check": {
+      "get": {
+        "operationId": "getVersionCheck",
+        "summary": "One route version's independent check status and its current report, model output checked in code against the cited official pages; never starts a check. 403 not_approver, 404 not_found",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+            },
+            "required": true,
+            "name": "routeId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "required": true,
+            "name": "number",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The check",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "checked",
+                        "flagged",
+                        "running",
+                        "stale",
+                        "none"
+                      ]
+                    },
+                    "report": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "checkedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "clean": {
+                          "type": "boolean"
+                        },
+                        "scripted": {
+                          "type": "boolean"
+                        },
+                        "failure": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "enum": [
+                            "check_unparsable",
+                            "check_timeout",
+                            "check_unavailable",
+                            "check_failed",
+                            null
+                          ]
+                        },
+                        "guide": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "country": {
+                              "type": "string",
+                              "pattern": "^[A-Z]{2}$"
+                            },
+                            "number": {
+                              "type": "integer",
+                              "minimum": 1
+                            }
+                          },
+                          "required": [
+                            "country",
+                            "number"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string",
+                                "maxLength": 120
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "requirement",
+                                  "assessment",
+                                  "dependent",
+                                  "cost",
+                                  "duration",
+                                  "leapDayBirthday",
+                                  "closure",
+                                  "countrySet"
+                                ]
+                              },
+                              "title": {
+                                "type": "string",
+                                "maxLength": 200
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "matches",
+                                  "differs",
+                                  "could_not_check"
+                                ]
+                              },
+                              "quote": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "maxLength": 800
+                              },
+                              "url": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "maxLength": 2000
+                              },
+                              "note": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "maxLength": 300
+                              },
+                              "reason": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "enum": [
+                                  "not_answered",
+                                  "model_could_not_check",
+                                  "url_not_cited",
+                                  "page_not_read",
+                                  "page_cut",
+                                  "quote_length",
+                                  "quote_not_on_page",
+                                  "echoes_address",
+                                  "value_not_in_quote",
+                                  null
+                                ]
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "kind",
+                              "title",
+                              "status",
+                              "quote",
+                              "url",
+                              "note",
+                              "reason"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "maxItems": 200
+                        },
+                        "fetchLog": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "url": {
+                                "type": "string",
+                                "maxLength": 2000
+                              },
+                              "outcome": {
+                                "type": "string",
+                                "enum": [
+                                  "read",
+                                  "refused_url",
+                                  "redirect_refused",
+                                  "too_many_redirects",
+                                  "address_refused",
+                                  "lookup_failed",
+                                  "http_status",
+                                  "unsupported_type",
+                                  "too_large",
+                                  "timeout",
+                                  "network"
+                                ]
+                              },
+                              "status": {
+                                "type": [
+                                  "integer",
+                                  "null"
+                                ],
+                                "minimum": 0,
+                                "maximum": 999
+                              },
+                              "cut": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "url",
+                              "outcome",
+                              "status",
+                              "cut"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "maxItems": 200
+                        }
+                      },
+                      "required": [
+                        "checkedAt",
+                        "clean",
+                        "scripted",
+                        "failure",
+                        "guide",
+                        "items",
+                        "fetchLog"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "report"
+                  ],
+                  "additionalProperties": false
                 }
               }
             }

@@ -1,0 +1,328 @@
+import { VersionCheck } from '@arca/api-contract/routes';
+import { type CatalogEntry, routeVersionSchema, versionIdentity } from '@arca/domain';
+import type { Logger } from '@arca/telemetry';
+import { describe, expect, it } from 'vitest';
+import { createApp } from '../src/app.js';
+import type { SignedIn } from '../src/auth/service.js';
+import type { CheckSubject } from '../src/knowledge/check/run.js';
+import { memoryCheckStarts, type RecordedStart } from '../src/knowledge/check/starts.js';
+import { type NewCheckReport, memoryCheckReportStore } from '../src/knowledge/check/store.js';
+import { createVersionChecks } from '../src/knowledge/checks.js';
+import type { KnowledgeDecisions } from '../src/knowledge/decisions.js';
+import type { KnowledgeVersions } from '../src/knowledge/versions.js';
+import { noLimits } from './limits.js';
+
+/** Synthetic routes only. */
+const silentLogger: Logger = { info: () => undefined, error: () => undefined };
+const origin = 'http://arca.test';
+const admin: SignedIn = {
+  accountId: '3f2b8a4e-6c1d-4e5f-9a7b-0c1d2e3f4a5b',
+  sessionId: '6a1c2d3e-4f50-4617-8a9b-0c1d2e3f4a5b',
+};
+const law = 'https://www.gov.example/law';
+const hash = (number: number) => String(number % 10).repeat(64);
+
+const versionFile = (number: number) =>
+  routeVersionSchema.parse({
+    schemaVersion: 1,
+    routeId: 'qm-sample',
+    number,
+    title: 'Sample residence route',
+    country: 'QM',
+    tags: [],
+    effectiveFrom: '2026-01-01',
+    status: 'open',
+    currency: 'EUR',
+    sources: [
+      { id: 'law', url: law, title: 'Residence act', kind: 'official', verifiedAt: '2026-10-01' },
+    ],
+    countries: { id: 'countries', number: 1 },
+    formerCountries: { id: 'former-countries', number: 1 },
+    countrySets: [],
+    officialDomains: [{ id: 'qm-gov', number: 1 }],
+    requirements: [
+      {
+        id: 'means',
+        title: 'Means of subsistence',
+        expression: { op: 'bool', value: true },
+        sources: ['law'],
+      },
+    ],
+    assessments: [],
+    dependents: [],
+    costs: [],
+    durations: [],
+  });
+
+function setup({
+  admitted = true,
+  count = 3,
+  states = new Map<number, 'proposed' | 'active' | 'rejected'>(),
+  model = 'claude-test',
+}: {
+  admitted?: boolean;
+  count?: number;
+  states?: Map<number, 'proposed' | 'active' | 'rejected'>;
+  model?: string;
+} = {}) {
+  let time = 1_000_000_000;
+  const now = () => time;
+  const entries: CatalogEntry[] = Array.from({ length: count }, (_, index) => {
+    const version = versionFile(index + 1);
+    return { identity: versionIdentity(version, hash(index + 1)), version, countrySets: [] };
+  });
+  const versions: KnowledgeVersions = {
+    list: () =>
+      Promise.resolve(
+        entries.map(({ identity, version }) => ({
+          routeId: identity.routeId,
+          number: identity.number,
+          title: version.title,
+          country: version.country,
+          effectiveFrom: identity.effectiveFrom,
+          hash: identity.hash,
+          state: states.get(identity.number) ?? 'proposed',
+        })),
+      ),
+    view: () => Promise.resolve(undefined),
+    comparisons: () => Promise.resolve([]),
+    comparisonView: () => Promise.resolve(undefined),
+  };
+  const subject = (routeId: string, number: number): CheckSubject | undefined => {
+    const entry = entries.find(
+      ({ identity }) => identity.routeId === routeId && identity.number === number,
+    );
+    return entry === undefined
+      ? undefined
+      : { entry, content: '{}', officialHosts: () => ['gov.example'] };
+  };
+  const reports = memoryCheckReportStore(now);
+  const starts = memoryCheckStarts(reports, now);
+  const runs: RecordedStart[] = [];
+  const checks = createVersionChecks({
+    versions,
+    subject,
+    guide: () => undefined,
+    checker: { model, promptVersion: 'check-1' },
+    reports,
+    starts,
+    run: (start) => {
+      runs.push(start);
+      return Promise.resolve();
+    },
+    logger: silentLogger,
+    now,
+  });
+  const knowledge: KnowledgeDecisions = {
+    isApprover: () => admitted,
+    decide: () => Promise.reject(new Error('not used')),
+    states: () => Promise.resolve(new Map()),
+  };
+  const app = createApp({
+    checkDatabase: () => Promise.resolve('ok'),
+    logger: silentLogger,
+    origin,
+    auth: {
+      handle: () => Promise.resolve(Response.json({})),
+      signedIn: () => Promise.resolve(admin),
+      refresh: () => Promise.resolve({ session: null, setCookies: [] }),
+    },
+    authLimits: noLimits,
+    knowledge,
+    knowledgeVersions: versions,
+    versionChecks: checks,
+  });
+  const start = (headers: Record<string, string> = { origin }) =>
+    app.request('/v1/knowledge/checks/start', { method: 'POST', headers });
+  const list = async () =>
+    (
+      (await (await app.request('/v1/knowledge/versions')).json()) as {
+        versions: { number: number; check: string }[];
+      }
+    ).versions.map(({ number, check }) => [number, check]);
+  const read = (number: number) =>
+    app.request(`/v1/knowledge/versions/check?routeId=qm-sample&number=${String(number)}`);
+  const report = (recorded: RecordedStart | undefined, patch: Partial<NewCheckReport> = {}) => {
+    if (recorded === undefined) throw new Error('no start was recorded');
+    return reports.save({
+      startId: recorded.id,
+      routeId: recorded.routeId,
+      number: recorded.number,
+      contentHash: hash(recorded.number),
+      guideHash: 'none',
+      promptVersion: 'check-1',
+      model,
+      items: [
+        {
+          key: 'requirement:means',
+          status: 'matches',
+          quote: 'means of at least EUR 920',
+          url: law,
+          note: null,
+          reason: null,
+        },
+      ],
+      fetchLog: [
+        { url: law, outcome: 'read', status: 200, durationMs: 5, sha256: null, cut: false },
+      ],
+      failure: null,
+      failed: false,
+      clean: true,
+      ...patch,
+    });
+  };
+  const advance = (milliseconds: number) => {
+    time += milliseconds;
+  };
+  return { start, list, read, report, runs, starts, advance };
+}
+
+const minute = 60_000;
+
+describe('POST /v1/knowledge/checks/start (ADR-0027)', () => {
+  it('starts a check of every proposed route version, with identifiers only', async () => {
+    const { start, runs } = setup({ states: new Map([[2, 'active']]) });
+    const response = await start();
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ started: 2 });
+    expect(runs.map(({ routeId, number }) => [routeId, number])).toEqual([
+      ['qm-sample', 1],
+      ['qm-sample', 3],
+    ]);
+  });
+
+  it('starts nothing again while a check runs, and again once its start dies', async () => {
+    const { start, advance } = setup();
+    await start();
+    expect(await (await start()).json()).toEqual({ started: 0 });
+    advance(31 * minute);
+    expect(await (await start()).json()).toEqual({ started: 3 });
+  });
+
+  it('starts nothing for a version with a current report', async () => {
+    const { start, runs, report, advance } = setup({ count: 1 });
+    await start();
+    await report(runs[0]);
+    advance(31 * minute);
+    expect(await (await start()).json()).toEqual({ started: 0 });
+  });
+
+  it('stays within 20 starts in any 24 hours', async () => {
+    const { start, advance } = setup({ count: 25 });
+    expect(await (await start()).json()).toEqual({ started: 20 });
+    advance(31 * minute);
+    expect(await (await start()).json()).toEqual({ started: 0 });
+    advance(24 * 60 * minute);
+    expect(await (await start()).json()).toEqual({ started: 20 });
+  });
+
+  it('is for admins only, from the same origin', async () => {
+    expect((await setup({ admitted: false }).start()).status).toBe(403);
+    const { start, runs } = setup();
+    expect((await start({ origin: 'https://evil.example' })).status).toBe(403);
+    expect((await start({ 'sec-fetch-site': 'cross-site' })).status).toBe(403);
+    expect(runs).toEqual([]);
+  });
+});
+
+describe('the check status in the version list (ADR-0027)', () => {
+  it('reads running, checked, flagged, stale and none, and starts nothing', async () => {
+    const { start, list, runs, report, advance } = setup({ count: 4 });
+    expect(await list()).toEqual([
+      [1, 'none'],
+      [2, 'none'],
+      [3, 'none'],
+      [4, 'none'],
+    ]);
+    expect(runs).toEqual([]);
+    await start();
+    const [first, second, third] = runs as [RecordedStart, RecordedStart, RecordedStart];
+    await report(first);
+    await report(second, {
+      clean: false,
+      items: [
+        {
+          key: 'requirement:means',
+          status: 'differs',
+          quote: 'means of at least EUR 920',
+          url: law,
+          note: null,
+          reason: null,
+        },
+      ],
+    });
+    await report(third, { model: 'claude-old' });
+    expect(await list()).toEqual([
+      [1, 'checked'],
+      [2, 'flagged'],
+      [3, 'stale'],
+      [4, 'running'],
+    ]);
+    advance(31 * minute);
+    expect(await list()).toEqual([
+      [1, 'checked'],
+      [2, 'flagged'],
+      [3, 'stale'],
+      [4, 'none'],
+    ]);
+  });
+});
+
+describe('GET /v1/knowledge/versions/check (ADR-0027)', () => {
+  it('answers the current report with each item named, as plain data', async () => {
+    const { start, read, runs, report } = setup({ count: 1 });
+    await start();
+    await report(runs[0]);
+    const response = await read(1);
+    expect(response.status).toBe(200);
+    const body = VersionCheck.parse(await response.json());
+    expect(body).toEqual({
+      status: 'checked',
+      report: {
+        checkedAt: new Date(1_000_000_000).toISOString(),
+        clean: true,
+        scripted: false,
+        failure: null,
+        guide: null,
+        items: [
+          {
+            key: 'requirement:means',
+            kind: 'requirement',
+            title: 'Means of subsistence',
+            status: 'matches',
+            quote: 'means of at least EUR 920',
+            url: law,
+            note: null,
+            reason: null,
+          },
+        ],
+        fetchLog: [{ url: law, outcome: 'read', status: 200, cut: false }],
+      },
+    });
+  });
+
+  it('answers no report while a check runs or when only a stale one exists', async () => {
+    const { start, read, runs, report, advance } = setup({ count: 1 });
+    expect(await (await read(1)).json()).toEqual({ status: 'none', report: null });
+    await start();
+    expect(await (await read(1)).json()).toEqual({ status: 'running', report: null });
+    await report(runs[0], { contentHash: 'f'.repeat(64) });
+    advance(31 * minute);
+    expect(await (await read(1)).json()).toEqual({ status: 'stale', report: null });
+  });
+
+  it('marks a scripted report as such, never clean', async () => {
+    const { start, read, runs, report } = setup({ count: 1, model: 'fake' });
+    await start();
+    await report(runs[0], { clean: false });
+    expect(await (await read(1)).json()).toMatchObject({
+      status: 'flagged',
+      report: { scripted: true, clean: false },
+    });
+  });
+
+  it('answers 404 for a version the catalog does not hold, and 403 to anyone but an admin', async () => {
+    expect((await setup().read(9)).status).toBe(404);
+    expect((await setup({ admitted: false }).read(1)).status).toBe(403);
+  });
+});

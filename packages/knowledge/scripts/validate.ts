@@ -51,6 +51,13 @@ export interface BuiltComparison {
   readonly indicators: readonly Json[];
 }
 
+/** An official-domain list's hosts, which the independent check fetches on (ADR-0027). */
+export interface BuiltOfficialDomains {
+  readonly id: string;
+  readonly number: number;
+  readonly hosts: readonly string[];
+}
+
 /** A country guide as the catalog carries it: the reviewed JSON and its hash (ADR-0027). */
 export interface BuiltGuide {
   readonly hash: string;
@@ -61,6 +68,7 @@ export interface ValidatedData {
   readonly entries: readonly BuiltEntry[];
   readonly comparisons: readonly BuiltComparison[];
   readonly guides: readonly BuiltGuide[];
+  readonly officialDomains: readonly BuiltOfficialDomains[];
   /** Content hash of each valid hashed file, by path without the extension. */
   readonly hashes: ReadonlyMap<string, string>;
   /** Every path of a hashed kind, valid or not. */
@@ -200,10 +208,22 @@ class Validation {
         .filter((file) => hashedKinds.has(file.kind))
         .map((file) => withoutExtension(file.file)),
     );
+    const officialDomains = [...this.parsed.values()].flatMap((file) =>
+      file.kind === 'official-domains' && !this.failed.has(file.raw.file)
+        ? [
+            {
+              id: file.data.id,
+              number: file.data.number,
+              hosts: file.data.hosts.map((h) => h.host),
+            },
+          ]
+        : [],
+    );
     return {
       entries,
       comparisons,
       guides,
+      officialDomains,
       hashes,
       hashable,
       countries: this.latestCountries(),
