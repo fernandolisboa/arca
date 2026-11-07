@@ -365,7 +365,7 @@
       }
     },
     {
-      "id": "adult-child-who-does-not-depend-on-the-principal",
+      "id": "adult-child-who-does-not-depend-on-the-principal-possible",
       "snapshot": {
         "recordedOn": "2026-10-01",
         "members": ["p1", "p2"],
@@ -413,7 +413,7 @@
       "expected": {
         "status": "needs_assessment",
         "dependents": [],
-        "possibleDependents": [],
+        "possibleDependents": ["p2"],
         "missingFacts": []
       }
     },
@@ -686,7 +686,7 @@
       "expected": {
         "status": "needs_assessment",
         "dependents": [],
-        "possibleDependents": [],
+        "possibleDependents": ["p2"],
         "missingFacts": []
       }
     },
@@ -857,7 +857,7 @@
       }
     },
     {
-      "id": "afghan-and-brazilian-citizen",
+      "id": "afghan-and-brazilian-citizen-possible",
       "snapshot": {
         "recordedOn": "2026-10-01",
         "members": ["p1"],
@@ -879,7 +879,8 @@
                 "lost": "none",
                 "basis": "birth"
               }
-            ]
+            ],
+            "residenceCountry": "BR"
           }
         ],
         "relationships": [],
@@ -888,7 +889,7 @@
       "principal": "p1",
       "rulesAsOf": "2026-10-01",
       "expected": {
-        "status": "needs_assessment",
+        "status": "missing_information",
         "dependents": [],
         "possibleDependents": [],
         "missingFacts": []

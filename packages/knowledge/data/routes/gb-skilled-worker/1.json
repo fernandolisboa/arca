@@ -184,7 +184,7 @@
     },
     {
       "id": "not-applying-from-abroad-as-afghan",
-      "title": "Not applying from abroad as a citizen of Afghanistan only (refused since 26 March 2026); switching from another permission inside the UK: possible",
+      "title": "Not applying from abroad as a citizen of Afghanistan (refused since 26 March 2026); a dual national, or someone switching from another permission inside the UK: possible",
       "expression": {
         "op": "any",
         "operands": [
@@ -203,18 +203,26 @@
             }
           },
           {
-            "op": "not",
-            "operand": {
-              "op": "within",
-              "list": {
-                "op": "fact",
-                "key": "principal.citizenships"
+            "op": "all",
+            "operands": [
+              {
+                "op": "not",
+                "operand": {
+                  "op": "within",
+                  "list": {
+                    "op": "fact",
+                    "key": "principal.citizenships"
+                  },
+                  "set": {
+                    "op": "tokens",
+                    "values": ["AF"]
+                  }
+                }
               },
-              "set": {
-                "op": "tokens",
-                "values": ["AF"]
+              {
+                "op": "unmodeled"
               }
-            }
+            ]
           },
           {
             "op": "all",
@@ -318,7 +326,7 @@
     },
     {
       "id": "children",
-      "title": "Children under 18 with no spouse or partner; living with the principal and the other parent coming too are not checked; an adult child who depends on the principal: possible",
+      "title": "Children under 18 with no spouse or partner; living with the principal and the other parent coming too are not checked; an adult child: possible, only after UK permission as their child",
       "path": ["child"],
       "condition": {
         "op": "all",
@@ -352,16 +360,7 @@
                 }
               },
               {
-                "op": "all",
-                "operands": [
-                  {
-                    "op": "fact",
-                    "key": "person.dependsOnPrincipal"
-                  },
-                  {
-                    "op": "unmodeled"
-                  }
-                ]
+                "op": "unmodeled"
               }
             ]
           }
