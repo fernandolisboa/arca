@@ -13,6 +13,7 @@ describe('the display catalog (spec 0007, R7)', () => {
       'pl-descent',
       'pt-d7',
       'pt-d8',
+      'py-mercosur-temporary',
       'us-eb5',
       'uy-mercosur-permanent',
     ]);

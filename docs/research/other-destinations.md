@@ -1,6 +1,6 @@
 # Other destinations
 
-Checked 2026-11-01; the Uruguay and Argentina sections on 2026-11-07.
+Checked 2026-11-01; the Uruguay, Argentina and Paraguay sections on 2026-11-07.
 
 ## Spain
 
@@ -41,6 +41,19 @@ Temporary residence by nationality (Mercosur) is now route version `ar-mercosur-
 | Not modeled: passport or Mercosur travel document; Argentine criminal record (over 16) and records from every country lived in for more than a year in the last three years; proof of address and regular entry; the application is made from inside Argentina; for minors, a birth certificate and a parent's authorization; at entry, a sworn statement of health insurance (Ley 25.871, art. 35, as worded by Decreto 366/2025). The fee follows the directorate's table of migration fees, which is not read yet | [DNM](https://www.argentina.gob.ar/servicio/obtener-una-residencia-temporaria-por-nacionalidad-mercosur), [Ley 25.871](https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion) |
 | After two continuous years of temporary residence, a Mercosur or associated national can apply for permanent residence (Decreto 616/2010, art. 22 c); since Decreto 366/2025 the applicant must prove enough means to live on and no disqualifying criminal record (Ley 25.871, art. 22). Not a route yet | [Decreto 616/2010](https://www.argentina.gob.ar/normativa/nacional/decreto-616-2010-167004/texto), [Ley 25.871](https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion) |
 
+## Paraguay
+
+Mercosur temporary residence is now route version `py-mercosur-temporary` 1 in `packages/knowledge/data/routes`, verified on 2026-11-07 against the laws on www.bacn.gov.py and the migration directorate's page on migraciones.gov.py. It grants two years, not renewable; the holder may then ask for Mercosur permanent residence (Ley 3578, art. 5), which is not a route yet. Each listed national qualifies on their own nationality if it is native, so a Brazilian child born a Brazilian qualifies as a Brazilian. A family member without a listed nationality comes in through art. 9.2 of the Residence Agreement: a spouse, an unmarried child or stepchild under 18, or a parent who depends on a principal native of a state that signed the agreement Paraguay approved by Ley 3578 (Argentina, Bolivia, Brazil, Chile, Uruguay) is a dependent; anyone else in those relationships shows as possible. Accepted readings: the agreement does not define family members, so the route takes the list in the migration law's reunification principle (Ley 6984, art. 4.10: parents, spouses, unmarried minor children, adult children with a disability) and reads a dependent stepchild as a child, as the Uruguay and Argentina versions do. That list names no partner, and Ley 6984 never mentions a stable union, so a partner is not a dependent, not even a possible one: a rule that can only answer "not known" cannot pass the cases' coverage check, and the law's text supports leaving partners out. A later version should add partners if the directorate admits them (see OPEN-QUESTIONS). The Civil Code's rule for periods of years (arts. 339 and 340, in the chapter on juristic acts) is read as the convention for ages too, so a 29 February birthday counts on 28 February.
+
+| Fact | Source |
+| --- | --- |
+| Nationals of the agreement's states get temporary residence of up to two years (art. 4) and may turn it into permanent residence in the 90 days before it expires (art. 5); a national is one by origin or naturalized for five years (art. 2); family members without a state party's nationality get a residence like that of the person they depend on (art. 9.2) | [Ley 3578/2008](https://www.bacn.gov.py/leyes-paraguayas/1104/x) |
+| The states covered, as the migration directorate lists them: Argentina, Brazil, Uruguay, Bolivia, Chile, Peru, Colombia and Ecuador. Two years, not renewable, unlike the general temporary residence of Ley 6984, art. 46, which can be extended once. Venezuela, Guyana and Suriname are not listed | [DNM, Residencia Temporaria Mercosur](https://migraciones.gov.py/residencia-temporaria-mercosur/) |
+| Family reunification covers parents, spouses, unmarried minor children and adult children with a disability (Ley 6984, art. 4.10). The law was published on 2022-10-18 and binds from the next day (Civil Code, art. 1), which is the version's start | [Ley 6984/2022](https://www.bacn.gov.py/leyes-paraguayas/10973/x) |
+| Ages: full capacity at 18 (Civil Code art. 36, as worded by Ley 2169/2003); a period of years ends on the same day number, or on the last day of a shorter month (arts. 339 and 340) | [Ley 2169/2003](https://www.bacn.gov.py/leyes-paraguayas/4845/x), [Código Civil, libro segundo](https://www.bacn.gov.py/leyes-paraguayas/5299/x) |
+| Not modeled: a naturalized national's five years, since no fact reads how long a citizenship has been held, so a non-native citizenship of a listed state shows as possible; an adult child's disability, so unmarried adult children show as possible; whether art. 9.2 also binds Paraguay for principals from Peru, Colombia and Ecuador, which acceded later, so their family members show as possible | [Ley 3578/2008](https://www.bacn.gov.py/leyes-paraguayas/1104/x), [Ley 6984/2022](https://www.bacn.gov.py/leyes-paraguayas/10973/x) |
+| Not modeled: identity document, birth and civil-status certificates, criminal records from the country of origin and Paraguay's police (from 14), proof of entry; minors sign with both parents, who hold or apply for residence at the same time. The fee is Gs. 2,341,540 (cash), which the version does not record yet | [DNM, Residencia Temporaria Mercosur](https://migraciones.gov.py/residencia-temporaria-mercosur/) |
+
 ## Germany
 
 | Fact | Source |
@@ -67,7 +80,7 @@ Temporary residence by nationality (Mercosur) is now route version `ar-mercosur-
 
 | Destination | Starting point |
 | --- | --- |
-| Paraguay, Chile | Mercosur Residence Agreement (**unverified** details per country) |
+| Chile | Mercosur Residence Agreement (**unverified** details per country) |
 | Canada | Express Entry points system |
 | Ireland | Critical Skills Employment Permit and general work permits |
 | Australia, New Zealand | Points-based skilled visas |
