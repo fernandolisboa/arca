@@ -8,6 +8,7 @@ describe('the display catalog (spec 0007, R7)', () => {
   it('holds every seed version with its cases', () => {
     expect(routes.sort()).toEqual([
       'ar-mercosur-temporary',
+      'cl-mercosur-temporary',
       'es-non-lucrative',
       'it-descent',
       'pl-descent',

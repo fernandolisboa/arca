@@ -1,0 +1,218 @@
+{
+  "schemaVersion": 1,
+  "routeId": "cl-mercosur-temporary",
+  "number": 1,
+  "title": "Chilean temporary residence for nationals of the Mercosur Residence Agreement states (Argentina, Bolivia, Brazil, Paraguay, Uruguay)",
+  "country": "CL",
+  "tags": ["regional-agreement", "temporary-residence"],
+  "effectiveFrom": "2022-05-14",
+  "status": "open",
+  "currency": "CLP",
+  "leapDayBirthday": "feb-28",
+  "leapDayBirthdaySources": ["codigo-civil"],
+  "sources": [
+    {
+      "id": "ley-21325",
+      "url": "https://www.bcn.cl/leychile/navegar?idNorma=1158549",
+      "title": "Ley N.º 21.325 (migration law), published 2021-04-20: art. 70 N.º 13, residence by reciprocity or treaty; art. 74, dependents and the principal's proof of stable income for their upkeep",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "decreto-177",
+      "url": "https://www.bcn.cl/leychile/navegar?idNorma=1176043",
+      "title": "Decreto N.º 177/2022 (temporary residence subcategories), in force 2022-05-14: art. 46, treaty residence on the treaty's terms; arts. 72 to 74, dependents and the principal's means",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "sermig-mercosur",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/subcategorias/reciprocidad-internacional/",
+      "title": "Servicio Nacional de Migraciones: Mercosur temporary residence (subcategory 15) for nationals of Argentina, Bolivia, Brazil, Paraguay and Uruguay, up to two years, applied for from abroad",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "sermig-dependents",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/",
+      "title": "Servicio Nacional de Migraciones: dependents of a temporary resident and their documents, including the principal's means measured against the Social Development Ministry's indicators",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "codigo-civil",
+      "url": "https://www.bcn.cl/leychile/navegar?idNorma=172986",
+      "title": "Civil Code: art. 26, of age at 18; art. 48, a period of years started on a day the end month lacks ends on its last day, which also applies to ages",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "mercosur-residence-agreement",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "title": "Text of the Mercosur, Bolivia and Chile Residence Agreement, as approved by Paraguay's Ley N.º 3578/2008: art. 2, nationals by origin or naturalized for five years",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "cl",
+      "number": 1
+    },
+    {
+      "id": "py",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "mercosur-nationality",
+      "title": "National by origin of Argentina, Bolivia, Brazil, Paraguay or Uruguay, or naturalized there for five years or more",
+      "expression": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "intersects",
+            "list": {
+              "op": "fact",
+              "key": "principal.citizenshipsFromBirth"
+            },
+            "set": {
+              "op": "tokens",
+              "values": ["AR", "BO", "BR", "PY", "UY"]
+            }
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "intersects",
+                "list": {
+                  "op": "fact",
+                  "key": "principal.citizenships"
+                },
+                "set": {
+                  "op": "tokens",
+                  "values": ["AR", "BO", "BR", "PY", "UY"]
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["ley-21325", "decreto-177", "sermig-mercosur", "mercosur-residence-agreement"]
+    }
+  ],
+  "assessments": [],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse; the principal must also prove stable income for their upkeep, which is not checked",
+      "path": ["spouse"],
+      "condition": {
+        "op": "bool",
+        "value": true
+      },
+      "sources": ["ley-21325", "decreto-177", "sermig-dependents"]
+    },
+    {
+      "id": "partner",
+      "title": "Partner in a genuine cohabiting relationship; the principal must also prove stable income for their upkeep, which is not checked",
+      "path": ["partner"],
+      "condition": {
+        "op": "bool",
+        "value": true
+      },
+      "sources": ["ley-21325", "decreto-177", "sermig-dependents"]
+    },
+    {
+      "id": "children",
+      "title": "Children under 18; children of 18 or more, who qualify only with a disability or when under 24 and studying at an institution Chile recognizes, neither of which is recorded: possible",
+      "path": ["child"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["ley-21325", "decreto-177", "sermig-dependents", "codigo-civil"]
+    },
+    {
+      "id": "spouse-children",
+      "title": "The spouse's children under 18; children of 18 or more, who qualify only with a disability or when under 24 and studying at an institution Chile recognizes, neither of which is recorded: possible",
+      "path": ["spouse", "child"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["ley-21325", "decreto-177", "sermig-dependents", "codigo-civil"]
+    },
+    {
+      "id": "partner-children",
+      "title": "The partner's children under 18; children of 18 or more, who qualify only with a disability or when under 24 and studying at an institution Chile recognizes, neither of which is recorded: possible",
+      "path": ["partner", "child"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["ley-21325", "decreto-177", "sermig-dependents", "codigo-civil"]
+    }
+  ],
+  "costs": [],
+  "durations": []
+}
