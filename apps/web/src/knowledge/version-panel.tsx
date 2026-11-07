@@ -2,6 +2,7 @@ import type { VersionView } from '@arca/api-contract/client';
 import type { Messages } from '@arca/i18n';
 import { Button, Icon, StatusChip, menuItemClass } from '@arca/ui';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { CheckReport } from './checks.js';
 import { Decision, decideVersion } from './decision.js';
 import { ChangeList, CheckAndHash, card, changeLines, surface } from './review-parts.js';
 import { ExpressionTree } from './expression-tree.js';
@@ -327,7 +328,11 @@ function DecisionStep({
           </div>
         ))}
       </dl>
-      <CheckAndHash hash={view.hash} words={words} />
+      <CheckAndHash
+        hash={view.hash}
+        check={<CheckReport view={view} words={words} />}
+        words={words}
+      />
       <Decision
         state={view.state}
         decide={(kind) => decideVersion(kind, view)}

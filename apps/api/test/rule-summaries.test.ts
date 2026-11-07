@@ -1,7 +1,8 @@
 import { identityKey, parseCalendarDate } from '@arca/domain';
 import type { LogEntry, Logger } from '@arca/telemetry';
 import { describe, expect, it } from 'vitest';
-import { createRuleSummaries, summaryContent } from '../src/knowledge/summaries.js';
+import { createRuleSummaries } from '../src/knowledge/summaries.js';
+import { summaryContent } from '../src/knowledge/version-content.js';
 import { memorySummaryStore, type RuleSummaryStore } from '../src/knowledge/summary/store.js';
 import {
   type Summarizer,
