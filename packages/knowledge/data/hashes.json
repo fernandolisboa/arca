@@ -42,6 +42,10 @@
     {
       "path": "routes/us-eb5/2",
       "sha256": "13d3026c79ee12f628822211dcc3a9ee988091560162199ff4b1c983dfd25a72"
+    },
+    {
+      "path": "routes/uy-mercosur-permanent/1",
+      "sha256": "59a1a20b3e9f7445a8ff57f736714321ceb257a99ef2ec0fec28e3297fac90af"
     }
   ]
 }

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "routeId": "uy-mercosur-permanent",
+  "number": 1,
+  "title": "Uruguayan permanent residence for nationals of Mercosur member and associated states",
+  "country": "UY",
+  "tags": ["regional-agreement", "permanent-residence"],
+  "effectiveFrom": "2023-02-17",
+  "status": "open",
+  "currency": "UYU",
+  "sources": [
+    {
+      "id": "ley-18250",
+      "url": "https://www.impo.com.uy/bases/leyes/18250-2008",
+      "title": "Ley N.º 18.250 (migration law), article 33 B): nationals of Mercosur member and associated states who prove that nationality are permanent residents",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "ley-20075",
+      "url": "https://www.impo.com.uy/bases/leyes/20075-2022",
+      "title": "Ley N.º 20.075, article 169: the current text of article 33, in force 120 days after its promulgation on 2022-10-20",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "decreto-45-2023",
+      "url": "https://www.impo.com.uy/bases/decretos/45-2023",
+      "title": "Decreto N.º 45/023, article 2: the national applies with a valid passport or identity document, before the Ministry of the Interior or a consulate",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "dnm-residencia-legal",
+      "url": "https://www.gub.uy/tramites/residencia-legal",
+      "title": "Dirección Nacional de Migración, Residencia legal: Mercosur permanent residence for nationals of AR, BO, BR, CL, CO, EC, GY, PE, PY, SR and VE",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "uy",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "mercosur-nationality",
+      "title": "Holds the nationality of a Mercosur member or associated state: Argentina, Bolivia, Brazil, Chile, Colombia, Ecuador, Guyana, Paraguay, Peru, Suriname or Venezuela",
+      "expression": {
+        "op": "intersects",
+        "list": {
+          "op": "fact",
+          "key": "principal.citizenships"
+        },
+        "set": {
+          "op": "tokens",
+          "values": ["AR", "BO", "BR", "CL", "CO", "EC", "GY", "PE", "PY", "SR", "VE"]
+        }
+      },
+      "sources": ["ley-18250", "ley-20075", "decreto-45-2023", "dnm-residencia-legal"]
+    }
+  ],
+  "assessments": [],
+  "dependents": [],
+  "costs": [],
+  "durations": []
+}

@@ -13,6 +13,17 @@ The non-lucrative residence visa is now route version `es-non-lucrative` 1 in `p
 | The Democratic Memory Law ("Lei dos Netos") closed new applications in October 2025 | [Eurodicas](https://www.eurodicas.com.br/?p=236) |
 | Golden visa abolished | **Unverified** |
 
+## Uruguay
+
+Mercosur permanent residence is now route version `uy-mercosur-permanent` 1 in `packages/knowledge/data/routes`, verified on 2026-11-07 against IMPO and the migration directorate's page on gub.uy. Each person applies on their own nationality, so the route has no dependents: a Brazilian child qualifies as a Brazilian, not through a parent. A spouse from outside the listed states is not covered by this route (article 33 A covers only the family of Uruguayans).
+
+| Fact | Source |
+| --- | --- |
+| Nationals of Mercosur member and associated states who prove that nationality are permanent residents (Ley 18.250, art. 33 B, as worded by Ley 20.075, art. 169, in force from 2023-02-17, 120 days after promulgation on 2022-10-20) | [Ley 18.250](https://www.impo.com.uy/bases/leyes/18250-2008), [Ley 20.075](https://www.impo.com.uy/bases/leyes/20075-2022) |
+| The states covered: Argentina, Bolivia, Brazil, Chile, Colombia, Ecuador, Guyana, Paraguay, Peru, Suriname and Venezuela | [DNM, Residencia legal](https://www.gub.uy/tramites/residencia-legal) |
+| Application with a valid passport or identity document; adults sign a sworn statement of no criminal record and present records from every country lived in for more than six months in the last five years; Uruguayan vaccination certificate. Not modeled: the case records none of these | [Decreto 45/023, art. 2](https://www.impo.com.uy/bases/decretos/45-2023) |
+| The ministry decides within 90 business days | [Ley 18.250, art. 33](https://www.impo.com.uy/bases/leyes/18250-2008) |
+
 ## Germany
 
 | Fact | Source |
@@ -39,7 +50,7 @@ The non-lucrative residence visa is now route version `es-non-lucrative` 1 in `p
 
 | Destination | Starting point |
 | --- | --- |
-| Uruguay, Paraguay, Argentina, Chile | Mercosur Residence Agreement (**unverified** details per country) |
+| Paraguay, Argentina, Chile | Mercosur Residence Agreement (**unverified** details per country) |
 | Canada | Express Entry points system |
 | Ireland | Critical Skills Employment Permit and general work permits |
 | Australia, New Zealand | Points-based skilled visas |

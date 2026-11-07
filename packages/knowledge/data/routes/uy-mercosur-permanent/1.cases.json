@@ -1,0 +1,310 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "brazilian-adult",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1985-04-12",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1985-04-12",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "brazilian-child",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "2016-09-30",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2016-09-30",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "venezuelan-adult",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1990-01-15",
+            "citizenships": [
+              {
+                "country": "VE",
+                "acquired": "1990-01-15",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "portuguese-and-brazilian",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1979-11-02",
+            "citizenships": [
+              {
+                "country": "PT",
+                "acquired": "2010-06-01",
+                "lost": "none",
+                "basis": "naturalization"
+              },
+              {
+                "country": "BR",
+                "acquired": "1979-11-02",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "portuguese-only",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1982-03-08",
+            "citizenships": [
+              {
+                "country": "PT",
+                "acquired": "1982-03-08",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "united-states-only",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1975-07-04",
+            "citizenships": [
+              {
+                "country": "US",
+                "acquired": "1975-07-04",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "brazilian-citizenship-lost",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1970-02-20",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1970-02-20",
+                "lost": "2015-05-05",
+                "basis": "birth"
+              },
+              {
+                "country": "IT",
+                "acquired": "2014-01-10",
+                "lost": "none",
+                "basis": "naturalization"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "brazilian-from-a-later-naturalization",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1980-08-08",
+            "citizenships": [
+              {
+                "country": "PT",
+                "acquired": "1980-08-08",
+                "lost": "none",
+                "basis": "birth"
+              },
+              {
+                "country": "BR",
+                "acquired": "2026-11-01",
+                "lost": "none",
+                "basis": "naturalization"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "brazilian-citizenship-with-no-recorded-loss-status",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1985-04-12",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1985-04-12",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": ["principal.citizenships@p1"]
+      }
+    }
+  ]
+}
