@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "ar",
+  "number": 1,
+  "issuer": "Argentine Republic",
+  "hosts": [
+    {
+      "host": "www.argentina.gob.ar",
+      "source": {
+        "id": "nic-ar-zone-requirements",
+        "url": "https://www.argentina.gob.ar/sites/default/files/infoleg/403964/disp364.pdf",
+        "title": "NIC Argentina, Disposición DNRDI 364/2024, Annex I (requirements per zone): only national, provincial, municipal and Buenos Aires City government bodies may register under .gob.ar",
+        "kind": "official",
+        "verifiedAt": "2026-11-07"
+      }
+    }
+  ]
+}
