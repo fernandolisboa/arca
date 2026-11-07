@@ -31,6 +31,8 @@ describe('roundedDecimal', () => {
     [125n, 1000n, 2, '0.12'],
     [135n, 1000n, 2, '0.14'],
     [10n, 1n, 1, '10'],
+    [-15n, 100n, 1, '-0.2'],
+    [-5n, 1000n, 2, '0'],
   ])('%d / %d to %d places is %s', (n, d, places, expected) => {
     expect(roundedDecimal(n, d, places)).toBe(expected);
   });

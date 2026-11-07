@@ -146,7 +146,9 @@ async function fetchRows(code: string, countries: readonly string[]): Promise<Wo
 async function main(): Promise<void> {
   const dataDir = fileURLToPath(new URL('../data', import.meta.url));
   const { files, issues } = await loadData(dataDir);
-  if (issues.length > 0) throw new Error('The data does not load; run the build first');
+  if (issues.length > 0) {
+    throw new Error(`The data does not load: ${issues.map((issue) => issue.file).join(', ')}`);
+  }
   const countries = routeCountries(files);
   const countriesNumber = latestNumber(files, 'countries', 'countries');
   const listNumber = latestNumber(files, 'official-domains', officialList);
