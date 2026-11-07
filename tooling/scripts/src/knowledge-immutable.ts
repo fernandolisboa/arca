@@ -36,6 +36,15 @@ export const vendoredSources = '.github/policy/vendored-sources.json';
 const hashesPath = `${dataRoot}hashes.json`;
 const casesPattern = /^packages\/knowledge\/data\/routes\/[^/]+\/[^/]+\.cases\.json$/;
 const officialPattern = /^packages\/knowledge\/data\/official-domains\/([^/]+)\/([0-9]+)\.json$/;
+const guidePattern = /^packages\/knowledge\/data\/guides\/[^/]+\/[0-9]+\.json$/;
+/**
+ * Trust roots (ADR-0014, ADR-0027): what counts as official, and what the independent check is
+ * told about a country. Each kind changes in a pull request of its own, with only its hashes.
+ */
+const trustRoots = [
+  { pattern: officialPattern, kind: 'an official-domain list' },
+  { pattern: guidePattern, kind: 'a country guide' },
+] as const;
 const regularFile = { mode: '100644', type: 'blob' };
 /** At least the build's nesting limit; the build applies its own, stricter one. */
 const maxJsonDepth = 64;
@@ -62,7 +71,7 @@ export interface KnowledgeVerdict {
 /**
  * The `knowledge-immutable` rules (spec 0002, R6 to R8): nothing under `data`, `vendor` or
  * `eval/families` that the base has may change, move or disappear; cases files, hashes.json and vendored.json only gain
- * entries; official-domain lists change alone; new vendored files match an entry already on main.
+ * entries; official-domain lists and country guides change alone; new vendored files match an entry already on main.
  */
 export async function checkKnowledgeChange(change: KnowledgeChange): Promise<KnowledgeVerdict> {
   const check = new Check(change);
@@ -120,7 +129,7 @@ class Check {
         this.#checkCases(path, undefined, await this.#json(head, path));
       }
     }
-    this.#checkOfficialAlone();
+    this.#checkTrustRootsAlone();
     await this.#checkHostProofs();
     await this.#checkVendored();
   }
@@ -238,15 +247,13 @@ class Check {
     }
   }
 
-  /** Official-domain lists are a trust root: a change to them is its own pull request (ADR-0014). */
-  #checkOfficialAlone(): void {
-    const official = this.#changed.filter((path) => officialPattern.test(path));
-    const others = this.#changed.filter(
-      (path) => !officialPattern.test(path) && path !== hashesPath,
-    );
-    if (official.length > 0 && others.length > 0) {
-      for (const path of official) {
-        this.#add(path, 'changes an official-domain list together with other knowledge data');
+  #checkTrustRootsAlone(): void {
+    for (const { pattern, kind } of trustRoots) {
+      const roots = this.#changed.filter((path) => pattern.test(path));
+      const others = this.#changed.filter((path) => !pattern.test(path) && path !== hashesPath);
+      if (roots.length === 0 || others.length === 0) continue;
+      for (const path of roots) {
+        this.#add(path, `changes ${kind} together with other knowledge data`);
       }
     }
   }

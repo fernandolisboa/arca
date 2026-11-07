@@ -1,6 +1,6 @@
 # @arca/knowledge
 
-The knowledge base as data: route versions, country sets, official-domain lists and the countries files, validated, hashed and bundled into the API ([spec 0002](../../docs/specs/0002-rules-engine-and-knowledge-base.md), [ADR-0014](../../docs/adr/0014-knowledge-base-as-reviewed-data.md)).
+The knowledge base as data: route versions, country sets, official-domain lists, country guides and the countries files, validated, hashed and bundled into the API ([spec 0002](../../docs/specs/0002-rules-engine-and-knowledge-base.md), [ADR-0014](../../docs/adr/0014-knowledge-base-as-reviewed-data.md)).
 
 ## Layout
 
@@ -13,6 +13,7 @@ data/routes/<route-id>/<n>.json             one file per route version
 data/routes/<route-id>/<n>.cases.json       table-driven cases for that version (R8)
 data/indicators/<id>/<n>.json               country indicators for the destination comparison (ADR-0026)
 data/comparisons/<id>/<n>.json              comparison versions: criteria and the indicators they pin
+data/guides/<country>/<n>.json              country guides for the independent check (ADR-0027)
 data/hashes.json                            committed content hashes, append-only
 scripts/                                    load, validate, hash and write the catalog; generate countries
 vendor/cldr/<release>/                      the pinned CLDR territories file, its license and manifest
@@ -24,7 +25,7 @@ test/history.test.ts                        selection over the fixture version h
 test/performance.test.ts                    the engine's trace-size bound over every fixture route (R5)
 ```
 
-Every file in `data` is immutable once on `main`. A change is a new numbered file; `hashes.json` and cases files only gain entries. The required check `knowledge-immutable` enforces this from `main` on every pull request (`tooling/scripts/src/check-knowledge-immutable.ts`, which reads hosts with the same `hostOf` the build uses, from `@arca/scripts/host`; run it locally with `pnpm check:knowledge-immutable`). It also keeps official-domain lists in pull requests of their own and admits a file under `vendor` only once `.github/policy/vendored.json` on `main` approves it.
+Every file in `data` is immutable once on `main`. A change is a new numbered file; `hashes.json` and cases files only gain entries. The required check `knowledge-immutable` enforces this from `main` on every pull request (`tooling/scripts/src/check-knowledge-immutable.ts`, which reads hosts with the same `hostOf` the build uses, from `@arca/scripts/host`; run it locally with `pnpm check:knowledge-immutable`). It also keeps official-domain lists, and country guides, in pull requests of their own and admits a file under `vendor` only once `.github/policy/vendored.json` on `main` approves it.
 
 ## Building
 
@@ -33,7 +34,7 @@ Every file in `data` is immutable once on `main`. A change is a new numbered fil
 1. Reads every file under `data`. A file outside the layout, a symbolic link or a file over 1 MB is an issue.
 2. Parses each one in the accepted JSON subset: UTF-8 without a byte order mark, integers only and within ±(2^53 − 1), strings in NFC (checked, never normalized) with no control, format or invisible characters, no duplicate keys, bounded nesting.
 3. Validates it against the schemas in `@arca/domain` and the rules of spec 0002 R6: IDs and numbers match the path, numbers are contiguous, pins resolve to valid files, official sources sit on a pinned official host, members and route countries are in the pinned countries files, `verifiedAt` is not after the build date, and version dates and corrections stay inside their bounds.
-4. Hashes each route version, country set, country indicator and comparison version: SHA-256 over the RFC 8785 canonical JSON of `{ "version": <file>, "pinned": { "<kind>/<id>/<number>": <file>, … } }`, holding every file it pins, transitively.
+4. Hashes each route version, country set, country indicator, comparison version and country guide: SHA-256 over the RFC 8785 canonical JSON of `{ "version": <file>, "pinned": { "<kind>/<id>/<number>": <file>, … } }`, holding every file it pins, transitively.
 5. Compares every hash, and the hashes of the RFC 8785 test vectors, with `data/hashes.json`.
 6. Writes `src/generated/catalog.ts`. Any issue fails the build and deletes the module, so no tool keeps serving an earlier catalog.
 
@@ -48,6 +49,17 @@ Every file in `data` is immutable once on `main`. A change is a new numbered fil
 The destination comparison reads `comparisons/<id>/<n>.json`, which pins the `indicators/<id>/<n>.json` it scores ([ADR-0026](../../docs/adr/0026-destination-comparison-data.md)). An indicator holds one value per country (a decimal string or a token), its year and the source it comes from; a country without a value is unknown. A criterion is `indicator` (scored linearly from `zeroAt` to `tenAt`, so the anchors also give the direction), `category` (a score per token, every token scored) or `personal` (rated by each person). Refreshing values or adding a criterion is a new indicator version and a new comparison version, activated as a whole (an indicator's hash is recorded in `hashes.json` but never activated alone, and the build allows exactly one comparison series); criterion IDs stay stable across versions, since people's weights and ratings point at them. `@arca/knowledge` exports `comparisonCatalog`, which hands out a full entry only for an active version, like `routeCatalog`.
 
 To refresh the World Bank values, run `pnpm --filter @arca/knowledge comparison:fetch` (`scripts/fetch-world-bank.ts`, run by a maintainer and never in CI). For every country with a route it writes the next file of each indicator: the most recent non-empty year from the API (`mrnev=1`), rounded half-even to two decimal places, with countries the API has no value for left out. Then write the next comparison version pinning them, run the build and append the hashes it prints. The indicators it reads and their units are listed in the script.
+
+## Country guides
+
+`guides/<country>/<n>.json`, where `<country>` is the lowercase ISO 3166-1 alpha-2 code, is what a specialist in that country knows, which the independent check reads beside the pages a route version cites ([ADR-0027](../../docs/adr/0027-admins-and-the-checked-batch-activation.md)). It holds:
+
+- `laws`: the laws and regulations that govern the country's routes, each with a `title`, a `url` on a host of an official-domain list the guide pins (`officialDomains`), the date it was read (`verifiedAt`) and how it is usually amended (`amendment`).
+- `pitfalls`: known traps in reading those laws, each naming the `laws` it is about.
+
+Free text (`amendment` and a pitfall's `text`) is plain prose of at most 600 characters, with no angle brackets and no URLs. A guide is never a source and never widens what counts as official: the pages a version cites stay the authority, and the check ranks the guide below them. The build validates guides, hashes each one with the files it pins like other knowledge files, and `@arca/knowledge` exports `countryGuide(code)`, which answers a country's highest guide version and its hash, by the uppercase code.
+
+A guide is a trust root: a pull request that adds one changes no other knowledge data except the `hashes.json` append (guides for several countries may land together). A change to a guide is a new numbered file, so a report that recorded the old guide's hash goes stale. Write a guide in an authoring session from the official texts themselves, covering every route of the country in the catalog.
 
 ## Tags
 
@@ -107,5 +119,5 @@ A source is stale when it was verified more than 90 days before the context's `t
 
 ## Runtime entry points
 
-- `@arca/knowledge` exports `routeCatalog`, the `RouteCatalog` the engine reads: every version's identity, and a full entry only for an exact identity (route, number and content hash) whose decision state is active.
+- `@arca/knowledge` exports `routeCatalog`, the `RouteCatalog` the engine reads: every version's identity, and a full entry only for an exact identity (route, number and content hash) whose decision state is active. It also exports `countryGuide`, the lookup of each country's current guide.
 - `@arca/knowledge/reproduction` exports `reproductionEntry(routeId, number, hash)`, which ignores decision states so an old evaluation stays reproducible. Modules and folders named `reproduction` are reserved for it: lint allows importing them only in the cases runner (`test/cases`), the reproduction path (`src/reproduction`, `test/reproduction`) and the lookup's own test, and those files may not re-export it with `export … from` (passing it on any other way is for review to catch). Inside this package only the two entry points read the built catalog.

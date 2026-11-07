@@ -419,6 +419,72 @@ describe('knowledge-immutable', () => {
     });
   });
 
+  describe('country guides', () => {
+    const guide = `${data}guides/qm/1.json`;
+    const withHash = (tree: Tree, path: string): void => {
+      hashesOf(tree).files.push({ path, sha256: '5' });
+    };
+
+    it('accepts new guides alone, with their hashes', async () => {
+      expect(
+        await problems((tree) => {
+          tree[guide] = { number: 1 };
+          tree[`${data}guides/qn/1.json`] = { number: 1 };
+          withHash(tree, 'guides/qm/1');
+          withHash(tree, 'guides/qn/1');
+        }),
+      ).toEqual([]);
+    });
+
+    it.each<[string, (tree: Tree) => void, string[]]>([
+      [
+        'a guide added with a route version',
+        (tree) => {
+          tree[guide] = { number: 1 };
+          tree[`${data}routes/qm-work/2.json`] = { number: 2 };
+        },
+        [`${guide}: changes a country guide together with other knowledge data`],
+      ],
+      [
+        'a guide added with a cases entry',
+        (tree) => {
+          tree[guide] = { number: 1 };
+          casesOf(tree).push(caseEntry('c2'));
+        },
+        [`${guide}: changes a country guide together with other knowledge data`],
+      ],
+      [
+        'a guide added with an official-domain list',
+        (tree) => {
+          tree[guide] = { number: 1 };
+          tree[`${data}official-domains/qm-gov/2.json`] = officialList([
+            ['gov.example', 'https://registry.example/gov'],
+          ]);
+        },
+        [
+          `${data}official-domains/qm-gov/2.json: changes an official-domain list together with other knowledge data`,
+          `${guide}: changes a country guide together with other knowledge data`,
+        ],
+      ],
+    ])('refuses %s', async (_, change, messages) => {
+      const found = await problems(change);
+      for (const message of messages) expect(found).toContain(message);
+    });
+
+    it('keeps a merged guide immutable', async () => {
+      const base = baseTree();
+      base[guide] = { number: 1 };
+      expect(
+        await problems(
+          (tree) => {
+            tree[guide] = { number: 1, title: 'changed' };
+          },
+          { base },
+        ),
+      ).toContain(`${guide}: was modified; it is immutable, so add a new numbered file instead`);
+    });
+  });
+
   describe('official-domain lists', () => {
     const list2 = `${data}official-domains/qm-gov/2.json`;
 

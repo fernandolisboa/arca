@@ -147,7 +147,7 @@ export function emptyHashes(): { schemaVersion: 1; vectors: object[]; files: obj
 export async function builtEntries(tree = baseTree()): Promise<ReadonlyMap<string, CatalogEntry>> {
   const { entries, issues } = await buildKnowledge(await writeTree(tree), buildDate, fixtures);
   expect(issues).toEqual([]);
-  const literal = /JSON\.parse\((.*)\);$/m.exec(catalogModule(entries))?.[1] ?? '';
+  const literal = /JSON\.parse\((.*)\);$/m.exec(catalogModule({ entries }))?.[1] ?? '';
   return parseEntries(JSON.parse(JSON.parse(literal) as string));
 }
 

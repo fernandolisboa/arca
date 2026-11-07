@@ -280,7 +280,7 @@ describe('comparison data (ADR-0026)', () => {
   it('reaches the runtime only through the generated module, and only when active', async () => {
     const { entries, countries, comparisons, issues } = await build(comparisonTree());
     expect(issues).toEqual([]);
-    const module = catalogModule(entries, countries, [], comparisons);
+    const module = catalogModule({ entries, countries, comparisons });
     const literal = /^export const comparisonData: unknown = JSON\.parse\((.*)\);$/m.exec(
       module,
     )?.[1];
