@@ -274,6 +274,35 @@ describe('runCases', () => {
     expect(uncovered.problems.some((problem) => problem.includes('never includes'))).toBe(false);
   });
 
+  it('reads a negation by its operand, never asking a literal false to make anyone possible', async () => {
+    const family = {
+      ...citizen,
+      members: ['p1', 'p2'],
+      people: [{ ...citizen.people[0], recordedInFull: ['partners'] }, { id: 'p2' }],
+      relationships: [{ kind: 'partner', people: ['p1', 'p2'], start: '2010-01-01', end: 'none' }],
+    };
+    const tree = (condition: object, possibleDependents: readonly string[]) => ({
+      ...baseTree(),
+      'routes/qm-work/1.json': routeVersion({
+        dependents: [
+          { id: 'partner', title: 'Partner', path: ['partner'], condition, sources: ['law'] },
+        ],
+      }),
+      'routes/qm-work/1.cases.json': {
+        schemaVersion: 1,
+        cases: [
+          { ...eligible, snapshot: family, expected: { ...eligible.expected, possibleDependents } },
+        ],
+      },
+    });
+    const notUnmodeled = await run(tree({ op: 'not', operand: { op: 'unmodeled' } }, ['p2']));
+    expect(notUnmodeled.problems.some((problem) => problem.includes('Dependent rule'))).toBe(false);
+    const notTrue = await run(tree({ op: 'not', operand: { op: 'bool', value: true } }, []));
+    expect(notTrue.problems).toContain(
+      'routes/qm-work/1.cases.json: Dependent rule partner never includes anyone',
+    );
+  });
+
   it('does not count a rule as including someone another rule included', async () => {
     const students = {
       id: 'students',
