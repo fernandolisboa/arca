@@ -16,3 +16,4 @@ Conventions:
 | [ancestry.md](ancestry.md) | Citizenship by descent: Italy, Portugal, and the E-2 link |
 | [brazil-exit.md](brazil-exit.md) | Brazilian side: capital gains, FX tax, tax exit, source of funds |
 | [ai-vendors.md](ai-vendors.md) | AI vendors under evaluation |
+| [routes/](routes/) | One file per route: its notes and the record of each [rule audit](../runbooks/rule-audit.md), newest first |
