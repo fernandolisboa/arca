@@ -234,6 +234,10 @@
     {
       "path": "guides/py/1",
       "sha256": "5e135ffa1fc1c59342f2e1eddf3eadcd9a530eb32bdef0cb49aef483490a255f"
+    },
+    {
+      "path": "routes/ie-critical-skills/2",
+      "sha256": "456a1aea163a3c58cfce48140f2100ecc4f8fb10f88a0d4e6899af530e5b9d96"
     }
   ]
 }
