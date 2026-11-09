@@ -50,10 +50,21 @@ const blocks = new Set([
 ]);
 
 /**
- * The cells of a table row stay on the row's line, a space apart, so a row reads as the one
- * statement it is: what a fee is for and the fee, side by side.
+ * The cells of a table row stay on the row's line, so a row reads as the one statement it is:
+ * what a fee is for and the fee, side by side. A bar stands between them, not a space, so the
+ * digits of two cells never read as one number.
  */
 const cells = new Set(['td', 'th']);
+const cellEnd = '\u001F';
+const cellBar = ' | ';
+
+/** A line with its whitespace collapsed and a bar between the cells that have text. */
+const lineText = (line: string) =>
+  line
+    .split(cellEnd)
+    .map((cell) => cell.replace(/\s+/gu, ' ').trim())
+    .filter((cell) => cell !== '')
+    .join(cellBar);
 
 const hiddenStyle =
   /(?:^|;)\s*(?:display\s*:\s*none|visibility\s*:\s*hidden|opacity\s*:\s*0*(?:\.0*)?|font-size\s*:\s*0*(?:\.0*)?(?:px|pt|em|rem|%)?|color\s*:\s*transparent)\s*(?:!important\s*)?(?:;|$)/i;
@@ -77,14 +88,14 @@ function hidden(attrs: readonly { readonly name: string; readonly value: string 
  * A page's text as a reader sees it (ADR-0027): parsed by parse5, a parser with no scripts, no
  * network and no DOM emulation, then walked without recursion, so a deeply nested page cannot
  * overflow the stack. Scripts, styles, templates, comments, hidden elements and struck-through
- * text are dropped; block elements break lines, and a table row is one line; whitespace collapses
- * within each line.
+ * text are dropped; block elements break lines, and a table row is one line with a bar between its
+ * cells; whitespace collapses within each line.
  */
 export function htmlToText(html: string): string {
   const parts: string[] = [];
-  const stack: (Node | '\n' | ' ')[] = [parse(html)];
+  const stack: (Node | '\n' | typeof cellEnd)[] = [parse(html)];
   for (let next = stack.pop(); next !== undefined; next = stack.pop()) {
-    if (next === '\n' || next === ' ') {
+    if (next === '\n' || next === cellEnd) {
       parts.push(next);
       continue;
     }
@@ -95,7 +106,11 @@ export function htmlToText(html: string): string {
     if (!('childNodes' in next)) continue;
     if ('tagName' in next) {
       if (dropped.has(next.tagName) || struck.has(next.tagName) || hidden(next.attrs)) continue;
-      const around = blocks.has(next.tagName) ? '\n' : cells.has(next.tagName) ? ' ' : undefined;
+      const around = blocks.has(next.tagName)
+        ? '\n'
+        : cells.has(next.tagName)
+          ? cellEnd
+          : undefined;
       if (around !== undefined) {
         parts.push(around);
         stack.push(around);
@@ -109,7 +124,7 @@ export function htmlToText(html: string): string {
   return parts
     .join('')
     .split('\n')
-    .map((line) => line.replace(/\s+/gu, ' ').trim())
+    .map(lineText)
     .filter((line) => line !== '')
     .join('\n');
 }

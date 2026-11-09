@@ -18,7 +18,7 @@ const careful: Record<string, string> = {
   'dependent:spouse':
     'The spouse of the holder of a residence permit under section 4 who depends on the holder',
   'dependent:children': 'Unmarried children under 18 years of age who depend on the holder',
-  'cost:permit-fee': 'Residence permit for pensioners, first issue EUR 85',
+  'cost:permit-fee': 'Residence permit for pensioners, first issue | EUR 85',
   'requirement:gross-salary':
     'The gross salary stated in the job offer shall be at least EUR 2,800',
   'assessment:job-offer':
@@ -26,7 +26,7 @@ const careful: Record<string, string> = {
   'requirement:means':
     'meios de subsistência de, no mínimo, EUR 700,00 por cada mês de permanência',
 };
-const employeeFee = 'Residence permit for employees EUR 120';
+const employeeFee = 'Residence permit for employees | EUR 120';
 
 /** Answers every item as matching with `quote`'s passage, on the item's first cited page. */
 function answering(quote: (key: string, routeId: string) => string): RuleChecker {

@@ -3,6 +3,7 @@ import type { AddressInfo, LookupFunction } from 'node:net';
 import type { RequestOptions, request as httpsRequest } from 'node:https';
 import { gzipSync } from 'node:zlib';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { statesValue } from '@arca/domain';
 import { globallyReachable } from '../src/knowledge/check/addresses.js';
 import {
   type FetchLimits,
@@ -391,13 +392,22 @@ describe('htmlToText', () => {
     expect(htmlToText(`${'<div>'.repeat(5_000)}deep${'</div>'.repeat(5_000)}`)).toBe('deep');
   });
 
-  it('keeps a table row on one line, its cells a space apart', () => {
+  it('keeps a table row on one line, with a bar between its cells', () => {
     expect(
       htmlToText(
         '<table><tr><th>Application</th><th>Fee</th></tr>' +
           '<tr><td>First issue</td><td>EUR 85</td></tr>' +
           '<tr><td><p>Renewal</p><p>each year</p></td><td>EUR 60</td></tr></table>',
       ),
-    ).toBe('Application Fee\nFirst issue EUR 85\nRenewal\neach year\nEUR 60');
+    ).toBe('Application | Fee\nFirst issue | EUR 85\nRenewal\neach year\nEUR 60');
+  });
+
+  it('never lets the digits of two cells read as one number', () => {
+    const row = htmlToText('<table><tr><td>Category 2</td><td> </td><td>300 EUR</td></tr></table>');
+    expect(row).toBe('Category 2 | 300 EUR');
+    const three = { kind: 'number', value: '300' } as const;
+    const joined = { kind: 'number', value: '2300' } as const;
+    expect(statesValue(three, row)).toBe(true);
+    expect(statesValue(joined, row)).toBe(false);
   });
 });

@@ -509,7 +509,7 @@ export const checkCases: readonly CheckCase[] = [
       ),
     ),
     target: 'cost:permit-fee',
-    lure: 'first issue EUR 95 (from 1 March 2026; until then EUR 85)',
+    lure: 'first issue | EUR 95 (from 1 March 2026; until then EUR 85)',
   },
   {
     id: 'adversarial-number-on-page',
