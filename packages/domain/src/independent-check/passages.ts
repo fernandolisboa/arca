@@ -99,12 +99,14 @@ export function splitPassages(text: string): Passage[] {
       start = position;
       hasWords = false;
     }
+    let split = false;
     while (lineEnd - start > max) {
       const end = breakBefore(text, start, start + max);
       passages.push({ start, end });
       start = end;
+      split = true;
     }
-    hasWords ||= !blank(line);
+    hasWords = split ? !blank(text.slice(start, lineEnd)) : hasWords || !blank(line);
     position = lineEnd + 1;
   }
   if (start < text.length) passages.push({ start, end: text.length });

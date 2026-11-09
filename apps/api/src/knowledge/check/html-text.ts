@@ -45,11 +45,15 @@ const blocks = new Set([
   'pre',
   'section',
   'table',
-  'td',
-  'th',
   'tr',
   'ul',
 ]);
+
+/**
+ * The cells of a table row stay on the row's line, a space apart, so a row reads as the one
+ * statement it is: what a fee is for and the fee, side by side.
+ */
+const cells = new Set(['td', 'th']);
 
 const hiddenStyle =
   /(?:^|;)\s*(?:display\s*:\s*none|visibility\s*:\s*hidden|opacity\s*:\s*0*(?:\.0*)?|font-size\s*:\s*0*(?:\.0*)?(?:px|pt|em|rem|%)?|color\s*:\s*transparent)\s*(?:!important\s*)?(?:;|$)/i;
@@ -73,14 +77,15 @@ function hidden(attrs: readonly { readonly name: string; readonly value: string 
  * A page's text as a reader sees it (ADR-0027): parsed by parse5, a parser with no scripts, no
  * network and no DOM emulation, then walked without recursion, so a deeply nested page cannot
  * overflow the stack. Scripts, styles, templates, comments, hidden elements and struck-through
- * text are dropped; block elements break lines; whitespace collapses within each line.
+ * text are dropped; block elements break lines, and a table row is one line; whitespace collapses
+ * within each line.
  */
 export function htmlToText(html: string): string {
   const parts: string[] = [];
-  const stack: (Node | '\n')[] = [parse(html)];
+  const stack: (Node | '\n' | ' ')[] = [parse(html)];
   for (let next = stack.pop(); next !== undefined; next = stack.pop()) {
-    if (next === '\n') {
-      parts.push('\n');
+    if (next === '\n' || next === ' ') {
+      parts.push(next);
       continue;
     }
     if (next.nodeName === '#text' && 'value' in next) {
@@ -90,9 +95,10 @@ export function htmlToText(html: string): string {
     if (!('childNodes' in next)) continue;
     if ('tagName' in next) {
       if (dropped.has(next.tagName) || struck.has(next.tagName) || hidden(next.attrs)) continue;
-      if (blocks.has(next.tagName)) {
-        parts.push('\n');
-        stack.push('\n');
+      const around = blocks.has(next.tagName) ? '\n' : cells.has(next.tagName) ? ' ' : undefined;
+      if (around !== undefined) {
+        parts.push(around);
+        stack.push(around);
       }
     }
     for (let index = next.childNodes.length - 1; index >= 0; index -= 1) {

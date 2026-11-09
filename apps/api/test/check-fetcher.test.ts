@@ -390,4 +390,14 @@ describe('htmlToText', () => {
   it('walks a deeply nested page without overflowing the stack', () => {
     expect(htmlToText(`${'<div>'.repeat(5_000)}deep${'</div>'.repeat(5_000)}`)).toBe('deep');
   });
+
+  it('keeps a table row on one line, its cells a space apart', () => {
+    expect(
+      htmlToText(
+        '<table><tr><th>Application</th><th>Fee</th></tr>' +
+          '<tr><td>First issue</td><td>EUR 85</td></tr>' +
+          '<tr><td><p>Renewal</p><p>each year</p></td><td>EUR 60</td></tr></table>',
+      ),
+    ).toBe('Application Fee\nFirst issue EUR 85\nRenewal\neach year\nEUR 60');
+  });
 });

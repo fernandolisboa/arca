@@ -84,6 +84,7 @@ describe('the passages of a long page (ADR-0027)', () => {
     ['blank lines before one long line', `\n\n${'x'.repeat(9_000)}`],
     ['lines of spaces between articles', [article(1), '   ', '   ', body(200), '    '].join('\n')],
     ['lines of spaces before one long line', `   \n   \n${'x'.repeat(9_000)}`],
+    ['spaces left at the end of a split line', `${'x'.repeat(2_399)}     \n${'y'.repeat(2_400)}`],
   ])('makes no blank passage of %s', (_, text) => {
     const passages = splitPassages(text);
     expect(passages[0]?.start).toBe(0);
