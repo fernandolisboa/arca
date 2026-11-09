@@ -183,8 +183,7 @@ function setup({
         {
           key: 'requirement:means',
           status: 'matches',
-          quote: 'means of at least EUR 920',
-          url: law,
+          quotes: [{ quote: 'means of at least EUR 920', url: law }],
           note: null,
           reason: null,
         },
@@ -277,8 +276,7 @@ describe('the check status in the version list (ADR-0027)', () => {
         {
           key: 'requirement:means',
           status: 'differs',
-          quote: 'means of at least EUR 920',
-          url: law,
+          quotes: [{ quote: 'means of at least EUR 920', url: law }],
           note: null,
           reason: null,
         },
@@ -324,8 +322,7 @@ describe('GET /v1/knowledge/versions/check (ADR-0027)', () => {
             kind: 'requirement',
             title: 'Means of subsistence',
             status: 'matches',
-            quote: 'means of at least EUR 920',
-            url: law,
+            quotes: [{ quote: 'means of at least EUR 920', url: law }],
             note: null,
             reason: null,
           },
@@ -392,8 +389,7 @@ const shown = (number: number, versionHash = hash(number)) => ({
 const flaggedItem = {
   key: 'requirement:means',
   status: 'differs',
-  quote: 'means of at least EUR 920',
-  url: law,
+  quotes: [{ quote: 'means of at least EUR 920', url: law }],
   note: null,
   reason: null,
 } as const;

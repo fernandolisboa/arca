@@ -208,20 +208,20 @@ function ReportItemCard({
         />
       </div>
       {item.reason !== null && <p>{t('knowledge.check.reason', { reason: item.reason })}</p>}
-      {item.quote !== null && (
-        <figure className="flex flex-col gap-1">
-          <figcaption className="text-small text-muted">{t('knowledge.check.quote')}</figcaption>
+      {item.quotes.map(({ quote, url }, index) => (
+        <figure key={`${String(index)}-${url}`} className="flex flex-col gap-1">
+          <figcaption className="text-small text-muted">
+            {t('knowledge.check.quote', { n: index + 1, total: item.quotes.length })}
+          </figcaption>
           <blockquote className="border-l-2 border-line pl-3 whitespace-pre-wrap">
-            {item.quote}
+            {quote}
           </blockquote>
+          <p className="flex flex-col gap-1 text-small">
+            <span className="text-muted">{t('knowledge.check.page')}</span>
+            <span className="font-mono break-all">{url}</span>
+          </p>
         </figure>
-      )}
-      {item.url !== null && (
-        <p className="flex flex-col gap-1 text-small">
-          <span className="text-muted">{t('knowledge.check.page')}</span>
-          <span className="font-mono break-all">{item.url}</span>
-        </p>
-      )}
+      ))}
       {item.note !== null && <p>{t('knowledge.check.note', { note: item.note })}</p>}
     </div>
   );

@@ -9,6 +9,7 @@ import {
   maxCheckItemKeyLength,
   maxNoteLength,
   maxQuoteLength,
+  maxQuotes,
 } from '@arca/domain';
 import type { Database } from '@arca/db';
 import { independentCheck } from '@arca/db/knowledge-schema';
@@ -50,14 +51,26 @@ export interface CheckReportStore {
 }
 
 const url = z.string().max(2_000);
-const storedItem = z.strictObject({
+const quote = z.string().max(maxQuoteLength);
+const itemFields = {
   key: z.string().max(maxCheckItemKeyLength),
   status: z.enum(checkStatuses),
-  quote: z.string().max(maxQuoteLength).nullable(),
-  url: url.nullable(),
   note: z.string().max(maxNoteLength).nullable(),
   reason: z.enum(checkReasons).nullable(),
+};
+/** An item as reports store it since a match may rest on several quotes. */
+const quotedItem = z.strictObject({
+  ...itemFields,
+  quotes: z.array(z.strictObject({ quote, url })).max(maxQuotes),
 });
+/** An item as reports stored it before (prompt `rule-check-3` and earlier): one quote at most. */
+const singleQuoteItem = z
+  .strictObject({ ...itemFields, quote: quote.nullable(), url: url.nullable() })
+  .transform(({ quote: text, url: page, ...rest }) => ({
+    ...rest,
+    quotes: text === null || page === null ? [] : [{ quote: text, url: page }],
+  }));
+const storedItem = z.union([quotedItem, singleQuoteItem]);
 const storedFetch = z.strictObject({
   url,
   outcome: z.enum(fetchOutcomes),

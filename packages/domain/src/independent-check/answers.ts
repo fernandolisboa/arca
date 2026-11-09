@@ -5,12 +5,17 @@ import { type CheckValue, statesValue } from './values.js';
 export const checkStatuses = ['matches', 'differs', 'could_not_check'] as const;
 export type CheckStatus = (typeof checkStatuses)[number];
 
+/** A passage and the cited page it was copied from. */
+export interface CheckQuote {
+  readonly quote: string;
+  readonly url: string;
+}
+
 /** One entry of a model's answer, as the closed answer schema parses it; still untrusted. */
 export interface CheckAnswer {
   readonly key: string;
   readonly status: CheckStatus;
-  readonly quote?: string | undefined;
-  readonly url?: string | undefined;
+  readonly quotes?: readonly CheckQuote[] | undefined;
   readonly note?: string | undefined;
 }
 
@@ -33,6 +38,7 @@ export const checkReasons = [
   'no_page_read',
   'not_answered',
   'model_could_not_check',
+  'quote_count',
   'url_not_cited',
   'page_not_read',
   'page_cut',
@@ -47,9 +53,8 @@ export type CheckReason = (typeof checkReasons)[number];
 export interface CheckedItem {
   readonly key: string;
   readonly status: CheckStatus;
-  /** The verified quote, on matches and differs only. */
-  readonly quote: string | null;
-  readonly url: string | null;
+  /** The verified quotes, each with its page, on matches and differs only; empty otherwise. */
+  readonly quotes: readonly CheckQuote[];
   /**
    * The model's short note, with links and host names taken out: what differs, or why it could
    * not check. Never on a match, and never when code is what refused the answer.
@@ -58,6 +63,8 @@ export interface CheckedItem {
   readonly reason: CheckReason | null;
 }
 
+/** An item that joins provisions may rest on a few quotes, never on more than this. */
+export const maxQuotes = 3;
 export const minQuoteLength = 12;
 export const maxQuoteLength = 800;
 export const maxNoteLength = 300;
@@ -182,14 +189,40 @@ export function plainNote(note: string): string | null {
 const unchecked = (key: string, reason: CheckReason, note: string | null = null): CheckedItem => ({
   key,
   status: 'could_not_check',
-  quote: null,
-  url: null,
+  quotes: [],
   note,
   reason,
 });
 
 const noteOf = ({ note }: CheckAnswer): string | null =>
   note === undefined ? null : plainNote(note);
+
+type QuoteCheck =
+  | { readonly ok: true; readonly quote: CheckQuote; readonly page: ReadPage }
+  | { readonly ok: false; readonly reason: CheckReason };
+
+/** One quote, checked on its own against the page it names. */
+function checkQuote(
+  item: CheckItem,
+  answered: CheckQuote,
+  pages: ReadonlyMap<string, ReadPage>,
+): QuoteCheck {
+  const { url } = answered;
+  if (!item.urls.includes(url)) return { ok: false, reason: 'url_not_cited' };
+  const page = pages.get(url);
+  if (page === undefined) return { ok: false, reason: 'page_not_read' };
+  const quote = normalizeWhitespace(answered.quote);
+  if (quote.length < minQuoteLength || quote.length > maxQuoteLength) {
+    return { ok: false, reason: 'quote_length' };
+  }
+  // An excerpt's gap line stands for text left out, so a quote counts only within one run.
+  const runs = page.excerpt === true ? excerptRuns(page.text) : [page.text];
+  if (!runs.some((run) => normalizeWhitespace(run).includes(quote))) {
+    return { ok: false, reason: 'quote_not_on_page' };
+  }
+  if (echoesAddress(quote, page.chain, item.values)) return { ok: false, reason: 'echoes_address' };
+  return { ok: true, quote: { quote, url }, page };
+}
 
 function verifyOne(
   item: CheckItem,
@@ -202,45 +235,36 @@ function verifyOne(
   if (answer.status === 'could_not_check') {
     return unchecked(item.key, 'model_could_not_check', noteOf(answer));
   }
-  const { url } = answer;
-  if (url === undefined || !item.urls.includes(url)) return unchecked(item.key, 'url_not_cited');
-  const page = pages.get(url);
-  if (page === undefined) return unchecked(item.key, 'page_not_read');
-  const quote = normalizeWhitespace(answer.quote ?? '');
-  if (quote.length < minQuoteLength || quote.length > maxQuoteLength) {
-    return unchecked(item.key, 'quote_length');
+  const answered = answer.quotes ?? [];
+  if (answered.length === 0 || answered.length > maxQuotes) {
+    return unchecked(item.key, 'quote_count');
   }
-  // An excerpt's gap line stands for text left out, so a quote counts only within one run.
-  const runs = page.excerpt === true ? excerptRuns(page.text) : [page.text];
-  if (!runs.some((run) => normalizeWhitespace(run).includes(quote))) {
-    return unchecked(item.key, 'quote_not_on_page');
+  const checked: { quote: CheckQuote; page: ReadPage }[] = [];
+  for (const quote of answered) {
+    const result = checkQuote(item, quote, pages);
+    if (!result.ok) return unchecked(item.key, result.reason);
+    checked.push(result);
   }
-  if (echoesAddress(quote, page.chain, item.values)) return unchecked(item.key, 'echoes_address');
+  const quotes = checked.map(({ quote }) => quote);
   if (answer.status === 'matches') {
-    if (page.cut) return unchecked(item.key, 'page_cut');
-    if (!item.values.every((value) => statesValue(value, quote))) {
+    if (checked.some(({ page }) => page.cut)) return unchecked(item.key, 'page_cut');
+    if (!item.values.every((value) => quotes.some(({ quote }) => statesValue(value, quote)))) {
       return unchecked(item.key, 'value_not_in_quote');
     }
-    return { key: item.key, status: 'matches', quote, url, note: null, reason: null };
+    return { key: item.key, status: 'matches', quotes, note: null, reason: null };
   }
-  return {
-    key: item.key,
-    status: 'differs',
-    quote,
-    url,
-    note: noteOf(answer),
-    reason: null,
-  };
+  return { key: item.key, status: 'differs', quotes, note: noteOf(answer), reason: null };
 }
 
 /**
- * What a report says about each item (ADR-0027), checked in code: a quote counts only when it is,
- * after whitespace is normalized, a substring of the exact text sent for a URL the item itself
- * cites, within one run of an excerpt, within the length limits, echoing no address of its
- * redirect chain, and, for a match, stating every value the item states, from a page that was not
- * cut. An item that cites no official page, whose pages were all unread, or that the model left
- * out, answered twice or failed on is could not be checked, with the model's own reason when it
- * gave one; keys of no item are dropped.
+ * What a report says about each item (ADR-0027), checked in code. A match or a difference rests on
+ * one to `maxQuotes` quotes, and every one must count: after whitespace is normalized, a substring
+ * of the exact text sent for a URL the item itself cites, within one run of an excerpt, within the
+ * length limits and echoing no address of its page's redirect chain. A match also needs every
+ * value the item states in at least one of its quotes, and no quote from a page that was cut. An
+ * item that cites no official page, whose pages were all unread, or that the model left out,
+ * answered twice or failed on is could not be checked, with the model's own reason when it gave
+ * one; keys of no item are dropped.
  */
 export function verifyAnswers(
   items: readonly CheckItem[],

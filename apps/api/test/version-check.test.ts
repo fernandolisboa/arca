@@ -115,8 +115,16 @@ function answering(...replies: unknown[]): RuleChecker & { requests: RuleCheckRe
 
 const matchesBoth = {
   items: [
-    { key: 'requirement:means', status: 'matches', quote: 'means of at least EUR 920', url: law },
-    { key: 'cost:fee', status: 'matches', quote: 'Application fee: EUR 100', url: fees },
+    {
+      key: 'requirement:means',
+      status: 'matches',
+      quotes: [{ quote: 'means of at least EUR 920', url: law }],
+    },
+    {
+      key: 'cost:fee',
+      status: 'matches',
+      quotes: [{ quote: 'Application fee: EUR 100', url: fees }],
+    },
   ],
 };
 
@@ -246,7 +254,10 @@ describe('the independent check of one version (ADR-0027)', () => {
   it('flags a quote that is not on the page', async () => {
     const checker = answering({
       items: [
-        { ...matchesBoth.items[0], quote: 'means of at least EUR 820 a month' },
+        {
+          ...matchesBoth.items[0],
+          quotes: [{ quote: 'means of at least EUR 820 a month', url: law }],
+        },
         matchesBoth.items[1],
       ],
     });
@@ -411,7 +422,10 @@ describe('the independent check of one version (ADR-0027)', () => {
       async (_, locator) => {
         const checker = answering({
           items: [
-            { ...matchesBoth.items[0], quote: 'Residence act, consolidated text' },
+            {
+              ...matchesBoth.items[0],
+              quotes: [{ quote: 'Residence act, consolidated text', url: law }],
+            },
             matchesBoth.items[1],
           ],
         });
@@ -440,9 +454,13 @@ describe('the independent check of one version (ADR-0027)', () => {
           {
             key: 'requirement:means',
             status: 'matches',
-            url: law,
-            // The end of the opening passage, the gap line, then the passage picked.
-            quote: `Further provisions apply here. ${excerptGap} Article 201. Means ${lawText}`,
+            quotes: [
+              {
+                url: law,
+                // The end of the opening passage, the gap line, then the passage picked.
+                quote: `Further provisions apply here. ${excerptGap} Article 201. Means ${lawText}`,
+              },
+            ],
           },
           matchesBoth.items[1],
         ],

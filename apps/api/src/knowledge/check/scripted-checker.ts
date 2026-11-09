@@ -19,7 +19,7 @@ export const scriptedChecker: RuleChecker = {
           const text = url === undefined ? undefined : texts.get(url);
           return text === undefined || text.length < 12
             ? { key, status: 'could_not_check' }
-            : { key, status: 'matches', url, quote: text.slice(0, 120).trimEnd() };
+            : { key, status: 'matches', quotes: [{ url, quote: text.slice(0, 120).trimEnd() }] };
         }),
       },
       model: scriptedCheckerModel,

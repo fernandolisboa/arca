@@ -1,17 +1,15 @@
 import { type CheckAnswer, checkStatuses, maxCheckItemKeyLength } from '@arca/domain';
 import { z } from 'zod';
 
-const optionalText = z
-  .string()
-  .max(4_000)
-  .nullish()
-  .transform((value) => value ?? undefined);
+const text = z.string().max(4_000);
+const optionalText = text.nullish().transform((value) => value ?? undefined);
 
 /**
  * The closed schema of a checker's answer (ADR-0027): one entry per item key with a status and,
- * except for could not be checked, a quote and its URL; a short note, on a difference or on why
- * an item could not be checked, is the only free text. Lengths here only bound the parse; code
- * checks every quote, URL and note after.
+ * except for could not be checked, the quotes it rests on, each with the URL of its page; a short
+ * note, on a difference or on why an item could not be checked, is the only free text. Lengths and
+ * counts here only bound the parse; code checks every quote, URL and note after, and refuses an
+ * item with more than `maxQuotes` quotes.
  */
 export const RuleCheckAnswer = z.strictObject({
   items: z
@@ -19,8 +17,11 @@ export const RuleCheckAnswer = z.strictObject({
       z.strictObject({
         key: z.string().max(maxCheckItemKeyLength),
         status: z.enum(checkStatuses),
-        quote: optionalText,
-        url: optionalText,
+        quotes: z
+          .array(z.strictObject({ quote: text, url: text }))
+          .max(10)
+          .nullish()
+          .transform((value) => value ?? undefined),
         note: optionalText,
       }),
     )

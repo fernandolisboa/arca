@@ -244,6 +244,7 @@ export {
 } from './independent-check/items.js';
 export {
   type CheckAnswer,
+  type CheckQuote,
   type CheckReason,
   type CheckStatus,
   type CheckedItem,
@@ -252,6 +253,7 @@ export {
   checkStatuses,
   maxNoteLength,
   maxQuoteLength,
+  maxQuotes,
   minQuoteLength,
   normalizeWhitespace,
   plainNote,

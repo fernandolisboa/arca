@@ -75,7 +75,7 @@ It is ADR-0014's check, now built, with these choices.
 - The version as the admin's activation view lays it out (no hash, no state, no rule cases), the item keys, each page's text in its own delimited data block with its URL and angle brackets replaced, as in ADR-0025, and the country guide in its own data block after the pages. The prompt says the pages are the authority and a guide never outweighs them. The instructions come first so they can be cached. No case data, so no exception to minimization.
 - A closed schema with one entry per item key: a status (**matches**, **differs** or **could not be checked**) and, except for the last, a quote and its URL. A **differs** entry carries one short plain-text note on what differs, and, since the long-page amendment below, a **could not be checked** entry carries one saying why; these are the only free text, because a flagged item is what a person reads next. Code strips URLs and host names from a note and caps its length, and drops the note of any answer it refuses itself. Unknown or duplicate keys are dropped. No recommendation, no verdict on the rule.
 
-**Checked in code**, in pure functions in `packages/domain`. A quote counts only when:
+**Checked in code**, in pure functions in `packages/domain`. A quote counts only when (since the several-quotes amendment below, every quote of an item, which may rest on up to three):
 
 - it is a verbatim substring, after whitespace is normalized, of the exact text sent to the model for a URL that the item itself cites, and, on an excerpt, lies within one run of it;
 - its length is within a minimum and a maximum;
@@ -134,6 +134,20 @@ Decided:
 - **Time:** the picks for a check's long pages run together, each at most 90 seconds, before the check's own call and its one retry.
 
 Not decided here, left as could not be checked with its reason shown: PDFs, pages that scripts draw (several of those sites publish the same text through an API on the same official host) and sites that answer an access check.
+
+### A match on several quotes (amendment, 2026-11-09)
+
+The first catalog check after the long-page amendment read 158 items and confirmed 17; 91 were read and not confirmed, most because the item joins provisions (an income in one section and the savings in another, an amount left to a ministerial order, a rule and its exception) and a match needed one passage carrying all of it ([#354](https://github.com/fernandolisboa/arca/issues/354), spec [#351](https://github.com/fernandolisboa/arca/issues/351)).
+
+Decided:
+
+- **An answer gives quotes, not a quote.** A **matches** or **differs** entry carries one to three quotes, each with the URL of its page; **could not be checked** carries none. The parse bounds the list at ten; code refuses more than three, or none, as could not be checked (`quote_count`).
+- **Every quote is checked as one was.** Each must be on a URL the item cites, from a page that was read, within the length limits, verbatim within one run of what was sent, and echo no address of its own page's redirect chain. One quote that fails makes the whole item could not be checked, with that quote's reason; the item never matches on the quotes that passed.
+- **The values are checked across the quotes.** A match needs each of the item's values in at least one of its quotes, and none of its quotes from a page that was cut. A difference keeps its quotes and note as before.
+- **The prompt keeps a match for the whole item.** `rule-check-4` asks for one passage when one holds the item and more only when it joins provisions, one passage per provision, each the item's own provision, never a passage that only holds the same number or words about something else; anything that would take more than three passages, or arithmetic, is could not be checked.
+- **Each quote is shown with its page.** A stored item and the report's contract carry `quotes`, each with its URL, and the panel shows them numbered, each above its page. Reports stored before keep reading: their one quote becomes a list of one.
+- **Residual risk: real quotes from unrelated provisions, paired.** Two passages, each verbatim on a cited page and together holding every value, can still be about different things: the pensioner's income in one section and the investors' amount, worded alike, in another can make a wrong savings threshold look confirmed. Code cannot tell what a passage is about, the same limit that already let one quote with the right number about another route through. What stands against it: the prompt's rule that each quote is the item's own provision; at most three quotes, each on a page the item itself cites; every value still in a verified quote; an adversarial case for exactly this pairing (`adversarial-unrelated-quotes`), which every passing run must flag, beside the one-quote case of a number from another route; the panel showing each quote with its page so the admin reads them side by side; and its footer saying that the AI is what judges that the quotes concern the same rule.
+- **Evaluation:** four cases join the suite: a correct item confirmed by two quotes on one page, one confirmed by quotes on two pages (the act and an order on amounts), a wrong amount offered with one real and one invented quote (stopped in code, `quote_not_on_page`), and the adversarial pairing above. That makes 28 cases (7 correct, 6 wrong, 15 adversarial); the bar is 6 of the 7 correct ones checked, and a run is capped at 70 calls. The offline test checks that each of a correct case's quotes is needed: any one alone leaves a value out.
 
 ## Alternatives
 

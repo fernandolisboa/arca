@@ -87,6 +87,7 @@ function summary(runs: readonly Run[], calls: number, dollars: number): string {
     '',
     `Versions checked: ${String(reports.filter(({ clean }) => clean).length)} of ${String(runs.length)}.`,
     `Items: ${String(count('matches'))} match, ${String(count('differs'))} differ, ${String(count('could_not_check'))} could not be checked, of ${String(items.length)}.`,
+    `Matches resting on several quotes: ${String(items.filter(({ status, quotes }) => status === 'matches' && quotes.length > 1).length)}.`,
     `Why not checked: ${tally(reasons)}.`,
     `Left unchecked by the model with no reason: ${String(withoutReason(items).length)}.`,
     `Pages: ${tally(outcomes)}.`,
@@ -104,12 +105,12 @@ function summary(runs: readonly Run[], calls: number, dollars: number): string {
     lines.push(
       `### ${id}: ${String(matches)} of ${String(report.items.length)} match${failure}`,
       '',
-      '| Item | Status | Reason | Note |',
-      '| --- | --- | --- | --- |',
+      '| Item | Status | Quotes | Reason | Note |',
+      '| --- | --- | --- | --- | --- |',
     );
     for (const item of report.items) {
       lines.push(
-        `| \`${item.key}\` | ${item.status} | ${item.reason ?? ''} | ${plain(item.note)} |`,
+        `| \`${item.key}\` | ${item.status} | ${String(item.quotes.length)} | ${item.reason ?? ''} | ${plain(item.note)} |`,
       );
     }
     const problems = report.fetchLog.filter(({ outcome, cut }) => outcome !== 'read' || cut);
