@@ -1,13 +1,14 @@
 // What the independent check evaluation reads a case through, shared with its offline test.
 import { hostMatches } from '@arca/domain';
 import type { Logger } from '@arca/telemetry';
-import type { RuleCheckerChoice } from '../../../src/knowledge/check/checker.js';
+import type { RuleChecker, RuleCheckerChoice } from '../../../src/knowledge/check/checker.js';
 import {
   type FetchOutcome,
   type SourceFetcher,
   capText,
 } from '../../../src/knowledge/check/fetcher.js';
 import { htmlToText } from '../../../src/knowledge/check/html-text.js';
+import { type PassageLocator, scriptedLocator } from '../../../src/knowledge/check/locator.js';
 import { createVersionCheck } from '../../../src/knowledge/check/run.js';
 import { type CheckReport, memoryCheckReportStore } from '../../../src/knowledge/check/store.js';
 import { createCheckSubjects } from '../../../src/knowledge/versions.js';
@@ -60,6 +61,18 @@ export function snapshotFetcher(snapshots: ReadonlyMap<string, Snapshot>): Sourc
   };
 }
 
+/** The checker, keeping the page text of each request, so a run can tell what the model read. */
+export function recordingPages(checker: RuleChecker) {
+  const sent: string[] = [];
+  const recording: RuleChecker = {
+    check(request) {
+      sent.push(...request.pages.map(({ text }) => text));
+      return checker.check(request);
+    },
+  };
+  return { checker: recording, sent: () => sent.join('\n') };
+}
+
 const silentLogger: Logger = { info: () => undefined, error: () => undefined };
 
 /** One case through the check's own path, as its workflow step runs it, answering its report. */
@@ -67,6 +80,7 @@ export async function checkCase(
   evalCase: CheckCase,
   checker: RuleCheckerChoice,
   logger: Logger = silentLogger,
+  locator: PassageLocator = scriptedLocator,
 ): Promise<CheckReport> {
   const store = memoryCheckReportStore();
   const check = createVersionCheck({
@@ -74,6 +88,7 @@ export async function checkCase(
     guide: () => evalCase.guide,
     fetcher: snapshotFetcher(evalCase.snapshots),
     checker,
+    locator,
     store,
     logger,
     now: () => performance.now(),

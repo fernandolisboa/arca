@@ -9,8 +9,9 @@ const optionalText = z
 
 /**
  * The closed schema of a checker's answer (ADR-0027): one entry per item key with a status and,
- * except for could not be checked, a quote and its URL; a short note on a difference is the only
- * free text. Lengths here only bound the parse; code checks every quote, URL and note after.
+ * except for could not be checked, a quote and its URL; a short note, on a difference or on why
+ * an item could not be checked, is the only free text. Lengths here only bound the parse; code
+ * checks every quote, URL and note after.
  */
 export const RuleCheckAnswer = z.strictObject({
   items: z

@@ -14,7 +14,7 @@ const law = 'https://www.gov.example/law';
 const request: RuleCheckRequest = {
   version: '{"title":"Sample residence route"}',
   items: [{ key: 'requirement:means', kind: 'requirement', title: 'Means', urls: [law] }],
-  pages: [{ url: law, text: 'Article 3. Means of at least EUR 920 a month.' }],
+  pages: [{ url: law, text: 'Article 3. Means of at least EUR 920 a month.', excerpt: false }],
   guide: '{"id":"qm"}',
 };
 const answer = {
@@ -113,8 +113,8 @@ describe('the independent check prompt (ADR-0027)', () => {
     const text = ruleCheckMessage({
       ...request,
       pages: [
-        { url: law, text: 'First page.' },
-        { url: 'https://fees.gov.example/table', text: 'Second page.' },
+        { url: law, text: 'First page.', excerpt: false },
+        { url: 'https://fees.gov.example/table', text: 'Second page.', excerpt: false },
       ],
     });
     const order = ['<rule_version>', '<items>', `<page>\n${law}\n\nFirst page.`, '<country_guide>'];
@@ -123,6 +123,20 @@ describe('the independent check prompt (ADR-0027)', () => {
     expect([...at].sort((a, b) => a - b)).toEqual(at);
     expect(text.indexOf('<page>\nhttps://fees.gov.example/table')).toBeGreaterThan(at[2] ?? 0);
     expect(text.indexOf('Second page.')).toBeLessThan(text.indexOf('<country_guide>'));
+  });
+
+  it('marks an excerpt of a long page as one, and tells the model what the gap line means', () => {
+    const text = ruleCheckMessage({
+      ...request,
+      pages: [{ url: law, text: 'Article 1.\n[…]\nArticle 9.', excerpt: true }],
+    });
+    expect(text).toContain(`<page excerpt="true">\n${law}\n\nArticle 1.\n[…]\nArticle 9.\n</page>`);
+    expect(ruleCheckInstructions).toContain('<page excerpt="true">');
+    expect(ruleCheckInstructions).toContain('[…]');
+  });
+
+  it('asks for a reason whenever an item could not be checked', () => {
+    expect(ruleCheckInstructions).toMatch(/could_not_check:[^]*- note: one short plain sentence/u);
   });
 
   it('leaves out the guide block when the country has none', () => {
@@ -134,7 +148,7 @@ describe('the independent check prompt (ADR-0027)', () => {
     const text = ruleCheckMessage({
       version: hostile,
       items: [{ key: 'requirement:x', kind: 'requirement', title: hostile, urls: [law] }],
-      pages: [{ url: law, text: hostile }],
+      pages: [{ url: law, text: hostile, excerpt: false }],
       guide: hostile,
     });
     for (const tag of ['rule_version', 'items', 'page', 'country_guide']) {

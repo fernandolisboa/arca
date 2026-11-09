@@ -2,7 +2,9 @@ name: intake-eval
 
 # The AI evaluations: the intake's synthetic cases (spec 0008, R5), the rule summary of every
 # bundled version (ADR-0025) and the independent check's synthetic cases (ADR-0027), against the
-# real model, each writing its report to the job summary. Started by hand only
+# real model, each writing its report to the job summary. `catalog-check` is a measurement, not an
+# evaluation: the independent check of every route's newest version against its live official
+# pages, which costs a few dollars, so `all` leaves it out. Started by hand only
 # (`gh workflow run intake-eval --ref <branch>`, `-f only=<evaluation>` to spend on one), never a
 # required check (ADR-0019). It evaluates the commit it was dispatched on, a branch or tag of this
 # repository, with that commit's own copy of this file; there is no ref input, so no fork's code can
@@ -13,7 +15,7 @@ on:
       only:
         description: Which evaluation to run
         type: choice
-        options: [all, intake, rule-summary, independent-check]
+        options: [all, intake, rule-summary, independent-check, catalog-check]
         default: all
 
 permissions: {}
@@ -29,7 +31,7 @@ env:
 jobs:
   evaluate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 45
     permissions:
       contents: read
     steps:
@@ -87,6 +89,20 @@ jobs:
           pnpm --fail-if-no-match --filter @arca/api eval:independent-check || status=$?
           if [ ! -f "$ARCA_EVAL_REPORT" ]; then
             echo "The independent check evaluation wrote no report." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          cat "$ARCA_EVAL_REPORT" >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+      - name: Run the catalog check
+        if: ${{ !cancelled() && steps.named.outcome == 'success' && inputs.only == 'catalog-check' }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ARCA_EVAL_REPORT: ${{ runner.temp }}/catalog-check.md
+        run: |
+          status=0
+          pnpm --fail-if-no-match --filter @arca/api eval:catalog-check || status=$?
+          if [ ! -f "$ARCA_EVAL_REPORT" ]; then
+            echo "The catalog check wrote no report." >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
           cat "$ARCA_EVAL_REPORT" >> "$GITHUB_STEP_SUMMARY"

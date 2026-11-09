@@ -1,4 +1,5 @@
 import type { CheckItem } from './items.js';
+import { excerptRuns } from './passages.js';
 import { type CheckValue, statesValue } from './values.js';
 
 export const checkStatuses = ['matches', 'differs', 'could_not_check'] as const;
@@ -20,12 +21,16 @@ export interface ReadPage {
   readonly text: string;
   /** The text was cut at the size cap, so a match on it cannot be trusted. */
   readonly cut: boolean;
+  /** The text is an excerpt: runs of the page with a gap line wherever text is left out. */
+  readonly excerpt?: boolean;
   /** Every URL requested on the way, the cited one first and the final one last. */
   readonly chain: readonly string[];
 }
 
 /** Why code did not take the model's word for an item. */
 export const checkReasons = [
+  'no_source_cited',
+  'no_page_read',
   'not_answered',
   'model_could_not_check',
   'url_not_cited',
@@ -45,7 +50,10 @@ export interface CheckedItem {
   /** The verified quote, on matches and differs only. */
   readonly quote: string | null;
   readonly url: string | null;
-  /** The model's short note, on differs only, with links and host names taken out. */
+  /**
+   * The model's short note, with links and host names taken out: what differs, or why it could
+   * not check. Never on a match, and never when code is what refused the answer.
+   */
   readonly note: string | null;
   readonly reason: CheckReason | null;
 }
@@ -93,8 +101,9 @@ function echoesAddress(quote: string, chain: readonly string[], values: readonly
 }
 
 const scheme = /^[a-z][a-z0-9+.-]*$/;
-const label = /^[a-z0-9-]+$/;
-const topLevel = /^[a-z]{2,63}$/;
+// Host names in any script, so one written in Cyrillic or with accents is caught too.
+const label = /^[\p{L}\p{N}-]+$/u;
+const topLevel = /^\p{L}{2,63}$/u;
 const ipv4 = /^\d{1,3}(?:\.\d{1,3}){3}$/u;
 
 /**
@@ -140,15 +149,27 @@ function linkLike(word: string): boolean {
     .normalize('NFKC')
     .replace(/\u3002/gu, '.')
     .toLowerCase();
-  if (lower.includes('://') || lower.includes('www.')) return true;
+  if (lower.includes('://') || lower.includes('www.') || lower.includes('@')) return true;
   if (defangedDots.some((dot) => lower.includes(dot))) return true;
   return lower.split(/[[\](){}<>‹›"'!`]+/u).some((piece) => piece !== '' && pieceLinkLike(piece));
 }
 
-/** Links, addresses and host names out of a note, angle brackets too, then capped. */
+/**
+ * Characters that show nothing: format characters such as those with no width, the soft hyphen
+ * and the ones that reorder the text around them, then the joiners, variation selectors and
+ * blank that are not format characters. Any could split a host name so that no word of it reads
+ * as one.
+ */
+const unseen = /[\p{Cf}\p{Variation_Selector}\u2800]|\u034F/gu;
+
+/**
+ * Links, addresses, e-mail addresses and host names out of a note, angle brackets too, then
+ * capped.
+ */
 export function plainNote(note: string): string | null {
   const plain = normalizeWhitespace(
     note
+      .replace(unseen, '')
       .split(/\s+/u)
       .filter((word) => !linkLike(word))
       .join(' ')
@@ -158,22 +179,29 @@ export function plainNote(note: string): string | null {
   return plain.length > maxNoteLength ? `${plain.slice(0, maxNoteLength - 1).trimEnd()}…` : plain;
 }
 
-const unchecked = (key: string, reason: CheckReason): CheckedItem => ({
+const unchecked = (key: string, reason: CheckReason, note: string | null = null): CheckedItem => ({
   key,
   status: 'could_not_check',
   quote: null,
   url: null,
-  note: null,
+  note,
   reason,
 });
+
+const noteOf = ({ note }: CheckAnswer): string | null =>
+  note === undefined ? null : plainNote(note);
 
 function verifyOne(
   item: CheckItem,
   answer: CheckAnswer | undefined,
   pages: ReadonlyMap<string, ReadPage>,
 ): CheckedItem {
+  if (item.urls.length === 0) return unchecked(item.key, 'no_source_cited');
+  if (!item.urls.some((cited) => pages.has(cited))) return unchecked(item.key, 'no_page_read');
   if (answer === undefined) return unchecked(item.key, 'not_answered');
-  if (answer.status === 'could_not_check') return unchecked(item.key, 'model_could_not_check');
+  if (answer.status === 'could_not_check') {
+    return unchecked(item.key, 'model_could_not_check', noteOf(answer));
+  }
   const { url } = answer;
   if (url === undefined || !item.urls.includes(url)) return unchecked(item.key, 'url_not_cited');
   const page = pages.get(url);
@@ -182,7 +210,9 @@ function verifyOne(
   if (quote.length < minQuoteLength || quote.length > maxQuoteLength) {
     return unchecked(item.key, 'quote_length');
   }
-  if (!normalizeWhitespace(page.text).includes(quote)) {
+  // An excerpt's gap line stands for text left out, so a quote counts only within one run.
+  const runs = page.excerpt === true ? excerptRuns(page.text) : [page.text];
+  if (!runs.some((run) => normalizeWhitespace(run).includes(quote))) {
     return unchecked(item.key, 'quote_not_on_page');
   }
   if (echoesAddress(quote, page.chain, item.values)) return unchecked(item.key, 'echoes_address');
@@ -198,7 +228,7 @@ function verifyOne(
     status: 'differs',
     quote,
     url,
-    note: answer.note === undefined ? null : plainNote(answer.note),
+    note: noteOf(answer),
     reason: null,
   };
 }
@@ -206,9 +236,11 @@ function verifyOne(
 /**
  * What a report says about each item (ADR-0027), checked in code: a quote counts only when it is,
  * after whitespace is normalized, a substring of the exact text sent for a URL the item itself
- * cites, within the length limits, echoing no address of its redirect chain, and, for a match,
- * stating every value the item states, from a page that was not cut. An item the model left out,
- * answered twice or failed on is could not be checked; keys of no item are dropped.
+ * cites, within one run of an excerpt, within the length limits, echoing no address of its
+ * redirect chain, and, for a match, stating every value the item states, from a page that was not
+ * cut. An item that cites no official page, whose pages were all unread, or that the model left
+ * out, answered twice or failed on is could not be checked, with the model's own reason when it
+ * gave one; keys of no item are dropped.
  */
 export function verifyAnswers(
   items: readonly CheckItem[],

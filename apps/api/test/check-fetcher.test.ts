@@ -3,6 +3,7 @@ import type { AddressInfo, LookupFunction } from 'node:net';
 import type { RequestOptions, request as httpsRequest } from 'node:https';
 import { gzipSync } from 'node:zlib';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { statesValue } from '@arca/domain';
 import { globallyReachable } from '../src/knowledge/check/addresses.js';
 import {
   type FetchLimits,
@@ -53,6 +54,15 @@ const routes = new Map<string, Handler>([
     (response) => {
       response.writeHead(200, { 'content-type': 'text/html' });
       response.end(Buffer.alloc(200_000, 0x61));
+    },
+  ],
+  [
+    '/app',
+    (response) => {
+      response.writeHead(200, { 'content-type': 'text/html' });
+      response.end(
+        '<html><head><title>Laws</title><script src="/app.js"></script></head><body><div id="root"></div><noscript>Turn scripts on.</noscript></body></html>',
+      );
     },
   ],
   [
@@ -201,6 +211,7 @@ describe('the cited-source fetcher (ADR-0027)', () => {
     ['a redirect loop', page('/loop'), 'too_many_redirects'],
     ['a 404', page('/missing'), 'http_status'],
     ['a PDF', page('/pdf'), 'unsupported_type'],
+    ['a page that only scripts fill with text', page('/app'), 'no_text'],
     ['too many bytes', page('/big'), 'too_large'],
     ['a decompression bomb', page('/bomb'), 'too_large'],
   ])('refuses %s', async (_, url, failure) => {
@@ -214,8 +225,9 @@ describe('the cited-source fetcher (ADR-0027)', () => {
   });
 
   it('hands the parser no more markup than its cap, and says the page was cut', async () => {
-    const read = await fetcher({ maxMarkupLength: 20 }).fetch(page('/law'), hosts);
+    const read = await fetcher({ maxMarkupLength: 120 }).fetch(page('/law'), hosts);
     expect(read).toMatchObject({ ok: true, cut: true });
+    expect(read.ok && read.text).toBe('Residence Act\nIncome of at least €920,0');
   });
 
   it('gives up after its time limit', async () => {
@@ -357,7 +369,19 @@ describe('htmlToText', () => {
     expect(htmlToText(`<p>Shown</p><p style="${style}">Hidden</p>`)).toBe('Shown');
   });
 
-  it.each(['opacity:0.5', 'font-size:10px', 'color:black'])(
+  it.each([
+    '<strike>EUR 1.000</strike>',
+    '<s>EUR 1.000</s>',
+    '<del>EUR 1.000</del>',
+    '<span style="text-decoration: line-through">EUR 1.000</span>',
+    '<span style="color:red;text-decoration-line:underline line-through">EUR 1.000</span>',
+  ])('drops wording a law strikes through: %s', (old) => {
+    expect(htmlToText(`<p>Means of at least ${old} EUR 2.000 a month.</p>`)).toBe(
+      'Means of at least EUR 2.000 a month.',
+    );
+  });
+
+  it.each(['opacity:0.5', 'font-size:10px', 'color:black', 'text-decoration:underline'])(
     'keeps an element styled %s',
     (style) => {
       expect(htmlToText(`<p style="${style}">Shown</p>`)).toBe('Shown');
@@ -366,5 +390,24 @@ describe('htmlToText', () => {
 
   it('walks a deeply nested page without overflowing the stack', () => {
     expect(htmlToText(`${'<div>'.repeat(5_000)}deep${'</div>'.repeat(5_000)}`)).toBe('deep');
+  });
+
+  it('keeps a table row on one line, with a bar between its cells', () => {
+    expect(
+      htmlToText(
+        '<table><tr><th>Application</th><th>Fee</th></tr>' +
+          '<tr><td>First issue</td><td>EUR 85</td></tr>' +
+          '<tr><td><p>Renewal</p><p>each year</p></td><td>EUR 60</td></tr></table>',
+      ),
+    ).toBe('Application | Fee\nFirst issue | EUR 85\nRenewal\neach year\nEUR 60');
+  });
+
+  it('never lets the digits of two cells read as one number', () => {
+    const row = htmlToText('<table><tr><td>Category 2</td><td> </td><td>300 EUR</td></tr></table>');
+    expect(row).toBe('Category 2 | 300 EUR');
+    const three = { kind: 'number', value: '300' } as const;
+    const joined = { kind: 'number', value: '2300' } as const;
+    expect(statesValue(three, row)).toBe(true);
+    expect(statesValue(joined, row)).toBe(false);
   });
 });

@@ -5,6 +5,14 @@ type Node = DefaultTreeAdapterTypes.Node;
 /** Elements whose content is never page text: code, styling, metadata and inert templates. */
 const dropped = new Set(['head', 'script', 'style', 'noscript', 'template', 'iframe', 'object']);
 
+/**
+ * Elements a law marks superseded wording with. A consolidated text often keeps the old words
+ * struck through beside the new ones, and a reader takes only the new ones as the law.
+ */
+const struck = new Set(['del', 's', 'strike']);
+
+const struckStyle = /(?:^|;)\s*text-decoration(?:-line)?\s*:[^;]*\bline-through\b/i;
+
 /** Elements that start a new line, so the words on either side never run together. */
 const blocks = new Set([
   'address',
@@ -37,11 +45,26 @@ const blocks = new Set([
   'pre',
   'section',
   'table',
-  'td',
-  'th',
   'tr',
   'ul',
 ]);
+
+/**
+ * The cells of a table row stay on the row's line, so a row reads as the one statement it is:
+ * what a fee is for and the fee, side by side. A bar stands between them, not a space, so the
+ * digits of two cells never read as one number.
+ */
+const cells = new Set(['td', 'th']);
+const cellEnd = '\u001F';
+const cellBar = ' | ';
+
+/** A line with its whitespace collapsed and a bar between the cells that have text. */
+const lineText = (line: string) =>
+  line
+    .split(cellEnd)
+    .map((cell) => cell.replace(/\s+/gu, ' ').trim())
+    .filter((cell) => cell !== '')
+    .join(cellBar);
 
 const hiddenStyle =
   /(?:^|;)\s*(?:display\s*:\s*none|visibility\s*:\s*hidden|opacity\s*:\s*0*(?:\.0*)?|font-size\s*:\s*0*(?:\.0*)?(?:px|pt|em|rem|%)?|color\s*:\s*transparent)\s*(?:!important\s*)?(?:;|$)/i;
@@ -49,29 +72,31 @@ const hiddenStyle =
 /**
  * Hidden from a reader by the element itself: the `hidden` attribute, `aria-hidden="true"` or an
  * inline style (no display, no visibility, no opacity, no size or a transparent color). Text a
- * style sheet hides stays in, and the value check in code covers it.
+ * style sheet hides stays in, and the value check in code covers it. Text the element's own style
+ * strikes through is left out the same way.
  */
 function hidden(attrs: readonly { readonly name: string; readonly value: string }[]): boolean {
   return attrs.some(
     ({ name, value }) =>
       name === 'hidden' ||
       (name === 'aria-hidden' && value.trim().toLowerCase() === 'true') ||
-      (name === 'style' && hiddenStyle.test(value)),
+      (name === 'style' && (hiddenStyle.test(value) || struckStyle.test(value))),
   );
 }
 
 /**
  * A page's text as a reader sees it (ADR-0027): parsed by parse5, a parser with no scripts, no
  * network and no DOM emulation, then walked without recursion, so a deeply nested page cannot
- * overflow the stack. Scripts, styles, templates, comments and hidden elements are dropped; block
- * elements break lines; whitespace collapses within each line.
+ * overflow the stack. Scripts, styles, templates, comments, hidden elements and struck-through
+ * text are dropped; block elements break lines, and a table row is one line with a bar between its
+ * cells; whitespace collapses within each line.
  */
 export function htmlToText(html: string): string {
   const parts: string[] = [];
-  const stack: (Node | '\n')[] = [parse(html)];
+  const stack: (Node | '\n' | typeof cellEnd)[] = [parse(html)];
   for (let next = stack.pop(); next !== undefined; next = stack.pop()) {
-    if (next === '\n') {
-      parts.push('\n');
+    if (next === '\n' || next === cellEnd) {
+      parts.push(next);
       continue;
     }
     if (next.nodeName === '#text' && 'value' in next) {
@@ -80,10 +105,15 @@ export function htmlToText(html: string): string {
     }
     if (!('childNodes' in next)) continue;
     if ('tagName' in next) {
-      if (dropped.has(next.tagName) || hidden(next.attrs)) continue;
-      if (blocks.has(next.tagName)) {
-        parts.push('\n');
-        stack.push('\n');
+      if (dropped.has(next.tagName) || struck.has(next.tagName) || hidden(next.attrs)) continue;
+      const around = blocks.has(next.tagName)
+        ? '\n'
+        : cells.has(next.tagName)
+          ? cellEnd
+          : undefined;
+      if (around !== undefined) {
+        parts.push(around);
+        stack.push(around);
       }
     }
     for (let index = next.childNodes.length - 1; index >= 0; index -= 1) {
@@ -94,7 +124,7 @@ export function htmlToText(html: string): string {
   return parts
     .join('')
     .split('\n')
-    .map((line) => line.replace(/\s+/gu, ' ').trim())
+    .map(lineText)
     .filter((line) => line !== '')
     .join('\n');
 }

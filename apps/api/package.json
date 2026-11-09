@@ -11,7 +11,8 @@
     "test:db": "vitest run --config vitest.db.config.ts",
     "eval:intake": "vitest run --config vitest.eval.config.ts test/eval/intake",
     "eval:rule-summary": "vitest run --config vitest.eval.config.ts test/eval/rule-summary",
-    "eval:independent-check": "vitest run --config vitest.eval.config.ts test/eval/independent-check"
+    "eval:independent-check": "vitest run --config vitest.eval.config.ts test/eval/independent-check",
+    "eval:catalog-check": "vitest run --config vitest.eval.config.ts test/eval/catalog-check"
   },
   "devDependencies": {
     "@arca/eslint-config": "workspace:*",

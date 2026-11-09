@@ -16,6 +16,7 @@ export const fetchFailures = [
   'lookup_failed',
   'http_status',
   'unsupported_type',
+  'no_text',
   'too_large',
   'timeout',
   'network',
