@@ -34380,6 +34380,8 @@
                                   "null"
                                 ],
                                 "enum": [
+                                  "no_source_cited",
+                                  "no_page_read",
                                   "not_answered",
                                   "model_could_not_check",
                                   "url_not_cited",
@@ -34427,6 +34429,7 @@
                                   "lookup_failed",
                                   "http_status",
                                   "unsupported_type",
+                                  "no_text",
                                   "too_large",
                                   "timeout",
                                   "network"

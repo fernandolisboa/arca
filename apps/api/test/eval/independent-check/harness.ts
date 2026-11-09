@@ -8,6 +8,7 @@ import {
   capText,
 } from '../../../src/knowledge/check/fetcher.js';
 import { htmlToText } from '../../../src/knowledge/check/html-text.js';
+import { type PassageLocator, scriptedLocator } from '../../../src/knowledge/check/locator.js';
 import { createVersionCheck } from '../../../src/knowledge/check/run.js';
 import { type CheckReport, memoryCheckReportStore } from '../../../src/knowledge/check/store.js';
 import { createCheckSubjects } from '../../../src/knowledge/versions.js';
@@ -67,6 +68,7 @@ export async function checkCase(
   evalCase: CheckCase,
   checker: RuleCheckerChoice,
   logger: Logger = silentLogger,
+  locator: PassageLocator = scriptedLocator,
 ): Promise<CheckReport> {
   const store = memoryCheckReportStore();
   const check = createVersionCheck({
@@ -74,6 +76,7 @@ export async function checkCase(
     guide: () => evalCase.guide,
     fetcher: snapshotFetcher(evalCase.snapshots),
     checker,
+    locator,
     store,
     logger,
     now: () => performance.now(),

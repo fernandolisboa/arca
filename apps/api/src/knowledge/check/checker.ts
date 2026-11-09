@@ -13,9 +13,14 @@ export interface RuleCheckRequest {
   }[];
   /**
    * Each page read, as the exact text code later checks quotes against: already framed as data
-   * and within the check's budget, so an adapter sends it unchanged.
+   * and within the check's budget, so an adapter sends it unchanged. An excerpt holds only the
+   * passages picked for the items, with a gap line wherever text was left out.
    */
-  readonly pages: readonly { readonly url: string; readonly text: string }[];
+  readonly pages: readonly {
+    readonly url: string;
+    readonly text: string;
+    readonly excerpt: boolean;
+  }[];
   /** The country guide as JSON, or null when the country has none. */
   readonly guide: string | null;
 }

@@ -262,6 +262,16 @@ export {
 export { asDataText } from './data-text.js';
 export { maxCheckPagesText, withinTextBudget } from './independent-check/sent-pages.js';
 export {
+  type Passage,
+  excerptGap,
+  excerptPassages,
+  excerptText,
+  maxPassagesPerItem,
+  maxWholePageText,
+  pageOutline,
+  splitPassages,
+} from './independent-check/passages.js';
+export {
   type CheckFailure,
   type FetchFailure,
   checkFailures,

@@ -42,7 +42,7 @@ export interface FetchLimits {
   readonly maxDecompressedBytes: number;
   /** Characters of markup handed to the HTML parser; more is cut, as the text would be. */
   readonly maxMarkupLength: number;
-  /** Characters of text kept; a law's section fits. */
+  /** Characters of text kept; a whole code fits, and the check sends a long page as an excerpt. */
   readonly maxTextLength: number;
   /** For the whole fetch, redirects included. */
   readonly timeoutMs: number;
@@ -52,8 +52,8 @@ export interface FetchLimits {
 export const fetchLimits: FetchLimits = {
   maxBytes: 3_000_000,
   maxDecompressedBytes: 6_000_000,
-  maxMarkupLength: 2_000_000,
-  maxTextLength: 60_000,
+  maxMarkupLength: 6_000_000,
+  maxTextLength: 3_000_000,
   timeoutMs: 20_000,
   maxRedirects: 3,
 };
@@ -190,7 +190,7 @@ function contentType(response: IncomingMessage): { type: string; charset: string
  * The `node:https` adapter of the port (ADR-0027): a `GET` with no cookies or credentials, at most
  * three redirect hops each checked against the allowed hosts, every connection made to an address
  * the guard checked, with the certificate verified against the host name, and limits on bytes,
- * decompressed size, time and text. Only a final 2xx HTML or plain-text page is read.
+ * decompressed size, time and text. Only a final 2xx HTML or plain-text page with some text is read.
  */
 export function httpsSourceFetcher({
   resolve = systemResolve,
@@ -293,6 +293,8 @@ export function httpsSourceFetcher({
         type === 'text/plain'
           ? raw
           : htmlToText(markupCut ? raw.slice(0, limits.maxMarkupLength) : raw);
+      // A page that draws its text with scripts answers markup with nothing a reader would see.
+      if (full.trim() === '') throw new FetchError('no_text', status);
       const capped = capText(full, limits.maxTextLength);
       return { status, text: capped.text, cut: markupCut || capped.cut };
     }

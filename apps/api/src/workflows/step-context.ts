@@ -19,7 +19,11 @@ import {
 import { roleDatabase } from '../database.js';
 import { emailRouteFor, emailSenderFor } from '../email/environment.js';
 import { createNotices } from '../email/notices.js';
-import { checkFetcherFor, ruleCheckerFor } from '../knowledge/check/environment.js';
+import {
+  checkFetcherFor,
+  passageLocatorFor,
+  ruleCheckerFor,
+} from '../knowledge/check/environment.js';
 import { type VersionCheck, createVersionCheck } from '../knowledge/check/run.js';
 import { postgresCheckReportStore } from '../knowledge/check/store.js';
 import { createCheckSubjects } from '../knowledge/versions.js';
@@ -155,7 +159,8 @@ export const retentionSteps = once(async (): Promise<Retention> => {
  */
 export const checkSteps = once((): Promise<VersionCheck> => {
   const environment = readDeploymentEnvironment();
-  const checker = ruleCheckerFor(environment, readAnthropicApiKey());
+  const apiKey = readAnthropicApiKey();
+  const checker = ruleCheckerFor(environment, apiKey);
   if (checker === undefined) {
     return Promise.resolve(() => {
       stepLogger.error({ route: 'workflow:check-version', errorCode: 'check_not_configured' });
@@ -168,6 +173,7 @@ export const checkSteps = once((): Promise<VersionCheck> => {
       guide: countryGuide,
       fetcher: checkFetcherFor(environment, readOfflineRuleCheck()),
       checker,
+      locator: passageLocatorFor(environment, apiKey),
       store: postgresCheckReportStore(jobsDatabase),
       logger: stepLogger,
       now: () => performance.now(),

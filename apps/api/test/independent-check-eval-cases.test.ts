@@ -1,7 +1,8 @@
-import { plainNote } from '@arca/domain';
+import { maxWholePageText, plainNote } from '@arca/domain';
 import { describe, expect, it } from 'vitest';
 import type { RuleChecker } from '../src/knowledge/check/checker.js';
 import { htmlToText } from '../src/knowledge/check/html-text.js';
+import type { PassageLocator } from '../src/knowledge/check/locator.js';
 import { maxCallsPerRun } from './eval/independent-check/call-limit.js';
 import { type CheckCase, checkCases } from './eval/independent-check/cases.js';
 import { checkCase } from './eval/independent-check/harness.js';
@@ -55,8 +56,28 @@ const carefulQuote = (key: string, routeId: string) =>
 const fallingFor = ({ target, lure }: CheckCase) =>
   answering((key, routeId) => (key === target ? (lure ?? '') : carefulQuote(key, routeId)));
 
+/** A locator that finds its way: every passage whose outline names a section the items rely on. */
+const findingSections: PassageLocator = {
+  locate({ items, outline }) {
+    const passages = outline
+      .split('\n')
+      .filter((line) => /Section (?:2|4|9)\. /u.test(line))
+      .map((line) => Number(/^\[(\d+)\]/u.exec(line)?.[1]));
+    return Promise.resolve({
+      reply: { items: items.map(({ key }) => ({ key, passages })) },
+      model: 'locator-test',
+      promptVersion: 'locate-test',
+    });
+  },
+};
+
 const reportOf = (evalCase: CheckCase, checker: RuleChecker) =>
-  checkCase(evalCase, { checker, model: 'claude-test', promptVersion: 'check-test' });
+  checkCase(
+    evalCase,
+    { checker, model: 'claude-test', promptVersion: 'check-test' },
+    undefined,
+    findingSections,
+  );
 
 const byId = (id: string) => {
   const found = checkCases.find((evalCase) => evalCase.id === id);
@@ -64,6 +85,9 @@ const byId = (id: string) => {
   return found;
 };
 
+const longCases = checkCases.filter(({ snapshots }) =>
+  [...snapshots.values()].some(({ html }) => htmlToText(html).length > maxWholePageText),
+);
 const correctIds = checkCases.filter(({ kind }) => kind === 'correct').map(({ id }) => id);
 const lured = checkCases.filter(({ kind }) => kind !== 'correct');
 const modelStops = lured.filter(({ stoppedBy }) => stoppedBy === undefined).map(({ id }) => id);
@@ -72,11 +96,11 @@ const codeStops = lured.flatMap(({ id, stoppedBy }) =>
 );
 
 describe('the independent check evaluation cases (ADR-0027)', () => {
-  it('holds four correct, three wrong and eleven adversarial cases with unique IDs', () => {
+  it('holds five correct, four wrong and twelve adversarial cases with unique IDs', () => {
     const kinds = checkCases.map(({ kind }) => kind);
-    expect(kinds.filter((kind) => kind === 'correct')).toHaveLength(4);
-    expect(kinds.filter((kind) => kind === 'wrong')).toHaveLength(3);
-    expect(kinds.filter((kind) => kind === 'adversarial')).toHaveLength(11);
+    expect(kinds.filter((kind) => kind === 'correct')).toHaveLength(5);
+    expect(kinds.filter((kind) => kind === 'wrong')).toHaveLength(4);
+    expect(kinds.filter((kind) => kind === 'adversarial')).toHaveLength(12);
     expect(new Set(checkCases.map(({ id }) => id)).size).toBe(checkCases.length);
   });
 
@@ -90,9 +114,28 @@ describe('the independent check evaluation cases (ADR-0027)', () => {
     }
   });
 
-  it('leaves room under the call cap for every case and its one retry', () => {
-    expect(checkCases.length * 2).toBeLessThanOrEqual(maxCallsPerRun);
+  it('leaves room under the call cap for every check and its one retry, and every pick', () => {
+    expect(checkCases.length * 2 + longCases.length).toBeLessThanOrEqual(maxCallsPerRun);
   });
+
+  it('holds three cases whose act is too long to send whole, one of each kind', () => {
+    expect(longCases.map(({ kind }) => kind).sort()).toEqual(['adversarial', 'correct', 'wrong']);
+  });
+
+  it.each(longCases.map(({ id }) => id))(
+    '%s reads nothing of section 4 unless its passage is picked',
+    async (id) => {
+      const report = await checkCase(byId(id), {
+        checker: answering(carefulQuote),
+        model: 'claude-test',
+        promptVersion: 'check-test',
+      });
+      expect(report.items.find(({ key }) => key === 'requirement:passive-income')).toMatchObject({
+        status: 'could_not_check',
+        reason: 'quote_not_on_page',
+      });
+    },
+  );
 
   it.each(correctIds)('%s comes out checked with careful quotes', async (id) => {
     const report = await reportOf(byId(id), answering(carefulQuote));

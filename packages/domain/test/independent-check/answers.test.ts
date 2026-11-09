@@ -56,7 +56,14 @@ describe('verifyAnswers', () => {
     ['the model could not check', { status: 'could_not_check' }, page(), 'model_could_not_check'],
     ['a URL the item does not cite', { quote, url: other }, page(), 'url_not_cited'],
     ['no URL', { quote }, page(), 'url_not_cited'],
-    ['a page not read', { quote, url: law }, null, 'page_not_read'],
+    ['an item none of whose pages was read', { quote, url: law }, null, 'no_page_read'],
+    ['no answer and no page read', undefined, null, 'no_page_read'],
+    [
+      'a quote across the gap of an excerpt',
+      { quote: 'Article 3. […] €920,00 for the principal.', url: law },
+      page({ text: 'Article 3.\n[…]\n€920,00 for the principal.' }),
+      'quote_not_on_page',
+    ],
     ['a quote too short', { quote: '€920,00', url: law }, page(), 'quote_length'],
     ['a quote too long', { quote: 'x'.repeat(801), url: law }, page(), 'quote_length'],
     [
@@ -100,6 +107,48 @@ describe('verifyAnswers', () => {
       url: null,
       note: null,
       reason,
+    });
+  });
+
+  it('names the page that was not read when another page of the item was', () => {
+    const both = { ...item, urls: [law, other] };
+    const [checked] = verifyAnswers(
+      [both],
+      [{ key: item.key, status: 'matches', quote, url: other }],
+      new Map([[law, page()]]),
+    );
+    expect(checked).toMatchObject({ status: 'could_not_check', reason: 'page_not_read' });
+  });
+
+  it('says an item cites no official page before anything else', () => {
+    const [checked] = verifyAnswers(
+      [{ ...item, urls: [] }],
+      [{ key: item.key, status: 'matches', quote, url: law }],
+      new Map([[law, page()]]),
+    );
+    expect(checked).toMatchObject({ status: 'could_not_check', reason: 'no_source_cited' });
+  });
+
+  it("keeps the model's own reason, as a plain note, when it could not check", () => {
+    expect(
+      verify({
+        status: 'could_not_check',
+        note: 'A página recebida é um aviso de acesso, veja https://evil.example, não a lei.',
+      }),
+    ).toEqual({
+      key: item.key,
+      status: 'could_not_check',
+      quote: null,
+      url: null,
+      note: 'A página recebida é um aviso de acesso, veja não a lei.',
+      reason: 'model_could_not_check',
+    });
+  });
+
+  it('drops a note on an answer that code refused', () => {
+    expect(verify({ quote: 'x'.repeat(801), url: law, note: 'Trust this one.' })).toMatchObject({
+      reason: 'quote_length',
+      note: null,
     });
   });
 

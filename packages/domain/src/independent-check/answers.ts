@@ -1,4 +1,5 @@
 import type { CheckItem } from './items.js';
+import { excerptGap } from './passages.js';
 import { type CheckValue, statesValue } from './values.js';
 
 export const checkStatuses = ['matches', 'differs', 'could_not_check'] as const;
@@ -26,6 +27,8 @@ export interface ReadPage {
 
 /** Why code did not take the model's word for an item. */
 export const checkReasons = [
+  'no_source_cited',
+  'no_page_read',
   'not_answered',
   'model_could_not_check',
   'url_not_cited',
@@ -45,7 +48,10 @@ export interface CheckedItem {
   /** The verified quote, on matches and differs only. */
   readonly quote: string | null;
   readonly url: string | null;
-  /** The model's short note, on differs only, with links and host names taken out. */
+  /**
+   * The model's short note, with links and host names taken out: what differs, or why it could
+   * not check. Never on a match, and never when code is what refused the answer.
+   */
   readonly note: string | null;
   readonly reason: CheckReason | null;
 }
@@ -158,22 +164,29 @@ export function plainNote(note: string): string | null {
   return plain.length > maxNoteLength ? `${plain.slice(0, maxNoteLength - 1).trimEnd()}…` : plain;
 }
 
-const unchecked = (key: string, reason: CheckReason): CheckedItem => ({
+const unchecked = (key: string, reason: CheckReason, note: string | null = null): CheckedItem => ({
   key,
   status: 'could_not_check',
   quote: null,
   url: null,
-  note: null,
+  note,
   reason,
 });
+
+const noteOf = ({ note }: CheckAnswer): string | null =>
+  note === undefined ? null : plainNote(note);
 
 function verifyOne(
   item: CheckItem,
   answer: CheckAnswer | undefined,
   pages: ReadonlyMap<string, ReadPage>,
 ): CheckedItem {
+  if (item.urls.length === 0) return unchecked(item.key, 'no_source_cited');
+  if (!item.urls.some((cited) => pages.has(cited))) return unchecked(item.key, 'no_page_read');
   if (answer === undefined) return unchecked(item.key, 'not_answered');
-  if (answer.status === 'could_not_check') return unchecked(item.key, 'model_could_not_check');
+  if (answer.status === 'could_not_check') {
+    return unchecked(item.key, 'model_could_not_check', noteOf(answer));
+  }
   const { url } = answer;
   if (url === undefined || !item.urls.includes(url)) return unchecked(item.key, 'url_not_cited');
   const page = pages.get(url);
@@ -182,7 +195,8 @@ function verifyOne(
   if (quote.length < minQuoteLength || quote.length > maxQuoteLength) {
     return unchecked(item.key, 'quote_length');
   }
-  if (!normalizeWhitespace(page.text).includes(quote)) {
+  // An excerpt's gap line stands for text left out, so a quote across it is not on the page.
+  if (quote.includes(excerptGap) || !normalizeWhitespace(page.text).includes(quote)) {
     return unchecked(item.key, 'quote_not_on_page');
   }
   if (echoesAddress(quote, page.chain, item.values)) return unchecked(item.key, 'echoes_address');
@@ -198,7 +212,7 @@ function verifyOne(
     status: 'differs',
     quote,
     url,
-    note: answer.note === undefined ? null : plainNote(answer.note),
+    note: noteOf(answer),
     reason: null,
   };
 }
@@ -206,9 +220,11 @@ function verifyOne(
 /**
  * What a report says about each item (ADR-0027), checked in code: a quote counts only when it is,
  * after whitespace is normalized, a substring of the exact text sent for a URL the item itself
- * cites, within the length limits, echoing no address of its redirect chain, and, for a match,
- * stating every value the item states, from a page that was not cut. An item the model left out,
- * answered twice or failed on is could not be checked; keys of no item are dropped.
+ * cites, across no gap of an excerpt, within the length limits, echoing no address of its redirect
+ * chain, and, for a match,
+ * stating every value the item states, from a page that was not cut. An item that cites no official
+ * page, whose pages were all unread, or that the model left out, answered twice or failed on is
+ * could not be checked, with the model's own reason when it gave one; keys of no item are dropped.
  */
 export function verifyAnswers(
   items: readonly CheckItem[],

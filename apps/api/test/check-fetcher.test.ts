@@ -56,6 +56,15 @@ const routes = new Map<string, Handler>([
     },
   ],
   [
+    '/app',
+    (response) => {
+      response.writeHead(200, { 'content-type': 'text/html' });
+      response.end(
+        '<html><head><title>Laws</title><script src="/app.js"></script></head><body><div id="root"></div><noscript>Turn scripts on.</noscript></body></html>',
+      );
+    },
+  ],
+  [
     '/long',
     (response) => {
       response.writeHead(200, { 'content-type': 'text/plain' });
@@ -201,6 +210,7 @@ describe('the cited-source fetcher (ADR-0027)', () => {
     ['a redirect loop', page('/loop'), 'too_many_redirects'],
     ['a 404', page('/missing'), 'http_status'],
     ['a PDF', page('/pdf'), 'unsupported_type'],
+    ['a page that only scripts fill with text', page('/app'), 'no_text'],
     ['too many bytes', page('/big'), 'too_large'],
     ['a decompression bomb', page('/bomb'), 'too_large'],
   ])('refuses %s', async (_, url, failure) => {
@@ -214,8 +224,9 @@ describe('the cited-source fetcher (ADR-0027)', () => {
   });
 
   it('hands the parser no more markup than its cap, and says the page was cut', async () => {
-    const read = await fetcher({ maxMarkupLength: 20 }).fetch(page('/law'), hosts);
+    const read = await fetcher({ maxMarkupLength: 120 }).fetch(page('/law'), hosts);
     expect(read).toMatchObject({ ok: true, cut: true });
+    expect(read.ok && read.text).toBe('Residence Act\nIncome of at least €920,0');
   });
 
   it('gives up after its time limit', async () => {

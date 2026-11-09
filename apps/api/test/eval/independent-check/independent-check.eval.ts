@@ -12,7 +12,9 @@ import { expect, it } from 'vitest';
 import { readAnthropicApiKey } from '../../../src/config.js';
 import type { RuleChecker } from '../../../src/knowledge/check/checker.js';
 import { claudeRuleChecker } from '../../../src/knowledge/check/claude-checker.js';
-import { ruleCheckModel } from '../../../src/knowledge/check/model.js';
+import { claudePassageLocator } from '../../../src/knowledge/check/claude-locator.js';
+import type { PassageLocator } from '../../../src/knowledge/check/locator.js';
+import { passageLocateModel, ruleCheckModel } from '../../../src/knowledge/check/model.js';
 import { ruleCheckPromptVersion } from '../../../src/knowledge/check/prompt.js';
 import type { CheckReport } from '../../../src/knowledge/check/store.js';
 import { maxCallsPerRun, withCallLimit } from './call-limit.js';
@@ -21,8 +23,8 @@ import { checkCase } from './harness.js';
 
 const concurrency = 3;
 
-/** Of the four correct cases, at least this many come out checked (ADR-0027 leaves the bar here). */
-const minCorrectChecked = 3;
+/** Of the five correct cases, at least this many come out checked (ADR-0027 leaves the bar here). */
+const minCorrectChecked = 4;
 
 /**
  * At most this many correct cases may get no answer from the vendor. A wrong or adversarial case
@@ -31,24 +33,33 @@ const minCorrectChecked = 3;
 const maxCorrectFailures = 1;
 
 /**
- * Claude Sonnet 5.5's list prices in US dollars per million tokens, read 2026-11-07 from
+ * List prices in US dollars per million tokens of the check's model, Claude Sonnet 5.5, and of the
+ * passage locator's, Claude Haiku 5.5 on prompts up to 100,000 tokens, read 2026-11-09 from
  * https://platform.claude.com/docs/en/about-claude/pricing.
  */
-const dollarsPerMillion = { input: 2, output: 10 };
+const dollarsPerMillion: Record<string, { input: number; output: number }> = {
+  [ruleCheckModel]: { input: 2, output: 10 },
+  [passageLocateModel]: { input: 0.1, output: 0.5 },
+};
 
 interface Usage {
   calls: number;
   inputTokens: number;
   outputTokens: number;
+  dollars: number;
 }
 
 /** A logger that keeps the call metadata the check logs, never more. */
 function usageLogger(usage: Usage): Logger {
   const record = ({ model, inputTokens, outputTokens }: LogEntry) => {
     if (model === undefined) return;
+    const price = dollarsPerMillion[String(model)] ?? { input: 0, output: 0 };
+    const input = Number(inputTokens ?? 0);
+    const output = Number(outputTokens ?? 0);
     usage.calls += 1;
-    usage.inputTokens += Number(inputTokens ?? 0);
-    usage.outputTokens += Number(outputTokens ?? 0);
+    usage.inputTokens += input;
+    usage.outputTokens += output;
+    usage.dollars += (input * price.input + output * price.output) / 1_000_000;
   };
   return { info: record, error: () => undefined };
 }
@@ -57,10 +68,6 @@ interface CaseRun {
   readonly evalCase: CheckCase;
   readonly report: CheckReport;
 }
-
-const dollars = (usage: Usage) =>
-  (usage.inputTokens * dollarsPerMillion.input + usage.outputTokens * dollarsPerMillion.output) /
-  1_000_000;
 
 /** Model text as inert text in the public job summary: one line, no Markdown, no markup. */
 const plain = (text: string | null) =>
@@ -111,11 +118,11 @@ function report(runs: readonly CaseRun[], usage: Usage, calls: number) {
   const lines = [
     '## Independent check evaluation',
     '',
-    `Model \`${ruleCheckModel}\`, prompt \`${ruleCheckPromptVersion}\`, ${String(checks)} cases.`,
+    `Model \`${ruleCheckModel}\`, prompt \`${ruleCheckPromptVersion}\`, passages picked by \`${passageLocateModel}\`, ${String(checks)} cases.`,
     problems.length === 0 ? '**Passed.**' : `**Failed:** ${problems.join('; ')}.`,
     '',
     `Correct versions checked: ${String(correctChecked)} of ${String(correct.length)}.`,
-    `Tokens: ${String(usage.inputTokens)} in, ${String(usage.outputTokens)} out over ${String(usage.calls)} calls; about US$${(dollars(usage) / checks).toFixed(4)} a check, US$${dollars(usage).toFixed(4)} the run.`,
+    `Tokens: ${String(usage.inputTokens)} in, ${String(usage.outputTokens)} out over ${String(usage.calls)} calls; about US$${(usage.dollars / checks).toFixed(4)} a check, US$${usage.dollars.toFixed(4)} the run.`,
     '',
   ];
   for (const { evalCase, report: row } of runs) {
@@ -144,13 +151,18 @@ function report(runs: readonly CaseRun[], usage: Usage, calls: number) {
     if (unread.length > 0) {
       lines.push('', `Not read: ${unread.map(({ outcome }) => outcome).join(', ')}.`);
     }
+    if (row.fetchLog.some(({ cut }) => cut)) lines.push('', 'A page was sent cut.');
     lines.push('');
   }
   lines.push(`Model calls: ${String(calls)} of at most ${String(maxCallsPerRun)}.`);
   return { text: lines.join('\n'), problems };
 }
 
-async function runAll(checker: RuleChecker, usage: Usage): Promise<CaseRun[]> {
+async function runAll(
+  checker: RuleChecker,
+  locator: PassageLocator,
+  usage: Usage,
+): Promise<CaseRun[]> {
   const choice = { checker, model: ruleCheckModel, promptVersion: ruleCheckPromptVersion };
   const runs: CaseRun[] = [];
   const queue = [...checkCases.entries()];
@@ -158,7 +170,10 @@ async function runAll(checker: RuleChecker, usage: Usage): Promise<CaseRun[]> {
     Array.from({ length: concurrency }, async () => {
       for (let item = queue.shift(); item !== undefined; item = queue.shift()) {
         const [index, evalCase] = item;
-        runs[index] = { evalCase, report: await checkCase(evalCase, choice, usageLogger(usage)) };
+        runs[index] = {
+          evalCase,
+          report: await checkCase(evalCase, choice, usageLogger(usage), locator),
+        };
       }
     }),
   );
@@ -170,9 +185,12 @@ it('flags every wrong and adversarial version and checks most correct ones', asy
   if (apiKey === undefined) {
     throw new Error('Set ANTHROPIC_API_KEY to run the independent check evaluation');
   }
-  const { checker, calls } = withCallLimit(claudeRuleChecker({ apiKey }));
-  const usage: Usage = { calls: 0, inputTokens: 0, outputTokens: 0 };
-  const runs = await runAll(checker, usage);
+  const { checker, locator, calls } = withCallLimit(
+    claudeRuleChecker({ apiKey }),
+    claudePassageLocator({ apiKey }),
+  );
+  const usage: Usage = { calls: 0, inputTokens: 0, outputTokens: 0, dollars: 0 };
+  const runs = await runAll(checker, locator, usage);
   const { text, problems } = report(runs, usage, calls());
   console.log(text);
   const summary = process.env['ARCA_EVAL_REPORT'];
