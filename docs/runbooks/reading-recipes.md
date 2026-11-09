@@ -8,7 +8,7 @@ For each host:
 - **Cite:** the URL form a version cites. Cite the page a person can open, not an API address, unless the API is the only official form of the text.
 - **Amendments:** where to look for instruments made after a source's `verifiedAt`.
 
-"Last confirmed" is the date a session last read the host this way. A recipe can stop working: when it does, fix it here in the same pull request as the audit that found out. A recipe never widens what counts as official: every Read address is on the pinned official-domain list, by the same matching rule as a source (spec 0002, R4). An edit to this file also gets the supply-chain reviewer.
+"Last confirmed" is the date a session last read the host this way. A recipe can stop working: when it does, fix it here in the same pull request as the audit that found out. A recipe never widens what counts as official: every Read address is on the pinned official-domain list, by the same matching rule as a source (spec 0002, R4). An edit to this file also gets the supply-chain reviewer, added by hand to what `pnpm review:reviewers` prints.
 
 ## Rules for every host
 
@@ -17,7 +17,7 @@ For each host:
 - Never get around a block. No user-agent change, no headless browser to pass a challenge, no archive or cache copy, no proxy, no disabled certificate check (`-k`, `--insecure`, `NODE_TLS_REJECT_UNAUTHORIZED`). Earlier sessions were refused the first three. Each client is used as itself: where `curl` is refused, the `web-fetch` agent, a client the session provides, may be tried once; a challenge or refusal to it too means the host is "not readable from a session". Then the source keeps its old `verifiedAt`, and the audit record says so.
 - A text read through the `web-fetch` agent comes back summarized, and a summary is not a re-read. Have it save the page or PDF as a file and read the file; once it invented a review period a Georgian law does not state.
 - PDFs: `pdftotext -layout file.pdf -` (installed). A scanned PDF has no text layer: read it with the Read tool.
-- Playwright is the session image's own, not a repository dependency. Use a fresh browser context with no downloads. If it or its browser is missing, or the rendered page shows a challenge or a captcha, the host is not readable: never install anything.
+- Use the session image's Playwright browser, not the repository's `@playwright/test`. Use a fresh browser context with no downloads. If it or its browser is missing, or the rendered page shows a challenge or a captcha, the host is not readable: never install anything.
 - Saved files stay in the session's scratch folder and are never committed.
 - Laws in force are often the consolidated text. When the official gazette version prevails by law (Iceland, for one), read the gazette originals of every amendment too.
 
@@ -46,9 +46,9 @@ For each host:
 
 ## `cl`: Chile
 
-**`www.bcn.cl`** (Ley Chile; last confirmed 2026-11-07)
+**`www.bcn.cl`** (Ley Chile; last tried 2026-11-07)
 
-- **Read:** not readable from a session. `curl` gets 401 (a CloudFront check) and the `web-fetch` agent gets an empty page drawn by scripts. The same norms come as JSON from `https://nuevo.leychile.cl/servicios/Navegar/get_norma_json?idNorma=<id>`, but that host is not on the `cl` list, so it is a lead: it never moves a `www.bcn.cl` source's `verifiedAt`. Adding the host to the list, with its proof, in a pull request of its own, would make it a Read address.
+- **Read:** not readable from a session. `curl` gets 401 (a CloudFront check) and the `web-fetch` agent gets an empty page drawn by scripts. The same norms come as JSON from `https://nuevo.leychile.cl/servicios/Navegar/get_norma_json?idNorma=<id>`, but that host is not on the `cl` list, so it is a lead: it never moves a `www.bcn.cl` source's `verifiedAt`. Adding the host to the list, with its proof, in a pull request of its own, would make it a Read address. Version 1 of `cl-mercosur-temporary` read its three `www.bcn.cl` sources from that JSON on 2026-11-07; they count as not re-read and go stale on 2027-02-05 unless the list gains the host first.
 - **Cite:** `https://www.bcn.cl/leychile/navegar?idNorma=<id>`.
 - **Amendments:** the norm's JSON (a lead) names its versions and the norms that changed it.
 - Ids: Ley 21.325 1158549, Decreto 177/2022 1176043, Decreto 23/2022 1173324, Civil Code 172986.
@@ -130,7 +130,7 @@ For each host:
 
 **`matsne.gov.ge`** (last confirmed 2026-11-07)
 
-- **Read:** `curl` gets "Access Denied". Through the `web-fetch` agent, find the number `<n>` of the "Consolidated version (final)" on `https://matsne.gov.ge/en/document/view/<id>` (the bare address or `?publication=latest` can show the first version), then have it save the English PDF `/en/document/download/<id>/<n>/en/pdf` and read the file. Georgian view pages (`/ka/document/view/<id>`) are readable; Georgian PDFs are not.
+- **Read:** `curl` gets "Access Denied". Through the `web-fetch` agent, find the number `<n>` of the "Consolidated version (final)" on `https://matsne.gov.ge/en/document/view/<id>` (the bare address or `?publication=latest` can show the first version), then have it save the English PDF `/en/document/download/<id>/<n>/en/pdf` and read the file. Georgian view pages (`/ka/document/view/<id>`) are readable only as a summary, and Georgian PDFs not at all, so a Georgian-only text is not re-read.
 - **Cite:** `https://matsne.gov.ge/en/document/view/<id>?publication=<n>`, the publication read (or `/ka/` for a text with no English version). Versions written before 2026-11-09 cite the bare address; a new version adds the publication number.
 - **Amendments:** the document's list of consolidated publications; each amending law has its own document id.
 - Ids: Law on the Legal Status of Aliens 2278806, Civil Code 31702.
@@ -202,7 +202,7 @@ For each host:
 
 **`moj.go.jp`** (last confirmed 2026-11-07)
 
-- **Read:** `curl` gets a CloudFront 403. The `web-fetch` agent reads it and saves PDFs as files; `pdftotext -raw`, then join the lines (vertical text).
+- **Read:** `curl` gets a CloudFront 403. Have the `web-fetch` agent save the PDF as a file and read the file: `pdftotext -raw`, then join the lines (vertical text).
 - **Cite:** the PDF or page itself.
 - **Amendments:** the Immigration Services Agency's page of laws and notices (`/isa/policies/bill/…`) links the current notice text.
 
