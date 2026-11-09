@@ -568,6 +568,7 @@ export const knowledgeRoutes = {
 
 export {
   type FactKey,
+  checkReasons,
   collectionNames,
   comparisonOperators,
   expressionOperators,

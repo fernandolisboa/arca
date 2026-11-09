@@ -39,6 +39,7 @@ export {
   maxSharingStateBytes,
   maxOpenInvites,
   maxQuotes,
+  checkReasons,
   maxPushChannels,
   pendingPasskeyHours,
   recoveryLinkMinutes,

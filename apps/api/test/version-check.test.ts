@@ -296,6 +296,7 @@ describe('the independent check of one version (ADR-0027)', () => {
       ...subject,
       entry: { ...entry, identity: versionIdentity(joined, 'c'.repeat(64)), version: joined },
     };
+    // Only value coverage across pages is tested here: code cannot tell what a passage is about.
     const onLaw = { quote: 'means of at least EUR 920 a month', url: law };
     const onFees = { quote: 'Application fee: EUR 100', url: fees };
     const answeringMeans = (quotes: readonly { quote: string; url: string }[]) =>
@@ -336,6 +337,9 @@ describe('the independent check of one version (ADR-0027)', () => {
         reason,
       });
       expect(store.rows[0]?.clean).toBe(false);
+      // The other item still stands: one entry's quotes never fail the whole reply.
+      expect(store.rows[0]?.failure).toBeNull();
+      expect(store.rows[0]?.items[1]?.status).toBe('matches');
     });
   });
 

@@ -3,12 +3,13 @@ import { z } from 'zod';
 
 const text = z.string().max(4_000);
 
+const optionalText = text.nullish().transform((value) => value ?? undefined);
+
 /**
  * How many quotes an entry may carry and still parse. Looser than `maxQuotes` on purpose: an entry
  * with a few too many is refused on its own, as `quote_count`, instead of failing the whole reply.
  */
-const parsedQuotes = 10;
-const optionalText = text.nullish().transform((value) => value ?? undefined);
+const maxParsedQuotes = 10;
 
 /**
  * The closed schema of a checker's answer (ADR-0027): one entry per item key with a status and,
@@ -25,7 +26,7 @@ export const RuleCheckAnswer = z.strictObject({
         status: z.enum(checkStatuses),
         quotes: z
           .array(z.strictObject({ quote: text, url: text }))
-          .max(parsedQuotes)
+          .max(maxParsedQuotes)
           .nullish()
           .transform((value) => value ?? undefined),
         note: optionalText,
