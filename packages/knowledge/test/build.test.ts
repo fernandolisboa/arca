@@ -460,36 +460,26 @@ describe("a source's machine-readable address (spec 0002, R4)", () => {
       { machineReadableUrl: `https://api.gov.example/${'a'.repeat(2000)}` },
       '/sources/0/machineReadableUrl:',
     ],
-    [
-      'on a secondary source',
-      {
-        url: 'https://blog.example/law',
-        kind: 'secondary',
-        machineReadableUrl: 'https://api.gov.example/law',
-      },
-      '/sources/0/machineReadableUrl: Only an official source has a machine-readable address',
-    ],
   ])('refuses one %s', async (_, overrides, expected) => {
-    const tree = withRouteSource(overrides);
-    if (overrides['kind'] === 'secondary') {
-      tree['routes/qm-work/1.json'] = routeVersion({
-        sources: [lawSource({ id: 'act' }), lawSource(overrides)],
-        requirements: [
-          {
-            id: 'treaty-citizen',
-            title: 'The principal is a citizen of a treaty country',
-            expression: citizenOf(['QN']),
-            sources: ['act', 'law'],
-          },
-        ],
-      });
-    }
-    const issues = await issuesOf(tree);
-    const index = overrides['kind'] === 'secondary' ? '1' : '0';
-    expect(issues).toContainEqual(
-      expect.stringContaining(
-        `routes/qm-work/1.json ${expected.replace('/sources/0/', `/sources/${index}/`)}`,
-      ),
+    const issues = await issuesOf(withRouteSource(overrides));
+    expect(issues).toContainEqual(expect.stringContaining(`routes/qm-work/1.json ${expected}`));
+  });
+
+  it('refuses one on a secondary source, even on a pinned official host', async () => {
+    const tree = baseTree();
+    tree['routes/qm-work/1.json'] = routeVersion({
+      sources: [
+        lawSource({}),
+        lawSource({
+          id: 'commentary',
+          url: 'https://blog.example/law',
+          kind: 'secondary',
+          machineReadableUrl: 'https://api.gov.example/law',
+        }),
+      ],
+    });
+    expect(await issuesOf(tree)).toContain(
+      'routes/qm-work/1.json /sources/1/machineReadableUrl: Only an official source has a machine-readable address',
     );
   });
 
@@ -521,6 +511,23 @@ describe("a source's machine-readable address (spec 0002, R4)", () => {
     const issues = await issuesOf(tree);
     expect(issues).toContainEqual(
       expect.stringMatching(/^official-domains\/qm-gov\/1\.json \/hosts\/0\/source:/),
+    );
+  });
+
+  it('refuses one in the former-countries file, which pins no list to check it against', async () => {
+    const tree = baseTree();
+    tree['former-countries/1.json'] = {
+      ...(tree['former-countries/1.json'] as object),
+      sources: [
+        lawSource({
+          id: 'iso',
+          url: 'https://www.iso.example/3166-3',
+          machineReadableUrl: 'https://www.iso.example/3166-3.json',
+        }),
+      ],
+    };
+    expect(await issuesOf(tree)).toContainEqual(
+      expect.stringMatching(/^former-countries\/1\.json \/sources\/0:/),
     );
   });
 

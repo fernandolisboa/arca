@@ -29,9 +29,10 @@ const sourceUrlSchema = z.string().max(2000).startsWith('https://');
  * An official address that serves a source's text as data, such as an API or a print address.
  * The build matches its host against the pinned official-domain lists, as it does a source's URL.
  */
-export const machineReadableUrlSchema = sourceUrlSchema.regex(/^https:\/\/[^/?#@:\\]+(?:[/?#]|$)/, {
-  message: 'A machine-readable address has no user information or port',
-});
+export const machineReadableUrlSchema = sourceUrlSchema.regex(
+  /^https:\/\/[^/?#\\@:%\s\u3002\uff0e\uff61]+(?:[/?#]|$)/,
+  { message: 'A machine-readable address has a plain host, with no user information or port' },
+);
 
 /** A source as the files that pin no official-domain list cite it: its URL only. */
 export const plainSourceSchema = z.strictObject({
@@ -42,7 +43,10 @@ export const plainSourceSchema = z.strictObject({
   verifiedAt: calendarDateSchema,
 });
 
-/** A source of a file that pins official-domain lists; an official one may name its data address. */
+/**
+ * A source of a file that pins official-domain lists; an official one may name its machine-readable
+ * address.
+ */
 export const sourceSchema = plainSourceSchema.extend({
   machineReadableUrl: machineReadableUrlSchema.optional(),
 });

@@ -78,7 +78,8 @@ export function guideCountry(guide: Pick<CountryGuide, 'id'>): CountryCode {
 
 /**
  * Checks what a guide's schema cannot: its country in the pinned countries, each law's URL and
- * machine-readable address on a pinned official host, unique law and pitfall IDs, and every pitfall about laws of the guide.
+ * machine-readable address on a pinned official host, unique law and pitfall IDs, and every
+ * pitfall about laws of the guide.
  */
 export function checkCountryGuide(
   guide: CountryGuide,

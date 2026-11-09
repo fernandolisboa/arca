@@ -29634,7 +29634,7 @@
                                       "machineReadableUrl": {
                                         "type": "string",
                                         "maxLength": 2000,
-                                        "pattern": "^https:\\/\\/[^/?#@:\\\\]+(?:[/?#]|$)"
+                                        "pattern": "^https:\\/\\/[^/?#\\\\@:%\\s\\u3002\\uff0e\\uff61]+(?:[/?#]|$)"
                                       }
                                     },
                                     "required": [
@@ -29701,7 +29701,7 @@
                                       "machineReadableUrl": {
                                         "type": "string",
                                         "maxLength": 2000,
-                                        "pattern": "^https:\\/\\/[^/?#@:\\\\]+(?:[/?#]|$)"
+                                        "pattern": "^https:\\/\\/[^/?#\\\\@:%\\s\\u3002\\uff0e\\uff61]+(?:[/?#]|$)"
                                       }
                                     },
                                     "required": [
@@ -29835,7 +29835,7 @@
                                       "machineReadableUrl": {
                                         "type": "string",
                                         "maxLength": 2000,
-                                        "pattern": "^https:\\/\\/[^/?#@:\\\\]+(?:[/?#]|$)"
+                                        "pattern": "^https:\\/\\/[^/?#\\\\@:%\\s\\u3002\\uff0e\\uff61]+(?:[/?#]|$)"
                                       }
                                     },
                                     "required": [
@@ -29914,7 +29914,7 @@
                                       "machineReadableUrl": {
                                         "type": "string",
                                         "maxLength": 2000,
-                                        "pattern": "^https:\\/\\/[^/?#@:\\\\]+(?:[/?#]|$)"
+                                        "pattern": "^https:\\/\\/[^/?#\\\\@:%\\s\\u3002\\uff0e\\uff61]+(?:[/?#]|$)"
                                       }
                                     },
                                     "required": [
@@ -29971,7 +29971,7 @@
                                 "machineReadableUrl": {
                                   "type": "string",
                                   "maxLength": 2000,
-                                  "pattern": "^https:\\/\\/[^/?#@:\\\\]+(?:[/?#]|$)"
+                                  "pattern": "^https:\\/\\/[^/?#\\\\@:%\\s\\u3002\\uff0e\\uff61]+(?:[/?#]|$)"
                                 }
                               },
                               "required": [
@@ -30955,7 +30955,7 @@
                                         "machineReadableUrl": {
                                           "type": "string",
                                           "maxLength": 2000,
-                                          "pattern": "^https:\\/\\/[^/?#@:\\\\]+(?:[/?#]|$)"
+                                          "pattern": "^https:\\/\\/[^/?#\\\\@:%\\s\\u3002\\uff0e\\uff61]+(?:[/?#]|$)"
                                         }
                                       },
                                       "required": [
@@ -31427,7 +31427,7 @@
                                         "machineReadableUrl": {
                                           "type": "string",
                                           "maxLength": 2000,
-                                          "pattern": "^https:\\/\\/[^/?#@:\\\\]+(?:[/?#]|$)"
+                                          "pattern": "^https:\\/\\/[^/?#\\\\@:%\\s\\u3002\\uff0e\\uff61]+(?:[/?#]|$)"
                                         }
                                       },
                                       "required": [
@@ -32813,7 +32813,7 @@
                           "machineReadableUrl": {
                             "type": "string",
                             "maxLength": 2000,
-                            "pattern": "^https:\\/\\/[^/?#@:\\\\]+(?:[/?#]|$)"
+                            "pattern": "^https:\\/\\/[^/?#\\\\@:%\\s\\u3002\\uff0e\\uff61]+(?:[/?#]|$)"
                           },
                           "host": {
                             "type": [
@@ -33582,7 +33582,7 @@
                                 "machineReadableUrl": {
                                   "type": "string",
                                   "maxLength": 2000,
-                                  "pattern": "^https:\\/\\/[^/?#@:\\\\]+(?:[/?#]|$)"
+                                  "pattern": "^https:\\/\\/[^/?#\\\\@:%\\s\\u3002\\uff0e\\uff61]+(?:[/?#]|$)"
                                 },
                                 "host": {
                                   "type": [
