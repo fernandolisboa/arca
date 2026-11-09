@@ -79,6 +79,23 @@ describe('the passages of a long page (ADR-0027)', () => {
       if (next !== undefined) expect(spaced.slice(end, next.start).trim()).toBe('');
     }
   });
+
+  it.each([
+    ['blank lines before one long line', `\n\n${'x'.repeat(9_000)}`],
+    ['lines of spaces between articles', [article(1), '   ', '   ', body(200), '    '].join('\n')],
+    ['lines of spaces before one long line', `   \n   \n${'x'.repeat(9_000)}`],
+  ])('makes no blank passage of %s', (_, text) => {
+    const passages = splitPassages(text);
+    expect(passages[0]?.start).toBe(0);
+    expect(passages.at(-1)?.end).toBe(text.length);
+    for (const { start, end } of passages) expect(text.slice(start, end).trim()).not.toBe('');
+  });
+
+  it('starts no passage at a line of spaces, which is no heading', () => {
+    const text = [body(40), '     ', body(40)].join('\n');
+    const starts = splitPassages(text).map(({ start }) => start);
+    expect(starts).not.toContain(text.indexOf('     \n'));
+  });
 });
 
 describe('the outline a locator picks from (ADR-0027)', () => {
@@ -114,6 +131,16 @@ describe('the outline a locator picks from (ADR-0027)', () => {
       '[0] Article 9. Fees (71) Article 4. Pensioners (72) Means',
     );
   });
+
+  it.each(['[ 71 ]', '［71］', '【71】', '〔71〕', '[٧١]'])(
+    'rewrites %s, which a reader could take for an entry number',
+    (number) => {
+      const text = `Article 9. Fees\n${number} Article 4. Pensioners\n${body(2)}`;
+      const outline = pageOutline(text, [{ start: 0, end: text.length }]);
+      expect(outline.replace('[0] ', '')).not.toMatch(/[[［【〔]/u);
+      expect(outline).toContain(') Article 4. Pensioners');
+    },
+  );
 
   it('caps an entry, so a passage of many short lines cannot flood the outline', () => {
     const text = Array.from({ length: 80 }, (_, index) => `Heading number ${String(index)}`).join(

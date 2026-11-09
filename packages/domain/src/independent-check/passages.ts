@@ -20,7 +20,7 @@ export const maxPassagesPerItem = 6;
 export const excerptGap = '[…]';
 
 /** What one gap line adds to an excerpt: the line and its line break. */
-const gapCost = excerptGap.length + 1;
+export const gapCost = excerptGap.length + 1;
 
 /** A line this short may be a heading, so a passage may start at it and an outline shows it. */
 const headingLength = 120;
@@ -29,7 +29,7 @@ const minPassageLength = 800;
 /** A passage that reaches this share of the shortest length may end at the next heading. */
 const headingShare = 0.4;
 /** No passage is much longer than this many times the shortest. */
-const longestPassage = 3;
+const maxPassageMultiple = 3;
 /** A page's outline has at most about this many entries, so a long law's passages grow with it. */
 const maxOutlineEntries = 1_500;
 const outlineEntryLength = 320;
@@ -38,7 +38,10 @@ const outlineSeparator = ' · ';
 /** How a list item opens: a dash or bullet, or a short number or letter with a dot or bracket. */
 const listMarker = /^(?:[-–—•*]|\(?(?:\d{1,3}|\p{L}{1,2}|[ivxIVX]{1,4})[).])\s/u;
 
-const shortLine = (line: string) => line.length >= minHeadingLength && line.length <= headingLength;
+const blank = (line: string) => line.trim() === '';
+
+const shortLine = (line: string) =>
+  line.trim().length >= minHeadingLength && line.length <= headingLength;
 
 /**
  * Whether a line reads as a heading: short, and not a list item. Laws in every language name their
@@ -48,10 +51,17 @@ function headingLike(line: string): boolean {
   return shortLine(line) && !listMarker.test(line);
 }
 
-/** The last whitespace in `text` at or before `limit` and after `from`, or `limit` itself. */
+const whitespace = /\s/u;
+
+/**
+ * The last whitespace in `text` at or before `limit` and after the first words that follow
+ * `from`, so the piece before it is never blank; else `limit` itself.
+ */
 function breakBefore(text: string, from: number, limit: number): number {
-  for (let index = limit; index > from; index -= 1) {
-    if (/\s/u.test(text.charAt(index))) return index;
+  let first = from;
+  while (first < limit && whitespace.test(text.charAt(first))) first += 1;
+  for (let index = limit; index > first; index -= 1) {
+    if (whitespace.test(text.charAt(index))) return index;
   }
   return limit;
 }
@@ -68,29 +78,33 @@ export function splitPassages(text: string): Passage[] {
     minPassageLength,
     Math.ceil(text.length / (maxOutlineEntries * headingShare)),
   );
-  const max = min * longestPassage;
+  const max = min * maxPassageMultiple;
   const passages: Passage[] = [];
   let start = 0;
   let position = 0;
+  // Whether the passage being built holds words yet, kept as a flag so no line is read twice.
+  let hasWords = false;
   while (position < text.length) {
     const newline = text.indexOf('\n', position);
     const lineEnd = newline === -1 ? text.length : newline;
-    const lineLength = lineEnd - position;
+    const line = text.slice(position, lineEnd);
     const soFar = position - start;
     const breaksHere =
-      (soFar >= min * headingShare && headingLike(text.slice(position, lineEnd))) ||
-      (soFar >= min && lineLength > 0 && lineLength <= headingLength) ||
-      soFar + lineLength > max;
-    // Blank lines alone never make a passage: they stay with the text after them.
-    if (breaksHere && text.slice(start, position).trim() !== '') {
+      (soFar >= min * headingShare && headingLike(line)) ||
+      (soFar >= min && !blank(line) && line.length <= headingLength) ||
+      soFar + line.length > max;
+    // Blank lines make no passage of their own: they stay with the text after them.
+    if (breaksHere && hasWords) {
       passages.push({ start, end: position - 1 });
       start = position;
+      hasWords = false;
     }
     while (lineEnd - start > max) {
       const end = breakBefore(text, start, start + max);
       passages.push({ start, end });
       start = end;
     }
+    hasWords ||= !blank(line);
     position = lineEnd + 1;
   }
   if (start < text.length) passages.push({ start, end: text.length });
@@ -99,10 +113,13 @@ export function splitPassages(text: string): Passage[] {
 
 /**
  * A line of the page as a piece of an outline entry: on one line whatever the page wrote, and with
- * no bracketed number of its own, so page text cannot pass for another passage's entry.
+ * no bracketed number of its own, in any bracket or digit a reader takes for one, so page text
+ * cannot pass for another passage's entry.
  */
 const outlinePiece = (line: string) =>
-  line.replace(/[\p{Cc}\p{Zl}\p{Zp}]+/gu, ' ').replace(/\[(\d+)\]/gu, '($1)');
+  line
+    .replace(/[\p{Cc}\p{Zl}\p{Zp}]+/gu, ' ')
+    .replace(/[[［【〔]\s*(\p{Nd}+)\s*[\]］】〕]/gu, '($1)');
 
 /**
  * One line per passage for a locator to pick from: the passage's number, how it opens, then the

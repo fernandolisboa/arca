@@ -7,6 +7,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     include: ['test/eval/**/*.eval.ts'],
-    testTimeout: 40 * 60_000,
+    // Under the workflow job's 45 minutes, which also cover its install and build.
+    testTimeout: 35 * 60_000,
   },
 });

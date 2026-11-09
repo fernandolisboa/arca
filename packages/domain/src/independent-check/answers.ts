@@ -155,10 +155,12 @@ function linkLike(word: string): boolean {
 }
 
 /**
- * Characters that show nothing: those with no width, which could split a host name so that no
- * word of it reads as one, and those that reorder the text around them.
+ * Characters that show nothing: format characters such as those with no width, the soft hyphen
+ * and the ones that reorder the text around them, then the joiners, variation selectors and
+ * blank that are not format characters. Any could split a host name so that no word of it reads
+ * as one.
  */
-const unseen = /[\u200B-\u200F\u202A-\u202E\u2060-\u2069\uFEFF]/gu;
+const unseen = /[\p{Cf}\p{Variation_Selector}\u2800]|\u034F/gu;
 
 /**
  * Links, addresses, e-mail addresses and host names out of a note, angle brackets too, then

@@ -525,6 +525,51 @@ describe('the independent check of one version (ADR-0027)', () => {
       expect(store.rows[0]).toMatchObject({ failed: true });
     });
 
+    it('sends the opening, cut, when the budget holds none of the picks', async () => {
+      // Four pages sent whole leave the long one 1,400 characters: its opening and no more.
+      const whole = [60_000, 60_000, 60_000, 18_600];
+      const urls = [law, ...whole.map((_, index) => `${law}/${String(index)}`)];
+      const many = routeVersionSchema.parse({
+        ...version,
+        sources: urls.map((url, index) => ({
+          id: `law-${String(index)}`,
+          url,
+          title: 'Residence act',
+          kind: 'official',
+          verifiedAt: '2026-10-01',
+        })),
+        requirements: version.requirements.map((requirement) => ({
+          ...requirement,
+          sources: urls.map((_, index) => `law-${String(index)}`),
+        })),
+        costs: [],
+      });
+      const checked: CheckSubject = {
+        ...subject,
+        entry: { ...entry, version: many, identity: versionIdentity(many, 'c'.repeat(64)) },
+      };
+      const oneLong: SourceFetcher = {
+        fetch: (url) =>
+          Promise.resolve({
+            ok: true,
+            status: 200,
+            text: url === law ? longLaw : 'x'.repeat(whole[urls.indexOf(url) - 1] ?? 0),
+            cut: false,
+            chain: [url],
+          }),
+      };
+      const checker = answering(matchesBoth);
+      const locator = locating('Article 201. Means');
+      const { check, store } = setup({ checker, fetcher: oneLong, locator, checked });
+      await check(startId, 'qm-sample', 1);
+      expect(locator.requests).toHaveLength(1);
+      const sent = checker.requests[0]?.pages.find(({ url }) => url === law);
+      expect(sent?.text).toContain('Residence act, consolidated text');
+      expect(sent?.text).not.toContain('Article 201');
+      expect(store.rows[0]?.fetchLog.find(({ url }) => url === law)).toMatchObject({ cut: true });
+      expect(store.rows[0]).toMatchObject({ failed: true });
+    });
+
     it('ignores picks that are not passages of the page', async () => {
       const locator: PassageLocator = {
         locate: ({ items }) =>

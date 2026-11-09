@@ -193,18 +193,19 @@ export function createVersionCheck({
   /**
    * A long page as the passages picked for the items that cite it, within `budget`. When none
    * was picked, because the locator was not asked, failed, named no passage of the page, or the
-   * budget holds none, the page goes as its opening marked cut, so no match counts on it.
+   * budget holds none of its picks, the page goes as its opening marked cut, so no match counts
+   * on it.
    */
   const excerptOf = async (
     page: ReadPage,
     items: readonly CheckItem[],
     entry: CatalogEntry,
     budget: number,
-    ask: boolean,
+    askLocator: boolean,
   ): Promise<Excerpt> => {
     const citing = items.filter(({ urls }) => urls.includes(page.url));
     const passages = splitPassages(page.text);
-    const picks = ask
+    const picks = askLocator
       ? await locate({
           items: citing.map(({ key, kind, title }) => ({ key, kind, title })),
           sourceTitles: sourceTitlesAt(page.url, entry),
@@ -214,10 +215,9 @@ export function createVersionCheck({
     const ranked = citing.map(({ key }) =>
       (picks?.get(key) ?? []).filter((pick) => pick < passages.length).slice(0, maxPassagesPerItem),
     );
-    const chosen = ranked.some((ofItem) => ofItem.length > 0)
-      ? excerptPassages(passages, ranked, budget)
-      : [];
-    if (chosen.length === 0) {
+    const picked = new Set(ranked.flat());
+    const chosen = picked.size > 0 ? excerptPassages(passages, ranked, budget) : [];
+    if (!chosen.some((index) => picked.has(index))) {
       const text = openingExcerpt(page.text, budget);
       return { page: { ...page, text, cut: true, excerpt: true }, picked: false };
     }

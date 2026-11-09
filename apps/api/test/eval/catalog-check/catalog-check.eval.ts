@@ -31,10 +31,11 @@ const concurrency = 3;
 const maxCallsPerRun = 200;
 
 /**
- * No check starts after this long, so the report is written well inside the test's time limit
- * even when official sites answer slowly; the versions left are reported as not run.
+ * No check starts after this long, so even one that then takes its longest, about 13 minutes,
+ * ends inside the test's time limit and the report is written; the versions left are reported
+ * as not run.
  */
-const startWithinMs = 25 * 60_000;
+const startWithinMs = 20 * 60_000;
 
 interface Version {
   readonly routeId: string;

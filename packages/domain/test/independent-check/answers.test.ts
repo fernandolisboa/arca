@@ -230,6 +230,8 @@ describe('plainNote', () => {
     ['Escreva para fulano@ministerio agora', 'Escreva para agora'],
     ['Veja пример.рф para confirmar', 'Veja para confirmar'],
     ['Veja evil\u200B.example para confirmar', 'Veja para confirmar'],
+    ['Veja evil\u00ADsite.example para confirmar', 'Veja para confirmar'],
+    ['Veja evil\uFE0Fsite\u034F.example\u2800 para confirmar', 'Veja para confirmar'],
     [
       'A seção 4 não traz o valor; o art. 3.º cita 1.500.',
       'A seção 4 não traz o valor; o art. 3.º cita 1.500.',
