@@ -23,12 +23,28 @@ const sourceIds = z.array(slugSchema).min(1).max(20);
 /** A reference to an exact version of another knowledge file. */
 export const pinSchema = z.strictObject({ id: slugSchema, number: versionNumberSchema });
 
-export const sourceSchema = z.strictObject({
+const sourceUrlSchema = z.string().max(2000).startsWith('https://');
+
+/**
+ * An official address that serves a source's text as data, such as an API or a print address.
+ * The build matches its host against the pinned official-domain lists, as it does a source's URL.
+ */
+export const machineReadableUrlSchema = sourceUrlSchema.regex(/^https:\/\/[^/?#@:\\]+(?:[/?#]|$)/, {
+  message: 'A machine-readable address has no user information or port',
+});
+
+/** A source as the files that pin no official-domain list cite it: its URL only. */
+export const plainSourceSchema = z.strictObject({
   id: slugSchema,
-  url: z.string().max(2000).startsWith('https://'),
+  url: sourceUrlSchema,
   title: text,
   kind: z.enum(['official', 'secondary']),
   verifiedAt: calendarDateSchema,
+});
+
+/** A source of a file that pins official-domain lists; an official one may name its data address. */
+export const sourceSchema = plainSourceSchema.extend({
+  machineReadableUrl: machineReadableUrlSchema.optional(),
 });
 
 export const requirementSchema = z.strictObject({
@@ -161,7 +177,7 @@ export const officialDomainListSchema = z.strictObject({
           .regex(
             /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z]{2,63}|xn--[a-z0-9-]{1,59})$/,
           ),
-        source: sourceSchema,
+        source: plainSourceSchema,
       }),
     )
     .min(1)

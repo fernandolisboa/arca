@@ -29630,6 +29630,11 @@
                                       "verifiedAt": {
                                         "type": "string",
                                         "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      "machineReadableUrl": {
+                                        "type": "string",
+                                        "maxLength": 2000,
+                                        "pattern": "^https:\\/\\/[^/?#@:\\\\]+(?:[/?#]|$)"
                                       }
                                     },
                                     "required": [
@@ -29692,6 +29697,11 @@
                                       "verifiedAt": {
                                         "type": "string",
                                         "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      "machineReadableUrl": {
+                                        "type": "string",
+                                        "maxLength": 2000,
+                                        "pattern": "^https:\\/\\/[^/?#@:\\\\]+(?:[/?#]|$)"
                                       }
                                     },
                                     "required": [
@@ -29821,6 +29831,11 @@
                                       "verifiedAt": {
                                         "type": "string",
                                         "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      "machineReadableUrl": {
+                                        "type": "string",
+                                        "maxLength": 2000,
+                                        "pattern": "^https:\\/\\/[^/?#@:\\\\]+(?:[/?#]|$)"
                                       }
                                     },
                                     "required": [
@@ -29895,6 +29910,11 @@
                                       "verifiedAt": {
                                         "type": "string",
                                         "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      "machineReadableUrl": {
+                                        "type": "string",
+                                        "maxLength": 2000,
+                                        "pattern": "^https:\\/\\/[^/?#@:\\\\]+(?:[/?#]|$)"
                                       }
                                     },
                                     "required": [
@@ -29947,6 +29967,11 @@
                                 "verifiedAt": {
                                   "type": "string",
                                   "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                },
+                                "machineReadableUrl": {
+                                  "type": "string",
+                                  "maxLength": 2000,
+                                  "pattern": "^https:\\/\\/[^/?#@:\\\\]+(?:[/?#]|$)"
                                 }
                               },
                               "required": [
@@ -30926,6 +30951,11 @@
                                         "verifiedAt": {
                                           "type": "string",
                                           "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                        },
+                                        "machineReadableUrl": {
+                                          "type": "string",
+                                          "maxLength": 2000,
+                                          "pattern": "^https:\\/\\/[^/?#@:\\\\]+(?:[/?#]|$)"
                                         }
                                       },
                                       "required": [
@@ -31393,6 +31423,11 @@
                                         "verifiedAt": {
                                           "type": "string",
                                           "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                        },
+                                        "machineReadableUrl": {
+                                          "type": "string",
+                                          "maxLength": 2000,
+                                          "pattern": "^https:\\/\\/[^/?#@:\\\\]+(?:[/?#]|$)"
                                         }
                                       },
                                       "required": [
@@ -32775,6 +32810,11 @@
                             "type": "string",
                             "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
                           },
+                          "machineReadableUrl": {
+                            "type": "string",
+                            "maxLength": 2000,
+                            "pattern": "^https:\\/\\/[^/?#@:\\\\]+(?:[/?#]|$)"
+                          },
                           "host": {
                             "type": [
                               "string",
@@ -33538,6 +33578,11 @@
                                 "verifiedAt": {
                                   "type": "string",
                                   "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                },
+                                "machineReadableUrl": {
+                                  "type": "string",
+                                  "maxLength": 2000,
+                                  "pattern": "^https:\\/\\/[^/?#@:\\\\]+(?:[/?#]|$)"
                                 },
                                 "host": {
                                   "type": [

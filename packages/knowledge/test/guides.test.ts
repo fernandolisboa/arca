@@ -52,6 +52,15 @@ describe('country guides in the build (ADR-0027)', () => {
     expect(guides[0]?.hash).toMatch(/^[0-9a-f]{64}$/);
   });
 
+  it("accepts a law's machine-readable address on a pinned official host", async () => {
+    const withAddress = guide({
+      laws: [law({ machineReadableUrl: 'https://api.gov.example/residence-act.xml' })],
+    });
+    const { guides, issues } = await build(withGuides(withAddress));
+    expect(issues).toEqual([]);
+    expect(guides.map((each) => each.guide)).toEqual([withAddress]);
+  });
+
   it('records each guide in hashes.json', async () => {
     const { issues } = await build(withGuides(guide()), emptyHashes());
     expect(issues.map(formatIssue)).toContainEqual(
@@ -80,6 +89,11 @@ describe('country guides in the build (ADR-0027)', () => {
         pitfalls: [],
       }),
       'guides/qm/1.json /laws/0/url: A law is on a host of a pinned official-domain list',
+    ],
+    [
+      "a law's machine-readable address off the pinned official hosts",
+      guide({ laws: [law({ machineReadableUrl: 'https://evil-gov.example/act.xml' })] }),
+      'guides/qm/1.json /laws/0/machineReadableUrl: A machine-readable address is on a pinned official host',
     ],
     [
       'a law verified after the build date',

@@ -3,8 +3,13 @@ import { calendarDateSchema } from '../calendar/calendar-date.js';
 import type { CountryCode } from '../case/snapshot.js';
 import type { CheckIssue } from './check.js';
 import { slugSchema } from './expression.js';
-import { pinSchema, sourceSchema, versionNumberSchema } from './route-version.js';
-import { type OfficialHosts, officialUrl } from './validate.js';
+import {
+  machineReadableUrlSchema,
+  pinSchema,
+  sourceSchema,
+  versionNumberSchema,
+} from './route-version.js';
+import { type OfficialHosts, checkMachineReadableUrl, officialUrl } from './validate.js';
 
 /** The longest piece of free text in a guide: a paragraph, never a law's text. */
 export const maxGuideTextLength = 600;
@@ -43,6 +48,7 @@ export const countryGuideSchema = z.strictObject({
         id: slugSchema,
         title,
         url: sourceSchema.shape.url,
+        machineReadableUrl: machineReadableUrlSchema.optional(),
         verifiedAt: calendarDateSchema,
         amendment: guideTextSchema,
       }),
@@ -71,8 +77,8 @@ export function guideCountry(guide: Pick<CountryGuide, 'id'>): CountryCode {
 }
 
 /**
- * Checks what a guide's schema cannot: its country in the pinned countries, each law's URL on a
- * pinned official host, unique law and pitfall IDs, and every pitfall about laws of the guide.
+ * Checks what a guide's schema cannot: its country in the pinned countries, each law's URL and
+ * machine-readable address on a pinned official host, unique law and pitfall IDs, and every pitfall about laws of the guide.
  */
 export function checkCountryGuide(
   guide: CountryGuide,
@@ -92,6 +98,13 @@ export function checkCountryGuide(
     if (!officialUrl(law.url, official)) {
       issue(`/laws/${String(index)}/url`, 'A law is on a host of a pinned official-domain list');
     }
+    issues.push(
+      ...checkMachineReadableUrl(
+        law.machineReadableUrl,
+        `/laws/${String(index)}/machineReadableUrl`,
+        official,
+      ),
+    );
   });
   const pitfallIds = guide.pitfalls.map((pitfall) => pitfall.id);
   if (new Set(pitfallIds).size !== pitfallIds.length) issue('/pitfalls', 'Pitfall IDs are unique');

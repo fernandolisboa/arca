@@ -1,4 +1,4 @@
-import { sourceSchema } from '@arca/domain';
+import { plainSourceSchema } from '@arca/domain';
 import { z } from 'zod';
 import { sha256Schema as sha256 } from '../src/entries.ts';
 
@@ -31,7 +31,7 @@ export const formerCountriesFileSchema = z.strictObject({
     .array(z.string().regex(/^[A-Z]{4}$/))
     .min(1)
     .max(200),
-  sources: z.array(sourceSchema).min(1).max(50),
+  sources: z.array(plainSourceSchema).min(1).max(50),
 });
 
 /**

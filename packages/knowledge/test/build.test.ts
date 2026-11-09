@@ -392,6 +392,147 @@ describe('buildKnowledge', () => {
   });
 });
 
+describe("a source's machine-readable address (spec 0002, R4)", () => {
+  const lawSource = (overrides: Record<string, unknown>): Record<string, unknown> => ({
+    id: 'law',
+    url: 'https://www.gov.example/law',
+    title: 'Residence act',
+    kind: 'official',
+    verifiedAt: '2026-10-01',
+    ...overrides,
+  });
+  const withRouteSource = (overrides: Record<string, unknown>): Record<string, unknown> => ({
+    ...baseTree(),
+    'routes/qm-work/1.json': routeVersion({ sources: [lawSource(overrides)] }),
+  });
+  const withSetSource = (overrides: Record<string, unknown>): Record<string, unknown> => {
+    const tree = baseTree();
+    tree['country-sets/treaty/1.json'] = {
+      ...(tree['country-sets/treaty/1.json'] as object),
+      sources: [lawSource({ id: 'treaty', ...overrides })],
+    };
+    return tree;
+  };
+
+  it.each([
+    ['a route version', withRouteSource],
+    ['a country set', withSetSource],
+  ])('accepts one on a pinned official host in %s', async (_, treeWith) => {
+    const issues = await issuesOf(
+      treeWith({ machineReadableUrl: 'https://api.gov.example/law?format=json' }),
+    );
+    expect(issues).toEqual([]);
+  });
+
+  it.each<[string, Record<string, unknown>, string]>([
+    [
+      'on a host no pinned list holds',
+      { machineReadableUrl: 'https://api.other.example/law' },
+      '/sources/0/machineReadableUrl: A machine-readable address is on a pinned official host',
+    ],
+    [
+      'on a lookalike host',
+      { machineReadableUrl: 'https://evil-gov.example/law' },
+      '/sources/0/machineReadableUrl: A machine-readable address is on a pinned official host',
+    ],
+    [
+      'on a host that only starts with a pinned one',
+      { machineReadableUrl: 'https://gov.example.evil.example/law' },
+      '/sources/0/machineReadableUrl: A machine-readable address is on a pinned official host',
+    ],
+    [
+      'over http',
+      { machineReadableUrl: 'http://api.gov.example/law' },
+      '/sources/0/machineReadableUrl:',
+    ],
+    [
+      'with user information',
+      { machineReadableUrl: 'https://user@api.gov.example/law' },
+      '/sources/0/machineReadableUrl:',
+    ],
+    [
+      'with a port',
+      { machineReadableUrl: 'https://api.gov.example:8443/law' },
+      '/sources/0/machineReadableUrl:',
+    ],
+    [
+      'longer than a source URL',
+      { machineReadableUrl: `https://api.gov.example/${'a'.repeat(2000)}` },
+      '/sources/0/machineReadableUrl:',
+    ],
+    [
+      'on a secondary source',
+      {
+        url: 'https://blog.example/law',
+        kind: 'secondary',
+        machineReadableUrl: 'https://api.gov.example/law',
+      },
+      '/sources/0/machineReadableUrl: Only an official source has a machine-readable address',
+    ],
+  ])('refuses one %s', async (_, overrides, expected) => {
+    const tree = withRouteSource(overrides);
+    if (overrides['kind'] === 'secondary') {
+      tree['routes/qm-work/1.json'] = routeVersion({
+        sources: [lawSource({ id: 'act' }), lawSource(overrides)],
+        requirements: [
+          {
+            id: 'treaty-citizen',
+            title: 'The principal is a citizen of a treaty country',
+            expression: citizenOf(['QN']),
+            sources: ['act', 'law'],
+          },
+        ],
+      });
+    }
+    const issues = await issuesOf(tree);
+    const index = overrides['kind'] === 'secondary' ? '1' : '0';
+    expect(issues).toContainEqual(
+      expect.stringContaining(
+        `routes/qm-work/1.json ${expected.replace('/sources/0/', `/sources/${index}/`)}`,
+      ),
+    );
+  });
+
+  it('refuses one in a country set on a host no pinned list holds', async () => {
+    const issues = await issuesOf(withSetSource({ machineReadableUrl: 'https://other.example/x' }));
+    expect(issues).toContain(
+      'country-sets/treaty/1.json /sources/0/machineReadableUrl: A machine-readable address is on a pinned official host',
+    );
+  });
+
+  it('refuses one on the proof of an official host, which pins no list to check it against', async () => {
+    const tree = baseTree();
+    tree['official-domains/qm-gov/1.json'] = {
+      schemaVersion: 1,
+      id: 'qm-gov',
+      number: 1,
+      issuer: 'Government of QM',
+      hosts: [
+        {
+          host: 'gov.example',
+          source: lawSource({
+            id: 'registry',
+            url: 'https://registry.example/gov',
+            machineReadableUrl: 'https://registry.example/gov.json',
+          }),
+        },
+      ],
+    };
+    const issues = await issuesOf(tree);
+    expect(issues).toContainEqual(
+      expect.stringMatching(/^official-domains\/qm-gov\/1\.json \/hosts\/0\/source:/),
+    );
+  });
+
+  it('hashes the address with the version, so adding one makes a new version', async () => {
+    const without = await buildKnowledge(await writeTree(baseTree()), buildDate, fixtures);
+    const tree = withRouteSource({ machineReadableUrl: 'https://api.gov.example/law' });
+    const withAddress = await buildKnowledge(await writeTree(tree), buildDate, fixtures);
+    expect(withAddress.issues).toEqual([]);
+    expect(withAddress.entries[0]?.hash).not.toBe(without.entries[0]?.hash);
+  });
+});
+
 describe('catalogModule', () => {
   it('keeps the data as data, through JSON.parse', async () => {
     const { entries, countries } = await buildKnowledge(
