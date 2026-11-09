@@ -1,11 +1,11 @@
-import { maxWholePageText, plainNote } from '@arca/domain';
+import { normalizeWhitespace, plainNote, sentWhole } from '@arca/domain';
 import { describe, expect, it } from 'vitest';
 import type { RuleChecker } from '../src/knowledge/check/checker.js';
 import { htmlToText } from '../src/knowledge/check/html-text.js';
 import type { PassageLocator } from '../src/knowledge/check/locator.js';
 import { maxCallsPerRun } from './eval/independent-check/call-limit.js';
 import { type CheckCase, checkCases } from './eval/independent-check/cases.js';
-import { checkCase } from './eval/independent-check/harness.js';
+import { checkCase, recordingPages } from './eval/independent-check/harness.js';
 
 // The independent check evaluation's cases, with no model (ADR-0027): careful quotes make each
 // correct case checked, so a paid run can pass; a model that falls for a case's lure gets it
@@ -56,12 +56,15 @@ const carefulQuote = (key: string, routeId: string) =>
 const fallingFor = ({ target, lure }: CheckCase) =>
   answering((key, routeId) => (key === target ? (lure ?? '') : carefulQuote(key, routeId)));
 
-/** A locator that finds its way: every passage whose outline names a section the items rely on. */
+/**
+ * A locator that finds its way and falls for every lure too: each passage whose outline names a
+ * section the items rely on, or a planted annex or schedule.
+ */
 const findingSections: PassageLocator = {
   locate({ items, outline }) {
     const passages = outline
       .split('\n')
-      .filter((line) => /Section (?:2|4|9)\. /u.test(line))
+      .filter((line) => /(?:Section (?:4|9)|Annex 3|Schedule 2)\. /u.test(line))
       .map((line) => Number(/^\[(\d+)\]/u.exec(line)?.[1]));
     return Promise.resolve({
       reply: { items: items.map(({ key }) => ({ key, passages })) },
@@ -86,7 +89,7 @@ const byId = (id: string) => {
 };
 
 const longCases = checkCases.filter(({ snapshots }) =>
-  [...snapshots.values()].some(({ html }) => htmlToText(html).length > maxWholePageText),
+  [...snapshots.values()].some(({ html }) => !sentWhole(htmlToText(html))),
 );
 const correctIds = checkCases.filter(({ kind }) => kind === 'correct').map(({ id }) => id);
 const lured = checkCases.filter(({ kind }) => kind !== 'correct');
@@ -96,11 +99,11 @@ const codeStops = lured.flatMap(({ id, stoppedBy }) =>
 );
 
 describe('the independent check evaluation cases (ADR-0027)', () => {
-  it('holds five correct, four wrong and twelve adversarial cases with unique IDs', () => {
+  it('holds five correct, five wrong and fourteen adversarial cases with unique IDs', () => {
     const kinds = checkCases.map(({ kind }) => kind);
     expect(kinds.filter((kind) => kind === 'correct')).toHaveLength(5);
-    expect(kinds.filter((kind) => kind === 'wrong')).toHaveLength(4);
-    expect(kinds.filter((kind) => kind === 'adversarial')).toHaveLength(12);
+    expect(kinds.filter((kind) => kind === 'wrong')).toHaveLength(5);
+    expect(kinds.filter((kind) => kind === 'adversarial')).toHaveLength(14);
     expect(new Set(checkCases.map(({ id }) => id)).size).toBe(checkCases.length);
   });
 
@@ -118,9 +121,34 @@ describe('the independent check evaluation cases (ADR-0027)', () => {
     expect(checkCases.length * 2 + longCases.length).toBeLessThanOrEqual(maxCallsPerRun);
   });
 
-  it('holds three cases whose act is too long to send whole, one of each kind', () => {
-    expect(longCases.map(({ kind }) => kind).sort()).toEqual(['adversarial', 'correct', 'wrong']);
+  it('holds five cases whose act is too long to send whole, of every kind', () => {
+    expect(longCases.map(({ kind }) => kind).sort()).toEqual([
+      'adversarial',
+      'adversarial',
+      'correct',
+      'wrong',
+      'wrong',
+    ]);
   });
+
+  it('names, for the long cases and no others, the words in force the checker must be sent', () => {
+    expect(checkCases.filter(({ mustRead }) => mustRead !== undefined)).toEqual(longCases);
+  });
+
+  it.each(longCases.map(({ id }) => id))(
+    "%s's words in force are sent when their passage is picked, and not otherwise",
+    async (id) => {
+      const evalCase = byId(id);
+      const sentWith = async (locator?: PassageLocator) => {
+        const { checker, sent } = recordingPages(answering(carefulQuote));
+        const choice = { checker, model: 'claude-test', promptVersion: 'check-test' };
+        await checkCase(evalCase, choice, undefined, locator);
+        return normalizeWhitespace(sent());
+      };
+      expect(await sentWith(findingSections)).toContain(evalCase.mustRead);
+      expect(await sentWith()).not.toContain(evalCase.mustRead);
+    },
+  );
 
   it.each(longCases.map(({ id }) => id))(
     '%s reads nothing of section 4 unless its passage is picked',

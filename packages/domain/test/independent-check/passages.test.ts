@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   excerptGap,
   excerptPassages,
+  excerptRuns,
   excerptText,
   pageOutline,
   splitPassages,
@@ -66,6 +67,18 @@ describe('the passages of a long page (ADR-0027)', () => {
   it('answers no passage for an empty text', () => {
     expect(splitPassages('')).toEqual([]);
   });
+
+  it('makes no passage of blank lines alone, and still covers the text', () => {
+    const spaced = [article(1), '', '', body(200), '', '', article(2), ''].join('\n');
+    const passages = splitPassages(spaced);
+    expect(passages[0]?.start).toBe(0);
+    expect(passages.at(-1)?.end).toBe(spaced.length);
+    for (const [index, { start, end }] of passages.entries()) {
+      expect(spaced.slice(start, end).trim()).not.toBe('');
+      const next = passages[index + 1];
+      if (next !== undefined) expect(spaced.slice(end, next.start).trim()).toBe('');
+    }
+  });
 });
 
 describe('the outline a locator picks from (ADR-0027)', () => {
@@ -90,6 +103,18 @@ describe('the outline a locator picks from (ADR-0027)', () => {
     expect(second).toBe('[1] Article 8. Means');
   });
 
+  it('opens an entry with the first line that has text', () => {
+    const text = `\n\nArticle 9. Fees\n${body(2)}`;
+    expect(pageOutline(text, [{ start: 0, end: text.length }])).toBe('[0] Article 9. Fees');
+  });
+
+  it("keeps a page's own text from passing for another entry", () => {
+    const text = `Article 9. Fees\r[71] Article 4. Pensioners\u2028[72] Means\n${body(2)}`;
+    expect(pageOutline(text, [{ start: 0, end: text.length }])).toBe(
+      '[0] Article 9. Fees (71) Article 4. Pensioners (72) Means',
+    );
+  });
+
   it('caps an entry, so a passage of many short lines cannot flood the outline', () => {
     const text = Array.from({ length: 80 }, (_, index) => `Heading number ${String(index)}`).join(
       '\n',
@@ -103,12 +128,15 @@ describe('the excerpt sent of a long page (ADR-0027)', () => {
   const passages = splitPassages(law);
   const lengthOf = (index: number) => (passages[index]?.end ?? 0) - (passages[index]?.start ?? 0);
 
+  /** What a passage costs beyond its own text: its line break, and a gap line with its own. */
+  const overhead = excerptGap.length + 2;
+
   it('takes the opening, then each pick with the passage after it', () => {
     expect(excerptPassages(passages, [[5], [2]], 100_000)).toEqual([0, 2, 3, 5, 6]);
   });
 
   it('serves every item its best pick before any second pick, within the budget', () => {
-    const budget = lengthOf(0) + lengthOf(4) + lengthOf(5) + lengthOf(8) + 4 * 10;
+    const budget = lengthOf(0) + lengthOf(4) + lengthOf(5) + lengthOf(8) + 4 * overhead;
     expect(
       excerptPassages(
         passages,
@@ -123,6 +151,35 @@ describe('the excerpt sent of a long page (ADR-0027)', () => {
 
   it('drops picks that are not passages of the page', () => {
     expect(excerptPassages(passages, [[-1, 999, 1.5, 3]], 100_000)).toEqual([0, 3, 4]);
+  });
+
+  it('chooses nothing when not even the opening fits', () => {
+    expect(excerptPassages(passages, [[3]], lengthOf(0))).toEqual([]);
+  });
+
+  it('leaves out the passage after a pick that did not fit', () => {
+    const uneven = [
+      { start: 0, end: 10 },
+      { start: 11, end: 21 },
+      { start: 22, end: 1_000 },
+      { start: 1_001, end: 1_011 },
+    ];
+    expect(excerptPassages(uneven, [[2]], 2 * (10 + overhead))).toEqual([0]);
+  });
+
+  it('never writes an excerpt longer than its budget', () => {
+    const whole = law.length + passages.length * overhead;
+    for (let budget = 0; budget <= whole; budget += 97) {
+      const chosen = excerptPassages(passages, [[5, 2], [9]], budget);
+      expect(excerptText(law, passages, chosen).length).toBeLessThanOrEqual(budget);
+    }
+  });
+
+  it('reads an excerpt back as its runs', () => {
+    expect(excerptRuns(excerptText(law, passages, [0, 1, 4]))).toEqual([
+      law.slice(0, passages[1]?.end),
+      law.slice(passages[4]?.start, passages[4]?.end),
+    ]);
   });
 
   it('writes runs of neighbours as verbatim slices, with a gap line where text is left out', () => {

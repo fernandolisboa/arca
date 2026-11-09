@@ -260,7 +260,12 @@ export {
   verifyAnswers,
 } from './independent-check/answers.js';
 export { asDataText } from './data-text.js';
-export { maxCheckPagesText, withinTextBudget } from './independent-check/sent-pages.js';
+export {
+  excerptBudget,
+  maxCheckPagesText,
+  openingExcerpt,
+  withinTextBudget,
+} from './independent-check/sent-pages.js';
 export {
   type Passage,
   excerptGap,
@@ -269,6 +274,7 @@ export {
   maxPassagesPerItem,
   maxWholePageText,
   pageOutline,
+  sentWhole,
   splitPassages,
 } from './independent-check/passages.js';
 export {

@@ -368,7 +368,19 @@ describe('htmlToText', () => {
     expect(htmlToText(`<p>Shown</p><p style="${style}">Hidden</p>`)).toBe('Shown');
   });
 
-  it.each(['opacity:0.5', 'font-size:10px', 'color:black'])(
+  it.each([
+    '<strike>EUR 1.000</strike>',
+    '<s>EUR 1.000</s>',
+    '<del>EUR 1.000</del>',
+    '<span style="text-decoration: line-through">EUR 1.000</span>',
+    '<span style="color:red;text-decoration-line:underline line-through">EUR 1.000</span>',
+  ])('drops wording a law strikes through: %s', (old) => {
+    expect(htmlToText(`<p>Means of at least ${old} EUR 2.000 a month.</p>`)).toBe(
+      'Means of at least EUR 2.000 a month.',
+    );
+  });
+
+  it.each(['opacity:0.5', 'font-size:10px', 'color:black', 'text-decoration:underline'])(
     'keeps an element styled %s',
     (style) => {
       expect(htmlToText(`<p style="${style}">Shown</p>`)).toBe('Shown');

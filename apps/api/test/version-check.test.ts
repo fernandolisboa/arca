@@ -1,6 +1,7 @@
 import {
   type CatalogEntry,
   excerptGap,
+  maxPassagesPerItem,
   maxWholePageText,
   routeVersionSchema,
   versionIdentity,
@@ -19,7 +20,7 @@ import {
   textDigest,
 } from '../src/knowledge/check/fetcher.js';
 import {
-  type LocateRequest,
+  type PassageLocateRequest,
   type PassageLocator,
   PassageLocatorError,
   scriptedLocator,
@@ -119,17 +120,20 @@ const matchesBoth = {
   ],
 };
 
-/** Picks, for every item, the passage whose outline line holds `heading`. */
-function locating(heading: string): PassageLocator & { requests: LocateRequest[] } {
-  const requests: LocateRequest[] = [];
+/** Picks, for every item, the passage whose outline line holds each of `headings`, in order. */
+function locating(...headings: string[]): PassageLocator & { requests: PassageLocateRequest[] } {
+  const requests: PassageLocateRequest[] = [];
   return {
     requests,
     locate(request) {
       requests.push(request);
-      const line = request.outline.split('\n').find((entry) => entry.includes(heading)) ?? '';
-      const passage = Number(/^\[(\d+)\]/u.exec(line)?.[1]);
+      const lines = request.outline.split('\n');
+      const passages = headings.map((heading) => {
+        const line = lines.find((entry) => entry.includes(heading)) ?? '';
+        return Number(/^\[(\d+)\]/u.exec(line)?.[1]);
+      });
       return Promise.resolve({
-        reply: { items: request.items.map(({ key }) => ({ key, passages: [passage] })) },
+        reply: { items: request.items.map(({ key }) => ({ key, passages })) },
         model: 'locator-test',
         promptVersion: 'locate-1',
       });
@@ -143,12 +147,14 @@ function setup({
   locator = scriptedLocator,
   guide,
   model = 'claude-test',
+  checked = subject,
 }: {
   checker?: RuleChecker;
   fetcher?: SourceFetcher;
   locator?: PassageLocator;
   guide?: CountryGuideEntry;
   model?: string;
+  checked?: CheckSubject;
 } = {}) {
   const store = memoryCheckReportStore(() => 1_000);
   const lines: unknown[] = [];
@@ -158,7 +164,7 @@ function setup({
   };
   const fetched: [string, readonly string[]][] = [];
   const check = createVersionCheck({
-    subject: (routeId, number) => (routeId === 'qm-sample' && number === 1 ? subject : undefined),
+    subject: (routeId, number) => (routeId === 'qm-sample' && number === 1 ? checked : undefined),
     guide: () => guide,
     fetcher: {
       fetch: (url, hosts) => {
@@ -390,6 +396,7 @@ describe('the independent check of one version (ADR-0027)', () => {
     });
 
     it.each<[string, PassageLocator]>([
+      ['picks nothing', scriptedLocator],
       ['fails', { locate: () => Promise.reject(new PassageLocatorError('locate_timeout')) }],
       ['throws something else', { locate: () => Promise.reject(new TypeError('boom')) }],
       [
@@ -411,8 +418,11 @@ describe('the independent check of one version (ADR-0027)', () => {
         const { check, store, lines } = setup({ checker, fetcher, locator });
         await check(startId, 'qm-sample', 1);
         const sentLaw = checker.requests[0]?.pages[0];
-        expect(sentLaw).toMatchObject({ excerpt: false });
-        expect(longLaw.startsWith(sentLaw?.text ?? 'x')).toBe(true);
+        // Told it is an excerpt, the model never reads the rest of the page as missing.
+        expect(sentLaw).toMatchObject({ excerpt: true });
+        const [opening, ...rest] = (sentLaw?.text ?? '').split(`\n${excerptGap}`);
+        expect(rest).toEqual(['']);
+        expect(longLaw.startsWith(opening ?? 'x')).toBe(true);
         expect(sentLaw?.text.length).toBe(maxWholePageText);
         expect(store.rows[0]).toMatchObject({ failed: true, clean: false, failure: null });
         expect(store.rows[0]?.fetchLog.map(({ cut }) => cut)).toEqual([true, false]);
@@ -431,15 +441,88 @@ describe('the independent check of one version (ADR-0027)', () => {
             key: 'requirement:means',
             status: 'matches',
             url: law,
-            quote: `Residence act, consolidated text ${excerptGap} Article 201. Means ${lawText}`,
+            // The end of the opening passage, the gap line, then the passage picked.
+            quote: `Further provisions apply here. ${excerptGap} Article 201. Means ${lawText}`,
           },
           matchesBoth.items[1],
         ],
       });
-      // The opening is short here, so the gap line comes right after it.
       const { check, store } = setup({ checker, fetcher, locator: locating('Article 201. Means') });
       await check(startId, 'qm-sample', 1);
-      expect(store.rows[0]?.items[0]).toMatchObject({ status: 'could_not_check' });
+      expect(checker.requests[0]?.pages[0]?.text).toContain(
+        `Further provisions apply here. \n${excerptGap}\nArticle 201. Means\n${lawText}`,
+      );
+      expect(store.rows[0]?.items[0]).toMatchObject({
+        status: 'could_not_check',
+        reason: 'quote_not_on_page',
+      });
+    });
+
+    it('keeps a page the fetcher cut marked cut, so no match counts on its excerpt', async () => {
+      const cutFetcher: SourceFetcher = {
+        fetch: async (url, hosts) => {
+          const read = await fetcher.fetch(url, hosts);
+          return read.ok && url === law ? { ...read, cut: true } : read;
+        },
+      };
+      const { check, store } = setup({
+        fetcher: cutFetcher,
+        locator: locating('Article 201. Means'),
+      });
+      await check(startId, 'qm-sample', 1);
+      expect(store.rows[0]?.fetchLog[0]).toMatchObject({ outcome: 'read', cut: true });
+      expect(store.rows[0]?.items[0]).toMatchObject({ reason: 'page_cut' });
+      expect(store.rows[0]).toMatchObject({ clean: false });
+    });
+
+    it('reads at most a few picks for an item, however many the locator names', async () => {
+      const picked = Array.from({ length: maxPassagesPerItem + 2 }, (_, index) => index * 10 + 10);
+      const checker = answering(matchesBoth);
+      const locator = locating(
+        ...picked.map((number) => `Article ${String(number)}. Other provisions`),
+      );
+      const { check } = setup({ checker, fetcher, locator });
+      await check(startId, 'qm-sample', 1);
+      const sent = checker.requests[0]?.pages[0]?.text ?? '';
+      const read = picked.filter((number) => sent.includes(`Article ${String(number)}. Other`));
+      expect(read).toEqual(picked.slice(0, maxPassagesPerItem));
+    });
+
+    it('has passages picked for a bounded number of long pages, each within its share', async () => {
+      const urls = Array.from({ length: 12 }, (_, index) => `${law}/${String(index)}`);
+      const many = routeVersionSchema.parse({
+        ...version,
+        sources: urls.map((url, index) => ({
+          id: `law-${String(index)}`,
+          url,
+          title: 'Residence act',
+          kind: 'official',
+          verifiedAt: '2026-10-01',
+        })),
+        requirements: version.requirements.map((requirement) => ({
+          ...requirement,
+          sources: urls.map((_, index) => `law-${String(index)}`),
+        })),
+        costs: [],
+      });
+      const checked: CheckSubject = {
+        ...subject,
+        entry: { ...entry, version: many, identity: versionIdentity(many, 'c'.repeat(64)) },
+      };
+      const allLong: SourceFetcher = {
+        fetch: (url) =>
+          Promise.resolve({ ok: true, status: 200, text: longLaw, cut: false, chain: [url] }),
+      };
+      const checker = answering(matchesBoth);
+      const locator = locating('Article 201. Means');
+      const { check, store } = setup({ checker, fetcher: allLong, locator, checked });
+      await check(startId, 'qm-sample', 1);
+      expect(locator.requests).toHaveLength(10);
+      const sent = checker.requests[0]?.pages ?? [];
+      expect(sent).toHaveLength(12);
+      for (const { text } of sent) expect(text.length).toBeLessThanOrEqual(200_000 / 12);
+      expect(store.rows[0]?.fetchLog.filter(({ cut }) => cut)).toHaveLength(2);
+      expect(store.rows[0]).toMatchObject({ failed: true });
     });
 
     it('ignores picks that are not passages of the page', async () => {
@@ -456,6 +539,8 @@ describe('the independent check of one version (ADR-0027)', () => {
       await check(startId, 'qm-sample', 1);
       expect(checker.requests[0]?.pages[0]?.text).not.toContain('Article 201');
       expect(store.rows[0]?.items[0]).toMatchObject({ reason: 'quote_not_on_page' });
+      expect(store.rows[0]).toMatchObject({ failed: true });
+      expect(store.rows[0]?.fetchLog[0]).toMatchObject({ cut: true });
     });
   });
 

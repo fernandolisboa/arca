@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { ReadPage } from '../../src/independent-check/answers.js';
-import { withinTextBudget } from '../../src/independent-check/sent-pages.js';
+import { excerptGap, maxWholePageText } from '../../src/independent-check/passages.js';
+import {
+  excerptBudget,
+  openingExcerpt,
+  withinTextBudget,
+} from '../../src/independent-check/sent-pages.js';
 
 const page = (url: string, length: number, cut = false): ReadPage => ({
   url,
@@ -65,5 +70,34 @@ describe('the total page text one check sends (ADR-0027)', () => {
     const [sent] = withinTextBudget([emoji], 3);
     expect(sent?.text).toBe('ab');
     expect(sent?.cut).toBe(true);
+  });
+});
+
+describe('what the excerpt of a long page may hold (ADR-0027)', () => {
+  const short = 'a'.repeat(maxWholePageText);
+  const long = 'a'.repeat(maxWholePageText + 1);
+
+  it.each<[string, string[], number, number]>([
+    ['a whole page at most, however much is left', [long, 'aaa'], 200_000, maxWholePageText],
+    ['an equal share among the long pages', [long, long, long, long], 200_000, 50_000],
+    ['what the pages sent whole leave', [short, short, short, long, long], 200_000, 10_000],
+    ['nothing once the whole pages fill the budget', [short, short, long], 100_000, 0],
+  ])('gives %s', (_, texts, budget, expected) => {
+    expect(excerptBudget(texts, budget)).toBe(expected);
+  });
+});
+
+describe('the opening sent of a long page no passage was picked for (ADR-0027)', () => {
+  it('writes the text that fits, then a gap line, within the budget', () => {
+    expect(openingExcerpt('abcdefghij', 8)).toBe(`abcd\n${excerptGap}`);
+  });
+
+  it('writes nothing when the budget holds no text', () => {
+    expect(openingExcerpt('abcdefghij', excerptGap.length + 1)).toBe('');
+    expect(openingExcerpt('abcdefghij', 0)).toBe('');
+  });
+
+  it('never cuts inside a surrogate pair', () => {
+    expect(openingExcerpt('ab😀cd', 3 + excerptGap.length + 1)).toBe(`ab\n${excerptGap}`);
   });
 });

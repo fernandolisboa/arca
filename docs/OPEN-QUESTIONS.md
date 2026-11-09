@@ -18,6 +18,8 @@
 
 Made by agents, tracked here so they are not lost.
 
+- [ ] Official pages the independent check cannot read yet, left as could not be checked with the reason shown ([ADR-0027, long pages and reasons](adr/0027-admins-and-the-checked-batch-activation.md#long-pages-and-reasons-amendment-2026-11-09)): PDFs (a reader is a new dependency), pages that scripts draw (several of those sites publish the same text through an API on the same official host) and sites that answer an access check. Of the 104 pages the bundled versions cited on 2026-11-08, 34 were one of these.
+- [ ] The HTML-to-text conversion of the independent check builds a full tree, so a hostile page on a cited official URL can make it slow or large (measured 2026-11-09: seconds of CPU and a gigabyte of memory from tens of kilobytes of markup). It fails closed, with no report. A tokenizer with no tree, or a worker with a deadline and a memory limit, would bound it.
 - [ ] Delete the unused Preview copy of `RESEND_API_KEY` (only production sends email) and the unused `ARCA_GITHUB_TOKEN` in the agent environment ([SETUP.md](SETUP.md)); each needs the owner's OK or click.
 - [ ] Rotate `ARCA_RATE_LIMIT_KEY` monthly in Production and Preview ([spec 0003, R10](specs/0003-identity-and-access.md#r10-rate-limits)). Created by an agent on 2026-11-04; rotation is not automated yet: an agent writes a new value through the Vercel API, which resets the counters.
 - [ ] Whether a missing destination-comparison value should ever open a research task; for now it shows "sem dado" and waits for the next comparison version ([ADR-0026](adr/0026-destination-comparison-data.md)).

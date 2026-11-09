@@ -1,7 +1,7 @@
 // What the independent check evaluation reads a case through, shared with its offline test.
 import { hostMatches } from '@arca/domain';
 import type { Logger } from '@arca/telemetry';
-import type { RuleCheckerChoice } from '../../../src/knowledge/check/checker.js';
+import type { RuleChecker, RuleCheckerChoice } from '../../../src/knowledge/check/checker.js';
 import {
   type FetchOutcome,
   type SourceFetcher,
@@ -59,6 +59,18 @@ export function snapshotFetcher(snapshots: ReadonlyMap<string, Snapshot>): Sourc
       });
     },
   };
+}
+
+/** The checker, keeping the page text of each request, so a run can tell what the model read. */
+export function recordingPages(checker: RuleChecker) {
+  const sent: string[] = [];
+  const recording: RuleChecker = {
+    check(request) {
+      sent.push(...request.pages.map(({ text }) => text));
+      return checker.check(request);
+    },
+  };
+  return { checker: recording, sent: () => sent.join('\n') };
 }
 
 const silentLogger: Logger = { info: () => undefined, error: () => undefined };

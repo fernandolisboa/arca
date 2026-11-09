@@ -1,9 +1,9 @@
-import { type CheckItemKind, maxCheckItemKeyLength } from '@arca/domain';
+import { type CheckItemKind, maxCheckItemKeyLength, scriptedCheckerModel } from '@arca/domain';
 import { z } from 'zod';
 import type { ModelReply } from '../../ai/model-call.js';
 
 /** What a locator reads of one long page: public rule data and the page's outline (ADR-0027). */
-export interface LocateRequest {
+export interface PassageLocateRequest {
   /** The items that cite the page. */
   readonly items: readonly {
     readonly key: string;
@@ -23,7 +23,7 @@ export interface LocateRequest {
  * passages of the page are sent. An adapter throws a `PassageLocatorError` with a fixed code.
  */
 export interface PassageLocator {
-  locate(request: LocateRequest): Promise<ModelReply>;
+  locate(request: PassageLocateRequest): Promise<ModelReply>;
 }
 
 export type PassageLocatorFailure =
@@ -38,16 +38,21 @@ export class PassageLocatorError extends Error {
   }
 }
 
+// These only bound the parse: code keeps the passages of the page, a few per item.
+const maxParsedItems = 200;
+const maxParsedPassages = 50;
+const maxPassageNumber = 1_000_000;
+
 /** The closed schema of a locator's answer: passage numbers per item key, best first. */
 export const PassageLocation = z.strictObject({
   items: z
     .array(
       z.strictObject({
         key: z.string().max(maxCheckItemKeyLength),
-        passages: z.array(z.int().min(0).max(1_000_000)).max(50),
+        passages: z.array(z.int().min(0).max(maxPassageNumber)).max(maxParsedPassages),
       }),
     )
-    .max(200),
+    .max(maxParsedItems),
 });
 
 /** Each item's picks by key, or undefined when the reply does not parse. */
@@ -59,17 +64,17 @@ export function parsePassageLocation(
   return new Map(parsed.data.items.map(({ key, passages }) => [key, passages]));
 }
 
-export const scriptedLocatorModel = 'fake';
+const scriptedLocatorPromptVersion = 'scripted-1';
 
 /**
  * The scripted locator for every environment but production, and for tests: it picks nothing, so
- * a long page is sent as its opening alone and nothing leaves the process.
+ * a long page is sent as its opening, cut, and nothing leaves the process.
  */
 export const scriptedLocator: PassageLocator = {
   locate: ({ items }) =>
     Promise.resolve({
       reply: { items: items.map(({ key }) => ({ key, passages: [] })) },
-      model: scriptedLocatorModel,
-      promptVersion: 'scripted-1',
+      model: scriptedCheckerModel,
+      promptVersion: scriptedLocatorPromptVersion,
     }),
 };

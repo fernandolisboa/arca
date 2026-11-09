@@ -6,14 +6,15 @@ import {
   type ReadPage,
   asDataText,
   checkItems,
+  excerptBudget,
   excerptPassages,
   excerptText,
-  maxCheckPagesText,
   maxPassagesPerItem,
-  maxWholePageText,
   noGuide,
+  openingExcerpt,
   pageOutline,
   reportClean,
+  sentWhole,
   splitPassages,
   verifyAnswers,
   withinTextBudget,
@@ -30,7 +31,7 @@ import {
 } from './checker.js';
 import { type FetchOutcome, type SourceFetcher, textDigest } from './fetcher.js';
 import {
-  type LocateRequest,
+  type PassageLocateRequest,
   type PassageLocator,
   PassageLocatorError,
   parsePassageLocation,
@@ -68,6 +69,24 @@ const route = 'workflow:check-version';
 const maxFetchedPages = 200;
 
 /**
+ * The most long pages one check has passages picked for, which bounds its fast-model calls and
+ * so their cost; any further long page is sent as its opening, cut.
+ */
+const maxLocatedPages = 10;
+
+interface FetchedPage {
+  readonly url: string;
+  readonly read: FetchOutcome;
+  readonly durationMs: number;
+}
+
+/** A long page as it is sent, and whether passages were picked for it. */
+interface Excerpt {
+  readonly page: ReadPage;
+  readonly picked: boolean;
+}
+
+/**
  * The hosts each cited URL may be read on: those of every item citing it, so a page two items
  * share is held to the narrower of their lists.
  */
@@ -98,12 +117,30 @@ function sourceTitlesAt(url: string, { version, countrySets }: CatalogEntry): st
   ];
 }
 
+/** The report's fetch log: each page's outcome, and the digest of the text sent for it. */
+function fetchLogOf(
+  fetched: readonly FetchedPage[],
+  sent: ReadonlyMap<string, ReadPage>,
+): FetchLogEntry[] {
+  return fetched.map(({ url, read, durationMs }) => {
+    const page = sent.get(url);
+    return {
+      url,
+      outcome: read.ok ? 'read' : read.failure,
+      status: read.status,
+      durationMs,
+      sha256: page === undefined ? null : textDigest(page.text),
+      cut: page?.cut ?? false,
+    };
+  });
+}
+
 /**
  * Fetches each cited page, has the locator pick the passages of each long one, asks the checker
  * about every item, checks its answer in code and stores the report keyed by its start. Every
  * failure becomes a fixed code in the report: a page not read leaves its items could not be
- * checked, a failed model call leaves them all so, a long page whose passages could not be picked
- * is sent cut, and each makes the report short-lived. Page text and model output never reach a
+ * checked, a failed model call leaves them all so, a long page no passage was picked for is sent
+ * cut, and each makes the report short-lived. Page text and model output never reach a
  * log line.
  */
 export function createVersionCheck({
@@ -116,8 +153,25 @@ export function createVersionCheck({
   logger,
   now,
 }: VersionCheckSettings): VersionCheck {
-  const located = async (
-    request: LocateRequest,
+  const fetchCited = async (
+    items: readonly CheckItem[],
+    subject: CheckSubject,
+  ): Promise<FetchedPage[]> => {
+    const fetched: FetchedPage[] = [];
+    // The report's fetch log holds at most this many pages; items citing others go unread.
+    const cited = [...hostsByUrl(items, subject)].slice(0, maxFetchedPages);
+    for (const [url, hosts] of cited) {
+      const started = now();
+      const read = await fetcher.fetch(url, hosts);
+      // Official sites fail often and the report keeps each failure, so the log line is a code.
+      if (!read.ok) logger.info({ route, errorCode: `check_fetch_${read.failure}` });
+      fetched.push({ url, read, durationMs: Math.max(0, Math.round(now() - started)) });
+    }
+    return fetched;
+  };
+
+  const locate = async (
+    request: PassageLocateRequest,
   ): Promise<ReadonlyMap<string, readonly number[]> | undefined> => {
     try {
       const { reply } = await loggedModelCall(
@@ -137,37 +191,38 @@ export function createVersionCheck({
   };
 
   /**
-   * A long page as the passages picked for the items that cite it, within `budget`, or, when the
-   * picking failed, as its opening marked cut, so no match counts on it.
+   * A long page as the passages picked for the items that cite it, within `budget`. When none
+   * was picked, because the locator was not asked, failed, named no passage of the page, or the
+   * budget holds none, the page goes as its opening marked cut, so no match counts on it.
    */
-  const excerpt = async (
+  const excerptOf = async (
     page: ReadPage,
     items: readonly CheckItem[],
     entry: CatalogEntry,
     budget: number,
-  ): Promise<ReadPage & { readonly excerpt: boolean; readonly located: boolean }> => {
+    ask: boolean,
+  ): Promise<Excerpt> => {
     const citing = items.filter(({ urls }) => urls.includes(page.url));
     const passages = splitPassages(page.text);
-    const picks = await located({
-      items: citing.map(({ key, kind, title }) => ({ key, kind, title })),
-      sourceTitles: sourceTitlesAt(page.url, entry),
-      outline: pageOutline(page.text, passages),
-    });
-    if (picks === undefined) {
-      const [opening = page] = withinTextBudget([page], budget);
-      return { ...opening, cut: true, excerpt: false, located: false };
-    }
-    const chosen = excerptPassages(
-      passages,
-      citing.map(({ key }) => (picks.get(key) ?? []).slice(0, maxPassagesPerItem)),
-      budget,
+    const picks = ask
+      ? await locate({
+          items: citing.map(({ key, kind, title }) => ({ key, kind, title })),
+          sourceTitles: sourceTitlesAt(page.url, entry),
+          outline: pageOutline(page.text, passages),
+        })
+      : undefined;
+    const ranked = citing.map(({ key }) =>
+      (picks?.get(key) ?? []).filter((pick) => pick < passages.length).slice(0, maxPassagesPerItem),
     );
-    return {
-      ...page,
-      text: excerptText(page.text, passages, chosen),
-      excerpt: true,
-      located: true,
-    };
+    const chosen = ranked.some((ofItem) => ofItem.length > 0)
+      ? excerptPassages(passages, ranked, budget)
+      : [];
+    if (chosen.length === 0) {
+      const text = openingExcerpt(page.text, budget);
+      return { page: { ...page, text, cut: true, excerpt: true }, picked: false };
+    }
+    const text = excerptText(page.text, passages, chosen);
+    return { page: { ...page, text, excerpt: true }, picked: true };
   };
 
   const ask = async (request: RuleCheckRequest): Promise<readonly CheckAnswer[]> =>
@@ -202,57 +257,34 @@ export function createVersionCheck({
     }
     const items = checkItems(subject.entry);
     const guide = guideOf(subject.entry.version.country);
-    const reads: { url: string; read: FetchOutcome; durationMs: number }[] = [];
-    // The report's fetch log holds at most this many pages; items citing others go unread.
-    const cited = [...hostsByUrl(items, subject)].slice(0, maxFetchedPages);
-    for (const [url, hosts] of cited) {
-      const started = now();
-      const read = await fetcher.fetch(url, hosts);
-      // Official sites fail often and the report keeps each failure, so the log line is a code.
-      if (!read.ok) logger.info({ route, errorCode: `check_fetch_${read.failure}` });
-      reads.push({ url, read, durationMs: Math.max(0, Math.round(now() - started)) });
-    }
-    const readPages = reads.flatMap(({ url, read }) =>
+    const fetched = await fetchCited(items, subject);
+    const readPages: ReadPage[] = fetched.flatMap(({ url, read }) =>
       read.ok ? [{ url, text: asDataText(read.text), cut: read.cut, chain: read.chain }] : [],
     );
     // Short pages go whole; the long ones share what is left of the budget, as excerpts.
-    const long = readPages.filter(({ text }) => text.length > maxWholePageText);
-    const whole = readPages.reduce(
-      (sum, { text }) => sum + (text.length > maxWholePageText ? 0 : text.length),
-      0,
-    );
-    const excerptBudget = Math.min(
-      maxWholePageText,
-      Math.floor(Math.max(0, maxCheckPagesText - whole) / Math.max(1, long.length)),
-    );
+    const budget = excerptBudget(readPages.map(({ text }) => text));
+    const longPages = readPages.filter(({ text }) => !sentWhole(text));
     const excerpts = new Map(
       await Promise.all(
-        long.map(
-          async (page) =>
-            [page.url, await excerpt(page, items, subject.entry, excerptBudget)] as const,
+        longPages.map(
+          async (page, index) =>
+            [
+              page.url,
+              await excerptOf(page, items, subject.entry, budget, index < maxLocatedPages),
+            ] as const,
         ),
       ),
     );
     // The text sent, framed as data and within the total budget, is what quotes are checked against.
-    const sent = withinTextBudget(readPages.map((page) => excerpts.get(page.url) ?? page));
+    const sent = withinTextBudget(readPages.map((page) => excerpts.get(page.url)?.page ?? page));
     const pages = new Map<string, ReadPage>(sent.map((page) => [page.url, page]));
-    const fetchLog: FetchLogEntry[] = reads.map(({ url, read, durationMs }) => {
-      const page = pages.get(url);
-      return {
-        url,
-        outcome: read.ok ? 'read' : read.failure,
-        status: read.status,
-        durationMs,
-        sha256: page === undefined ? null : textDigest(page.text),
-        cut: page?.cut ?? false,
-      };
-    });
+    const fetchLog = fetchLogOf(fetched, pages);
 
     let answers: readonly CheckAnswer[] = [];
     let failure: RuleCheckerFailure | null = null;
     const pagesToSend = sent
       .filter(({ text }) => text !== '')
-      .map(({ url, text }) => ({ url, text, excerpt: excerpts.get(url)?.excerpt ?? false }));
+      .map(({ url, text, excerpt }) => ({ url, text, excerpt: excerpt === true }));
     // With no page text nothing could match, so no model call is paid for.
     if (pagesToSend.length > 0) {
       try {
@@ -284,7 +316,7 @@ export function createVersionCheck({
       failed:
         failure !== null ||
         pagesToSend.length === 0 ||
-        [...excerpts.values()].some(({ located }) => !located) ||
+        [...excerpts.values()].some(({ picked }) => !picked) ||
         fetchLog.some((entry) => entry.outcome !== 'read'),
       clean: reportClean(checked, model),
     });

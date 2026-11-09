@@ -1,4 +1,5 @@
 import type { ReadPage } from './answers.js';
+import { excerptGap, maxWholePageText, sentWhole } from './passages.js';
 
 /**
  * The most characters of page text one check sends the model, across every page it read: what
@@ -40,4 +41,25 @@ export function withinTextBudget(
     if (given >= page.text.length) return page;
     return { ...page, text: cutAt(page.text, given), cut: true };
   });
+}
+
+/**
+ * What the excerpt of each long page may hold: an equal share of what the pages sent whole leave
+ * of the check's budget, and at most the length of a whole page.
+ */
+export function excerptBudget(texts: readonly string[], budget = maxCheckPagesText): number {
+  const whole = texts.filter(sentWhole);
+  const left = budget - whole.reduce((sum, text) => sum + text.length, 0);
+  const long = texts.length - whole.length;
+  return Math.min(maxWholePageText, Math.floor(Math.max(0, left) / Math.max(1, long)));
+}
+
+/**
+ * The opening of a long page as an excerpt of at most `budget` characters, for when no passage
+ * of it could be picked: the text that fits, then a gap line.
+ */
+export function openingExcerpt(text: string, budget: number): string {
+  const room = budget - excerptGap.length - 1;
+  if (room <= 0) return '';
+  return text.length <= room ? text : `${cutAt(text, room)}\n${excerptGap}`;
 }

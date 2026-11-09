@@ -61,7 +61,13 @@ describe('verifyAnswers', () => {
     [
       'a quote across the gap of an excerpt',
       { quote: 'Article 3. […] €920,00 for the principal.', url: law },
-      page({ text: 'Article 3.\n[…]\n€920,00 for the principal.' }),
+      page({ excerpt: true, text: 'Article 3.\n[…]\n€920,00 for the principal.' }),
+      'quote_not_on_page',
+    ],
+    [
+      'a quote that runs into the gap of an excerpt',
+      { quote: 'at least €920,00 for the principal. […', url: law },
+      page({ excerpt: true, text: `${page().text}\n[…]\nArticle 9. Fees` }),
       'quote_not_on_page',
     ],
     ['a quote too short', { quote: '€920,00', url: law }, page(), 'quote_length'],
@@ -192,6 +198,20 @@ describe('verifyAnswers', () => {
   });
 });
 
+describe('a quote on an excerpt', () => {
+  it('counts within one run', () => {
+    const excerpt = page({ excerpt: true, text: `Article 1.\n[…]\n${page().text}\n[…]` });
+    expect(verify({ quote, url: law }, excerpt)).toMatchObject({ status: 'matches' });
+  });
+
+  it("counts on a whole page that writes the gap's characters itself", () => {
+    const text = 'The applicant […] shows a monthly income of at least €920,00.';
+    expect(verify({ quote: text, url: law }, page({ text }))).toMatchObject({
+      status: 'matches',
+    });
+  });
+});
+
 describe('plainNote', () => {
   it('caps a long note', () => {
     expect(plainNote('a'.repeat(400))?.length).toBe(300);
@@ -207,6 +227,13 @@ describe('plainNote', () => {
     ['Ask evil.example, not the law.', 'Ask not the law.'],
     ['Write to mailto:a@b.example <b>here</b>', 'Write to b here /b'],
     ['The amount is 1.800 euros, not 1.500.', 'The amount is 1.800 euros, not 1.500.'],
+    ['Escreva para fulano@ministerio agora', 'Escreva para agora'],
+    ['Veja пример.рф para confirmar', 'Veja para confirmar'],
+    ['Veja evil\u200B.example para confirmar', 'Veja para confirmar'],
+    [
+      'A seção 4 não traz o valor; o art. 3.º cita 1.500.',
+      'A seção 4 não traz o valor; o art. 3.º cita 1.500.',
+    ],
     [
       'See [the new act](https://gov-example.example/act) for details.',
       'See [the new for details.',

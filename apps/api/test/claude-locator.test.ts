@@ -6,15 +6,16 @@ import {
   passageLocatePromptVersion,
 } from '../src/knowledge/check/locate-prompt.js';
 import {
-  type LocateRequest,
+  type PassageLocateRequest,
   PassageLocatorError,
   parsePassageLocation,
   scriptedLocator,
 } from '../src/knowledge/check/locator.js';
 import { passageLocateModel } from '../src/knowledge/check/model.js';
+import { ruleCheckPromptVersion } from '../src/knowledge/check/prompt.js';
 
 // The Claude adapter of the passage locator against a fake HTTP client (ADR-0027).
-const request: LocateRequest = {
+const request: PassageLocateRequest = {
   items: [{ key: 'requirement:means', kind: 'requirement', title: 'Means of subsistence' }],
   sourceTitles: ['Residence act, art. 201: means of subsistence'],
   outline: '[0] Residence act\n[1] Article 201. Means',
@@ -131,5 +132,17 @@ describe('the passage locator prompt and answer (ADR-0027)', () => {
       model: 'fake',
       promptVersion: 'scripted-1',
     });
+  });
+});
+
+describe("what picks a check's passages, as its reports are stored (ADR-0027)", () => {
+  // A report stays current while the check's prompt version stands, and the locator decides what
+  // the check reads: a change to its model or its prompt bumps `ruleCheckPromptVersion` here too.
+  it("changes only together with the check's prompt version", () => {
+    expect({
+      check: ruleCheckPromptVersion,
+      locate: passageLocatePromptVersion,
+      model: passageLocateModel,
+    }).toEqual({ check: 'rule-check-3', locate: 'passage-locate-1', model: 'claude-haiku-5-5' });
   });
 });
