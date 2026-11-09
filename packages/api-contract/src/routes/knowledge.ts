@@ -573,6 +573,7 @@ export {
   expressionOperators,
   factKeys,
   factTargets,
+  maxQuotes,
   relationshipSteps,
   staleAfterDays,
   versionKey,

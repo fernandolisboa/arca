@@ -1,5 +1,6 @@
 import {
   type KnowledgeVersion,
+  maxQuotes,
   routes,
   type VersionCheckReport,
   type VersionView,
@@ -90,7 +91,7 @@ export function CheckReport({
       defaultOpen={fold.defaultOpen}
       footer={
         status !== undefined && (
-          <p className="text-small text-muted">{t('knowledge.check.footer')}</p>
+          <p className="text-small text-muted">{t('knowledge.check.footer', { max: maxQuotes })}</p>
         )
       }
       className={card}
@@ -207,7 +208,9 @@ function ReportItemCard({
           label={t('knowledge.check.itemStatus', { status: item.status })}
         />
       </div>
-      {item.reason !== null && <p>{t('knowledge.check.reason', { reason: item.reason })}</p>}
+      {item.reason !== null && (
+        <p>{t('knowledge.check.reason', { reason: item.reason, max: maxQuotes })}</p>
+      )}
       {item.quotes.map(({ quote, url }, index) => (
         <figure key={`${String(index)}-${url}`} className="flex flex-col gap-1">
           <figcaption className="text-small text-muted">

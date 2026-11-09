@@ -270,6 +270,75 @@ describe('the independent check of one version (ADR-0027)', () => {
     });
   });
 
+  describe('an item that joins provisions on two pages', () => {
+    const joined = routeVersionSchema.parse({
+      ...version,
+      requirements: [
+        {
+          id: 'means',
+          title: 'Means of subsistence, and the fee paid',
+          expression: {
+            op: 'all',
+            operands: [
+              ...version.requirements.map(({ expression }) => expression),
+              {
+                op: 'gte',
+                left: { op: 'fact', key: 'principal.monthlyPassiveIncome' },
+                right: { op: 'money', amount: 10000, currency: 'EUR' },
+              },
+            ],
+          },
+          sources: ['law', 'fees'],
+        },
+      ],
+    });
+    const joinedSubject: CheckSubject = {
+      ...subject,
+      entry: { ...entry, identity: versionIdentity(joined, 'c'.repeat(64)), version: joined },
+    };
+    const onLaw = { quote: 'means of at least EUR 920 a month', url: law };
+    const onFees = { quote: 'Application fee: EUR 100', url: fees };
+    const answeringMeans = (quotes: readonly { quote: string; url: string }[]) =>
+      answering({
+        items: [{ key: 'requirement:means', status: 'matches', quotes }, matchesBoth.items[1]],
+      });
+
+    it('stores a clean report with a quote from each page', async () => {
+      const { check, store } = setup({
+        checker: answeringMeans([onLaw, onFees]),
+        checked: joinedSubject,
+      });
+      await check(startId, 'qm-sample', 1);
+      expect(store.rows[0]?.items[0]).toEqual({
+        key: 'requirement:means',
+        status: 'matches',
+        quotes: [onLaw, onFees],
+        note: null,
+        reason: null,
+      });
+      expect(store.rows[0]?.clean).toBe(true);
+    });
+
+    it.each([
+      ['one quote, which leaves a value out', [onLaw], 'value_not_in_quote'],
+      [
+        'a second quote not on its page',
+        [onLaw, { ...onFees, quote: 'Application fee: EUR 90' }],
+        'quote_not_on_page',
+      ],
+      ['four quotes', [onLaw, onFees, onLaw, onFees], 'quote_count'],
+    ] as const)('refuses the item on %s', async (_, quotes, reason) => {
+      const { check, store } = setup({ checker: answeringMeans(quotes), checked: joinedSubject });
+      await check(startId, 'qm-sample', 1);
+      expect(store.rows[0]?.items[0]).toMatchObject({
+        status: 'could_not_check',
+        quotes: [],
+        reason,
+      });
+      expect(store.rows[0]?.clean).toBe(false);
+    });
+  });
+
   it('makes the items of a page not read could not be checked, and the report short-lived', async () => {
     const fetcher: SourceFetcher = {
       fetch: (url) =>

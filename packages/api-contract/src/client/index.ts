@@ -38,6 +38,7 @@ export {
   maxDocumentBytes,
   maxSharingStateBytes,
   maxOpenInvites,
+  maxQuotes,
   maxPushChannels,
   pendingPasskeyHours,
   recoveryLinkMinutes,
