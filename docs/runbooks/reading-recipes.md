@@ -8,7 +8,7 @@ For each host:
 - **Cite:** the URL form a version cites. Cite the page a person can open, not an API address, unless the API is the only official form of the text.
 - **Amendments:** where to look for instruments made after a source's `verifiedAt`.
 
-"Last confirmed" is the date a session last read the host this way. A recipe can stop working: when it does, fix it here in the same pull request as the audit that found out. A recipe never widens what counts as official: every Read address is on the pinned official-domain list, by the same matching rule as a source (spec 0002, R4). An edit to this file also gets the supply-chain reviewer, added by hand to what `pnpm review:reviewers` prints.
+"Last confirmed" is the date a session last read the host this way; "last tried", for a host not readable, the date a session last tried. A recipe can stop working: when it does, fix it here in the same pull request as the audit that found out. A recipe never widens what counts as official: every Read address is on the pinned official-domain list, by the same matching rule as a source (spec 0002, R4). An edit to this file also gets the supply-chain reviewer, added by hand to what `pnpm review:reviewers` prints.
 
 ## Rules for every host
 
@@ -130,7 +130,7 @@ For each host:
 
 **`matsne.gov.ge`** (last confirmed 2026-11-07)
 
-- **Read:** `curl` gets "Access Denied". Through the `web-fetch` agent, find the number `<n>` of the "Consolidated version (final)" on `https://matsne.gov.ge/en/document/view/<id>` (the bare address or `?publication=latest` can show the first version), then have it save the English PDF `/en/document/download/<id>/<n>/en/pdf` and read the file. Georgian view pages (`/ka/document/view/<id>`) are readable only as a summary, and Georgian PDFs not at all, so a Georgian-only text is not re-read.
+- **Read:** `curl` gets "Access Denied". Through the `web-fetch` agent, find the number `<n>` of the "Consolidated version (final)" on `https://matsne.gov.ge/en/document/view/<id>` (the bare address or `?publication=latest` can show the first version), then have it save the English PDF `/en/document/download/<id>/<n>/en/pdf` and read the file. Georgian view pages (`/ka/document/view/<id>`) are readable only as a summary, and Georgian PDFs not at all, so a Georgian-only text is not re-read. Version 1 of `ge-property-short-term` cites Law No. 863 (document 6543112) on a Georgian view page: that source counts as not re-read and goes stale on 2027-02-05 unless an English consolidated publication carrying the amendment is cited instead.
 - **Cite:** `https://matsne.gov.ge/en/document/view/<id>?publication=<n>`, the publication read (or `/ka/` for a text with no English version). Versions written before 2026-11-09 cite the bare address; a new version adds the publication number.
 - **Amendments:** the document's list of consolidated publications; each amending law has its own document id.
 - Ids: Law on the Legal Status of Aliens 2278806, Civil Code 31702.
