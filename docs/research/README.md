@@ -1,6 +1,6 @@
 # Research notes
 
-Seed material for the knowledge base, gathered on 2026-10-31 and 2026-11-01. These notes are **not** the knowledge base: each fact must be re-verified against an official source before it becomes a route version or knowledge item.
+Seed material for the knowledge base, gathered on 2026-10-31 and 2026-11-01, and, under `routes/`, the notes and audit records of each route. These notes are **not** the knowledge base: each fact must be re-verified against an official source before it becomes a route version or knowledge item.
 
 Conventions:
 
