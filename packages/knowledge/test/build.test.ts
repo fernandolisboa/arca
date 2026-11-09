@@ -448,12 +448,27 @@ describe("a source's machine-readable address (spec 0002, R4)", () => {
     [
       'with user information',
       { machineReadableUrl: 'https://user@api.gov.example/law' },
-      '/sources/0/machineReadableUrl:',
+      '/sources/0/machineReadableUrl: A machine-readable address has a plain host, with no user information or port',
     ],
     [
       'with a port',
       { machineReadableUrl: 'https://api.gov.example:8443/law' },
-      '/sources/0/machineReadableUrl:',
+      '/sources/0/machineReadableUrl: A machine-readable address has a plain host, with no user information or port',
+    ],
+    [
+      'with a percent-encoded host',
+      { machineReadableUrl: 'https://api%2egov.example/law' },
+      '/sources/0/machineReadableUrl: A machine-readable address has a plain host, with no user information or port',
+    ],
+    [
+      'with a space in the host',
+      { machineReadableUrl: 'https://api gov.example/law' },
+      '/sources/0/machineReadableUrl: A machine-readable address has a plain host, with no user information or port',
+    ],
+    [
+      'with a full-width dot in the host',
+      { machineReadableUrl: 'https://api\uff0egov.example/law' },
+      '/sources/0/machineReadableUrl: A machine-readable address has a plain host, with no user information or port',
     ],
     [
       'longer than a source URL',

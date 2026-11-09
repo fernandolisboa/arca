@@ -255,14 +255,14 @@ function StepContent({
               <p className="font-medium">{source.title}</p>
               {/* Plain text, never a link: the admin reads the full address before opening it. */}
               <p className="font-mono text-small break-all">{source.url}</p>
-              {source.machineReadableUrl !== undefined && (
-                <p className="font-mono text-small break-all">{source.machineReadableUrl}</p>
-              )}
               <p className="text-small">
                 {source.host === null
                   ? t('knowledge.noHost')
                   : t('knowledge.host', { host: source.host })}
               </p>
+              {source.machineReadableUrl !== undefined && (
+                <p className="font-mono text-small break-all">{source.machineReadableUrl}</p>
+              )}
               <p className="text-small text-muted">
                 {[
                   source.id,

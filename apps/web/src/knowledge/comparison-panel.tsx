@@ -118,6 +118,9 @@ function IndicatorCard({
                 t('knowledge.verifiedAt', { date: words.date(source.verifiedAt) }),
               ].join(' · ')}
             </span>
+            {source.machineReadableUrl !== undefined && (
+              <span className="break-all text-muted">{source.machineReadableUrl}</span>
+            )}
           </li>
         ))}
       </ul>
