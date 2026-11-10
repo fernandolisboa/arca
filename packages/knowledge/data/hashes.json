@@ -254,6 +254,18 @@
     {
       "path": "guides/us/2",
       "sha256": "2ed9db1cdcb8b5c4422e2077ee0d48050845dc1023fee4bda30e52870f9cfa7f"
+    },
+    {
+      "path": "routes/us-eb5/6",
+      "sha256": "d03808091dcebe8c8b9a094d939e6bf2461b21f662b305134d9d1afe793ff20c"
+    },
+    {
+      "path": "routes/us-eb5/7",
+      "sha256": "a666371a8da16c22d915d7fe1b809d5d3a65b78321730eb41cd6b0cbd835ad29"
+    },
+    {
+      "path": "routes/us-eb5/8",
+      "sha256": "1be3041b48781fcab7f869f8d1687f7856126badea152139fbc2f411a8101cbb"
     }
   ]
 }
