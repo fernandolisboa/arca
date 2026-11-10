@@ -1,0 +1,220 @@
+{
+  "schemaVersion": 1,
+  "id": "us",
+  "number": 2,
+  "title": "United States federal immigration law",
+  "laws": [
+    {
+      "id": "ina-203",
+      "title": "8 U.S.C. 1153 (INA section 203): preference visas, EB-5 employment creation and derivative spouses and children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "verifiedAt": "2026-11-10",
+      "amendment": "Amended only by Acts of Congress. EB-5 in subsection (b)(5) was last rewritten by the EB-5 Reform and Integrity Act of 2022 (Public Law 117-103, division BB). The investment amounts in (b)(5)(C) adjust by themselves from 2027-01-01 and every 5 years after, by the CPI-U, and DHS publishes the new amounts as a technical amendment in the Federal Register. The regional center program in (b)(5)(E) runs through 2027-09-30 unless Congress extends it."
+    },
+    {
+      "id": "ina-101",
+      "title": "8 U.S.C. 1101 (INA section 101): definitions, including child in subsection (b)(1)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "verifiedAt": "2026-11-10",
+      "amendment": "Amended only by Acts of Congress."
+    },
+    {
+      "id": "ina-202",
+      "title": "8 U.S.C. 1152 (INA section 202): per-country limits on preference visas",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1152.htm",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended only by Acts of Congress."
+    },
+    {
+      "id": "ina-212",
+      "title": "8 U.S.C. 1182 (INA section 212): grounds of inadmissibility and their waivers",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by Acts of Congress, often inside larger bills."
+    },
+    {
+      "id": "ina-216a",
+      "title": "8 U.S.C. 1186b (INA section 216A): two-year conditional residence for investors, their spouses and children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1186b.htm",
+      "verifiedAt": "2026-11-10",
+      "amendment": "Amended only by Acts of Congress, last by the EB-5 Reform and Integrity Act of 2022."
+    },
+    {
+      "id": "cfr-204-6",
+      "title": "8 CFR 204.6: petitions for employment creation immigrants (EB-5)",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "verifiedAt": "2026-11-10",
+      "amendment": "Amended by DHS rules published in the Federal Register, usually a proposed rule and then a final rule with an effective date. The eCFR still prints the changes of the 2019 rule at 84 FR 35750: 91 FR 40676 records that a court vacated that rule on 2021-06-22, reverting 204.6 to its earlier text, and that DHS has not yet removed the vacated text. The 2026 EB-5 fee rule at 91 FR 61940 did not amend part 204. The rule proposed at 91 FR 40676 on 2026-07-02 would remove 204.6 and add a subpart D to part 204, sections 204.400 to 204.435; no final rule by 2026-11-10.",
+      "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-11-06/title-8?chapter=I&subchapter=B&part=204&subpart=A&section=204.6"
+    },
+    {
+      "id": "cfr-216-6",
+      "title": "8 CFR 216.6: investor petition to remove the conditions on permanent residence",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-216/section-216.6",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by DHS rules in the Federal Register; the EB-5 fee rule at 91 FR 61940 amends it from 2026-11-30."
+    },
+    {
+      "id": "cfr-106-2",
+      "title": "8 CFR 106.2: USCIS fees, including Forms I-526, I-526E and I-829",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "verifiedAt": "2026-11-10",
+      "amendment": "Amended by USCIS fee rules in the Federal Register, each with its own date from which the new fees apply; the EB-5 fee rule at 91 FR 61940 sets EB-5 fees for filings postmarked on or after 2026-11-30. The eCFR text of title 8 was current as of 2026-11-06 when read on 2026-11-10.",
+      "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-11-06/title-8?chapter=I&subchapter=B&part=106&section=106.2"
+    },
+    {
+      "id": "fee-rule-2026",
+      "title": "EB-5 fee final rule, 91 FR 61940 (2026-09-30), amending 8 CFR 106.2 and 216.6 from 2026-11-30",
+      "url": "https://www.federalregister.gov/documents/2026/09/30/2026-20016/us-citizenship-and-immigration-services-employment-based-immigrant-visa-fifth-preference-eb-5-fee",
+      "verifiedAt": "2026-11-10",
+      "amendment": "Published once in the Federal Register; a correction document or a later rule changes its fees or text. Its tables, including Table 1 with the fees USCIS accepted before the rule, are images missing from the text versions and listed by the Federal Register API. Its text gives 2025-11-12 as the date USCIS went back to those fees; the heading of Table 1, in the image, gives 2025-11-13.",
+      "machineReadableUrl": "https://www.govinfo.gov/content/pkg/FR-2026-09-30/html/2026-20016.htm"
+    },
+    {
+      "id": "fee-rule-2016",
+      "title": "USCIS fee schedule final rule, 81 FR 73292 (2016-10-24), effective 2016-12-23: Form I-526 USD 3,675 and Form I-829 USD 3,750",
+      "url": "https://www.federalregister.gov/documents/2016/10/24/2016-25328/us-citizenship-and-immigration-services-fee-schedule",
+      "verifiedAt": "2026-11-10",
+      "amendment": "Published once in the Federal Register. Later fee rules replaced its fees: the 2024 fee rule at 89 FR 6194 from 2024-04-01, and for EB-5 the rule at 91 FR 61940 from 2026-11-30. Its Form I-526 and Form I-829 fees are the amounts Table 1 of 91 FR 61940 lists as accepted again since 2025-11-12.",
+      "machineReadableUrl": "https://www.govinfo.gov/content/pkg/FR-2016-10-24/html/2016-25328.htm"
+    },
+    {
+      "id": "cfr-22-1",
+      "title": "22 CFR 22.1: Department of State schedule of consular fees, including the immigrant visa application processing fee in item 32",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-C/part-22/section-22.1",
+      "verifiedAt": "2026-11-10",
+      "amendment": "Amended by Department of State rules in the Federal Register. Item 32(b), the employment-based immigrant visa application fee, was USD 345 per person in the eCFR text of 2024-04-01, 2025-11-12, 2026-10-19 and 2026-11-06, the last date the eCFR had for title 22 when read on 2026-11-10.",
+      "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-11-06/title-22?chapter=I&subchapter=C&part=22&section=22.1"
+    },
+    {
+      "id": "proposed-rule-2026",
+      "title": "DHS proposed rule on the EB-5 Reform and Integrity Act of 2022, 91 FR 40676 (2026-07-02): proposed, not law",
+      "url": "https://www.federalregister.gov/documents/2026/07/02/2026-13392/eb-5-reform-and-integrity-act-of-2022-ensuring-the-integrity-of-the-eb-5-program-automatic",
+      "verifiedAt": "2026-11-10",
+      "amendment": "A proposed rule has no legal effect; a final rule, once published in the Federal Register, amends the regulation from the effective date it states. None was published by 2026-11-10. Its background section records the court ruling of 2021-06-22 that vacated the 2019 rule at 84 FR 35750.",
+      "machineReadableUrl": "https://www.govinfo.gov/content/pkg/FR-2026-07-02/html/2026-13392.htm"
+    }
+  ],
+  "pitfalls": [
+    {
+      "id": "regulation-amounts-outdated",
+      "text": "8 CFR 204.6(f) still prints investment amounts of USD 1,800,000 and USD 900,000 from the 2019 rule at 84 FR 35750, which a court vacated on 2021-06-22; its adjustment from 2024-10-01 is measured against 1990, and its capital, targeted employment area and pilot program text predate the 2022 Act. The amounts in 8 U.S.C. 1153(b)(5)(C), USD 1,050,000 and USD 800,000 in a targeted employment area or infrastructure project, govern, and 204.6(f) is no authority for an investment amount.",
+      "laws": ["ina-203", "cfr-204-6", "proposed-rule-2026"]
+    },
+    {
+      "id": "amounts-adjust-2027",
+      "text": "From 2027-01-01, and every 5 years after, the standard amount follows the CPI-U since 2022-01-01, rounded down to the nearest USD 50,000, and the reduced amount is 75 percent of it. The new amounts apply to petitions filed on or after the adjustment, so the filing date decides, not the investment date. Until DHS publishes them as a technical amendment the new figures are unknown, and the amounts set by the 2022 Act apply only to petitions filed before 2027-01-01.",
+      "laws": ["ina-203"]
+    },
+    {
+      "id": "reduced-amount-areas",
+      "text": "The reduced amount needs a targeted employment area at the time of investment, which is a rural area or a high unemployment area designated by DHS, or an infrastructure project. An infrastructure project is defined only as part of the regional center program. A high employment area may require up to 3 times the standard amount.",
+      "laws": ["ina-203"]
+    },
+    {
+      "id": "regional-center-sunset",
+      "text": "Visas through a regional center are available only through 2027-09-30 unless Congress extends the program. If it lapses, DHS must keep processing regional center petitions, Form I-829 included, filed on or before 2026-09-30. A standalone Form I-526 investment does not depend on the program.",
+      "laws": ["ina-203"]
+    },
+    {
+      "id": "capital-exclusions",
+      "text": "Capital excludes assets acquired by unlawful means, money invested in exchange for a debt arrangement with the new commercial enterprise, a guaranteed rate of return and a contractual right to repayment, though a buy-back option the enterprise alone may exercise is allowed, and exercising it withdraws the investor's petition unless the sustainment period and other requirements are met. The capital must be expected to stay invested for at least 2 years.",
+      "laws": ["ina-203", "cfr-204-6"]
+    },
+    {
+      "id": "jobs-exclude-family",
+      "text": "The 10 full-time jobs must go to qualifying employees other than the investor and the investor's spouse, sons and daughters. Only a regional center investor may count indirect jobs, for up to 90 percent of them, or up to 75 percent when the jobs come from construction activity lasting less than 2 years.",
+      "laws": ["ina-203", "cfr-204-6"]
+    },
+    {
+      "id": "integrity-fund-fee",
+      "text": "8 U.S.C. 1153(b)(5)(J) prints the EB-5 Integrity Fund fee for each regional center petition as USD 1,000 and the annual regional center fees as USD 20,000 and USD 10,000; the rule at 91 FR 61940 raises them to USD 1,100, USD 22,000 and USD 11,000 from 2026-11-30: the petition fee for filings postmarked on or after that date, and the annual fees due each October 1. For those fees the rule, not the statute, has the current amounts.",
+      "laws": ["ina-203", "cfr-106-2", "fee-rule-2026"]
+    },
+    {
+      "id": "child-definition",
+      "text": "A child is unmarried, under 21, and born in wedlock, a stepchild whose parent married before the child turned 18, legitimated before 18 while in the parent's custody, born out of wedlock (through the father only with a bona fide parent-child relationship), or adopted before 16 with 2 years of custody and residence, or before 18 on the same terms by the parents who adopted the child's natural sibling under 16 or as an orphan. Only subparagraphs (A) to (E) of 1101(b)(1) give derivative status under 1153(d), so an orphan or Hague adoptee does not.",
+      "laws": ["ina-101"]
+    },
+    {
+      "id": "child-age-protection",
+      "text": "For a derivative child, the age limit of 21 is checked at the date a visa number became available for the parent, reduced by the days the parent's petition was pending, and only if the child seeks permanent residence within one year of that availability. A plain age on the filing date is not the rule.",
+      "laws": ["ina-203", "ina-101"]
+    },
+    {
+      "id": "derivatives-follow-principal",
+      "text": "A spouse or child gets the investor's category and place in line only when accompanying or following to join the investor. Parents, siblings and other relatives are not derivatives of an EB-5 investor.",
+      "laws": ["ina-203"]
+    },
+    {
+      "id": "proxy-marriage",
+      "text": "A spouse married at a ceremony where the two were not physically together counts only if the marriage was consummated.",
+      "laws": ["ina-101"]
+    },
+    {
+      "id": "per-country-wait",
+      "text": "Preference visas for natives of one country are capped at 7 percent a year, so a visa number can be delayed even after a petition is approved. Qualifying for EB-5 does not mean a visa is available now.",
+      "laws": ["ina-202", "ina-203"]
+    },
+    {
+      "id": "chargeability",
+      "text": "A visa is charged to the country of birth, not of citizenship. A child, or a spouse, accompanying or following to join may be charged to the investor's country when needed to keep the family together.",
+      "laws": ["ina-202"]
+    },
+    {
+      "id": "admissibility-separate",
+      "text": "Qualifying for a category does not make anyone admissible: each family member must clear the grounds of inadmissibility, such as health, criminal, security, public charge and past immigration violations, or get a waiver.",
+      "laws": ["ina-212"]
+    },
+    {
+      "id": "conditional-residence",
+      "text": "An investor, spouse and children get permanent residence on a 2-year conditional basis. The investor files Form I-829 in the 90 days before the second anniversary and may include the spouse and children; a spouse or child left out must file their own petition. From 2026-11-30, 8 CFR 216.6 lets that petition be filed at any time in the investor's filing period. With no petition, status ends at the second anniversary unless a late one shows good cause and extenuating circumstances.",
+      "laws": ["ina-216a", "cfr-216-6", "fee-rule-2026"]
+    },
+    {
+      "id": "fees-by-postmark",
+      "text": "USCIS fees come from 8 CFR 106.2 as each fee rule amends it, and a rule sets the postmark date from which its amounts apply; the eCFR text of 106.2 changes only when an amendment takes effect. For EB-5, the rule at 91 FR 61940 records that a court stayed the 2024 EB-5 fees still printed in 106.2, and its own fees apply to filings postmarked on or after 2026-11-30.",
+      "laws": ["cfr-106-2", "fee-rule-2026"]
+    },
+    {
+      "id": "code-edition",
+      "text": "The U.S. Code pages are the 2024 edition; a law enacted after that edition is not in them yet. Later Public Laws and Federal Register documents may add to or change them.",
+      "laws": ["ina-203", "ina-101", "ina-202", "ina-212", "ina-216a"]
+    },
+    {
+      "id": "investor-engagement",
+      "text": "8 CFR 204.6(j)(5) asks for evidence that the investor is or will be engaged in the new commercial enterprise, through day-to-day managerial control or policy formulation. Its eCFR wording, under which an equity holder with certain rights, powers and duties normal for that type of entity counts, comes from the 2019 rule at 84 FR 35750, which a court vacated on 2021-06-22. The eCFR text in force on 2019-11-20, before that rule, speaks of engagement in the management, as opposed to a purely passive role, and counts a limited partner with rights normal under the Uniform Limited Partnership Act.",
+      "laws": ["cfr-204-6", "proposed-rule-2026"]
+    },
+    {
+      "id": "gifted-and-borrowed-funds",
+      "text": "Gifted or borrowed money counts toward the capital only if given or lent in good faith and not to get around the limits on permissible sources of capital, and the petition then needs the donor's or lender's records too, unless the lender is a bank. 8 U.S.C. 1153(b)(5)(L) asks for tax returns filed during the past 7 years, or another period the Secretary sets; 8 CFR 204.6(j)(3)(ii), last amended before the 2022 Act, still says filed within 5 years.",
+      "laws": ["ina-203", "cfr-204-6"]
+    },
+    {
+      "id": "proposed-eb5-rule",
+      "text": "The DHS rule proposed at 91 FR 40676 on 2026-07-02 would implement the EB-5 Reform and Integrity Act of 2022: it would move the EB-5 rules out of 8 CFR 204.6, set USD 1,400,000 for a high employment area, require the capital to remain invested on the date the petition is filed, and drop the engagement evidence of 204.6(j)(5). DHS says it will decide in the final rule whether to include the amounts adjusted for 2027-01-01. A proposed rule has no legal effect; a final rule, once published, amends the regulation from the effective date it states.",
+      "laws": ["proposed-rule-2026", "cfr-204-6", "ina-203"]
+    },
+    {
+      "id": "immigrant-visa-fees",
+      "text": "Besides the USCIS petition fees, each family member who applies for an immigrant visa at a consulate pays the Department of State application processing fee, USD 345 per person for an employment-based application (22 CFR 22.1, item 32(b)). The USCIS immigrant fee, USD 235, is for processing and issuing documents after the Department of State issues the visa (8 CFR 106.2(c)(3)). Form I-485, the application to adjust status in the United States, has its own fee in 8 CFR 106.2(a)(21). The amounts are those in the eCFR text of 2026-11-06.",
+      "laws": ["cfr-22-1", "cfr-106-2"]
+    },
+    {
+      "id": "reverted-eb5-fees",
+      "text": "The rule at 91 FR 61940 records that since 2025-11-12 USCIS has accepted the EB-5 fees in effect until 2024-03-31: USD 3,675 for Forms I-526 and I-526E and USD 3,750 for Form I-829, listed in its Table 1, an image; the text of 81 FR 73292 states the Form I-526 and Form I-829 amounts. The same rule records that USCIS still accepted the fee of the 2024 fee rule for filings postmarked before 2025-11-26. The fees of 91 FR 61940 itself apply to filings postmarked on or after 2026-11-30.",
+      "laws": ["fee-rule-2026", "fee-rule-2016", "cfr-106-2"]
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "us",
+      "number": 1
+    }
+  ]
+}
