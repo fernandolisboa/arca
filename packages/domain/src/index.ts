@@ -241,6 +241,7 @@ export {
   checkItemKinds,
   checkItems,
   expressionValues,
+  machineReadableUrls,
   maxCheckItemKeyLength,
 } from './independent-check/items.js';
 export {

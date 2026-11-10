@@ -20,6 +20,8 @@ import type { RuleCheckerFailure } from './checker.js';
 /** One cited URL as the run fetched it (ADR-0027). */
 export interface FetchLogEntry {
   readonly url: string;
+  /** The machine-readable address read in the page's place, or null when the page was read. */
+  readonly machineReadableUrl: string | null;
   readonly outcome: 'read' | FetchFailure;
   readonly status: number | null;
   readonly durationMs: number;
@@ -73,6 +75,8 @@ const singleQuoteItem = z
 const storedItem = z.union([quotedItem, singleQuoteItem]);
 const storedFetch = z.strictObject({
   url,
+  // Reports stored before a source could name a machine-readable address read the page itself.
+  machineReadableUrl: url.nullable().default(null),
   outcome: z.enum(fetchOutcomes),
   status: z.int().min(0).max(999).nullable(),
   durationMs: z.int().min(0),

@@ -123,6 +123,35 @@ const routes = new Map<string, Handler>([
       response.end('cookies set');
     },
   ],
+  [
+    '/law.json',
+    (response) => {
+      response.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      response.end(
+        JSON.stringify({
+          title: 'Residence Act',
+          number: 3,
+          body: '<p>Income of at least <b>€920,00</b>.</p>',
+        }),
+      );
+    },
+  ],
+  [
+    '/law.xml',
+    (response) => {
+      response.writeHead(200, { 'content-type': 'application/akn+xml' });
+      response.end(
+        '<?xml version="1.0"?><act><title>Residence Act</title><p>Income of at least &#8364;920,00.</p></act>',
+      );
+    },
+  ],
+  [
+    '/broken.json',
+    (response) => {
+      response.writeHead(200, { 'content-type': 'application/json' });
+      response.end('{"title": "Residence Act"');
+    },
+  ],
   ['/slow', () => undefined],
 ]);
 
@@ -133,13 +162,18 @@ function redirect(response: ServerResponse, location: string) {
 
 let server: Server;
 let port: number;
-const received: { cookie: string | undefined; authorization: string | undefined }[] = [];
+const received: {
+  cookie: string | undefined;
+  authorization: string | undefined;
+  accept?: string | undefined;
+}[] = [];
 
 beforeAll(async () => {
   server = createServer((request, response) => {
     received.push({
       cookie: request.headers.cookie,
       authorization: request.headers.authorization,
+      accept: request.headers.accept,
     });
     const handler = routes.get(request.url ?? '');
     if (typeof handler !== 'function') {
@@ -178,6 +212,27 @@ describe('the cited-source fetcher (ADR-0027)', () => {
     });
   });
 
+  it.each([
+    ['JSON', '/law.json'],
+    ['XML of a vocabulary of its own', '/law.xml'],
+  ])('reads a %s answer from a machine-readable address as its strings', async (_, path) => {
+    expect(await fetcher().fetch(page(path), hosts)).toEqual({
+      ok: true,
+      status: 200,
+      text: 'Residence Act\nIncome of at least €920,00.',
+      cut: false,
+      chain: [page(path)],
+    });
+  });
+
+  it('asks for a page first, then data, then plain text', async () => {
+    received.length = 0;
+    await fetcher().fetch(page('/law'), hosts);
+    expect(received[0]?.accept).toBe(
+      'text/html, application/xhtml+xml, application/json;q=0.9, application/xml;q=0.9, text/xml;q=0.9, text/plain;q=0.8',
+    );
+  });
+
   it('decodes the declared charset and the declared compression', async () => {
     expect(await fetcher().fetch(page('/latin1'), hosts)).toMatchObject({ text: 'Art. º' });
     expect(await fetcher().fetch(page('/gzip'), hosts)).toMatchObject({ text: 'Compressed law' });
@@ -187,7 +242,7 @@ describe('the cited-source fetcher (ADR-0027)', () => {
     received.length = 0;
     await fetcher().fetch(page('/cookie'), hosts);
     await fetcher().fetch(page('/law'), hosts);
-    expect(received).toEqual([
+    expect(received.map(({ cookie, authorization }) => ({ cookie, authorization }))).toEqual([
       { cookie: undefined, authorization: undefined },
       { cookie: undefined, authorization: undefined },
     ]);
@@ -212,6 +267,7 @@ describe('the cited-source fetcher (ADR-0027)', () => {
     ['a 404', page('/missing'), 'http_status'],
     ['a PDF', page('/pdf'), 'unsupported_type'],
     ['a page that only scripts fill with text', page('/app'), 'no_text'],
+    ['a JSON answer that does not parse', page('/broken.json'), 'no_text'],
     ['too many bytes', page('/big'), 'too_large'],
     ['a decompression bomb', page('/bomb'), 'too_large'],
   ])('refuses %s', async (_, url, failure) => {

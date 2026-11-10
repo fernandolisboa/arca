@@ -189,7 +189,15 @@ function setup({
         },
       ],
       fetchLog: [
-        { url: law, outcome: 'read', status: 200, durationMs: 5, sha256: null, cut: false },
+        {
+          url: law,
+          machineReadableUrl: null,
+          outcome: 'read',
+          status: 200,
+          durationMs: 5,
+          sha256: null,
+          cut: false,
+        },
       ],
       failure: null,
       failed: false,

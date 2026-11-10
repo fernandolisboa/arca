@@ -54,7 +54,10 @@ export type ExpressionView = Readonly<Record<string, unknown>>;
 export interface SourceView extends Source {
   /** The host the URL really names, or null when it is not a plain `https` URL. */
   readonly host: string | null;
-  /** No lower version of the route cites a source on this host, or the URL has no plain host. */
+  /**
+   * No lower version of the route names an address on this host or on its machine-readable
+   * address's, or one of the two has no plain host.
+   */
   readonly newHost: boolean;
 }
 
@@ -169,6 +172,10 @@ export interface VersionViewInput {
    */
   readonly hostOf: (url: string) => string | undefined;
 }
+
+/** The addresses a source names: its URL and, when it has one, its machine-readable address. */
+const sourceUrls = ({ url, machineReadableUrl }: Source): string[] =>
+  machineReadableUrl === undefined ? [url] : [url, machineReadableUrl];
 
 const isNode = (value: unknown): value is Readonly<Record<string, unknown>> =>
   typeof value === 'object' && value !== null && !Array.isArray(value) && 'op' in value;
@@ -313,9 +320,14 @@ export function versionView({
   const earlierHosts = new Set(
     versions
       .filter((candidate) => candidate.identity.number < number)
-      .flatMap((candidate) => candidate.version.sources.map((source) => hostOf(source.url)))
+      .flatMap((candidate) => candidate.version.sources.flatMap(sourceUrls))
+      .map(hostOf)
       .filter((host) => host !== undefined),
   );
+  const isNewHost = (url: string) => {
+    const host = hostOf(url);
+    return host === undefined || !earlierHosts.has(host);
+  };
   return {
     routeId: identity.routeId,
     number,
@@ -374,14 +386,11 @@ export function versionView({
       title,
       members,
     })),
-    sources: version.sources.map((source) => {
-      const host = hostOf(source.url);
-      return {
-        ...source,
-        host: host ?? null,
-        newHost: host === undefined || !earlierHosts.has(host),
-      };
-    }),
+    sources: version.sources.map((source) => ({
+      ...source,
+      host: hostOf(source.url) ?? null,
+      newHost: sourceUrls(source).some(isNewHost),
+    })),
     replaces:
       replaced === undefined || replacedNumber < 1
         ? null

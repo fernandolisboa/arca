@@ -9,6 +9,7 @@ import {
   excerptBudget,
   excerptPassages,
   excerptText,
+  machineReadableUrls,
   maxPassagesPerItem,
   noGuide,
   openingExcerpt,
@@ -75,7 +76,10 @@ const maxFetchedPages = 200;
 const maxLocatedPages = 10;
 
 interface FetchedPage {
+  /** The cited URL, which the model, the quotes and the panel name. */
   readonly url: string;
+  /** The machine-readable address read in its place, or null when the page itself was read. */
+  readonly machineReadableUrl: string | null;
   readonly read: FetchOutcome;
   readonly durationMs: number;
 }
@@ -122,10 +126,11 @@ function fetchLogOf(
   fetched: readonly FetchedPage[],
   sent: ReadonlyMap<string, ReadPage>,
 ): FetchLogEntry[] {
-  return fetched.map(({ url, read, durationMs }) => {
+  return fetched.map(({ url, machineReadableUrl, read, durationMs }) => {
     const page = sent.get(url);
     return {
       url,
+      machineReadableUrl,
       outcome: read.ok ? 'read' : read.failure,
       status: read.status,
       durationMs,
@@ -136,12 +141,12 @@ function fetchLogOf(
 }
 
 /**
- * Fetches each cited page, has the locator pick the passages of each long one, asks the checker
- * about every item, checks its answer in code and stores the report keyed by its start. Every
- * failure becomes a fixed code in the report: a page not read leaves its items could not be
- * checked, a failed model call leaves them all so, a long page no passage was picked for is sent
- * cut, and each makes the report short-lived. Page text and model output never reach a
- * log line.
+ * Fetches each cited page, or the machine-readable address its sources name in its place, has the
+ * locator pick the passages of each long one, asks the checker about every item, checks its answer
+ * in code and stores the report keyed by its start. Every failure becomes a fixed code in the
+ * report: a page not read leaves its items could not be checked, a failed model call leaves them
+ * all so, a long page no passage was picked for is sent cut, and each makes the report
+ * short-lived. Page text and model output never reach a log line.
  */
 export function createVersionCheck({
   subject: subjectOf,
@@ -158,14 +163,23 @@ export function createVersionCheck({
     subject: CheckSubject,
   ): Promise<FetchedPage[]> => {
     const fetched: FetchedPage[] = [];
+    const addresses = machineReadableUrls(subject.entry);
     // The report's fetch log holds at most this many pages; items citing others go unread.
     const cited = [...hostsByUrl(items, subject)].slice(0, maxFetchedPages);
     for (const [url, hosts] of cited) {
+      // A machine-readable address is read in place of its page, on the same hosts; when it
+      // fails, the page is not tried, so its items could not be checked, with the reason.
+      const machineReadableUrl = addresses.get(url) ?? null;
       const started = now();
-      const read = await fetcher.fetch(url, hosts);
+      const read = await fetcher.fetch(machineReadableUrl ?? url, hosts);
       // Official sites fail often and the report keeps each failure, so the log line is a code.
       if (!read.ok) logger.info({ route, errorCode: `check_fetch_${read.failure}` });
-      fetched.push({ url, read, durationMs: Math.max(0, Math.round(now() - started)) });
+      fetched.push({
+        url,
+        machineReadableUrl,
+        read,
+        durationMs: Math.max(0, Math.round(now() - started)),
+      });
     }
     return fetched;
   };

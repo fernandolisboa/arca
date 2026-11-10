@@ -37,8 +37,27 @@ const summaryFields = [
   'cases',
 ] as const satisfies readonly Exclude<keyof VersionView, 'hash' | 'state' | 'rejection'>[];
 
+/**
+ * A source field by field. Its machine-readable address stays out: the check reads it in the
+ * page's place and names the page, and the layout stays as both prompts' versions describe it.
+ */
+const sourcesRead = (view: VersionView) =>
+  view.sources.map(({ id, url, title, kind, verifiedAt, host, newHost }) => ({
+    id,
+    url,
+    title,
+    kind,
+    verifiedAt,
+    host,
+    newHost,
+  }));
+
 const contentOf = (view: VersionView, fields: readonly (keyof VersionView)[]) =>
-  JSON.stringify(Object.fromEntries(fields.map((field) => [field, view[field]])));
+  JSON.stringify(
+    Object.fromEntries(
+      fields.map((field) => [field, field === 'sources' ? sourcesRead(view) : view[field]]),
+    ),
+  );
 
 export function summaryContent(view: VersionView): string {
   return contentOf(view, summaryFields);

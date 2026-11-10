@@ -28,6 +28,7 @@ import {
 import { type CheckSubject, createVersionCheck } from '../src/knowledge/check/run.js';
 import { scriptedCheckerChoice } from '../src/knowledge/check/scripted-checker.js';
 import { memoryCheckReportStore } from '../src/knowledge/check/store.js';
+import { snapshotFetcher } from './eval/independent-check/harness.js';
 
 /** Synthetic knowledge only: an invented route, hosts and amounts. */
 const law = 'https://www.gov.example/law';
@@ -216,6 +217,7 @@ describe('the independent check of one version (ADR-0027)', () => {
     expect(store.rows[0]?.items.map(({ status }) => status)).toEqual(['matches', 'matches']);
     expect(store.rows[0]?.fetchLog[0]).toEqual({
       url: law,
+      machineReadableUrl: null,
       outcome: 'read',
       status: 200,
       durationMs: 0,
@@ -703,6 +705,108 @@ describe('the independent check of one version (ADR-0027)', () => {
     await check(startId, 'qm-sample', 1);
     expect(checker.requests).toEqual([]);
     expect(store.rows[0]).toMatchObject({ failure: null, failed: true, clean: false });
+  });
+
+  describe('a source that names a machine-readable address', () => {
+    const data = 'https://api.gov.example/law';
+    const lookalike = 'https://api.gov-example.example/law';
+    const reading: CheckSubject = {
+      ...subject,
+      entry: {
+        ...entry,
+        version: routeVersionSchema.parse({
+          ...version,
+          sources: version.sources.map((source) =>
+            source.url === law ? { ...source, machineReadableUrl: data } : source,
+          ),
+        }),
+      },
+    };
+    const feePage = { body: `<p>${feeText}</p>` };
+    const json = JSON.stringify({
+      title: 'Residence act',
+      number: 3,
+      articles: [{ heading: 'Article 3', body: `<p>${lawText.slice(11)}</p>` }],
+    });
+    const xml = `<?xml version="1.0"?><!DOCTYPE act [<!ENTITY amount "EUR 1">]>
+<act><title>Residence act</title><!-- &amount; --><section n="3">Article 3. The applicant shows means of at least <![CDATA[EUR 920]]> a month &amp; more.</section></act>`;
+    const serving = (answer: { body: string; type: string; chain?: readonly string[] }) =>
+      snapshotFetcher(
+        new Map([
+          [data, answer],
+          [fees, feePage],
+        ]),
+      );
+
+    it.each([
+      [
+        'a JSON answer as its strings in order, its markup read as a page',
+        { body: json, type: 'application/json' },
+        'Residence act\nArticle 3\nThe applicant shows means of at least EUR 920 a month.',
+      ],
+      [
+        'an XML answer as its text and CDATA in order, with no entity of its own expanded',
+        { body: xml, type: 'application/xml' },
+        'Residence act\nArticle 3. The applicant shows means of at least\nEUR 920\na month & more.',
+      ],
+    ])('reads %s in place of the page', async (_, answer, text) => {
+      const checker = answering(matchesBoth);
+      const { check, store, fetched } = setup({
+        checker,
+        checked: reading,
+        fetcher: serving(answer),
+      });
+      await check(startId, 'qm-sample', 1);
+      expect(fetched).toEqual([
+        [data, ['gov.example']],
+        [fees, ['gov.example']],
+      ]);
+      expect(checker.requests[0]?.pages[0]).toEqual({ url: law, text, excerpt: false });
+      expect(store.rows[0]).toMatchObject({ failed: false, clean: true });
+      expect(store.rows[0]?.items.map(({ status }) => status)).toEqual(['matches', 'matches']);
+      expect(
+        store.rows[0]?.fetchLog.map(({ url, machineReadableUrl }) => [url, machineReadableUrl]),
+      ).toEqual([
+        [law, data],
+        [fees, null],
+      ]);
+    });
+
+    it.each<[string, SourceFetcher, string]>([
+      [
+        'redirects off the official hosts',
+        serving({ body: json, type: 'application/json', chain: [data, lookalike] }),
+        'redirect_refused',
+      ],
+      [
+        'fails',
+        {
+          fetch: (url) =>
+            url === data
+              ? Promise.resolve({ ok: false, failure: 'http_status', status: 404, chain: [url] })
+              : readAll.fetch(url, []),
+        },
+        'http_status',
+      ],
+    ])(
+      'leaves its items could not be checked when the address %s, and never reads the page',
+      async (_, fetcher, outcome) => {
+        const { check, store, fetched } = setup({ checked: reading, fetcher });
+        await check(startId, 'qm-sample', 1);
+        expect(fetched.map(([url]) => url)).toEqual([data, fees]);
+        expect(store.rows[0]).toMatchObject({ failed: true, clean: false });
+        expect(store.rows[0]?.items[0]).toMatchObject({
+          status: 'could_not_check',
+          reason: 'no_page_read',
+        });
+        expect(store.rows[0]?.fetchLog[0]).toMatchObject({
+          url: law,
+          machineReadableUrl: data,
+          outcome,
+          sha256: null,
+        });
+      },
+    );
   });
 
   it('stores nothing for a version the catalog does not hold', async () => {

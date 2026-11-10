@@ -1,13 +1,13 @@
 // What the independent check evaluation reads a case through, shared with its offline test.
 import { hostMatches } from '@arca/domain';
 import type { Logger } from '@arca/telemetry';
+import { answerFormat, answerText } from '../../../src/knowledge/check/answer-text.js';
 import type { RuleChecker, RuleCheckerChoice } from '../../../src/knowledge/check/checker.js';
 import {
   type FetchOutcome,
   type SourceFetcher,
   capText,
 } from '../../../src/knowledge/check/fetcher.js';
-import { htmlToText } from '../../../src/knowledge/check/html-text.js';
 import { type PassageLocator, scriptedLocator } from '../../../src/knowledge/check/locator.js';
 import { createVersionCheck } from '../../../src/knowledge/check/run.js';
 import { type CheckReport, memoryCheckReportStore } from '../../../src/knowledge/check/store.js';
@@ -29,9 +29,16 @@ export function caseCatalog({ entry }: CheckCase): CaseCatalog {
   };
 }
 
+/** A snapshot's text as the real fetcher reads its media type, or undefined for one it does not. */
+export function snapshotText({ body, type = 'text/html' }: Snapshot): string | undefined {
+  const format = answerFormat(type);
+  return format === undefined ? undefined : answerText(format, body);
+}
+
 /**
- * Serves the case's snapshots, with the real fetcher's host rule on every hop and its text cap, so
- * a redirect off the pinned hosts is refused as it would be in production.
+ * Serves the case's snapshots, with the real fetcher's host rule on every hop, its reading of each
+ * media type and its text cap, so a redirect off the pinned hosts is refused as it would be in
+ * production.
  */
 export function snapshotFetcher(snapshots: ReadonlyMap<string, Snapshot>): SourceFetcher {
   return {
@@ -51,12 +58,16 @@ export function snapshotFetcher(snapshots: ReadonlyMap<string, Snapshot>): Sourc
           });
         }
       }
-      return Promise.resolve<FetchOutcome>({
-        ok: true,
-        status: 200,
-        ...capText(htmlToText(snapshot.html)),
-        chain,
-      });
+      const text = snapshotText(snapshot);
+      if (text === undefined || text.trim() === '') {
+        return Promise.resolve<FetchOutcome>({
+          ok: false,
+          failure: text === undefined ? 'unsupported_type' : 'no_text',
+          status: 200,
+          chain,
+        });
+      }
+      return Promise.resolve<FetchOutcome>({ ok: true, status: 200, ...capText(text), chain });
     },
   };
 }

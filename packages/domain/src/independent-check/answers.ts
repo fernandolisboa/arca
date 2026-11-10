@@ -28,7 +28,10 @@ export interface ReadPage {
   readonly cut: boolean;
   /** The text is an excerpt: runs of the page with a gap line wherever text is left out. */
   readonly excerpt?: boolean;
-  /** Every URL requested on the way, the cited one first and the final one last. */
+  /**
+   * Every URL requested on the way, the final one last: the cited one first, or the
+   * machine-readable address read in its place.
+   */
   readonly chain: readonly string[];
 }
 

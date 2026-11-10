@@ -173,6 +173,31 @@ describe('the activation view (spec 0007, R7)', () => {
     ]);
   });
 
+  it('flags a source whose machine-readable address is on a host new to the route', () => {
+    const [law] = sampleVersion.sources;
+    const naming = (number: number, address: string) =>
+      entry({ number, sources: [{ ...law, machineReadableUrl: address }] });
+    const sourcesOf = (versions: ReturnType<typeof entry>[]) =>
+      versionView({
+        versions,
+        number: versions.length,
+        cases: [],
+        states: new Map(),
+        today,
+        hostOf,
+      })?.sources.map(({ host, newHost }) => [host, newHost]);
+    const onApi = naming(2, 'https://api.gov.example/law.json');
+    expect(sourcesOf([first, onApi])).toEqual([['www.gov.example', true]]);
+    expect(sourcesOf([first, naming(2, 'https://www.gov.example/law.json')])).toEqual([
+      ['www.gov.example', false],
+    ]);
+    const apiHostLater = entry({
+      number: 3,
+      sources: [{ ...law, url: 'https://api.gov.example/law' }],
+    });
+    expect(sourcesOf([first, onApi, apiHostLater])).toEqual([['api.gov.example', false]]);
+  });
+
   it('writes money in the currency units, never in minor units', () => {
     expect(view(1)?.costs[0]?.amount).toEqual({ op: 'money', amount: '100', currency: 'EUR' });
   });

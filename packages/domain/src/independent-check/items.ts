@@ -103,6 +103,31 @@ function officialUrls(ids: readonly string[], sources: readonly Source[]): strin
 }
 
 /**
+ * The machine-readable address each cited official URL is read through in place of its page: the
+ * one every official source at that URL names, the version's and its country sets' alike. A URL
+ * whose sources name different addresses, or that some of them leave without one, is read as
+ * itself, so no source's address is chosen over another's.
+ */
+export function machineReadableUrls({
+  version,
+  countrySets,
+}: CatalogEntry): ReadonlyMap<string, string> {
+  const named = new Map<string, Set<string | undefined>>();
+  for (const { kind, url, machineReadableUrl } of [version, ...countrySets].flatMap(
+    ({ sources }) => sources,
+  )) {
+    if (kind !== 'official') continue;
+    named.set(url, (named.get(url) ?? new Set()).add(machineReadableUrl));
+  }
+  const addresses = new Map<string, string>();
+  for (const [url, names] of named) {
+    const [only] = names;
+    if (names.size === 1 && only !== undefined) addresses.set(url, only);
+  }
+  return addresses;
+}
+
+/**
  * Every item of a route version the check compares (ADR-0027), by stable key: each requirement,
  * assessment, dependent rule, cost and duration, the leap-day rule and the closure when the version
  * has them, and each pinned country set's members, which are read on the set's own sources and
