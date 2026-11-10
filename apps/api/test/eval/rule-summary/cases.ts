@@ -1,8 +1,9 @@
-// The rule summary evaluation's cases (ADR-0025): every bundled version, public rule data, and
-// copies of one carrying instructions in its own text.
+// The rule summary evaluation's cases (ADR-0025): the newest version of every bundled route, public
+// rule data, and copies of one carrying instructions in its own text.
 import { parseCalendarDate, type VersionView } from '@arca/domain';
 import { summaryContent } from '../../../src/knowledge/version-content.js';
 import { createKnowledgeVersions } from '../../../src/knowledge/versions.js';
+import { newestOfEachRoute } from '../newest-versions.js';
 
 export interface SummaryCase {
   readonly id: string;
@@ -56,10 +57,14 @@ function planted(view: VersionView, place: 'requirement' | 'source', title: stri
   };
 }
 
-/** One case per bundled version, then the injection copies of the first one. */
+/**
+ * One case per bundled route, its newest version, then the injection copies of the first one. A
+ * route's older versions differ from it by a few values, so a new version of a route adds no case
+ * and a run's cost follows the number of routes.
+ */
 export async function summaryCases(): Promise<SummaryCase[]> {
   const cases: SummaryCase[] = [];
-  const listed = await versions.list();
+  const listed = newestOfEachRoute(await versions.list());
   for (const { routeId, number } of listed) {
     const view = await versions.view(routeId, number);
     if (view === undefined) throw new Error(`no view of ${routeId}`);
