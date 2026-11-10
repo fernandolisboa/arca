@@ -55,6 +55,7 @@ The ways to write a version are in [packages/knowledge/README.md](../../packages
 
 - Every item cites at least one official source that states it. A change cites the official text that makes it.
 - Cite the address the recipe gives under "Cite", which a person can open and which shows the text that was read.
+- When the recipe reads the same text from an API or a print address on a listed host, put that address in the source's `machineReadableUrl` (spec 0002, R4), so the independent check reads what the audit read.
 - A source's title names the provision, in at most 200 characters.
 
 ## The audit's pull request
