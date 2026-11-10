@@ -254,6 +254,14 @@
     {
       "path": "guides/us/2",
       "sha256": "2ed9db1cdcb8b5c4422e2077ee0d48050845dc1023fee4bda30e52870f9cfa7f"
+    },
+    {
+      "path": "routes/us-eb5/6",
+      "sha256": "628460a361fc0bb96132e6c8b0e394b23812c680a53fd180abba03aa3cb5f92a"
+    },
+    {
+      "path": "routes/us-eb5/7",
+      "sha256": "c2e77e000cfb0b5df8e18e39044ea62d4b7b0810540cdd43d3b70a1e2cebbb49"
     }
   ]
 }
