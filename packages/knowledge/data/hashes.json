@@ -250,6 +250,10 @@
     {
       "path": "routes/us-eb5/5",
       "sha256": "f695c19cc6d4db33fb0e899cf12f8378dad3bda79929aab0031c54d96c266ec9"
+    },
+    {
+      "path": "guides/us/2",
+      "sha256": "993427f9c0f4622b177d4a9da87ab1a3c5204713259caf7d0e8ecf1c6d71d57b"
     }
   ]
 }
