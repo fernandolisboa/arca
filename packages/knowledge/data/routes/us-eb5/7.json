@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "routeId": "us-eb5",
   "number": 7,
-  "corrects": 6,
+  "corrects": 5,
   "title": "EB-5 immigrant investor (permanent residence)",
   "country": "US",
   "tags": ["investment", "permanent-residence"],
-  "effectiveFrom": "2025-11-12",
+  "effectiveFrom": "2026-11-30",
   "status": "open",
   "currency": "USD",
   "sources": [
@@ -55,17 +55,9 @@
       "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-11-06/title-8?chapter=I&subchapter=B&part=106&section=106.2"
     },
     {
-      "id": "fee-rule-2016",
-      "url": "https://www.federalregister.gov/documents/2016/10/24/2016-25328/us-citizenship-and-immigration-services-fee-schedule",
-      "title": "USCIS fee schedule final rule, 81 FR 73292, effective 2016-12-23: Form I-526 USD 3,675 and Form I-829 USD 3,750",
-      "kind": "official",
-      "verifiedAt": "2026-11-10",
-      "machineReadableUrl": "https://www.govinfo.gov/content/pkg/FR-2016-10-24/html/2016-25328.htm"
-    },
-    {
       "id": "fee-rule-2026",
       "url": "https://www.federalregister.gov/documents/2026/09/30/2026-20016/us-citizenship-and-immigration-services-employment-based-immigrant-visa-fifth-preference-eb-5-fee",
-      "title": "EB-5 fee final rule, 91 FR 61940: since 2025-11-12, after the stay in Moody v. Noem, USCIS accepts the EB-5 fees in effect until 2024-03-31 (Table 1, current fee)",
+      "title": "EB-5 fee final rule, 91 FR 61940, revising 8 CFR 106.2(d) for filings postmarked on or after 2026-11-30",
       "kind": "official",
       "verifiedAt": "2026-11-10",
       "machineReadableUrl": "https://www.govinfo.gov/content/pkg/FR-2026-09-30/html/2026-20016.htm"
@@ -115,7 +107,7 @@
   "requirements": [
     {
       "id": "capital",
-      "title": "Capital to invest of at least USD 800,000 (targeted employment area or infrastructure project; USD 1,050,000 elsewhere)",
+      "title": "Capital to invest of at least USD 800,000 (targeted employment area or infrastructure project; USD 1,050,000 elsewhere), for petitions filed before 2027-01-01",
       "expression": {
         "op": "gte",
         "left": {
@@ -362,30 +354,27 @@
     },
     {
       "id": "petition-fee",
-      "title": "Form I-526 or I-526E petition fee in effect until 2024-03-31, which USCIS accepts again since 2025-11-12, when a court stayed the 2024 EB-5 fees",
+      "title": "Form I-526E regional center petition fee, technology fee included (a standalone Form I-526 costs USD 7,615)",
       "kind": "fee",
       "amount": {
         "op": "money",
-        "amount": 367500,
+        "amount": 785000,
         "currency": "USD"
       },
       "appliesTo": "principal",
-      "sources": ["fee-rule-2016", "fee-rule-2026"]
+      "sources": ["fee-rule-2026"]
     },
     {
       "id": "integrity-fund-fee",
-      "title": "EB-5 Integrity Fund fee for each Form I-526E regional center petition; a standalone Form I-526 investor does not pay it",
+      "title": "EB-5 Integrity Fund fee for each Form I-526E regional center petition",
       "kind": "fee",
       "amount": {
         "op": "money",
-        "amount": 100000,
+        "amount": 110000,
         "currency": "USD"
       },
       "appliesTo": "principal",
-      "condition": {
-        "op": "unmodeled"
-      },
-      "sources": ["usc-1153"]
+      "sources": ["fee-rule-2026"]
     },
     {
       "id": "removal-petition-fee",
@@ -393,11 +382,11 @@
       "kind": "fee",
       "amount": {
         "op": "money",
-        "amount": 375000,
+        "amount": 500000,
         "currency": "USD"
       },
       "appliesTo": "principal",
-      "sources": ["fee-rule-2016", "fee-rule-2026", "usc-1186b"]
+      "sources": ["fee-rule-2026", "usc-1186b"]
     },
     {
       "id": "visa-application-fee",

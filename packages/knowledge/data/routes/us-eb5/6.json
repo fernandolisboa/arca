@@ -6,7 +6,7 @@
   "title": "EB-5 immigrant investor (permanent residence)",
   "country": "US",
   "tags": ["investment", "permanent-residence"],
-  "effectiveFrom": "2024-04-01",
+  "effectiveFrom": "2025-11-12",
   "status": "open",
   "currency": "USD",
   "sources": [
@@ -49,17 +49,26 @@
     {
       "id": "cfr-106-2",
       "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
-      "title": "8 CFR 106.2(a)(25), (a)(53) and (c)(3): USCIS fees for Forms I-526, I-526E and I-829 and the USCIS immigrant fee, as set from 2024-04-01",
+      "title": "8 CFR 106.2(c)(3): USCIS immigrant fee, for processing and issuing documents after the Department of State issues an immigrant visa",
       "kind": "official",
       "verifiedAt": "2026-11-10",
       "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-11-06/title-8?chapter=I&subchapter=B&part=106&section=106.2"
     },
     {
-      "id": "fee-rule-2024",
-      "url": "https://www.federalregister.gov/documents/2024/01/31/2024-01427/us-citizenship-and-immigration-services-fee-schedule-and-changes-to-certain-other-immigration",
-      "title": "USCIS fee schedule final rule, 89 FR 6194, effective 2024-04-01",
+      "id": "fee-rule-2016",
+      "url": "https://www.federalregister.gov/documents/2016/10/24/2016-25328/us-citizenship-and-immigration-services-fee-schedule",
+      "title": "USCIS fee schedule final rule, 81 FR 73292, effective 2016-12-23: Form I-526 USD 3,675 and Form I-829 USD 3,750",
       "kind": "official",
-      "verifiedAt": "2026-11-05"
+      "verifiedAt": "2026-11-10",
+      "machineReadableUrl": "https://www.govinfo.gov/content/pkg/FR-2016-10-24/html/2016-25328.htm"
+    },
+    {
+      "id": "fee-rule-2026",
+      "url": "https://www.federalregister.gov/documents/2026/09/30/2026-20016/us-citizenship-and-immigration-services-employment-based-immigrant-visa-fifth-preference-eb-5-fee",
+      "title": "EB-5 fee final rule, 91 FR 61940: since 2025-11-12, after the stay in Moody v. Noem, USCIS accepts the EB-5 fees in effect until 2024-03-31 (Table 1, current fee)",
+      "kind": "official",
+      "verifiedAt": "2026-11-10",
+      "machineReadableUrl": "https://www.govinfo.gov/content/pkg/FR-2026-09-30/html/2026-20016.htm"
     },
     {
       "id": "cfr-22-1",
@@ -353,15 +362,15 @@
     },
     {
       "id": "petition-fee",
-      "title": "Form I-526 or I-526E petition fee",
+      "title": "Form I-526 or I-526E petition fee in effect until 2024-03-31, which USCIS accepts again since 2025-11-12, when a court stayed the 2024 EB-5 fees",
       "kind": "fee",
       "amount": {
         "op": "money",
-        "amount": 1116000,
+        "amount": 367500,
         "currency": "USD"
       },
       "appliesTo": "principal",
-      "sources": ["cfr-106-2", "fee-rule-2024"]
+      "sources": ["fee-rule-2016", "fee-rule-2026"]
     },
     {
       "id": "integrity-fund-fee",
@@ -384,11 +393,11 @@
       "kind": "fee",
       "amount": {
         "op": "money",
-        "amount": 952500,
+        "amount": 375000,
         "currency": "USD"
       },
       "appliesTo": "principal",
-      "sources": ["cfr-106-2", "fee-rule-2024", "usc-1186b"]
+      "sources": ["fee-rule-2016", "fee-rule-2026", "usc-1186b"]
     },
     {
       "id": "visa-application-fee",
