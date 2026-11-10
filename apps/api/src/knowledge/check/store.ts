@@ -151,6 +151,13 @@ export const listingColumns = {
  * app_api pool. Items and the fetch log are parsed again on the way out, so a row the table's
  * checks let through never reaches the screen in another shape.
  */
+/**
+ * A log entry as stored: without the address when the page itself was read, so the code from
+ * before a source could name one still reads every report that read no address.
+ */
+const storedEntry = ({ machineReadableUrl, ...entry }: FetchLogEntry) =>
+  machineReadableUrl === null ? entry : { ...entry, machineReadableUrl };
+
 export function postgresCheckReportStore(db: () => Database): CheckReportStore {
   return {
     async save(report) {
@@ -161,7 +168,7 @@ export function postgresCheckReportStore(db: () => Database): CheckReportStore {
           guide_hash, prompt_version, model, items, fetch_log, failure, failed, clean)
         VALUES (${report.startId}, ${report.routeId}, ${report.number}, ${report.contentHash},
           ${report.guideHash}, ${report.promptVersion}, ${report.model},
-          ${JSON.stringify(report.items)}::jsonb, ${JSON.stringify(report.fetchLog)}::jsonb,
+          ${JSON.stringify(report.items)}::jsonb, ${JSON.stringify(report.fetchLog.map(storedEntry))}::jsonb,
           ${report.failure}, ${report.failed}, ${report.clean})`);
     },
     async list() {

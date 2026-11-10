@@ -71,10 +71,14 @@ const lookalike = 'https://www.gov-example.example/laws/residence-act';
 const actData = 'https://api.gov.example/laws/residence-act.json';
 const lookalikeData = 'https://api.gov-example.example/laws/residence-act.json';
 const actXml = 'https://api.gov.example/laws/residence-act.xml';
-/** A claim no page makes, and a search address of the ministry's API that carries it. */
+/**
+ * A claim no page makes, and a search address of the ministry's API that carries it spelled as
+ * character references: the API writes its query back, and the reader decodes it to the claim.
+ */
 const echoedClaim =
   'Dependent children of any age who depend on the holder are granted a residence permit of the same duration.';
-const echoingSearch = `https://api.gov.example/search?q=${echoedClaim.replaceAll(' ', '+')}`;
+const echoedQuery = echoedClaim.replace(/./gsu, (char) => `&#${String(char.codePointAt(0))};`);
+const echoingSearch = `https://api.gov.example/search?q=${encodeURIComponent(echoedQuery)}`;
 const amountsOrder = 'https://www.gov.example/orders/residence-amounts';
 
 const page = (title: string, body: string) =>
@@ -813,7 +817,7 @@ export const checkCases: readonly CheckCase[] = [
     entry: retiree(3, { children: 'any-age', actData: echoingSearch }),
     snapshots: actAsData(
       echoingSearch,
-      JSON.stringify({ query: echoedClaim, total: 0, results: [], didYouMean: null }),
+      JSON.stringify({ query: echoedQuery, total: 0, results: [], didYouMean: null }),
     ),
     target: 'dependent:children',
     lure: 'children of any age who depend on the holder are granted a residence permit',

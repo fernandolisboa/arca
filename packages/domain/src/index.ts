@@ -155,6 +155,7 @@ export {
   routeVersionJsonSchema,
   routeVersionSchema,
   sourceSchema,
+  sourceUrls,
 } from './rules/route-version.js';
 export {
   collectionNames,
@@ -226,13 +227,13 @@ export {
   type VersionViewInput,
   type ViewSection,
   ruleCaseSummarySchema,
-  sourceUrls,
   versionView,
   viewSections,
 } from './rules/version-view.js';
 export {
   type CheckValue,
   canonicalNumber,
+  digitsApart,
   numbersIn,
   statesValue,
 } from './independent-check/values.js';
@@ -253,6 +254,7 @@ export {
   type CheckStatus,
   type CheckedItem,
   type ReadPage,
+  addressTexts,
   checkReasons,
   checkStatuses,
   maxNoteLength,

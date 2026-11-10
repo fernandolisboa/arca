@@ -1019,6 +1019,8 @@ export const ptBR = {
     sourceKind: '{kind, select, official {Fonte oficial} other {Fonte secundária}}',
     verifiedAt: 'Conferida em {date}',
     newHost: 'Site novo nesta rota',
+    readAddress: 'O Arca lê o texto neste endereço',
+    newAddressHost: 'Este endereço fica em um site novo nesta rota',
     case: '{id}: {status}',
     caseStatus:
       '{status, select, unavailable {Indisponível} not_eligible {Não elegível} missing_information {Faltam informações} needs_assessment {Depende de critério subjetivo} other {Elegível}}',

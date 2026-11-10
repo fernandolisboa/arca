@@ -90,17 +90,29 @@ function hidden(attrs: readonly { readonly name: string; readonly value: string 
  * would hold the step for hours within the size cap; no law page comes near this depth.
  */
 export const maxElementDepth = 512;
+/** The most elements a page is read with; a law's longest consolidated text holds far fewer. */
+export const maxElements = 500_000;
 
-class TooDeep extends Error {}
+class TooMuchMarkup extends Error {}
 
-/** The parsed page, or undefined when its elements nest deeper than the limit. */
+/**
+ * The elements markup of this length may open: one for every three characters, the shortest tag,
+ * and never more than the limit. A parser reopens every unclosed formatting element at each new
+ * paragraph, so a few hundred of them make a short page cost gigabytes; this budget stops that
+ * while it is still cheap.
+ */
+const elementBudget = (length: number) => Math.min(maxElements, Math.ceil(length / 3) + 16);
+
+/** The parsed page, or undefined when it nests deeper or opens more elements than the limits. */
 function parsed(html: string): Node | undefined {
   let depth = 0;
+  let left = elementBudget(html.length);
   const treeAdapter: typeof defaultTreeAdapter = {
     ...defaultTreeAdapter,
     onItemPush: () => {
       depth += 1;
-      if (depth > maxElementDepth) throw new TooDeep();
+      left -= 1;
+      if (depth > maxElementDepth || left < 0) throw new TooMuchMarkup();
     },
     onItemPop: () => {
       depth -= 1;
@@ -109,21 +121,31 @@ function parsed(html: string): Node | undefined {
   try {
     return parse(html, { treeAdapter });
   } catch (error) {
-    if (error instanceof TooDeep) return undefined;
+    if (error instanceof TooMuchMarkup) return undefined;
     throw error;
   }
 }
+
+/**
+ * Markup with a cell end wherever only tags stand between two digits, so a tag between two numbers
+ * never makes them one, whatever the element and whether the parser keeps it: a line break, a cell
+ * a table would hold, a footnote mark. The tags are matched as written, not parsed: a miss leaves
+ * the text as the parser reads it.
+ */
+const digitsKeptApart = (html: string) =>
+  html.replace(/(\d\s*(?:<[^<>]*>\s*)+)(?=\d)/gu, `$1${cellEnd}`);
 
 /**
  * A page's text as a reader sees it (ADR-0027): parsed by parse5, a parser with no scripts, no
  * network and no DOM emulation, then walked without recursion, so a deeply nested page cannot
  * overflow the stack. Scripts, styles, templates, comments, hidden elements and struck-through
  * text are dropped; block elements break lines, and a table row is one line with a bar between its
- * cells; whitespace collapses within each line. A page nested past the depth limit has no text.
+ * cells; whitespace collapses within each line. A page past the depth or element limit has no
+ * text.
  */
 export function htmlToText(html: string): string {
   const parts: string[] = [];
-  const root = parsed(html);
+  const root = parsed(digitsKeptApart(html));
   if (root === undefined) return '';
   const stack: (Node | '\n' | typeof cellEnd)[] = [root];
   for (let next = stack.pop(); next !== undefined; next = stack.pop()) {

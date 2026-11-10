@@ -772,6 +772,66 @@ describe('the independent check of one version (ADR-0027)', () => {
       ]);
     });
 
+    it.each([
+      [
+        'character references in a JSON answer',
+        (claim: string) => claim.replace(/./gsu, (char) => `&#${String(char.codePointAt(0))};`),
+        (written: string) => ({
+          body: JSON.stringify({ query: written }),
+          type: 'application/json',
+        }),
+      ],
+      [
+        'tags in a JSON answer',
+        (claim: string) => claim.replaceAll(' ', '<i></i> '),
+        (written: string) => ({
+          body: JSON.stringify({ query: written }),
+          type: 'application/json',
+        }),
+      ],
+      [
+        'character references an XML answer escapes',
+        (claim: string) => claim.replace(/./gsu, (char) => `&#${String(char.codePointAt(0))};`),
+        (written: string) => ({
+          body: `<search><query>${written.replaceAll('&', '&amp;')}</query></search>`,
+          type: 'application/xml',
+        }),
+      ],
+    ])(
+      'takes no quote an address spells with %s for its answer to write back',
+      async (_, spell, answer) => {
+        const written = spell(lawText);
+        const echoing = `https://api.gov.example/search?q=${encodeURIComponent(written)}`;
+        const checked: CheckSubject = {
+          ...subject,
+          entry: {
+            ...entry,
+            version: routeVersionSchema.parse({
+              ...version,
+              sources: version.sources.map((source) =>
+                source.url === law ? { ...source, machineReadableUrl: echoing } : source,
+              ),
+            }),
+          },
+        };
+        const checker = answering(matchesBoth);
+        const fetcher = snapshotFetcher(
+          new Map([
+            [echoing, answer(written)],
+            [fees, feePage],
+          ]),
+        );
+        const { check, store } = setup({ checker, checked, fetcher });
+        await check(startId, 'qm-sample', 1);
+        expect(checker.requests[0]?.pages[0]).toMatchObject({ url: law, text: lawText });
+        expect(store.rows[0]?.items[0]).toMatchObject({
+          status: 'could_not_check',
+          reason: 'echoes_address',
+        });
+        expect(store.rows[0]?.clean).toBe(false);
+      },
+    );
+
     it.each<[string, SourceFetcher, string]>([
       [
         'redirects off the official hosts',

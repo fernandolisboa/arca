@@ -25,6 +25,7 @@ import type { CountryGuideEntry } from '@arca/knowledge';
 import type { Logger } from '@arca/telemetry';
 import { loggedModelCall, parsedWithOneRetry } from '../../ai/model-call.js';
 import { guideContent } from '../version-content.js';
+import { addressesAsRead } from './answer-text.js';
 import { parseCheckAnswer } from './answer.js';
 import {
   type RuleCheckRequest,
@@ -274,7 +275,17 @@ export function createVersionCheck({
     const guide = guideOf(subject.entry.version.country);
     const fetched = await fetchCited(items, subject);
     const readPages: ReadPage[] = fetched.flatMap(({ url, read }) =>
-      read.ok ? [{ url, text: asDataText(read.text), cut: read.cut, chain: read.chain }] : [],
+      read.ok
+        ? [
+            {
+              url,
+              text: asDataText(read.text),
+              cut: read.cut,
+              chain: read.chain,
+              echoes: addressesAsRead(read.chain).map(asDataText),
+            },
+          ]
+        : [],
     );
     // Short pages go whole; the long ones share what is left of the budget, as excerpts.
     const budget = excerptBudget(readPages.map(({ text }) => text));

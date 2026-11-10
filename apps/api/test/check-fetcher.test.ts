@@ -455,6 +455,20 @@ describe('htmlToText', () => {
     expect(performance.now() - started).toBeLessThan(2_000);
   });
 
+  it('reads no text of a short page that makes the parser reopen elements without end', () => {
+    const reopened = `<p>${Array.from({ length: 500 }, (_, index) => `<b a=${String(index)}>`).join('')}`;
+    const started = performance.now();
+    expect(htmlToText(`${reopened}${'</p><p>x'.repeat(20_000)}`)).toBe('');
+    expect(performance.now() - started).toBeLessThan(2_000);
+  });
+
+  it('reads a page as dense with elements as markup gets', () => {
+    expect(htmlToText('<p>a'.repeat(2_000)).split('\n')).toHaveLength(2_000);
+    expect(htmlToText(`<table>${'<tr><td>a<td>b'.repeat(500)}</table>`).split('\n')).toHaveLength(
+      500,
+    );
+  });
+
   it('keeps a table row on one line, with a bar between its cells', () => {
     expect(
       htmlToText(

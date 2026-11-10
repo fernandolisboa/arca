@@ -31,6 +31,12 @@ const page = (patch: Partial<ReadPage> = {}): ReadPage => ({
 
 const quote = 'a monthly income of at least €920,00';
 
+/** A claim no law makes, and a search address that carries a text for its API to write back. */
+const claim = 'spouses of any age are granted a permit';
+const searching = (text: string) => `https://api.gov.example/search?q=${encodeURIComponent(text)}`;
+const asReferences = (text: string) =>
+  text.replace(/./gsu, (char) => `&#${String(char.codePointAt(0))};`);
+
 /** An answer's quotes: one passage on one page. */
 const on = (text: string, url = law) => ({ quotes: [{ quote: text, url }] });
 
@@ -116,12 +122,27 @@ describe('verifyAnswers', () => {
       'echoes_address',
     ],
     [
-      'a quote taken from a path segment of the chain, however it is punctuated',
-      on('Spouses of any age are granted a permit'),
-      page({
-        text: 'Spouses of any age are granted a permit',
-        chain: ['https://api.gov.example/echo/spouses-of-any-age-are-granted-a-permit.json'],
-      }),
+      'a claim a query spells as character references',
+      on(claim),
+      page({ text: claim, chain: [searching(asReferences(claim))] }),
+      'echoes_address',
+    ],
+    [
+      'a claim a query writes between tags',
+      on(claim),
+      page({ text: claim, chain: [searching(claim.replaceAll('a', 'a<i></i>'))] }),
+      'echoes_address',
+    ],
+    [
+      'an address whose bytes are not UTF-8',
+      on(quote),
+      page({ chain: [law, 'https://www.gov.example/search?q=%CC%E8%ED'] }),
+      'echoes_address',
+    ],
+    [
+      'a value an address states once it is decoded twice',
+      on(quote),
+      page({ chain: [law, 'https://www.gov.example/amounts?v=%2539%2532%2530'] }),
       'echoes_address',
     ],
     [
@@ -151,6 +172,37 @@ describe('verifyAnswers', () => {
       quotes: [],
       note: null,
       reason,
+    });
+  });
+
+  it("takes a quote that restates the words of its page's path", () => {
+    const text =
+      'A long-term residence permit for the purpose of family reunification needs a monthly income of at least €920,00';
+    const read = page({
+      text,
+      chain: [
+        'https://www.gov.example/permits/long-term-residence-permit-for-the-purpose-of-family-reunification/',
+      ],
+    });
+    expect(verify(on(text), read)).toMatchObject({ status: 'matches' });
+  });
+
+  it("takes the reader's rendering of an address as the address", () => {
+    const amount: CheckItem = { ...item, values: [{ kind: 'number', value: '1500' }] };
+    const stated = 'A monthly income of 1,500 is required';
+    const chain = ['https://api.gov.example/search?q=income+1%26comma%3B500'];
+    const check = (echoes: readonly string[]) =>
+      verifyAnswers(
+        [amount],
+        [{ key: item.key, status: 'matches', ...on(stated) }],
+        new Map([[law, page({ text: stated, chain, echoes })]]),
+      )[0];
+    // The address spells the comma as an entity, so only the text a reader of markup makes of it
+    // states the amount.
+    expect(check([])).toMatchObject({ status: 'matches' });
+    expect(check(['https://api.gov.example/search?q=income 1,500'])).toMatchObject({
+      status: 'could_not_check',
+      reason: 'echoes_address',
     });
   });
 

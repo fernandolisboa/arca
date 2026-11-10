@@ -78,11 +78,7 @@ export function textWithinLimits(
   limits: Pick<FetchLimits, 'maxMarkupLength' | 'maxTextLength'> = fetchLimits,
 ): { readonly text: string; readonly cut: boolean } | undefined {
   const markupCut = format !== 'plain' && raw.length > limits.maxMarkupLength;
-  // No NUL reaches the text: a quote holding one could not be stored with its report.
-  const full = answerText(format, markupCut ? raw.slice(0, limits.maxMarkupLength) : raw).replace(
-    /\0/gu,
-    '',
-  );
+  const full = answerText(format, markupCut ? raw.slice(0, limits.maxMarkupLength) : raw);
   if (full.trim() === '') return undefined;
   const capped = capText(full, limits.maxTextLength);
   return { text: capped.text, cut: markupCut || capped.cut };
@@ -308,7 +304,8 @@ export function httpsSourceFetcher({
       const { type, charset } = contentType(response);
       const format = answerFormat(type);
       if (format === undefined) {
-        response.resume();
+        // Nothing will read the body, so the socket closes now rather than at the time limit.
+        response.destroy();
         throw new FetchError('unsupported_type', status);
       }
       const read = textWithinLimits(format, await body(response, charset), limits);

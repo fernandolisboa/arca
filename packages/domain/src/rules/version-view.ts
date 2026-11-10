@@ -15,7 +15,7 @@ import type { EvaluationStatus } from './engine.js';
 import { slugSchema } from './expression.js';
 import { resolveFactReference } from './fact-reference.js';
 import { type CurrencyCode, unitsAmount } from '../money/currency.js';
-import type { Pin, RouteVersion, Source } from './route-version.js';
+import { type Pin, type RouteVersion, type Source, sourceUrls } from './route-version.js';
 
 const evaluationStatuses = [
   'unavailable',
@@ -174,13 +174,6 @@ export interface VersionViewInput {
    */
   readonly hostOf: (url: string) => string | undefined;
 }
-
-/**
- * The addresses a source names: its URL and, when it has one, its machine-readable address. The
- * build records the host of each, so the view can tell which hosts are new to a route.
- */
-export const sourceUrls = ({ url, machineReadableUrl }: Source): string[] =>
-  machineReadableUrl === undefined ? [url] : [url, machineReadableUrl];
 
 const isNode = (value: unknown): value is Readonly<Record<string, unknown>> =>
   typeof value === 'object' && value !== null && !Array.isArray(value) && 'op' in value;

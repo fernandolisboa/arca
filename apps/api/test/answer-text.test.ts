@@ -1,6 +1,7 @@
 import { normalizeWhitespace, statesValue } from '@arca/domain';
 import { describe, expect, it } from 'vitest';
 import {
+  addressesAsRead,
   answerFormat,
   answerText,
   jsonStrings,
@@ -186,8 +187,78 @@ describe('answerText', () => {
     );
   });
 
+  it.each([
+    ['xml', 'an empty element', '<p>Fee category 1<br/>500 EUR</p>'],
+    ['xml', 'one tag', '<fee>Class 1<amount>500</amount> EUR</fee>'],
+    ['xml', 'one tag and a space', '<fee>Class 1 <amount>500</amount> EUR</fee>'],
+    [
+      'html',
+      'an element that breaks no line',
+      '<details><summary>Fee 1</summary>500 EUR</details>',
+    ],
+    ['html', 'an inline element', '<p>Fee 1 <b>500</b> EUR</p>'],
+    ['html', 'a line break', '<p>Fee 1<br>500 EUR</p>'],
+    [
+      'json',
+      'the cells of a row with no table around it',
+      JSON.stringify({ row: '<tr><td>Fee 1</td><td>500 EUR</td></tr>' }),
+    ],
+    ['json', 'a tag written in prose', JSON.stringify({ note: 'Fee 1<x and y>500 EUR' })],
+    ['json', 'a NUL at the end of a string', '["Fee 1\\u0000", "500 EUR"]'],
+    ['xml', 'a NUL reference before a tag', '<fee>Fee 1&#0;<amount>500 EUR</amount></fee>'],
+  ] as const)('never reads one number across %s %s', (format, _, body) => {
+    const text = normalizeWhitespace(answerText(format, body));
+    expect(statesValue({ kind: 'number', value: '500' }, text)).toBe(true);
+    expect(statesValue({ kind: 'number', value: '1500' }, text)).toBe(false);
+  });
+
+  it('keeps a number an inline element writes whole, and words across a tag', () => {
+    expect(answerText('html', '<p>at least <b>1 500</b> EUR, or <i>more</i>.</p>')).toBe(
+      'at least 1 500 EUR, or more.',
+    );
+    expect(answerText('xml', '<p>at least <b>1 500</b> EUR, or <i>more</i>.</p>')).toBe(
+      'at least 1 500 EUR, or more.',
+    );
+  });
+
+  it('reads no text of a string that is only a comment', () => {
+    expect(answerText('json', JSON.stringify({ note: '<!-- fee 1500 -->', fee: '500 EUR' }))).toBe(
+      '500 EUR',
+    );
+  });
+
+  it('replaces a surrogate with no pair, which a stored report could not hold', () => {
+    expect(answerText('json', '["a\\ud800b"]')).toBe('a\uFFFDb');
+  });
+
   it('reads a page as a page and plain text as it is', () => {
     expect(answerText('html', '<p>Act</p>')).toBe('Act');
     expect(answerText('plain', 'Act <p>')).toBe('Act <p>');
+  });
+});
+
+describe('addressesAsRead', () => {
+  const search = (query: string) => `https://api.gov.example/search?q=${encodeURIComponent(query)}`;
+
+  it.each([
+    ['character references', 'the fee is &#49;,&#x35;00 EUR'],
+    ['an entity for the separator', 'the fee is 1&comma;500 EUR'],
+    ['tags inside its words', 'the f<i></i>ee is 1,500 E<b></b>UR'],
+    ['references an XML answer decodes first', 'the fee is &amp;#49;,500 EUR'],
+  ])('reads an address that writes its claim with %s as the reader would', (_, query) => {
+    expect(addressesAsRead([search(query)])).toContain(
+      'https://api.gov.example/search?q=the fee is 1,500 EUR',
+    );
+  });
+
+  it('reads an address decoded twice over, and none whose bytes are not UTF-8', () => {
+    expect(addressesAsRead([search(encodeURIComponent('1&comma;500'))])).toContain(
+      'https://api.gov.example/search?q=1,500',
+    );
+    expect(addressesAsRead(['https://api.gov.example/search?q=%CC%E8'])).toEqual([]);
+  });
+
+  it('has nothing to add for an address with no markup in it', () => {
+    expect(addressesAsRead(['https://api.gov.example/laws/residence-act.json?part=4'])).toEqual([]);
   });
 });

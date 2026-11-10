@@ -33,6 +33,13 @@ export interface ReadPage {
    * machine-readable address read in its place.
    */
   readonly chain: readonly string[];
+  /**
+   * What the reader makes of those addresses when an answer writes one back: each as
+   * `addressTexts` gives it, read as the answer's own text is, markup and references included.
+   * They are tested as the addresses are, so a claim an address spells as references or between
+   * tags is still an echo. A reader that turns markup into text must give them.
+   */
+  readonly echoes?: readonly string[];
 }
 
 /** Why code did not take the model's word for an item. */
@@ -79,26 +86,44 @@ export function normalizeWhitespace(text: string): string {
   return text.normalize('NFC').replace(/\s+/gu, ' ').trim();
 }
 
-function decoded(text: string): string {
-  try {
-    return decodeURIComponent(text.replace(/\+/g, ' '));
-  } catch {
-    return text;
+/** A server may decode what another already did, so an address is read decoded this many times. */
+const decodingRounds = 3;
+
+/**
+ * An address as the servers on its way may read it: percent-decoded, and decoded again while that
+ * changes it. Undefined when its bytes are not UTF-8, which nothing here could compare with a
+ * page's text.
+ */
+export function addressTexts(url: string): readonly string[] | undefined {
+  const texts: string[] = [];
+  let last = url;
+  for (let round = 0; round < decodingRounds; round += 1) {
+    let next: string;
+    try {
+      next = decodeURIComponent(last.replace(/\+/g, ' '));
+    } catch {
+      return round === 0 ? undefined : texts;
+    }
+    if (round > 0 && next === last) break;
+    texts.push(next);
+    last = next;
   }
+  return texts;
 }
 
-function queryValues(url: string): string[] {
-  const query = /\?([^#]*)/.exec(url)?.[1] ?? '';
-  return query
+/** What an address's query says: the text after its question mark, up to a fragment. */
+const queryOf = (text: string) => /\?([^#]*)/.exec(text)?.[1] ?? '';
+
+function queryValues(text: string): string[] {
+  return queryOf(text)
     .split('&')
-    .map((pair) => decoded(pair.slice(pair.indexOf('=') + 1)))
-    .map(normalizeWhitespace)
+    .map((pair) => normalizeWhitespace(pair.slice(pair.indexOf('=') + 1)))
     .filter((value) => value.length >= echoedQueryLength);
 }
 
-/** A piece of a quote this long that an address also holds counts as taken from the address. */
+/** A piece of a quote this long that a query also holds counts as taken from the query. */
 const echoedPieceLength = 4;
-/** A quote at least this much made of pieces of its addresses says what they say, not the law. */
+/** A quote at least this much made of pieces of its addresses' queries says what they say. */
 const echoedShare = 0.5;
 
 /** Lower-case letters and digits with one space for anything between them, in any script. */
@@ -109,45 +134,54 @@ const lettersAndDigits = (text: string) =>
     .replace(/[^\p{L}\p{N}]+/gu, ' ')
     .trim();
 
-/** What an address says besides its host: its path, query and fragment, decoded. */
-const addressWords = (url: string) =>
-  lettersAndDigits(decoded(url.replace(/^[a-z][a-z0-9+.-]*:\/\/[^/?#]*/iu, '')));
-
 /**
- * Whether at least half of a quote is made of pieces of the addresses requested for its page,
- * whatever punctuation the address or the answer writes between the words: so a quote that is part
- * of a long query value, of a path segment, or put together from several short values is caught,
- * where the whole-value test alone would let it through.
+ * Whether at least half of a quote is made of pieces of the queries requested for its page,
+ * whatever punctuation the query or the answer writes between the words: so a quote that is part
+ * of a long query value, or put together from several short ones, is caught where the whole-value
+ * test alone would let it through. Paths are left out: a path names its page's subject, which the
+ * page's own words restate, and no test on the words could tell that from an echo.
  */
-function madeOfAddress(quote: string, chain: readonly string[]): boolean {
+function madeOfQuery(quote: string, texts: readonly string[]): boolean {
   const text = lettersAndDigits(quote);
-  const addresses = chain.map(addressWords).filter(({ length }) => length >= echoedPieceLength);
-  if (text.length < echoedPieceLength || addresses.length === 0) return false;
+  const queries = texts
+    .map((address) => lettersAndDigits(queryOf(address)))
+    .filter(({ length }) => length >= echoedPieceLength);
+  if (text.length < echoedPieceLength || queries.length === 0) return false;
   const taken = new Uint8Array(text.length);
   for (let start = 0; start + echoedPieceLength <= text.length; start += 1) {
     const piece = text.slice(start, start + echoedPieceLength);
-    if (addresses.some((address) => address.includes(piece))) {
+    if (queries.some((query) => query.includes(piece))) {
       taken.fill(1, start, start + echoedPieceLength);
     }
   }
   return taken.reduce((sum, mark) => sum + mark, 0) >= text.length * echoedShare;
 }
 
+/** A tag or a character reference opening in an address: text a reader of markup would rewrite. */
+const opensMarkup = (text: string) => /<|&#/u.test(text);
+
 /**
  * A page that writes its own address into its text could be made to "say" anything by the address
- * alone: a quote holding a query value of the chain, a quote mostly made of the chain's addresses,
+ * alone: a quote holding a query value of the chain, a quote mostly made of the chain's queries,
  * or an item's value that those addresses already state, proves nothing about the law. The chain
  * starts at the address requested, which for a source read through its machine-readable address
- * is one the model and the panel never see.
+ * is not the page's. An address is compared as every text it may have become: decoded as often as
+ * a server might, and as the reader renders it. One that cannot be decoded, or that opens markup
+ * of its own, is taken as an echo whatever the quote.
  */
-function echoesAddress(quote: string, chain: readonly string[], values: readonly CheckValue[]) {
+function echoesAddress(quote: string, page: ReadPage, values: readonly CheckValue[]) {
+  const decoded = page.chain.map(addressTexts);
+  if (decoded.includes(undefined)) return true;
+  const addresses = decoded.flatMap((texts) => texts ?? []);
+  if (addresses.some(opensMarkup)) return true;
+  const texts = [...addresses, ...(page.echoes ?? [])];
   const lower = quote.toLowerCase();
   return (
-    madeOfAddress(quote, chain) ||
-    chain.some(
-      (url) =>
-        queryValues(url).some((value) => lower.includes(value.toLowerCase())) ||
-        values.some((value) => statesValue(value, decoded(url))),
+    madeOfQuery(quote, texts) ||
+    texts.some(
+      (text) =>
+        queryValues(text).some((value) => lower.includes(value.toLowerCase())) ||
+        values.some((value) => statesValue(value, text)),
     )
   );
 }
@@ -265,7 +299,7 @@ function checkQuote(
   if (!runs.some((run) => normalizeWhitespace(run).includes(quote))) {
     return { ok: false, reason: 'quote_not_on_page' };
   }
-  if (echoesAddress(quote, page.chain, item.values)) return { ok: false, reason: 'echoes_address' };
+  if (echoesAddress(quote, page, item.values)) return { ok: false, reason: 'echoes_address' };
   return { ok: true, quote: { quote, url }, page };
 }
 

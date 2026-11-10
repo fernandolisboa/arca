@@ -139,7 +139,7 @@ function ReportBody({
 }) {
   const { t } = words;
   const problems = report.fetchLog.filter(({ outcome, cut }) => outcome !== 'read' || cut);
-  const readAt = new Map(
+  const addressRead = new Map(
     report.fetchLog.map(({ url, machineReadableUrl }) => [url, machineReadableUrl]),
   );
   const checkedAt = new Intl.DateTimeFormat(words.language, { dateStyle: 'long' }).format(
@@ -168,7 +168,7 @@ function ReportBody({
               <ReportItemCard
                 item={item}
                 scripted={report.scripted}
-                readAt={readAt}
+                addressRead={addressRead}
                 words={words}
               />
             </li>
@@ -179,13 +179,13 @@ function ReportBody({
         <div className="flex flex-col gap-2">
           <h6 className="font-medium">{t('knowledge.check.pages')}</h6>
           <ul className="flex flex-col gap-2">
-            {problems.map(({ url, outcome, status }) => (
+            {problems.map(({ url, machineReadableUrl, outcome, status }) => (
               <li key={url} className="flex flex-col gap-1 text-small">
                 <span>
                   {t('knowledge.check.outcome', { outcome, status: String(status ?? '') })}
                 </span>
                 <span className="font-mono break-all text-muted">{url}</span>
-                <ReadAt address={readAt.get(url)} words={words} />
+                <AddressRead address={machineReadableUrl} words={words} />
               </li>
             ))}
           </ul>
@@ -199,7 +199,7 @@ function ReportBody({
  * The address a page's text was read at, when not the page itself: plain text, as every URL here,
  * so the admin can tell a quote came from a data address and open it to see the words.
  */
-function ReadAt({
+function AddressRead({
   address,
   words,
 }: {
@@ -218,12 +218,12 @@ function ReadAt({
 function ReportItemCard({
   item,
   scripted,
-  readAt,
+  addressRead,
   words,
 }: {
   readonly item: ReportItem;
   readonly scripted: boolean;
-  readonly readAt: ReadonlyMap<string, string | null>;
+  readonly addressRead: ReadonlyMap<string, string | null>;
   readonly words: KnowledgeWords;
 }) {
   const { t } = words;
@@ -253,7 +253,7 @@ function ReportItemCard({
           <p className="flex flex-col gap-1 text-small">
             <span className="text-muted">{t('knowledge.check.page')}</span>
             <span className="font-mono break-all">{url}</span>
-            <ReadAt address={readAt.get(url)} words={words} />
+            <AddressRead address={addressRead.get(url)} words={words} />
           </p>
         </figure>
       ))}

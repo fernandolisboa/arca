@@ -1,3 +1,4 @@
+import { addressTexts, digitsApart } from '@arca/domain';
 import { htmlToText, struckElements } from './html-text.js';
 
 /** How the fetcher reads an answer, by its media type. */
@@ -16,11 +17,11 @@ export function answerFormat(type: string): AnswerFormat | undefined {
 }
 
 /**
- * Whether a string of data holds markup of its own: a tag, or an entity or character reference. A
- * lone `<` or `&`, as in "income < minimum", is text.
+ * Whether a string of data holds markup of its own: a tag, a comment, or an entity or character
+ * reference. A lone `<` or `&`, as in "income < minimum", is text.
  */
 const hasMarkup = (value: string) =>
-  /<\/?[a-z][a-z0-9:-]*(?:\s[^<>]*)?\/?>|&(?:#\d+|#x[0-9a-f]+|[a-z][a-z0-9]*);/iu.test(value);
+  /<\/?[a-z][a-z0-9:-]*(?:\s[^<>]*)?\/?>|<!--|&(?:#\d+|#x[0-9a-f]+|[a-z][a-z0-9]*);/iu.test(value);
 
 /** A string of data as a reader sees it: markup in it read as a page's markup is. */
 function stringText(value: string): string {
@@ -121,23 +122,29 @@ function tagOf(tag: string): {
  * sections in document order, with references decoded. Tags, attributes, comments, processing
  * instructions and the document type are structure, and the text of an element a law strikes
  * superseded wording with is left out, as on a page. No vocabulary says which elements start a
- * line, so the document's own line breaks stand, text that follows two or more tags starts a new
- * line, and text that follows one tag runs on, as words in an inline element do. One pass over the
- * text, with no parser that fetches, validates or expands anything.
+ * line, so the document's own line breaks stand, text that follows two or more tags, or an empty
+ * element, starts a new line, and text that follows one tag runs on, as words in an inline element
+ * do, unless digits would meet across it: a tag between two numbers never makes them one. One pass
+ * over the text, with no parser that fetches, validates or expands anything.
  */
 export function xmlText(xml: string): string {
   const pieces: string[] = [];
   let tagsSinceText = 2;
+  let afterDigit = false;
   let struckDepth = 0;
-  const text = (piece: string) => {
+  const text = (raw: string) => {
     if (struckDepth > 0) return;
+    // A NUL is dropped from every answer; here already, so it hides no digit from the line rule.
+    const piece = raw.replaceAll('\0', '');
     if (piece.trim() === '') pieces.push(piece);
     else {
+      const digitsMeet = tagsSinceText > 0 && afterDigit && /^\s*\d/u.test(piece);
       pieces.push(
-        tagsSinceText >= 2 ? '\n' : '',
+        tagsSinceText >= 2 || digitsMeet ? '\n' : '',
         hasMarkup(piece) ? `\n${htmlToText(piece)}\n` : piece,
       );
       tagsSinceText = 0;
+      afterDigit = /\d\s*$/u.test(piece);
     }
   };
   let index = 0;
@@ -162,7 +169,7 @@ export function xmlText(xml: string): string {
         if (end) struckDepth = Math.max(0, struckDepth - 1);
         else if (!empty) struckDepth += 1;
       }
-      tagsSinceText += 1;
+      tagsSinceText += empty ? 2 : 1;
     }
   }
   return pieces.join('');
@@ -174,25 +181,6 @@ function dataLines(texts: readonly string[]): string {
     .flatMap((text) => text.split('\n'))
     .map((line) => line.replace(/\s+/gu, ' ').trim())
     .filter((line) => line !== '')
-    .join('\n');
-}
-
-/**
- * A line that starts with a digit after one that ends with a digit opens with a bar, as between
- * the cells of a table row, so the digits of two lines never read as one number: a quote takes a
- * line break as a space, and a space between digits is a thousands separator to the value check.
- */
-function digitLinesApart(text: string): string {
-  let afterDigit = false;
-  return text
-    .split('\n')
-    .map((line) => {
-      const words = line.trim();
-      if (words === '') return line;
-      const barred = afterDigit && /^\d/u.test(words);
-      afterDigit = /\d$/u.test(words);
-      return barred ? `| ${line}` : line;
-    })
     .join('\n');
 }
 
@@ -213,9 +201,36 @@ function textOf(format: AnswerFormat, body: string): string {
  * An answer's text as a reader sees it (ADR-0027). A page's markup through `htmlToText`; plain text
  * as it is; a JSON answer as its string values in document order, one to a line; an XML answer as
  * its text in document order. A string of either with markup in it is read as a page's markup is.
- * Nothing in a data answer is ever more than text, and in every format the digits of two lines
- * stay apart.
+ * Nothing in a data answer is ever more than text. In every format, NUL and unpaired surrogates,
+ * which a stored report cannot hold, are taken out, and the digits of two lines stay apart.
  */
 export function answerText(format: AnswerFormat, body: string): string {
-  return digitLinesApart(textOf(format, body));
+  return digitsApart(
+    textOf(format, body)
+      .replace(/\0/gu, '')
+      .replace(/\p{Cs}/gu, '\uFFFD'),
+  );
+}
+
+/** A reader of markup decodes what it reads, and an XML answer's text twice over. */
+const renderingRounds = 3;
+
+/**
+ * What the reader makes of the addresses of a chain when an answer writes one back: each decoded
+ * as a server might, then read as a string of a data answer is, as often as that changes it. The
+ * quote check compares a quote with these as with the addresses themselves, so a claim an address
+ * spells as character references, or between tags, is still an echo of the address.
+ */
+export function addressesAsRead(chain: readonly string[]): string[] {
+  const read = new Set<string>();
+  for (const address of chain.flatMap((url) => addressTexts(url) ?? [])) {
+    let text = address;
+    for (let round = 0; round < renderingRounds; round += 1) {
+      const next = htmlToText(text);
+      if (next === text) break;
+      read.add(next);
+      text = next;
+    }
+  }
+  return [...read];
 }
