@@ -1,6 +1,6 @@
 # Research notes
 
-Seed material for the knowledge base, gathered on 2026-10-31 and 2026-11-01. These notes are **not** the knowledge base: each fact must be re-verified against an official source before it becomes a route version or knowledge item.
+Seed material for the knowledge base, gathered on 2026-10-31 and 2026-11-01, and, under `routes/`, the notes and audit records of each route. These notes are **not** the knowledge base: each fact must be re-verified against an official source before it becomes a route version or knowledge item.
 
 Conventions:
 
@@ -16,3 +16,4 @@ Conventions:
 | [ancestry.md](ancestry.md) | Citizenship by descent: Italy, Portugal, and the E-2 link |
 | [brazil-exit.md](brazil-exit.md) | Brazilian side: capital gains, FX tax, tax exit, source of funds |
 | [ai-vendors.md](ai-vendors.md) | AI vendors under evaluation |
+| [routes/](routes/) | One file per route: its notes and the record of each [rule audit](../runbooks/rule-audit.md), newest first |

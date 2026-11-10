@@ -149,6 +149,7 @@ export {
   jsonDepthWithin,
   maxKnowledgeJsonDepth,
   officialDomainListSchema,
+  plainSourceSchema,
   routeCountry,
   routeIdSchema,
   routeVersionJsonSchema,

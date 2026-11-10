@@ -56,20 +56,52 @@ export function checkCountrySet(set: CountrySet, official: OfficialHosts): Check
   return checkOfficialSources(set.sources, official);
 }
 
-/** Checks a file's own sources: each official one on a pinned host, and at least one. */
+/** Checks a machine-readable address against the pinned official hosts, as a source's URL is. */
+export function checkMachineReadableUrl(
+  url: string | undefined,
+  path: string,
+  official: OfficialHosts,
+): CheckIssue[] {
+  return url === undefined || officialUrl(url, official)
+    ? []
+    : [{ path, message: 'A machine-readable address is on a pinned official host' }];
+}
+
+/**
+ * Checks each source on its own: an official one on a pinned host, and a machine-readable address
+ * only on an official source, on a pinned host too.
+ */
+function checkSourceHosts(sources: readonly Source[], official: OfficialHosts): CheckIssue[] {
+  return sources.flatMap((source, index) => {
+    const path = `/sources/${String(index)}`;
+    const issues: CheckIssue[] = [];
+    if (source.kind === 'official' && !officialUrl(source.url, official)) {
+      issues.push({ path, message: 'An official source is on a pinned official host' });
+    }
+    if (source.kind !== 'official' && source.machineReadableUrl !== undefined) {
+      issues.push({
+        path: `${path}/machineReadableUrl`,
+        message: 'Only an official source has a machine-readable address',
+      });
+    } else {
+      issues.push(
+        ...checkMachineReadableUrl(
+          source.machineReadableUrl,
+          `${path}/machineReadableUrl`,
+          official,
+        ),
+      );
+    }
+    return issues;
+  });
+}
+
+/** Checks a file's own sources: each on its own, and at least one official on a pinned host. */
 export function checkOfficialSources(
   sources: readonly Source[],
   official: OfficialHosts,
 ): CheckIssue[] {
-  const issues: CheckIssue[] = [];
-  sources.forEach((source, index) => {
-    if (source.kind === 'official' && !officialUrl(source.url, official)) {
-      issues.push({
-        path: `/sources/${String(index)}`,
-        message: 'An official source is on a pinned official host',
-      });
-    }
-  });
+  const issues = checkSourceHosts(sources, official);
   if (!sources.some((source) => source.kind === 'official' && officialUrl(source.url, official))) {
     issues.push({ path: '/sources', message: 'At least one source is official' });
   }
@@ -108,11 +140,7 @@ export function checkRouteVersion(
   ] as const) {
     if (new Set(ids).size !== ids.length) issue(`/${kind}`, 'IDs are unique');
   }
-  version.sources.forEach((source, index) => {
-    if (source.kind === 'official' && !officialUrl(source.url, official)) {
-      issue(`/sources/${String(index)}`, 'An official source is on a pinned official host');
-    }
-  });
+  issues.push(...checkSourceHosts(version.sources, official));
   const cites = (path: string, ids: readonly string[]): void => {
     if (ids.some((id) => !sources.has(id))) issue(path, 'Every cited source is in sources');
     if (!ids.some((id) => isOfficial(sources.get(id)))) {
