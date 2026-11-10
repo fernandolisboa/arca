@@ -105,6 +105,35 @@ describe('verifyAnswers', () => {
       'echoes_address',
     ],
     [
+      'a quote that is part of a long query value of the chain',
+      on('spouses of any age are granted a permit'),
+      page({
+        text: 'It is hereby confirmed that spouses of any age are granted a permit of the same duration.',
+        chain: [
+          'https://api.gov.example/search?q=It+is+hereby+confirmed+that+spouses+of+any+age+are+granted+a+permit+of+the+same+duration.',
+        ],
+      }),
+      'echoes_address',
+    ],
+    [
+      'a quote taken from a path segment of the chain, however it is punctuated',
+      on('Spouses of any age are granted a permit'),
+      page({
+        text: 'Spouses of any age are granted a permit',
+        chain: ['https://api.gov.example/echo/spouses-of-any-age-are-granted-a-permit.json'],
+      }),
+      'echoes_address',
+    ],
+    [
+      'a quote put together from several short query values of the chain',
+      on('spouses of any age qualify'),
+      page({
+        text: 'spouses\nof any age\nqualify',
+        chain: ['https://api.gov.example/echo?a=spouses&b=of%20any%20age&c=qualify'],
+      }),
+      'echoes_address',
+    ],
+    [
       'a value the address already states',
       on(quote),
       page({ chain: [law, 'https://www.gov.example/amounts/920'] }),
@@ -123,6 +152,16 @@ describe('verifyAnswers', () => {
       note: null,
       reason,
     });
+  });
+
+  it('takes a quote that shares only a word or two with its address', () => {
+    const read = page({
+      text: 'Residence act, article 3. The applicant shows a monthly income of at least €920,00.',
+      chain: ['https://api.gov.example/laws/residence-act/article-3.json'],
+    });
+    const sharing =
+      'Residence act, article 3. The applicant shows a monthly income of at least €920,00';
+    expect(verify(on(sharing), read)).toMatchObject({ status: 'matches' });
   });
 
   it('names the page that was not read when another page of the item was', () => {

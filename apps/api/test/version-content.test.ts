@@ -1,6 +1,7 @@
 import { parseCalendarDate } from '@arca/domain';
+import { countryGuide } from '@arca/knowledge';
 import { describe, expect, it } from 'vitest';
-import { checkContent, summaryContent } from '../src/knowledge/version-content.js';
+import { checkContent, guideContent, summaryContent } from '../src/knowledge/version-content.js';
 import { createKnowledgeVersions } from '../src/knowledge/versions.js';
 
 // What the AI features read of a version, from a view of the bundled catalog (ADR-0025, ADR-0027).
@@ -28,5 +29,19 @@ describe('the version content the models read', () => {
     expect(content(naming)).toBe(content(view));
     expect(content(naming)).not.toContain('machineReadableUrl');
     expect(content(view)).toContain(view.sources[0]?.url);
+  });
+
+  it("sends a guide whole, but for a law's machine-readable address", () => {
+    const guide = countryGuide('US')?.guide;
+    if (guide === undefined) throw new Error('the catalog has no guide for the United States');
+    const naming = {
+      ...guide,
+      laws: guide.laws.map((law) => ({
+        ...law,
+        machineReadableUrl: 'https://api.gov.example/law.json',
+      })),
+    };
+    expect(guideContent(guide)).toBe(JSON.stringify(guide));
+    expect(guideContent(naming)).toBe(JSON.stringify(guide));
   });
 });

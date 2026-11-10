@@ -11,7 +11,7 @@ import {
   guardedLookup,
   httpsSourceFetcher,
 } from '../src/knowledge/check/fetcher.js';
-import { htmlToText } from '../src/knowledge/check/html-text.js';
+import { htmlToText, maxElementDepth } from '../src/knowledge/check/html-text.js';
 
 /** Synthetic hosts only; a local server stands in for both. */
 const hosts = ['gov.example'];
@@ -229,7 +229,7 @@ describe('the cited-source fetcher (ADR-0027)', () => {
     received.length = 0;
     await fetcher().fetch(page('/law'), hosts);
     expect(received[0]?.accept).toBe(
-      'text/html, application/xhtml+xml, application/json;q=0.9, application/xml;q=0.9, text/xml;q=0.9, text/plain;q=0.8',
+      'text/html, application/xhtml+xml, application/json;q=0.9, application/xml;q=0.9, text/xml;q=0.9, text/plain;q=0.8, */*;q=0.1',
     );
   });
 
@@ -444,8 +444,15 @@ describe('htmlToText', () => {
     },
   );
 
-  it('walks a deeply nested page without overflowing the stack', () => {
-    expect(htmlToText(`${'<div>'.repeat(5_000)}deep${'</div>'.repeat(5_000)}`)).toBe('deep');
+  it('reads a page nested as deep as a real one may be', () => {
+    expect(htmlToText(`${'<div>'.repeat(500)}deep${'</div>'.repeat(500)}`)).toBe('deep');
+  });
+
+  it('reads no text of a page nested past the depth limit, without the work of parsing it', () => {
+    expect(htmlToText(`${'<div>'.repeat(maxElementDepth)}deep`)).toBe('');
+    const started = performance.now();
+    expect(htmlToText(`${'<div>'.repeat(400_000)}deep`)).toBe('');
+    expect(performance.now() - started).toBeLessThan(2_000);
   });
 
   it('keeps a table row on one line, with a bar between its cells', () => {

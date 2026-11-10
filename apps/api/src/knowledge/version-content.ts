@@ -1,4 +1,4 @@
-import type { VersionView } from '@arca/domain';
+import type { CountryGuide, VersionView } from '@arca/domain';
 
 /*
  * A version as the AI features read it, shared by the rule summary (ADR-0025) and the independent
@@ -71,5 +71,15 @@ export function checkContent(view: VersionView): string {
   return contentOf(
     view,
     summaryFields.filter((field) => field !== 'cases'),
+  );
+}
+
+/**
+ * A country guide as the independent check's model reads it (ADR-0027): whole, but for a law's
+ * machine-readable address, which no item of a version cites.
+ */
+export function guideContent(guide: CountryGuide): string {
+  return JSON.stringify(guide, (key, value: unknown) =>
+    key === 'machineReadableUrl' ? undefined : value,
   );
 }

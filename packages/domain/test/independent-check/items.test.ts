@@ -159,14 +159,18 @@ describe('machineReadableUrls', () => {
     countrySets: [countrySetSchema.parse({ ...treaty, sources: [naming(setAddress)] })],
   });
 
-  it('reads a URL through the address every official source at it names', () => {
-    expect([...machineReadableUrls(withSources(data, data))]).toEqual([[law, data]]);
+  it.each([
+    ['every official source at it names it', data, data],
+    ['the country set names none', data, undefined],
+    ['the version names none', undefined, data],
+  ])('reads a URL through its address when %s', (_, versionAddress, setAddress) => {
+    expect([...machineReadableUrls(withSources(versionAddress, setAddress))]).toEqual([
+      [law, data],
+    ]);
   });
 
   it.each([
     ['no source names one', undefined, undefined],
-    ['the country set leaves it without one', data, undefined],
-    ['the version leaves it without one', undefined, data],
     ['the sources name different ones', data, 'https://api.gov.example/other.json'],
   ])('reads the page itself when %s', (_, versionAddress, setAddress) => {
     expect(machineReadableUrls(withSources(versionAddress, setAddress)).size).toBe(0);

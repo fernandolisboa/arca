@@ -113,11 +113,11 @@ const codeStops = lured.flatMap(({ id, stoppedBy }) =>
 );
 
 describe('the independent check evaluation cases (ADR-0027)', () => {
-  it('holds eight correct, six wrong and seventeen adversarial cases with unique IDs', () => {
+  it('holds nine correct, six wrong and eighteen adversarial cases with unique IDs', () => {
     const kinds = checkCases.map(({ kind }) => kind);
-    expect(kinds.filter((kind) => kind === 'correct')).toHaveLength(8);
+    expect(kinds.filter((kind) => kind === 'correct')).toHaveLength(9);
     expect(kinds.filter((kind) => kind === 'wrong')).toHaveLength(6);
-    expect(kinds.filter((kind) => kind === 'adversarial')).toHaveLength(17);
+    expect(kinds.filter((kind) => kind === 'adversarial')).toHaveLength(18);
     expect(new Set(checkCases.map(({ id }) => id)).size).toBe(checkCases.length);
   });
 
@@ -237,6 +237,7 @@ describe('the independent check evaluation cases (ADR-0027)', () => {
 
   it.each<[string, string, string]>([
     ['correct-json-address', 'https://api.gov.example/laws/residence-act.json', 'read'],
+    ['correct-xml-address', 'https://api.gov.example/laws/residence-act.xml', 'read'],
     [
       'adversarial-lookalike-address',
       'https://api.gov-example.example/laws/residence-act.json',
@@ -253,6 +254,14 @@ describe('the independent check evaluation cases (ADR-0027)', () => {
       });
     },
   );
+
+  it('sends the XML sentence whole, without the amount its document strikes', async () => {
+    const { checker, sent } = recordingPages(answering(carefulQuote));
+    const choice = { checker, model: 'claude-test', promptVersion: 'check-test' };
+    await checkCase(byId('correct-xml-address'), choice);
+    expect(normalizeWhitespace(sent())).toContain(careful['requirement:passive-income']);
+    expect(sent()).not.toContain('EUR 1,200');
+  });
 
   it("sends a JSON answer's strings, never its keys", async () => {
     const { checker, sent } = recordingPages(answering(carefulQuote));

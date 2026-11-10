@@ -745,9 +745,9 @@ describe('the independent check of one version (ADR-0027)', () => {
         'Residence act\nArticle 3\nThe applicant shows means of at least EUR 920 a month.',
       ],
       [
-        'an XML answer as its text and CDATA in order, with no entity of its own expanded',
+        'an XML answer as its text in order, with no entity of its own expanded',
         { body: xml, type: 'application/xml' },
-        'Residence act\nArticle 3. The applicant shows means of at least\nEUR 920\na month & more.',
+        'Residence act\nArticle 3. The applicant shows means of at least EUR 920 a month & more.',
       ],
     ])('reads %s in place of the page', async (_, answer, text) => {
       const checker = answering(matchesBoth);

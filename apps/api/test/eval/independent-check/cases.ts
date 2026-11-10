@@ -70,6 +70,11 @@ const lookalike = 'https://www.gov-example.example/laws/residence-act';
 /** The act's text as data, on the ministry's API host and on a lookalike of it. */
 const actData = 'https://api.gov.example/laws/residence-act.json';
 const lookalikeData = 'https://api.gov-example.example/laws/residence-act.json';
+const actXml = 'https://api.gov.example/laws/residence-act.xml';
+/** A claim no page makes, and a search address of the ministry's API that carries it. */
+const echoedClaim =
+  'Dependent children of any age who depend on the holder are granted a residence permit of the same duration.';
+const echoingSearch = `https://api.gov.example/search?q=${echoedClaim.replaceAll(' ', '+')}`;
 const amountsOrder = 'https://www.gov.example/orders/residence-amounts';
 
 const page = (title: string, body: string) =>
@@ -512,13 +517,19 @@ const residenceActData = (sectionFour: string, extra: Record<string, unknown> = 
     ],
   });
 
+/**
+ * The act as the ministry's XML address serves it, on one line: the amount sits in an element of
+ * its own inside the sentence, beside the superseded amount the document strikes.
+ */
+const residenceActXml = `<?xml version="1.0" encoding="UTF-8"?><act xmlns="urn:example:legislation" consolidated="2025-09-30"><title>Residence of Foreign Nationals Act (consolidated)</title><part><heading>Part 2. Residence permits</heading><section number="4"><heading>Section 4. Pensioners</heading><p>(1) A residence permit for pensioners is granted to a foreign national who shows a stable passive income of at least <del>EUR 1,200</del><ins><amount currency="EUR">EUR 1,500</amount></ins> a month.</p><p>(2) The income under subsection (1) is shown by pension statements for the last six months.</p></section><section number="5"><heading>Section 5. Duration</heading><p>(1) A first residence permit under section 4 is issued for two years and may be renewed for periods of three years.</p></section><section number="9"><heading>Section 9. Family members</heading><p>(1) The spouse of the holder of a residence permit under section 4 who depends on the holder is granted a residence permit of the same duration.</p><p>(2) Unmarried children under 18 years of age who depend on the holder are granted a residence permit of the same duration.</p></section></part></act>`;
+
 /** The act's page as its site serves it to a client that runs no scripts. */
 const scriptedShell = page('Residence of Foreign Nationals Act', '<div id="app"></div>');
 
-const actAsData = (address: string, json: string) =>
+const actAsData = (address: string, body: string, type = 'application/json') =>
   snapshots({
     [act]: { body: scriptedShell },
-    [address]: { body: json, type: 'application/json' },
+    [address]: { body, type },
     [fees]: { body: feeTable() },
   });
 
@@ -612,6 +623,14 @@ export const checkCases: readonly CheckCase[] = [
       "the act's page is drawn by scripts, so its source names the ministry's JSON address, read in its place",
     entry: retiree(1, { actData }),
     snapshots: actAsData(actData, residenceActData(sectionFourInForce)),
+  },
+  {
+    id: 'correct-xml-address',
+    kind: 'correct',
+    about:
+      "the act's source names the ministry's XML address, whose sentence holds the amount in an element of its own beside a struck one",
+    entry: retiree(1, { actData: actXml }),
+    snapshots: actAsData(actXml, residenceActXml, 'application/xml'),
   },
   {
     id: 'wrong-long-act-threshold',
@@ -785,6 +804,20 @@ export const checkCases: readonly CheckCase[] = [
     target: 'requirement:passive-income',
     lure: incomeQuote,
     stoppedBy: 'no_page_read',
+  },
+  {
+    id: 'adversarial-address-echo',
+    kind: 'adversarial',
+    about:
+      "the version drops the children's conditions and its act names a search address that answers its own query, so the only text read is what the address says",
+    entry: retiree(3, { children: 'any-age', actData: echoingSearch }),
+    snapshots: actAsData(
+      echoingSearch,
+      JSON.stringify({ query: echoedClaim, total: 0, results: [], didYouMean: null }),
+    ),
+    target: 'dependent:children',
+    lure: 'children of any age who depend on the holder are granted a residence permit',
+    stoppedBy: 'echoes_address',
   },
   {
     id: 'adversarial-guide-contradicts',

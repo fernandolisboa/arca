@@ -1,4 +1,4 @@
-import { type DefaultTreeAdapterTypes, parse } from 'parse5';
+import { type DefaultTreeAdapterTypes, defaultTreeAdapter, parse } from 'parse5';
 
 type Node = DefaultTreeAdapterTypes.Node;
 
@@ -9,7 +9,7 @@ const dropped = new Set(['head', 'script', 'style', 'noscript', 'template', 'ifr
  * Elements a law marks superseded wording with. A consolidated text often keeps the old words
  * struck through beside the new ones, and a reader takes only the new ones as the law.
  */
-const struck = new Set(['del', 's', 'strike']);
+export const struckElements: ReadonlySet<string> = new Set(['del', 's', 'strike']);
 
 const struckStyle = /(?:^|;)\s*text-decoration(?:-line)?\s*:[^;]*\bline-through\b/i;
 
@@ -85,15 +85,47 @@ function hidden(attrs: readonly { readonly name: string; readonly value: string 
 }
 
 /**
+ * The deepest nesting a page is read at, the depth browsers stop nesting at themselves. The
+ * parser's work on each tag grows with the open elements above it, so markup nested without limit
+ * would hold the step for hours within the size cap; no law page comes near this depth.
+ */
+export const maxElementDepth = 512;
+
+class TooDeep extends Error {}
+
+/** The parsed page, or undefined when its elements nest deeper than the limit. */
+function parsed(html: string): Node | undefined {
+  let depth = 0;
+  const treeAdapter: typeof defaultTreeAdapter = {
+    ...defaultTreeAdapter,
+    onItemPush: () => {
+      depth += 1;
+      if (depth > maxElementDepth) throw new TooDeep();
+    },
+    onItemPop: () => {
+      depth -= 1;
+    },
+  };
+  try {
+    return parse(html, { treeAdapter });
+  } catch (error) {
+    if (error instanceof TooDeep) return undefined;
+    throw error;
+  }
+}
+
+/**
  * A page's text as a reader sees it (ADR-0027): parsed by parse5, a parser with no scripts, no
  * network and no DOM emulation, then walked without recursion, so a deeply nested page cannot
  * overflow the stack. Scripts, styles, templates, comments, hidden elements and struck-through
  * text are dropped; block elements break lines, and a table row is one line with a bar between its
- * cells; whitespace collapses within each line.
+ * cells; whitespace collapses within each line. A page nested past the depth limit has no text.
  */
 export function htmlToText(html: string): string {
   const parts: string[] = [];
-  const stack: (Node | '\n' | typeof cellEnd)[] = [parse(html)];
+  const root = parsed(html);
+  if (root === undefined) return '';
+  const stack: (Node | '\n' | typeof cellEnd)[] = [root];
   for (let next = stack.pop(); next !== undefined; next = stack.pop()) {
     if (next === '\n' || next === cellEnd) {
       parts.push(next);
@@ -105,7 +137,8 @@ export function htmlToText(html: string): string {
     }
     if (!('childNodes' in next)) continue;
     if ('tagName' in next) {
-      if (dropped.has(next.tagName) || struck.has(next.tagName) || hidden(next.attrs)) continue;
+      if (dropped.has(next.tagName) || struckElements.has(next.tagName) || hidden(next.attrs))
+        continue;
       const around = blocks.has(next.tagName)
         ? '\n'
         : cells.has(next.tagName)

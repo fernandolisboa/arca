@@ -263,6 +263,9 @@ function StepContent({
               {source.machineReadableUrl !== undefined && (
                 <p className="font-mono text-small break-all">{source.machineReadableUrl}</p>
               )}
+              {source.newMachineReadableHost && (
+                <p className="font-medium text-danger-ink">{t('knowledge.newHost')}</p>
+              )}
               <p className="text-small text-muted">
                 {[
                   source.id,

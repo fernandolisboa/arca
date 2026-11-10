@@ -8,7 +8,7 @@ import { pipeline } from 'node:stream/promises';
 import { createBrotliDecompress, createGunzip, createInflate } from 'node:zlib';
 import { type FetchFailure, hostMatches } from '@arca/domain';
 import { globallyReachable } from './addresses.js';
-import { answerFormat, answerText } from './answer-text.js';
+import { type AnswerFormat, answerFormat, answerText } from './answer-text.js';
 
 export type FetchOutcome =
   | {
@@ -60,11 +60,32 @@ export const fetchLimits: FetchLimits = {
 };
 
 /** A page's text within the per-page cap, and whether the cap cut it. */
-export function capText(
+function capText(
   full: string,
   maxLength = fetchLimits.maxTextLength,
 ): { readonly text: string; readonly cut: boolean } {
   return { text: full.slice(0, maxLength), cut: full.length > maxLength };
+}
+
+/**
+ * An answer's text within the limits and whether they cut it, or undefined when it has no text: a
+ * page that draws its text with scripts answers markup with nothing a reader would see, and a data
+ * answer that does not parse has no strings.
+ */
+export function textWithinLimits(
+  format: AnswerFormat,
+  raw: string,
+  limits: Pick<FetchLimits, 'maxMarkupLength' | 'maxTextLength'> = fetchLimits,
+): { readonly text: string; readonly cut: boolean } | undefined {
+  const markupCut = format !== 'plain' && raw.length > limits.maxMarkupLength;
+  // No NUL reaches the text: a quote holding one could not be stored with its report.
+  const full = answerText(format, markupCut ? raw.slice(0, limits.maxMarkupLength) : raw).replace(
+    /\0/gu,
+    '',
+  );
+  if (full.trim() === '') return undefined;
+  const capped = capText(full, limits.maxTextLength);
+  return { text: capped.text, cut: markupCut || capped.cut };
 }
 
 /** Every address a host resolves to; the guard picks among them. */
@@ -211,7 +232,7 @@ export function httpsSourceFetcher({
         path: `${url.pathname}${url.search}`,
         headers: {
           accept:
-            'text/html, application/xhtml+xml, application/json;q=0.9, application/xml;q=0.9, text/xml;q=0.9, text/plain;q=0.8',
+            'text/html, application/xhtml+xml, application/json;q=0.9, application/xml;q=0.9, text/xml;q=0.9, text/plain;q=0.8, */*;q=0.1',
           'accept-encoding': 'gzip, deflate, br',
           'user-agent': 'Arca-rule-check/1',
         },
@@ -290,14 +311,9 @@ export function httpsSourceFetcher({
         response.resume();
         throw new FetchError('unsupported_type', status);
       }
-      const raw = await body(response, charset);
-      const markupCut = format !== 'plain' && raw.length > limits.maxMarkupLength;
-      const full = answerText(format, markupCut ? raw.slice(0, limits.maxMarkupLength) : raw);
-      // A page that draws its text with scripts answers markup with nothing a reader would see,
-      // and a data answer that does not parse has no strings.
-      if (full.trim() === '') throw new FetchError('no_text', status);
-      const capped = capText(full, limits.maxTextLength);
-      return { status, text: capped.text, cut: markupCut || capped.cut };
+      const read = textWithinLimits(format, await body(response, charset), limits);
+      if (read === undefined) throw new FetchError('no_text', status);
+      return { status, ...read };
     }
     throw new FetchError('refused_url');
   };

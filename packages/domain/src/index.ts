@@ -226,6 +226,7 @@ export {
   type VersionViewInput,
   type ViewSection,
   ruleCaseSummarySchema,
+  sourceUrls,
   versionView,
   viewSections,
 } from './rules/version-view.js';
@@ -243,6 +244,7 @@ export {
   expressionValues,
   machineReadableUrls,
   maxCheckItemKeyLength,
+  officialSources,
 } from './independent-check/items.js';
 export {
   type CheckAnswer,

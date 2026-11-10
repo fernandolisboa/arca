@@ -102,21 +102,24 @@ function officialUrls(ids: readonly string[], sources: readonly Source[]): strin
   ];
 }
 
+/** The official sources a check reads: the version's own and those of its pinned country sets. */
+export function officialSources({ version, countrySets }: CatalogEntry): Source[] {
+  return [version, ...countrySets]
+    .flatMap(({ sources }) => sources)
+    .filter(({ kind }) => kind === 'official');
+}
+
 /**
  * The machine-readable address each cited official URL is read through in place of its page: the
- * one every official source at that URL names, the version's and its country sets' alike. A URL
- * whose sources name different addresses, or that some of them leave without one, is read as
- * itself, so no source's address is chosen over another's.
+ * one its official sources name, the version's and its country sets' alike, when at least one
+ * names an address and no two name different ones. A source that names none leaves the choice to
+ * those that do; sources that disagree leave the URL read as itself, so no address is chosen over
+ * another.
  */
-export function machineReadableUrls({
-  version,
-  countrySets,
-}: CatalogEntry): ReadonlyMap<string, string> {
-  const named = new Map<string, Set<string | undefined>>();
-  for (const { kind, url, machineReadableUrl } of [version, ...countrySets].flatMap(
-    ({ sources }) => sources,
-  )) {
-    if (kind !== 'official') continue;
+export function machineReadableUrls(entry: CatalogEntry): ReadonlyMap<string, string> {
+  const named = new Map<string, Set<string>>();
+  for (const { url, machineReadableUrl } of officialSources(entry)) {
+    if (machineReadableUrl === undefined) continue;
     named.set(url, (named.get(url) ?? new Set()).add(machineReadableUrl));
   }
   const addresses = new Map<string, string>();

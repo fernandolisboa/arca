@@ -12,6 +12,7 @@ import {
   machineReadableUrls,
   maxPassagesPerItem,
   noGuide,
+  officialSources,
   openingExcerpt,
   pageOutline,
   reportClean,
@@ -23,6 +24,7 @@ import {
 import type { CountryGuideEntry } from '@arca/knowledge';
 import type { Logger } from '@arca/telemetry';
 import { loggedModelCall, parsedWithOneRetry } from '../../ai/model-call.js';
+import { guideContent } from '../version-content.js';
 import { parseCheckAnswer } from './answer.js';
 import {
   type RuleCheckRequest,
@@ -110,12 +112,11 @@ function hostsByUrl(items: readonly CheckItem[], subject: CheckSubject): Map<str
 }
 
 /** The titles of the official sources, the version's and its country sets', at one URL. */
-function sourceTitlesAt(url: string, { version, countrySets }: CatalogEntry): string[] {
+function sourceTitlesAt(url: string, entry: CatalogEntry): string[] {
   return [
     ...new Set(
-      [version, ...countrySets]
-        .flatMap(({ sources }) => sources)
-        .filter((source) => source.kind === 'official' && source.url === url)
+      officialSources(entry)
+        .filter((source) => source.url === url)
         .map(({ title }) => title),
     ),
   ];
@@ -306,7 +307,7 @@ export function createVersionCheck({
           version: subject.content,
           items: items.map(({ key, kind, title, urls }) => ({ key, kind, title, urls })),
           pages: pagesToSend,
-          guide: guide === undefined ? null : JSON.stringify(guide.guide),
+          guide: guide === undefined ? null : guideContent(guide.guide),
         });
       } catch (error) {
         failure = error instanceof RuleCheckerError ? error.code : 'check_failed';

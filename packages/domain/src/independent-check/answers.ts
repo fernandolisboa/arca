@@ -96,17 +96,59 @@ function queryValues(url: string): string[] {
     .filter((value) => value.length >= echoedQueryLength);
 }
 
+/** A piece of a quote this long that an address also holds counts as taken from the address. */
+const echoedPieceLength = 4;
+/** A quote at least this much made of pieces of its addresses says what they say, not the law. */
+const echoedShare = 0.5;
+
+/** Lower-case letters and digits with one space for anything between them, in any script. */
+const lettersAndDigits = (text: string) =>
+  text
+    .normalize('NFKC')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim();
+
+/** What an address says besides its host: its path, query and fragment, decoded. */
+const addressWords = (url: string) =>
+  lettersAndDigits(decoded(url.replace(/^[a-z][a-z0-9+.-]*:\/\/[^/?#]*/iu, '')));
+
+/**
+ * Whether at least half of a quote is made of pieces of the addresses requested for its page,
+ * whatever punctuation the address or the answer writes between the words: so a quote that is part
+ * of a long query value, of a path segment, or put together from several short values is caught,
+ * where the whole-value test alone would let it through.
+ */
+function madeOfAddress(quote: string, chain: readonly string[]): boolean {
+  const text = lettersAndDigits(quote);
+  const addresses = chain.map(addressWords).filter(({ length }) => length >= echoedPieceLength);
+  if (text.length < echoedPieceLength || addresses.length === 0) return false;
+  const taken = new Uint8Array(text.length);
+  for (let start = 0; start + echoedPieceLength <= text.length; start += 1) {
+    const piece = text.slice(start, start + echoedPieceLength);
+    if (addresses.some((address) => address.includes(piece))) {
+      taken.fill(1, start, start + echoedPieceLength);
+    }
+  }
+  return taken.reduce((sum, mark) => sum + mark, 0) >= text.length * echoedShare;
+}
+
 /**
  * A page that writes its own address into its text could be made to "say" anything by the address
- * alone: a quote holding a query value of the chain, or an item's value that the chain's addresses
- * already state, proves nothing about the law.
+ * alone: a quote holding a query value of the chain, a quote mostly made of the chain's addresses,
+ * or an item's value that those addresses already state, proves nothing about the law. The chain
+ * starts at the address requested, which for a source read through its machine-readable address
+ * is one the model and the panel never see.
  */
 function echoesAddress(quote: string, chain: readonly string[], values: readonly CheckValue[]) {
   const lower = quote.toLowerCase();
-  return chain.some(
-    (url) =>
-      queryValues(url).some((value) => lower.includes(value.toLowerCase())) ||
-      values.some((value) => statesValue(value, decoded(url))),
+  return (
+    madeOfAddress(quote, chain) ||
+    chain.some(
+      (url) =>
+        queryValues(url).some((value) => lower.includes(value.toLowerCase())) ||
+        values.some((value) => statesValue(value, decoded(url))),
+    )
   );
 }
 

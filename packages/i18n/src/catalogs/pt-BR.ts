@@ -1066,6 +1066,7 @@ export const ptBR = {
         '{status, select, matches {Bate com a fonte} differs {Diferente da fonte} other {Não deu para conferir}}',
       quote: '{total, plural, one {Trecho da página} other {Trecho {n} de {total}}}',
       page: 'Página',
+      readAt: 'O Arca leu o texto neste endereço',
       note: 'Observação da IA: {note}',
       reason:
         '{reason, select, no_source_cited {Este item não cita nenhuma fonte oficial.} no_page_read {O Arca não conseguiu ler nenhuma página deste item. O motivo de cada uma está em “Páginas com problema”, no fim.} not_answered {A IA não respondeu sobre este item.} model_could_not_check {A IA leu o que recebeu e não confirmou este item.} quote_count {A IA não citou nenhum trecho, ou citou mais de {max}.} url_not_cited {A IA citou uma página que este item não usa.} page_not_read {A página não abriu.} page_cut {Esta página não foi lida inteira, então um trecho que bate não basta.} quote_length {O trecho citado é curto ou longo demais.} quote_not_on_page {O trecho citado não está na página.} echoes_address {O trecho repete o endereço da página, então não prova nada.} value_not_in_quote {O trecho não traz os valores deste item.} other {Não deu para conferir.}}',

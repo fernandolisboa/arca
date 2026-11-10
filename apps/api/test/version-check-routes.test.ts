@@ -191,7 +191,7 @@ function setup({
       fetchLog: [
         {
           url: law,
-          machineReadableUrl: null,
+          machineReadableUrl: `${law}.json`,
           outcome: 'read',
           status: 200,
           durationMs: 5,
@@ -335,7 +335,15 @@ describe('GET /v1/knowledge/versions/check (ADR-0027)', () => {
             reason: null,
           },
         ],
-        fetchLog: [{ url: law, outcome: 'read', status: 200, cut: false }],
+        fetchLog: [
+          {
+            url: law,
+            machineReadableUrl: `${law}.json`,
+            outcome: 'read',
+            status: 200,
+            cut: false,
+          },
+        ],
       },
     });
   });

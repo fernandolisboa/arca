@@ -173,11 +173,11 @@ describe('the activation view (spec 0007, R7)', () => {
     ]);
   });
 
-  it('flags a source whose machine-readable address is on a host new to the route', () => {
+  it("flags a machine-readable address on a host new to the route, apart from the URL's own flag", () => {
     const [law] = sampleVersion.sources;
     const naming = (number: number, address: string) =>
       entry({ number, sources: [{ ...law, machineReadableUrl: address }] });
-    const sourcesOf = (versions: ReturnType<typeof entry>[]) =>
+    const flagsOf = (versions: ReturnType<typeof entry>[]) =>
       versionView({
         versions,
         number: versions.length,
@@ -185,17 +185,16 @@ describe('the activation view (spec 0007, R7)', () => {
         states: new Map(),
         today,
         hostOf,
-      })?.sources.map(({ host, newHost }) => [host, newHost]);
+      })?.sources.map(({ newHost, newMachineReadableHost }) => [newHost, newMachineReadableHost]);
     const onApi = naming(2, 'https://api.gov.example/law.json');
-    expect(sourcesOf([first, onApi])).toEqual([['www.gov.example', true]]);
-    expect(sourcesOf([first, naming(2, 'https://www.gov.example/law.json')])).toEqual([
-      ['www.gov.example', false],
+    expect(flagsOf([first])).toEqual([[true, false]]);
+    expect(flagsOf([first, onApi])).toEqual([[false, true]]);
+    expect(flagsOf([first, naming(2, 'https://www.gov.example/law.json')])).toEqual([
+      [false, false],
     ]);
-    const apiHostLater = entry({
-      number: 3,
-      sources: [{ ...law, url: 'https://api.gov.example/law' }],
-    });
-    expect(sourcesOf([first, onApi, apiHostLater])).toEqual([['api.gov.example', false]]);
+    expect(flagsOf([first, onApi, naming(3, 'https://api.gov.example/v2/law.json')])).toEqual([
+      [false, false],
+    ]);
   });
 
   it('writes money in the currency units, never in minor units', () => {

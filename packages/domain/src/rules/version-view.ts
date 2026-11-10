@@ -54,11 +54,13 @@ export type ExpressionView = Readonly<Record<string, unknown>>;
 export interface SourceView extends Source {
   /** The host the URL really names, or null when it is not a plain `https` URL. */
   readonly host: string | null;
-  /**
-   * No lower version of the route names an address on this host or on its machine-readable
-   * address's, or one of the two has no plain host.
-   */
+  /** No lower version of the route cites a source on this host, or the URL has no plain host. */
   readonly newHost: boolean;
+  /**
+   * The source names a machine-readable address whose host no lower version of the route names, as
+   * a URL or as an address, or which has no plain host.
+   */
+  readonly newMachineReadableHost: boolean;
 }
 
 /** What changed in one section from the version this one replaces, by item ID. */
@@ -173,8 +175,11 @@ export interface VersionViewInput {
   readonly hostOf: (url: string) => string | undefined;
 }
 
-/** The addresses a source names: its URL and, when it has one, its machine-readable address. */
-const sourceUrls = ({ url, machineReadableUrl }: Source): string[] =>
+/**
+ * The addresses a source names: its URL and, when it has one, its machine-readable address. The
+ * build records the host of each, so the view can tell which hosts are new to a route.
+ */
+export const sourceUrls = ({ url, machineReadableUrl }: Source): string[] =>
   machineReadableUrl === undefined ? [url] : [url, machineReadableUrl];
 
 const isNode = (value: unknown): value is Readonly<Record<string, unknown>> =>
@@ -317,16 +322,16 @@ export function versionView({
   const { version, identity } = entry;
   const replacedNumber = version.corrects ?? number - 1;
   const replaced = versions.find((candidate) => candidate.identity.number === replacedNumber);
-  const earlierHosts = new Set(
-    versions
-      .filter((candidate) => candidate.identity.number < number)
-      .flatMap((candidate) => candidate.version.sources.flatMap(sourceUrls))
-      .map(hostOf)
-      .filter((host) => host !== undefined),
-  );
-  const isNewHost = (url: string) => {
+  const earlierSources = versions
+    .filter((candidate) => candidate.identity.number < number)
+    .flatMap((candidate) => candidate.version.sources);
+  const hostsOf = (urls: readonly string[]) =>
+    new Set(urls.map(hostOf).filter((host) => host !== undefined));
+  const earlierHosts = hostsOf(earlierSources.map(({ url }) => url));
+  const earlierNamedHosts = hostsOf(earlierSources.flatMap(sourceUrls));
+  const isNew = (url: string, known: ReadonlySet<string>) => {
     const host = hostOf(url);
-    return host === undefined || !earlierHosts.has(host);
+    return host === undefined || !known.has(host);
   };
   return {
     routeId: identity.routeId,
@@ -389,7 +394,10 @@ export function versionView({
     sources: version.sources.map((source) => ({
       ...source,
       host: hostOf(source.url) ?? null,
-      newHost: sourceUrls(source).some(isNewHost),
+      newHost: isNew(source.url, earlierHosts),
+      newMachineReadableHost:
+        source.machineReadableUrl !== undefined &&
+        isNew(source.machineReadableUrl, earlierNamedHosts),
     })),
     replaces:
       replaced === undefined || replacedNumber < 1
