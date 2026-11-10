@@ -1,6 +1,9 @@
 // The versions an evaluation over the bundled catalog reads: one for each route.
 
-/** The newest version of each route, which is what an admin is asked to activate, in the order given. */
+/**
+ * The highest-numbered version of each route, in the order given. It may not be the one in force:
+ * a version dated ahead, or the correction of an earlier period, is another version of its route.
+ */
 export function newestOfEachRoute<Version extends { routeId: string; number: number }>(
   versions: readonly Version[],
 ): Version[] {

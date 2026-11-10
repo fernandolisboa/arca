@@ -58,9 +58,9 @@ function planted(view: VersionView, place: 'requirement' | 'source', title: stri
 }
 
 /**
- * One case per bundled route, its newest version, then the injection copies of the first one. A
- * route's older versions differ from it by a few values, so a new version of a route adds no case
- * and a run's cost follows the number of routes.
+ * One case per bundled route, its newest version, then the injection copies of the first one. The
+ * cases are a sample: a route's other versions, which an admin may also summarize, are not read. In
+ * exchange a new version of a route adds no case, and a run's cost follows the number of routes.
  */
 export async function summaryCases(): Promise<SummaryCase[]> {
   const cases: SummaryCase[] = [];

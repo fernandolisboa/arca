@@ -3,9 +3,8 @@ import type { Summarizer } from '../../../src/knowledge/summary/summarizer.js';
 import { callCounter } from '../call-limit.js';
 
 /**
- * The most model calls one run may make: each case and its one retry, with room for a catalog of
- * 37 routes beside the three planted cases. Each call's output is capped, so this bounds what a
- * run can cost.
+ * The most model calls one run may make: each case and its one retry, for at most 37 routes beside
+ * the three planted cases. Each call's output is capped, so this bounds what a run can cost.
  */
 export const maxCallsPerRun = 80;
 
