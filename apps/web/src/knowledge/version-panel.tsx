@@ -260,6 +260,9 @@ function StepContent({
                   ? t('knowledge.noHost')
                   : t('knowledge.host', { host: source.host })}
               </p>
+              {source.machineReadableUrl !== undefined && (
+                <p className="font-mono text-small break-all">{source.machineReadableUrl}</p>
+              )}
               <p className="text-small text-muted">
                 {[
                   source.id,
