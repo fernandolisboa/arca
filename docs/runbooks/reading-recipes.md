@@ -260,21 +260,23 @@ For each host:
 
 ## `us`: the United States
 
-**`ecfr.gov`** (last confirmed 2026-11-09)
+**`ecfr.gov`** (last confirmed 2026-11-10)
 
-- **Read:** pages redirect `curl` to a bot check; use the versioner API: `https://www.ecfr.gov/api/versioner/v1/full/<yyyy-mm-dd>/title-<t>.xml?part=<p>&section=<s>` for the text on a date, `/api/versioner/v1/versions/title-<t>.json?part=<p>` for each section's amendment dates. Pass `--compressed`.
+- **Read:** pages redirect `curl` to a bot check; use the versioner API: `https://www.ecfr.gov/api/versioner/v1/full/<yyyy-mm-dd>/title-<t>.xml?part=<p>&section=<s>` for the text on a date, `/api/versioner/v1/versions/title-<t>.json?part=<p>` for each section's amendment dates. Pass `--compressed`. A date after the title's `latest_issue_date` (in the versions answer's `meta`) answers 404: read on that date. An older date gives the text then in force, which is how a fee from an earlier period is read. The same API serves title 22 (State Department fees, 22 CFR 22.1). `/api/versioner/v1/ancestry/<date>/title-<t>.json?part=<p>&section=<s>` gives the chapter and subchapter a Cite address needs.
+- **Machine-readable address:** the versioner `full` address on the date read.
 - **Cite:** `https://www.ecfr.gov/current/title-<t>/…/section-<s>`.
 - **Amendments:** the versions list, then the Federal Register document behind each date.
 
-**`federalregister.gov`** (last confirmed 2026-11-09)
+**`federalregister.gov`** (last confirmed 2026-11-10)
 
-- **Read:** pages and full-text addresses redirect `curl` to a bot check; the API answers: `https://www.federalregister.gov/api/v1/documents.json?conditions[term]=<terms>&conditions[agencies][]=<agency slug>&order=newest` (use `curl -g`), and `/api/v1/documents/<document number>.json`. Read the text on govinfo: `https://www.govinfo.gov/content/pkg/FR-<yyyy-mm-dd>/html/<document number>.htm`.
+- **Read:** pages and full-text addresses redirect `curl` to a bot check; the API answers: `https://www.federalregister.gov/api/v1/documents.json?conditions[term]=<terms>&conditions[agencies][]=<agency slug>&order=newest` (use `curl -g`), and `/api/v1/documents/<document number>.json`. Read the text on govinfo: `https://www.govinfo.gov/content/pkg/FR-<yyyy-mm-dd>/html/<document number>.htm`. Tables printed as images are missing from that text (it shows `[GRAPHIC] [TIFF OMITTED]`): the document's `images` field (`?fields[]=images`) lists them on `img.federalregister.gov`; download the `large` PNG with `curl` and read it with the Read tool.
 - **Cite:** the document's page, `https://www.federalregister.gov/documents/<yyyy>/<mm>/<dd>/<document number>/<slug>`.
-- **Amendments:** search by agency and term, newest first; a final rule names its effective date.
+- **Machine-readable address:** the govinfo HTML above (it lacks the image tables).
+- **Amendments:** search by agency and term, newest first; a final rule names its effective date. Documents to be published next are at `/api/v1/public-inspection-documents/current.json`.
 
-**`govinfo.gov`** (last confirmed 2026-11-09)
+**`govinfo.gov`** (last confirmed 2026-11-10)
 
-- **Read:** `curl` on the U.S. Code HTML: `/content/pkg/USCODE-<edition>-title8/html/USCODE-<edition>-title8-<path>-sec<n>.htm`.
+- **Read:** `curl` on the U.S. Code HTML: `/content/pkg/USCODE-<edition>-title8/html/USCODE-<edition>-title8-<path>-sec<n>.htm`. An edition not published yet redirects (the 2025 edition did on 2026-11-10).
 - **Cite:** that page.
 - **Amendments:** the annual edition lags; laws passed after it are public laws, found through the Federal Register and govinfo's public-law collection.
 

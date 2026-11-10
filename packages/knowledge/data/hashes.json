@@ -238,6 +238,18 @@
     {
       "path": "routes/ie-critical-skills/2",
       "sha256": "456a1aea163a3c58cfce48140f2100ecc4f8fb10f88a0d4e6899af530e5b9d96"
+    },
+    {
+      "path": "routes/us-eb5/3",
+      "sha256": "86b4816c4277616c7175f2ed1603d8402980288891bccb9c90085c19316bdcee"
+    },
+    {
+      "path": "routes/us-eb5/4",
+      "sha256": "e2b24825893bf9fee268529fe033f24ffc29082719c69ed19e7e38a934d33f72"
+    },
+    {
+      "path": "routes/us-eb5/5",
+      "sha256": "2a6e55c1601103e9e98f5b0152f2938259aa42bd8739e5ef33cfb86379912ff7"
     }
   ]
 }
