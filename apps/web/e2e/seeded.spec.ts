@@ -394,7 +394,7 @@ test('the seed admin approves the checked versions with one tap, and the server 
       },
     ],
   });
-  await page.unroute('**/v1/knowledge/versions');
+  await page.unrouteAll({ behavior: 'wait' });
   await page.reload();
   await expect(
     page.getByRole('region', { name: 'Versões propostas' }).getByRole('button', {

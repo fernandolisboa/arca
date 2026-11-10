@@ -4,7 +4,7 @@ import type { RuleChecker } from '../src/knowledge/check/checker.js';
 import { htmlToText } from '../src/knowledge/check/html-text.js';
 import type { PassageLocator } from '../src/knowledge/check/locator.js';
 import { maxCallsPerRun } from './eval/independent-check/call-limit.js';
-import { type CheckCase, checkCases } from './eval/independent-check/cases.js';
+import { type CaseQuote, type CheckCase, checkCases } from './eval/independent-check/cases.js';
 import { checkCase, recordingPages } from './eval/independent-check/harness.js';
 
 // The independent check evaluation's cases, with no model (ADR-0027): careful quotes make each
@@ -28,19 +28,26 @@ const careful: Record<string, string> = {
 };
 const employeeFee = 'Residence permit for employees | EUR 120';
 
-/** Answers every item as matching with `quote`'s passage, on the item's first cited page. */
-function answering(quote: (key: string, routeId: string) => string): RuleChecker {
+type Quoting = (key: string, routeId: string) => string | readonly CaseQuote[];
+
+/**
+ * Answers every item as matching with `quote`'s passages: one passage on the item's first cited
+ * page, or several, each with its page.
+ */
+function answering(quote: Quoting): RuleChecker {
   return {
     check({ items, version }) {
       const routeId = version.includes('qm-employee') ? 'qm-employee' : 'other';
       return Promise.resolve({
         reply: {
-          items: items.map(({ key, urls }) => ({
-            key,
-            status: 'matches',
-            url: urls[0],
-            quote: quote(key, routeId),
-          })),
+          items: items.map(({ key, urls }) => {
+            const quoted = quote(key, routeId);
+            return {
+              key,
+              status: 'matches',
+              quotes: typeof quoted === 'string' ? [{ quote: quoted, url: urls[0] }] : quoted,
+            };
+          }),
         },
         model: 'claude-test',
         promptVersion: 'check-test',
@@ -52,9 +59,17 @@ function answering(quote: (key: string, routeId: string) => string): RuleChecker
 const carefulQuote = (key: string, routeId: string) =>
   key === 'cost:permit-fee' && routeId === 'qm-employee' ? employeeFee : (careful[key] ?? '');
 
+/** The careful quotes for a case, its own for an item that joins provisions. */
+const carefulIn =
+  (evalCase: CheckCase): Quoting =>
+  (key, routeId) =>
+    evalCase.careful?.[key] ?? carefulQuote(key, routeId);
+
 /** A model that does all the case asks: its lure for the target, careful quotes elsewhere. */
-const fallingFor = ({ target, lure }: CheckCase) =>
-  answering((key, routeId) => (key === target ? (lure ?? '') : carefulQuote(key, routeId)));
+const fallingFor = (evalCase: CheckCase) =>
+  answering((key, routeId) =>
+    key === evalCase.target ? (evalCase.lure ?? '') : carefulIn(evalCase)(key, routeId),
+  );
 
 /**
  * A locator that finds its way and falls for every lure too: each passage whose outline names a
@@ -99,20 +114,20 @@ const codeStops = lured.flatMap(({ id, stoppedBy }) =>
 );
 
 describe('the independent check evaluation cases (ADR-0027)', () => {
-  it('holds five correct, five wrong and fourteen adversarial cases with unique IDs', () => {
+  it('holds seven correct, six wrong and fifteen adversarial cases with unique IDs', () => {
     const kinds = checkCases.map(({ kind }) => kind);
-    expect(kinds.filter((kind) => kind === 'correct')).toHaveLength(5);
-    expect(kinds.filter((kind) => kind === 'wrong')).toHaveLength(5);
-    expect(kinds.filter((kind) => kind === 'adversarial')).toHaveLength(14);
+    expect(kinds.filter((kind) => kind === 'correct')).toHaveLength(7);
+    expect(kinds.filter((kind) => kind === 'wrong')).toHaveLength(6);
+    expect(kinds.filter((kind) => kind === 'adversarial')).toHaveLength(15);
     expect(new Set(checkCases.map(({ id }) => id)).size).toBe(checkCases.length);
   });
 
   it('gives every wrong and adversarial case a target and a lure', () => {
     for (const { id, target, lure } of lured) {
-      expect({ id, target: typeof target, lure: typeof lure }).toEqual({
+      expect({ id, target: typeof target, lure: lure !== undefined }).toEqual({
         id,
         target: 'string',
-        lure: 'string',
+        lure: true,
       });
     }
   });
@@ -166,7 +181,8 @@ describe('the independent check evaluation cases (ADR-0027)', () => {
   );
 
   it.each(correctIds)('%s comes out checked with careful quotes', async (id) => {
-    const report = await reportOf(byId(id), answering(carefulQuote));
+    const evalCase = byId(id);
+    const report = await reportOf(evalCase, answering(carefulIn(evalCase)));
     expect(report.items.filter(({ status }) => status !== 'matches')).toEqual([]);
     expect(report.clean).toBe(true);
   });
@@ -184,6 +200,32 @@ describe('the independent check evaluation cases (ADR-0027)', () => {
     const report = await reportOf(evalCase, fallingFor(evalCase));
     expect(report.clean).toBe(false);
     expect(report.items.find(({ key }) => key === evalCase.target)?.reason).toBe(reason);
+  });
+
+  it.each(checkCases.filter(({ careful }) => careful !== undefined).map(({ id }) => id))(
+    '%s needs every one of its careful quotes: any one alone leaves a value out',
+    async (id) => {
+      const evalCase = byId(id);
+      for (const [key, quotes] of Object.entries(evalCase.careful ?? {})) {
+        for (const quote of quotes) {
+          const alone = (item: string, routeId: string) =>
+            item === key ? [quote] : carefulIn(evalCase)(item, routeId);
+          const report = await reportOf(evalCase, answering(alone));
+          expect(report.items.find((item) => item.key === key)?.reason).toBe('value_not_in_quote');
+        }
+      }
+    },
+  );
+
+  it('offers two quotes on two pages, and two on one page, for the items that join provisions', () => {
+    const pagesOf = (id: string) =>
+      Object.values(byId(id).careful ?? {}).map(
+        (quotes) => new Set(quotes.map(({ url }) => url)).size,
+      );
+    expect(pagesOf('correct-two-quotes-one-page')).toEqual([1]);
+    expect(pagesOf('correct-two-quotes-two-pages')).toEqual([2]);
+    const lure = byId('adversarial-unrelated-quotes').lure;
+    expect(Array.isArray(lure) ? lure.length : 1).toBe(2);
   });
 
   it.each(
