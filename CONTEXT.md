@@ -86,6 +86,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Owner list | Internal, no UI label | The reviewed file in the repository that names, by account ID and per environment, the accounts that are always admins and cannot lose the role in the app; formerly the approver list |
 | Activation screen | Tela de ativação | Where an admin reviews a proposed version as data, with its check report apart, and activates or rejects it |
 | Independent check | Verificação independente | The model's report that compares a proposed route version, item by item, with the official sources it cites: matches, differs or could not be checked, each quote and value checked in code against the fetched page; never activates a version by itself and is never part of the content hash |
+| Rule audit | Auditoria de regras | An authoring session's review of one route against the law, not only its cited pages: it re-reads the official sources whole, looks for later amendments, follows leads from other sites and looks for what the rule leaves out; only an official source changes a rule; it ends in a correction, a new version or a record of no change ([runbook](docs/runbooks/rule-audit.md)); avoid "independent check", which is the model's report at activation |
 | Checked version | Conferida pela IA | A proposed route version whose current independent check report is clean: every item matches, with each quote and value checked in code; admins can activate all checked versions with one tap |
 | Flagged version | Marcada para revisão | A proposed route version whose current check report is not clean: an item differs or could not be checked; decided one by one |
 | Stale check | Verificação vencida | A route version whose reports no longer count: its content, country guide, prompt or model changed, or the newest report outlived its 30 days (one day after a failure); the next opening of the activation screen checks it again |
@@ -96,7 +97,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Catalog check | Internal, no UI label | The manual run of the independent check on the newest version of every bundled route against its live official pages, which reports what matched and why the rest did not; it measures a change to the check and never gates one |
 | Country guide | Internal, no UI label | The reviewed, versioned data file per country that the independent check loads, its per-country specialist: governing laws, how they change, known pitfalls; never a source and never a list of official hosts; lands in its own pull request; not a Claude Code skill |
 | Rule report | Aviso de regra errada | A person's flag that a rule they were shown may be wrong; opens a research task. The button reads "Avisar regra errada" |
-| Research task | Pesquisa pendente | The request opened when the knowledge base cannot answer a question; a research agent works it into a proposal |
+| Research task | Pesquisa pendente | The request opened when the knowledge base cannot answer a question; a research agent works it into a proposal; while none is built, the owner may ask for a rule audit instead |
 | Possible dependent | Possível dependente | A person a route might cover, pending unknown facts |
 | Candidate | Internal, no UI label | The person a dependent rule is being evaluated for |
 | Expression | Internal, no UI label | The JSON tree of a requirement, cost or condition, evaluated by the engine |
@@ -117,8 +118,8 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Unavailable | Indisponível | Evaluation status: no version in effect, or the route is closed |
 | Knowledge base | Base de conhecimento | Sourced, versioned rules and information about routes, documents, steps and pitfalls; the admins' area for it is labelled "Regras" in navigation |
 | Knowledge item | Item da base | One sourced entry in the knowledge base |
-| Research agent | Internal, no UI label | The agent that proposes route versions from official sources as pull requests |
-| Rule watcher | Vigia de regras | Scheduled job that detects rule changes and proposes updates |
+| Research agent | Internal, no UI label | The agent that would propose route versions from official sources as pull requests; not built: rule audits in authoring sessions do this work for now (ADR-0014) |
+| Rule watcher | Vigia de regras | Scheduled job that detects rule changes and proposes updates; not built: the monthly rule audit covers this ground for now (ADR-0014) |
 | Fixture route | Internal, no UI label | A made-up route on a user-assigned country code (`QM` to `QZ`, except `QO` and `QU`) that proves the schema in tests; never shown to users |
 | Synthetic family | Internal, no UI label | An invented case snapshot in `eval/families`, shared by rule cases and AI evaluation; never real data |
 | Intake evaluation case | Internal, no UI label | An invented pt-BR description with the draft expected from it, in `apps/api/test/eval/intake`; never real data |

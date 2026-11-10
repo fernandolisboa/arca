@@ -62,7 +62,7 @@ The first case is the founder's own family. The app goes to other families only 
 | [docs/adr/](docs/adr/) | Architecture decision records: language, rules as data, stack, AI ports, platforms, auth, background jobs, database security, automation-first setup, the knowledge base as reviewed data, reviewers in the authoring session, identity, observability, data lifecycle and backups, vault encryption, themeable UI, staying on Vercel and Neon, single-approver activation, free-text intake, the mattpocock-skills flow, the rule summary, destination comparison data, admins and the independent check |
 | [docs/specs/](docs/specs/) | Feature specs written before 2026-11-06; newer specs are GitHub issues ([ADR-0024](docs/adr/0024-mattpocock-skills-flow.md)) |
 | [docs/agents/](docs/agents/) | How the `mattpocock-skills` flow uses this repo: issue tracker, triage labels, domain docs |
-| [docs/runbooks/](docs/runbooks/) | Incident response and the real-data gate |
+| [docs/runbooks/](docs/runbooks/) | Incident response, the real-data gate, and the rule audit with its reading recipes |
 | [docs/threat-models/](docs/threat-models/) | Component threat models, each control linked to its test |
 | [docs/research/](docs/research/) | Sourced research notes that seed the knowledge base |
 
