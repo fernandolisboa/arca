@@ -8,7 +8,7 @@ For each host:
 - **Cite:** the URL form a version cites. Cite the page a person can open, not an API address, unless the API is the only official form of the text.
 - **Amendments:** where to look for instruments made after a source's `verifiedAt`.
 
-"Last confirmed" is the date a session last read the host this way; "last tried", for a host not readable, the date a session last tried. A recipe can stop working: when it does, fix it here in the same pull request as the audit that found out. A recipe never widens what counts as official: every Read address is on the pinned official-domain list, by the same matching rule as a source (spec 0002, R4). An edit to this file also gets the supply-chain reviewer, added by hand to what `pnpm review:reviewers` prints.
+"Last confirmed" is the date a session last read the host this way; "last tried", for a host not readable, the date a session last tried. A recipe can stop working: when it does, an on-demand audit fixes it here in the same pull request as the audit that found out. A [scheduled run](rule-audit.md#what-a-scheduled-run-leaves-to-others) never edits this file: it notes the broken recipe in the route's record and in its closing message. A recipe never widens what counts as official: every Read address is on the pinned official-domain list, by the same matching rule as a source (spec 0002, R4). An edit to this file also gets the supply-chain reviewer, which `pnpm review:reviewers` names.
 
 ## Rules for every host
 

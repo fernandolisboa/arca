@@ -68,6 +68,8 @@ const rules: readonly Rule[] = [
     match: /^(SECURITY\.md|docs\/(SECURITY|SETUP|RETENTION)\.md|docs\/(threat-models|runbooks)\/)/,
     reviewers: ['security'],
   },
+  // The scheduled rule audit runs from these two with nobody watching, so they act as its prompt.
+  { match: /^docs\/runbooks\/(rule-audit|reading-recipes)\.md$/, reviewers: ['supply-chain'] },
   { match: /^docs\/vault-format\.md$/, reviewers: ['security', 'auth-crypto'] },
   // ADRs and the data-flow register admit vendors and services and set the auth and vault design.
   {

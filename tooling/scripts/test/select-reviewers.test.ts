@@ -29,6 +29,16 @@ describe('reviewer selection', () => {
     ['a threat model', ['docs/threat-models/foundations.md'], [...docs, 'security']],
     ['the secrets guide', ['docs/SETUP.md'], [...docs, 'security']],
     ['a runbook', ['docs/runbooks/incident-response.md'], [...docs, 'security']],
+    [
+      'the rule audit runbook',
+      ['docs/runbooks/rule-audit.md'],
+      [...docs, 'security', 'supply-chain'],
+    ],
+    [
+      'the reading recipes',
+      ['docs/runbooks/reading-recipes.md'],
+      [...docs, 'security', 'supply-chain'],
+    ],
     ['retention', ['docs/RETENTION.md'], [...docs, 'security']],
     ['route data', ['packages/knowledge/data/routes/pl-descent/1.json'], core],
     ['code beside route data', ['packages/knowledge/data/loader.ts'], core],
