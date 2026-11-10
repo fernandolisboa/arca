@@ -34,7 +34,7 @@
     {
       "id": "usc-1186b",
       "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1186b.htm",
-      "title": "8 U.S.C. 1186b(a) and (d)(2): the investor, spouse and children get permanent residence on a conditional basis, removed by a petition filed before the second anniversary",
+      "title": "8 U.S.C. 1186b(a), (c)(3)(B) and (d)(2): conditional permanent residence for the investor, spouse and children, removed on a petition filed before the second anniversary",
       "kind": "official",
       "verifiedAt": "2026-11-10"
     },
@@ -44,7 +44,7 @@
       "title": "8 CFR 204.6(j): evidence of lawfully obtained capital placed at risk, of 10 full-time jobs, and of the investor's engagement in the new commercial enterprise",
       "kind": "official",
       "verifiedAt": "2026-11-10",
-      "machineReadableUrl": "https://www.ecfr.gov/api/versioner/v1/full/2026-09-30/title-8.xml?part=204&section=204.6"
+      "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-11-06/title-8?chapter=I&subchapter=B&part=204&subpart=A&section=204.6"
     },
     {
       "id": "cfr-106-2",
@@ -52,7 +52,7 @@
       "title": "8 CFR 106.2(a)(25), (a)(53) and (c)(3): USCIS fees for Forms I-526, I-526E and I-829 and the USCIS immigrant fee, as set from 2024-04-01",
       "kind": "official",
       "verifiedAt": "2026-11-10",
-      "machineReadableUrl": "https://www.ecfr.gov/api/versioner/v1/full/2026-09-30/title-8.xml?part=106&section=106.2"
+      "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-11-06/title-8?chapter=I&subchapter=B&part=106&section=106.2"
     },
     {
       "id": "fee-rule-2024",
@@ -67,7 +67,7 @@
       "title": "22 CFR 22.1, item 32(b): immigrant visa application processing fee for employment-based applications, per person",
       "kind": "official",
       "verifiedAt": "2026-11-10",
-      "machineReadableUrl": "https://www.ecfr.gov/api/versioner/v1/full/2026-10-19/title-22.xml?part=22&section=22.1"
+      "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-11-06/title-22?chapter=I&subchapter=C&part=22&section=22.1"
     }
   ],
   "countries": {
@@ -119,9 +119,15 @@
     },
     {
       "id": "at-risk",
-      "title": "The capital is invested, or actively being invested, at risk in a new commercial enterprise, beyond a mere intent to invest, and expected to stay invested for at least 2 years",
+      "title": "The capital is invested, or actively being invested, at risk in a new commercial enterprise, with a present commitment beyond a mere intent to invest",
       "evidence": ["unit.liquidAssets"],
       "sources": ["usc-1153", "cfr-204-6"]
+    },
+    {
+      "id": "investment-term",
+      "title": "The capital is expected to remain invested for at least 2 years",
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["usc-1153"]
     },
     {
       "id": "job-creation",
@@ -343,7 +349,7 @@
     },
     {
       "id": "integrity-fund-fee",
-      "title": "EB-5 Integrity Fund fee for each Form I-526E regional center petition",
+      "title": "EB-5 Integrity Fund fee for each Form I-526E regional center petition; a standalone Form I-526 investor does not pay it",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -351,6 +357,9 @@
         "currency": "USD"
       },
       "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
       "sources": ["usc-1153"]
     },
     {
@@ -363,11 +372,11 @@
         "currency": "USD"
       },
       "appliesTo": "principal",
-      "sources": ["cfr-106-2", "fee-rule-2024"]
+      "sources": ["cfr-106-2", "fee-rule-2024", "usc-1186b"]
     },
     {
       "id": "visa-application-fee",
-      "title": "Immigrant visa application fee, employment-based, for each person whose visa is issued at a consulate abroad",
+      "title": "Immigrant visa application fee, employment-based, for the investor, when the visa is issued at a consulate abroad (not when adjusting status in the U.S.)",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -375,11 +384,14 @@
         "currency": "USD"
       },
       "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
       "sources": ["cfr-22-1"]
     },
     {
       "id": "visa-application-fee-dependents",
-      "title": "Immigrant visa application fee, employment-based, for each person whose visa is issued at a consulate abroad",
+      "title": "Immigrant visa application fee, employment-based, for each accompanying family member, when the visa is issued at a consulate abroad (not when adjusting status in the U.S.)",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -387,11 +399,14 @@
         "currency": "USD"
       },
       "appliesTo": "each_dependent",
+      "condition": {
+        "op": "unmodeled"
+      },
       "sources": ["cfr-22-1"]
     },
     {
       "id": "uscis-immigrant-fee",
-      "title": "USCIS immigrant fee for each person given an immigrant visa abroad, for the permanent resident card",
+      "title": "USCIS immigrant fee for the investor, after an immigrant visa issued abroad, for the permanent resident card",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -399,11 +414,14 @@
         "currency": "USD"
       },
       "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
       "sources": ["cfr-106-2"]
     },
     {
       "id": "uscis-immigrant-fee-dependents",
-      "title": "USCIS immigrant fee for each person given an immigrant visa abroad, for the permanent resident card",
+      "title": "USCIS immigrant fee for each accompanying family member, after an immigrant visa issued abroad, for the permanent resident card",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -411,15 +429,18 @@
         "currency": "USD"
       },
       "appliesTo": "each_dependent",
+      "condition": {
+        "op": "unmodeled"
+      },
       "sources": ["cfr-106-2"]
     }
   ],
   "durations": [
     {
       "id": "conditional-residence",
-      "title": "Permanent residence on a conditional basis, for the investor, spouse and children, until the Form I-829 petition removes the conditions",
+      "title": "Conditional permanent residence for the investor, spouse and children, to its second anniversary, or the third if DHS extends it a year while the jobs are still being created",
       "min": "P2Y",
-      "max": "P2Y",
+      "max": "P3Y",
       "sources": ["usc-1186b"]
     }
   ]
