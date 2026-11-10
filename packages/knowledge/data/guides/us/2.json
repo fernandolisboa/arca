@@ -59,7 +59,7 @@
       "title": "8 CFR 106.2: USCIS fees, including Forms I-526, I-526E and I-829",
       "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
       "verifiedAt": "2026-11-10",
-      "amendment": "Amended by USCIS fee rules in the Federal Register, each with its own date from which the new fees apply; the EB-5 fee rule at 91 FR 61940 sets EB-5 fees for filings postmarked on or after 2026-11-30. The eCFR shows a title only up to the date it is up to date as of: 2026-11-06 for title 8 when read on 2026-11-10.",
+      "amendment": "Amended by USCIS fee rules in the Federal Register, each with its own date from which the new fees apply; the EB-5 fee rule at 91 FR 61940 sets EB-5 fees for filings postmarked on or after 2026-11-30. The eCFR text of title 8 was current as of 2026-11-06 when read on 2026-11-10.",
       "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-11-06/title-8?chapter=I&subchapter=B&part=106&section=106.2"
     },
     {
@@ -67,7 +67,7 @@
       "title": "EB-5 fee final rule, 91 FR 61940 (2026-09-30), amending 8 CFR 106.2 and 216.6 from 2026-11-30",
       "url": "https://www.federalregister.gov/documents/2026/09/30/2026-20016/us-citizenship-and-immigration-services-employment-based-immigrant-visa-fifth-preference-eb-5-fee",
       "verifiedAt": "2026-11-10",
-      "amendment": "Published once in the Federal Register; a correction document or a later rule changes its fees or text. Its tables, including Table 1 with the fees USCIS accepted before the rule, are images missing from the text versions and listed by the Federal Register API. Its text gives 2025-11-12 as the date USCIS went back to those fees; the heading of Table 1 gives 2025-11-13.",
+      "amendment": "Published once in the Federal Register; a correction document or a later rule changes its fees or text. Its tables, including Table 1 with the fees USCIS accepted before the rule, are images missing from the text versions and listed by the Federal Register API. Its text gives 2025-11-12 as the date USCIS went back to those fees; the heading of Table 1, in the image, gives 2025-11-13.",
       "machineReadableUrl": "https://www.govinfo.gov/content/pkg/FR-2026-09-30/html/2026-20016.htm"
     },
     {
@@ -75,7 +75,7 @@
       "title": "USCIS fee schedule final rule, 81 FR 73292 (2016-10-24), effective 2016-12-23: Form I-526 USD 3,675 and Form I-829 USD 3,750",
       "url": "https://www.federalregister.gov/documents/2016/10/24/2016-25328/us-citizenship-and-immigration-services-fee-schedule",
       "verifiedAt": "2026-11-10",
-      "amendment": "Published once in the Federal Register. Later fee rules replaced its fees: the 2024 fee rule from 2024-04-01, and for EB-5 the rule at 91 FR 61940 from 2026-11-30. Its Form I-526 and Form I-829 fees are the amounts Table 1 of 91 FR 61940 lists as accepted again since 2025-11-12.",
+      "amendment": "Published once in the Federal Register. Later fee rules replaced its fees: the 2024 fee rule at 89 FR 6194 from 2024-04-01, and for EB-5 the rule at 91 FR 61940 from 2026-11-30. Its Form I-526 and Form I-829 fees are the amounts Table 1 of 91 FR 61940 lists as accepted again since 2025-11-12.",
       "machineReadableUrl": "https://www.govinfo.gov/content/pkg/FR-2016-10-24/html/2016-25328.htm"
     },
     {
@@ -98,12 +98,12 @@
   "pitfalls": [
     {
       "id": "regulation-amounts-outdated",
-      "text": "8 CFR 204.6(f) still prints investment amounts of USD 1,800,000 and USD 900,000 from the 2019 rule at 84 FR 35750, which a court vacated on 2021-06-22, with an adjustment from 2024-10-01 measured against 1990, and its capital, targeted employment area and pilot program text predate the 2022 Act. The amounts in 8 U.S.C. 1153(b)(5)(C), USD 1,050,000 and USD 800,000 in a targeted employment area or infrastructure project, govern, and 204.6(f) is no authority for an investment amount.",
+      "text": "8 CFR 204.6(f) still prints investment amounts of USD 1,800,000 and USD 900,000 from the 2019 rule at 84 FR 35750, which a court vacated on 2021-06-22; its adjustment from 2024-10-01 is measured against 1990, and its capital, targeted employment area and pilot program text predate the 2022 Act. The amounts in 8 U.S.C. 1153(b)(5)(C), USD 1,050,000 and USD 800,000 in a targeted employment area or infrastructure project, govern, and 204.6(f) is no authority for an investment amount.",
       "laws": ["ina-203", "cfr-204-6", "proposed-rule-2026"]
     },
     {
       "id": "amounts-adjust-2027",
-      "text": "From 2027-01-01, and every 5 years after, the standard amount follows the CPI-U since 2022-01-01, rounded down to the nearest USD 50,000, and the reduced amount is 75 percent of it. The new amounts apply to petitions filed on or after the adjustment, so the filing date decides, not the investment date. Until DHS publishes them as a technical amendment the new figures are unknown, and the 2022 amounts apply only to petitions filed before 2027-01-01.",
+      "text": "From 2027-01-01, and every 5 years after, the standard amount follows the CPI-U since 2022-01-01, rounded down to the nearest USD 50,000, and the reduced amount is 75 percent of it. The new amounts apply to petitions filed on or after the adjustment, so the filing date decides, not the investment date. Until DHS publishes them as a technical amendment the new figures are unknown, and the amounts set by the 2022 Act apply only to petitions filed before 2027-01-01.",
       "laws": ["ina-203"]
     },
     {
@@ -183,7 +183,7 @@
     },
     {
       "id": "investor-engagement",
-      "text": "8 CFR 204.6(j)(5) asks for evidence that the investor is or will be engaged in the new commercial enterprise, through day-to-day managerial control or policy formulation. Its eCFR wording, under which an equity holder with certain rights, powers and duties normal for that type of entity counts, comes from the 2019 rule at 84 FR 35750, which a court vacated on 2021-06-22; the text of 2019-11-20 speaks of engagement in the management, as opposed to a purely passive role, and of a limited partner. The rule proposed at 91 FR 40676 would eliminate this evidence requirement.",
+      "text": "8 CFR 204.6(j)(5) asks for evidence that the investor is or will be engaged in the new commercial enterprise, through day-to-day managerial control or policy formulation. Its eCFR wording, under which an equity holder with certain rights, powers and duties normal for that type of entity counts, comes from the 2019 rule at 84 FR 35750, which a court vacated on 2021-06-22. The eCFR text in force on 2019-11-20, before that rule, speaks of engagement in the management, as opposed to a purely passive role, and counts a limited partner with rights normal under the Uniform Limited Partnership Act.",
       "laws": ["cfr-204-6", "proposed-rule-2026"]
     },
     {
@@ -198,12 +198,12 @@
     },
     {
       "id": "immigrant-visa-fees",
-      "text": "Besides the USCIS petition fees, each family member who applies for an immigrant visa at a consulate pays the Department of State application processing fee, USD 345 per person for an employment-based application (22 CFR 22.1, item 32(b)). The USCIS immigrant fee, USD 235, is for processing and issuing documents after the Department of State issues the visa (8 CFR 106.2(c)(3)). Form I-485, the application to adjust status in the United States, costs USD 1,440, or USD 950 for a child under 14 filing with a parent (8 CFR 106.2(a)(21)). The amounts are those in the eCFR text of 2026-11-06.",
+      "text": "Besides the USCIS petition fees, each family member who applies for an immigrant visa at a consulate pays the Department of State application processing fee, USD 345 per person for an employment-based application (22 CFR 22.1, item 32(b)). The USCIS immigrant fee, USD 235, is for processing and issuing documents after the Department of State issues the visa (8 CFR 106.2(c)(3)). Form I-485, the application to adjust status in the United States, has its own fee in 8 CFR 106.2(a)(21). The amounts are those in the eCFR text of 2026-11-06.",
       "laws": ["cfr-22-1", "cfr-106-2"]
     },
     {
       "id": "reverted-eb5-fees",
-      "text": "The rule at 91 FR 61940 records that since 2025-11-12 USCIS has accepted the EB-5 fees in effect until 2024-03-31: USD 3,675 for Forms I-526 and I-526E and USD 3,750 for Form I-829, listed in its Table 1, an image; the text of 81 FR 73292 states the Form I-526 and Form I-829 amounts. USCIS still took the 2024 fee for filings postmarked before 2025-11-26. The fees of 91 FR 61940 itself apply to filings postmarked on or after 2026-11-30.",
+      "text": "The rule at 91 FR 61940 records that since 2025-11-12 USCIS has accepted the EB-5 fees in effect until 2024-03-31: USD 3,675 for Forms I-526 and I-526E and USD 3,750 for Form I-829, listed in its Table 1, an image; the text of 81 FR 73292 states the Form I-526 and Form I-829 amounts. The same rule records that USCIS still accepted the fee of the 2024 fee rule for filings postmarked before 2025-11-26. The fees of 91 FR 61940 itself apply to filings postmarked on or after 2026-11-30.",
       "laws": ["fee-rule-2026", "fee-rule-2016", "cfr-106-2"]
     }
   ],
