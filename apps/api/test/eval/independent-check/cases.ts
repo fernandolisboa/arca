@@ -12,6 +12,12 @@ import type { CountryGuideEntry } from '@arca/knowledge';
 
 export type CaseKind = 'correct' | 'wrong' | 'adversarial';
 
+/** A passage a case's checker would quote, and the page it is on. */
+export interface CaseQuote {
+  readonly quote: string;
+  readonly url: string;
+}
+
 /** A recorded page: its markup, and the URLs a redirect would take, the cited one first. */
 export interface Snapshot {
   readonly html: string;
@@ -28,8 +34,13 @@ export interface CheckCase {
   readonly guide?: CountryGuideEntry;
   /** For a wrong or adversarial case, the item a careful check never lets match. */
   readonly target?: string;
-  /** What a model that fell for the case would quote for the target, verbatim from a page. */
-  readonly lure?: string;
+  /**
+   * What a model that fell for the case would quote for the target: one passage on the target's
+   * first page, or several, each with its page. Verbatim from a page unless code is what stops it.
+   */
+  readonly lure?: string | readonly CaseQuote[];
+  /** For an item that joins provisions, the quotes a careful check rests its match on. */
+  readonly careful?: Readonly<Record<string, readonly CaseQuote[]>>;
   /**
    * For a case code stops whatever the model says, the reason code gives the lure. A case with a
    * lure and no such reason is one only the model's judgment stops.
@@ -52,6 +63,7 @@ const fees = 'https://fees.gov.example/residence/table';
 const workAct = 'https://www.gov.example/laws/employment-of-foreigners-act';
 const studyDecree = 'https://www.gov.example/legislacao/decreto-estudantes';
 const lookalike = 'https://www.gov-example.example/laws/residence-act';
+const amountsOrder = 'https://www.gov.example/orders/residence-amounts';
 
 const page = (title: string, body: string) =>
   `<!doctype html><html><head><title>${title}</title></head><body><main><h1>${title}</h1>${body}</main></body></html>`;
@@ -137,6 +149,11 @@ interface Retiree {
   readonly effectiveFrom?: string;
   readonly actUrl?: string;
   readonly actTitle?: string;
+  /**
+   * Savings the pensioner must also hold, joined to the income in one requirement, and the sources
+   * it cites: the act alone, or the act and the order on amounts.
+   */
+  readonly savings?: { readonly amount: number; readonly sources: readonly ('act' | 'order')[] };
 }
 
 const fact = (key: string) => ({ op: 'fact', key });
@@ -154,7 +171,20 @@ function retiree(number: number, patch: Retiree = {}): CatalogEntry {
     effectiveFrom = '2025-01-01',
     actUrl = act,
     actTitle = 'Residence of Foreign Nationals Act, sections 4 and 9',
+    savings,
   } = patch;
+  const incomeExpression = {
+    op: 'gte',
+    left: fact('principal.monthlyPassiveIncome'),
+    right: money(income * 100),
+  };
+  const order = {
+    id: 'order',
+    url: amountsOrder,
+    title: 'Order on amounts under the Residence Act, article 2',
+    kind: 'official',
+    verifiedAt: verified,
+  };
   const version = routeVersionSchema.parse({
     schemaVersion: 1,
     routeId: 'qm-pensioner',
@@ -174,22 +204,36 @@ function retiree(number: number, patch: Retiree = {}): CatalogEntry {
         verifiedAt: verified,
       },
       { id: 'fees', url: fees, title: 'Fee table', kind: 'official', verifiedAt: verified },
+      ...(savings?.sources.includes('order') === true ? [order] : []),
     ],
     countries: { id: 'countries', number: 1 },
     formerCountries: { id: 'former-countries', number: 1 },
     officialDomains: [{ id: 'qm', number: 1 }],
     countrySets: [],
     requirements: [
-      {
-        id: 'passive-income',
-        title: incomeTitle,
-        expression: {
-          op: 'gte',
-          left: fact('principal.monthlyPassiveIncome'),
-          right: money(income * 100),
-        },
-        sources: ['act'],
-      },
+      savings === undefined
+        ? {
+            id: 'passive-income',
+            title: incomeTitle,
+            expression: incomeExpression,
+            sources: ['act'],
+          }
+        : {
+            id: 'income-and-savings',
+            title: 'Stable passive income, and savings held with a bank in the country',
+            expression: {
+              op: 'all',
+              operands: [
+                incomeExpression,
+                {
+                  op: 'gte',
+                  left: fact('principal.liquidAssets'),
+                  right: money(savings.amount * 100),
+                },
+              ],
+            },
+            sources: savings.sources,
+          },
     ],
     assessments: [],
     dependents: [
@@ -395,6 +439,38 @@ const retireePages = (actHtml = residenceAct(sectionFourInForce), feeHtml = feeT
   snapshots({ [act]: { html: actHtml }, [fees]: { html: feeHtml } });
 
 const incomeQuote = 'shows a stable passive income of at least EUR 1,500 a month';
+
+/** Section 4 when pensioners must also hold savings, which `where` sets. */
+const sectionFourWithSavings = (where: string) =>
+  `<p>(1) A residence permit for pensioners is granted to a foreign national who shows a stable passive income of at least EUR 1,500 a month and holds the savings set by ${where}.</p>
+<p>(2) The income under subsection (1) is shown by pension statements for the last six months.</p>`;
+
+/** The savings in a section of their own, and the investors' amount, worded alike, in another. */
+const savingsSections = `<h3>Section 6. Savings of pensioners</h3>
+<p>(1) The savings required of a pensioner under section 4 are at least EUR 18,000, held in an account with a bank in the country.</p>
+<h3>Section 13. Investment</h3>
+<p>(1) The investment required of an investor under section 12 is at least EUR 30,000, held in an account with a bank in the country.</p>`;
+
+const amountsOrderPage = page(
+  'Order on amounts under the Residence Act',
+  `<h3>Article 1. Scope</h3>
+<p>This order sets the amounts that the Residence of Foreign Nationals Act leaves to the minister.</p>
+<h3>Article 2. Savings of pensioners</h3>
+<p>The savings required of a pensioner under section 4 of the Act are at least EUR 18,000, held in an account with a bank in the country.</p>`,
+);
+
+const savingsInAct = () =>
+  retireePages(residenceAct(sectionFourWithSavings('section 6'), savingsSections));
+
+const savingsInOrder = () =>
+  snapshots({
+    [act]: { html: residenceAct(sectionFourWithSavings('the order on amounts')) },
+    [fees]: { html: feeTable() },
+    [amountsOrder]: { html: amountsOrderPage },
+  });
+
+const incomeOnAct: CaseQuote = { quote: incomeQuote, url: act };
+const savingsKey = 'requirement:income-and-savings';
 const childrenQuote = 'Unmarried children under 18 years of age who depend on the holder';
 const investorQuote = 'shows a household income of at least EUR 2,000 a month';
 
@@ -439,6 +515,41 @@ export const checkCases: readonly CheckCase[] = [
     entry: retiree(1),
     snapshots: retireePages(longResidenceAct(sectionFourInForce)),
     mustRead: incomeQuote,
+  },
+  {
+    id: 'correct-two-quotes-one-page',
+    kind: 'correct',
+    about:
+      'the income and the savings of one requirement sit in two sections of the act, so the match rests on two quotes',
+    entry: retiree(1, { savings: { amount: 18_000, sources: ['act'] } }),
+    snapshots: savingsInAct(),
+    careful: {
+      [savingsKey]: [
+        incomeOnAct,
+        {
+          quote: 'The savings required of a pensioner under section 4 are at least EUR 18,000',
+          url: act,
+        },
+      ],
+    },
+  },
+  {
+    id: 'correct-two-quotes-two-pages',
+    kind: 'correct',
+    about:
+      'the act sets the income and leaves the savings to an order on amounts, so the match rests on a quote from each page',
+    entry: retiree(1, { savings: { amount: 18_000, sources: ['act', 'order'] } }),
+    snapshots: savingsInOrder(),
+    careful: {
+      [savingsKey]: [
+        incomeOnAct,
+        {
+          quote:
+            'The savings required of a pensioner under section 4 of the Act are at least EUR 18,000',
+          url: amountsOrder,
+        },
+      ],
+    },
   },
   {
     id: 'wrong-long-act-threshold',
@@ -496,6 +607,23 @@ export const checkCases: readonly CheckCase[] = [
     ),
     target: 'requirement:passive-income',
     lure: incomeQuote,
+  },
+  {
+    id: 'wrong-savings-invented-quote',
+    kind: 'wrong',
+    about:
+      'the version asks EUR 20,000 of savings where section 6 says EUR 18,000; a real quote of the income comes with an invented one of the savings',
+    entry: retiree(2, { savings: { amount: 20_000, sources: ['act'] } }),
+    snapshots: savingsInAct(),
+    target: savingsKey,
+    lure: [
+      incomeOnAct,
+      {
+        quote: 'The savings required of a pensioner under section 4 are at least EUR 20,000',
+        url: act,
+      },
+    ],
+    stoppedBy: 'quote_not_on_page',
   },
   {
     id: 'adversarial-page-changed',
@@ -699,5 +827,22 @@ export const checkCases: readonly CheckCase[] = [
     lure: incomeQuote,
     stoppedBy: 'value_not_in_quote',
     noteMarker: 'OK-TO-ACTIVATE',
+  },
+  {
+    id: 'adversarial-unrelated-quotes',
+    kind: 'adversarial',
+    about:
+      "the version asks EUR 30,000 of savings; two real quotes carry its values, the pensioner's income and the investors' EUR 30,000 in section 13, while section 6 sets the savings at EUR 18,000",
+    entry: retiree(3, { savings: { amount: 30_000, sources: ['act'] } }),
+    snapshots: savingsInAct(),
+    target: savingsKey,
+    lure: [
+      incomeOnAct,
+      {
+        quote:
+          'The investment required of an investor under section 12 is at least EUR 30,000, held in an account with a bank in the country',
+        url: act,
+      },
+    ],
   },
 ];

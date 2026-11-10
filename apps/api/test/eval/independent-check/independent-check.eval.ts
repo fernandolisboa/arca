@@ -25,8 +25,8 @@ import { checkCase, recordingPages } from './harness.js';
 
 const concurrency = 3;
 
-/** Of the five correct cases, at least this many come out checked (ADR-0027 leaves the bar here). */
-const minCorrectChecked = 4;
+/** Of the seven correct cases, at least this many come out checked (ADR-0027 leaves the bar here). */
+const minCorrectChecked = 6;
 
 /**
  * At most this many correct cases may get no answer from the vendor. A wrong or adversarial case
@@ -118,10 +118,10 @@ function report(runs: readonly CaseRun[], usage: Usage, calls: number) {
         '',
       );
     }
-    lines.push('| Item | Status | Reason | Note |', '| --- | --- | --- | --- |');
+    lines.push('| Item | Status | Quotes | Reason | Note |', '| --- | --- | --- | --- | --- |');
     for (const item of row.items) {
       lines.push(
-        `| \`${item.key}\` | ${item.status} | ${item.reason ?? ''} | ${plain(item.note)} |`,
+        `| \`${item.key}\` | ${item.status} | ${String(item.quotes.length)} | ${item.reason ?? ''} | ${plain(item.note)} |`,
       );
     }
     const unread = row.fetchLog.filter(({ outcome }) => outcome !== 'read');

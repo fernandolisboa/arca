@@ -27,8 +27,7 @@ const law = 'https://www.gov.example/law';
 const matches = {
   key: 'requirement:means',
   status: 'matches' as const,
-  quote: 'means of at least EUR 920',
-  url: law,
+  quotes: [{ quote: 'means of at least EUR 920', url: law }],
   note: null,
   reason: null,
 };
@@ -110,6 +109,25 @@ describe('knowledge.independent_check (ADR-0027)', () => {
     });
   });
 
+  it('reads a report stored before items had several quotes as one with its single quote', async () => {
+    const { quotes, ...rest } = matches;
+    const single = { ...rest, quote: quotes[0]?.quote ?? null, url: law };
+    const unchecked = {
+      ...rest,
+      status: 'could_not_check',
+      quote: null,
+      url: null,
+      reason: 'page_cut',
+    };
+    const stored = report({ items: [single, unchecked] as never, clean: false });
+    await postgresCheckReportStore(() => testDatabase.jobsDb).save(stored);
+    const found = await postgresCheckReportStore(() => testDatabase.apiDb).find(stored.startId);
+    expect(found?.items).toEqual([
+      matches,
+      { ...rest, status: 'could_not_check', quotes: [], reason: 'page_cut' },
+    ]);
+  });
+
   it('keeps one report per start', async () => {
     const stored = report();
     const store = postgresCheckReportStore(() => testDatabase.jobsDb);
@@ -121,9 +139,7 @@ describe('knowledge.independent_check (ADR-0027)', () => {
     [
       'a clean flag on an item that does not match',
       {
-        items: [
-          { ...matches, status: 'could_not_check', quote: null, url: null, reason: 'page_cut' },
-        ],
+        items: [{ ...matches, status: 'could_not_check', quotes: [], reason: 'page_cut' }],
       },
     ],
     ['a clean flag on no items', { items: [] }],
@@ -139,7 +155,7 @@ describe('knowledge.independent_check (ADR-0027)', () => {
   });
 
   it('never answers a row whose items the report schema refuses', async () => {
-    const odd = report({ items: [{ ...matches, quote: 'x'.repeat(801) }] });
+    const odd = report({ items: [{ ...matches, quotes: [{ quote: 'x'.repeat(801), url: law }] }] });
     await postgresCheckReportStore(() => testDatabase.jobsDb).save(odd);
     expect(
       await postgresCheckReportStore(() => testDatabase.apiDb).find(odd.startId),

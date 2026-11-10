@@ -34398,19 +34398,27 @@
                                   "could_not_check"
                                 ]
                               },
-                              "quote": {
-                                "type": [
-                                  "string",
-                                  "null"
-                                ],
-                                "maxLength": 800
-                              },
-                              "url": {
-                                "type": [
-                                  "string",
-                                  "null"
-                                ],
-                                "maxLength": 2000
+                              "quotes": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "quote": {
+                                      "type": "string",
+                                      "maxLength": 800
+                                    },
+                                    "url": {
+                                      "type": "string",
+                                      "maxLength": 2000
+                                    }
+                                  },
+                                  "required": [
+                                    "quote",
+                                    "url"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "maxItems": 3
                               },
                               "note": {
                                 "type": [
@@ -34429,6 +34437,7 @@
                                   "no_page_read",
                                   "not_answered",
                                   "model_could_not_check",
+                                  "quote_count",
                                   "url_not_cited",
                                   "page_not_read",
                                   "page_cut",
@@ -34445,8 +34454,7 @@
                               "kind",
                               "title",
                               "status",
-                              "quote",
-                              "url",
+                              "quotes",
                               "note",
                               "reason"
                             ],

@@ -115,8 +115,16 @@ function answering(...replies: unknown[]): RuleChecker & { requests: RuleCheckRe
 
 const matchesBoth = {
   items: [
-    { key: 'requirement:means', status: 'matches', quote: 'means of at least EUR 920', url: law },
-    { key: 'cost:fee', status: 'matches', quote: 'Application fee: EUR 100', url: fees },
+    {
+      key: 'requirement:means',
+      status: 'matches',
+      quotes: [{ quote: 'means of at least EUR 920', url: law }],
+    },
+    {
+      key: 'cost:fee',
+      status: 'matches',
+      quotes: [{ quote: 'Application fee: EUR 100', url: fees }],
+    },
   ],
 };
 
@@ -246,7 +254,10 @@ describe('the independent check of one version (ADR-0027)', () => {
   it('flags a quote that is not on the page', async () => {
     const checker = answering({
       items: [
-        { ...matchesBoth.items[0], quote: 'means of at least EUR 820 a month' },
+        {
+          ...matchesBoth.items[0],
+          quotes: [{ quote: 'means of at least EUR 820 a month', url: law }],
+        },
         matchesBoth.items[1],
       ],
     });
@@ -256,6 +267,79 @@ describe('the independent check of one version (ADR-0027)', () => {
     expect(store.rows[0]?.items[0]).toMatchObject({
       status: 'could_not_check',
       reason: 'quote_not_on_page',
+    });
+  });
+
+  describe('an item that joins provisions on two pages', () => {
+    const joined = routeVersionSchema.parse({
+      ...version,
+      requirements: [
+        {
+          id: 'means',
+          title: 'Means of subsistence, and the fee paid',
+          expression: {
+            op: 'all',
+            operands: [
+              ...version.requirements.map(({ expression }) => expression),
+              {
+                op: 'gte',
+                left: { op: 'fact', key: 'principal.monthlyPassiveIncome' },
+                right: { op: 'money', amount: 10000, currency: 'EUR' },
+              },
+            ],
+          },
+          sources: ['law', 'fees'],
+        },
+      ],
+    });
+    const joinedSubject: CheckSubject = {
+      ...subject,
+      entry: { ...entry, identity: versionIdentity(joined, 'c'.repeat(64)), version: joined },
+    };
+    // Only value coverage across pages is tested here: code cannot tell what a passage is about.
+    const onLaw = { quote: 'means of at least EUR 920 a month', url: law };
+    const onFees = { quote: 'Application fee: EUR 100', url: fees };
+    const answeringMeans = (quotes: readonly { quote: string; url: string }[]) =>
+      answering({
+        items: [{ key: 'requirement:means', status: 'matches', quotes }, matchesBoth.items[1]],
+      });
+
+    it('stores a clean report with a quote from each page', async () => {
+      const { check, store } = setup({
+        checker: answeringMeans([onLaw, onFees]),
+        checked: joinedSubject,
+      });
+      await check(startId, 'qm-sample', 1);
+      expect(store.rows[0]?.items[0]).toEqual({
+        key: 'requirement:means',
+        status: 'matches',
+        quotes: [onLaw, onFees],
+        note: null,
+        reason: null,
+      });
+      expect(store.rows[0]?.clean).toBe(true);
+    });
+
+    it.each([
+      ['one quote, which leaves a value out', [onLaw], 'value_not_in_quote'],
+      [
+        'a second quote not on its page',
+        [onLaw, { ...onFees, quote: 'Application fee: EUR 90' }],
+        'quote_not_on_page',
+      ],
+      ['four quotes', [onLaw, onFees, onLaw, onFees], 'quote_count'],
+    ] as const)('refuses the item on %s', async (_, quotes, reason) => {
+      const { check, store } = setup({ checker: answeringMeans(quotes), checked: joinedSubject });
+      await check(startId, 'qm-sample', 1);
+      expect(store.rows[0]?.items[0]).toMatchObject({
+        status: 'could_not_check',
+        quotes: [],
+        reason,
+      });
+      expect(store.rows[0]?.clean).toBe(false);
+      // The other item still stands: one entry's quotes never fail the whole reply.
+      expect(store.rows[0]?.failure).toBeNull();
+      expect(store.rows[0]?.items[1]?.status).toBe('matches');
     });
   });
 
@@ -411,7 +495,10 @@ describe('the independent check of one version (ADR-0027)', () => {
       async (_, locator) => {
         const checker = answering({
           items: [
-            { ...matchesBoth.items[0], quote: 'Residence act, consolidated text' },
+            {
+              ...matchesBoth.items[0],
+              quotes: [{ quote: 'Residence act, consolidated text', url: law }],
+            },
             matchesBoth.items[1],
           ],
         });
@@ -440,9 +527,13 @@ describe('the independent check of one version (ADR-0027)', () => {
           {
             key: 'requirement:means',
             status: 'matches',
-            url: law,
-            // The end of the opening passage, the gap line, then the passage picked.
-            quote: `Further provisions apply here. ${excerptGap} Article 201. Means ${lawText}`,
+            quotes: [
+              {
+                url: law,
+                // The end of the opening passage, the gap line, then the passage picked.
+                quote: `Further provisions apply here. ${excerptGap} Article 201. Means ${lawText}`,
+              },
+            ],
           },
           matchesBoth.items[1],
         ],

@@ -10,6 +10,7 @@ import {
   maxCheckItemKeyLength,
   maxNoteLength,
   maxQuoteLength,
+  maxQuotes,
   comparisonCriterionSchema,
   countryCodeSchema,
   durationStageSchema,
@@ -453,8 +454,15 @@ export const VersionCheckReport = z.strictObject({
         kind: z.enum(checkItemKinds),
         title: z.string().max(200),
         status: z.enum(checkStatuses),
-        quote: z.string().max(maxQuoteLength).nullable(),
-        url: z.string().max(2_000).nullable(),
+        /** The verified passages it rests on, each with its page; empty when not checked. */
+        quotes: z
+          .array(
+            z.strictObject({
+              quote: z.string().max(maxQuoteLength),
+              url: z.string().max(2_000),
+            }),
+          )
+          .max(maxQuotes),
         note: z.string().max(maxNoteLength).nullable(),
         reason: z.enum(checkReasons).nullable(),
       }),
@@ -560,11 +568,13 @@ export const knowledgeRoutes = {
 
 export {
   type FactKey,
+  checkReasons,
   collectionNames,
   comparisonOperators,
   expressionOperators,
   factKeys,
   factTargets,
+  maxQuotes,
   relationshipSteps,
   staleAfterDays,
   versionKey,

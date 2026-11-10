@@ -19,7 +19,11 @@ const request: RuleCheckRequest = {
 };
 const answer = {
   items: [
-    { key: 'requirement:means', status: 'matches', quote: 'Means of at least EUR 920', url: law },
+    {
+      key: 'requirement:means',
+      status: 'matches',
+      quotes: [{ quote: 'Means of at least EUR 920', url: law }],
+    },
   ],
 };
 const secret = 'resposta-que-nao-pode-vazar';
