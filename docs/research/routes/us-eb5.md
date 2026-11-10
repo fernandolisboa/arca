@@ -9,7 +9,7 @@ Research notes for the U.S. EB-5 immigrant investor route, route `us-eb5` in `pa
 The first full audit by the runbook ([#355](https://github.com/fernandolisboa/arca/issues/355)), on demand.
 
 - **Version audited:** 2, the newest, and version 1, the version in effect until 2026-11-29, since the errors found are in both.
-- **Outcome:** correction, version 3, of version 1 from its own date, 2024-04-01; correction, version 4, of version 3 from 2025-11-12, the day USCIS went back to the fees in effect until 2024-03-31; correction, version 5, of version 2 from its own date, 2026-11-30. All three in pull request [#PR](https://github.com/fernandolisboa/arca/pull/PR), one pull request for the route.
+- **Outcome:** correction, version 3, of version 1 from its own date, 2024-04-01; correction, version 4, of version 3 from 2025-11-12, the day USCIS went back to the fees in effect until 2024-03-31; correction, version 5, of version 2 from its own date, 2026-11-30. All three in pull request [#368](https://github.com/fernandolisboa/arca/pull/368), one pull request for the route.
 - **Sources re-read** (all on 2026-11-10 UTC, with `curl`):
   - `usc-1153`, `usc-1101`, `usc-1101-leap-day`: the 2024 edition pages on govinfo.gov, read whole. No 2025 edition is published (its address redirects to an error page).
   - `usc-1186b` (new): the 2024 edition page, read whole.
