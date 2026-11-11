@@ -272,6 +272,22 @@
       "sha256": "d2793238218df95e032ab40437c336bbd5de44fdd58f9f1a5a29fb95f33221dd"
     },
     {
+      "path": "country-sets/eu-free-movement/2",
+      "sha256": "2da6690ecb84ae50694ce74e1f5d3f4851c6dc40ed8181f9018b26f220d040b5"
+    },
+    {
+      "path": "routes/pt-d7/5",
+      "sha256": "5c2739278cd45824b9888093b49aeaeb4d9a4dd85435150c6f8ca505ebc04efc"
+    },
+    {
+      "path": "routes/pt-d8/5",
+      "sha256": "ea7824b4c139767ef85142c32953457b8d9d47bd9b7a71a8fc71b42e7404fc1a"
+    },
+    {
+      "path": "routes/us-eb5/8",
+      "sha256": "290223a2be2c3aa33b7be592e5d07b7ccccb3d81307eb7146e067429e97aed94"
+    },
+    {
       "path": "guides/pt/2",
       "sha256": "02629d431a48adc3cc950bc0cb8ee2b27e7aa97f9786a430ac527b4c067022f8"
     }

@@ -4,7 +4,9 @@ name: intake-eval
 # route's newest version (ADR-0025) and the independent check's synthetic cases (ADR-0027), on the
 # real model, each writing its report to the job summary. `catalog-check` is a measurement, not an
 # evaluation: the independent check of every route's newest version against its live official
-# pages, which costs a few dollars, so `all` leaves it out. Started by hand only
+# pages, which costs a few dollars, so `all` leaves it out; `routes` narrows it to some routes, as
+# a rule audit's check loop does (about ten cents a route). Started by hand only, by a person or by
+# a rule audit session's check loop (docs/runbooks/rule-audit.md)
 # (`gh workflow run intake-eval --ref <branch>`, `-f only=<evaluation>` to spend on one), never a
 # required check (ADR-0019). It evaluates the commit it was dispatched on, a branch or tag of this
 # repository, with that commit's own copy of this file; there is no ref input, so no fork's code can
@@ -17,6 +19,10 @@ on:
         type: choice
         options: [all, intake, rule-summary, independent-check, catalog-check]
         default: all
+      routes:
+        description: 'catalog-check only: route IDs to check, comma-separated (empty: every route)'
+        type: string
+        default: ''
 
 permissions: {}
 
@@ -98,6 +104,7 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           ARCA_EVAL_REPORT: ${{ runner.temp }}/catalog-check.md
+          ARCA_CATALOG_ROUTES: ${{ inputs.routes }}
         run: |
           status=0
           pnpm --fail-if-no-match --filter @arca/api eval:catalog-check || status=$?

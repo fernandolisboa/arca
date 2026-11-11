@@ -1,4 +1,9 @@
-export { type LeapDayBirthday, ageYears, leapDayBirthdaySchema } from './calendar/age.js';
+export {
+  type LeapDayBirthday,
+  type SettledLeapDayBirthday,
+  ageYears,
+  leapDayBirthdaySchema,
+} from './calendar/age.js';
 export {
   type CalendarDate,
   type DateParts,

@@ -79,6 +79,8 @@ function leapDayRule(rule: VersionView['leapDayBirthday']) {
       return 'february';
     case 'march-1':
       return 'march';
+    case 'unsettled':
+      return 'unsettled';
     case null:
       return 'none';
   }
