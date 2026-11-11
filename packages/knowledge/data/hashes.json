@@ -318,6 +318,22 @@
     {
       "path": "guides/pl/2",
       "sha256": "b9c9a71c1d44a28cb0f568962bfda27adcd9267e73cd4aceb4841322f5d4d7bc"
+    },
+    {
+      "path": "routes/ar-mercosur-temporary/3",
+      "sha256": "a7409736c6fca3f112df14bd1c3ae32a99c3f8d84e22a836788d1e7a189ce699"
+    },
+    {
+      "path": "routes/uy-mercosur-permanent/3",
+      "sha256": "fed0462d823480a378590e21675d9b92ff6fcd3b0a535ed533267dc87fcd86e0"
+    },
+    {
+      "path": "routes/py-mercosur-temporary/3",
+      "sha256": "bcb42ef995c679ad48e4cac04414bf9438e754db32169baac3d20f7f02e72653"
+    },
+    {
+      "path": "routes/cl-mercosur-temporary/2",
+      "sha256": "0454ae5bd8c48a371ac897a5d31df288a5178360d0e33b8efb5aef7fa0c7204e"
     }
   ]
 }
