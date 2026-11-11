@@ -60,18 +60,20 @@
       "title": "Lei n.º 61/2025: amendment of the foreigners law, in force 2025-10-23, with its transitional rules (article 6.º), revocations (article 7.º) and rule on time (article 8.º)",
       "url": "https://diariodarepublica.pt/dr/detalhe/lei/61-2025-941547426",
       "verifiedAt": "2026-11-11",
-      "amendment": "An amending law, published on 2025-10-22 and in force the next day (article 9.º). Its changes are merged into the consolidated Lei n.º 23/2007, which repeats its rule on time (article 8.º, which covers its articles 2.º and 3.º) as a note under each changed article but does not show its transitional article 6.º."
+      "amendment": "An amending law, published on 2025-10-22 and in force the next day (article 9.º). Its changes are merged into the consolidated Lei n.º 23/2007, which repeats its rule on time (article 8.º, which covers its articles 2.º and 3.º) as a note under each changed article but does not show its transitional article 6.º.",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2025/10/20400/0000900017.pdf"
     },
     {
       "id": "lei-62-2026",
       "title": "Lei n.º 62/2026: executes EU regulations of 2024 and transposes Directives (EU) 2024/1346 and 2024/1233, amending Lei n.º 23/2007 among other laws, in force 2026-09-11",
       "url": "https://diariodarepublica.pt/dr/detalhe/lei/62-2026-1168979170",
       "verifiedAt": "2026-11-11",
-      "amendment": "An amending law, published on 2026-09-10 and in force the next day (article 11.º). Its changes are merged into the consolidated Lei n.º 23/2007. Among the articles the residence visa rules read, it changed article 52.º, in paragraph 2 only, and article 209.º, in paragraph 4 only. Its rule on time (article 10.º) keeps the earlier regime only for applications and procedures pending under the asylum law, Lei n.º 27/2008."
+      "amendment": "An amending law, published on 2026-09-10 and in force the next day (article 11.º). Its changes are merged into the consolidated Lei n.º 23/2007. Of articles 4.º, 52.º, 54.º, 58.º, 61.º-B, 75.º, 77.º, 98.º to 101.º and 209.º of that law, it changed article 52.º, in paragraph 2 only, and article 209.º, in paragraph 4 only. Its rule on time (article 10.º) keeps the earlier regime only for applications and procedures pending under the asylum law, Lei n.º 27/2008.",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2026/09/17600/0006000111.pdf"
     },
     {
       "id": "lei-7-2001",
-      "title": "Lei n.º 7/2001, consolidated: protection of de facto unions, which article 1.º(2) defines as two people living in conditions analogous to those of spouses for more than two years",
+      "title": "Lei n.º 7/2001, consolidated: protection of de facto unions, which article 1.º(2) defines as 2 people living in conditions analogous to those of spouses for more than 2 years",
       "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2001-34471975",
       "verifiedAt": "2026-11-11",
       "amendment": "Amended ad hoc by laws of the Assembleia da República: Lei n.º 23/2010, Lei n.º 2/2016, Lei n.º 49/2018 and Lei n.º 71/2018. The consolidated text showed its last change as 2018-12-31. Article 1.º lists one amendment, by Lei n.º 23/2010."
@@ -81,7 +83,7 @@
       "title": "Portaria n.º 229/2021, consolidated: table of consular fees, with visa fees (article 15.º), exemptions (article 22.º), payment and exchange rates (article 28.º) and the yearly update (article 29.º)",
       "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/portaria/2021-173517007",
       "verifiedAt": "2026-11-11",
-      "amendment": "An order of the foreign affairs ministry, in force from 2022-01-01, amended by Portaria n.º 434/2023 (in force 2024-01-01) and Portaria n.º 91/2025/1 (in force 2025-03-11); the consolidated text showed its last change as 2025-03-10. Article 29.º updates sections II to VII and IX each 1 March by the consumer price index, announced by a ministerial despacho; visa fees are in section VIII, which is not among them, and article 15.º(6) lets legislation change them."
+      "amendment": "An order of the foreign affairs ministry, in force from 2022-01-01, amended by Portaria n.º 434/2023 (in force 2024-01-01, rectified by Declaração de Retificação n.º 6/2024) and Portaria n.º 91/2025/1 (in force 2025-03-11); the consolidated text showed its last change as 2025-03-10. Article 29.º updates each 1 March, by the consumer price index, the fees of sections II to VII and IX whose revenue goes only to the ministry's own bodies; visa fees are in section VIII, which is not among them, and article 15.º(6) lets legislation change them."
     },
     {
       "id": "portaria-91-2025",
@@ -93,7 +95,7 @@
     },
     {
       "id": "portaria-307-2023",
-      "title": "Portaria n.º 307/2023, consolidated: table of fees for residence permits and other acts on the entry and stay of foreigners, charged by the Agency for Integration, Migration and Asylum (AIMA)",
+      "title": "Portaria n.º 307/2023, consolidated: table of fees for residence permits and other acts on the entry and stay of foreigners, most of them revenue of the migration agency (AIMA)",
       "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/portaria/2023-223039442",
       "verifiedAt": "2026-11-11",
       "amendment": "A ministerial order under article 209.º(2) of Lei n.º 23/2007, in force from 2023-10-29, rectified by Declaração de Retificação n.º 24/2023 and amended by Decreto-Lei n.º 126/2025; the consolidated text showed its last change as 2025-12-04. Its article 3.º updates every amount automatically each 1 March by the consumer price index, and names no act that publishes the updated amounts; gazette searches on 2026-11-11 found none."
@@ -137,7 +139,7 @@
     },
     {
       "id": "net-of-contributions",
-      "text": "The Portaria's household scale (article 2.º(2)) takes the RMMG net of social security contributions as its reference, not the gross amount. The Portaria names no rate; the worker's share in the general scheme is 11 percent (Código dos Regimes Contributivos, article 53.º), so the net RMMG is 89 percent of the gross, EUR 818.80 of EUR 920 in 2026. The remote work income test of 4 minimum wages (Decreto Regulamentar n.º 84/2007, article 31.º-A) does not say net.",
+      "text": "The Portaria's household scale (article 2.º(2)) takes the RMMG net of social security contributions as its reference, not the gross amount, and names no rate and no article. The worker's share in the general scheme is 11 percent (Código dos Regimes Contributivos, article 53.º); at that rate the net of EUR 920 is EUR 818.80, a computed amount that no text read states. The remote work income test of 4 minimum wages (Decreto Regulamentar n.º 84/2007, article 31.º-A) does not say net.",
       "laws": ["portaria-1563-2007", "codigo-contributivo", "decreto-regulamentar-84-2007"]
     },
     {
@@ -217,17 +219,17 @@
     },
     {
       "id": "visa-and-permit-durations",
-      "text": "The decision on a residence visa is due within 60 days (article 58.º(4)). The visa is valid for 2 entries and a stay of 4 months (article 58.º(2)), in which its holder asks for the residence permit (article 58.º(1)); the 4 months are how long the visa lasts, not a wait. A temporary residence permit is valid for 2 years from the date the card is issued and renewable for successive periods of 3 years, save special provisions (article 75.º(1)).",
+      "text": "The decision on a residence visa is due within 60 days, save shorter periods set in the law (article 58.º(4)). The visa is valid for 2 entries and a stay of 4 months (article 58.º(2)) and serves to enter Portugal to ask for the residence permit (article 58.º(1)); the 4 months are how long the visa lasts, not a wait. A temporary residence permit is valid for 2 years from the date the card is issued and renewable for successive periods of 3 years, save special provisions (article 75.º(1)).",
       "laws": ["lei-23-2007"]
     },
     {
       "id": "visa-fee",
-      "text": "Visa fees at consulates come from the table of consular fees (Lei n.º 23/2007, article 209.º(1)): EUR 110 for processing a national visa application (table, article 15.º(4), as set by Portaria n.º 91/2025/1 from 2025-03-11). Children up to 6 are exempt; those from 6 and under 18 may be exempted, and the table names no criterion for it (article 22.º, points 1.1(a) and 1.2(a)). Abroad the fee is paid in euros or local currency at the Banco de Portugal's reference rate, set from day 1 of each month (article 28.º(1) and (2)).",
+      "text": "Visa fees at consulates come from the table of consular fees (Lei n.º 23/2007, article 209.º(1)): EUR 110 for processing a national visa application (table, article 15.º(4), as set by Portaria n.º 91/2025/1 from 2025-03-11). The table exempts \"children up to 6 years of age\" and says \"children from 6 and under 18\" may be exempted, naming no criterion (article 22.º, points 1.1(a) and 1.2(a)). Abroad the fee is paid in euros or local currency at the Banco de Portugal's reference rate, set from day 1 of each month (article 28.º(1) and (2)).",
       "laws": ["portaria-229-2021", "portaria-91-2025", "lei-23-2007"]
     },
     {
       "id": "permit-fees",
-      "text": "The residence permit has fees of its own, apart from the consular visa fee: Portaria n.º 307/2023 charges for receiving and analysing the application and for each card issued, with 25 percent off through the digital channel and, until that channel exists, in person (table, points III and XIV). The amounts it prints are not necessarily the ones charged: article 3.º updates them each 1 March by the consumer price index, rounded up to the next tenth, and no act in the gazette states the updated amounts. An amount for a permit fee needs an official text that states the current one.",
+      "text": "The residence permit has fees of its own, apart from the consular visa fee: Portaria n.º 307/2023 charges for receiving and analyzing the applications its point III lists and for each temporary residence card issued, with 25 percent off through the digital channel and, until the services are offered there, off the in-person fee (points III and XIV). The amounts it prints are not necessarily the ones charged: article 3.º updates them each 1 March by the consumer price index, rounded up to the next tenth, and no act in the gazette states the updated amounts.",
       "laws": ["portaria-307-2023", "lei-23-2007"]
     },
     {
@@ -247,7 +249,7 @@
     },
     {
       "id": "amending-acts-and-gazette-files",
-      "text": "The text of a consolidated page shows the current wording and, under each article, the acts that changed it. To see what one act changed, read the amending act's own page, which prints each changed article with its untouched paragraphs as [...]. An original act also has its gazette PDF on files.diariodarepublica.pt, a subdomain of the listed host, which is its machine-readable address; a consolidated text has no such file.",
+      "text": "The text of a consolidated page shows the current wording and, under each article, the acts that changed it. The amending act's own page prints each article it changed, with the untouched paragraphs left out and marked by an ellipsis in square brackets. An original act also has a gazette PDF, on a files subdomain of the Diário da República's host; a consolidated text has no such file.",
       "laws": ["lei-23-2007", "lei-61-2025", "lei-62-2026", "portaria-1563-2007"]
     }
   ],
