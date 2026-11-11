@@ -11,6 +11,7 @@ import {
 import { type Database, lockKey } from '@arca/db';
 import { checkStart, independentCheck } from '@arca/db/knowledge-schema';
 import { gte, sql } from 'drizzle-orm';
+import type { CheckProgressStore } from './progress.js';
 import { type CheckReportStore, listingColumns } from './store.js';
 
 /** A version the screen asks to check, with what its report would answer for. */
@@ -81,20 +82,29 @@ function due(
 export function memoryCheckStarts(
   reports: CheckReportStore,
   now: () => number = Date.now,
+  progress?: Pick<CheckProgressStore, 'list'>,
 ): CheckStarts & { readonly rows: RecordedStart[] } {
   const rows: RecordedStart[] = [];
-  const recent = () => rows.filter((row) => now() - row.startedAt < startWindow);
+  const recent = () =>
+    Promise.all(
+      rows
+        .filter((row) => now() - row.startedAt < startWindow)
+        .map(async (row) => ({
+          ...row,
+          failed: ((await progress?.list(row.id)) ?? []).some(({ kind }) => kind === 'failed'),
+        })),
+    );
   return {
     rows,
     begin: async (requests) => {
-      const started = due(requests, recent(), await reports.list(), now()).map(
+      const started = due(requests, await recent(), await reports.list(), now()).map(
         ({ routeId, number }) => ({ id: randomUUID(), routeId, number, startedAt: now() }),
       );
       rows.push(...started);
       return started;
     },
     request: async ({ routeId, number }) => {
-      const inWindow = recent();
+      const inWindow = await recent();
       const decision = requestedStart(
         grouped(inWindow)({ routeId, number }),
         await reports.list(),
@@ -107,7 +117,7 @@ export function memoryCheckStarts(
       rows.push(start);
       return { start, began: true };
     },
-    recent: () => Promise.resolve(recent()),
+    recent,
   };
 }
 
@@ -116,6 +126,8 @@ const startColumns = {
   routeId: checkStart.routeId,
   number: checkStart.versionNumber,
   startedAt: checkStart.startedAt,
+  failed: sql<boolean>`EXISTS (SELECT 1 FROM knowledge.check_progress p
+    WHERE p.start_id = ${checkStart.id} AND p.kind = 'failed')`,
 };
 
 /**

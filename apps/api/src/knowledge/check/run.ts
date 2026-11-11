@@ -195,7 +195,7 @@ export function createVersionCheck({
     const fetched: FetchedPage[] = [];
     const addresses = machineReadableUrls(subject.entry);
     for (const [url, hosts] of cited) {
-      await record({ kind: 'page', url, outcome: 'reading' });
+      await record({ kind: 'page', url, outcome: 'reading', status: null });
       // A machine-readable address is read in place of its page, on the same hosts; when it
       // fails, the page is not tried, so its items could not be checked, with the reason.
       const machineReadableUrl = addresses.get(url) ?? null;
@@ -203,7 +203,12 @@ export function createVersionCheck({
       const read = await fetcher.fetch(machineReadableUrl ?? url, hosts);
       // Official sites fail often and the report keeps each failure, so the log line is a code.
       if (!read.ok) logger.info({ route, errorCode: `check_fetch_${read.failure}` });
-      await record({ kind: 'page', url, outcome: read.ok ? 'read' : read.failure });
+      await record({
+        kind: 'page',
+        url,
+        outcome: read.ok ? 'read' : read.failure,
+        status: read.status,
+      });
       fetched.push({
         url,
         machineReadableUrl,

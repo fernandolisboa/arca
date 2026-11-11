@@ -1,4 +1,4 @@
-import { type CheckStart, type FetchFailure, fetchOutcomes, startLifetime } from './reports.js';
+import { type CheckStart, fetchOutcomes, startLifetime } from './reports.js';
 
 /** What a page event says of a cited page: about to be read, read, or why it was not. */
 export const pageProgressOutcomes = ['reading', ...fetchOutcomes] as const;
@@ -14,20 +14,17 @@ export type ProgressFailure = (typeof progressFailures)[number];
  */
 export type CheckProgressEvent =
   | { readonly kind: 'started'; readonly items: number; readonly pages: number }
-  | { readonly kind: 'page'; readonly url: string; readonly outcome: PageProgressOutcome }
+  | {
+      readonly kind: 'page';
+      readonly url: string;
+      readonly outcome: PageProgressOutcome;
+      /** The final HTTP status once read or refused, when there was one. */
+      readonly status: number | null;
+    }
   | { readonly kind: 'locating'; readonly pages: number }
   | { readonly kind: 'comparing' }
   | { readonly kind: 'finished' }
   | { readonly kind: 'failed'; readonly code: ProgressFailure };
-
-export const checkProgressEventKinds = [
-  'started',
-  'page',
-  'locating',
-  'comparing',
-  'finished',
-  'failed',
-] as const satisfies readonly CheckProgressEvent['kind'][];
 
 export const checkProgressStates = ['running', 'finished', 'failed', 'dead'] as const;
 export type CheckProgressState = (typeof checkProgressStates)[number];
@@ -38,7 +35,8 @@ export type CheckProgressStage = (typeof checkProgressStages)[number];
 
 export interface PageProgress {
   readonly url: string;
-  readonly outcome: 'reading' | 'read' | FetchFailure;
+  readonly outcome: PageProgressOutcome;
+  readonly status: number | null;
 }
 
 /** A start and what its check recorded, as the progress screen shows it. */
@@ -73,7 +71,7 @@ export function checkProgress(
   reported: boolean,
   now: number,
 ): CheckProgress {
-  const pages = new Map<string, PageProgressOutcome>();
+  const pages = new Map<string, PageProgress>();
   let stage: CheckProgressStage = 'starting';
   let itemCount: number | null = null;
   let pageCount: number | null = null;
@@ -88,7 +86,7 @@ export function checkProgress(
         pageCount = event.pages;
         break;
       case 'page':
-        pages.set(event.url, event.outcome);
+        pages.set(event.url, { url: event.url, outcome: event.outcome, status: event.status });
         break;
       case 'locating':
         locatedPages = event.pages;
@@ -116,7 +114,7 @@ export function checkProgress(
     stage,
     itemCount,
     pageCount,
-    pages: [...pages].map(([url, outcome]) => ({ url, outcome })),
+    pages: [...pages.values()],
     locatedPages,
     failure: state === 'failed' ? failure : null,
   };

@@ -25,6 +25,8 @@ const storedEvent = z.discriminatedUnion('kind', [
     kind: z.literal('page'),
     url: z.string().max(2_000),
     outcome: z.enum(pageProgressOutcomes),
+    // Rows written before the status was recorded have none.
+    status: z.int().min(0).max(999).nullable().default(null),
   }),
   z.strictObject({ kind: z.literal('locating'), pages: count }),
   z.strictObject({ kind: z.literal('comparing') }),

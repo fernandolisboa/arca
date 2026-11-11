@@ -64,7 +64,10 @@ function setup({
   enabled = true,
   unreadable = false,
   refusals = new Map(),
+  runFails = false,
 }: {
+  /** Starting the workflow throws, as when the platform refuses it. */
+  runFails?: boolean;
   admitted?: boolean;
   count?: number;
   states?: Map<number, 'proposed' | 'active' | 'rejected'>;
@@ -109,10 +112,10 @@ function setup({
       : { entry, content: '{}', officialHosts: () => ['gov.example'] };
   };
   const reports = memoryCheckReportStore(now);
-  const starts = memoryCheckStarts(reports, now);
+  const progress = memoryCheckProgressStore();
+  const starts = memoryCheckStarts(reports, now, progress);
   const readReports = unreadable ? { ...reports, find: () => Promise.resolve(undefined) } : reports;
   const runs: RecordedStart[] = [];
-  const progress = memoryCheckProgressStore();
   const checks = createVersionChecks({
     versions,
     subject,
@@ -123,7 +126,7 @@ function setup({
     progress,
     run: (start) => {
       runs.push(start);
-      return Promise.resolve();
+      return runFails ? Promise.reject(new Error('workflow down')) : Promise.resolve();
     },
     logger: silentLogger,
     now,
@@ -570,10 +573,17 @@ describe('POST /v1/knowledge/versions/check/start (ADR-0027, on demand)', () => 
     expect(runs).toEqual([]);
   });
 
-  it('answers a fixed code where no checker is configured', async () => {
+  it('answers a fixed code where no checker is configured, after the version is known', async () => {
     const response = await setup({ enabled: false }).startOne(1);
     expect(response.status).toBe(503);
     expect(await response.json()).toEqual({ error: { code: 'check_off' } });
+    expect((await setup({ count: 1, enabled: false }).startOne(9)).status).toBe(404);
+  });
+
+  it('answers a fixed code when the run could not begin', async () => {
+    const response = await setup({ runFails: true }).startOne(1);
+    expect(response.status).toBe(502);
+    expect(await response.json()).toEqual({ error: { code: 'check_not_started' } });
   });
 
   it('is for admins only, from the same origin', async () => {
@@ -601,9 +611,14 @@ describe('GET /v1/knowledge/versions/check/progress (ADR-0027, on demand)', () =
     await startOne(1);
     const id = runs[0]?.id ?? '';
     await progress.record(id, 0, { kind: 'started', items: 1, pages: 2 });
-    await progress.record(id, 1, { kind: 'page', url: law, outcome: 'reading' });
-    await progress.record(id, 2, { kind: 'page', url: law, outcome: 'read' });
-    await progress.record(id, 3, { kind: 'page', url: `${law}/fees`, outcome: 'reading' });
+    await progress.record(id, 1, { kind: 'page', url: law, outcome: 'reading', status: null });
+    await progress.record(id, 2, { kind: 'page', url: law, outcome: 'read', status: 200 });
+    await progress.record(id, 3, {
+      kind: 'page',
+      url: `${law}/fees`,
+      outcome: 'reading',
+      status: null,
+    });
     expect(await watched(1)).toEqual({
       startedAt: new Date(1_000_000_000).toISOString(),
       state: 'running',
@@ -611,8 +626,8 @@ describe('GET /v1/knowledge/versions/check/progress (ADR-0027, on demand)', () =
       itemCount: 1,
       pageCount: 2,
       pages: [
-        { url: law, outcome: 'read' },
-        { url: `${law}/fees`, outcome: 'reading' },
+        { url: law, outcome: 'read', status: 200 },
+        { url: `${law}/fees`, outcome: 'reading', status: null },
       ],
       locatedPages: null,
       failure: null,
@@ -626,11 +641,16 @@ describe('GET /v1/knowledge/versions/check/progress (ADR-0027, on demand)', () =
     expect(await watched(1)).toMatchObject({ state: 'finished', failure: null });
   });
 
-  it('shows a failed check with its fixed code', async () => {
-    const { startOne, runs, progress, watched } = setup();
+  it('shows a failed check with its fixed code, and a new tap starts another', async () => {
+    const { startOne, runs, progress, watched, list, advance } = setup({ count: 1 });
     await startOne(1);
     await progress.record(runs[0]?.id ?? '', 0, { kind: 'failed', code: 'check_failed' });
     expect(await watched(1)).toMatchObject({ state: 'failed', failure: 'check_failed' });
+    expect(await list()).toEqual([[1, 'none']]);
+    advance(minute);
+    expect(await (await startOne(1)).json()).toEqual({ started: true });
+    expect(runs).toHaveLength(2);
+    expect(await watched(1)).toMatchObject({ state: 'running' });
   });
 
   it('shows a start dead after 30 minutes with no report, then nothing a day later', async () => {

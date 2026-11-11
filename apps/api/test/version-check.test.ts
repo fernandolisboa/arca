@@ -904,10 +904,10 @@ describe('the independent check of one version (ADR-0027)', () => {
       await check(startId, 'qm-sample', 1);
       expect(events()).toEqual([
         { kind: 'started', items: 2, pages: 2 },
-        { kind: 'page', url: law, outcome: 'reading' },
-        { kind: 'page', url: law, outcome: 'read' },
-        { kind: 'page', url: fees, outcome: 'reading' },
-        { kind: 'page', url: fees, outcome: 'read' },
+        { kind: 'page', url: law, outcome: 'reading', status: null },
+        { kind: 'page', url: law, outcome: 'read', status: 200 },
+        { kind: 'page', url: fees, outcome: 'reading', status: null },
+        { kind: 'page', url: fees, outcome: 'read', status: 200 },
         { kind: 'comparing' },
         { kind: 'finished' },
       ]);
@@ -922,10 +922,10 @@ describe('the independent check of one version (ADR-0027)', () => {
       await check(startId, 'qm-sample', 1);
       expect(events()).toEqual([
         { kind: 'started', items: 2, pages: 2 },
-        { kind: 'page', url: law, outcome: 'reading' },
-        { kind: 'page', url: law, outcome: 'timeout' },
-        { kind: 'page', url: fees, outcome: 'reading' },
-        { kind: 'page', url: fees, outcome: 'timeout' },
+        { kind: 'page', url: law, outcome: 'reading', status: null },
+        { kind: 'page', url: law, outcome: 'timeout', status: null },
+        { kind: 'page', url: fees, outcome: 'reading', status: null },
+        { kind: 'page', url: fees, outcome: 'timeout', status: null },
         { kind: 'finished' },
       ]);
       expect(store.rows).toHaveLength(1);

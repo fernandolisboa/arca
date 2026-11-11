@@ -1,4 +1,9 @@
-import { ApiError, type VersionView, VersionViewQuery } from '@arca/api-contract/client';
+import {
+  ApiError,
+  maxStartsPerDay,
+  type VersionView,
+  VersionViewQuery,
+} from '@arca/api-contract/client';
 import { Button } from '@arca/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
@@ -12,6 +17,7 @@ import {
   CheckRunSteps,
   useCheckRun,
 } from '../knowledge/check-run.js';
+import { pagesSettled } from '../knowledge/check-run-steps.js';
 import { CheckReport } from '../knowledge/checks.js';
 import { type KnowledgeWords, useKnowledgeWords } from '../knowledge/words.js';
 import { Page } from '../page.js';
@@ -96,7 +102,7 @@ function CheckRunBody({
   const { t } = words;
   const version = { routeId: view.routeId, number: view.number };
   const progress = useQuery(checkProgressQuery(version.routeId, version.number));
-  const checkRun = useCheckRun(version, () => void progress.refetch());
+  const checkRun = useCheckRun(version);
   const dateFormat = useDateFormat();
   const resultId = useId();
 
@@ -119,7 +125,9 @@ function CheckRunBody({
       />
       <CheckRunConfirm state={checkRun} words={words} />
       {!checkRun.confirming && checkRun.failure !== undefined && (
-        <p role="status">{t('knowledge.checkRun.startFailure', { reason: checkRun.failure })}</p>
+        <p role="status">
+          {t('knowledge.checkRun.startFailure', { reason: checkRun.failure, max: maxStartsPerDay })}
+        </p>
       )}
     </>
   );
@@ -131,7 +139,7 @@ function CheckRunBody({
       </div>
     );
   }
-  const done = run.pages.filter(({ outcome }) => outcome !== 'reading').length;
+  const done = pagesSettled(run);
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <p className="text-small text-muted">

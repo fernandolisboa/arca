@@ -110,6 +110,20 @@ describe('knowledge.check_start (ADR-0027)', () => {
     expect(await starts.recent()).toHaveLength(2);
   });
 
+  it('ends a start whose run recorded a failure, so the next request begins another', async () => {
+    await clearStarts();
+    const starts = postgresCheckStarts(() => testDatabase.apiDb);
+    const version = { routeId: 'qm-failed', number: 1 };
+    const first = await starts.request(version);
+    expect(await starts.request(version)).toMatchObject({ began: false });
+    await postgresCheckProgressStore(() => testDatabase.jobsDb).record(first?.start.id ?? '', 0, {
+      kind: 'failed',
+      code: 'check_failed',
+    });
+    expect((await starts.recent())[0]).toMatchObject({ failed: true });
+    expect(await starts.request(version)).toMatchObject({ began: true });
+  });
+
   it('lets app_api only read and insert starts, and no other runtime role touch them', async () => {
     for (const change of [
       sql`UPDATE knowledge.check_start SET version_number = 9`,
@@ -131,17 +145,27 @@ describe('knowledge.check_progress (ADR-0027, on demand)', () => {
 
   it('records events from app_jobs and reads them back in order on app_api', async () => {
     const startId = randomUUID();
-    await written().record(startId, 1, { kind: 'page', url: law, outcome: 'reading' });
+    await written().record(startId, 1, {
+      kind: 'page',
+      url: law,
+      outcome: 'reading',
+      status: null,
+    });
     await written().record(startId, 0, { kind: 'started', items: 3, pages: 1 });
-    await written().record(startId, 2, { kind: 'page', url: law, outcome: 'http_status' });
+    await written().record(startId, 2, {
+      kind: 'page',
+      url: law,
+      outcome: 'http_status',
+      status: 503,
+    });
     await written().record(startId, 3, { kind: 'locating', pages: 1 });
     await written().record(startId, 4, { kind: 'comparing' });
     await written().record(startId, 5, { kind: 'failed', code: 'check_failed' });
     await written().record(randomUUID(), 0, { kind: 'finished' });
     expect(await read().list(startId)).toEqual([
       { kind: 'started', items: 3, pages: 1 },
-      { kind: 'page', url: law, outcome: 'reading' },
-      { kind: 'page', url: law, outcome: 'http_status' },
+      { kind: 'page', url: law, outcome: 'reading', status: null },
+      { kind: 'page', url: law, outcome: 'http_status', status: 503 },
       { kind: 'locating', pages: 1 },
       { kind: 'comparing' },
       { kind: 'failed', code: 'check_failed' },

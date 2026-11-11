@@ -276,6 +276,7 @@ export type ErrorCode =
   | 'not_found'
   | 'rate_limited'
   | 'check_off'
+  | 'check_not_started'
   | 'step_up_refused'
   | 'step_up_required'
   | 'invalid_code'
@@ -1545,12 +1546,20 @@ export function createApp({
     const reads = await adminReads(c);
     if ('refused' in reads) return reads.refused;
     const { routeId, number } = DecideVersionRequest.parse(await c.req.json());
-    if (versionChecks === undefined) return fail(c, 'check_off', 503);
+    if (versionChecks === undefined) {
+      const view = await reads.versions.view(routeId, number);
+      return view === undefined ? fail(c, 'not_found', 404) : fail(c, 'check_off', 503);
+    }
     const outcome = await versionChecks.startOne(routeId, number);
     if (outcome.ok) return c.json({ started: outcome.started }, 200);
-    return outcome.reason === 'rate_limited'
-      ? fail(c, 'rate_limited', 429)
-      : fail(c, 'not_found', 404);
+    switch (outcome.reason) {
+      case 'rate_limited':
+        return fail(c, 'rate_limited', 429);
+      case 'check_not_started':
+        return fail(c, 'check_not_started', 502);
+      case 'not_found':
+        return fail(c, 'not_found', 404);
+    }
   });
   v1.openapi(openApiRoutes.getVersionCheckProgress, async (c) => {
     const reads = await adminReads(c);

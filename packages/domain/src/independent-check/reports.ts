@@ -52,6 +52,8 @@ export interface ReportMeta extends ReportKey {
 export interface CheckStart {
   readonly id: string;
   readonly startedAt: number;
+  /** Its run recorded a failure, so it ends with no report and may be started again. */
+  readonly failed?: boolean;
 }
 
 const minute = 60_000;
@@ -97,13 +99,39 @@ export function currentReport<R extends ReportMeta>(
   return now - newest.checkedAt < lifetime ? newest : undefined;
 }
 
-/** Whether a start is still running: young enough, and no report came from it. */
+/** Reports of today's key still within their lifetime: what a version's status rests on. */
+function liveReports<R extends ReportMeta>(
+  reports: readonly R[],
+  key: ReportKey,
+  now: number,
+): R[] {
+  return reports.filter(
+    (report) =>
+      sameKey(report, key) &&
+      now - report.checkedAt < (report.failed ? failedReportLifetime : reportLifetime),
+  );
+}
+
+/** The newest of some starts. */
+export function newestStart<S extends CheckStart>(starts: readonly S[]): S | undefined {
+  return starts.reduce<S | undefined>(
+    (newest, start) =>
+      newest === undefined || start.startedAt > newest.startedAt ? start : newest,
+    undefined,
+  );
+}
+
+/** Whether a start is still running: young enough, not failed, and no report came from it. */
 export function liveStart(
   start: CheckStart,
   reports: readonly Pick<ReportMeta, 'startId'>[],
   now: number,
 ): boolean {
-  return now - start.startedAt < startLifetime && !reports.some((r) => r.startId === start.id);
+  return (
+    start.failed !== true &&
+    now - start.startedAt < startLifetime &&
+    !reports.some((r) => r.startId === start.id)
+  );
 }
 
 export const listedCheckStatuses = ['checked', 'flagged', 'running', 'stale', 'none'] as const;
@@ -111,7 +139,9 @@ export type ListedCheckStatus = (typeof listedCheckStatuses)[number];
 
 /**
  * A version's check status for the list: checked or flagged by its current report, else running
- * while a start is live, else stale when an older report exists, else none.
+ * while a start is live, else stale when an older report exists, else none. A clean report reads
+ * as checked only while no other report of the same key in its lifetime was flagged, so checking
+ * a version again until the model happens to agree never makes it checked.
  */
 export function listedCheckStatus(
   reports: readonly (ReportMeta & { readonly clean: boolean })[],
@@ -120,7 +150,9 @@ export function listedCheckStatus(
   now: number,
 ): ListedCheckStatus {
   const current = currentReport(reports, key, now);
-  if (current !== undefined) return current.clean ? 'checked' : 'flagged';
+  if (current !== undefined) {
+    return liveReports(reports, key, now).every(({ clean }) => clean) ? 'checked' : 'flagged';
+  }
   if (starts.some((start) => liveStart(start, reports, now))) return 'running';
   return reports.length > 0 ? 'stale' : 'none';
 }
@@ -169,13 +201,7 @@ export function requestedStart<S extends CheckStart>(
   startsInWindow: number,
   now: number,
 ): RequestedStart<S> {
-  const live = starts
-    .filter((start) => liveStart(start, reports, now))
-    .reduce<S | undefined>(
-      (newest, start) =>
-        newest === undefined || start.startedAt > newest.startedAt ? start : newest,
-      undefined,
-    );
+  const live = newestStart(starts.filter((start) => liveStart(start, reports, now)));
   if (live !== undefined) return { outcome: 'live', start: live };
   return startsInWindow >= maxStartsPerDay ? { outcome: 'limit' } : { outcome: 'start' };
 }

@@ -1109,7 +1109,7 @@ export const ptBR = {
       status:
         '{status, select, running {A IA está lendo as fontes desta versão. Leva alguns minutos, e a tela se atualiza sozinha.} stale {A última verificação não vale mais: a versão, o guia do país ou a IA mudaram, ou ela passou da validade.} other {Esta versão ainda não foi verificada.}}',
       startsOnOpen:
-        'As versões propostas são verificadas sozinhas quando você abre a lista de versões, até 15 por dia.',
+        'As versões propostas são verificadas sozinhas quando você abre a lista de versões, até {max} por dia.',
       loadFailure: 'Não conseguimos carregar a verificação.',
       clean:
         '{n, plural, one {O único item bate} other {Os # itens batem}} com as fontes oficiais.',
@@ -1149,7 +1149,7 @@ export const ptBR = {
       confirm: 'Analisar agora',
       starting: 'Começando a análise…',
       startFailure:
-        '{reason, select, limited {O limite de 20 análises em 24 horas foi atingido. Uma vaga abre quando a análise mais antiga completa 24 horas.} check_off {A verificação independente não está ligada aqui, então não há o que analisar.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para começar a análise. Tente de novo.}}',
+        '{reason, select, limited {O limite de {max} análises em 24 horas foi atingido. Uma vaga abre quando a análise mais antiga completa 24 horas.} check_not_started {A análise não conseguiu começar. Ela sai da fila em até 30 minutos, e aí você pode tentar de novo.} check_off {A verificação independente não está ligada aqui, então não há o que analisar.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para começar a análise. Tente de novo.}}',
       title: 'Análise com IA',
       back: 'Voltar para as versões',
       loadFailure: 'Não conseguimos carregar o andamento da análise.',
@@ -1170,6 +1170,7 @@ export const ptBR = {
         '{n, plural, one {# página longa: a IA lê só os trechos escolhidos.} other {# páginas longas: a IA lê só os trechos escolhidos.}}',
       compareDetail: '{n, plural, one {# item da regra} other {# itens da regra}}',
       pageOutcome: '{outcome, select, reading {Lendo agora} read {Lida} other {Não abriu}}',
+      httpStatus: 'O site respondeu com erro.',
       again: 'Analisar de novo',
       result: 'Resultado da análise',
     },

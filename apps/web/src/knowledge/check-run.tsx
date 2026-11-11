@@ -1,4 +1,9 @@
-import { type ApiError, type CheckProgress, routes } from '@arca/api-contract/client';
+import {
+  type ApiError,
+  type CheckProgress,
+  maxStartsPerDay,
+  routes,
+} from '@arca/api-contract/client';
 import { Button, Icon, StatusChip, type StatusTone, buttonClass } from '@arca/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
@@ -10,6 +15,7 @@ import {
   type CheckRunStepStatus,
   checkRunStepStatuses,
   checkRunSteps,
+  pagesSettled,
 } from './check-run-steps.js';
 import { card } from './review-parts.js';
 import type { KnowledgeWords } from './words.js';
@@ -21,8 +27,11 @@ export interface CheckedVersion {
 }
 
 type StartFailure = ReturnType<typeof startFailure>;
+const startCodes = ['check_off', 'check_not_started'] as const;
+const isStartCode = (code: string): code is (typeof startCodes)[number] =>
+  (startCodes as readonly string[]).includes(code);
 const startFailure = (error: unknown) =>
-  commonFailure(error, ({ code }: ApiError) => (code === 'check_off' ? code : undefined));
+  commonFailure(error, ({ code }: ApiError) => (isStartCode(code) ? code : undefined));
 
 export interface CheckRunState {
   readonly version: CheckedVersion;
@@ -43,11 +52,16 @@ export interface CheckRunState {
  * confirmed with its cost in view, then started. The server answers a running check in place of
  * a second one, so `onStarted` runs either way and the admin lands on the one to watch.
  */
-export function useCheckRun(version: CheckedVersion, onStarted: () => void): CheckRunState {
+export function useCheckRun(version: CheckedVersion, onStarted?: () => void): CheckRunState {
   const { routeId, number } = version;
   const queryClient = useQueryClient();
   const check = useQuery(versionCheckQuery(routeId, number));
   const progress = useQuery(checkProgressQuery(routeId, number));
+  const finished = progress.data?.state === 'finished';
+  // A forced check replaces a current report, so the report is read again once the run ends.
+  useEffect(() => {
+    if (finished) void queryClient.invalidateQueries({ queryKey: ['knowledge', 'check'] });
+  }, [finished, queryClient]);
   const [confirming, setConfirming] = useState(false);
   const start = useMutation({
     mutationFn: () => reach(api.call(routes.startVersionCheck, { routeId, number })),
@@ -55,7 +69,7 @@ export function useCheckRun(version: CheckedVersion, onStarted: () => void): Che
     onSuccess: async () => {
       setConfirming(false);
       await queryClient.invalidateQueries({ queryKey: ['knowledge'] });
-      onStarted();
+      onStarted?.();
     },
   });
   return {
@@ -145,7 +159,10 @@ export function CheckRunConfirm({
           ? t('knowledge.checkRun.starting')
           : state.failure === undefined
             ? ''
-            : t('knowledge.checkRun.startFailure', { reason: state.failure })}
+            : t('knowledge.checkRun.startFailure', {
+                reason: state.failure,
+                max: maxStartsPerDay,
+              })}
       </p>
     </section>
   );
@@ -196,7 +213,7 @@ export function CheckRunSteps({
 }) {
   const { t } = words;
   const statuses = checkRunStepStatuses(progress);
-  const done = progress.pages.filter(({ outcome }) => outcome !== 'reading').length;
+  const done = pagesSettled(progress);
   const details: Record<CheckRunStep, string | null> = {
     read:
       progress.pageCount === null
@@ -237,7 +254,7 @@ export function CheckRunSteps({
             )}
             {step === 'read' && progress.pages.length > 0 && (
               <ul className="flex flex-col gap-2">
-                {progress.pages.map(({ url, outcome }) => (
+                {progress.pages.map(({ url, outcome, status: httpStatus }) => (
                   <li
                     key={url}
                     className="flex animate-row-land flex-col gap-1 border-t border-line pt-2 text-small"
@@ -250,7 +267,12 @@ export function CheckRunSteps({
                       />
                       {outcome !== 'read' && outcome !== 'reading' && (
                         <span className="text-muted">
-                          {t('knowledge.check.outcome', { outcome, status: '' })}
+                          {outcome === 'http_status' && httpStatus === null
+                            ? t('knowledge.checkRun.httpStatus')
+                            : t('knowledge.check.outcome', {
+                                outcome,
+                                status: String(httpStatus ?? ''),
+                              })}
                         </span>
                       )}
                     </span>

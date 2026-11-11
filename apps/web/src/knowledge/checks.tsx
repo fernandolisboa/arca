@@ -1,5 +1,6 @@
 import {
   type KnowledgeVersion,
+  maxAutomaticStartsPerDay,
   maxQuotes,
   routes,
   type VersionCheckReport,
@@ -117,7 +118,9 @@ export function CheckReport({
         <div aria-live="polite" className="flex flex-col gap-1">
           <p>{t('knowledge.check.status', { status: check.data.status })}</p>
           {view.state === 'proposed' && check.data.status !== 'running' && (
-            <p className="text-small text-muted">{t('knowledge.check.startsOnOpen')}</p>
+            <p className="text-small text-muted">
+              {t('knowledge.check.startsOnOpen', { max: maxAutomaticStartsPerDay })}
+            </p>
           )}
         </div>
       ) : (

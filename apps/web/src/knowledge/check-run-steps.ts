@@ -6,7 +6,16 @@ export type CheckRunStep = (typeof checkRunSteps)[number];
 /** `skipped` when the check had no use for the step; `stopped` where a check ended early. */
 export type CheckRunStepStatus = 'done' | 'current' | 'pending' | 'skipped' | 'stopped';
 
-const stageSteps = { starting: 'read', reading: 'read', locating: 'locate', comparing: 'compare' };
+const stageSteps = {
+  starting: 'read',
+  reading: 'read',
+  locating: 'locate',
+  comparing: 'compare',
+} as const satisfies Record<CheckProgress['stage'], CheckRunStep>;
+
+/** How many cited pages are past their read, whatever its outcome. */
+export const pagesSettled = ({ pages }: Pick<CheckProgress, 'pages'>): number =>
+  pages.filter(({ outcome }) => outcome !== 'reading').length;
 
 /**
  * Each step of a check as the progress screen lists it. A running check is at the step of its
@@ -16,7 +25,7 @@ const stageSteps = { starting: 'read', reading: 'read', locating: 'locate', comp
 export function checkRunStepStatuses(
   progress: Pick<CheckProgress, 'state' | 'stage' | 'locatedPages'>,
 ): Record<CheckRunStep, CheckRunStepStatus> {
-  const at = checkRunSteps.indexOf(stageSteps[progress.stage] as CheckRunStep);
+  const at = checkRunSteps.indexOf(stageSteps[progress.stage]);
   const finished = progress.state === 'finished';
   const entered = (step: CheckRunStep) =>
     step === 'locate' ? progress.locatedPages !== null : checkRunSteps.indexOf(step) <= at;

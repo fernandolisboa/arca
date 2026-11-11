@@ -12,8 +12,18 @@ const law = 'https://www.gov.example/law';
 const fees = 'https://fees.gov.example/table';
 
 const started: CheckProgressEvent = { kind: 'started', items: 4, pages: 2 };
-const reading = (url: string): CheckProgressEvent => ({ kind: 'page', url, outcome: 'reading' });
-const read = (url: string): CheckProgressEvent => ({ kind: 'page', url, outcome: 'read' });
+const reading = (url: string): CheckProgressEvent => ({
+  kind: 'page',
+  url,
+  outcome: 'reading',
+  status: null,
+});
+const read = (url: string): CheckProgressEvent => ({
+  kind: 'page',
+  url,
+  outcome: 'read',
+  status: 200,
+});
 
 const empty: CheckProgress = {
   startedAt: start.startedAt,
@@ -36,7 +46,7 @@ describe('checkProgress', () => {
       [started, reading(law)],
       false,
       now,
-      { stage: 'reading', ...counted, pages: [{ url: law, outcome: 'reading' }] },
+      { stage: 'reading', ...counted, pages: [{ url: law, outcome: 'reading', status: null }] },
     ],
     [
       'pages with their latest outcome, in the order first read',
@@ -45,7 +55,7 @@ describe('checkProgress', () => {
         reading(law),
         read(law),
         reading(fees),
-        { kind: 'page', url: fees, outcome: 'timeout' },
+        { kind: 'page', url: fees, outcome: 'http_status', status: 503 },
       ],
       false,
       now,
@@ -53,8 +63,8 @@ describe('checkProgress', () => {
         stage: 'reading',
         ...counted,
         pages: [
-          { url: law, outcome: 'read' },
-          { url: fees, outcome: 'timeout' },
+          { url: law, outcome: 'read', status: 200 },
+          { url: fees, outcome: 'http_status', status: 503 },
         ],
       },
     ],

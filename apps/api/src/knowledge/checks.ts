@@ -7,6 +7,7 @@ import {
   checkItems,
   checkProgress,
   currentReport,
+  newestStart,
   listedCheckStatus,
   noGuide,
   scriptedCheckerModel,
@@ -47,7 +48,7 @@ export type ReportOutcome =
 export type RequestedCheckOutcome =
   /** `started` is false when the version's live start was answered in place of a new one. */
   | { readonly ok: true; readonly started: boolean }
-  | { readonly ok: false; readonly reason: 'not_found' | 'rate_limited' };
+  | { readonly ok: false; readonly reason: 'not_found' | 'rate_limited' | 'check_not_started' };
 
 export type ProgressOutcome =
   | { readonly ok: true; readonly progress: CheckProgress | null }
@@ -107,12 +108,15 @@ export function createVersionChecks({
     model: checker.model,
   });
 
-  /** A start whose run never begins dies in 30 minutes, and may then be started again. */
+  /**
+   * Answers whether every run began. A start whose run never begins dies in 30 minutes, and may
+   * then be started again.
+   */
   const runAll = async (started: readonly RecordedStart[], route: string) => {
     const runs = await Promise.allSettled(started.map((each) => run(each)));
-    if (runs.some((outcome) => outcome.status === 'rejected')) {
-      logger.error({ route, errorCode: 'check_not_started' });
-    }
+    if (runs.every((outcome) => outcome.status === 'fulfilled')) return true;
+    logger.error({ route, errorCode: 'check_not_started' });
+    return false;
   };
 
   return {
@@ -133,19 +137,15 @@ export function createVersionChecks({
       if (subject(routeId, number) === undefined) return { ok: false, reason: 'not_found' };
       const requested = await starts.request({ routeId, number });
       if (requested === undefined) return { ok: false, reason: 'rate_limited' };
-      if (requested.began) await runAll([requested.start], '/v1/knowledge/versions/check/start');
-      return { ok: true, started: requested.began };
+      if (!requested.began) return { ok: true, started: false };
+      return (await runAll([requested.start], '/v1/knowledge/versions/check/start'))
+        ? { ok: true, started: true }
+        : { ok: false, reason: 'check_not_started' };
     },
 
     async progress(routeId, number) {
       if (subject(routeId, number) === undefined) return { ok: false, reason: 'not_found' };
-      const newest = ofVersion(
-        routeId,
-        number,
-      )(await starts.recent()).reduce<RecordedStart | undefined>(
-        (best, each) => (best === undefined || each.startedAt > best.startedAt ? each : best),
-        undefined,
-      );
+      const newest = newestStart(ofVersion(routeId, number)(await starts.recent()));
       if (newest === undefined) return { ok: true, progress: null };
       const [events, stored] = await Promise.all([progress.list(newest.id), reports.list()]);
       const reported = stored.some(({ startId }) => startId === newest.id);

@@ -67,6 +67,30 @@ describe('listedCheckStatus', () => {
     ['stale with only an older report', [report({ model: 'n' })], [dead], 'stale'],
     ['none with nothing', [], [dead], 'none'],
     [
+      'flagged when a clean report follows a flagged one of the same key',
+      [report({ clean: false }), report({ startId: 'start-2', checkedAt: now - minute })],
+      [],
+      'flagged',
+    ],
+    [
+      'checked when the flagged one was for older content',
+      [
+        report({ clean: false, contentHash: 'b'.repeat(64) }),
+        report({ startId: 'start-2', checkedAt: now - minute }),
+      ],
+      [],
+      'checked',
+    ],
+    [
+      'checked once the flagged one outlived its lifetime',
+      [
+        report({ clean: false, failed: true, checkedAt: now - day - minute }),
+        report({ startId: 'start-2', checkedAt: now - minute }),
+      ],
+      [],
+      'checked',
+    ],
+    [
       'not running once its start reported',
       [report({ startId: 'start-9', model: 'n' })],
       [live],

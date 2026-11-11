@@ -13,6 +13,7 @@ import {
   pageProgressOutcomes,
   progressFailures,
   maxNoteLength,
+  maxAutomaticStartsPerDay,
   maxQuoteLength,
   maxQuotes,
   comparisonCriterionSchema,
@@ -434,7 +435,9 @@ export const closeRuleReports = {
  * checked against the cited official pages: plain text, quotes and URLs included, never links.
  */
 
-export const StartVersionChecksResponse = z.strictObject({ started: z.int().min(0).max(15) });
+export const StartVersionChecksResponse = z.strictObject({
+  started: z.int().min(0).max(maxAutomaticStartsPerDay),
+});
 export type StartVersionChecksResponse = z.infer<typeof StartVersionChecksResponse>;
 
 export const startVersionChecks = {
@@ -529,7 +532,7 @@ export const startVersionCheck = {
   path: '/knowledge/versions/check/start',
   operationId: 'startVersionCheck',
   summary:
-    'Starts a new independent check of one route version for an admin, in any state and whatever its current report; while a check of the version is running it answers that one and starts nothing. Counts against the 20 starts in any 24 hours per environment (429 rate_limited). 403 not_admin; 404 not_found; 503 check_off where no checker is configured',
+    'Starts a new independent check of one route version for an admin, in any state and whatever its current report; while a check of the version is running it answers that one and starts nothing. Counts against the 20 starts in any 24 hours per environment (429 rate_limited). 403 not_admin; 404 not_found; 502 check_not_started when its run could not begin, which then counts as running for up to 30 minutes; 503 check_off where no checker is configured',
   body: DecideVersionRequest,
   response: { description: 'Started, or already running', schema: StartVersionCheckResponse },
 } as const satisfies RouteDefinition<typeof StartVersionCheckResponse>;
@@ -544,7 +547,14 @@ export const CheckProgress = z.strictObject({
   pageCount: z.int().min(0).max(1_000).nullable(),
   /** Each cited page in the order first read, with its latest outcome; plain text, never a link. */
   pages: z
-    .array(z.strictObject({ url: z.string().max(2_000), outcome: z.enum(pageProgressOutcomes) }))
+    .array(
+      z.strictObject({
+        url: z.string().max(2_000),
+        outcome: z.enum(pageProgressOutcomes),
+        /** The final HTTP status once read or refused, when there was one. */
+        status: z.int().min(0).max(999).nullable(),
+      }),
+    )
     .max(200),
   /** How many long pages had passages picked, once that stage began. */
   locatedPages: z.int().min(0).max(1_000).nullable(),
@@ -644,7 +654,9 @@ export {
   expressionOperators,
   factKeys,
   factTargets,
+  maxAutomaticStartsPerDay,
   maxQuotes,
+  maxStartsPerDay,
   relationshipSteps,
   staleAfterDays,
   versionKey,
