@@ -1,19 +1,18 @@
 import { type ReactNode, useId } from 'react';
-import type { KnowledgeWords } from './words.js';
-
 import type { TallyTone } from './step-checks.js';
+import type { KnowledgeWords } from './words.js';
 
 const surfaceShape = 'rounded-control border bg-surface p-4';
 
 /** The surface of one item under review, and the card that lays one out. */
 export const surface = `${surfaceShape} border-line`;
-export const card = `flex min-w-0 flex-col gap-2 ${surface}`;
+const cardLayout = 'flex min-w-0 flex-col gap-2';
+export const card = `${cardLayout} ${surface}`;
 
 /** An item's surface, its border tinted when the check found its point differs. */
 export const surfaceOf = (tone: TallyTone | undefined): string =>
   tone === 'differs' ? `${surfaceShape} border-danger-ink/40` : surface;
-export const cardOf = (tone: TallyTone | undefined): string =>
-  `flex min-w-0 flex-col gap-2 ${surfaceOf(tone)}`;
+export const cardOf = (tone: TallyTone | undefined): string => `${cardLayout} ${surfaceOf(tone)}`;
 
 /** IDs added, removed or changed in one section since the version before. */
 export interface SectionChange {

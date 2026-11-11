@@ -28,6 +28,11 @@ const markTone: Record<TallyTone, string> = {
   unread: 'bg-warn-bg text-warn-ink',
 };
 
+const markIcon = { ok: 'check', differs: 'close', unread: 'help' } as const satisfies Record<
+  TallyTone,
+  string
+>;
+
 const chipTone = { ok: 'ok', differs: 'danger', unread: 'warn' } as const satisfies Record<
   TallyTone,
   StatusTone
@@ -45,7 +50,7 @@ export function PointMark({ tone }: { readonly tone: TallyTone }) {
     <span
       className={`grid size-6 shrink-0 place-items-center rounded-full border border-current/20 ${markTone[tone]}`}
     >
-      <Icon name={tone === 'ok' ? 'check' : tone === 'differs' ? 'close' : 'help'} size={14} />
+      <Icon name={markIcon[tone]} size={14} />
     </span>
   );
 }

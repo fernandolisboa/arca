@@ -30,25 +30,23 @@ function Cards<T>({
   items,
   keyOf,
   render,
-  point,
-  pointKey,
+  check,
 }: {
   readonly items: readonly T[];
   readonly keyOf: (item: T) => string;
   readonly render: (item: T) => ReactNode;
   /** The check's points, and the check key of an item, to show its result under it. */
-  readonly point?: PointOf;
-  readonly pointKey?: (item: T) => string;
+  readonly check?: { readonly points: PointOf; readonly keyOf: (item: T) => string };
 }) {
   return (
     <ol className="flex flex-col gap-3">
       {items.map((item, position) => {
-        const key = pointKey?.(item);
+        const key = check?.keyOf(item);
         return (
           <li
             key={keyOf(item)}
             className={`grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 ${surfaceOf(
-              key === undefined ? undefined : point?.tone(key),
+              key === undefined ? undefined : check?.points.tone(key),
             )}`}
           >
             <span
@@ -59,7 +57,7 @@ function Cards<T>({
             </span>
             <div className="flex min-w-0 flex-col gap-2">
               {render(item)}
-              {key !== undefined && point?.result(key)}
+              {key !== undefined && check?.points.result(key)}
             </div>
           </li>
         );
@@ -182,8 +180,7 @@ function StepContent({
         <Cards
           items={view.requirements}
           keyOf={(requirement) => requirement.id}
-          point={point}
-          pointKey={(requirement) => `requirement:${requirement.id}`}
+          check={{ points: point, keyOf: (requirement) => `requirement:${requirement.id}` }}
           render={(requirement) => (
             <>
               <p className="font-medium">{requirement.title}</p>
@@ -198,8 +195,7 @@ function StepContent({
         <Cards
           items={view.assessments}
           keyOf={(assessment) => assessment.id}
-          point={point}
-          pointKey={(assessment) => `assessment:${assessment.id}`}
+          check={{ points: point, keyOf: (assessment) => `assessment:${assessment.id}` }}
           render={(assessment) => (
             <>
               <p className="font-medium">{assessment.title}</p>
@@ -213,8 +209,7 @@ function StepContent({
         <Cards
           items={view.dependents}
           keyOf={(dependent) => dependent.id}
-          point={point}
-          pointKey={(dependent) => `dependent:${dependent.id}`}
+          check={{ points: point, keyOf: (dependent) => `dependent:${dependent.id}` }}
           render={(dependent) => (
             <>
               <p className="font-medium">{dependent.title}</p>
@@ -238,8 +233,7 @@ function StepContent({
         <Cards
           items={view.costs}
           keyOf={(cost) => cost.id}
-          point={point}
-          pointKey={(cost) => `cost:${cost.id}`}
+          check={{ points: point, keyOf: (cost) => `cost:${cost.id}` }}
           render={(cost) => (
             <>
               <p className="font-medium">{cost.title}</p>
@@ -267,8 +261,7 @@ function StepContent({
         <Cards
           items={view.durations}
           keyOf={(stage) => stage.id}
-          point={point}
-          pointKey={(stage) => `duration:${stage.id}`}
+          check={{ points: point, keyOf: (stage) => `duration:${stage.id}` }}
           render={(stage) => (
             <>
               <p>
@@ -288,8 +281,7 @@ function StepContent({
         <Cards
           items={view.countrySets}
           keyOf={(set) => set.id}
-          point={point}
-          pointKey={(set) => `countrySet:${set.id}/${String(set.number)}`}
+          check={{ points: point, keyOf: (set) => `countrySet:${set.id}/${String(set.number)}` }}
           render={(set) => (
             <>
               {t('knowledge.countrySet', {
