@@ -106,8 +106,14 @@ export function CoachMark({
   useLayoutEffect(() => {
     const ids = key.split(' ');
     let frame = 0;
+    let watched: HTMLElement | null = null;
     const update = () => {
       const target = findTarget(ids);
+      if (target !== watched) {
+        if (watched !== null) sizes.unobserve(watched);
+        if (target !== null) sizes.observe(target);
+        watched = target;
+      }
       const box = target === null ? null : measure(target);
       const card = cardRef.current;
       // eslint-disable-next-line @eslint-react/set-state-in-effect -- measured before paint, so no flash
@@ -120,16 +126,20 @@ export function CoachMark({
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(update);
     };
+    // Font swaps, text size and reflow move the target without a resize or scroll event, and a
+    // screen that is still loading adds the target, or grows it, after the step opens.
+    const sizes = new ResizeObserver(schedule);
+    sizes.observe(document.body);
+    const changes = new MutationObserver(schedule);
+    changes.observe(document.body, { childList: true, subtree: true });
     findTarget(ids)?.scrollIntoView({ block: 'center' });
     update();
-    // Font swaps, text size and reflow move the target without a resize or scroll event.
-    const observer = new ResizeObserver(schedule);
-    observer.observe(document.body);
     addEventListener('resize', schedule);
     addEventListener('scroll', schedule, true);
     return () => {
       cancelAnimationFrame(frame);
-      observer.disconnect();
+      sizes.disconnect();
+      changes.disconnect();
       removeEventListener('resize', schedule);
       removeEventListener('scroll', schedule, true);
     };

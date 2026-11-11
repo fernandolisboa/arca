@@ -26,14 +26,17 @@ const screenHint = (id: string, path: string): Tour => ({
   steps: [{ id: 'screen', targetIds: [pageIntroId] }],
 });
 
-/** The first-run walk through the main areas, by way of the navigation. */
+/** The first-run walk through the main areas, by way of the navigation: a step's id is its destination's. */
 export const appTour: Tour = {
   id: 'app',
   path: '/',
   steps: ['home', 'family', 'compare', 'vault', 'settings'].map(destination),
 };
 
-/** A new screen adds its hint here and its two messages to the catalog; nothing else changes. */
+/**
+ * A new screen adds its hint here, its two messages to the catalog and its id to the tours the
+ * e2e suites start with (`e2e/tour.ts`); the tour code itself does not change.
+ */
 export const screenHints: readonly Tour[] = [
   screenHint('family', '/family'),
   screenHint('compare', '/compare'),
@@ -49,4 +52,25 @@ export const tours: readonly Tour[] = [appTour, ...screenHints];
 export function nextTour(pathname: string, seen: ReadonlySet<string>): Tour | undefined {
   const pending = seen.has(appTour.id) ? screenHints : [appTour];
   return pending.find((tour) => tour.path === pathname && !seen.has(tour.id));
+}
+
+/** What the tour reads from the signed-in session. */
+export interface TourAccount {
+  readonly confirmed: boolean;
+  readonly deletionDueAt: string | null;
+  readonly pendingPasskeyUntil: string | null;
+  readonly recoveryPending: boolean;
+}
+
+/**
+ * Whether the tour can run: only a confirmed account sees its screens, and one with a security
+ * notice pending (a new passkey, a recovery, a deletion) reads that notice first, uncovered.
+ */
+export function tourReady(account: TourAccount | undefined): boolean {
+  return (
+    account?.confirmed === true &&
+    account.deletionDueAt === null &&
+    account.pendingPasskeyUntil === null &&
+    !account.recoveryPending
+  );
 }

@@ -101,6 +101,8 @@ export const ptBR = {
         'O tour mostra onde fica cada coisa. As dicas aparecem na primeira vez que você abre uma tela.',
       replayTour: 'Ver o tour de novo',
       replayHints: 'Mostrar as dicas de novo',
+      unavailable:
+        'O tour aparece para quem entrou em uma conta confirmada e sem aviso de segurança pendente.',
       hintsBack: 'Pronto. Cada dica volta a aparecer quando você abrir a tela dela.',
     },
     appearance: {

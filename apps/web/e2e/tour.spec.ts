@@ -55,7 +55,17 @@ test('walks a new account through the app once, then hints at a screen once', as
   await page.goto(`${databaseServer.origin}/family`);
   const hint = coachMark(page, 'Comece por aqui');
   await expect(hint.getByRole('button')).toHaveText(['Entendi']);
+  // The spotlight follows the screen's intro as it grows with the lead (8 px around it).
+  await expect(page.getByText('Comece o caso da sua família.')).toBeVisible();
+  await expect
+    .poll(async () => {
+      const intro = await page.locator('#page-intro').boundingBox();
+      const spotlight = await page.locator('[data-coach-spotlight]').boundingBox();
+      return (spotlight?.height ?? 0) - (intro?.height ?? 0);
+    })
+    .toBe(16);
   await hint.getByRole('button', { name: 'Entendi' }).click();
+  await expect(page.locator('#page-intro')).toBeFocused();
   await page.reload();
   await expect(page.getByRole('heading', { level: 2, name: 'Área da família' })).toBeVisible();
   await expect(page.getByRole('dialog')).toHaveCount(0);

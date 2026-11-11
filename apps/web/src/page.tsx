@@ -22,7 +22,8 @@ export function Page({
       aria-labelledby={titleId}
       className={`flex flex-col gap-5 ${wide ? 'w-full' : 'mx-auto max-w-md'}`}
     >
-      <div id={pageIntroId} className="flex flex-col gap-2">
+      {/* A screen hint returns focus here when it closes, so the place is not lost. */}
+      <div id={pageIntroId} tabIndex={-1} className="flex flex-col gap-2 outline-none">
         <h2 id={titleId} className="font-display text-title">
           {title}
         </h2>

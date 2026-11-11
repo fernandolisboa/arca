@@ -19,6 +19,7 @@ import {
   type AxisSection,
   type SettingsSection,
 } from '../settings/sections.js';
+import { useTourReady } from '../tour/guide.js';
 import { seenTours } from '../tour/seen.js';
 import { appTour, screenHints } from '../tour/tours.js';
 
@@ -198,6 +199,8 @@ function HelpPanel() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [hintsBack, setHintsBack] = useState(false);
+  const ready = useTourReady();
+  if (!ready) return <p>{t('settings.help.unavailable')}</p>;
   return (
     <div className="flex flex-col items-start gap-3">
       <Button
