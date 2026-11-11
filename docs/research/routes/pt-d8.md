@@ -4,6 +4,12 @@ Research notes for Portugal's D8 residence visa for remote work for employers or
 
 ## Audits
 
+### 2026-11-11, check loop
+
+- **Version audited:** 4
+- **Outcome:** correction, version 5 (pull request [#382](https://github.com/fernandolisboa/arca/pull/382)), the same two changes as [`pt-d7`](pt-d7.md#2026-11-11-check-loop) version 5, where the entry is.
+- **Check loop:** 1 of 24 items match, the EU, EEA and Swiss set; the rest is `unreadable`, as in `pt-d7`'s entry.
+
 ### 2026-11-11
 
 The first full audit by the runbook ([#356](https://github.com/fernandolisboa/arca/issues/356)), on demand, done together with [`pt-d7`](pt-d7.md). The two routes share every source but three; what they share is in [that record](pt-d7.md#2026-11-11), and this one holds what is D8's own.

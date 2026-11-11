@@ -109,7 +109,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Owner | Responsável | The founder, who owns the repository and is the first admin; "founder" in product docs means the same person |
 | Active version | Versão ativa | A route version with a counted activation and no rejection; the only kind the engine evaluates for a case |
 | Rejected version | Versão recusada | A route version with a counted rejection; selection skips it for good |
-| Version settings | Configurações da versão | The fields of a route version other than its items: dates, currency, leap-day rule, reference dates, closure sources, tags and pins |
+| Version settings | Configurações da versão | The fields of a route version other than its items: dates, currency, leap-day rule (a convention, or unsettled when no official text settles it), reference dates, closure sources, tags and pins |
 | Tag | Etiqueta | A free label of a route version, such as `investment`, hashed and activated with it |
 | Pinned file | Arquivo fixado | A versioned data file a route version names by ID and number, such as a country list or an official-domain list |
 | Decisive missing fact | Dado decisivo pendente | An unknown fact whose answer could change an evaluation's status |

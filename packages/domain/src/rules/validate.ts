@@ -164,7 +164,11 @@ export function checkRouteVersion(
   } else if (version.closureSources !== undefined) {
     issue('/closureSources', 'Only a closed version has closure sources');
   }
-  if (version.leapDayBirthday !== undefined) {
+  if (version.leapDayBirthday === 'unsettled') {
+    if (version.leapDayBirthdaySources !== undefined) {
+      issue('/leapDayBirthdaySources', 'An unsettled leap-day birthday cites no sources');
+    }
+  } else if (version.leapDayBirthday !== undefined) {
     if (version.leapDayBirthdaySources === undefined) {
       issue('/leapDayBirthdaySources', 'The leap-day convention cites its sources');
     } else {
