@@ -91,6 +91,7 @@ export function MenuPanel({
             <NavList
               items={group.items}
               link={link}
+              place="menu"
               shape="row"
               direction="column"
               onNavigate={onNavigate}
