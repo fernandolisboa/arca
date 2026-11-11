@@ -1,5 +1,6 @@
 import { createHash, generateKeyPairSync, randomBytes, sign } from 'node:crypto';
 import type { PasskeyAssertion, PasskeyAttestation } from '@arca/api-contract/routes';
+import { isoCBOR } from '@simplewebauthn/server/helpers';
 
 const sha256 = (data: Buffer | string) => createHash('sha256').update(data).digest();
 
@@ -13,29 +14,35 @@ function coseKey(x: Buffer, y: Buffer): Buffer {
   ]);
 }
 
-/** CBOR for the "none" attestation of a credential: {fmt: "none", attStmt: {}, authData}. */
-function noneAttestation(authData: Buffer): Buffer {
-  const text = (value: string) =>
-    Buffer.concat([Buffer.from([0x60 + value.length]), Buffer.from(value)]);
-  const length = Buffer.alloc(2);
-  length.writeUInt16BE(authData.length);
-  return Buffer.concat([
-    Buffer.from([0xa3]),
-    text('fmt'),
-    text('none'),
-    text('attStmt'),
-    Buffer.from([0xa0]),
-    text('authData'),
-    Buffer.from([0x59]),
-    length,
-    authData,
-  ]);
+/** An attestation statement as an authenticator would send it, or one a test forged. */
+export interface AttestationStatement {
+  readonly fmt: string;
+  readonly attStmt: Readonly<Record<string, string | number | Uint8Array | Uint8Array[]>>;
+}
+
+const noAttestation: AttestationStatement = { fmt: 'none', attStmt: {} };
+
+function attestationObject({ fmt, attStmt }: AttestationStatement, authData: Buffer): Buffer {
+  return Buffer.from(
+    isoCBOR.encode(
+      new Map<string, unknown>([
+        ['fmt', fmt],
+        ['attStmt', new Map(Object.entries(attStmt))],
+        ['authData', new Uint8Array(authData)],
+      ]) as Parameters<typeof isoCBOR.encode>[0],
+    ),
+  );
 }
 
 export interface AttestationOptions {
   readonly challenge: string;
   readonly origin: string;
   readonly userVerified?: boolean;
+  /**
+   * Absent, the "none" format a synced passkey sends; "self" is the packed statement the new key
+   * signs itself; anything else is sent as given.
+   */
+  readonly statement?: 'self' | AttestationStatement;
   /** What the authenticator reports for the PRF extension; absent, it reports nothing. */
   readonly prfEnabled?: boolean;
 }
@@ -60,12 +67,13 @@ export function softwarePasskey(rpId: string) {
   let counter = 0;
   return {
     credentialId,
-    /** Registers the key as a synced passkey would, with no attestation statement. */
+    /** Registers the key as a synced passkey would; `statement` changes what attests it. */
     attest({
       challenge,
       origin,
       userVerified = true,
       prfEnabled,
+      statement,
     }: AttestationOptions): PasskeyAttestation {
       // UP, UV when verified, backup eligible and backed up, attested credential data.
       const flags = 0x01 | (userVerified ? 0x04 : 0) | 0x08 | 0x10 | 0x40;
@@ -83,13 +91,26 @@ export function softwarePasskey(rpId: string) {
       const clientDataJSON = Buffer.from(
         JSON.stringify({ type: 'webauthn.create', challenge, origin, crossOrigin: false }),
       );
+      const selfAttestation = (): AttestationStatement => ({
+        fmt: 'packed',
+        attStmt: {
+          alg: -7,
+          sig: new Uint8Array(
+            sign('sha256', Buffer.concat([authenticatorData, sha256(clientDataJSON)]), privateKey),
+          ),
+        },
+      });
+      const attestation = attestationObject(
+        statement === 'self' ? selfAttestation() : (statement ?? noAttestation),
+        authenticatorData,
+      );
       return {
         id: credentialId,
         rawId: credentialId,
         type: 'public-key',
         response: {
           clientDataJSON: clientDataJSON.toString('base64url'),
-          attestationObject: noneAttestation(authenticatorData).toString('base64url'),
+          attestationObject: attestation.toString('base64url'),
           transports: ['internal', 'hybrid'],
         },
         authenticatorAttachment: 'platform',
