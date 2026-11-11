@@ -9,7 +9,7 @@ Research notes for Ireland's Critical Skills Employment Permit, route `ie-critic
 The second audit, the first by the full runbook ([#359](https://github.com/fernandolisboa/arca/issues/359)), on demand, in one pull request with the British, Australian and Japanese routes ([British record](gb-skilled-worker.md)). As the issue asked, it covers what the pilot left: the requirements, the family rules of the Family Reunification Policy, and later instruments.
 
 - **Version audited:** 2
-- **Outcome:** correction, version 3 (pull request [PR_NUMBER](https://github.com/fernandolisboa/arca/pull/PR_NUMBER)), from version 2's date, 2026-06-12, which it replaces entirely. It pins the EU, EEA and Swiss set at version 2.
+- **Outcome:** correction, version 3 (pull request [#387](https://github.com/fernandolisboa/arca/pull/387)), from version 2's date, 2026-06-12, which it replaces entirely. It pins the EU, EEA and Swiss set at version 2.
 - **Sources re-read** (all on 2026-11-11 UTC with `curl`):
   - The Employment Permits Act 2024, print form, whole; ss. 7, 8 and 22 are now cited per section (`/eli/2024/act/17/section/<n>/enacted/en/html`), so the check reads the provision instead of the whole act.
   - S.I. No. 444 of 2024 (regs. 7, 25 to 29, Schedule 1), S.I. No. 643 of 2025, S.I. No. 213 of 2026 and S.I. No. 558 of 2026, print forms, whole; with them the amending S.I. Nos. 33, 64, 119 and 127 of 2025, which change regs. 8, 9 and 14 and Schedules 3 and 5; Schedule 3 has since been replaced whole twice, and none of the rest is cited. S.I. No. 558 of 2026, cited in version 2 as a PDF, now has an html form, which version 3 cites.

@@ -9,7 +9,7 @@ Research notes for Japan's long-term resident status (teijusha) for the third ge
 The first audit by the runbook ([#359](https://github.com/fernandolisboa/arca/issues/359)), on demand, in one pull request with the British, Irish and Australian routes ([British record](gb-skilled-worker.md)).
 
 - **Version audited:** 1
-- **Outcome:** correction, version 2 (pull request [PR_NUMBER](https://github.com/fernandolisboa/arca/pull/PR_NUMBER)), from version 1's date, 2022-04-01, which it replaces entirely.
+- **Outcome:** correction, version 2 (pull request [#387](https://github.com/fernandolisboa/arca/pull/387)), from version 1's date, 2022-04-01, which it replaces entirely.
 - **Sources re-read** (all on 2026-11-11 UTC):
   - `teijusha-notice`: Ministry of Justice Notice No. 132 of 1990. `curl` gets a CloudFront 403 from `moj.go.jp`, so the `web-fetch` agent saved the PDF and the audit read the file with `pdftotext -raw`. Items 3 to 7 read as version 1 has them. The agency's page for the notice, `/isa/policies/bill/nyukan_hourei_h07-01-01.html`, names Notice No. 220 of 28 October 2021 as the latest amendment, as version 1 did.
   - `immigration-act`, `civil-code` (arts. 4 and 143) and `age-calculation-act`: `curl` on the e-Gov API v2, current revision of each. Each now names the API's whole-text XML, `https://laws.e-gov.go.jp/api/2/law_data/<id>?response_format=xml&law_full_text_format=xml`, as `machineReadableUrl`, since the cited page is drawn by scripts.
