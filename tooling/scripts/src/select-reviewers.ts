@@ -70,7 +70,7 @@ const rules: readonly Rule[] = [
   },
   // The monthly rule audit reads a route's notes back at the route's next turn, and reads its
   // hosts by the recipes, with nobody watching.
-  { match: /^docs\/research\/routes\/[^/]+\.md$/, reviewers: ['security'] },
+  { match: /^docs\/research\/routes\/.+\.md$/, reviewers: ['security'] },
   { match: /^docs\/runbooks\/reading-recipes\.md$/, reviewers: ['supply-chain'] },
   { match: /^docs\/vault-format\.md$/, reviewers: ['security', 'auth-crypto'] },
   // ADRs and the data-flow register admit vendors and services and set the auth and vault design.
