@@ -56,7 +56,7 @@ ADR-0008 says deleting a case deletes related data in workflow runs. That cannot
 - Zero retention removes payload inspection after a run ends; debugging relies on our own logs and the database rows steps write.
 - The API depends on a release-candidate build tool. Its version is pinned, its upgrades go through the supply-chain reviewer, and the Hono app does not depend on it.
 - Case deletion leaves identifier-only run payloads at Vercel for up to 36 days, and run metadata for up to one year.
-- **How the SDK's routes reject requests the queue did not send** (spec 0001, R6; checked 2026-11-02 against `workflow` 5.2.3):
+- **How the SDK's routes reject requests the queue did not send** (spec 0001, R6; checked 2026-11-02 against `workflow` 5.2.3, and again 2026-11-11 against 5.3.0 with `@vercel/queue` 0.10.0):
   - The runner, `/.well-known/workflow/v1/flow`, does not verify a signature itself: `@vercel/queue`'s callback handler runs the pushed message. Its protection is the platform's. The Nitro integration deploys the runner as its own function with a `queue/v2beta` trigger, and Vercel keeps queue consumers private: no public URL, invoked only by the queue ([Vercel Queues quickstart](https://vercel.com/docs/queues/quickstart)). A test asserts the trigger in the build output, and the production smoke test sends an unsigned request and requires 401, 403 or 404.
   - The webhook route, `/.well-known/workflow/v1/webhook/:token`, is public by design: it resumes a hook by its token. Arca creates no hooks, so every token answers 404. A workflow that adds a webhook needs its own review of token entropy and of what the hook accepts.
 - **Supply chain** (#10, npm registry checked 2026-11-02):

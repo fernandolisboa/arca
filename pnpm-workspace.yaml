@@ -39,10 +39,6 @@ blockExoticSubdeps: true
 autoInstallPeers: false
 
 overrides:
-  # Tailwind pins 1.32.0 while Vite uses 1.33.0. One copy instead of two, and the one whose
-  # MPL-2.0 license already has an exception in .github/policy/licenses.json. Recheck on every
-  # Tailwind update, and drop it once Tailwind pins the version Vite uses.
-  '@tailwindcss/node>lightningcss': 1.33.0
   # The Workflow SDK pins @swc/core 1.15.3, whose platform binaries were published without the
   # provenance that versions before and after carry, so the trust policy drops them. 1.15.4, the
   # next patch, has provenance on every package. Its SWC plugin fails to load on 1.16 ("Failed to
