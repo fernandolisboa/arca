@@ -11,6 +11,8 @@ import { useEffect, useRef } from 'react';
 import { api, versionCheckQuery } from '../api.js';
 import { checkFold } from './check-fold.js';
 import { card, surface } from './review-parts.js';
+import { pointTone } from './step-checks.js';
+import { PointMark } from './step-nav.js';
 import type { KnowledgeWords } from './words.js';
 
 type ListedCheck = KnowledgeVersion['check'];
@@ -139,9 +141,7 @@ function ReportBody({
 }) {
   const { t } = words;
   const problems = report.fetchLog.filter(({ outcome, cut }) => outcome !== 'read' || cut);
-  const addressRead = new Map(
-    report.fetchLog.map(({ url, machineReadableUrl }) => [url, machineReadableUrl]),
-  );
+  const addressRead = addressesRead(report);
   const checkedAt = new Intl.DateTimeFormat(words.language, { dateStyle: 'long' }).format(
     new Date(report.checkedAt),
   );
@@ -242,22 +242,82 @@ function ReportItemCard({
       {item.reason !== null && (
         <p>{t('knowledge.check.reason', { reason: item.reason, max: maxQuotes })}</p>
       )}
-      {item.quotes.map(({ quote, url }, index) => (
-        <figure key={`${String(index)}-${url}`} className="flex flex-col gap-1">
-          <figcaption className="text-small text-muted">
-            {t('knowledge.check.quote', { n: index + 1, total: item.quotes.length })}
-          </figcaption>
-          <blockquote className="border-l-2 border-line pl-3 whitespace-pre-wrap">
-            {quote}
-          </blockquote>
-          <p className="flex flex-col gap-1 text-small">
-            <span className="text-muted">{t('knowledge.check.page')}</span>
-            <span className="font-mono break-all">{url}</span>
-            <AddressRead address={addressRead.get(url)} words={words} />
-          </p>
-        </figure>
-      ))}
+      <Quotes item={item} addressRead={addressRead} words={words} />
       {item.note !== null && <p>{t('knowledge.check.note', { note: item.note })}</p>}
+    </div>
+  );
+}
+
+/** The verified passages an item rests on, each with its page: plain text, never links. */
+function Quotes({
+  item,
+  addressRead,
+  words,
+}: {
+  readonly item: ReportItem;
+  readonly addressRead: ReadonlyMap<string, string | null>;
+  readonly words: KnowledgeWords;
+}) {
+  const { t } = words;
+  return item.quotes.map(({ quote, url }, index) => (
+    <figure key={`${String(index)}-${url}`} className="flex flex-col gap-1">
+      <figcaption className="text-small text-muted">
+        {t('knowledge.check.quote', { n: index + 1, total: item.quotes.length })}
+      </figcaption>
+      <blockquote className="border-l-2 border-line pl-3 whitespace-pre-wrap">{quote}</blockquote>
+      <p className="flex flex-col gap-1 text-small">
+        <span className="text-muted">{t('knowledge.check.page')}</span>
+        <span className="font-mono break-all">{url}</span>
+        <AddressRead address={addressRead.get(url)} words={words} />
+      </p>
+    </figure>
+  ));
+}
+
+/** The address each page of a report was read at, by the page's URL. */
+export const addressesRead = (
+  report: Pick<VersionCheckReport, 'fetchLog'>,
+): ReadonlyMap<string, string | null> =>
+  new Map(report.fetchLog.map(({ url, machineReadableUrl }) => [url, machineReadableUrl]));
+
+/**
+ * One checked point under the rule item it is about: how it came out, why, the model's note and
+ * the passages, folded unless the point differs. Model output, shown as plain text.
+ */
+export function ItemResult({
+  item,
+  addressRead,
+  words,
+}: {
+  readonly item: ReportItem;
+  readonly addressRead: ReadonlyMap<string, string | null>;
+  readonly words: KnowledgeWords;
+}) {
+  const { t } = words;
+  return (
+    <div className="flex items-start gap-3 border-t border-line pt-3">
+      <PointMark tone={pointTone(item.status)} />
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <p>
+          <span className="font-medium">
+            {t('knowledge.points.status', { status: item.status })}
+          </span>
+          {item.reason !== null && (
+            <> {t('knowledge.check.reason', { reason: item.reason, max: maxQuotes })}</>
+          )}
+        </p>
+        {item.note !== null && <p>{t('knowledge.check.note', { note: item.note })}</p>}
+        {item.quotes.length > 0 && (
+          <details open={item.status === 'differs'}>
+            <summary className="cursor-pointer text-small text-accent">
+              {t('knowledge.points.quotes', { n: item.quotes.length })}
+            </summary>
+            <div className="mt-2 flex flex-col gap-3">
+              <Quotes item={item} addressRead={addressRead} words={words} />
+            </div>
+          </details>
+        )}
+      </div>
     </div>
   );
 }

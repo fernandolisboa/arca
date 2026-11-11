@@ -42,7 +42,7 @@ function setup({
     },
     states: () => Promise.resolve(new Map()),
   };
-  const listedVersion = KnowledgeVersion.omit({ check: true }).parse({
+  const listedVersion = KnowledgeVersion.omit({ check: true, points: true }).parse({
     routeId: 'pt-d7',
     number: 2,
     title: 'Visto D7',
@@ -204,7 +204,7 @@ describe('POST /v1/knowledge/versions (spec 0007, R7; ADR-0027)', () => {
     const response = await read('');
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
-      versions: [{ ...listedVersion, check: 'none' }],
+      versions: [{ ...listedVersion, check: 'none', points: null }],
       comparisons: [listedComparison],
     });
     const other = setup({ listed: false });

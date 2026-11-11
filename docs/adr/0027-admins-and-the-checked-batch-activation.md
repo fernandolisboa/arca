@@ -177,6 +177,12 @@ Decided:
 - **A version may leave a 29 February birthday `unsettled`** (spec 0002, R2) when no official text settles it. It cites nothing, the check lists no item for it, and an age that turns on it is a range on that day.
 - Nothing changes in what code checks, in what makes a report clean, or in the admin's decision.
 
+### Points beside the items they are about (amendment, 2026-11-11)
+
+The owner asked to see, while reviewing a version, which of its items the check confirmed and which it did not, without opening the report panel. A report's items now also show under the rule items they are about, in every review step: matches, differs or could not be checked, with the model's note and the verified quotes as plain text, the quotes folded unless the item differs. Each step with checked items takes the tone of its worst item. A summary above the steps counts the items and carries the "made by AI, can be wrong" note, which covers every item shown below it; the full report keeps its own panel, footer and labels in the decision step.
+
+The version list carries each current report's counts, so the proposed versions can be ordered for review: a version with an item that differs first, then checked versions, then those with items that could not be checked, grouped by country. A flagged version reads as "Tem diferença" or "Falta conferir" on that list, which says what it asks of the admin; the label is a status, never a verdict on the rule. A scripted report's matches count as could not be checked everywhere, so nothing outside production looks confirmed.
+
 ## Alternatives
 
 | Option | Why not |
