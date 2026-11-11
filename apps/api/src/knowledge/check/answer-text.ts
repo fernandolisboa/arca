@@ -1,5 +1,5 @@
 import { addressTexts, digitsApart } from '@arca/domain';
-import { htmlToText, markupReader, struckElements } from './html-text.js';
+import { htmlToText, markupReader, struckElements, type MarkupReader } from './html-text.js';
 
 /** How the fetcher reads an answer, by its media type. */
 export type AnswerFormat = 'html' | 'plain' | 'json' | 'xml';
@@ -126,7 +126,7 @@ function tagOf(tag: string): {
  * do, unless digits would meet across it: a tag between two numbers never makes them one. One pass
  * over the text, with no parser that fetches, validates or expands anything.
  */
-export function xmlText(xml: string, read = markupReader()): string {
+export function xmlText(xml: string, read = markupReader().read): string {
   const pieces: string[] = [];
   let tagsSinceText = 2;
   let afterDigit = false;
@@ -184,6 +184,16 @@ function dataLines(texts: readonly string[]): string {
     .join('\n');
 }
 
+/**
+ * The text of a data answer read through one reader, or none when a string of it was past a
+ * parsing limit: a match must not rest on an answer read in part.
+ */
+function wholeText(textThrough: (reader: MarkupReader) => string): string {
+  const reader = markupReader();
+  const text = textThrough(reader);
+  return reader.stopped() ? '' : text;
+}
+
 function textOf(format: AnswerFormat, body: string): string {
   switch (format) {
     case 'html':
@@ -191,9 +201,9 @@ function textOf(format: AnswerFormat, body: string): string {
     case 'plain':
       return body;
     case 'json':
-      return dataLines(jsonStrings(body).map(stringText(markupReader())));
+      return wholeText(({ read }) => dataLines(jsonStrings(body).map(stringText(read))));
     case 'xml':
-      return dataLines([xmlText(body)]);
+      return wholeText(({ read }) => dataLines([xmlText(body, read)]));
   }
 }
 

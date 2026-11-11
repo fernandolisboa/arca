@@ -184,12 +184,12 @@ const digitsKeptApart = (html: string) =>
  * overflow the stack. Scripts, styles, templates, comments, hidden elements and struck-through
  * text are dropped; block elements break lines, and a table row is one line with a bar between its
  * cells; whitespace collapses within each line; and a cell end stands between two text nodes whose
- * digits would meet, whatever is between them. A page past a parsing limit has no text.
+ * digits would meet, whatever is between them. Undefined for markup past a parsing limit.
  */
-function textWithin(html: string, budget: MoveBudget): string {
+function textWithin(html: string, budget: MoveBudget): string | undefined {
   const parts: string[] = [];
   const root = parsed(digitsKeptApart(html), budget);
-  if (root === undefined) return '';
+  if (root === undefined) return undefined;
   const stack: (Node | '\n' | typeof cellEnd)[] = [root];
   let afterDigit = false;
   for (let next = stack.pop(); next !== undefined; next = stack.pop()) {
@@ -231,10 +231,28 @@ function textWithin(html: string, budget: MoveBudget): string {
 }
 
 /** A reader of markup with one move budget for all it reads: the strings of one data answer. */
-export function markupReader(moveWork = maxMoveWork): (html: string) => string {
-  const budget = { left: moveWork };
-  return (html) => textWithin(html, budget);
+export interface MarkupReader {
+  /** The text of a piece of markup, none when it is past a parsing limit. */
+  readonly read: (html: string) => string;
+  /**
+   * Whether a piece was past a limit. What the reader read is then not all the answer says, and a
+   * piece left out may be the one that amends another, so the answer as a whole has no text.
+   */
+  readonly stopped: () => boolean;
 }
 
-/** The text of one page or one piece of markup, read on a move budget of its own. */
-export const htmlToText = (html: string): string => markupReader()(html);
+export function markupReader(moveWork = maxMoveWork): MarkupReader {
+  const budget = { left: moveWork };
+  let stopped = false;
+  return {
+    read: (html) => {
+      const text = textWithin(html, budget);
+      stopped ||= text === undefined;
+      return text ?? '';
+    },
+    stopped: () => stopped,
+  };
+}
+
+/** The text of one page or one piece of markup, none when it is past a parsing limit. */
+export const htmlToText = (html: string): string => markupReader().read(html);

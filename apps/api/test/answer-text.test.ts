@@ -236,6 +236,18 @@ describe('answerText', () => {
     );
   });
 
+  it('reads no text of an answer one of whose strings is past a parsing limit', () => {
+    // The string left out may be the one that amends another, so no text is read in part.
+    const deep = `${'<div>'.repeat(600)}From 2026 the fee is 2000 EUR`;
+    const old = '<p>The fee is 1500 EUR</p>';
+    expect(answerText('json', JSON.stringify({ old }))).toBe('The fee is 1500 EUR');
+    expect(answerText('json', JSON.stringify({ deep, old }))).toBe('');
+    expect(answerText('json', JSON.stringify({ old, deep }))).toBe('');
+    expect(
+      answerText('xml', `<act><a><![CDATA[${deep}]]></a><b><![CDATA[${old}]]></b></act>`),
+    ).toBe('');
+  });
+
   it('reads no text of a string that is only a comment', () => {
     expect(answerText('json', JSON.stringify({ note: '<!-- fee 1500 -->', fee: '500 EUR' }))).toBe(
       '500 EUR',

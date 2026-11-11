@@ -512,16 +512,20 @@ describe('htmlToText', () => {
     const adopted = `<html a b c>${'<html>'.repeat(20)}x`;
     for (const markup of [strayText, strayElements, reparented, adopted]) {
       expect(htmlToText(markup)).toContain('x');
-      expect(markupReader(1_000)(markup)).toBe('');
+      const reader = markupReader(1_000);
+      expect(reader.read(markup)).toBe('');
+      expect(reader.stopped()).toBe(true);
     }
   });
 
   it('holds all a reader reads to one budget', () => {
     const stray = `<table>${'<tr><td>a</td></tr><br>'.repeat(20)}</table>`;
-    const read = markupReader(1_000);
-    const texts = Array.from({ length: 10 }, () => read(stray));
-    expect(texts[0]).toContain('a');
+    const reader = markupReader(1_000);
+    expect(reader.read(stray)).toContain('a');
+    expect(reader.stopped()).toBe(false);
+    const texts = Array.from({ length: 10 }, () => reader.read(stray));
     expect(texts.at(-1)).toBe('');
+    expect(reader.stopped()).toBe(true);
   });
 
   it('reads a table with stray content between its rows by the thousand', () => {
