@@ -75,6 +75,8 @@ describe('the Claude extractor (spec 0008, R1)', () => {
       promptVersion: intakePromptVersion,
       inputTokens: 321,
       outputTokens: 45,
+      cacheReadTokens: 0,
+      cacheWriteTokens: 0,
     });
     expect(urls).toEqual(['https://api.anthropic.com/v1/messages']);
     expect(bodies).toHaveLength(1);

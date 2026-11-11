@@ -18,6 +18,7 @@ import type { PassageLocator } from '../../../src/knowledge/check/locator.js';
 import { passageLocateModel, ruleCheckModel } from '../../../src/knowledge/check/model.js';
 import { ruleCheckPromptVersion } from '../../../src/knowledge/check/prompt.js';
 import type { CheckReport } from '../../../src/knowledge/check/store.js';
+import { cacheUseLine } from '../cache-use.js';
 import { type Usage, noUsage, plain, usageLogger, withoutReason } from '../check-report.js';
 import { maxCallsPerRun, withCallLimit } from './call-limit.js';
 import { type CheckCase, checkCases } from './cases.js';
@@ -99,6 +100,7 @@ function report(runs: readonly CaseRun[], usage: Usage, calls: number) {
     '',
     `Correct versions checked: ${String(correctChecked)} of ${String(correct.length)}.`,
     `Tokens: ${String(usage.inputTokens)} in, ${String(usage.outputTokens)} out over ${String(usage.calls)} calls; about US$${(usage.dollars / checks).toFixed(4)} a check, US$${usage.dollars.toFixed(4)} the run.`,
+    cacheUseLine(usage.cache),
     '',
   ];
   for (const run of runs) {

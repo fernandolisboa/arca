@@ -54,6 +54,8 @@ describe('the Claude summarizer (ADR-0025)', () => {
       promptVersion: ruleSummaryPromptVersion,
       inputTokens: 2_100,
       outputTokens: 300,
+      cacheReadTokens: 0,
+      cacheWriteTokens: 0,
     });
     expect(urls).toEqual(['https://api.anthropic.com/v1/messages']);
     expect(bodies).toHaveLength(1);

@@ -54,6 +54,8 @@ describe('the Claude passage locator (ADR-0027)', () => {
       promptVersion: passageLocatePromptVersion,
       inputTokens: 30_000,
       outputTokens: 60,
+      cacheReadTokens: 0,
+      cacheWriteTokens: 0,
     });
     expect(bodies).toHaveLength(1);
     const [body] = bodies;

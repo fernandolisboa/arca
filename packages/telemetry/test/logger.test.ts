@@ -41,12 +41,16 @@ describe('logger', () => {
       promptVersion: 'intake-1',
       inputTokens: 812,
       outputTokens: 240,
+      cacheReadTokens: 600,
+      cacheWriteTokens: 0,
     });
     logger.info({
       model: 'Somos eu e minha esposa',
       promptVersion: 'intake 1',
       inputTokens: -1,
       outputTokens: 1.5,
+      cacheReadTokens: -1,
+      cacheWriteTokens: 0.5,
     });
     expect(lines.map((line) => JSON.parse(line) as unknown)).toEqual([
       {
@@ -55,6 +59,8 @@ describe('logger', () => {
         promptVersion: 'intake-1',
         inputTokens: 812,
         outputTokens: 240,
+        cacheReadTokens: 600,
+        cacheWriteTokens: 0,
       },
       { level: 'info' },
     ]);
