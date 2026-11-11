@@ -331,3 +331,35 @@ export const independentCheck = knowledge.table(
     pgPolicy('independent_check_insert', { for: 'insert', to: 'app_jobs', withCheck: sql`true` }),
   ],
 );
+
+/**
+ * Progress of the independent check (ADR-0027, "On demand, with progress"): what one start's run
+ * recorded as it went, in order, so an admin can watch it. A closed kind and a small detail of
+ * counts, one cited URL and fixed codes; never page text or anything a model wrote. Public rule
+ * data with no account. `app_jobs` inserts from the check's workflow step; `app_api` reads; the
+ * database sets the time; nobody updates or deletes. The kinds and details are closed in code,
+ * which parses each row on the way out; the table only bounds their shape.
+ */
+export const checkProgress = knowledge.table(
+  'check_progress',
+  {
+    startId: uuid('start_id').notNull(),
+    sequence: integer('sequence').notNull(),
+    kind: text('kind').notNull(),
+    detail: jsonb('detail').notNull(),
+    recordedAt: timestamp('recorded_at', { withTimezone: true })
+      .notNull()
+      .default(sql`clock_timestamp()`),
+  },
+  (table) => [
+    primaryKey({ name: 'check_progress_pkey', columns: [table.startId, table.sequence] }),
+    check('check_progress_sequence_range', sql`${table.sequence} BETWEEN 0 AND 999`),
+    check('check_progress_kind_format', sql`${table.kind} ~ '^[a-z][a-z_]{0,19}$'`),
+    check(
+      'check_progress_detail_object',
+      sql`jsonb_typeof(${table.detail}) = 'object' AND length(${table.detail}::text) <= 2500`,
+    ),
+    pgPolicy('check_progress_read', { for: 'select', to: 'app_api', using: sql`true` }),
+    pgPolicy('check_progress_insert', { for: 'insert', to: 'app_jobs', withCheck: sql`true` }),
+  ],
+);

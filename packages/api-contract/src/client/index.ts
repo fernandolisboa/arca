@@ -38,7 +38,9 @@ export {
   maxDocumentBytes,
   maxSharingStateBytes,
   maxOpenInvites,
+  maxAutomaticStartsPerDay,
   maxQuotes,
+  maxStartsPerDay,
   checkReasons,
   maxPushChannels,
   pendingPasskeyHours,
@@ -50,6 +52,7 @@ export {
   ruleReportReasons,
   startsInPlan,
   stepUpNonceHeader,
+  VersionViewQuery,
   webPathSegments,
 } from '../routes/index.js';
 export type {
@@ -84,6 +87,7 @@ export type {
   WriteComparisonPreferencesRequest,
   ActivateCheckedRequest,
   ActivateCheckedResponse,
+  CheckProgress,
   ComparisonVersionView,
   DecideComparisonRequest,
   DecideVersionRequest,

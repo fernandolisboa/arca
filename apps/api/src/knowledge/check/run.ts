@@ -2,6 +2,7 @@ import {
   type CatalogEntry,
   type CheckAnswer,
   type CheckItem,
+  type CheckProgressEvent,
   type Pin,
   type ReadPage,
   asDataText,
@@ -40,6 +41,7 @@ import {
   PassageLocatorError,
   parsePassageLocation,
 } from './locator.js';
+import type { CheckProgressStore } from './progress.js';
 import type { CheckReportStore, FetchLogEntry } from './store.js';
 
 /** What a check reads about one bundled route version. */
@@ -59,6 +61,8 @@ export interface VersionCheckSettings {
   /** Picks the passages of each long page that the checker reads. */
   readonly locator: PassageLocator;
   readonly store: CheckReportStore;
+  /** Where the run says how far it got, for an admin watching it. */
+  readonly progress: CheckProgressStore;
   readonly logger: Logger;
   /** Monotonic milliseconds, for latencies. */
   readonly now: () => number;
@@ -86,6 +90,8 @@ interface FetchedPage {
   readonly read: FetchOutcome;
   readonly durationMs: number;
 }
+
+type Recorder = (event: CheckProgressEvent) => Promise<void>;
 
 /** A long page as it is sent, and whether passages were picked for it. */
 interface Excerpt {
@@ -148,7 +154,8 @@ function fetchLogOf(
  * in code and stores the report keyed by its start. Every failure becomes a fixed code in the
  * report: a page not read leaves its items could not be checked, a failed model call leaves them
  * all so, a long page no passage was picked for is sent cut, and each makes the report
- * short-lived. Page text and model output never reach a log line.
+ * short-lived. As it goes it records how far it got, in counts, cited URLs and fixed codes. Page
+ * text and model output never reach a log line or a progress event.
  */
 export function createVersionCheck({
   subject: subjectOf,
@@ -157,18 +164,38 @@ export function createVersionCheck({
   checker: { checker, model, promptVersion },
   locator,
   store,
+  progress,
   logger,
   now,
 }: VersionCheckSettings): VersionCheck {
+  /**
+   * Records a start's events in order. Progress is only for watching: a write that fails is
+   * logged by a fixed code and the check carries on.
+   */
+  const recorderFor = (startId: string): Recorder => {
+    let sequence = 0;
+    return async (event) => {
+      try {
+        await progress.record(startId, sequence++, event);
+      } catch {
+        logger.error({ route, errorCode: 'check_progress_unwritten' });
+      }
+    };
+  };
+
+  /** The cited pages a check reads, each with its hosts; items citing any further page go unread. */
+  const citedPages = (items: readonly CheckItem[], subject: CheckSubject) =>
+    [...hostsByUrl(items, subject)].slice(0, maxFetchedPages);
+
   const fetchCited = async (
-    items: readonly CheckItem[],
+    cited: readonly (readonly [string, readonly string[]])[],
     subject: CheckSubject,
+    record: Recorder,
   ): Promise<FetchedPage[]> => {
     const fetched: FetchedPage[] = [];
     const addresses = machineReadableUrls(subject.entry);
-    // The report's fetch log holds at most this many pages; items citing others go unread.
-    const cited = [...hostsByUrl(items, subject)].slice(0, maxFetchedPages);
     for (const [url, hosts] of cited) {
+      await record({ kind: 'page', url, outcome: 'reading', status: null });
       // A machine-readable address is read in place of its page, on the same hosts; when it
       // fails, the page is not tried, so its items could not be checked, with the reason.
       const machineReadableUrl = addresses.get(url) ?? null;
@@ -176,6 +203,12 @@ export function createVersionCheck({
       const read = await fetcher.fetch(machineReadableUrl ?? url, hosts);
       // Official sites fail often and the report keeps each failure, so the log line is a code.
       if (!read.ok) logger.info({ route, errorCode: `check_fetch_${read.failure}` });
+      await record({
+        kind: 'page',
+        url,
+        outcome: read.ok ? 'read' : read.failure,
+        status: read.status,
+      });
       fetched.push({
         url,
         machineReadableUrl,
@@ -265,15 +298,18 @@ export function createVersionCheck({
       },
     );
 
-  return async (startId, routeId, number) => {
-    const subject = subjectOf(routeId, number);
-    if (subject === undefined) {
-      logger.error({ route, errorCode: 'check_unknown_version' });
-      return;
-    }
+  const check = async (
+    startId: string,
+    routeId: string,
+    number: number,
+    subject: CheckSubject,
+    record: Recorder,
+  ): Promise<void> => {
     const items = checkItems(subject.entry);
     const guide = guideOf(subject.entry.version.country);
-    const fetched = await fetchCited(items, subject);
+    const cited = citedPages(items, subject);
+    await record({ kind: 'started', items: items.length, pages: cited.length });
+    const fetched = await fetchCited(cited, subject, record);
     const readPages: ReadPage[] = fetched.flatMap(({ url, read }) =>
       read.ok
         ? [
@@ -290,6 +326,8 @@ export function createVersionCheck({
     // Short pages go whole; the long ones share what is left of the budget, as excerpts.
     const budget = excerptBudget(readPages.map(({ text }) => text));
     const longPages = readPages.filter(({ text }) => !sentWhole(text));
+    const located = Math.min(longPages.length, maxLocatedPages);
+    if (located > 0) await record({ kind: 'locating', pages: located });
     const excerpts = new Map(
       await Promise.all(
         longPages.map(
@@ -313,6 +351,7 @@ export function createVersionCheck({
       .map(({ url, text, excerpt }) => ({ url, text, excerpt: excerpt === true }));
     // With no page text nothing could match, so no model call is paid for.
     if (pagesToSend.length > 0) {
+      await record({ kind: 'comparing' });
       try {
         answers = await ask({
           version: subject.content,
@@ -346,5 +385,22 @@ export function createVersionCheck({
         fetchLog.some((entry) => entry.outcome !== 'read'),
       clean: reportClean(checked, model),
     });
+    await record({ kind: 'finished' });
+  };
+
+  return async (startId, routeId, number) => {
+    const record = recorderFor(startId);
+    const subject = subjectOf(routeId, number);
+    if (subject === undefined) {
+      logger.error({ route, errorCode: 'check_unknown_version' });
+      await record({ kind: 'failed', code: 'check_unknown_version' });
+      return;
+    }
+    try {
+      await check(startId, routeId, number, subject, record);
+    } catch (error) {
+      await record({ kind: 'failed', code: 'check_failed' });
+      throw error;
+    }
   };
 }

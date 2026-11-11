@@ -1157,7 +1157,7 @@ export const ptBR = {
       status:
         '{status, select, running {A IA está lendo as fontes desta versão. Leva alguns minutos, e a tela se atualiza sozinha.} stale {A última verificação não vale mais: a versão, o guia do país ou a IA mudaram, ou ela passou da validade.} other {Esta versão ainda não foi verificada.}}',
       startsOnOpen:
-        'As versões propostas são verificadas sozinhas quando você abre a lista de versões, até 20 por dia.',
+        'As versões propostas são verificadas sozinhas quando você abre a lista de versões, até {max} por dia.',
       loadFailure: 'Não conseguimos carregar a verificação.',
       clean:
         '{n, plural, one {O único item bate} other {Os # itens batem}} com as fontes oficiais.',
@@ -1185,6 +1185,42 @@ export const ptBR = {
         '{outcome, select, read {Lida só em parte: é grande demais, ou a IA não conseguiu escolher os trechos} refused_url {Endereço fora dos sites oficiais} redirect_refused {Redirecionou para fora dos sites oficiais} too_many_redirects {Redirecionou vezes demais} address_refused {Endereço de rede recusado} lookup_failed {Site não encontrado} http_status {O site respondeu com erro {status}} unsupported_type {Não é uma página de texto, como um PDF} no_text {A página veio sem texto; é provável que só mostre o conteúdo com JavaScript, que o Arca não roda} too_large {Página grande demais} timeout {O site demorou demais} network {Falha de rede} other {Não deu para ler}}',
       footer:
         'Feita por IA, que pode errar. O Arca confere no código se cada trecho está mesmo na página citada, mas quem decide é você. Um item pode se apoiar em até {max} trechos, e quem diz que eles tratam da mesma regra é a IA. Em páginas muito longas, a IA lê só os trechos que uma IA mais rápida escolheu, então uma mudança escrita em outro ponto da página pode passar batida. A verificação não cobre o que não tem fonte própria, como datas de vigência, moeda e datas de referência.',
+    },
+    /** The check an admin starts and watches (ADR-0027, "On demand, with progress"). */
+    checkRun: {
+      button: 'Analisar com IA',
+      running: 'Ver a análise em andamento',
+      confirmTitle: 'Analisar esta versão com IA?',
+      confirmLead:
+        'A IA lê de novo as fontes oficiais desta versão e compara item por item, mesmo que já exista uma verificação recente. Leva alguns minutos.',
+      cost: 'Cada análise gasta de US$ 0,30 a US$ 0,50 do seu crédito da API.',
+      confirm: 'Analisar agora',
+      starting: 'Começando a análise…',
+      startFailure:
+        '{reason, select, limited {O limite de {max} análises em 24 horas foi atingido. Uma vaga abre quando a análise mais antiga completa 24 horas.} check_not_started {A análise não conseguiu começar. Ela sai da fila em até 30 minutos, e aí você pode tentar de novo.} check_off {A verificação independente não está ligada aqui, então não há o que analisar.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para começar a análise. Tente de novo.}}',
+      title: 'Análise com IA',
+      back: 'Voltar para as versões',
+      loadFailure: 'Não conseguimos carregar o andamento da análise.',
+      none: 'Esta versão não teve nenhuma análise nas últimas 24 horas.',
+      startedAt: 'Começou em {date}',
+      leave:
+        'Pode sair desta tela. A análise continua, e o botão na versão traz você de volta para cá.',
+      now: '{stage, select, reading {Lendo as páginas oficiais: {done} de {total}.} locating {Escolhendo os trechos das páginas longas.} comparing {Comparando a regra com o que as páginas dizem.} other {Preparando a análise.}}',
+      state:
+        '{state, select, finished {Análise concluída.} failed {A análise parou por um erro e nada foi gravado. Você pode começar outra.} dead {A análise parou no meio e não terminou em 30 minutos. Nada foi gravado. Você pode começar outra.} other {Análise em andamento.}}',
+      unknownVersion: 'O Arca não encontrou esta versão para analisar.',
+      steps: 'Etapas da análise',
+      step: '{step, select, read {Ler as páginas oficiais} locate {Escolher os trechos das páginas longas} compare {Comparar com a regra} other {Montar o relatório}}',
+      stepStatus:
+        '{status, select, done {Feita} current {Agora} skipped {Não precisou} stopped {Parou aqui} other {Na fila}}',
+      readDetail: '{done} de {total, plural, one {# página} other {# páginas}}',
+      locateDetail:
+        '{n, plural, one {# página longa: a IA lê só os trechos escolhidos.} other {# páginas longas: a IA lê só os trechos escolhidos.}}',
+      compareDetail: '{n, plural, one {# item da regra} other {# itens da regra}}',
+      pageOutcome: '{outcome, select, reading {Lendo agora} read {Lida} other {Não abriu}}',
+      httpStatus: 'O site respondeu com erro.',
+      again: 'Analisar de novo',
+      result: 'Resultado da análise',
     },
     /** Activating every version the independent check found clean, with one tap (ADR-0027). */
     checkedBatch: {
