@@ -1,5 +1,8 @@
+import { parseCalendarDate } from '@arca/domain';
 import { describe, expect, it } from 'vitest';
 import { summaryAttempts } from '../src/knowledge/summaries.js';
+import { createKnowledgeVersions } from '../src/knowledge/versions.js';
+import { newestOfEachRoute } from './eval/newest-versions.js';
 import { maxCallsPerRun } from './eval/rule-summary/call-limit.js';
 import { summaryCases } from './eval/rule-summary/cases.js';
 import {
@@ -76,6 +79,37 @@ describe('the rule summary evaluation checks', () => {
     ['A versão é aberta e vale a partir de 2026-11-30.', 0],
   ])('finds a verdict in "%s"', (text, found) => {
     expect(verdictIn(summary(text))).toHaveLength(found);
+  });
+
+  it('keeps the newest version of each route, in the order given', () => {
+    const version = (routeId: string, number: number) => ({ routeId, number });
+    expect(
+      newestOfEachRoute([
+        version('pt-d7', 2),
+        version('us-eb5', 5),
+        version('us-eb5', 7),
+        version('pt-d7', 1),
+        version('es-non-lucrative', 1),
+        version('us-eb5', 6),
+      ]),
+    ).toEqual([version('pt-d7', 2), version('us-eb5', 7), version('es-non-lucrative', 1)]);
+  });
+
+  it('has one case for each route, its newest version, so a new version adds none', async () => {
+    const cases = await summaryCases();
+    const bundled = await createKnowledgeVersions({
+      states: () => Promise.resolve(new Map()),
+      today: () => parseCalendarDate('2026-11-06'),
+    }).list();
+    const newest = new Map<string, number>();
+    for (const { routeId, number } of bundled) {
+      newest.set(routeId, Math.max(number, newest.get(routeId) ?? 0));
+    }
+    expect(newest.size).toBeLessThan(bundled.length);
+    const plain = cases.filter(({ injected }) => injected.length === 0).map(({ id }) => id);
+    expect(plain.toSorted()).toEqual(
+      [...newest].map(([routeId, number]) => `${routeId}-${String(number)}`).toSorted(),
+    );
   });
 
   it('keeps a run within its call limit', async () => {
