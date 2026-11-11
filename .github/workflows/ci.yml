@@ -65,7 +65,13 @@ jobs:
       - uses: ./.github/actions/setup-pnpm
       - run: pnpm install --frozen-lockfile
       - name: Chromium for the installed Playwright version
-        run: pnpm --filter @arca/web exec playwright install --with-deps --only-shell chromium
+        run: pnpm --filter @arca/web exec playwright install --only-shell chromium
+      # The runner image already carries the libraries Chromium needs; apt adds only fallback
+      # fonts, so an Ubuntu mirror or DNS outage must not block the suite.
+      - name: Chromium's system packages, when the Ubuntu mirrors answer
+        continue-on-error: true
+        timeout-minutes: 4
+        run: pnpm --filter @arca/web exec playwright install-deps chromium
       - name: Role passwords and auth secrets that live only for this job
         run: |
           for name in ARCA_DB_MIGRATOR_PASSWORD ARCA_DB_API_PASSWORD ARCA_DB_JOBS_PASSWORD \
