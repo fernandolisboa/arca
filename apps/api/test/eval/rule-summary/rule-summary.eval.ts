@@ -81,7 +81,7 @@ function report(runs: readonly CaseRun[], calls: number): { text: string; proble
   return { text: lines.join('\n'), problems };
 }
 
-it('summarizes every version without inventing numbers or following planted text', async () => {
+it('summarizes the newest version of every route without inventing numbers or following planted text', async () => {
   const apiKey = readAnthropicApiKey();
   if (apiKey === undefined) {
     throw new Error('Set ANTHROPIC_API_KEY to run the rule summary evaluation');
