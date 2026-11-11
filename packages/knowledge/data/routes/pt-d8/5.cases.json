@@ -4023,6 +4023,105 @@
         "possibleDependents": [],
         "missingFacts": []
       }
+    },
+    {
+      "id": "child-born-on-29-february-turning-18-on-28-february-is-possible",
+      "snapshot": {
+        "recordedOn": "2026-02-28",
+        "members": ["p1", "p2", "p3"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1980-03-10",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1980-03-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "incomes": [
+              {
+                "kind": "active",
+                "monthly": {
+                  "amount": 400000,
+                  "currency": "EUR"
+                },
+                "sourceCountry": "BR"
+              }
+            ],
+            "financiallyDependentOn": [],
+            "studying": false,
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1981-09-21",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1981-09-21",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "incomes": [],
+            "financiallyDependentOn": [],
+            "studying": false,
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
+          },
+          {
+            "id": "p3",
+            "birthDate": "2008-02-29",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2008-02-29",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "incomes": [],
+            "financiallyDependentOn": ["p1", "p2"],
+            "studying": true,
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "spouse",
+            "people": ["p1", "p2"],
+            "start": "2005-04-14",
+            "end": "none"
+          },
+          {
+            "kind": "parent",
+            "parent": "p1",
+            "child": "p3",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p3",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "needs_assessment",
+        "dependents": ["p2"],
+        "possibleDependents": ["p3"],
+        "missingFacts": []
+      },
+      "factsAsOf": "2026-02-28"
     }
   ]
 }
