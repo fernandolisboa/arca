@@ -1,0 +1,363 @@
+{
+  "schemaVersion": 1,
+  "routeId": "dk-pay-limit",
+  "number": 2,
+  "title": "Danish residence and work permit under the Pay Limit Scheme: a job offer with annual pay of at least DKK 552,000 (2026)",
+  "country": "DK",
+  "tags": ["work", "temporary-residence"],
+  "effectiveFrom": "2026-01-01",
+  "status": "open",
+  "currency": "DKK",
+  "leapDayBirthday": "unsettled",
+  "sources": [
+    {
+      "id": "aliens-act-pay-limit",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "title": "Aliens Act (consolidated Act No. 953 of 2026), § 9 a(2)(3) and (29): a job offer with annual pay of at least DKK 400,000, adjusted each year in line with wage growth and rounded to DKK 1,000",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://www.retsinformation.dk/eli/lta/2026/953/xml"
+    },
+    {
+      "id": "siri-pay-limit",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "title": "SIRI, the Pay Limit Scheme: the pay limit is DKK 552,000 a year for 2026, set each 1 January; only cash pay, pension and paid holiday allowance count; pay and terms usual in Denmark",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "aliens-act-employment-terms",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "title": "Aliens Act, § 9 a(9), (10), (25) and (26): at least 30 hours a week; pay into a Danish bank account; no permit for a job in a lawful labour dispute or for an offer that is not genuine",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://www.retsinformation.dk/eli/lta/2026/953/xml"
+    },
+    {
+      "id": "aliens-act-social-assistance",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "title": "Aliens Act, § 9 a(4): the permit requires that the principal and the family members who get permits through them receive no assistance under the Active Social Policy Act",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://www.retsinformation.dk/eli/lta/2026/953/xml"
+    },
+    {
+      "id": "aliens-act-family",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "title": "Aliens Act, § 9 m(1): where essential business or employment interests favour it, a family member of a foreigner with a § 9 a(2) permit may get one, if they share a home",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://www.retsinformation.dk/eli/lta/2026/953/xml"
+    },
+    {
+      "id": "siri-accompanying-family",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "title": "SIRI, accompanying family of employees: a spouse or registered partner, a cohabiting partner over 18 after at least 1.5 to 2 years living together, and a child under 18",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "aliens-act-free-movement",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "title": "Aliens Act, §§ 1 and 2: citizens of Finland, Iceland, Norway and Sweden live in Denmark without a permit; EU and EEA citizens fall under the EU rules on free movement",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://www.retsinformation.dk/eli/lta/2026/953/xml"
+    },
+    {
+      "id": "eu-residence-order",
+      "url": "https://www.retsinformation.dk/eli/lta/2020/1457",
+      "title": "EU Residence Order (Order No. 1457 of 2020), §§ 1(2) and 2(2): Swiss citizens are treated like EU citizens under the EU rules on free movement",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://www.retsinformation.dk/eli/lta/2020/1457/xml"
+    },
+    {
+      "id": "guardianship-act-minors",
+      "url": "https://www.retsinformation.dk/eli/lta/2021/1122",
+      "title": "Guardianship Act (consolidated Act No. 1122 of 2021), § 1(1): children and young people under 18 who have not married are minors",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://www.retsinformation.dk/eli/lta/2021/1122/xml"
+    },
+    {
+      "id": "fee-order-principal",
+      "url": "https://www.retsinformation.dk/eli/lta/2025/1612",
+      "title": "Order No. 1612 of 2025 on fees, § 5(2)(1): for 1 January to 31 December 2026 the fee for a permit application under Aliens Act § 9 a(2)(1) to (9) and (11) to (14) is DKK 6,810",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://www.retsinformation.dk/eli/lta/2025/1612/xml"
+    },
+    {
+      "id": "fee-order-family",
+      "url": "https://www.retsinformation.dk/eli/lta/2025/1612",
+      "title": "Order No. 1612 of 2025 on fees, § 5(5)(1): for 1 January to 31 December 2026 the fee for a permit application under Aliens Act § 9 m(1) and (2), for family members, is DKK 3,080",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://www.retsinformation.dk/eli/lta/2025/1612/xml"
+    },
+    {
+      "id": "aliens-act-fee",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "title": "Aliens Act, § 9 h(1)(4) and (9) and (2): a fee is paid no later than with an application under § 9 a(2)(1) to (14) or § 9 m(1); the minister sets the fees",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://www.retsinformation.dk/eli/lta/2026/953/xml"
+    },
+    {
+      "id": "siri-processing-and-duration",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "title": "SIRI, the Pay Limit Scheme: normal processing time 1 month, up to 3 months if more information is needed; a permit for the employment period, normally 4 years at most",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "dk",
+      "number": 1
+    }
+  ],
+  "countrySets": [
+    {
+      "id": "eu-free-movement",
+      "number": 2
+    }
+  ],
+  "requirements": [
+    {
+      "id": "not-nordic-eu-eea-or-swiss-citizen",
+      "title": "Not a citizen of Denmark, another Nordic country, an EU or EEA state or Switzerland: they live and work in Denmark without this permit",
+      "expression": {
+        "op": "not",
+        "operand": {
+          "op": "intersects",
+          "list": {
+            "op": "fact",
+            "key": "principal.citizenships"
+          },
+          "set": {
+            "op": "set",
+            "id": "eu-free-movement"
+          }
+        }
+      },
+      "sources": ["aliens-act-free-movement", "eu-residence-order"]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "pay-limit",
+      "title": "A job offer in Denmark with annual pay of at least the pay limit: DKK 400,000 in the act, adjusted each year for wage growth; DKK 552,000 for 2026 as SIRI publishes it",
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["aliens-act-pay-limit", "siri-pay-limit"]
+    },
+    {
+      "id": "working-hours",
+      "title": "Employment of at least 30 hours a week",
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["aliens-act-employment-terms", "siri-pay-limit"]
+    },
+    {
+      "id": "danish-bank-account",
+      "title": "Pay goes into a Danish bank account, opened within 180 days of entry or of the permit by someone who does not yet hold a permit of at least 180 days",
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["aliens-act-employment-terms", "siri-pay-limit"]
+    },
+    {
+      "id": "usual-terms",
+      "title": "Pay and employment terms not inferior to the Danish standards of the professional field",
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["siri-pay-limit"]
+    },
+    {
+      "id": "genuine-offer",
+      "title": "No permit for a job covered by a lawful labour dispute, nor where the actual employment is presumed not to match the application or the offer mainly serves to obtain residence",
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["aliens-act-employment-terms"]
+    },
+    {
+      "id": "no-social-assistance",
+      "title": "Neither the principal nor the family members with permits through them receive assistance under the Active Social Policy Act",
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["aliens-act-social-assistance"]
+    },
+    {
+      "id": "shared-home",
+      "title": "Family members live at the same address as the principal and receive no assistance under the Active Social Policy Act",
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["aliens-act-family", "siri-accompanying-family"]
+    }
+  ],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse who was 18 or more at the wedding; married younger, both now 18 or more: possible, as a cohabiting partner after at least 1.5 to 2 years living together",
+      "path": ["spouse"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "edge.ageAtStart"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "gte",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              },
+              {
+                "op": "gte",
+                "left": {
+                  "op": "fact",
+                  "key": "principal.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["aliens-act-family", "siri-accompanying-family"]
+    },
+    {
+      "id": "partner",
+      "title": "Cohabiting partner over 18: SIRI asks, as a rule, for at least 1.5 to 2 years living together, so 2 years or more counts, and 1.5 to 2 years, or a registered partnership, is possible",
+      "path": ["partner"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "principal.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "since",
+                "date": {
+                  "op": "fact",
+                  "key": "edge.start"
+                },
+                "duration": "P2Y"
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["aliens-act-family", "siri-accompanying-family", "guardianship-act-minors"]
+    },
+    {
+      "id": "children",
+      "title": "Children under 18",
+      "path": ["child"],
+      "condition": {
+        "op": "lt",
+        "left": {
+          "op": "fact",
+          "key": "person.ageYears"
+        },
+        "right": {
+          "op": "int",
+          "value": 18
+        }
+      },
+      "sources": ["aliens-act-family", "siri-accompanying-family", "guardianship-act-minors"]
+    }
+  ],
+  "costs": [
+    {
+      "id": "application-fee",
+      "title": "Fee for the Pay Limit Scheme permit application: DKK 6,810, the amount set for 1 January to 31 December 2026",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 681000,
+        "currency": "DKK"
+      },
+      "appliesTo": "principal",
+      "sources": ["fee-order-principal", "aliens-act-fee"]
+    },
+    {
+      "id": "family-fee",
+      "title": "Fee for each accompanying family member's permit application: DKK 3,080, the amount set for 1 January to 31 December 2026",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 308000,
+        "currency": "DKK"
+      },
+      "appliesTo": "each_dependent",
+      "sources": ["fee-order-family", "aliens-act-fee"]
+    }
+  ],
+  "durations": [
+    {
+      "id": "processing",
+      "title": "SIRI's processing of the application: normally 1 month, up to 3 months if further information is needed",
+      "min": "P1M",
+      "max": "P3M",
+      "sources": ["siri-processing-and-duration"]
+    },
+    {
+      "id": "permit",
+      "title": "Permit valid for the period of the employment; for an employment of 4 years or more, normally 4 years, then extended",
+      "min": "P0D",
+      "max": "P4Y",
+      "sources": ["siri-processing-and-duration"]
+    }
+  ],
+  "corrects": 1
+}

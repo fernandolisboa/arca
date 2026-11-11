@@ -244,6 +244,7 @@ describe('knowledge.independent_check (ADR-0027)', () => {
       checkedAt: found?.checkedAt,
       failed: false,
       clean: true,
+      counts: { matches: 1, differs: 0, could_not_check: 0 },
     });
   });
 

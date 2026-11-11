@@ -19,7 +19,14 @@ import { createVersionCheck } from '../../../src/knowledge/check/run.js';
 import { memoryCheckProgressStore } from '../../../src/knowledge/check/progress.js';
 import { type CheckReport, memoryCheckReportStore } from '../../../src/knowledge/check/store.js';
 import { createCheckSubjects, createKnowledgeVersions } from '../../../src/knowledge/versions.js';
-import { noUsage, plain, usageLogger, withoutReason } from '../check-report.js';
+import {
+  type Usage,
+  cacheUseLines,
+  noUsage,
+  plain,
+  usageLogger,
+  withoutReason,
+} from '../check-report.js';
 import { withCallLimit } from '../independent-check/call-limit.js';
 import { newestOfEachRoute } from '../newest-versions.js';
 
@@ -77,7 +84,7 @@ interface Run {
   readonly report: CheckReport | undefined;
 }
 
-function summary(runs: readonly Run[], calls: number, dollars: number): string {
+function summary(runs: readonly Run[], calls: number, usage: Usage): string {
   const reports = runs.flatMap(({ report }) => (report === undefined ? [] : [report]));
   const items = reports.flatMap((report) => report.items);
   const count = (status: string) => items.filter((item) => item.status === status).length;
@@ -106,7 +113,8 @@ function summary(runs: readonly Run[], calls: number, dollars: number): string {
     `Why not checked: ${tally(reasons)}.`,
     `Left unchecked by the model with no reason: ${String(withoutReason(items).length)}.`,
     `Pages: ${tally(outcomes)}; read through a machine-readable address: ${String(reports.flatMap((report) => report.fetchLog).filter(({ machineReadableUrl }) => machineReadableUrl !== null).length)}.`,
-    `Model calls: ${String(calls)} of at most ${String(maxCallsPerRun)}; about US$${dollars.toFixed(2)} the run.`,
+    `Model calls: ${String(calls)} of at most ${String(maxCallsPerRun)}; about US$${usage.dollars.toFixed(2)} the run.`,
+    ...cacheUseLines(usage),
     '',
   ];
   for (const { version, report } of runs) {
@@ -184,7 +192,7 @@ it('checks the newest version of every bundled route against its live official p
       ({ routeId, number }) => routeId === version.routeId && number === version.number,
     ),
   }));
-  const text = summary(runs, calls(), usage.dollars);
+  const text = summary(runs, calls(), usage);
   console.log(text);
   const file = process.env['ARCA_EVAL_REPORT'];
   if (file !== undefined && file !== '') appendFileSync(file, `${text}\n`);

@@ -32132,6 +32132,32 @@
                               "stale",
                               "none"
                             ]
+                          },
+                          "points": {
+                            "type": [
+                              "object",
+                              "null"
+                            ],
+                            "properties": {
+                              "matches": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "differs": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "unread": {
+                                "type": "integer",
+                                "minimum": 0
+                              }
+                            },
+                            "required": [
+                              "matches",
+                              "differs",
+                              "unread"
+                            ],
+                            "additionalProperties": false
                           }
                         },
                         "required": [
@@ -32142,7 +32168,8 @@
                           "effectiveFrom",
                           "hash",
                           "state",
-                          "check"
+                          "check",
+                          "points"
                         ]
                       }
                     },

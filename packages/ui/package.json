@@ -55,6 +55,7 @@
     "@fontsource-variable/work-sans": "catalog:",
     "@fontsource/ibm-plex-mono": "catalog:",
     "@fontsource/instrument-serif": "catalog:",
+    "@fontsource/opendyslexic": "catalog:",
     "@fontsource/young-serif": "catalog:",
     "lucide-react": "catalog:"
   }

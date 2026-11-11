@@ -138,6 +138,17 @@ export const KnowledgeVersion = z.object({
   state: decisionState,
   /** The independent check's status (ADR-0027); `none` where no check runs. */
   check: z.enum(listedCheckStatuses),
+  /**
+   * How the current report's points came out, or null with no current report; a scripted report's
+   * matches count as not confirmed.
+   */
+  points: z
+    .strictObject({
+      matches: z.int().min(0),
+      differs: z.int().min(0),
+      unread: z.int().min(0),
+    })
+    .nullable(),
 });
 export type KnowledgeVersion = z.infer<typeof KnowledgeVersion>;
 

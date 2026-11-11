@@ -73,7 +73,13 @@ test('the seed admin activates a version, reads and closes its reports, then rej
   await page.getByRole('link', { name: 'Abrir a tela de ativação' }).click();
   const proposed = page.getByRole('region', { name: 'Versões propostas' });
   // The scripted checker's reports are never clean, so no version reads as checked.
-  await expect(proposed).not.toContainText('Conferida pela IA');
+  await expect(proposed.getByRole('button', { name: 'Conferida pela IA 0' })).toBeVisible();
+  // Every country starts folded; picking one in the filter shows it alone, open.
+  const usa = proposed.getByRole('button', { name: 'Estados Unidos', exact: true });
+  await expect(usa).toHaveAttribute('aria-expanded', 'false');
+  await proposed.getByLabel('País').selectOption({ label: 'Estados Unidos' });
+  await expect(usa).toHaveAttribute('aria-expanded', 'true');
+  await expect(proposed.getByRole('button', { name: 'Portugal', exact: true })).toHaveCount(0);
   await proposed
     .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
     .click();
@@ -116,6 +122,7 @@ test('the seed admin activates a version, reads and closes its reports, then rej
   // The server keeps the summary, so it is still there after a reload, with no button to ask again.
   // A stored summary starts folded under its title, and the title opens it.
   await page.reload();
+  await usa.click();
   await proposed
     .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
     .click();
@@ -207,10 +214,9 @@ test('the seed admin reviews, activates and rejects a comparison version (ADR-00
   await expect(page.getByText(`Você entrou como ${account.email}.`)).toBeVisible();
 
   await page.goto(`${databaseServer.origin}/knowledge`);
-  await page
-    .getByRole('region', { name: 'Versões propostas' })
-    .getByRole('button', { name: /^Destination comparison · versão 1\b/ })
-    .click();
+  const proposed = page.getByRole('region', { name: 'Versões propostas' });
+  await proposed.getByRole('button', { name: 'Comparar destinos', exact: true }).click();
+  await proposed.getByRole('button', { name: /^Destination comparison · versão 1\b/ }).click();
   await expect(
     page.getByRole('heading', { level: 3, name: 'Destination comparison · versão 1' }),
   ).toBeVisible();
@@ -397,8 +403,10 @@ test('the seed admin approves the checked versions with one tap, and the server 
   });
   await page.unrouteAll({ behavior: 'wait' });
   await page.reload();
+  const proposed = page.getByRole('region', { name: 'Versões propostas' });
+  await proposed.getByRole('button', { name: 'Estados Unidos', exact: true }).click();
   await expect(
-    page.getByRole('region', { name: 'Versões propostas' }).getByRole('button', {
+    proposed.getByRole('button', {
       name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`),
     }),
   ).toBeVisible();

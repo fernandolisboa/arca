@@ -173,6 +173,12 @@ function setup({
         versions: { number: number; check: string }[];
       }
     ).versions.map(({ number, check }) => [number, check]);
+  const points = async () =>
+    (
+      (await (await app.request('/v1/knowledge/versions')).json()) as {
+        versions: { number: number; points: unknown }[];
+      }
+    ).versions.map(({ number, points: counted }) => [number, counted]);
   const read = (number: number) =>
     app.request(`/v1/knowledge/versions/check?routeId=qm-sample&number=${String(number)}`);
   const report = (recorded: RecordedStart | undefined, patch: Partial<NewCheckReport> = {}) => {
@@ -233,6 +239,7 @@ function setup({
   return {
     start,
     list,
+    points,
     read,
     report,
     runs,
@@ -334,6 +341,20 @@ describe('the check status in the version list (ADR-0027)', () => {
       [3, 'stale'],
       [4, 'none'],
     ]);
+  });
+
+  it('carries the current report’s points, a scripted match counted as not confirmed', async () => {
+    const { start, points, runs, report } = setup({ count: 2 });
+    await start();
+    await report(runs[0]);
+    expect(await points()).toEqual([
+      [1, { matches: 1, differs: 0, unread: 0 }],
+      [2, null],
+    ]);
+    const scripted = setup({ count: 1, model: 'fake' });
+    await scripted.start();
+    await scripted.report(scripted.runs[0], { clean: false });
+    expect(await scripted.points()).toEqual([[1, { matches: 0, differs: 0, unread: 1 }]]);
   });
 });
 

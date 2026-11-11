@@ -1,6 +1,7 @@
 import {
   type CheckItemKind,
   type CheckProgress,
+  type CheckPoints,
   type CheckedItem,
   type ListedCheckStatus,
   type ReportKey,
@@ -10,6 +11,7 @@ import {
   newestStart,
   listedCheckStatus,
   noGuide,
+  reportPoints,
   scriptedCheckerModel,
   versionKey,
 } from '@arca/domain';
@@ -54,6 +56,12 @@ export type ProgressOutcome =
   | { readonly ok: true; readonly progress: CheckProgress | null }
   | { readonly ok: false; readonly reason: 'not_found' };
 
+/** A version's check on the list: its status, and its current report's points if it has one. */
+export interface ListedCheck {
+  readonly status: ListedCheckStatus;
+  readonly points: CheckPoints | null;
+}
+
 /** The independent check as the activation screen reaches it (ADR-0027). */
 export interface VersionChecks {
   /** Starts a check for every proposed route version that is due; answers how many started. */
@@ -62,8 +70,8 @@ export interface VersionChecks {
   readonly startOne: (routeId: string, number: number) => Promise<RequestedCheckOutcome>;
   /** How far the version's newest start of the last 24 hours got, or null with none. */
   readonly progress: (routeId: string, number: number) => Promise<ProgressOutcome>;
-  /** Each route version's check status, by `routeId/number`. */
-  readonly statuses: () => Promise<ReadonlyMap<string, ListedCheckStatus>>;
+  /** Each route version's check status and its current report's points, by `routeId/number`. */
+  readonly statuses: () => Promise<ReadonlyMap<string, ListedCheck>>;
   readonly report: (routeId: string, number: number) => Promise<ReportOutcome>;
 }
 
@@ -162,9 +170,14 @@ export function createVersionChecks({
       return new Map(
         listed.map(({ routeId, number, hash, country }) => {
           const own = ofVersion(routeId, number);
+          const key = keyOf(hash, country);
+          const current = currentReport(own(stored), key, time);
           return [
             versionKey({ routeId, number }),
-            listedCheckStatus(own(stored), own(recent), keyOf(hash, country), time),
+            {
+              status: listedCheckStatus(own(stored), own(recent), key, time),
+              points: current === undefined ? null : reportPoints(current.counts, current.model),
+            },
           ];
         }),
       );
@@ -228,10 +241,10 @@ export async function versionsWithChecks(
 ): Promise<KnowledgeVersion[]> {
   const [listed, statuses] = await Promise.all([
     versions.list(),
-    checks?.statuses() ?? new Map<string, ListedCheckStatus>(),
+    checks?.statuses() ?? new Map<string, ListedCheck>(),
   ]);
-  return listed.map((version) => ({
-    ...version,
-    check: statuses.get(versionKey(version)) ?? 'none',
-  }));
+  return listed.map((version) => {
+    const check = statuses.get(versionKey(version));
+    return { ...version, check: check?.status ?? 'none', points: check?.points ?? null };
+  });
 }

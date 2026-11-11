@@ -1,0 +1,273 @@
+{
+  "schemaVersion": 1,
+  "routeId": "ge-property-short-term",
+  "number": 2,
+  "title": "Georgian short-term residence permit for owners of real estate worth more than USD 150,000, with their spouse and children",
+  "country": "GE",
+  "tags": ["investment", "temporary-residence"],
+  "effectiveFrom": "2026-09-01",
+  "status": "open",
+  "currency": "USD",
+  "leapDayBirthday": "unsettled",
+  "sources": [
+    {
+      "id": "aliens-law-short-term",
+      "url": "https://matsne.gov.ge/en/document/view/2278806?publication=23",
+      "title": "Law on the Legal Status of Aliens, Article 15 – Types of residence permits, (j): a short-term permit for an owner of real estate worth over USD 150 000, the spouse and children",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "aliens-law-validity",
+      "url": "https://matsne.gov.ge/en/document/view/2278806?publication=23",
+      "title": "Law on the Legal Status of Aliens, Article 16 – The validity period of a residence permit, 1(f) and 3: extended one year at a time, up to 12 years; ends if the ownership ends",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "aliens-law-alien",
+      "url": "https://matsne.gov.ge/en/document/view/2278806?publication=23",
+      "title": "Law on the Legal Status of Aliens, Article 2 – Definition of terms, (a): alien – a person who is not a citizen of Georgia",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "aliens-law-lawful-stay",
+      "url": "https://matsne.gov.ge/en/document/view/2278806?publication=23",
+      "title": "Law on the Legal Status of Aliens, Article 14 – Body issuing Georgian residence permits and general conditions for issuing a residence permit, 1 to 1^4: a lawful stay",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "aliens-law-refusal",
+      "url": "https://matsne.gov.ge/en/document/view/2278806?publication=23",
+      "title": "Law on the Legal Status of Aliens, Article 18 – Grounds for denying the issuance of Georgian residence permits, 1 and 4, as amended by Law No 1803 of 25 June 2026",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "aliens-law-family-member",
+      "url": "https://matsne.gov.ge/en/document/view/2278806?publication=23",
+      "title": "Law on the Legal Status of Aliens, Article 2 – Definition of terms, (h): family member – a spouse, and a minor child of an alien, among others",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "aliens-law-fee",
+      "url": "https://matsne.gov.ge/en/document/view/2278806?publication=23",
+      "title": "Law on the Legal Status of Aliens, Article 70 – Georgian residence permit fees, 2(b): a service fee, set by an ordinance of the Government, for considering and deciding on a residence permit",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "sda-residence-permits",
+      "url": "https://sda.gov.ge/products/%e1%83%9b%e1%83%98%e1%83%92%e1%83%a0%e1%83%90%e1%83%aa%e1%83%98%e1%83%90-%e1%83%91%e1%83%98%e1%83%9c%e1%83%90%e1%83%93%e1%83%a0%e1%83%9d%e1%83%91%e1%83%98%e1%83%a1-%e1%83%9c%e1%83%94%e1%83%91%e1%83%90/",
+      "title": "Public Service Development Agency, residence permits: the short-term permit is decided on the 30th calendar day for GEL 300, the 20th for GEL 450 or the 10th for GEL 600",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "civil-code-majority",
+      "url": "https://matsne.gov.ge/en/document/view/31702?publication=140",
+      "title": "Civil Code of Georgia, Article 12 – Legal capacity, 2: a person who has attained the age of eighteen years shall be a person of the age of majority",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "ge",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "property-value",
+      "title": "Funds for a Georgian property, not agricultural land, whose market value exceeds the equivalent in GEL of USD 150,000",
+      "expression": {
+        "op": "gt",
+        "left": {
+          "op": "fact",
+          "key": "unit.liquidAssets"
+        },
+        "right": {
+          "op": "money",
+          "amount": 15000000,
+          "currency": "USD"
+        }
+      },
+      "sources": ["aliens-law-short-term"]
+    },
+    {
+      "id": "not-georgian-citizen",
+      "title": "Not a citizen of Georgia: residence permits are issued to aliens, and an alien is a person who is not a citizen of Georgia",
+      "expression": {
+        "op": "not",
+        "operand": {
+          "op": "intersects",
+          "list": {
+            "op": "fact",
+            "key": "principal.citizenships"
+          },
+          "set": {
+            "op": "tokens",
+            "values": ["GE"]
+          }
+        }
+      },
+      "sources": ["aliens-law-alien", "aliens-law-lawful-stay"]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "property-ownership",
+      "title": "Ownership of the property registered under Georgian law, its market value set by a certified assessor of an accredited body; the permit ends if the ownership ends",
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["aliens-law-short-term", "aliens-law-validity"]
+    },
+    {
+      "id": "lawful-stay",
+      "title": "In Georgia on a lawful ground when applying: not as an asylum seeker, on a deferred obligation to leave, on an ordinary C visa or under Article 10(3^1)",
+      "evidence": ["principal.citizenships"],
+      "sources": ["aliens-law-lawful-stay"]
+    },
+    {
+      "id": "security",
+      "title": "May be refused: sufficient grounds to assume the residence is inadvisable for state security or public safety, or an activity that threatens them",
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["aliens-law-refusal"]
+    },
+    {
+      "id": "criminal-record",
+      "title": "May be refused: a crime against peace and humanity; wanted for an offence; a final conviction in Georgia for a less serious offence unless expunged, or for a serious one; a pending prosecution",
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["aliens-law-refusal"]
+    },
+    {
+      "id": "disease",
+      "title": "May be refused: an infectious or other disease on the Health Ministry's list whose nature, severity or duration may threaten the population of Georgia",
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["aliens-law-refusal"]
+    },
+    {
+      "id": "true-documents",
+      "title": "May be refused: forged or invalid documents submitted, incorrect data in the application or significant information concealed",
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["aliens-law-refusal"]
+    },
+    {
+      "id": "no-expulsion-proceedings",
+      "title": "No permit for an alien whose expulsion from Georgia is under review or has been decided, even while the decision is under appeal",
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["aliens-law-refusal"]
+    }
+  ],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse",
+      "path": ["spouse"],
+      "condition": {
+        "op": "bool",
+        "value": true
+      },
+      "sources": ["aliens-law-short-term"]
+    },
+    {
+      "id": "children",
+      "title": "Children under 18; Article 15(j) names the owner's child or children with no age and the law's family member is a minor child, so a child of 18 or more: possible",
+      "path": ["child"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["aliens-law-short-term", "aliens-law-family-member", "civil-code-majority"]
+    }
+  ],
+  "costs": [
+    {
+      "id": "property",
+      "title": "Real estate in Georgia, not agricultural land, worth more than USD 150,000",
+      "kind": "capital",
+      "amount": {
+        "op": "money",
+        "amount": 15000000,
+        "currency": "USD"
+      },
+      "appliesTo": "principal",
+      "sources": ["aliens-law-short-term"]
+    },
+    {
+      "id": "service-fee",
+      "title": "Service fee for deciding the principal's permit application on the 30th calendar day: GEL 300 (GEL 450 on the 20th day, GEL 600 on the 10th)",
+      "kind": "fee",
+      "amount": {
+        "op": "convert",
+        "operand": {
+          "op": "money",
+          "amount": 30000,
+          "currency": "GEL"
+        },
+        "currency": "USD"
+      },
+      "appliesTo": "principal",
+      "sources": ["sda-residence-permits", "aliens-law-fee"]
+    },
+    {
+      "id": "family-service-fee",
+      "title": "Each family member applies for the same short-term permit, with the same service fee: GEL 300 for a decision on the 30th calendar day (GEL 450 on the 20th, GEL 600 on the 10th)",
+      "kind": "fee",
+      "amount": {
+        "op": "convert",
+        "operand": {
+          "op": "money",
+          "amount": 30000,
+          "currency": "GEL"
+        },
+        "currency": "USD"
+      },
+      "appliesTo": "each_dependent",
+      "sources": ["sda-residence-permits", "aliens-law-fee"]
+    }
+  ],
+  "durations": [
+    {
+      "id": "decision",
+      "title": "Decision on the application on the 10th, 20th or 30th calendar day, by the service fee paid",
+      "min": "P10D",
+      "max": "P30D",
+      "sources": ["sda-residence-permits"]
+    },
+    {
+      "id": "validity",
+      "title": "The permit's validity is extended one year at a time while the alien owns the property, up to 12 years in all",
+      "min": "P1Y",
+      "max": "P12Y",
+      "sources": ["aliens-law-validity"]
+    }
+  ]
+}

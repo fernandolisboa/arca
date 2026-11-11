@@ -1,6 +1,9 @@
 import {
+  type CheckStatus,
   type CheckedItem,
   type ReportMeta,
+  type StatusCounts,
+  countStatuses,
   type FetchFailure,
   checkFailures,
   checkReasons,
@@ -40,7 +43,10 @@ export interface CheckReport extends ReportMeta {
   readonly clean: boolean;
 }
 
-export type ReportListing = Omit<CheckReport, 'items' | 'fetchLog' | 'failure'>;
+export type ReportListing = Omit<CheckReport, 'items' | 'fetchLog' | 'failure'> & {
+  /** How many of its items came out each way. */
+  readonly counts: StatusCounts;
+};
 
 export type NewCheckReport = Omit<CheckReport, 'checkedAt'>;
 
@@ -88,6 +94,11 @@ const storedFetch = z.strictObject({
 });
 const storedFailure = z.enum(checkFailures).nullable();
 
+/** The items of a stored report with this status, counted in the database. */
+const statusCount = (status: CheckStatus) =>
+  sql<number>`(SELECT count(*) FROM jsonb_array_elements(CASE WHEN jsonb_typeof(${independentCheck.items}) = 'array' THEN ${independentCheck.items} ELSE '[]'::jsonb END) AS item
+    WHERE item->>'status' = ${status})::int`;
+
 /** For tests: kept while the process runs. */
 export function memoryCheckReportStore(now: () => number = Date.now): CheckReportStore & {
   readonly rows: CheckReport[];
@@ -125,6 +136,7 @@ export function memoryCheckReportStore(now: () => number = Date.now): CheckRepor
             checkedAt: rest.checkedAt,
             failed: rest.failed,
             clean: rest.clean,
+            counts: countStatuses(rest.items),
           }),
         ),
       ),
@@ -173,10 +185,19 @@ export function postgresCheckReportStore(db: () => Database): CheckReportStore {
     },
     async list() {
       const rows = await db()
-        .select(listingColumns)
+        .select({
+          ...listingColumns,
+          matches: statusCount('matches'),
+          differs: statusCount('differs'),
+          couldNotCheck: statusCount('could_not_check'),
+        })
         .from(independentCheck)
         .orderBy(desc(independentCheck.checkedAt));
-      return rows.map((row) => ({ ...row, checkedAt: row.checkedAt.getTime() }));
+      return rows.map(({ matches, differs, couldNotCheck, ...row }) => ({
+        ...row,
+        checkedAt: row.checkedAt.getTime(),
+        counts: { matches, differs, could_not_check: couldNotCheck },
+      }));
     },
     async find(startId) {
       const [row] = await db()

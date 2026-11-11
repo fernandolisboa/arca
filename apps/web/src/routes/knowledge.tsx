@@ -3,10 +3,10 @@ import {
   type KnowledgeComparisonVersion,
   type KnowledgeVersion,
 } from '@arca/api-contract/client';
-import { Button, StatusChip } from '@arca/ui';
+import { Button, Disclosure, Icon, StatusChip, cardClass } from '@arca/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   comparisonViewQuery,
@@ -19,6 +19,20 @@ import { CheckedBatch } from '../knowledge/checked-batch.js';
 import { CheckChip, useStartChecks } from '../knowledge/checks.js';
 import { ComparisonPanel } from '../knowledge/comparison-panel.js';
 import { ReportsSection } from '../knowledge/reports-section.js';
+import { ReviewFilters, needTone } from '../knowledge/review-filters.js';
+import {
+  type CountryGroup,
+  type ReviewFilter,
+  actionable,
+  filtering,
+  needCounts,
+  noFilter,
+  passes,
+  reviewNeed,
+  reviewNeeds,
+  reviewOrder,
+} from '../knowledge/review-order.js';
+import { tallyWords } from '../knowledge/step-nav.js';
 import { stateTone } from '../knowledge/state-tone.js';
 import { VersionPanel } from '../knowledge/version-panel.js';
 import { type KnowledgeWords, useKnowledgeWords } from '../knowledge/words.js';
@@ -54,6 +68,8 @@ function Knowledge() {
   const admin = session.data?.admin === true;
   const versions = useQuery({ ...knowledgeVersionsQuery, enabled: admin });
   const [picked, setPicked] = useState<Picked | null>(null);
+  const [picks, setPicks] = useState<ReviewFilter>(noFilter);
+  const [openCountries, setOpenCountries] = useState<ReadonlySet<string>>(() => new Set());
   useStartChecks(versions.isSuccess);
   const title = t('knowledge.title');
   if (session.isError) {
@@ -114,15 +130,66 @@ function Knowledge() {
     ...versions.data.comparisons.map((version) => comparisonItem(version, words)),
     ...all.map((version) => routeItem(version, words)),
   ];
-  const proposed = listed.filter(({ state }) => state === 'proposed');
+  const proposed = all.filter(({ state }) => state === 'proposed');
+  const ordered = reviewOrder(proposed, words.country);
+  const first = ordered[0]?.versions[0];
+  // A country whose last proposed version was decided drops out of the filter.
+  const filter =
+    picks.country === null || ordered.some(({ country }) => country === picks.country)
+      ? picks
+      : { ...picks, country: null };
+  const filtered = proposed.length > 0 && filtering(filter);
+  const proposedComparisons = filtered
+    ? []
+    : listed.filter(({ picked, state }) => picked.subject === 'comparison' && state === 'proposed');
   const others = listed.filter(({ state }) => state !== 'proposed');
   return (
     <Page title={title} lead={t('knowledge.lead')} wide>
       <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-6">
           <CheckedBatch versions={all} words={words} />
-          <VersionList title={t('knowledge.proposed')} versions={proposed} onPick={setPicked} />
-          {proposed.length === 0 && <p className="text-muted">{t('knowledge.noneProposed')}</p>}
+          <ProposedVersions
+            groups={reviewOrder(
+              proposed.filter((version) => passes(filter, version)),
+              words.country,
+            )}
+            startHere={first !== undefined && actionable(reviewNeed(first)) ? first : undefined}
+            comparisons={proposedComparisons}
+            filters={
+              proposed.length > 0 && (
+                <ReviewFilters
+                  countries={ordered
+                    .map(({ country }) => country)
+                    .toSorted((left, right) =>
+                      words.country(left).localeCompare(words.country(right)),
+                    )}
+                  counts={needCounts(proposed, filter)}
+                  filter={filter}
+                  onChange={(next) => {
+                    setPicks(next);
+                    const { country } = next;
+                    if (country !== null) setOpenCountries((was) => new Set(was).add(country));
+                  }}
+                  words={words}
+                />
+              )
+            }
+            filtered={filtered}
+            onClearFilter={() => {
+              setPicks(noFilter);
+            }}
+            openCountries={openCountries}
+            onToggleCountry={(country, open) => {
+              setOpenCountries((was) => {
+                const next = new Set(was);
+                if (open) next.add(country);
+                else next.delete(country);
+                return next;
+              });
+            }}
+            onPick={setPicked}
+            words={words}
+          />
           {others.length > 0 && (
             <VersionList title={t('knowledge.others')} versions={others} onPick={setPicked} />
           )}
@@ -197,6 +264,247 @@ function VersionList({
         ))}
       </ul>
     </section>
+  );
+}
+
+const rowButton =
+  'flex min-h-touch w-full items-start gap-3 px-4 py-3 text-left hover:bg-soft focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary';
+
+/**
+ * The proposed versions by country, in the order to review them (reviewOrder), each with what it
+ * asks of the admin and how its check's points came out; the comparisons last. Each country folds
+ * behind its name, which keeps a tally of its needs, and the screen keeps which are open.
+ */
+function ProposedVersions({
+  groups,
+  startHere,
+  comparisons,
+  filters,
+  filtered,
+  onClearFilter,
+  openCountries,
+  onToggleCountry,
+  onPick,
+  words,
+}: {
+  readonly groups: readonly CountryGroup<KnowledgeVersion>[];
+  /** The version to review first, when the admin can act on it now. */
+  readonly startHere: KnowledgeVersion | undefined;
+  readonly comparisons: readonly Listed[];
+  readonly filters: ReactNode;
+  readonly filtered: boolean;
+  readonly onClearFilter: () => void;
+  readonly openCountries: ReadonlySet<string>;
+  readonly onToggleCountry: (country: string, open: boolean) => void;
+  readonly onPick: (picked: Picked) => void;
+  readonly words: KnowledgeWords;
+}) {
+  const { t } = words;
+  const title = t('knowledge.proposed');
+  return (
+    <section aria-label={title} className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1">
+        <h3 className="font-medium">{title}</h3>
+        {groups.length > 0 && (
+          <p className="text-small text-muted">{t('knowledge.review.order')}</p>
+        )}
+      </div>
+      {filters}
+      {groups.length === 0 && comparisons.length === 0 && (
+        <div className="flex flex-col items-start gap-2">
+          <p className="text-muted">
+            {t(filtered ? 'knowledge.review.filter.empty' : 'knowledge.noneProposed')}
+          </p>
+          {filtered && (
+            <button type="button" className={textLinkClass} onClick={onClearFilter}>
+              {t('knowledge.review.filter.clear')}
+            </button>
+          )}
+        </div>
+      )}
+      {groups.map(({ country, versions }) => (
+        <ProposedGroup
+          key={country}
+          title={words.country(country)}
+          count={versions.length}
+          tally={
+            <>
+              {startHere?.country === country && (
+                <span className="text-caption font-medium text-accent">
+                  {t('knowledge.review.start')}
+                </span>
+              )}
+              <NeedTally versions={versions} words={words} />
+            </>
+          }
+          open={openCountries.has(country)}
+          onOpenChange={(open) => {
+            onToggleCountry(country, open);
+          }}
+          words={words}
+        >
+          {versions.map((version, position) => {
+            const need = reviewNeed(version);
+            const { points } = version;
+            return (
+              <li key={`${version.routeId}:${String(version.number)}`}>
+                <button
+                  type="button"
+                  className={rowButton}
+                  onClick={() => {
+                    onPick({ subject: 'route', routeId: version.routeId, number: version.number });
+                  }}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="grid size-7 shrink-0 place-items-center rounded-full bg-soft text-small font-medium tabular-nums"
+                  >
+                    {position + 1}
+                  </span>
+                  <span className="flex min-w-0 flex-1 flex-col gap-1">
+                    <span className="font-medium">
+                      {t('knowledge.versionTitle', {
+                        title: version.title,
+                        number: version.number,
+                      })}
+                    </span>
+                    {version === startHere && (
+                      <span className="text-caption font-medium text-accent">
+                        {t('knowledge.review.start')}
+                      </span>
+                    )}
+                    <span className="text-small text-muted">
+                      {t('knowledge.versionMeta', {
+                        country: words.country(version.country),
+                        date: words.date(version.effectiveFrom),
+                      })}
+                    </span>
+                    <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      {need === 'unchecked' ? (
+                        <CheckChip status={version.check} words={words} />
+                      ) : (
+                        <StatusChip
+                          tone={needTone[need]}
+                          label={t('knowledge.review.need', { need })}
+                        />
+                      )}
+                      {points !== null && (
+                        <span className="text-small text-muted">{tallyWords(points, words)}</span>
+                      )}
+                    </span>
+                  </span>
+                  <span aria-hidden="true" className="self-center text-muted">
+                    <Icon name="chevron" size={16} />
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ProposedGroup>
+      ))}
+      {comparisons.length > 0 && (
+        <ProposedGroup
+          title={t('knowledge.review.comparisons')}
+          count={comparisons.length}
+          open={openCountries.has(comparisonsGroup)}
+          onOpenChange={(open) => {
+            onToggleCountry(comparisonsGroup, open);
+          }}
+          words={words}
+        >
+          {comparisons.map((version) => (
+            <li key={pickedKey(version.picked)}>
+              <button
+                type="button"
+                className={rowButton}
+                onClick={() => {
+                  onPick(version.picked);
+                }}
+              >
+                <span className="flex min-w-0 flex-1 flex-col gap-1">
+                  <span className="font-medium">
+                    {t('knowledge.versionTitle', {
+                      title: version.title,
+                      number: version.picked.number,
+                    })}
+                  </span>
+                  <span className="text-small text-muted">{version.meta}</span>
+                </span>
+                <span aria-hidden="true" className="self-center text-muted">
+                  <Icon name="chevron" size={16} />
+                </span>
+              </button>
+            </li>
+          ))}
+        </ProposedGroup>
+      )}
+    </section>
+  );
+}
+
+/** The open-state key of the comparisons' card, which no country code can take. */
+const comparisonsGroup = 'comparisons';
+
+/** How many of a country's versions have each need, so a folded card still says what waits. */
+function NeedTally({
+  versions,
+  words,
+}: {
+  readonly versions: readonly KnowledgeVersion[];
+  readonly words: KnowledgeWords;
+}) {
+  const counts = needCounts(versions, noFilter);
+  return (
+    <>
+      {reviewNeeds
+        .filter((need) => counts[need] > 0)
+        .map((need) => (
+          <StatusChip
+            key={need}
+            tone={needTone[need]}
+            label={words.t(`knowledge.review.needCount.${need}`, { n: counts[need] })}
+          />
+        ))}
+    </>
+  );
+}
+
+/** One country's proposed versions, folded behind its name, as rows in one card. */
+function ProposedGroup({
+  title,
+  count,
+  tally,
+  open,
+  onOpenChange,
+  words,
+  children,
+}: {
+  readonly title: string;
+  readonly count: number;
+  readonly tally?: ReactNode;
+  readonly open: boolean;
+  readonly onOpenChange: (open: boolean) => void;
+  readonly words: KnowledgeWords;
+  readonly children: ReactNode;
+}) {
+  return (
+    <Disclosure
+      title={title}
+      level={4}
+      open={open}
+      onOpenChange={onOpenChange}
+      aside={
+        <span className="flex basis-full flex-wrap items-center gap-2 pb-3">
+          {tally}
+          <span className="text-small text-muted">
+            {words.t('knowledge.review.versions', { n: count })}
+          </span>
+        </span>
+      }
+      className={`overflow-hidden px-4 ${cardClass}`}
+    >
+      <ol className="-mx-4 flex flex-col divide-y divide-line border-t border-line">{children}</ol>
+    </Disclosure>
   );
 }
 

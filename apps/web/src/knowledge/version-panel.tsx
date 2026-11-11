@@ -1,42 +1,69 @@
 import type { VersionView } from '@arca/api-contract/client';
 import type { Messages } from '@arca/i18n';
-import { Button, Icon, StatusChip, menuItemClass } from '@arca/ui';
+import { Button, Icon, StatusChip } from '@arca/ui';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
-import { CheckReport } from './checks.js';
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
+import { versionCheckQuery } from '../api.js';
+import { CheckReport, ItemResult, addressesRead } from './checks.js';
 import { Decision, decideVersion } from './decision.js';
-import { ChangeList, CheckAndHash, card, changeLines, surface } from './review-parts.js';
+import { ChangeList, CheckAndHash, card, cardOf, changeLines, surfaceOf } from './review-parts.js';
 import { ExpressionTree } from './expression-tree.js';
 import { CheckRunButton, CheckRunConfirm, useCheckRun } from './check-run.js';
 import { RuleSummaryButton, RuleSummaryCard, useRuleSummary } from './rule-summary.js';
 import { stateTone } from './state-tone.js';
+import { type TallyTone, pointTone, shownPoints, stepTallies } from './step-checks.js';
+import { CheckSummary, StepNav, TallyLine } from './step-nav.js';
 import { reviewSteps, sectionCounts, type Step, type StepKey } from './steps.js';
 import { type KnowledgeWords, useKnowledgeWords } from './words.js';
 
 type SectionKey = keyof Messages['knowledge']['section'];
 
+/** The independent check's result for the item with this check key, and how it came out. */
+interface PointOf {
+  readonly result: (key: string) => ReactNode;
+  readonly tone: (key: string) => TallyTone | undefined;
+}
+
+/** The check keys of the settings the check reads. */
+const settingPoints = { leapDay: 'leapDayBirthday', closure: 'closure' } as const;
+
 function Cards<T>({
   items,
   keyOf,
   render,
+  check,
 }: {
   readonly items: readonly T[];
   readonly keyOf: (item: T) => string;
   readonly render: (item: T) => ReactNode;
+  /** The check's points, and the check key of an item, to show its result under it. */
+  readonly check?: { readonly points: PointOf; readonly keyOf: (item: T) => string };
 }) {
   return (
     <ol className="flex flex-col gap-3">
-      {items.map((item, position) => (
-        <li key={keyOf(item)} className={`grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 ${surface}`}>
-          <span
-            aria-hidden="true"
-            className="grid size-7 place-items-center rounded-full bg-soft text-small font-medium tabular-nums"
+      {items.map((item, position) => {
+        const key = check?.keyOf(item);
+        return (
+          <li
+            key={keyOf(item)}
+            className={`grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 ${surfaceOf(
+              key === undefined ? undefined : check?.points.tone(key),
+            )}`}
           >
-            {position + 1}
-          </span>
-          <div className="flex min-w-0 flex-col gap-2">{render(item)}</div>
-        </li>
-      ))}
+            <span
+              aria-hidden="true"
+              className="grid size-7 place-items-center rounded-full bg-soft text-small font-medium tabular-nums"
+            >
+              {position + 1}
+            </span>
+            <div className="flex min-w-0 flex-col gap-2">
+              {render(item)}
+              {key !== undefined && check?.points.result(key)}
+            </div>
+          </li>
+        );
+      })}
     </ol>
   );
 }
@@ -88,13 +115,22 @@ function leapDayRule(rule: VersionView['leapDayBirthday']) {
   }
 }
 
-function Settings({ view, words }: { readonly view: VersionView; readonly words: KnowledgeWords }) {
+function Settings({
+  view,
+  words,
+  point,
+}: {
+  readonly view: VersionView;
+  readonly words: KnowledgeWords;
+  readonly point: PointOf;
+}) {
   const { t } = words;
   return (
     <ul className="flex flex-col gap-3">
-      <li className={card}>
+      <li className={cardOf(point.tone(settingPoints.leapDay))}>
         <p>{t('knowledge.leapDay', { rule: leapDayRule(view.leapDayBirthday) })}</p>
         <Reads sources={view.leapDayBirthdaySources} words={words} />
+        {point.result(settingPoints.leapDay)}
       </li>
       {view.referenceDates.length > 0 && (
         <li className={card}>
@@ -103,9 +139,11 @@ function Settings({ view, words }: { readonly view: VersionView; readonly words:
           })}
         </li>
       )}
-      {view.closureSources.length > 0 && (
-        <li className={card}>
-          {t('knowledge.closureSources', { sources: words.list(view.closureSources) })}
+      {(view.closureSources.length > 0 || view.status === 'closed') && (
+        <li className={cardOf(point.tone(settingPoints.closure))}>
+          {view.closureSources.length > 0 &&
+            t('knowledge.closureSources', { sources: words.list(view.closureSources) })}
+          {point.result(settingPoints.closure)}
         </li>
       )}
       <li className={card}>
@@ -126,22 +164,25 @@ function StepContent({
   step,
   view,
   words,
+  point,
 }: {
   readonly step: Step;
   readonly view: VersionView;
   readonly words: KnowledgeWords;
+  readonly point: PointOf;
 }) {
   const { t } = words;
   switch (step.key) {
     case 'changes':
       return <Changes view={view} words={words} />;
     case 'settings':
-      return <Settings view={view} words={words} />;
+      return <Settings view={view} words={words} point={point} />;
     case 'requirements':
       return (
         <Cards
           items={view.requirements}
           keyOf={(requirement) => requirement.id}
+          check={{ points: point, keyOf: (requirement) => `requirement:${requirement.id}` }}
           render={(requirement) => (
             <>
               <p className="font-medium">{requirement.title}</p>
@@ -156,6 +197,7 @@ function StepContent({
         <Cards
           items={view.assessments}
           keyOf={(assessment) => assessment.id}
+          check={{ points: point, keyOf: (assessment) => `assessment:${assessment.id}` }}
           render={(assessment) => (
             <>
               <p className="font-medium">{assessment.title}</p>
@@ -169,6 +211,7 @@ function StepContent({
         <Cards
           items={view.dependents}
           keyOf={(dependent) => dependent.id}
+          check={{ points: point, keyOf: (dependent) => `dependent:${dependent.id}` }}
           render={(dependent) => (
             <>
               <p className="font-medium">{dependent.title}</p>
@@ -192,6 +235,7 @@ function StepContent({
         <Cards
           items={view.costs}
           keyOf={(cost) => cost.id}
+          check={{ points: point, keyOf: (cost) => `cost:${cost.id}` }}
           render={(cost) => (
             <>
               <p className="font-medium">{cost.title}</p>
@@ -219,6 +263,7 @@ function StepContent({
         <Cards
           items={view.durations}
           keyOf={(stage) => stage.id}
+          check={{ points: point, keyOf: (stage) => `duration:${stage.id}` }}
           render={(stage) => (
             <>
               <p>
@@ -238,6 +283,7 @@ function StepContent({
         <Cards
           items={view.countrySets}
           keyOf={(set) => set.id}
+          check={{ points: point, keyOf: (set) => `countrySet:${set.id}/${String(set.number)}` }}
           render={(set) => (
             <>
               {t('knowledge.countrySet', {
@@ -380,10 +426,28 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
   });
   const steps = reviewSteps(view);
   const [currentKey, setCurrentKey] = useState<StepKey>('changes');
-  const [seen, setSeen] = useState<ReadonlySet<StepKey>>(() => new Set(['changes']));
   const movedRef = useRef(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const currentRef = useRef<HTMLButtonElement>(null);
+  const check = useQuery(versionCheckQuery(view.routeId, view.number));
+  const report = check.data?.enabled === true ? check.data.report : null;
+  const { tallies, point } = useMemo(() => {
+    const points = shownPoints(report);
+    const byKey = new Map(points.map((item) => [item.key, item]));
+    const addressRead = report === null ? new Map<string, string | null>() : addressesRead(report);
+    const pointOf: PointOf = {
+      result: (key) => {
+        const item = byKey.get(key);
+        return item === undefined ? null : (
+          <ItemResult item={item} addressRead={addressRead} words={words} />
+        );
+      },
+      tone: (key) => {
+        const item = byKey.get(key);
+        return item === undefined ? undefined : pointTone(item.status);
+      },
+    };
+    return { tallies: stepTallies(points), point: pointOf };
+  }, [report, words]);
   const headingId = useId();
 
   const index = Math.max(
@@ -392,6 +456,7 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
   );
   const step = steps[index] ?? { key: 'decision' };
   const next = steps[index + 1];
+  const stepTally = tallies.get(step.key);
   const title = (target: Step) =>
     target.key === 'decision'
       ? t('knowledge.wizard.decision')
@@ -401,14 +466,12 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
     if (!movedRef.current) return;
     // Focus lands on the new step's heading, so a screen reader reads where it now is.
     headingRef.current?.focus();
-    currentRef.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   }, [currentKey]);
 
   const go = (target: Step | undefined) => {
     if (target === undefined) return;
     movedRef.current = true;
     setCurrentKey(target.key);
-    setSeen((before) => new Set(before).add(target.key));
   };
 
   return (
@@ -455,58 +518,34 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
       </header>
       <CheckRunConfirm state={checkRun} words={words} />
       <RuleSummaryCard state={summary} />
+      <CheckSummary tallies={tallies} scripted={report?.scripted === true} words={words} />
       <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-10">
-        <nav aria-label={t('knowledge.wizard.steps')}>
-          <ol className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 lg:sticky lg:top-4 lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:px-0 lg:pb-0">
-            {steps.map((item, position) => {
-              const current = position === index;
-              return (
-                <li key={item.key} className="shrink-0">
-                  <button
-                    ref={current ? currentRef : undefined}
-                    type="button"
-                    aria-current={current ? 'step' : undefined}
-                    onClick={() => {
-                      go(item);
-                    }}
-                    data-current={current || undefined}
-                    className={menuItemClass}
-                  >
-                    <span
-                      aria-hidden="true"
-                      className="grid size-6 shrink-0 place-items-center rounded-full border border-line text-caption tabular-nums"
-                    >
-                      {seen.has(item.key) && !current ? (
-                        <Icon name="check" size={14} />
-                      ) : (
-                        position + 1
-                      )}
-                    </span>
-                    <span className="flex-1">{title(item)}</span>
-                    {'count' in item && (
-                      <span className="text-caption text-muted tabular-nums">{item.count}</span>
-                    )}
-                  </button>
-                </li>
-              );
-            })}
-          </ol>
-        </nav>
+        <StepNav
+          steps={steps}
+          index={index}
+          tallies={tallies}
+          title={title}
+          go={go}
+          words={words}
+        />
         <section aria-labelledby={headingId} className="flex min-w-0 flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <p className="text-small text-muted">
-              {t('knowledge.wizard.progress', { current: index + 1, total: steps.length })}
-            </p>
-            <h4
-              ref={headingRef}
-              id={headingId}
-              tabIndex={-1}
-              className="text-lead font-medium focus:outline-none"
-            >
-              {title(step)}
-            </h4>
+          <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
+            <div className="flex flex-col gap-1">
+              <p className="text-small text-muted">
+                {t('knowledge.wizard.progress', { current: index + 1, total: steps.length })}
+              </p>
+              <h4
+                ref={headingRef}
+                id={headingId}
+                tabIndex={-1}
+                className="text-lead font-medium focus:outline-none"
+              >
+                {title(step)}
+              </h4>
+            </div>
+            {stepTally !== undefined && <TallyLine tally={stepTally} words={words} />}
           </div>
-          <StepContent step={step} view={view} words={words} />
+          <StepContent step={step} view={view} words={words} point={point} />
           <div className="mt-2 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
             {index > 0 ? (
               <Button
