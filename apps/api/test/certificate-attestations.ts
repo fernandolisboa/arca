@@ -24,10 +24,18 @@ const jws = (header: object) =>
       '.AA',
   );
 
-/** One statement per format that carries certificates, each naming the revocation list above. */
+/** The statement that makes an unguarded verifier request the revocation list. */
+export const appleAttestation: AttestationStatement = { fmt: 'apple', attStmt: { x5c } };
+export const revocationListUrl = 'http://crl.invalid/arca-test.crl';
+
+/**
+ * One statement per format that carries certificates, each with the certificate above. Only the
+ * Apple one is forged well enough to reach the request in SimpleWebAuthn 13.3.3; the verifier
+ * turns the others away on earlier checks, so they pin the refusal of their format.
+ */
 export const certificateAttestations: readonly AttestationStatement[] = [
   { fmt: 'packed', attStmt: { alg: -7, sig, x5c } },
-  { fmt: 'apple', attStmt: { x5c } },
+  appleAttestation,
   { fmt: 'android-key', attStmt: { alg: -7, sig, x5c } },
   {
     fmt: 'android-safetynet',

@@ -308,7 +308,7 @@ export function registration(
     verify: async (headers, { token, code, response }) => {
       // The plugin calls the verifier itself, so the attestation is checked before it runs.
       if (!attestsWithoutCertificates(response.response.attestationObject)) {
-        logger.info({ errorName: 'RegistrationRefused' });
+        logger.info({ errorName: 'AttestationRefused' });
         return { ok: false, reason: 'refused' };
       }
       const ceremony: Parameters<RegistrationHooks['within']>[0] = {

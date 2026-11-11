@@ -681,7 +681,11 @@ describe('invites (spec 0003, R2)', () => {
   it('erases a declined account and frees its address', async () => {
     const declined = 'declined@example.org';
     expect((await invite(owner.cookie, declined)).status).toBe(200);
-    const { verified } = await register(await latestToken('invite'), { typed: null });
+    // A self attestation, the other statement a registration accepts.
+    const { verified } = await register(await latestToken('invite'), {
+      typed: null,
+      statement: 'self',
+    });
     expect(verified.status).toBe(200);
     const pending = (await listed(owner.cookie)).find((entry) => entry.email === declined);
     const id = pending?.id ?? '';
