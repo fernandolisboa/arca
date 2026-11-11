@@ -28,7 +28,7 @@ For each host:
 - **Read:** `curl`. Consolidated laws at `/normativa/nacional/<slug>-<id>/actualizacion`; a norm's original text at `/normativa/nacional/norma-<id>/texto`; some PDFs at `/normativa/<id>_<name>_pdf/archivo`.
 - **Cite:** the `actualizacion` page for a law in force; the `texto` page for a decree or resolution.
 - **Amendments:** the consolidated page says which norm it is current through, and `/normativa/nacional/<slug>-<id>/normas-modifican` lists the norms that modify it, newest first. The `normativa` search needs a captcha; find norm ids by publication date with `/normativa/buscar-boletin?s=1&fecha_publicacion=DD-MM-YYYY`.
-- Decreto 584/2024's fee table (article 1) is published only as images; the directorate's `/migraciones/cuadro-tasas-migratorias` page gives the same amounts as text, so cite it for a fee.
+- Decreto 584/2024's fee table (article 1) is published only as images; the directorate's `/migraciones/cuadro-tasas-migratorias` page gives the amounts as text, so cite it for a fee.
 - Not readable: infoleg (403), saij (403), boletinoficial.gob.ar and nic.ar (connection reset), mercosur.int (403).
 
 ## `au`: Australia

@@ -209,7 +209,7 @@
   "assessments": [
     {
       "id": "serious-crime",
-      "title": "No conviction, final or not, and no record (an indictment or committal to trial), anywhere, for a crime Argentine law punishes with three years of prison or more, save an exceptional dispensation",
+      "title": "No conviction, final or not, or record, anywhere, for a crime Argentine law punishes with three years of prison or more, save a dispensation, barred for intentional crimes on life, sex or the State",
       "evidence": ["principal.visaRefusals"],
       "sources": ["ley-25871-serious-crimes"]
     },
