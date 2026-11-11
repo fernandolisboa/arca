@@ -68,6 +68,10 @@ const rules: readonly Rule[] = [
     match: /^(SECURITY\.md|docs\/(SECURITY|SETUP|RETENTION)\.md|docs\/(threat-models|runbooks)\/)/,
     reviewers: ['security'],
   },
+  // The monthly rule audit reads a route's notes back at the route's next turn, and reads its
+  // hosts by the recipes, with nobody watching.
+  { match: /^docs\/research\/routes\/.+\.md$/, reviewers: ['security'] },
+  { match: /^docs\/runbooks\/reading-recipes\.md$/, reviewers: ['supply-chain'] },
   { match: /^docs\/vault-format\.md$/, reviewers: ['security', 'auth-crypto'] },
   // ADRs and the data-flow register admit vendors and services and set the auth and vault design.
   {
@@ -188,10 +192,11 @@ const rules: readonly Rule[] = [
     ),
     reviewers: withCore('supply-chain'),
   },
-  // Agent and review configuration, wherever an agent would load it (threat model S4).
+  // Agent and review configuration, wherever an agent would load it (threat model S4). The rule
+  // audit runbook holds the monthly run's prompt and what that run may merge on its own.
   {
     match:
-      /(^|\/)((CLAUDE|AGENTS|GEMINI)(\.local)?\.md|\.claude\/|\.mcp\.json$)|^(docs\/agents\/|docs\/REVIEW\.md$|tooling\/scripts\/src\/select-reviewers\.ts$)/i,
+      /(^|\/)((CLAUDE|AGENTS|GEMINI)(\.local)?\.md|\.claude\/|\.mcp\.json$)|^(docs\/agents\/|docs\/REVIEW\.md$|docs\/runbooks\/rule-audit\.md$|tooling\/scripts\/src\/select-reviewers\.ts$)/i,
     reviewers: withCore('supply-chain'),
   },
 ];
