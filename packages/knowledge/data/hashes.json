@@ -373,11 +373,11 @@
     },
     {
       "path": "routes/cz-eu-blue-card/3",
-      "sha256": "fd557b0c21a07bafafef799e98d6c4991cbe3f043e9322c294bfca369ce0c0d3"
+      "sha256": "99f1eef9808c5e68195c8d1e239d5dead9ab0158333a325f03729d7891f7849c"
     },
     {
       "path": "routes/dk-pay-limit/2",
-      "sha256": "a26e4d223fff427e90431608f19e8472d4fffed079c95782aec61876bd07bdee"
+      "sha256": "db79ca6a1fd7253390b8c69211d2258e296765971d952ceaacfbee34529ba162"
     },
     {
       "path": "routes/ge-property-short-term/2",

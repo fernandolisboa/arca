@@ -200,7 +200,7 @@
   "dependents": [
     {
       "id": "spouse",
-      "title": "Spouse, both aged 18 or more at the wedding; married younger, both now 18 or more: possible, as a cohabiting partner after at least 1.5 to 2 years living together",
+      "title": "Spouse who was 18 or more at the wedding; married younger, both now 18 or more: possible, as a cohabiting partner after at least 1.5 to 2 years living together",
       "path": ["spouse"],
       "condition": {
         "op": "any",

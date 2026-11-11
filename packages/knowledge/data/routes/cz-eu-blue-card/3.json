@@ -294,7 +294,7 @@
     },
     {
       "id": "parents",
-      "title": "A lone parent over 65 (single, widowed or divorced); one living with a partner: possible; a dependent parent of any age unable to care for themselves for health reasons: possible",
+      "title": "A lone parent of 65 or more (single, widowed or divorced); one living with a partner: possible; a dependent parent of any age unable to care for themselves for health reasons: possible",
       "path": ["parent"],
       "condition": {
         "op": "any",
@@ -418,18 +418,26 @@
       },
       "appliesTo": "principal",
       "condition": {
-        "op": "not",
-        "operand": {
-          "op": "eq",
-          "left": {
-            "op": "fact",
-            "key": "principal.residenceCountry"
+        "op": "any",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "eq",
+              "left": {
+                "op": "fact",
+                "key": "principal.residenceCountry"
+              },
+              "right": {
+                "op": "token",
+                "value": "CZ"
+              }
+            }
           },
-          "right": {
-            "op": "token",
-            "value": "CZ"
+          {
+            "op": "unmodeled"
           }
-        }
+        ]
       },
       "sources": ["fees-act-consular", "ipc-blue-card"]
     },
@@ -475,18 +483,26 @@
       },
       "appliesTo": "each_dependent",
       "condition": {
-        "op": "not",
-        "operand": {
-          "op": "eq",
-          "left": {
-            "op": "fact",
-            "key": "person.residenceCountry"
+        "op": "any",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "eq",
+              "left": {
+                "op": "fact",
+                "key": "person.residenceCountry"
+              },
+              "right": {
+                "op": "token",
+                "value": "CZ"
+              }
+            }
           },
-          "right": {
-            "op": "token",
-            "value": "CZ"
+          {
+            "op": "unmodeled"
           }
-        }
+        ]
       },
       "sources": ["fees-act-consular", "ipc-family"]
     },
