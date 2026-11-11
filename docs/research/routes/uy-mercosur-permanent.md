@@ -9,7 +9,7 @@ Research notes for Uruguay's permanent residence for nationals of the Mercosur s
 The first audit by the runbook ([#358](https://github.com/fernandolisboa/arca/issues/358)), on demand, together with the other three Mercosur routes. The pull request carries the four Mercosur routes, as the [Argentine record](ar-mercosur-temporary.md) explains.
 
 - **Version audited:** 2
-- **Outcome:** correction, version 3 (pull request PR_NUMBER), from version 2's own date, 2023-02-17, so it replaces versions 1 and 2. Article 46 of Ley N.º 18.250 has its current wording from 2024-01-01 (Ley N.º 20.212, articles 155 and 2); the assessment that cites it rests also on Decreto N.º 45/023, article 2, in force throughout, and the API evaluates only as of today, so the closed period from 2023-02-17 to 2023-12-31 gets no version of its own.
+- **Outcome:** correction, version 3 (pull request [#385](https://github.com/fernandolisboa/arca/pull/385)), from version 2's own date, 2023-02-17, so it replaces versions 1 and 2. Article 46 of Ley N.º 18.250 has its current wording from 2024-01-01 (Ley N.º 20.212, articles 155 and 2); the assessment that cites it rests also on Decreto N.º 45/023, article 2, in force throughout, and the API evaluates only as of today, so the closed period from 2023-02-17 to 2023-12-31 gets no version of its own.
 - **Sources re-read** (all on 2026-11-11 UTC with `curl`, Latin-1 pages read from the saved files):
   - `ley-18250-mercosur`, `-decision`, `-family`, `-entry-refusal` and `-denial`: the consolidated Ley N.º 18.250, articles 10, 33, 34 and 45 to 52.
   - `ley-20075`: article 169.

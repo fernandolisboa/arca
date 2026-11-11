@@ -9,7 +9,7 @@ Research notes for Chile's Mercosur temporary residence, route `cl-mercosur-temp
 The first audit by the runbook ([#358](https://github.com/fernandolisboa/arca/issues/358)), on demand, together with the other three Mercosur routes. The pull request carries the four Mercosur routes, as the [Argentine record](ar-mercosur-temporary.md) explains.
 
 - **Version audited:** 1
-- **Outcome:** correction, version 2 (pull request PR_NUMBER), from version 1's own date, 2022-05-14, so it replaces version 1 entirely.
+- **Outcome:** correction, version 2 (pull request [#385](https://github.com/fernandolisboa/arca/pull/385)), from version 1's own date, 2022-05-14, so it replaces version 1 entirely.
 - **Sources re-read** (on 2026-11-11 UTC with `curl`):
   - `sermig-mercosur` (last updated 2025-12-18) and `sermig-dependents` (last updated 2025-12-16): the migration service's pages.
   - `agreement-nationals`, `-residence` and `-records`: the agreement as Paraguay's Ley N.º 3578/2008 prints it, articles 2, 4 and 9.

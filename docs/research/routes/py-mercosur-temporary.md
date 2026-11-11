@@ -9,7 +9,7 @@ Research notes for Paraguay's Mercosur temporary residence, route `py-mercosur-t
 The first audit by the runbook ([#358](https://github.com/fernandolisboa/arca/issues/358)), on demand, together with the other three Mercosur routes. The pull request carries the four Mercosur routes, as the [Argentine record](ar-mercosur-temporary.md) explains.
 
 - **Version audited:** 2
-- **Outcome:** correction, version 3 (pull request PR_NUMBER), from 2026-07-01, a later date inside version 2's period, because the fee it adds is the amount in force from that day (Decreto N.º 6225/2026, Resolución DNM N.º 478/2026). The closed period before it, with the earlier jornal, gets no version: the API evaluates only as of today, so version 2, with the errors version 3 corrects, stays selected for dates before 2026-07-01. The two leap-day cases moved to 2030 so that they fall inside version 3's period.
+- **Outcome:** correction, version 3 (pull request [#385](https://github.com/fernandolisboa/arca/pull/385)), from 2026-07-01, a later date inside version 2's period, because the fee it adds is the amount in force from that day (Decreto N.º 6225/2026, Resolución DNM N.º 478/2026). The closed period before it, with the earlier jornal, gets no version: the API evaluates only as of today, so version 2, with the errors version 3 corrects, stays selected for dates before 2026-07-01. The two leap-day cases moved to 2030 so that they fall inside version 3's period.
 - **Sources re-read** (all on 2026-11-11 UTC with `curl`; `www.bacn.gov.py` answered 520 once and the retry read):
   - `ley-3578-nationals`, `-residence`, `-records` and `-family`: Ley N.º 3578/2008 with the agreement, articles 2, 4 and 9.
   - `ley-6984`: Ley N.º 6984/2022, articles 4.10, 46, 50, 52, 100 and 101.
