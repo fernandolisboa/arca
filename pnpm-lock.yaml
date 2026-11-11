@@ -218,6 +218,9 @@ catalogs:
     '@fontsource/instrument-serif':
       specifier: 5.3.0
       version: 5.3.0
+    '@fontsource/opendyslexic':
+      specifier: 5.3.0
+      version: 5.3.0
     '@fontsource/young-serif':
       specifier: 5.3.0
       version: 5.3.0
@@ -876,6 +879,9 @@ importers:
         specifier: 'catalog:'
         version: 5.3.0
       '@fontsource/instrument-serif':
+        specifier: 'catalog:'
+        version: 5.3.0
+      '@fontsource/opendyslexic':
         specifier: 'catalog:'
         version: 5.3.0
       '@fontsource/young-serif':
@@ -1620,6 +1626,9 @@ packages:
 
   '@fontsource/instrument-serif@5.3.0':
     resolution: {integrity: sha512-mDiaIg0u67sYV59fie92Wz4sM8UiVlbL7fLxnFPCKkX15DMASEnQTREbaP5S5/3DCcsoAOcQ0sV9E4AeY4QqYQ==}
+
+  '@fontsource/opendyslexic@5.3.0':
+    resolution: {integrity: sha512-BVYIW/ghc1U2iAghhYTN+GFWiZ3lnCy8Jf2KkZC23aHQHBNcMqKT718zckfqVxRx4qsXJmIMPWvczirRuhmtsg==}
 
   '@fontsource/young-serif@5.3.0':
     resolution: {integrity: sha512-/ay2kPm7QzGKW/9tL7UVh+B5meX3J6gh2PLnHV2ohlIbQSMRGTuyzNNVWpzsHc3P3bcpMm1IPfuO7GRtFrXWvQ==}
@@ -5148,6 +5157,8 @@ snapshots:
   '@fontsource/ibm-plex-mono@5.3.0': {}
 
   '@fontsource/instrument-serif@5.3.0': {}
+
+  '@fontsource/opendyslexic@5.3.0': {}
 
   '@fontsource/young-serif@5.3.0': {}
 

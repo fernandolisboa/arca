@@ -134,6 +134,7 @@ export const ptBR = {
         geometric: 'Geométrica',
         friendly: 'Amigável',
         readable: 'Leitura fácil',
+        dyslexic: 'OpenDyslexic',
         clean: 'Limpa',
         technical: 'Técnica',
       },

@@ -8,7 +8,7 @@
 
 ## Goal
 
-One visual language for every screen, with the choices the owner asked for: four color themes, light and dark, nine font pairs, three corner shapes, four navigation layouts on wide screens and three on phones, the floating dock's edge, text size and high contrast, chosen per person in Settings. Components read tokens only, so a new theme is a data change.
+One visual language for every screen, with the choices the owner asked for: four color themes, light and dark, ten font pairs, three corner shapes, four navigation layouts on wide screens and three on phones, the floating dock's edge, text size and high contrast, chosen per person in Settings. Components read tokens only, so a new theme is a data change.
 
 ## Scope
 
@@ -92,6 +92,7 @@ Non-text cues (bars on `track`, the dashed `line` border of unknown items) are b
 | `retro` | Young Serif 400 | Work Sans 400–700 | Work Sans, tabular figures |
 | `friendly` | Nunito 800 | Nunito 400–600 | Nunito, tabular figures |
 | `readable` | Atkinson Hyperlegible Next 700 | Atkinson Hyperlegible Next 400 | Atkinson Hyperlegible Next, tabular figures |
+| `dyslexic` | OpenDyslexic 700 | OpenDyslexic 400 | OpenDyslexic 400 (latin subset only; added 2026-11-11 at the owner's request) |
 | `clean` | Inter 700 | Inter 400–600 | Inter, tabular figures |
 | `technical` | IBM Plex Sans 600 | IBM Plex Sans 400–600 | IBM Plex Mono 500 |
 
