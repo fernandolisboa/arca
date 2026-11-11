@@ -65,7 +65,7 @@ describe('adding a passkey', () => {
     return fetched;
   };
 
-  // The premise of the two tests after it: if an upgrade stops this request, they prove nothing.
+  // The premise of the refusals after it: if an upgrade stops this request, they prove nothing.
   it('would request the revocation list a certificate names, were it not refused', async () => {
     const fetched = stubFetch();
     await expect(

@@ -29,9 +29,11 @@ export const appleAttestation: AttestationStatement = { fmt: 'apple', attStmt: {
 export const revocationListUrl = 'http://crl.invalid/arca-test.crl';
 
 /**
- * One statement per format that carries certificates, each with the certificate above. Only the
- * Apple one is forged well enough to reach the request in SimpleWebAuthn 13.3.3; the verifier
- * turns the others away on earlier checks, so they pin the refusal of their format.
+ * One statement per format that carries certificates, each with the certificate above. In
+ * SimpleWebAuthn 13.3.3 only the Apple one makes an unguarded verifier request the list: packed,
+ * fido-u2f and tpm have no default trust anchors, so their certificates are never checked for
+ * revocation, and the two Android ones are not forged well enough to get that far. The others
+ * pin the refusal of their format.
  */
 export const certificateAttestations: readonly AttestationStatement[] = [
   { fmt: 'packed', attStmt: { alg: -7, sig, x5c } },
