@@ -1,0 +1,425 @@
+{
+  "schemaVersion": 1,
+  "routeId": "lv-capital-investment",
+  "number": 4,
+  "corrects": 3,
+  "title": "Latvian temporary residence for an investment in a company's share capital (EUR 50,000 or EUR 100,000, plus EUR 10,000 to the state budget)",
+  "country": "LV",
+  "tags": ["investment", "temporary-residence"],
+  "effectiveFrom": "2026-09-15",
+  "status": "open",
+  "currency": "EUR",
+  "leapDayBirthday": "unsettled",
+  "sources": [
+    {
+      "id": "immigration-law-investment",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "title": "Immigration Law, 27. pants (1) 10): up to two years for EUR 50,000 or EUR 100,000 invested in a company's share capital and EUR 10,000 paid to the state budget; the company's size and yearly taxes",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "immigration-law-family",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "title": "Immigration Law, 27. pants (3): in the cases of the first part a family member of the foreigner may also request a temporary residence permit for the term of the foreigner's permit",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "immigration-law-family-member",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "title": "Immigration Law, 1. pants (1) 8) ģimenes loceklis: the spouse, the minor children of the third-country national or of the spouse (wards included) and persons under curatorship",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "immigration-law-russia-belarus",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "title": "Immigration Law, 27. pants (7) and (8): a citizen of Belarus, and a citizen of the Russian Federation, has no right to request a temporary residence permit under point 10 of the first part",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "immigration-law-third-country",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "title": "Immigration Law, 1. pants (1) 21) and 29) and 2. pants: a third-country national holds no EU, EEA or Swiss citizenship; the law sets the entry and residence of third-country nationals",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "immigration-law-renewal",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "title": "Immigration Law, 29. pants (1) and (3): a repeated permit while the conditions last; after five years of residence on this ground, EUR 2,000 paid to the state budget on receiving the repeated permit",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "immigration-law-time-limit",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "title": "Immigration Law, 33. pants (1) 1): the Office examines the documents for a temporary residence permit and answers within 30 days",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "immigration-law-suspension",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "title": "Immigration Law, 28. pants: the Cabinet may suspend the issue of permits under 27. pants (1) 10) for up to five years for nationals of the third countries it names",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "state-fee-regulations",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "title": "Cabinet Regulations No. 731 of 2024 on the state fee for migration services, point 5.1: examining a temporary residence permit request in 30 days EUR 160, in 10 working days EUR 280, in 5 EUR 560",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "civil-law-minors",
+      "url": "https://likumi.lv/ta/id/90223",
+      "title": "Civil Law, Part One (family law): art. 219, minority lasts until the age of 18; art. 221, a person who married before 18 is of age",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "lv",
+      "number": 1
+    }
+  ],
+  "countrySets": [
+    {
+      "id": "eu-free-movement",
+      "number": 2
+    }
+  ],
+  "requirements": [
+    {
+      "id": "capital",
+      "title": "Funds for the minimum investment of EUR 50,000 in a company's share capital and for the EUR 10,000 payment to the state budget (the investment is EUR 100,000 in a larger company)",
+      "expression": {
+        "op": "gte",
+        "left": {
+          "op": "fact",
+          "key": "unit.liquidAssets"
+        },
+        "right": {
+          "op": "add",
+          "left": {
+            "op": "money",
+            "amount": 5000000,
+            "currency": "EUR"
+          },
+          "right": {
+            "op": "money",
+            "amount": 1000000,
+            "currency": "EUR"
+          }
+        }
+      },
+      "sources": ["immigration-law-investment"]
+    },
+    {
+      "id": "not-russian-or-belarusian",
+      "title": "Not a citizen of Russia or Belarus, whose citizens have no right to this permit",
+      "expression": {
+        "op": "not",
+        "operand": {
+          "op": "intersects",
+          "list": {
+            "op": "fact",
+            "key": "principal.citizenships"
+          },
+          "set": {
+            "op": "tokens",
+            "values": ["BY", "RU"]
+          }
+        }
+      },
+      "sources": ["immigration-law-russia-belarus"]
+    },
+    {
+      "id": "not-eu-eea-or-swiss-citizen",
+      "title": "Not a citizen of an EU or EEA state or of Switzerland, Latvia included: only third-country nationals may request this permit",
+      "expression": {
+        "op": "not",
+        "operand": {
+          "op": "intersects",
+          "list": {
+            "op": "fact",
+            "key": "principal.citizenships"
+          },
+          "set": {
+            "op": "set",
+            "id": "eu-free-movement"
+          }
+        }
+      },
+      "sources": ["immigration-law-third-country"]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "company-size",
+      "title": "EUR 50,000: a company with at most 50 employees and a yearly turnover or balance sheet of at most EUR 10 million; EUR 100,000: over 50 employees and over EUR 10 million",
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["immigration-law-investment"]
+    },
+    {
+      "id": "ten-investors",
+      "title": "For an investment in one company's share capital, permits go to at most 10 foreigners, each having made the investment and paid EUR 10,000 to the state budget",
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["immigration-law-investment"]
+    },
+    {
+      "id": "company-taxes",
+      "title": "The permit stays valid only while the company pays at least EUR 40,000 in taxes each reporting year (EUR 100,000 for the larger company, its Latvian subsidiaries included)",
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["immigration-law-investment"]
+    },
+    {
+      "id": "no-suspension",
+      "title": "The Cabinet may suspend these permits for up to five years for nationals of third countries it names; no such regulations were found on 2026-11-11",
+      "evidence": ["principal.citizenships"],
+      "sources": ["immigration-law-suspension"]
+    }
+  ],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse, unless an EU, EEA or Swiss citizen, who needs no permit under this law",
+      "path": ["spouse"],
+      "condition": {
+        "op": "not",
+        "operand": {
+          "op": "intersects",
+          "list": {
+            "op": "fact",
+            "key": "person.citizenships"
+          },
+          "set": {
+            "op": "set",
+            "id": "eu-free-movement"
+          }
+        }
+      },
+      "sources": [
+        "immigration-law-family",
+        "immigration-law-family-member",
+        "immigration-law-third-country"
+      ]
+    },
+    {
+      "id": "children",
+      "title": "Children under 18 who have not married, unless EU, EEA or Swiss citizens, who need no permit under this law; a person of 18 or more under curatorship: possible",
+      "path": ["child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "intersects",
+              "list": {
+                "op": "fact",
+                "key": "person.citizenships"
+              },
+              "set": {
+                "op": "set",
+                "id": "eu-free-movement"
+              }
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "lt",
+                    "left": {
+                      "op": "fact",
+                      "key": "person.ageYears"
+                    },
+                    "right": {
+                      "op": "int",
+                      "value": 18
+                    }
+                  },
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasSpouse"
+                    }
+                  }
+                ]
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": [
+        "immigration-law-family",
+        "immigration-law-family-member",
+        "civil-law-minors",
+        "immigration-law-third-country"
+      ]
+    },
+    {
+      "id": "spouse-children",
+      "title": "The spouse's children under 18 who have not married, unless EU, EEA or Swiss citizens, who need no permit under this law; a person of 18 or more under curatorship: possible",
+      "path": ["spouse", "child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "intersects",
+              "list": {
+                "op": "fact",
+                "key": "person.citizenships"
+              },
+              "set": {
+                "op": "set",
+                "id": "eu-free-movement"
+              }
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "lt",
+                    "left": {
+                      "op": "fact",
+                      "key": "person.ageYears"
+                    },
+                    "right": {
+                      "op": "int",
+                      "value": 18
+                    }
+                  },
+                  {
+                    "op": "not",
+                    "operand": {
+                      "op": "fact",
+                      "key": "person.hasSpouse"
+                    }
+                  }
+                ]
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": [
+        "immigration-law-family",
+        "immigration-law-family-member",
+        "civil-law-minors",
+        "immigration-law-third-country"
+      ]
+    }
+  ],
+  "costs": [
+    {
+      "id": "investment",
+      "title": "Minimum investment in the share capital of a company within the small-company limits",
+      "kind": "capital",
+      "amount": {
+        "op": "money",
+        "amount": 5000000,
+        "currency": "EUR"
+      },
+      "appliesTo": "principal",
+      "sources": ["immigration-law-investment"]
+    },
+    {
+      "id": "state-budget-payment",
+      "title": "One-off payment to the state budget with the first application",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 1000000,
+        "currency": "EUR"
+      },
+      "appliesTo": "principal",
+      "sources": ["immigration-law-investment"]
+    },
+    {
+      "id": "state-fee",
+      "title": "State fee for examining the principal's temporary residence permit request in 30 days: EUR 160 (EUR 280 in 10 working days, EUR 560 in 5)",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 16000,
+        "currency": "EUR"
+      },
+      "appliesTo": "principal",
+      "sources": ["state-fee-regulations"]
+    },
+    {
+      "id": "family-state-fee",
+      "title": "State fee for examining each family member's temporary residence permit request in 30 days: EUR 160 (EUR 280 in 10 working days, EUR 560 in 5)",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 16000,
+        "currency": "EUR"
+      },
+      "appliesTo": "each_dependent",
+      "sources": ["state-fee-regulations"]
+    },
+    {
+      "id": "renewal-payment",
+      "title": "Payment to the state budget on receiving a repeated permit after five years of residence on this ground: EUR 2,000: possible",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 200000,
+        "currency": "EUR"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["immigration-law-renewal"]
+    }
+  ],
+  "durations": [
+    {
+      "id": "decision",
+      "title": "The Office's answer on the temporary residence permit request, within 30 days of accepting all the documents",
+      "min": "P0D",
+      "max": "P30D",
+      "sources": ["immigration-law-time-limit"]
+    },
+    {
+      "id": "permit",
+      "title": "Temporary residence permit for up to two years, then a repeated permit while the conditions last",
+      "min": "P0D",
+      "max": "P2Y",
+      "sources": ["immigration-law-investment", "immigration-law-renewal"]
+    }
+  ]
+}
