@@ -4,6 +4,21 @@ Research notes for the U.S. EB-5 immigrant investor route, route `us-eb5` in `pa
 
 ## Audits
 
+### 2026-11-11, check loop
+
+The check loop of the [rule audit runbook](../../runbooks/rule-audit.md#the-check-loop), run on version 7.
+
+- **Version audited:** 7
+- **Outcome:** correction, version 8 (pull request [#382](https://github.com/fernandolisboa/arca/pull/382)), from version 7's date, 2026-11-30. No amount, condition or dependent changes; the cases files repeat version 7's. What changes is what each item cites and says:
+  - The leap-day convention is now `unsettled`: version 7's source said itself that 1101(b)(1) sets no rule for a 29 February birthday and assumed 28 February. On 28 February of a common year the age is now a range.
+  - Each provision the check could not find on a long page has a source of its own whose title names it by the page's own headings: the capital amounts and their automatic adjustment from 2027-01-01 (1153(b)(5)(C)), the 2-year investment term (1153(b)(5)(A)(i)), the source of funds (1153(b)(5)(L)), and the three EB-5 fees in the fee rule's regulatory text (Sec. 106.2(d)(1), (d)(2) and (d)(4), at the end of a 218,000-character page). The unused `fee-rule-2026` source is gone.
+  - Titles say only what the law says: `lawful-source` drops "a documented path of funds", which no cited text states, for "shown by the records the petition must contain" (1153(b)(5)(L)(ii)); `adopted-children` states 1101(b)(1)(E) and no longer names the outcome the engine gives a custody shorter than two years.
+- **Check loop:** runs [43041543873](https://github.com/fernandolisboa/arca/actions/runs/43041543873) (7 of 19 match), [43042957239](https://github.com/fernandolisboa/arca/actions/runs/43042957239) (13 of 19) and [43043236596](https://github.com/fernandolisboa/arca/actions/runs/43043236596) (11 of 19, on the final head). No item differed in any run. Before the loop, 2 items of version 7 matched. Left over:
+  - `checker-gap`: `children`, `adopted-children`, `stepchildren` and `conditional-residence`. The law writes these values in words ("twenty-one", "sixteen", "two years", "second anniversary"), and the code that confirms a value inside a quote looks for figures.
+  - `checker-gap`: `capital` and `investment`. Subparagraph (C) sits in a passage of a 160,000-character page that the locator picked in the first run, where `investment` matched, and not in the next two. The amounts are the statute's own and unchanged since 2022.
+  - `checker-gap`: `engagement` and `uscis-immigrant-fee-dependents` matched in the second run and not in the third, from what the locator picked and how the model read the same page. Run-to-run variance.
+- **Watch next:** the 2027-01-01 CPI amounts are now version 9, not 8: it keeps version 8 except the amounts. A checker that reads values written in words would settle the first leftover group for every route; a locator that ranks a long page's passages the same way each run would settle the rest.
+
 ### 2026-11-10
 
 The first full audit by the runbook ([#355](https://github.com/fernandolisboa/arca/issues/355)), on demand.
