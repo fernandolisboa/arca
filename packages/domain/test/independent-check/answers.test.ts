@@ -203,20 +203,28 @@ describe('verifyAnswers', () => {
       page({ chain: [law, 'https://www.gov.example/amounts?v=%25u0039%25u0032%25u0030'] }),
       'echoes_address',
     ],
-    ...['\t', '\n', '\r'].map((dropped): [string, Partial<CheckAnswer>, ReadPage, string] => [
-      `a claim an address spells around a character dropped when it is sent (${JSON.stringify(dropped)})`,
-      on(claim),
-      page({
-        text: claim,
-        chain: [
-          `https://api.gov.example/search?q=${claim.replace(
-            /./gsu,
-            (char) => `%${dropped}${char.charCodeAt(0).toString(16)}`,
-          )}`,
-        ],
-      }),
+    ...['\t', '\n', '\r', '\u0001'].map(
+      (dropped): [string, Partial<CheckAnswer>, ReadPage, string] => [
+        `a claim an address spells around a character dropped when it is sent (${JSON.stringify(dropped)})`,
+        on(claim),
+        page({
+          text: claim,
+          chain: [
+            `https://api.gov.example/search?q=${claim.replace(
+              /./gsu,
+              (char) => `%${dropped}${char.charCodeAt(0).toString(16)}`,
+            )}`,
+          ],
+        }),
+        'echoes_address',
+      ],
+    ),
+    [
+      'an address with a space at an end, which is trimmed when it is sent',
+      on(quote),
+      page({ chain: [`${law} `] }),
       'echoes_address',
-    ]),
+    ],
     [
       'a word a query carries before a semicolon',
       on(sponsored),
