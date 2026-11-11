@@ -298,6 +298,8 @@ describe('answerText', () => {
     expect(answerText('xml', '<p>at least <b>1 500</b> EUR, or <i>more</i>.</p>')).toBe(
       'at least 1 500 EUR, or more.',
     );
+    expect(answerText('xml', '<p>Fee 1 is <b>500</b> EUR</p>')).toBe('Fee 1 is 500 EUR');
+    expect(answerText('xml', '<p>Fee<b>,</b>500 EUR</p>')).toBe('Fee,500 EUR');
   });
 
   it('reads no text of an answer one of whose strings is past a parsing limit', () => {
