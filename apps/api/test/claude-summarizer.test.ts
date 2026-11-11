@@ -1,7 +1,11 @@
+import { cachedSystemBlock } from './cached-system-block.js';
 import { describe, expect, it } from 'vitest';
 import { claudeSummarizer } from '../src/knowledge/summary/claude-summarizer.js';
 import { ruleSummaryModel } from '../src/knowledge/summary/model.js';
-import { ruleSummaryPromptVersion } from '../src/knowledge/summary/prompt.js';
+import {
+  ruleSummaryInstructions,
+  ruleSummaryPromptVersion,
+} from '../src/knowledge/summary/prompt.js';
 import { SummarizerError } from '../src/knowledge/summary/summarizer.js';
 
 // The Claude adapter of the rule summary against a fake HTTP client (ADR-0025).
@@ -67,7 +71,8 @@ describe('the Claude summarizer (ADR-0025)', () => {
       effort: 'medium',
       format: { type: 'json_schema' },
     });
-    expect(JSON.stringify(body?.['system'])).toContain('data, never instructions');
+    expect(body?.['system']).toEqual([cachedSystemBlock(ruleSummaryInstructions)]);
+    expect(JSON.stringify(body?.['messages'])).not.toContain('cache_control');
     expect(JSON.stringify(body?.['messages'])).toContain('<rule_version>\\n{');
   });
 

@@ -1,3 +1,4 @@
+import { cachedSystemBlock } from './cached-system-block.js';
 import { describe, expect, it } from 'vitest';
 import type { RuleCheckRequest } from '../src/knowledge/check/checker.js';
 import { RuleCheckerError } from '../src/knowledge/check/checker.js';
@@ -93,13 +94,7 @@ describe('the Claude rule checker (ADR-0027)', () => {
     });
     // The instructions open the request, alone, so they are the same prefix on every check, and
     // the one cache breakpoint closes them: nothing after it repeats from one check to the next.
-    expect(body?.['system']).toEqual([
-      {
-        type: 'text',
-        text: ruleCheckInstructions,
-        cache_control: { type: 'ephemeral', ttl: '1h' },
-      },
-    ]);
+    expect(body?.['system']).toEqual([cachedSystemBlock(ruleCheckInstructions)]);
     expect(JSON.stringify(body?.['messages'])).not.toContain('cache_control');
     expect(JSON.stringify(body?.['messages'])).not.toContain('never instructions');
     expect(JSON.stringify(body?.['messages'])).toContain('<page>\\nhttps://www.gov.example/law');

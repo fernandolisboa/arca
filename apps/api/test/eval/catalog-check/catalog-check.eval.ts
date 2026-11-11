@@ -18,8 +18,14 @@ import { ruleCheckPromptVersion } from '../../../src/knowledge/check/prompt.js';
 import { createVersionCheck } from '../../../src/knowledge/check/run.js';
 import { type CheckReport, memoryCheckReportStore } from '../../../src/knowledge/check/store.js';
 import { createCheckSubjects, createKnowledgeVersions } from '../../../src/knowledge/versions.js';
-import { cacheUseLine } from '../cache-use.js';
-import { type Usage, noUsage, plain, usageLogger, withoutReason } from '../check-report.js';
+import {
+  type Usage,
+  cacheUseLines,
+  noUsage,
+  plain,
+  usageLogger,
+  withoutReason,
+} from '../check-report.js';
 import { withCallLimit } from '../independent-check/call-limit.js';
 import { newestOfEachRoute } from '../newest-versions.js';
 
@@ -77,7 +83,7 @@ interface Run {
   readonly report: CheckReport | undefined;
 }
 
-function summary(runs: readonly Run[], calls: number, { dollars, cache }: Usage): string {
+function summary(runs: readonly Run[], calls: number, usage: Usage): string {
   const reports = runs.flatMap(({ report }) => (report === undefined ? [] : [report]));
   const items = reports.flatMap((report) => report.items);
   const count = (status: string) => items.filter((item) => item.status === status).length;
@@ -106,8 +112,8 @@ function summary(runs: readonly Run[], calls: number, { dollars, cache }: Usage)
     `Why not checked: ${tally(reasons)}.`,
     `Left unchecked by the model with no reason: ${String(withoutReason(items).length)}.`,
     `Pages: ${tally(outcomes)}; read through a machine-readable address: ${String(reports.flatMap((report) => report.fetchLog).filter(({ machineReadableUrl }) => machineReadableUrl !== null).length)}.`,
-    `Model calls: ${String(calls)} of at most ${String(maxCallsPerRun)}; about US$${dollars.toFixed(2)} the run.`,
-    cacheUseLine(cache),
+    `Model calls: ${String(calls)} of at most ${String(maxCallsPerRun)}; about US$${usage.dollars.toFixed(2)} the run.`,
+    ...cacheUseLines(usage),
     '',
   ];
   for (const { version, report } of runs) {

@@ -111,4 +111,7 @@ it('summarizes the newest version of every route without inventing numbers or fo
   const summary = process.env['ARCA_EVAL_REPORT'];
   if (summary !== undefined && summary !== '') appendFileSync(summary, `${text}\n`);
   expect(problems).toEqual([]);
+  // Every call of a run shares its instructions, so a run that read nothing from the cache has a
+  // prefix that stopped matching.
+  expect(cache.cacheReadTokens).toBeGreaterThan(0);
 });

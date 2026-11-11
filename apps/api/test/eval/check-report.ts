@@ -2,7 +2,7 @@
 // inert for the public job summary, and what a run's calls cost.
 import type { LogEntry, Logger } from '@arca/telemetry';
 import { passageLocateModel, ruleCheckModel } from '../../src/knowledge/check/model.js';
-import { type CacheUse, countCacheUse, noCacheUse } from './cache-use.js';
+import { type CacheUse, cacheUseLine, countCacheUse, noCacheUse } from './cache-use.js';
 
 /**
  * Model text as inert text in the public job summary: one line, no Markdown, no markup, no
@@ -43,21 +43,25 @@ function priceOf(model: string, inputTokens: number): Price {
     : { input: 0.1, output: 0.5, cacheRead: 0.1 };
 }
 
-export interface Usage {
+export interface Usage extends CacheUse {
   calls: number;
-  inputTokens: number;
   outputTokens: number;
   dollars: number;
-  cache: CacheUse;
+  /** Cache use per model, since the check and the passage locator cache different instructions. */
+  cacheByModel: Map<string, CacheUse>;
 }
 
 export const noUsage = (): Usage => ({
+  ...noCacheUse(),
   calls: 0,
-  inputTokens: 0,
   outputTokens: 0,
   dollars: 0,
-  cache: noCacheUse(),
+  cacheByModel: new Map(),
 });
+
+/** One report line of cache use for each model the run called. */
+export const cacheUseLines = ({ cacheByModel }: Usage) =>
+  [...cacheByModel].map(([model, use]) => `\`${model}\`: ${cacheUseLine(use)}`);
 
 /** A logger that keeps the call metadata the check logs, never more. */
 export function usageLogger(usage: Usage): Logger {
@@ -72,10 +76,12 @@ export function usageLogger(usage: Usage): Logger {
     // `inputTokens` counts every input token, so the cached ones are repriced, not added.
     const pricedInput = input - read - written + read * price.cacheRead + written * cacheWrite;
     usage.calls += 1;
-    usage.inputTokens += input;
     usage.outputTokens += output;
     usage.dollars += (pricedInput * price.input + output * price.output) / 1_000_000;
-    countCacheUse(usage.cache, entry);
+    countCacheUse(usage, entry);
+    const ofModel = usage.cacheByModel.get(String(model)) ?? noCacheUse();
+    countCacheUse(ofModel, entry);
+    usage.cacheByModel.set(String(model), ofModel);
   };
   return { info: record, error: () => undefined };
 }

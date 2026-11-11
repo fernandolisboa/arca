@@ -78,4 +78,7 @@ it('scores the intake extraction against the baseline', async () => {
   const summary = process.env['ARCA_EVAL_REPORT'];
   if (summary !== undefined && summary !== '') appendFileSync(summary, `${text}\n`);
   expect(verdict.problems).toEqual([]);
+  // Every call of a run shares its instructions, so a run that read nothing from the cache has a
+  // prefix that stopped matching.
+  expect(cache.cacheReadTokens).toBeGreaterThan(0);
 });

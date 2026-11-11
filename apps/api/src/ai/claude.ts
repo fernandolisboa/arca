@@ -89,12 +89,6 @@ function cachedInstructions(instructions: string): SystemModelMessage {
   };
 }
 
-/** The counts the vendor reported, without the ones it left out. */
-const reported = <Counts extends Readonly<Record<string, number | undefined>>>(counts: Counts) =>
-  Object.fromEntries(Object.entries(counts).filter(([, tokens]) => tokens !== undefined)) as {
-    readonly [Name in keyof Counts]?: number;
-  };
-
 /**
  * Claude behind one call shape (ADR-0004): the host pinned, telemetry off, no retry inside the
  * SDK, the instructions as the cached prefix, and every failure a `ClaudeCallError` with a fixed kind.
@@ -122,14 +116,13 @@ export function claudeClient({ apiKey, fetch }: ClaudeSettings) {
           telemetry: { isEnabled: false, recordInputs: false, recordOutputs: false },
         });
         const { inputTokens, outputTokens, inputTokenDetails } = result.usage;
+        const { cacheReadTokens, cacheWriteTokens } = inputTokenDetails;
         return {
           output: result.output,
-          ...reported({
-            inputTokens,
-            outputTokens,
-            cacheReadTokens: inputTokenDetails.cacheReadTokens,
-            cacheWriteTokens: inputTokenDetails.cacheWriteTokens,
-          }),
+          ...(inputTokens === undefined ? {} : { inputTokens }),
+          ...(outputTokens === undefined ? {} : { outputTokens }),
+          ...(cacheReadTokens === undefined ? {} : { cacheReadTokens }),
+          ...(cacheWriteTokens === undefined ? {} : { cacheWriteTokens }),
         };
       } catch (error) {
         throw new ClaudeCallError(failureOf(error));
