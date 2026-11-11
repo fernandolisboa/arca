@@ -270,6 +270,10 @@
     {
       "path": "routes/pt-d8/4",
       "sha256": "d2793238218df95e032ab40437c336bbd5de44fdd58f9f1a5a29fb95f33221dd"
+    },
+    {
+      "path": "guides/pt/2",
+      "sha256": "717c7d7ad183a87a86b1e4b5f9758e649e1d7b66c4549c212a59a1e99b8753e1"
     }
   ]
 }
