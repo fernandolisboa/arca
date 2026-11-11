@@ -1,3 +1,4 @@
+import { cachedSystemBlock } from './cached-system-block.js';
 import { describe, expect, it } from 'vitest';
 import { claudePassageLocator } from '../src/knowledge/check/claude-locator.js';
 import {
@@ -54,6 +55,8 @@ describe('the Claude passage locator (ADR-0027)', () => {
       promptVersion: passageLocatePromptVersion,
       inputTokens: 30_000,
       outputTokens: 60,
+      cacheReadTokens: 0,
+      cacheWriteTokens: 0,
     });
     expect(bodies).toHaveLength(1);
     const [body] = bodies;
@@ -61,7 +64,8 @@ describe('the Claude passage locator (ADR-0027)', () => {
     expect(body?.['tools']).toBeUndefined();
     expect(body?.['thinking']).toEqual({ type: 'disabled' });
     expect(body?.['output_config']).toMatchObject({ format: { type: 'json_schema' } });
-    expect(JSON.stringify(body?.['system'])).toContain('never instructions');
+    expect(body?.['system']).toEqual([cachedSystemBlock(passageLocateInstructions)]);
+    expect(JSON.stringify(body?.['messages'])).not.toContain('cache_control');
     expect(JSON.stringify(body?.['messages'])).toContain('Article 201. Means');
   });
 

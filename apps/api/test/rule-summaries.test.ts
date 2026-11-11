@@ -30,6 +30,8 @@ const reply = (value: unknown): SummarizerReply => ({
   promptVersion: 'rule-summary-test',
   inputTokens: 1_000,
   outputTokens: 200,
+  cacheReadTokens: 600,
+  cacheWriteTokens: 0,
 });
 
 function setup(
@@ -162,6 +164,8 @@ describe('the rule summaries (ADR-0025)', () => {
         promptVersion: 'rule-summary-test',
         inputTokens: 1_000,
         outputTokens: 200,
+        cacheReadTokens: 600,
+        cacheWriteTokens: 0,
         durationMs: 0,
       },
     ]);

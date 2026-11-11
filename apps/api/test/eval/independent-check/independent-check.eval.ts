@@ -18,7 +18,14 @@ import type { PassageLocator } from '../../../src/knowledge/check/locator.js';
 import { passageLocateModel, ruleCheckModel } from '../../../src/knowledge/check/model.js';
 import { ruleCheckPromptVersion } from '../../../src/knowledge/check/prompt.js';
 import type { CheckReport } from '../../../src/knowledge/check/store.js';
-import { type Usage, noUsage, plain, usageLogger, withoutReason } from '../check-report.js';
+import {
+  type Usage,
+  cacheUseLines,
+  noUsage,
+  plain,
+  usageLogger,
+  withoutReason,
+} from '../check-report.js';
 import { maxCallsPerRun, withCallLimit } from './call-limit.js';
 import { type CheckCase, checkCases } from './cases.js';
 import { checkCase, recordingPages } from './harness.js';
@@ -99,6 +106,7 @@ function report(runs: readonly CaseRun[], usage: Usage, calls: number) {
     '',
     `Correct versions checked: ${String(correctChecked)} of ${String(correct.length)}.`,
     `Tokens: ${String(usage.inputTokens)} in, ${String(usage.outputTokens)} out over ${String(usage.calls)} calls; about US$${(usage.dollars / checks).toFixed(4)} a check, US$${usage.dollars.toFixed(4)} the run.`,
+    ...cacheUseLines(usage),
     '',
   ];
   for (const run of runs) {
@@ -180,4 +188,7 @@ it('flags every wrong and adversarial version and checks most correct ones', asy
   const summary = process.env['ARCA_EVAL_REPORT'];
   if (summary !== undefined && summary !== '') appendFileSync(summary, `${text}\n`);
   expect(problems).toEqual([]);
+  // Every call of a run shares its instructions, so a run that read nothing from the cache has a
+  // prefix that stopped matching.
+  expect(usage.cacheReadTokens).toBeGreaterThan(0);
 });
