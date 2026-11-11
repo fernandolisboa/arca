@@ -121,9 +121,17 @@ describe('xmlText', () => {
     expect(
       lines('<row><fee>EUR 85</fee><del><note>until 2025</note></del><unit>a year</unit></row>'),
     ).toEqual(['EUR 85', 'a year']);
-    expect(lines('<p>one <b></del>two</b>, until 2027-01-<del>10</del>15.</p>')).toEqual([
-      'one two, until 2027-01-',
-      '15.',
+    expect(
+      lines('<p>one <b></del>two</b>, children under <del>18</del><ins>21</ins>.</p>'),
+    ).toEqual(['one two, children under 21.']);
+  });
+
+  it('never makes one date of two texts', () => {
+    expect(lines('<p>Until 2027-01-<del>10</del>15.</p>')).toEqual(['Until 2027-01-', '15.']);
+    expect(lines('<p>Rule 31/<b><i>05/2027</i></b></p>')).toEqual(['Rule 31/', '05/2027']);
+    expect(lines('<p>Until <b><i>2027</i></b>-<b><i>01-15</i></b></p>')).toEqual([
+      'Until 2027-',
+      '01-15',
     ]);
   });
 
@@ -238,6 +246,15 @@ describe('answerText', () => {
       '<fee>Class 1.<del>450</del><ins>500</ins> EUR</fee>',
     ],
     ['xml', 'a separator and an empty struck element', '<fee>Class 1.<s/>500 EUR</fee>'],
+    ['xml', 'a separator in a text of its own', '<l><i><n>Class 1</n></i>,<i><n>500</n></i></l>'],
+    ['xml', 'a separator between struck texts', '<p>Class 1<del>a</del>.<ins><b>500</b></ins></p>'],
+    ['xml', 'a separator between comments', '<fee>Class 1<!-- a -->.<!-- b -->500 EUR</fee>'],
+    ['xml', 'a separator in CDATA', '<fee>Class 1<![CDATA[.]]>500 EUR</fee>'],
+    ['xml', 'a blank CDATA section', '<fee>Class 1<![CDATA[ ]]>500 EUR</fee>'],
+    ['xml', 'an apostrophe before a tag', "<fee>Class 1'<b><i>500 EUR</i></b></fee>"],
+    ['xml', 'an apostrophe after a tag', "<fee><b><i>Class 1</i></b>'500 EUR</fee>"],
+    ['xml', 'a dot after a tag', '<fee><b><i>Class 1</i></b>.500 EUR</fee>'],
+    ['xml', 'a space after a tag', '<fee><b><i>Class 1</i></b> 500 EUR</fee>'],
     [
       'html',
       'an element that breaks no line',

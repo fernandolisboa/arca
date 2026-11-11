@@ -116,9 +116,15 @@ function tagOf(tag: string): {
   };
 }
 
-/** Where a number ends at a join, with the separator it may leave open, and where one starts. */
-const numberEnds = /\d[.,'’]?\s*$/u;
-const numberStarts = /^\s*[.,'’]?\d/u;
+/**
+ * What the value check takes between the digits of one number or numeric date: spaces, group and
+ * decimal marks and date separators. A text that ends in digits and these, and one that starts
+ * with these and a digit, would read as one value if nothing stood between them.
+ */
+const between = String.raw`[\s.,'’/-]*`;
+const leavesNumberOpen = new RegExp(String.raw`\d${between}$`, 'u');
+const goesOnNumber = new RegExp(String.raw`^${between}\d`, 'u');
+const onlyBetween = new RegExp(`^${between}$`, 'u');
 
 /**
  * The text of an XML document as a reader of its text would see it (ADR-0027): its text nodes and
@@ -126,27 +132,28 @@ const numberStarts = /^\s*[.,'’]?\d/u;
  * strikes superseded wording left out with its tags. Text starts a new line at a sibling, which
  * is where one element ended and another began since the last text, or an empty one stood; text
  * that only went into elements or only came out of them runs on, as a sentence's inline elements
- * do. Two numbers never become one across markup of any kind, struck text included. One pass,
- * with no parser that fetches, validates or expands anything.
+ * do. Two texts never make one number: text that would go on a number the text before it left
+ * open starts a new line, whatever markup stood between them. One pass, with no parser that
+ * fetches, validates or expands anything.
  */
 export function xmlText(xml: string, read = markupReader().read): string {
   const pieces: string[] = [];
   let elementStarted = true;
   let elementEnded = true;
-  let afterNumber = false;
+  let numberOpen = false;
   let struckDepth = 0;
   const text = (piece: string) => {
-    if (struckDepth > 0) afterNumber ||= numberEnds.test(piece);
-    else if (piece.trim() === '') pieces.push(piece);
+    if (struckDepth > 0) return;
+    if (piece.trim() === '') pieces.push(piece);
     else {
-      const numbersMeet = afterNumber && numberStarts.test(piece);
+      const numbersMeet = numberOpen && goesOnNumber.test(piece);
       pieces.push(
         (elementStarted && elementEnded) || numbersMeet ? '\n' : '',
         hasMarkup(piece) ? `\n${read(piece)}\n` : piece,
       );
       elementStarted = false;
       elementEnded = false;
-      afterNumber = numberEnds.test(piece);
+      numberOpen = leavesNumberOpen.test(piece) || (numberOpen && onlyBetween.test(piece));
     }
   };
   let index = 0;
