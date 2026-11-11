@@ -1,6 +1,15 @@
-import { axes, fontPairs } from '@arca/ui/theme';
+import { createRequire } from 'node:module';
+import { axes, type FontRole, fontPairs } from '@arca/ui/theme';
 import { expect, test, type Page } from '@playwright/test';
 import { reportViolations, watchProblems } from './problems.js';
+
+const fromUi = createRequire(new URL('../../../packages/ui/package.json', import.meta.url));
+
+/** Faces a role loads for "aą": latin, plus latin-ext when its package ships that subset. */
+function expectedFaces(role: FontRole): number {
+  const { subsets } = fromUi(`${role.source.package}/metadata.json`) as { subsets: string[] };
+  return subsets.includes('latin-ext') ? 2 : 1;
+}
 
 test.beforeEach(async ({ page }) => {
   await reportViolations(page);
@@ -21,7 +30,7 @@ test('loads every font pair from the app itself without a CSP violation', async 
         const root = document.documentElement;
         root.setAttribute('data-font', id);
         const style = getComputedStyle(root);
-        // "aą" falls in both the latin and the latin-ext ranges, so both faces load.
+        // "aą" falls in both the latin and the latin-ext ranges, so both faces load when present.
         const faces = await Promise.all(
           roles.map((role) =>
             document.fonts.load(`${String(role.weight)} 16px "${role.family}"`, 'aą'),
@@ -36,7 +45,7 @@ test('loads every font pair from the app itself without a CSP violation', async 
       },
       { id, roles: [display, body, numeric].map(({ family, weight }) => ({ family, weight })) },
     );
-    expect(loaded.faces, id).toEqual([2, 2, 2]);
+    expect(loaded.faces, id).toEqual([display, body, numeric].map(expectedFaces));
     [display, body, numeric].forEach((role, index) => {
       expect(loaded.families[index], id).toContain(role.family);
     });

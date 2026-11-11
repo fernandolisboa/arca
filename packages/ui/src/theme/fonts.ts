@@ -90,6 +90,11 @@ export const fontPairs: Readonly<Record<FontPairId, FontPair>> = {
     numeric: sans('Atkinson Hyperlegible Next', 400),
   },
   clean: { display: sans('Inter', 700), body: sans('Inter', 400), numeric: sans('Inter', 500) },
+  dyslexic: {
+    display: sans('OpenDyslexic', 700, fixed('OpenDyslexic')),
+    body: sans('OpenDyslexic', 400, fixed('OpenDyslexic')),
+    numeric: sans('OpenDyslexic', 400, fixed('OpenDyslexic')),
+  },
   technical: {
     display: sans('IBM Plex Sans', 600),
     body: sans('IBM Plex Sans', 400),
@@ -102,13 +107,18 @@ export const fontPairs: Readonly<Record<FontPairId, FontPair>> = {
   },
 };
 
-/** Every family the pairs use, once each. */
-export function fontFamilies(): readonly FontRole[] {
-  const byFamily = new Map<string, FontRole>();
+/**
+ * Every face the pairs use, once each: one per variable family, since its file spans every weight,
+ * and one per weight of a static family.
+ */
+export function fontFaces(): readonly FontRole[] {
+  const byFace = new Map<string, FontRole>();
   for (const pair of Object.values(fontPairs)) {
     for (const role of [pair.display, pair.body, pair.numeric]) {
-      if (!byFamily.has(role.family)) byFamily.set(role.family, role);
+      const key =
+        role.source.kind === 'variable' ? role.family : `${role.family} ${String(role.weight)}`;
+      if (!byFace.has(key)) byFace.set(key, role);
     }
   }
-  return [...byFamily.values()];
+  return [...byFace.values()];
 }

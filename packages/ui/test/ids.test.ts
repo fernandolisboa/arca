@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
 import { axes, axisNames } from '../src/theme/ids.js';
-import { fontPairs, palettes, radii } from '../src/theme/index.js';
+import { fontFaces, fontPairs, palettes, radii } from '../src/theme/index.js';
 
 describe('@arca/ui/theme/ids', () => {
   it('imports nothing, so the boot script never pulls in React or CSS', async () => {
@@ -25,15 +25,18 @@ describe('@arca/ui/theme/ids', () => {
   });
 });
 
-describe('font sources', () => {
-  it('use each static family at one weight, since only that file is generated', () => {
-    const weights = new Map<string, Set<number>>();
+describe('font faces', () => {
+  it('cover every role, at its weight for a static family', () => {
+    const faces = fontFaces();
     for (const pair of Object.values(fontPairs)) {
       for (const role of [pair.display, pair.body, pair.numeric]) {
-        if (role.source.kind !== 'static') continue;
-        weights.set(role.family, (weights.get(role.family) ?? new Set()).add(role.weight));
+        const covered = faces.some(
+          (face) =>
+            face.family === role.family &&
+            (role.source.kind === 'variable' || face.weight === role.weight),
+        );
+        expect(covered, `${role.family} ${String(role.weight)}`).toBe(true);
       }
     }
-    for (const [family, used] of weights) expect([...used], family).toHaveLength(1);
   });
 });
