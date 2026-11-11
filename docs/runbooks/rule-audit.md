@@ -151,7 +151,7 @@ A monthly run writes less than an on-demand audit, because no person sees its wo
 - It writes no country guide, no official-domain list and no item in OPEN-QUESTIONS, and opens no issue. Each need goes under "Watch next" and in the closing message, for the owner to ask an on-demand session.
 - It leaves nothing behind outside its pull requests. It creates, edits, pauses or deletes no scheduled task, its own included. It writes no project memory, no agent settings or local instructions (`.claude/`, `CLAUDE.local.md`), and no git hook or git configuration.
 - It starts no workflow by hand. The evaluations in `intake-eval` spend API credit and are not an audit's to run.
-- It uses GitHub through the session's own access to this repository, and no other credential. The agent environment also holds the owner's tokens for other work ([SETUP.md](../SETUP.md#agent-session-and-ci)); a run never reads, prints or sends them, and calls no vendor API. That is a rule the run follows, not a wall: a steered run could do what those tokens allow, the Vercel token's deploys and settings included ([threat model](../threat-models/foundations.md#open-gaps)).
+- It uses GitHub through the session's own access to this repository, and no other credential. The agent environment also holds the owner's tokens for other work ([SETUP.md](../SETUP.md#agent-session-and-ci)); a run never reads, prints or sends them, and calls no vendor API. That is a rule the run follows, not a wall: a steered run could do what those tokens allow, the Vercel token's deploys and settings included ([threat model, R-12](../threat-models/foundations.md#accepted-residuals)).
 
 ### The closing message
 
