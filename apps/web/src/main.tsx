@@ -11,6 +11,7 @@ import { recoverOnce } from './pwa/recover.js';
 import { registerServiceWorker } from './pwa/register.js';
 import { routeTree } from './routeTree.gen.js';
 import { sessionQuery } from './api.js';
+import { startTourSync } from './tour/seen.js';
 import { guardVault } from './vault-guard.js';
 import './styles.css';
 
@@ -63,6 +64,7 @@ const queryClient = new QueryClient();
 guardVault(window, queryClient, sessionQuery.queryKey);
 
 startAppearance();
+startTourSync();
 document.documentElement.lang = defaultLocale;
 document.title = i18n.t('app.name');
 

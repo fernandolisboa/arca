@@ -3,6 +3,7 @@ import { iconButtonClass } from './button.js';
 
 export interface MenuToggleProps {
   readonly ref?: Ref<HTMLButtonElement>;
+  readonly id?: string;
   readonly open: boolean;
   readonly onToggle: () => void;
   /** The id of the panel this button opens. */
@@ -21,6 +22,7 @@ const line =
  */
 export function MenuToggle({
   ref,
+  id,
   open,
   onToggle,
   controls,
@@ -30,6 +32,7 @@ export function MenuToggle({
   return (
     <button
       ref={ref}
+      id={id}
       type="button"
       aria-expanded={open}
       aria-controls={controls}
