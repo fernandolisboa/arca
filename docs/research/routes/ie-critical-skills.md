@@ -33,7 +33,7 @@ The second audit, the first by the full runbook ([#359](https://github.com/ferna
 - **Watch next:**
   - The minimum annual remuneration roadmap's next change, due January 2027: version 4.
   - Schedule 3 is replaced every few months: check the year index for an instrument after S.I. No. 558 of 2026.
-  - The guide `ie` version 1 does not list S.I. No. 421 of 2025 (the registration fee); a version 2 that adds it goes in a pull request of its own.
+  - The guide `ie` version 1 did not list S.I. No. 421 of 2025 (the registration fee); version 2 adds it and cites S.I. No. 558 of 2026 by its HTML form, in a pull request of its own.
 
 ### 2026-11-09
 
