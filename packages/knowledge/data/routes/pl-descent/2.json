@@ -15,14 +15,16 @@
       "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
       "title": "Ustawa z dnia 2 kwietnia 2009 r. o obywatelstwie polskim (Dz.U. 2025 poz. 1611), in force since 15 August 2012, art. 14 pkt 1: a minor with at least one Polish parent is Polish by birth",
       "kind": "official",
-      "verifiedAt": "2026-11-11"
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2025/1611/text.pdf"
     },
     {
       "id": "ustawa-2009-art-55",
       "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
       "title": "Ustawa o obywatelstwie polskim of 2009, art. 55: the voivode decides, on application, whether a person holds Polish citizenship",
       "kind": "official",
-      "verifiedAt": "2026-11-11"
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2025/1611/text.pdf"
     },
     {
       "id": "ustawa-1962-art-4",
@@ -41,7 +43,7 @@
     {
       "id": "ustawa-1951-art-6",
       "url": "https://api.sejm.gov.pl/eli/acts/DU/1951/25/text.pdf",
-      "title": "Ustawa z dnia 8 stycznia 1951 r. o obywatelstwie polskim, in force from 19 January 1951, art. 6: a child of two Polish parents, or of one with the other unknown or of unknown or unsettled citizenship",
+      "title": "Ustawa z 8 stycznia 1951 r. o obywatelstwie polskim, in force from 19 January 1951, art. 6: a child of two Polish parents, or of one with the other unknown or of unknown or undetermined citizenship",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
@@ -85,49 +87,64 @@
       "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
       "title": "Ustawa o obywatelstwie polskim of 2009, art. 10 ust. 3a: a confirmation case is settled within 6 months of the day the application reaches the authority that decides",
       "kind": "official",
-      "verifiedAt": "2026-11-11"
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2025/1611/text.pdf"
     },
     {
       "id": "ustawa-2009-consul",
       "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
       "title": "Ustawa o obywatelstwie polskim of 2009, art. 57: the application goes to the voivode; a person living outside Poland may file it through the consul of their place of residence",
       "kind": "official",
-      "verifiedAt": "2026-11-11"
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2025/1611/text.pdf"
     },
     {
       "id": "ustawa-2025-921",
       "url": "https://dziennikustaw.gov.pl/DU/2025/921",
       "title": "Ustawa z dnia 25 czerwca 2025 r. o zmianie ustawy o repatriacji (Dz.U. 2025 poz. 921), in force from 1 August 2025: art. 2 sets the stamp duty at PLN 277 and art. 3 adds the 6-month term",
       "kind": "official",
-      "verifiedAt": "2026-11-11"
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2025/921/text.pdf"
     },
     {
       "id": "oplata-skarbowa-item-27",
       "url": "https://dziennikustaw.gov.pl/DU/2026/1395",
       "title": "Ustawa z dnia 16 listopada 2006 r. o opłacie skarbowej (Dz.U. 2026 poz. 1395), annex, part I, item 27: PLN 277 for a decision confirming that a person holds or lost Polish citizenship",
       "kind": "official",
-      "verifiedAt": "2026-11-11"
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2026/1395/text.pdf"
+    },
+    {
+      "id": "oplata-skarbowa-art-3a",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1395",
+      "title": "Ustawa o opłacie skarbowej, art. 3a ust. 1: no stamp duty on an official act done on an application passed on through a Polish consul against a consular fee",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2026/1395/text.pdf"
     },
     {
       "id": "oplata-skarbowa-due",
       "url": "https://dziennikustaw.gov.pl/DU/2026/1395",
       "title": "Ustawa o opłacie skarbowej, art. 6 ust. 1 pkt 1 and ust. 2: the duty on an official act falls due, and is paid, when the application for it is filed",
       "kind": "official",
-      "verifiedAt": "2026-11-11"
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2026/1395/text.pdf"
     },
     {
       "id": "oplaty-konsularne-item-2-03",
       "url": "https://dziennikustaw.gov.pl/DU/2026/1298",
       "title": "Rozporządzenie Ministra Spraw Zagranicznych z dnia 18 grudnia 2015 r. w sprawie opłat konsularnych (Dz.U. 2026 poz. 1298), tariff from 1 January 2026, item 2.03: EUR 100",
       "kind": "official",
-      "verifiedAt": "2026-11-11"
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2026/1298/text.pdf"
     },
     {
       "id": "oplaty-konsularne-conversion",
       "url": "https://dziennikustaw.gov.pl/DU/2026/1298",
       "title": "Rozporządzenie w sprawie opłat konsularnych, § 3 ust. 1: the consul converts the fee into the currency it is charged in at the European Central Bank's reference rate, rounded up to a whole unit",
       "kind": "official",
-      "verifiedAt": "2026-11-11"
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2026/1298/text.pdf"
     }
   ],
   "countries": {
@@ -405,7 +422,7 @@
   "costs": [
     {
       "id": "stamp-duty",
-      "title": "Stamp duty on the voivode's decision confirming Polish citizenship, paid on filing; a consul who takes the application also charges EUR 100, in the consulate's currency, which this amount leaves out",
+      "title": "Stamp duty on the voivode's decision confirming Polish citizenship, paid on filing with the voivode; not owed when a person living abroad files through a consul, which is not recorded: possible abroad",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -413,13 +430,73 @@
         "currency": "PLN"
       },
       "appliesTo": "principal",
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "principal.residenceCountry"
+            },
+            "right": {
+              "op": "token",
+              "value": "PL"
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
       "sources": [
         "oplata-skarbowa-item-27",
         "oplata-skarbowa-due",
-        "ustawa-2025-921",
+        "oplata-skarbowa-art-3a",
+        "ustawa-2025-921"
+      ]
+    },
+    {
+      "id": "consular-fee",
+      "title": "Filing through a consul, open to a person living outside Poland: consular fee of EUR 100, charged in the consulate's currency, in place of the stamp duty; the place of filing is not recorded: possible",
+      "kind": "fee",
+      "amount": {
+        "op": "convert",
+        "operand": {
+          "op": "money",
+          "amount": 10000,
+          "currency": "EUR"
+        },
+        "currency": "PLN"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "eq",
+              "left": {
+                "op": "fact",
+                "key": "principal.residenceCountry"
+              },
+              "right": {
+                "op": "token",
+                "value": "PL"
+              }
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": [
         "oplaty-konsularne-item-2-03",
         "oplaty-konsularne-conversion",
-        "ustawa-2009-consul"
+        "ustawa-2009-consul",
+        "oplata-skarbowa-art-3a"
       ]
     }
   ],

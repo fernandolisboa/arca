@@ -96,7 +96,7 @@
     {
       "id": "dlgs-71-2011-term",
       "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2011-02-03;71~art10",
-      "title": "Decreto legislativo 3 febbraio 2011, n. 71, art. 10, comma 7: the procedures of commi 2 and 6, an adult's application to the central office or to a consulate, are concluded within 36 months",
+      "title": "Decreto legislativo 3 febbraio 2011, n. 71, art. 10, comma 7: the procedure of comma 6, an adult's application received by a consulate, is concluded within 36 months",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
@@ -544,7 +544,7 @@
   "costs": [
     {
       "id": "consular-fee",
-      "title": "An adult who applies through a consulate: fee for handling the application for recognition; the place of application is not recorded: possible",
+      "title": "An adult who applies through a consulate: fee for handling the application for recognition; one of three paths, and only one fee is paid; the path is not recorded: possible",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -559,7 +559,7 @@
     },
     {
       "id": "municipal-fee",
-      "title": "An adult who applies to a municipality in Italy: the municipality may charge up to this amount; the place of application is not recorded: possible",
+      "title": "An adult who applies to a municipality in Italy: the municipality may charge up to this amount; one of three paths, and only one fee is paid; the path is not recorded: possible",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -574,7 +574,7 @@
     },
     {
       "id": "court-fee",
-      "title": "A claimant who goes to court to have the citizenship established: court fee for each claimant, even in a joint claim; the path is not recorded: possible",
+      "title": "A claimant who goes to court to have the citizenship established: fee for each claimant, even in a joint claim; one of three paths, and only one fee is paid; the path is not recorded: possible",
       "kind": "fee",
       "amount": {
         "op": "money",

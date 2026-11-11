@@ -181,13 +181,13 @@ For each host:
 
 **`normattiva.it`** (last confirmed 2026-11-11)
 
-- **Read:** `curl` on the URN address `uri-res/N2Ls?urn:nir:stato:<type>:<yyyy-mm-dd>;<n>`; one article with the suffix `~art<n>` (`~art3bis`, `~art10`). The `/atto/caricaArticolo?…` addresses the page links to answer only with the session cookie the act's page sets (`curl -c` on the act, then `-b` on the article); without it they answer HTTP 500. A budget law's single article is served in parts of 100 commi, each a `caricaArticolo` address, and `~art1-com<n>` opens only the first part.
+- **Read:** `curl` on the URN address `uri-res/N2Ls?urn:nir:stato:<type>:<yyyy-mm-dd>;<n>`; one article with the suffix `~art<n>` (`~art3bis`, `~art10`). The `/atto/caricaArticolo?…` addresses the page links to answer only with the session cookie the act's page sets (`curl -c` on the act, then `-b` on the article); without it they answer HTTP 500. The cookie file stays in the scratch folder. A budget law's single article is served in parts of 100 commi, each a `caricaArticolo` address, and `~art1-com<n>` opens only the first part.
 - **Cite:** the URN address, with `~art<n>` when the item is one article; a comma of a budget law by the act's address, with the comma in the title.
 - **Amendments:** the act's page shows "Ultimo aggiornamento all'atto" with a date, each article its "Testo in vigore dal", and "aggiornamenti all'atto" and "aggiornamenti all'articolo" list the amending acts. gazzettaufficiale.it, interno.gov.it, governo.it and camera.it are readable but not on the list: leads.
 
 **`cortecostituzionale.it`** (last confirmed 2026-11-11)
 
-- **Read:** `curl` on `/scheda-pronuncia/<yyyy>/<n>`; PDFs at `/stampa-pdf-pronuncia/<yyyy>/<n>`, which redirect on the same host (`curl -L`).
+- **Read:** `curl` on `https://www.cortecostituzionale.it/scheda-pronuncia/<yyyy>/<n>`, which carries the whole ruling. Do not follow a redirect: after a few requests the host answers 302 to a bot challenge on another host (`validate.perfdrive.com`), and so does the PDF address `/stampa-pdf-pronuncia/<yyyy>/<n>`. That answer is a refusal for that request: space the requests out and try again later, or record the page as not readable.
 - **Cite:** the `scheda-pronuncia` page.
 - **Amendments:** a pending question (a referral to the CJEU, for one) is a lead to watch: record it in the route's notes.
 - Not readable: esteri.it (bot wall), quirinale.it and senato.it (403). cortedicassazione.it is readable with `curl` (judgments as PDFs under `/resources/cms/documents/`) but not on the list: a lead, or a `secondary` source beside an official one.
