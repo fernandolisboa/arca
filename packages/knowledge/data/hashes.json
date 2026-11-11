@@ -266,6 +266,14 @@
     {
       "path": "routes/es-non-lucrative/3",
       "sha256": "d11588933274e908d688e333647596f1e1c4fab5ae2719441def60c3a86e7f32"
+    },
+    {
+      "path": "routes/it-descent/2",
+      "sha256": "1eb14f78f9b928ebfa2a286a0fbd6b68132605ca6471809586833f602595713b"
+    },
+    {
+      "path": "routes/it-descent/3",
+      "sha256": "86610a7b2c9d3f5a6fca0d719590c72ac6d8ddc7a9ead2a45c7a866d6b1f0e42"
     }
   ]
 }

@@ -179,18 +179,18 @@ For each host:
 
 ## `it`: Italy
 
-**`normattiva.it`** (last confirmed 2026-11-09)
+**`normattiva.it`** (last confirmed 2026-11-11)
 
-- **Read:** `curl` on the URN address `uri-res/N2Ls?urn:nir:stato:<type>:<yyyy-mm-dd>;<n>`; single articles through `/atto/caricaArticolo?…` with the `codiceRedazionale` from the page.
-- **Cite:** the URN address.
-- **Amendments:** the act's page shows its updates and the "vigente" date. gazzettaufficiale.it, interno.gov.it, governo.it and camera.it are readable but not on the list: leads.
+- **Read:** `curl` on the URN address `uri-res/N2Ls?urn:nir:stato:<type>:<yyyy-mm-dd>;<n>`; one article with the suffix `~art<n>` (`~art3bis`, `~art10`). The `/atto/caricaArticolo?…` addresses the page links to answer only with the session cookie the act's page sets (`curl -c` on the act, then `-b` on the article); without it they answer HTTP 500. A budget law's single article is served in parts of 100 commi, each a `caricaArticolo` address, and `~art1-com<n>` opens only the first part.
+- **Cite:** the URN address, with `~art<n>` when the item is one article; a comma of a budget law by the act's address, with the comma in the title.
+- **Amendments:** the act's page shows "Ultimo aggiornamento all'atto" with a date, each article its "Testo in vigore dal", and "aggiornamenti all'atto" and "aggiornamenti all'articolo" list the amending acts. gazzettaufficiale.it, interno.gov.it, governo.it and camera.it are readable but not on the list: leads.
 
-**`cortecostituzionale.it`** (last confirmed 2026-11-09)
+**`cortecostituzionale.it`** (last confirmed 2026-11-11)
 
-- **Read:** `curl` on `/scheda-pronuncia/<yyyy>/<n>`; PDFs at `/stampa-pdf-pronuncia/<yyyy>/<n>`.
+- **Read:** `curl` on `/scheda-pronuncia/<yyyy>/<n>`; PDFs at `/stampa-pdf-pronuncia/<yyyy>/<n>`, which redirect on the same host (`curl -L`).
 - **Cite:** the `scheda-pronuncia` page.
 - **Amendments:** a pending question (a referral to the CJEU, for one) is a lead to watch: record it in the route's notes.
-- Not readable: esteri.it (bot wall), quirinale.it and senato.it (403).
+- Not readable: esteri.it (bot wall), quirinale.it and senato.it (403). cortedicassazione.it is readable with `curl` (judgments as PDFs under `/resources/cms/documents/`) but not on the list: a lead, or a `secondary` source beside an official one.
 
 ## `jp`: Japan
 

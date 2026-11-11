@@ -1,0 +1,613 @@
+{
+  "schemaVersion": 1,
+  "routeId": "it-descent",
+  "number": 3,
+  "title": "Italian citizenship by descent (iure sanguinis) for someone born abroad who applies after 27 March 2025",
+  "country": "IT",
+  "tags": ["descent", "citizenship"],
+  "effectiveFrom": "2029-01-01",
+  "status": "open",
+  "currency": "EUR",
+  "sources": [
+    {
+      "id": "legge-91-1992-art-1",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1992-02-05;91~art1",
+      "title": "Legge 5 febbraio 1992, n. 91 (Nuove norme sulla cittadinanza), art. 1: the child of a citizen father or mother is a citizen by birth",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "legge-91-1992-art-3-bis",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1992-02-05;91~art3bis",
+      "title": "Legge 91/1992, art. 3-bis, as in force since 24 May 2025: who is born abroad and holds another citizenship never acquired the Italian one, unless one of its conditions applies, such as letter c",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "dl-36-2025",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2025-03-28;36",
+      "title": "Decreto-legge 28 marzo 2025, n. 36, which added art. 3-bis to law 91/1992",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "legge-74-2025",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2025-05-23;74",
+      "title": "Legge 23 maggio 2025, n. 74, which converted decree-law 36/2025 with amendments, in force from 24 May 2025",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "legge-555-1912",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1912-06-13;555",
+      "title": "Legge 13 giugno 1912, n. 555, art. 1: before 1948 citizenship passed through the father, and through the mother only in narrow cases",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "legge-555-1912-minors",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1912-06-13;555",
+      "title": "Legge 555/1912, arts. 7 and 12, in force until 15 August 1992: a citizen born and living in a state that held them its citizen by birth kept Italian citizenship; minor children of a parent who lost it",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "corte-cost-30-1983",
+      "url": "https://www.cortecostituzionale.it/scheda-pronuncia/1983/30",
+      "title": "Corte costituzionale, sentenza 30/1983: a child of a citizen mother is also a citizen by birth",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "corte-cost-63-2026",
+      "url": "https://www.cortecostituzionale.it/scheda-pronuncia/2026/63",
+      "title": "Corte costituzionale, sentenza 63/2026: art. 3-bis is an original bar to acquiring citizenship, not a revocation; the challenges are unfounded or inadmissible",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "corte-cost-147-2026",
+      "url": "https://www.cortecostituzionale.it/scheda-pronuncia/2026/147",
+      "title": "Corte costituzionale, ordinanza 147/2026: refers to the EU Court of Justice whether EU law precludes art. 3-bis, and suspends its own case until the answer",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "cassazione-ssuu-24045-2026",
+      "url": "https://www.cortedicassazione.it/resources/cms/documents/24045072026_oscuramento.pdf",
+      "title": "Corte di cassazione, Sezioni Unite civili, sentenza 24045/2026: a minor born abroad, a citizen of that state by birth on its soil, kept Italian citizenship when the Italian parent lost it",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "legge-11-2026",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2026-01-19;11~art1",
+      "title": "Legge 19 gennaio 2026, n. 11, art. 1, comma 1, in force from 19 February 2026: replaces art. 10 of legislative decree 71/2011, on recognizing the citizenship of adults who live abroad",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "dlgs-71-2011-central-office",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2011-02-03;71~art10",
+      "title": "Decreto legislativo 71/2011, art. 10, commi 2, 3 and 5: from 1 January 2029 adults living abroad apply by post, with paper originals and proof of the fee, to a central office of the Foreign Ministry",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "dlgs-71-2011-central-limit",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2011-02-03;71~art10",
+      "title": "Decreto legislativo 71/2011, art. 10, comma 5: in 2029 and 2030 the central office takes, per year, no more applications than those for which consulates collected the art. 7-bis fee in 2025",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "dlgs-71-2011-term",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2011-02-03;71~art10",
+      "title": "Decreto legislativo 3 febbraio 2011, n. 71, art. 10, comma 7: the procedures of commi 2 and 6, an adult's application to the central office or to a consulate, are concluded within 36 months",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "dlgs-71-2011-fee-table",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2011-02-03;71",
+      "title": "Decreto legislativo 71/2011, annexed table of consular fees, section I, art. 7-bis: the fee for handling an adult's application for recognition, whose notes quote the laws that set its amount",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "dl-66-2014",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2014-04-24;66~art5bis",
+      "title": "Decreto-legge 24 aprile 2014, n. 66, art. 5-bis, comma 1: adds art. 7-bis to the consular fee table, the fee for handling an adult's application for recognition of Italian citizenship",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "legge-207-2024-consular-fee",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2024-12-30;207",
+      "title": "Legge 30 dicembre 2024, n. 207, art. 1, comma 639, in force from 1 January 2025: raises the fee of art. 7-bis of the consular fee table from EUR 300 to EUR 600",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "legge-207-2024-municipal-fee",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2024-12-30;207",
+      "title": "Legge 207/2024, art. 1, comma 636: a municipality may charge up to EUR 600 for each adult applicant's request for recognition; not for requests made through a consulate",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "dpr-115-2002",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.del.presidente.della.repubblica:2002-05-30;115~art13",
+      "title": "D.P.R. 30 maggio 2002, n. 115 (court costs), art. 13, comma 1-sexies, in force from 1 January 2025: EUR 600 for each claimant in a case on establishing Italian citizenship, even in a joint claim",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "it",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "citizen-line",
+      "title": "A parent or grandparent who holds, or held at death, only Italian citizenship and passed it on at each birth (art. 3-bis c); other Italian parents leave it open",
+      "expression": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "some",
+            "over": "principal.ancestors",
+            "generations": 2,
+            "where": {
+              "op": "all",
+              "operands": [
+                {
+                  "op": "within",
+                  "list": {
+                    "op": "fact",
+                    "key": "person.citizenships"
+                  },
+                  "set": {
+                    "op": "tokens",
+                    "values": ["IT"]
+                  }
+                },
+                {
+                  "op": "intersects",
+                  "list": {
+                    "op": "fact",
+                    "key": "person.citizenships"
+                  },
+                  "set": {
+                    "op": "tokens",
+                    "values": ["IT"]
+                  }
+                },
+                {
+                  "op": "any",
+                  "operands": [
+                    {
+                      "op": "all",
+                      "operands": [
+                        {
+                          "op": "eq",
+                          "left": {
+                            "op": "fact",
+                            "key": "lineage.edgeKind"
+                          },
+                          "right": {
+                            "op": "token",
+                            "value": "biological"
+                          }
+                        },
+                        {
+                          "op": "intersects",
+                          "list": {
+                            "op": "fact",
+                            "key": "lineage.citizenshipsAtChildBirth"
+                          },
+                          "set": {
+                            "op": "tokens",
+                            "values": ["IT"]
+                          }
+                        },
+                        {
+                          "op": "any",
+                          "operands": [
+                            {
+                              "op": "gte",
+                              "left": {
+                                "op": "fact",
+                                "key": "lineage.childBirthDate"
+                              },
+                              "right": {
+                                "op": "date",
+                                "value": "1948-01-01"
+                              }
+                            },
+                            {
+                              "op": "unmodeled"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "op": "all",
+                      "operands": [
+                        {
+                          "op": "eq",
+                          "left": {
+                            "op": "fact",
+                            "key": "lineage.edgeKind"
+                          },
+                          "right": {
+                            "op": "token",
+                            "value": "biological"
+                          }
+                        },
+                        {
+                          "op": "intersects",
+                          "list": {
+                            "op": "fact",
+                            "key": "person.citizenships"
+                          },
+                          "set": {
+                            "op": "tokens",
+                            "values": ["IT"]
+                          }
+                        },
+                        {
+                          "op": "unmodeled"
+                        }
+                      ]
+                    },
+                    {
+                      "op": "all",
+                      "operands": [
+                        {
+                          "op": "not",
+                          "operand": {
+                            "op": "eq",
+                            "left": {
+                              "op": "fact",
+                              "key": "lineage.edgeKind"
+                            },
+                            "right": {
+                              "op": "token",
+                              "value": "biological"
+                            }
+                          }
+                        },
+                        {
+                          "op": "unmodeled"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "every",
+                  "over": "lineage.links",
+                  "where": {
+                    "op": "any",
+                    "operands": [
+                      {
+                        "op": "all",
+                        "operands": [
+                          {
+                            "op": "eq",
+                            "left": {
+                              "op": "fact",
+                              "key": "lineage.edgeKind"
+                            },
+                            "right": {
+                              "op": "token",
+                              "value": "biological"
+                            }
+                          },
+                          {
+                            "op": "intersects",
+                            "list": {
+                              "op": "fact",
+                              "key": "lineage.citizenshipsAtChildBirth"
+                            },
+                            "set": {
+                              "op": "tokens",
+                              "values": ["IT"]
+                            }
+                          },
+                          {
+                            "op": "any",
+                            "operands": [
+                              {
+                                "op": "gte",
+                                "left": {
+                                  "op": "fact",
+                                  "key": "lineage.childBirthDate"
+                                },
+                                "right": {
+                                  "op": "date",
+                                  "value": "1948-01-01"
+                                }
+                              },
+                              {
+                                "op": "unmodeled"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "op": "all",
+                        "operands": [
+                          {
+                            "op": "eq",
+                            "left": {
+                              "op": "fact",
+                              "key": "lineage.edgeKind"
+                            },
+                            "right": {
+                              "op": "token",
+                              "value": "biological"
+                            }
+                          },
+                          {
+                            "op": "intersects",
+                            "list": {
+                              "op": "fact",
+                              "key": "person.citizenships"
+                            },
+                            "set": {
+                              "op": "tokens",
+                              "values": ["IT"]
+                            }
+                          },
+                          {
+                            "op": "unmodeled"
+                          }
+                        ]
+                      },
+                      {
+                        "op": "all",
+                        "operands": [
+                          {
+                            "op": "not",
+                            "operand": {
+                              "op": "eq",
+                              "left": {
+                                "op": "fact",
+                                "key": "lineage.edgeKind"
+                              },
+                              "right": {
+                                "op": "token",
+                                "value": "biological"
+                              }
+                            }
+                          },
+                          {
+                            "op": "unmodeled"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "some",
+                "over": "principal.ancestors",
+                "generations": 1,
+                "where": {
+                  "op": "any",
+                  "operands": [
+                    {
+                      "op": "all",
+                      "operands": [
+                        {
+                          "op": "eq",
+                          "left": {
+                            "op": "fact",
+                            "key": "lineage.edgeKind"
+                          },
+                          "right": {
+                            "op": "token",
+                            "value": "biological"
+                          }
+                        },
+                        {
+                          "op": "intersects",
+                          "list": {
+                            "op": "fact",
+                            "key": "lineage.citizenshipsAtChildBirth"
+                          },
+                          "set": {
+                            "op": "tokens",
+                            "values": ["IT"]
+                          }
+                        },
+                        {
+                          "op": "any",
+                          "operands": [
+                            {
+                              "op": "gte",
+                              "left": {
+                                "op": "fact",
+                                "key": "lineage.childBirthDate"
+                              },
+                              "right": {
+                                "op": "date",
+                                "value": "1948-01-01"
+                              }
+                            },
+                            {
+                              "op": "unmodeled"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "op": "all",
+                      "operands": [
+                        {
+                          "op": "eq",
+                          "left": {
+                            "op": "fact",
+                            "key": "lineage.edgeKind"
+                          },
+                          "right": {
+                            "op": "token",
+                            "value": "biological"
+                          }
+                        },
+                        {
+                          "op": "intersects",
+                          "list": {
+                            "op": "fact",
+                            "key": "person.citizenships"
+                          },
+                          "set": {
+                            "op": "tokens",
+                            "values": ["IT"]
+                          }
+                        },
+                        {
+                          "op": "unmodeled"
+                        }
+                      ]
+                    },
+                    {
+                      "op": "all",
+                      "operands": [
+                        {
+                          "op": "not",
+                          "operand": {
+                            "op": "eq",
+                            "left": {
+                              "op": "fact",
+                              "key": "lineage.edgeKind"
+                            },
+                            "right": {
+                              "op": "token",
+                              "value": "biological"
+                            }
+                          }
+                        },
+                        {
+                          "op": "unmodeled"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": [
+        "legge-91-1992-art-1",
+        "legge-91-1992-art-3-bis",
+        "dl-36-2025",
+        "legge-74-2025",
+        "legge-555-1912",
+        "legge-555-1912-minors",
+        "corte-cost-30-1983",
+        "corte-cost-63-2026",
+        "corte-cost-147-2026",
+        "cassazione-ssuu-24045-2026"
+      ]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "central-office-by-post",
+      "title": "An adult living abroad applies by post, at their own cost, with the documents in paper originals and proof of the fee, to a central office of the Foreign Ministry, no longer to a consulate",
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["dlgs-71-2011-central-office", "legge-11-2026"]
+    },
+    {
+      "id": "central-office-yearly-limit",
+      "title": "In 2029 and 2030 the central office takes, per year, no more applications than those for which consulates collected the fee in 2025, so an application needs a place in that number",
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["dlgs-71-2011-central-limit", "legge-11-2026"]
+    }
+  ],
+  "dependents": [],
+  "costs": [
+    {
+      "id": "consular-fee",
+      "title": "An adult living abroad who applies to the central office of the Foreign Ministry: fee for handling the application for recognition; the place of application is not recorded: possible",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 60000,
+        "currency": "EUR"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["dlgs-71-2011-fee-table", "dl-66-2014", "legge-207-2024-consular-fee"]
+    },
+    {
+      "id": "municipal-fee",
+      "title": "An adult who applies to a municipality in Italy: the municipality may charge up to this amount; the place of application is not recorded: possible",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 60000,
+        "currency": "EUR"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["legge-207-2024-municipal-fee"]
+    },
+    {
+      "id": "court-fee",
+      "title": "A claimant who goes to court to have the citizenship established: court fee for each claimant, even in a joint claim; the path is not recorded: possible",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 60000,
+        "currency": "EUR"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["dpr-115-2002"]
+    }
+  ],
+  "durations": [
+    {
+      "id": "recognition-decision",
+      "title": "Decision on an adult's application sent to the central office of the Foreign Ministry, within the legal time limit",
+      "min": "P0D",
+      "max": "P36M",
+      "sources": ["dlgs-71-2011-term", "legge-11-2026"]
+    }
+  ]
+}
