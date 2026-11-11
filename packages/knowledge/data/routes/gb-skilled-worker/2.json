@@ -61,13 +61,6 @@
       "verifiedAt": "2026-11-11"
     },
     {
-      "id": "sw-temporary-shortage-list",
-      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
-      "title": "Appendix Skilled Worker, SW 6.1A and the Temporary Shortage List: a listed occupation, where the certificate of sponsorship was issued before 31 December 2026",
-      "kind": "official",
-      "verifiedAt": "2026-11-11"
-    },
-    {
       "id": "sw-salary-phd",
       "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
       "title": "Appendix Skilled Worker, table after SW 4.4, options B and C: a relevant PhD with £37,500 and 90% of the going rate; a STEM PhD with £33,400 and 80% of the going rate",
@@ -120,13 +113,6 @@
       "id": "sw-dependant-funds",
       "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
       "title": "Appendix Skilled Worker, SW 33.3 and 33.5: £285 for a dependent partner, £315 for the first dependent child, £200 for any other, held for a 28-day period",
-      "kind": "official",
-      "verifiedAt": "2026-11-11"
-    },
-    {
-      "id": "sw-dependants-job-tables",
-      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
-      "title": "Appendix Skilled Worker, SW 29.1A and 32A.2: a partner or child joins only a Skilled Worker sponsored for a job in Table 1, Table 2 or Table 3 of Appendix Skilled Occupations, save listed exceptions",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
@@ -318,12 +304,6 @@
       "sources": ["sw-occupation-lists"]
     },
     {
-      "id": "temporary-shortage-list",
-      "title": "Or a job on the Temporary Shortage List, with a certificate of sponsorship issued before 31 December 2026; such a job brings no partner or children",
-      "evidence": ["principal.educationLevel"],
-      "sources": ["sw-temporary-shortage-list", "sw-dependants-job-tables"]
-    },
-    {
       "id": "salary",
       "title": "A salary of at least £41,700 a year and the going rate for the occupation (option A)",
       "evidence": ["principal.monthlyActiveIncome"],
@@ -473,7 +453,54 @@
       },
       "appliesTo": "principal",
       "condition": {
-        "op": "unmodeled"
+        "op": "all",
+        "operands": [
+          {
+            "op": "ne",
+            "left": {
+              "op": "fact",
+              "key": "principal.residenceCountry"
+            },
+            "right": {
+              "op": "token",
+              "value": "GB"
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["fees-table"]
+    },
+    {
+      "id": "visa-fee-in-uk-up-to-3-years",
+      "title": "Visa fee from inside the UK for a certificate of sponsorship of three years or less, £943 (Immigration Salary List: £628); the alternative to the £1,865 fee: possible",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 94300,
+        "currency": "GBP"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "principal.residenceCountry"
+            },
+            "right": {
+              "op": "token",
+              "value": "GB"
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
       },
       "sources": ["fees-table"]
     },
@@ -488,7 +515,54 @@
       },
       "appliesTo": "each_dependent",
       "condition": {
-        "op": "unmodeled"
+        "op": "all",
+        "operands": [
+          {
+            "op": "ne",
+            "left": {
+              "op": "fact",
+              "key": "principal.residenceCountry"
+            },
+            "right": {
+              "op": "token",
+              "value": "GB"
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["fees-table"]
+    },
+    {
+      "id": "visa-fee-in-uk-up-to-3-years-dependant",
+      "title": "The same £943 fee for each partner or child applying in the UK, for a certificate of three years or less (Immigration Salary List: £628): possible",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 94300,
+        "currency": "GBP"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "principal.residenceCountry"
+            },
+            "right": {
+              "op": "token",
+              "value": "GB"
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
       },
       "sources": ["fees-table"]
     },
@@ -503,7 +577,54 @@
       },
       "appliesTo": "principal",
       "condition": {
-        "op": "unmodeled"
+        "op": "all",
+        "operands": [
+          {
+            "op": "ne",
+            "left": {
+              "op": "fact",
+              "key": "principal.residenceCountry"
+            },
+            "right": {
+              "op": "token",
+              "value": "GB"
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["fees-table"]
+    },
+    {
+      "id": "visa-fee-in-uk-over-3-years",
+      "title": "Visa fee from inside the UK for a certificate of sponsorship of over three years, £1,865 (Immigration Salary List: £1,235); the alternative to the £943 fee: possible",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 186500,
+        "currency": "GBP"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "principal.residenceCountry"
+            },
+            "right": {
+              "op": "token",
+              "value": "GB"
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
       },
       "sources": ["fees-table"]
     },
@@ -518,18 +639,69 @@
       },
       "appliesTo": "each_dependent",
       "condition": {
-        "op": "unmodeled"
+        "op": "all",
+        "operands": [
+          {
+            "op": "ne",
+            "left": {
+              "op": "fact",
+              "key": "principal.residenceCountry"
+            },
+            "right": {
+              "op": "token",
+              "value": "GB"
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["fees-table"]
+    },
+    {
+      "id": "visa-fee-in-uk-over-3-years-dependant",
+      "title": "The same £1,865 fee for each partner or child applying in the UK, for a certificate of over three years (Immigration Salary List: £1,235): possible",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 186500,
+        "currency": "GBP"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "principal.residenceCountry"
+            },
+            "right": {
+              "op": "token",
+              "value": "GB"
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
       },
       "sources": ["fees-table"]
     },
     {
       "id": "health-surcharge",
-      "title": "Immigration health surcharge, £1,035 for each year of the visa; the total, this amount times the years granted, is not computed: possible",
+      "title": "Immigration health surcharge, £1,035 for each year of the visa, shown at its most, 5 years (£5,175): possible",
       "kind": "fee",
       "amount": {
-        "op": "money",
-        "amount": 103500,
-        "currency": "GBP"
+        "op": "mul",
+        "operand": {
+          "op": "money",
+          "amount": 103500,
+          "currency": "GBP"
+        },
+        "by": "5"
       },
       "appliesTo": "principal",
       "condition": {
@@ -539,12 +711,16 @@
     },
     {
       "id": "health-surcharge-adult-dependant",
-      "title": "Immigration health surcharge of each partner or child aged 18 or over, £1,035 for each year of the visa, not multiplied here: possible",
+      "title": "Immigration health surcharge of each partner or child aged 18 or over, £1,035 for each year of the visa, shown at its most, 5 years (£5,175): possible",
       "kind": "fee",
       "amount": {
-        "op": "money",
-        "amount": 103500,
-        "currency": "GBP"
+        "op": "mul",
+        "operand": {
+          "op": "money",
+          "amount": 103500,
+          "currency": "GBP"
+        },
+        "by": "5"
       },
       "appliesTo": "each_dependent",
       "condition": {
@@ -570,12 +746,16 @@
     },
     {
       "id": "health-surcharge-child",
-      "title": "Immigration health surcharge of each child under 18 at the time of application, £776 for each year of the visa, not multiplied here: possible",
+      "title": "Immigration health surcharge of each child under 18 at the time of application, £776 for each year of the visa, shown at its most, 5 years (£3,880): possible",
       "kind": "fee",
       "amount": {
-        "op": "money",
-        "amount": 77600,
-        "currency": "GBP"
+        "op": "mul",
+        "operand": {
+          "op": "money",
+          "amount": 77600,
+          "currency": "GBP"
+        },
+        "by": "5"
       },
       "appliesTo": "each_dependent",
       "condition": {

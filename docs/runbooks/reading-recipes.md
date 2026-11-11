@@ -152,7 +152,7 @@ For each host:
 - The year index `/eli/<yyyy>/si/` is a table of number and title: match the rows to find instruments made after a date.
 - **Amendments:** the year index `/eli/<yyyy>/si/` lists every instrument; the Employment Permits regulations change by numbered amending regulations. Revised acts are on revisedacts.lawreform.ie, readable but not on the list: a lead.
 
-**`enterprise.gov.ie`** (last confirmed 2026-11-09)
+**`enterprise.gov.ie`** (last confirmed 2026-11-11)
 
 - **Read:** `curl`.
 - **Cite:** the page itself.
@@ -200,7 +200,7 @@ For each host:
 **`laws.e-gov.go.jp`** (last confirmed 2026-11-11)
 
 - **Read:** `curl` on the API v2: `/api/2/laws?law_title=<title>`, `/api/2/law_data/<id>?response_format=json&law_full_text_format=json`, `/api/2/law_revisions/<id>`.
-- **Cite:** `https://laws.e-gov.go.jp/law/<id>`. The page is drawn by scripts, so put `https://laws.e-gov.go.jp/api/2/law_data/<id>?response_format=xml&law_full_text_format=xml`, the whole text as XML, in `machineReadableUrl`.
+- **Cite:** `https://laws.e-gov.go.jp/law/<id>`. The page is drawn by scripts, so put `https://laws.e-gov.go.jp/api/2/law_data/<id>?response_format=xml&law_full_text_format=xml`, the whole text as XML, in `machineReadableUrl`. For a long law, cite each article as its own source and add `&elm=MainProvision-Article_<n>` to that address, which serves that article alone (confirmed 2026-11-11); an appended table answers 500 to `elm`, so cite it by the whole text.
 - **Amendments:** `law_revisions` lists every revision with its dates, including ones not yet in force.
 - Ids: Immigration Control and Refugee Recognition Act 326CO0000000319, its Enforcement Ordinance 356M50000010054, Civil Code 129AC0000000089, Act on the Calculation of Age 135AC1000000050. Ministry notices (告示) are not on e-Gov.
 

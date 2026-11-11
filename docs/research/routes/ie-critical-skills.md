@@ -22,9 +22,10 @@ The second audit, the first by the full runbook ([#359](https://github.com/ferna
 - **Leads:** none beyond the pages above.
 - **Findings:**
   - Missing, now costs: the registration certificate fee, €300 for the principal and each family member aged 18 or over, waived under 18 (S.I. No. 421 of 2025, in force since 5 September 2025).
+  - Missing, now an assessment: the critical skills occupation that the lower pay thresholds need, citing the two Schedule 3 instruments (found in review, where no item cited them).
   - Missing, now durations: the permit, of up to 24 months; then a Stamp 4 permission of 2 years, renewable, without a further permit.
   - Corrected: the leap-day convention. Section 4 of the Age of Majority Act 1985 says an age is attained at the start of the anniversary; no Irish text says when a person born on 29 February has one, and version 2 assumed 28 February. `leapDayBirthday` is now `unsettled`; the case of a child born on 29 February moved from "excluded" to "possible".
-  - Split: the `not-eu-eea-swiss-or-british-citizen` and `job-offer` items cite one section each; `pay` cites only the instrument that states the amounts.
+  - Split: the citizenship item is now `not-eu-eea-or-swiss-citizen` and `not-british-citizen`, each citing only what states it (the British one after review); `job-offer` cites one section; `pay` cites only the instrument that states the amounts.
   - Confirmed, unchanged: the thresholds, the qualification rules, the 2 years and 20 hours, the 50% rule, the €1,000 fee and its waivers, and the family rules (spouse or civil partner 18, de facto partner 18 with 2 years, unmarried children under 18, stepchildren in the household, adoptions recognised in Ireland).
 - **Check loop:** runs [43075817319](https://github.com/fernandolisboa/arca/actions/runs/43075817319) (6 of 16 items match), [43076496175](https://github.com/fernandolisboa/arca/actions/runs/43076496175) (8 of 16) and [43076956976](https://github.com/fernandolisboa/arca/actions/runs/43076956976) (8 of 17, none differs). Fixed on the way: the job offer split from the employer's staff test, and S.I. No. 558 of 2026 cited by its html form after its PDF address began to redirect. Left over:
   - `unreadable`: `dependent:spouse`, `dependent:partner`, `dependent:children` and `dependent:spouse-children`, whose Family Reunification Policy is a PDF the checker does not read (#363).
@@ -32,6 +33,7 @@ The second audit, the first by the full runbook ([#359](https://github.com/ferna
 - **Watch next:**
   - The minimum annual remuneration roadmap's next change, due January 2027: version 4.
   - Schedule 3 is replaced every few months: check the year index for an instrument after S.I. No. 558 of 2026.
+  - The guide `ie` version 1 does not list S.I. No. 421 of 2025 (the registration fee); a version 2 that adds it goes in a pull request of its own.
 
 ### 2026-11-09
 

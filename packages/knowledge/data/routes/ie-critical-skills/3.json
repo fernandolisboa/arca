@@ -244,6 +244,12 @@
       "sources": ["ep-act-csep"]
     },
     {
+      "id": "critical-skills-occupation",
+      "title": "For the lower pay thresholds, a job in a critical skills occupation of Schedule 3, as last replaced by S.I. No. 558 of 2026",
+      "evidence": ["principal.educationLevel"],
+      "sources": ["csol-schedule-3-may-2026", "csol-schedule-3-october-2026"]
+    },
+    {
       "id": "pay",
       "title": "Pay of at least €40,904 a year and €20.17 an hour in a critical skills occupation, or at least €68,911 a year and €33.98 an hour in any other eligible job",
       "evidence": ["principal.monthlyActiveIncome"],

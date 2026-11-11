@@ -602,10 +602,85 @@
     },
     {
       "id": "grandchildren",
-      "title": "A dependent child of a child who is a family member (for example a child's own child who relies on them): possible",
+      "title": "A child's child with no spouse or partner, if dependent on that child (who must be a family member): possible",
       "path": ["child", "child"],
       "condition": {
-        "op": "unmodeled"
+        "op": "all",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasPartner"
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["regs-family-unit-grandchildren"]
+    },
+    {
+      "id": "spouse-grandchildren",
+      "title": "A child of the spouse's child, with no spouse or partner, if dependent on that child (who must be a family member): possible",
+      "path": ["spouse", "child", "child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasPartner"
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["regs-family-unit-grandchildren"]
+    },
+    {
+      "id": "partner-grandchildren",
+      "title": "A child of the partner's child, with no spouse or partner, if dependent on that child (who must be a family member): possible",
+      "path": ["partner", "child", "child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasPartner"
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
       },
       "sources": ["regs-family-unit-grandchildren"]
     }
