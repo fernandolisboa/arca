@@ -20,6 +20,7 @@ import { type CheckReport, memoryCheckReportStore } from '../../../src/knowledge
 import { createCheckSubjects, createKnowledgeVersions } from '../../../src/knowledge/versions.js';
 import { noUsage, plain, usageLogger, withoutReason } from '../check-report.js';
 import { withCallLimit } from '../independent-check/call-limit.js';
+import { newestOfEachRoute } from '../newest-versions.js';
 
 const concurrency = 3;
 
@@ -42,19 +43,16 @@ interface Version {
   readonly number: number;
 }
 
-/** The newest version of each route, which is what an admin is asked to activate. */
+/** The newest version of each route, by route. */
 async function newestVersions(): Promise<Version[]> {
   const versions = createKnowledgeVersions({
     states: () => Promise.resolve(new Map()),
     // The listing wants a date for the state it shows; which version is newest does not use it.
     today: () => parseCalendarDate(new Date().toISOString().slice(0, 10)),
   });
-  const newest = new Map<string, Version>();
-  for (const { routeId, number } of await versions.list()) {
-    const held = newest.get(routeId);
-    if (held === undefined || number > held.number) newest.set(routeId, { routeId, number });
-  }
-  return [...newest.values()].sort((left, right) => left.routeId.localeCompare(right.routeId));
+  return newestOfEachRoute(await versions.list()).sort((left, right) =>
+    left.routeId.localeCompare(right.routeId),
+  );
 }
 
 interface Run {

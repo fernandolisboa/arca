@@ -1,7 +1,7 @@
 name: intake-eval
 
-# The AI evaluations: the intake's synthetic cases (spec 0008, R5), the rule summary of every
-# bundled version (ADR-0025) and the independent check's synthetic cases (ADR-0027), against the
+# The AI evaluations: the intake's synthetic cases (spec 0008, R5), the rule summary of each
+# route's newest version (ADR-0025) and the independent check's synthetic cases (ADR-0027), on the
 # real model, each writing its report to the job summary. `catalog-check` is a measurement, not an
 # evaluation: the independent check of every route's newest version against its live official
 # pages, which costs a few dollars, so `all` leaves it out. Started by hand only
