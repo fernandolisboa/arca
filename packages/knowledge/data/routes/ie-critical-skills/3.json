@@ -245,7 +245,7 @@
     },
     {
       "id": "critical-skills-occupation",
-      "title": "For the lower pay thresholds, a job in a critical skills occupation of Schedule 3, as last replaced by S.I. No. 558 of 2026",
+      "title": "For the lower pay thresholds, a job in a critical skills occupation listed in Schedule 3 to the Employment Permits Regulations",
       "evidence": ["principal.educationLevel"],
       "sources": ["csol-schedule-3-may-2026", "csol-schedule-3-october-2026"]
     },

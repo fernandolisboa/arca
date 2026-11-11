@@ -444,7 +444,7 @@
   "costs": [
     {
       "id": "visa-fee-up-to-3-years",
-      "title": "Visa fee from outside the UK for a certificate of sponsorship of three years or less, £819 (a job on the Immigration Salary List: £628); the alternative to the fee for over three years: possible",
+      "title": "Visa fee from outside the UK, certificate of sponsorship of three years or less: £819 for the main applicant: possible",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -475,7 +475,7 @@
     },
     {
       "id": "visa-fee-in-uk-up-to-3-years",
-      "title": "Visa fee from inside the UK for a certificate of sponsorship of three years or less, £943 (Immigration Salary List: £628); the alternative to the £1,865 fee: possible",
+      "title": "Visa fee from inside the UK, certificate of sponsorship of three years or less: £943 for the main applicant: possible",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -506,7 +506,7 @@
     },
     {
       "id": "visa-fee-up-to-3-years-dependant",
-      "title": "The same £819 fee for each partner or child, for a certificate of three years or less (Immigration Salary List: £628): possible",
+      "title": "Visa fee from outside the UK, certificate of sponsorship of three years or less: £819 for each partner or child: possible",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -537,7 +537,7 @@
     },
     {
       "id": "visa-fee-in-uk-up-to-3-years-dependant",
-      "title": "The same £943 fee for each partner or child applying in the UK, for a certificate of three years or less (Immigration Salary List: £628): possible",
+      "title": "Visa fee from inside the UK, certificate of sponsorship of three years or less: £943 for each partner or child: possible",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -568,7 +568,7 @@
     },
     {
       "id": "visa-fee-over-3-years",
-      "title": "Visa application fee from outside the UK for a certificate of sponsorship of over three years, £1,618 (Immigration Salary List: £1,235), instead of the £819 fee: possible",
+      "title": "Visa fee from outside the UK, certificate of sponsorship of over three years: £1,618 for the main applicant: possible",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -599,7 +599,7 @@
     },
     {
       "id": "visa-fee-in-uk-over-3-years",
-      "title": "Visa fee from inside the UK for a certificate of sponsorship of over three years, £1,865 (Immigration Salary List: £1,235); the alternative to the £943 fee: possible",
+      "title": "Visa fee from inside the UK, certificate of sponsorship of over three years: £1,865 for the main applicant: possible",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -630,7 +630,7 @@
     },
     {
       "id": "visa-fee-over-3-years-dependant",
-      "title": "The same £1,618 fee for each partner or child, for a certificate of over three years (Immigration Salary List: £1,235), instead of £819: possible",
+      "title": "Visa fee from outside the UK, certificate of sponsorship of over three years: £1,618 for each partner or child: possible",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -661,7 +661,7 @@
     },
     {
       "id": "visa-fee-in-uk-over-3-years-dependant",
-      "title": "The same £1,865 fee for each partner or child applying in the UK, for a certificate of over three years (Immigration Salary List: £1,235): possible",
+      "title": "Visa fee from inside the UK, certificate of sponsorship of over three years: £1,865 for each partner or child: possible",
       "kind": "fee",
       "amount": {
         "op": "money",
