@@ -8,6 +8,7 @@ import {
   comparisonStateOf,
   comparisonVersionView,
   stateOf,
+  supersededVersions,
   versionView,
 } from '@arca/domain';
 import { type DisplayCatalog, displayCatalog } from '@arca/knowledge/display';
@@ -45,8 +46,19 @@ export function createKnowledgeVersions({
   return {
     list: async () => {
       const decided = await states();
-      return catalog
-        .entries()
+      const asOf = today();
+      const entries = catalog.entries();
+      const superseded = new Map(
+        [...new Set(entries.map(({ identity }) => identity.routeId))].map((routeId) => [
+          routeId,
+          supersededVersions(
+            catalog.versions(routeId).map(({ identity }) => identity),
+            asOf,
+            decided,
+          ),
+        ]),
+      );
+      return entries
         .map(({ identity, version }) => ({
           routeId: identity.routeId,
           number: identity.number,
@@ -55,6 +67,7 @@ export function createKnowledgeVersions({
           effectiveFrom: identity.effectiveFrom,
           hash: identity.hash,
           state: stateOf(identity, decided),
+          superseded: superseded.get(identity.routeId)?.has(identity.number) === true,
         }))
         .sort(
           (left, right) =>

@@ -39,6 +39,15 @@ describe('the activation screen reads (spec 0007, R7)', () => {
     expect(listed.filter(({ state }) => state === 'proposed')).toHaveLength(listed.length - 1);
   });
 
+  it('marks the EB-5 versions no date from today on selects as superseded', async () => {
+    const eb5 = (await versions.list()).filter(({ routeId }) => routeId === 'us-eb5');
+    const superseded = eb5
+      .filter((version) => version.superseded)
+      .map(({ number }) => number)
+      .sort((left, right) => left - right);
+    expect(superseded).toEqual([1, 2, 3, 4, 5, 7]);
+  });
+
   it("views one version with its state and today's selection", async () => {
     const view = await versions.view(
       singleVersionEntry.identity.routeId,

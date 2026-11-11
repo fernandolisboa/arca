@@ -50,6 +50,7 @@ function setup({
     effectiveFrom: '2026-01-01',
     hash: 'a'.repeat(64),
     state: 'proposed',
+    superseded: false,
   });
   const listedComparison = KnowledgeComparisonVersion.parse({
     ...comparison,

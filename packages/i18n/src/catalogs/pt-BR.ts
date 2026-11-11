@@ -1010,6 +1010,18 @@ export const ptBR = {
       },
       versions: '{n, plural, one {# versão} other {# versões}}',
       comparisons: 'Comparar destinos',
+      /** What the admin can do about each need. */
+      hints: {
+        title: 'O que fazer em cada caso',
+        differs:
+          'A IA achou ao menos um ponto que não bate com a fonte. Abra a versão e leia o trecho marcado. Se a fonte estiver certa, recuse: a regra precisa de correção.',
+        ready:
+          'Todos os pontos batem com as fontes oficiais. Dá para ativar todas de uma vez em “Conferidas pela IA”, no topo.',
+        unread:
+          'Nada diverge, mas a IA não conseguiu ler parte das fontes, quase sempre um PDF ou uma página que só abre com JavaScript. Isso não quer dizer que a regra está errada. Abra as fontes e confira os pontos sem marca antes de decidir.',
+        unchecked:
+          'A IA ainda não leu esta versão. Ela confere as versões sozinha quando você abre esta tela, algumas por dia. Volte mais tarde.',
+      },
       filter: {
         country: 'País',
         allCountries: 'Todos os países',
@@ -1019,6 +1031,11 @@ export const ptBR = {
       },
     },
     noneProposed: 'Nenhuma versão proposta agora.',
+    /** Proposed versions no date from today on would use (CONTEXT: superseded version). */
+    superseded: {
+      title: 'Substituídas, não precisam de decisão',
+      lead: 'Uma correção ou uma versão mais nova já ocupa o lugar destas. Enquanto a versão que entrou no lugar delas não for recusada, o Arca não usa nenhuma.',
+    },
     others: 'Outras versões',
     versionTitle: '{title} · versão {number}',
     versionMeta: '{country} · em vigor a partir de {date}',

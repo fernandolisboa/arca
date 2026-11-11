@@ -7,6 +7,7 @@ import {
   identityKey,
   newerProposedVersion,
   selectVersion,
+  supersededVersions,
 } from '../../src/rules/catalog.js';
 
 function identity(number: number, effectiveFrom: string, corrects?: number): VersionIdentity {
@@ -143,5 +144,65 @@ describe('newerProposedVersion', () => {
     expect(
       newerProposedVersion(versions, first, at, states(versions, { 2: 'rejected', 3: 'rejected' })),
     ).toBeUndefined();
+  });
+});
+
+describe('supersededVersions', () => {
+  // Two chains of corrections, shaped like a real route: 1 <- 3 <- 4 <- 6 from 2024, and a rule
+  // change 2 <- 5 <- 7 <- 8 from 2026-11-30.
+  const versions = [
+    identity(1, '2024-04-01'),
+    identity(2, '2026-11-30'),
+    identity(3, '2024-04-01', 1),
+    identity(4, '2025-11-12', 3),
+    identity(5, '2026-11-30', 2),
+    identity(6, '2025-11-12', 4),
+    identity(7, '2026-11-30', 5),
+    identity(8, '2026-11-30', 7),
+  ];
+  const superseded = (
+    date: string,
+    overrides: Record<number, DecisionState> = {},
+    listed: readonly VersionIdentity[] = versions,
+  ) =>
+    [...supersededVersions(listed, parseCalendarDate(date), states(listed, overrides))].sort(
+      (left, right) => left - right,
+    );
+
+  it('names every version that no date from today on would select', () => {
+    expect(superseded('2026-11-11')).toEqual([1, 2, 3, 4, 5, 7]);
+  });
+
+  it('counts proposed versions as candidates, as selection does', () => {
+    const proposed: Record<number, DecisionState> = Object.fromEntries(
+      versions.map(({ number }) => [number, 'proposed' as const]),
+    );
+    expect(superseded('2026-11-11', proposed)).toEqual([1, 2, 3, 4, 5, 7]);
+  });
+
+  it('keeps a version in effect today and one that takes over on a later date', () => {
+    expect(superseded('2026-11-11', { 8: 'rejected' })).toEqual([1, 2, 3, 4, 5, 8]);
+  });
+
+  it('keeps the version a rejected correction would have replaced', () => {
+    expect(superseded('2026-11-11', { 6: 'rejected' })).toEqual([1, 2, 3, 5, 6, 7]);
+  });
+
+  it('keeps a version that takes effect today, and of two on one date the higher number', () => {
+    const listed = [
+      identity(1, '2020-01-01'),
+      identity(2, '2026-11-11'),
+      identity(3, '2026-11-11'),
+    ];
+    expect(superseded('2026-11-11', {}, listed)).toEqual([1, 2]);
+  });
+
+  it('names nothing for no versions', () => {
+    expect(superseded('2026-11-11', {}, [])).toEqual([]);
+  });
+
+  it('names a version whose whole period ended before today', () => {
+    const listed = [identity(1, '2020-01-01'), identity(2, '2024-01-01')];
+    expect(superseded('2026-11-11', {}, listed)).toEqual([1]);
   });
 });

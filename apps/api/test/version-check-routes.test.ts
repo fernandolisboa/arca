@@ -63,10 +63,13 @@ function setup({
   enabled = true,
   unreadable = false,
   refusals = new Map(),
+  superseded = new Set<number>(),
 }: {
   admitted?: boolean;
   count?: number;
   states?: Map<number, 'proposed' | 'active' | 'rejected'>;
+  /** The version numbers no date from today on selects. */
+  superseded?: ReadonlySet<number>;
   model?: string;
   /** Whether the environment runs the check at all. */
   enabled?: boolean;
@@ -92,6 +95,7 @@ function setup({
           effectiveFrom: identity.effectiveFrom,
           hash: identity.hash,
           state: states.get(identity.number) ?? 'proposed',
+          superseded: superseded.has(identity.number),
         })),
       ),
     // Only the disabled check's read route asks; it needs to know the version exists.
@@ -235,6 +239,12 @@ describe('POST /v1/knowledge/checks/start (ADR-0027)', () => {
       ['qm-sample', 1],
       ['qm-sample', 3],
     ]);
+  });
+
+  it('starts no check of a superseded proposed version', async () => {
+    const { start, runs } = setup({ superseded: new Set([1, 2]) });
+    expect(await (await start()).json()).toEqual({ started: 1 });
+    expect(runs.map(({ number }) => number)).toEqual([3]);
   });
 
   it('starts nothing again while a check runs, and again once its start dies', async () => {

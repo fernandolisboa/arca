@@ -211,6 +211,7 @@ export {
   sameIdentity,
   selectVersion,
   stateOf,
+  supersededVersions,
   versionIdentity,
 } from './rules/catalog.js';
 export {

@@ -131,6 +131,12 @@ export const KnowledgeVersion = z.object({
   effectiveFrom: calendarDateSchema,
   hash: contentHash,
   state: decisionState,
+  /**
+   * No date from today on selects this version: a correction or a later version replaced it, or it
+   * was rejected. Recomputed on each read, so it clears if the replacing version is rejected. A
+   * proposed one needs no decision and is not checked while it holds.
+   */
+  superseded: z.boolean(),
   /** The independent check's status (ADR-0027); `none` where no check runs. */
   check: z.enum(listedCheckStatuses),
   /**
