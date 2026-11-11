@@ -6,19 +6,22 @@ import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'rea
 import { versionCheckQuery } from '../api.js';
 import { CheckReport, ItemResult, addressesRead } from './checks.js';
 import { Decision, decideVersion } from './decision.js';
-import { ChangeList, CheckAndHash, card, changeLines, surface } from './review-parts.js';
+import { ChangeList, CheckAndHash, card, cardOf, changeLines, surfaceOf } from './review-parts.js';
 import { ExpressionTree } from './expression-tree.js';
 import { RuleSummaryButton, RuleSummaryCard, useRuleSummary } from './rule-summary.js';
 import { stateTone } from './state-tone.js';
-import { shownPoints, stepTallies } from './step-checks.js';
-import { CheckSummary, StepNav, tallyWords } from './step-nav.js';
+import { type TallyTone, pointTone, shownPoints, stepTallies } from './step-checks.js';
+import { CheckSummary, StepNav, TallyLine } from './step-nav.js';
 import { reviewSteps, sectionCounts, type Step, type StepKey } from './steps.js';
 import { type KnowledgeWords, useKnowledgeWords } from './words.js';
 
 type SectionKey = keyof Messages['knowledge']['section'];
 
-/** The independent check's result for the item with this check key, or nothing. */
-type PointOf = (key: string) => ReactNode;
+/** The independent check's result for the item with this check key, and how it came out. */
+interface PointOf {
+  readonly result: (key: string) => ReactNode;
+  readonly tone: (key: string) => TallyTone | undefined;
+}
 
 /** The check keys of the settings the check reads. */
 const settingPoints = { leapDay: 'leapDayBirthday', closure: 'closure' } as const;
@@ -27,30 +30,38 @@ function Cards<T>({
   items,
   keyOf,
   render,
-  point,
+  check,
 }: {
   readonly items: readonly T[];
   readonly keyOf: (item: T) => string;
   readonly render: (item: T) => ReactNode;
-  /** The check's result for an item, shown under it. */
-  readonly point?: (item: T) => ReactNode;
+  /** The check's points, and the check key of an item, to show its result under it. */
+  readonly check?: { readonly points: PointOf; readonly keyOf: (item: T) => string };
 }) {
   return (
     <ol className="flex flex-col gap-3">
-      {items.map((item, position) => (
-        <li key={keyOf(item)} className={`grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 ${surface}`}>
-          <span
-            aria-hidden="true"
-            className="grid size-7 place-items-center rounded-full bg-soft text-small font-medium tabular-nums"
+      {items.map((item, position) => {
+        const key = check?.keyOf(item);
+        return (
+          <li
+            key={keyOf(item)}
+            className={`grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 ${surfaceOf(
+              key === undefined ? undefined : check?.points.tone(key),
+            )}`}
           >
-            {position + 1}
-          </span>
-          <div className="flex min-w-0 flex-col gap-2">
-            {render(item)}
-            {point?.(item)}
-          </div>
-        </li>
-      ))}
+            <span
+              aria-hidden="true"
+              className="grid size-7 place-items-center rounded-full bg-soft text-small font-medium tabular-nums"
+            >
+              {position + 1}
+            </span>
+            <div className="flex min-w-0 flex-col gap-2">
+              {render(item)}
+              {key !== undefined && check?.points.result(key)}
+            </div>
+          </li>
+        );
+      })}
     </ol>
   );
 }
@@ -114,10 +125,10 @@ function Settings({
   const { t } = words;
   return (
     <ul className="flex flex-col gap-3">
-      <li className={card}>
+      <li className={cardOf(point.tone(settingPoints.leapDay))}>
         <p>{t('knowledge.leapDay', { rule: leapDayRule(view.leapDayBirthday) })}</p>
         <Reads sources={view.leapDayBirthdaySources} words={words} />
-        {point(settingPoints.leapDay)}
+        {point.result(settingPoints.leapDay)}
       </li>
       {view.referenceDates.length > 0 && (
         <li className={card}>
@@ -127,10 +138,10 @@ function Settings({
         </li>
       )}
       {(view.closureSources.length > 0 || view.status === 'closed') && (
-        <li className={card}>
+        <li className={cardOf(point.tone(settingPoints.closure))}>
           {view.closureSources.length > 0 &&
             t('knowledge.closureSources', { sources: words.list(view.closureSources) })}
-          {point(settingPoints.closure)}
+          {point.result(settingPoints.closure)}
         </li>
       )}
       <li className={card}>
@@ -169,7 +180,7 @@ function StepContent({
         <Cards
           items={view.requirements}
           keyOf={(requirement) => requirement.id}
-          point={(requirement) => point(`requirement:${requirement.id}`)}
+          check={{ points: point, keyOf: (requirement) => `requirement:${requirement.id}` }}
           render={(requirement) => (
             <>
               <p className="font-medium">{requirement.title}</p>
@@ -184,7 +195,7 @@ function StepContent({
         <Cards
           items={view.assessments}
           keyOf={(assessment) => assessment.id}
-          point={(assessment) => point(`assessment:${assessment.id}`)}
+          check={{ points: point, keyOf: (assessment) => `assessment:${assessment.id}` }}
           render={(assessment) => (
             <>
               <p className="font-medium">{assessment.title}</p>
@@ -198,7 +209,7 @@ function StepContent({
         <Cards
           items={view.dependents}
           keyOf={(dependent) => dependent.id}
-          point={(dependent) => point(`dependent:${dependent.id}`)}
+          check={{ points: point, keyOf: (dependent) => `dependent:${dependent.id}` }}
           render={(dependent) => (
             <>
               <p className="font-medium">{dependent.title}</p>
@@ -222,7 +233,7 @@ function StepContent({
         <Cards
           items={view.costs}
           keyOf={(cost) => cost.id}
-          point={(cost) => point(`cost:${cost.id}`)}
+          check={{ points: point, keyOf: (cost) => `cost:${cost.id}` }}
           render={(cost) => (
             <>
               <p className="font-medium">{cost.title}</p>
@@ -250,7 +261,7 @@ function StepContent({
         <Cards
           items={view.durations}
           keyOf={(stage) => stage.id}
-          point={(stage) => point(`duration:${stage.id}`)}
+          check={{ points: point, keyOf: (stage) => `duration:${stage.id}` }}
           render={(stage) => (
             <>
               <p>
@@ -270,7 +281,7 @@ function StepContent({
         <Cards
           items={view.countrySets}
           keyOf={(set) => set.id}
-          point={(set) => point(`countrySet:${set.id}/${String(set.number)}`)}
+          check={{ points: point, keyOf: (set) => `countrySet:${set.id}/${String(set.number)}` }}
           render={(set) => (
             <>
               {t('knowledge.countrySet', {
@@ -416,11 +427,17 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
     const points = shownPoints(report);
     const byKey = new Map(points.map((item) => [item.key, item]));
     const addressRead = report === null ? new Map<string, string | null>() : addressesRead(report);
-    const pointOf: PointOf = (key) => {
-      const item = byKey.get(key);
-      return item === undefined ? null : (
-        <ItemResult item={item} addressRead={addressRead} words={words} />
-      );
+    const pointOf: PointOf = {
+      result: (key) => {
+        const item = byKey.get(key);
+        return item === undefined ? null : (
+          <ItemResult item={item} addressRead={addressRead} words={words} />
+        );
+      },
+      tone: (key) => {
+        const item = byKey.get(key);
+        return item === undefined ? undefined : pointTone(item.status);
+      },
     };
     return { tallies: stepTallies(points), point: pointOf };
   }, [report, words]);
@@ -515,9 +532,7 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
                 {title(step)}
               </h4>
             </div>
-            {stepTally !== undefined && (
-              <p className="text-small text-muted">{tallyWords(stepTally, words)}</p>
-            )}
+            {stepTally !== undefined && <TallyLine tally={stepTally} words={words} />}
           </div>
           <StepContent step={step} view={view} words={words} point={point} />
           <div className="mt-2 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
