@@ -13,6 +13,7 @@ export interface NavItem {
 }
 
 export interface ShellLinkProps {
+  readonly id?: string;
   readonly href: string;
   readonly className: string;
   readonly 'aria-current'?: 'page';
@@ -44,9 +45,30 @@ const shapes = {
 
 export type NavShape = keyof typeof shapes;
 
+/** The copies of the navigation a layout may render; a link's id names its copy, so ids stay unique. */
+const places = ['bar', 'side', 'dock', 'floating-dock', 'menu'] as const;
+
+export type NavPlace = (typeof places)[number];
+
+const navLinkId = (place: NavPlace, itemId: string) => `nav-${place}-${itemId}`;
+
+export const menuToggleId = 'nav-menu-toggle';
+
+/**
+ * The ids that lead to a destination, in order of preference: its link in each copy of the
+ * navigation, then the menu button, which is what shows while the link sits in the closed menu.
+ */
+export function navTargetIds(itemId: string): string[] {
+  return [
+    ...places.filter((place) => place !== 'menu').map((place) => navLinkId(place, itemId)),
+    menuToggleId,
+  ];
+}
+
 interface NavLinkProps {
   readonly item: NavItem;
   readonly link: ShellLink;
+  readonly place: NavPlace;
   readonly shape: NavShape;
   /** Icon only, with the label as the accessible name (the top bar's gear). */
   readonly iconOnly?: boolean;
@@ -58,6 +80,7 @@ interface NavLinkProps {
 export function NavLink({
   item,
   link: Link,
+  place,
   shape,
   iconOnly = false,
   compact = false,
@@ -66,6 +89,7 @@ export function NavLink({
   const tone = item.current ? 'bg-soft text-primary' : 'text-ink hover:bg-soft';
   return (
     <Link
+      id={navLinkId(place, item.id)}
       href={item.href}
       className={`${iconOnly ? iconButtonClass : `${shapes[shape]} ${focusRing}`} ${tone} transition-colors`}
       {...(item.current ? { 'aria-current': 'page' as const } : {})}
@@ -85,13 +109,22 @@ export function NavLink({
 interface NavListProps {
   readonly items: readonly NavItem[];
   readonly link: ShellLink;
+  readonly place: NavPlace;
   readonly shape: NavShape;
   readonly direction: 'row' | 'column';
   readonly compact?: boolean;
   readonly onNavigate?: () => void;
 }
 
-export function NavList({ items, link, shape, direction, compact, onNavigate }: NavListProps) {
+export function NavList({
+  items,
+  link,
+  place,
+  shape,
+  direction,
+  compact,
+  onNavigate,
+}: NavListProps) {
   return (
     <ul className={`flex gap-1 ${direction === 'row' ? 'flex-row' : 'flex-col'}`}>
       {items.map((item) => (
@@ -99,6 +132,7 @@ export function NavList({ items, link, shape, direction, compact, onNavigate }: 
           <NavLink
             item={item}
             link={link}
+            place={place}
             shape={shape}
             {...(compact === undefined ? {} : { compact })}
             {...(onNavigate === undefined ? {} : { onNavigate })}

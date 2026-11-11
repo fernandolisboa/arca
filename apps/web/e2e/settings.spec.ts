@@ -34,7 +34,13 @@ test('splits the settings into categories and labels every control', async ({ pa
   await openSettings(page);
   const categories = page.getByRole('navigation', { name: 'Categorias' }).getByRole('link');
   // No session: no admin category. This server has no database, so the account can't load.
-  await expect(categories).toHaveText(['Aparência', 'Navegação', 'Acessibilidade', 'Conta']);
+  await expect(categories).toHaveText([
+    'Aparência',
+    'Navegação',
+    'Acessibilidade',
+    'Conta',
+    'Ajuda',
+  ]);
   await expect(page.getByRole('heading', { level: 3, name: 'Aparência' })).toBeVisible();
 
   const sections = [
@@ -61,6 +67,11 @@ test('splits the settings into categories and labels every control', async ({ pa
   await openSection(page, 'Conta');
   await expect(page.getByText('Não deu para carregar sua conta agora.')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Tentar de novo' })).toBeVisible();
+
+  // The tour runs for a signed-in account only, so Help offers no replay here.
+  await openSection(page, 'Ajuda');
+  await expect(page.getByText('O tour aparece para quem entrou')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Ver o tour de novo' })).toHaveCount(0);
   expect(problems).toEqual([]);
 });
 
