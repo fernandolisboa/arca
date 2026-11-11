@@ -187,7 +187,7 @@ For each host:
 
 **`cortecostituzionale.it`** (last confirmed 2026-11-11)
 
-- **Read:** `curl` on `https://www.cortecostituzionale.it/scheda-pronuncia/<yyyy>/<n>`, which carries the whole ruling. Do not follow a redirect: after a few requests the host answers 302 to a bot challenge on another host (`validate.perfdrive.com`), and so does the PDF address `/stampa-pdf-pronuncia/<yyyy>/<n>`. That answer is a refusal for that request: space the requests out and try again later, or record the page as not readable.
+- **Read:** `curl` on `https://www.cortecostituzionale.it/scheda-pronuncia/<yyyy>/<n>`, which carries the whole ruling. Do not follow a redirect: after a few requests the host answers 302 to a bot challenge on another host (`validate.perfdrive.com`), and so does the PDF address `/stampa-pdf-pronuncia/<yyyy>/<n>`. That answer is a refusal for that request: space the requests out and try once more later in the same audit; if it is refused again, record the page as not readable.
 - **Cite:** the `scheda-pronuncia` page.
 - **Amendments:** a pending question (a referral to the CJEU, for one) is a lead to watch: record it in the route's notes.
 - Not readable: esteri.it (bot wall), quirinale.it and senato.it (403). cortedicassazione.it is readable with `curl` (judgments as PDFs under `/resources/cms/documents/`) but not on the list: a lead, or a `secondary` source beside an official one.
