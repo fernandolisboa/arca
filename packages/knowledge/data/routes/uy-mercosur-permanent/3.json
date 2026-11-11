@@ -1,0 +1,355 @@
+{
+  "schemaVersion": 1,
+  "routeId": "uy-mercosur-permanent",
+  "number": 3,
+  "title": "Uruguayan permanent residence for nationals of Mercosur member and associated states",
+  "country": "UY",
+  "tags": ["regional-agreement", "permanent-residence"],
+  "effectiveFrom": "2023-02-17",
+  "status": "open",
+  "currency": "UYU",
+  "leapDayBirthday": "feb-28",
+  "leapDayBirthdaySources": ["codigo-civil-majority"],
+  "sources": [
+    {
+      "id": "ley-18250-mercosur",
+      "url": "https://www.impo.com.uy/bases/leyes/18250-2008",
+      "title": "Ley N.º 18.250, article 33, literal B, as worded by Ley N.º 20.075: permanent residence for nationals of the Mercosur States Parties and Associated States who prove that nationality",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ley-18250-decision",
+      "url": "https://www.impo.com.uy/bases/leyes/18250-2008",
+      "title": "Ley N.º 18.250, article 33, last paragraphs: the application goes to the Ministry of the Interior or a consulate, and the Ministry decides within 90 business days",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ley-20075",
+      "url": "https://www.impo.com.uy/bases/leyes/20075-2022",
+      "title": "Ley N.º 20.075, article 169: the current wording of article 33 of Ley N.º 18.250 applies from 120 days after the law's promulgation on 2022-10-20",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ley-18250-family",
+      "url": "https://www.impo.com.uy/bases/leyes/18250-2008",
+      "title": "Ley N.º 18.250, article 10: family reunification with parents, spouses, partners (concubinos), and unmarried children who are minors or adults with a disability",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ley-18250-entry-refusal",
+      "url": "https://www.impo.com.uy/bases/leyes/18250-2008",
+      "title": "Ley N.º 18.250, article 45, literals B to D: crimes against humanity, an expulsion or re-entry ban not revoked, and a conviction for trafficking, laundering or drug or arms trafficking",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ley-18250-denial",
+      "url": "https://www.impo.com.uy/bases/leyes/18250-2008",
+      "title": "Ley N.º 18.250, article 46: residence is denied after a charge or conviction for an intentional common crime punished with more than two years of prison, or repeated offending",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "decreto-45-2023-requirements",
+      "url": "https://www.impo.com.uy/bases/decretos/45-2023",
+      "title": "Decreto N.º 45/023, article 2: a valid passport or identity document, and for applicants over 18 a sworn statement that articles 45, B to D, and 46 of Ley N.º 18.250 do not apply",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "decreto-45-2023-reciprocity",
+      "url": "https://www.impo.com.uy/bases/decretos/45-2023",
+      "title": "Decreto N.º 45/023, article 8: the procedure follows the reciprocity agreement between Uruguay and the applicant's state",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ley-17927-nationals",
+      "url": "https://www.impo.com.uy/bases/leyes-internacional/17927-2005",
+      "title": "Ley N.º 17.927, Mercosur Residence Agreements, article 2: the States Parties are Mercosur members and associated states; a naturalized national counts after five years",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ley-17927-family",
+      "url": "https://www.impo.com.uy/bases/leyes-internacional/17927-2005",
+      "title": "Ley N.º 17.927, Mercosur Residence Agreements, article 9.2: family members without a party's nationality get a residence of the same term as the person they depend on",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "dnm-residencia-legal",
+      "url": "https://www.gub.uy/tramites/residencia-legal",
+      "title": "Dirección Nacional de Migración, Residencia legal: Mercosur permanent residence for nationals of AR, BO, BR, CL, CO, EC, GY, PE, PY, SR and VE",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "dnm-permanente-mercosur",
+      "url": "https://www.gub.uy/tramites/residencia-legal-permanente-mercosur",
+      "title": "Dirección Nacional de Migración, Residencia Legal Permanente Mercosur: requirements, minors, fees in indexed units, and no fee for Brazilians and Paraguayans by reciprocity",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ley-18246",
+      "url": "https://www.impo.com.uy/bases/leyes/18246-2007",
+      "title": "Ley N.º 18.246 (unión concubinaria), article 1: the rights of a stable union arise after at least five years of uninterrupted living together",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "decreto-394-2009",
+      "url": "https://www.impo.com.uy/bases/decretos/394-2009",
+      "title": "Decreto N.º 394/009 (regulation of Ley N.º 18.250), article 16: a stable union is proved only by its registered judicial recognition",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "codigo-civil-majority",
+      "url": "https://www.impo.com.uy/bases/codigo-civil/16603-1994",
+      "title": "Civil Code, article 280: majority is reached at 18 completed years, and parental authority also ends with a child's marriage",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "uy",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "mercosur-nationality",
+      "title": "Holds the nationality of a Mercosur member or associated state: Argentina, Bolivia, Brazil, Chile, Colombia, Ecuador, Guyana, Paraguay, Peru, Suriname or Venezuela",
+      "expression": {
+        "op": "intersects",
+        "list": {
+          "op": "fact",
+          "key": "principal.citizenships"
+        },
+        "set": {
+          "op": "tokens",
+          "values": ["AR", "BO", "BR", "CL", "CO", "EC", "GY", "PE", "PY", "SR", "VE"]
+        }
+      },
+      "sources": [
+        "ley-18250-mercosur",
+        "ley-20075",
+        "decreto-45-2023-requirements",
+        "dnm-residencia-legal"
+      ]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "no-denial-ground",
+      "title": "No charge or conviction for an intentional common crime punished with more than two years of prison, and no repeated offending, unless five years have passed since the sentence",
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["ley-18250-denial", "decreto-45-2023-requirements"]
+    },
+    {
+      "id": "no-entry-refusal-ground",
+      "title": "No expulsion or re-entry ban in force, no conviction for trafficking, laundering or drug or arms trafficking, and no crime against humanity",
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["ley-18250-entry-refusal", "decreto-45-2023-requirements"]
+    }
+  ],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse who depends on a principal from Argentina, Bolivia, Brazil, Chile or Paraguay; others: possible",
+      "path": ["spouse"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "intersects",
+                "list": {
+                  "op": "fact",
+                  "key": "principal.citizenships"
+                },
+                "set": {
+                  "op": "tokens",
+                  "values": ["AR", "BO", "BR", "CL", "PY"]
+                }
+              },
+              {
+                "op": "fact",
+                "key": "person.dependsOnPrincipal"
+              }
+            ]
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["ley-17927-family", "ley-18250-family", "decreto-45-2023-reciprocity"]
+    },
+    {
+      "id": "partner",
+      "title": "Partner of five years or more, who counts only once a court has recognised the union and the ruling is registered, which is not recorded: possible",
+      "path": ["partner"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "since",
+            "date": {
+              "op": "fact",
+              "key": "edge.start"
+            },
+            "duration": "P5Y"
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["ley-17927-family", "ley-18250-family", "ley-18246", "decreto-394-2009"]
+    },
+    {
+      "id": "children",
+      "title": "Unmarried children under 18 who depend on a principal from Argentina, Bolivia, Brazil, Chile or Paraguay; adults only with a disability, which is not recorded: possible",
+      "path": ["child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "lt",
+                    "left": {
+                      "op": "fact",
+                      "key": "person.ageYears"
+                    },
+                    "right": {
+                      "op": "int",
+                      "value": 18
+                    }
+                  },
+                  {
+                    "op": "all",
+                    "operands": [
+                      {
+                        "op": "intersects",
+                        "list": {
+                          "op": "fact",
+                          "key": "principal.citizenships"
+                        },
+                        "set": {
+                          "op": "tokens",
+                          "values": ["AR", "BO", "BR", "CL", "PY"]
+                        }
+                      },
+                      {
+                        "op": "fact",
+                        "key": "person.dependsOnPrincipal"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": [
+        "ley-17927-family",
+        "ley-18250-family",
+        "decreto-45-2023-reciprocity",
+        "codigo-civil-majority"
+      ]
+    },
+    {
+      "id": "spouse-children",
+      "title": "The spouse's unmarried children, whom article 10 of the migration law does not name, so they count only as family members under the agreements, which is not settled: possible",
+      "path": ["spouse", "child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["ley-17927-family", "ley-18250-family"]
+    },
+    {
+      "id": "parents",
+      "title": "Parents who depend on a principal from Argentina, Bolivia, Brazil, Chile or Paraguay; others: possible",
+      "path": ["parent"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "intersects",
+                "list": {
+                  "op": "fact",
+                  "key": "principal.citizenships"
+                },
+                "set": {
+                  "op": "tokens",
+                  "values": ["AR", "BO", "BR", "CL", "PY"]
+                }
+              },
+              {
+                "op": "fact",
+                "key": "person.dependsOnPrincipal"
+              }
+            ]
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["ley-17927-family", "ley-18250-family", "decreto-45-2023-reciprocity"]
+    }
+  ],
+  "costs": [],
+  "durations": [],
+  "corrects": 2
+}

@@ -1,0 +1,572 @@
+{
+  "schemaVersion": 1,
+  "routeId": "ar-mercosur-temporary",
+  "number": 3,
+  "title": "Argentine temporary residence by nationality for native nationals of Mercosur member and associated states",
+  "country": "AR",
+  "tags": ["regional-agreement", "temporary-residence"],
+  "effectiveFrom": "2025-05-29",
+  "status": "open",
+  "currency": "ARS",
+  "leapDayBirthday": "feb-28",
+  "leapDayBirthdaySources": ["ccyc-periods"],
+  "sources": [
+    {
+      "id": "ley-25871-nationality",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "title": "Ley 25.871, article 23, l): temporary residence by nationality for native citizens of the Mercosur states parties, Chile and Bolivia, for two years, extendable, with multiple entries and exits",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ley-25871-reunification",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "title": "Ley 25.871, article 23, ñ): temporary residence for the spouse, parent, or unmarried child under 18 not emancipated or adult child with a disability, of a temporary or permanent resident",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ley-25871-family",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "title": "Ley 25.871, article 10: the State guarantees family reunification of immigrants with their parents, spouses, unmarried minor children or adult children with a disability",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ley-25871-impediments",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "title": "Ley 25.871, article 29, b) to d): an entry ban in force, and a conviction or record, in Argentina or abroad, for a crime Argentine law punishes with prison, bar entry and stay",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "decreto-616-2010-nationality",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/decreto-616-2010-167004/texto",
+      "title": "Decreto 616/2010, article 23, l): the states named in article 23, l), of the law are illustrative, and every Mercosur state party and associated state counts",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "decreto-616-2010-reunification",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/decreto-616-2010-167004/texto",
+      "title": "Decreto 616/2010, article 23, last paragraph: temporary residence for the spouse, parent, or unmarried child under 18 not emancipated or adult child with a disability, of a temporary resident",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "decreto-616-2010-disability",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/decreto-616-2010-167004/texto",
+      "title": "Decreto 616/2010, article 20, c): a foreigner with a disability, whatever their age, gets the same residence category as their parents, children or spouse",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "decreto-366-2025",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-413297/texto",
+      "title": "Decreto 366/2025, article 6: adds article 23, ñ) (family reunification) to Ley 25.871, in force from its publication on 2025-05-29 (article 47)",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "disp-dnm-1637-2022-beneficiaries",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-369202/texto",
+      "title": "Disposición DNM 1637/2022, annex, article 2: natives of 11 Mercosur states, and nationals naturalized for five years or more in Brazil, Paraguay, Uruguay, Bolivia, Chile, Peru, Ecuador or Colombia",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "dnm-mercosur",
+      "url": "https://www.argentina.gob.ar/servicio/obtener-una-residencia-temporaria-por-nacionalidad-mercosur",
+      "title": "Dirección Nacional de Migraciones: who can apply for temporary residence by nationality (Mercosur), applying from inside Argentina, for at most two years, extendable",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "disp-dnm-4880-2015",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-253078/texto",
+      "title": "Disposición DNM 4880/2015, article 1: a cohabiting union registered in the local registry counts like a marriage for admission with a temporary or permanent resident",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "disp-dnm-6206-2017",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-287287/texto",
+      "title": "Disposición DNM 6206/2017, article 1: the current wording of article 1 of Disposición DNM 4880/2015 on registered cohabiting unions",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ccyc-periods",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-26994-235975/actualizacion",
+      "title": "Civil and Commercial Code (Ley 26.994), article 6: periods of years run from date to date, and one whose end month lacks the start day ends on that month's last day",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ccyc-minors",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-26994-235975/actualizacion",
+      "title": "Civil and Commercial Code (Ley 26.994), articles 25 and 27: a minor has not turned 18, and marriage before 18 emancipates, irrevocably",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ccyc-unions",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-26994-235975/actualizacion",
+      "title": "Civil and Commercial Code (Ley 26.994), articles 510, e), 511 and 512: a cohabiting union needs two years of living together; its registration serves only as proof",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "decreto-584-2024-unit",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-401218/texto",
+      "title": "Decreto 584/2024, article 2: the migration services unit (UMSM) is worth ARS 1,000; article 3 lets the Chief of Cabinet change it",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "decreto-584-2024-exemption",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-401218/texto",
+      "title": "Decreto 584/2024, article 5, II: unmarried children under 18 who apply together with a parent pay no residence fee",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "dnm-fee-table",
+      "url": "https://www.argentina.gob.ar/migraciones/cuadro-tasas-migratorias",
+      "title": "Dirección Nacional de Migraciones, fee table under Decreto 584/2024: permanent or temporary residence costs 50 UMSM in the Mercosur column and 100 UMSM in the other",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "ar",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "mercosur-native-nationality",
+      "title": "Native national of a Mercosur member or associated state the migration directorate lists, or naturalized for five years or more in one of the eight states it lists for that",
+      "expression": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "intersects",
+            "list": {
+              "op": "fact",
+              "key": "principal.citizenshipsFromBirth"
+            },
+            "set": {
+              "op": "tokens",
+              "values": ["BO", "BR", "CL", "CO", "EC", "GY", "PE", "PY", "SR", "UY", "VE"]
+            }
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "intersects",
+                "list": {
+                  "op": "fact",
+                  "key": "principal.citizenships"
+                },
+                "set": {
+                  "op": "tokens",
+                  "values": ["BO", "BR", "CL", "CO", "EC", "PE", "PY", "UY"]
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": [
+        "ley-25871-nationality",
+        "decreto-616-2010-nationality",
+        "disp-dnm-1637-2022-beneficiaries",
+        "dnm-mercosur"
+      ]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "criminal-record",
+      "title": "No conviction, final or not, and no indictment or committal to trial, in Argentina or abroad, for a crime that Argentine law punishes with prison",
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["ley-25871-impediments"]
+    },
+    {
+      "id": "no-entry-ban",
+      "title": "No ban on entering Argentina in force, unless it was revoked or its term has run",
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["ley-25871-impediments"]
+    }
+  ],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse",
+      "path": ["spouse"],
+      "condition": {
+        "op": "bool",
+        "value": true
+      },
+      "sources": [
+        "ley-25871-reunification",
+        "ley-25871-family",
+        "decreto-616-2010-reunification",
+        "decreto-366-2025"
+      ]
+    },
+    {
+      "id": "partner",
+      "title": "Partner of two years or more, who counts like a spouse only if the union is registered, which is not recorded: possible",
+      "path": ["partner"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "since",
+            "date": {
+              "op": "fact",
+              "key": "edge.start"
+            },
+            "duration": "P2Y"
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": [
+        "ley-25871-reunification",
+        "disp-dnm-4880-2015",
+        "disp-dnm-6206-2017",
+        "ccyc-unions"
+      ]
+    },
+    {
+      "id": "children",
+      "title": "Unmarried children under 18; adult children only with a disability, which is not recorded: possible",
+      "path": ["child"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "lt",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              },
+              {
+                "op": "not",
+                "operand": {
+                  "op": "fact",
+                  "key": "person.hasSpouse"
+                }
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "gte",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": [
+        "ley-25871-reunification",
+        "ley-25871-family",
+        "decreto-616-2010-reunification",
+        "decreto-616-2010-disability",
+        "ccyc-minors"
+      ]
+    },
+    {
+      "id": "spouse-children",
+      "title": "The spouse's unmarried children under 18, who join the spouse once the spouse is a temporary resident; adults: possible",
+      "path": ["spouse", "child"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "lt",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              },
+              {
+                "op": "not",
+                "operand": {
+                  "op": "fact",
+                  "key": "person.hasSpouse"
+                }
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "gte",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["ley-25871-reunification", "decreto-616-2010-reunification", "ccyc-minors"]
+    },
+    {
+      "id": "partner-children",
+      "title": "The partner's children, like the spouse's, when the union of two years or more is registered, which is not recorded: possible; a married child under 18 is left out",
+      "path": ["partner", "child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "since",
+            "date": {
+              "op": "fact",
+              "key": "firstEdge.start"
+            },
+            "duration": "P2Y"
+          },
+          {
+            "op": "unmodeled"
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "all",
+              "operands": [
+                {
+                  "op": "lt",
+                  "left": {
+                    "op": "fact",
+                    "key": "person.ageYears"
+                  },
+                  "right": {
+                    "op": "int",
+                    "value": 18
+                  }
+                },
+                {
+                  "op": "fact",
+                  "key": "person.hasSpouse"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "sources": [
+        "ley-25871-reunification",
+        "disp-dnm-4880-2015",
+        "disp-dnm-6206-2017",
+        "ccyc-unions",
+        "ccyc-minors"
+      ]
+    },
+    {
+      "id": "parents",
+      "title": "Parents",
+      "path": ["parent"],
+      "condition": {
+        "op": "bool",
+        "value": true
+      },
+      "sources": ["ley-25871-reunification", "ley-25871-family", "decreto-616-2010-reunification"]
+    }
+  ],
+  "costs": [
+    {
+      "id": "residence-fee",
+      "title": "Residence fee in the Mercosur column: 50 UMSM, a computed ARS 50,000 at ARS 1,000 a unit, paid when applying in Argentina",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 5000000,
+        "currency": "ARS"
+      },
+      "appliesTo": "principal",
+      "sources": ["dnm-fee-table", "decreto-584-2024-unit"]
+    },
+    {
+      "id": "residence-fee-native-family",
+      "title": "Residence fee of each family member who is a native of a listed state, unless an unmarried child under 18 applying with a parent: 50 UMSM, ARS 50,000",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 5000000,
+        "currency": "ARS"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "all",
+              "operands": [
+                {
+                  "op": "lt",
+                  "left": {
+                    "op": "fact",
+                    "key": "person.ageYears"
+                  },
+                  "right": {
+                    "op": "int",
+                    "value": 18
+                  }
+                },
+                {
+                  "op": "not",
+                  "operand": {
+                    "op": "fact",
+                    "key": "person.hasSpouse"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "op": "intersects",
+            "list": {
+              "op": "fact",
+              "key": "person.citizenshipsFromBirth"
+            },
+            "set": {
+              "op": "tokens",
+              "values": ["BO", "BR", "CL", "CO", "EC", "GY", "PE", "PY", "SR", "UY", "VE"]
+            }
+          }
+        ]
+      },
+      "sources": ["dnm-fee-table", "decreto-584-2024-unit", "decreto-584-2024-exemption"]
+    },
+    {
+      "id": "residence-fee-other-family",
+      "title": "Residence fee of each other family member, unless an unmarried child under 18 applying with a parent: 50 or 100 UMSM, as the table does not say which column applies",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 10000000,
+        "currency": "ARS"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "all",
+              "operands": [
+                {
+                  "op": "lt",
+                  "left": {
+                    "op": "fact",
+                    "key": "person.ageYears"
+                  },
+                  "right": {
+                    "op": "int",
+                    "value": 18
+                  }
+                },
+                {
+                  "op": "not",
+                  "operand": {
+                    "op": "fact",
+                    "key": "person.hasSpouse"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "intersects",
+              "list": {
+                "op": "fact",
+                "key": "person.citizenshipsFromBirth"
+              },
+              "set": {
+                "op": "tokens",
+                "values": ["BO", "BR", "CL", "CO", "EC", "GY", "PE", "PY", "SR", "UY", "VE"]
+              }
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["dnm-fee-table", "decreto-584-2024-unit", "decreto-584-2024-exemption"]
+    }
+  ],
+  "durations": [
+    {
+      "id": "temporary-residence",
+      "title": "Temporary residence by nationality: two years, extendable, with multiple entries and exits",
+      "min": "P2Y",
+      "max": "P2Y",
+      "sources": ["ley-25871-nationality", "dnm-mercosur"]
+    }
+  ],
+  "corrects": 2
+}
