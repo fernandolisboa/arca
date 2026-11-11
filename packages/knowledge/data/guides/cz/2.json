@@ -216,18 +216,18 @@
       "laws": ["aliens-act-326-1999"]
     },
     {
-      "id": "residence-and-consular-fees",
+      "id": "residence-fees",
       "text": "In Czechia, an application for a long-term or permanent residence permit (note 2 to item 116) costs CZK 2,500, or CZK 1,000 for a foreigner under 15 (tariff item 116(1)(a) and (b)); extending a permit card costs the same (item 116(2)). For an EU citizen and their family member, a residence document costs CZK 200 (item 116(5)). No text read says on which date the age under 15 is taken.",
       "laws": ["fees-act-634-2004"]
     },
     {
       "id": "consular-fees",
-      "text": "At a Czech embassy or consulate, the consular fee is CZK 5,000 for an application for a Blue Card, an employee card, an intra-company transfer card or an investment permit (tariff item 162(c)), CZK 2,500 for another residence permit, a family reunification permit among them (item 162(a)), CZK 200 for an EU citizen's family member's permanent permit (item 162(e)) and CZK 1,000 for booking an appointment to file in person (item 162(d)).",
+      "text": "At a Czech embassy or consulate, the consular fee is CZK 5,000 for an application for a Blue Card, an employee card, an intra-company transfer card or an investment permit (tariff item 162(c)), CZK 2,500 for another long-term or permanent residence permit (item 162(a), note 2 to item 116), CZK 200 for an EU citizen's or their family member's permanent permit (item 162(e)) and CZK 1,000 for booking an appointment to file in person (item 162(d)). Item 162(a) is not charged when the Ministry of Foreign Affairs issues the long-term permit.",
       "laws": ["fees-act-634-2004"]
     },
     {
       "id": "consular-fee-changes",
-      "text": "The authority may raise, lower or waive a consular fee for reciprocity, and waive it in the foreign-policy or public interest; an embassy may also charge extraordinary costs (empowerment to Part XII, points 1 and 4).",
+      "text": "The authority may raise, lower or waive a consular fee for reciprocity, and waive it in the foreign-policy or public interest; an embassy may also charge extraordinary costs (empowerment to Part XII, points 1 and 4). An embassy may also waive the item 162(a) fee for government scholarship holders under the development aid programme (point 2).",
       "laws": ["fees-act-634-2004"]
     },
     {

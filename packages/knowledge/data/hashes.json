@@ -389,11 +389,11 @@
     },
     {
       "path": "guides/cz/2",
-      "sha256": "9453556368f3cd3135012922ae6dc579c29de59049edc632fd6a06bf0237b87b"
+      "sha256": "8c2ba5a3e399598afb8695b7e9fb93c00fd7a539e4d5c7c6730beec80c2720cf"
     },
     {
       "path": "guides/dk/2",
-      "sha256": "ef3ee1e6dd98f9196e0bdfacad85f1a84595a117280f8e4e739c558a144dff6f"
+      "sha256": "b971d3122df3e00d6e777c0ae0cf918e71e7949634703f1b50e425554bcb2461"
     }
   ]
 }
