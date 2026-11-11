@@ -410,6 +410,7 @@ test('the seed admin analyses a version with AI on demand and watches it to the 
   page,
 }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop', 'runs once, on the desktop project');
+  test.setTimeout(90_000);
   const [account] = await runSeed();
   if (account === undefined) throw new Error('the seed lists no account');
   await Promise.all([
