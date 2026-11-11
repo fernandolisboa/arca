@@ -347,7 +347,7 @@
     },
     {
       "id": "means-for-12-months",
-      "title": "Means assured for at least 12 months, asked of residence visa applicants without prejudice to the portaria's earlier paragraphs; proofs are named only for retirees and people living on assets",
+      "title": "Means assured for at least 12 months, asked of residence visa applicants without prejudice to the portaria's earlier paragraphs; proofs named only for retirees and people living on income from assets",
       "evidence": ["principal.monthlyActiveIncome"],
       "sources": ["portaria-1563-2007-period"]
     },
