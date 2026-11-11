@@ -469,6 +469,19 @@ describe('htmlToText', () => {
     expect(performance.now() - started).toBeLessThan(2_000);
   });
 
+  it('reads no text of a page that makes the parser move its content without end', () => {
+    const attributes = Array.from({ length: 2_000 }, (_, index) => `a${String(index)}`).join(' ');
+    const started = performance.now();
+    expect(htmlToText(`<b><p>${'<!>'.repeat(200_000)}</b>x`)).toBe('');
+    expect(htmlToText(`<html ${attributes}>${'<html>'.repeat(100_000)}x`)).toBe('');
+    expect(performance.now() - started).toBeLessThan(2_000);
+  });
+
+  it('reads a table with stray content between its rows by the thousand', () => {
+    const text = htmlToText(`<table>${'<tr><td>a</td></tr><br>'.repeat(1_500)}</table>`);
+    expect(text.match(/a/gu)).toHaveLength(1_500);
+  });
+
   it('reads a table with a few pieces out of place', () => {
     expect(htmlToText('<table>note<tr><td>a</td>stray<td>b</td></tr></table>')).toContain('a | b');
   });

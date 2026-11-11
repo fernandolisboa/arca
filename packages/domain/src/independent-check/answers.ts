@@ -89,39 +89,41 @@ export function normalizeWhitespace(text: string): string {
 /** A server may decode what another already did, so an address is read decoded this many times. */
 const decodingRounds = 3;
 
+/** The escape of legacy servers, `%u0041`, which no decoding here reads. */
+const legacyEscape = /%u[0-9a-f]{4}/iu;
+
 /**
- * A text percent-decoded once, and whether all of it could be: a run of bytes that is not UTF-8
- * stays as written.
+ * A text percent-decoded once, or undefined when nothing here reads it as its server may: a run
+ * of bytes that is not UTF-8, or a legacy escape.
  */
-function decodedOnce(text: string): { readonly text: string; readonly whole: boolean } {
-  let whole = true;
-  const decoded = text.replace(/\+/g, ' ').replace(/(?:%[0-9a-f]{2})+/giu, (run) => {
-    try {
-      return decodeURIComponent(run);
-    } catch {
-      whole = false;
-      return run;
-    }
-  });
-  return { text: decoded, whole };
+function decodedOnce(text: string): string | undefined {
+  try {
+    const decoded = text
+      .replace(/\+/g, ' ')
+      .replace(/(?:%[0-9a-f]{2})+/giu, (run) => decodeURIComponent(run));
+    return legacyEscape.test(decoded) ? undefined : decoded;
+  } catch {
+    return undefined;
+  }
 }
 
 /**
- * An address as the servers on its way may read it: percent-decoded, and decoded again while that
- * changes it. Undefined when nothing here could compare it with a page's text: its bytes are not
- * UTF-8, or it is encoded more times over than any honest address is.
+ * An address as the servers on its way may read it: without its fragment, which is never sent,
+ * percent-decoded, and decoded again while that changes it. Undefined when nothing here could
+ * compare it with a page's text: at any round its bytes are not UTF-8 or it holds a legacy
+ * escape, or it is encoded more times over than any honest address is.
  */
 export function addressTexts(url: string): readonly string[] | undefined {
   const texts: string[] = [];
-  let last = url;
+  let last = url.replace(/#.*$/su, '');
   for (let round = 0; round < decodingRounds; round += 1) {
-    const { text, whole } = decodedOnce(last);
-    if (round === 0 && !whole) return undefined;
+    const text = decodedOnce(last);
+    if (text === undefined) return undefined;
     if (round > 0 && text === last) return texts;
     texts.push(text);
     last = text;
   }
-  return decodedOnce(last).text === last ? texts : undefined;
+  return decodedOnce(last) === last ? texts : undefined;
 }
 
 /**
@@ -135,7 +137,7 @@ const queryOf = (text: string) => {
 
 function queryValues(text: string): string[] {
   return queryOf(text)
-    .split('&')
+    .split(/[&;#]/u)
     .map((pair) => normalizeWhitespace(pair.slice(pair.indexOf('=') + 1)))
     .filter((value) => value.length >= echoedQueryLength);
 }

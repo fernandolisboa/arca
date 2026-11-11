@@ -93,11 +93,15 @@ export const maxElementDepth = 512;
 /** The most elements a page is read with; a law's longest consolidated text holds far fewer. */
 export const maxElements = 500_000;
 /**
- * The most pieces of a page the parser may move out of a table they do not belong in. Each move
- * searches the table's siblings, so text strewn through broken tables by the thousand costs
- * minutes; a real page misplaces a handful.
+ * The most work the parser may spend moving a page's pieces: content out of a table it does not
+ * belong in, the children of misnested formatting, the attributes of a repeated `html` or `body`
+ * tag. Each move goes through the siblings or attributes beside it, which is what it costs here,
+ * so a page built to repeat them would hold the step for minutes; a real page with thousands of
+ * stray rows spends a small part of this.
  */
-export const maxMisplaced = 1_000;
+export const maxMoveWork = 50_000_000;
+/** An attribute costs the parser a set entry, many times a sibling it steps over. */
+const attributeWork = 64;
 
 class TooMuchMarkup extends Error {}
 
@@ -110,16 +114,16 @@ class TooMuchMarkup extends Error {}
 const elementBudget = (length: number) => Math.min(maxElements, Math.ceil(length / 3) + 16);
 
 /**
- * The parsed page, or undefined when it nests deeper, makes more elements or misplaces more of its
+ * The parsed page, or undefined when it nests deeper, makes more elements or moves more of its
  * content than the limits.
  */
 function parsed(html: string): Node | undefined {
   let depth = 0;
   let elements = elementBudget(html.length);
-  let misplaced = maxMisplaced;
-  const moved = () => {
-    misplaced -= 1;
-    if (misplaced < 0) throw new TooMuchMarkup();
+  let moveWork = maxMoveWork;
+  const moved = (through: number) => {
+    moveWork -= through + 1;
+    if (moveWork < 0) throw new TooMuchMarkup();
   };
   const treeAdapter: typeof defaultTreeAdapter = {
     ...defaultTreeAdapter,
@@ -128,13 +132,21 @@ function parsed(html: string): Node | undefined {
       if (elements < 0) throw new TooMuchMarkup();
       return defaultTreeAdapter.createElement(...element);
     },
-    insertBefore: (...nodes) => {
-      moved();
-      defaultTreeAdapter.insertBefore(...nodes);
+    insertBefore: (parent, ...nodes) => {
+      moved(parent.childNodes.length);
+      defaultTreeAdapter.insertBefore(parent, ...nodes);
     },
-    insertTextBefore: (...nodes) => {
-      moved();
-      defaultTreeAdapter.insertTextBefore(...nodes);
+    insertTextBefore: (parent, ...nodes) => {
+      moved(parent.childNodes.length);
+      defaultTreeAdapter.insertTextBefore(parent, ...nodes);
+    },
+    detachNode: (node) => {
+      moved(node.parentNode?.childNodes.length ?? 0);
+      defaultTreeAdapter.detachNode(node);
+    },
+    adoptAttributes: (recipient, attrs) => {
+      moved(attributeWork * (recipient.attrs.length + attrs.length));
+      defaultTreeAdapter.adoptAttributes(recipient, attrs);
     },
     onItemPush: () => {
       depth += 1;

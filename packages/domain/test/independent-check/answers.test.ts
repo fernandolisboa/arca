@@ -37,6 +37,11 @@ const searching = (text: string) => `https://api.gov.example/search?q=${encodeUR
 const asReferences = (text: string) =>
   text.replace(/./gsu, (char) => `&#${String(char.codePointAt(0))};`);
 
+const asLegacyEscapes = (text: string) =>
+  text.replace(/./gsu, (char) => `%u${char.charCodeAt(0).toString(16).padStart(4, '0')}`);
+/** A sentence that shares one word with a query, far less than half of it. */
+const sponsored = 'A sponsor is required for a spouse of any age under this article';
+
 /** An answer's quotes: one passage on one page. */
 const on = (text: string, url = law) => ({ quotes: [{ quote: text, url }] });
 
@@ -178,6 +183,39 @@ describe('verifyAnswers', () => {
       'echoes_address',
     ],
     [
+      'a value an address states in one run with bytes that stop a later decoding',
+      on(quote),
+      page({ chain: [law, 'https://www.gov.example/amounts?v=%2539%2532%2530%25FF'] }),
+      'echoes_address',
+    ],
+    [
+      'a claim a query spells as the escapes of a legacy server',
+      on(claim),
+      page({
+        text: claim,
+        chain: [`https://api.gov.example/search.aspx?q=${asLegacyEscapes(claim)}`],
+      }),
+      'echoes_address',
+    ],
+    [
+      'a legacy escape that only a second decoding shows',
+      on(quote),
+      page({ chain: [law, 'https://www.gov.example/amounts?v=%25u0039%25u0032%25u0030'] }),
+      'echoes_address',
+    ],
+    [
+      'a word a query carries before an encoded number sign',
+      on(sponsored),
+      page({ text: sponsored, chain: ['https://api.gov.example/search?status=required%23x'] }),
+      'echoes_address',
+    ],
+    [
+      'a word a query carries before a fragment',
+      on(sponsored),
+      page({ text: sponsored, chain: ['https://api.gov.example/search?status=required#x'] }),
+      'echoes_address',
+    ],
+    [
       'an address whose bytes are not UTF-8',
       on(quote),
       page({ chain: [law, 'https://www.gov.example/search?q=%CC%E8%ED'] }),
@@ -234,6 +272,12 @@ describe('verifyAnswers', () => {
   it('takes a quote from a page whose address has a stray percent sign or a query of IDs', () => {
     const chain = [law, 'https://www.gov.example/act?id=BOE-A-2000-544&rate=5%&p=%C3%A9'];
     expect(verify(on(quote), page({ chain }))).toMatchObject({ status: 'matches' });
+  });
+
+  it('leaves the fragment of an address, which is never sent, out of what it says', () => {
+    const text = 'Financial requirement: a monthly income of at least €920,00';
+    const chain = ['https://www.gov.example/visas?lang=en#financial-requirement-monthly-income'];
+    expect(verify(on(text), page({ text, chain }))).toMatchObject({ status: 'matches' });
   });
 
   it("takes the reader's rendering of an address as the address", () => {
