@@ -33,6 +33,7 @@ export const ptBR = {
       accessibility: 'Acessibilidade',
       account: 'Conta',
       knowledge: 'Base de conhecimento',
+      help: 'Ajuda',
       signIn:
         'Entre na sua conta para ver os avisos de segurança, baixar seus dados ou excluir a conta.',
       loadFailure: 'Não deu para carregar sua conta agora.',
@@ -93,6 +94,14 @@ export const ptBR = {
       done: 'Pedido recebido. A conta será apagada a partir de {dueAt}. Até lá, é só entrar de novo para cancelar.',
       failure:
         '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} tooLate {O prazo para cancelar acabou, e a conta já está sendo apagada.} other {Não deu certo desta vez. Tente de novo.}}',
+    },
+    /** Replaying the guided tour (#123). */
+    help: {
+      intro:
+        'O tour mostra onde fica cada coisa. As dicas aparecem na primeira vez que você abre uma tela.',
+      replayTour: 'Ver o tour de novo',
+      replayHints: 'Mostrar as dicas de novo',
+      hintsBack: 'Pronto. Cada dica volta a aparecer quando você abrir a tela dela.',
     },
     appearance: {
       title: 'Aparência',
@@ -169,6 +178,55 @@ export const ptBR = {
         on: 'Ligadas',
         off: 'Desligadas',
         reduced: 'Seu aparelho está com movimento reduzido, então as animações ficam desligadas.',
+      },
+    },
+  },
+  /** The guided tour (#123): `tour.<tour>.<step>` follows the ids in the app's tour list. */
+  tour: {
+    step: '{current} de {total}',
+    skip: 'Pular',
+    back: 'Voltar',
+    next: 'Próximo',
+    done: 'Concluir',
+    gotIt: 'Entendi',
+    app: {
+      home: {
+        title: 'Comece pelo Início',
+        body: 'Aqui aparece o próximo passo da sua família e o que já ficou pronto.',
+      },
+      family: {
+        title: 'Quem vai com você',
+        body: 'Em Família você coloca quem vai junto e responde às perguntas que o Arca usa para avaliar as rotas.',
+      },
+      compare: {
+        title: 'Para onde ir',
+        body: 'Em Comparar você dá peso ao que importa para você e vê os países em ordem.',
+      },
+      vault: {
+        title: 'Documentos trancados',
+        body: 'O Cofre guarda os seus documentos com uma chave que só existe nos seus dispositivos.',
+      },
+      settings: {
+        title: 'Do seu jeito',
+        body: 'Em Configurações você muda as cores, a letra e o menu. Para ver este tour de novo, é lá também, em Ajuda.',
+      },
+    },
+    family: {
+      screen: {
+        title: 'Comece por aqui',
+        body: 'Coloque quem vai com você. Depois responda às perguntas, e o Arca mostra as rotas que servem para a família.',
+      },
+    },
+    compare: {
+      screen: {
+        title: 'Monte a sua ordem',
+        body: 'Ajuste os pesos do que importa para você. A ordem dos países muda junto.',
+      },
+    },
+    vault: {
+      screen: {
+        title: 'Guarde os documentos aqui',
+        body: 'Crie o cofre uma vez e abra com a sua chave de acesso. Depois é só adicionar os documentos.',
       },
     },
   },

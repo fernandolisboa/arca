@@ -19,6 +19,7 @@ export interface CoachMarkProps {
   readonly body: string;
   /** "x de n". */
   readonly stepLabel: string;
+  /** A step that is both first and last is a hint: it shows Done alone, with no count and no Skip. */
   readonly first: boolean;
   readonly last: boolean;
   readonly labels: CoachMarkLabels;
@@ -100,6 +101,7 @@ export function CoachMark({
   const [place, setPlace] = useState<{ top: number; left: number } | null>(null);
 
   const key = targetIds.join(' ');
+  const hint = first && last;
 
   useLayoutEffect(() => {
     const ids = key.split(' ');
@@ -191,19 +193,23 @@ export function CoachMark({
         className="absolute bottom-4 left-4 flex w-[min(22rem,calc(100vw-2rem))] flex-col gap-3 rounded-card bg-surface p-4 shadow-lg ring-1 shadow-ink/15 ring-line focus-visible:outline-2 focus-visible:outline-primary"
         style={place === null ? undefined : { ...place, bottom: 'auto' }}
       >
-        <p className="text-caption text-muted">{stepLabel}</p>
+        {!hint && <p className="text-caption text-muted">{stepLabel}</p>}
         <h2 id={titleId} className="font-display text-title">
           {title}
         </h2>
         <p id={bodyId}>{body}</p>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <button
-            type="button"
-            onClick={onSkip}
-            className="min-h-touch rounded-control px-3 font-medium text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          >
-            {labels.skip}
-          </button>
+        <div
+          className={`flex flex-wrap items-center gap-2 ${hint ? 'justify-end' : 'justify-between'}`}
+        >
+          {!hint && (
+            <button
+              type="button"
+              onClick={onSkip}
+              className="min-h-touch rounded-control px-3 font-medium text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              {labels.skip}
+            </button>
+          )}
           <div className="flex gap-2">
             {!first && (
               <button

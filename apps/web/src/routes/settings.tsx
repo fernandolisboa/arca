@@ -2,7 +2,7 @@ import { ApiError } from '@arca/api-contract/client';
 import { Button, ChoiceGroup, Icon, menuItemClass, type Choice } from '@arca/ui';
 import { axes, type AxisName, type AxisValue } from '@arca/ui/theme/ids';
 import { useQuery } from '@tanstack/react-query';
-import { Link, createFileRoute } from '@tanstack/react-router';
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useCallback, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AccountDeletionSection, DeletionPendingNotice } from '../account-deletion.js';
@@ -19,6 +19,8 @@ import {
   type AxisSection,
   type SettingsSection,
 } from '../settings/sections.js';
+import { seenTours } from '../tour/seen.js';
+import { appTour, screenHints } from '../tour/tours.js';
 
 export const Route = createFileRoute('/settings')({
   validateSearch: settingsSearch,
@@ -191,7 +193,38 @@ function KnowledgePanel() {
   );
 }
 
-type IntroKey = 'settings.appearance.intro' | 'knowledge.settings.intro';
+/** Shows the first-run tour again, or the screens' hints (#123). */
+function HelpPanel() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [hintsBack, setHintsBack] = useState(false);
+  return (
+    <div className="flex flex-col items-start gap-3">
+      <Button
+        onClick={() => {
+          seenTours.forget(appTour.id);
+          void navigate({ to: appTour.path });
+        }}
+      >
+        {t('settings.help.replayTour')}
+      </Button>
+      <Button
+        variant="secondary"
+        onClick={() => {
+          seenTours.forget(...screenHints.map((hint) => hint.id));
+          setHintsBack(true);
+        }}
+      >
+        {t('settings.help.replayHints')}
+      </Button>
+      <p role="status" className="text-small text-muted">
+        {hintsBack ? t('settings.help.hintsBack') : ''}
+      </p>
+    </div>
+  );
+}
+
+type IntroKey = 'settings.appearance.intro' | 'knowledge.settings.intro' | 'settings.help.intro';
 
 /** What each category shows under its heading; the admins' category only to an admin. */
 interface PanelEntry {
@@ -211,6 +244,7 @@ const panels: Record<SettingsSection, PanelEntry> = {
   ...axisPanels,
   account: { Panel: AccountPanel },
   knowledge: { intro: 'knowledge.settings.intro', Panel: KnowledgePanel, adminOnly: true },
+  help: { intro: 'settings.help.intro', Panel: HelpPanel },
 };
 
 /** Settings in categories: a side menu on wide screens, a row of buttons on top on phones. */

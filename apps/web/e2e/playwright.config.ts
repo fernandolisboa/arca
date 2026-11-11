@@ -1,5 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 import { databaseServer, e2eEnrollmentCodeHash, signedOutOrigin } from './servers.js';
+import { toured } from './tour.js';
 
 const ci = process.env['CI'] !== undefined;
 /** Optional: a local Chromium when the installed one does not match Playwright's revision. */
@@ -26,6 +27,7 @@ export default defineConfig({
   use: {
     ...devices['Desktop Chrome'],
     baseURL: signedOutOrigin,
+    storageState: toured,
     launchOptions: executablePath === undefined ? {} : { executablePath },
   },
   projects: [

@@ -8,6 +8,7 @@ export const settingsSections = [
   'accessibility',
   'account',
   'knowledge',
+  'help',
 ] as const;
 
 export type SettingsSection = (typeof settingsSections)[number];
@@ -18,6 +19,7 @@ export const sectionIcons = {
   accessibility: 'accessibility',
   account: 'profile',
   knowledge: 'knowledge',
+  help: 'help',
 } as const satisfies Record<SettingsSection, IconName>;
 
 /** Each appearance axis lives in exactly one category; the test checks none is left out. */
