@@ -1,5 +1,5 @@
 import { addressTexts, digitsApart } from '@arca/domain';
-import { htmlToText, struckElements } from './html-text.js';
+import { htmlToText, markupReader, struckElements } from './html-text.js';
 
 /** How the fetcher reads an answer, by its media type. */
 export type AnswerFormat = 'html' | 'plain' | 'json' | 'xml';
@@ -24,9 +24,8 @@ const hasMarkup = (value: string) =>
   /<\/?[a-z][a-z0-9:-]*(?:\s[^<>]*)?\/?>|<!--|&(?:#\d+|#x[0-9a-f]+|[a-z][a-z0-9]*);/iu.test(value);
 
 /** A string of data as a reader sees it: markup in it read as a page's markup is. */
-function stringText(value: string): string {
-  return hasMarkup(value) ? htmlToText(value) : value;
-}
+const stringText = (read: (markup: string) => string) => (value: string) =>
+  hasMarkup(value) ? read(value) : value;
 
 /** A JSON string token. Its two branches never match the same character, so it cannot backtrack. */
 const jsonStringToken = /"(?:[^"\\]|\\.)*"/gu;
@@ -127,7 +126,7 @@ function tagOf(tag: string): {
  * do, unless digits would meet across it: a tag between two numbers never makes them one. One pass
  * over the text, with no parser that fetches, validates or expands anything.
  */
-export function xmlText(xml: string): string {
+export function xmlText(xml: string, read = markupReader()): string {
   const pieces: string[] = [];
   let tagsSinceText = 2;
   let afterDigit = false;
@@ -139,7 +138,7 @@ export function xmlText(xml: string): string {
       const digitsMeet = tagsSinceText > 0 && afterDigit && /^\s*\d/u.test(piece);
       pieces.push(
         tagsSinceText >= 2 || digitsMeet ? '\n' : '',
-        hasMarkup(piece) ? `\n${htmlToText(piece)}\n` : piece,
+        hasMarkup(piece) ? `\n${read(piece)}\n` : piece,
       );
       tagsSinceText = 0;
       afterDigit = /\d\s*$/u.test(piece);
@@ -192,7 +191,7 @@ function textOf(format: AnswerFormat, body: string): string {
     case 'plain':
       return body;
     case 'json':
-      return dataLines(jsonStrings(body).map(stringText));
+      return dataLines(jsonStrings(body).map(stringText(markupReader())));
     case 'xml':
       return dataLines([xmlText(body)]);
   }

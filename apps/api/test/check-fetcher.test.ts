@@ -11,7 +11,12 @@ import {
   guardedLookup,
   httpsSourceFetcher,
 } from '../src/knowledge/check/fetcher.js';
-import { htmlToText, maxElementDepth, maxElements } from '../src/knowledge/check/html-text.js';
+import {
+  htmlToText,
+  markupReader,
+  maxElementDepth,
+  maxElements,
+} from '../src/knowledge/check/html-text.js';
 
 /** Synthetic hosts only; a local server stands in for both. */
 const hosts = ['gov.example'];
@@ -223,6 +228,11 @@ describe('the cited-source fetcher (ADR-0027)', () => {
       cut: false,
       chain: [page(path)],
     });
+  });
+
+  it('records the address as it is requested, not as it is written', async () => {
+    const read = await fetcher().fetch(page('/l\taw'), hosts);
+    expect(read).toMatchObject({ ok: true, chain: [page('/law')] });
   });
 
   it('asks for a page first, then data, then plain text', async () => {
@@ -462,19 +472,56 @@ describe('htmlToText', () => {
     expect(performance.now() - started).toBeLessThan(2_000);
   });
 
-  it('reads no text of a page that strews text through broken tables by the thousand', () => {
-    const started = performance.now();
-    expect(htmlToText('<table>x'.repeat(100_000))).toBe('');
-    expect(htmlToText(`${'<br>'.repeat(100_000)}<table>${'x</x>'.repeat(100_000)}`)).toBe('');
-    expect(performance.now() - started).toBeLessThan(2_000);
+  // Each of these four cost the parser a minute or more with no budget; the bound is loose
+  // because the budget is spent before the parse stops, which takes seconds on a busy machine.
+  it.each([
+    ['strews text through broken tables', () => '<table>x'.repeat(100_000)],
+    [
+      'strews text before a table with many siblings',
+      () => `${'<br>'.repeat(100_000)}<table>${'x</x>'.repeat(100_000)}`,
+    ],
+    [
+      'makes the parser move every child of an element',
+      () => `<b><p>${'<!>'.repeat(200_000)}</b>x`,
+    ],
+    [
+      'repeats a tag whose attributes are adopted',
+      () =>
+        `<html ${Array.from({ length: 2_000 }, (_, index) => `a${String(index)}`).join(' ')}>${'<html>'.repeat(100_000)}x`,
+    ],
+  ])(
+    'reads no text of a page that %s without end',
+    (_, markup) => {
+      const started = performance.now();
+      expect(htmlToText(markup())).toBe('');
+      expect(performance.now() - started).toBeLessThan(15_000);
+    },
+    30_000,
+  );
+
+  it('reads a page whose one misnested element wraps thousands of paragraphs', () => {
+    const paragraphs = '<p>A paragraph of the act.</p>\n'.repeat(5_000);
+    const text = htmlToText(`<font><div>${paragraphs}</font></div>`);
+    expect(text.split('\n')).toHaveLength(5_000);
   });
 
-  it('reads no text of a page that makes the parser move its content without end', () => {
-    const attributes = Array.from({ length: 2_000 }, (_, index) => `a${String(index)}`).join(' ');
-    const started = performance.now();
-    expect(htmlToText(`<b><p>${'<!>'.repeat(200_000)}</b>x`)).toBe('');
-    expect(htmlToText(`<html ${attributes}>${'<html>'.repeat(100_000)}x`)).toBe('');
-    expect(performance.now() - started).toBeLessThan(2_000);
+  it('counts each kind of move against the budget', () => {
+    const strayText = `${'<br>'.repeat(50)}<table>${'x</x>'.repeat(50)}</table>`;
+    const strayElements = `${'<br>'.repeat(50)}<table>${'<b>x</b>'.repeat(50)}</table>`;
+    const reparented = `<b><p>${'<br>'.repeat(100)}</b>x`;
+    const adopted = `<html a b c>${'<html>'.repeat(20)}x`;
+    for (const markup of [strayText, strayElements, reparented, adopted]) {
+      expect(htmlToText(markup)).toContain('x');
+      expect(markupReader(1_000)(markup)).toBe('');
+    }
+  });
+
+  it('holds all a reader reads to one budget', () => {
+    const stray = `<table>${'<tr><td>a</td></tr><br>'.repeat(20)}</table>`;
+    const read = markupReader(1_000);
+    const texts = Array.from({ length: 10 }, () => read(stray));
+    expect(texts[0]).toContain('a');
+    expect(texts.at(-1)).toBe('');
   });
 
   it('reads a table with stray content between its rows by the thousand', () => {

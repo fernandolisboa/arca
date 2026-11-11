@@ -281,6 +281,8 @@ export function httpsSourceFetcher({
     signal: AbortSignal,
   ) => {
     let url = allowedUrl(cited, hosts);
+    // The chain holds each address as it is requested, which is what a server can write back.
+    if (url !== undefined) chain[0] = url.href;
     for (let hop = 0; url !== undefined; hop += 1) {
       const current: URL = url;
       const response = await get(current, signal);

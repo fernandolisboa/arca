@@ -89,6 +89,9 @@ export function normalizeWhitespace(text: string): string {
 /** A server may decode what another already did, so an address is read decoded this many times. */
 const decodingRounds = 3;
 
+/** What a URL parser drops from an address or trims off its ends, so it is not sent as written. */
+const droppedWhenSent = /\p{Cc}|^ | $/u;
+
 /** The escape of legacy servers, `%u0041`, which no decoding here reads. */
 const legacyEscape = /%u[0-9a-f]{4}/iu;
 
@@ -110,10 +113,12 @@ function decodedOnce(text: string): string | undefined {
 /**
  * An address as the servers on its way may read it: without its fragment, which is never sent,
  * percent-decoded, and decoded again while that changes it. Undefined when nothing here could
- * compare it with a page's text: at any round its bytes are not UTF-8 or it holds a legacy
- * escape, or it is encoded more times over than any honest address is.
+ * compare it with a page's text: it holds a character that is dropped when it is sent, at any
+ * round its bytes are not UTF-8 or it holds a legacy escape, or it is encoded more times over
+ * than any honest address is.
  */
 export function addressTexts(url: string): readonly string[] | undefined {
+  if (droppedWhenSent.test(url)) return undefined;
   const texts: string[] = [];
   let last = url.replace(/#.*$/su, '');
   for (let round = 0; round < decodingRounds; round += 1) {
@@ -135,9 +140,11 @@ const queryOf = (text: string) => {
   return mark === -1 ? '' : text.slice(mark + 1);
 };
 
+/** The values of a query, each whole and as the pieces a `;` or an encoded `#` may end. */
 function queryValues(text: string): string[] {
-  return queryOf(text)
-    .split(/[&;#]/u)
+  const query = queryOf(text);
+  return ['&', /[&;#]/u]
+    .flatMap((separator) => query.split(separator))
     .map((pair) => normalizeWhitespace(pair.slice(pair.indexOf('=') + 1)))
     .filter((value) => value.length >= echoedQueryLength);
 }

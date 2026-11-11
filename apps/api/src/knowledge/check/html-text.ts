@@ -93,15 +93,21 @@ export const maxElementDepth = 512;
 /** The most elements a page is read with; a law's longest consolidated text holds far fewer. */
 export const maxElements = 500_000;
 /**
- * The most work the parser may spend moving a page's pieces: content out of a table it does not
- * belong in, the children of misnested formatting, the attributes of a repeated `html` or `body`
- * tag. Each move goes through the siblings or attributes beside it, which is what it costs here,
- * so a page built to repeat them would hold the step for minutes; a real page with thousands of
- * stray rows spends a small part of this.
+ * The most work the parser may spend moving the pieces of everything one reader reads, a page or
+ * the strings of a data answer: content out of a table it does not belong in, the children of
+ * misnested formatting, the attributes of a repeated `html` or `body` tag. Each move goes through
+ * the siblings or attributes beside it, which is what it costs here, so markup built to repeat
+ * them would hold the step for minutes. A page whose one misnested element wraps ten thousand
+ * paragraphs spends two fifths of this, and past it the parse takes seconds.
  */
-export const maxMoveWork = 50_000_000;
+export const maxMoveWork = 500_000_000;
 /** An attribute costs the parser a set entry, many times a sibling it steps over. */
 const attributeWork = 64;
+
+/** What is left of a reader's move budget. */
+interface MoveBudget {
+  left: number;
+}
 
 class TooMuchMarkup extends Error {}
 
@@ -117,13 +123,12 @@ const elementBudget = (length: number) => Math.min(maxElements, Math.ceil(length
  * The parsed page, or undefined when it nests deeper, makes more elements or moves more of its
  * content than the limits.
  */
-function parsed(html: string): Node | undefined {
+function parsed(html: string, budget: MoveBudget): Node | undefined {
   let depth = 0;
   let elements = elementBudget(html.length);
-  let moveWork = maxMoveWork;
   const moved = (through: number) => {
-    moveWork -= through + 1;
-    if (moveWork < 0) throw new TooMuchMarkup();
+    budget.left -= through + 1;
+    if (budget.left < 0) throw new TooMuchMarkup();
   };
   const treeAdapter: typeof defaultTreeAdapter = {
     ...defaultTreeAdapter,
@@ -181,9 +186,9 @@ const digitsKeptApart = (html: string) =>
  * cells; whitespace collapses within each line; and a cell end stands between two text nodes whose
  * digits would meet, whatever is between them. A page past a parsing limit has no text.
  */
-export function htmlToText(html: string): string {
+function textWithin(html: string, budget: MoveBudget): string {
   const parts: string[] = [];
-  const root = parsed(digitsKeptApart(html));
+  const root = parsed(digitsKeptApart(html), budget);
   if (root === undefined) return '';
   const stack: (Node | '\n' | typeof cellEnd)[] = [root];
   let afterDigit = false;
@@ -224,3 +229,12 @@ export function htmlToText(html: string): string {
     .filter((line) => line !== '')
     .join('\n');
 }
+
+/** A reader of markup with one move budget for all it reads: the strings of one data answer. */
+export function markupReader(moveWork = maxMoveWork): (html: string) => string {
+  const budget = { left: moveWork };
+  return (html) => textWithin(html, budget);
+}
+
+/** The text of one page or one piece of markup, read on a move budget of its own. */
+export const htmlToText = (html: string): string => markupReader()(html);

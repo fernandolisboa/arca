@@ -203,6 +203,35 @@ describe('verifyAnswers', () => {
       page({ chain: [law, 'https://www.gov.example/amounts?v=%25u0039%25u0032%25u0030'] }),
       'echoes_address',
     ],
+    ...['\t', '\n', '\r'].map((dropped): [string, Partial<CheckAnswer>, ReadPage, string] => [
+      `a claim an address spells around a character dropped when it is sent (${JSON.stringify(dropped)})`,
+      on(claim),
+      page({
+        text: claim,
+        chain: [
+          `https://api.gov.example/search?q=${claim.replace(
+            /./gsu,
+            (char) => `%${dropped}${char.charCodeAt(0).toString(16)}`,
+          )}`,
+        ],
+      }),
+      'echoes_address',
+    ]),
+    [
+      'a word a query carries before a semicolon',
+      on(sponsored),
+      page({ text: sponsored, chain: ['https://api.gov.example/search?status=required;x=1'] }),
+      'echoes_address',
+    ],
+    [
+      'a whole query value of short pieces between semicolons',
+      on(`Search results for: no;fee;is;due. ${sponsored}`),
+      page({
+        text: `Search results for: no;fee;is;due. ${sponsored}`,
+        chain: ['https://api.gov.example/search?q=no;fee;is;due'],
+      }),
+      'echoes_address',
+    ],
     [
       'a word a query carries before an encoded number sign',
       on(sponsored),
