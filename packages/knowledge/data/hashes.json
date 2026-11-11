@@ -334,6 +334,22 @@
     {
       "path": "routes/cl-mercosur-temporary/2",
       "sha256": "0454ae5bd8c48a371ac897a5d31df288a5178360d0e33b8efb5aef7fa0c7204e"
+    },
+    {
+      "path": "guides/ar/2",
+      "sha256": "b9c7491e29b7d4d53dde3db637fbb48e356dcbbea29305366bd93681328e0b41"
+    },
+    {
+      "path": "guides/uy/2",
+      "sha256": "5b47a3a7d10d1fc288fbdc0674c5ebe2d6741ed2f6a93c7618e2f1fd11fdd6af"
+    },
+    {
+      "path": "guides/py/2",
+      "sha256": "95f971eb7995c5f2750ab1f9d46addf2b72a83d09a6fa5d4fb72ea7d39b07deb"
+    },
+    {
+      "path": "guides/cl/2",
+      "sha256": "dc96f8cb3537db0d7880c1319d43c8fbc7aded85c488418d7e4a901ab639b952"
     }
   ]
 }
