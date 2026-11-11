@@ -4,10 +4,7 @@
   "number": 2,
   "title": "Skilled Worker visa for the United Kingdom: a sponsored job in an eligible occupation, usually paying at least £41,700 a year and the going rate, with English at B2",
   "country": "GB",
-  "tags": [
-    "work",
-    "temporary-residence"
-  ],
+  "tags": ["work", "temporary-residence"],
   "effectiveFrom": "2026-04-08",
   "corrects": 1,
   "status": "open",
@@ -220,9 +217,7 @@
           "value": 18
         }
       },
-      "sources": [
-        "sw-age"
-      ]
+      "sources": ["sw-age"]
     },
     {
       "id": "not-british-or-irish",
@@ -237,18 +232,11 @@
           },
           "set": {
             "op": "tokens",
-            "values": [
-              "GB",
-              "IE"
-            ]
+            "values": ["GB", "IE"]
           }
         }
       },
-      "sources": [
-        "immigration-act-1971-abode",
-        "immigration-act-1971-irish",
-        "rules-introduction"
-      ]
+      "sources": ["immigration-act-1971-abode", "immigration-act-1971-irish", "rules-introduction"]
     },
     {
       "id": "not-applying-from-abroad-as-afghan",
@@ -266,9 +254,7 @@
               },
               "set": {
                 "op": "tokens",
-                "values": [
-                  "AF"
-                ]
+                "values": ["AF"]
               }
             }
           },
@@ -285,9 +271,7 @@
                   },
                   "set": {
                     "op": "tokens",
-                    "values": [
-                      "AF"
-                    ]
+                    "values": ["AF"]
                   }
                 }
               },
@@ -317,118 +301,70 @@
           }
         ]
       },
-      "sources": [
-        "sw-afghanistan",
-        "visa-brake-hc-1691"
-      ]
+      "sources": ["sw-afghanistan", "visa-brake-hc-1691"]
     }
   ],
   "assessments": [
     {
       "id": "sponsored-job",
       "title": "A Certificate of Sponsorship from a licensed, A-rated employer for the job",
-      "evidence": [
-        "principal.monthlyActiveIncome"
-      ],
-      "sources": [
-        "sw-sponsorship-and-job"
-      ]
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["sw-sponsorship-and-job"]
     },
     {
       "id": "eligible-occupation",
       "title": "A job in an eligible occupation in Table 1, 2 or 3 of Appendix Skilled Occupations, or on the Immigration Salary List",
-      "evidence": [
-        "principal.educationLevel"
-      ],
-      "sources": [
-        "sw-occupation-lists"
-      ]
+      "evidence": ["principal.educationLevel"],
+      "sources": ["sw-occupation-lists"]
     },
     {
       "id": "temporary-shortage-list",
       "title": "Or a job on the Temporary Shortage List, with a certificate of sponsorship issued before 31 December 2026; such a job brings no partner or children",
-      "evidence": [
-        "principal.educationLevel"
-      ],
-      "sources": [
-        "sw-temporary-shortage-list",
-        "sw-dependants-job-tables"
-      ]
+      "evidence": ["principal.educationLevel"],
+      "sources": ["sw-temporary-shortage-list", "sw-dependants-job-tables"]
     },
     {
       "id": "salary",
       "title": "A salary of at least £41,700 a year and the going rate for the occupation (option A)",
-      "evidence": [
-        "principal.monthlyActiveIncome"
-      ],
-      "sources": [
-        "sw-salary",
-        "skilled-occupations"
-      ]
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["sw-salary", "skilled-occupations"]
     },
     {
       "id": "salary-phd",
       "title": "Or, with a PhD relevant to the job, £37,500 a year and 90% of the going rate; with a STEM PhD, £33,400 and 80% of the going rate",
-      "evidence": [
-        "principal.monthlyActiveIncome",
-        "principal.educationLevel"
-      ],
-      "sources": [
-        "sw-salary-phd"
-      ]
+      "evidence": ["principal.monthlyActiveIncome", "principal.educationLevel"],
+      "sources": ["sw-salary-phd"]
     },
     {
       "id": "salary-isl-or-new-entrant",
       "title": "Or, for a job on the Immigration Salary List, £33,400 a year and the going rate; for a new entrant at the start of their career, £33,400 and 70% of the going rate",
-      "evidence": [
-        "principal.monthlyActiveIncome",
-        "principal.ageYears"
-      ],
-      "sources": [
-        "sw-salary-isl-new-entrant"
-      ]
+      "evidence": ["principal.monthlyActiveIncome", "principal.ageYears"],
+      "sources": ["sw-salary-isl-new-entrant"]
     },
     {
       "id": "english-b2",
       "title": "English at level B2 in reading, writing, speaking and listening (B1 if the last Skilled Worker permission required B1), shown in a way Appendix English Language allows",
-      "evidence": [
-        "principal.citizenships",
-        "principal.educationLevel"
-      ],
-      "sources": [
-        "sw-english",
-        "english-b2-hc-1333",
-        "english-language-appendix"
-      ]
+      "evidence": ["principal.citizenships", "principal.educationLevel"],
+      "sources": ["sw-english", "english-b2-hc-1333", "english-language-appendix"]
     },
     {
       "id": "funds",
       "title": "Savings of £1,270 held for 28 days by the worker, unless the A-rated sponsor certifies it will maintain and accommodate them",
-      "evidence": [
-        "unit.liquidAssets"
-      ],
-      "sources": [
-        "sw-funds"
-      ]
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["sw-funds"]
     },
     {
       "id": "funds-dependants",
       "title": "Plus £285 for a partner, £315 for the first child and £200 for each other child, held for 28 days, unless the sponsor certifies it will maintain them",
-      "evidence": [
-        "unit.liquidAssets"
-      ],
-      "sources": [
-        "sw-dependant-funds"
-      ]
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["sw-dependant-funds"]
     }
   ],
   "dependents": [
     {
       "id": "spouse",
       "title": "Spouse aged 18 or over, if the worker's job is in Table 1, 2 or 3 of Appendix Skilled Occupations (not checked: a Temporary Shortage List job brings no family)",
-      "path": [
-        "spouse"
-      ],
+      "path": ["spouse"],
       "condition": {
         "op": "gte",
         "left": {
@@ -450,9 +386,7 @@
     {
       "id": "partner",
       "title": "Partner aged 18 or over, after 2 years in a relationship similar to marriage; a shorter one, which may be a civil partnership: possible; the job must be in Table 1, 2 or 3 (not checked)",
-      "path": [
-        "partner"
-      ],
+      "path": ["partner"],
       "condition": {
         "op": "all",
         "operands": [
@@ -495,9 +429,7 @@
     {
       "id": "children",
       "title": "Children under 18 with no spouse or partner; living with the principal, the other parent coming too and a job in Table 1, 2 or 3 are not checked; an adult child: possible",
-      "path": [
-        "child"
-      ],
+      "path": ["child"],
       "condition": {
         "op": "all",
         "operands": [
@@ -558,9 +490,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "fees-table"
-      ]
+      "sources": ["fees-table"]
     },
     {
       "id": "visa-fee-up-to-3-years-dependant",
@@ -575,9 +505,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "fees-table"
-      ]
+      "sources": ["fees-table"]
     },
     {
       "id": "visa-fee-over-3-years",
@@ -592,9 +520,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "fees-table"
-      ]
+      "sources": ["fees-table"]
     },
     {
       "id": "visa-fee-over-3-years-dependant",
@@ -609,9 +535,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "fees-table"
-      ]
+      "sources": ["fees-table"]
     },
     {
       "id": "health-surcharge",
@@ -626,9 +550,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "health-surcharge"
-      ]
+      "sources": ["health-surcharge"]
     },
     {
       "id": "health-surcharge-adult-dependant",
@@ -659,9 +581,7 @@
           }
         ]
       },
-      "sources": [
-        "health-surcharge"
-      ]
+      "sources": ["health-surcharge"]
     },
     {
       "id": "health-surcharge-child",
@@ -692,9 +612,7 @@
           }
         ]
       },
-      "sources": [
-        "health-surcharge"
-      ]
+      "sources": ["health-surcharge"]
     }
   ],
   "durations": [
@@ -703,9 +621,7 @@
       "title": "Permission until 14 days after the end date of the certificate of sponsorship, which is at most 5 years after its start date",
       "min": "P0Y",
       "max": "P5Y",
-      "sources": [
-        "sw-grant-period"
-      ]
+      "sources": ["sw-grant-period"]
     }
   ]
 }

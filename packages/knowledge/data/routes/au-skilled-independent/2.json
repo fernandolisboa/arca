@@ -4,10 +4,7 @@
   "number": 2,
   "title": "Australian Skilled Independent visa (subclass 189), points-tested stream: permanent residence for a skilled worker invited before turning 45",
   "country": "AU",
-  "tags": [
-    "work",
-    "permanent-residence"
-  ],
+  "tags": ["work", "permanent-residence"],
   "effectiveFrom": "2026-07-01",
   "corrects": 1,
   "status": "open",
@@ -154,90 +151,56 @@
           "value": 45
         }
       },
-      "sources": [
-        "regs-1137-invitation"
-      ]
+      "sources": ["regs-1137-invitation"]
     }
   ],
   "assessments": [
     {
       "id": "invitation",
       "title": "An invitation in writing from the Minister to apply, and an application made within the period it states",
-      "evidence": [
-        "principal.ageYears"
-      ],
-      "sources": [
-        "regs-1137-invitation",
-        "regs-189-criteria"
-      ]
+      "evidence": ["principal.ageYears"],
+      "sources": ["regs-1137-invitation", "regs-189-criteria"]
     },
     {
       "id": "skills-assessment",
       "title": "A skilled occupation on the Minister's list, named in the invitation, with a positive skills assessment by its assessing authority, at most 3 years old at invitation",
-      "evidence": [
-        "principal.educationLevel"
-      ],
-      "sources": [
-        "regs-1137-invitation",
-        "regs-189-criteria"
-      ]
+      "evidence": ["principal.educationLevel"],
+      "sources": ["regs-1137-invitation", "regs-189-criteria"]
     },
     {
       "id": "competent-english",
       "title": "Competent English at the time of invitation: a specified test score from the last 3 years, or a passport of a type the Minister specifies",
-      "evidence": [
-        "principal.citizenships"
-      ],
-      "sources": [
-        "regs-189-criteria",
-        "regs-competent-english"
-      ]
+      "evidence": ["principal.citizenships"],
+      "sources": ["regs-189-criteria", "regs-competent-english"]
     },
     {
       "id": "points-score",
       "title": "A points-test score at least the score in the invitation and the pass mark, from age, English, work experience, qualifications, the partner's skills and other attributes",
-      "evidence": [
-        "principal.ageYears",
-        "principal.educationLevel"
-      ],
-      "sources": [
-        "regs-189-criteria",
-        "regs-points-test"
-      ]
+      "evidence": ["principal.ageYears", "principal.educationLevel"],
+      "sources": ["regs-189-criteria", "regs-points-test"]
     },
     {
       "id": "character",
       "title": "The applicant and each family member applying satisfy the character criterion (public interest criterion 4001) and the other criteria 4002 to 4004",
-      "evidence": [
-        "principal.visaRefusals"
-      ],
-      "sources": [
-        "regs-189-character"
-      ]
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["regs-189-character"]
     }
   ],
   "dependents": [
     {
       "id": "spouse",
       "title": "Spouse",
-      "path": [
-        "spouse"
-      ],
+      "path": ["spouse"],
       "condition": {
         "op": "bool",
         "value": true
       },
-      "sources": [
-        "regs-family-unit",
-        "regs-189-secondary"
-      ]
+      "sources": ["regs-family-unit", "regs-189-secondary"]
     },
     {
       "id": "partner",
       "title": "De facto partner aged 18 or more, together for at least 12 months (a shorter relationship that is registered, or with compelling reasons: possible)",
-      "path": [
-        "partner"
-      ],
+      "path": ["partner"],
       "condition": {
         "op": "all",
         "operands": [
@@ -281,18 +244,12 @@
           }
         ]
       },
-      "sources": [
-        "regs-family-unit",
-        "regs-de-facto",
-        "regs-189-secondary"
-      ]
+      "sources": ["regs-family-unit", "regs-de-facto", "regs-189-secondary"]
     },
     {
       "id": "children",
       "title": "Children with no spouse or partner: under 18, or 18 to 22 and depending on the principal; others, who may depend on the principal's spouse or partner or be unable to work: possible",
-      "path": [
-        "child"
-      ],
+      "path": ["child"],
       "condition": {
         "op": "any",
         "operands": [
@@ -399,19 +356,12 @@
           }
         ]
       },
-      "sources": [
-        "regs-family-unit",
-        "regs-dependent",
-        "regs-189-secondary"
-      ]
+      "sources": ["regs-family-unit", "regs-dependent", "regs-189-secondary"]
     },
     {
       "id": "spouse-children",
       "title": "The spouse's children with no spouse or partner: under 18, or 18 to 22 and depending on the principal or the spouse; others, who may be unable to work: possible",
-      "path": [
-        "spouse",
-        "child"
-      ],
+      "path": ["spouse", "child"],
       "condition": {
         "op": "any",
         "operands": [
@@ -527,19 +477,12 @@
           }
         ]
       },
-      "sources": [
-        "regs-family-unit",
-        "regs-dependent",
-        "regs-189-secondary"
-      ]
+      "sources": ["regs-family-unit", "regs-dependent", "regs-189-secondary"]
     },
     {
       "id": "partner-children",
       "title": "The partner's children with no spouse or partner: under 18, or 18 to 22 and depending on the principal or the partner; others, who may be unable to work: possible",
-      "path": [
-        "partner",
-        "child"
-      ],
+      "path": ["partner", "child"],
       "condition": {
         "op": "any",
         "operands": [
@@ -655,25 +598,16 @@
           }
         ]
       },
-      "sources": [
-        "regs-family-unit",
-        "regs-dependent",
-        "regs-189-secondary"
-      ]
+      "sources": ["regs-family-unit", "regs-dependent", "regs-189-secondary"]
     },
     {
       "id": "grandchildren",
       "title": "A dependent child of a child who is a family member (for example a child's own child who relies on them): possible",
-      "path": [
-        "child",
-        "child"
-      ],
+      "path": ["child", "child"],
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "regs-family-unit-grandchildren"
-      ]
+      "sources": ["regs-family-unit-grandchildren"]
     }
   ],
   "costs": [
@@ -701,10 +635,7 @@
           }
         }
       },
-      "sources": [
-        "vac-2026-first-instalment",
-        "regs-1137-charges"
-      ]
+      "sources": ["vac-2026-first-instalment", "regs-1137-charges"]
     },
     {
       "id": "base-charge-pacific",
@@ -727,10 +658,7 @@
           "id": "au-pacific-regional"
         }
       },
-      "sources": [
-        "vac-2026-first-instalment",
-        "regs-1137-charges"
-      ]
+      "sources": ["vac-2026-first-instalment", "regs-1137-charges"]
     },
     {
       "id": "additional-adult",
@@ -772,10 +700,7 @@
           }
         ]
       },
-      "sources": [
-        "vac-2026-first-instalment",
-        "regs-1137-charges"
-      ]
+      "sources": ["vac-2026-first-instalment", "regs-1137-charges"]
     },
     {
       "id": "additional-minor",
@@ -817,10 +742,7 @@
           }
         ]
       },
-      "sources": [
-        "vac-2026-first-instalment",
-        "regs-1137-charges"
-      ]
+      "sources": ["vac-2026-first-instalment", "regs-1137-charges"]
     },
     {
       "id": "additional-adult-pacific",
@@ -859,10 +781,7 @@
           }
         ]
       },
-      "sources": [
-        "vac-2026-first-instalment",
-        "regs-1137-charges"
-      ]
+      "sources": ["vac-2026-first-instalment", "regs-1137-charges"]
     },
     {
       "id": "additional-minor-pacific",
@@ -901,10 +820,7 @@
           }
         ]
       },
-      "sources": [
-        "vac-2026-first-instalment",
-        "regs-1137-charges"
-      ]
+      "sources": ["vac-2026-first-instalment", "regs-1137-charges"]
     },
     {
       "id": "second-instalment-adult",
@@ -935,9 +851,7 @@
           }
         ]
       },
-      "sources": [
-        "regs-1137-charges"
-      ]
+      "sources": ["regs-1137-charges"]
     }
   ],
   "durations": [
@@ -946,9 +860,7 @@
       "title": "Permanent visa; travel to and entry into Australia allowed for 5 years from the date of grant",
       "min": "P5Y",
       "max": "P5Y",
-      "sources": [
-        "regs-189-visa-period"
-      ]
+      "sources": ["regs-189-visa-period"]
     }
   ]
 }

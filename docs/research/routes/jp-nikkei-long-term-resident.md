@@ -19,5 +19,7 @@ The first audit by the runbook ([#359](https://github.com/fernandolisboa/arca/is
 - **Findings:**
   - Missing, now a duration: a long-term resident of a status the notice sets stays 5 years, 3 years, 1 year or 6 months (Enforcement Ordinance, appended table II), then renews.
   - Confirmed, unchanged: the descent through a biological grandparent, the family items, the minors under 18 and the 29 February reading (the Act on the Calculation of Age applies Civil Code art. 143, whose paragraph 2 ends a year with no corresponding day at the end of the month, so a person born on 29 February is a year older from 1 March).
-- **Check loop:** CHECK_LOOP
+- **Check loop:** runs [43075817319](https://github.com/fernandolisboa/arca/actions/runs/43075817319) (0 of 11 items match) and [43076496175](https://github.com/fernandolisboa/arca/actions/runs/43076496175) (0 of 11, none differs). Left over, every item:
+  - `unreadable`: the teijusha notice is a PDF (#363), and the e-Gov XML reached the model only as the law's opening.
+  - `checker-gap`: `duration:period-of-stay`, whose periods the ordinance writes in kanji numerals, which the checker does not confirm as values.
 - **Watch next:** the notice's page for a new amendment; the electronic travel authorization from 2028-10-31.

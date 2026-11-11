@@ -20,5 +20,7 @@ The first audit by the runbook ([#359](https://github.com/fernandolisboa/arca/is
   - Corrected: the leap-day convention. Section 37A of the Acts Interpretation Act says an age is attained at the start of the anniversary, and s. 2G counts months, not ages; no text says when a person born on 29 February has an anniversary, so `leapDayBirthday` is now `unsettled` and those sections are no longer cited. The case of a principal born on 29 February moved from "needs assessment" to "missing information".
   - Confirmed, unchanged: every first-instalment amount (AUD 6,135, 3,070 and 1,540; Pacific-regional 5,030, 2,515 and 1,260), the second instalment of AUD 4,885, the invitation, age 45, the skills assessment, competent English, the points score and the 12 months of a de facto relationship.
   - Not modeled, a particular case: a holder of a subclass 491 or 494 visa must have held it 3 years (clause 189.224A); the case records no Australian visa.
-- **Check loop:** CHECK_LOOP
+- **Check loop:** runs [43075817319](https://github.com/fernandolisboa/arca/actions/runs/43075817319) (0 of 21 items match) and [43076496175](https://github.com/fernandolisboa/arca/actions/runs/43076496175) (0 of 21, none differs). Left over, every item:
+  - `unreadable`: the Migration Regulations compilation is about 1.2 million characters even as its machine-readable document, and the passage locator sent the model only its table of contents.
+  - `checker-gap`: the fee items, whose amounts the instrument writes with a space as the thousands separator ("$6 135"), so the quoted value does not match the item's.
 - **Watch next:** the visa application charges are indexed each 1 July; a new amount is a new version.

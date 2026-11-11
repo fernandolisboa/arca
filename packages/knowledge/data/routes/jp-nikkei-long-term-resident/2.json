@@ -4,19 +4,13 @@
   "number": 2,
   "title": "Japanese long-term resident status (teijusha) for the third generation of Japanese descent (sansei), with their spouse and children",
   "country": "JP",
-  "tags": [
-    "descent",
-    "temporary-residence"
-  ],
+  "tags": ["descent", "temporary-residence"],
   "effectiveFrom": "2022-04-01",
   "corrects": 1,
   "status": "open",
   "currency": "JPY",
   "leapDayBirthday": "march-1",
-  "leapDayBirthdaySources": [
-    "age-calculation-act",
-    "civil-code"
-  ],
+  "leapDayBirthdaySources": ["age-calculation-act", "civil-code"],
   "sources": [
     {
       "id": "teijusha-notice",
@@ -117,9 +111,7 @@
                   },
                   "set": {
                     "op": "tokens",
-                    "values": [
-                      "JP"
-                    ]
+                    "values": ["JP"]
                   }
                 },
                 {
@@ -177,9 +169,7 @@
                   },
                   "set": {
                     "op": "tokens",
-                    "values": [
-                      "JP"
-                    ]
+                    "values": ["JP"]
                   }
                 },
                 {
@@ -205,10 +195,7 @@
           }
         ]
       },
-      "sources": [
-        "teijusha-notice",
-        "immigration-act"
-      ]
+      "sources": ["teijusha-notice", "immigration-act"]
     },
     {
       "id": "not-japanese-national",
@@ -223,61 +210,42 @@
           },
           "set": {
             "op": "tokens",
-            "values": [
-              "JP"
-            ]
+            "values": ["JP"]
           }
         }
       },
-      "sources": [
-        "immigration-act"
-      ]
+      "sources": ["immigration-act"]
     }
   ],
   "assessments": [
     {
       "id": "good-conduct",
       "title": "Good conduct, and none of the grounds for refusing landing (criminal record, earlier deportation and the others in art. 5 of the act)",
-      "evidence": [
-        "principal.visaRefusals"
-      ],
-      "sources": [
-        "teijusha-notice",
-        "immigration-act"
-      ]
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["teijusha-notice", "immigration-act"]
     },
     {
       "id": "family-conditions",
       "title": "If family come: a marriage Japan recognizes; whoever they rely on (the principal, or the spouse for the spouse's children) gets a stay of a year or more; spouse and biological children of good conduct",
-      "evidence": [
-        "principal.hasSpouse"
-      ],
-      "sources": [
-        "teijusha-notice"
-      ]
+      "evidence": ["principal.hasSpouse"],
+      "sources": ["teijusha-notice"]
     }
   ],
   "dependents": [
     {
       "id": "spouse",
       "title": "Spouse",
-      "path": [
-        "spouse"
-      ],
+      "path": ["spouse"],
       "condition": {
         "op": "bool",
         "value": true
       },
-      "sources": [
-        "teijusha-notice"
-      ]
+      "sources": ["teijusha-notice"]
     },
     {
       "id": "children",
       "title": "Unmarried biological children under 18 whom the principal supports",
-      "path": [
-        "child"
-      ],
+      "path": ["child"],
       "condition": {
         "op": "all",
         "operands": [
@@ -316,17 +284,12 @@
           }
         ]
       },
-      "sources": [
-        "teijusha-notice",
-        "civil-code"
-      ]
+      "sources": ["teijusha-notice", "civil-code"]
     },
     {
       "id": "adopted-children",
       "title": "Adopted children under 6 whom the principal supports",
-      "path": [
-        "child"
-      ],
+      "path": ["child"],
       "condition": {
         "op": "all",
         "operands": [
@@ -358,17 +321,12 @@
           }
         ]
       },
-      "sources": [
-        "teijusha-notice"
-      ]
+      "sources": ["teijusha-notice"]
     },
     {
       "id": "spouse-children",
       "title": "The spouse's unmarried biological children under 18 whom the principal or the spouse supports",
-      "path": [
-        "spouse",
-        "child"
-      ],
+      "path": ["spouse", "child"],
       "condition": {
         "op": "all",
         "operands": [
@@ -416,18 +374,12 @@
           }
         ]
       },
-      "sources": [
-        "teijusha-notice",
-        "civil-code"
-      ]
+      "sources": ["teijusha-notice", "civil-code"]
     },
     {
       "id": "spouse-adopted-children",
       "title": "The spouse's adopted children under 6 whom the principal or the spouse supports",
-      "path": [
-        "spouse",
-        "child"
-      ],
+      "path": ["spouse", "child"],
       "condition": {
         "op": "all",
         "operands": [
@@ -468,9 +420,7 @@
           }
         ]
       },
-      "sources": [
-        "teijusha-notice"
-      ]
+      "sources": ["teijusha-notice"]
     }
   ],
   "costs": [],
@@ -480,9 +430,7 @@
       "title": "Period of stay as a long-term resident (teijusha) of a status the notice sets: 5 years, 3 years, 1 year or 6 months, then renewable",
       "min": "P6M",
       "max": "P60M",
-      "sources": [
-        "enforcement-ordinance-periods"
-      ]
+      "sources": ["enforcement-ordinance-periods"]
     }
   ]
 }

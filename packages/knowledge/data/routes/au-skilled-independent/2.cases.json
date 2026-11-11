@@ -32,13 +32,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p2",
@@ -51,13 +45,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p3",
@@ -70,13 +58,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p4",
@@ -89,13 +71,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p5",
@@ -108,16 +84,8 @@
                 "basis": "birth"
               }
             ],
-            "financiallyDependentOn": [
-              "p1"
-            ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "financiallyDependentOn": ["p1"],
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p6",
@@ -131,13 +99,7 @@
               }
             ],
             "financiallyDependentOn": [],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p7",
@@ -150,16 +112,8 @@
                 "basis": "birth"
               }
             ],
-            "financiallyDependentOn": [
-              "p1"
-            ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "financiallyDependentOn": ["p1"],
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p8",
@@ -172,13 +126,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p9",
@@ -191,16 +139,8 @@
                 "basis": "birth"
               }
             ],
-            "financiallyDependentOn": [
-              "p2"
-            ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "financiallyDependentOn": ["p2"],
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p10",
@@ -213,13 +153,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p11",
@@ -232,16 +166,8 @@
                 "basis": "birth"
               }
             ],
-            "financiallyDependentOn": [
-              "p2"
-            ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "financiallyDependentOn": ["p2"],
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p12",
@@ -254,16 +180,8 @@
                 "basis": "birth"
               }
             ],
-            "financiallyDependentOn": [
-              "p1"
-            ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "financiallyDependentOn": ["p1"],
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p13",
@@ -276,22 +194,13 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           }
         ],
         "relationships": [
           {
             "kind": "spouse",
-            "people": [
-              "p1",
-              "p2"
-            ],
+            "people": ["p1", "p2"],
             "start": "2012-01-01",
             "end": "none"
           },
@@ -333,10 +242,7 @@
           },
           {
             "kind": "spouse",
-            "people": [
-              "p7",
-              "p8"
-            ],
+            "people": ["p7", "p8"],
             "start": "2024-05-01",
             "end": "none"
           },
@@ -348,10 +254,7 @@
           },
           {
             "kind": "spouse",
-            "people": [
-              "p9",
-              "p10"
-            ],
+            "people": ["p9", "p10"],
             "start": "2025-06-01",
             "end": "none"
           },
@@ -369,10 +272,7 @@
           },
           {
             "kind": "partner",
-            "people": [
-              "p12",
-              "p13"
-            ],
+            "people": ["p12", "p13"],
             "start": "2025-01-01",
             "end": "none"
           }
@@ -383,16 +283,8 @@
       "rulesAsOf": "2026-10-01",
       "expected": {
         "status": "needs_assessment",
-        "dependents": [
-          "p2",
-          "p3",
-          "p4",
-          "p5",
-          "p11"
-        ],
-        "possibleDependents": [
-          "p6"
-        ],
+        "dependents": ["p2", "p3", "p4", "p5", "p11"],
+        "possibleDependents": ["p6"],
         "missingFacts": []
       }
     },
@@ -400,13 +292,7 @@
       "id": "brazilian-skilled-worker-with-partner-of-several-years",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1",
-          "p2",
-          "p3",
-          "p4",
-          "p5"
-        ],
+        "members": ["p1", "p2", "p3", "p4", "p5"],
         "people": [
           {
             "id": "p1",
@@ -419,13 +305,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p2",
@@ -438,13 +318,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p3",
@@ -457,13 +331,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p4",
@@ -476,13 +344,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p5",
@@ -495,22 +357,13 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           }
         ],
         "relationships": [
           {
             "kind": "partner",
-            "people": [
-              "p1",
-              "p2"
-            ],
+            "people": ["p1", "p2"],
             "start": "2020-01-01",
             "end": "none"
           },
@@ -528,10 +381,7 @@
           },
           {
             "kind": "spouse",
-            "people": [
-              "p4",
-              "p5"
-            ],
+            "people": ["p4", "p5"],
             "start": "2023-01-01",
             "end": "none"
           }
@@ -542,10 +392,7 @@
       "rulesAsOf": "2026-10-01",
       "expected": {
         "status": "needs_assessment",
-        "dependents": [
-          "p2",
-          "p3"
-        ],
+        "dependents": ["p2", "p3"],
         "possibleDependents": [],
         "missingFacts": []
       }
@@ -554,10 +401,7 @@
       "id": "partner-for-less-than-12-months",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1",
-          "p2"
-        ],
+        "members": ["p1", "p2"],
         "people": [
           {
             "id": "p1",
@@ -570,13 +414,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p2",
@@ -589,22 +427,13 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           }
         ],
         "relationships": [
           {
             "kind": "partner",
-            "people": [
-              "p1",
-              "p2"
-            ],
+            "people": ["p1", "p2"],
             "start": "2026-03-01",
             "end": "none"
           }
@@ -616,9 +445,7 @@
       "expected": {
         "status": "needs_assessment",
         "dependents": [],
-        "possibleDependents": [
-          "p2"
-        ],
+        "possibleDependents": ["p2"],
         "missingFacts": []
       }
     },
@@ -626,10 +453,7 @@
       "id": "partner-under-18",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1",
-          "p2"
-        ],
+        "members": ["p1", "p2"],
         "people": [
           {
             "id": "p1",
@@ -642,13 +466,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p2",
@@ -661,22 +479,13 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           }
         ],
         "relationships": [
           {
             "kind": "partner",
-            "people": [
-              "p1",
-              "p2"
-            ],
+            "people": ["p1", "p2"],
             "start": "2024-01-01",
             "end": "none"
           }
@@ -696,9 +505,7 @@
       "id": "principal-turned-45",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1"
-        ],
+        "members": ["p1"],
         "people": [
           {
             "id": "p1",
@@ -711,13 +518,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           }
         ],
         "relationships": [],
@@ -736,9 +537,7 @@
       "id": "principal-birth-date-not-recorded",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1"
-        ],
+        "members": ["p1"],
         "people": [
           {
             "id": "p1",
@@ -750,13 +549,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           }
         ],
         "relationships": [],
@@ -768,18 +561,14 @@
         "status": "missing_information",
         "dependents": [],
         "possibleDependents": [],
-        "missingFacts": [
-          "principal.ageYears@p1"
-        ]
+        "missingFacts": ["principal.ageYears@p1"]
       }
     },
     {
       "id": "principal-born-on-a-leap-day-on-28-february-age-unsettled",
       "snapshot": {
         "recordedOn": "2029-02-28",
-        "members": [
-          "p1"
-        ],
+        "members": ["p1"],
         "people": [
           {
             "id": "p1",
@@ -792,13 +581,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           }
         ],
         "relationships": [],
@@ -810,18 +593,14 @@
         "status": "missing_information",
         "dependents": [],
         "possibleDependents": [],
-        "missingFacts": [
-          "principal.ageYears@p1"
-        ]
+        "missingFacts": ["principal.ageYears@p1"]
       }
     },
     {
       "id": "principal-born-on-a-leap-day-is-45-on-1-march",
       "snapshot": {
         "recordedOn": "2029-03-01",
-        "members": [
-          "p1"
-        ],
+        "members": ["p1"],
         "people": [
           {
             "id": "p1",
@@ -834,13 +613,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           }
         ],
         "relationships": [],
@@ -859,12 +632,7 @@
       "id": "grandchild-of-the-principal-is-possible",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1",
-          "p2",
-          "p3",
-          "p4"
-        ],
+        "members": ["p1", "p2", "p3", "p4"],
         "people": [
           {
             "id": "p1",
@@ -877,13 +645,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p2",
@@ -896,13 +658,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p3",
@@ -915,13 +671,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p4",
@@ -934,22 +684,13 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           }
         ],
         "relationships": [
           {
             "kind": "spouse",
-            "people": [
-              "p1",
-              "p2"
-            ],
+            "people": ["p1", "p2"],
             "start": "2009-01-01",
             "end": "none"
           },
@@ -978,13 +719,8 @@
       "rulesAsOf": "2026-10-01",
       "expected": {
         "status": "needs_assessment",
-        "dependents": [
-          "p2",
-          "p3"
-        ],
-        "possibleDependents": [
-          "p4"
-        ],
+        "dependents": ["p2", "p3"],
+        "possibleDependents": ["p4"],
         "missingFacts": []
       }
     }

@@ -26,7 +26,9 @@ The second audit, the first by the full runbook ([#359](https://github.com/ferna
   - Corrected: the leap-day convention. Section 4 of the Age of Majority Act 1985 says an age is attained at the start of the anniversary; no Irish text says when a person born on 29 February has one, and version 2 assumed 28 February. `leapDayBirthday` is now `unsettled`; the case of a child born on 29 February moved from "excluded" to "possible".
   - Split: the `not-eu-eea-swiss-or-british-citizen` and `job-offer` items cite one section each; `pay` cites only the instrument that states the amounts.
   - Confirmed, unchanged: the thresholds, the qualification rules, the 2 years and 20 hours, the 50% rule, the €1,000 fee and its waivers, and the family rules (spouse or civil partner 18, de facto partner 18 with 2 years, unmarried children under 18, stepchildren in the household, adoptions recognised in Ireland).
-- **Check loop:** CHECK_LOOP
+- **Check loop:** runs [43075817319](https://github.com/fernandolisboa/arca/actions/runs/43075817319) (6 of 16 items match), [43076496175](https://github.com/fernandolisboa/arca/actions/runs/43076496175) (8 of 16) and [43076956976](https://github.com/fernandolisboa/arca/actions/runs/43076956976) (8 of 17, none differs). Fixed on the way: the job offer split from the employer's staff test, and S.I. No. 558 of 2026 cited by its html form after its PDF address began to redirect. Left over:
+  - `unreadable`: `dependent:spouse`, `dependent:partner`, `dependent:children` and `dependent:spouse-children`, whose Family Reunification Policy is a PDF the checker does not read (#363).
+  - `checker-gap`: `requirement:not-eu-eea-swiss-or-british-citizen`, which joins several acts; `assessment:pay`, `assessment:pay-recent-graduate` and `duration:permit`, which matched in the second run on the same pages (the passage locator's run-to-run variance); the pinned set `eu-free-movement` v2, as in earlier audits.
 - **Watch next:**
   - The minimum annual remuneration roadmap's next change, due January 2027: version 4.
   - Schedule 3 is replaced every few months: check the year index for an instrument after S.I. No. 558 of 2026.
