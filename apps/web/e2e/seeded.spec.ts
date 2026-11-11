@@ -457,7 +457,8 @@ test('the seed admin analyses a version with AI on demand and watches it to the 
 
   await expect(page).toHaveURL(new RegExp(`/knowledge/check\\?routeId=us-eb5&number=${version}$`));
   await expect(page.getByRole('heading', { level: 2, name: 'Análise com IA' })).toBeVisible();
-  await expect(page.getByText('Análise concluída.')).toBeVisible({ timeout: 30_000 });
+  // On the page body, so a run that ends any other way prints what the screen said instead.
+  await expect(page.locator('body')).toContainText('Análise concluída.', { timeout: 30_000 });
   const steps = page.getByRole('list', { name: 'Etapas da análise' });
   await expect(steps).toContainText('Ler as páginas oficiais');
   await expect(steps).toContainText('Montar o relatório');
