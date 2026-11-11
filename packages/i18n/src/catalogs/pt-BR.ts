@@ -929,6 +929,15 @@ export const ptBR = {
       open: 'Abrir a tela de ativação',
     },
     proposed: 'Versões propostas',
+    /** The proposed versions grouped by country, in the order to review them. */
+    review: {
+      order:
+        'Em ordem: primeiro o que difere das fontes, depois o que já pode ser aprovado, por último o que a IA não conseguiu conferir.',
+      start: 'Comece por aqui',
+      need: '{need, select, differs {Tem diferença} ready {Pronta para aprovar} other {Falta conferir}}',
+      versions: '{n, plural, one {# versão} other {# versões}}',
+      comparisons: 'Comparação de destinos',
+    },
     noneProposed: 'Nenhuma versão proposta agora.',
     others: 'Outras versões',
     versionTitle: '{title} · versão {number}',
@@ -1061,7 +1070,7 @@ export const ptBR = {
         'A verificação independente não lê comparações. Abra as fontes e confira por conta própria antes de decidir.',
       off: 'A verificação independente ainda não está ligada. Abra as fontes e confira por conta própria antes de decidir.',
       listStatus:
-        '{status, select, checked {Conferida pela IA} flagged {Marcada para revisão} running {Verificando} stale {Verificação vencida} other {Sem verificação}}',
+        '{status, select, checked {Conferida pela IA} flagged {Conferida em parte} running {Verificando} stale {Verificação vencida} other {Sem verificação}}',
       status:
         '{status, select, running {A IA está lendo as fontes desta versão. Leva alguns minutos, e a tela se atualiza sozinha.} stale {A última verificação não vale mais: a versão, o guia do país ou a IA mudaram, ou ela passou da validade.} other {Esta versão ainda não foi verificada.}}',
       startsOnOpen:
