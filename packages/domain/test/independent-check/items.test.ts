@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { checkItems, expressionValues } from '../../src/independent-check/items.js';
+import {
+  checkItems,
+  expressionValues,
+  machineReadableUrls,
+} from '../../src/independent-check/items.js';
 import type { Expression } from '../../src/rules/expression.js';
-import { routeVersionSchema } from '../../src/rules/route-version.js';
-import { entry } from '../rules/fixtures.js';
+import { countrySetSchema, routeVersionSchema } from '../../src/rules/route-version.js';
+import { entry, treaty } from '../rules/fixtures.js';
 
 const secondary = {
   id: 'blog',
@@ -135,5 +139,49 @@ describe('expressionValues', () => {
     ],
   ])('%s', (_, expression, expected) => {
     expect(expressionValues(expression).map(({ value }) => value)).toEqual(expected);
+  });
+});
+
+describe('machineReadableUrls', () => {
+  const law = 'https://www.gov.example/law';
+  const data = 'https://api.gov.example/law.json';
+  const lawSource = {
+    id: 'law',
+    url: law,
+    title: 'Residence act',
+    kind: 'official' as const,
+    verifiedAt: '2026-10-01',
+  };
+  const naming = (address: string | undefined) =>
+    address === undefined ? lawSource : { ...lawSource, machineReadableUrl: address };
+  const withSources = (versionAddress?: string, setAddress?: string) => ({
+    ...entry({ sources: [naming(versionAddress)] }),
+    countrySets: [countrySetSchema.parse({ ...treaty, sources: [naming(setAddress)] })],
+  });
+
+  it.each([
+    ['every official source at it names it', data, data],
+    ['the country set names none', data, undefined],
+    ['the version names none', undefined, data],
+  ])('reads a URL through its address when %s', (_, versionAddress, setAddress) => {
+    expect([...machineReadableUrls(withSources(versionAddress, setAddress))]).toEqual([
+      [law, data],
+    ]);
+  });
+
+  it.each([
+    ['no source names one', undefined, undefined],
+    ['the sources name different ones', data, 'https://api.gov.example/other.json'],
+  ])('reads the page itself when %s', (_, versionAddress, setAddress) => {
+    expect(machineReadableUrls(withSources(versionAddress, setAddress)).size).toBe(0);
+  });
+
+  it('never takes an address from a secondary source', () => {
+    const secondaryWithAddress = { ...secondary, machineReadableUrl: data };
+    const read = machineReadableUrls({
+      ...entry({ sources: [lawSource, secondaryWithAddress] }),
+      countrySets: [],
+    });
+    expect(read.size).toBe(0);
   });
 });

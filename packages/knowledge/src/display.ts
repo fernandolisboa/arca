@@ -24,7 +24,10 @@ export interface DisplayCatalog {
   readonly comparisons: () => readonly ComparisonEntry[];
   readonly versions: (routeId: string) => readonly CatalogEntry[];
   readonly cases: (hash: string) => readonly RuleCaseSummary[];
-  /** A cited URL's host as the build's official-source matching read it, if it has one. */
+  /**
+   * The host of a cited URL or machine-readable address as the build's official-source matching
+   * read it, if it has one.
+   */
   readonly hostOf: (url: string) => string | undefined;
   /**
    * The hosts of the pinned official-domain lists, which the independent check may fetch on

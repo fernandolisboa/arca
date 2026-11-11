@@ -78,6 +78,32 @@ export function numbersIn(text: string): ReadonlySet<string> {
   return found;
 }
 
+/** A line break of any kind: a quote reads each as one space. */
+const lineBreak = /\r\n|[\n\r\v\f\u0085\u2028\u2029]/u;
+
+/**
+ * A text with the digits of two lines, or of two columns of one line, kept apart, as a bar keeps
+ * the cells of a table row: a line that starts with a digit after one that ends with a digit opens
+ * with a bar, and a tab or a run of spaces between two digits becomes one. A quote takes any
+ * whitespace as one space and `numbersIn` takes a space between digits as a group separator, so
+ * "Article 1" above "600 EUR" would otherwise state 1,600. Every text a quote is checked against
+ * goes through this first.
+ */
+export function digitsApart(text: string): string {
+  let afterDigit = false;
+  return text
+    .split(lineBreak)
+    .map((line) => {
+      const columns = line.replace(/(?<=\d)(?:\s{2,}|\t)(?=\d)/gu, ' | ');
+      const words = columns.trim();
+      if (words === '') return columns;
+      const barred = afterDigit && /^\d/u.test(words);
+      afterDigit = /\d$/u.test(words);
+      return barred ? `| ${columns}` : columns;
+    })
+    .join('\n');
+}
+
 /**
  * Languages whose month names a dated passage may use: a wide set rather than the catalog's
  * countries, so a country added as data needs no change here. A name in another language fails

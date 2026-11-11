@@ -11,7 +11,12 @@ import {
   guardedLookup,
   httpsSourceFetcher,
 } from '../src/knowledge/check/fetcher.js';
-import { htmlToText } from '../src/knowledge/check/html-text.js';
+import {
+  htmlToText,
+  markupReader,
+  maxElementDepth,
+  maxElements,
+} from '../src/knowledge/check/html-text.js';
 
 /** Synthetic hosts only; a local server stands in for both. */
 const hosts = ['gov.example'];
@@ -123,6 +128,35 @@ const routes = new Map<string, Handler>([
       response.end('cookies set');
     },
   ],
+  [
+    '/law.json',
+    (response) => {
+      response.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      response.end(
+        JSON.stringify({
+          title: 'Residence Act',
+          number: 3,
+          body: '<p>Income of at least <b>€920,00</b>.</p>',
+        }),
+      );
+    },
+  ],
+  [
+    '/law.xml',
+    (response) => {
+      response.writeHead(200, { 'content-type': 'application/akn+xml' });
+      response.end(
+        '<?xml version="1.0"?><act><title>Residence Act</title><p>Income of at least &#8364;920,00.</p></act>',
+      );
+    },
+  ],
+  [
+    '/broken.json',
+    (response) => {
+      response.writeHead(200, { 'content-type': 'application/json' });
+      response.end('{"title": "Residence Act"');
+    },
+  ],
   ['/slow', () => undefined],
 ]);
 
@@ -133,13 +167,18 @@ function redirect(response: ServerResponse, location: string) {
 
 let server: Server;
 let port: number;
-const received: { cookie: string | undefined; authorization: string | undefined }[] = [];
+const received: {
+  cookie: string | undefined;
+  authorization: string | undefined;
+  accept?: string | undefined;
+}[] = [];
 
 beforeAll(async () => {
   server = createServer((request, response) => {
     received.push({
       cookie: request.headers.cookie,
       authorization: request.headers.authorization,
+      accept: request.headers.accept,
     });
     const handler = routes.get(request.url ?? '');
     if (typeof handler !== 'function') {
@@ -178,6 +217,32 @@ describe('the cited-source fetcher (ADR-0027)', () => {
     });
   });
 
+  it.each([
+    ['JSON', '/law.json'],
+    ['XML of a vocabulary of its own', '/law.xml'],
+  ])('reads a %s answer from a machine-readable address as its strings', async (_, path) => {
+    expect(await fetcher().fetch(page(path), hosts)).toEqual({
+      ok: true,
+      status: 200,
+      text: 'Residence Act\nIncome of at least €920,00.',
+      cut: false,
+      chain: [page(path)],
+    });
+  });
+
+  it('records the address as it is requested, not as it is written', async () => {
+    const read = await fetcher().fetch(page('/l\taw'), hosts);
+    expect(read).toMatchObject({ ok: true, chain: [page('/law')] });
+  });
+
+  it('asks for a page first, then data, then plain text', async () => {
+    received.length = 0;
+    await fetcher().fetch(page('/law'), hosts);
+    expect(received[0]?.accept).toBe(
+      'text/html, application/xhtml+xml, application/json;q=0.9, application/xml;q=0.9, text/xml;q=0.9, text/plain;q=0.8, */*;q=0.1',
+    );
+  });
+
   it('decodes the declared charset and the declared compression', async () => {
     expect(await fetcher().fetch(page('/latin1'), hosts)).toMatchObject({ text: 'Art. º' });
     expect(await fetcher().fetch(page('/gzip'), hosts)).toMatchObject({ text: 'Compressed law' });
@@ -187,7 +252,7 @@ describe('the cited-source fetcher (ADR-0027)', () => {
     received.length = 0;
     await fetcher().fetch(page('/cookie'), hosts);
     await fetcher().fetch(page('/law'), hosts);
-    expect(received).toEqual([
+    expect(received.map(({ cookie, authorization }) => ({ cookie, authorization }))).toEqual([
       { cookie: undefined, authorization: undefined },
       { cookie: undefined, authorization: undefined },
     ]);
@@ -212,6 +277,7 @@ describe('the cited-source fetcher (ADR-0027)', () => {
     ['a 404', page('/missing'), 'http_status'],
     ['a PDF', page('/pdf'), 'unsupported_type'],
     ['a page that only scripts fill with text', page('/app'), 'no_text'],
+    ['a JSON answer that does not parse', page('/broken.json'), 'no_text'],
     ['too many bytes', page('/big'), 'too_large'],
     ['a decompression bomb', page('/bomb'), 'too_large'],
   ])('refuses %s', async (_, url, failure) => {
@@ -426,8 +492,102 @@ describe('htmlToText', () => {
     );
   });
 
-  it('walks a deeply nested page without overflowing the stack', () => {
-    expect(htmlToText(`${'<div>'.repeat(5_000)}deep${'</div>'.repeat(5_000)}`)).toBe('deep');
+  it('walks a page nested past the depth limit without overflowing the stack', () => {
+    expect(htmlToText(`${'<div>'.repeat(5_000)}deep${'</div>'.repeat(5_000)}`)).toBe('');
+  });
+
+  it('reads a page nested as deep as a real one may be', () => {
+    expect(htmlToText(`${'<div>'.repeat(500)}deep${'</div>'.repeat(500)}`)).toBe('deep');
+  });
+
+  it('reads no text of a page nested past the depth limit, without the work of parsing it', () => {
+    expect(htmlToText(`${'<div>'.repeat(maxElementDepth)}deep`)).toBe('');
+    const started = performance.now();
+    expect(htmlToText(`${'<div>'.repeat(400_000)}deep`)).toBe('');
+    expect(performance.now() - started).toBeLessThan(2_000);
+  });
+
+  it('reads no text of a short page that makes the parser reopen elements without end', () => {
+    const reopened = `<p>${Array.from({ length: 500 }, (_, index) => `<b a=${String(index)}>`).join('')}`;
+    const started = performance.now();
+    expect(htmlToText(`${reopened}${'</p><p>x'.repeat(20_000)}`)).toBe('');
+    expect(performance.now() - started).toBeLessThan(2_000);
+  });
+
+  // Each of these four cost the parser a minute or more with no budget; the bound is loose
+  // because the budget is spent before the parse stops, which takes seconds on a busy machine.
+  it.each([
+    ['strews text through broken tables', () => '<table>x'.repeat(100_000)],
+    [
+      'strews text before a table with many siblings',
+      () => `${'<br>'.repeat(100_000)}<table>${'x</x>'.repeat(100_000)}`,
+    ],
+    [
+      'makes the parser move every child of an element',
+      () => `<b><p>${'<!>'.repeat(200_000)}</b>x`,
+    ],
+    [
+      'repeats a tag whose attributes are adopted',
+      () =>
+        `<html ${Array.from({ length: 2_000 }, (_, index) => `a${String(index)}`).join(' ')}>${'<html>'.repeat(100_000)}x`,
+    ],
+  ])(
+    'reads no text of a page that %s without end',
+    (_, markup) => {
+      const started = performance.now();
+      expect(htmlToText(markup())).toBe('');
+      expect(performance.now() - started).toBeLessThan(15_000);
+    },
+    30_000,
+  );
+
+  it('reads a page whose one misnested element wraps thousands of paragraphs', () => {
+    const paragraphs = '<p>A paragraph of the act.</p>\n'.repeat(5_000);
+    const text = htmlToText(`<font><div>${paragraphs}</font></div>`);
+    expect(text.split('\n')).toHaveLength(5_000);
+  });
+
+  it('counts each kind of move against the budget', () => {
+    const strayText = `${'<br>'.repeat(50)}<table>${'x</x>'.repeat(50)}</table>`;
+    const strayElements = `${'<br>'.repeat(50)}<table>${'<b>x</b>'.repeat(50)}</table>`;
+    const reparented = `<b><p>${'<br>'.repeat(100)}</b>x`;
+    const adopted = `<html a b c>${'<html>'.repeat(20)}x`;
+    for (const markup of [strayText, strayElements, reparented, adopted]) {
+      expect(htmlToText(markup)).toContain('x');
+      const reader = markupReader(1_000);
+      expect(reader.read(markup)).toBe('');
+      expect(reader.stopped()).toBe(true);
+    }
+  });
+
+  it('holds all a reader reads to one budget', () => {
+    const stray = `<table>${'<tr><td>a</td></tr><br>'.repeat(20)}</table>`;
+    const reader = markupReader(1_000);
+    expect(reader.read(stray)).toContain('a');
+    expect(reader.stopped()).toBe(false);
+    const texts = Array.from({ length: 10 }, () => reader.read(stray));
+    expect(texts.at(-1)).toBe('');
+    expect(reader.stopped()).toBe(true);
+  });
+
+  it('reads a table with stray content between its rows by the thousand', () => {
+    const text = htmlToText(`<table>${'<tr><td>a</td></tr><br>'.repeat(1_500)}</table>`);
+    expect(text.match(/a/gu)).toHaveLength(1_500);
+  });
+
+  it('reads a table with a few pieces out of place', () => {
+    expect(htmlToText('<table>note<tr><td>a</td>stray<td>b</td></tr></table>')).toContain('a | b');
+  });
+
+  it('counts the elements that hold nothing, too', () => {
+    expect(htmlToText('x<br>'.repeat(maxElements + 1))).toBe('');
+  });
+
+  it('reads a page as dense with elements as markup gets', () => {
+    expect(htmlToText('<p>a'.repeat(2_000)).split('\n')).toHaveLength(2_000);
+    expect(htmlToText(`<table>${'<tr><td>a<td>b'.repeat(500)}</table>`).split('\n')).toHaveLength(
+      500,
+    );
   });
 
   it('keeps a table row on one line, with a bar between its cells', () => {

@@ -6,6 +6,7 @@ import {
   type RuleCaseSummary,
   maxKnowledgeJsonDepth,
   parseCalendarDate,
+  sourceUrls,
 } from '@arca/domain';
 import { hostOf } from '@arca/scripts/host';
 import { parseJsonSubset } from '@arca/scripts/json';
@@ -98,8 +99,8 @@ export async function buildKnowledge(
 }
 
 /**
- * The host of every cited URL as official-source matching reads it, or null for a URL with none,
- * so the activation screen names the same host the build matched.
+ * The host of every cited URL and machine-readable address as official-source matching reads it,
+ * or null for one with none, so the activation screen names the same host the build matched.
  */
 function sourceHosts(
   entries: readonly BuiltEntry[],
@@ -110,7 +111,7 @@ function sourceHosts(
     ...[...parseComparisons(comparisons).values()].flatMap(({ indicators }) =>
       indicators.flatMap((indicator) => indicator.sources),
     ),
-  ].map(({ url }) => url);
+  ].flatMap(sourceUrls);
   return Object.fromEntries(urls.map((url) => [url, hostOf(url) ?? null] as const));
 }
 

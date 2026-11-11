@@ -20,6 +20,8 @@ import type { RuleCheckerFailure } from './checker.js';
 /** One cited URL as the run fetched it (ADR-0027). */
 export interface FetchLogEntry {
   readonly url: string;
+  /** The machine-readable address read in the page's place, or null when the page was read. */
+  readonly machineReadableUrl: string | null;
   readonly outcome: 'read' | FetchFailure;
   readonly status: number | null;
   readonly durationMs: number;
@@ -73,6 +75,8 @@ const singleQuoteItem = z
 const storedItem = z.union([quotedItem, singleQuoteItem]);
 const storedFetch = z.strictObject({
   url,
+  // Reports stored before a source could name a machine-readable address read the page itself.
+  machineReadableUrl: url.nullable().default(null),
   outcome: z.enum(fetchOutcomes),
   status: z.int().min(0).max(999).nullable(),
   durationMs: z.int().min(0),
@@ -147,6 +151,13 @@ export const listingColumns = {
  * app_api pool. Items and the fetch log are parsed again on the way out, so a row the table's
  * checks let through never reaches the screen in another shape.
  */
+/**
+ * A log entry as stored: without the address when the page itself was read, so the code from
+ * before a source could name one still reads every report that read no address.
+ */
+const storedEntry = ({ machineReadableUrl, ...entry }: FetchLogEntry) =>
+  machineReadableUrl === null ? entry : { ...entry, machineReadableUrl };
+
 export function postgresCheckReportStore(db: () => Database): CheckReportStore {
   return {
     async save(report) {
@@ -157,7 +168,7 @@ export function postgresCheckReportStore(db: () => Database): CheckReportStore {
           guide_hash, prompt_version, model, items, fetch_log, failure, failed, clean)
         VALUES (${report.startId}, ${report.routeId}, ${report.number}, ${report.contentHash},
           ${report.guideHash}, ${report.promptVersion}, ${report.model},
-          ${JSON.stringify(report.items)}::jsonb, ${JSON.stringify(report.fetchLog)}::jsonb,
+          ${JSON.stringify(report.items)}::jsonb, ${JSON.stringify(report.fetchLog.map(storedEntry))}::jsonb,
           ${report.failure}, ${report.failed}, ${report.clean})`);
     },
     async list() {
