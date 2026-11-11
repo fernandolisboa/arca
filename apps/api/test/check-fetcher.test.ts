@@ -415,12 +415,14 @@ describe('htmlToText', () => {
     );
   });
 
-  it('keeps every word of a page longer than one parser chunk', () => {
+  it('reads a page longer than one parser chunk the same way to its end', () => {
     const sentences = 6_000;
-    const page = `<p>${'Taxa de &euro;&nbsp;85 por pedido. '.repeat(sentences)}</p>`;
-    expect(page.length).toBeGreaterThan(65_536);
-    expect(htmlToText(page)).toBe(
-      Array.from({ length: sentences }, () => 'Taxa de € 85 por pedido.').join(' '),
+    const html =
+      `<p>${'Taxa de &euro;&nbsp;85 por pedido. '.repeat(sentences)}</p>` +
+      '<p style="display&#58;none">EUR 1.000</p><p>Fim.</p>';
+    expect(html.length).toBeGreaterThan(65_536);
+    expect(htmlToText(html)).toBe(
+      `${Array.from({ length: sentences }, () => 'Taxa de € 85 por pedido.').join(' ')}\nFim.`,
     );
   });
 
