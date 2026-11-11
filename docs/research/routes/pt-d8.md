@@ -9,7 +9,7 @@ Research notes for Portugal's D8 residence visa for remote work for employers or
 The first full audit by the runbook ([#356](https://github.com/fernandolisboa/arca/issues/356)), on demand, done together with [`pt-d7`](pt-d7.md). The two routes share every source but three; what they share is in [that record](pt-d7.md#2026-11-11), and this one holds what is D8's own.
 
 - **Version audited:** 3
-- **Outcome:** correction, version 4 (pull request [#377](https://github.com/fernandolisboa/arca/pull/377)), from version 3's own date, 2026-01-01, so it replaces version 3 entirely, and with it versions 1 and 2, which start on the same date. The pull request carries both routes.
+- **Outcome:** correction, version 4 (pull request [#379](https://github.com/fernandolisboa/arca/pull/379)), from version 3's own date, 2026-01-01, so it replaces version 3 entirely, and with it versions 1 and 2, which start on the same date. The pull request carries both routes.
 - **Sources re-read** (all on 2026-11-11 UTC; pages of diariodarepublica.pt rendered with the session's Playwright and read from the saved text, gazette PDFs with `curl` and `pdftotext`):
   - `lei-23-2007-remote` (new): the consolidated Lei n.º 23/2007, article 61.º-B, read in full.
   - `dr-84-2007-income`, which was `dr-84-2007`, and `dr-84-2007-work-link` (new): the consolidated Decreto Regulamentar n.º 84/2007, article 31.º-A, read in full.
