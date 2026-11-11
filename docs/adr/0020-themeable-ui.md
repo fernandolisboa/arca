@@ -36,7 +36,7 @@ This needs four things ADR-0010 does not settle: how themes are applied, where f
 - Every component must use tokens; a hard-coded color, radius or font is a review finding.
 - Each new theme adds one palette per mode and must pass the contrast test.
 - Four navigation layouts on wide screens, three on phones and three dock edges mean several shell variants to test in Playwright at each breakpoint.
-- Sixteen runtime packages (fifteen fonts and `lucide-react`) and two test packages (`@axe-core/playwright`, `axe-core`) enter the dependency list. None has install scripts; none has runtime dependencies except `@axe-core/playwright`, which depends on `axe-core`; all publish with provenance (npm registry, checked 2026-11-03).
+- Sixteen runtime packages (fifteen fonts and `lucide-react`; a sixteenth font, `@fontsource/opendyslexic`, joined on 2026-11-11) and two test packages (`@axe-core/playwright`, `axe-core`) enter the dependency list. None has install scripts; none has runtime dependencies except `@axe-core/playwright`, which depends on `axe-core`; all publish with provenance (npm registry, checked 2026-11-03).
 
 ## Versions
 
@@ -45,5 +45,5 @@ This needs four things ADR-0010 does not settle: how themes are applied, where f
 | `lucide-react` | 1.62.0 (newest past the seven-day cooldown) | ISC |
 | `@fontsource-variable/bricolage-grotesque`, `dm-sans`, `fraunces`, `inter`, `ibm-plex-sans`, `instrument-sans`, `space-grotesk`, `manrope`, `work-sans`, `nunito`, `atkinson-hyperlegible-next` | 5.3.0 | OFL-1.1 |
 | `@fontsource-variable/source-sans-3` | 5.3.1 | OFL-1.1 |
-| `@fontsource/ibm-plex-mono`, `instrument-serif`, `young-serif` | 5.3.0 | OFL-1.1 |
+| `@fontsource/ibm-plex-mono`, `instrument-serif`, `young-serif`, `opendyslexic` (added 2026-11-11) | 5.3.0 | OFL-1.1 |
 | `@axe-core/playwright`, `axe-core` | 4.14 | MPL-2.0 |
