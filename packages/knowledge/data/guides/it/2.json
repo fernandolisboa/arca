@@ -1,0 +1,252 @@
+{
+  "schemaVersion": 1,
+  "id": "it",
+  "number": 2,
+  "title": "Italian citizenship law: citizenship by descent and the art. 3-bis bar",
+  "laws": [
+    {
+      "id": "legge-91-1992",
+      "title": "Legge 5 febbraio 1992, n. 91 (Nuove norme sulla cittadinanza), the citizenship law: art. 1 citizenship by birth, art. 3-bis bar for people born abroad, arts. 3, 4, 9, 9-bis, 11, 14, 15, 17, 20 and 26",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1992-02-05;91",
+      "verifiedAt": "2026-11-11",
+      "amendment": "Amended ad hoc by ordinary laws and by decree-laws, which Parliament converts, often with amendments. Art. 3-bis was added by decree-law 36/2025 from 2025-03-29 and rewritten by its conversion law 74/2025 from 2025-05-24; art. 4, comma 1-bis, b and art. 9-bis were changed by the 2026 budget law 199/2025 from 2026-01-01. Normattiva shows each article with the date its text is in force and keeps earlier versions; its editorial notes under an article can lag behind later amendments to the act they quote, as the note under art. 4 does."
+    },
+    {
+      "id": "decreto-legge-36-2025",
+      "title": "Decreto-legge 28 marzo 2025, n. 36 (urgent citizenship provisions): art. 1 adds art. 3-bis to law 91/1992 and court evidence rules; as converted, also comma 1-ter on minors and arts. 1-bis and 1-ter",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2025-03-28;36",
+      "verifiedAt": "2026-11-11",
+      "amendment": "In force from 2025-03-29 (art. 2, the day after publication in the Gazzetta Ufficiale of 2025-03-28) and converted with amendments by law 74/2025, whose changes apply from 2025-05-24; art. 1, commi 1-bis to 1-quater and arts. 1-bis and 1-ter exist only in the converted text. Decree-law 200/2025, art. 1, comma 19-ter, added on conversion by law 26/2026, moved the deadline in art. 1, comma 1-ter from 2026-05-31 to 2029-05-31; Normattiva shows that text of art. 1 in force from 2026-03-01."
+    },
+    {
+      "id": "legge-74-2025",
+      "title": "Legge 23 maggio 2025, n. 74, which converted decree-law 36/2025 with amendments, among them rewriting art. 3-bis letters c and d, deleting letter e and adding letter a-bis",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2025-05-23;74",
+      "verifiedAt": "2026-11-11",
+      "amendment": "A one-off conversion law in force from 2025-05-24 (art. 1, comma 2, the day after publication in the Gazzetta Ufficiale of 2025-05-23); its notice under art. 15, comma 5 of law 400/1988 says the changes it makes to the decree take effect from that day. Later changes amend decree-law 36/2025 as converted, or law 91/1992, not this law."
+    },
+    {
+      "id": "legge-555-1912",
+      "title": "Legge 13 giugno 1912, n. 555 (Sulla cittadinanza italiana), the former citizenship law: art. 1 transmission by the father, arts. 7, 8, 10 and 12 on keeping and losing citizenship, arts. 19 and 20",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1912-06-13;555",
+      "verifiedAt": "2026-11-11",
+      "amendment": "In force from 1912-07-01 (art. 20) and repealed by art. 26 of law 91/1992 from 1992-08-16, so not amended again; it still decides the status of births and losses before that date. Normattiva shows the repealed text by default; the wording in force on a past date is in the earlier versions of each article. Constitutional Court rulings 87/1975 (art. 10, third paragraph) and 30/1983 (art. 1, Nos. 1 and 2) struck parts of it, and Normattiva records both in notes under those articles."
+    },
+    {
+      "id": "legge-123-1983",
+      "title": "Legge 21 aprile 1983, n. 123, art. 5: the minor child, also adopted, of a citizen father or a citizen mother is a citizen; a dual citizen had to opt within a year of majority",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1983-04-21;123",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Art. 5 was in force from 1983-04-27 to 1992-08-15. Art. 26 of law 91/1992 repealed the whole law and, in comma 2, abolished the duty to opt in art. 5, second paragraph; Normattiva's note under that art. 26 records that law 180/1986 had extended the option deadline until the new citizenship law came into force. No further amendments."
+    },
+    {
+      "id": "corte-costituzionale-sentenza-30-1983",
+      "title": "Corte costituzionale, sentenza 30/1983: art. 1, No. 1 of law 555/1912 is unconstitutional where it does not make the child of a citizen mother a citizen by birth",
+      "url": "https://www.cortecostituzionale.it/scheda-pronuncia/1983/30",
+      "verifiedAt": "2026-11-11",
+      "amendment": "A final ruling of the Constitutional Court, decided 1983-01-28 and deposited 1983-02-09; it is not amended. It also struck art. 1, No. 2 and art. 2, second paragraph of law 555/1912. It does not say whether it reaches births before 1948-01-01; order 147/2026 records that the Court of Cassation and the administration answer that differently."
+    },
+    {
+      "id": "corte-costituzionale-sentenza-87-1975",
+      "title": "Corte costituzionale, sentenza 87/1975: art. 10, third paragraph of law 555/1912 is unconstitutional where it took Italian citizenship from a woman who married a foreigner regardless of her will",
+      "url": "https://www.cortecostituzionale.it/scheda-pronuncia/1975/87",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A final ruling, decided 1975-04-09, deposited 1975-04-16 and published in the Gazzetta Ufficiale of 1975-04-23; it is not amended. It strikes the loss only where it happened regardless of the woman's will. Normattiva records it in a note under art. 10 of law 555/1912, in the version in force from 1975-04-24."
+    },
+    {
+      "id": "corte-costituzionale-sentenza-63-2026",
+      "title": "Corte costituzionale, sentenza 63/2026: art. 3-bis is an original bar to acquiring citizenship, not a revocation; the challenges are unfounded or inadmissible",
+      "url": "https://www.cortecostituzionale.it/scheda-pronuncia/2026/63",
+      "verifiedAt": "2026-11-11",
+      "amendment": "A final ruling, decided 2026-03-11, deposited 2026-04-30 and published in the Gazzetta Ufficiale on 2026-05-06, on questions of the Tribunale di Torino limited to the words on people born before art. 3-bis came into force and to letters a, a-bis and b. It is not amended; a later ruling on other questions, or an EU Court of Justice answer, can change how art. 3-bis applies."
+    },
+    {
+      "id": "corte-costituzionale-ordinanza-147-2026",
+      "title": "Corte costituzionale, ordinanza 147/2026: asks the EU Court of Justice whether arts. 9 TEU and 20 TFEU preclude art. 3-bis, and suspends the joined cases until the answer",
+      "url": "https://www.cortecostituzionale.it/scheda-pronuncia/2026/147",
+      "verifiedAt": "2026-11-11",
+      "amendment": "An order decided 2026-06-09, deposited 2026-07-23 and published in the Gazzetta Ufficiale on 2026-07-29, in the joined cases of the Tribunale di Mantova and the Tribunale di Campobasso. The suspended cases resume once the EU Court of Justice answers. The order does not change art. 3-bis; only a later ruling or a new law can."
+    },
+    {
+      "id": "legge-199-2025",
+      "title": "Legge 30 dicembre 2025, n. 199, the State budget law for 2026, art. 1, commi 513 and 514: 3 years for the declaration in art. 4, comma 1-bis, b of law 91/1992, made free of charge",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2025-12-30;199",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A budget law in force from 2026-01-01, except some commi its notes list, which do not include 513 and 514; these changed law 91/1992 and the consular fee table from that date. Its commi are amended by later laws and Normattiva keeps many dated versions of its single art. 1; commi 513 and 514 read the same in the first and the current version."
+    },
+    {
+      "id": "decreto-legge-200-2025",
+      "title": "Decreto-legge 31 dicembre 2025, n. 200 (urgent provisions on legal deadlines), art. 1, comma 19-ter, added by law 26/2026: moves the deadline in art. 1, comma 1-ter of decree-law 36/2025 to 2029-05-31",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2025-12-31;200",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A decree-law in force from 2025-12-31, converted with amendments by law 26/2026 of 2026-02-27, published 2026-02-28. Comma 19-ter is not in the decree as published: the conversion law added it, and Normattiva shows art. 1 with it in force from 2026-03-01. It replaced the words 31 maggio 2026 with 31 maggio 2029 in decree-law 36/2025. Later laws may amend it again."
+    },
+    {
+      "id": "decreto-legislativo-71-2011",
+      "title": "Decreto legislativo 3 febbraio 2011, n. 71 (consular functions): art. 10 on recognizing citizenship, and the annexed table of consular fees, section I, arts. 7-bis to 7-quater",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2011-02-03;71",
+      "verifiedAt": "2026-11-11",
+      "amendment": "The amounts in the table are changed by laws, ad hoc: law 207/2024, art. 1, comma 639 raised the art. 7-bis fee from EUR 300 to EUR 600; decree-law 36/2025 added art. 7-ter and law 199/2025 added art. 7-quater. Normattiva shows the table in force from 2026-01-01 but publishes its rows as an image, so the amounts are readable there only in its notes quoting each amending law. Law 11/2026 replaced art. 10 from 2026-02-19; parts of the new art. 10 apply only from 2029-01-01."
+    },
+    {
+      "id": "legge-11-2026",
+      "title": "Legge 19 gennaio 2026, n. 11 (services for citizens and businesses abroad), art. 1: replaces art. 10 of legislative decree 71/2011 on recognizing the citizenship of adults living abroad",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2026-01-19;11",
+      "verifiedAt": "2026-11-11",
+      "amendment": "Published in the Gazzetta Ufficiale n. 28 of 2026-02-04, in force from 2026-02-19. Art. 1 works by rewriting art. 10 of decree 71/2011, so a later change amends that article, and Normattiva shows it there with its dates. Some of the new art. 10 takes effect only on 2029-01-01, so a law can still move or change it before then."
+    },
+    {
+      "id": "legge-207-2024",
+      "title": "Legge 30 dicembre 2024, n. 207, the State budget law for 2025, art. 1, commi 636 (municipal fee for recognition), 639 (consular fee raised to EUR 600) and 814 (court fee)",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2024-12-30;207",
+      "verifiedAt": "2026-11-11",
+      "amendment": "A budget law in force from 2025-01-01, except 3 commi its notes list, which do not include 639. Its single art. 1 is amended often and Normattiva keeps many dated versions; comma 639 reads the same in the first and the current version. A later law can change the fee again."
+    },
+    {
+      "id": "dpr-115-2002",
+      "title": "D.P.R. 30 maggio 2002, n. 115 (consolidated text on court costs), art. 13, comma 1-sexies: EUR 600 per claimant in a case on establishing Italian citizenship",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.del.presidente.della.repubblica:2002-05-30;115",
+      "verifiedAt": "2026-11-11",
+      "amendment": "Amended by later laws; law 207/2024, art. 1, comma 814 added comma 1-sexies from 2025-01-01. Normattiva shows art. 13 with its dated versions."
+    }
+  ],
+  "pitfalls": [
+    {
+      "id": "art-1-overridden-by-3-bis",
+      "text": "Art. 1 of law 91/1992 still reads that the child of a citizen father or mother is a citizen by birth, unchanged since 1992-08-16. Art. 3-bis derogates from it and from arts. 2, 3, 14 and 20, art. 5 of law 123/1983, arts. 1, 2, 7, 10, 12 and 19 of law 555/1912 and arts. 4, 5, 7, 8 and 9 of the 1865 civil code: whoever is born abroad, even before art. 3-bis came into force, and holds another citizenship is deemed never to have acquired Italian citizenship unless one of its conditions applies.",
+      "laws": ["legge-91-1992", "decreto-legge-36-2025"]
+    },
+    {
+      "id": "original-bar-not-loss",
+      "text": "Ruling 63/2026 reads art. 3-bis as an original bar to acquiring citizenship that works ex tunc, not as a revocation or a loss: it reaches a status that was never officially recognized. So the question is whether the person ever acquired citizenship, and the bar reaches only people born abroad who hold another citizenship. Someone born in Italy, or holding no other citizenship, is outside it. The text says holds another citizenship in the present tense and names no date for judging it.",
+      "laws": ["corte-costituzionale-sentenza-63-2026", "legge-91-1992"]
+    },
+    {
+      "id": "two-texts-of-3-bis",
+      "text": "Art. 3-bis had 2 texts. From 2025-03-29 to 2025-05-23 the decree-law listed: a citizen parent or adopter born in Italy (c), a citizen parent or adopter resident in Italy for 2 continuous years before the birth or adoption (d), and a citizen first-degree ascendant of the citizen parents or adopters, born in Italy (e); there was no a-bis. From 2025-05-24 law 74/2025 rewrote c and d as they now read, deleted e and added a-bis. The current letters apply from 2025-05-24; the decree-law text governs the period in between.",
+      "laws": ["decreto-legge-36-2025", "legge-74-2025", "legge-91-1992"]
+    },
+    {
+      "id": "filings-by-2025-03-27",
+      "text": "Letters a, a-bis and b keep the rules applicable on 2025-03-27 for an application with its documents filed with the consulate or mayor, or a court claim, by 23h59 Rome time that day, or an application filed on the day of an appointment the office communicated by that time. Ruling 63/2026 left open whether someone who started the procedure but got no appointment by then must be treated alike, and order 147/2026 did not decide it; it notes Cassation order 13818/2026, by which a missing appointment gives an interest to sue. For applications filed later these letters do not apply.",
+      "laws": [
+        "legge-91-1992",
+        "corte-costituzionale-sentenza-63-2026",
+        "corte-costituzionale-ordinanza-147-2026"
+      ]
+    },
+    {
+      "id": "exclusively-italian-now-or-at-death",
+      "text": "Letter c needs a first or second degree ascendant, a parent or grandparent, who holds now, or held at death, exclusively Italian citizenship. It is read now or at death, not at the birth: an ancestor who was only Italian at the birth but later took another citizenship and still holds it, or held it at death, does not meet it. A dual citizen parent does not meet it either, though an exclusively Italian grandparent still can; a great-grandparent never does. Ruling 63/2026 says Interior Ministry circular 26185 of 2025-05-28 details this requirement; that circular is not among these texts.",
+      "laws": ["legge-91-1992", "corte-costituzionale-sentenza-63-2026"]
+    },
+    {
+      "id": "condition-does-not-confer",
+      "text": "The letters of art. 3-bis are exceptions to the bar, not a way to acquire citizenship. The person must still have acquired it through each link under the law in force at that time: law 555/1912 as the courts and law 123/1983 changed it before 1992-08-16, and law 91/1992 from that date. An exclusively Italian grandparent helps only if the parent in between was a citizen at the applicant's birth, which for a parent born abroad usually means the grandparent was a citizen at the parent's birth.",
+      "laws": ["legge-91-1992", "legge-555-1912"]
+    },
+    {
+      "id": "residence-letter-d",
+      "text": "Letter d needs a parent or adopter, never a grandparent, who was resident in Italy for at least 2 continuous years after acquiring Italian citizenship and before the birth or adoption of the child. Residence after the birth does not count, and neither does residence before the parent became a citizen.",
+      "laws": ["legge-91-1992"]
+    },
+    {
+      "id": "adoption-and-ascendant",
+      "text": "Letter c speaks of an ascendant, while letter d names a parent or adopter, so the text does not say whether an adoptive parent can satisfy letter c. Art. 3 makes a foreign minor adopted by an Italian citizen a citizen, but art. 3-bis derogates from art. 3 too. No official text read settles adoptive links.",
+      "laws": ["legge-91-1992"]
+    },
+    {
+      "id": "pre-1948-maternal-line",
+      "text": "Law 555/1912 made the child of a citizen father a citizen, and of a citizen mother only if the father was unknown or stateless or the child did not follow his citizenship. Ruling 30/1983 struck art. 1, No. 1 for not covering the child of a citizen mother. Order 147/2026 records that the Court of Cassation (ruling 4466/2009) holds the struck rules inapplicable also to facts before the Constitution came into force, while the administration follows Interior circular K.28.1 of 1991-04-08, which recognizes descent through a woman only for children born after 1948-01-01.",
+      "laws": [
+        "legge-555-1912",
+        "corte-costituzionale-sentenza-30-1983",
+        "corte-costituzionale-ordinanza-147-2026"
+      ]
+    },
+    {
+      "id": "woman-lost-by-marriage",
+      "text": "Art. 10, third paragraph of law 555/1912 took citizenship from an Italian woman who married a foreigner whose citizenship passed to her by the marriage. Ruling 87/1975 declared it unconstitutional only where the loss happened regardless of her will, so a loss she chose is outside the ruling. Ruling 63/2026 adds that the Court of Cassation holds struck rules inapplicable also to facts before the Constitution came into force. A loss by marriage on the record does not by itself show that the woman was not Italian at a later birth; these rulings decide whether it stands.",
+      "laws": [
+        "legge-555-1912",
+        "corte-costituzionale-sentenza-87-1975",
+        "corte-costituzionale-sentenza-63-2026"
+      ]
+    },
+    {
+      "id": "naturalization-before-1992",
+      "text": "Until 1992-08-15, art. 8, No. 1 of law 555/1912 took citizenship from whoever spontaneously acquired a foreign one and had or established residence abroad, while art. 7 let a citizen born and resident in a state that held them its citizen by birth keep Italian citizenship. From 1992-08-16, art. 11 of law 91/1992 lets a citizen who acquires another citizenship keep the Italian one. Whether a naturalization came before or after the next birth decides whether that link passes.",
+      "laws": ["legge-555-1912", "legge-91-1992"]
+    },
+    {
+      "id": "minor-children-of-a-parent-who-lost",
+      "text": "Art. 12, second paragraph of law 555/1912 made the non-emancipated minor children of someone who lost citizenship foreigners when they shared the residence of the parent with parental authority or guardianship and acquired a foreign citizenship. So a child born Italian could lose citizenship as a minor, before the next birth in the line. Order 147/2026 notes that the First President of the Court of Cassation sent the reading of arts. 7, 8, 9 and 12 of law 555/1912 to its joint chambers on 2025-09-25. Their answer is not among the texts this guide cites.",
+      "laws": ["legge-555-1912", "corte-costituzionale-ordinanza-147-2026"]
+    },
+    {
+      "id": "law-by-date-of-birth",
+      "text": "Which statute governs a link depends on the date of the birth: law 555/1912 from 1912-07-01, with art. 5 of law 123/1983 from 1983-04-27 making the minor child of a citizen father or citizen mother a citizen, and law 91/1992 from 1992-08-16. Each new law kept status acquired before it unless later facts changed it (art. 19 of law 555/1912, art. 20 of law 91/1992); art. 3-bis also names the earlier 1865 civil code, which this guide does not cover. Art. 5 required a dual citizen to opt within a year of majority; law 91/1992 abolished that duty.",
+      "laws": ["legge-123-1983", "legge-555-1912", "legge-91-1992"]
+    },
+    {
+      "id": "reacquisition-is-not-retroactive",
+      "text": "Art. 17 lets someone born in Italy, or resident there for 2 continuous years, who lost citizenship under art. 8, Nos. 1 and 2 or art. 12 of law 555/1912, reacquire it by a declaration made between 2025-07-01 and 2027-12-31, without prejudice to art. 3-bis; the consular fee is EUR 250. Art. 15 gives reacquisition effect from the day after its conditions and formalities are met, so it does not make a child already born a citizen by birth; art. 14 extends it only to cohabiting minor children legally resident in Italy for 2 continuous years at that date, or since birth if under 2.",
+      "laws": ["legge-91-1992", "decreto-legge-36-2025", "decreto-legislativo-71-2011"]
+    },
+    {
+      "id": "minors-by-declaration",
+      "text": "Art. 4, comma 1-bis lets a minor whose father or mother is a citizen by birth become a citizen on the parents' or guardian's declaration, followed by 2 continuous years of legal residence in Italy or filed within 3 years of the birth or later filiation (1 year until law 199/2025, from 2026-01-01); a declaration within that time is free. For minors on 2025-05-24 who are children of citizens by birth under letters a, a-bis or b, art. 1, comma 1-ter of decree-law 36/2025 allows it until 23h59 Rome time on 2029-05-31. Normattiva's note under art. 4 still quotes the old date, 2026-05-31.",
+      "laws": [
+        "legge-91-1992",
+        "decreto-legge-36-2025",
+        "legge-199-2025",
+        "decreto-legge-200-2025",
+        "decreto-legislativo-71-2011"
+      ]
+    },
+    {
+      "id": "other-paths-are-not-descent",
+      "text": "Several paths for descendants are not citizenship by birth: art. 4, comma 1 (a foreigner whose parent or grandparent is or was a citizen by birth, for example after 2 years of legal residence at majority and a declaration within a year), art. 9, comma 1, a (naturalization that may be granted after 2 years of legal residence to the same descendants) and the work entry outside quotas added by art. 1-bis of decree-law 36/2025 for descendants with the citizenship of states named by a ministerial decree.",
+      "laws": ["legge-91-1992", "decreto-legge-36-2025", "corte-costituzionale-sentenza-63-2026"]
+    },
+    {
+      "id": "cjeu-referral-pending",
+      "text": "Ruling 63/2026 rejected the Torino challenges, including under arts. 9 TEU and 20 TFEU, and declined to refer. Order 147/2026, deposited 2026-07-23, asked the EU Court of Justice whether those articles preclude art. 3-bis as an original bar for people born abroad, also before it came into force, who hold another citizenship, suspending its joined cases. Art. 3-bis stays in force meanwhile; an adverse answer can change how it applies. The Court refused the request on letter c under free movement and arts. 7 and 9 of the EU Charter, as the Tribunale di Campobasso had not challenged letter c.",
+      "laws": [
+        "corte-costituzionale-ordinanza-147-2026",
+        "corte-costituzionale-sentenza-63-2026",
+        "legge-91-1992"
+      ]
+    },
+    {
+      "id": "court-evidence-and-burden",
+      "text": "Art. 1, comma 2 of decree-law 36/2025, in force from 2025-03-29, added to art. 19-bis of legislative decree 150/2011 that, in court cases on Italian citizenship, oath and witness evidence are not admitted unless a law expressly provides otherwise, and the claimant must allege and prove that no cause of non-acquisition or loss of citizenship applies. Facts a claim must prove cannot rest on oath or witness testimony.",
+      "laws": ["decreto-legge-36-2025"]
+    },
+    {
+      "id": "consular-fees-and-contribution",
+      "text": "The consular table charges EUR 600 for handling the recognition of an adult's citizenship (art. 7-bis, raised from EUR 300 by law 207/2024; Normattiva shows the rows only as an image), EUR 250 for a declaration of reacquisition (art. 7-ter) and nothing for the declaration in art. 4, comma 1-bis, b (art. 7-quater). Art. 9-bis, comma 2 of law 91/1992 sets a EUR 250 contribution on applications and declarations of election, acquisition, reacquisition, renunciation or grant, except consular reacquisition declarations and those under art. 4, comma 1-bis, b.",
+      "laws": ["decreto-legislativo-71-2011", "legge-207-2024", "legge-91-1992"]
+    },
+    {
+      "id": "one-fee-per-path",
+      "text": "From 2025-01-01 each path to recognition of an adult has its own EUR 600: the consular fee (table, art. 7-bis), up to EUR 600 at a municipality that chooses to charge, never for requests made through a consulate (law 207/2024, art. 1, comma 636), or EUR 600 for each claimant in court (D.P.R. 115/2002, art. 13, comma 1-sexies). A person pays the one for the path taken, not all three.",
+      "laws": ["decreto-legislativo-71-2011", "legge-207-2024", "dpr-115-2002"]
+    },
+    {
+      "id": "consulate-limits-and-central-office",
+      "text": "Art. 10 of decree 71/2011, as law 11/2026 rewrote it from 2026-02-19: a consulate concludes an adult's recognition within 36 months (comma 7) and, through 2028, takes per year no more adult applications than the recognitions it concluded in 2025, never fewer than 100 (comma 6). From 2029-01-01 adults abroad apply by post to a central office of the Foreign Ministry, capped in 2029 and 2030 at the applications consulates collected the fee for in 2025 (commi 2, 3 and 5).",
+      "laws": ["decreto-legislativo-71-2011", "legge-11-2026"]
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "it",
+      "number": 1
+    }
+  ]
+}
