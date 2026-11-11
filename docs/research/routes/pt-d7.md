@@ -4,6 +4,17 @@ Research notes for Portugal's D7 residence visa for retirees and people living o
 
 ## Audits
 
+### 2026-11-11, check loop
+
+The check loop of the [rule audit runbook](../../runbooks/rule-audit.md#the-check-loop), run on version 4 together with [`pt-d8`](pt-d8.md), which shares this entry.
+
+- **Version audited:** 4
+- **Outcome:** correction, version 5 (pull request [#382](https://github.com/fernandolisboa/arca/pull/382)), from version 4's date, 2026-01-01. Two changes: the leap-day convention is now `unsettled`, since article 279.º c) of the Código Civil speaks of periods, not ages, and no Portuguese text says when a person born on 29 February turns a year older, so on 28 February of a common year the age is a range; and the EU, EEA and Swiss set is pinned at version 2, whose EU source lists all 27 members on one page. The `codigo-civil` source goes with the convention. Nothing else changes; the cases files repeat version 4's.
+- **Check loop:** run [43041543873](https://github.com/fernandolisboa/arca/actions/runs/43041543873) on version 5: `pt-d7` 0 of 22 items match, `pt-d8` 1 of 24, none differs. Left over:
+  - `unreadable`: every other item. The consolidated texts on diariodarepublica.pt are drawn by script and give the reader no text, and the original acts' machine-readable addresses are gazette PDFs, which the reader does not take yet ([#363](https://github.com/fernandolisboa/arca/issues/363)). A second run would read the same pages the same way, so the loop stopped after one.
+  - `countrySet:eu-free-movement/2` in `pt-d7`: the model would not join the three pages into one set, while the same set matched with three quotes in `pt-d8` on the same run. Run-to-run variance, not a fault of the set.
+- **Watch next:** the 2027 minimum wage decree ([#220](https://github.com/fernandolisboa/arca/issues/220)) is now version 6 of both routes, not 5. Once PDFs are read, run the loop again on both routes.
+
 ### 2026-11-11
 
 The first full audit by the runbook ([#356](https://github.com/fernandolisboa/arca/issues/356)), on demand, done together with [`pt-d8`](pt-d8.md): the two routes share every source but three, so this record holds what they share and that one what is D8's own.
