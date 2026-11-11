@@ -1,0 +1,55 @@
+# pt-d7
+
+Research notes for Portugal's D7 residence visa for retirees and people living on their own income, route `pt-d7` in `packages/knowledge/data/routes`. The seed research is in [portugal.md](../portugal.md#residence-visas); the audit procedure is in the [rule audit runbook](../../runbooks/rule-audit.md).
+
+## Audits
+
+### 2026-11-11
+
+The first full audit by the runbook ([#356](https://github.com/fernandolisboa/arca/issues/356)), on demand, done together with [`pt-d8`](pt-d8.md): the two routes share every source but two, so this record holds what they share and that one what is D8's own.
+
+- **Version audited:** 3
+- **Outcome:** correction, version 4 (pull request [#377](https://github.com/fernandolisboa/arca/pull/377)), from version 3's own date, 2026-01-01, so it replaces version 3 entirely. The pull request carries both routes, against the runbook's one pull request per route: the two corrections come from the same reading of the same texts.
+- **Sources re-read** (all on 2026-11-11 UTC; every page of diariodarepublica.pt rendered with the session's Playwright in a fresh context and read from the saved text):
+  - `lei-23-2007`, `lei-23-2007-scope` and the new `lei-23-2007-partner`, `-conditions`, `-visa`, `-permit` and `-fees`: the consolidated Lei n.º 23/2007, as last amended by Lei n.º 62/2026. Articles 4.º, 52.º, 58.º, 75.º, 98.º to 100.º and 209.º read in full; the rest of the text was not read line by line.
+  - `portaria-1563-2007`: the page of the original act, marked "Em vigor" and never amended, read whole, and its gazette PDF (`curl`, `pdftotext`), which is its machine-readable address.
+  - `dl-139-2025`: the page of the original act, read whole, and its gazette PDF, which is its machine-readable address.
+  - `codigo-contributivo`: the consolidated Lei n.º 110/2009, article 53.º.
+  - `codigo-civil`: the consolidated Código Civil, article 279.º.
+  - `dr-84-2007-family`, `-means` and `-documents` (new): the consolidated Decreto Regulamentar n.º 84/2007, as last amended by Decreto Regulamentar n.º 1/2024. Articles 12.º, 12.º-A and 24.º-B read in full.
+  - `lei-7-2001` (new): the consolidated Lei n.º 7/2001, article 1.º.
+  - `portaria-229-2021` (new): the consolidated table of consular fees, articles 15.º, 22.º and 28.º and its updating rule.
+  - `portaria-91-2025` (new): the page of the original act, read whole, and its gazette PDF, which is its machine-readable address.
+  - Read and not cited: Portaria n.º 307/2023 (the residence permit fees), Portaria n.º 760/2009 (the unemployment exception to the means test) and Portaria n.º 320-C/2011 (the earlier table of consular fees, which Portaria n.º 229/2021 revoked).
+  - Not readable: none of the cited sources. vistos.mne.gov.pt and aima.gov.pt, which would show the amounts a consulate or AIMA charges today, stay as the [reading recipes](../../runbooks/reading-recipes.md#pt-portugal) list them and were not tried again.
+  - A consolidated text has no machine-readable address: it exists only as a page drawn by scripts. The three original acts have their gazette PDF on `files.diariodarepublica.pt`, a subdomain of the listed host.
+- **Amendments looked for**, up to Diário da República n.º 218/2026 of 2026-11-10:
+  - The list of amending acts on each consolidated text. Lei n.º 23/2007: the last two are Lei n.º 61/2025 (in force 2025-10-23; it changed articles 52.º, 75.º, 98.º and 99.º among others) and Lei n.º 62/2026 (in force 2026-09-11; articles 52.º and 209.º among others). Both are older than version 3's verification, and the text read is the one in force. Decreto Regulamentar n.º 84/2007: the last is Decreto Regulamentar n.º 1/2024. Lei n.º 7/2001: Lei n.º 71/2018. Código dos Regimes Contributivos: Decreto-Lei n.º 127/2025, in force 2026-01-01, which leaves article 53.º as it was.
+  - The gazette search, newest first, for "retribuição mínima mensal garantida", "entrada permanência saída e afastamento de estrangeiros do território nacional", "meios de subsistência cidadãos estrangeiros", "Decreto Regulamentar n.º 84/2007", "Portaria n.º 1563/2007", "emolumentos consulares", "Tabela de Emolumentos Consulares", "taxas AIMA autorização de residência" and the residence permit fee table. Nothing after 2026-11-05 changes a provision the route cites.
+  - No decree sets the minimum wage for 2027 yet ([#220](https://github.com/fernandolisboa/arca/issues/220)).
+  - Court rulings: the gazette searches above returned no ruling on these provisions. The Constitutional Court's site is not on the official-domain list and was not searched.
+- **Leads:**
+  - News pages say the 2027 minimum wage will be EUR 970, the figure of the 2025 to 2028 agreement between the government and the social partners that Decreto-Lei n.º 139/2025 mentions in its preamble. No decree confirms it; nothing changes.
+  - The seed notes' secondary pages said practice asks for 12 months of means. Confirmed by an official text: Portaria n.º 1563/2007, article 5.º, n.º 6.
+- **Findings:**
+  - Confirmed, unchanged: the means scale of 100%, 50% and 30% of the minimum wage net of social security contributions (Portaria n.º 1563/2007, article 2.º, n.º 2; EUR 920, Decreto-Lei n.º 139/2025; 11%, Código dos Regimes Contributivos, article 53.º); the spouse rule with both spouses 18 or over (Lei n.º 23/2007, article 99.º, n.º 6); the exclusion of EU, EEA and Swiss citizens (article 4.º); the leap-day convention. The `household-income` requirement now also cites Decreto Regulamentar n.º 84/2007, article 24.º-B, n.º 1, b), the provision that applies the scale to the family members who apply with the principal.
+  - Missing, now an assessment `means-for-12-months`: the means must be assured for at least 12 months, a retiree proving the pension and that its payment is guaranteed, others the income and its availability in Portugal (Portaria n.º 1563/2007, article 5.º, n.º 6).
+  - Missing, now the assessments `no-entry-ban` and `criminal-record`: no visa during an entry ban or under a return or refusal alert (Lei n.º 23/2007, article 52.º, n.º 1, a) to c)), nor after a conviction for a crime Portugal punishes with more than one year of prison (n.º 3); the criminal record certificate is asked from age 16 (Decreto Regulamentar n.º 84/2007, article 12.º, n.os 1, c), and 7). No case fact records any of it, so both show the principal's visa refusals as evidence.
+  - Missing, now possible dependents: the partner in a de facto union and the partner's unmarried minor or incapable children entrusted to the partner (Decreto Regulamentar n.º 84/2007, article 24.º-B, n.º 2, which adds article 100.º, n.º 1, of the law to the family of article 58.º, n.º 5). A de facto union is one of more than two years (Lei n.º 7/2001, article 1.º, n.º 2), so the rule asks for two years and a day from the start the case records, and both partners must be 18 or over (article 99.º, n.º 6). Whether the union is duly proven and recognised, and whether a child is entrusted to the partner, the case does not record: such people show as possible.
+  - Missing, now possible dependents: adult children who depend on the couple, when incapable (article 99.º, n.º 1, b) or single and studying at a school in Portugal (n.º 1, d). Neither fact is recorded.
+  - The children rules' titles now say what is not checked: an adoption must be recognised by Portugal (article 99.º, n.º 1, c), and a child of only one spouse needs the other parent's consent or a custody decision (n.º 4).
+  - Missing, now costs: EUR 110 for processing a national visa application (table of consular fees, article 15.º, n.º 4, as set by Portaria n.º 91/2025/1, in force 2025-03-11; Lei n.º 23/2007, article 209.º, n.º 1), for the principal and for each family member aged 18 or over; a possible cost for a child aged 6 to 17, whom the consulate may exempt, and none for a child under 6 (article 22.º, n.º 1). The section of the table that holds visas is not among those updated each March. A consulate charges in euros or local currency at the Banco de Portugal's rate (article 28.º). Not applied: the exemption for descendants of residence permit holders under family reunification (article 22.º, n.º 1.1, i), since this route's principal holds no permit yet, and the one for family members of EU or Portuguese citizens (n.º 1.1, f), which goes with the open question on such principals.
+  - Missing, now durations: the visa decision within 60 days and the visa's four months and two entries (Lei n.º 23/2007, article 58.º, n.os 4 and 2); the first residence permit's two years (article 75.º, n.º 1).
+  - Gaps kept, each in [OPEN-QUESTIONS.md](../../OPEN-QUESTIONS.md):
+    - The residence permit's own fees. Portaria n.º 307/2023 sets them, updates them each 1 March by the consumer price index and cuts them 25% for applications through the digital channel; the updated amounts are not in the gazette, and aima.gov.pt is not readable, so no current amount has an official source.
+    - Minor siblings under the principal's guardianship (article 99.º, n.º 1, g): the case has no path to a sibling.
+    - A dependent adult child counts 30% in the means scale (Portaria n.º 1563/2007, article 2.º, n.º 2, c), and the requirement counts every adult at 50%. Such a child is only ever possible, so this widens the upper bound of the amount and never turns a result into "eligible" or "not eligible" wrongly.
+    - A possible dependent makes the amount an interval: an income between its bounds reads "Faltam informações" with no fact to ask for.
+    - The statement of responsibility that replaces proof of means for nationals of states under the CPLP agreement (Decreto Regulamentar n.º 84/2007, article 12.º-A), and principals who are family members of EU citizens, both already open.
+    - The other general conditions of article 52.º (a valid travel document, travel insurance, a danger to public order, an earlier illegal stay) belong to the document checklist, not to this route's rules.
+  - The cases file keeps version 3's cases and adds the partner cases (three years, one year, exactly two years, two years and a day), the adult children and the bounds of the amount with possible dependents. R8 has no cost expectations, so the fee is pinned only by the hashes and this record.
+  - The independent check cannot read the consolidated texts, which are script-drawn pages, and reads a PDF only after [#363](https://github.com/fernandolisboa/arca/issues/363), so its report on version 4 will be incomplete until then.
+- **Watch next:**
+  - The 2027 minimum wage ([#220](https://github.com/fernandolisboa/arca/issues/220)): the decree came on 2023-11-17, 2024-12-19 and 2025-12-29. The 2027 version is now version 5, from 2027-01-01, and keeps version 4 except the amounts.
+  - The country guide's version 2, in its own pull request after this one: the fee table and its 2025 amendment, Lei n.º 7/2001, the residence permit fee table, and how to reach a gazette PDF.
+  - The residence permit fees, once an official page with the current amounts can be read.
