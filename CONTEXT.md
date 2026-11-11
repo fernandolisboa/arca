@@ -25,6 +25,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Rule case | Caso de teste da regra | One table-driven test entry for a route version, in its cases file; not a family's case |
 | Official-domain list | Lista de sites oficiais | A versioned list of hosts that count as official for a country or international body |
 | Evaluation | Avaliação | The result of applying a route version to a person or unit |
+| Prompt cache | Internal, no UI label | The model vendor's short-lived store of a request's opening bytes, which a later request that opens with the same bytes reads at a fraction of the input price. Arca marks only a call's instructions for it ([ADR-0004](docs/adr/0004-ai-providers-behind-ports.md)); a cache read and a cache write are the input tokens a call took from it and put into it |
 | Evaluation engine | Internal, no UI label | The pure functions in `packages/domain` that select a version, compute the unit and evaluate requirements |
 | Case snapshot | Internal, no UI label | The engine's structured, free-text-free view of a case at one moment (`CaseSnapshot`) |
 | Completeness marker | Internal, no UI label | A person's flag that their spouses, partners, children or parents are all recorded; without it, unrecorded people may exist |

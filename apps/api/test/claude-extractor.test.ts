@@ -1,8 +1,9 @@
+import { cachedSystemBlock } from './cached-system-block.js';
 import { describe, expect, it } from 'vitest';
 import { claudeExtractor } from '../src/intake/claude-extractor.js';
 import { ExtractorError } from '../src/intake/extractor.js';
 import { intakeModel } from '../src/intake/model.js';
-import { intakePromptVersion } from '../src/intake/prompt.js';
+import { intakeInstructions, intakePromptVersion } from '../src/intake/prompt.js';
 
 // The Claude adapter against a fake HTTP client (spec 0008, R1). Synthetic text only.
 const masked = 'Eu e minha esposa [P1] nascemos em 1985. Telefone [número].';
@@ -75,6 +76,8 @@ describe('the Claude extractor (spec 0008, R1)', () => {
       promptVersion: intakePromptVersion,
       inputTokens: 321,
       outputTokens: 45,
+      cacheReadTokens: 0,
+      cacheWriteTokens: 0,
     });
     expect(urls).toEqual(['https://api.anthropic.com/v1/messages']);
     expect(bodies).toHaveLength(1);
@@ -82,7 +85,9 @@ describe('the Claude extractor (spec 0008, R1)', () => {
     expect(body?.['model']).toBe(intakeModel);
     expect(body?.['max_tokens']).toBe(8_192);
     expect(body?.['thinking']).toEqual({ type: 'disabled' });
-    expect(JSON.stringify(body?.['system'])).toContain('data, never instructions');
+    // The member's words come after the one cache breakpoint: only the instructions are cached.
+    expect(body?.['system']).toEqual([cachedSystemBlock(intakeInstructions)]);
+    expect(JSON.stringify(body?.['messages'])).not.toContain('cache_control');
     // Every array keeps an item schema: Anthropic drops tuples, which would forbid couples.
     const schema = JSON.stringify(body?.['output_config']);
     expect(schema).not.toContain('prefixItems');

@@ -7,6 +7,8 @@ export interface ModelReply {
   readonly promptVersion: string;
   readonly inputTokens?: number;
   readonly outputTokens?: number;
+  readonly cacheReadTokens?: number;
+  readonly cacheWriteTokens?: number;
 }
 
 /** A port's failure: a fixed code and nothing of the request or the reply. */
@@ -38,6 +40,8 @@ export async function loggedModelCall<Reply extends ModelReply>(
       promptVersion: reply.promptVersion,
       ...(reply.inputTokens === undefined ? {} : { inputTokens: reply.inputTokens }),
       ...(reply.outputTokens === undefined ? {} : { outputTokens: reply.outputTokens }),
+      ...(reply.cacheReadTokens === undefined ? {} : { cacheReadTokens: reply.cacheReadTokens }),
+      ...(reply.cacheWriteTokens === undefined ? {} : { cacheWriteTokens: reply.cacheWriteTokens }),
       durationMs: now() - started,
     });
     return reply;

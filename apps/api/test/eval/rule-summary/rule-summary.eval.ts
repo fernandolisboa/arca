@@ -13,6 +13,7 @@ import { claudeSummarizer } from '../../../src/knowledge/summary/claude-summariz
 import { ruleSummaryModel } from '../../../src/knowledge/summary/model.js';
 import { ruleSummaryPromptVersion } from '../../../src/knowledge/summary/prompt.js';
 import { SummarizerError } from '../../../src/knowledge/summary/summarizer.js';
+import { type CacheUse, cacheUseLine } from '../cache-use.js';
 import { maxCallsPerRun, withCallLimit } from './call-limit.js';
 import { type SummaryCase, summaryCases } from './cases.js';
 import { injectedIn, markupIn, ungroundedNumbers, verdictIn } from './checks.js';
@@ -52,7 +53,11 @@ async function runCase(
 /** At most this many cases may get no summary from the vendor before the run says too little. */
 const maxFailures = 1;
 
-function report(runs: readonly CaseRun[], calls: number): { text: string; problems: string[] } {
+function report(
+  runs: readonly CaseRun[],
+  calls: number,
+  cache: CacheUse,
+): { text: string; problems: string[] } {
   const problems = runs.flatMap(({ id, problems: found }) =>
     found.map((problem) => `${id}: ${problem}`),
   );
@@ -77,7 +82,10 @@ function report(runs: readonly CaseRun[], calls: number): { text: string; proble
       lines.push('```text', text, '```', '');
     }
   }
-  lines.push(`Model calls: ${String(calls)} of at most ${String(maxCallsPerRun)}.`);
+  lines.push(
+    `Model calls: ${String(calls)} of at most ${String(maxCallsPerRun)}.`,
+    cacheUseLine(cache),
+  );
   return { text: lines.join('\n'), problems };
 }
 
@@ -86,7 +94,7 @@ it('summarizes the newest version of every route without inventing numbers or fo
   if (apiKey === undefined) {
     throw new Error('Set ANTHROPIC_API_KEY to run the rule summary evaluation');
   }
-  const { summarizer, calls } = withCallLimit(claudeSummarizer({ apiKey }));
+  const { summarizer, calls, cache } = withCallLimit(claudeSummarizer({ apiKey }));
   const cases = await summaryCases();
   const runs: CaseRun[] = [];
   const queue = [...cases.entries()];
@@ -98,9 +106,12 @@ it('summarizes the newest version of every route without inventing numbers or fo
       }
     }),
   );
-  const { text, problems } = report(runs, calls());
+  const { text, problems } = report(runs, calls(), cache);
   console.log(text);
   const summary = process.env['ARCA_EVAL_REPORT'];
   if (summary !== undefined && summary !== '') appendFileSync(summary, `${text}\n`);
   expect(problems).toEqual([]);
+  // Every call of a run shares its instructions, so a run that read nothing from the cache has a
+  // prefix that stopped matching.
+  expect(cache.cacheReadTokens).toBeGreaterThan(0);
 });

@@ -1,5 +1,12 @@
 import { type AnthropicLanguageModelOptions, createAnthropic } from '@ai-sdk/anthropic';
-import { APICallError, type JSONSchema7, Output, generateText, jsonSchema } from 'ai';
+import {
+  APICallError,
+  type JSONSchema7,
+  Output,
+  type SystemModelMessage,
+  generateText,
+  jsonSchema,
+} from 'ai';
 
 /** Pinned in code: the provider would otherwise take `ANTHROPIC_BASE_URL` from the environment. */
 export const anthropicBaseUrl = 'https://api.anthropic.com/v1';
@@ -25,8 +32,13 @@ export interface StructuredCall {
 export interface StructuredReply {
   /** Untrusted: the caller parses it against its own schema. */
   readonly output: unknown;
+  /** Every input token: read from the prompt cache, written to it, or neither. */
   readonly inputTokens?: number;
   readonly outputTokens?: number;
+  /** Input tokens read from the prompt cache, at a fraction of the input price. */
+  readonly cacheReadTokens?: number;
+  /** Input tokens written to the prompt cache, at a premium over the input price. */
+  readonly cacheWriteTokens?: number;
 }
 
 export type ClaudeFailure = 'timeout' | 'unavailable' | 'unparsable' | 'failed';
@@ -62,8 +74,24 @@ function failureOf(error: unknown): ClaudeFailure {
 }
 
 /**
+ * The instructions as the request's cached prefix. They are the only bytes two calls of one kind
+ * share: what follows is a different rule, page or description each time, so the one breakpoint
+ * sits here and nothing volatile may come before it. One hour, not the default five minutes: a
+ * person reviewing rules calls minutes apart, and the write premium on a prefix this small is
+ * a fraction of a cent. Instructions under the model's minimum cacheable length are sent uncached,
+ * with no error.
+ */
+function cachedInstructions(instructions: string): SystemModelMessage {
+  return {
+    role: 'system',
+    content: instructions,
+    providerOptions: { anthropic: { cacheControl: { type: 'ephemeral', ttl: '1h' } } },
+  };
+}
+
+/**
  * Claude behind one call shape (ADR-0004): the host pinned, telemetry off, no retry inside the
- * SDK, and every failure a `ClaudeCallError` with a fixed kind.
+ * SDK, the instructions as the cached prefix, and every failure a `ClaudeCallError` with a fixed kind.
  */
 export function claudeClient({ apiKey, fetch }: ClaudeSettings) {
   const anthropic = createAnthropic({
@@ -76,7 +104,7 @@ export function claudeClient({ apiKey, fetch }: ClaudeSettings) {
       try {
         const result = await generateText({
           model: anthropic(call.model),
-          instructions: call.instructions,
+          instructions: cachedInstructions(call.instructions),
           prompt: call.prompt,
           output: Output.object({ schema: jsonSchema(call.schema), name: call.schemaName }),
           maxOutputTokens: call.maxOutputTokens,
@@ -87,11 +115,14 @@ export function claudeClient({ apiKey, fetch }: ClaudeSettings) {
           abortSignal: AbortSignal.timeout(call.timeoutMs),
           telemetry: { isEnabled: false, recordInputs: false, recordOutputs: false },
         });
-        const { inputTokens, outputTokens } = result.usage;
+        const { inputTokens, outputTokens, inputTokenDetails } = result.usage;
+        const { cacheReadTokens, cacheWriteTokens } = inputTokenDetails;
         return {
           output: result.output,
           ...(inputTokens === undefined ? {} : { inputTokens }),
           ...(outputTokens === undefined ? {} : { outputTokens }),
+          ...(cacheReadTokens === undefined ? {} : { cacheReadTokens }),
+          ...(cacheWriteTokens === undefined ? {} : { cacheWriteTokens }),
         };
       } catch (error) {
         throw new ClaudeCallError(failureOf(error));
