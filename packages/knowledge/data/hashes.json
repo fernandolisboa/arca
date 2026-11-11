@@ -370,6 +370,22 @@
     {
       "path": "guides/ie/2",
       "sha256": "e7ddc01be2c3e90aa0b147923a9ce45f8dc7230afa121da5af2ab4acafb372c5"
+    },
+    {
+      "path": "routes/cz-eu-blue-card/3",
+      "sha256": "e21d1a8302e06c61fd2924206ed45df821254abf2e9f7314cc5b01afea050618"
+    },
+    {
+      "path": "routes/dk-pay-limit/2",
+      "sha256": "db79ca6a1fd7253390b8c69211d2258e296765971d952ceaacfbee34529ba162"
+    },
+    {
+      "path": "routes/ge-property-short-term/2",
+      "sha256": "c296261ed774498dc08ec8086994092264e238aded57919ebb6372f8e54e7931"
+    },
+    {
+      "path": "routes/lv-capital-investment/4",
+      "sha256": "db744c578ac18ab298d91b26430775dfbc6547afa4a8ebe9290fcee2e6f0da5f"
     }
   ]
 }
