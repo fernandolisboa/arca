@@ -236,11 +236,11 @@ For each host:
 
 ## `pt`: Portugal
 
-**`diariodarepublica.pt`** (last confirmed 2026-11-06)
+**`diariodarepublica.pt`** (last confirmed 2026-11-11)
 
-- **Read:** the page is drawn by scripts: `curl` gets only the shell. Load it with Playwright (see the rules above) and read the rendered text. The `?q=` search address is ignored: type the terms into the home page's search box.
+- **Read:** the page is drawn by scripts: `curl` gets only the shell. Load it with Playwright (see the rules above) and read the rendered text. The `?q=` search address is ignored: type the terms into the home page's search box. An original act (`/dr/detalhe/…`) has its gazette PDF on `files.diariodarepublica.pt`, a subdomain of the listed host, which `curl` reads; its address is the `URL_PDF` field of the data response the page loads (`DataActionGetAllConteudoDetalheData`), which Playwright can capture. Use the `files.diariodarepublica.pt` address as the source's `machineReadableUrl`; an address in that field on any other host is a lead. A consolidated text has no such file.
 - **Cite:** `https://diariodarepublica.pt/dr/detalhe/<type>/<n>-<yyyy>-<id>`, or `/dr/legislacao-consolidada/…` for a consolidated text.
-- **Amendments:** the consolidated text lists its amending diplomas. The yearly minimum wage decree came on 2023-11-17, 2024-12-19 and 2025-12-29.
+- **Amendments:** the consolidated text lists its amending diplomas, newest first, and each article the act that last changed it. For acts not yet consolidated, search the gazette and sort by "Data: mais recente primeiro". The yearly minimum wage decree came on 2023-11-17, 2024-12-19 and 2025-12-29.
 - pgdlisboa.pt is readable but not on the list: a lead. Not readable: vistos.mne.gov.pt, portaldiplomatico, aima.gov.pt, dgert.gov.pt.
 
 ## `py`: Paraguay
