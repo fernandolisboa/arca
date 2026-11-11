@@ -144,6 +144,13 @@ export const routeVersionSchema = z
 
 export type RouteVersion = z.infer<typeof routeVersionSchema>;
 export type Source = z.infer<typeof sourceSchema>;
+
+/**
+ * The addresses a source names: its URL and, when it has one, its machine-readable address. The
+ * build records the host of each, so the view can tell which hosts are new to a route.
+ */
+export const sourceUrls = ({ url, machineReadableUrl }: Source): string[] =>
+  machineReadableUrl === undefined ? [url] : [url, machineReadableUrl];
 export type Requirement = z.infer<typeof requirementSchema>;
 export type Assessment = z.infer<typeof assessmentSchema>;
 export type DependentRule = z.infer<typeof dependentRuleSchema>;

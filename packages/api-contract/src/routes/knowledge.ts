@@ -244,7 +244,13 @@ export const VersionView = z.object({
     )
     .max(20),
   sources: z
-    .array(sourceSchema.extend({ host: z.string().max(253).nullable(), newHost: z.boolean() }))
+    .array(
+      sourceSchema.extend({
+        host: z.string().max(253).nullable(),
+        newHost: z.boolean(),
+        newMachineReadableHost: z.boolean(),
+      }),
+    )
     .max(50),
   replaces: z
     .object({
@@ -472,6 +478,8 @@ export const VersionCheckReport = z.strictObject({
     .array(
       z.strictObject({
         url: z.string().max(2_000),
+        /** The address read in the page's place, so the admin sees where a quote's text came from. */
+        machineReadableUrl: z.string().max(2_000).nullable(),
         outcome: z.enum(fetchOutcomes),
         status: z.int().min(0).max(999).nullable(),
         cut: z.boolean(),

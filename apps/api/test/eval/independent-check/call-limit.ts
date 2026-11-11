@@ -4,12 +4,12 @@ import type { PassageLocator } from '../../../src/knowledge/check/locator.js';
 import { callCounter } from '../call-limit.js';
 
 /**
- * The most model calls one run may make: each of the 28 cases and its one retry, one pick of
- * passages for each of the five cases with a long act, and a little room. Each call's output is
+ * The most model calls one run may make: each case and its one retry, one pick of passages for
+ * each case with a long act, and a little room. Each call's output is
  * capped and its input holds only synthetic pages, the long ones as an outline or an excerpt, so
  * this bounds what a run can cost.
  */
-export const maxCallsPerRun = 70;
+export const maxCallsPerRun = 80;
 
 /**
  * The checker and the locator, refusing any call past the limit they share; a call counts before
