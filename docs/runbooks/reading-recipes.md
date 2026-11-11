@@ -62,27 +62,29 @@ For each host:
 
 ## `cz`: Czechia
 
-**`e-sbirka.gov.cz`** (last confirmed 2026-11-09)
+**`e-sbirka.gov.cz`** (last confirmed 2026-11-11)
 
-- **Read:** `curl` on the JSON API, no sign-in. `GET https://e-sbirka.gov.cz/sbr-cache/dokumenty-sbirky/<URL-encoded /sb/<yyyy>/<n>>` gives the metadata and current version date; append `/fragmenty?cisloStranky=N` for the text in pages of fragments. A version at a date: `/sb/<yyyy>/<n>/<yyyy-mm-dd>`.
-- **Cite:** `https://e-sbirka.gov.cz/sb/<yyyy>/<n>`.
+- **Read:** `curl` on the JSON API, no sign-in. `GET https://e-sbirka.gov.cz/sbr-cache/dokumenty-sbirky/<URL-encoded /sb/<yyyy>/<n>>` gives the metadata and current version date; append `/fragmenty?cisloStranky=N` for the text in pages of 1,000 fragments (`pocetStranek` says how many pages; read them all). A version at a date: `/sb/<yyyy>/<n>/<yyyy-mm-dd>`.
+- **Cite:** `https://e-sbirka.gov.cz/sb/<yyyy>/<n>`, and for one provision of a long act the dated address with its anchor, `https://e-sbirka.gov.cz/sb/<yyyy>/<n>/<yyyy-mm-dd>#par_<n>`, so each provision is a source with an address of its own.
+- **Machine-readable address:** the page is drawn by scripts, so a source names the fragment page that holds its provision, `.../sbr-cache/dokumenty-sbirky/<encoded path>/fragmenty?cisloStranky=N`. The API has no address for a single provision and no page size (tried 2026-11-11), so a source cites one provision and names the page only after the audit confirmed the provision sits whole on it (the fragments' `staleUrl` anchors show where a paragraph starts and ends); the audit itself still reads every page. A page of the Aliens Act is about 1.3 MB of JSON, which the checker cuts, so most of its provisions stay unchecked (`checker-gap`); short acts fit on page 0.
 - **Amendments:** `.../souvislosti` lists amending and implementing acts.
 - `zakonyprolidi.cz` is a private site: read it as a lead, never cite it as official.
 
-**`ipc.gov.cz`** (last confirmed 2026-11-09) and **`mv.gov.cz`** (last confirmed 2026-11-09; not cited yet)
+**`ipc.gov.cz`** (last confirmed 2026-11-11) and **`mv.gov.cz`** (last confirmed 2026-11-09; not cited yet)
 
 - **Read:** `curl`. `mvcr.cz` redirects to `mv.gov.cz`.
-- **Cite:** the page itself.
+- **Cite:** the page itself. The permit pages are under `https://ipc.gov.cz/en/visa-and-residence-permit-types/third-country-nationals/long-term-residence-permits/`. A page's opening summary can lag behind its own list of documents (the Blue Card page said "one year" above and "6 months" below on 2026-11-11): the act decides.
 
 ## `dk`: Denmark
 
-**`retsinformation.dk`** (last confirmed 2026-11-09)
+**`retsinformation.dk`** (last confirmed 2026-11-11)
 
 - **Read:** the site is drawn by scripts, but `curl https://www.retsinformation.dk/eli/lta/<yyyy>/<n>/xml` returns the LexDania XML. Search: `GET /api/documentsearch?t=<query>` returns JSON with `isHistoryFlag` (a superseded text).
-- **Cite:** the ELI without `/xml`: `https://www.retsinformation.dk/eli/lta/<yyyy>/<n>`.
+- **Cite:** the ELI without `/xml`: `https://www.retsinformation.dk/eli/lta/<yyyy>/<n>`, with the `/xml` address as the machine-readable one. The Aliens Act's XML is long and the checker cuts it before § 9 a.
+- The yearly fees are in an order (bekendtgørelse) replaced each December: Order No. 1612 of 2025 holds the 2026 amounts (§ 5).
 - **Amendments:** search for the act's short name. A consolidation (LBK) replaces the previous one; amending acts (LOV) come into force on their own dates.
 
-**`nyidanmark.dk`** (last confirmed 2026-11-09)
+**`nyidanmark.dk`** (last confirmed 2026-11-11)
 
 - **Read:** `curl`. Use the ASCII `en-GB` URLs.
 - **Cite:** the page itself. Yearly amounts the act leaves to adjustment (the pay limit) are only here.
@@ -131,14 +133,15 @@ For each host:
 
 ## `ge`: Georgia
 
-**`matsne.gov.ge`** (last confirmed 2026-11-07)
+**`matsne.gov.ge`** (last confirmed 2026-11-11)
 
-- **Read:** `curl` gets "Access Denied". Through the `web-fetch` agent, find the number `<n>` of the "Consolidated version (final)" on `https://matsne.gov.ge/en/document/view/<id>` (the bare address or `?publication=latest` can show the first version), then have it save the English PDF `/en/document/download/<id>/<n>/en/pdf` and read the file. Georgian view pages (`/ka/document/view/<id>`) are readable only as a summary, and Georgian PDFs not at all, so a Georgian-only text is not re-read. Version 1 of `ge-property-short-term` cites Law No. 863 (document 6543112) on a Georgian view page: that source counts as not re-read and goes stale on 2027-02-05 unless an English consolidated publication carrying the amendment is cited instead.
+- **Read:** `curl` gets "Access Denied". Through the `web-fetch` agent, find the number `<n>` of the "Consolidated version (final)" on `https://matsne.gov.ge/en/document/view/<id>` (the bare address or `?publication=latest` can show the first version), then have it save the English PDF `/en/document/download/<id>/<n>/en/pdf` and read the file. Georgian view pages (`/ka/document/view/<id>`) are readable only as a summary, and Georgian PDFs not at all, so a Georgian-only text is not re-read. Version 1 of `ge-property-short-term` cites Law No. 863 (document 6543112) on a Georgian view page: that source counts as not re-read and goes stale on 2027-02-05 unless an English consolidated publication carrying the amendment is cited instead; version 2 does that, with publication 23.
+- The checker, which runs outside the session, reads the English view page `?publication=<n>` as it is (run of 2026-11-11), so a dated publication address needs no machine-readable one.
 - **Cite:** `https://matsne.gov.ge/en/document/view/<id>?publication=<n>`, the publication read (or `/ka/` for a text with no English version). Versions written before 2026-11-09 cite the bare address; a new version adds the publication number.
 - **Amendments:** the document's list of consolidated publications; each amending law has its own document id.
-- Ids: Law on the Legal Status of Aliens 2278806, Civil Code 31702.
+- Ids: Law on the Legal Status of Aliens 2278806 (publication 23 of 25/06/2026 carries Laws Nos. 863, 865, 1510 and 1803), Civil Code 31702 (publication 140).
 
-**`sda.gov.ge`** (last confirmed 2026-11-09)
+**`sda.gov.ge`** (last confirmed 2026-11-11)
 
 - **Read:** `curl` (WordPress).
 - **Cite:** the page itself.
@@ -165,10 +168,10 @@ For each host:
 
 ## `is`: Iceland
 
-**`stjornartidindi.is`** (the gazette; last confirmed 2026-11-09)
+**`stjornartidindi.is`** (the gazette; last confirmed 2026-11-11)
 
 - **Read:** `curl` on the PDFs: `https://adverts.stjornartidindi.is/A_nr_<n>_<yyyy>.pdf` for acts, `B_nr_<n>_<yyyy>.pdf` for regulations. The gazette text prevails over the consolidated law (Act 38/2012).
-- **Cite:** the PDF.
+- **Cite:** the PDF. The checker reads no PDF (#363), and the host answered its fetch with 403 on 2026-11-11.
 - **Amendments:** search the gazette with a POST to `https://island.is/api/graphql`, query `officialJournalOfIcelandAdverts(input: {search, department: ["a-deild"], pageSize, dateFrom})`. The search is fuzzy; read every candidate.
 
 **`island.is`** (last confirmed 2026-11-09)
@@ -212,13 +215,13 @@ For each host:
 
 ## `lv`: Latvia
 
-**`likumi.lv`** (last confirmed 2026-11-09)
+**`likumi.lv`** (last confirmed 2026-11-11)
 
 - **Read:** `curl` on `https://likumi.lv/ta/id/<id>`. `www.likumi.lv` redirects to plain `http`; cite and read `https://likumi.lv` directly. English translations exist only for older texts.
 - **Cite:** `https://likumi.lv/ta/id/<id>`.
 - **Amendments:** the page lists its amending laws and redactions. Bills are on the Saeima site: leads.
 - Readable but not on the list: vestnesis.lv (the gazette), lvportals.lv. pmlp.gov.lv times out.
-- Ids: Immigration Law 370622 (in force 2026-09-15), Civil Law family part 90223, Administrative Procedure Law 55567.
+- Ids: Immigration Law 370622 (in force 2026-09-15; next redaction 2027-12-31), Civil Law family part 90223, Administrative Procedure Law 55567, Cabinet Regulations No. 731 of 2024 on the state fee for migration services 356656 (they lose force on 2027-12-02).
 
 ## `pl`: Poland
 
