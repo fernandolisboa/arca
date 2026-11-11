@@ -39,9 +39,16 @@
       "verifiedAt": "2026-11-11"
     },
     {
+      "id": "ley-3578-parties",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "title": "Ley N.º 3578/2008, Mercosur Residence Agreement, opening: its parties are Argentina, Brazil, Paraguay and Uruguay, Mercosur's states parties, and Bolivia and Chile, associated states",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
       "id": "ley-6984",
       "url": "https://www.bacn.gov.py/leyes-paraguayas/10973/x",
-      "title": "Ley N.º 6984/2022 (migration law), article 4.10: family reunification with parents, spouses, unmarried minor children and adult children with a disability",
+      "title": "Ley N.º 6984/2022, article 4, principle 10, Reunificación Familiar: migrants' reunification with parents, spouses, unmarried minor children and adult children with a disability",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
@@ -172,7 +179,7 @@
           }
         ]
       },
-      "sources": ["ley-3578-family", "ley-6984"]
+      "sources": ["ley-3578-family", "ley-3578-parties", "ley-6984"]
     },
     {
       "id": "children",
@@ -253,11 +260,11 @@
           }
         ]
       },
-      "sources": ["ley-3578-family", "ley-6984", "ley-2169"]
+      "sources": ["ley-3578-family", "ley-3578-parties", "ley-6984", "ley-2169"]
     },
     {
       "id": "spouse-children",
-      "title": "The spouse's unmarried children under 18 who depend on a principal native of Argentina, Bolivia, Brazil, Chile or Uruguay; others, adults married or not included: possible",
+      "title": "The spouse's children, whom article 4, principle 10, of the migration law does not name, so they count only as family members under the agreement, which is not settled: possible",
       "path": ["spouse", "child"],
       "condition": {
         "op": "any",
@@ -273,43 +280,7 @@
                 }
               },
               {
-                "op": "any",
-                "operands": [
-                  {
-                    "op": "all",
-                    "operands": [
-                      {
-                        "op": "lt",
-                        "left": {
-                          "op": "fact",
-                          "key": "person.ageYears"
-                        },
-                        "right": {
-                          "op": "int",
-                          "value": 18
-                        }
-                      },
-                      {
-                        "op": "intersects",
-                        "list": {
-                          "op": "fact",
-                          "key": "principal.citizenshipsFromBirth"
-                        },
-                        "set": {
-                          "op": "tokens",
-                          "values": ["AR", "BO", "BR", "CL", "UY"]
-                        }
-                      },
-                      {
-                        "op": "fact",
-                        "key": "person.dependsOnPrincipal"
-                      }
-                    ]
-                  },
-                  {
-                    "op": "unmodeled"
-                  }
-                ]
+                "op": "unmodeled"
               }
             ]
           },
@@ -334,7 +305,7 @@
           }
         ]
       },
-      "sources": ["ley-3578-family", "ley-6984", "ley-2169"]
+      "sources": ["ley-3578-family", "ley-6984"]
     },
     {
       "id": "parents",
@@ -368,7 +339,7 @@
           }
         ]
       },
-      "sources": ["ley-3578-family", "ley-6984"]
+      "sources": ["ley-3578-family", "ley-3578-parties", "ley-6984"]
     }
   ],
   "costs": [
@@ -423,7 +394,7 @@
     },
     {
       "id": "residence-fee-family",
-      "title": "Residence fee of each family member, 20 jornales, PYG 2,341,540, if their residence is charged as a Mercosur temporary residence, which the texts read do not say: possible",
+      "title": "Residence fee of each family member: no text read says what a family member without a party's nationality pays; at the Mercosur fee of 20 jornales, PYG 2,341,540: possible",
       "kind": "fee",
       "amount": {
         "op": "money",

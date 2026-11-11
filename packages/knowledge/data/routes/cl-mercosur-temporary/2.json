@@ -151,9 +151,9 @@
   "assessments": [
     {
       "id": "means-for-dependents",
-      "title": "When family members apply as dependents, the principal proves economic activity or stable income enough for their upkeep, against the Social Development Ministry's indicators",
+      "title": "When family members apply as dependents, the principal shows enough economic resources for their upkeep, by the indicators of the Social Development and Family Ministry",
       "evidence": ["principal.monthlyActiveIncome", "principal.monthlyPassiveIncome"],
-      "sources": ["ley-21325-dependents", "decreto-177-dependents", "sermig-dependents"]
+      "sources": ["sermig-dependents", "decreto-177-dependents"]
     },
     {
       "id": "no-criminal-record",
@@ -165,27 +165,27 @@
   "dependents": [
     {
       "id": "spouse",
-      "title": "Spouse; the principal's means for their upkeep are an assessment",
+      "title": "Spouse (cónyuge)",
       "path": ["spouse"],
       "condition": {
         "op": "bool",
         "value": true
       },
-      "sources": ["ley-21325-dependents", "decreto-177-dependents", "sermig-dependents"]
+      "sources": ["sermig-dependents", "ley-21325-dependents"]
     },
     {
       "id": "partner",
-      "title": "Partner (conviviente) in a genuine cohabiting relationship; the principal's means for their upkeep are an assessment",
+      "title": "Partner (conviviente)",
       "path": ["partner"],
       "condition": {
         "op": "bool",
         "value": true
       },
-      "sources": ["ley-21325-dependents", "decreto-177-dependents", "sermig-dependents"]
+      "sources": ["sermig-dependents", "ley-21325-dependents"]
     },
     {
       "id": "children",
-      "title": "Children under 18; children of 18 or more, who qualify only with a disability or when under 24 and studying at an institution Chile recognizes, neither of which is recorded: possible",
+      "title": "The principal's children under 18; older children only with a disability, or between 18 and 24 and studying at an institution the State recognizes, neither of which is recorded: possible",
       "path": ["child"],
       "condition": {
         "op": "any",
@@ -206,16 +206,11 @@
           }
         ]
       },
-      "sources": [
-        "ley-21325-dependents",
-        "decreto-177-dependents",
-        "sermig-dependents",
-        "codigo-civil"
-      ]
+      "sources": ["sermig-dependents", "ley-21325-dependents", "codigo-civil"]
     },
     {
       "id": "spouse-children",
-      "title": "The spouse's children under 18; children of 18 or more, who qualify only with a disability or when under 24 and studying at an institution Chile recognizes, neither of which is recorded: possible",
+      "title": "The spouse's children under 18; older children only with a disability, or between 18 and 24 and studying at an institution the State recognizes, neither of which is recorded: possible",
       "path": ["spouse", "child"],
       "condition": {
         "op": "any",
@@ -236,16 +231,11 @@
           }
         ]
       },
-      "sources": [
-        "ley-21325-dependents",
-        "decreto-177-dependents",
-        "sermig-dependents",
-        "codigo-civil"
-      ]
+      "sources": ["sermig-dependents", "ley-21325-dependents", "codigo-civil"]
     },
     {
       "id": "partner-children",
-      "title": "The partner's children under 18; children of 18 or more, who qualify only with a disability or when under 24 and studying at an institution Chile recognizes, neither of which is recorded: possible",
+      "title": "The partner's children under 18; older children only with a disability, or between 18 and 24 and studying at an institution the State recognizes, neither of which is recorded: possible",
       "path": ["partner", "child"],
       "condition": {
         "op": "any",
@@ -266,12 +256,7 @@
           }
         ]
       },
-      "sources": [
-        "ley-21325-dependents",
-        "decreto-177-dependents",
-        "sermig-dependents",
-        "codigo-civil"
-      ]
+      "sources": ["sermig-dependents", "ley-21325-dependents", "codigo-civil"]
     }
   ],
   "costs": [],

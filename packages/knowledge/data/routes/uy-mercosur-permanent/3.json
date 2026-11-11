@@ -12,56 +12,56 @@
   "sources": [
     {
       "id": "ley-18250-mercosur",
-      "url": "https://www.impo.com.uy/bases/leyes/18250-2008",
+      "url": "https://www.impo.com.uy/bases/leyes/18250-2008/33",
       "title": "Ley N.º 18.250, article 33, literal B, as worded by Ley N.º 20.075: permanent residence for nationals of the Mercosur States Parties and Associated States who prove that nationality",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
     {
       "id": "ley-18250-decision",
-      "url": "https://www.impo.com.uy/bases/leyes/18250-2008",
+      "url": "https://www.impo.com.uy/bases/leyes/18250-2008/33",
       "title": "Ley N.º 18.250, article 33, last paragraphs: the application goes to the Ministry of the Interior or a consulate, and the Ministry decides within 90 business days",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
     {
       "id": "ley-20075",
-      "url": "https://www.impo.com.uy/bases/leyes/20075-2022",
+      "url": "https://www.impo.com.uy/bases/leyes/20075-2022/169",
       "title": "Ley N.º 20.075, article 169: the current wording of article 33 of Ley N.º 18.250 applies from 120 days after the law's promulgation on 2022-10-20",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
     {
       "id": "ley-18250-family",
-      "url": "https://www.impo.com.uy/bases/leyes/18250-2008",
+      "url": "https://www.impo.com.uy/bases/leyes/18250-2008/10",
       "title": "Ley N.º 18.250, article 10: family reunification with parents, spouses, partners (concubinos), and unmarried children who are minors or adults with a disability",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
     {
       "id": "ley-18250-entry-refusal",
-      "url": "https://www.impo.com.uy/bases/leyes/18250-2008",
+      "url": "https://www.impo.com.uy/bases/leyes/18250-2008/45",
       "title": "Ley N.º 18.250, article 45, literals B to D: crimes against humanity, an expulsion or re-entry ban not revoked, and a conviction for trafficking, laundering or drug or arms trafficking",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
     {
       "id": "ley-18250-denial",
-      "url": "https://www.impo.com.uy/bases/leyes/18250-2008",
+      "url": "https://www.impo.com.uy/bases/leyes/18250-2008/46",
       "title": "Ley N.º 18.250, article 46: residence is denied after a charge or conviction for an intentional common crime punished with more than two years of prison, or repeated offending",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
     {
       "id": "decreto-45-2023-requirements",
-      "url": "https://www.impo.com.uy/bases/decretos/45-2023",
+      "url": "https://www.impo.com.uy/bases/decretos/45-2023/2",
       "title": "Decreto N.º 45/023, article 2: a valid passport or identity document, and for applicants over 18 a sworn statement that articles 45, B to D, and 46 of Ley N.º 18.250 do not apply",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
     {
       "id": "decreto-45-2023-reciprocity",
-      "url": "https://www.impo.com.uy/bases/decretos/45-2023",
+      "url": "https://www.impo.com.uy/bases/decretos/45-2023/8",
       "title": "Decreto N.º 45/023, article 8: the procedure follows the reciprocity agreement between Uruguay and the applicant's state",
       "kind": "official",
       "verifiedAt": "2026-11-11"
@@ -81,6 +81,13 @@
       "verifiedAt": "2026-11-11"
     },
     {
+      "id": "ley-17927-parties",
+      "url": "https://www.impo.com.uy/bases/leyes-internacional/17927-2005",
+      "title": "Ley N.º 17.927, Residence Agreement for nationals of the Mercosur States Parties, Bolivia and Chile, opening: its parties are Argentina, Brazil, Paraguay, Uruguay, Bolivia and Chile",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
       "id": "dnm-residencia-legal",
       "url": "https://www.gub.uy/tramites/residencia-legal",
       "title": "Dirección Nacional de Migración, Residencia legal: Mercosur permanent residence for nationals of AR, BO, BR, CL, CO, EC, GY, PE, PY, SR and VE",
@@ -96,21 +103,21 @@
     },
     {
       "id": "ley-18246",
-      "url": "https://www.impo.com.uy/bases/leyes/18246-2007",
+      "url": "https://www.impo.com.uy/bases/leyes/18246-2007/1",
       "title": "Ley N.º 18.246 (unión concubinaria), article 1: the rights of a stable union arise after at least five years of uninterrupted living together",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
     {
       "id": "decreto-394-2009",
-      "url": "https://www.impo.com.uy/bases/decretos/394-2009",
+      "url": "https://www.impo.com.uy/bases/decretos/394-2009/16",
       "title": "Decreto N.º 394/009 (regulation of Ley N.º 18.250), article 16: a stable union is proved only by its registered judicial recognition",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
     {
       "id": "codigo-civil-majority",
-      "url": "https://www.impo.com.uy/bases/codigo-civil/16603-1994",
+      "url": "https://www.impo.com.uy/bases/codigo-civil/16603-1994/280",
       "title": "Civil Code, article 280: majority is reached at 18 completed years, and parental authority also ends with a child's marriage",
       "kind": "official",
       "verifiedAt": "2026-11-11"
@@ -201,7 +208,7 @@
           }
         ]
       },
-      "sources": ["ley-17927-family", "ley-18250-family", "decreto-45-2023-reciprocity"]
+      "sources": ["ley-17927-family", "ley-17927-parties", "ley-18250-family"]
     },
     {
       "id": "partner",
@@ -223,7 +230,7 @@
           }
         ]
       },
-      "sources": ["ley-17927-family", "ley-18250-family", "ley-18246", "decreto-394-2009"]
+      "sources": ["ley-18250-family", "ley-18246", "decreto-394-2009"]
     },
     {
       "id": "children",
@@ -287,8 +294,8 @@
       },
       "sources": [
         "ley-17927-family",
+        "ley-17927-parties",
         "ley-18250-family",
-        "decreto-45-2023-reciprocity",
         "codigo-civil-majority"
       ]
     },
@@ -345,7 +352,7 @@
           }
         ]
       },
-      "sources": ["ley-17927-family", "ley-18250-family", "decreto-45-2023-reciprocity"]
+      "sources": ["ley-17927-family", "ley-17927-parties", "ley-18250-family"]
     }
   ],
   "costs": [],

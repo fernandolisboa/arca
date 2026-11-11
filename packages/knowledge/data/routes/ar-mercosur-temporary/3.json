@@ -32,9 +32,23 @@
       "verifiedAt": "2026-11-11"
     },
     {
-      "id": "ley-25871-impediments",
+      "id": "ley-25871-entry-ban",
       "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
-      "title": "Ley 25.871, article 29, b) to d): an entry ban in force, and a conviction or record, in Argentina or abroad, for a crime Argentine law punishes with prison, bar entry and stay",
+      "title": "Ley 25.871, article 29, b): an entry ban in force bars entry and stay until it is revoked or its term has run",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ley-25871-serious-crimes",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "title": "Ley 25.871, article 29, c) and closing paragraph: a conviction, final or not, or a record (an indictment or committal to trial) for a crime punished with three years of prison or more",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ley-25871-lesser-crimes",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "title": "Ley 25.871, article 29, d) and closing paragraph: a conviction, final or not, in Argentina or abroad, for a crime punished with less than three years of prison",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
@@ -194,16 +208,22 @@
   ],
   "assessments": [
     {
-      "id": "criminal-record",
-      "title": "No conviction, final or not, and no indictment or committal to trial, in Argentina or abroad, for a crime that Argentine law punishes with prison",
+      "id": "serious-crime",
+      "title": "No conviction, final or not, and no record (an indictment or committal to trial), in Argentina or abroad, for a crime Argentine law punishes with three years of prison or more",
       "evidence": ["principal.visaRefusals"],
-      "sources": ["ley-25871-impediments"]
+      "sources": ["ley-25871-serious-crimes"]
+    },
+    {
+      "id": "lesser-crime-conviction",
+      "title": "No conviction, final or not, in Argentina or abroad, for a crime Argentine law punishes with less than three years of prison",
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["ley-25871-lesser-crimes"]
     },
     {
       "id": "no-entry-ban",
       "title": "No ban on entering Argentina in force, unless it was revoked or its term has run",
       "evidence": ["principal.visaRefusals"],
-      "sources": ["ley-25871-impediments"]
+      "sources": ["ley-25871-entry-ban"]
     }
   ],
   "dependents": [
@@ -242,12 +262,7 @@
           }
         ]
       },
-      "sources": [
-        "ley-25871-reunification",
-        "disp-dnm-4880-2015",
-        "disp-dnm-6206-2017",
-        "ccyc-unions"
-      ]
+      "sources": ["disp-dnm-4880-2015", "disp-dnm-6206-2017", "ccyc-unions"]
     },
     {
       "id": "children",
@@ -310,52 +325,36 @@
     },
     {
       "id": "spouse-children",
-      "title": "The spouse's unmarried children under 18, who join the spouse once the spouse is a temporary resident; adults: possible",
+      "title": "The spouse's children, whom article 23, ñ), does not name: they qualify as the spouse's own children once the spouse is a resident, which is not modeled: possible; a married child under 18 is left out",
       "path": ["spouse", "child"],
       "condition": {
-        "op": "any",
+        "op": "all",
         "operands": [
           {
-            "op": "all",
-            "operands": [
-              {
-                "op": "lt",
-                "left": {
-                  "op": "fact",
-                  "key": "person.ageYears"
+            "op": "not",
+            "operand": {
+              "op": "all",
+              "operands": [
+                {
+                  "op": "lt",
+                  "left": {
+                    "op": "fact",
+                    "key": "person.ageYears"
+                  },
+                  "right": {
+                    "op": "int",
+                    "value": 18
+                  }
                 },
-                "right": {
-                  "op": "int",
-                  "value": 18
-                }
-              },
-              {
-                "op": "not",
-                "operand": {
+                {
                   "op": "fact",
                   "key": "person.hasSpouse"
                 }
-              }
-            ]
+              ]
+            }
           },
           {
-            "op": "all",
-            "operands": [
-              {
-                "op": "gte",
-                "left": {
-                  "op": "fact",
-                  "key": "person.ageYears"
-                },
-                "right": {
-                  "op": "int",
-                  "value": 18
-                }
-              },
-              {
-                "op": "unmodeled"
-              }
-            ]
+            "op": "unmodeled"
           }
         ]
       },
@@ -363,7 +362,7 @@
     },
     {
       "id": "partner-children",
-      "title": "The partner's children, like the spouse's, when the union of two years or more is registered, which is not recorded: possible; a married child under 18 is left out",
+      "title": "The partner's children, whom article 23, ñ), does not name, when the union of two years or more is registered, which is not recorded: possible; a married child under 18 is left out",
       "path": ["partner", "child"],
       "condition": {
         "op": "all",
@@ -404,13 +403,7 @@
           }
         ]
       },
-      "sources": [
-        "ley-25871-reunification",
-        "disp-dnm-4880-2015",
-        "disp-dnm-6206-2017",
-        "ccyc-unions",
-        "ccyc-minors"
-      ]
+      "sources": ["ley-25871-reunification", "disp-dnm-6206-2017", "ccyc-unions"]
     },
     {
       "id": "parents",
@@ -426,24 +419,32 @@
   "costs": [
     {
       "id": "residence-fee",
-      "title": "Residence fee in the Mercosur column: 50 UMSM, a computed ARS 50,000 at ARS 1,000 a unit, paid when applying in Argentina",
+      "title": "Residence fee in the Mercosur and associated states column: 50 UMSM, at ARS 1,000 a unit, paid when applying in Argentina",
       "kind": "fee",
       "amount": {
-        "op": "money",
-        "amount": 5000000,
-        "currency": "ARS"
+        "op": "mul",
+        "operand": {
+          "op": "money",
+          "amount": 100000,
+          "currency": "ARS"
+        },
+        "by": "50"
       },
       "appliesTo": "principal",
       "sources": ["dnm-fee-table", "decreto-584-2024-unit"]
     },
     {
       "id": "residence-fee-native-family",
-      "title": "Residence fee of each family member who is a native of a listed state, unless an unmarried child under 18 applying with a parent: 50 UMSM, ARS 50,000",
+      "title": "Residence fee of each family member who is a native of a listed state, unless an unmarried child under 18 applying with a parent: 50 UMSM, at ARS 1,000 a unit",
       "kind": "fee",
       "amount": {
-        "op": "money",
-        "amount": 5000000,
-        "currency": "ARS"
+        "op": "mul",
+        "operand": {
+          "op": "money",
+          "amount": 100000,
+          "currency": "ARS"
+        },
+        "by": "50"
       },
       "appliesTo": "each_dependent",
       "condition": {
@@ -492,12 +493,16 @@
     },
     {
       "id": "residence-fee-other-family",
-      "title": "Residence fee of each other family member, unless an unmarried child under 18 applying with a parent: 50 or 100 UMSM, as the table does not say which column applies",
+      "title": "Residence fee of each other family member, unless an unmarried child under 18 applying with a parent: the table does not say whether its 50 or its 100 UMSM column applies; 100 UMSM at ARS 1,000 a unit",
       "kind": "fee",
       "amount": {
-        "op": "money",
-        "amount": 10000000,
-        "currency": "ARS"
+        "op": "mul",
+        "operand": {
+          "op": "money",
+          "amount": 100000,
+          "currency": "ARS"
+        },
+        "by": "100"
       },
       "appliesTo": "each_dependent",
       "condition": {

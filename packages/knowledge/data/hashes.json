@@ -289,19 +289,19 @@
     },
     {
       "path": "routes/ar-mercosur-temporary/3",
-      "sha256": "6e29aa12057875306985a86e0b525e053638612c586c20dd839db491daf9a382"
+      "sha256": "95b043196fc72ce8fdaedab062fce63d53ce2e629f4c8a01c44caaec19226f18"
     },
     {
       "path": "routes/uy-mercosur-permanent/3",
-      "sha256": "405fac9d7f1f8e783aee86433d3dd9d47148e1c2988fce871a761aaafc07fa44"
+      "sha256": "df337a91125c604a5ed1863e3edd08452566da36741767f6052877838e6f559f"
     },
     {
       "path": "routes/py-mercosur-temporary/3",
-      "sha256": "c773a98053d2136dbd2ce8493f16d72e480e537b02368e326d8ab8ac4182a21f"
+      "sha256": "19baa7c7552938bc271b2f6cdaa6f9e5d538e5b14a8f9c5b1334f3b7e7e38d91"
     },
     {
       "path": "routes/cl-mercosur-temporary/2",
-      "sha256": "15393801a1404ae0312c9748d7ded3ecb0377e7ace6cfb1954001eb7e063f138"
+      "sha256": "0454ae5bd8c48a371ac897a5d31df288a5178360d0e33b8efb5aef7fa0c7204e"
     }
   ]
 }
