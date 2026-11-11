@@ -13,28 +13,42 @@
     {
       "id": "lei-23-2007",
       "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2007-67564445",
-      "title": "Lei n.º 23/2007 (foreigners law), article 58.º, n.º 5, and article 99.º, n.os 1, 4 and 6: family members who may apply with the principal; the other parent's consent; both spouses 18 or over",
+      "title": "Lei n.º 23/2007 (foreigners law), articles 58.º, n.º 5, and 99.º, n.os 1, 4 and 6: family members who may apply with the principal; the other parent's consent; both spouses or partners 18 or over",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
     {
       "id": "lei-23-2007-partner",
       "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2007-67564445",
-      "title": "Lei n.º 23/2007, article 100.º, n.º 1: reunification may be authorised with the partner in a duly proven de facto union and the partner's unmarried minor or incapable children entrusted to the partner",
+      "title": "Lei n.º 23/2007, article 100.º, n.º 1: reunification may be authorized with the partner in a duly proven de facto union and the partner's unmarried minor or incapable children entrusted to the partner",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
     {
-      "id": "lei-23-2007-conditions",
+      "id": "lei-23-2007-entry-ban",
       "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2007-67564445",
-      "title": "Lei n.º 23/2007, article 52.º, n.º 1, a) to c), and n.º 3: no visa under an entry ban or a return or refusal alert, or after a conviction for a crime punishable with more than one year of prison",
+      "title": "Lei n.º 23/2007, article 52.º, n.º 1, a) to c): no visa during an entry ban that follows a removal, or under an alert for return or for refusal of entry and stay",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
     {
-      "id": "lei-23-2007-visa",
+      "id": "lei-23-2007-conviction",
       "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2007-67564445",
-      "title": "Lei n.º 23/2007, article 58.º, n.os 2 and 4: a residence visa is valid for two entries and a stay of four months, and the application is decided within 60 days",
+      "title": "Lei n.º 23/2007, article 52.º, n.º 3: a residence visa is refused after a conviction for a crime Portugal punishes with more than one year of prison, even if not served or suspended",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "lei-23-2007-visa-validity",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2007-67564445",
+      "title": "Lei n.º 23/2007, article 58.º, n.º 2: a residence visa is valid for two entries and lets its holder stay for four months",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "lei-23-2007-visa-decision",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2007-67564445",
+      "title": "Lei n.º 23/2007, article 58.º, n.º 4: the residence visa application is decided within 60 days",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
@@ -67,16 +81,31 @@
       "verifiedAt": "2026-11-11"
     },
     {
-      "id": "dr-84-2007",
+      "id": "dr-84-2007-income",
       "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-regulamentar/2007-116373592",
-      "title": "Decreto Regulamentar n.º 84/2007, article 31.º-A, n.º 1: proof of the work link, average monthly work income over the last three months of at least four minimum wages, and a tax residence document",
+      "title": "Decreto Regulamentar n.º 84/2007, article 31.º-A, n.º 1, c): proof of average monthly income from work over the last three months of at least four guaranteed minimum monthly wages",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "dr-84-2007-work-link",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-regulamentar/2007-116373592",
+      "title": "Decreto Regulamentar n.º 84/2007, article 31.º-A, n.º 1, a) and b): a work contract or employer's statement, or a company contract, a services contract or proof of services provided",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
     {
       "id": "portaria-1563-2007",
       "url": "https://diariodarepublica.pt/dr/detalhe/portaria/1563-2007-628798",
-      "title": "Portaria n.º 1563/2007, articles 2.º, n.º 2, and 5.º, n.º 6: means of subsistence per household member against the minimum wage net of social security contributions, assured for at least 12 months",
+      "title": "Portaria n.º 1563/2007, article 2.º, n.º 2: means per household member against the minimum wage net of social security: first adult 100%, other adults 50%, under 18 and dependent adult children 30%",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2007/12/23800/0886608868.pdf"
+    },
+    {
+      "id": "portaria-1563-2007-period",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/1563-2007-628798",
+      "title": "Portaria n.º 1563/2007, article 5.º, n.º 6: a residence visa applicant's means are assured for at least 12 months; it names the proofs for retirees and for people living on income from assets",
       "kind": "official",
       "verifiedAt": "2026-11-11",
       "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2007/12/23800/0886608868.pdf"
@@ -107,13 +136,6 @@
       "id": "dr-84-2007-means",
       "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-regulamentar/2007-116373592",
       "title": "Decreto Regulamentar n.º 84/2007, article 24.º-B, n.º 1, b): proof of stable and regular resources for the applicant and the accompanying family, set by article 2.º, n.º 2, of Portaria n.º 1563/2007",
-      "kind": "official",
-      "verifiedAt": "2026-11-11"
-    },
-    {
-      "id": "dr-84-2007-documents",
-      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-regulamentar/2007-116373592",
-      "title": "Decreto Regulamentar n.º 84/2007, article 12.º, n.os 1, c), and 7: a criminal record certificate from the country of nationality or of residence for over a year; those under 16 are exempt",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
@@ -189,7 +211,7 @@
           "by": "4"
         }
       },
-      "sources": ["dr-84-2007", "dl-139-2025"]
+      "sources": ["dr-84-2007-income", "dl-139-2025"]
     },
     {
       "id": "household-means",
@@ -314,31 +336,31 @@
       "id": "remote-work",
       "title": "Work done remotely for people or companies domiciled or seated outside Portugal, shown by a work contract or employer's statement, or by a company or services contract or proof of services provided",
       "evidence": ["principal.monthlyActiveIncome"],
-      "sources": ["lei-23-2007-remote", "dr-84-2007"]
+      "sources": ["lei-23-2007-remote", "dr-84-2007-work-link"]
     },
     {
-      "id": "tax-residence",
-      "title": "A document attesting the applicant's tax residence",
-      "evidence": ["principal.residenceCountry"],
-      "sources": ["dr-84-2007"]
+      "id": "means-for-12-months",
+      "title": "Means assured for at least 12 months, which the portaria asks of every residence visa applicant; it predates this visa and names proofs only for retirees and people living on income from assets",
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["portaria-1563-2007-period"]
     },
     {
       "id": "no-entry-ban",
       "title": "No entry ban in force after a removal from Portugal, and no alert for return or for refusal of entry and stay in the Schengen Information System or in Portugal's border system",
       "evidence": ["principal.visaRefusals"],
-      "sources": ["lei-23-2007-conditions"]
+      "sources": ["lei-23-2007-entry-ban"]
     },
     {
       "id": "criminal-record",
-      "title": "No conviction for a crime that Portugal punishes with more than one year of prison, even if the sentence was not served or was suspended; a criminal record certificate is asked from age 16",
+      "title": "No conviction for a crime that Portugal punishes with more than one year of prison, even if the sentence was not served or was suspended",
       "evidence": ["principal.visaRefusals"],
-      "sources": ["lei-23-2007-conditions", "dr-84-2007-documents"]
+      "sources": ["lei-23-2007-conviction"]
     }
   ],
   "dependents": [
     {
       "id": "spouse",
-      "title": "Spouse, both spouses aged 18 or over; the marriage must be valid and recognised under Portuguese law, which is not checked",
+      "title": "Spouse, both spouses aged 18 or over; the marriage must be valid and recognized under Portuguese law, which is not checked",
       "path": ["spouse"],
       "condition": {
         "op": "all",
@@ -371,7 +393,7 @@
     },
     {
       "id": "minor-children",
-      "title": "Children under 18; an adoption must be recognised by Portugal and a child of only one spouse needs the other parent's consent or a custody decision, which are not checked",
+      "title": "Children under 18; an adoption must be recognized by Portugal and a child of only one spouse needs the other parent's consent or a custody decision, which are not checked",
       "path": ["child"],
       "condition": {
         "op": "lt",
@@ -388,7 +410,7 @@
     },
     {
       "id": "spouse-minor-children",
-      "title": "The spouse's children under 18; an adoption must be recognised by Portugal and a child of only one spouse needs the other parent's consent or a custody decision, which are not checked",
+      "title": "The spouse's children under 18; an adoption must be recognized by Portugal and a child of only one spouse needs the other parent's consent or a custody decision, which are not checked",
       "path": ["spouse", "child"],
       "condition": {
         "op": "lt",
@@ -501,7 +523,7 @@
     },
     {
       "id": "partner",
-      "title": "Partner in a de facto union of more than two years, both aged 18 or over; counts only if the union is duly proven and recognised under Portuguese law, which is not recorded: possible",
+      "title": "Partner in a de facto union of more than two years, both aged 18 or over; counts only if the union is duly proven and recognized under Portuguese law, which is not recorded: possible",
       "path": ["partner"],
       "condition": {
         "op": "all",
@@ -559,6 +581,17 @@
             "duration": "P2Y1D"
           },
           {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "principal.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
             "op": "not",
             "operand": {
               "op": "fact",
@@ -576,7 +609,7 @@
   "costs": [
     {
       "id": "visa-fee",
-      "title": "Consular fee for processing the principal's residence visa application",
+      "title": "Consular fee for processing the residence visa application of a principal aged 18 or over",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -584,6 +617,59 @@
         "currency": "EUR"
       },
       "appliesTo": "principal",
+      "condition": {
+        "op": "gte",
+        "left": {
+          "op": "fact",
+          "key": "principal.ageYears"
+        },
+        "right": {
+          "op": "int",
+          "value": 18
+        }
+      },
+      "sources": ["portaria-91-2025", "portaria-229-2021", "lei-23-2007-fees"]
+    },
+    {
+      "id": "visa-fee-minor-principal",
+      "title": "Consular fee for processing the residence visa application of a principal aged 6 to 17, which the consulate may waive",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 11000,
+        "currency": "EUR"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "principal.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 6
+            }
+          },
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "principal.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
       "sources": ["portaria-91-2025", "portaria-229-2021", "lei-23-2007-fees"]
     },
     {
@@ -611,7 +697,7 @@
     },
     {
       "id": "visa-fee-children",
-      "title": "Consular fee for the residence visa application of each child aged 6 to 17, unless the consulate waives it, as it may; children under 6 pay nothing",
+      "title": "Consular fee for the residence visa application of each child aged 6 to 17, which the consulate may waive; children under 6 pay nothing",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -658,14 +744,14 @@
       "title": "Decision on the residence visa application, within the legal time limit of 60 days",
       "min": "P0D",
       "max": "P60D",
-      "sources": ["lei-23-2007-visa"]
+      "sources": ["lei-23-2007-visa-decision"]
     },
     {
       "id": "visa-validity",
       "title": "Residence visa: two entries and a stay of four months in Portugal, to apply there for the residence permit",
       "min": "P4M",
       "max": "P4M",
-      "sources": ["lei-23-2007-visa"]
+      "sources": ["lei-23-2007-visa-validity"]
     },
     {
       "id": "first-residence-permit",
