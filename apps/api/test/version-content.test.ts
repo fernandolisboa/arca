@@ -41,7 +41,11 @@ describe('the version content the models read', () => {
         machineReadableUrl: 'https://api.gov.example/law.json',
       })),
     };
-    expect(guideContent(guide)).toBe(JSON.stringify(guide));
-    expect(guideContent(naming)).toBe(JSON.stringify(guide));
+    expect(guideContent(naming)).toBe(guideContent(guide));
+    expect(guideContent(naming)).not.toContain('machineReadableUrl');
+    expect(JSON.parse(guideContent(naming))).toEqual({
+      ...guide,
+      laws: guide.laws.map((law) => ({ ...law, machineReadableUrl: undefined })),
+    });
   });
 });
