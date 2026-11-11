@@ -59,3 +59,46 @@ export function reviewOrder<V extends Checked & Pick<KnowledgeVersion, 'country'
         name(left.country).localeCompare(name(right.country)),
     );
 }
+
+/** What the admin narrowed the proposed list to: one country or all, and any needs or all. */
+export interface ReviewFilter {
+  readonly country: string | null;
+  readonly needs: ReadonlySet<ReviewNeed>;
+}
+
+export const noFilter: ReviewFilter = { country: null, needs: new Set() };
+
+export const filtering = ({ country, needs }: ReviewFilter): boolean =>
+  country !== null || needs.size > 0;
+
+const inCountry = (filter: ReviewFilter, version: Pick<KnowledgeVersion, 'country'>) =>
+  filter.country === null || version.country === filter.country;
+
+/** Whether a proposed version passes the filter; no need picked means every need. */
+export const passes = (
+  filter: ReviewFilter,
+  version: Checked & Pick<KnowledgeVersion, 'country'>,
+) =>
+  inCountry(filter, version) && (filter.needs.size === 0 || filter.needs.has(reviewNeed(version)));
+
+/**
+ * How many versions of the filter's country have each need, whatever needs are picked, so each
+ * need's toggle says what picking it would show.
+ */
+export function needCounts(
+  versions: readonly (Checked & Pick<KnowledgeVersion, 'country'>)[],
+  filter: ReviewFilter,
+): Readonly<Record<ReviewNeed, number>> {
+  const counts = { differs: 0, ready: 0, unread: 0, unchecked: 0 };
+  for (const version of versions) {
+    if (inCountry(filter, version)) counts[reviewNeed(version)] += 1;
+  }
+  return counts;
+}
+
+/** The toggled filter: a need picked again is dropped. */
+export const toggleNeed = (filter: ReviewFilter, need: ReviewNeed): ReviewFilter => {
+  const needs = new Set(filter.needs);
+  if (!needs.delete(need)) needs.add(need);
+  return { ...filter, needs };
+};

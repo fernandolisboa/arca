@@ -1000,9 +1000,22 @@ export const ptBR = {
       order:
         'Ordem de revisão: primeiro o que difere das fontes, depois o que a IA conferiu inteiro, por último o que ela não conseguiu conferir.',
       start: 'Comece por aqui',
-      need: '{need, select, differs {Tem diferença} ready {Conferida pela IA} other {Falta conferir}}',
+      need: '{need, select, differs {Tem diferença} ready {Conferida pela IA} unread {Falta conferir} other {Sem verificação}}',
+      needCount: {
+        differs: '{n, plural, one {# com diferença} other {# com diferença}}',
+        ready: '{n, plural, one {# conferida} other {# conferidas}}',
+        unread: '{n, plural, one {# falta conferir} other {# faltam conferir}}',
+        unchecked: '{n, plural, one {# sem verificação} other {# sem verificação}}',
+      },
       versions: '{n, plural, one {# versão} other {# versões}}',
       comparisons: 'Comparar destinos',
+      filter: {
+        country: 'País',
+        allCountries: 'Todos os países',
+        needs: 'Situação',
+        empty: 'Nenhuma versão proposta com esses filtros.',
+        clear: 'Limpar filtros',
+      },
     },
     noneProposed: 'Nenhuma versão proposta agora.',
     others: 'Outras versões',

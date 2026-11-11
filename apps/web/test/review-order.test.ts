@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { reviewNeed, reviewOrder } from '../src/knowledge/review-order.js';
+import {
+  type ReviewFilter,
+  type ReviewNeed,
+  filtering,
+  needCounts,
+  noFilter,
+  passes,
+  reviewNeed,
+  reviewOrder,
+  toggleNeed,
+} from '../src/knowledge/review-order.js';
 
 const points = (matches: number, differs: number, unread: number) => ({ matches, differs, unread });
 
@@ -58,5 +68,59 @@ describe('reviewOrder', () => {
 
   it('answers nothing for no versions', () => {
     expect(reviewOrder([], name)).toEqual([]);
+  });
+});
+
+describe('the review filter', () => {
+  const version = (country: string, check: 'checked' | 'flagged' | 'none', differs: number) => ({
+    country,
+    check,
+    points: check === 'none' ? null : points(1, differs, check === 'flagged' ? 2 : 0),
+  });
+  const listed = [
+    version('US', 'flagged', 1),
+    version('US', 'checked', 0),
+    version('US', 'none', 0),
+    version('PT', 'flagged', 0),
+    version('PT', 'flagged', 2),
+  ];
+  const shown = (filter: ReviewFilter) => listed.filter((v) => passes(filter, v)).length;
+
+  it('shows everything with nothing picked', () => {
+    expect(filtering(noFilter)).toBe(false);
+    expect(shown(noFilter)).toBe(5);
+  });
+
+  const narrowed = (country: string | null, needs: ReviewNeed[]): ReviewFilter => ({
+    country,
+    needs: new Set(needs),
+  });
+
+  it.each([
+    { name: 'one country', filter: narrowed('PT', []), count: 2 },
+    { name: 'one need', filter: narrowed(null, ['differs']), count: 2 },
+    { name: 'several needs', filter: narrowed(null, ['ready', 'unchecked']), count: 2 },
+    { name: 'country and need', filter: narrowed('US', ['differs']), count: 1 },
+    { name: 'nothing left', filter: narrowed('PT', ['ready']), count: 0 },
+  ])('narrows to $name', ({ filter, count }) => {
+    expect(filtering(filter)).toBe(true);
+    expect(shown(filter)).toBe(count);
+  });
+
+  it('counts each need inside the country, whatever needs are picked', () => {
+    expect(needCounts(listed, narrowed('US', ['ready']))).toEqual({
+      differs: 1,
+      ready: 1,
+      unread: 0,
+      unchecked: 1,
+    });
+    expect(needCounts(listed, noFilter)).toEqual({ differs: 2, ready: 1, unread: 1, unchecked: 1 });
+  });
+
+  it('picks a need, and drops it when picked again', () => {
+    const picked = toggleNeed(noFilter, 'unread');
+    expect([...picked.needs]).toEqual(['unread']);
+    expect(toggleNeed(picked, 'unread').needs.size).toBe(0);
+    expect(noFilter.needs.size).toBe(0);
   });
 });

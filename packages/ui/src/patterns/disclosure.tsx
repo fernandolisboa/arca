@@ -10,6 +10,9 @@ export interface DisclosureProps {
   readonly aside?: ReactNode;
   /** Read once, when the disclosure first renders; a different `key` starts it over. */
   readonly defaultOpen: boolean;
+  /** Set with `onOpenChange` when the parent keeps the state, such as across a remount. */
+  readonly open?: boolean;
+  readonly onOpenChange?: (open: boolean) => void;
   /** Shown under the body whether open or closed, such as a note that a model wrote it. */
   readonly footer?: ReactNode;
   /** The surface classes of the whole region. */
@@ -28,11 +31,14 @@ export function Disclosure({
   icon,
   aside,
   defaultOpen,
+  open: controlled,
+  onOpenChange,
   footer,
   className,
   children,
 }: DisclosureProps) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [own, setOwn] = useState(defaultOpen);
+  const open = controlled ?? own;
   const titleId = useId();
   const bodyId = useId();
   const Heading = level === 4 ? 'h4' : 'h5';
@@ -45,7 +51,8 @@ export function Disclosure({
             aria-expanded={open}
             aria-controls={bodyId}
             onClick={() => {
-              setOpen((was) => !was);
+              setOwn(!open);
+              onOpenChange?.(!open);
             }}
             className="flex min-h-touch w-full items-center gap-2 rounded-control text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >

@@ -64,6 +64,23 @@ describe('Disclosure', () => {
     expect(render(true)).toMatch(/aria-controls="[^"]+" class="[^"]*\bmin-h-touch\b/);
   });
 
+  it('follows the parent when it keeps the state', () => {
+    const html = renderToStaticMarkup(
+      <Disclosure
+        title={words.title}
+        level={4}
+        defaultOpen={false}
+        open
+        onOpenChange={() => undefined}
+        className="surface"
+      >
+        <p>{words.body}</p>
+      </Disclosure>,
+    );
+    expect(html).toContain('aria-expanded="true"');
+    expect(html).not.toContain('hidden=""');
+  });
+
   it('keeps the footer outside the body, so it shows while folded', () => {
     expect(render(false)).toMatch(/<\/p><\/div><p>A IA pode errar.<\/p><\/section>$/);
   });
