@@ -7,6 +7,7 @@ import {
   type AuthenticatorTransportFuture,
   type RegistrationResponseJSON,
 } from '@simplewebauthn/server';
+import { attestsWithoutCertificates } from './attestation.js';
 import { accounts, devices, passkeyRegistration, type NewPasskey } from './auth.js';
 
 const challengeTimeoutMs = 2 * 60 * 1000;
@@ -65,6 +66,7 @@ export function passkeyCreation({
     },
 
     verify: async (response, challenge) => {
+      if (!attestsWithoutCertificates(response.response.attestationObject)) return null;
       try {
         const { verified, registrationInfo } = await verifyRegistrationResponse({
           response: response as RegistrationResponseJSON,

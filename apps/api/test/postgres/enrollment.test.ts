@@ -1,7 +1,7 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { inviteLifetimeHours, type PasskeyCreationOptions } from '@arca/api-contract/routes';
 import { createI18n } from '@arca/i18n';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createErasure, eraseAccountNow } from '../../src/account/erasure.js';
 import { linkAccounts } from '../../src/account/links.js';
 import { createApp, type App } from '../../src/app.js';
@@ -16,9 +16,14 @@ import { createStepUp } from '../../src/auth/step-up.js';
 import { unconfiguredSender } from '../../src/email/email.js';
 import { createNotices } from '../../src/email/notices.js';
 import { outboxSender, readOutbox } from '../../src/email/outbox.js';
+import { certificateAttestations } from '../certificate-attestations.js';
 import { cookiesFrom } from '../cookies.js';
 import { allowAll } from '../limits.js';
-import { softwarePasskey, type SoftwarePasskey } from '../software-passkey.js';
+import {
+  softwarePasskey,
+  type AttestationOptions,
+  type SoftwarePasskey,
+} from '../software-passkey.js';
 import { deliveringNotifier } from './notification-delivery.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
 
@@ -123,12 +128,19 @@ interface Completion {
   readonly typed?: string | null;
   readonly userVerified?: boolean;
   readonly prfEnabled?: boolean;
+  readonly statement?: AttestationOptions['statement'];
 }
 
 /** Options, a new passkey's attestation, then verify, as the enrollment page makes them. */
 async function register(
   token: string,
-  { passkey = softwarePasskey(rpId), typed = code, userVerified, prfEnabled }: Completion = {},
+  {
+    passkey = softwarePasskey(rpId),
+    typed = code,
+    userVerified,
+    prfEnabled,
+    statement,
+  }: Completion = {},
 ) {
   const offered = await options(token, typed === null ? null : code);
   expect(offered.status).toBe(200);
@@ -138,6 +150,7 @@ async function register(
     origin,
     ...(userVerified === undefined ? {} : { userVerified }),
     ...(prfEnabled === undefined ? {} : { prfEnabled }),
+    ...(statement === undefined ? {} : { statement }),
   });
   const verified = await post(
     '/v1/auth/registration/verify',
@@ -261,6 +274,23 @@ describe('owner enrollment (spec 0003, R2)', () => {
         async (client) => (await client.query('SELECT FROM auth.setup')).rowCount,
       ),
     ).toBe(0);
+  });
+
+  it('refuses an attestation with certificates without requesting what they name', async () => {
+    const fetched = vi.fn(() => Promise.reject(new Error('no request may leave')));
+    vi.stubGlobal('fetch', fetched);
+    try {
+      const token = await latestToken();
+      for (const statement of certificateAttestations) {
+        const forged = await register(token, { statement });
+        expect(forged.verified.status).toBe(403);
+        expect(await forged.verified.json()).toEqual({ error: { code: 'registration_refused' } });
+      }
+      expect(fetched).not.toHaveBeenCalled();
+      expect(await accountCount()).toBe(0);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('rolls the account back when its session cannot be stored', async () => {
@@ -651,7 +681,11 @@ describe('invites (spec 0003, R2)', () => {
   it('erases a declined account and frees its address', async () => {
     const declined = 'declined@example.org';
     expect((await invite(owner.cookie, declined)).status).toBe(200);
-    const { verified } = await register(await latestToken('invite'), { typed: null });
+    // A self attestation, the other statement a registration accepts.
+    const { verified } = await register(await latestToken('invite'), {
+      typed: null,
+      statement: 'self',
+    });
     expect(verified.status).toBe(200);
     const pending = (await listed(owner.cookie)).find((entry) => entry.email === declined);
     const id = pending?.id ?? '';
