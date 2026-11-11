@@ -386,6 +386,14 @@
     {
       "path": "routes/lv-capital-investment/4",
       "sha256": "db744c578ac18ab298d91b26430775dfbc6547afa4a8ebe9290fcee2e6f0da5f"
+    },
+    {
+      "path": "guides/cz/2",
+      "sha256": "a63c437a6173bac9d9cc6e7446baa794e8d629296f635937828ef50f685352a0"
+    },
+    {
+      "path": "guides/dk/2",
+      "sha256": "f8a45734dd909792154c1c85b1d986ce724b789714a46216babb411c17aae643"
     }
   ]
 }

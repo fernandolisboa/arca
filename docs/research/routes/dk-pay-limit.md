@@ -28,4 +28,4 @@ The first audit ([#360](https://github.com/fernandolisboa/arca/issues/360)), on 
   - `checker-gap`: `assessment:pay-limit`, `assessment:genuine-offer` and `assessment:no-social-assistance`, whose provisions (§ 9 a(2)(3), (4), (26) and (29)) sit in the Aliens Act's long XML after the point where the checker cuts it ([OPEN-QUESTIONS](../../OPEN-QUESTIONS.md)); SIRI's page confirmed the DKK 552,000. The pinned set `eu-free-movement` v2, as in earlier audits.
 - **Watch next:**
   - Version 3, due before 2027-01-01, is not written now although Act No. 765 of 2026 is published: a version from 2027-01-01 needs the 2027 pay limit and fees, which SIRI and the ministry have not published, and with 2026's amounts it would show wrong figures from that day. It brings SIRI's 2027 pay limit, the 2027 fee order that replaces Order No. 1612 of 2025, and the subsection numbers Act No. 765 of 2026 gives § 9 a. The collective-agreement scheme it adds is another route.
-  - The guide `dk` does not list the fee order: a version 2 of the guide, in a pull request of its own.
+  - The guide `dk` version 1 did not list the fee order; version 2 adds it, in a pull request of its own.
