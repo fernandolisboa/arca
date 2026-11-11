@@ -41,6 +41,7 @@ export const screenHints: readonly Tour[] = [
   screenHint('family', '/family'),
   screenHint('compare', '/compare'),
   screenHint('vault', '/vault'),
+  screenHint('knowledge', '/knowledge'),
 ];
 
 export const tours: readonly Tour[] = [appTour, ...screenHints];

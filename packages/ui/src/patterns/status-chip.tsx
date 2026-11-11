@@ -1,4 +1,4 @@
-export type StatusTone = 'ok' | 'warn' | 'unknown';
+export type StatusTone = 'ok' | 'warn' | 'danger' | 'unknown';
 
 export interface StatusChipProps {
   readonly tone: StatusTone;
@@ -9,6 +9,7 @@ export interface StatusChipProps {
 const tones: Record<StatusTone, string> = {
   ok: 'bg-ok-bg text-ok-ink',
   warn: 'bg-warn-bg text-warn-ink',
+  danger: 'bg-danger-bg text-danger-ink',
   unknown: 'bg-soft text-muted',
 };
 

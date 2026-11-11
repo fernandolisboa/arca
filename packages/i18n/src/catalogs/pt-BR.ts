@@ -231,6 +231,12 @@ export const ptBR = {
         body: 'Crie o cofre uma vez e abra com a sua chave de acesso. Depois é só adicionar os documentos.',
       },
     },
+    knowledge: {
+      screen: {
+        title: 'Revise nesta ordem',
+        body: 'As regras propostas vêm separadas por país. Comece pelas que diferem das fontes. As que a IA conferiu inteiras dá para ativar de uma vez.',
+      },
+    },
   },
   notFound: {
     title: 'Página não encontrada',
@@ -989,6 +995,15 @@ export const ptBR = {
       open: 'Abrir a tela de ativação',
     },
     proposed: 'Versões propostas',
+    /** The proposed versions grouped by country, in the order to review them. */
+    review: {
+      order:
+        'Ordem de revisão: primeiro o que difere das fontes, depois o que a IA conferiu inteiro, por último o que ela não conseguiu conferir.',
+      start: 'Comece por aqui',
+      need: '{need, select, differs {Tem diferença} ready {Conferida pela IA} other {Falta conferir}}',
+      versions: '{n, plural, one {# versão} other {# versões}}',
+      comparisons: 'Comparar destinos',
+    },
     noneProposed: 'Nenhuma versão proposta agora.',
     others: 'Outras versões',
     versionTitle: '{title} · versão {number}',
@@ -1019,6 +1034,8 @@ export const ptBR = {
       progress: 'Passo {current} de {total}',
       back: 'Voltar',
       next: 'Próximo: {step}',
+      previous: 'Passo anterior',
+      following: 'Próximo passo',
       decision: 'Decisão',
       count: '{n, plural, =0 {nenhum item} one {# item} other {# itens}}',
     },
@@ -1098,6 +1115,23 @@ export const ptBR = {
         '{reason, select, summary_unavailable {O resumo não está disponível agora. A regra continua aqui para você ler.} summary_timeout {A IA demorou demais. Tente de novo.} summary_unparsable {A IA não conseguiu montar um resumo desta vez. Tente de novo.} limited {Você pediu muitos resumos. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
       retry: 'Tentar de novo',
     },
+    /** The independent check's points, shown beside the rule items they are about (ADR-0027). */
+    points: {
+      status:
+        '{status, select, matches {Bate com a fonte, segundo a IA.} differs {Difere da fonte, segundo a IA.} other {Não conferido.}}',
+      matches: '{n, plural, one {# bate} other {# batem}}',
+      differs: '{n, plural, one {# difere} other {# diferem}}',
+      unread: '{n, plural, one {# não conferido} other {# não conferidos}}',
+      checked:
+        'A IA comparou {n, plural, one {# ponto} other {# pontos}} desta versão com as fontes oficiais',
+      needYou:
+        '{n, plural, one {1 ponto difere e precisa de você} other {# pontos diferem e precisam de você}}',
+      unconfirmed:
+        '{n, plural, one {Nenhum ponto difere, mas 1 não foi conferido} other {Nenhum ponto difere, mas # não foram conferidos}}',
+      allMatch: 'Todos os pontos batem com as fontes',
+      note: 'Feita por IA, que pode errar. “Não conferido” quer dizer que a IA não conseguiu confirmar o ponto, não que a regra está errada. O relatório completo fica no passo Decisão.',
+      quotes: '{n, plural, one {Ver o trecho da fonte} other {Ver os # trechos da fonte}}',
+    },
     /** The independent check of a route version against its official pages (ADR-0027). */
     check: {
       title: 'Verificação independente',
@@ -1105,7 +1139,7 @@ export const ptBR = {
         'A verificação independente não lê comparações. Abra as fontes e confira por conta própria antes de decidir.',
       off: 'A verificação independente ainda não está ligada. Abra as fontes e confira por conta própria antes de decidir.',
       listStatus:
-        '{status, select, checked {Conferida pela IA} flagged {Marcada para revisão} running {Verificando} stale {Verificação vencida} other {Sem verificação}}',
+        '{status, select, checked {Conferida pela IA} flagged {Conferida em parte} running {Verificando} stale {Verificação vencida} other {Sem verificação}}',
       status:
         '{status, select, running {A IA está lendo as fontes desta versão. Leva alguns minutos, e a tela se atualiza sozinha.} stale {A última verificação não vale mais: a versão, o guia do país ou a IA mudaram, ou ela passou da validade.} other {Esta versão ainda não foi verificada.}}',
       startsOnOpen:

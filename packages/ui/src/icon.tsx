@@ -24,6 +24,7 @@ import {
   TriangleAlert,
   UserRound,
   UsersRound,
+  X,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -47,6 +48,7 @@ const icons = {
   chevron: ChevronRight,
   back: ChevronLeft,
   check: Check,
+  close: X,
   copy: Copy,
   alert: TriangleAlert,
   vault: LockKeyhole,
