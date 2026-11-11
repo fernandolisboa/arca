@@ -62,9 +62,9 @@ overrides:
   '@sentry/node>@sentry/bundler-plugins': '-'
 
 catalog:
-  '@ai-sdk/anthropic': 4.0.95
+  '@ai-sdk/anthropic': 4.0.96
   '@axe-core/playwright': 4.14.0
-  '@better-auth/passkey': 1.7.15
+  '@better-auth/passkey': 1.7.16
   '@fontsource-variable/atkinson-hyperlegible-next': 5.3.0
   '@fontsource-variable/bricolage-grotesque': 5.3.0
   '@fontsource-variable/dm-sans': 5.3.0
@@ -101,8 +101,8 @@ catalog:
   '@vercel/blob': 2.8.2
   '@vitejs/plugin-react': 6.2.1
   age-encryption: 0.3.1
-  ai: 7.0.161
-  better-auth: 1.7.15
+  ai: 7.0.162
+  better-auth: 1.7.16
   cctv-age: 0.2.0
   drizzle-kit: 1.0.0-rc.5
   drizzle-orm: 1.0.0-rc.5
@@ -113,13 +113,13 @@ catalog:
   i18next: 26.7.1
   intl-messageformat: 12.1.4
   libpg-query: 18.2.2
-  lucide-react: 1.66.0
+  lucide-react: 1.68.0
   nitro: 3.0.260903-beta
   parse5: 8.1.0
   pg: 8.23.1
   prettier: 3.9.10
   react-dom: 19.3.1
-  react-i18next: 17.1.11
+  react-i18next: 17.1.12
   react: 19.3.1
   tailwindcss: 4.3.4
   turbo: 2.11.10
