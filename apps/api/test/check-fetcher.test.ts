@@ -388,6 +388,44 @@ describe('htmlToText', () => {
     },
   );
 
+  it.each([
+    [
+      'named, with and without a semicolon',
+      '<p>Resid&ecirc;ncia &amp; taxa de&nbsp;&euro;&nbsp;85 &copy 2026</p>',
+      'Residência & taxa de € 85 © 2026',
+    ],
+    [
+      'decimal, hexadecimal and astral',
+      '<p>&#8364; 85, &#x20AC; 60 &#x1F6C2;</p>',
+      '€ 85, € 60 🛂',
+    ],
+    ['left alone where the name is unknown', '<p>R&D &unknown; fee</p>', 'R&D &unknown; fee'],
+  ])('decodes character references: %s', (_label, html, text) => {
+    expect(htmlToText(html)).toBe(text);
+  });
+
+  it.each([
+    '<p style="display&#58;none">EUR 1.000</p>',
+    '<p style="visibility&colon;hidden">EUR 1.000</p>',
+    '<span style="text-decoration&#x3A; line-through">EUR 1.000</span>',
+    '<span aria-hidden="tr&#117;e">EUR 1.000</span>',
+  ])('drops an element hidden or struck through character references: %s', (old) => {
+    expect(htmlToText(`<div>Means of ${old} EUR 2.000 a month.</div>`)).toBe(
+      'Means of EUR 2.000 a month.',
+    );
+  });
+
+  it('reads a page longer than one parser chunk the same way to its end', () => {
+    const sentences = 6_000;
+    const html =
+      `<p>${'Taxa de &euro;&nbsp;85 por pedido. '.repeat(sentences)}</p>` +
+      '<p style="display&#58;none">EUR 1.000</p><p>Fim.</p>';
+    expect(html.length).toBeGreaterThan(65_536);
+    expect(htmlToText(html)).toBe(
+      `${Array.from({ length: sentences }, () => 'Taxa de € 85 por pedido.').join(' ')}\nFim.`,
+    );
+  });
+
   it('walks a deeply nested page without overflowing the stack', () => {
     expect(htmlToText(`${'<div>'.repeat(5_000)}deep${'</div>'.repeat(5_000)}`)).toBe('deep');
   });

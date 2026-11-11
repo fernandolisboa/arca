@@ -64,7 +64,7 @@ export interface RegistrationSettings {
  * verifies the attestation and stores the passkey and the session; Arca's callbacks claim the
  * registration context and create the account. Better Auth's adapter runs the ceremony in one
  * transaction, which the callbacks join, so a failure anywhere leaves no account behind. This
- * relies on the Drizzle adapter (1.7.14) opening that transaction with `db.transaction`; if an
+ * relies on the Drizzle adapter (1.7.15) opening that transaction with `db.transaction`; if an
  * upgrade stops doing so, the callbacks find no transaction and refuse every registration.
  */
 export function registrationHooks({ db, audit, ownerCode }: RegistrationSettings) {

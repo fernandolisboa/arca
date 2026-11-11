@@ -12,6 +12,11 @@ updates:
     groups:
       npm:
         patterns: ['*']
+    # One WebAuthn verifier in the tree (ADR-0015): SimpleWebAuthn stays on the major the passkey
+    # plugin resolves. Drop this entry in the pull request that moves the plugin to the next major.
+    ignore:
+      - dependency-name: '@simplewebauthn/*'
+        update-types: ['version-update:semver-major']
   - package-ecosystem: github-actions
     directories:
       - /
