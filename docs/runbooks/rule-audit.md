@@ -89,7 +89,7 @@ The record holds public law only: no case data, no person's facts.
 
 ## The monthly run
 
-The owner asked for an audit every month, so that nobody has to ask for each one ([#361](https://github.com/fernandolisboa/arca/issues/361)). A scheduled task named "Monthly rule audit (Arca)" fires on the 2nd of each month, at 02:17 in São Paulo, into the project thread of the monthly audit ("Auditar as regras todo mês"). Each firing is one monthly run. The run is that thread's session, an authoring session like any other, and this section leaves it nothing to decide. The [safety rules](#safety) hold at every step, and where this section is stricter, it wins.
+The owner asked for an audit every month, so that nobody has to ask for each one ([#361](https://github.com/fernandolisboa/arca/issues/361)). A scheduled task named "Monthly rule audit (Arca)" fires on the 2nd of each month, at 02:17 in São Paulo, into the project thread of the monthly audit ("Auditar as regras todo mês"). Each firing is one monthly run. The task is created, or created again after a stop, only once the owner has revoked the fine-grained GitHub token that the thread's session still holds ([SETUP.md](../SETUP.md#agent-session-and-ci)); the session that creates it confirms that with him first. The run is that thread's session, an authoring session like any other, and this section leaves it nothing to decide. The [safety rules](#safety) hold at every step, and where this section is stricter, it wins.
 
 The task sends this prompt. The copy here is the reviewed one: a change to the prompt is a pull request to this section first, then the same text in the task.
 
