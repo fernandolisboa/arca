@@ -32,4 +32,4 @@ The first audit ([#360](https://github.com/fernandolisboa/arca/issues/360)), on 
 - **Watch next:**
   - The average wage communication for 2027-05-01 onward: version 4, due by 2027-05-01.
   - The fees act's text of 2028-01-01.
-  - The guide `cz` does not list the fees act: a version 2 of the guide, in a pull request of its own.
+  - The guide `cz` version 1 did not list the fees act; version 2 adds it, in a pull request of its own.
