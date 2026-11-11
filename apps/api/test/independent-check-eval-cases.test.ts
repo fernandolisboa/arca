@@ -22,8 +22,7 @@ const careful: Record<string, string> = {
     'The gross salary stated in the job offer shall be at least EUR 2,800',
   'assessment:job-offer':
     'holds a signed job offer from an employer entered in the national register of employers',
-  'requirement:means':
-    'rendimentos passivos de, no mínimo, EUR 700,00 por cada mês de permanência',
+  'requirement:means': 'rendimentos passivos de, no mínimo, EUR 700,00 por cada mês de permanência',
 };
 const employeeFee = 'Residence permit for employees | EUR 120';
 
