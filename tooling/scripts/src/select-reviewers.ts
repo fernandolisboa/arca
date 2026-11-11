@@ -64,13 +64,13 @@ const accessKeywords = ['shar', 'invite', 'admin', 'owner-list', 'decision'];
 const rules: readonly Rule[] = [
   // Markdown under the code roots may be a prompt or a fixture, so it is not docs.
   { match: /^(?!(apps|packages|tooling|eval)\/).*\.md$/, reviewers: docsReviewers },
-  // Route notes are what the scheduled rule audit reads back the next month.
   {
-    match:
-      /^(SECURITY\.md|docs\/(SECURITY|SETUP|RETENTION)\.md|docs\/(threat-models|runbooks|research\/routes)\/)/,
+    match: /^(SECURITY\.md|docs\/(SECURITY|SETUP|RETENTION)\.md|docs\/(threat-models|runbooks)\/)/,
     reviewers: ['security'],
   },
-  // The scheduled rule audit reads its hosts by these recipes with nobody watching.
+  // The monthly rule audit reads a route's notes back at the route's next turn, and reads its
+  // hosts by the recipes, with nobody watching.
+  { match: /^docs\/research\/routes\/[^/]+\.md$/, reviewers: ['security'] },
   { match: /^docs\/runbooks\/reading-recipes\.md$/, reviewers: ['supply-chain'] },
   { match: /^docs\/vault-format\.md$/, reviewers: ['security', 'auth-crypto'] },
   // ADRs and the data-flow register admit vendors and services and set the auth and vault design.
@@ -193,7 +193,7 @@ const rules: readonly Rule[] = [
     reviewers: withCore('supply-chain'),
   },
   // Agent and review configuration, wherever an agent would load it (threat model S4). The rule
-  // audit runbook holds the scheduled run's prompt and what that run may merge on its own.
+  // audit runbook holds the monthly run's prompt and what that run may merge on its own.
   {
     match:
       /(^|\/)((CLAUDE|AGENTS|GEMINI)(\.local)?\.md|\.claude\/|\.mcp\.json$)|^(docs\/agents\/|docs\/REVIEW\.md$|docs\/runbooks\/rule-audit\.md$|tooling\/scripts\/src\/select-reviewers\.ts$)/i,
