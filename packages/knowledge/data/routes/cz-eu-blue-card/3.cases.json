@@ -329,7 +329,7 @@
       }
     },
     {
-      "id": "lone-parent-of-70-with-a-partner",
+      "id": "parent-of-70-with-a-partner",
       "snapshot": {
         "recordedOn": "2026-10-01",
         "members": ["p1", "p2", "p3"],

@@ -22,4 +22,4 @@ The first audit ([#360](https://github.com/fernandolisboa/arca/issues/360)), on 
   - `unreadable`: the closure item. Every source is a gazette PDF, which the checker does not read (#363), and the gazette host answered the checker's fetch with 403. A further run would read the same nothing, so none was made.
 - **Watch next:**
   - A new regulation under Act No. 37/2026 that creates a visa for remote work: that is a new version with a later `effectiveFrom`.
-  - Once the checker reads PDFs (#363), run the check on this route again.
+  - The closure item stays unchecked until the checker reads PDFs (#363).

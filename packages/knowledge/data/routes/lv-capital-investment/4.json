@@ -28,7 +28,7 @@
     {
       "id": "immigration-law-family-member",
       "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
-      "title": "Immigration Law, 1. pants (1) 8) ģimenes loceklis: the spouse, the minor children of the third-country national or of the spouse (wards included) and persons under curatorship",
+      "title": "Immigration Law, 1. pants (1) 8), family member (ģimenes loceklis): the spouse, the minor children of the third-country national or of the spouse (wards included) and persons under curatorship",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
@@ -188,7 +188,7 @@
     },
     {
       "id": "no-suspension",
-      "title": "The Cabinet may suspend these permits for up to five years for nationals of third countries it names; no such regulations were found on 2026-11-11",
+      "title": "No suspension in force: the Cabinet may suspend these permits for up to five years for nationals of third countries it names",
       "evidence": ["principal.citizenships"],
       "sources": ["immigration-law-suspension"]
     }

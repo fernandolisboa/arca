@@ -9,7 +9,7 @@ Research notes for Georgia's short-term residence permit for owners of real esta
 The first audit ([#360](https://github.com/fernandolisboa/arca/issues/360)), on demand, in one pull request with the Czech, Danish, Latvian and Icelandic routes ([Czech record](cz-eu-blue-card.md)).
 
 - **Version audited:** 1
-- **Outcome:** new version, version 2 (pull request [#394](https://github.com/fernandolisboa/arca/pull/394)), from 2026-09-01, the day Law No. 1803 of 25 June 2026 reworded art. 18 (the date is the guide's reading of that law). Version 1 keeps the dates from 2026-03-01 to 2026-08-31; it words the refusal grounds as they read from September, which changes no result, since they are assessments.
+- **Outcome:** new version, version 2 (pull request [#394](https://github.com/fernandolisboa/arca/pull/394)), from 2026-09-01, the day Law No. 1803 of 25 June 2026 reworded art. 18 (the date is the guide's reading of that law). Version 1 keeps the dates from 2026-03-01 to 2026-08-31 and is left uncorrected: it words the refusal grounds as they read from September, has no fees and uses the 28 February reading. A correction would need the law as in force before Law No. 1803, which is not the publication read, and only an evaluation dated in that window selects it; none of it changes an eligibility result, since the grounds are assessments ([OPEN-QUESTIONS](../../OPEN-QUESTIONS.md)).
 - **Sources re-read** (all on 2026-11-11 UTC):
   - The Law on the Legal Status of Aliens and Stateless Persons, consolidated publication 23 of 25/06/2026, English PDF saved through the `web-fetch` agent and read whole with `pdftotext`; arts. 2, 14, 15, 16, 18 and 70 are cited, now at `?publication=23`. The publication carries Laws Nos. 863, 865, 1510 and 1803, so the Georgian-only page of Law No. 863, which version 1 cited and no session could re-read, is no longer cited.
   - The Civil Code, publication 140, English PDF read the same way; art. 12(2).
@@ -31,4 +31,5 @@ The first audit ([#360](https://github.com/fernandolisboa/arca/issues/360)), on 
   - Matched in one run only: `requirement:not-georgian-citizen`, `assessment:property-ownership`, `assessment:security`, `cost:service-fee` and `duration:decision`.
 - **Watch next:**
   - A consolidated publication after 23.
+  - The start date of 2026-09-01 rests on the guide's reading of Law No. 1803, a Georgian-only text no session could read; confirm it from an official text once one is readable.
   - The government ordinance that sets the service fees (art. 70(2)(b)) was not found in English; the Agency's page is the source for the amounts.

@@ -92,7 +92,7 @@
   "requirements": [
     {
       "id": "property-value",
-      "title": "Funds for a Georgian property, not agricultural land, whose market value exceeds USD 150,000 (in GEL)",
+      "title": "Funds for a Georgian property, not agricultural land, whose market value exceeds the equivalent in GEL of USD 150,000",
       "expression": {
         "op": "gt",
         "left": {
