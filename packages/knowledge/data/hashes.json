@@ -270,6 +270,10 @@
     {
       "path": "routes/pt-d8/4",
       "sha256": "d2793238218df95e032ab40437c336bbd5de44fdd58f9f1a5a29fb95f33221dd"
+    },
+    {
+      "path": "country-sets/eu-free-movement/2",
+      "sha256": "2da6690ecb84ae50694ce74e1f5d3f4851c6dc40ed8181f9018b26f220d040b5"
     }
   ]
 }

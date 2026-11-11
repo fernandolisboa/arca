@@ -43,16 +43,34 @@ interface Version {
   readonly number: number;
 }
 
-/** The newest version of each route, by route. */
+const routeIdPattern = /^[a-z]{2}-[a-z0-9-]{1,80}$/;
+
+/**
+ * The routes `ARCA_CATALOG_ROUTES` names, comma-separated, or undefined for every route. A name that
+ * is not a route ID, or no bundled route's, fails the run, so a typo never measures nothing.
+ */
+function requestedRoutes(known: readonly string[]): ReadonlySet<string> | undefined {
+  const raw = process.env['ARCA_CATALOG_ROUTES']?.trim() ?? '';
+  if (raw === '') return undefined;
+  const ids = raw.split(',').map((id) => id.trim());
+  const unknown = ids.filter((id) => !routeIdPattern.test(id) || !known.includes(id));
+  if (unknown.length > 0)
+    throw new Error(`${String(unknown.length)} requested routes are not bundled`);
+  return new Set(ids);
+}
+
+/** The newest version of each route, by route, narrowed to the requested routes. */
 async function newestVersions(): Promise<Version[]> {
   const versions = createKnowledgeVersions({
     states: () => Promise.resolve(new Map()),
     // The listing wants a date for the state it shows; which version is newest does not use it.
     today: () => parseCalendarDate(new Date().toISOString().slice(0, 10)),
   });
-  return newestOfEachRoute(await versions.list()).sort((left, right) =>
-    left.routeId.localeCompare(right.routeId),
-  );
+  const newest = newestOfEachRoute(await versions.list());
+  const requested = requestedRoutes(newest.map(({ routeId }) => routeId));
+  return newest
+    .filter(({ routeId }) => requested === undefined || requested.has(routeId))
+    .sort((left, right) => left.routeId.localeCompare(right.routeId));
 }
 
 interface Run {

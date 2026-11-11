@@ -1,7 +1,7 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import {
-  type LeapDayBirthday,
+  type SettledLeapDayBirthday,
   addDays,
   ageYears,
   dateParts,
@@ -12,7 +12,7 @@ import {
 import { calendarDates } from '../arbitraries.js';
 
 const date = parseCalendarDate;
-const conventions: LeapDayBirthday[] = ['feb-28', 'march-1'];
+const conventions: SettledLeapDayBirthday[] = ['feb-28', 'march-1'];
 
 describe('ageYears', () => {
   it.each([

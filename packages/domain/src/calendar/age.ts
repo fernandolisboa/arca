@@ -3,17 +3,20 @@ import { type CalendarDate, compareDates, dateParts, isLeapYear } from './calend
 
 /**
  * When someone born on 29 February turns a year older in a common year. Jurisdictions differ, so a
- * route version that compares an age names its convention and cites its source (spec 0002, R2).
+ * route version that compares an age names its convention and cites its source (spec 0002, R2), or
+ * says `unsettled` when no official text settles it: that person's age is then a range on the days
+ * between the two conventions, and the version cites nothing for it.
  */
-export const leapDayBirthdaySchema = z.enum(['feb-28', 'march-1']);
+export const leapDayBirthdaySchema = z.enum(['feb-28', 'march-1', 'unsettled']);
 
 export type LeapDayBirthday = z.infer<typeof leapDayBirthdaySchema>;
+export type SettledLeapDayBirthday = Exclude<LeapDayBirthday, 'unsettled'>;
 
 /** Whole years of age at `date`. */
 export function ageYears(
   birthDate: CalendarDate,
   date: CalendarDate,
-  leapDayBirthday: LeapDayBirthday,
+  leapDayBirthday: SettledLeapDayBirthday,
 ): number {
   if (compareDates(birthDate, date) > 0) throw new RangeError('Born after the date');
   const birth = dateParts(birthDate);
@@ -28,7 +31,7 @@ function birthdayIn(
   year: number,
   month: number,
   day: number,
-  leapDayBirthday: LeapDayBirthday,
+  leapDayBirthday: SettledLeapDayBirthday,
 ): { month: number; day: number } {
   if (month !== 2 || day !== 29 || isLeapYear(year)) return { month, day };
   return leapDayBirthday === 'feb-28' ? { month: 2, day: 28 } : { month: 3, day: 1 };
