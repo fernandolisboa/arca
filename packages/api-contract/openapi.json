@@ -34220,7 +34220,7 @@
     "/knowledge/checks/start": {
       "post": {
         "operationId": "startVersionChecks",
-        "summary": "Starts the independent check of every proposed route version with no current report and no check running, within 20 starts in any 24 hours per environment; answers how many started. 403 not_admin",
+        "summary": "Starts the independent check of every proposed route version with no current report and no check running, within 15 of the 20 starts in any 24 hours per environment, so 5 are left for the checks an admin asks for; answers how many started. 403 not_admin",
         "responses": {
           "200": {
             "description": "Started",
@@ -34232,7 +34232,7 @@
                     "started": {
                       "type": "integer",
                       "minimum": 0,
-                      "maximum": 20
+                      "maximum": 15
                     }
                   },
                   "required": [
@@ -34540,6 +34540,270 @@
                     "enabled",
                     "status",
                     "report"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/versions/check/start": {
+      "post": {
+        "operationId": "startVersionCheck",
+        "summary": "Starts a new independent check of one route version for an admin, in any state and whatever its current report; while a check of the version is running it answers that one and starts nothing. Counts against the 20 starts in any 24 hours per environment (429 rate_limited). 403 not_admin; 404 not_found; 503 check_off where no checker is configured",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "routeId": {
+                    "type": "string",
+                    "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                  },
+                  "number": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000
+                  }
+                },
+                "required": [
+                  "routeId",
+                  "number"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Started, or already running",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "started": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "started"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/versions/check/progress": {
+      "get": {
+        "operationId": "getVersionCheckProgress",
+        "summary": "How far one route version's newest independent check of the last 24 hours got, for an admin: its state, stage and the cited pages read so far; never starts a check. 403 not_admin, 404 not_found",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+            },
+            "required": true,
+            "name": "routeId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "required": true,
+            "name": "number",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The progress",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "progress": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "startedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "running",
+                            "finished",
+                            "failed",
+                            "dead"
+                          ]
+                        },
+                        "stage": {
+                          "type": "string",
+                          "enum": [
+                            "starting",
+                            "reading",
+                            "locating",
+                            "comparing"
+                          ]
+                        },
+                        "itemCount": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0,
+                          "maximum": 1000
+                        },
+                        "pageCount": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0,
+                          "maximum": 1000
+                        },
+                        "pages": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "url": {
+                                "type": "string",
+                                "maxLength": 2000
+                              },
+                              "outcome": {
+                                "type": "string",
+                                "enum": [
+                                  "reading",
+                                  "read",
+                                  "refused_url",
+                                  "redirect_refused",
+                                  "too_many_redirects",
+                                  "address_refused",
+                                  "lookup_failed",
+                                  "http_status",
+                                  "unsupported_type",
+                                  "no_text",
+                                  "too_large",
+                                  "timeout",
+                                  "network"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "url",
+                              "outcome"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "maxItems": 200
+                        },
+                        "locatedPages": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0,
+                          "maximum": 1000
+                        },
+                        "failure": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "enum": [
+                            "check_unknown_version",
+                            "check_failed",
+                            null
+                          ]
+                        }
+                      },
+                      "required": [
+                        "startedAt",
+                        "state",
+                        "stage",
+                        "itemCount",
+                        "pageCount",
+                        "pages",
+                        "locatedPages",
+                        "failure"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "progress"
                   ],
                   "additionalProperties": false
                 }

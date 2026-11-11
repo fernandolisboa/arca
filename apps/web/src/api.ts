@@ -167,6 +167,20 @@ export const versionCheckQuery = (routeId: string, number: number) =>
     refetchInterval: ({ state }) => (state.data?.status === 'running' ? checkPollMs : false),
   });
 
+/** How often the progress of a running check is read again (ADR-0027, "On demand, with progress"). */
+const checkProgressPollMs = 1_500;
+
+/** How far one route version's newest check got, read again while it runs. */
+export const checkProgressQuery = (routeId: string, number: number) =>
+  queryOptions({
+    queryKey: ['knowledge', 'check-progress', routeId, number],
+    queryFn: async () =>
+      (await api.call(routes.getVersionCheckProgress, { routeId, number })).progress,
+    networkMode: 'always',
+    retry: false,
+    refetchInterval: ({ state }) => (state.data?.state === 'running' ? checkProgressPollMs : false),
+  });
+
 /**
  * Everything cached for one account, the session first; a new query that is the account's own
  * joins this list.

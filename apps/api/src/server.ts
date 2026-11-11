@@ -45,6 +45,7 @@ import { postgresSummaryStore } from './knowledge/summary/store.js';
 import { createCheckSubjects, createKnowledgeVersions } from './knowledge/versions.js';
 import { createVersionChecks } from './knowledge/checks.js';
 import { ruleCheckerFor } from './knowledge/check/environment.js';
+import { postgresCheckProgressStore } from './knowledge/check/progress.js';
 import { postgresCheckStarts } from './knowledge/check/starts.js';
 import { postgresCheckReportStore } from './knowledge/check/store.js';
 import {
@@ -317,6 +318,7 @@ const versionChecks =
         checker: ruleChecker,
         reports: postgresCheckReportStore(() => connected().db),
         starts: postgresCheckStarts(() => connected().db),
+        progress: postgresCheckProgressStore(() => connected().db),
         run: startCheck,
         logger,
         now: () => Date.now(),

@@ -5,7 +5,9 @@ import {
   type StartCandidate,
   currentReport,
   listedCheckStatus,
+  maxAutomaticStartsPerDay,
   maxStartsPerDay,
+  requestedStart,
   versionsToStart,
 } from '../../src/independent-check/reports.js';
 
@@ -100,10 +102,50 @@ describe('versionsToStart', () => {
     expect(picked.map(({ number }) => number)).toEqual([1, 4, 5]);
   });
 
-  it('stays within the starts left in the last 24 hours', () => {
+  it('stays within the automatic share of the last 24 hours, leaving the rest to an admin', () => {
     const candidates = Array.from({ length: 30 }, (_, index) => candidate(index + 1));
-    expect(versionsToStart(candidates, 0, now)).toHaveLength(maxStartsPerDay);
-    expect(versionsToStart(candidates, maxStartsPerDay - 3, now)).toHaveLength(3);
+    expect(maxAutomaticStartsPerDay).toBe(15);
+    expect(versionsToStart(candidates, 0, now)).toHaveLength(maxAutomaticStartsPerDay);
+    expect(versionsToStart(candidates, maxAutomaticStartsPerDay - 3, now)).toHaveLength(3);
+    expect(versionsToStart(candidates, maxAutomaticStartsPerDay, now)).toHaveLength(0);
     expect(versionsToStart(candidates, maxStartsPerDay + 5, now)).toHaveLength(0);
+  });
+});
+
+describe('requestedStart', () => {
+  const live = { id: 'start-9', startedAt: now - 5 * minute };
+  const newerLive = { id: 'start-10', startedAt: now - minute };
+  const dead = { id: 'start-8', startedAt: now - 31 * minute };
+  it.each<[string, { id: string; startedAt: number }[], { startId: string }[], number, unknown]>([
+    ['starts with nothing before', [], [], 0, { outcome: 'start' }],
+    ['starts over a current report', [], [report()], 3, { outcome: 'start' }],
+    ['starts past the automatic share', [], [], maxAutomaticStartsPerDay, { outcome: 'start' }],
+    ['starts with one start left', [], [], maxStartsPerDay - 1, { outcome: 'start' }],
+    ['is limited at the cap', [], [], maxStartsPerDay, { outcome: 'limit' }],
+    ['answers the live start', [live], [], 1, { outcome: 'live', start: live }],
+    [
+      'answers the live start even at the cap',
+      [live],
+      [],
+      maxStartsPerDay,
+      {
+        outcome: 'live',
+        start: live,
+      },
+    ],
+    [
+      'answers the newest live start',
+      [live, newerLive],
+      [],
+      2,
+      {
+        outcome: 'live',
+        start: newerLive,
+      },
+    ],
+    ['starts after a dead start', [dead], [], 1, { outcome: 'start' }],
+    ['starts after its start reported', [live], [{ startId: 'start-9' }], 1, { outcome: 'start' }],
+  ])('%s', (_, starts, reports, inWindow, expected) => {
+    expect(requestedStart(starts, reports, inWindow, now)).toEqual(expected);
   });
 });

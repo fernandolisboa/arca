@@ -252,6 +252,9 @@ const summaryPrivileges = (role: string) =>
 const startColumns = ['id', 'route_id', 'version_number', 'started_at'];
 const startPrivileges = (role: string) =>
   columnPrivileges(role, 'knowledge.check_start', startColumns);
+const progressColumns = ['start_id', 'sequence', 'kind', 'detail', 'recorded_at'];
+const progressPrivileges = (role: string) =>
+  columnPrivileges(role, 'knowledge.check_progress', progressColumns);
 const reportColumns = [
   'id',
   'start_id',
@@ -342,6 +345,7 @@ describe('the knowledge schema access matrix (spec 0007, R7)', () => {
     expect(await schemaShape('knowledge')).toEqual({
       tables: [
         { name: 'admin_grant', forced: true },
+        { name: 'check_progress', forced: true },
         { name: 'check_start', forced: true },
         { name: 'decision', forced: true },
         { name: 'independent_check', forced: true },
@@ -439,6 +443,33 @@ describe('the knowledge schema access matrix (spec 0007, R7)', () => {
       table: [],
     });
   });
+
+  it('lets app_jobs insert check progress but its time, and nothing else (ADR-0027)', async () => {
+    expect(await progressPrivileges('app_jobs')).toEqual({
+      usage: true,
+      create: false,
+      columns: { ...onEvery(progressColumns, ['INSERT']), recorded_at: [] },
+      table: [],
+    });
+  });
+
+  it('lets app_api only read check progress (ADR-0027)', async () => {
+    expect(await progressPrivileges('app_api')).toEqual({
+      usage: true,
+      create: false,
+      columns: onEvery(progressColumns, ['SELECT']),
+      table: [],
+    });
+  });
+
+  it.each(runtimeRoles.filter((role) => !['app_api', 'app_jobs'].includes(role)))(
+    'gives %s no access to check progress',
+    async (role) => {
+      const privileges = await progressPrivileges(role);
+      expect(privileges.columns).toEqual(onEvery(progressColumns, []));
+      expect(privileges.table).toEqual([]);
+    },
+  );
 
   it.each(runtimeRoles.filter((role) => role !== 'app_api'))(
     'gives %s no access to check starts',

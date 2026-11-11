@@ -65,6 +65,11 @@ export const startLifetime = 30 * minute;
 /** Starts allowed in any 24 hours, per environment. */
 export const maxStartsPerDay = 20;
 export const startWindow = day;
+/**
+ * Starts the activation screen may use by itself in the window; the rest of the cap is kept for
+ * checks an admin asks for.
+ */
+export const maxAutomaticStartsPerDay = 15;
 
 const sameKey = (left: ReportKey, right: ReportKey) =>
   left.contentHash === right.contentHash &&
@@ -130,15 +135,15 @@ export interface StartCandidate {
 }
 
 /**
- * The versions to start now, in the order given: each with no current report and no live start,
- * within what is left of the starts allowed in the last 24 hours.
+ * The versions the activation screen starts by itself, in the order given: each with no current
+ * report and no live start, within what is left of the automatic share of the last 24 hours.
  */
 export function versionsToStart<C extends StartCandidate>(
   candidates: readonly C[],
   startsInWindow: number,
   now: number,
 ): C[] {
-  const left = Math.max(0, maxStartsPerDay - startsInWindow);
+  const left = Math.max(0, maxAutomaticStartsPerDay - startsInWindow);
   return candidates
     .filter(
       (candidate) =>
@@ -146,4 +151,31 @@ export function versionsToStart<C extends StartCandidate>(
         !candidate.starts.some((start) => liveStart(start, candidate.reports, now)),
     )
     .slice(0, left);
+}
+
+/** What happens when an admin asks for one version's check now. */
+export type RequestedStart<S extends CheckStart> =
+  | { readonly outcome: 'live'; readonly start: S }
+  | { readonly outcome: 'limit' }
+  | { readonly outcome: 'start' };
+
+/**
+ * An admin's own start of one version, whatever its reports say: its live start is answered in
+ * place of a second one, and otherwise it starts unless the starts of the last 24 hours are used.
+ */
+export function requestedStart<S extends CheckStart>(
+  starts: readonly S[],
+  reports: readonly Pick<ReportMeta, 'startId'>[],
+  startsInWindow: number,
+  now: number,
+): RequestedStart<S> {
+  const live = starts
+    .filter((start) => liveStart(start, reports, now))
+    .reduce<S | undefined>(
+      (newest, start) =>
+        newest === undefined || start.startedAt > newest.startedAt ? start : newest,
+      undefined,
+    );
+  if (live !== undefined) return { outcome: 'live', start: live };
+  return startsInWindow >= maxStartsPerDay ? { outcome: 'limit' } : { outcome: 'start' };
 }

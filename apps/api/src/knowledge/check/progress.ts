@@ -1,0 +1,89 @@
+import { type CheckProgressEvent, pageProgressOutcomes, progressFailures } from '@arca/domain';
+import type { Database } from '@arca/db';
+import { checkProgress } from '@arca/db/knowledge-schema';
+import { asc, eq, sql } from 'drizzle-orm';
+import { z } from 'zod';
+
+/**
+ * What a running check recorded, across instances (ADR-0027, "On demand, with progress"): written
+ * by the check's step, read by the API for the progress screen.
+ */
+export interface CheckProgressStore {
+  /** Appends one event of a start; `sequence` orders the start's events from zero. */
+  readonly record: (startId: string, sequence: number, event: CheckProgressEvent) => Promise<void>;
+  /** A start's events in the order recorded; a row the closed schema refuses is left out. */
+  readonly list: (startId: string) => Promise<readonly CheckProgressEvent[]>;
+}
+
+/** The most events one start records: two per cited page and a handful of stages. */
+export const maxProgressEvents = 1_000;
+
+const count = z.int().min(0).max(1_000);
+const storedEvent = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('started'), items: count, pages: count }),
+  z.strictObject({
+    kind: z.literal('page'),
+    url: z.string().max(2_000),
+    outcome: z.enum(pageProgressOutcomes),
+  }),
+  z.strictObject({ kind: z.literal('locating'), pages: count }),
+  z.strictObject({ kind: z.literal('comparing') }),
+  z.strictObject({ kind: z.literal('finished') }),
+  z.strictObject({ kind: z.literal('failed'), code: z.enum(progressFailures) }),
+]) satisfies z.ZodType<CheckProgressEvent>;
+
+/** For tests: kept while the process runs. */
+export function memoryCheckProgressStore(): CheckProgressStore & {
+  readonly rows: { startId: string; sequence: number; event: CheckProgressEvent }[];
+} {
+  const rows: { startId: string; sequence: number; event: CheckProgressEvent }[] = [];
+  return {
+    rows,
+    record: (startId, sequence, event) => {
+      if (rows.some((row) => row.startId === startId && row.sequence === sequence)) {
+        return Promise.reject(new Error('A start records each sequence number once'));
+      }
+      rows.push({ startId, sequence, event });
+      return Promise.resolve();
+    },
+    list: (startId) =>
+      Promise.resolve(
+        rows
+          .filter((row) => row.startId === startId)
+          .sort((left, right) => left.sequence - right.sequence)
+          .map(({ event }) => event),
+      ),
+  };
+}
+
+/**
+ * `knowledge.check_progress`: the step inserts on the app_jobs pool, the API reads on the app_api
+ * pool. Each row is parsed against the closed event schema on the way out, so a row the table's
+ * checks let through never reaches the screen in another shape.
+ */
+export function postgresCheckProgressStore(db: () => Database): CheckProgressStore {
+  return {
+    async record(startId, sequence, { kind, ...detail }) {
+      // Raw SQL: the role may insert every column but the time, which a builder insert would
+      // name with DEFAULT.
+      await db().execute(sql`
+        INSERT INTO knowledge.check_progress (start_id, sequence, kind, detail)
+        VALUES (${startId}, ${sequence}, ${kind}, ${JSON.stringify(detail)}::jsonb)`);
+    },
+    async list(startId) {
+      const rows = await db()
+        .select({ kind: checkProgress.kind, detail: checkProgress.detail })
+        .from(checkProgress)
+        .where(eq(checkProgress.startId, startId))
+        .orderBy(asc(checkProgress.sequence))
+        .limit(maxProgressEvents);
+      return rows.flatMap(({ kind, detail }) => {
+        const parsed = storedEvent.safeParse({
+          ...(typeof detail === 'object' && detail !== null ? detail : {}),
+          kind,
+        });
+        return parsed.success ? [parsed.data] : [];
+      });
+    },
+  };
+}

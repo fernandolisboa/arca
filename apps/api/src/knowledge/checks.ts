@@ -1,9 +1,11 @@
 import {
   type CheckItemKind,
+  type CheckProgress,
   type CheckedItem,
   type ListedCheckStatus,
   type ReportKey,
   checkItems,
+  checkProgress,
   currentReport,
   listedCheckStatus,
   noGuide,
@@ -13,6 +15,7 @@ import {
 import type { CountryGuideEntry } from '@arca/knowledge';
 import type { Logger } from '@arca/telemetry';
 import type { RuleCheckerChoice } from './check/checker.js';
+import type { CheckProgressStore } from './check/progress.js';
 import type { CheckSubject } from './check/run.js';
 import type { RecordedStart, CheckStarts } from './check/starts.js';
 import type { CheckReport, CheckReportStore, FetchLogEntry } from './check/store.js';
@@ -41,10 +44,23 @@ export type ReportOutcome =
     }
   | { readonly ok: false; readonly reason: 'not_found' };
 
+export type RequestedCheckOutcome =
+  /** `started` is false when the version's live start was answered in place of a new one. */
+  | { readonly ok: true; readonly started: boolean }
+  | { readonly ok: false; readonly reason: 'not_found' | 'rate_limited' };
+
+export type ProgressOutcome =
+  | { readonly ok: true; readonly progress: CheckProgress | null }
+  | { readonly ok: false; readonly reason: 'not_found' };
+
 /** The independent check as the activation screen reaches it (ADR-0027). */
 export interface VersionChecks {
   /** Starts a check for every proposed route version that is due; answers how many started. */
   readonly start: () => Promise<number>;
+  /** An admin's own start of one route version, in any state and whatever its reports say. */
+  readonly startOne: (routeId: string, number: number) => Promise<RequestedCheckOutcome>;
+  /** How far the version's newest start of the last 24 hours got, or null with none. */
+  readonly progress: (routeId: string, number: number) => Promise<ProgressOutcome>;
   /** Each route version's check status, by `routeId/number`. */
   readonly statuses: () => Promise<ReadonlyMap<string, ListedCheckStatus>>;
   readonly report: (routeId: string, number: number) => Promise<ReportOutcome>;
@@ -58,6 +74,7 @@ export interface VersionCheckSettings {
   readonly checker: Pick<RuleCheckerChoice, 'model' | 'promptVersion'>;
   readonly reports: CheckReportStore;
   readonly starts: CheckStarts;
+  readonly progress: CheckProgressStore;
   /** Starts the workflow of one recorded start, with identifiers only. */
   readonly run: (start: RecordedStart) => Promise<void>;
   readonly logger: Logger;
@@ -78,6 +95,7 @@ export function createVersionChecks({
   checker,
   reports,
   starts,
+  progress,
   run,
   logger,
   now,
@@ -89,6 +107,14 @@ export function createVersionChecks({
     model: checker.model,
   });
 
+  /** A start whose run never begins dies in 30 minutes, and may then be started again. */
+  const runAll = async (started: readonly RecordedStart[], route: string) => {
+    const runs = await Promise.allSettled(started.map((each) => run(each)));
+    if (runs.some((outcome) => outcome.status === 'rejected')) {
+      logger.error({ route, errorCode: 'check_not_started' });
+    }
+  };
+
   return {
     async start() {
       const proposed = (await versions.list()).filter(({ state }) => state === 'proposed');
@@ -99,12 +125,31 @@ export function createVersionChecks({
           key: keyOf(hash, country),
         })),
       );
-      // A start whose run never begins dies in 30 minutes, and the next screen tries again.
-      const runs = await Promise.allSettled(started.map((each) => run(each)));
-      if (runs.some((outcome) => outcome.status === 'rejected')) {
-        logger.error({ route: '/v1/knowledge/checks/start', errorCode: 'check_not_started' });
-      }
+      await runAll(started, '/v1/knowledge/checks/start');
       return started.length;
+    },
+
+    async startOne(routeId, number) {
+      if (subject(routeId, number) === undefined) return { ok: false, reason: 'not_found' };
+      const requested = await starts.request({ routeId, number });
+      if (requested === undefined) return { ok: false, reason: 'rate_limited' };
+      if (requested.began) await runAll([requested.start], '/v1/knowledge/versions/check/start');
+      return { ok: true, started: requested.began };
+    },
+
+    async progress(routeId, number) {
+      if (subject(routeId, number) === undefined) return { ok: false, reason: 'not_found' };
+      const newest = ofVersion(
+        routeId,
+        number,
+      )(await starts.recent()).reduce<RecordedStart | undefined>(
+        (best, each) => (best === undefined || each.startedAt > best.startedAt ? each : best),
+        undefined,
+      );
+      if (newest === undefined) return { ok: true, progress: null };
+      const [events, stored] = await Promise.all([progress.list(newest.id), reports.list()]);
+      const reported = stored.some(({ startId }) => startId === newest.id);
+      return { ok: true, progress: checkProgress(newest, events, reported, now()) };
     },
 
     async statuses() {

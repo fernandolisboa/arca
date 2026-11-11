@@ -177,6 +177,17 @@ Decided:
 - **A version may leave a 29 February birthday `unsettled`** (spec 0002, R2) when no official text settles it. It cites nothing, the check lists no item for it, and an age that turns on it is a range on that day.
 - Nothing changes in what code checks, in what makes a report clean, or in the admin's decision.
 
+### On demand, with progress (amendment, 2026-11-11)
+
+The owner asked to start a check himself and to watch it ([spec #390](https://github.com/fernandolisboa/arca/issues/390)). He decided: the button always runs a fresh check after showing its cost; the automatic start stays; the button is on every route version, active and rejected included.
+
+- **Forced start.** An admin-only route starts one route version's check whatever its state and current report. It uses the start ledger under the same lock: a live start of the version is answered instead of a second one, and otherwise a start is recorded unless the 20 starts of the last 24 hours are used (429 `rate_limited`). No checker configured answers 503 `check_off`, and the button is not offered. The workflow, its identifiers-only arguments, the single step with no retries and the report table do not change; a forced report is an ordinary report, and the newest one for today's key is the current one.
+- **Reserved share.** The automatic start stops at 15 starts in the window, so 5 are always left for the button. The cost bound does not change.
+- **Progress table.** `knowledge.check_progress` holds, per start, an append-only sequence of events with a closed kind and a small closed detail: started (item and page counts), page (cited URL and outcome, including `reading`), locating (how many long pages), comparing, finished and failed (a fixed code). `app_jobs` inserts every column but the time; `app_api` reads; nobody updates or deletes. Public rule data with no account, unowned in the personal-data registry. No page text, quote, note or other model text ever reaches it, and the API parses every row against the closed schema on the way out.
+- **Recording.** The check's run receives the progress store as a dependency and records as it goes. A failed progress write is logged as `check_progress_unwritten` and never fails the check. The stored report, not the progress, is the authority on a check having finished.
+- **Reading.** A pure domain function reduces a start and its events into a view: running, finished, failed, or dead after the start's 30 minutes. An admin-only route answers the view of the version's newest start of the last 24 hours, or null. The web app reads it every 1.5 seconds while it runs and stops otherwise; no server-sent events or sockets, so the client stays a static bundle.
+- **Later tickets.** Per-item results as they land (a streamed checker call, after two passing evaluation runs) and the cost of each run (usage events and a reviewed price table) extend this table with `item` and `usage` events; until then the confirmation states the typical cost of a check and items appear when the report is stored.
+
 ## Alternatives
 
 | Option | Why not |
