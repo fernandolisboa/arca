@@ -71,9 +71,16 @@
       "verifiedAt": "2026-11-11"
     },
     {
-      "id": "sw-salary-lower-options",
+      "id": "sw-salary-phd",
       "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
-      "title": "Appendix Skilled Worker, table after SW 4.4, options B to E: £37,500 and 90% of the going rate (relevant PhD); £33,400 with a STEM PhD (80%), the Immigration Salary List or a new entrant (70%)",
+      "title": "Appendix Skilled Worker, table after SW 4.4, options B and C: a relevant PhD with £37,500 and 90% of the going rate; a STEM PhD with £33,400 and 80% of the going rate",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "sw-salary-isl-new-entrant",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "title": "Appendix Skilled Worker, table after SW 4.4, options D and E: a job on the Immigration Salary List with £33,400 and the going rate; a new entrant with £33,400 and 70% of the going rate",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
@@ -115,7 +122,7 @@
     {
       "id": "sw-dependant-funds",
       "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
-      "title": "Appendix Skilled Worker, SW 33.3: the funds required are £285 for a dependent partner, £315 for the first dependent child and £200 for any other dependent child",
+      "title": "Appendix Skilled Worker, SW 33.3 and 33.5: £285 for a dependent partner, £315 for the first dependent child, £200 for any other, held for a 28-day period",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
@@ -360,19 +367,30 @@
       ]
     },
     {
-      "id": "salary-lower-options",
-      "title": "Or a lower floor: £37,500 and 90% of the going rate with a relevant PhD; £33,400 with a STEM PhD (80%), a job on the Immigration Salary List, or as a new entrant (70%)",
+      "id": "salary-phd",
+      "title": "Or, with a PhD relevant to the job, £37,500 a year and 90% of the going rate; with a STEM PhD, £33,400 and 80% of the going rate",
       "evidence": [
         "principal.monthlyActiveIncome",
         "principal.educationLevel"
       ],
       "sources": [
-        "sw-salary-lower-options"
+        "sw-salary-phd"
+      ]
+    },
+    {
+      "id": "salary-isl-or-new-entrant",
+      "title": "Or, for a job on the Immigration Salary List, £33,400 a year and the going rate; for a new entrant at the start of their career, £33,400 and 70% of the going rate",
+      "evidence": [
+        "principal.monthlyActiveIncome",
+        "principal.ageYears"
+      ],
+      "sources": [
+        "sw-salary-isl-new-entrant"
       ]
     },
     {
       "id": "english-b2",
-      "title": "English at level B2 in reading, writing, speaking and listening, through an approved test, a degree taught in English or citizenship of a majority English-speaking country",
+      "title": "English at level B2 in reading, writing, speaking and listening (B1 if the last Skilled Worker permission required B1), shown in a way Appendix English Language allows",
       "evidence": [
         "principal.citizenships",
         "principal.educationLevel"

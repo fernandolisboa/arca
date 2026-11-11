@@ -59,7 +59,14 @@
     {
       "id": "ep-regs-csep",
       "url": "https://www.irishstatutebook.ie/eli/2024/si/444/made/en/html",
-      "title": "Employment Permits Regulations 2024 (S.I. No. 444 of 2024), regs. 27 to 29: a relevant degree (or experience above the higher threshold), an offer of at least 2 years and 20 hours a week",
+      "title": "Employment Permits Regulations 2024 (S.I. No. 444 of 2024), regs. 28 and 29: a minimum period of employment of 2 years and a minimum of 20 hours of work each week",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ep-regs-csep-qualification",
+      "url": "https://www.irishstatutebook.ie/eli/2024/si/444/made/en/html",
+      "title": "Employment Permits Regulations 2024 (S.I. No. 444 of 2024), reg. 27: a relevant third level degree; for a nurse, midwife or radiographer, one their registration board accepts",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
@@ -233,14 +240,23 @@
   "assessments": [
     {
       "id": "job-offer",
-      "title": "A 2-year job offer of 20+ hours a week from an employer whose staff are at least half EEA, Swiss or UK nationals",
+      "title": "A job offer of at least 2 years and at least 20 hours of work each week",
       "evidence": [
         "principal.monthlyActiveIncome"
       ],
       "sources": [
-        "ep-act-csep",
         "ep-regs-csep",
         "dete-csep"
+      ]
+    },
+    {
+      "id": "employer-staff",
+      "title": "An employer at least half of whose employees are EEA, Swiss or UK nationals, save the exceptions of the act",
+      "evidence": [
+        "principal.monthlyActiveIncome"
+      ],
+      "sources": [
+        "ep-act-csep"
       ]
     },
     {
@@ -282,7 +298,7 @@
         "principal.educationLevel"
       ],
       "sources": [
-        "ep-regs-csep",
+        "ep-regs-csep-qualification",
         "ep-regs-mar-2026",
         "dete-csep"
       ]

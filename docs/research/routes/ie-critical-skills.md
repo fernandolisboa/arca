@@ -4,6 +4,33 @@ Research notes for Ireland's Critical Skills Employment Permit, route `ie-critic
 
 ## Audits
 
+### 2026-11-11
+
+The second audit, the first by the full runbook ([#359](https://github.com/fernandolisboa/arca/issues/359)), on demand, in one pull request with the British, Australian and Japanese routes ([British record](gb-skilled-worker.md)). As the issue asked, it covers what the pilot left: the requirements, the family rules of the Family Reunification Policy, and later instruments.
+
+- **Version audited:** 2
+- **Outcome:** correction, version 3 (pull request [PR_NUMBER](https://github.com/fernandolisboa/arca/pull/PR_NUMBER)), from version 2's date, 2026-06-12, which it replaces entirely. It pins the EU, EEA and Swiss set at version 2.
+- **Sources re-read** (all on 2026-11-11 UTC with `curl`):
+  - The Employment Permits Act 2024, print form, whole; ss. 7, 8 and 22 are now cited per section (`/eli/2024/act/17/section/<n>/enacted/en/html`), so the check reads the provision instead of the whole act.
+  - S.I. No. 444 of 2024 (regs. 7, 25 to 29, Schedule 1), S.I. No. 643 of 2025, S.I. No. 213 of 2026 and S.I. No. 558 of 2026, print forms, whole; with them the amending S.I. Nos. 33, 64, 119 and 127 of 2025, which change regs. 8, 9 and 14 and Schedules 3 and 5; Schedule 3 has since been replaced whole twice, and none of the rest is cited. S.I. No. 558 of 2026, cited in version 2 as a PDF, now has an html form, which version 3 cites.
+  - The Immigration Act 1999, s. 1; S.I. No. 97 of 1999, art. 3; the Department's pages on who needs a permit, the Critical Skills Employment Permit and fees.
+  - The Family Reunification Policy of 12 June 2026 (PDF, `pdftotext`), paras. 1.5.1, 6.3, 7.5, 7.10, 7.12, 7.13, 7.21 to 7.26, 8.2 and 10.8 to 10.10; the notice of the June 2026 amendments; the Policy Document Archive page, which confirms the June 2026 policy applies to applications made from 12 June 2026. New: the "Join non EEA family member" page (`isd-join-family`), whose Category B paragraph states the immediate reunification as text the check can read.
+  - New: S.I. No. 421 of 2025 (`registration-fee`), regs. 3 and 4, found through the registration page of `irishimmigration.ie`.
+  - No longer cited: the Age of Majority Act 1985, s. 4 (below).
+  - Not readable: none.
+- **Amendments looked for**, up to 2026-11-11: the year indexes of statutory instruments for 2025 (to No. 695) and 2026 (to No. 565). The only Employment Permits instruments are S.I. Nos. 33, 64, 119, 127 and 643 of 2025 and 213 and 558 of 2026, all read. S.I. No. 558 of 2026 also changes regs. 6A, 9 and 72D, none of which this permit uses. The archive page lists no policy newer than June 2026.
+- **Leads:** none beyond the pages above.
+- **Findings:**
+  - Missing, now costs: the registration certificate fee, €300 for the principal and each family member aged 18 or over, waived under 18 (S.I. No. 421 of 2025, in force since 5 September 2025).
+  - Missing, now durations: the permit, of up to 24 months; then a Stamp 4 permission of 2 years, renewable, without a further permit.
+  - Corrected: the leap-day convention. Section 4 of the Age of Majority Act 1985 says an age is attained at the start of the anniversary; no Irish text says when a person born on 29 February has one, and version 2 assumed 28 February. `leapDayBirthday` is now `unsettled`; the case of a child born on 29 February moved from "excluded" to "possible".
+  - Split: the `not-eu-eea-swiss-or-british-citizen` and `job-offer` items cite one section each; `pay` cites only the instrument that states the amounts.
+  - Confirmed, unchanged: the thresholds, the qualification rules, the 2 years and 20 hours, the 50% rule, the €1,000 fee and its waivers, and the family rules (spouse or civil partner 18, de facto partner 18 with 2 years, unmarried children under 18, stepchildren in the household, adoptions recognised in Ireland).
+- **Check loop:** CHECK_LOOP
+- **Watch next:**
+  - The minimum annual remuneration roadmap's next change, due January 2027: version 4.
+  - Schedule 3 is replaced every few months: check the year index for an instrument after S.I. No. 558 of 2026.
+
 ### 2026-11-09
 
 The pilot of the rule audit. It started from leads, the two items the catalog check of pull request [#348](https://github.com/fernandolisboa/arca/pull/348) found to differ from their sources, rather than from every step of the runbook, which did not exist yet.

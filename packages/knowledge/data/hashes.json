@@ -357,11 +357,11 @@
     },
     {
       "path": "routes/gb-skilled-worker/2",
-      "sha256": "b3bdd8968607f71bae80187af4df803b8997f3f4236cb754184941124704d8ea"
+      "sha256": "21a5b0c332a2b20432b6ef1cd456d3fae236fbec77a1304f5e3c3ed1d181b020"
     },
     {
       "path": "routes/ie-critical-skills/3",
-      "sha256": "889a737b5ede9431e415a7170bdbdf09a75823dc698cf57d7630f216cbb1b894"
+      "sha256": "108eeec2a7b25649bfa76fd4611377abe35905dbaae849c158b14ad915f13516"
     },
     {
       "path": "routes/jp-nikkei-long-term-resident/2",
