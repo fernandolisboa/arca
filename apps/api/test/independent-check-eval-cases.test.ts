@@ -23,7 +23,7 @@ const careful: Record<string, string> = {
   'assessment:job-offer':
     'holds a signed job offer from an employer entered in the national register of employers',
   'requirement:means':
-    'meios de subsistência de, no mínimo, EUR 700,00 por cada mês de permanência',
+    'rendimentos passivos de, no mínimo, EUR 700,00 por cada mês de permanência',
 };
 const employeeFee = 'Residence permit for employees | EUR 120';
 

@@ -390,7 +390,7 @@ function student(): CatalogEntry {
     requirements: [
       {
         id: 'means',
-        title: 'Means of subsistence for each month of the stay',
+        title: 'Passive income for each month of the stay',
         expression: {
           op: 'gte',
           left: fact('principal.monthlyPassiveIncome'),
@@ -418,8 +418,8 @@ const workActPage = page(
 const studyDecreePage = page(
   'Decreto dos estudantes do ensino superior',
   `<h3>Artigo 12.º Meios de subsistência</h3>
-<p>1 — O requerente de autorização de residência para estudo no ensino superior deve dispor de meios de subsistência de, no mínimo, EUR 700,00 por cada mês de permanência.</p>
-<p>2 — Os meios podem ser comprovados por bolsa de estudo, termo de responsabilidade ou extratos bancários.</p>`,
+<p>1 — O requerente de autorização de residência para estudo no ensino superior deve dispor de rendimentos passivos de, no mínimo, EUR 700,00 por cada mês de permanência.</p>
+<p>2 — Os rendimentos são comprovados por extratos bancários dos últimos três meses.</p>`,
 );
 
 function guide(pitfalls: readonly string[]): CountryGuideEntry {

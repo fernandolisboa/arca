@@ -120,27 +120,33 @@ function tagOf(tag: string): {
  * The text of an XML document as a reader of its text would see it: its text nodes and CDATA
  * sections in document order, with references decoded. Tags, attributes, comments, processing
  * instructions and the document type are structure, and the text of an element a law strikes
- * superseded wording with is left out, as on a page. No vocabulary says which elements start a
- * line, so the document's own line breaks stand, text that follows two or more tags, or an empty
- * element, starts a new line, and text that follows one tag runs on, as words in an inline element
- * do, unless digits would meet across it: a tag between two numbers never makes them one. One pass
- * over the text, with no parser that fetches, validates or expands anything.
+ * superseded wording with is left out with its tags, as on a page. No vocabulary says which
+ * elements start a line, so the document's own line breaks stand, and text starts a new line where
+ * one element ended and another began since the last text, or an empty element stood: a sibling,
+ * as a field or a paragraph is. Text that only went into elements, or only came out of them, runs
+ * on, as words in inline elements do, unless digits would meet across a tag: a tag between two
+ * numbers never makes them one. One pass over the text, with no parser that fetches, validates or
+ * expands anything.
  */
 export function xmlText(xml: string, read = markupReader().read): string {
   const pieces: string[] = [];
-  let tagsSinceText = 2;
+  let tagged = false;
+  let opened = true;
+  let closed = true;
   let afterDigit = false;
   let struckDepth = 0;
   const text = (piece: string) => {
     if (struckDepth > 0) return;
     if (piece.trim() === '') pieces.push(piece);
     else {
-      const digitsMeet = tagsSinceText > 0 && afterDigit && /^\s*\d/u.test(piece);
+      const digitsMeet = tagged && afterDigit && /^\s*\d/u.test(piece);
       pieces.push(
-        tagsSinceText >= 2 || digitsMeet ? '\n' : '',
+        (opened && closed) || digitsMeet ? '\n' : '',
         hasMarkup(piece) ? `\n${read(piece)}\n` : piece,
       );
-      tagsSinceText = 0;
+      tagged = false;
+      opened = false;
+      closed = false;
       afterDigit = /\d\s*$/u.test(piece);
     }
   };
@@ -162,11 +168,14 @@ export function xmlText(xml: string, read = markupReader().read): string {
       index = markupEnd(xml, open);
       if (xml.startsWith('<!', open)) continue;
       const { name, end, empty } = tagOf(xml.slice(open, index));
+      tagged = true;
       if (struckElements.has(name)) {
         if (end) struckDepth = Math.max(0, struckDepth - 1);
         else if (!empty) struckDepth += 1;
+      } else if (struckDepth === 0) {
+        opened ||= !end;
+        closed ||= end || empty;
       }
-      tagsSinceText += empty ? 2 : 1;
     }
   }
   return pieces.join('');

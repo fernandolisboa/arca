@@ -80,12 +80,29 @@ describe('xmlText', () => {
     ).toBe('< > & "\' €€ &fee; \ufffd \ufffd');
   });
 
-  it('keeps the words of an inline element on their line, and starts a line after two tags', () => {
+  it('keeps the words of an inline element on their line, and starts a line at a sibling', () => {
     expect(
       lines(
         '<act><title>Act</title><section><num>4</num><p>An income of at least <b>EUR 920</b> a month.</p></section></act>',
       ),
     ).toEqual(['Act', '4', 'An income of at least EUR 920 a month.']);
+  });
+
+  it('runs on through elements nested in a sentence, however deep', () => {
+    expect(
+      lines(
+        '<p>An income of at least <ins><amount currency="EUR">EUR 1,500</amount></ins> a month.</p>',
+      ),
+    ).toEqual(['An income of at least EUR 1,500 a month.']);
+  });
+
+  it.each([
+    ['an empty element', '<p>Section 4<lb/>Pensioners</p>'],
+    ['an element with nothing in it', '<p>Section 4<lb></lb>Pensioners</p>'],
+    ['a sibling', '<row><name>Section 4</name><title>Pensioners</title></row>'],
+    ['a sibling further in', '<row><a><name>Section 4</name></a><b><c>Pensioners</c></b></row>'],
+  ])('starts a line after %s', (_, xml) => {
+    expect(lines(xml)).toEqual(['Section 4', 'Pensioners']);
   });
 
   it("keeps the document's own line breaks", () => {
@@ -100,7 +117,10 @@ describe('xmlText', () => {
       lines(
         '<p>The fee is <del>EUR 80</del><ins>EUR 85</ins> a year.</p><p>Old: <akn:del>repealed <b>text</b></akn:del><s/>kept</p>',
       ),
-    ).toEqual(['The fee is', 'EUR 85 a year.', 'Old:', 'kept']);
+    ).toEqual(['The fee is EUR 85 a year.', 'Old: kept']);
+    expect(
+      lines('<row><fee>EUR 85</fee><del><note>until 2025</note></del><unit>a year</unit></row>'),
+    ).toEqual(['EUR 85', 'a year']);
   });
 
   it('keeps the text of a document cut inside its markup', () => {
@@ -191,6 +211,11 @@ describe('answerText', () => {
     ['xml', 'an empty element', '<p>Fee category 1<br/>500 EUR</p>'],
     ['xml', 'one tag', '<fee>Class 1<amount>500</amount> EUR</fee>'],
     ['xml', 'one tag and a space', '<fee>Class 1 <amount>500</amount> EUR</fee>'],
+    ['xml', 'nested tags', '<fee>Class 1<ins><amount>500</amount></ins> EUR</fee>'],
+    ['xml', 'end tags', '<fee><ins><class>Class 1</class></ins>500 EUR</fee>'],
+    ['xml', 'struck wording', '<fee>Class 1<del>2</del>500 EUR</fee>'],
+    ['xml', 'an empty struck element', '<fee>Class 1<s/>500 EUR</fee>'],
+    ['xml', 'an end tag that closes nothing struck', '<fee>Class 1</del>500 EUR</fee>'],
     [
       'html',
       'an element that breaks no line',
