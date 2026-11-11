@@ -16,7 +16,7 @@ import { checkContent } from './version-content.js';
 
 export interface KnowledgeVersions {
   /** Every bundled version with its state, the newest first (spec 0007, R7). */
-  readonly list: () => Promise<readonly Omit<KnowledgeVersion, 'check'>[]>;
+  readonly list: () => Promise<readonly Omit<KnowledgeVersion, 'check' | 'points'>[]>;
   readonly view: (routeId: string, number: number) => Promise<VersionView | undefined>;
   /** Every bundled comparison version with its state, the newest first (ADR-0026). */
   readonly comparisons: () => Promise<readonly KnowledgeComparisonVersion[]>;

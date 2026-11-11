@@ -1,7 +1,7 @@
 import type { VersionCheckReport } from '@arca/api-contract/client';
 import type { StepKey } from './steps.js';
 
-type ReportItem = VersionCheckReport['items'][number];
+export type ReportItem = VersionCheckReport['items'][number];
 type CheckedPoint = Pick<ReportItem, 'kind' | 'status'>;
 
 /** The review step that shows each kind of checked item. */
@@ -47,4 +47,35 @@ export const tallyTotal = ({ matches, differs, unread }: StepTally): number =>
 export function tallyTone({ differs, unread }: StepTally): TallyTone {
   if (differs > 0) return 'differs';
   return unread > 0 ? 'unread' : 'ok';
+}
+
+/** The tone of one point, by the same rule as a step's. */
+export const pointTone = (status: ReportItem['status']): TallyTone =>
+  status === 'matches' ? 'ok' : status === 'differs' ? 'differs' : 'unread';
+
+/** Every step's counts added up: the whole report's tally. */
+export function totalTally(tallies: Iterable<StepTally>): StepTally {
+  let total: StepTally = { matches: 0, differs: 0, unread: 0 };
+  for (const { matches, differs, unread } of tallies) {
+    total = {
+      matches: total.matches + matches,
+      differs: total.differs + differs,
+      unread: total.unread + unread,
+    };
+  }
+  return total;
+}
+
+/**
+ * The points the review shows beside the rule's own items. A scripted report's matches are a
+ * test's, never a confirmation, so they show as not confirmed.
+ */
+export function shownPoints(
+  report: Pick<VersionCheckReport, 'items' | 'scripted'> | null | undefined,
+): readonly ReportItem[] {
+  if (report === null || report === undefined) return [];
+  if (!report.scripted) return report.items;
+  return report.items.map((item) =>
+    item.status === 'matches' ? { ...item, status: 'could_not_check' } : item,
+  );
 }

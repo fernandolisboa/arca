@@ -268,7 +268,10 @@ export {
   minQuoteLength,
   normalizeWhitespace,
   plainNote,
+  type CheckPoints,
+  type StatusCounts,
   reportClean,
+  reportPoints,
   scriptedCheckerModel,
   verifyAnswers,
 } from './independent-check/answers.js';

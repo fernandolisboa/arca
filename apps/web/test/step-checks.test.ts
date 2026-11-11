@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { stepTallies, tallyTone, tallyTotal } from '../src/knowledge/step-checks.js';
+import {
+  pointTone,
+  shownPoints,
+  stepTallies,
+  tallyTone,
+  tallyTotal,
+  totalTally,
+} from '../src/knowledge/step-checks.js';
 
 describe('stepTallies', () => {
   it('counts each step’s points by how they came out', () => {
@@ -51,5 +58,53 @@ describe('tallyTone', () => {
 describe('tallyTotal', () => {
   it('adds the three counts', () => {
     expect(tallyTotal({ matches: 2, differs: 1, unread: 4 })).toBe(7);
+  });
+});
+
+describe('totalTally', () => {
+  it('adds every step up', () => {
+    expect(
+      totalTally([
+        { matches: 1, differs: 0, unread: 2 },
+        { matches: 2, differs: 1, unread: 0 },
+      ]),
+    ).toEqual({ matches: 3, differs: 1, unread: 2 });
+  });
+});
+
+describe('pointTone', () => {
+  it.each([
+    ['matches', 'ok'],
+    ['differs', 'differs'],
+    ['could_not_check', 'unread'],
+  ] as const)('%s reads as %s', (status, tone) => {
+    expect(pointTone(status)).toBe(tone);
+  });
+});
+
+describe('shownPoints', () => {
+  const item = (status: 'matches' | 'differs' | 'could_not_check') => ({
+    key: `requirement:${status}`,
+    kind: 'requirement' as const,
+    title: 'A requirement',
+    status,
+    quotes: [],
+    note: null,
+    reason: null,
+  });
+
+  it('shows nothing without a report', () => {
+    expect(shownPoints(null)).toEqual([]);
+    expect(shownPoints(undefined)).toEqual([]);
+  });
+
+  it('keeps a model report as it is', () => {
+    const items = [item('matches'), item('differs')];
+    expect(shownPoints({ items, scripted: false })).toBe(items);
+  });
+
+  it('never shows a scripted match as confirmed', () => {
+    const shown = shownPoints({ items: [item('matches'), item('differs')], scripted: true });
+    expect(shown.map(({ status }) => status)).toEqual(['could_not_check', 'differs']);
   });
 });

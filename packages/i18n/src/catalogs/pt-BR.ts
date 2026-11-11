@@ -959,6 +959,8 @@ export const ptBR = {
       progress: 'Passo {current} de {total}',
       back: 'Voltar',
       next: 'Próximo: {step}',
+      previous: 'Passo anterior',
+      following: 'Próximo passo',
       decision: 'Decisão',
       count: '{n, plural, =0 {nenhum item} one {# item} other {# itens}}',
     },
@@ -1037,6 +1039,20 @@ export const ptBR = {
       failure:
         '{reason, select, summary_unavailable {O resumo não está disponível agora. A regra continua aqui para você ler.} summary_timeout {A IA demorou demais. Tente de novo.} summary_unparsable {A IA não conseguiu montar um resumo desta vez. Tente de novo.} limited {Você pediu muitos resumos. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
       retry: 'Tentar de novo',
+    },
+    /** The independent check's points, shown beside the rule items they are about (ADR-0027). */
+    points: {
+      status:
+        '{status, select, matches {Bate com a fonte.} differs {Difere da fonte.} other {Não conferido.}}',
+      matches: '{n, plural, one {# bate} other {# batem}}',
+      differs: '{n, plural, one {# difere} other {# diferem}}',
+      unread: '{n, plural, one {# não conferido} other {# não conferidos}}',
+      checked:
+        'A IA comparou {n, plural, one {# ponto} other {# pontos}} desta versão com as fontes oficiais',
+      needYou:
+        '{n, plural, =0 {Nenhum ponto difere das fontes} one {1 ponto difere e precisa de você} other {# pontos diferem e precisam de você}}',
+      note: 'Feita por IA, que pode errar. “Não conferido” quer dizer que a IA não conseguiu confirmar o ponto, não que a regra está errada. O relatório completo fica no passo Decisão.',
+      quotes: '{n, plural, one {Ver o trecho da fonte} other {Ver os # trechos da fonte}}',
     },
     /** The independent check of a route version against its official pages (ADR-0027). */
     check: {

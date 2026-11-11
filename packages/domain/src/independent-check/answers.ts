@@ -389,6 +389,26 @@ export function verifyAnswers(
 /** The model a report is stored under when the scripted checker wrote it, outside production. */
 export const scriptedCheckerModel = 'fake';
 
+/** How many of a report's items came out each way. */
+export type StatusCounts = Readonly<Record<CheckStatus, number>>;
+
+/** A report's points as the screen counts them: matched, differing, and not confirmed. */
+export interface CheckPoints {
+  readonly matches: number;
+  readonly differs: number;
+  readonly unread: number;
+}
+
+/** A report's points. A scripted report's matches are a test's, so they count as not confirmed. */
+export function reportPoints(counts: StatusCounts, model: string): CheckPoints {
+  const scripted = model === scriptedCheckerModel;
+  return {
+    matches: scripted ? 0 : counts.matches,
+    differs: counts.differs,
+    unread: counts.could_not_check + (scripted ? counts.matches : 0),
+  };
+}
+
 /**
  * A clean report has at least one item and every item matches. A scripted report is never clean,
  * whatever it says, so nothing outside production can look checked.

@@ -4,6 +4,7 @@ import {
   type ReadPage,
   plainNote,
   reportClean,
+  reportPoints,
   scriptedCheckerModel,
   verifyAnswers,
 } from '../../src/independent-check/answers.js';
@@ -598,5 +599,23 @@ describe('reportClean', () => {
     ['the scripted checker wrote it', [matches], scriptedCheckerModel, false],
   ])('%s: %s', (_, items, model, clean) => {
     expect(reportClean(items, model)).toBe(clean);
+  });
+});
+
+describe('reportPoints', () => {
+  const counts = { matches: 3, differs: 1, could_not_check: 2 };
+  it('counts a model report as it came out', () => {
+    expect(reportPoints(counts, 'claude-sonnet-5-5')).toEqual({
+      matches: 3,
+      differs: 1,
+      unread: 2,
+    });
+  });
+  it('never counts a scripted match as confirmed', () => {
+    expect(reportPoints(counts, scriptedCheckerModel)).toEqual({
+      matches: 0,
+      differs: 1,
+      unread: 5,
+    });
   });
 });
