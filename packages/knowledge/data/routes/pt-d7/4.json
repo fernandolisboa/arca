@@ -13,7 +13,14 @@
     {
       "id": "lei-23-2007",
       "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2007-67564445",
-      "title": "Lei n.º 23/2007 (foreigners law), articles 58.º, n.º 5, and 99.º, n.os 1, 4 and 6: family members who may apply with the principal; the other parent's consent; both spouses or partners 18 or over",
+      "title": "Lei n.º 23/2007 (foreigners law), articles 58.º, n.º 5, and 99.º, n.os 1 and 4: the family members who may apply with the principal, and the other parent's consent for a child of only one spouse",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "lei-23-2007-age",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2007-67564445",
+      "title": "Lei n.º 23/2007, article 99.º, n.º 6: the marriage or de facto union must be valid and recognized under Portuguese law, and both spouses or partners 18 or over on the date of the application",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
@@ -136,7 +143,7 @@
     {
       "id": "portaria-229-2021",
       "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/portaria/2021-173517007",
-      "title": "Portaria n.º 229/2021 (table of consular fees), articles 22.º, n.º 1, and 28.º: children under 6 pay no visa fee, those aged 6 to 17 may be exempted; paid in euros or local currency",
+      "title": "Portaria n.º 229/2021 (table of consular fees), article 22.º, n.º 1: children up to the age of 6 pay no visa fee, and those from 6 and under 18 may be exempted",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
@@ -330,7 +337,7 @@
           }
         ]
       },
-      "sources": ["lei-23-2007"]
+      "sources": ["lei-23-2007", "lei-23-2007-age"]
     },
     {
       "id": "minor-children",
@@ -504,7 +511,7 @@
           }
         ]
       },
-      "sources": ["lei-23-2007-partner", "dr-84-2007-family", "lei-7-2001", "lei-23-2007"]
+      "sources": ["lei-23-2007-partner", "dr-84-2007-family", "lei-7-2001", "lei-23-2007-age"]
     },
     {
       "id": "partner-children",
@@ -544,7 +551,7 @@
           }
         ]
       },
-      "sources": ["lei-23-2007-partner", "dr-84-2007-family", "lei-7-2001"]
+      "sources": ["lei-23-2007-partner", "dr-84-2007-family", "lei-7-2001", "lei-23-2007-age"]
     }
   ],
   "costs": [

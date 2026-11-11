@@ -3226,11 +3226,11 @@
         "people": [
           {
             "id": "p1",
-            "birthDate": "1985-03-10",
+            "birthDate": "2006-03-10",
             "citizenships": [
               {
                 "country": "BR",
-                "acquired": "1985-03-10",
+                "acquired": "2006-03-10",
                 "lost": "none",
                 "basis": "birth"
               }
@@ -3269,11 +3269,11 @@
           },
           {
             "id": "p3",
-            "birthDate": "2024-05-05",
+            "birthDate": "2025-05-05",
             "citizenships": [
               {
                 "country": "BR",
-                "acquired": "2024-05-05",
+                "acquired": "2025-05-05",
                 "lost": "none",
                 "basis": "birth"
               }
@@ -3289,7 +3289,7 @@
           {
             "kind": "partner",
             "people": ["p1", "p2"],
-            "start": "2023-01-01",
+            "start": "2024-06-01",
             "end": "none"
           },
           {
@@ -3344,11 +3344,11 @@
           },
           {
             "id": "p2",
-            "birthDate": "2005-07-07",
+            "birthDate": "2007-07-07",
             "citizenships": [
               {
                 "country": "BR",
-                "acquired": "2005-07-07",
+                "acquired": "2007-07-07",
                 "lost": "none",
                 "basis": "birth"
               }
@@ -3361,11 +3361,11 @@
           },
           {
             "id": "p3",
-            "birthDate": "2024-05-05",
+            "birthDate": "2025-05-05",
             "citizenships": [
               {
                 "country": "BR",
-                "acquired": "2024-05-05",
+                "acquired": "2025-05-05",
                 "lost": "none",
                 "basis": "birth"
               }
@@ -3381,7 +3381,7 @@
           {
             "kind": "partner",
             "people": ["p1", "p2"],
-            "start": "2023-01-01",
+            "start": "2024-06-01",
             "end": "none"
           },
           {
