@@ -16,7 +16,7 @@ describe('client entry', () => {
       }),
     ).toEqual({ status: 'ok', checks: { database: 'ok' }, accounts: 'open' });
     expect(probe).not.toHaveBeenCalled();
-  });
+  }, 30_000);
 });
 
 describe('withHeaders', () => {

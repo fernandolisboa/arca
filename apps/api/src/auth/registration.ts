@@ -14,6 +14,7 @@ import { APIError, isAPIError } from 'better-auth/api';
 import { and, eq, gt, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import type { Logger } from '@arca/telemetry';
+import { attestsWithoutCertificates } from './attestation.js';
 import { accounts, type Auth } from './auth.js';
 import { sha256, type OwnerCode } from './enrollment.js';
 import { liveInvite } from './invites.js';
@@ -63,7 +64,7 @@ export interface RegistrationSettings {
  * verifies the attestation and stores the passkey and the session; Arca's callbacks claim the
  * registration context and create the account. Better Auth's adapter runs the ceremony in one
  * transaction, which the callbacks join, so a failure anywhere leaves no account behind. This
- * relies on the Drizzle adapter (1.7.14) opening that transaction with `db.transaction`; if an
+ * relies on the Drizzle adapter (1.7.15) opening that transaction with `db.transaction`; if an
  * upgrade stops doing so, the callbacks find no transaction and refuse every registration.
  */
 export function registrationHooks({ db, audit, ownerCode }: RegistrationSettings) {
@@ -305,6 +306,11 @@ export function registration(
       return { ok: true, body, setCookies: answered.getSetCookie() };
     },
     verify: async (headers, { token, code, response }) => {
+      // The plugin calls the verifier itself, so the attestation is checked before it runs.
+      if (!attestsWithoutCertificates(response.response.attestationObject)) {
+        logger.info({ errorName: 'AttestationRefused' });
+        return { ok: false, reason: 'refused' };
+      }
       const ceremony: Parameters<RegistrationHooks['within']>[0] = {
         tokenHash: sha256(token),
         code,
