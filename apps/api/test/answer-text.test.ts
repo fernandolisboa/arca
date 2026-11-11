@@ -121,6 +121,10 @@ describe('xmlText', () => {
     expect(
       lines('<row><fee>EUR 85</fee><del><note>until 2025</note></del><unit>a year</unit></row>'),
     ).toEqual(['EUR 85', 'a year']);
+    expect(lines('<p>one <b></del>two</b>, until 2027-01-<del>10</del>15.</p>')).toEqual([
+      'one two, until 2027-01-',
+      '15.',
+    ]);
   });
 
   it('keeps the text of a document cut inside its markup', () => {
@@ -216,6 +220,24 @@ describe('answerText', () => {
     ['xml', 'struck wording', '<fee>Class 1<del>2</del>500 EUR</fee>'],
     ['xml', 'an empty struck element', '<fee>Class 1<s/>500 EUR</fee>'],
     ['xml', 'an end tag that closes nothing struck', '<fee>Class 1</del>500 EUR</fee>'],
+    ['xml', 'a comment', '<fee>Class 1<!-- x -->500 EUR</fee>'],
+    ['xml', 'a processing instruction', '<fee>Class 1<?x y?>500 EUR</fee>'],
+    ['xml', 'a CDATA section', '<fee>Class 1<![CDATA[500 EUR]]></fee>'],
+    ['xml', 'a separator and one tag', '<fee>Class 1.<amount>500 EUR</amount></fee>'],
+    [
+      'xml',
+      'a separator and nested tags',
+      '<fee>Class 1.<ins><amount>500 EUR</amount></ins></fee>',
+    ],
+    ['xml', 'a separator and end tags', '<fee><b><num>1,</num></b>500 EUR</fee>'],
+    ['xml', 'a separator after a tag', '<fee><class><id>Class 1</id></class>,500 EUR</fee>'],
+    ['xml', 'a separator and struck words', '<fee>Class 1.<del>(repealed)</del>500 EUR</fee>'],
+    [
+      'xml',
+      'a separator and a struck number',
+      '<fee>Class 1.<del>450</del><ins>500</ins> EUR</fee>',
+    ],
+    ['xml', 'a separator and an empty struck element', '<fee>Class 1.<s/>500 EUR</fee>'],
     [
       'html',
       'an element that breaks no line',

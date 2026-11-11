@@ -116,38 +116,37 @@ function tagOf(tag: string): {
   };
 }
 
+/** Where a number ends at a join, with the separator it may leave open, and where one starts. */
+const numberEnds = /\d[.,'’]?\s*$/u;
+const numberStarts = /^\s*[.,'’]?\d/u;
+
 /**
- * The text of an XML document as a reader of its text would see it: its text nodes and CDATA
- * sections in document order, with references decoded. Tags, attributes, comments, processing
- * instructions and the document type are structure, and the text of an element a law strikes
- * superseded wording with is left out with its tags, as on a page. No vocabulary says which
- * elements start a line, so the document's own line breaks stand, and text starts a new line where
- * one element ended and another began since the last text, or an empty element stood: a sibling,
- * as a field or a paragraph is. Text that only went into elements, or only came out of them, runs
- * on, as words in inline elements do, unless digits would meet across a tag: a tag between two
- * numbers never makes them one. One pass over the text, with no parser that fetches, validates or
- * expands anything.
+ * The text of an XML document as a reader of its text would see it (ADR-0027): its text nodes and
+ * CDATA sections in document order, with references decoded, and the text of an element that
+ * strikes superseded wording left out with its tags. Text starts a new line at a sibling, which
+ * is where one element ended and another began since the last text, or an empty one stood; text
+ * that only went into elements or only came out of them runs on, as a sentence's inline elements
+ * do. Two numbers never become one across markup of any kind, struck text included. One pass,
+ * with no parser that fetches, validates or expands anything.
  */
 export function xmlText(xml: string, read = markupReader().read): string {
   const pieces: string[] = [];
-  let tagged = false;
-  let opened = true;
-  let closed = true;
-  let afterDigit = false;
+  let elementStarted = true;
+  let elementEnded = true;
+  let afterNumber = false;
   let struckDepth = 0;
   const text = (piece: string) => {
-    if (struckDepth > 0) return;
-    if (piece.trim() === '') pieces.push(piece);
+    if (struckDepth > 0) afterNumber ||= numberEnds.test(piece);
+    else if (piece.trim() === '') pieces.push(piece);
     else {
-      const digitsMeet = tagged && afterDigit && /^\s*\d/u.test(piece);
+      const numbersMeet = afterNumber && numberStarts.test(piece);
       pieces.push(
-        (opened && closed) || digitsMeet ? '\n' : '',
+        (elementStarted && elementEnded) || numbersMeet ? '\n' : '',
         hasMarkup(piece) ? `\n${read(piece)}\n` : piece,
       );
-      tagged = false;
-      opened = false;
-      closed = false;
-      afterDigit = /\d\s*$/u.test(piece);
+      elementStarted = false;
+      elementEnded = false;
+      afterNumber = numberEnds.test(piece);
     }
   };
   let index = 0;
@@ -168,13 +167,12 @@ export function xmlText(xml: string, read = markupReader().read): string {
       index = markupEnd(xml, open);
       if (xml.startsWith('<!', open)) continue;
       const { name, end, empty } = tagOf(xml.slice(open, index));
-      tagged = true;
       if (struckElements.has(name)) {
         if (end) struckDepth = Math.max(0, struckDepth - 1);
         else if (!empty) struckDepth += 1;
       } else if (struckDepth === 0) {
-        opened ||= !end;
-        closed ||= end || empty;
+        elementStarted ||= !end;
+        elementEnded ||= end || empty;
       }
     }
   }
