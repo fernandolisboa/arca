@@ -274,6 +274,18 @@
     {
       "path": "country-sets/eu-free-movement/2",
       "sha256": "2da6690ecb84ae50694ce74e1f5d3f4851c6dc40ed8181f9018b26f220d040b5"
+    },
+    {
+      "path": "routes/pt-d7/5",
+      "sha256": "5c2739278cd45824b9888093b49aeaeb4d9a4dd85435150c6f8ca505ebc04efc"
+    },
+    {
+      "path": "routes/pt-d8/5",
+      "sha256": "ea7824b4c139767ef85142c32953457b8d9d47bd9b7a71a8fc71b42e7404fc1a"
+    },
+    {
+      "path": "routes/us-eb5/8",
+      "sha256": "6f698fd32abea5aaa3e96430f4912f93d887eb07781039f6d1b6de8b520a8485"
     }
   ]
 }
