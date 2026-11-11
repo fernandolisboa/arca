@@ -112,7 +112,13 @@ export function Dock({
         </span>
       )}
       <div className={`min-w-0 flex-1 ${kind === 'fixed' ? 'p-1' : ''}`}>
-        <NavList items={items} link={link} shape="cell" direction={vertical ? 'column' : 'row'} />
+        <NavList
+          items={items}
+          link={link}
+          place={kind === 'fixed' ? 'dock' : 'floating-dock'}
+          shape="cell"
+          direction={vertical ? 'column' : 'row'}
+        />
       </div>
     </nav>
   );

@@ -7,6 +7,7 @@ import { MenuPanel, type MenuGroup, type SignOut } from './shell/menu-panel.js';
 import {
   NavLink,
   NavList,
+  menuToggleId,
   type DockEdge,
   type NavItem,
   type ShellLayout,
@@ -156,6 +157,7 @@ export function AppShell({
     <div className={visibility}>
       <MenuToggle
         ref={toggleRef}
+        id={menuToggleId}
         open={menuOpen}
         onToggle={() => {
           if (menuOpen) closeMenu();
@@ -203,9 +205,9 @@ export function AppShell({
               inert={menuOpen}
               className={`${at(false, true)} items-center gap-2`}
             >
-              <NavList items={items} link={link} shape="row" direction="row" compact />
+              <NavList items={items} link={link} place="bar" shape="row" direction="row" compact />
               {settings !== undefined && (
-                <NavLink item={settings} link={link} shape="row" iconOnly />
+                <NavLink item={settings} link={link} place="bar" shape="row" iconOnly />
               )}
             </nav>
           )}
@@ -220,9 +222,11 @@ export function AppShell({
         >
           <div className="px-1">{brand}</div>
           <div className="flex-1">
-            <NavList items={items} link={link} shape="row" direction="column" />
+            <NavList items={items} link={link} place="side" shape="row" direction="column" />
           </div>
-          {settings !== undefined && <NavLink item={settings} link={link} shape="row" />}
+          {settings !== undefined && (
+            <NavLink item={settings} link={link} place="side" shape="row" />
+          )}
         </nav>
       )}
 
