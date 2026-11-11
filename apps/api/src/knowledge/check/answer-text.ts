@@ -132,10 +132,8 @@ export function xmlText(xml: string): string {
   let tagsSinceText = 2;
   let afterDigit = false;
   let struckDepth = 0;
-  const text = (raw: string) => {
+  const text = (piece: string) => {
     if (struckDepth > 0) return;
-    // A NUL is dropped from every answer; here already, so it hides no digit from the line rule.
-    const piece = raw.replaceAll('\0', '');
     if (piece.trim() === '') pieces.push(piece);
     else {
       const digitsMeet = tagsSinceText > 0 && afterDigit && /^\s*\d/u.test(piece);
@@ -175,10 +173,13 @@ export function xmlText(xml: string): string {
   return pieces.join('');
 }
 
-/** The texts of a data answer as lines: whitespace collapsed within each, the blank ones left out. */
+/**
+ * The texts of a data answer as lines: whitespace collapsed within each, once the digits of its
+ * columns are apart, and the blank ones left out.
+ */
 function dataLines(texts: readonly string[]): string {
   return texts
-    .flatMap((text) => text.split('\n'))
+    .flatMap((text) => digitsApart(text).split('\n'))
     .map((line) => line.replace(/\s+/gu, ' ').trim())
     .filter((line) => line !== '')
     .join('\n');
@@ -201,15 +202,12 @@ function textOf(format: AnswerFormat, body: string): string {
  * An answer's text as a reader sees it (ADR-0027). A page's markup through `htmlToText`; plain text
  * as it is; a JSON answer as its string values in document order, one to a line; an XML answer as
  * its text in document order. A string of either with markup in it is read as a page's markup is.
- * Nothing in a data answer is ever more than text. In every format, NUL and unpaired surrogates,
- * which a stored report cannot hold, are taken out, and the digits of two lines stay apart.
+ * Nothing in a data answer is ever more than text. In every format, a NUL or an unpaired
+ * surrogate, which a stored report cannot hold, reads as the replacement character, and the digits
+ * of two lines stay apart.
  */
 export function answerText(format: AnswerFormat, body: string): string {
-  return digitsApart(
-    textOf(format, body)
-      .replace(/\0/gu, '')
-      .replace(/\p{Cs}/gu, '\uFFFD'),
-  );
+  return digitsApart(textOf(format, body).replace(/\0|\p{Cs}/gu, '\uFFFD'));
 }
 
 /** A reader of markup decodes what it reads, and an XML answer's text twice over. */

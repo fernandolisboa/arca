@@ -790,6 +790,14 @@ describe('the independent check of one version (ADR-0027)', () => {
         }),
       ],
       [
+        'an encoded number sign before it in a JSON answer',
+        (claim: string) => `#${claim}`,
+        (written: string) => ({
+          body: JSON.stringify({ query: written }),
+          type: 'application/json',
+        }),
+      ],
+      [
         'character references an XML answer escapes',
         (claim: string) => claim.replace(/./gsu, (char) => `&#${String(char.codePointAt(0))};`),
         (written: string) => ({
@@ -823,7 +831,10 @@ describe('the independent check of one version (ADR-0027)', () => {
         );
         const { check, store } = setup({ checker, checked, fetcher });
         await check(startId, 'qm-sample', 1);
-        expect(checker.requests[0]?.pages[0]).toMatchObject({ url: law, text: lawText });
+        expect(checker.requests[0]?.pages[0]).toMatchObject({
+          url: law,
+          text: expect.stringContaining(lawText) as string,
+        });
         expect(store.rows[0]?.items[0]).toMatchObject({
           status: 'could_not_check',
           reason: 'echoes_address',

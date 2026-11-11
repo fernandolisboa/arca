@@ -134,6 +134,50 @@ describe('verifyAnswers', () => {
       'echoes_address',
     ],
     [
+      'a claim after a number sign the query carries encoded',
+      on(claim),
+      page({ text: `x#${claim}`, chain: [searching(`x#${claim}`)] }),
+      'echoes_address',
+    ],
+    [
+      'a claim in a query that follows an encoded number sign',
+      on(claim),
+      page({
+        text: claim,
+        chain: [`https://api.gov.example/search?tag=%23residence&q=${encodeURIComponent(claim)}`],
+      }),
+      'echoes_address',
+    ],
+    [
+      'a difference a query carries after an encoded number sign',
+      { status: 'differs', ...on(claim) },
+      page({ text: claim, chain: [searching(`#${claim}`)] }),
+      'echoes_address',
+    ],
+    [
+      'a claim a query spells as JSON escapes',
+      on(claim),
+      page({ text: claim, chain: [searching(claim.replaceAll('s', '\\u0073'))] }),
+      'echoes_address',
+    ],
+    [
+      'an address encoded more times over than it is decoded here',
+      on(quote),
+      page({
+        chain: [
+          law,
+          `https://www.gov.example/amounts?v=${[1, 2, 3, 4].reduce(encodeURIComponent, '%39%32%30')}`,
+        ],
+      }),
+      'echoes_address',
+    ],
+    [
+      'a value an address states under bytes that stop a later decoding',
+      on(quote),
+      page({ chain: [law, 'https://www.gov.example/amounts?v=%2539%2532%2530&w=%25FF'] }),
+      'echoes_address',
+    ],
+    [
       'an address whose bytes are not UTF-8',
       on(quote),
       page({ chain: [law, 'https://www.gov.example/search?q=%CC%E8%ED'] }),
@@ -185,6 +229,11 @@ describe('verifyAnswers', () => {
       ],
     });
     expect(verify(on(text), read)).toMatchObject({ status: 'matches' });
+  });
+
+  it('takes a quote from a page whose address has a stray percent sign or a query of IDs', () => {
+    const chain = [law, 'https://www.gov.example/act?id=BOE-A-2000-544&rate=5%&p=%C3%A9'];
+    expect(verify(on(quote), page({ chain }))).toMatchObject({ status: 'matches' });
   });
 
   it("takes the reader's rendering of an address as the address", () => {

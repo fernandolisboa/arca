@@ -90,29 +90,48 @@ export function normalizeWhitespace(text: string): string {
 const decodingRounds = 3;
 
 /**
+ * A text percent-decoded once, and whether all of it could be: a run of bytes that is not UTF-8
+ * stays as written.
+ */
+function decodedOnce(text: string): { readonly text: string; readonly whole: boolean } {
+  let whole = true;
+  const decoded = text.replace(/\+/g, ' ').replace(/(?:%[0-9a-f]{2})+/giu, (run) => {
+    try {
+      return decodeURIComponent(run);
+    } catch {
+      whole = false;
+      return run;
+    }
+  });
+  return { text: decoded, whole };
+}
+
+/**
  * An address as the servers on its way may read it: percent-decoded, and decoded again while that
- * changes it. Undefined when its bytes are not UTF-8, which nothing here could compare with a
- * page's text.
+ * changes it. Undefined when nothing here could compare it with a page's text: its bytes are not
+ * UTF-8, or it is encoded more times over than any honest address is.
  */
 export function addressTexts(url: string): readonly string[] | undefined {
   const texts: string[] = [];
   let last = url;
   for (let round = 0; round < decodingRounds; round += 1) {
-    let next: string;
-    try {
-      next = decodeURIComponent(last.replace(/\+/g, ' '));
-    } catch {
-      return round === 0 ? undefined : texts;
-    }
-    if (round > 0 && next === last) break;
-    texts.push(next);
-    last = next;
+    const { text, whole } = decodedOnce(last);
+    if (round === 0 && !whole) return undefined;
+    if (round > 0 && text === last) return texts;
+    texts.push(text);
+    last = text;
   }
-  return texts;
+  return decodedOnce(last).text === last ? texts : undefined;
 }
 
-/** What an address's query says: the text after its question mark, up to a fragment. */
-const queryOf = (text: string) => /\?([^#]*)/.exec(text)?.[1] ?? '';
+/**
+ * What an address's query says: all the text after its first question mark. A decoded address is
+ * read to its end, since a `#` in it may be one the query carried encoded, which the server read.
+ */
+const queryOf = (text: string) => {
+  const mark = text.indexOf('?');
+  return mark === -1 ? '' : text.slice(mark + 1);
+};
 
 function queryValues(text: string): string[] {
   return queryOf(text)
@@ -157,8 +176,8 @@ function madeOfQuery(quote: string, texts: readonly string[]): boolean {
   return taken.reduce((sum, mark) => sum + mark, 0) >= text.length * echoedShare;
 }
 
-/** A tag or a character reference opening in an address: text a reader of markup would rewrite. */
-const opensMarkup = (text: string) => /<|&#/u.test(text);
+/** A `<`, a character reference or a JSON escape in an address: text a reader would rewrite. */
+const opensMarkup = (text: string) => /<|&#|\\u[0-9a-f]{4}/iu.test(text);
 
 /**
  * A page that writes its own address into its text could be made to "say" anything by the address
@@ -166,8 +185,8 @@ const opensMarkup = (text: string) => /<|&#/u.test(text);
  * or an item's value that those addresses already state, proves nothing about the law. The chain
  * starts at the address requested, which for a source read through its machine-readable address
  * is not the page's. An address is compared as every text it may have become: decoded as often as
- * a server might, and as the reader renders it. One that cannot be decoded, or that opens markup
- * of its own, is taken as an echo whatever the quote.
+ * a server might, and as the reader renders it. One that cannot be decoded, or that holds markup
+ * or an escape of its own, is taken as an echo whatever the quote.
  */
 function echoesAddress(quote: string, page: ReadPage, values: readonly CheckValue[]) {
   const decoded = page.chain.map(addressTexts);

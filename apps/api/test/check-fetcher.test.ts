@@ -11,7 +11,7 @@ import {
   guardedLookup,
   httpsSourceFetcher,
 } from '../src/knowledge/check/fetcher.js';
-import { htmlToText, maxElementDepth } from '../src/knowledge/check/html-text.js';
+import { htmlToText, maxElementDepth, maxElements } from '../src/knowledge/check/html-text.js';
 
 /** Synthetic hosts only; a local server stands in for both. */
 const hosts = ['gov.example'];
@@ -460,6 +460,21 @@ describe('htmlToText', () => {
     const started = performance.now();
     expect(htmlToText(`${reopened}${'</p><p>x'.repeat(20_000)}`)).toBe('');
     expect(performance.now() - started).toBeLessThan(2_000);
+  });
+
+  it('reads no text of a page that strews text through broken tables by the thousand', () => {
+    const started = performance.now();
+    expect(htmlToText('<table>x'.repeat(100_000))).toBe('');
+    expect(htmlToText(`${'<br>'.repeat(100_000)}<table>${'x</x>'.repeat(100_000)}`)).toBe('');
+    expect(performance.now() - started).toBeLessThan(2_000);
+  });
+
+  it('reads a table with a few pieces out of place', () => {
+    expect(htmlToText('<table>note<tr><td>a</td>stray<td>b</td></tr></table>')).toContain('a | b');
+  });
+
+  it('counts the elements that hold nothing, too', () => {
+    expect(htmlToText('x<br>'.repeat(maxElements + 1))).toBe('');
   });
 
   it('reads a page as dense with elements as markup gets', () => {

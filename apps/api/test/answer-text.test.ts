@@ -205,6 +205,21 @@ describe('answerText', () => {
     ],
     ['json', 'a tag written in prose', JSON.stringify({ note: 'Fee 1<x and y>500 EUR' })],
     ['json', 'a NUL at the end of a string', '["Fee 1\\u0000", "500 EUR"]'],
+    ['json', 'a tab inside a string', JSON.stringify({ row: 'Fee 1\t500 EUR' })],
+    ['json', 'a line separator inside a string', JSON.stringify({ row: 'Fee 1\u2028500 EUR' })],
+    ['xml', 'a carriage return inside a text', '<p>Fee 1&#13;500 EUR</p>'],
+    ['plain', 'a NUL', 'Fee 1\u0000500 EUR'],
+    ['html', 'a script', '<p>Fee 1<script>var a;</script>500 EUR</p>'],
+    ['html', 'a hidden element', '<p>Fee 1<span hidden>x</span>500 EUR</p>'],
+    ['html', 'a comment', '<p>Fee 1<!-- <b> -->500 EUR</p>'],
+    ['html', 'a space written as a reference', '<span>Fee 1</span>&nbsp;<span>500 EUR</span>'],
+    ['html', 'a tag before a digit written as a reference', '<p>Fee 1<b>&#53;00 EUR</b></p>'],
+    ['html', 'an end tag that closes nothing', '<p>Fee 1</x>&nbsp;500 EUR</p>'],
+    [
+      'json',
+      'cells with no table around them and a reference',
+      JSON.stringify({ row: '<td>Fee 1</td><td>&nbsp;500 EUR</td>' }),
+    ],
     ['xml', 'a NUL reference before a tag', '<fee>Fee 1&#0;<amount>500 EUR</amount></fee>'],
   ] as const)('never reads one number across %s %s', (format, _, body) => {
     const text = normalizeWhitespace(answerText(format, body));
