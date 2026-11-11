@@ -306,6 +306,18 @@
     {
       "path": "routes/it-descent/3",
       "sha256": "c81f4278eb3aafd9b30a091baf6a0756e0e9f1ac8124e0dd563c187ca5d654ad"
+    },
+    {
+      "path": "guides/es/2",
+      "sha256": "627488205dabf0360e97df24e45e1c00c863aa3c9f5426eb048ab45d3935b42b"
+    },
+    {
+      "path": "guides/it/2",
+      "sha256": "88b766c7cf88b9c1decffccaff7d7673ab004b3f4e4a8f363c6868d6361570a7"
+    },
+    {
+      "path": "guides/pl/2",
+      "sha256": "b9c9a71c1d44a28cb0f568962bfda27adcd9267e73cd4aceb4841322f5d4d7bc"
     }
   ]
 }
