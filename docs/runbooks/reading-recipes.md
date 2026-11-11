@@ -92,11 +92,12 @@ For each host:
 
 ## `es`: Spain
 
-**`boe.es`** (last confirmed 2026-11-09)
+**`boe.es`** (last confirmed 2026-11-11)
 
 - **Read:** `curl`. Consolidated text at `/buscar/act.php?id=BOE-A-<yyyy>-<n>`; the gazette text at `/diario_boe/txt.php?id=BOE-A-<yyyy>-<n>`. The search form `boe.php` takes `campo[n]` and `dato[n]` parameters (for example `campo[1]=TITULOS`, `campo[6]=FPU` with `dato[6][0]` and `dato[6][1]` as the date range).
 - **Cite:** the `act.php` consolidated text of a provision (BOE-A-…), never a BORME or section V announcement.
-- **Amendments:** the consolidated text lists its amending norms; search by title and publication date for newer ones. The BOE open-data API returned empty data when tried.
+- **Amendments:** the consolidated text lists its amending norms; search by title and publication date for newer ones, sending every field of the search form (`campo[0]` to `campo[6]`, each with its `operador[n]=and`) and `accion=Buscar`. A repealed act shows "Disposición derogada" in the results, and `/buscar/doc.php?id=<id>` names the act that repealed it.
+- **Open-data API:** `https://www.boe.es/datosabiertos/api/legislacion-consolidada/id/<id>/metadatos`, `/analisis` (earlier and later references) and `/texto/bloque/<block>` (one article, with its versions; block ids are the anchors of the consolidated page, such as `a6-3`) answer XML, but only with the header `Accept: application/xml`; any other request gets HTTP 400. So it is a way to read, not a `machineReadableUrl`: the independent check asks for HTML.
 - Not readable: inclusion.gob.es (403), extranjeros.inclusion.gob.es and mites.gob.es (broken TLS chain).
 
 ## `eu`: the European Union
