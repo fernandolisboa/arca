@@ -63,7 +63,7 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 - Sharing an analysis with chosen people in the case, so each starts their own checklist; relatives join through the family area first (slice 4).
 - Progress per person and for the whole family, computed in code; each person's bar is visible to those they share it with, and the family bar counts only what the viewer may see (slice 5).
 - Steps marked as doable online, with the official link, sourced like any knowledge fact, for the country that issues each document (most often Brazil) as well as the destination (slice 5 and the knowledge base).
-- Guided tour of the app and a hint per screen, using the CoachMark pattern of [spec 0006](specs/0006-design-system-and-theming.md), after the first screens of slice 3; separate from Phase 3's onboarding of new families.
+- Guided tour of the app and a hint per screen, using the CoachMark pattern of [spec 0006](specs/0006-design-system-and-theming.md), separate from Phase 3's onboarding of new families (done, [#123](https://github.com/fernandolisboa/arca/issues/123): the first-run tour, hints for the family area, the comparison and the vault, and Help in Settings to show them again; the activation screen gets its hint after its redesign).
 - Setup guide for every key and secret the project owner manages (`docs/SETUP.md`): names, where each lives, who creates it and how to rotate it, never values; links to ADR-0012 instead of repeating it.
 
 ## Phase 2 — Execution (web)

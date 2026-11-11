@@ -2,7 +2,12 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { AppShell, type AppShellProps } from '../src/app-shell.js';
 import { nearestEdge } from '../src/shell/dock.js';
-import type { NavItem, ShellLayout, ShellLinkProps } from '../src/shell/nav.js';
+import {
+  navTargetIds,
+  type NavItem,
+  type ShellLayout,
+  type ShellLinkProps,
+} from '../src/shell/nav.js';
 
 function Anchor({ href, className, children, ...rest }: ShellLinkProps) {
   return (
@@ -94,6 +99,23 @@ describe('AppShell', () => {
     expect(render({ wide: 'floating-dock', dockEdge: 'right' })).toContain(
       'md:pr-[calc(5rem+14px+env(safe-area-inset-right))]',
     );
+  });
+
+  it('gives every layout a unique target for each destination: its link or the menu button', () => {
+    const layouts: Partial<ShellLayout>[] = [
+      {},
+      { wide: 'menu' },
+      { wide: 'side', narrow: 'fixed-dock' },
+      { wide: 'floating-dock', narrow: 'fixed-dock' },
+      { wide: 'floating-dock', narrow: 'floating-dock' },
+    ];
+    for (const layout of layouts) {
+      const ids = [...render(layout).matchAll(/ id="([^"]+)"/g)].map((match) => match[1]);
+      expect(new Set(ids).size).toBe(ids.length);
+      for (const item of [home, settings]) {
+        expect(navTargetIds(item.id).some((id) => ids.includes(id))).toBe(true);
+      }
+    }
   });
 
   it('offers the drag grip only when the app saves the dock edge', () => {

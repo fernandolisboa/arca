@@ -292,6 +292,13 @@ describe('CoachMark', () => {
     expect(buttons(step(false, true))).toEqual(['Pular', 'Voltar', 'Concluir']);
   });
 
+  it('shows a one-step hint with Done alone and no count', () => {
+    const html = step(true, true);
+    expect([...html.matchAll(/<button type="button"[^>]*>([^<]+)<\/button>/g)]).toHaveLength(1);
+    expect(html).toContain('>Concluir</button>');
+    expect(html).not.toContain('2 de 4');
+  });
+
   it('dims the page with `bg` at 70% before the target is measured', () => {
     expect(step(true, false)).toContain('bg-bg/70');
   });
