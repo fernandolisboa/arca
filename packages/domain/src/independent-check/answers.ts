@@ -28,8 +28,18 @@ export interface ReadPage {
   readonly cut: boolean;
   /** The text is an excerpt: runs of the page with a gap line wherever text is left out. */
   readonly excerpt?: boolean;
-  /** Every URL requested on the way, the cited one first and the final one last. */
+  /**
+   * Every URL requested on the way, the final one last: the cited one first, or the
+   * machine-readable address read in its place.
+   */
   readonly chain: readonly string[];
+  /**
+   * What the reader makes of those addresses when an answer writes one back: each as
+   * `addressTexts` gives it, read as the answer's own text is, markup and references included.
+   * They are tested as the addresses are, so a claim an address spells as references or between
+   * tags is still an echo. A reader that turns markup into text must give them.
+   */
+  readonly echoes?: readonly string[];
 }
 
 /** Why code did not take the model's word for an item. */
@@ -76,34 +86,131 @@ export function normalizeWhitespace(text: string): string {
   return text.normalize('NFC').replace(/\s+/gu, ' ').trim();
 }
 
-function decoded(text: string): string {
+/** A server may decode what another already did, so an address is read decoded this many times. */
+const decodingRounds = 3;
+
+/** What a URL parser drops from an address or trims off its ends, so it is not sent as written. */
+const droppedWhenSent = /\p{Cc}|^ | $/u;
+
+/** The escape of legacy servers, `%u0041`, which no decoding here reads. */
+const legacyEscape = /%u[0-9a-f]{4}/iu;
+
+/**
+ * A text percent-decoded once, or undefined when nothing here reads it as its server may: a run
+ * of bytes that is not UTF-8, or a legacy escape.
+ */
+function decodedOnce(text: string): string | undefined {
   try {
-    return decodeURIComponent(text.replace(/\+/g, ' '));
+    const decoded = text
+      .replace(/\+/g, ' ')
+      .replace(/(?:%[0-9a-f]{2})+/giu, (run) => decodeURIComponent(run));
+    return legacyEscape.test(decoded) ? undefined : decoded;
   } catch {
-    return text;
+    return undefined;
   }
 }
 
-function queryValues(url: string): string[] {
-  const query = /\?([^#]*)/.exec(url)?.[1] ?? '';
-  return query
-    .split('&')
-    .map((pair) => decoded(pair.slice(pair.indexOf('=') + 1)))
-    .map(normalizeWhitespace)
-    .filter((value) => value.length >= echoedQueryLength);
+/**
+ * An address as the servers on its way may read it: without its fragment, which is never sent,
+ * percent-decoded, and decoded again while that changes it. Undefined when nothing here could
+ * compare it with a page's text: it holds a character that is dropped when it is sent, at any
+ * round its bytes are not UTF-8 or it holds a legacy escape, or it is encoded more times over
+ * than any honest address is.
+ */
+export function addressTexts(url: string): readonly string[] | undefined {
+  if (droppedWhenSent.test(url)) return undefined;
+  const texts: string[] = [];
+  let last = url.replace(/#.*$/su, '');
+  for (let round = 0; round < decodingRounds; round += 1) {
+    const text = decodedOnce(last);
+    if (text === undefined) return undefined;
+    if (round > 0 && text === last) return texts;
+    texts.push(text);
+    last = text;
+  }
+  return decodedOnce(last) === last ? texts : undefined;
 }
 
 /**
- * A page that writes its own address into its text could be made to "say" anything by the address
- * alone: a quote holding a query value of the chain, or an item's value that the chain's addresses
- * already state, proves nothing about the law.
+ * What an address's query says: all the text after its first question mark. A decoded address is
+ * read to its end, since a `#` in it may be one the query carried encoded, which the server read.
  */
-function echoesAddress(quote: string, chain: readonly string[], values: readonly CheckValue[]) {
+const queryOf = (text: string) => {
+  const mark = text.indexOf('?');
+  return mark === -1 ? '' : text.slice(mark + 1);
+};
+
+/** The values of a query, each whole and as the pieces a `;` or an encoded `#` may end. */
+function queryValues(text: string): string[] {
+  const query = queryOf(text);
+  return ['&', /[&;#]/u]
+    .flatMap((separator) => query.split(separator))
+    .map((pair) => normalizeWhitespace(pair.slice(pair.indexOf('=') + 1)))
+    .filter((value) => value.length >= echoedQueryLength);
+}
+
+/** A piece of a quote this long that a query also holds counts as taken from the query. */
+const echoedPieceLength = 4;
+/** A quote at least this much made of pieces of its addresses' queries says what they say. */
+const echoedShare = 0.5;
+
+/** Lower-case letters and digits with one space for anything between them, in any script. */
+const lettersAndDigits = (text: string) =>
+  text
+    .normalize('NFKC')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim();
+
+/**
+ * Whether at least half of a quote is made of pieces of the queries requested for its page,
+ * whatever punctuation the query or the answer writes between the words: so a quote that is part
+ * of a long query value, or put together from several short ones, is caught where the whole-value
+ * test alone would let it through. Paths are left out: a path names its page's subject, which the
+ * page's own words restate, and no test on the words could tell that from an echo.
+ */
+function madeOfQuery(quote: string, texts: readonly string[]): boolean {
+  const text = lettersAndDigits(quote);
+  const queries = texts
+    .map((address) => lettersAndDigits(queryOf(address)))
+    .filter(({ length }) => length >= echoedPieceLength);
+  if (text.length < echoedPieceLength || queries.length === 0) return false;
+  const taken = new Uint8Array(text.length);
+  for (let start = 0; start + echoedPieceLength <= text.length; start += 1) {
+    const piece = text.slice(start, start + echoedPieceLength);
+    if (queries.some((query) => query.includes(piece))) {
+      taken.fill(1, start, start + echoedPieceLength);
+    }
+  }
+  return taken.reduce((sum, mark) => sum + mark, 0) >= text.length * echoedShare;
+}
+
+/** A `<`, a character reference or a JSON escape in an address: text a reader would rewrite. */
+const opensMarkup = (text: string) => /<|&#|\\u[0-9a-f]{4}/iu.test(text);
+
+/**
+ * A page that writes its own address into its text could be made to "say" anything by the address
+ * alone: a quote holding a query value of the chain, a quote mostly made of the chain's queries,
+ * or an item's value that those addresses already state, proves nothing about the law. The chain
+ * starts at the address requested, which for a source read through its machine-readable address
+ * is not the page's. An address is compared as every text it may have become: decoded as often as
+ * a server might, and as the reader renders it. One that cannot be decoded, or that holds markup
+ * or an escape of its own, is taken as an echo whatever the quote.
+ */
+function echoesAddress(quote: string, page: ReadPage, values: readonly CheckValue[]) {
+  const decoded = page.chain.map(addressTexts);
+  if (decoded.includes(undefined)) return true;
+  const addresses = decoded.flatMap((texts) => texts ?? []);
+  if (addresses.some(opensMarkup)) return true;
+  const texts = [...addresses, ...(page.echoes ?? [])];
   const lower = quote.toLowerCase();
-  return chain.some(
-    (url) =>
-      queryValues(url).some((value) => lower.includes(value.toLowerCase())) ||
-      values.some((value) => statesValue(value, decoded(url))),
+  return (
+    madeOfQuery(quote, texts) ||
+    texts.some(
+      (text) =>
+        queryValues(text).some((value) => lower.includes(value.toLowerCase())) ||
+        values.some((value) => statesValue(value, text)),
+    )
   );
 }
 
@@ -220,7 +327,7 @@ function checkQuote(
   if (!runs.some((run) => normalizeWhitespace(run).includes(quote))) {
     return { ok: false, reason: 'quote_not_on_page' };
   }
-  if (echoesAddress(quote, page.chain, item.values)) return { ok: false, reason: 'echoes_address' };
+  if (echoesAddress(quote, page, item.values)) return { ok: false, reason: 'echoes_address' };
   return { ok: true, quote: { quote, url }, page };
 }
 

@@ -39,7 +39,15 @@ const report = (patch: Partial<NewCheckReport> = {}): NewCheckReport => ({
   ...key,
   items: [matches],
   fetchLog: [
-    { url: law, outcome: 'read', status: 200, durationMs: 12, sha256: 'a'.repeat(64), cut: false },
+    {
+      url: law,
+      machineReadableUrl: 'https://api.gov.example/law.json',
+      outcome: 'read',
+      status: 200,
+      durationMs: 12,
+      sha256: 'a'.repeat(64),
+      cut: false,
+    },
   ],
   failure: null,
   failed: false,
@@ -126,6 +134,16 @@ describe('knowledge.independent_check (ADR-0027)', () => {
       matches,
       { ...rest, status: 'could_not_check', quotes: [], reason: 'page_cut' },
     ]);
+  });
+
+  it('reads a fetch log stored before machine-readable addresses as pages read themselves', async () => {
+    const [entry] = report().fetchLog;
+    if (entry === undefined) throw new Error('the report has a fetch log');
+    // The stored JSON leaves an undefined field out, as rows written before it had none.
+    const stored = report({ fetchLog: [{ ...entry, machineReadableUrl: undefined }] as never });
+    await postgresCheckReportStore(() => testDatabase.jobsDb).save(stored);
+    const found = await postgresCheckReportStore(() => testDatabase.apiDb).find(stored.startId);
+    expect(found?.fetchLog).toEqual([{ ...entry, machineReadableUrl: null }]);
   });
 
   it('keeps one report per start', async () => {

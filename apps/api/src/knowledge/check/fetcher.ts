@@ -8,7 +8,7 @@ import { pipeline } from 'node:stream/promises';
 import { createBrotliDecompress, createGunzip, createInflate } from 'node:zlib';
 import { type FetchFailure, hostMatches } from '@arca/domain';
 import { globallyReachable } from './addresses.js';
-import { htmlToText } from './html-text.js';
+import { type AnswerFormat, answerFormat, answerText } from './answer-text.js';
 
 export type FetchOutcome =
   | {
@@ -17,7 +17,7 @@ export type FetchOutcome =
       /** The page's text, capped; `cut` says whether the cap cut it. */
       readonly text: string;
       readonly cut: boolean;
-      /** Every URL requested, the cited one first. */
+      /** Every URL requested, the one asked for first. */
       readonly chain: readonly string[];
     }
   | {
@@ -28,8 +28,9 @@ export type FetchOutcome =
     };
 
 /**
- * The `SourceFetcher` port (ADR-0027): reads one cited official page, allowed on `hosts` and their
- * subdomains only, every redirect hop included.
+ * The `SourceFetcher` port (ADR-0027): reads one cited official page, or the machine-readable
+ * address its source names, allowed on `hosts` and their subdomains only, every redirect hop
+ * included.
  */
 export interface SourceFetcher {
   fetch(url: string, hosts: readonly string[]): Promise<FetchOutcome>;
@@ -40,7 +41,7 @@ export interface FetchLimits {
   readonly maxBytes: number;
   /** Bytes after decompression. */
   readonly maxDecompressedBytes: number;
-  /** Characters of markup handed to the HTML parser; more is cut, as the text would be. */
+  /** Characters of markup or data handed to a parser; more is cut, as the text would be. */
   readonly maxMarkupLength: number;
   /** Characters of text kept; a whole code fits, and the check sends a long page as an excerpt. */
   readonly maxTextLength: number;
@@ -59,11 +60,28 @@ export const fetchLimits: FetchLimits = {
 };
 
 /** A page's text within the per-page cap, and whether the cap cut it. */
-export function capText(
+function capText(
   full: string,
   maxLength = fetchLimits.maxTextLength,
 ): { readonly text: string; readonly cut: boolean } {
   return { text: full.slice(0, maxLength), cut: full.length > maxLength };
+}
+
+/**
+ * An answer's text within the limits and whether they cut it, or undefined when it has no text: a
+ * page that draws its text with scripts answers markup with nothing a reader would see, and a data
+ * answer that does not parse has no strings.
+ */
+export function textWithinLimits(
+  format: AnswerFormat,
+  raw: string,
+  limits: Pick<FetchLimits, 'maxMarkupLength' | 'maxTextLength'> = fetchLimits,
+): { readonly text: string; readonly cut: boolean } | undefined {
+  const markupCut = format !== 'plain' && raw.length > limits.maxMarkupLength;
+  const full = answerText(format, markupCut ? raw.slice(0, limits.maxMarkupLength) : raw);
+  if (full.trim() === '') return undefined;
+  const capped = capText(full, limits.maxTextLength);
+  return { text: capped.text, cut: markupCut || capped.cut };
 }
 
 /** Every address a host resolves to; the guard picks among them. */
@@ -107,7 +125,6 @@ class FetchError extends Error {
 }
 
 const redirects = new Set([301, 302, 303, 307, 308]);
-const readable = new Set(['text/html', 'application/xhtml+xml', 'text/plain']);
 
 /** An `https` URL with no credentials or port, on an allowed host, or undefined. */
 function allowedUrl(url: string, hosts: readonly string[]): URL | undefined {
@@ -190,7 +207,8 @@ function contentType(response: IncomingMessage): { type: string; charset: string
  * The `node:https` adapter of the port (ADR-0027): a `GET` with no cookies or credentials, at most
  * three redirect hops each checked against the allowed hosts, every connection made to an address
  * the guard checked, with the certificate verified against the host name, and limits on bytes,
- * decompressed size, time and text. Only a final 2xx HTML or plain-text page with some text is read.
+ * decompressed size, time and text. Only a final 2xx answer with some text is read: an HTML or
+ * plain-text page, or a JSON or XML answer from a machine-readable address.
  */
 export function httpsSourceFetcher({
   resolve = systemResolve,
@@ -209,7 +227,8 @@ export function httpsSourceFetcher({
         ...(port === undefined ? {} : { port }),
         path: `${url.pathname}${url.search}`,
         headers: {
-          accept: 'text/html, application/xhtml+xml, text/plain;q=0.8',
+          accept:
+            'text/html, application/xhtml+xml, application/json;q=0.9, application/xml;q=0.9, text/xml;q=0.9, text/plain;q=0.8, */*;q=0.1',
           'accept-encoding': 'gzip, deflate, br',
           'user-agent': 'Arca-rule-check/1',
         },
@@ -262,6 +281,8 @@ export function httpsSourceFetcher({
     signal: AbortSignal,
   ) => {
     let url = allowedUrl(cited, hosts);
+    // The chain holds each address as it is requested, which is what a server can write back.
+    if (url !== undefined) chain[0] = url.href;
     for (let hop = 0; url !== undefined; hop += 1) {
       const current: URL = url;
       const response = await get(current, signal);
@@ -283,20 +304,15 @@ export function httpsSourceFetcher({
         throw new FetchError('http_status', status);
       }
       const { type, charset } = contentType(response);
-      if (!readable.has(type)) {
-        response.resume();
+      const format = answerFormat(type);
+      if (format === undefined) {
+        // Nothing will read the body, so the socket closes now rather than at the time limit.
+        response.destroy();
         throw new FetchError('unsupported_type', status);
       }
-      const raw = await body(response, charset);
-      const markupCut = type !== 'text/plain' && raw.length > limits.maxMarkupLength;
-      const full =
-        type === 'text/plain'
-          ? raw
-          : htmlToText(markupCut ? raw.slice(0, limits.maxMarkupLength) : raw);
-      // A page that draws its text with scripts answers markup with nothing a reader would see.
-      if (full.trim() === '') throw new FetchError('no_text', status);
-      const capped = capText(full, limits.maxTextLength);
-      return { status, text: capped.text, cut: markupCut || capped.cut };
+      const read = textWithinLimits(format, await body(response, charset), limits);
+      if (read === undefined) throw new FetchError('no_text', status);
+      return { status, ...read };
     }
     throw new FetchError('refused_url');
   };

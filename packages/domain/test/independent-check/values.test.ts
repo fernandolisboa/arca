@@ -3,6 +3,7 @@ import type { CalendarDate } from '../../src/calendar/calendar-date.js';
 import {
   type CheckValue,
   canonicalNumber,
+  digitsApart,
   numbersIn,
   statesValue,
 } from '../../src/independent-check/values.js';
@@ -51,6 +52,36 @@ describe('numbersIn', () => {
 
   it('reads two numbers apart by a space both on their own', () => {
     expect([...numbersIn('ages 18 21')]).toEqual(expect.arrayContaining(['18', '21']));
+  });
+});
+
+describe('digitsApart', () => {
+  const reads = (text: string, value: string) =>
+    numbersIn(digitsApart(text).replace(/\s+/gu, ' ')).has(value);
+
+  it.each([
+    ['a line feed', 'Article 1\n600 EUR'],
+    ['a blank line', 'Article 1\n\n600 EUR'],
+    ['a carriage return', 'Article 1\r600 EUR'],
+    ['a carriage return and a line feed', 'Article 1\r\n600 EUR'],
+    ['a form feed', 'Article 1\f600 EUR'],
+    ['a line separator', 'Article 1\u2028600 EUR'],
+    ['a tab', 'Category 1\t600 EUR'],
+    ['a run of spaces', 'Category 1    600 EUR'],
+  ])('keeps the digits on two sides of %s apart', (_, text) => {
+    expect(reads(text, '600')).toBe(true);
+    expect(reads(text, '1600')).toBe(false);
+  });
+
+  it('opens a line with a bar only when digits would meet across the break', () => {
+    expect(digitsApart('Section 2\n\n  3 months\nor more\n12')).toBe(
+      'Section 2\n\n|   3 months\nor more\n12',
+    );
+  });
+
+  it('leaves a number written with one space between its groups as it is', () => {
+    expect(digitsApart('at least 1 600 EUR')).toBe('at least 1 600 EUR');
+    expect(reads('at least 1 600 EUR', '1600')).toBe(true);
   });
 });
 

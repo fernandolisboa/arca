@@ -15,7 +15,7 @@ import type { EvaluationStatus } from './engine.js';
 import { slugSchema } from './expression.js';
 import { resolveFactReference } from './fact-reference.js';
 import { type CurrencyCode, unitsAmount } from '../money/currency.js';
-import type { Pin, RouteVersion, Source } from './route-version.js';
+import { type Pin, type RouteVersion, type Source, sourceUrls } from './route-version.js';
 
 const evaluationStatuses = [
   'unavailable',
@@ -56,6 +56,11 @@ export interface SourceView extends Source {
   readonly host: string | null;
   /** No lower version of the route cites a source on this host, or the URL has no plain host. */
   readonly newHost: boolean;
+  /**
+   * The source names a machine-readable address whose host no lower version of the route names, as
+   * a URL or as an address, or which has no plain host.
+   */
+  readonly newMachineReadableHost: boolean;
 }
 
 /** What changed in one section from the version this one replaces, by item ID. */
@@ -310,12 +315,17 @@ export function versionView({
   const { version, identity } = entry;
   const replacedNumber = version.corrects ?? number - 1;
   const replaced = versions.find((candidate) => candidate.identity.number === replacedNumber);
-  const earlierHosts = new Set(
-    versions
-      .filter((candidate) => candidate.identity.number < number)
-      .flatMap((candidate) => candidate.version.sources.map((source) => hostOf(source.url)))
-      .filter((host) => host !== undefined),
-  );
+  const earlierSources = versions
+    .filter((candidate) => candidate.identity.number < number)
+    .flatMap((candidate) => candidate.version.sources);
+  const hostsOf = (urls: readonly string[]) =>
+    new Set(urls.map(hostOf).filter((host) => host !== undefined));
+  const earlierHosts = hostsOf(earlierSources.map(({ url }) => url));
+  const earlierNamedHosts = hostsOf(earlierSources.flatMap(sourceUrls));
+  const isNew = (url: string, known: ReadonlySet<string>) => {
+    const host = hostOf(url);
+    return host === undefined || !known.has(host);
+  };
   return {
     routeId: identity.routeId,
     number,
@@ -374,14 +384,14 @@ export function versionView({
       title,
       members,
     })),
-    sources: version.sources.map((source) => {
-      const host = hostOf(source.url);
-      return {
-        ...source,
-        host: host ?? null,
-        newHost: host === undefined || !earlierHosts.has(host),
-      };
-    }),
+    sources: version.sources.map((source) => ({
+      ...source,
+      host: hostOf(source.url) ?? null,
+      newHost: isNew(source.url, earlierHosts),
+      newMachineReadableHost:
+        source.machineReadableUrl !== undefined &&
+        isNew(source.machineReadableUrl, earlierNamedHosts),
+    })),
     replaces:
       replaced === undefined || replacedNumber < 1
         ? null

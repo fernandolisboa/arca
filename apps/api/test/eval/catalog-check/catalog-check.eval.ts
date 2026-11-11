@@ -88,7 +88,7 @@ function summary(runs: readonly Run[], calls: number, dollars: number): string {
     `Matches resting on several quotes: ${String(items.filter(({ status, quotes }) => status === 'matches' && quotes.length > 1).length)}.`,
     `Why not checked: ${tally(reasons)}.`,
     `Left unchecked by the model with no reason: ${String(withoutReason(items).length)}.`,
-    `Pages: ${tally(outcomes)}.`,
+    `Pages: ${tally(outcomes)}; read through a machine-readable address: ${String(reports.flatMap((report) => report.fetchLog).filter(({ machineReadableUrl }) => machineReadableUrl !== null).length)}.`,
     `Model calls: ${String(calls)} of at most ${String(maxCallsPerRun)}; about US$${dollars.toFixed(2)} the run.`,
     '',
   ];
@@ -114,9 +114,12 @@ function summary(runs: readonly Run[], calls: number, dollars: number): string {
     const problems = report.fetchLog.filter(({ outcome, cut }) => outcome !== 'read' || cut);
     if (problems.length > 0) {
       lines.push('', 'Pages not read whole:', '');
-      for (const { url, outcome, status, cut } of problems) {
+      for (const { url, machineReadableUrl, outcome, status, cut } of problems) {
         const how = outcome === 'read' && cut ? 'read, cut' : outcome;
-        lines.push(`- ${how}${status === null ? '' : ` (${String(status)})`}: ${plain(url)}`);
+        const through = machineReadableUrl === null ? '' : ` through ${plain(machineReadableUrl)}`;
+        lines.push(
+          `- ${how}${status === null ? '' : ` (${String(status)})`}: ${plain(url)}${through}`,
+        );
       }
     }
     lines.push('');

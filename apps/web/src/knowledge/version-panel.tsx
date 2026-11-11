@@ -261,7 +261,13 @@ function StepContent({
                   : t('knowledge.host', { host: source.host })}
               </p>
               {source.machineReadableUrl !== undefined && (
-                <p className="font-mono text-small break-all">{source.machineReadableUrl}</p>
+                <p className="flex flex-col gap-1 text-small">
+                  <span className="text-muted">{t('knowledge.readAddress')}</span>
+                  <span className="font-mono break-all">{source.machineReadableUrl}</span>
+                </p>
+              )}
+              {source.newMachineReadableHost && (
+                <p className="font-medium text-danger-ink">{t('knowledge.newAddressHost')}</p>
               )}
               <p className="text-small text-muted">
                 {[
