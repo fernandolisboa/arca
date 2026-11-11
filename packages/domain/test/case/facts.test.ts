@@ -44,6 +44,23 @@ describe('person.ageYears', () => {
     expect(derive('person.ageYears', { environment: env, personId: 'p1' }).value).toEqual(expected);
   });
 
+  it.each([
+    ['feb-28', '2026-02-28', integer(18, 18)],
+    ['march-1', '2026-02-28', integer(17, 17)],
+    ['unsettled', '2026-02-28', integer(17, 18)],
+    ['unsettled', '2026-02-27', integer(17, 17)],
+    ['unsettled', '2026-03-01', integer(18, 18)],
+    ['unsettled', '2024-02-29', integer(16, 16)],
+  ] as const)('a 29 February birthday under %s on %s', (rule, today, expected) => {
+    const env = {
+      ...environment(snapshot({ people: [{ id: 'p1', birthDate: '2008-02-29' }] })),
+      leapDayBirthday: rule,
+    };
+    expect(derive('person.ageYears', { environment: env, personId: 'p1' }, today).value).toEqual(
+      expected,
+    );
+  });
+
   it('refuses to compute an age without the leap-day convention', () => {
     const value = snapshot({ people: [{ id: 'p1', birthDate: '2000-01-01' }] });
     const env = environment(value);

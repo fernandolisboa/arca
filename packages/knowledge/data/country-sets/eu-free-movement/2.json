@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "id": "eu-free-movement",
+  "number": 2,
+  "title": "EU and EEA member states and Switzerland, whose citizens live in each other's territory under EU free movement rules",
+  "members": [
+    "AT",
+    "BE",
+    "BG",
+    "CH",
+    "CY",
+    "CZ",
+    "DE",
+    "DK",
+    "EE",
+    "ES",
+    "FI",
+    "FR",
+    "GR",
+    "HR",
+    "HU",
+    "IE",
+    "IS",
+    "IT",
+    "LI",
+    "LT",
+    "LU",
+    "LV",
+    "MT",
+    "NL",
+    "NO",
+    "PL",
+    "PT",
+    "RO",
+    "SE",
+    "SI",
+    "SK"
+  ],
+  "sources": [
+    {
+      "id": "eu-countries",
+      "url": "https://european-union.europa.eu/easy-read_en",
+      "title": "European Union, Easy to read: today 27 countries are part of the European Union, listed from Austria to Sweden",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "eea-agreement",
+      "url": "https://trade.ec.europa.eu/access-to-markets/en/content/european-economic-area-eea-agreement",
+      "title": "European Commission, Access2Markets: the EEA Agreement brings Iceland, Liechtenstein and Norway into the EU internal market, with free movement of people",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "eu-switzerland",
+      "url": "https://trade.ec.europa.eu/access-to-markets/en/content/switzerland",
+      "title": "European Commission, Access2Markets, Switzerland: the 1999 sectoral agreements (Bilaterals I) cover the free movement of persons",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "eu",
+      "number": 1
+    }
+  ]
+}

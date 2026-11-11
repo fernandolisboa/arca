@@ -76,6 +76,13 @@ describe('checkItems', () => {
     expect(checkItems({ ...closed, countrySets: [] }).map((item) => item.key)).toEqual(['closure']);
   });
 
+  it('lists no leap-day item when the version leaves the birthday unsettled', () => {
+    const unsettled = entry({ leapDayBirthday: 'unsettled', leapDayBirthdaySources: undefined });
+    expect(
+      checkItems({ ...unsettled, countrySets: [] }).some((item) => item.kind === 'leapDayBirthday'),
+    ).toBe(false);
+  });
+
   it('covers every field of a version that cites sources', () => {
     const shape = routeVersionSchema.shape;
     const sourced = Object.entries(shape)
