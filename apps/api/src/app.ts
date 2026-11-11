@@ -1525,12 +1525,15 @@ export function createApp({
             : {
                 ...report,
                 checkedAt: new Date(report.checkedAt).toISOString(),
-                fetchLog: report.fetchLog.map(({ url, outcome: read, status, cut }) => ({
-                  url,
-                  outcome: read,
-                  status,
-                  cut,
-                })),
+                fetchLog: report.fetchLog.map(
+                  ({ url, machineReadableUrl, outcome: read, status, cut }) => ({
+                    url,
+                    machineReadableUrl,
+                    outcome: read,
+                    status,
+                    cut,
+                  }),
+                ),
               },
       }),
       200,

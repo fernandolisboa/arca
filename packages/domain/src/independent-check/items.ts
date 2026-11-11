@@ -102,11 +102,39 @@ function officialUrls(ids: readonly string[], sources: readonly Source[]): strin
   ];
 }
 
+/** The official sources a check reads: the version's own and those of its pinned country sets. */
+export function officialSources({ version, countrySets }: CatalogEntry): Source[] {
+  return [version, ...countrySets]
+    .flatMap(({ sources }) => sources)
+    .filter(({ kind }) => kind === 'official');
+}
+
+/**
+ * The machine-readable address each cited official URL is read through in place of its page: the
+ * one its official sources name, the version's and its country sets' alike, when at least one
+ * names an address and no two name different ones. A source that names none leaves the choice to
+ * those that do; sources that disagree leave the URL read as itself, so no address is chosen over
+ * another.
+ */
+export function machineReadableUrls(entry: CatalogEntry): ReadonlyMap<string, string> {
+  const named = new Map<string, Set<string>>();
+  for (const { url, machineReadableUrl } of officialSources(entry)) {
+    if (machineReadableUrl === undefined) continue;
+    named.set(url, (named.get(url) ?? new Set()).add(machineReadableUrl));
+  }
+  const addresses = new Map<string, string>();
+  for (const [url, names] of named) {
+    const [only] = names;
+    if (names.size === 1 && only !== undefined) addresses.set(url, only);
+  }
+  return addresses;
+}
+
 /**
  * Every item of a route version the check compares (ADR-0027), by stable key: each requirement,
- * assessment, dependent rule, cost and duration, the leap-day rule and the closure when the version
- * has them, and each pinned country set's members, which are read on the set's own sources and
- * official-domain lists. Settings that cite no source are not items.
+ * assessment, dependent rule, cost and duration, the leap-day rule when the version settles one,
+ * the closure when the version has one, and each pinned country set's members, which are read on
+ * the set's own sources and official-domain lists. Settings that cite no source are not items.
  */
 export function checkItems({ version, countrySets }: CatalogEntry): readonly CheckItem[] {
   const urls = (ids: readonly string[]) => officialUrls(ids, version.sources);
@@ -150,7 +178,7 @@ export function checkItems({ version, countrySets }: CatalogEntry): readonly Che
         uniqueValues([...durationValues(min), ...durationValues(max)]),
       ),
     ),
-    ...(version.leapDayBirthday === undefined
+    ...(version.leapDayBirthday === undefined || version.leapDayBirthday === 'unsettled'
       ? []
       : [
           item(

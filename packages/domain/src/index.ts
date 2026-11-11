@@ -1,4 +1,9 @@
-export { type LeapDayBirthday, ageYears, leapDayBirthdaySchema } from './calendar/age.js';
+export {
+  type LeapDayBirthday,
+  type SettledLeapDayBirthday,
+  ageYears,
+  leapDayBirthdaySchema,
+} from './calendar/age.js';
 export {
   type CalendarDate,
   type DateParts,
@@ -155,6 +160,7 @@ export {
   routeVersionJsonSchema,
   routeVersionSchema,
   sourceSchema,
+  sourceUrls,
 } from './rules/route-version.js';
 export {
   collectionNames,
@@ -232,6 +238,7 @@ export {
 export {
   type CheckValue,
   canonicalNumber,
+  digitsApart,
   numbersIn,
   statesValue,
 } from './independent-check/values.js';
@@ -241,7 +248,9 @@ export {
   checkItemKinds,
   checkItems,
   expressionValues,
+  machineReadableUrls,
   maxCheckItemKeyLength,
+  officialSources,
 } from './independent-check/items.js';
 export {
   type CheckAnswer,
@@ -250,6 +259,7 @@ export {
   type CheckStatus,
   type CheckedItem,
   type ReadPage,
+  addressTexts,
   checkReasons,
   checkStatuses,
   maxNoteLength,

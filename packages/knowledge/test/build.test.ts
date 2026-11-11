@@ -2,6 +2,7 @@ import { rm, symlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { sourceUrls } from '@arca/domain';
 import { parseEntries } from '../src/entries.ts';
 import { buildKnowledge, catalogModule, formatIssue, todayUtc } from '../scripts/build.ts';
 import { contentHash } from '../scripts/content-hash.ts';
@@ -424,6 +425,19 @@ describe("a source's machine-readable address (spec 0002, R4)", () => {
     expect(issues).toEqual([]);
   });
 
+  it("records the address's host for the activation screen, so it is not taken as new", async () => {
+    const address = 'https://api.gov.example/law?format=json';
+    const { entries } = await buildKnowledge(
+      await writeTree(withRouteSource({ machineReadableUrl: address })),
+      buildDate,
+      fixtures,
+    );
+    const hosts = [...catalogModule({ entries }).matchAll(/JSON\.parse\((.*)\);$/gm)].map(
+      ([, literal]) => JSON.parse(JSON.parse(literal ?? '') as string) as unknown,
+    )[3];
+    expect(hosts).toMatchObject({ [address]: 'api.gov.example' });
+  });
+
   it.each<[string, Record<string, unknown>, string]>([
     [
       'on a host no pinned list holds',
@@ -572,7 +586,7 @@ describe('catalogModule', () => {
     expect(pinned).toEqual(countries);
     expect(summaries).toEqual(cases);
     const urls = [...parseEntries(entries).values()].flatMap(({ version }) =>
-      version.sources.map(({ url }) => url),
+      version.sources.flatMap(sourceUrls),
     );
     expect(Object.keys(hosts as object).sort()).toEqual([...new Set(urls)].sort());
   });

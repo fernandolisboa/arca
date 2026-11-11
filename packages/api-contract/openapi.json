@@ -32324,6 +32324,7 @@
                       "enum": [
                         "feb-28",
                         "march-1",
+                        "unsettled",
                         null
                       ]
                     },
@@ -32824,6 +32825,9 @@
                           },
                           "newHost": {
                             "type": "boolean"
+                          },
+                          "newMachineReadableHost": {
+                            "type": "boolean"
                           }
                         },
                         "required": [
@@ -32833,7 +32837,8 @@
                           "kind",
                           "verifiedAt",
                           "host",
-                          "newHost"
+                          "newHost",
+                          "newMachineReadableHost"
                         ],
                         "additionalProperties": false
                       },
@@ -34471,6 +34476,13 @@
                                 "type": "string",
                                 "maxLength": 2000
                               },
+                              "machineReadableUrl": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "maxLength": 2000
+                              },
                               "outcome": {
                                 "type": "string",
                                 "enum": [
@@ -34502,6 +34514,7 @@
                             },
                             "required": [
                               "url",
+                              "machineReadableUrl",
                               "outcome",
                               "status",
                               "cut"

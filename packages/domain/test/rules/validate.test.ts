@@ -129,6 +129,10 @@ describe('route version', () => {
     expect(issues({})).toEqual([]);
   });
 
+  it('accepts an unsettled leap-day birthday that cites no sources', () => {
+    expect(issues({ leapDayBirthday: 'unsettled', leapDayBirthdaySources: undefined })).toEqual([]);
+  });
+
   it.each([
     ['a wrong schema version', { schemaVersion: 2 }],
     ['a route ID without a country', { routeId: 'sample' }],
@@ -163,6 +167,11 @@ describe('route version', () => {
       'a rule citing a missing source',
       { requirements: [{ ...valid.requirements[0], sources: ['law', 'nope'] }] },
       '/requirements/0/sources',
+    ],
+    [
+      'an unsettled leap-day birthday that cites sources',
+      { leapDayBirthday: 'unsettled' },
+      '/leapDayBirthdaySources',
     ],
     [
       'an age without the leap-day convention',

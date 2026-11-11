@@ -43,16 +43,32 @@ interface Version {
   readonly number: number;
 }
 
-/** The newest version of each route, by route. */
+/**
+ * The routes `ARCA_CATALOG_ROUTES` names, comma-separated, or undefined for every route. A name that
+ * is no bundled route's fails the run, so a typo never measures nothing.
+ */
+function requestedRoutes(known: readonly string[]): ReadonlySet<string> | undefined {
+  const raw = process.env['ARCA_CATALOG_ROUTES']?.trim() ?? '';
+  if (raw === '') return undefined;
+  const ids = raw.split(',').map((id) => id.trim());
+  const unknown = ids.filter((id) => !known.includes(id));
+  if (unknown.length > 0)
+    throw new Error(`${String(unknown.length)} requested routes are not bundled`);
+  return new Set(ids);
+}
+
+/** The newest version of each route, by route, narrowed to the requested routes. */
 async function newestVersions(): Promise<Version[]> {
   const versions = createKnowledgeVersions({
     states: () => Promise.resolve(new Map()),
     // The listing wants a date for the state it shows; which version is newest does not use it.
     today: () => parseCalendarDate(new Date().toISOString().slice(0, 10)),
   });
-  return newestOfEachRoute(await versions.list()).sort((left, right) =>
-    left.routeId.localeCompare(right.routeId),
-  );
+  const newest = newestOfEachRoute(await versions.list());
+  const requested = requestedRoutes(newest.map(({ routeId }) => routeId));
+  return newest
+    .filter(({ routeId }) => requested === undefined || requested.has(routeId))
+    .sort((left, right) => left.routeId.localeCompare(right.routeId));
 }
 
 interface Run {
@@ -88,7 +104,7 @@ function summary(runs: readonly Run[], calls: number, dollars: number): string {
     `Matches resting on several quotes: ${String(items.filter(({ status, quotes }) => status === 'matches' && quotes.length > 1).length)}.`,
     `Why not checked: ${tally(reasons)}.`,
     `Left unchecked by the model with no reason: ${String(withoutReason(items).length)}.`,
-    `Pages: ${tally(outcomes)}.`,
+    `Pages: ${tally(outcomes)}; read through a machine-readable address: ${String(reports.flatMap((report) => report.fetchLog).filter(({ machineReadableUrl }) => machineReadableUrl !== null).length)}.`,
     `Model calls: ${String(calls)} of at most ${String(maxCallsPerRun)}; about US$${dollars.toFixed(2)} the run.`,
     '',
   ];
@@ -114,9 +130,12 @@ function summary(runs: readonly Run[], calls: number, dollars: number): string {
     const problems = report.fetchLog.filter(({ outcome, cut }) => outcome !== 'read' || cut);
     if (problems.length > 0) {
       lines.push('', 'Pages not read whole:', '');
-      for (const { url, outcome, status, cut } of problems) {
+      for (const { url, machineReadableUrl, outcome, status, cut } of problems) {
         const how = outcome === 'read' && cut ? 'read, cut' : outcome;
-        lines.push(`- ${how}${status === null ? '' : ` (${String(status)})`}: ${plain(url)}`);
+        const through = machineReadableUrl === null ? '' : ` through ${plain(machineReadableUrl)}`;
+        lines.push(
+          `- ${how}${status === null ? '' : ` (${String(status)})`}: ${plain(url)}${through}`,
+        );
       }
     }
     lines.push('');

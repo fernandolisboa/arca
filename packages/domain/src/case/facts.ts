@@ -1,4 +1,4 @@
-import { type LeapDayBirthday, ageYears } from '../calendar/age.js';
+import { type LeapDayBirthday, type SettledLeapDayBirthday, ageYears } from '../calendar/age.js';
 import { type CalendarDate, compareDates, tryAddDays } from '../calendar/calendar-date.js';
 import { type DateValue, after, dateRange, onOrBefore } from '../calendar/partial-date.js';
 import { type Interval, type Truth, and, or } from '../logic/truth.js';
@@ -418,9 +418,14 @@ function ageRange(
   }
   if (birthDate === undefined) return integerRange(0, undefined);
   const { min, max } = dateRange(birthDate);
-  const age = (birth: CalendarDate, on: CalendarDate): number =>
-    compareDates(birth, on) > 0 ? 0 : ageYears(birth, on, leapDayBirthday);
-  return integerRange(age(max, at.min), age(min, at.max));
+  const unsettled = leapDayBirthday === 'unsettled';
+  const age = (birth: CalendarDate, on: CalendarDate, rule: SettledLeapDayBirthday): number =>
+    compareDates(birth, on) > 0 ? 0 : ageYears(birth, on, rule);
+  // Unsettled: the later birthday bounds the age from below and the earlier one from above.
+  return integerRange(
+    age(max, at.min, unsettled ? 'march-1' : leapDayBirthday),
+    age(min, at.max, unsettled ? 'feb-28' : leapDayBirthday),
+  );
 }
 
 /**
