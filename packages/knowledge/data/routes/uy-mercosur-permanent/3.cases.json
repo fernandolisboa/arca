@@ -983,6 +983,80 @@
         "possibleDependents": ["p2", "p4"],
         "missingFacts": []
       }
+    },
+    {
+      "id": "child-born-on-a-leap-day-is-unsettled-on-28-february",
+      "snapshot": {
+        "recordedOn": "2026-02-28",
+        "members": ["p1", "p2", "p3"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1980-01-01",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1980-01-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["spouses", "partners", "children", "parents"],
+            "financiallyDependentOn": []
+          },
+          {
+            "id": "p2",
+            "birthDate": "2008-02-29",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2008-02-29",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["spouses", "partners", "children", "parents"],
+            "financiallyDependentOn": ["p1"]
+          },
+          {
+            "id": "p3",
+            "birthDate": "2008-03-01",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2008-03-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["spouses", "partners", "children", "parents"],
+            "financiallyDependentOn": ["p1"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p1",
+            "child": "p2",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p1",
+            "child": "p3",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-02-28",
+      "expected": {
+        "status": "needs_assessment",
+        "dependents": ["p3"],
+        "possibleDependents": ["p2"],
+        "missingFacts": []
+      }
     }
   ]
 }

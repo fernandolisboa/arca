@@ -41,14 +41,14 @@
     {
       "id": "ley-25871-serious-crimes",
       "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
-      "title": "Ley 25.871, article 29, c), and closing paragraphs: a conviction, final or not, or a record, for a crime punished with three years of prison or more; the exceptional dispensation",
+      "title": "Ley 25.871, article 29, c), and closing paragraphs: a conviction or record for a crime Argentine law punishes with three years of prison or more; the exceptional dispensation and its bars",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
     {
       "id": "ley-25871-lesser-crimes",
       "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
-      "title": "Ley 25.871, article 29, d), and closing paragraphs: a conviction, final or not, for a crime punished with less than three years of prison; the exceptional dispensation",
+      "title": "Ley 25.871, article 29, d), and closing paragraphs: a conviction for a crime Argentine law punishes with less than three years of prison; the exceptional dispensation and its bars",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
@@ -209,13 +209,13 @@
   "assessments": [
     {
       "id": "serious-crime",
-      "title": "No conviction, final or not, and no record (an indictment or committal to trial), anywhere, for a crime punished with three years of prison or more, unless the directorate grants a dispensation",
+      "title": "No conviction, final or not, and no record (an indictment or committal to trial), anywhere, for a crime Argentine law punishes with three years of prison or more, save an exceptional dispensation",
       "evidence": ["principal.visaRefusals"],
       "sources": ["ley-25871-serious-crimes"]
     },
     {
       "id": "lesser-crime-conviction",
-      "title": "No conviction, final or not, in Argentina or abroad, for a crime punished with less than three years of prison, unless the directorate grants a dispensation",
+      "title": "No conviction, final or not, in Argentina or abroad, for a crime Argentine law punishes with less than three years of prison, save an exceptional dispensation",
       "evidence": ["principal.visaRefusals"],
       "sources": ["ley-25871-lesser-crimes"]
     },
@@ -434,8 +434,8 @@
       "sources": ["dnm-fee-table", "decreto-584-2024-unit"]
     },
     {
-      "id": "residence-fee-native-family",
-      "title": "Residence fee of each family member who is a native of a listed state, unless an unmarried child under 18 applying with a parent: 50 UMSM, at ARS 1,000 a unit",
+      "id": "residence-fee-family",
+      "title": "Residence fee of each family member, unless an unmarried child under 18 applying with a parent: 50 UMSM, at ARS 1,000 a unit, the lower of the table's two columns",
       "kind": "fee",
       "amount": {
         "op": "mul",
@@ -448,52 +448,36 @@
       },
       "appliesTo": "each_dependent",
       "condition": {
-        "op": "all",
-        "operands": [
-          {
-            "op": "not",
-            "operand": {
-              "op": "all",
-              "operands": [
-                {
-                  "op": "lt",
-                  "left": {
-                    "op": "fact",
-                    "key": "person.ageYears"
-                  },
-                  "right": {
-                    "op": "int",
-                    "value": 18
-                  }
-                },
-                {
-                  "op": "not",
-                  "operand": {
-                    "op": "fact",
-                    "key": "person.hasSpouse"
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "op": "intersects",
-            "list": {
-              "op": "fact",
-              "key": "person.citizenshipsFromBirth"
+        "op": "not",
+        "operand": {
+          "op": "all",
+          "operands": [
+            {
+              "op": "lt",
+              "left": {
+                "op": "fact",
+                "key": "person.ageYears"
+              },
+              "right": {
+                "op": "int",
+                "value": 18
+              }
             },
-            "set": {
-              "op": "tokens",
-              "values": ["BO", "BR", "CL", "CO", "EC", "GY", "PE", "PY", "SR", "UY", "VE"]
+            {
+              "op": "not",
+              "operand": {
+                "op": "fact",
+                "key": "person.hasSpouse"
+              }
             }
-          }
-        ]
+          ]
+        }
       },
       "sources": ["dnm-fee-table", "decreto-584-2024-unit", "decreto-584-2024-exemption"]
     },
     {
-      "id": "residence-fee-other-family",
-      "title": "Residence fee of each other family member, unless an unmarried child under 18 applying with a parent: the table does not say whether its 50 or its 100 UMSM column applies; 100 UMSM at ARS 1,000 a unit",
+      "id": "residence-fee-family-extra",
+      "title": "Further fee of each family member who is not a native of a listed state, if the table's 100 UMSM column applies, which it does not say: 50 UMSM more, at ARS 1,000 a unit: possible",
       "kind": "fee",
       "amount": {
         "op": "mul",
@@ -502,7 +486,7 @@
           "amount": 100000,
           "currency": "ARS"
         },
-        "by": "100"
+        "by": "50"
       },
       "appliesTo": "each_dependent",
       "condition": {

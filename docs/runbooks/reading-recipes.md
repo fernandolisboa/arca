@@ -28,6 +28,7 @@ For each host:
 - **Read:** `curl`. Consolidated laws at `/normativa/nacional/<slug>-<id>/actualizacion`; a norm's original text at `/normativa/nacional/norma-<id>/texto`; some PDFs at `/normativa/<id>_<name>_pdf/archivo`.
 - **Cite:** the `actualizacion` page for a law in force; the `texto` page for a decree or resolution.
 - **Amendments:** the consolidated page says which norm it is current through, and `/normativa/nacional/<slug>-<id>/normas-modifican` lists the norms that modify it, newest first. The `normativa` search needs a captcha; find norm ids by publication date with `/normativa/buscar-boletin?s=1&fecha_publicacion=DD-MM-YYYY`.
+- Decreto 584/2024's fee table (article 1) is published only as images; the directorate's `/migraciones/cuadro-tasas-migratorias` page gives the same amounts as text, so cite it for a fee.
 - Not readable: infoleg (403), saij (403), boletinoficial.gob.ar and nic.ar (connection reset), mercosur.int (403).
 
 ## `au`: Australia
@@ -48,7 +49,7 @@ For each host:
 
 **`www.bcn.cl`** (Ley Chile; last tried 2026-11-11)
 
-- **Read:** not readable from a session. `curl` gets 401 (a CloudFront check) and the `web-fetch` agent gets an empty page drawn by scripts. The same norms came as JSON from `https://nuevo.leychile.cl/servicios/Navegar/get_norma_json?idNorma=<id>`, but that host is not on the `cl` list, so it is a lead, and on 2026-11-11 it answered 401 too: it never moves a `www.bcn.cl` source's `verifiedAt`. Adding the host to the list, with its proof, in a pull request of its own, would make it a Read address. Version 1 of `cl-mercosur-temporary` read its three `www.bcn.cl` sources from that JSON on 2026-11-07; they count as not re-read and go stale on 2027-02-05 unless the list gains the host first.
+- **Read:** not readable from a session. `curl` gets 401 (a CloudFront check) and the `web-fetch` agent gets an empty page drawn by scripts. The same norms came as JSON from `https://nuevo.leychile.cl/servicios/Navegar/get_norma_json?idNorma=<id>`, but that host is not on the `cl` list, so it is a lead and never moves a `www.bcn.cl` source's `verifiedAt`. On 2026-11-11 it answered 401 too. Adding the host to the list, with its proof, in a pull request of its own, would make it a Read address. Version 1 of `cl-mercosur-temporary` read its `www.bcn.cl` sources from that JSON on 2026-11-07, and version 2 carries them over split by provision; they count as not re-read and go stale on 2027-02-05 unless the list gains the host first.
 - **Cite:** `https://www.bcn.cl/leychile/navegar?idNorma=<id>`.
 - **Amendments:** the norm's JSON (a lead) names its versions and the norms that changed it.
 - Ids: Ley 21.325 1158549, Decreto 177/2022 1176043, Decreto 23/2022 1173324, Civil Code 172986.
@@ -247,7 +248,7 @@ For each host:
 
 **`www.bacn.gov.py`** (last confirmed 2026-11-11)
 
-- **Read:** `curl`; it sometimes answers 520, and a retry reads. Search JSON: `https://www.bacn.gov.py/buscar.php?j=si&s=<terms>` gives `id_documento`; the law is at `/leyes-paraguayas/<id>/x` (any slug works).
+- **Read:** `curl`; it sometimes answers 520, and one retry reads; a second 520 means not readable this run. Search JSON: `https://www.bacn.gov.py/buscar.php?j=si&s=<terms>` gives `id_documento`; the law is at `/leyes-paraguayas/<id>/x` (any slug works).
 - **Cite:** `https://www.bacn.gov.py/leyes-paraguayas/<id>/x`.
 - **Amendments:** search for the law's number; amending laws are their own documents.
 - Ids: Ley 6984 10973, Ley 3578 1104, Ley 3565 1096, Civil Code part one 5293, book two 5299, Ley 2169 4845.
@@ -293,8 +294,8 @@ For each host:
 
 **`impo.com.uy`** (last confirmed 2026-11-11)
 
-- **Read:** `curl`; the pages are Latin-1 and slow (a budget law takes minutes). Laws `/bases/leyes/<n>-<yyyy>`, decrees `/bases/decretos/<n>-<yyyy>`, treaties `/bases/leyes-internacional/<n>-<yyyy>`, codes `/bases/codigo-civil/…`.
-- **Cite:** that page.
+- **Read:** `curl`; the pages are Latin-1 and slow (a budget law takes minutes). Laws `/bases/leyes/<n>-<yyyy>`, decrees `/bases/decretos/<n>-<yyyy>`, treaties `/bases/leyes-internacional/<n>-<yyyy>`, codes `/bases/codigo-civil/…`. Each law, decree or code article also has its own page, `/bases/leyes/<n>-<yyyy>/<article>` and so on, which answers in a second where a whole budget law or code times out; treaty article paths serve no text.
+- **Cite:** the article's own page for a law, decree or code; the whole page for a treaty.
 - **Amendments:** each article notes the norms that changed it.
 
 **`www.gub.uy`** (last confirmed 2026-11-09)

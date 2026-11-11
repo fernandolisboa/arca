@@ -74,9 +74,9 @@
       "verifiedAt": "2026-11-11"
     },
     {
-      "id": "ley-2169",
-      "url": "https://www.bacn.gov.py/leyes-paraguayas/4845/x",
-      "title": "Ley N.º 2169/2003, article 1: the Civil Code's article 36 makes a person fully capable at 18",
+      "id": "ley-7371-majority",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/12775/x",
+      "title": "Ley N.º 7371/2025, article 27, giving article 36 of the Civil Code its current wording: the Code deems fully capable every person who has turned eighteen",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     }
@@ -260,7 +260,7 @@
           }
         ]
       },
-      "sources": ["ley-3578-family", "ley-3578-parties", "ley-6984", "ley-2169"]
+      "sources": ["ley-3578-family", "ley-3578-parties", "ley-6984", "ley-7371-majority"]
     },
     {
       "id": "spouse-children",
@@ -395,21 +395,6 @@
         }
       },
       "sources": ["dnm-ecuadorian-fees", "dnm-fee-table"]
-    },
-    {
-      "id": "residence-fee-family",
-      "title": "Residence fee of each family member: no text read says what a family member without a party's nationality pays; at the Mercosur fee of 20 jornales, PYG 2,341,540: possible",
-      "kind": "fee",
-      "amount": {
-        "op": "money",
-        "amount": 2341540,
-        "currency": "PYG"
-      },
-      "appliesTo": "each_dependent",
-      "condition": {
-        "op": "unmodeled"
-      },
-      "sources": ["dnm-fee-table", "ley-3578-family"]
     }
   ],
   "durations": [

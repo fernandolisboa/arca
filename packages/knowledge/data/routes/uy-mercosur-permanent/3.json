@@ -164,7 +164,7 @@
   "assessments": [
     {
       "id": "no-denial-ground",
-      "title": "No charge or conviction for an intentional common crime punished with more than two years of prison, and no repeated offending, unless five years have passed since the sentence",
+      "title": "No charge or conviction for an intentional common crime punished with over two years of prison, and no repeated offending, unless five years passed since the sentence was served, with no new crime",
       "evidence": ["principal.visaRefusals"],
       "sources": ["ley-18250-denial", "decreto-45-2023-requirements"]
     },
