@@ -33,10 +33,10 @@ For each host:
 
 ## `au`: Australia
 
-**`legislation.gov.au`** (last confirmed 2026-11-09)
+**`legislation.gov.au`** (last confirmed 2026-11-11)
 
 - **Read:** `curl`. `/<title id>/latest/text` lists the compilation's documents; the text sits at `/<id>/<date>/<date>/text/original/epub/OEBPS/document_N/document_N.html` (Migration Regulations: N = 1 to 4, Schedule 2 in document 2).
-- **Cite:** `https://www.legislation.gov.au/<title id>/latest/text`.
+- **Cite:** `https://www.legislation.gov.au/<title id>/latest/text`. The cited page is drawn by scripts, so put the compilation's `document_N.html` address in `machineReadableUrl`; it is dated, so a later audit moves it to the newest compilation it read.
 - **Amendments:** the versions API lists amendments not yet compiled: `https://api.prod.legislation.gov.au/v1/Versions?$filter=titleId eq '<title id>'&$orderby=start desc`. Each reason names the amending instrument, read at `/<instrument id>/latest/text`.
 - Ids: Migration Act C1958A00062, Migration Regulations F1996B03551, Acts Interpretation Act C1901A00002, Legislation Act C2004A01224.
 
@@ -116,13 +116,14 @@ For each host:
 
 ## `gb`: the United Kingdom
 
-**`www.gov.uk`** (last confirmed 2026-11-09)
+**`www.gov.uk`** (last confirmed 2026-11-11)
 
 - **Read:** `curl` on the content API: `https://www.gov.uk/api/content/<path>` returns JSON with the body HTML in `details.body` and the change history. Search: `/api/search.json?q=<terms>`.
 - **Cite:** the page path (`https://www.gov.uk/<path>`). For a publication, cite its HTML version, whose address ends in `-accessible` or `-accessible-version`; the PDFs on `assets.publishing.service.gov.uk` are not on the list.
-- **Amendments:** statements of changes to the Immigration Rules: `/api/content/government/collections/immigration-rules-statement-of-changes`. Each appendix is `/guidance/immigration-rules/immigration-rules-appendix-<name>`.
+- **Amendments:** statements of changes to the Immigration Rules: `/api/content/government/collections/immigration-rules-statement-of-changes`. Each appendix is `/guidance/immigration-rules/immigration-rules-appendix-<name>`; its `details.change_history` names the statements that changed it.
+- Fees: the Home Office fees table, `/government/publications/visa-regulations-revised-table`, lists one HTML page per fee change; the immigration health surcharge is on `/healthcare-immigration-application/how-much-pay`.
 
-**`legislation.gov.uk`** (last confirmed 2026-11-09)
+**`legislation.gov.uk`** (last confirmed 2026-11-11)
 
 - **Read:** `curl` on `/<type>/<year>/<n>/section/<s>/data.xml`.
 - **Cite:** `https://www.legislation.gov.uk/<type>/<year>/<n>[/section/<s>]`.
@@ -144,18 +145,19 @@ For each host:
 
 ## `ie`: Ireland
 
-**`irishstatutebook.ie`** (last confirmed 2026-11-09)
+**`irishstatutebook.ie`** (last confirmed 2026-11-11)
 
-- **Read:** `curl`. Print form: statutory instruments `/eli/<yyyy>/si/<n>/made/en/print`, acts `/eli/<yyyy>/act/<n>/enacted/en/print`. Recent instruments exist only as PDF: `/pdf/<yyyy>/en.si.<yyyy>.<nnnn>.pdf`.
-- **Cite:** the `html` form (`.../made/en/html`, `.../enacted/en/html`), or the PDF when that is the only form.
+- **Read:** `curl`. Print form: statutory instruments `/eli/<yyyy>/si/<n>/made/en/print`, acts `/eli/<yyyy>/act/<n>/enacted/en/print`. Recent instruments first exist only as PDF (`/pdf/<yyyy>/en.si.<yyyy>.<nnnn>.pdf`, now a redirect to `/eli/<yyyy>/si/<n>/made/en/pdf`); the html and print forms follow later (S.I. No. 558 of 2026 had them by 2026-11-11), so try them first.
+- **Cite:** the `html` form (`.../made/en/html`, `.../enacted/en/html`), or the PDF when that is the only form; move a PDF source to the html form once it exists.
+- The year index `/eli/<yyyy>/si/` is a table of number and title: match the rows to find instruments made after a date.
 - **Amendments:** the year index `/eli/<yyyy>/si/` lists every instrument; the Employment Permits regulations change by numbered amending regulations. Revised acts are on revisedacts.lawreform.ie, readable but not on the list: a lead.
 
-**`enterprise.gov.ie`** (last confirmed 2026-11-09)
+**`enterprise.gov.ie`** (last confirmed 2026-11-11)
 
 - **Read:** `curl`.
 - **Cite:** the page itself.
 
-**`irishimmigration.ie`** (last confirmed 2026-11-09)
+**`irishimmigration.ie`** (last confirmed 2026-11-11)
 
 - **Read:** the WordPress API: `/wp-json/wp/v2/search?search=<terms>`, then `/wp-json/wp/v2/pages/<id>`. Policy documents are PDFs under `/wp-content/uploads/`.
 - **Cite:** the page or the PDF.
@@ -195,18 +197,18 @@ For each host:
 
 ## `jp`: Japan
 
-**`laws.e-gov.go.jp`** (last confirmed 2026-11-09)
+**`laws.e-gov.go.jp`** (last confirmed 2026-11-11)
 
 - **Read:** `curl` on the API v2: `/api/2/laws?law_title=<title>`, `/api/2/law_data/<id>?response_format=json&law_full_text_format=json`, `/api/2/law_revisions/<id>`.
-- **Cite:** `https://laws.e-gov.go.jp/law/<id>`.
+- **Cite:** `https://laws.e-gov.go.jp/law/<id>`. The page is drawn by scripts, so put `https://laws.e-gov.go.jp/api/2/law_data/<id>?response_format=xml&law_full_text_format=xml`, the whole text as XML, in `machineReadableUrl`. For a long law, cite each article as its own source and add `&elm=MainProvision-Article_<n>` to that address, which serves that article alone (confirmed 2026-11-11); an appended table answers 500 to `elm`, so cite it by the whole text.
 - **Amendments:** `law_revisions` lists every revision with its dates, including ones not yet in force.
-- Ids: Immigration Control and Refugee Recognition Act 326CO0000000319, Civil Code 129AC0000000089. Ministry notices (告示) are not on e-Gov.
+- Ids: Immigration Control and Refugee Recognition Act 326CO0000000319, its Enforcement Ordinance 356M50000010054, Civil Code 129AC0000000089, Act on the Calculation of Age 135AC1000000050. Ministry notices (告示) are not on e-Gov.
 
-**`moj.go.jp`** (last confirmed 2026-11-07)
+**`moj.go.jp`** (last confirmed 2026-11-11)
 
 - **Read:** `curl` gets a CloudFront 403. Have the `web-fetch` agent save the PDF as a file and read the file: `pdftotext -raw`, then join the lines (vertical text).
 - **Cite:** the PDF or page itself.
-- **Amendments:** the Immigration Services Agency's page of laws and notices (`/isa/policies/bill/…`) links the current notice text.
+- **Amendments:** the Immigration Services Agency's page of laws and notices (`/isa/policies/bill/…`) links the current notice text; the long-term resident notice's page, `/isa/policies/bill/nyukan_hourei_h07-01-01.html`, states its latest amendment (最近改正).
 
 ## `lv`: Latvia
 
