@@ -76,7 +76,7 @@
       "title": "Lei n.º 7/2001, consolidated: protection of de facto unions, which article 1.º(2) defines as 2 people living in conditions analogous to those of spouses for more than 2 years",
       "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2001-34471975",
       "verifiedAt": "2026-11-11",
-      "amendment": "Amended ad hoc by laws of the Assembleia da República: Lei n.º 23/2010, Lei n.º 2/2016, Lei n.º 49/2018 and Lei n.º 71/2018. The consolidated text showed its last change as 2018-12-31. Article 1.º lists one amendment, by Lei n.º 23/2010."
+      "amendment": "Amended ad hoc by laws of the Assembleia da República: Lei n.º 23/2010, Lei n.º 2/2016, Lei n.º 49/2018 and Lei n.º 71/2018. The consolidated text showed its last change as 2018-12-31. Article 1.º lists 1 amendment, by Lei n.º 23/2010."
     },
     {
       "id": "portaria-229-2021",
@@ -139,8 +139,13 @@
     },
     {
       "id": "net-of-contributions",
-      "text": "The Portaria's household scale (article 2.º(2)) takes the RMMG net of social security contributions as its reference, not the gross amount, and names no rate and no article. The worker's share in the general scheme is 11 percent (Código dos Regimes Contributivos, article 53.º); at that rate the net of EUR 920 is EUR 818.80, a computed amount that no text read states. The remote work income test of 4 minimum wages (Decreto Regulamentar n.º 84/2007, article 31.º-A) does not say net.",
-      "laws": ["portaria-1563-2007", "codigo-contributivo", "decreto-regulamentar-84-2007"]
+      "text": "The Portaria's household scale (article 2.º(2)) takes the RMMG net of social security contributions as its reference, not the gross amount, and names no rate and no article. The worker's share in the general scheme is 11 percent (Código dos Regimes Contributivos, article 53.º); at that rate the net of the EUR 920 of 2026 is EUR 818.80, a computed amount that no text read states. The remote work income test of 4 minimum wages (Decreto Regulamentar n.º 84/2007, article 31.º-A) does not say net.",
+      "laws": [
+        "portaria-1563-2007",
+        "codigo-contributivo",
+        "decreto-lei-139-2025",
+        "decreto-regulamentar-84-2007"
+      ]
     },
     {
       "id": "scale-follows-rmmg",
@@ -224,7 +229,7 @@
     },
     {
       "id": "visa-fee",
-      "text": "Visa fees at consulates come from the table of consular fees (Lei n.º 23/2007, article 209.º(1)): EUR 110 for processing a national visa application (table, article 15.º(4), as set by Portaria n.º 91/2025/1 from 2025-03-11). The table exempts \"children up to 6 years of age\" and says \"children from 6 and under 18\" may be exempted, naming no criterion (article 22.º, points 1.1(a) and 1.2(a)). Abroad the fee is paid in euros or local currency at the Banco de Portugal's reference rate, set from day 1 of each month (article 28.º(1) and (2)).",
+      "text": "Visa fees at consulates come from the table of consular fees (Lei n.º 23/2007, article 209.º(1)): EUR 110 for processing a national visa application (table, article 15.º(4), as set by Portaria n.º 91/2025/1 from 2025-03-11). The table exempts children up to 6 years of age and says those from 6 and under 18 years may be exempted, naming no criterion (article 22.º, points 1.1(a) and 1.2(a)). Abroad the fee is paid in euros or local currency at the Banco de Portugal's reference rate, set from day 1 of each month (article 28.º(1) and (2)).",
       "laws": ["portaria-229-2021", "portaria-91-2025", "lei-23-2007"]
     },
     {
