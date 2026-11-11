@@ -27,6 +27,11 @@ describe('reviewer selection', () => {
     ['research notes', ['docs/research/ancestry.md'], docs],
     ['route notes', ['docs/research/routes/pl-descent.md'], [...docs, 'security']],
     [
+      'route notes in a folder below',
+      ['docs/research/routes/archive/pl-descent.md'],
+      [...docs, 'security'],
+    ],
+    [
       'another kind of file beside the route notes',
       ['docs/research/routes/pl-descent.json'],
       allReviewers,
