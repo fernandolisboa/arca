@@ -16,14 +16,14 @@
   "sources": [
     {
       "id": "ep-act-foreign-national",
-      "url": "https://www.irishstatutebook.ie/eli/2024/act/17/enacted/en/html",
-      "title": "Employment Permits Act 2024, ss. 2(1) and 7(1): a foreign national, a non-national within the Immigration Act 1999, may be in employment in the State only under an employment permit",
+      "url": "https://www.irishstatutebook.ie/eli/2024/act/17/section/7/enacted/en/html",
+      "title": "Employment Permits Act 2024, s. 7(1): a foreign national shall not be in employment in the State except in accordance with an employment permit",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
     {
       "id": "ep-act-eu-treaty-rights",
-      "url": "https://www.irishstatutebook.ie/eli/2024/act/17/enacted/en/html",
+      "url": "https://www.irishstatutebook.ie/eli/2024/act/17/section/8/enacted/en/html",
       "title": "Employment Permits Act 2024, s. 8(1)(e): section 7 does not apply to a foreign national entitled to enter and work in the State under the treaties governing the European Union",
       "kind": "official",
       "verifiedAt": "2026-11-11"
@@ -51,8 +51,8 @@
     },
     {
       "id": "ep-act-csep",
-      "url": "https://www.irishstatutebook.ie/eli/2024/act/17/enacted/en/html",
-      "title": "Employment Permits Act 2024, ss. 9(2)(a) and 22: the critical skills employment permit for skills in short supply; at least half the employer's staff EEA, Swiss or UK nationals, with exceptions",
+      "url": "https://www.irishstatutebook.ie/eli/2024/act/17/section/22/enacted/en/html",
+      "title": "Employment Permits Act 2024, s. 22(1): no permit unless 50 per cent or more of the employees are nationals of the EEA, Switzerland or the United Kingdom, with exceptions",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
@@ -127,6 +127,13 @@
       "verifiedAt": "2026-11-11"
     },
     {
+      "id": "isd-join-family",
+      "url": "https://www.irishimmigration.ie/coming-to-join-family-in-ireland/joining-a-non-eea-non-swiss-national/join-non-eea-family-member/",
+      "title": "Immigration Service Delivery, Join non EEA family member: a Category B sponsor, such as a Critical Skills Employment Permit holder, may be joined by a spouse, civil or de facto partner or minor child",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
       "id": "ep-regs-fees",
       "url": "https://www.irishstatutebook.ie/eli/2024/si/444/made/en/html",
       "title": "S.I. No. 444 of 2024, reg. 7, Schedule 1: €1,000 for a critical skills employment permit; no fee for a registered charity or an EEA, Swiss or UK national's spouse or civil partner; 90% back on refusal",
@@ -172,7 +179,7 @@
   "countrySets": [
     {
       "id": "eu-free-movement",
-      "number": 1
+      "number": 2
     }
   ],
   "requirements": [
@@ -243,9 +250,7 @@
         "principal.monthlyActiveIncome"
       ],
       "sources": [
-        "ep-regs-mar-2026",
-        "csol-schedule-3-may-2026",
-        "csol-schedule-3-october-2026"
+        "ep-regs-mar-2026"
       ]
     },
     {
@@ -304,7 +309,8 @@
       "sources": [
         "frp-nuclear-family",
         "frp-spouse",
-        "isd-family-reunification-june-2026"
+        "isd-family-reunification-june-2026",
+        "isd-join-family"
       ]
     },
     {
@@ -348,7 +354,8 @@
       "sources": [
         "frp-nuclear-family",
         "frp-spouse",
-        "frp-de-facto-partner"
+        "frp-de-facto-partner",
+        "isd-join-family"
       ]
     },
     {
@@ -382,7 +389,8 @@
       },
       "sources": [
         "frp-nuclear-family",
-        "frp-children"
+        "frp-children",
+        "isd-join-family"
       ]
     },
     {
@@ -480,12 +488,11 @@
   "durations": [
     {
       "id": "permit",
-      "title": "Critical Skills Employment Permit, issued for up to 24 months for a job offer of at least 2 years",
+      "title": "Critical Skills Employment Permit of up to 24 months, for which the €1,000 fee is paid",
       "min": "P0D",
       "max": "P24M",
       "sources": [
-        "dete-fees",
-        "ep-regs-csep"
+        "dete-fees"
       ]
     },
     {

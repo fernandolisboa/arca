@@ -12,11 +12,7 @@
   "corrects": 1,
   "status": "open",
   "currency": "GBP",
-  "leapDayBirthday": "march-1",
-  "leapDayBirthdaySources": [
-    "age-legal-capacity-scotland",
-    "family-law-reform-age"
-  ],
+  "leapDayBirthday": "unsettled",
   "sources": [
     {
       "id": "sw-age",
@@ -63,7 +59,14 @@
     {
       "id": "sw-occupation-lists",
       "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
-      "title": "Appendix Skilled Worker, SW 6.1 and 6.1A: Table 1, 2 or 3 of Appendix Skilled Occupations, the Immigration Salary List, or the Temporary Shortage List, certificate issued before 31 December 2026",
+      "title": "Appendix Skilled Worker, SW 6.1: the job must be in an eligible SOC 2020 occupation code listed in Table 1, Table 2 or Table 3 of Appendix Skilled Occupations, or the Immigration Salary List",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "sw-temporary-shortage-list",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "title": "Appendix Skilled Worker, SW 6.1A and the Temporary Shortage List: a listed occupation, where the certificate of sponsorship was issued before 31 December 2026",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
@@ -82,6 +85,13 @@
       "verifiedAt": "2026-11-11"
     },
     {
+      "id": "english-language-appendix",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-english-language",
+      "title": "Appendix English Language, EL 4.1, EL 5.1 and EL 6.1: a national of a majority-English-speaking country, an academic qualification taught in English, or an approved English language test",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
       "id": "english-b2-hc-1333",
       "url": "https://www.gov.uk/government/publications/statement-of-changes-to-the-immigration-rules-hc-1333-14-october-2025/explanatory-memorandum-to-the-statement-of-changes-to-the-immigration-rules-hc-1333-14-october-2025-accessible",
       "title": "Explanatory memorandum to Statement of Changes HC 1333, paras. 5.22, 5.23 and 6.4: the Skilled Worker English requirement rises from B1 to B2 for first grants from 8 January 2026",
@@ -91,7 +101,7 @@
     {
       "id": "sw-funds",
       "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
-      "title": "Appendix Skilled Worker, SW 15.2 and 15.3: from abroad, £1,270 held for 28 days, unless the A-rated sponsor certifies it will maintain and accommodate the applicant to that amount",
+      "title": "Appendix Skilled Worker, SW 15.2 and 15.3: from abroad, £1,270 held for a 28-day period, unless the A-rated sponsor certifies it will maintain and accommodate the applicant",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
@@ -105,7 +115,7 @@
     {
       "id": "sw-dependant-funds",
       "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
-      "title": "Appendix Skilled Worker, SW 33.2 to 33.4: £285 for a partner, £315 for the first child, £200 for each other child, on top of the worker's funds, unless the sponsor certifies",
+      "title": "Appendix Skilled Worker, SW 33.3: the funds required are £285 for a dependent partner, £315 for the first dependent child and £200 for any other dependent child",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
@@ -159,23 +169,16 @@
       "verifiedAt": "2026-11-11"
     },
     {
-      "id": "immigration-act-1971",
-      "url": "https://www.legislation.gov.uk/ukpga/1971/77",
-      "title": "Immigration Act 1971, ss. 1(1), 2(1)(a) and 3ZA(1): British citizens have the right of abode; Irish citizens do not require leave to enter or remain",
+      "id": "immigration-act-1971-abode",
+      "url": "https://www.legislation.gov.uk/ukpga/1971/77/section/2",
+      "title": "Immigration Act 1971, s. 2(1)(a): a person has the right of abode in the United Kingdom if they are a British citizen",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
     {
-      "id": "age-legal-capacity-scotland",
-      "url": "https://www.legislation.gov.uk/ukpga/1991/50/section/6",
-      "title": "Age of Legal Capacity (Scotland) Act 1991, s. 6: a person born on 29 February has their anniversary on 1 March in a year that is not a leap year",
-      "kind": "official",
-      "verifiedAt": "2026-11-11"
-    },
-    {
-      "id": "family-law-reform-age",
-      "url": "https://www.legislation.gov.uk/ukpga/1969/46/section/9",
-      "title": "Family Law Reform Act 1969, s. 9(1): a person attains an age at the commencement of the anniversary of their birth",
+      "id": "immigration-act-1971-irish",
+      "url": "https://www.legislation.gov.uk/ukpga/1971/77/section/3ZA",
+      "title": "Immigration Act 1971, s. 3ZA(1): an Irish citizen does not require leave to enter or remain in the United Kingdom",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     }
@@ -235,7 +238,8 @@
         }
       },
       "sources": [
-        "immigration-act-1971",
+        "immigration-act-1971-abode",
+        "immigration-act-1971-irish",
         "rules-introduction"
       ]
     },
@@ -325,13 +329,23 @@
     },
     {
       "id": "eligible-occupation",
-      "title": "A job in an eligible occupation: Table 1, 2 or 3 of Appendix Skilled Occupations, the Immigration Salary List, or the Temporary Shortage List with a certificate issued before 31 December 2026",
+      "title": "A job in an eligible occupation in Table 1, 2 or 3 of Appendix Skilled Occupations, or on the Immigration Salary List",
       "evidence": [
         "principal.educationLevel"
       ],
       "sources": [
-        "sw-occupation-lists",
-        "skilled-occupations"
+        "sw-occupation-lists"
+      ]
+    },
+    {
+      "id": "temporary-shortage-list",
+      "title": "Or a job on the Temporary Shortage List, with a certificate of sponsorship issued before 31 December 2026; such a job brings no partner or children",
+      "evidence": [
+        "principal.educationLevel"
+      ],
+      "sources": [
+        "sw-temporary-shortage-list",
+        "sw-dependants-job-tables"
       ]
     },
     {
@@ -365,17 +379,27 @@
       ],
       "sources": [
         "sw-english",
-        "english-b2-hc-1333"
+        "english-b2-hc-1333",
+        "english-language-appendix"
       ]
     },
     {
       "id": "funds",
-      "title": "Savings held for 28 days: £1,270 for the worker, plus £285 for a partner, £315 for the first child and £200 for each other child, unless the sponsor certifies it will maintain them",
+      "title": "Savings of £1,270 held for 28 days by the worker, unless the A-rated sponsor certifies it will maintain and accommodate them",
       "evidence": [
         "unit.liquidAssets"
       ],
       "sources": [
-        "sw-funds",
+        "sw-funds"
+      ]
+    },
+    {
+      "id": "funds-dependants",
+      "title": "Plus £285 for a partner, £315 for the first child and £200 for each other child, held for 28 days, unless the sponsor certifies it will maintain them",
+      "evidence": [
+        "unit.liquidAssets"
+      ],
+      "sources": [
         "sw-dependant-funds"
       ]
     }

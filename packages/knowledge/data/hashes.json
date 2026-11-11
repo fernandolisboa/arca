@@ -353,15 +353,15 @@
     },
     {
       "path": "routes/au-skilled-independent/2",
-      "sha256": "8ea9b46df3162c7ab5a36d1ae42bb0f99683b5d602df7dfce41460ccf68ba928"
+      "sha256": "9fadb961540cb90741904b6aaf2df6fe1c0a981b3c17aaece59ef2e19876fef3"
     },
     {
       "path": "routes/gb-skilled-worker/2",
-      "sha256": "5f3c3b82c7650e2924bc47206002356a0b5255910c795f51d1d963688f124796"
+      "sha256": "b3bdd8968607f71bae80187af4df803b8997f3f4236cb754184941124704d8ea"
     },
     {
       "path": "routes/ie-critical-skills/3",
-      "sha256": "55a6f853bbfb1697fb48a47f0a48fe0b1e62ac43d799238fc13fca81b0590cc8"
+      "sha256": "889a737b5ede9431e415a7170bdbdf09a75823dc698cf57d7630f216cbb1b894"
     },
     {
       "path": "routes/jp-nikkei-long-term-resident/2",

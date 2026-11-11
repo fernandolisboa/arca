@@ -31,6 +31,14 @@
       "machineReadableUrl": "https://www.legislation.gov.au/F1996B03551/2026-11-01/2026-11-01/text/original/epub/OEBPS/document_1/document_1.html"
     },
     {
+      "id": "vac-2026-first-instalment",
+      "url": "https://www.legislation.gov.au/F2026L00874/latest/text",
+      "title": "Home Affairs Legislation Amendment (2026 Measures No. 1) Regulations 2026, Schedule 3 item 20: Subitem 1137(3) of Schedule 1, first instalment for the Points-tested stream",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://www.legislation.gov.au/F2026L00874/asmade/2026-06-30/text/original/epub/OEBPS/document_1/document_1.html"
+    },
+    {
       "id": "regs-189-criteria",
       "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
       "title": "Migration Regulations 1994, Schedule 2 clauses 189.221 to 189.224: invitation, skills assessment for the nominated occupation, competent English at invitation, points score",
@@ -694,6 +702,7 @@
         }
       },
       "sources": [
+        "vac-2026-first-instalment",
         "regs-1137-charges"
       ]
     },
@@ -719,6 +728,7 @@
         }
       },
       "sources": [
+        "vac-2026-first-instalment",
         "regs-1137-charges"
       ]
     },
@@ -763,6 +773,7 @@
         ]
       },
       "sources": [
+        "vac-2026-first-instalment",
         "regs-1137-charges"
       ]
     },
@@ -807,6 +818,7 @@
         ]
       },
       "sources": [
+        "vac-2026-first-instalment",
         "regs-1137-charges"
       ]
     },
@@ -848,6 +860,7 @@
         ]
       },
       "sources": [
+        "vac-2026-first-instalment",
         "regs-1137-charges"
       ]
     },
@@ -889,6 +902,7 @@
         ]
       },
       "sources": [
+        "vac-2026-first-instalment",
         "regs-1137-charges"
       ]
     },
