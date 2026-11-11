@@ -30,6 +30,9 @@ const allowedFields = {
   promptVersion: modelOrPromptId,
   inputTokens: integer,
   outputTokens: integer,
+  /** The part of `inputTokens` read from and written to the vendor's prompt cache. */
+  cacheReadTokens: integer,
+  cacheWriteTokens: integer,
 } as const satisfies Readonly<Record<string, Shape>>;
 
 export type LogField = keyof typeof allowedFields;

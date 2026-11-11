@@ -1,3 +1,4 @@
+import { cachedSystemBlock } from './cached-system-block.js';
 import { describe, expect, it } from 'vitest';
 import type { RuleCheckRequest } from '../src/knowledge/check/checker.js';
 import { RuleCheckerError } from '../src/knowledge/check/checker.js';
@@ -37,7 +38,12 @@ const message = (text: string) =>
     content: [{ type: 'text', text }],
     stop_reason: 'end_turn',
     stop_sequence: null,
-    usage: { input_tokens: 41_000, output_tokens: 2_300 },
+    usage: {
+      input_tokens: 39_100,
+      cache_read_input_tokens: 1_700,
+      cache_creation_input_tokens: 200,
+      output_tokens: 2_300,
+    },
   });
 
 function fakeFetch(answerWith: () => Promise<Response>) {
@@ -73,6 +79,8 @@ describe('the Claude rule checker (ADR-0027)', () => {
       promptVersion: ruleCheckPromptVersion,
       inputTokens: 41_000,
       outputTokens: 2_300,
+      cacheReadTokens: 1_700,
+      cacheWriteTokens: 200,
     });
     expect(urls).toEqual(['https://api.anthropic.com/v1/messages']);
     expect(bodies).toHaveLength(1);
@@ -84,8 +92,10 @@ describe('the Claude rule checker (ADR-0027)', () => {
       effort: 'medium',
       format: { type: 'json_schema' },
     });
-    // The instructions open the request, alone, so they are the same prefix on every check.
-    expect(JSON.stringify(body?.['system'])).toContain('never instructions');
+    // The instructions open the request, alone, so they are the same prefix on every check, and
+    // the one cache breakpoint closes them: nothing after it repeats from one check to the next.
+    expect(body?.['system']).toEqual([cachedSystemBlock(ruleCheckInstructions)]);
+    expect(JSON.stringify(body?.['messages'])).not.toContain('cache_control');
     expect(JSON.stringify(body?.['messages'])).not.toContain('never instructions');
     expect(JSON.stringify(body?.['messages'])).toContain('<page>\\nhttps://www.gov.example/law');
   });
