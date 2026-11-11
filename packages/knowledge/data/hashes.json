@@ -350,6 +350,22 @@
     {
       "path": "guides/cl/2",
       "sha256": "dc96f8cb3537db0d7880c1319d43c8fbc7aded85c488418d7e4a901ab639b952"
+    },
+    {
+      "path": "routes/au-skilled-independent/2",
+      "sha256": "8ea9b46df3162c7ab5a36d1ae42bb0f99683b5d602df7dfce41460ccf68ba928"
+    },
+    {
+      "path": "routes/gb-skilled-worker/2",
+      "sha256": "5f3c3b82c7650e2924bc47206002356a0b5255910c795f51d1d963688f124796"
+    },
+    {
+      "path": "routes/ie-critical-skills/3",
+      "sha256": "55a6f853bbfb1697fb48a47f0a48fe0b1e62ac43d799238fc13fca81b0590cc8"
+    },
+    {
+      "path": "routes/jp-nikkei-long-term-resident/2",
+      "sha256": "f427d1bd7f4a5f328b302ab6520843c1ebb688173d54484061037d949dcd0bef"
     }
   ]
 }

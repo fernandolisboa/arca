@@ -1,0 +1,501 @@
+{
+  "schemaVersion": 1,
+  "routeId": "ie-critical-skills",
+  "number": 3,
+  "corrects": 2,
+  "title": "Critical Skills Employment Permit for Ireland: a 2-year job offer in a critical skills occupation paying at least €40,904 a year, or any eligible job paying €68,911",
+  "country": "IE",
+  "tags": [
+    "work",
+    "temporary-residence"
+  ],
+  "effectiveFrom": "2026-06-12",
+  "status": "open",
+  "currency": "EUR",
+  "leapDayBirthday": "unsettled",
+  "sources": [
+    {
+      "id": "ep-act-foreign-national",
+      "url": "https://www.irishstatutebook.ie/eli/2024/act/17/enacted/en/html",
+      "title": "Employment Permits Act 2024, ss. 2(1) and 7(1): a foreign national, a non-national within the Immigration Act 1999, may be in employment in the State only under an employment permit",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ep-act-eu-treaty-rights",
+      "url": "https://www.irishstatutebook.ie/eli/2024/act/17/enacted/en/html",
+      "title": "Employment Permits Act 2024, s. 8(1)(e): section 7 does not apply to a foreign national entitled to enter and work in the State under the treaties governing the European Union",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "immigration-act-1999-non-national",
+      "url": "https://www.irishstatutebook.ie/eli/1999/act/22/section/1/enacted/en/html",
+      "title": "Immigration Act 1999, s. 1(1): a non-national is an alien under the Aliens Act 1935, other than an alien whom an order under s. 10 of that Act exempts from all of it",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "aliens-exemption-order-1999",
+      "url": "https://www.irishstatutebook.ie/eli/1999/si/97/made/en/html",
+      "title": "Aliens (Exemption) Order 1999 (S.I. No. 97 of 1999), art. 3: every citizen of the United Kingdom is exempted from all the provisions of the Aliens Act 1935",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "dete-who-needs-a-permit",
+      "url": "https://enterprise.gov.ie/en/what-we-do/workplace-and-skills/employment-permits/employment-permit-eligibility/who-needs-an-employment-permit-/",
+      "title": "Department of Enterprise, Tourism and Employment: non-EEA nationals need an employment permit; Swiss nationals work in Ireland without one under the 2001 Act on free movement with Switzerland",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ep-act-csep",
+      "url": "https://www.irishstatutebook.ie/eli/2024/act/17/enacted/en/html",
+      "title": "Employment Permits Act 2024, ss. 9(2)(a) and 22: the critical skills employment permit for skills in short supply; at least half the employer's staff EEA, Swiss or UK nationals, with exceptions",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ep-regs-csep",
+      "url": "https://www.irishstatutebook.ie/eli/2024/si/444/made/en/html",
+      "title": "Employment Permits Regulations 2024 (S.I. No. 444 of 2024), regs. 27 to 29: a relevant degree (or experience above the higher threshold), an offer of at least 2 years and 20 hours a week",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ep-regs-mar-2026",
+      "url": "https://www.irishstatutebook.ie/eli/2025/si/643/made/en/html",
+      "title": "S.I. No. 643 of 2025, regs. 2, 4 to 7 and 21 (Schedule 8, Part 1), from 1 March 2026: €40,904, €36,848 with a level 8 degree of the last 12 months, €68,911, hourly rates, public sector pay agreements",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "csol-schedule-3-may-2026",
+      "url": "https://www.irishstatutebook.ie/eli/2026/si/213/made/en/html",
+      "title": "S.I. No. 213 of 2026, reg. 4, made 13 May 2026: a new Schedule 3, the critical skills occupations, including ICT professionals in SOC 2133 to 2139 such as software developers",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "csol-schedule-3-october-2026",
+      "url": "https://www.irishstatutebook.ie/eli/2026/si/558/made/en/html",
+      "title": "S.I. No. 558 of 2026, regs. 6 and 7, made 28 October 2026: Schedule 3 and the ineligible list in Schedule 4 replaced again; ICT professionals in SOC 2133 to 2139 stay on Schedule 3",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "dete-csep",
+      "url": "https://enterprise.gov.ie/en/what-we-do/workplace-and-skills/employment-permits/permit-types/critical-skills-employment-permit/",
+      "title": "Department of Enterprise, Tourism and Employment, Critical Skills Employment Permit: €40,904, €36,848, €68,911, public sector pay agreements, 2-year job offer, 50% rule, immediate family reunification",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "frp-nuclear-family",
+      "url": "https://www.irishimmigration.ie/wp-content/uploads/2026/06/Family-Reunification-Policy-12-June-2026.pdf",
+      "title": "Policy Document on Non-EEA Family Reunification (12 June 2026), paras. 1.5.1, 6.3 and 10.8: a Critical Skills Employment Permit holder's spouse, partner and minor children may come on arrival",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "frp-spouse",
+      "url": "https://www.irishimmigration.ie/wp-content/uploads/2026/06/Family-Reunification-Policy-12-June-2026.pdf",
+      "title": "Family Reunification Policy, paras. 7.5 and 7.10: a spouse or civil partner must be 18 or over at application; a recognised civil partnership counts as marriage",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "frp-de-facto-partner",
+      "url": "https://www.irishimmigration.ie/wp-content/uploads/2026/06/Family-Reunification-Policy-12-June-2026.pdf",
+      "title": "Family Reunification Policy, glossary and paras. 7.12 to 7.13: a de facto partner 18 or over, in a relationship akin to marriage with at least 2 years of cohabitation before applying",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "frp-children",
+      "url": "https://www.irishimmigration.ie/wp-content/uploads/2026/06/Family-Reunification-Policy-12-June-2026.pdf",
+      "title": "Family Reunification Policy, paras. 7.21, 7.22, 7.24, 7.26 and 8.2: biological, adopted or step-children, unmarried and under 18; stepchildren must be full-time members of the household",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "isd-family-reunification-june-2026",
+      "url": "https://www.irishimmigration.ie/amendments-to-policy-on-non-eea-family-reunification/",
+      "title": "Immigration Service Delivery: amendments to the non-EEA Family Reunification Policy take effect from 12 June 2026",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ep-regs-fees",
+      "url": "https://www.irishstatutebook.ie/eli/2024/si/444/made/en/html",
+      "title": "S.I. No. 444 of 2024, reg. 7, Schedule 1: €1,000 for a critical skills employment permit; no fee for a registered charity or an EEA, Swiss or UK national's spouse or civil partner; 90% back on refusal",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "dete-fees",
+      "url": "https://enterprise.gov.ie/en/what-we-do/workplace-and-skills/employment-permits/fees/",
+      "title": "Department of Enterprise, Tourism and Employment, Fees for Employment Permits: €1,000 for a Critical Skills Employment Permit of up to 24 months",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "registration-fee",
+      "url": "https://www.irishstatutebook.ie/eli/2025/si/421/made/en/html",
+      "title": "Immigration Act 2004 (Registration Certificate Fee) Regulations 2025 (S.I. No. 421 of 2025), regs. 3 and 4: €300 for a registration certificate, waived for a person under the age of 18 years",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "dete-stamp-4",
+      "url": "https://enterprise.gov.ie/en/what-we-do/workplace-and-skills/employment-permits/permit-types/critical-skills-employment-permit/",
+      "title": "Department of Enterprise, Tourism and Employment, Critical Skills Employment Permit, renewals: a holder can apply for a Stamp 4 permission, granted for 2 years, then renewable",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "ie",
+      "number": 1
+    }
+  ],
+  "countrySets": [
+    {
+      "id": "eu-free-movement",
+      "number": 1
+    }
+  ],
+  "requirements": [
+    {
+      "id": "not-eu-eea-swiss-or-british-citizen",
+      "title": "Not a citizen of Ireland, another EU or EEA state, Switzerland or the United Kingdom: they work in Ireland without an employment permit",
+      "expression": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "intersects",
+              "list": {
+                "op": "fact",
+                "key": "principal.citizenships"
+              },
+              "set": {
+                "op": "set",
+                "id": "eu-free-movement"
+              }
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "intersects",
+              "list": {
+                "op": "fact",
+                "key": "principal.citizenships"
+              },
+              "set": {
+                "op": "tokens",
+                "values": [
+                  "GB"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "sources": [
+        "ep-act-foreign-national",
+        "ep-act-eu-treaty-rights",
+        "immigration-act-1999-non-national",
+        "aliens-exemption-order-1999",
+        "dete-who-needs-a-permit"
+      ]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "job-offer",
+      "title": "A 2-year job offer of 20+ hours a week from an employer whose staff are at least half EEA, Swiss or UK nationals",
+      "evidence": [
+        "principal.monthlyActiveIncome"
+      ],
+      "sources": [
+        "ep-act-csep",
+        "ep-regs-csep",
+        "dete-csep"
+      ]
+    },
+    {
+      "id": "pay",
+      "title": "Pay of at least €40,904 a year and €20.17 an hour in a critical skills occupation, or at least €68,911 a year and €33.98 an hour in any other eligible job",
+      "evidence": [
+        "principal.monthlyActiveIncome"
+      ],
+      "sources": [
+        "ep-regs-mar-2026",
+        "csol-schedule-3-may-2026",
+        "csol-schedule-3-october-2026"
+      ]
+    },
+    {
+      "id": "pay-recent-graduate",
+      "title": "Critical skills occupation, not a nurse, midwife or radiographer: €36,848 a year and €18.17 an hour are enough with a degree at level 8 or higher, or equivalent, from the 12 months before applying",
+      "evidence": [
+        "principal.monthlyActiveIncome",
+        "principal.educationLevel"
+      ],
+      "sources": [
+        "ep-regs-mar-2026"
+      ]
+    },
+    {
+      "id": "pay-public-sector-agreement",
+      "title": "A critical skills job bound by a public sector pay agreement, or by a Workplace Relations Commission agreement linked to one, needs that agreement's pay instead of the €40,904 or €36,848 threshold",
+      "evidence": [
+        "principal.monthlyActiveIncome"
+      ],
+      "sources": [
+        "ep-regs-mar-2026",
+        "dete-csep"
+      ]
+    },
+    {
+      "id": "qualification",
+      "title": "A relevant third level degree (a nurse, midwife or radiographer: a degree or diploma their registration board accepts); for a job paying €68,911 or more, a relevant degree or the experience",
+      "evidence": [
+        "principal.educationLevel"
+      ],
+      "sources": [
+        "ep-regs-csep",
+        "ep-regs-mar-2026",
+        "dete-csep"
+      ]
+    }
+  ],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse or civil partner aged 18 or over",
+      "path": [
+        "spouse"
+      ],
+      "condition": {
+        "op": "gte",
+        "left": {
+          "op": "fact",
+          "key": "person.ageYears"
+        },
+        "right": {
+          "op": "int",
+          "value": 18
+        }
+      },
+      "sources": [
+        "frp-nuclear-family",
+        "frp-spouse",
+        "isd-family-reunification-june-2026"
+      ]
+    },
+    {
+      "id": "partner",
+      "title": "De facto partner aged 18 or over, after 2 years together; a shorter relationship, which may be a civil partnership: possible",
+      "path": [
+        "partner"
+      ],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "since",
+                "date": {
+                  "op": "fact",
+                  "key": "edge.start"
+                },
+                "duration": "P2Y"
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": [
+        "frp-nuclear-family",
+        "frp-spouse",
+        "frp-de-facto-partner"
+      ]
+    },
+    {
+      "id": "children",
+      "title": "Children under 18 and unmarried, biological or adopted; that Irish law recognises an adoption is not checked",
+      "path": [
+        "child"
+      ],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          }
+        ]
+      },
+      "sources": [
+        "frp-nuclear-family",
+        "frp-children"
+      ]
+    },
+    {
+      "id": "spouse-children",
+      "title": "The spouse or civil partner's children under 18 and unmarried, as stepchildren; living full time in the household is not checked",
+      "path": [
+        "spouse",
+        "child"
+      ],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          }
+        ]
+      },
+      "sources": [
+        "frp-nuclear-family",
+        "frp-children"
+      ]
+    }
+  ],
+  "costs": [
+    {
+      "id": "application-fee",
+      "title": "Permit application fee, paid by the applicant, 90% returned on refusal or withdrawal; not checked: no fee for a registered charity or for the spouse or civil partner of an EEA, Swiss or UK national",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 100000,
+        "currency": "EUR"
+      },
+      "appliesTo": "principal",
+      "sources": [
+        "ep-regs-fees",
+        "dete-fees"
+      ]
+    },
+    {
+      "id": "registration-fee",
+      "title": "Fee for the registration certificate (IRP card) on registering the immigration permission, €300; the waivers in reg. 4 are not checked",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 30000,
+        "currency": "EUR"
+      },
+      "appliesTo": "principal",
+      "sources": [
+        "registration-fee"
+      ]
+    },
+    {
+      "id": "registration-fee-adult-dependant",
+      "title": "Fee for the registration certificate of each family member aged 18 or over, €300; waived for a person under the age of 18 years",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 30000,
+        "currency": "EUR"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "gte",
+        "left": {
+          "op": "fact",
+          "key": "person.ageYears"
+        },
+        "right": {
+          "op": "int",
+          "value": 18
+        }
+      },
+      "sources": [
+        "registration-fee"
+      ]
+    }
+  ],
+  "durations": [
+    {
+      "id": "permit",
+      "title": "Critical Skills Employment Permit, issued for up to 24 months for a job offer of at least 2 years",
+      "min": "P0D",
+      "max": "P24M",
+      "sources": [
+        "dete-fees",
+        "ep-regs-csep"
+      ]
+    },
+    {
+      "id": "stamp-4",
+      "title": "Stamp 4 permission after the permit, to live and work without an employment permit: 2 years, then renewable",
+      "min": "P2Y",
+      "max": "P2Y",
+      "sources": [
+        "dete-stamp-4"
+      ]
+    }
+  ]
+}

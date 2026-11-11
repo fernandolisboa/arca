@@ -1,0 +1,669 @@
+{
+  "schemaVersion": 1,
+  "routeId": "gb-skilled-worker",
+  "number": 2,
+  "title": "Skilled Worker visa for the United Kingdom: a sponsored job in an eligible occupation, usually paying at least £41,700 a year and the going rate, with English at B2",
+  "country": "GB",
+  "tags": [
+    "work",
+    "temporary-residence"
+  ],
+  "effectiveFrom": "2026-04-08",
+  "corrects": 1,
+  "status": "open",
+  "currency": "GBP",
+  "leapDayBirthday": "march-1",
+  "leapDayBirthdaySources": [
+    "age-legal-capacity-scotland",
+    "family-law-reform-age"
+  ],
+  "sources": [
+    {
+      "id": "sw-age",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "title": "Immigration Rules, Appendix Skilled Worker, SW 1.3: the applicant must be aged 18 or over on the date of application",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "sw-afghanistan",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "title": "Appendix Skilled Worker, SW 3.3: a person must not be applying for entry clearance as a Skilled Worker as a national or citizen of Afghanistan",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "visa-brake-hc-1691",
+      "url": "https://www.gov.uk/government/publications/statement-of-changes-to-the-immigration-rules-hc-1619-5-march-2026/explanatory-memorandum-to-the-statement-of-changes-in-the-immigration-rules-hc-1691-5-march-2026-accessible",
+      "title": "Explanatory memorandum to Statement of Changes HC 1691, para. 5.3: Skilled Worker visa applications from main applicants who are nationals of Afghanistan are refused from 26 March 2026",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "sw-sponsorship-and-job",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "title": "Appendix Skilled Worker, SW 5.1 to 5.3: a valid Certificate of Sponsorship for the job, from a sponsor authorised for the Skilled Worker route and listed as A-rated",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "sw-salary",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "title": "Appendix Skilled Worker, SW 4.2 and the table after SW 4.4, option A: a salary of at least £41,700 per year and the going rate for the SOC 2020 occupation code",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "skilled-occupations",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-occupations",
+      "title": "Immigration Rules, Appendix Skilled Occupations, Tables 1 to 3: the eligible occupations, skilled to RQF level 6 or above, and their going rates",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "sw-occupation-lists",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "title": "Appendix Skilled Worker, SW 6.1 and 6.1A: Table 1, 2 or 3 of Appendix Skilled Occupations, the Immigration Salary List, or the Temporary Shortage List, certificate issued before 31 December 2026",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "sw-salary-lower-options",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "title": "Appendix Skilled Worker, table after SW 4.4, options B to E: £37,500 and 90% of the going rate (relevant PhD); £33,400 with a STEM PhD (80%), the Immigration Salary List or a new entrant (70%)",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "sw-english",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "title": "Appendix Skilled Worker, SW 4.1 and 7.1 to 7.2: English at CEFR level B2 in reading, writing, speaking and listening, shown as Appendix English Language specifies",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "english-b2-hc-1333",
+      "url": "https://www.gov.uk/government/publications/statement-of-changes-to-the-immigration-rules-hc-1333-14-october-2025/explanatory-memorandum-to-the-statement-of-changes-to-the-immigration-rules-hc-1333-14-october-2025-accessible",
+      "title": "Explanatory memorandum to Statement of Changes HC 1333, paras. 5.22, 5.23 and 6.4: the Skilled Worker English requirement rises from B1 to B2 for first grants from 8 January 2026",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "sw-funds",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "title": "Appendix Skilled Worker, SW 15.2 and 15.3: from abroad, £1,270 held for 28 days, unless the A-rated sponsor certifies it will maintain and accommodate the applicant to that amount",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "sw-dependents",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "title": "Appendix Skilled Worker, SW 26.3, 29.1, 29.1A, 29.2 and 32A.1 to 32A.2: a dependent partner aged 18 or over and dependent children of a Skilled Worker sponsored for a job in Table 1, 2 or 3",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "sw-dependant-funds",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "title": "Appendix Skilled Worker, SW 33.2 to 33.4: £285 for a partner, £315 for the first child, £200 for each other child, on top of the worker's funds, unless the sponsor certifies",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "sw-dependants-job-tables",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "title": "Appendix Skilled Worker, SW 29.1A and 32A.2: a partner or child joins only a Skilled Worker sponsored for a job in Table 1, Table 2 or Table 3 of Appendix Skilled Occupations, save listed exceptions",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "sw-grant-period",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "title": "Appendix Skilled Worker, SW 18.1: permission until 14 days after the end date of the certificate of sponsorship, which may be up to 5 years after its start date",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "fees-table",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "title": "Home Office immigration and nationality fees, 8 October 2026, table 1, Skilled Worker from outside the UK: £819 for a certificate of three years or less, £1,618 for over three years, per person",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "health-surcharge",
+      "url": "https://www.gov.uk/healthcare-immigration-application/how-much-pay",
+      "title": "Pay for UK healthcare as part of your immigration application, how much you pay: £1,035 per year, or £776 per year for applicants under the age of 18 at the time of application",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "relationship-with-partner",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-relationship-with-partner",
+      "title": "Appendix Relationship with Partner, RWP 1.1 and 5.1: both partners 18 or over; if not married or civil partners, a relationship similar to marriage for at least 2 years",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "appendix-children",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-children",
+      "title": "Appendix Children, CHI 1.1, 1.2, 1A.1 and 3.2: under 18, or older after permission as a dependent child; no partner, living with a parent; both parents come unless one has sole responsibility",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "rules-introduction",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-introduction",
+      "title": "Immigration Rules, introduction, para. 5C and definitions: not for Irish citizens who need no leave; a partner is a spouse, civil or unmarried partner of 2 years; a parent is not a step-parent",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "immigration-act-1971",
+      "url": "https://www.legislation.gov.uk/ukpga/1971/77",
+      "title": "Immigration Act 1971, ss. 1(1), 2(1)(a) and 3ZA(1): British citizens have the right of abode; Irish citizens do not require leave to enter or remain",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "age-legal-capacity-scotland",
+      "url": "https://www.legislation.gov.uk/ukpga/1991/50/section/6",
+      "title": "Age of Legal Capacity (Scotland) Act 1991, s. 6: a person born on 29 February has their anniversary on 1 March in a year that is not a leap year",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "family-law-reform-age",
+      "url": "https://www.legislation.gov.uk/ukpga/1969/46/section/9",
+      "title": "Family Law Reform Act 1969, s. 9(1): a person attains an age at the commencement of the anniversary of their birth",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "gb",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "aged-18-or-over",
+      "title": "Aged 18 or over",
+      "expression": {
+        "op": "gte",
+        "left": {
+          "op": "fact",
+          "key": "principal.ageYears"
+        },
+        "right": {
+          "op": "int",
+          "value": 18
+        }
+      },
+      "sources": [
+        "sw-age"
+      ]
+    },
+    {
+      "id": "not-british-or-irish",
+      "title": "Not a British or Irish citizen: they live and work in the UK without a visa",
+      "expression": {
+        "op": "not",
+        "operand": {
+          "op": "intersects",
+          "list": {
+            "op": "fact",
+            "key": "principal.citizenships"
+          },
+          "set": {
+            "op": "tokens",
+            "values": [
+              "GB",
+              "IE"
+            ]
+          }
+        }
+      },
+      "sources": [
+        "immigration-act-1971",
+        "rules-introduction"
+      ]
+    },
+    {
+      "id": "not-applying-from-abroad-as-afghan",
+      "title": "Not applying from abroad as a citizen of Afghanistan (refused since 26 March 2026); a dual national, or someone switching from another permission inside the UK: possible",
+      "expression": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "intersects",
+              "list": {
+                "op": "fact",
+                "key": "principal.citizenships"
+              },
+              "set": {
+                "op": "tokens",
+                "values": [
+                  "AF"
+                ]
+              }
+            }
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "not",
+                "operand": {
+                  "op": "within",
+                  "list": {
+                    "op": "fact",
+                    "key": "principal.citizenships"
+                  },
+                  "set": {
+                    "op": "tokens",
+                    "values": [
+                      "AF"
+                    ]
+                  }
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "eq",
+                "left": {
+                  "op": "fact",
+                  "key": "principal.residenceCountry"
+                },
+                "right": {
+                  "op": "token",
+                  "value": "GB"
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": [
+        "sw-afghanistan",
+        "visa-brake-hc-1691"
+      ]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "sponsored-job",
+      "title": "A Certificate of Sponsorship from a licensed, A-rated employer for the job",
+      "evidence": [
+        "principal.monthlyActiveIncome"
+      ],
+      "sources": [
+        "sw-sponsorship-and-job"
+      ]
+    },
+    {
+      "id": "eligible-occupation",
+      "title": "A job in an eligible occupation: Table 1, 2 or 3 of Appendix Skilled Occupations, the Immigration Salary List, or the Temporary Shortage List with a certificate issued before 31 December 2026",
+      "evidence": [
+        "principal.educationLevel"
+      ],
+      "sources": [
+        "sw-occupation-lists",
+        "skilled-occupations"
+      ]
+    },
+    {
+      "id": "salary",
+      "title": "A salary of at least £41,700 a year and the going rate for the occupation (option A)",
+      "evidence": [
+        "principal.monthlyActiveIncome"
+      ],
+      "sources": [
+        "sw-salary",
+        "skilled-occupations"
+      ]
+    },
+    {
+      "id": "salary-lower-options",
+      "title": "Or a lower floor: £37,500 and 90% of the going rate with a relevant PhD; £33,400 with a STEM PhD (80%), a job on the Immigration Salary List, or as a new entrant (70%)",
+      "evidence": [
+        "principal.monthlyActiveIncome",
+        "principal.educationLevel"
+      ],
+      "sources": [
+        "sw-salary-lower-options"
+      ]
+    },
+    {
+      "id": "english-b2",
+      "title": "English at level B2 in reading, writing, speaking and listening, through an approved test, a degree taught in English or citizenship of a majority English-speaking country",
+      "evidence": [
+        "principal.citizenships",
+        "principal.educationLevel"
+      ],
+      "sources": [
+        "sw-english",
+        "english-b2-hc-1333"
+      ]
+    },
+    {
+      "id": "funds",
+      "title": "Savings held for 28 days: £1,270 for the worker, plus £285 for a partner, £315 for the first child and £200 for each other child, unless the sponsor certifies it will maintain them",
+      "evidence": [
+        "unit.liquidAssets"
+      ],
+      "sources": [
+        "sw-funds",
+        "sw-dependant-funds"
+      ]
+    }
+  ],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse aged 18 or over, if the worker's job is in Table 1, 2 or 3 of Appendix Skilled Occupations (not checked: a Temporary Shortage List job brings no family)",
+      "path": [
+        "spouse"
+      ],
+      "condition": {
+        "op": "gte",
+        "left": {
+          "op": "fact",
+          "key": "person.ageYears"
+        },
+        "right": {
+          "op": "int",
+          "value": 18
+        }
+      },
+      "sources": [
+        "sw-dependents",
+        "relationship-with-partner",
+        "rules-introduction",
+        "sw-dependants-job-tables"
+      ]
+    },
+    {
+      "id": "partner",
+      "title": "Partner aged 18 or over, after 2 years in a relationship similar to marriage; a shorter one, which may be a civil partnership: possible; the job must be in Table 1, 2 or 3 (not checked)",
+      "path": [
+        "partner"
+      ],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "since",
+                "date": {
+                  "op": "fact",
+                  "key": "edge.start"
+                },
+                "duration": "P2Y"
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": [
+        "sw-dependents",
+        "relationship-with-partner",
+        "rules-introduction",
+        "sw-dependants-job-tables"
+      ]
+    },
+    {
+      "id": "children",
+      "title": "Children under 18 with no spouse or partner; living with the principal, the other parent coming too and a job in Table 1, 2 or 3 are not checked; an adult child: possible",
+      "path": [
+        "child"
+      ],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasPartner"
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "lt",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": [
+        "sw-dependents",
+        "appendix-children",
+        "rules-introduction",
+        "sw-dependants-job-tables"
+      ]
+    }
+  ],
+  "costs": [
+    {
+      "id": "visa-fee-up-to-3-years",
+      "title": "Visa fee from outside the UK for a certificate of sponsorship of three years or less, £819 (a job on the Immigration Salary List: £628); the alternative to the fee for over three years: possible",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 81900,
+        "currency": "GBP"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": [
+        "fees-table"
+      ]
+    },
+    {
+      "id": "visa-fee-up-to-3-years-dependant",
+      "title": "The same £819 fee for each partner or child, for a certificate of three years or less (Immigration Salary List: £628): possible",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 81900,
+        "currency": "GBP"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": [
+        "fees-table"
+      ]
+    },
+    {
+      "id": "visa-fee-over-3-years",
+      "title": "Visa application fee from outside the UK for a certificate of sponsorship of over three years, £1,618 (Immigration Salary List: £1,235), instead of the £819 fee: possible",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 161800,
+        "currency": "GBP"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": [
+        "fees-table"
+      ]
+    },
+    {
+      "id": "visa-fee-over-3-years-dependant",
+      "title": "The same £1,618 fee for each partner or child, for a certificate of over three years (Immigration Salary List: £1,235), instead of £819: possible",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 161800,
+        "currency": "GBP"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": [
+        "fees-table"
+      ]
+    },
+    {
+      "id": "health-surcharge",
+      "title": "Immigration health surcharge, £1,035 for each year of the visa; the total, this amount times the years granted, is not computed: possible",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 103500,
+        "currency": "GBP"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": [
+        "health-surcharge"
+      ]
+    },
+    {
+      "id": "health-surcharge-adult-dependant",
+      "title": "Immigration health surcharge of each partner or child aged 18 or over, £1,035 for each year of the visa, not multiplied here: possible",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 103500,
+        "currency": "GBP"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": [
+        "health-surcharge"
+      ]
+    },
+    {
+      "id": "health-surcharge-child",
+      "title": "Immigration health surcharge of each child under 18 at the time of application, £776 for each year of the visa, not multiplied here: possible",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 77600,
+        "currency": "GBP"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": [
+        "health-surcharge"
+      ]
+    }
+  ],
+  "durations": [
+    {
+      "id": "permission",
+      "title": "Permission until 14 days after the end date of the certificate of sponsorship, which is at most 5 years after its start date",
+      "min": "P0Y",
+      "max": "P5Y",
+      "sources": [
+        "sw-grant-period"
+      ]
+    }
+  ]
+}
