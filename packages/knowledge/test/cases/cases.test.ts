@@ -13,10 +13,10 @@ const packageDir = fileURLToPath(new URL('../..', import.meta.url));
 const familiesDir = join(packageDir, '..', '..', 'eval', 'families');
 
 describe('table-driven cases', () => {
+  // Every route version adds cases, and a full `pnpm check` shares the machine with other tasks.
   it('pass for every version in the knowledge base, with coverage', async () => {
     const run = await runCases(join(packageDir, 'data'), familiesDir, reproductionEntry);
     expect(run.problems).toEqual([]);
-    // Every route version adds cases, and a full `pnpm check` shares the machine with other tasks.
   }, 60_000);
 
   it('pass for every fixture route, with coverage', async () => {
