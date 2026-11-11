@@ -14,6 +14,7 @@ import { APIError, isAPIError } from 'better-auth/api';
 import { and, eq, gt, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import type { Logger } from '@arca/telemetry';
+import { attestsWithoutCertificates } from './attestation.js';
 import { accounts, type Auth } from './auth.js';
 import { sha256, type OwnerCode } from './enrollment.js';
 import { liveInvite } from './invites.js';
@@ -305,6 +306,11 @@ export function registration(
       return { ok: true, body, setCookies: answered.getSetCookie() };
     },
     verify: async (headers, { token, code, response }) => {
+      // The plugin calls the verifier itself, so the attestation is checked before it runs.
+      if (!attestsWithoutCertificates(response.response.attestationObject)) {
+        logger.info({ errorName: 'RegistrationRefused' });
+        return { ok: false, reason: 'refused' };
+      }
       const ceremony: Parameters<RegistrationHooks['within']>[0] = {
         tokenHash: sha256(token),
         code,

@@ -1,5 +1,6 @@
 import { createHash, generateKeyPairSync, randomBytes, sign } from 'node:crypto';
 import type { PasskeyAssertion, PasskeyAttestation } from '@arca/api-contract/routes';
+import { isoCBOR } from '@simplewebauthn/server/helpers';
 
 const sha256 = (data: Buffer | string) => createHash('sha256').update(data).digest();
 
@@ -32,10 +33,33 @@ function noneAttestation(authData: Buffer): Buffer {
   ]);
 }
 
+/** An attestation statement as an authenticator would send it, or one a test forged. */
+export interface AttestationStatement {
+  readonly fmt: string;
+  readonly attStmt: Readonly<Record<string, string | number | Uint8Array | Uint8Array[]>>;
+}
+
+function attestationObject({ fmt, attStmt }: AttestationStatement, authData: Buffer): Buffer {
+  return Buffer.from(
+    isoCBOR.encode(
+      new Map<string, unknown>([
+        ['fmt', fmt],
+        ['attStmt', new Map(Object.entries(attStmt))],
+        ['authData', new Uint8Array(authData)],
+      ]) as Parameters<typeof isoCBOR.encode>[0],
+    ),
+  );
+}
+
 export interface AttestationOptions {
   readonly challenge: string;
   readonly origin: string;
   readonly userVerified?: boolean;
+  /**
+   * Absent, the "none" format a synced passkey sends; "self" is the packed statement the new key
+   * signs itself; anything else is sent as given.
+   */
+  readonly statement?: 'self' | AttestationStatement;
   /** What the authenticator reports for the PRF extension; absent, it reports nothing. */
   readonly prfEnabled?: boolean;
 }
@@ -66,6 +90,7 @@ export function softwarePasskey(rpId: string) {
       origin,
       userVerified = true,
       prfEnabled,
+      statement,
     }: AttestationOptions): PasskeyAttestation {
       // UP, UV when verified, backup eligible and backed up, attested credential data.
       const flags = 0x01 | (userVerified ? 0x04 : 0) | 0x08 | 0x10 | 0x40;
@@ -83,13 +108,22 @@ export function softwarePasskey(rpId: string) {
       const clientDataJSON = Buffer.from(
         JSON.stringify({ type: 'webauthn.create', challenge, origin, crossOrigin: false }),
       );
+      const signed = Buffer.concat([authenticatorData, sha256(clientDataJSON)]);
+      const self = () => ({
+        fmt: 'packed',
+        attStmt: { alg: -7, sig: new Uint8Array(sign('sha256', signed, privateKey)) },
+      });
+      const attested =
+        statement === undefined
+          ? noneAttestation(authenticatorData)
+          : attestationObject(statement === 'self' ? self() : statement, authenticatorData);
       return {
         id: credentialId,
         rawId: credentialId,
         type: 'public-key',
         response: {
           clientDataJSON: clientDataJSON.toString('base64url'),
-          attestationObject: noneAttestation(authenticatorData).toString('base64url'),
+          attestationObject: attested.toString('base64url'),
           transports: ['internal', 'hybrid'],
         },
         authenticatorAttachment: 'platform',
