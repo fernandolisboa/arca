@@ -438,8 +438,9 @@ test('the seed admin analyses a version with AI on demand and watches it to the 
   const { version } = await eb5InEffect(page);
 
   await page.goto(`${databaseServer.origin}/knowledge`);
-  await page
-    .getByRole('region', { name: 'Versões propostas' })
+  const proposed = page.getByRole('region', { name: 'Versões propostas' });
+  await proposed.getByRole('button', { name: 'Estados Unidos', exact: true }).click();
+  await proposed
     .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
     .click();
   // Opening the screen may have started this version's check by itself; the button waits for it.
