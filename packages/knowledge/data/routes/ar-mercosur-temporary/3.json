@@ -41,14 +41,14 @@
     {
       "id": "ley-25871-serious-crimes",
       "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
-      "title": "Ley 25.871, article 29, c) and closing paragraph: a conviction, final or not, or a record (an indictment or committal to trial) for a crime punished with three years of prison or more",
+      "title": "Ley 25.871, article 29, c), and closing paragraphs: a conviction, final or not, or a record, for a crime punished with three years of prison or more; the exceptional dispensation",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
     {
       "id": "ley-25871-lesser-crimes",
       "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
-      "title": "Ley 25.871, article 29, d) and closing paragraph: a conviction, final or not, in Argentina or abroad, for a crime punished with less than three years of prison",
+      "title": "Ley 25.871, article 29, d), and closing paragraphs: a conviction, final or not, for a crime punished with less than three years of prison; the exceptional dispensation",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
@@ -209,13 +209,13 @@
   "assessments": [
     {
       "id": "serious-crime",
-      "title": "No conviction, final or not, and no record (an indictment or committal to trial), in Argentina or abroad, for a crime Argentine law punishes with three years of prison or more",
+      "title": "No conviction, final or not, and no record (an indictment or committal to trial), anywhere, for a crime punished with three years of prison or more, unless the directorate grants a dispensation",
       "evidence": ["principal.visaRefusals"],
       "sources": ["ley-25871-serious-crimes"]
     },
     {
       "id": "lesser-crime-conviction",
-      "title": "No conviction, final or not, in Argentina or abroad, for a crime Argentine law punishes with less than three years of prison",
+      "title": "No conviction, final or not, in Argentina or abroad, for a crime punished with less than three years of prison, unless the directorate grants a dispensation",
       "evidence": ["principal.visaRefusals"],
       "sources": ["ley-25871-lesser-crimes"]
     },

@@ -25,6 +25,9 @@ The first audit by the runbook ([#358](https://github.com/fernandolisboa/arca/is
   - Missing, now a duration: two years, not extendable.
   - Missing, now an assessment: the certificates of no criminal records of article 4.1, c) to e), of the agreement. No fact records them, so it shows the principal's visa refusals.
   - Corrected: the leap-day convention. Articles 339 to 342 of the Civil Code count periods, not ages, and no text read says when a person born on 29 February turns a year older, so `leapDayBirthday` is now `unsettled` and those articles are no longer cited.
-  - Sources: the agreement split one per provision.
+  - Corrected: the spouse's children. Article 4, principle 10, of Ley N.º 6984 names only the migrant's own children, so they now show as possible, not as family members.
+  - Sources: the agreement split one per provision, plus its opening, which names its six parties.
   - The cases file starts from version 2's cases; every case that met the requirement now reads "needs assessment".
+- **Check loop:** runs [43061828774](https://github.com/fernandolisboa/arca/actions/runs/43061828774) (5 of 10 items match), [43064316443](https://github.com/fernandolisboa/arca/actions/runs/43064316443) (4 of 10) and [43065678291](https://github.com/fernandolisboa/arca/actions/runs/43065678291) (5 of 10), then FINAL_RUN. Fixed on the way: the Ecuadorian fee written as two jornales of PYG 117,077; Ley N.º 6984 cited by its principle 10 by name. Left over:
+  - `checker-gap`: `dependent:spouse`, `dependent:children` and `dependent:parents`, because the passage picker does not reach article 4, principle 10, of the long Ley N.º 6984 page, and the restriction to principals from the agreement's other parties joins its opening to article 9.2; `dependent:spouse-children` and `cost:residence-fee-family`, possible only because no text read names them, an absence no quote can show.
 - **Watch next:** the jornal, which follows the minimum wage decree (the last took effect on 2026-07-01); a new fee table is a new version.
