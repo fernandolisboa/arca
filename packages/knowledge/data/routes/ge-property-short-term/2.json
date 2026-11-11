@@ -34,7 +34,7 @@
     {
       "id": "aliens-law-lawful-stay",
       "url": "https://matsne.gov.ge/en/document/view/2278806?publication=23",
-      "title": "Law on the Legal Status of Aliens, Article 14 – general conditions for issuing a residence permit, 1 to 1^4: a lawful stay, with the stays that do not count",
+      "title": "Law on the Legal Status of Aliens, Article 14 – Body issuing Georgian residence permits and general conditions for issuing a residence permit, 1 to 1^4: a lawful stay",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
@@ -239,7 +239,7 @@
     },
     {
       "id": "family-service-fee",
-      "title": "Service fee for deciding each family member's permit application on the 30th calendar day: GEL 300 (GEL 450 on the 20th day, GEL 600 on the 10th)",
+      "title": "Each family member applies for the same short-term permit, with the same service fee: GEL 300 for a decision on the 30th calendar day (GEL 450 on the 20th, GEL 600 on the 10th)",
       "kind": "fee",
       "amount": {
         "op": "convert",

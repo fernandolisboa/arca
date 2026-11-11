@@ -206,7 +206,7 @@
     },
     {
       "id": "contract",
-      "title": "An employment contract, or a contract to conclude one, of at least 6 months for the statutory weekly working hours",
+      "title": "An employment contract, or a contract to conclude one, of at least 6 months for the statutory weekly working hours (the portal's document list says 6 months; its summary still says one year)",
       "evidence": ["principal.monthlyActiveIncome"],
       "sources": ["aliens-act-blue-card-contract", "ipc-blue-card"]
     },

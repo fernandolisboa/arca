@@ -252,7 +252,7 @@
     },
     {
       "id": "partner",
-      "title": "Cohabiting partner over 18 after 2 years living together; after 1.5 to 2 years, or in a registered partnership: possible",
+      "title": "Cohabiting partner over 18: SIRI asks, as a rule, for at least 1.5 to 2 years living together, so 2 years or more counts, and 1.5 to 2 years, or a registered partnership, is possible",
       "path": ["partner"],
       "condition": {
         "op": "all",
