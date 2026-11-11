@@ -6,7 +6,7 @@ import {
   type ResolvedMode,
   type ThemeId,
   axes,
-  fontFamilies,
+  fontFaces,
   fontPairs,
   highContrast,
   mark,
@@ -81,23 +81,30 @@ function packageJson(name: string, file: string): unknown {
 }
 
 /**
- * The `@font-face` rules of every family (spec 0006, R2 and R4): latin and latin-ext only, each
- * with the `unicode-range` its package's unicode.json gives, so a browser fetches latin-ext only
- * for a page that needs it. Vite emits the files as hashed assets.
+ * The `@font-face` rules of every face (spec 0006, R2 and R4): latin and latin-ext only, each with
+ * the `unicode-range` its package's unicode.json gives, so a browser fetches latin-ext only for a
+ * page that needs it. A family that ships a single subset has no range, so its one file serves
+ * every page. Vite emits the files as hashed assets.
  */
-function fontFaces(): string[] {
-  return fontFamilies().flatMap(({ family, source, weight }) => {
+function fontFaceRules(): string[] {
+  return fontFaces().flatMap(({ family, source, weight }) => {
     const ranges = packageJson(source.package, 'unicode.json') as Record<string, string>;
     const metadata = packageJson(source.package, 'metadata.json') as {
+      subsets: readonly string[];
       variable?: { wght?: { min: string; max: string } };
     };
     const wght = metadata.variable?.wght;
     if (source.kind === 'variable' && wght === undefined) {
       throw new Error(`${source.package} has no wght axis`);
     }
-    return subsets.map((subset) => {
+    const shipped = subsets.filter((subset) => metadata.subsets.includes(subset));
+    if (!shipped.includes('latin')) throw new Error(`${source.package} has no latin subset`);
+    const singleSubset = metadata.subsets.length === 1;
+    return shipped.map((subset) => {
       const range = ranges[subset];
-      if (range === undefined) throw new Error(`${source.package} has no ${subset} subset`);
+      if (range === undefined && !singleSubset) {
+        throw new Error(`${source.package} has no ${subset} range`);
+      }
       const file =
         source.kind === 'variable'
           ? `${source.id}-${subset}-wght-normal.woff2`
@@ -110,7 +117,7 @@ function fontFaces(): string[] {
         'font-weight': wght === undefined ? String(weight) : `${wght.min} ${wght.max}`,
         // Relative to src/themes.css: Vite resolves relative url() paths, not package names.
         src: `url('../node_modules/${source.package}/files/${file}') format('woff2')`,
-        'unicode-range': range,
+        ...(range === undefined ? {} : { 'unicode-range': range }),
       });
     });
   });
@@ -131,7 +138,7 @@ export function renderThemesCss(): string {
   };
   const parts: string[] = [
     '/* Generated from packages/ui/src/theme by `pnpm --filter @arca/ui themes`. Do not edit. */',
-    ...fontFaces(),
+    ...fontFaceRules(),
     block(':root', {
       ...paletteDeclarations(palettes[defaults.theme][defaults.mode], defaults.mode),
       ...fontDeclarations(defaults.font),

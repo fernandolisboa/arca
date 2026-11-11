@@ -235,6 +235,22 @@
 }
 
 @font-face {
+  font-family: 'OpenDyslexic';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('../node_modules/@fontsource/opendyslexic/files/opendyslexic-latin-700-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('../node_modules/@fontsource/opendyslexic/files/opendyslexic-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
   font-family: 'IBM Plex Sans';
   font-style: normal;
   font-display: swap;
@@ -862,6 +878,15 @@
   --arca-font-body: 'Atkinson Hyperlegible Next', sans-serif;
   --arca-font-body-weight: 400;
   --arca-font-numeric: 'Atkinson Hyperlegible Next', sans-serif;
+  --arca-font-numeric-weight: 400;
+}
+
+[data-font="dyslexic"] {
+  --arca-font-display: 'OpenDyslexic', sans-serif;
+  --arca-font-display-weight: 700;
+  --arca-font-body: 'OpenDyslexic', sans-serif;
+  --arca-font-body-weight: 400;
+  --arca-font-numeric: 'OpenDyslexic', sans-serif;
   --arca-font-numeric-weight: 400;
 }
 

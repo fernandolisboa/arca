@@ -20,6 +20,7 @@ export const axes = {
       'geometric',
       'friendly',
       'readable',
+      'dyslexic',
       'technical',
     ],
     default: 'clean',
