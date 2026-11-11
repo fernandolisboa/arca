@@ -4,12 +4,14 @@
   "number": 3,
   "title": "Uruguayan permanent residence for nationals of Mercosur member and associated states",
   "country": "UY",
-  "tags": ["regional-agreement", "permanent-residence"],
+  "tags": [
+    "regional-agreement",
+    "permanent-residence"
+  ],
   "effectiveFrom": "2023-02-17",
   "status": "open",
   "currency": "UYU",
-  "leapDayBirthday": "feb-28",
-  "leapDayBirthdaySources": ["codigo-civil-majority"],
+  "leapDayBirthday": "unsettled",
   "sources": [
     {
       "id": "ley-18250-mercosur",
@@ -144,7 +146,19 @@
         },
         "set": {
           "op": "tokens",
-          "values": ["AR", "BO", "BR", "CL", "CO", "EC", "GY", "PE", "PY", "SR", "VE"]
+          "values": [
+            "AR",
+            "BO",
+            "BR",
+            "CL",
+            "CO",
+            "EC",
+            "GY",
+            "PE",
+            "PY",
+            "SR",
+            "VE"
+          ]
         }
       },
       "sources": [
@@ -159,21 +173,33 @@
     {
       "id": "no-denial-ground",
       "title": "No charge or conviction for an intentional common crime punished with more than two years of prison, and no repeated offending, unless five years have passed since the sentence",
-      "evidence": ["principal.visaRefusals"],
-      "sources": ["ley-18250-denial", "decreto-45-2023-requirements"]
+      "evidence": [
+        "principal.visaRefusals"
+      ],
+      "sources": [
+        "ley-18250-denial",
+        "decreto-45-2023-requirements"
+      ]
     },
     {
       "id": "no-entry-refusal-ground",
       "title": "No expulsion or re-entry ban in force, no conviction for trafficking, laundering or drug or arms trafficking, and no crime against humanity",
-      "evidence": ["principal.visaRefusals"],
-      "sources": ["ley-18250-entry-refusal", "decreto-45-2023-requirements"]
+      "evidence": [
+        "principal.visaRefusals"
+      ],
+      "sources": [
+        "ley-18250-entry-refusal",
+        "decreto-45-2023-requirements"
+      ]
     }
   ],
   "dependents": [
     {
       "id": "spouse",
       "title": "Spouse who depends on a principal from Argentina, Bolivia, Brazil, Chile or Paraguay; others: possible",
-      "path": ["spouse"],
+      "path": [
+        "spouse"
+      ],
       "condition": {
         "op": "any",
         "operands": [
@@ -188,7 +214,13 @@
                 },
                 "set": {
                   "op": "tokens",
-                  "values": ["AR", "BO", "BR", "CL", "PY"]
+                  "values": [
+                    "AR",
+                    "BO",
+                    "BR",
+                    "CL",
+                    "PY"
+                  ]
                 }
               },
               {
@@ -202,12 +234,18 @@
           }
         ]
       },
-      "sources": ["ley-17927-family", "ley-18250-family", "decreto-45-2023-reciprocity"]
+      "sources": [
+        "ley-17927-family",
+        "ley-18250-family",
+        "decreto-45-2023-reciprocity"
+      ]
     },
     {
       "id": "partner",
       "title": "Partner of five years or more, who counts only once a court has recognised the union and the ruling is registered, which is not recorded: possible",
-      "path": ["partner"],
+      "path": [
+        "partner"
+      ],
       "condition": {
         "op": "all",
         "operands": [
@@ -224,12 +262,19 @@
           }
         ]
       },
-      "sources": ["ley-17927-family", "ley-18250-family", "ley-18246", "decreto-394-2009"]
+      "sources": [
+        "ley-17927-family",
+        "ley-18250-family",
+        "ley-18246",
+        "decreto-394-2009"
+      ]
     },
     {
       "id": "children",
       "title": "Unmarried children under 18 who depend on a principal from Argentina, Bolivia, Brazil, Chile or Paraguay; adults only with a disability, which is not recorded: possible",
-      "path": ["child"],
+      "path": [
+        "child"
+      ],
       "condition": {
         "op": "all",
         "operands": [
@@ -268,7 +313,13 @@
                         },
                         "set": {
                           "op": "tokens",
-                          "values": ["AR", "BO", "BR", "CL", "PY"]
+                          "values": [
+                            "AR",
+                            "BO",
+                            "BR",
+                            "CL",
+                            "PY"
+                          ]
                         }
                       },
                       {
@@ -296,7 +347,10 @@
     {
       "id": "spouse-children",
       "title": "The spouse's unmarried children, whom article 10 of the migration law does not name, so they count only as family members under the agreements, which is not settled: possible",
-      "path": ["spouse", "child"],
+      "path": [
+        "spouse",
+        "child"
+      ],
       "condition": {
         "op": "all",
         "operands": [
@@ -312,12 +366,17 @@
           }
         ]
       },
-      "sources": ["ley-17927-family", "ley-18250-family"]
+      "sources": [
+        "ley-17927-family",
+        "ley-18250-family"
+      ]
     },
     {
       "id": "parents",
       "title": "Parents who depend on a principal from Argentina, Bolivia, Brazil, Chile or Paraguay; others: possible",
-      "path": ["parent"],
+      "path": [
+        "parent"
+      ],
       "condition": {
         "op": "any",
         "operands": [
@@ -332,7 +391,13 @@
                 },
                 "set": {
                   "op": "tokens",
-                  "values": ["AR", "BO", "BR", "CL", "PY"]
+                  "values": [
+                    "AR",
+                    "BO",
+                    "BR",
+                    "CL",
+                    "PY"
+                  ]
                 }
               },
               {
@@ -346,7 +411,11 @@
           }
         ]
       },
-      "sources": ["ley-17927-family", "ley-18250-family", "decreto-45-2023-reciprocity"]
+      "sources": [
+        "ley-17927-family",
+        "ley-18250-family",
+        "decreto-45-2023-reciprocity"
+      ]
     }
   ],
   "costs": [],
