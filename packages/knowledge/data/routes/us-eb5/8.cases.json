@@ -5,19 +5,7 @@
       "id": "blended-family-capital-covered",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1",
-          "p2",
-          "p3",
-          "p4",
-          "p5",
-          "p6",
-          "p7",
-          "p8",
-          "p9",
-          "p10",
-          "p11"
-        ],
+        "members": ["p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10", "p11"],
         "people": [
           {
             "id": "p1",
@@ -34,13 +22,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p2",
@@ -57,13 +39,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p3",
@@ -80,13 +56,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p4",
@@ -103,13 +73,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p5",
@@ -126,13 +90,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p6",
@@ -149,13 +107,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p7",
@@ -172,13 +124,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p8",
@@ -195,13 +141,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p9",
@@ -218,13 +158,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p10",
@@ -241,13 +175,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p11",
@@ -264,22 +192,13 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           }
         ],
         "relationships": [
           {
             "kind": "spouse",
-            "people": [
-              "p1",
-              "p2"
-            ],
+            "people": ["p1", "p2"],
             "start": "2015-04-15",
             "end": "none"
           },
@@ -337,10 +256,7 @@
           },
           {
             "kind": "spouse",
-            "people": [
-              "p9",
-              "p10"
-            ],
+            "people": ["p9", "p10"],
             "start": "2025-08-08",
             "end": "none"
           },
@@ -378,15 +294,8 @@
       "factsAsOf": "2026-10-01",
       "expected": {
         "status": "needs_assessment",
-        "dependents": [
-          "p2",
-          "p3",
-          "p5",
-          "p7"
-        ],
-        "possibleDependents": [
-          "p6"
-        ],
+        "dependents": ["p2", "p3", "p5", "p7"],
+        "possibleDependents": ["p6"],
         "missingFacts": []
       }
     },
@@ -394,19 +303,7 @@
       "id": "blended-family-capital-short",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1",
-          "p2",
-          "p3",
-          "p4",
-          "p5",
-          "p6",
-          "p7",
-          "p8",
-          "p9",
-          "p10",
-          "p11"
-        ],
+        "members": ["p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10", "p11"],
         "people": [
           {
             "id": "p1",
@@ -423,13 +320,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p2",
@@ -446,13 +337,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p3",
@@ -469,13 +354,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p4",
@@ -492,13 +371,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p5",
@@ -515,13 +388,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p6",
@@ -538,13 +405,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p7",
@@ -561,13 +422,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p8",
@@ -584,13 +439,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p9",
@@ -607,13 +456,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p10",
@@ -630,13 +473,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p11",
@@ -653,22 +490,13 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           }
         ],
         "relationships": [
           {
             "kind": "spouse",
-            "people": [
-              "p1",
-              "p2"
-            ],
+            "people": ["p1", "p2"],
             "start": "2015-04-15",
             "end": "none"
           },
@@ -726,10 +554,7 @@
           },
           {
             "kind": "spouse",
-            "people": [
-              "p9",
-              "p10"
-            ],
+            "people": ["p9", "p10"],
             "start": "2025-08-08",
             "end": "none"
           },
@@ -767,15 +592,8 @@
       "factsAsOf": "2026-10-01",
       "expected": {
         "status": "not_eligible",
-        "dependents": [
-          "p2",
-          "p3",
-          "p5",
-          "p7"
-        ],
-        "possibleDependents": [
-          "p6"
-        ],
+        "dependents": ["p2", "p3", "p5", "p7"],
+        "possibleDependents": ["p6"],
         "missingFacts": []
       }
     },
@@ -783,11 +601,7 @@
       "id": "stepchild-from-marriage-after-18",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1",
-          "p2",
-          "p3"
-        ],
+        "members": ["p1", "p2", "p3"],
         "people": [
           {
             "id": "p1",
@@ -804,13 +618,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p2",
@@ -827,13 +635,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p3",
@@ -850,22 +652,13 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           }
         ],
         "relationships": [
           {
             "kind": "spouse",
-            "people": [
-              "p1",
-              "p2"
-            ],
+            "people": ["p1", "p2"],
             "start": "2025-12-01",
             "end": "none"
           },
@@ -901,9 +694,7 @@
       "factsAsOf": "2026-10-01",
       "expected": {
         "status": "needs_assessment",
-        "dependents": [
-          "p2"
-        ],
+        "dependents": ["p2"],
         "possibleDependents": [],
         "missingFacts": []
       }
@@ -912,11 +703,7 @@
       "id": "adopted-children-custody-unknown-or-short",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1",
-          "p2",
-          "p3"
-        ],
+        "members": ["p1", "p2", "p3"],
         "people": [
           {
             "id": "p1",
@@ -933,13 +720,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p2",
@@ -956,13 +737,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           },
           {
             "id": "p3",
@@ -979,13 +754,7 @@
             "incomes": [],
             "financiallyDependentOn": [],
             "studying": false,
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents",
-              "assets"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
           }
         ],
         "relationships": [
@@ -1031,10 +800,7 @@
       "expected": {
         "status": "needs_assessment",
         "dependents": [],
-        "possibleDependents": [
-          "p2",
-          "p3"
-        ],
+        "possibleDependents": ["p2", "p3"],
         "missingFacts": []
       }
     },
@@ -1061,17 +827,9 @@
       },
       "expected": {
         "status": "missing_information",
-        "dependents": [
-          "p2",
-          "p3",
-          "p4"
-        ],
+        "dependents": ["p2", "p3", "p4"],
         "possibleDependents": [],
-        "missingFacts": [
-          "marker assets@p3",
-          "marker assets@p4",
-          "unit.liquidAssets@p1"
-        ]
+        "missingFacts": ["marker assets@p3", "marker assets@p4", "unit.liquidAssets@p1"]
       }
     },
     {

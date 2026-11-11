@@ -5,10 +5,7 @@
   "corrects": 7,
   "title": "EB-5 immigrant investor (permanent residence)",
   "country": "US",
-  "tags": [
-    "investment",
-    "permanent-residence"
-  ],
+  "tags": ["investment", "permanent-residence"],
   "effectiveFrom": "2026-11-30",
   "status": "open",
   "currency": "USD",
@@ -129,9 +126,7 @@
           "currency": "USD"
         }
       },
-      "sources": [
-        "usc-1153-capital"
-      ]
+      "sources": ["usc-1153-capital"]
     }
   ],
   "assessments": [
@@ -143,76 +138,48 @@
         "principal.monthlyPassiveIncome",
         "unit.liquidAssets"
       ],
-      "sources": [
-        "usc-1153",
-        "cfr-204-6"
-      ]
+      "sources": ["usc-1153", "cfr-204-6"]
     },
     {
       "id": "at-risk",
       "title": "The capital is invested, or actively being invested, at risk in a new commercial enterprise, with a present commitment beyond a mere intent to invest",
-      "evidence": [
-        "unit.liquidAssets"
-      ],
-      "sources": [
-        "usc-1153",
-        "cfr-204-6"
-      ]
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["usc-1153", "cfr-204-6"]
     },
     {
       "id": "investment-term",
       "title": "The capital is expected to remain invested for at least 2 years",
-      "evidence": [
-        "unit.liquidAssets"
-      ],
-      "sources": [
-        "usc-1153-term"
-      ]
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["usc-1153-term"]
     },
     {
       "id": "job-creation",
       "title": "The enterprise will create at least 10 full-time jobs for qualifying employees, not counting the investor or the investor's spouse, sons and daughters",
-      "evidence": [
-        "unit.liquidAssets"
-      ],
-      "sources": [
-        "usc-1153",
-        "cfr-204-6"
-      ]
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["usc-1153", "cfr-204-6"]
     },
     {
       "id": "engagement",
       "title": "The investor is or will be engaged in managing the enterprise, by day-to-day managerial control or policy formulation, not in a purely passive role; a limited partner with the usual rights counts",
-      "evidence": [
-        "unit.liquidAssets"
-      ],
-      "sources": [
-        "cfr-204-6-2019",
-        "proposed-rule-2026"
-      ]
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["cfr-204-6-2019", "proposed-rule-2026"]
     }
   ],
   "dependents": [
     {
       "id": "spouse",
       "title": "Spouse",
-      "path": [
-        "spouse"
-      ],
+      "path": ["spouse"],
       "condition": {
         "op": "bool",
         "value": true
       },
-      "sources": [
-        "usc-1153"
-      ]
+      "sources": ["usc-1153"]
     },
     {
       "id": "children",
       "title": "Unmarried biological children under 21",
-      "path": [
-        "child"
-      ],
+      "path": ["child"],
       "condition": {
         "op": "all",
         "operands": [
@@ -247,17 +214,12 @@
           }
         ]
       },
-      "sources": [
-        "usc-1153",
-        "usc-1101"
-      ]
+      "sources": ["usc-1153", "usc-1101"]
     },
     {
       "id": "adopted-children",
       "title": "Unmarried adopted children under 21, adopted before 16 with two years of custody (adopted at 16 or 17 as the natural sibling of a child adopted before 16, or custody still short: possible)",
-      "path": [
-        "child"
-      ],
+      "path": ["child"],
       "condition": {
         "op": "all",
         "operands": [
@@ -340,18 +302,12 @@
           }
         ]
       },
-      "sources": [
-        "usc-1153",
-        "usc-1101"
-      ]
+      "sources": ["usc-1153", "usc-1101"]
     },
     {
       "id": "stepchildren",
       "title": "Unmarried stepchildren under 21 whose parent married the principal before they turned 18",
-      "path": [
-        "spouse",
-        "child"
-      ],
+      "path": ["spouse", "child"],
       "condition": {
         "op": "all",
         "operands": [
@@ -386,10 +342,7 @@
           }
         ]
       },
-      "sources": [
-        "usc-1153",
-        "usc-1101"
-      ]
+      "sources": ["usc-1153", "usc-1101"]
     }
   ],
   "costs": [
@@ -403,9 +356,7 @@
         "currency": "USD"
       },
       "appliesTo": "principal",
-      "sources": [
-        "usc-1153-capital"
-      ]
+      "sources": ["usc-1153-capital"]
     },
     {
       "id": "petition-fee",
@@ -417,9 +368,7 @@
         "currency": "USD"
       },
       "appliesTo": "principal",
-      "sources": [
-        "fee-rule-2026-fees"
-      ]
+      "sources": ["fee-rule-2026-fees"]
     },
     {
       "id": "integrity-fund-fee",
@@ -431,9 +380,7 @@
         "currency": "USD"
       },
       "appliesTo": "principal",
-      "sources": [
-        "fee-rule-2026-fees"
-      ]
+      "sources": ["fee-rule-2026-fees"]
     },
     {
       "id": "removal-petition-fee",
@@ -445,10 +392,7 @@
         "currency": "USD"
       },
       "appliesTo": "principal",
-      "sources": [
-        "fee-rule-2026-fees",
-        "usc-1186b"
-      ]
+      "sources": ["fee-rule-2026-fees", "usc-1186b"]
     },
     {
       "id": "visa-application-fee",
@@ -463,9 +407,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "cfr-22-1"
-      ]
+      "sources": ["cfr-22-1"]
     },
     {
       "id": "visa-application-fee-dependents",
@@ -480,9 +422,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "cfr-22-1"
-      ]
+      "sources": ["cfr-22-1"]
     },
     {
       "id": "uscis-immigrant-fee",
@@ -497,9 +437,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "cfr-106-2"
-      ]
+      "sources": ["cfr-106-2"]
     },
     {
       "id": "uscis-immigrant-fee-dependents",
@@ -514,9 +452,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "cfr-106-2"
-      ]
+      "sources": ["cfr-106-2"]
     }
   ],
   "durations": [
@@ -525,9 +461,7 @@
       "title": "Conditional permanent residence for the investor, spouse and children, to its second anniversary, or the third if DHS extends it a year while the jobs are still being created",
       "min": "P2Y",
       "max": "P3Y",
-      "sources": [
-        "usc-1186b"
-      ]
+      "sources": ["usc-1186b"]
     }
   ]
 }

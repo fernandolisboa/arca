@@ -5,10 +5,7 @@
   "corrects": 4,
   "title": "D7 residence visa for retirees and people living on their own income",
   "country": "PT",
-  "tags": [
-    "retirement",
-    "temporary-residence"
-  ],
+  "tags": ["retirement", "temporary-residence"],
   "effectiveFrom": "2026-01-01",
   "status": "open",
   "currency": "EUR",
@@ -258,12 +255,7 @@
           }
         }
       },
-      "sources": [
-        "portaria-1563-2007",
-        "dl-139-2025",
-        "codigo-contributivo",
-        "dr-84-2007-means"
-      ]
+      "sources": ["portaria-1563-2007", "dl-139-2025", "codigo-contributivo", "dr-84-2007-means"]
     },
     {
       "id": "not-eu-eea-or-swiss-citizen",
@@ -282,50 +274,34 @@
           }
         }
       },
-      "sources": [
-        "lei-23-2007-scope"
-      ]
+      "sources": ["lei-23-2007-scope"]
     }
   ],
   "assessments": [
     {
       "id": "means-for-12-months",
       "title": "Means assured for at least 12 months: a retiree proves the pension and that its payment is guaranteed, or other income available in Portugal; others prove their income and its availability in Portugal",
-      "evidence": [
-        "principal.monthlyPassiveIncome"
-      ],
-      "sources": [
-        "portaria-1563-2007-period"
-      ]
+      "evidence": ["principal.monthlyPassiveIncome"],
+      "sources": ["portaria-1563-2007-period"]
     },
     {
       "id": "no-entry-ban",
       "title": "No entry ban in force after a removal from Portugal, and no alert for return or for refusal of entry and stay in the Schengen Information System or in Portugal's border system",
-      "evidence": [
-        "principal.visaRefusals"
-      ],
-      "sources": [
-        "lei-23-2007-entry-ban"
-      ]
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["lei-23-2007-entry-ban"]
     },
     {
       "id": "criminal-record",
       "title": "No conviction for a crime that Portugal punishes with more than one year of prison, even if the sentence was not served or was suspended",
-      "evidence": [
-        "principal.visaRefusals"
-      ],
-      "sources": [
-        "lei-23-2007-conviction"
-      ]
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["lei-23-2007-conviction"]
     }
   ],
   "dependents": [
     {
       "id": "spouse",
       "title": "Spouse, both spouses aged 18 or over; the marriage must be valid and recognized under Portuguese law, which is not checked",
-      "path": [
-        "spouse"
-      ],
+      "path": ["spouse"],
       "condition": {
         "op": "all",
         "operands": [
@@ -353,17 +329,12 @@
           }
         ]
       },
-      "sources": [
-        "lei-23-2007",
-        "lei-23-2007-age"
-      ]
+      "sources": ["lei-23-2007", "lei-23-2007-age"]
     },
     {
       "id": "minor-children",
       "title": "Children under 18; an adoption must be recognized by Portugal and a child of only one spouse needs the other parent's consent or a custody decision, which are not checked",
-      "path": [
-        "child"
-      ],
+      "path": ["child"],
       "condition": {
         "op": "lt",
         "left": {
@@ -375,17 +346,12 @@
           "value": 18
         }
       },
-      "sources": [
-        "lei-23-2007"
-      ]
+      "sources": ["lei-23-2007"]
     },
     {
       "id": "spouse-minor-children",
       "title": "The spouse's children under 18; an adoption must be recognized by Portugal and a child of only one spouse needs the other parent's consent or a custody decision, which are not checked",
-      "path": [
-        "spouse",
-        "child"
-      ],
+      "path": ["spouse", "child"],
       "condition": {
         "op": "lt",
         "left": {
@@ -397,16 +363,12 @@
           "value": 18
         }
       },
-      "sources": [
-        "lei-23-2007"
-      ]
+      "sources": ["lei-23-2007"]
     },
     {
       "id": "adult-children",
       "title": "Adult children who depend on the principal, only if incapable, or single and studying at a school in Portugal, which is not recorded: possible",
-      "path": [
-        "child"
-      ],
+      "path": ["child"],
       "condition": {
         "op": "all",
         "operands": [
@@ -430,17 +392,12 @@
           }
         ]
       },
-      "sources": [
-        "lei-23-2007"
-      ]
+      "sources": ["lei-23-2007"]
     },
     {
       "id": "spouse-adult-children",
       "title": "The spouse's adult children who depend on the principal or the spouse, only if incapable, or single and studying at a school in Portugal, which is not recorded: possible",
-      "path": [
-        "spouse",
-        "child"
-      ],
+      "path": ["spouse", "child"],
       "condition": {
         "op": "all",
         "operands": [
@@ -473,31 +430,22 @@
           }
         ]
       },
-      "sources": [
-        "lei-23-2007"
-      ]
+      "sources": ["lei-23-2007"]
     },
     {
       "id": "parents",
       "title": "Parents who depend on the principal",
-      "path": [
-        "parent"
-      ],
+      "path": ["parent"],
       "condition": {
         "op": "fact",
         "key": "person.dependsOnPrincipal"
       },
-      "sources": [
-        "lei-23-2007"
-      ]
+      "sources": ["lei-23-2007"]
     },
     {
       "id": "spouse-parents",
       "title": "The spouse's parents who depend on the principal or the spouse",
-      "path": [
-        "spouse",
-        "parent"
-      ],
+      "path": ["spouse", "parent"],
       "condition": {
         "op": "any",
         "operands": [
@@ -511,16 +459,12 @@
           }
         ]
       },
-      "sources": [
-        "lei-23-2007"
-      ]
+      "sources": ["lei-23-2007"]
     },
     {
       "id": "partner",
       "title": "Partner in a de facto union of more than two years, both aged 18 or over; counts only if the union is duly proven and recognized under Portuguese law, which is not recorded: possible",
-      "path": [
-        "partner"
-      ],
+      "path": ["partner"],
       "condition": {
         "op": "all",
         "operands": [
@@ -559,20 +503,12 @@
           }
         ]
       },
-      "sources": [
-        "lei-23-2007-partner",
-        "dr-84-2007-family",
-        "lei-7-2001",
-        "lei-23-2007-age"
-      ]
+      "sources": ["lei-23-2007-partner", "dr-84-2007-family", "lei-7-2001", "lei-23-2007-age"]
     },
     {
       "id": "partner-children",
       "title": "The partner's unmarried children, under 18 or incapable, legally entrusted to the partner, when the union of more than two years counts; none of this is recorded: possible",
-      "path": [
-        "partner",
-        "child"
-      ],
+      "path": ["partner", "child"],
       "condition": {
         "op": "all",
         "operands": [
@@ -607,12 +543,7 @@
           }
         ]
       },
-      "sources": [
-        "lei-23-2007-partner",
-        "dr-84-2007-family",
-        "lei-7-2001",
-        "lei-23-2007-age"
-      ]
+      "sources": ["lei-23-2007-partner", "dr-84-2007-family", "lei-7-2001", "lei-23-2007-age"]
     }
   ],
   "costs": [
@@ -637,11 +568,7 @@
           "value": 18
         }
       },
-      "sources": [
-        "portaria-91-2025",
-        "portaria-229-2021",
-        "lei-23-2007-fees"
-      ]
+      "sources": ["portaria-91-2025", "portaria-229-2021", "lei-23-2007-fees"]
     },
     {
       "id": "visa-fee-minor-principal",
@@ -683,11 +610,7 @@
           }
         ]
       },
-      "sources": [
-        "portaria-91-2025",
-        "portaria-229-2021",
-        "lei-23-2007-fees"
-      ]
+      "sources": ["portaria-91-2025", "portaria-229-2021", "lei-23-2007-fees"]
     },
     {
       "id": "visa-fee-adult-dependents",
@@ -710,11 +633,7 @@
           "value": 18
         }
       },
-      "sources": [
-        "portaria-91-2025",
-        "portaria-229-2021",
-        "lei-23-2007-fees"
-      ]
+      "sources": ["portaria-91-2025", "portaria-229-2021", "lei-23-2007-fees"]
     },
     {
       "id": "visa-fee-children",
@@ -756,11 +675,7 @@
           }
         ]
       },
-      "sources": [
-        "portaria-91-2025",
-        "portaria-229-2021",
-        "lei-23-2007-fees"
-      ]
+      "sources": ["portaria-91-2025", "portaria-229-2021", "lei-23-2007-fees"]
     }
   ],
   "durations": [
@@ -769,27 +684,21 @@
       "title": "Decision on the residence visa application, within the legal time limit of 60 days",
       "min": "P0D",
       "max": "P60D",
-      "sources": [
-        "lei-23-2007-visa-decision"
-      ]
+      "sources": ["lei-23-2007-visa-decision"]
     },
     {
       "id": "visa-validity",
       "title": "Residence visa: two entries and a stay of four months in Portugal, to apply there for the residence permit",
       "min": "P4M",
       "max": "P4M",
-      "sources": [
-        "lei-23-2007-visa-validity"
-      ]
+      "sources": ["lei-23-2007-visa-validity"]
     },
     {
       "id": "first-residence-permit",
       "title": "First temporary residence permit, counted from the issue of the card; then renewable for successive periods of three years",
       "min": "P2Y",
       "max": "P2Y",
-      "sources": [
-        "lei-23-2007-permit"
-      ]
+      "sources": ["lei-23-2007-permit"]
     }
   ]
 }
