@@ -1,0 +1,233 @@
+{
+  "schemaVersion": 1,
+  "id": "pl",
+  "number": 2,
+  "title": "Polish citizenship law: acquisition by descent and its confirmation",
+  "laws": [
+    {
+      "id": "citizenship-act-2009",
+      "title": "Ustawa z dnia 2 kwietnia 2009 r. o obywatelstwie polskim (Polish Citizenship Act), consolidated text Dz.U. 2025 poz. 1611, in force since 2012-08-15",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "verifiedAt": "2026-11-11",
+      "amendment": "Amended only by statutes passed by parliament, ad hoc, often inside acts on other subjects; the latest were Dz.U. 2025 poz. 622 (its changes to this act apply from 2025-07-01) and poz. 921 (from 2025-08-01). The Marshal of the Sejm republishes a consolidated text by notice: Dz.U. 2025 poz. 1611 covers changes published before 2025-10-21 and leaves out the amending acts' transitional and entry-into-force provisions. The Sejm ELI record of the original act, Dz.U. 2012 poz. 161, lists any later amendment.",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2025/1611/text.pdf"
+    },
+    {
+      "id": "constitution-1997",
+      "title": "Konstytucja Rzeczypospolitej Polskiej z dnia 2 kwietnia 1997 r. (Constitution), Dz.U. 1997 nr 78 poz. 483, in force since 1997-10-17: art. 34 on acquiring and losing citizenship",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/1997/483/text.pdf",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Changed only by a statute the Sejm passes by at least 2/3 of the votes and the Senate then passes in the same wording within 60 days (art. 235). Amended twice, in 2006 (art. 55) and 2009 (art. 99); art. 34 keeps its 1997 wording. The PDF is the text as published in 1997."
+    },
+    {
+      "id": "citizenship-act-1962",
+      "title": "Ustawa z dnia 15 lutego 1962 r. o obywatelstwie polskim (Polish Citizenship Act 1962), Dz.U. 1962 nr 10 poz. 49, as published; repealed from 2012-08-15",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/1962/49/text.pdf",
+      "verifiedAt": "2026-11-11",
+      "amendment": "Repealed from 2012-08-15 by art. 69 of the 2009 act, it still governs births while it was in force. The Sejm ELI record lists 12 amending acts from 1974 to 2007. This PDF is the 1962 original, an image-only scan; the 2000 consolidated text shows the wording as of its notice of 2000-04-03 but not the amendments of 2001 to 2007."
+    },
+    {
+      "id": "citizenship-act-1962-consolidated-2000",
+      "title": "Consolidated text of the 1962 act, notice of the Minister of Internal Affairs and Administration of 2000-04-03 (Dz.U. 2000 nr 28 poz. 353)",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/2000/353/text.pdf",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A one-off consolidated text, not a law of its own. It includes the Aliens Act of 1997-06-25 and the act of 1998-07-24 on the competences of public bodies, in force 1999-01-01, which rewrote art. 13 and struck art. 14 and 15. The later amendments, Dz.U. 2001 poz. 475 to 2007 poz. 818, were never consolidated, so the 2000 text does not show them."
+    },
+    {
+      "id": "citizenship-act-1951",
+      "title": "Ustawa z dnia 8 stycznia 1951 r. o obywatelstwie polskim (Polish Citizenship Act 1951), Dz.U. 1951 nr 4 poz. 25, in force from 1951-01-19 until the 1962 act took effect",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/1951/25/text.pdf",
+      "verifiedAt": "2026-11-11",
+      "amendment": "Repealed by art. 20 of the 1962 act, from the date the Sejm ELI record gives as 1962-08-21; it still governs births while it was in force. The ELI record lists 1 amending act, the Universal Military Duty Act of 1959 (Dz.U. 1959 poz. 75), and no consolidated text. The PDF is the 1951 original, a scan whose text layer has OCR errors."
+    },
+    {
+      "id": "citizenship-act-1920",
+      "title": "Ustawa z dnia 20 stycznia 1920 r. o obywatelstwie Państwa Polskiego (Polish State Citizenship Act 1920), Dz.U. 1920 nr 7 poz. 44, as published; in force from 1920-01-31 to 1951-01-18",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/1920/44/text.pdf",
+      "verifiedAt": "2026-11-11",
+      "amendment": "Repealed from 1951-01-19 by art. 17 of the 1951 act. The Sejm ELI record lists 6 amending acts from 1922 to 1938, among them Dz.U. 1932 poz. 896 and 1938 poz. 548, and no consolidated text; art. 38(1)(1) of the 2009 act cites the act with 1932 poz. 896, 1934 poz. 976, 1938 poz. 548 and 1946 poz. 106, a different list. The PDF is the 1920 original, so it shows none of those amendments."
+    },
+    {
+      "id": "regulation-1932",
+      "title": "Rozporządzenie Prezydenta Rzeczypospolitej z dnia 3 grudnia 1932 r. (Dz.U. 1932 nr 109 poz. 896) amending art. 11 and 13 of the 1920 act, in force from 1932-12-25",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/1932/896/text.pdf",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A one-off amendment: its wording became part of the 1920 act from 1932-12-25 and ended with that act on 1951-01-19."
+    },
+    {
+      "id": "decree-1938-cieszyn",
+      "title": "Dekret Prezydenta Rzeczypospolitej z dnia 19 października 1938 r. (Dz.U. 1938 nr 81 poz. 548) extending the 1920 act to Cieszyn Silesia and adding its art. 2a and art. 3 ust. 2",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/1938/548/text.pdf",
+      "verifiedAt": "2026-11-07",
+      "amendment": "A one-off amendment in force from its publication, 1938-10-20 in the Sejm ELI record: its wording became part of the 1920 act and ended with it on 1951-01-19, though art. 19 of the 1962 act still refers to it."
+    },
+    {
+      "id": "deprivation-act-1938",
+      "title": "Ustawa z dnia 31 marca 1938 r. o pozbawianiu obywatelstwa (Deprivation of Citizenship Act), Dz.U. 1938 nr 22 poz. 191, as published; in force from 1938-04-01 to 1951-01-18",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/1938/191/text.pdf",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Repealed from 1951-01-19 by art. 17(2)(3) of the 1951 act. The Sejm ELI record lists 1 amending act, the decree Dz.U. 1938 poz. 612 extending acts to Cieszyn Silesia, and no consolidated text. The PDF is the 1938 original, a scan."
+    },
+    {
+      "id": "confirmation-form-2012",
+      "title": "Rozporządzenie Ministra Spraw Wewnętrznych z dnia 7 sierpnia 2012 r. (Dz.U. 2012 poz. 925): the official form for an application to confirm possession or loss of Polish citizenship",
+      "url": "https://dziennikustaw.gov.pl/DU/2012/925",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Issued by the minister for internal affairs, in agreement with the minister for foreign affairs, under art. 58 of the 2009 act, and changed only by a new or amending regulation in the Dziennik Ustaw. In force since 2012-08-15; the Sejm ELI record lists no amendment."
+    },
+    {
+      "id": "stamp-duty-act-2006",
+      "title": "Ustawa z dnia 16 listopada 2006 r. o opłacie skarbowej (Stamp Duty Act), Dz.U. 2026 poz. 1395: art. 3a (consular cases), art. 6 and annex part I item 27",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1395",
+      "verifiedAt": "2026-11-11",
+      "amendment": "Amounts sit in the act's annex and change only when a statute amends it, ad hoc; item 27 was set at PLN 277 by Dz.U. 2025 poz. 921 from 2025-08-01. Consolidated texts follow often: Dz.U. 2026 poz. 1395 states the law as of 2026-10-01 and also includes changes from acts that take effect later, some on 2027-01-11.",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2026/1395/text.pdf"
+    },
+    {
+      "id": "consular-fees-regulation",
+      "title": "Rozporządzenie Ministra Spraw Zagranicznych z dnia 18 grudnia 2015 r. w sprawie opłat konsularnych (consular fees regulation), consolidated text Dz.U. 2026 poz. 1298: tariff item 2.03 and § 3",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1298",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2026/1298/text.pdf",
+      "verifiedAt": "2026-11-11",
+      "amendment": "A regulation of the Foreign Minister, amended by regulation, ad hoc; Dz.U. 2025 poz. 1523 set the tariff in force from 2026-01-01, raising item 2.03 from EUR 80 to EUR 100. Amounts are in euros and the consul converts them into the currency charged (§ 3). A separate regulation sets reduced fees by host state and group of applicants. The Sejm ELI record lists any later amendment."
+    },
+    {
+      "id": "civil-status-records-act-2014",
+      "title": "Ustawa z dnia 28 listopada 2014 r. Prawo o aktach stanu cywilnego (Civil Status Records Act), consolidated text Dz.U. 2026 poz. 393: art. 104 on transcribing foreign civil status records",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/393",
+      "verifiedAt": "2026-11-07",
+      "amendment": "Amended by statutes, ad hoc. The Marshal of the Sejm republishes a consolidated text by notice; Dz.U. 2026 poz. 393 states the law as of 2026-03-09. The Sejm ELI record of the original act, Dz.U. 2014 poz. 1741, lists later amendments."
+    }
+  ],
+  "pitfalls": [
+    {
+      "id": "confirmed-not-granted",
+      "text": "Descent is confirmed, not granted. A child of a Polish parent acquires citizenship by birth by operation of law (2009 act art. 4 and 14); the Constitution names birth to Polish parents and leaves other cases to statute (art. 34(1)). The art. 55 decision confirms that status. If a grant application's documents raise a doubt that the applicant may already be Polish, the voivode opens confirmation and, if so, confirms it and the grant goes no further (art. 22). Art. 2 keeps earlier citizens, so each earlier birth is checked under the act then in force, subject to art. 16 of the 1951 act.",
+      "laws": ["citizenship-act-2009", "constitution-1997", "citizenship-act-1951"]
+    },
+    {
+      "id": "act-periods",
+      "text": "The acts took effect in turn: the 1920 act on publication, in the issue of 1920-01-31 (art. 14); the 1951 act on publication, 1951-01-19 (art. 19); the 1962 act 6 months after its publication on 1962-02-21 (art. 21); the 2009 act, apart from chapter 5 and art. 65, 6 months after its publication on 2012-02-14 (art. 70), which the Sejm ELI record gives as 2012-08-15. A birth on 2012-08-14 falls under the 1962 act.",
+      "laws": [
+        "citizenship-act-2009",
+        "citizenship-act-1962",
+        "citizenship-act-1951",
+        "citizenship-act-1920"
+      ]
+    },
+    {
+      "id": "start-of-1962-act",
+      "text": "Sources disagree on when the 1962 act took effect. The Sejm ELI record gives 1962-08-21, also as the 1951 act's repeal date, while the official confirmation form puts births under it from 1962-08-22 to 2012-08-15. Art. 21 says 6 months after publication, and the 2000 consolidated text dates publication 1962-02-21; the same rule in the 2009 act, published 2012-02-14, gives 2012-08-15 in the ELI record, and counted that way 1962 gives 1962-08-22. The texts do not settle a birth on 1962-08-21. The form's end date is the 2009 act's first day, so a birth on 2012-08-15 falls under the 2009 act.",
+      "laws": [
+        "citizenship-act-1962",
+        "citizenship-act-1962-consolidated-2000",
+        "confirmation-form-2012",
+        "citizenship-act-2009"
+      ]
+    },
+    {
+      "id": "one-polish-parent-since-2012",
+      "text": "Under art. 14(1), since 2012-08-15 a minor acquires citizenship by birth when at least one parent is a Polish citizen. The article sets no condition on the other parent's citizenship or on the place of birth, and the 2009 act provides no choice of a foreign citizenship like the 1962 act's art. 6, though its registers keep past choices (art. 59(3)(5)). A later grant to a parent, or recognition of a parent, reaches a minor under parental authority only on the terms of art. 7, with the minor's consent from age 16 (art. 8); that is acquisition by grant or recognition, not by birth.",
+      "laws": ["citizenship-act-2009", "citizenship-act-1962"]
+    },
+    {
+      "id": "parent-established-within-a-year",
+      "text": "Art. 6(1) of the 2009 act takes into account changes in establishing who a parent is, or a parent's citizenship, only if they happened within 1 year of the birth; art. 7(1) of the 1962 act says the same and runs its 3-month choice period from the date the change was established. A court ruling that denies paternity, or that a recognition is ineffective, counts unless the child is already of age, and from age 16 only with the child's consent (2009 act art. 6(2)).",
+      "laws": ["citizenship-act-2009", "citizenship-act-1962"]
+    },
+    {
+      "id": "adoption",
+      "text": "A foreign minor fully adopted (przysposobienie pełne) by one or more Polish citizens before turning 16 acquires Polish citizenship and is treated as having held it from birth (2009 act art. 16). Under the 1920 act, legitimation, recognition or adoption gave a child of not more than 18 the citizenship of the father, the mother or the person recognising or adopting (art. 6). Which rule applies turns on the kind of adoption, its date and the child's age then.",
+      "laws": ["citizenship-act-2009", "citizenship-act-1920"]
+    },
+    {
+      "id": "choice-under-1962-act",
+      "text": "Under the 1962 act a child was Polish by birth if both parents were, or one was and the other was unknown, of undetermined citizenship or stateless (art. 4). With one Polish and one foreign parent the child was also Polish by birth, but the parents could, by a concordant declaration within 3 months of the birth, choose the foreign parent's citizenship if that state's law gave it to the child; either could go to court within that time if they disagreed (art. 6). Such a child became Polish by a declaration made from age 16 until 6 months after majority and accepted by decision (art. 6(3)).",
+      "laws": ["citizenship-act-1962"]
+    },
+    {
+      "id": "losses-under-1962-act",
+      "text": "Under the 1962 act as enacted, a Polish citizen could acquire a foreign citizenship only with a permit to change citizenship, and acquiring it entailed loss (art. 13(1)); the permit reached children under parental authority, from age 16 only with their consent. A woman could lose citizenship by a declaration after a foreign citizenship tied to a marriage (art. 14), and a citizen abroad could be deprived of it (art. 15). From 1999-01-01 art. 13 allowed loss only on renunciation with the President's consent, and art. 14 and 15 were struck.",
+      "laws": ["citizenship-act-1962", "citizenship-act-1962-consolidated-2000"]
+    },
+    {
+      "id": "dual-citizenship-and-loss",
+      "text": "A Polish citizen who also holds another citizenship has the same rights and duties towards Poland as one who holds only Polish citizenship, and cannot rely on the other one before Polish authorities (2009 act art. 3). Since 1997-10-17 the Constitution says a Polish citizen cannot lose citizenship unless he or she renounces it (art. 34(2)), yet the 1962 act's art. 13 was rewritten and art. 14 and 15 struck only from 1999-01-01. Under the 2009 act, loss takes the President's consent and follows 30 days after it unless a shorter time is set (art. 46 and 51).",
+      "laws": [
+        "citizenship-act-2009",
+        "constitution-1997",
+        "citizenship-act-1962-consolidated-2000"
+      ]
+    },
+    {
+      "id": "mixed-parents-1951",
+      "text": "Under the 1951 act a child was Polish if both parents were, or if one was and the other was unknown or of unknown or undetermined citizenship (art. 6); the article does not name a stateless parent. With one foreign parent, a child born in Poland was Polish unless both parents chose the other's citizenship within a month of the birth, where that state's law allowed it (art. 8). Art. 8 reached a child born abroad only if the other state applied the same rules to mixed-parent children born in Poland (art. 9). Art. 16 applies the act also to children born and found in Poland before it.",
+      "laws": ["citizenship-act-1951"]
+    },
+    {
+      "id": "exclusions-and-losses-1951",
+      "text": "Art. 4 of the 1951 act says a person who held Polish citizenship on 1939-08-31 but lives permanently abroad is not Polish if he or she took another citizenship under an international agreement on the border changes, is of Russian, Belarusian, Ukrainian, Lithuanian, Latvian or Estonian nationality, or is of German nationality unless the spouse is Polish and lives in Poland. Taking a foreign citizenship needed a permit and entailed loss, reaching children over 13 only with their consent (art. 11); a citizen abroad, and his or her children under 13 abroad, could be deprived of it (art. 12).",
+      "laws": ["citizenship-act-1951"]
+    },
+    {
+      "id": "father-line-1920",
+      "text": "Under the 1920 act a child born in wedlock took the father's citizenship and one born out of wedlock the mother's (art. 5), and a foreign woman marrying a Polish citizen became Polish (art. 7). Citizenship was lost by acquiring a foreign one, or by taking public office or military service abroad without consent (art. 11), and a grant or loss reached the man's wife and his children up to age 18 unless reserved otherwise (art. 13). Someone liable to active military service who took a foreign citizenship without the required permit stayed Polish towards the Polish State (art. 11, last paragraph).",
+      "laws": ["citizenship-act-1920"]
+    },
+    {
+      "id": "amendments-to-1920-act",
+      "text": "The 1920 act PDF is the original. From 1932-12-25 a regulation replaced the Government's consent in art. 11 with the competent voivode's, replaced the military permit with release from universal military duty, and moved the reservation in art. 13 into the act of grant or the ruling on loss. A 1938 decree added art. 2a and art. 3(2) for Cieszyn Silesia, and art. 19 of the 1962 act says people who became Polish under those 2 provisions are not Polish if they hold a foreign citizenship and live abroad.",
+      "laws": [
+        "citizenship-act-1920",
+        "regulation-1932",
+        "decree-1938-cieszyn",
+        "citizenship-act-1962"
+      ]
+    },
+    {
+      "id": "deprivation-1938",
+      "text": "From 1938-04-01 a Polish citizen abroad could be deprived of citizenship for acting abroad against Poland, for losing touch with Polish statehood after at least 5 years continuously abroad since the State was formed, or for not returning when summoned by a Polish office abroad (1938 act art. 1); a husband's loss reached his wife and a father's, or unmarried mother's, the children up to 18, if abroad and not excluded by the ruling (art. 3). The 1951 act voided such rulings made before 1939-09-01 for people living in Poland on 1951-01-19 (art. 15). The 2009 act's art. 38 does not list it.",
+      "laws": ["deprivation-act-1938", "citizenship-act-1951", "citizenship-act-2009"]
+    },
+    {
+      "id": "births-before-1920",
+      "text": "Art. 2 of the 1920 act gave citizenship, from its publication, to people settled in the Polish State in the senses it defines, or born in its territory, unless they held another state's citizenship, and to people entitled under treaties; art. 3 let citizens of other states of Polish origin and their descendants be recognised after returning, proving their origin and renouncing their other citizenship.",
+      "laws": ["citizenship-act-1920"]
+    },
+    {
+      "id": "restoration-not-retroactive",
+      "text": "Art. 38 restores citizenship, on the person's own application, to a foreigner who lost it before 1999-01-01 under art. 11 or 13 of the 1920 act, art. 11 or 12 of the 1951 act, or art. 13, 14 or 15 of the 1962 act, except in the cases of art. 38(2) and (3). It is acquired on the day the restoration decision becomes final (art. 39(2)), so the person was not Polish at births between the loss and that day. A minor child of a restored parent, living in Poland on one of the permanent residence titles art. 30(1)(5) lists, may be recognised as Polish if the other, non-Polish parent consents.",
+      "laws": ["citizenship-act-2009"]
+    },
+    {
+      "id": "confirmation-procedure",
+      "text": "The voivode of the person's residence, or last residence in Poland, decides, or the Mazowieckie voivode when there is neither (art. 55(1)); someone abroad may file through the consul of their residence (art. 57). The application gives data on the person and ascendants up to the second degree, with documents unless very hard to obtain (art. 56). Foreign-language documents need a Polish translation by a sworn translator or consul unless a treaty says otherwise (art. 12). Since 2025-08-01 the case must be settled within 6 months of the application reaching the deciding authority (art. 10(3a)).",
+      "laws": ["citizenship-act-2009"]
+    },
+    {
+      "id": "form-contents",
+      "text": "The official form asks about the person, the parents and the grandparents and, when the applicant relies on their Polish citizenship, more distant ascendants such as great-grandparents. A copy of a valid Polish identity card or passport, or of a voivode's confirmation decision, for the person spares parts II and III, and one for a parent spares part III. Part II asks whether the parents of a child born under the 1962 act chose a foreign citizenship under its art. 6(1). The form asks for birth and marriage records to be attached. No act read limits the generations.",
+      "laws": ["confirmation-form-2012", "citizenship-act-2009"]
+    },
+    {
+      "id": "stamp-duty",
+      "text": "A decision on confirming possession or loss of Polish citizenship carries stamp duty of PLN 277 (annex part I item 27 of the Stamp Duty Act), the amount since 2025-08-01; the duty falls due when the application is filed (art. 6(1)(1)). Art. 2(1)(1)(i) exempts confirming citizenship acquired by repatriation. No stamp duty is owed when the application is passed on through a Polish consul against a consular fee (art. 3a(1)): abroad, the person pays the consular fee instead, EUR 100 since 2026-01-01 (tariff item 2.03), converted by the consul at a European Central Bank reference rate (§ 3).",
+      "laws": ["stamp-duty-act-2006", "consular-fees-regulation"]
+    },
+    {
+      "id": "transcription",
+      "text": "Confirmation and civil registration are separate procedures under separate acts. Art. 104(5) of the Civil Status Records Act makes transcription of a foreign civil status document mandatory when the Polish citizen it concerns has a civil status record drawn up in Poland for earlier events and asks for a civil registration step, a Polish identity document or a PESEL number; otherwise it is done on request (art. 104(1) and (4)) or of the registrar's own motion (art. 104(6)).",
+      "laws": ["civil-status-records-act-2014"]
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "pl",
+      "number": 1
+    }
+  ]
+}

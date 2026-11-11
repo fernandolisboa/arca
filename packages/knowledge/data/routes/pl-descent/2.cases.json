@@ -1,0 +1,700 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "child-of-a-polish-mother-born-after-2012",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "2015-03-01",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2015-03-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1985-06-10",
+            "citizenships": [
+              {
+                "country": "PL",
+                "acquired": "1985-06-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          },
+          {
+            "id": "p3",
+            "birthDate": "1984-02-02",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1984-02-02",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p1",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p3",
+            "child": "p1",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "grandfather-line-born-before-2012",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1990-05-10",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1990-05-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1960-03-01",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1960-03-01",
+                "lost": "none",
+                "basis": "birth"
+              },
+              {
+                "country": "PL",
+                "acquired": "1960-03-01",
+                "lost": "none",
+                "basis": "descent"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          },
+          {
+            "id": "p3",
+            "birthDate": "1930-01-15",
+            "citizenships": [
+              {
+                "country": "PL",
+                "acquired": "1930-01-15",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          },
+          {
+            "id": "p4",
+            "birthDate": "1962-07-20",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1962-07-20",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p1",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p4",
+            "child": "p1",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p3",
+            "child": "p2",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "no-polish-ancestor",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1990-05-10",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1990-05-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1960-03-01",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1960-03-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          },
+          {
+            "id": "p3",
+            "birthDate": "1962-07-20",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1962-07-20",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p1",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p3",
+            "child": "p1",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "grandfather-renounced-with-consent-before-the-father-was-born",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "2014-05-10",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2014-05-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1990-03-01",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1990-03-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          },
+          {
+            "id": "p3",
+            "birthDate": "1955-01-15",
+            "citizenships": [
+              {
+                "country": "PL",
+                "acquired": "1955-01-15",
+                "lost": "1982-03-01",
+                "basis": "birth"
+              },
+              {
+                "country": "BR",
+                "acquired": "1980-06-01",
+                "lost": "none",
+                "basis": "naturalization"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          },
+          {
+            "id": "p4",
+            "birthDate": "1991-07-20",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1991-07-20",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p1",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p4",
+            "child": "p1",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p3",
+            "child": "p2",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "mother-naturalized-polish-after-the-birth",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "2015-03-01",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2015-03-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1985-06-10",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1985-06-10",
+                "lost": "none",
+                "basis": "birth"
+              },
+              {
+                "country": "PL",
+                "acquired": "2020-01-10",
+                "lost": "none",
+                "basis": "naturalization"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          },
+          {
+            "id": "p3",
+            "birthDate": "1984-02-02",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1984-02-02",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p1",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p3",
+            "child": "p1",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "adopted-by-a-polish-father",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "2016-04-01",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2016-04-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1980-09-09",
+            "citizenships": [
+              {
+                "country": "PL",
+                "acquired": "1980-09-09",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p1",
+            "parentKind": "adoptive"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "grandfather-polish-and-a-father-recorded-only-as-brazilian",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1990-05-10",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1990-05-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1960-03-01",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1960-03-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          },
+          {
+            "id": "p3",
+            "birthDate": "1930-01-15",
+            "citizenships": [
+              {
+                "country": "PL",
+                "acquired": "1930-01-15",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          },
+          {
+            "id": "p4",
+            "birthDate": "1962-07-20",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1962-07-20",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p1",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p4",
+            "child": "p1",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p3",
+            "child": "p2",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "child-of-a-polish-mother-born-the-day-before-the-2009-act",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "2012-08-14",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2012-08-14",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1985-06-10",
+            "citizenships": [
+              {
+                "country": "PL",
+                "acquired": "1985-06-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          },
+          {
+            "id": "p3",
+            "birthDate": "1984-02-02",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1984-02-02",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p1",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p3",
+            "child": "p1",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "child-of-a-polish-mother-born-the-day-the-2009-act-took-effect",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "2012-08-15",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2012-08-15",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1985-06-10",
+            "citizenships": [
+              {
+                "country": "PL",
+                "acquired": "1985-06-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          },
+          {
+            "id": "p3",
+            "birthDate": "1984-02-02",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1984-02-02",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p1",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p3",
+            "child": "p1",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    }
+  ]
+}

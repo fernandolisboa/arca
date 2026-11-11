@@ -93,11 +93,12 @@ For each host:
 
 ## `es`: Spain
 
-**`boe.es`** (last confirmed 2026-11-09)
+**`boe.es`** (last confirmed 2026-11-11)
 
 - **Read:** `curl`. Consolidated text at `/buscar/act.php?id=BOE-A-<yyyy>-<n>`; the gazette text at `/diario_boe/txt.php?id=BOE-A-<yyyy>-<n>`. The search form `boe.php` takes `campo[n]` and `dato[n]` parameters (for example `campo[1]=TITULOS`, `campo[6]=FPU` with `dato[6][0]` and `dato[6][1]` as the date range).
 - **Cite:** the `act.php` consolidated text of a provision (BOE-A-…), never a BORME or section V announcement.
-- **Amendments:** the consolidated text lists its amending norms; search by title and publication date for newer ones. The BOE open-data API returned empty data when tried.
+- **Amendments:** the consolidated text lists its amending norms; search by title and publication date for newer ones, sending every field of the search form (`campo[0]` to `campo[6]`, each with its `operador[n]=and`) and `accion=Buscar`. A repealed act shows "Disposición derogada" in the results, and `/buscar/doc.php?id=<id>` names the act that repealed it.
+- **Open-data API:** `https://www.boe.es/datosabiertos/api/legislacion-consolidada/id/<id>/metadatos`, `/analisis` (earlier and later references) and `/texto/bloque/<block>` (one article, with its versions; block ids are the anchors of the consolidated page, such as `a6-3`) answer XML, but only with the header `Accept: application/xml`; any other request gets HTTP 400. So it is a way to read, not a `machineReadableUrl`: the independent check asks for HTML.
 - Not readable: inclusion.gob.es (403), extranjeros.inclusion.gob.es and mites.gob.es (broken TLS chain).
 
 ## `eu`: the European Union
@@ -179,18 +180,18 @@ For each host:
 
 ## `it`: Italy
 
-**`normattiva.it`** (last confirmed 2026-11-09)
+**`normattiva.it`** (last confirmed 2026-11-11)
 
-- **Read:** `curl` on the URN address `uri-res/N2Ls?urn:nir:stato:<type>:<yyyy-mm-dd>;<n>`; single articles through `/atto/caricaArticolo?…` with the `codiceRedazionale` from the page.
-- **Cite:** the URN address.
-- **Amendments:** the act's page shows its updates and the "vigente" date. gazzettaufficiale.it, interno.gov.it, governo.it and camera.it are readable but not on the list: leads.
+- **Read:** `curl` on the URN address `uri-res/N2Ls?urn:nir:stato:<type>:<yyyy-mm-dd>;<n>`; one article with the suffix `~art<n>` (`~art3bis`, `~art10`). The `/atto/caricaArticolo?…` addresses the page links to answer only with the session cookie the act's page sets (`curl -c` on the act, then `-b` on the article); without it they answer HTTP 500. The cookie file stays in the scratch folder. A budget law's single article is served in parts of 100 commi, each a `caricaArticolo` address, and `~art1-com<n>` opens only the first part.
+- **Cite:** the URN address, with `~art<n>` when the item is one article; a comma of a budget law by the act's address, with the comma in the title.
+- **Amendments:** the act's page shows "Ultimo aggiornamento all'atto" with a date, each article its "Testo in vigore dal", and "aggiornamenti all'atto" and "aggiornamenti all'articolo" list the amending acts. gazzettaufficiale.it, interno.gov.it, governo.it and camera.it are readable but not on the list: leads.
 
-**`cortecostituzionale.it`** (last confirmed 2026-11-09)
+**`cortecostituzionale.it`** (last confirmed 2026-11-11)
 
-- **Read:** `curl` on `/scheda-pronuncia/<yyyy>/<n>`; PDFs at `/stampa-pdf-pronuncia/<yyyy>/<n>`.
+- **Read:** `curl` on `https://www.cortecostituzionale.it/scheda-pronuncia/<yyyy>/<n>`, which carries the whole ruling. Do not follow a redirect: after a few requests the host answers 302 to a bot challenge on another host (`validate.perfdrive.com`), and so does the PDF address `/stampa-pdf-pronuncia/<yyyy>/<n>`. That answer is a refusal for that request: space the requests out and try once more later in the same audit; if it is refused again, record the page as not readable.
 - **Cite:** the `scheda-pronuncia` page.
 - **Amendments:** a pending question (a referral to the CJEU, for one) is a lead to watch: record it in the route's notes.
-- Not readable: esteri.it (bot wall), quirinale.it and senato.it (403).
+- Not readable: esteri.it (bot wall), quirinale.it and senato.it (403). cortedicassazione.it is readable with `curl` (judgments as PDFs under `/resources/cms/documents/`) but not on the list: a lead, or a `secondary` source beside an official one.
 
 ## `jp`: Japan
 
@@ -219,21 +220,21 @@ For each host:
 
 ## `pl`: Poland
 
-**`sejm.gov.pl`** (cited through `api.sejm.gov.pl`; last confirmed 2026-11-09)
+**`sejm.gov.pl`** (cited through `api.sejm.gov.pl`; last confirmed 2026-11-11)
 
-- **Read:** `curl` on the ELI API: `https://api.sejm.gov.pl/eli/acts/DU/<yyyy>/<n>` (JSON, with `entryIntoForce` and references) and `/text.pdf`. Old acts are scans: read the PDF with the Read tool.
+- **Read:** `curl` on the ELI API: `https://api.sejm.gov.pl/eli/acts/DU/<yyyy>/<n>` (JSON, with `entryIntoForce` and references) and `/text.pdf`. Old acts are scans: read the PDF with the Read tool. `/text.html` answers empty for consolidated texts.
 - **Cite:** `https://api.sejm.gov.pl/eli/acts/DU/<yyyy>/<n>/text.pdf`, the act as published in the Journal of Laws: the ISAP page a person would open is blocked (below), and the PDF is the official text.
-- **Amendments:** the act's JSON lists amending acts and consolidated texts.
+- **Amendments:** the original act's JSON lists amending acts ("Akty zmieniające", each with the date its change applies) and consolidated texts ("Inf. o tekście jednolitym"); a consolidated text's own record lists neither. `/eli/acts/search?title=<words>&publisher=DU&year=<yyyy>` finds acts by title.
 - Not readable: isap.sejm.gov.pl pages (403) and the sejm.gov.pl root.
 
-**`dziennikustaw.gov.pl`** (last confirmed 2026-11-09)
+**`dziennikustaw.gov.pl`** (last confirmed 2026-11-11)
 
-- **Read:** `curl` on `/DU/<yyyy>/<n>`.
+- **Read:** `curl` on `/DU/<yyyy>/<n>`: the page carries the act's title and a link to the PDF, not the text; read the text from the ELI API's `/text.pdf`.
 - **Cite:** that page.
 
-**`uw.gov.pl`** and **`www.gov.pl`** (not cited yet)
+**`uw.gov.pl`** and **`www.gov.pl`** (not cited yet; `www.gov.pl` last confirmed 2026-11-11)
 
-- `uw.gov.pl` gave no answer on 2026-11-09; the `www.gov.pl` root answers 403, and guessed `/web/…` paths redirect to the home page.
+- `uw.gov.pl` gave no answer on 2026-11-09. The `www.gov.pl` root answers 403 and guessed `/web/…` paths redirect to the home page, but a real page answers `curl`: `/web/<office>/<page>`, where the office is a voivode's (`uw-opolski`) or a country's consulates (`brazylia`).
 
 ## `pt`: Portugal
 
