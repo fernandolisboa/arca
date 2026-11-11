@@ -103,11 +103,7 @@
     {
       "id": "confirmed-not-granted",
       "text": "Descent is confirmed, not granted. A child of a Polish parent acquires citizenship by birth by operation of law (2009 act art. 4 and 14); the Constitution names birth to Polish parents and leaves other cases to statute (art. 34(1)). The art. 55 decision confirms that status. If a grant application's documents raise a doubt that the applicant may already be Polish, the voivode opens confirmation and, if so, confirms it and the grant goes no further (art. 22). Art. 2 keeps earlier citizens, so each earlier birth is checked under the act then in force, subject to art. 16 of the 1951 act.",
-      "laws": [
-        "citizenship-act-2009",
-        "constitution-1997",
-        "citizenship-act-1951"
-      ]
+      "laws": ["citizenship-act-2009", "constitution-1997", "citizenship-act-1951"]
     },
     {
       "id": "act-periods",
@@ -132,41 +128,27 @@
     {
       "id": "one-polish-parent-since-2012",
       "text": "Under art. 14(1), since 2012-08-15 a minor acquires citizenship by birth when at least one parent is a Polish citizen. The article sets no condition on the other parent's citizenship or on the place of birth, and the 2009 act provides no choice of a foreign citizenship like the 1962 act's art. 6, though its registers keep past choices (art. 59(3)(5)). A later grant to a parent, or recognition of a parent, reaches a minor under parental authority only on the terms of art. 7, with the minor's consent from age 16 (art. 8); that is acquisition by grant or recognition, not by birth.",
-      "laws": [
-        "citizenship-act-2009",
-        "citizenship-act-1962"
-      ]
+      "laws": ["citizenship-act-2009", "citizenship-act-1962"]
     },
     {
       "id": "parent-established-within-a-year",
       "text": "Art. 6(1) of the 2009 act takes into account changes in establishing who a parent is, or a parent's citizenship, only if they happened within 1 year of the birth; art. 7(1) of the 1962 act says the same and runs its 3-month choice period from the date the change was established. A court ruling that denies paternity, or that a recognition is ineffective, counts unless the child is already of age, and from age 16 only with the child's consent (2009 act art. 6(2)).",
-      "laws": [
-        "citizenship-act-2009",
-        "citizenship-act-1962"
-      ]
+      "laws": ["citizenship-act-2009", "citizenship-act-1962"]
     },
     {
       "id": "adoption",
       "text": "A foreign minor fully adopted (przysposobienie pełne) by one or more Polish citizens before turning 16 acquires Polish citizenship and is treated as having held it from birth (2009 act art. 16). Under the 1920 act, legitimation, recognition or adoption gave a child of not more than 18 the citizenship of the father, the mother or the person recognising or adopting (art. 6). Which rule applies turns on the kind of adoption, its date and the child's age then.",
-      "laws": [
-        "citizenship-act-2009",
-        "citizenship-act-1920"
-      ]
+      "laws": ["citizenship-act-2009", "citizenship-act-1920"]
     },
     {
       "id": "choice-under-1962-act",
       "text": "Under the 1962 act a child was Polish by birth if both parents were, or one was and the other was unknown, of undetermined citizenship or stateless (art. 4). With one Polish and one foreign parent the child was also Polish by birth, but the parents could, by a concordant declaration within 3 months of the birth, choose the foreign parent's citizenship if that state's law gave it to the child; either could go to court within that time if they disagreed (art. 6). Such a child became Polish by a declaration made from age 16 until 6 months after majority and accepted by decision (art. 6(3)).",
-      "laws": [
-        "citizenship-act-1962"
-      ]
+      "laws": ["citizenship-act-1962"]
     },
     {
       "id": "losses-under-1962-act",
       "text": "Under the 1962 act as enacted, a Polish citizen could acquire a foreign citizenship only with a permit to change citizenship, and acquiring it entailed loss (art. 13(1)); the permit reached children under parental authority, from age 16 only with their consent. A woman could lose citizenship by a declaration after a foreign citizenship tied to a marriage (art. 14), and a citizen abroad could be deprived of it (art. 15). From 1999-01-01 art. 13 allowed loss only on renunciation with the President's consent, and art. 14 and 15 were struck.",
-      "laws": [
-        "citizenship-act-1962",
-        "citizenship-act-1962-consolidated-2000"
-      ]
+      "laws": ["citizenship-act-1962", "citizenship-act-1962-consolidated-2000"]
     },
     {
       "id": "dual-citizenship-and-loss",
@@ -180,23 +162,17 @@
     {
       "id": "mixed-parents-1951",
       "text": "Under the 1951 act a child was Polish if both parents were, or if one was and the other was unknown or of unknown or undetermined citizenship (art. 6); the article does not name a stateless parent. With one foreign parent, a child born in Poland was Polish unless both parents chose the other's citizenship within a month of the birth, where that state's law allowed it (art. 8). Art. 8 reached a child born abroad only if the other state applied the same rules to mixed-parent children born in Poland (art. 9). Art. 16 applies the act also to children born and found in Poland before it.",
-      "laws": [
-        "citizenship-act-1951"
-      ]
+      "laws": ["citizenship-act-1951"]
     },
     {
       "id": "exclusions-and-losses-1951",
       "text": "Art. 4 of the 1951 act says a person who held Polish citizenship on 1939-08-31 but lives permanently abroad is not Polish if he or she took another citizenship under an international agreement on the border changes, is of Russian, Belarusian, Ukrainian, Lithuanian, Latvian or Estonian nationality, or is of German nationality unless the spouse is Polish and lives in Poland. Taking a foreign citizenship needed a permit and entailed loss, reaching children over 13 only with their consent (art. 11); a citizen abroad, and his or her children under 13 abroad, could be deprived of it (art. 12).",
-      "laws": [
-        "citizenship-act-1951"
-      ]
+      "laws": ["citizenship-act-1951"]
     },
     {
       "id": "father-line-1920",
       "text": "Under the 1920 act a child born in wedlock took the father's citizenship and one born out of wedlock the mother's (art. 5), and a foreign woman marrying a Polish citizen became Polish (art. 7). Citizenship was lost by acquiring a foreign one, or by taking public office or military service abroad without consent (art. 11), and a grant or loss reached the man's wife and his children up to age 18 unless reserved otherwise (art. 13). Someone liable to active military service who took a foreign citizenship without the required permit stayed Polish towards the Polish State (art. 11, last paragraph).",
-      "laws": [
-        "citizenship-act-1920"
-      ]
+      "laws": ["citizenship-act-1920"]
     },
     {
       "id": "amendments-to-1920-act",
@@ -211,55 +187,37 @@
     {
       "id": "deprivation-1938",
       "text": "From 1938-04-01 a Polish citizen abroad could be deprived of citizenship for acting abroad against Poland, for losing touch with Polish statehood after at least 5 years continuously abroad since the State was formed, or for not returning when summoned by a Polish office abroad (1938 act art. 1); a husband's loss reached his wife and a father's, or unmarried mother's, the children up to 18, if abroad and not excluded by the ruling (art. 3). The 1951 act voided such rulings made before 1939-09-01 for people living in Poland on 1951-01-19 (art. 15). The 2009 act's art. 38 does not list it.",
-      "laws": [
-        "deprivation-act-1938",
-        "citizenship-act-1951",
-        "citizenship-act-2009"
-      ]
+      "laws": ["deprivation-act-1938", "citizenship-act-1951", "citizenship-act-2009"]
     },
     {
       "id": "births-before-1920",
       "text": "Art. 2 of the 1920 act gave citizenship, from its publication, to people settled in the Polish State in the senses it defines, or born in its territory, unless they held another state's citizenship, and to people entitled under treaties; art. 3 let citizens of other states of Polish origin and their descendants be recognised after returning, proving their origin and renouncing their other citizenship.",
-      "laws": [
-        "citizenship-act-1920"
-      ]
+      "laws": ["citizenship-act-1920"]
     },
     {
       "id": "restoration-not-retroactive",
       "text": "Art. 38 restores citizenship, on the person's own application, to a foreigner who lost it before 1999-01-01 under art. 11 or 13 of the 1920 act, art. 11 or 12 of the 1951 act, or art. 13, 14 or 15 of the 1962 act, except in the cases of art. 38(2) and (3). It is acquired on the day the restoration decision becomes final (art. 39(2)), so the person was not Polish at births between the loss and that day. A minor child of a restored parent, living in Poland on one of the permanent residence titles art. 30(1)(5) lists, may be recognised as Polish if the other, non-Polish parent consents.",
-      "laws": [
-        "citizenship-act-2009"
-      ]
+      "laws": ["citizenship-act-2009"]
     },
     {
       "id": "confirmation-procedure",
       "text": "The voivode of the person's residence, or last residence in Poland, decides, or the Mazowieckie voivode when there is neither (art. 55(1)); someone abroad may file through the consul of their residence (art. 57). The application gives data on the person and ascendants up to the second degree, with documents unless very hard to obtain (art. 56). Foreign-language documents need a Polish translation by a sworn translator or consul unless a treaty says otherwise (art. 12). Since 2025-08-01 the case must be settled within 6 months of the application reaching the deciding authority (art. 10(3a)).",
-      "laws": [
-        "citizenship-act-2009"
-      ]
+      "laws": ["citizenship-act-2009"]
     },
     {
       "id": "form-contents",
       "text": "The official form asks about the person, the parents and the grandparents and, when the applicant relies on their Polish citizenship, more distant ascendants such as great-grandparents. A copy of a valid Polish identity card or passport, or of a voivode's confirmation decision, for the person spares parts II and III, and one for a parent spares part III. Part II asks whether the parents of a child born under the 1962 act chose a foreign citizenship under its art. 6(1). The form asks for birth and marriage records to be attached. No act read limits the generations.",
-      "laws": [
-        "confirmation-form-2012",
-        "citizenship-act-2009"
-      ]
+      "laws": ["confirmation-form-2012", "citizenship-act-2009"]
     },
     {
       "id": "stamp-duty",
       "text": "A decision on confirming possession or loss of Polish citizenship carries stamp duty of PLN 277 (annex part I item 27 of the Stamp Duty Act), the amount since 2025-08-01; the duty falls due when the application is filed (art. 6(1)(1)). Art. 2(1)(1)(i) exempts confirming citizenship acquired by repatriation. No stamp duty is owed when the application is passed on through a Polish consul against a consular fee (art. 3a(1)): abroad, the person pays the consular fee instead, EUR 100 since 2026-01-01 (tariff item 2.03), converted by the consul at a European Central Bank reference rate (§ 3).",
-      "laws": [
-        "stamp-duty-act-2006",
-        "consular-fees-regulation"
-      ]
+      "laws": ["stamp-duty-act-2006", "consular-fees-regulation"]
     },
     {
       "id": "transcription",
       "text": "Confirmation and civil registration are separate procedures under separate acts. Art. 104(5) of the Civil Status Records Act makes transcription of a foreign civil status document mandatory when the Polish citizen it concerns has a civil status record drawn up in Poland for earlier events and asks for a civil registration step, a Polish identity document or a PESEL number; otherwise it is done on request (art. 104(1) and (4)) or of the registrar's own motion (art. 104(6)).",
-      "laws": [
-        "civil-status-records-act-2014"
-      ]
+      "laws": ["civil-status-records-act-2014"]
     }
   ],
   "countries": {

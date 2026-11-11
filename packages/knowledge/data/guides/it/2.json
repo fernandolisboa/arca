@@ -114,27 +114,17 @@
     {
       "id": "art-1-overridden-by-3-bis",
       "text": "Art. 1 of law 91/1992 still reads that the child of a citizen father or mother is a citizen by birth, unchanged since 1992-08-16. Art. 3-bis derogates from it and from arts. 2, 3, 14 and 20, art. 5 of law 123/1983, arts. 1, 2, 7, 10, 12 and 19 of law 555/1912 and arts. 4, 5, 7, 8 and 9 of the 1865 civil code: whoever is born abroad, even before art. 3-bis came into force, and holds another citizenship is deemed never to have acquired Italian citizenship unless one of its conditions applies.",
-      "laws": [
-        "legge-91-1992",
-        "decreto-legge-36-2025"
-      ]
+      "laws": ["legge-91-1992", "decreto-legge-36-2025"]
     },
     {
       "id": "original-bar-not-loss",
       "text": "Ruling 63/2026 reads art. 3-bis as an original bar to acquiring citizenship that works ex tunc, not as a revocation or a loss: it reaches a status that was never officially recognized. So the question is whether the person ever acquired citizenship, and the bar reaches only people born abroad who hold another citizenship. Someone born in Italy, or holding no other citizenship, is outside it. The text says holds another citizenship in the present tense and names no date for judging it.",
-      "laws": [
-        "corte-costituzionale-sentenza-63-2026",
-        "legge-91-1992"
-      ]
+      "laws": ["corte-costituzionale-sentenza-63-2026", "legge-91-1992"]
     },
     {
       "id": "two-texts-of-3-bis",
       "text": "Art. 3-bis had 2 texts. From 2025-03-29 to 2025-05-23 the decree-law listed: a citizen parent or adopter born in Italy (c), a citizen parent or adopter resident in Italy for 2 continuous years before the birth or adoption (d), and a citizen first-degree ascendant of the citizen parents or adopters, born in Italy (e); there was no a-bis. From 2025-05-24 law 74/2025 rewrote c and d as they now read, deleted e and added a-bis. The current letters apply from 2025-05-24; the decree-law text governs the period in between.",
-      "laws": [
-        "decreto-legge-36-2025",
-        "legge-74-2025",
-        "legge-91-1992"
-      ]
+      "laws": ["decreto-legge-36-2025", "legge-74-2025", "legge-91-1992"]
     },
     {
       "id": "filings-by-2025-03-27",
@@ -148,32 +138,22 @@
     {
       "id": "exclusively-italian-now-or-at-death",
       "text": "Letter c needs a first or second degree ascendant, a parent or grandparent, who holds now, or held at death, exclusively Italian citizenship. It is read now or at death, not at the birth: an ancestor who was only Italian at the birth but later took another citizenship and still holds it, or held it at death, does not meet it. A dual citizen parent does not meet it either, though an exclusively Italian grandparent still can; a great-grandparent never does. Ruling 63/2026 says Interior Ministry circular 26185 of 2025-05-28 details this requirement; that circular is not among these texts.",
-      "laws": [
-        "legge-91-1992",
-        "corte-costituzionale-sentenza-63-2026"
-      ]
+      "laws": ["legge-91-1992", "corte-costituzionale-sentenza-63-2026"]
     },
     {
       "id": "condition-does-not-confer",
       "text": "The letters of art. 3-bis are exceptions to the bar, not a way to acquire citizenship. The person must still have acquired it through each link under the law in force at that time: law 555/1912 as the courts and law 123/1983 changed it before 1992-08-16, and law 91/1992 from that date. An exclusively Italian grandparent helps only if the parent in between was a citizen at the applicant's birth, which for a parent born abroad usually means the grandparent was a citizen at the parent's birth.",
-      "laws": [
-        "legge-91-1992",
-        "legge-555-1912"
-      ]
+      "laws": ["legge-91-1992", "legge-555-1912"]
     },
     {
       "id": "residence-letter-d",
       "text": "Letter d needs a parent or adopter, never a grandparent, who was resident in Italy for at least 2 continuous years after acquiring Italian citizenship and before the birth or adoption of the child. Residence after the birth does not count, and neither does residence before the parent became a citizen.",
-      "laws": [
-        "legge-91-1992"
-      ]
+      "laws": ["legge-91-1992"]
     },
     {
       "id": "adoption-and-ascendant",
       "text": "Letter c speaks of an ascendant, while letter d names a parent or adopter, so the text does not say whether an adoptive parent can satisfy letter c. Art. 3 makes a foreign minor adopted by an Italian citizen a citizen, but art. 3-bis derogates from art. 3 too. No official text read settles adoptive links.",
-      "laws": [
-        "legge-91-1992"
-      ]
+      "laws": ["legge-91-1992"]
     },
     {
       "id": "pre-1948-maternal-line",
@@ -196,36 +176,22 @@
     {
       "id": "naturalization-before-1992",
       "text": "Until 1992-08-15, art. 8, No. 1 of law 555/1912 took citizenship from whoever spontaneously acquired a foreign one and had or established residence abroad, while art. 7 let a citizen born and resident in a state that held them its citizen by birth keep Italian citizenship. From 1992-08-16, art. 11 of law 91/1992 lets a citizen who acquires another citizenship keep the Italian one. Whether a naturalization came before or after the next birth decides whether that link passes.",
-      "laws": [
-        "legge-555-1912",
-        "legge-91-1992"
-      ]
+      "laws": ["legge-555-1912", "legge-91-1992"]
     },
     {
       "id": "minor-children-of-a-parent-who-lost",
       "text": "Art. 12, second paragraph of law 555/1912 made the non-emancipated minor children of someone who lost citizenship foreigners when they shared the residence of the parent with parental authority or guardianship and acquired a foreign citizenship. So a child born Italian could lose citizenship as a minor, before the next birth in the line. Order 147/2026 notes that the First President of the Court of Cassation sent the reading of arts. 7, 8, 9 and 12 of law 555/1912 to its joint chambers on 2025-09-25. Their answer is not among the texts this guide cites.",
-      "laws": [
-        "legge-555-1912",
-        "corte-costituzionale-ordinanza-147-2026"
-      ]
+      "laws": ["legge-555-1912", "corte-costituzionale-ordinanza-147-2026"]
     },
     {
       "id": "law-by-date-of-birth",
       "text": "Which statute governs a link depends on the date of the birth: law 555/1912 from 1912-07-01, with art. 5 of law 123/1983 from 1983-04-27 making the minor child of a citizen father or citizen mother a citizen, and law 91/1992 from 1992-08-16. Each new law kept status acquired before it unless later facts changed it (art. 19 of law 555/1912, art. 20 of law 91/1992); art. 3-bis also names the earlier 1865 civil code, which this guide does not cover. Art. 5 required a dual citizen to opt within a year of majority; law 91/1992 abolished that duty.",
-      "laws": [
-        "legge-123-1983",
-        "legge-555-1912",
-        "legge-91-1992"
-      ]
+      "laws": ["legge-123-1983", "legge-555-1912", "legge-91-1992"]
     },
     {
       "id": "reacquisition-is-not-retroactive",
       "text": "Art. 17 lets someone born in Italy, or resident there for 2 continuous years, who lost citizenship under art. 8, Nos. 1 and 2 or art. 12 of law 555/1912, reacquire it by a declaration made between 2025-07-01 and 2027-12-31, without prejudice to art. 3-bis; the consular fee is EUR 250. Art. 15 gives reacquisition effect from the day after its conditions and formalities are met, so it does not make a child already born a citizen by birth; art. 14 extends it only to cohabiting minor children legally resident in Italy for 2 continuous years at that date, or since birth if under 2.",
-      "laws": [
-        "legge-91-1992",
-        "decreto-legge-36-2025",
-        "decreto-legislativo-71-2011"
-      ]
+      "laws": ["legge-91-1992", "decreto-legge-36-2025", "decreto-legislativo-71-2011"]
     },
     {
       "id": "minors-by-declaration",
@@ -241,11 +207,7 @@
     {
       "id": "other-paths-are-not-descent",
       "text": "Several paths for descendants are not citizenship by birth: art. 4, comma 1 (a foreigner whose parent or grandparent is or was a citizen by birth, for example after 2 years of legal residence at majority and a declaration within a year), art. 9, comma 1, a (naturalization that may be granted after 2 years of legal residence to the same descendants) and the work entry outside quotas added by art. 1-bis of decree-law 36/2025 for descendants with the citizenship of states named by a ministerial decree.",
-      "laws": [
-        "legge-91-1992",
-        "decreto-legge-36-2025",
-        "corte-costituzionale-sentenza-63-2026"
-      ]
+      "laws": ["legge-91-1992", "decreto-legge-36-2025", "corte-costituzionale-sentenza-63-2026"]
     },
     {
       "id": "cjeu-referral-pending",
@@ -259,35 +221,22 @@
     {
       "id": "court-evidence-and-burden",
       "text": "Art. 1, comma 2 of decree-law 36/2025, in force from 2025-03-29, added to art. 19-bis of legislative decree 150/2011 that, in court cases on Italian citizenship, oath and witness evidence are not admitted unless a law expressly provides otherwise, and the claimant must allege and prove that no cause of non-acquisition or loss of citizenship applies. Facts a claim must prove cannot rest on oath or witness testimony.",
-      "laws": [
-        "decreto-legge-36-2025"
-      ]
+      "laws": ["decreto-legge-36-2025"]
     },
     {
       "id": "consular-fees-and-contribution",
       "text": "The consular table charges EUR 600 for handling the recognition of an adult's citizenship (art. 7-bis, raised from EUR 300 by law 207/2024; Normattiva shows the rows only as an image), EUR 250 for a declaration of reacquisition (art. 7-ter) and nothing for the declaration in art. 4, comma 1-bis, b (art. 7-quater). Art. 9-bis, comma 2 of law 91/1992 sets a EUR 250 contribution on applications and declarations of election, acquisition, reacquisition, renunciation or grant, except consular reacquisition declarations and those under art. 4, comma 1-bis, b.",
-      "laws": [
-        "decreto-legislativo-71-2011",
-        "legge-207-2024",
-        "legge-91-1992"
-      ]
+      "laws": ["decreto-legislativo-71-2011", "legge-207-2024", "legge-91-1992"]
     },
     {
       "id": "one-fee-per-path",
       "text": "From 2025-01-01 each path to recognition of an adult has its own EUR 600: the consular fee (table, art. 7-bis), up to EUR 600 at a municipality that chooses to charge, never for requests made through a consulate (law 207/2024, art. 1, comma 636), or EUR 600 for each claimant in court (D.P.R. 115/2002, art. 13, comma 1-sexies). A person pays the one for the path taken, not all three.",
-      "laws": [
-        "decreto-legislativo-71-2011",
-        "legge-207-2024",
-        "dpr-115-2002"
-      ]
+      "laws": ["decreto-legislativo-71-2011", "legge-207-2024", "dpr-115-2002"]
     },
     {
       "id": "consulate-limits-and-central-office",
       "text": "Art. 10 of decree 71/2011, as law 11/2026 rewrote it from 2026-02-19: a consulate concludes an adult's recognition within 36 months (comma 7) and, through 2028, takes per year no more adult applications than the recognitions it concluded in 2025, never fewer than 100 (comma 6). From 2029-01-01 adults abroad apply by post to a central office of the Foreign Ministry, capped in 2029 and 2030 at the applications consulates collected the fee for in 2025 (commi 2, 3 and 5).",
-      "laws": [
-        "decreto-legislativo-71-2011",
-        "legge-11-2026"
-      ]
+      "laws": ["decreto-legislativo-71-2011", "legge-11-2026"]
     }
   ],
   "countries": {
