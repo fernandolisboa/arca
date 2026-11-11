@@ -371,12 +371,16 @@
     },
     {
       "id": "residence-fee-ecuadorian",
-      "title": "Residence fee for an Ecuadorian citizen: two jornales, a computed PYG 234,154 at the jornal in force from 2026-07-01",
+      "title": "Residence fee for an Ecuadorian citizen, by reciprocity: two jornales, at the jornal of PYG 117,077 in force from 2026-07-01",
       "kind": "fee",
       "amount": {
-        "op": "money",
-        "amount": 234154,
-        "currency": "PYG"
+        "op": "mul",
+        "operand": {
+          "op": "money",
+          "amount": 117077,
+          "currency": "PYG"
+        },
+        "by": "2"
       },
       "appliesTo": "principal",
       "condition": {
