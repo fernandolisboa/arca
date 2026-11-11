@@ -25,15 +25,12 @@ describe('reviewer selection', () => {
   it.each<[string, string[], readonly Reviewer[]]>([
     ['a doc', ['docs/ROADMAP.md'], docs],
     ['research notes', ['docs/research/ancestry.md'], docs],
+    ['route notes', ['docs/research/routes/pl-descent.md'], [...docs, 'security']],
     ['the security docs', ['docs/SECURITY.md'], [...docs, 'security']],
     ['a threat model', ['docs/threat-models/foundations.md'], [...docs, 'security']],
     ['the secrets guide', ['docs/SETUP.md'], [...docs, 'security']],
     ['a runbook', ['docs/runbooks/incident-response.md'], [...docs, 'security']],
-    [
-      'the rule audit runbook',
-      ['docs/runbooks/rule-audit.md'],
-      [...docs, 'security', 'supply-chain'],
-    ],
+    ['the rule audit runbook', ['docs/runbooks/rule-audit.md'], [...core, 'supply-chain']],
     [
       'the reading recipes',
       ['docs/runbooks/reading-recipes.md'],
@@ -242,6 +239,9 @@ const sensitive: readonly (readonly [string, Reviewer])[] = [
   ['apps/api/src/knowledge/admin-grants.ts', 'auth-crypto'],
   ['apps/api/src/knowledge/admin-grants.ts', 'data-access'],
   ['apps/web/src/admins.ts', 'auth-crypto'],
+  ['docs/runbooks/rule-audit.md', 'supply-chain'],
+  ['docs/runbooks/rule-audit.md', 'architecture'],
+  ['docs/runbooks/reading-recipes.md', 'supply-chain'],
 ];
 
 describe('sensitive files in this repository', () => {
