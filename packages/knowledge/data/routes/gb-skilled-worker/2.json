@@ -363,7 +363,7 @@
   "dependents": [
     {
       "id": "spouse",
-      "title": "Spouse aged 18 or over, if the worker's job is in Table 1, 2 or 3 of Appendix Skilled Occupations (not checked: a Temporary Shortage List job brings no family)",
+      "title": "Spouse aged 18 or over",
       "path": ["spouse"],
       "condition": {
         "op": "gte",
@@ -376,16 +376,11 @@
           "value": 18
         }
       },
-      "sources": [
-        "sw-dependents",
-        "relationship-with-partner",
-        "rules-introduction",
-        "sw-dependants-job-tables"
-      ]
+      "sources": ["sw-dependents", "relationship-with-partner", "rules-introduction"]
     },
     {
       "id": "partner",
-      "title": "Partner aged 18 or over, after 2 years in a relationship similar to marriage; a shorter one, which may be a civil partnership: possible; the job must be in Table 1, 2 or 3 (not checked)",
+      "title": "Partner aged 18 or over, after 2 years in a relationship similar to marriage; a shorter one, which may be a civil partnership: possible",
       "path": ["partner"],
       "condition": {
         "op": "all",
@@ -419,16 +414,11 @@
           }
         ]
       },
-      "sources": [
-        "sw-dependents",
-        "relationship-with-partner",
-        "rules-introduction",
-        "sw-dependants-job-tables"
-      ]
+      "sources": ["sw-dependents", "relationship-with-partner", "rules-introduction"]
     },
     {
       "id": "children",
-      "title": "Children under 18 with no spouse or partner; living with the principal, the other parent coming too and a job in Table 1, 2 or 3 are not checked; an adult child: possible",
+      "title": "Children under 18 with no spouse or partner; living with the principal and the other parent coming too are not checked; an adult child: possible",
       "path": ["child"],
       "condition": {
         "op": "all",
@@ -468,12 +458,7 @@
           }
         ]
       },
-      "sources": [
-        "sw-dependents",
-        "appendix-children",
-        "rules-introduction",
-        "sw-dependants-job-tables"
-      ]
+      "sources": ["sw-dependents", "appendix-children", "rules-introduction"]
     }
   ],
   "costs": [

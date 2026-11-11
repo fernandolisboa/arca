@@ -10,7 +10,7 @@
   "status": "open",
   "currency": "JPY",
   "leapDayBirthday": "march-1",
-  "leapDayBirthdaySources": ["age-calculation-act", "civil-code"],
+  "leapDayBirthdaySources": ["age-calculation-act", "civil-code-periods"],
   "sources": [
     {
       "id": "teijusha-notice",
@@ -20,20 +20,44 @@
       "verifiedAt": "2026-11-11"
     },
     {
-      "id": "immigration-act",
+      "id": "immigration-act-foreigner",
       "url": "https://laws.e-gov.go.jp/law/326CO0000000319",
-      "title": "Immigration Control and Refugee Recognition Act (Cabinet Order No. 319 of 1951), art. 2(i) (a foreigner has no Japanese nationality), art. 5, art. 7(1)(ii) and (iv), appended table II",
+      "title": "Immigration Control and Refugee Recognition Act (Cabinet Order No. 319 of 1951), art. 2(i): a foreigner is a person who does not have Japanese nationality",
       "kind": "official",
       "verifiedAt": "2026-11-11",
-      "machineReadableUrl": "https://laws.e-gov.go.jp/api/2/law_data/326CO0000000319?response_format=xml&law_full_text_format=xml"
+      "machineReadableUrl": "https://laws.e-gov.go.jp/api/2/law_data/326CO0000000319?response_format=xml&law_full_text_format=xml&elm=MainProvision-Article_2"
     },
     {
-      "id": "civil-code",
-      "url": "https://laws.e-gov.go.jp/law/129AC0000000089",
-      "title": "Civil Code (Act No. 89 of 1896), art. 4: majority at 18 since 1 April 2022 (Act No. 59 of 2018); art. 143: periods counted by the calendar",
+      "id": "immigration-act-denial",
+      "url": "https://laws.e-gov.go.jp/law/326CO0000000319",
+      "title": "Immigration Control and Refugee Recognition Act (Cabinet Order No. 319 of 1951), art. 5: the grounds on which a foreigner is denied landing",
       "kind": "official",
       "verifiedAt": "2026-11-11",
-      "machineReadableUrl": "https://laws.e-gov.go.jp/api/2/law_data/129AC0000000089?response_format=xml&law_full_text_format=xml"
+      "machineReadableUrl": "https://laws.e-gov.go.jp/api/2/law_data/326CO0000000319?response_format=xml&law_full_text_format=xml&elm=MainProvision-Article_5"
+    },
+    {
+      "id": "immigration-act-landing",
+      "url": "https://laws.e-gov.go.jp/law/326CO0000000319",
+      "title": "Immigration Control and Refugee Recognition Act (Cabinet Order No. 319 of 1951), art. 7(1)(ii): activities fit a status of residence; for a long-term resident, a notice lists them",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://laws.e-gov.go.jp/api/2/law_data/326CO0000000319?response_format=xml&law_full_text_format=xml&elm=MainProvision-Article_7"
+    },
+    {
+      "id": "civil-code-majority",
+      "url": "https://laws.e-gov.go.jp/law/129AC0000000089",
+      "title": "Civil Code (Act No. 89 of 1896), art. 4: majority at 18 since 1 April 2022 (Act No. 59 of 2018)",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://laws.e-gov.go.jp/api/2/law_data/129AC0000000089?response_format=xml&law_full_text_format=xml&elm=MainProvision-Article_4"
+    },
+    {
+      "id": "civil-code-periods",
+      "url": "https://laws.e-gov.go.jp/law/129AC0000000089",
+      "title": "Civil Code (Act No. 89 of 1896), art. 143: periods of weeks, months or years are counted by the calendar",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://laws.e-gov.go.jp/api/2/law_data/129AC0000000089?response_format=xml&law_full_text_format=xml&elm=MainProvision-Article_143"
     },
     {
       "id": "age-calculation-act",
@@ -195,7 +219,7 @@
           }
         ]
       },
-      "sources": ["teijusha-notice", "immigration-act"]
+      "sources": ["teijusha-notice", "immigration-act-landing"]
     },
     {
       "id": "not-japanese-national",
@@ -214,7 +238,7 @@
           }
         }
       },
-      "sources": ["immigration-act"]
+      "sources": ["immigration-act-foreigner"]
     }
   ],
   "assessments": [
@@ -222,7 +246,7 @@
       "id": "good-conduct",
       "title": "Good conduct, and none of the grounds for refusing landing (criminal record, earlier deportation and the others in art. 5 of the act)",
       "evidence": ["principal.visaRefusals"],
-      "sources": ["teijusha-notice", "immigration-act"]
+      "sources": ["teijusha-notice", "immigration-act-denial"]
     },
     {
       "id": "family-conditions",
@@ -284,7 +308,7 @@
           }
         ]
       },
-      "sources": ["teijusha-notice", "civil-code"]
+      "sources": ["teijusha-notice", "civil-code-majority"]
     },
     {
       "id": "adopted-children",
@@ -374,7 +398,7 @@
           }
         ]
       },
-      "sources": ["teijusha-notice", "civil-code"]
+      "sources": ["teijusha-notice", "civil-code-majority"]
     },
     {
       "id": "spouse-adopted-children",

@@ -188,47 +188,45 @@
   ],
   "requirements": [
     {
-      "id": "not-eu-eea-swiss-or-british-citizen",
-      "title": "Not a citizen of Ireland, another EU or EEA state, Switzerland or the United Kingdom: they work in Ireland without an employment permit",
+      "id": "not-eu-eea-or-swiss-citizen",
+      "title": "Not a citizen of Ireland, another EU or EEA state or Switzerland: they work in Ireland without an employment permit",
       "expression": {
-        "op": "all",
-        "operands": [
-          {
-            "op": "not",
-            "operand": {
-              "op": "intersects",
-              "list": {
-                "op": "fact",
-                "key": "principal.citizenships"
-              },
-              "set": {
-                "op": "set",
-                "id": "eu-free-movement"
-              }
-            }
+        "op": "not",
+        "operand": {
+          "op": "intersects",
+          "list": {
+            "op": "fact",
+            "key": "principal.citizenships"
           },
-          {
-            "op": "not",
-            "operand": {
-              "op": "intersects",
-              "list": {
-                "op": "fact",
-                "key": "principal.citizenships"
-              },
-              "set": {
-                "op": "tokens",
-                "values": ["GB"]
-              }
-            }
+          "set": {
+            "op": "set",
+            "id": "eu-free-movement"
           }
-        ]
+        }
+      },
+      "sources": ["ep-act-foreign-national", "ep-act-eu-treaty-rights", "dete-who-needs-a-permit"]
+    },
+    {
+      "id": "not-british-citizen",
+      "title": "Not a citizen of the United Kingdom: exempt from the Aliens Act 1935, a British citizen is no non-national and needs no employment permit",
+      "expression": {
+        "op": "not",
+        "operand": {
+          "op": "intersects",
+          "list": {
+            "op": "fact",
+            "key": "principal.citizenships"
+          },
+          "set": {
+            "op": "tokens",
+            "values": ["GB"]
+          }
+        }
       },
       "sources": [
         "ep-act-foreign-national",
-        "ep-act-eu-treaty-rights",
         "immigration-act-1999-non-national",
-        "aliens-exemption-order-1999",
-        "dete-who-needs-a-permit"
+        "aliens-exemption-order-1999"
       ]
     }
   ],
