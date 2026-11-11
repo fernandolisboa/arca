@@ -468,7 +468,7 @@ function ListedRow({
 
 /**
  * Proposed versions no date from today on would use, folded apart: a correction or a later version
- * took their place, so they need no decision and are never checked.
+ * took their place, so they need no decision and are not checked while that holds.
  */
 function SupersededVersions({
   versions,
