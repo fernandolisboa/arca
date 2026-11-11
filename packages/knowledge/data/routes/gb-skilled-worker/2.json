@@ -117,6 +117,13 @@
       "verifiedAt": "2026-11-11"
     },
     {
+      "id": "sw-dependants-job-tables",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "title": "Appendix Skilled Worker, SW 29.1A and 32A.2: a partner or child joins only a Skilled Worker sponsored for a job in Table 1, Table 2 or Table 3 of Appendix Skilled Occupations, save listed exceptions",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
       "id": "sw-grant-period",
       "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
       "title": "Appendix Skilled Worker, SW 18.1: permission until 14 days after the end date of the certificate of sponsorship, which may be up to 5 years after its start date",
@@ -126,7 +133,7 @@
     {
       "id": "fees-table",
       "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
-      "title": "Home Office immigration and nationality fees, 8 October 2026, table 1, Skilled Worker from outside the UK: £819 for a certificate of three years or less, £1,618 for over three years, per person",
+      "title": "Home Office immigration and nationality fees, 8 October 2026: Skilled Worker per person, £819 or £1,618 from outside the UK and £943 or £1,865 inside it, by certificate length",
       "kind": "official",
       "verifiedAt": "2026-11-11"
     },
@@ -299,7 +306,7 @@
     },
     {
       "id": "eligible-occupation",
-      "title": "A job in an eligible occupation in Table 1, 2 or 3 of Appendix Skilled Occupations, or on the Immigration Salary List",
+      "title": "A job in an eligible occupation in Table 1, 2 or 3 of Appendix Skilled Occupations, or a table the rules name for a particular case (such as 1a, 2aa or 3a), or on the Immigration Salary List",
       "evidence": ["principal.educationLevel"],
       "sources": ["sw-occupation-lists"]
     },
@@ -343,7 +350,7 @@
   "dependents": [
     {
       "id": "spouse",
-      "title": "Spouse aged 18 or over",
+      "title": "Spouse aged 18 or over; only if the worker's job is in Table 1, 2 or 3 (not checked)",
       "path": ["spouse"],
       "condition": {
         "op": "gte",
@@ -356,11 +363,16 @@
           "value": 18
         }
       },
-      "sources": ["sw-dependents", "relationship-with-partner", "rules-introduction"]
+      "sources": [
+        "sw-dependents",
+        "relationship-with-partner",
+        "rules-introduction",
+        "sw-dependants-job-tables"
+      ]
     },
     {
       "id": "partner",
-      "title": "Partner aged 18 or over, after 2 years in a relationship similar to marriage; a shorter one, which may be a civil partnership: possible",
+      "title": "Partner aged 18 or over, after 2 years in a relationship similar to marriage; a shorter one, which may be a civil partnership: possible; job in Table 1, 2 or 3 (not checked)",
       "path": ["partner"],
       "condition": {
         "op": "all",
@@ -394,11 +406,16 @@
           }
         ]
       },
-      "sources": ["sw-dependents", "relationship-with-partner", "rules-introduction"]
+      "sources": [
+        "sw-dependents",
+        "relationship-with-partner",
+        "rules-introduction",
+        "sw-dependants-job-tables"
+      ]
     },
     {
       "id": "children",
-      "title": "Children under 18 with no spouse or partner; living with the principal and the other parent coming too are not checked; an adult child: possible",
+      "title": "Children under 18 with no spouse or partner; living with the principal and the other parent coming too are not checked; an adult child: possible; job in Table 1, 2 or 3 (not checked)",
       "path": ["child"],
       "condition": {
         "op": "all",
@@ -438,13 +455,18 @@
           }
         ]
       },
-      "sources": ["sw-dependents", "appendix-children", "rules-introduction"]
+      "sources": [
+        "sw-dependents",
+        "appendix-children",
+        "rules-introduction",
+        "sw-dependants-job-tables"
+      ]
     }
   ],
   "costs": [
     {
       "id": "visa-fee-up-to-3-years",
-      "title": "Visa fee from outside the UK, certificate of sponsorship of three years or less: £819 for the main applicant: possible",
+      "title": "Visa fee from outside the UK, certificate of three years or less: £819 for the main applicant (Immigration Salary List: £628); one of four alternatives: possible",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -453,29 +475,13 @@
       },
       "appliesTo": "principal",
       "condition": {
-        "op": "all",
-        "operands": [
-          {
-            "op": "ne",
-            "left": {
-              "op": "fact",
-              "key": "principal.residenceCountry"
-            },
-            "right": {
-              "op": "token",
-              "value": "GB"
-            }
-          },
-          {
-            "op": "unmodeled"
-          }
-        ]
+        "op": "unmodeled"
       },
       "sources": ["fees-table"]
     },
     {
       "id": "visa-fee-in-uk-up-to-3-years",
-      "title": "Visa fee from inside the UK, certificate of sponsorship of three years or less: £943 for the main applicant: possible",
+      "title": "Visa fee from inside the UK, certificate of three years or less: £943 for the main applicant (Immigration Salary List: £628); one of four alternatives: possible",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -506,7 +512,7 @@
     },
     {
       "id": "visa-fee-up-to-3-years-dependant",
-      "title": "Visa fee from outside the UK, certificate of sponsorship of three years or less: £819 for each partner or child: possible",
+      "title": "Visa fee from outside the UK, certificate of three years or less: £819 for each partner or child (Immigration Salary List: £628); one of four alternatives: possible",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -515,29 +521,13 @@
       },
       "appliesTo": "each_dependent",
       "condition": {
-        "op": "all",
-        "operands": [
-          {
-            "op": "ne",
-            "left": {
-              "op": "fact",
-              "key": "principal.residenceCountry"
-            },
-            "right": {
-              "op": "token",
-              "value": "GB"
-            }
-          },
-          {
-            "op": "unmodeled"
-          }
-        ]
+        "op": "unmodeled"
       },
       "sources": ["fees-table"]
     },
     {
       "id": "visa-fee-in-uk-up-to-3-years-dependant",
-      "title": "Visa fee from inside the UK, certificate of sponsorship of three years or less: £943 for each partner or child: possible",
+      "title": "Visa fee from inside the UK, certificate of three years or less: £943 for each partner or child (Immigration Salary List: £628); one of four alternatives: possible",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -552,7 +542,7 @@
             "op": "eq",
             "left": {
               "op": "fact",
-              "key": "principal.residenceCountry"
+              "key": "person.residenceCountry"
             },
             "right": {
               "op": "token",
@@ -568,7 +558,7 @@
     },
     {
       "id": "visa-fee-over-3-years",
-      "title": "Visa fee from outside the UK, certificate of sponsorship of over three years: £1,618 for the main applicant: possible",
+      "title": "Visa fee from outside the UK, certificate of over three years: £1,618 for the main applicant (Immigration Salary List: £1,235); one of four alternatives: possible",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -577,29 +567,13 @@
       },
       "appliesTo": "principal",
       "condition": {
-        "op": "all",
-        "operands": [
-          {
-            "op": "ne",
-            "left": {
-              "op": "fact",
-              "key": "principal.residenceCountry"
-            },
-            "right": {
-              "op": "token",
-              "value": "GB"
-            }
-          },
-          {
-            "op": "unmodeled"
-          }
-        ]
+        "op": "unmodeled"
       },
       "sources": ["fees-table"]
     },
     {
       "id": "visa-fee-in-uk-over-3-years",
-      "title": "Visa fee from inside the UK, certificate of sponsorship of over three years: £1,865 for the main applicant: possible",
+      "title": "Visa fee from inside the UK, certificate of over three years: £1,865 for the main applicant (Immigration Salary List: £1,235); one of four alternatives: possible",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -630,7 +604,7 @@
     },
     {
       "id": "visa-fee-over-3-years-dependant",
-      "title": "Visa fee from outside the UK, certificate of sponsorship of over three years: £1,618 for each partner or child: possible",
+      "title": "Visa fee from outside the UK, certificate of over three years: £1,618 for each partner or child (Immigration Salary List: £1,235); one of four alternatives: possible",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -639,29 +613,13 @@
       },
       "appliesTo": "each_dependent",
       "condition": {
-        "op": "all",
-        "operands": [
-          {
-            "op": "ne",
-            "left": {
-              "op": "fact",
-              "key": "principal.residenceCountry"
-            },
-            "right": {
-              "op": "token",
-              "value": "GB"
-            }
-          },
-          {
-            "op": "unmodeled"
-          }
-        ]
+        "op": "unmodeled"
       },
       "sources": ["fees-table"]
     },
     {
       "id": "visa-fee-in-uk-over-3-years-dependant",
-      "title": "Visa fee from inside the UK, certificate of sponsorship of over three years: £1,865 for each partner or child: possible",
+      "title": "Visa fee from inside the UK, certificate of over three years: £1,865 for each partner or child (Immigration Salary List: £1,235); one of four alternatives: possible",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -676,7 +634,7 @@
             "op": "eq",
             "left": {
               "op": "fact",
-              "key": "principal.residenceCountry"
+              "key": "person.residenceCountry"
             },
             "right": {
               "op": "token",
@@ -692,7 +650,7 @@
     },
     {
       "id": "health-surcharge",
-      "title": "Immigration health surcharge, £1,035 for each year of the visa, shown at its most, 5 years (£5,175): possible",
+      "title": "Immigration health surcharge, £1,035 a year, shown for the 5 years of a five-year certificate (£5,175; the 14 days after it may add half a year): possible",
       "kind": "fee",
       "amount": {
         "op": "mul",
@@ -707,11 +665,11 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": ["health-surcharge"]
+      "sources": ["health-surcharge", "sw-grant-period"]
     },
     {
       "id": "health-surcharge-adult-dependant",
-      "title": "Immigration health surcharge of each partner or child aged 18 or over, £1,035 for each year of the visa, shown at its most, 5 years (£5,175): possible",
+      "title": "Health surcharge of each partner or child aged 18 or over, £1,035 a year, shown for the 5 years of a five-year certificate (£5,175; the 14 days after it may add half a year): possible",
       "kind": "fee",
       "amount": {
         "op": "mul",
@@ -742,11 +700,11 @@
           }
         ]
       },
-      "sources": ["health-surcharge"]
+      "sources": ["health-surcharge", "sw-grant-period"]
     },
     {
       "id": "health-surcharge-child",
-      "title": "Immigration health surcharge of each child under 18 at the time of application, £776 for each year of the visa, shown at its most, 5 years (£3,880): possible",
+      "title": "Health surcharge of each child under 18, £776 a year, shown for the 5 years of a five-year certificate (£3,880; the 14 days after it may add half a year): possible",
       "kind": "fee",
       "amount": {
         "op": "mul",
@@ -777,7 +735,7 @@
           }
         ]
       },
-      "sources": ["health-surcharge"]
+      "sources": ["health-surcharge", "sw-grant-period"]
     }
   ],
   "durations": [
