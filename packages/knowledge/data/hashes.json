@@ -373,15 +373,15 @@
     },
     {
       "path": "routes/cz-eu-blue-card/3",
-      "sha256": "a0cb975546d44373d3368f8487d31517a95341b9d93778ac9140102097790d4c,"
+      "sha256": "a0cb975546d44373d3368f8487d31517a95341b9d93778ac9140102097790d4c"
     },
     {
       "path": "routes/dk-pay-limit/2",
-      "sha256": "a26e4d223fff427e90431608f19e8472d4fffed079c95782aec61876bd07bdee,"
+      "sha256": "a26e4d223fff427e90431608f19e8472d4fffed079c95782aec61876bd07bdee"
     },
     {
       "path": "routes/ge-property-short-term/2",
-      "sha256": "8bb41ebe7493201543d8c5488559af187adc6d06bcba36a996f8f23b5ac9013f,"
+      "sha256": "8bb41ebe7493201543d8c5488559af187adc6d06bcba36a996f8f23b5ac9013f"
     },
     {
       "path": "routes/lv-capital-investment/4",
