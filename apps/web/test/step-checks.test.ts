@@ -4,7 +4,7 @@ import {
   shownPoints,
   stepTallies,
   tallyTone,
-  tallyTotal,
+  pointCount,
   totalTally,
 } from '../src/knowledge/step-checks.js';
 
@@ -55,9 +55,9 @@ describe('tallyTone', () => {
   });
 });
 
-describe('tallyTotal', () => {
+describe('pointCount', () => {
   it('adds the three counts', () => {
-    expect(tallyTotal({ matches: 2, differs: 1, unread: 4 })).toBe(7);
+    expect(pointCount({ matches: 2, differs: 1, unread: 4 })).toBe(7);
   });
 });
 

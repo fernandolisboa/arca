@@ -4,7 +4,7 @@ import {
   type StepTally,
   type TallyTone,
   tallyTone,
-  tallyTotal,
+  pointCount,
   totalTally,
 } from './step-checks.js';
 import type { Step, StepKey } from './steps.js';
@@ -102,15 +102,18 @@ export function TallyDots({
  */
 export function CheckSummary({
   tallies,
+  scripted,
   words,
 }: {
   readonly tallies: ReadonlyMap<StepKey, StepTally>;
+  /** A test report, written with no model: the points are a test's, never a reading. */
+  readonly scripted: boolean;
   readonly words: KnowledgeWords;
 }) {
   const { t } = words;
   const titleId = useId();
   const total = totalTally(tallies.values());
-  if (tallyTotal(total) === 0) return null;
+  if (pointCount(total) === 0) return null;
   return (
     <section
       aria-labelledby={titleId}
@@ -120,14 +123,19 @@ export function CheckSummary({
         <div className="flex flex-col">
           <p className="flex items-center gap-2 text-small text-muted">
             <Icon name="ai" size={16} />
-            {t('knowledge.points.checked', { n: tallyTotal(total) })}
+            {t('knowledge.points.checked', { n: pointCount(total) })}
           </p>
           <h4 id={titleId} className="font-medium">
-            {t('knowledge.points.needYou', { n: total.differs })}
+            {total.differs > 0
+              ? t('knowledge.points.needYou', { n: total.differs })
+              : total.unread > 0
+                ? t('knowledge.points.unconfirmed', { n: total.unread })
+                : t('knowledge.points.allMatch')}
           </h4>
         </div>
         <p className="text-small">{tallyWords(total, words)}</p>
       </div>
+      {scripted && <p className="text-small font-medium">{t('knowledge.check.scripted')}</p>}
       <p className="text-small text-muted">{t('knowledge.points.note')}</p>
     </section>
   );

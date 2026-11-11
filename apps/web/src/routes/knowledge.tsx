@@ -19,7 +19,12 @@ import { CheckedBatch } from '../knowledge/checked-batch.js';
 import { CheckChip, useStartChecks } from '../knowledge/checks.js';
 import { ComparisonPanel } from '../knowledge/comparison-panel.js';
 import { ReportsSection } from '../knowledge/reports-section.js';
-import { type CountryGroup, reviewNeed, reviewOrder } from '../knowledge/review-order.js';
+import {
+  type CountryGroup,
+  actionable,
+  reviewNeed,
+  reviewOrder,
+} from '../knowledge/review-order.js';
 import { tallyWords } from '../knowledge/step-nav.js';
 import { stateTone } from '../knowledge/state-tone.js';
 import { VersionPanel } from '../knowledge/version-panel.js';
@@ -235,7 +240,7 @@ function ProposedVersions({
   const { t } = words;
   const title = t('knowledge.proposed');
   const first = groups[0]?.versions[0];
-  const startHere = first !== undefined && ['differs', 'ready'].includes(reviewNeed(first));
+  const startHere = first !== undefined && actionable(reviewNeed(first));
   return (
     <section aria-label={title} className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">

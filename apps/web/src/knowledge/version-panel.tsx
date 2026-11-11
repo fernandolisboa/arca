@@ -126,9 +126,10 @@ function Settings({
           })}
         </li>
       )}
-      {view.closureSources.length > 0 && (
+      {(view.closureSources.length > 0 || view.status === 'closed') && (
         <li className={card}>
-          {t('knowledge.closureSources', { sources: words.list(view.closureSources) })}
+          {view.closureSources.length > 0 &&
+            t('knowledge.closureSources', { sources: words.list(view.closureSources) })}
           {point(settingPoints.closure)}
         </li>
       )}
@@ -489,7 +490,7 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
         )}
       </header>
       <RuleSummaryCard state={summary} />
-      <CheckSummary tallies={tallies} words={words} />
+      <CheckSummary tallies={tallies} scripted={report?.scripted === true} words={words} />
       <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-10">
         <StepNav
           steps={steps}
@@ -501,7 +502,7 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
         />
         <section aria-labelledby={headingId} className="flex min-w-0 flex-col gap-4">
           <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
-            <div className="flex flex-col gap-1 max-lg:sr-only">
+            <div className="flex flex-col gap-1">
               <p className="text-small text-muted">
                 {t('knowledge.wizard.progress', { current: index + 1, total: steps.length })}
               </p>

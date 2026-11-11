@@ -271,6 +271,7 @@ export {
   type CheckPoints,
   type StatusCounts,
   reportClean,
+  countStatuses,
   reportPoints,
   scriptedCheckerModel,
   verifyAnswers,

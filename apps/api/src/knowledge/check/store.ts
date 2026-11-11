@@ -3,6 +3,7 @@ import {
   type CheckedItem,
   type ReportMeta,
   type StatusCounts,
+  countStatuses,
   type FetchFailure,
   checkFailures,
   checkReasons,
@@ -93,16 +94,9 @@ const storedFetch = z.strictObject({
 });
 const storedFailure = z.enum(checkFailures).nullable();
 
-/** How many items came out each way. */
-export function countStatuses(items: readonly Pick<CheckedItem, 'status'>[]): StatusCounts {
-  const counts: Record<CheckStatus, number> = { matches: 0, differs: 0, could_not_check: 0 };
-  for (const { status } of items) counts[status] += 1;
-  return counts;
-}
-
 /** The items of a stored report with this status, counted in the database. */
 const statusCount = (status: CheckStatus) =>
-  sql<number>`(SELECT count(*) FROM jsonb_array_elements(${independentCheck.items}) AS item
+  sql<number>`(SELECT count(*) FROM jsonb_array_elements(CASE WHEN jsonb_typeof(${independentCheck.items}) = 'array' THEN ${independentCheck.items} ELSE '[]'::jsonb END) AS item
     WHERE item->>'status' = ${status})::int`;
 
 /** For tests: kept while the process runs. */

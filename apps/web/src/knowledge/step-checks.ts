@@ -1,4 +1,4 @@
-import type { VersionCheckReport } from '@arca/api-contract/client';
+import type { KnowledgeVersion, VersionCheckReport } from '@arca/api-contract/client';
 import type { StepKey } from './steps.js';
 
 export type ReportItem = VersionCheckReport['items'][number];
@@ -17,11 +17,7 @@ const stepOfKind = {
 } as const satisfies Record<ReportItem['kind'], StepKey>;
 
 /** How a step's checked points came out; `unread` are the ones the check could not confirm. */
-export interface StepTally {
-  readonly matches: number;
-  readonly differs: number;
-  readonly unread: number;
-}
+export type StepTally = NonNullable<KnowledgeVersion['points']>;
 
 export type TallyTone = 'ok' | 'differs' | 'unread';
 
@@ -31,16 +27,17 @@ export function stepTallies(items: readonly CheckedPoint[]): ReadonlyMap<StepKey
   for (const { kind, status } of items) {
     const step = stepOfKind[kind];
     const before = tallies.get(step) ?? { matches: 0, differs: 0, unread: 0 };
+    const tone = pointTone(status);
     tallies.set(step, {
-      matches: before.matches + (status === 'matches' ? 1 : 0),
-      differs: before.differs + (status === 'differs' ? 1 : 0),
-      unread: before.unread + (status === 'matches' || status === 'differs' ? 0 : 1),
+      matches: before.matches + (tone === 'ok' ? 1 : 0),
+      differs: before.differs + (tone === 'differs' ? 1 : 0),
+      unread: before.unread + (tone === 'unread' ? 1 : 0),
     });
   }
   return tallies;
 }
 
-export const tallyTotal = ({ matches, differs, unread }: StepTally): number =>
+export const pointCount = ({ matches, differs, unread }: StepTally): number =>
   matches + differs + unread;
 
 /** A difference outranks an unread point, and only a step where every point matches reads as fine. */

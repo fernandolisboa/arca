@@ -16,6 +16,9 @@ export function reviewNeed({ check, points }: Checked): ReviewNeed {
   return points === null ? 'unchecked' : 'unread';
 }
 
+/** A need the admin can act on now, so the list points at its first version. */
+export const actionable = (need: ReviewNeed): boolean => need === 'differs' || need === 'ready';
+
 const rank = (need: ReviewNeed) => reviewNeeds.indexOf(need);
 
 /** The rank of a sorted list's most urgent version. */

@@ -392,6 +392,13 @@ export const scriptedCheckerModel = 'fake';
 /** How many of a report's items came out each way. */
 export type StatusCounts = Readonly<Record<CheckStatus, number>>;
 
+/** How many items came out each way. */
+export function countStatuses(items: readonly { readonly status: CheckStatus }[]): StatusCounts {
+  const counts: Record<CheckStatus, number> = { matches: 0, differs: 0, could_not_check: 0 };
+  for (const { status } of items) counts[status] += 1;
+  return counts;
+}
+
 /** A report's points as the screen counts them: matched, differing, and not confirmed. */
 export interface CheckPoints {
   readonly matches: number;

@@ -4,6 +4,7 @@ import {
   type ReadPage,
   plainNote,
   reportClean,
+  countStatuses,
   reportPoints,
   scriptedCheckerModel,
   verifyAnswers,
@@ -617,5 +618,13 @@ describe('reportPoints', () => {
       differs: 1,
       unread: 5,
     });
+  });
+});
+
+describe('countStatuses', () => {
+  it('counts each status, none of them missing', () => {
+    expect(
+      countStatuses([{ status: 'matches' }, { status: 'matches' }, { status: 'differs' }]),
+    ).toEqual({ matches: 2, differs: 1, could_not_check: 0 });
   });
 });
