@@ -1000,7 +1000,7 @@ export const ptBR = {
       order:
         'Ordem de revisão: primeiro o que difere das fontes, depois o que a IA conferiu inteiro, por último o que ela não conseguiu conferir.',
       start: 'Comece por aqui',
-      need: '{need, select, differs {Tem diferença} ready {Conferida pela IA} unread {Falta conferir} other {Sem verificação}}',
+      need: '{need, select, differs {Tem diferença} ready {Conferida pela IA} unread {Falta conferir} unchecked {Sem verificação} other {Sem verificação}}',
       needCount: {
         differs: '{n, plural, one {# com diferença} other {# com diferença}}',
         ready: '{n, plural, one {# conferida} other {# conferidas}}',

@@ -69,7 +69,6 @@ describe('Disclosure', () => {
       <Disclosure
         title={words.title}
         level={4}
-        defaultOpen={false}
         open
         onOpenChange={() => undefined}
         className="surface"

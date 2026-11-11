@@ -19,7 +19,7 @@ import { CheckedBatch } from '../knowledge/checked-batch.js';
 import { CheckChip, useStartChecks } from '../knowledge/checks.js';
 import { ComparisonPanel } from '../knowledge/comparison-panel.js';
 import { ReportsSection } from '../knowledge/reports-section.js';
-import { ReviewFilters } from '../knowledge/review-filters.js';
+import { ReviewFilters, needTone } from '../knowledge/review-filters.js';
 import {
   type CountryGroup,
   type ReviewFilter,
@@ -68,7 +68,7 @@ function Knowledge() {
   const admin = session.data?.admin === true;
   const versions = useQuery({ ...knowledgeVersionsQuery, enabled: admin });
   const [picked, setPicked] = useState<Picked | null>(null);
-  const [filter, setFilter] = useState<ReviewFilter>(noFilter);
+  const [picks, setPicks] = useState<ReviewFilter>(noFilter);
   const [openCountries, setOpenCountries] = useState<ReadonlySet<string>>(() => new Set());
   useStartChecks(versions.isSuccess);
   const title = t('knowledge.title');
@@ -133,7 +133,13 @@ function Knowledge() {
   const proposed = all.filter(({ state }) => state === 'proposed');
   const ordered = reviewOrder(proposed, words.country);
   const first = ordered[0]?.versions[0];
-  const proposedComparisons = filtering(filter)
+  // A country whose last proposed version was decided drops out of the filter.
+  const filter =
+    picks.country === null || ordered.some(({ country }) => country === picks.country)
+      ? picks
+      : { ...picks, country: null };
+  const filtered = proposed.length > 0 && filtering(filter);
+  const proposedComparisons = filtered
     ? []
     : listed.filter(({ picked, state }) => picked.subject === 'comparison' && state === 'proposed');
   const others = listed.filter(({ state }) => state !== 'proposed');
@@ -160,7 +166,7 @@ function Knowledge() {
                   counts={needCounts(proposed, filter)}
                   filter={filter}
                   onChange={(next) => {
-                    setFilter(next);
+                    setPicks(next);
                     const { country } = next;
                     if (country !== null) setOpenCountries((was) => new Set(was).add(country));
                   }}
@@ -168,9 +174,9 @@ function Knowledge() {
                 />
               )
             }
-            filtered={filtering(filter)}
+            filtered={filtered}
             onClearFilter={() => {
-              setFilter(noFilter);
+              setPicks(noFilter);
             }}
             openCountries={openCountries}
             onToggleCountry={(country, open) => {
@@ -264,8 +270,6 @@ function VersionList({
 const rowButton =
   'flex min-h-touch w-full items-start gap-3 px-4 py-3 text-left hover:bg-soft focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary';
 
-const needTone = { differs: 'danger', ready: 'ok', unread: 'warn' } as const;
-
 /**
  * The proposed versions by country, in the order to review them (reviewOrder), each with what it
  * asks of the admin and how its check's points came out; the comparisons last. Each country folds
@@ -323,7 +327,16 @@ function ProposedVersions({
           key={country}
           title={words.country(country)}
           count={versions.length}
-          tally={<NeedTally versions={versions} words={words} />}
+          tally={
+            <>
+              {startHere?.country === country && (
+                <span className="text-caption font-medium text-accent">
+                  {t('knowledge.review.start')}
+                </span>
+              )}
+              <NeedTally versions={versions} words={words} />
+            </>
+          }
           open={openCountries.has(country)}
           onOpenChange={(open) => {
             onToggleCountry(country, open);
@@ -432,13 +445,6 @@ function ProposedVersions({
 /** The open-state key of the comparisons' card, which no country code can take. */
 const comparisonsGroup = 'comparisons';
 
-const needChipTone = {
-  differs: 'danger',
-  ready: 'ok',
-  unread: 'warn',
-  unchecked: 'unknown',
-} as const;
-
 /** How many of a country's versions have each need, so a folded card still says what waits. */
 function NeedTally({
   versions,
@@ -455,7 +461,7 @@ function NeedTally({
         .map((need) => (
           <StatusChip
             key={need}
-            tone={needChipTone[need]}
+            tone={needTone[need]}
             label={words.t(`knowledge.review.needCount.${need}`, { n: counts[need] })}
           />
         ))}
@@ -485,7 +491,6 @@ function ProposedGroup({
     <Disclosure
       title={title}
       level={4}
-      defaultOpen={false}
       open={open}
       onOpenChange={onOpenChange}
       aside={

@@ -1,24 +1,35 @@
 import { type ReactNode, useId, useState } from 'react';
 import { Icon, type IconName } from '../icon.js';
 
-export interface DisclosureProps {
+interface DisclosureBase {
   /** The heading, which is also the toggle's name and the region's name. */
   readonly title: string;
   readonly level: 4 | 5;
   readonly icon?: IconName;
   /** Shown beside the title whether open or closed, such as a status chip. */
   readonly aside?: ReactNode;
-  /** Read once, when the disclosure first renders; a different `key` starts it over. */
-  readonly defaultOpen: boolean;
-  /** Set with `onOpenChange` when the parent keeps the state, such as across a remount. */
-  readonly open?: boolean;
-  readonly onOpenChange?: (open: boolean) => void;
   /** Shown under the body whether open or closed, such as a note that a model wrote it. */
   readonly footer?: ReactNode;
   /** The surface classes of the whole region. */
   readonly className: string;
   readonly children: ReactNode;
 }
+
+/** The disclosure keeps its own state, or its parent does, such as across a remount. */
+export type DisclosureProps = DisclosureBase &
+  (
+    | {
+        /** Read once, when the disclosure first renders; a different `key` starts it over. */
+        readonly defaultOpen: boolean;
+        readonly open?: never;
+        readonly onOpenChange?: never;
+      }
+    | {
+        readonly defaultOpen?: never;
+        readonly open: boolean;
+        readonly onOpenChange: (open: boolean) => void;
+      }
+  );
 
 /**
  * A titled region whose body folds away behind its heading (the WAI-ARIA disclosure pattern): the
@@ -37,7 +48,7 @@ export function Disclosure({
   className,
   children,
 }: DisclosureProps) {
-  const [own, setOwn] = useState(defaultOpen);
+  const [own, setOwn] = useState(defaultOpen ?? false);
   const open = controlled ?? own;
   const titleId = useId();
   const bodyId = useId();

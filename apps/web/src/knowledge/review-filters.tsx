@@ -1,14 +1,22 @@
+import type { StatusTone } from '@arca/ui';
 import { useId } from 'react';
 import { SelectField } from '../forms/select-field.js';
 import { type ReviewFilter, type ReviewNeed, reviewNeeds, toggleNeed } from './review-order.js';
 import type { KnowledgeWords } from './words.js';
 
-/** A need's color, matching its chip in the list. */
-export const needInk: Readonly<Record<ReviewNeed, string>> = {
-  differs: 'text-danger-ink',
-  ready: 'text-ok-ink',
-  unread: 'text-warn-ink',
-  unchecked: 'text-muted',
+/** A need's tone, for its chip in the list and its dot in the filter. */
+export const needTone: Readonly<Record<ReviewNeed, StatusTone>> = {
+  differs: 'danger',
+  ready: 'ok',
+  unread: 'warn',
+  unchecked: 'unknown',
+};
+
+const toneInk: Readonly<Record<StatusTone, string>> = {
+  danger: 'text-danger-ink',
+  ok: 'text-ok-ink',
+  warn: 'text-warn-ink',
+  unknown: 'text-muted',
 };
 
 /**
@@ -61,7 +69,7 @@ export function ReviewFilters({
             >
               <span
                 aria-hidden="true"
-                className={`size-2 rounded-full bg-current ${needInk[need]}`}
+                className={`size-2 rounded-full bg-current ${toneInk[needTone[need]]}`}
               />
               {t('knowledge.review.need', { need })}{' '}
               <span className="text-muted tabular-nums">{counts[need]}</span>
