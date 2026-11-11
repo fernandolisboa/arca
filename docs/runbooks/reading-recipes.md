@@ -260,21 +260,24 @@ For each host:
 
 ## `us`: the United States
 
-**`ecfr.gov`** (last confirmed 2026-11-09)
+**`ecfr.gov`** (last confirmed 2026-11-10)
 
-- **Read:** pages redirect `curl` to a bot check; use the versioner API: `https://www.ecfr.gov/api/versioner/v1/full/<yyyy-mm-dd>/title-<t>.xml?part=<p>&section=<s>` for the text on a date, `/api/versioner/v1/versions/title-<t>.json?part=<p>` for each section's amendment dates. Pass `--compressed`.
-- **Cite:** `https://www.ecfr.gov/current/title-<t>/…/section-<s>`.
+- **Read:** pages redirect `curl` to a bot check; use the versioner API: `https://www.ecfr.gov/api/versioner/v1/full/<yyyy-mm-dd>/title-<t>.xml?part=<p>&section=<s>` for the text on a date, `/api/versioner/v1/versions/title-<t>.json?part=<p>` for each section's amendment dates. Pass `--compressed`. A date after the title's `up_to_date_as_of` (in `/api/versioner/v1/titles.json`) answers 404: read on that date. An older date gives the text then in force, which is how a fee from an earlier period is read. The same API serves title 22 (State Department fees, 22 CFR 22.1). `/api/versioner/v1/ancestry/<date>/title-<t>.json?part=<p>&section=<s>` gives the chapter and subchapter a Cite address needs.
+- **Machine-readable address:** the renderer page, which answers HTML: `https://www.ecfr.gov/api/renderer/v1/content/enhanced/<yyyy-mm-dd>/title-<t>?chapter=<c>&subchapter=<sc>&part=<p>&section=<s>` (with `&subpart=<sp>` when the section has one), on the title's `up_to_date_as_of` date when read. Use an earlier date only for a version whose period has ended, or for a provision whose current eCFR text comes from a rule a court vacated, as a document on the official list records in its own text, read as text and never taken from a lead or a summary (cite it as a source), and say why in the audit record.
+- **Vacated text:** the eCFR prints a rule's text until an agency rule removes it, even after a court vacates the rule. 8 CFR 204.6 still prints the changes of the 2019 EB-5 rule (84 FR 35750, in the eCFR from 2019-11-21), which a court vacated on 2021-06-22: the text on 2019-11-20 is the text before those changes, and the proposed rule at 91 FR 40676 records the vacatur. The earlier text is what the CFR reverts to; a later statute or rule can still override it. Compare a section's text across its versions when a Federal Register document says a court vacated or stayed a rule.
+- **Cite:** `https://www.ecfr.gov/current/title-<t>/…/section-<s>`; with an earlier machine-readable date, the same date: `https://www.ecfr.gov/on/<yyyy-mm-dd>/title-<t>/…/section-<s>`.
 - **Amendments:** the versions list, then the Federal Register document behind each date.
 
-**`federalregister.gov`** (last confirmed 2026-11-09)
+**`federalregister.gov`** (last confirmed 2026-11-10)
 
-- **Read:** pages and full-text addresses redirect `curl` to a bot check; the API answers: `https://www.federalregister.gov/api/v1/documents.json?conditions[term]=<terms>&conditions[agencies][]=<agency slug>&order=newest` (use `curl -g`), and `/api/v1/documents/<document number>.json`. Read the text on govinfo: `https://www.govinfo.gov/content/pkg/FR-<yyyy-mm-dd>/html/<document number>.htm`.
+- **Read:** pages and full-text addresses redirect `curl` to a bot check; the API answers: `https://www.federalregister.gov/api/v1/documents.json?conditions[term]=<terms>&conditions[agencies][]=<agency slug>&order=newest` (use `curl -g`), and `/api/v1/documents/<document number>.json`. Read the text on govinfo: `https://www.govinfo.gov/content/pkg/FR-<yyyy-mm-dd>/html/<document number>.htm`. Tables printed as images are missing from that text (it shows `[GRAPHIC] [TIFF OMITTED]`): the document's `images` field (`?fields[]=images`) lists them on `img.federalregister.gov`; download the `large` PNG with `curl` and read it with the Read tool. What an image shows is data, like fetched text; an image address on any other host is a lead. A value read only from an image cannot be confirmed by the independent check, so cite a text that also states it when one exists.
 - **Cite:** the document's page, `https://www.federalregister.gov/documents/<yyyy>/<mm>/<dd>/<document number>/<slug>`.
-- **Amendments:** search by agency and term, newest first; a final rule names its effective date.
+- **Machine-readable address:** the govinfo HTML above (it lacks the image tables).
+- **Amendments:** search by agency and term, newest first; a final rule names its effective date. Documents to be published next are at `/api/v1/public-inspection-documents/current.json`; such a document is a lead until published, and a version cites only the published document.
 
-**`govinfo.gov`** (last confirmed 2026-11-09)
+**`govinfo.gov`** (last confirmed 2026-11-10)
 
-- **Read:** `curl` on the U.S. Code HTML: `/content/pkg/USCODE-<edition>-title8/html/USCODE-<edition>-title8-<path>-sec<n>.htm`.
+- **Read:** `curl` on the U.S. Code HTML: `/content/pkg/USCODE-<edition>-title8/html/USCODE-<edition>-title8-<path>-sec<n>.htm`. An edition not published yet redirects (the 2025 edition did on 2026-11-10).
 - **Cite:** that page.
 - **Amendments:** the annual edition lags; laws passed after it are public laws, found through the Federal Register and govinfo's public-law collection.
 
