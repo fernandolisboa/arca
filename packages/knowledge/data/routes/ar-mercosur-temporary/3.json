@@ -4,10 +4,7 @@
   "number": 3,
   "title": "Argentine temporary residence by nationality for native nationals of Mercosur member and associated states",
   "country": "AR",
-  "tags": [
-    "regional-agreement",
-    "temporary-residence"
-  ],
+  "tags": ["regional-agreement", "temporary-residence"],
   "effectiveFrom": "2025-05-29",
   "status": "open",
   "currency": "ARS",
@@ -163,19 +160,7 @@
             },
             "set": {
               "op": "tokens",
-              "values": [
-                "BO",
-                "BR",
-                "CL",
-                "CO",
-                "EC",
-                "GY",
-                "PE",
-                "PY",
-                "SR",
-                "UY",
-                "VE"
-              ]
+              "values": ["BO", "BR", "CL", "CO", "EC", "GY", "PE", "PY", "SR", "UY", "VE"]
             }
           },
           {
@@ -189,16 +174,7 @@
                 },
                 "set": {
                   "op": "tokens",
-                  "values": [
-                    "BO",
-                    "BR",
-                    "CL",
-                    "CO",
-                    "EC",
-                    "PE",
-                    "PY",
-                    "UY"
-                  ]
+                  "values": ["BO", "BR", "CL", "CO", "EC", "PE", "PY", "UY"]
                 }
               },
               {
@@ -220,31 +196,21 @@
     {
       "id": "criminal-record",
       "title": "No conviction, final or not, and no indictment or committal to trial, in Argentina or abroad, for a crime that Argentine law punishes with prison",
-      "evidence": [
-        "principal.visaRefusals"
-      ],
-      "sources": [
-        "ley-25871-impediments"
-      ]
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["ley-25871-impediments"]
     },
     {
       "id": "no-entry-ban",
       "title": "No ban on entering Argentina in force, unless it was revoked or its term has run",
-      "evidence": [
-        "principal.visaRefusals"
-      ],
-      "sources": [
-        "ley-25871-impediments"
-      ]
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["ley-25871-impediments"]
     }
   ],
   "dependents": [
     {
       "id": "spouse",
       "title": "Spouse",
-      "path": [
-        "spouse"
-      ],
+      "path": ["spouse"],
       "condition": {
         "op": "bool",
         "value": true
@@ -259,9 +225,7 @@
     {
       "id": "partner",
       "title": "Partner of two years or more, who counts like a spouse only if the union is registered, which is not recorded: possible",
-      "path": [
-        "partner"
-      ],
+      "path": ["partner"],
       "condition": {
         "op": "all",
         "operands": [
@@ -288,9 +252,7 @@
     {
       "id": "children",
       "title": "Unmarried children under 18; adult children only with a disability, which is not recorded: possible",
-      "path": [
-        "child"
-      ],
+      "path": ["child"],
       "condition": {
         "op": "any",
         "operands": [
@@ -349,10 +311,7 @@
     {
       "id": "spouse-children",
       "title": "The spouse's unmarried children under 18, who join the spouse once the spouse is a temporary resident; adults: possible",
-      "path": [
-        "spouse",
-        "child"
-      ],
+      "path": ["spouse", "child"],
       "condition": {
         "op": "any",
         "operands": [
@@ -400,19 +359,12 @@
           }
         ]
       },
-      "sources": [
-        "ley-25871-reunification",
-        "decreto-616-2010-reunification",
-        "ccyc-minors"
-      ]
+      "sources": ["ley-25871-reunification", "decreto-616-2010-reunification", "ccyc-minors"]
     },
     {
       "id": "partner-children",
       "title": "The partner's children, like the spouse's, when the union of two years or more is registered, which is not recorded: possible; a married child under 18 is left out",
-      "path": [
-        "partner",
-        "child"
-      ],
+      "path": ["partner", "child"],
       "condition": {
         "op": "all",
         "operands": [
@@ -463,18 +415,12 @@
     {
       "id": "parents",
       "title": "Parents",
-      "path": [
-        "parent"
-      ],
+      "path": ["parent"],
       "condition": {
         "op": "bool",
         "value": true
       },
-      "sources": [
-        "ley-25871-reunification",
-        "ley-25871-family",
-        "decreto-616-2010-reunification"
-      ]
+      "sources": ["ley-25871-reunification", "ley-25871-family", "decreto-616-2010-reunification"]
     }
   ],
   "costs": [
@@ -488,10 +434,7 @@
         "currency": "ARS"
       },
       "appliesTo": "principal",
-      "sources": [
-        "dnm-fee-table",
-        "decreto-584-2024-unit"
-      ]
+      "sources": ["dnm-fee-table", "decreto-584-2024-unit"]
     },
     {
       "id": "residence-fee-native-family",
@@ -540,28 +483,12 @@
             },
             "set": {
               "op": "tokens",
-              "values": [
-                "BO",
-                "BR",
-                "CL",
-                "CO",
-                "EC",
-                "GY",
-                "PE",
-                "PY",
-                "SR",
-                "UY",
-                "VE"
-              ]
+              "values": ["BO", "BR", "CL", "CO", "EC", "GY", "PE", "PY", "SR", "UY", "VE"]
             }
           }
         ]
       },
-      "sources": [
-        "dnm-fee-table",
-        "decreto-584-2024-unit",
-        "decreto-584-2024-exemption"
-      ]
+      "sources": ["dnm-fee-table", "decreto-584-2024-unit", "decreto-584-2024-exemption"]
     },
     {
       "id": "residence-fee-other-family",
@@ -612,19 +539,7 @@
               },
               "set": {
                 "op": "tokens",
-                "values": [
-                  "BO",
-                  "BR",
-                  "CL",
-                  "CO",
-                  "EC",
-                  "GY",
-                  "PE",
-                  "PY",
-                  "SR",
-                  "UY",
-                  "VE"
-                ]
+                "values": ["BO", "BR", "CL", "CO", "EC", "GY", "PE", "PY", "SR", "UY", "VE"]
               }
             }
           },
@@ -633,11 +548,7 @@
           }
         ]
       },
-      "sources": [
-        "dnm-fee-table",
-        "decreto-584-2024-unit",
-        "decreto-584-2024-exemption"
-      ]
+      "sources": ["dnm-fee-table", "decreto-584-2024-unit", "decreto-584-2024-exemption"]
     }
   ],
   "durations": [
@@ -646,10 +557,7 @@
       "title": "Temporary residence by nationality: two years, extendable, with multiple entries and exits",
       "min": "P2Y",
       "max": "P2Y",
-      "sources": [
-        "ley-25871-nationality",
-        "dnm-mercosur"
-      ]
+      "sources": ["ley-25871-nationality", "dnm-mercosur"]
     }
   ],
   "corrects": 2

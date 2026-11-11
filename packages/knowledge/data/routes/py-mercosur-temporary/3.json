@@ -4,10 +4,7 @@
   "number": 3,
   "title": "Paraguayan Mercosur temporary residence for nationals of the states in the Mercosur Residence Agreement",
   "country": "PY",
-  "tags": [
-    "regional-agreement",
-    "temporary-residence"
-  ],
+  "tags": ["regional-agreement", "temporary-residence"],
   "effectiveFrom": "2026-07-01",
   "status": "open",
   "currency": "PYG",
@@ -107,16 +104,7 @@
             },
             "set": {
               "op": "tokens",
-              "values": [
-                "AR",
-                "BO",
-                "BR",
-                "CL",
-                "CO",
-                "EC",
-                "PE",
-                "UY"
-              ]
+              "values": ["AR", "BO", "BR", "CL", "CO", "EC", "PE", "UY"]
             }
           },
           {
@@ -130,16 +118,7 @@
                 },
                 "set": {
                   "op": "tokens",
-                  "values": [
-                    "AR",
-                    "BO",
-                    "BR",
-                    "CL",
-                    "CO",
-                    "EC",
-                    "PE",
-                    "UY"
-                  ]
+                  "values": ["AR", "BO", "BR", "CL", "CO", "EC", "PE", "UY"]
                 }
               },
               {
@@ -149,31 +128,22 @@
           }
         ]
       },
-      "sources": [
-        "ley-3578-nationals",
-        "dnm-mercosur-temporary"
-      ]
+      "sources": ["ley-3578-nationals", "dnm-mercosur-temporary"]
     }
   ],
   "assessments": [
     {
       "id": "no-criminal-record",
       "title": "Certificates showing no judicial, criminal or police records in the country of origin or where the applicant lived in the five years before arriving or applying",
-      "evidence": [
-        "principal.visaRefusals"
-      ],
-      "sources": [
-        "ley-3578-records"
-      ]
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["ley-3578-records"]
     }
   ],
   "dependents": [
     {
       "id": "spouse",
       "title": "Spouse who depends on a principal native of Argentina, Bolivia, Brazil, Chile or Uruguay; others: possible",
-      "path": [
-        "spouse"
-      ],
+      "path": ["spouse"],
       "condition": {
         "op": "any",
         "operands": [
@@ -188,13 +158,7 @@
                 },
                 "set": {
                   "op": "tokens",
-                  "values": [
-                    "AR",
-                    "BO",
-                    "BR",
-                    "CL",
-                    "UY"
-                  ]
+                  "values": ["AR", "BO", "BR", "CL", "UY"]
                 }
               },
               {
@@ -208,17 +172,12 @@
           }
         ]
       },
-      "sources": [
-        "ley-3578-family",
-        "ley-6984"
-      ]
+      "sources": ["ley-3578-family", "ley-6984"]
     },
     {
       "id": "children",
       "title": "Unmarried children under 18 who depend on a principal native of Argentina, Bolivia, Brazil, Chile or Uruguay; adult children, married or not, only with a disability, which is not recorded: possible",
-      "path": [
-        "child"
-      ],
+      "path": ["child"],
       "condition": {
         "op": "any",
         "operands": [
@@ -257,13 +216,7 @@
                         },
                         "set": {
                           "op": "tokens",
-                          "values": [
-                            "AR",
-                            "BO",
-                            "BR",
-                            "CL",
-                            "UY"
-                          ]
+                          "values": ["AR", "BO", "BR", "CL", "UY"]
                         }
                       },
                       {
@@ -300,19 +253,12 @@
           }
         ]
       },
-      "sources": [
-        "ley-3578-family",
-        "ley-6984",
-        "ley-2169"
-      ]
+      "sources": ["ley-3578-family", "ley-6984", "ley-2169"]
     },
     {
       "id": "spouse-children",
       "title": "The spouse's unmarried children under 18 who depend on a principal native of Argentina, Bolivia, Brazil, Chile or Uruguay; others, adults married or not included: possible",
-      "path": [
-        "spouse",
-        "child"
-      ],
+      "path": ["spouse", "child"],
       "condition": {
         "op": "any",
         "operands": [
@@ -351,13 +297,7 @@
                         },
                         "set": {
                           "op": "tokens",
-                          "values": [
-                            "AR",
-                            "BO",
-                            "BR",
-                            "CL",
-                            "UY"
-                          ]
+                          "values": ["AR", "BO", "BR", "CL", "UY"]
                         }
                       },
                       {
@@ -394,18 +334,12 @@
           }
         ]
       },
-      "sources": [
-        "ley-3578-family",
-        "ley-6984",
-        "ley-2169"
-      ]
+      "sources": ["ley-3578-family", "ley-6984", "ley-2169"]
     },
     {
       "id": "parents",
       "title": "Parents who depend on a principal native of Argentina, Bolivia, Brazil, Chile or Uruguay; others: possible",
-      "path": [
-        "parent"
-      ],
+      "path": ["parent"],
       "condition": {
         "op": "any",
         "operands": [
@@ -420,13 +354,7 @@
                 },
                 "set": {
                   "op": "tokens",
-                  "values": [
-                    "AR",
-                    "BO",
-                    "BR",
-                    "CL",
-                    "UY"
-                  ]
+                  "values": ["AR", "BO", "BR", "CL", "UY"]
                 }
               },
               {
@@ -440,10 +368,7 @@
           }
         ]
       },
-      "sources": [
-        "ley-3578-family",
-        "ley-6984"
-      ]
+      "sources": ["ley-3578-family", "ley-6984"]
     }
   ],
   "costs": [
@@ -467,16 +392,11 @@
           },
           "set": {
             "op": "tokens",
-            "values": [
-              "EC"
-            ]
+            "values": ["EC"]
           }
         }
       },
-      "sources": [
-        "dnm-fee-table",
-        "dnm-mercosur-temporary"
-      ]
+      "sources": ["dnm-fee-table", "dnm-mercosur-temporary"]
     },
     {
       "id": "residence-fee-ecuadorian",
@@ -496,15 +416,10 @@
         },
         "set": {
           "op": "tokens",
-          "values": [
-            "EC"
-          ]
+          "values": ["EC"]
         }
       },
-      "sources": [
-        "dnm-ecuadorian-fees",
-        "dnm-fee-table"
-      ]
+      "sources": ["dnm-ecuadorian-fees", "dnm-fee-table"]
     },
     {
       "id": "residence-fee-family",
@@ -519,10 +434,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "dnm-fee-table",
-        "ley-3578-family"
-      ]
+      "sources": ["dnm-fee-table", "ley-3578-family"]
     }
   ],
   "durations": [
@@ -531,10 +443,7 @@
       "title": "Mercosur temporary residence: two years, not extendable; permanent residence is asked for in the 90 days before it expires",
       "min": "P2Y",
       "max": "P2Y",
-      "sources": [
-        "dnm-mercosur-temporary",
-        "ley-3578-residence"
-      ]
+      "sources": ["dnm-mercosur-temporary", "ley-3578-residence"]
     }
   ],
   "corrects": 2
