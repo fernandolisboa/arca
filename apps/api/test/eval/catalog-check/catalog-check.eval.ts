@@ -43,17 +43,15 @@ interface Version {
   readonly number: number;
 }
 
-const routeIdPattern = /^[a-z]{2}-[a-z0-9-]{1,80}$/;
-
 /**
  * The routes `ARCA_CATALOG_ROUTES` names, comma-separated, or undefined for every route. A name that
- * is not a route ID, or no bundled route's, fails the run, so a typo never measures nothing.
+ * is no bundled route's fails the run, so a typo never measures nothing.
  */
 function requestedRoutes(known: readonly string[]): ReadonlySet<string> | undefined {
   const raw = process.env['ARCA_CATALOG_ROUTES']?.trim() ?? '';
   if (raw === '') return undefined;
   const ids = raw.split(',').map((id) => id.trim());
-  const unknown = ids.filter((id) => !routeIdPattern.test(id) || !known.includes(id));
+  const unknown = ids.filter((id) => !known.includes(id));
   if (unknown.length > 0)
     throw new Error(`${String(unknown.length)} requested routes are not bundled`);
   return new Set(ids);

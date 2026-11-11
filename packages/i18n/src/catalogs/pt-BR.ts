@@ -987,7 +987,7 @@ export const ptBR = {
       officialDomains: 'listas de sites oficiais',
     },
     leapDay:
-      '{rule, select, february {Quem nasceu em 29 de fevereiro faz aniversário em 28 de fevereiro nos anos comuns.} march {Quem nasceu em 29 de fevereiro faz aniversário em 1º de março nos anos comuns.} unsettled {Nenhuma lei diz quando faz aniversário quem nasceu em 29 de fevereiro. Nos anos comuns, entre 28 de fevereiro e 1º de março, a idade dessa pessoa fica em aberto.} other {A versão não diz quando faz aniversário quem nasceu em 29 de fevereiro.}}',
+      '{rule, select, february {Quem nasceu em 29 de fevereiro faz aniversário em 28 de fevereiro nos anos comuns.} march {Quem nasceu em 29 de fevereiro faz aniversário em 1º de março nos anos comuns.} unsettled {Nenhum texto oficial define quando faz aniversário quem nasceu em 29 de fevereiro. Nos anos comuns, entre 28 de fevereiro e 1º de março, a idade dessa pessoa fica em aberto.} other {A versão não diz quando faz aniversário quem nasceu em 29 de fevereiro.}}',
     referenceDates: 'Datas de referência: {dates}',
     closureSources: 'Fontes do encerramento: {sources}',
     pins: 'Arquivos fixados: {pins}',

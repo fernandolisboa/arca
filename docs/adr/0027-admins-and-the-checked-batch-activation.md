@@ -173,6 +173,7 @@ Decided:
 
 - **A rule audit runs the check on its branch and fixes what it could not confirm** ([the check loop](../runbooks/rule-audit.md#the-check-loop)): the rule, the sources (a machine-readable address, one provision per source, a page holding the whole provision) or the item, then runs it again, at most three times. What is left gets one of three categories, `unreadable`, `checker-gap` or `differs-open`, with its reason, in the route's record and the pull request. The audit never relaxes the check to pass.
 - **`intake-eval`'s catalog check takes a `routes` input**, so a loop run checks only the audited routes: about ten U.S. cents a route, under the same 200-call cap.
+- **The unattended monthly run may start that one workflow**, and only it: with routes it audited, at most four times a pull request, one run at a time, and only on a head whose changed files already pass its path check, so no workflow or code it wrote runs with the key. It merges nothing whose last run left an item `differs`. About three dollars a month at most, from the owner's API credit, which he chose on 2026-11-11 ("não só analisa as regras, mas entra em loop e vai corrigindo").
 - **A version may leave a 29 February birthday `unsettled`** (spec 0002, R2) when no official text settles it. It cites nothing, the check lists no item for it, and an age that turns on it is a range on that day.
 - Nothing changes in what code checks, in what makes a report clean, or in the admin's decision.
 

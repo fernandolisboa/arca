@@ -27,6 +27,8 @@ function statedNumbers(content: string): Set<string> {
   // A leap-day rule is about birthdays on 29 February, which the version names only by its outcome.
   if (typeof parsed === 'object' && parsed !== null && 'leapDayBirthday' in parsed) {
     if (parsed.leapDayBirthday !== null) stated.add('29');
+    // Unsettled names the days in between: 28 February and 1 March.
+    if (parsed.leapDayBirthday === 'unsettled') ['28', '1'].forEach((day) => stated.add(day));
   }
   return stated;
 }
