@@ -1,4 +1,4 @@
-import { Icon } from '@arca/ui';
+import { Icon, StatusChip, type StatusTone } from '@arca/ui';
 import { useId, useState } from 'react';
 import {
   type StepTally,
@@ -9,12 +9,6 @@ import {
 } from './step-checks.js';
 import type { Step, StepKey } from './steps.js';
 import type { KnowledgeWords } from './words.js';
-
-const ink: Record<TallyTone, string> = {
-  ok: 'text-ok-ink',
-  differs: 'text-danger-ink',
-  unread: 'text-warn-ink',
-};
 
 const rowTone: Record<TallyTone, string> = {
   ok: 'bg-ok-bg/60',
@@ -28,6 +22,22 @@ const dotTone: Record<TallyTone, string> = {
   unread: 'border-[1.5px] border-warn-ink bg-surface',
 };
 
+const markTone: Record<TallyTone, string> = {
+  ok: 'bg-ok-bg text-ok-ink',
+  differs: 'bg-danger-bg text-danger-ink',
+  unread: 'bg-warn-bg text-warn-ink',
+};
+
+const markIcon = { ok: 'check', differs: 'close', unread: 'help' } as const satisfies Record<
+  TallyTone,
+  string
+>;
+
+const chipTone = { ok: 'ok', differs: 'danger', unread: 'warn' } as const satisfies Record<
+  TallyTone,
+  StatusTone
+>;
+
 const segmentTone: Record<TallyTone, string> = {
   ok: 'bg-ok-ink',
   differs: 'bg-danger-ink',
@@ -36,30 +46,36 @@ const segmentTone: Record<TallyTone, string> = {
 
 /** How a point or a step came out, as a shape as well as a colour. */
 export function PointMark({ tone }: { readonly tone: TallyTone }) {
-  if (tone === 'unread') {
-    return (
-      <span className={`grid size-6 shrink-0 place-items-center ${ink.unread}`}>
-        <Icon name="help" size={22} />
-      </span>
-    );
-  }
   return (
     <span
-      className={`grid size-6 shrink-0 place-items-center rounded-full border border-current/30 bg-surface ${ink[tone]}`}
+      className={`grid size-6 shrink-0 place-items-center rounded-full border border-current/20 ${markTone[tone]}`}
     >
-      <Icon name={tone === 'ok' ? 'check' : 'close'} size={14} />
+      <Icon name={markIcon[tone]} size={14} />
     </span>
   );
 }
 
-/** A tally in words, naming only the counts it has: "2 batem, 1 difere". */
-export function tallyWords({ matches, differs, unread }: StepTally, words: KnowledgeWords): string {
-  const { t } = words;
-  return words.list([
-    ...(matches > 0 ? [t('knowledge.points.matches', { n: matches })] : []),
-    ...(differs > 0 ? [t('knowledge.points.differs', { n: differs })] : []),
-    ...(unread > 0 ? [t('knowledge.points.unread', { n: unread })] : []),
-  ]);
+/** Each count a tally has, in words and with its tone: "2 batem", "1 difere". */
+function tallyParts(
+  { matches, differs, unread }: StepTally,
+  { t }: KnowledgeWords,
+): readonly { readonly tone: TallyTone; readonly text: string }[] {
+  return [
+    ...(matches > 0
+      ? [{ tone: 'ok' as const, text: t('knowledge.points.matches', { n: matches }) }]
+      : []),
+    ...(differs > 0
+      ? [{ tone: 'differs' as const, text: t('knowledge.points.differs', { n: differs }) }]
+      : []),
+    ...(unread > 0
+      ? [{ tone: 'unread' as const, text: t('knowledge.points.unread', { n: unread }) }]
+      : []),
+  ];
+}
+
+/** A tally in words, naming only the counts it has: "2 batem e 1 difere". */
+export function tallyWords(tally: StepTally, words: KnowledgeWords): string {
+  return words.list(tallyParts(tally, words).map(({ text }) => text));
 }
 
 /** One dot per point, keyed by its tone and its place among the points of that tone. */
@@ -88,8 +104,55 @@ export function TallyDots({
       aria-label={tallyWords(tally, words)}
       className="flex max-w-24 shrink-0 flex-wrap justify-end gap-1"
     >
+      <Dots tally={tally} />
+    </span>
+  );
+}
+
+function Dots({ tally }: { readonly tally: StepTally }) {
+  return (
+    <>
       {dotsOf(tally).map(({ key, tone }) => (
         <span key={key} className={`size-2 rounded-full ${dotTone[tone]}`} />
+      ))}
+    </>
+  );
+}
+
+/** A step's tally beside its title: "2 batem · 1 difere" and one dot per point. */
+export function TallyLine({
+  tally,
+  words,
+}: {
+  readonly tally: StepTally;
+  readonly words: KnowledgeWords;
+}) {
+  return (
+    <p className="flex items-center gap-3 text-small text-muted">
+      <span className="sr-only">{tallyWords(tally, words)}</span>
+      <span aria-hidden="true">
+        {tallyParts(tally, words)
+          .map(({ text }) => text)
+          .join(' · ')}
+      </span>
+      <span aria-hidden="true" className="flex max-w-32 flex-wrap justify-end gap-1.5">
+        <Dots tally={tally} />
+      </span>
+    </p>
+  );
+}
+
+/** One segment per checked point, coloured by how it came out, along a card's bottom edge. */
+function PointBar({ tally }: { readonly tally: StepTally }) {
+  return (
+    <span aria-hidden="true" className="absolute inset-x-0 bottom-0 flex h-1.5">
+      {dotsOf(tally).map(({ key, tone }, position, all) => (
+        <span
+          key={key}
+          className={`flex-1 ${segmentTone[tone]} ${
+            position > 0 && all[position - 1]?.tone !== tone ? 'ml-0.5' : ''
+          }`}
+        />
       ))}
     </span>
   );
@@ -117,7 +180,7 @@ export function CheckSummary({
   return (
     <section
       aria-labelledby={titleId}
-      className="flex flex-col gap-2 rounded-card border border-line bg-surface p-4"
+      className="relative flex flex-col gap-2 overflow-hidden rounded-card border border-line bg-surface p-4 pb-5"
     >
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
         <div className="flex flex-col">
@@ -133,10 +196,17 @@ export function CheckSummary({
                 : t('knowledge.points.allMatch')}
           </h4>
         </div>
-        <p className="text-small">{tallyWords(total, words)}</p>
+        <ul className="flex flex-wrap gap-2">
+          {tallyParts(total, words).map(({ tone, text }) => (
+            <li key={tone}>
+              <StatusChip tone={chipTone[tone]} label={text} />
+            </li>
+          ))}
+        </ul>
       </div>
       {scripted && <p className="text-small font-medium">{t('knowledge.check.scripted')}</p>}
       <p className="text-small text-muted">{t('knowledge.points.note')}</p>
+      <PointBar tally={total} />
     </section>
   );
 }
