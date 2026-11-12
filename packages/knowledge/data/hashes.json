@@ -402,6 +402,10 @@
     {
       "path": "routes/pt-d8/6",
       "sha256": "69c2f6750dca3a75f9e71884ec0f464b149ae93829aba1d2d18d7a76814158ff"
+    },
+    {
+      "path": "routes/cz-eu-blue-card/4",
+      "sha256": "5628de29ffc727bee3bfcc3184957714b3d95d020ec7ed289174b6d97408c971"
     }
   ]
 }

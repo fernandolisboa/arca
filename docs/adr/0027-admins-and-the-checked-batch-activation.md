@@ -214,6 +214,10 @@ The owner asked why so many items stay could not be checked when the sessions th
 
 PDFs set in vertical columns, as Japanese notices are, came out one glyph per line, so no quote could be copied from them; such runs of single Han, kana or Hangul characters are joined back into lines ([ADR-0028](0028-pdf-text-in-the-independent-check.md)).
 
+### Addresses in pages (amendment, 2026-11-12)
+
+Some official APIs serve a long law only in pages (the Czech Collection of Laws serves the Aliens Act in four), and one page is not the text a source cites. The owner chose official data addresses over a headless browser for pages that scripts draw: only the Czech and Chilean pages fall in that case, both sites serve their laws as data, and sites that refuse automated readers would refuse a browser too. A machine-readable address may now name one range in its query, `cisloStranky={0..3}`, of at most ten pages, with no leading zero and before any `#`; the check reads the pages in order on the source's hosts and joins them into one text within the usual 3,000,000-character cap, and the first page that fails fails the whole address, so no item is checked on part of a law. Sources that name the same address share one read in a check. The range is data, so a country's paged API needs no code; the fetch log keeps the address as written.
+
 ## Alternatives
 
 | Option | Why not |

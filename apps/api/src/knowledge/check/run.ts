@@ -13,6 +13,7 @@ import {
   excerptBudgets,
   excerptPassages,
   excerptText,
+  addressPages,
   machineReadableUrls,
   maxPassagesPerItem,
   noGuide,
@@ -39,7 +40,7 @@ import {
   RuleCheckerError,
   type RuleCheckerFailure,
 } from './checker.js';
-import { type FetchOutcome, type SourceFetcher, textDigest } from './fetcher.js';
+import { type FetchOutcome, type SourceFetcher, fetchLimits, textDigest } from './fetcher.js';
 import {
   type PassageLocateRequest,
   type PassageLocator,
@@ -137,6 +138,45 @@ interface Comparison {
   readonly failure: RuleCheckerFailure | null;
   /** Whether a long page went as its opening because no passage was picked for its items. */
   readonly unpicked: boolean;
+}
+
+/**
+ * The pages of a machine-readable address read in order and joined into one text, within the
+ * per-page text cap, as one long law an official API serves in pages; the first page that fails
+ * fails the whole, so no item is checked on part of a law.
+ */
+async function fetchPages(
+  fetcher: SourceFetcher,
+  pages: readonly string[],
+  hosts: readonly string[],
+): Promise<FetchOutcome> {
+  if (pages.length === 0) return { ok: false, failure: 'no_text', status: null, chain: [] };
+  const texts: string[] = [];
+  const chain: string[] = [];
+  let status = 0;
+  let cut = false;
+  let length = 0;
+  for (const page of pages) {
+    if (length >= fetchLimits.maxTextLength) {
+      cut = true;
+      break;
+    }
+    const read = await fetcher.fetch(page, hosts);
+    chain.push(...read.chain);
+    if (!read.ok) return { ...read, chain };
+    if (texts.length === 0) status = read.status;
+    texts.push(read.text);
+    cut ||= read.cut;
+    length += read.text.length + 1;
+  }
+  const text = texts.join('\n');
+  return {
+    ok: true,
+    status,
+    text: text.slice(0, fetchLimits.maxTextLength),
+    cut: cut || text.length > fetchLimits.maxTextLength,
+    chain,
+  };
 }
 
 /**
@@ -256,13 +296,26 @@ export function createVersionCheck({
   ): Promise<FetchedPage[]> => {
     const fetched: FetchedPage[] = [];
     const addresses = machineReadableUrls(subject.entry);
+    // Sources that cite parts of one law often name the same address; it is read once.
+    const readAddresses = new Map<string, Promise<FetchOutcome>>();
+    const readAddress = (address: string, hosts: readonly string[]) => {
+      const key = JSON.stringify([address, hosts]);
+      const known = readAddresses.get(key);
+      if (known !== undefined) return known;
+      const reading = fetchPages(fetcher, addressPages(address), hosts);
+      readAddresses.set(key, reading);
+      return reading;
+    };
     for (const [url, hosts] of cited) {
       await record({ kind: 'page', url, outcome: 'reading', status: null });
       // A machine-readable address is read in place of its page, on the same hosts; when it
       // fails, the page is not tried, so its items could not be checked, with the reason.
       const machineReadableUrl = addresses.get(url) ?? null;
       const started = now();
-      const read = await fetcher.fetch(machineReadableUrl ?? url, hosts);
+      const read =
+        machineReadableUrl === null
+          ? await fetcher.fetch(url, hosts)
+          : await readAddress(machineReadableUrl, hosts);
       // Official sites fail often and the report keeps each failure, so the log line is a code.
       if (!read.ok) logger.info({ route, errorCode: `check_fetch_${read.failure}` });
       await record({

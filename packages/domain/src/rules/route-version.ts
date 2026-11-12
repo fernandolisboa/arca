@@ -25,14 +25,46 @@ export const pinSchema = z.strictObject({ id: slugSchema, number: versionNumberS
 
 const sourceUrlSchema = z.string().max(2000).startsWith('https://');
 
+/** The most pages one machine-readable address may name with a range. */
+export const maxAddressPages = 10;
+
+const pageRange = /\{(\d{1,3})\.\.(\d{1,3})\}/gu;
+
+/**
+ * The addresses a machine-readable address stands for, in order: itself, or one address per page
+ * when its query names a range such as `page={0..3}`, for an official API that serves a long law
+ * in pages. Empty when the range is malformed, too long, outside the query or not the only one.
+ */
+export function addressPages(address: string): string[] {
+  const ranges = [...address.matchAll(pageRange)];
+  if (ranges.length === 0) return /[{}]/u.test(address) ? [] : [address];
+  const [range] = ranges;
+  if (ranges.length > 1 || range === undefined) return [];
+  const first = Number(range[1]);
+  const last = Number(range[2]);
+  const query = address.indexOf('?');
+  const count = last - first + 1;
+  const fragment = address.indexOf('#');
+  if (query === -1 || range.index < query || (fragment !== -1 && fragment < range.index)) return [];
+  if (/^0\d/u.test(range[1] ?? '') || /^0\d/u.test(range[2] ?? '')) return [];
+  if (count < 1 || count > maxAddressPages) return [];
+  const before = address.slice(0, range.index);
+  const after = address.slice(range.index + range[0].length);
+  if (/[{}]/u.test(before + after)) return [];
+  return Array.from({ length: count }, (_, page) => `${before}${String(first + page)}${after}`);
+}
+
 /**
  * An official address that serves a source's text as data, such as an API or a print address.
  * The build matches its host against the pinned official-domain lists, as it does a source's URL.
  */
-export const machineReadableUrlSchema = sourceUrlSchema.regex(
-  /^https:\/\/[^/?#\\@:%\s\u3002\uff0e\uff61]+(?:[/?#]|$)/,
-  { message: 'A machine-readable address has a plain host, with no user information or port' },
-);
+export const machineReadableUrlSchema = sourceUrlSchema
+  .regex(/^https:\/\/[^/?#\\@:%\s\u3002\uff0e\uff61]+(?:[/?#]|$)/, {
+    message: 'A machine-readable address has a plain host, with no user information or port',
+  })
+  .refine((address) => addressPages(address).length > 0, {
+    message: `A machine-readable address names at most one page range, {first..last} in its query, of at most ${String(maxAddressPages)} pages`,
+  });
 
 /** A source as the files that pin no official-domain list cite it: its URL only. */
 export const plainSourceSchema = z.strictObject({
