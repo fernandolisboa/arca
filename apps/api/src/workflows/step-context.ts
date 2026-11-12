@@ -25,6 +25,7 @@ import {
   ruleCheckerFor,
 } from '../knowledge/check/environment.js';
 import { postgresCheckProgressStore } from '../knowledge/check/progress.js';
+import { storedPageCopies } from '../knowledge/check/page-copies.js';
 import { type VersionCheck, createVersionCheck } from '../knowledge/check/run.js';
 import { postgresCheckReportStore } from '../knowledge/check/store.js';
 import { createCheckSubjects } from '../knowledge/versions.js';
@@ -180,6 +181,7 @@ export const checkSteps = once((): Promise<VersionCheck> => {
       subject: createCheckSubjects(),
       guide: countryGuide,
       fetcher: checkFetcherFor(environment, readOfflineRuleCheck()),
+      copies: storedPageCopies({ db: jobsDatabase, storage: jobStorage() }),
       checker,
       locator: passageLocatorFor(environment, apiKey),
       store: postgresCheckReportStore(jobsDatabase),

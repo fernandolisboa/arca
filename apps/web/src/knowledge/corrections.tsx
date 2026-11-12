@@ -30,6 +30,7 @@ import {
   fileExtensions,
 } from './correction-file-type.js';
 import { saveCorrectionFile, uploadCorrectionFile } from './correction-upload.js';
+import { SelectField } from '../forms/select-field.js';
 import { TextField } from '../forms/text-field.js';
 import { textLinkClass } from '../forms/text-link.js';
 import type { KnowledgeWords } from './words.js';
@@ -40,6 +41,8 @@ type ListedRequest = CorrectionRequests['requests'][number];
 interface Filing {
   readonly routeId: string;
   readonly number: number;
+  /** The pages the version cites, which a file may be a copy of. */
+  readonly pages: VersionView['sources'];
   readonly canFile: boolean;
   readonly words: KnowledgeWords;
 }
@@ -59,8 +62,8 @@ export function CorrectionFiling({
   const requests = useQuery(correctionRequestsQuery(view.routeId, view.number));
   const canFile = requests.data?.canFile === true;
   const filing = useMemo(
-    () => ({ routeId: view.routeId, number: view.number, canFile, words }),
-    [view.routeId, view.number, canFile, words],
+    () => ({ routeId: view.routeId, number: view.number, pages: view.sources, canFile, words }),
+    [view.routeId, view.number, view.sources, canFile, words],
   );
   return <FilingContext value={filing}>{children}</FilingContext>;
 }
@@ -101,12 +104,16 @@ function TextArea({
   );
 }
 
-/** A file chosen for the request: uploading, uploaded with its upload's ID, or failed. */
+/**
+ * A file chosen for the request: uploading, uploaded with its upload's ID, or failed; and the
+ * cited page it is a copy of, if any.
+ */
 interface FileDraft {
   readonly kind: 'file';
   readonly name: string;
   readonly state: 'sending' | 'ready' | 'failed';
   readonly uploadId?: string;
+  readonly pageUrl: string | null;
 }
 
 type Draft = { readonly id: number } & (
@@ -126,7 +133,9 @@ const failures = {
 function filledSources(drafts: readonly Draft[]): CorrectionSource[] {
   return drafts.flatMap((draft): CorrectionSource[] => {
     if (draft.kind === 'file') {
-      return draft.uploadId === undefined ? [] : [{ kind: 'file', uploadId: draft.uploadId }];
+      return draft.uploadId === undefined
+        ? []
+        : [{ kind: 'file', uploadId: draft.uploadId, pageUrl: draft.pageUrl }];
     }
     if (draft.kind === 'link') {
       const url = draft.url.trim();
@@ -175,14 +184,22 @@ function CorrectionForm({
     setFileRefused(mediaType === undefined);
     if (mediaType === undefined) return;
     const id = nextIdRef.current++;
-    const base = { id, kind: 'file', name: file.name } as const;
-    setDrafts((current) => [...current, { ...base, state: 'sending' }]);
+    setDrafts((current) => [
+      ...current,
+      { id, kind: 'file', name: file.name, state: 'sending', pageUrl: null },
+    ]);
+    // Merged into the draft as it then stands, so a page chosen while it uploads is kept.
+    const settle = (settled: Pick<FileDraft, 'state' | 'uploadId'>) => {
+      setDrafts((current) =>
+        current.map((old) => (old.id === id && old.kind === 'file' ? { ...old, ...settled } : old)),
+      );
+    };
     uploadCorrectionFile(file, mediaType)
       .then((uploadId) => {
-        change({ ...base, state: 'ready', uploadId });
+        settle({ state: 'ready', uploadId });
       })
       .catch(() => {
-        change({ ...base, state: 'failed' });
+        settle({ state: 'failed' });
       });
   };
   const pickFile = () => {
@@ -238,23 +255,39 @@ function CorrectionForm({
       />
       {drafts.map((draft) =>
         draft.kind === 'file' ? (
-          <div key={draft.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-small">
-            <span className="break-all font-medium">{draft.name}</span>
-            <span
-              role={draft.state === 'failed' ? 'alert' : 'status'}
-              className={draft.state === 'failed' ? 'text-danger-ink' : 'text-muted'}
-            >
-              {t('knowledge.corrections.fileState', { state: draft.state })}
-            </span>
-            <button
-              type="button"
-              className={textLinkClass}
-              onClick={() => {
-                remove(draft.id);
-              }}
-            >
-              {t('knowledge.corrections.removeFile')}
-            </button>
+          <div key={draft.id} className="flex flex-col gap-2">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-small">
+              <span className="break-all font-medium">{draft.name}</span>
+              <span
+                role={draft.state === 'failed' ? 'alert' : 'status'}
+                className={draft.state === 'failed' ? 'text-danger-ink' : 'text-muted'}
+              >
+                {t('knowledge.corrections.fileState', { state: draft.state })}
+              </span>
+              <button
+                type="button"
+                className={textLinkClass}
+                onClick={() => {
+                  remove(draft.id);
+                }}
+              >
+                {t('knowledge.corrections.removeFile')}
+              </button>
+            </div>
+            {filing.pages.length > 0 && (
+              <SelectField
+                label={t('knowledge.corrections.copyOf')}
+                hint={t('knowledge.corrections.copyOfHint')}
+                value={draft.pageUrl ?? ''}
+                placeholder={t('knowledge.corrections.notACopy')}
+                options={[...new Map(filing.pages.map((page) => [page.url, page])).values()].map(
+                  ({ url, title }) => ({ value: url, label: title }),
+                )}
+                onChange={(pageUrl) => {
+                  change({ ...draft, pageUrl: pageUrl === '' ? null : pageUrl });
+                }}
+              />
+            )}
           </div>
         ) : draft.kind === 'link' ? (
           <TextField
@@ -439,6 +472,12 @@ function FileEntry({
           }).format(Math.max(source.size / 1_000_000, 0.1)),
         })}
       </span>
+      {source.pageUrl !== null && (
+        <span className="flex flex-col">
+          <span className="text-muted">{t('knowledge.corrections.copyOfPage')}</span>
+          <span className="font-mono break-all">{source.pageUrl}</span>
+        </span>
+      )}
       <button
         type="button"
         className={textLinkClass}

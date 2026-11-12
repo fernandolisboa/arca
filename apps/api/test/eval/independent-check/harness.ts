@@ -9,6 +9,7 @@ import {
   answerWithinLimits,
 } from '../../../src/knowledge/check/fetcher.js';
 import { type PassageLocator, scriptedLocator } from '../../../src/knowledge/check/locator.js';
+import { noPageCopies } from '../../../src/knowledge/check/page-copies.js';
 import { createVersionCheck } from '../../../src/knowledge/check/run.js';
 import {
   type CheckProgressStore,
@@ -113,6 +114,7 @@ export async function checkCase(
     subject: createCheckSubjects(caseCatalog(evalCase)),
     guide: () => evalCase.guide,
     fetcher: snapshotFetcher(evalCase.snapshots),
+    copies: noPageCopies,
     checker,
     locator,
     store,

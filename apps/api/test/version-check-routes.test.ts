@@ -229,6 +229,7 @@ function setup({
         {
           url: law,
           machineReadableUrl: `${law}.json`,
+          fromCopy: false,
           outcome: 'read',
           status: 200,
           durationMs: 5,
@@ -429,6 +430,7 @@ describe('GET /v1/knowledge/versions/check (ADR-0027)', () => {
           {
             url: law,
             machineReadableUrl: `${law}.json`,
+            fromCopy: false,
             outcome: 'read',
             status: 200,
             cut: false,

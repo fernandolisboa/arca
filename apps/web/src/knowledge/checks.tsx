@@ -197,13 +197,13 @@ function ReportBody({
         <div className="flex flex-col gap-2">
           <Subheading className="font-medium">{t('knowledge.check.pages')}</Subheading>
           <ul className="flex flex-col gap-2">
-            {problems.map(({ url, machineReadableUrl, outcome, status }) => (
+            {problems.map(({ url, machineReadableUrl, fromCopy, outcome, status }) => (
               <li key={url} className="flex flex-col gap-1 text-small">
                 <span>
                   {t('knowledge.check.outcome', { outcome, status: String(status ?? '') })}
                 </span>
                 <span className="font-mono break-all text-muted">{url}</span>
-                <AddressRead address={machineReadableUrl} words={words} />
+                <AddressRead read={{ address: machineReadableUrl, fromCopy }} words={words} />
               </li>
             ))}
           </ul>
@@ -213,18 +213,28 @@ function ReportBody({
   );
 }
 
+/** Where a page's text came from when not the page itself: a data address, or an attached copy. */
+export interface PageRead {
+  readonly address: string | null;
+  readonly fromCopy: boolean;
+}
+
 /**
- * The address a page's text was read at, when not the page itself: plain text, as every URL here,
- * so the admin can tell a quote came from a data address and open it to see the words.
+ * Where a page's text was read, when not the page itself: an attached copy, or the address, as
+ * plain text like every URL here, so the admin can tell where a quote's words came from.
  */
 function AddressRead({
-  address,
+  read,
   words,
 }: {
-  readonly address: string | null | undefined;
+  readonly read: PageRead | undefined;
   readonly words: KnowledgeWords;
 }) {
-  if (address === null || address === undefined) return null;
+  if (read?.fromCopy === true) {
+    return <span className="text-muted">{words.t('knowledge.check.readFromCopy')}</span>;
+  }
+  const address = read?.address ?? null;
+  if (address === null) return null;
   return (
     <>
       <span className="text-muted">{words.t('knowledge.check.readAt')}</span>
@@ -241,7 +251,7 @@ function ReportItemCard({
 }: {
   readonly item: ReportItem;
   readonly scripted: boolean;
-  readonly addressRead: ReadonlyMap<string, string | null>;
+  readonly addressRead: ReadonlyMap<string, PageRead>;
   readonly words: KnowledgeWords;
 }) {
   const { t } = words;
@@ -276,7 +286,7 @@ function Quotes({
   words,
 }: {
   readonly item: ReportItem;
-  readonly addressRead: ReadonlyMap<string, string | null>;
+  readonly addressRead: ReadonlyMap<string, PageRead>;
   readonly words: KnowledgeWords;
 }) {
   const { t } = words;
@@ -289,7 +299,7 @@ function Quotes({
       <p className="flex flex-col gap-1 text-small">
         <span className="text-muted">{t('knowledge.check.page')}</span>
         <span className="font-mono break-all">{url}</span>
-        <AddressRead address={addressRead.get(url)} words={words} />
+        <AddressRead read={addressRead.get(url)} words={words} />
       </p>
     </figure>
   ));
@@ -298,8 +308,13 @@ function Quotes({
 /** The address each page of a report was read at, by the page's URL. */
 export const addressesRead = (
   report: Pick<VersionCheckReport, 'fetchLog'>,
-): ReadonlyMap<string, string | null> =>
-  new Map(report.fetchLog.map(({ url, machineReadableUrl }) => [url, machineReadableUrl]));
+): ReadonlyMap<string, PageRead> =>
+  new Map(
+    report.fetchLog.map(({ url, machineReadableUrl, fromCopy }) => [
+      url,
+      { address: machineReadableUrl, fromCopy },
+    ]),
+  );
 
 /** Where to look and what to look for, from the bundled version: links only to its official pages. */
 function LookHere({ item, words }: { readonly item: ReportItem; readonly words: KnowledgeWords }) {
@@ -363,7 +378,7 @@ export function ItemResult({
   handCheck,
 }: {
   readonly item: ReportItem;
-  readonly addressRead: ReadonlyMap<string, string | null>;
+  readonly addressRead: ReadonlyMap<string, PageRead>;
   readonly words: KnowledgeWords;
   readonly handCheck?: HandCheck;
 }) {

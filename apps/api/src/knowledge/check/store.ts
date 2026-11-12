@@ -25,6 +25,8 @@ export interface FetchLogEntry {
   readonly url: string;
   /** The machine-readable address read in the page's place, or null when the page was read. */
   readonly machineReadableUrl: string | null;
+  /** Whether the text came from a copy attached to a correction request (ADR-0029). */
+  readonly fromCopy: boolean;
   readonly outcome: 'read' | FetchFailure;
   readonly status: number | null;
   readonly durationMs: number;
@@ -83,6 +85,8 @@ const storedFetch = z.strictObject({
   url,
   // Reports stored before a source could name a machine-readable address read the page itself.
   machineReadableUrl: url.nullable().default(null),
+  // Reports stored before a copy could be read in a page's place read none.
+  fromCopy: z.boolean().default(false),
   outcome: z.enum(fetchOutcomes),
   status: z.int().min(0).max(999).nullable(),
   durationMs: z.int().min(0),
@@ -164,11 +168,14 @@ export const listingColumns = {
  * checks let through never reaches the screen in another shape.
  */
 /**
- * A log entry as stored: without the address when the page itself was read, so the code from
- * before a source could name one still reads every report that read no address.
+ * A log entry as stored: without the address when the page itself was read, and without the copy
+ * mark when no copy was, so older code still reads every report that read neither.
  */
-const storedEntry = ({ machineReadableUrl, ...entry }: FetchLogEntry) =>
-  machineReadableUrl === null ? entry : { ...entry, machineReadableUrl };
+const storedEntry = ({ machineReadableUrl, fromCopy, ...entry }: FetchLogEntry) => ({
+  ...entry,
+  ...(machineReadableUrl === null ? {} : { machineReadableUrl }),
+  ...(fromCopy ? { fromCopy } : {}),
+});
 
 export function postgresCheckReportStore(db: () => Database): CheckReportStore {
   return {

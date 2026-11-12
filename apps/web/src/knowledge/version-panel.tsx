@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { versionCheckQuery } from '../api.js';
-import { CheckReport, ItemResult, addressesRead } from './checks.js';
+import { CheckReport, ItemResult, type PageRead, addressesRead } from './checks.js';
 import { CorrectionFiling, CorrectionsSection, PointOutError } from './corrections.js';
 import { useHandChecks } from './hand-checks.js';
 import { Decision, decideVersion } from './decision.js';
@@ -449,7 +449,7 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
   const { tallies, point } = useMemo(() => {
     const points = shownPoints(report);
     const byKey = new Map(points.map((item) => [item.key, item]));
-    const addressRead = report === null ? new Map<string, string | null>() : addressesRead(report);
+    const addressRead = report === null ? new Map<string, PageRead>() : addressesRead(report);
     const pointOf: PointOf = {
       result: (key) => {
         const item = byKey.get(key);

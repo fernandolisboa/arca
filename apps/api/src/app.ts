@@ -1542,9 +1542,10 @@ export function createApp({
                 ...report,
                 checkedAt: new Date(report.checkedAt).toISOString(),
                 fetchLog: report.fetchLog.map(
-                  ({ url, machineReadableUrl, outcome: read, status, cut }) => ({
+                  ({ url, machineReadableUrl, fromCopy, outcome: read, status, cut }) => ({
                     url,
                     machineReadableUrl,
+                    fromCopy,
                     outcome: read,
                     status,
                     cut,

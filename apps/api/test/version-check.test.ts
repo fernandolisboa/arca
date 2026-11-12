@@ -34,6 +34,7 @@ import {
   type CheckProgressStore,
   memoryCheckProgressStore,
 } from '../src/knowledge/check/progress.js';
+import { type PageCopies, noPageCopies } from '../src/knowledge/check/page-copies.js';
 import { type CheckSubject, createVersionCheck } from '../src/knowledge/check/run.js';
 import {
   scriptedCheckerChoice,
@@ -187,6 +188,7 @@ function locating(...headings: string[]): PassageLocator & { requests: PassageLo
 function setup({
   checker = answering(matchesBoth),
   fetcher = readAll,
+  copies = noPageCopies,
   locator = scriptedLocator,
   guide,
   model = 'claude-test',
@@ -199,6 +201,7 @@ function setup({
   store?: ReturnType<typeof memoryCheckReportStore>;
   checker?: RuleChecker;
   fetcher?: SourceFetcher;
+  copies?: PageCopies;
   locator?: PassageLocator;
   guide?: CountryGuideEntry;
   model?: string;
@@ -219,6 +222,7 @@ function setup({
         return fetcher.fetch(url, hosts);
       },
     },
+    copies,
     checker: { checker, model, promptVersion: 'check-1' },
     locator,
     store,
@@ -268,6 +272,7 @@ describe('the independent check of one version (ADR-0027)', () => {
     expect(store.rows[0]?.fetchLog[0]).toEqual({
       url: law,
       machineReadableUrl: null,
+      fromCopy: false,
       outcome: 'read',
       status: 200,
       durationMs: 0,
@@ -412,6 +417,65 @@ describe('the independent check of one version (ADR-0027)', () => {
     });
   });
 
+  describe('a copy of a page attached to a correction request (ADR-0029)', () => {
+    const blocked: SourceFetcher = {
+      fetch: (url) =>
+        url === fees
+          ? Promise.resolve({ ok: false, failure: 'http_status', status: 403, chain: [url] })
+          : readAll.fetch(url, []),
+    };
+    const copying = (text: string): PageCopies & { asked: string[] } => {
+      const asked: string[] = [];
+      return {
+        asked,
+        read: (url) => {
+          asked.push(url);
+          return Promise.resolve(url === fees ? { text, cut: false } : undefined);
+        },
+      };
+    };
+
+    it('reads the copy only for a page it cannot read, and marks it in the log', async () => {
+      const copies = copying(feeText);
+      const { check, store } = setup({ fetcher: blocked, copies });
+      await check(startId, 'qm-sample', 1);
+      expect(copies.asked).toEqual([fees]);
+      expect(store.rows[0]).toMatchObject({ failed: false, clean: true });
+      expect(store.rows[0]?.items[1]).toMatchObject({ status: 'matches' });
+      expect(store.rows[0]?.fetchLog).toMatchObject([
+        { url: law, fromCopy: false, outcome: 'read' },
+        { url: fees, fromCopy: true, outcome: 'read', status: 403, machineReadableUrl: null },
+      ]);
+    });
+
+    it('checks quotes against the copy, not the page', async () => {
+      const { check, store } = setup({
+        fetcher: blocked,
+        copies: copying('Application fee: EUR 250.'),
+      });
+      await check(startId, 'qm-sample', 1);
+      expect(store.rows[0]?.items[1]).toMatchObject({ status: 'could_not_check' });
+    });
+
+    it('keeps the failure when there is no copy, or reading one fails', async () => {
+      for (const copies of [
+        noPageCopies,
+        { read: () => Promise.reject(new Error('store down')) } satisfies PageCopies,
+      ]) {
+        const { check, store, lines } = setup({ fetcher: blocked, copies });
+        await check(startId, 'qm-sample', 1);
+        expect(store.rows[0]).toMatchObject({ failed: true });
+        expect(store.rows[0]?.fetchLog[1]).toMatchObject({
+          outcome: 'http_status',
+          fromCopy: false,
+        });
+        if (copies !== noPageCopies) {
+          expect(lines).toContainEqual(expect.objectContaining({ errorCode: 'check_copy_failed' }));
+        }
+      }
+    });
+  });
+
   it('refuses every page when the catalog lacks a pinned list', async () => {
     const lacking = setup();
     const check = createVersionCheck({
@@ -423,6 +487,7 @@ describe('the independent check of one version (ADR-0027)', () => {
           return readAll.fetch(url, hosts);
         },
       },
+      copies: noPageCopies,
       checker: { checker: answering(matchesBoth), model: 'claude-test', promptVersion: 'check-1' },
       locator: scriptedLocator,
       store: lacking.store,

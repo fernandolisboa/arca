@@ -286,7 +286,15 @@ const correctionTables = {
     'created_at',
     'content_erased_at',
   ],
-  'knowledge.correction_source': ['request_id', 'position', 'kind', 'url', 'text', 'upload_id'],
+  'knowledge.correction_source': [
+    'request_id',
+    'position',
+    'kind',
+    'url',
+    'text',
+    'upload_id',
+    'page_url',
+  ],
   'knowledge.correction_event': ['id', 'request_id', 'kind', 'at'],
   'knowledge.correction_upload': [
     'id',
@@ -309,6 +317,9 @@ const correctionFunctions = [
   'knowledge.correction_files(text, integer, text, uuid)',
   'knowledge.correction_file(uuid, integer, text, uuid)',
   'knowledge.own_correction_upload_rows(text)',
+  'knowledge.attach_correction_file_with_page(uuid, integer, uuid, text, text)',
+  'knowledge.correction_file_sources(text, integer, text, uuid)',
+  'knowledge.correction_page_copies(text[])',
   'knowledge.admin_basis_holds(text, uuid)',
 ];
 
@@ -364,11 +375,13 @@ describe('the correction request access matrix (ADR-0029)', () => {
         'knowledge.correction_files',
         'knowledge.correction_file',
         'knowledge.own_correction_upload_rows',
+        'knowledge.attach_correction_file_with_page',
+        'knowledge.correction_file_sources',
       ],
     });
   });
 
-  it('lets app_jobs read every table, delete requests, sources and uploads, and clear a note, and run nothing', async () => {
+  it('lets app_jobs read every table, delete requests, sources and uploads, clear a note, and read page copies', async () => {
     const request = correctionTables['knowledge.correction_request'];
     expect(await correctionAccess('app_jobs')).toEqual({
       tables: {
@@ -396,7 +409,7 @@ describe('the correction request access matrix (ADR-0029)', () => {
           table: ['DELETE'],
         },
       },
-      functions: [],
+      functions: ['knowledge.correction_page_copies'],
     });
   });
 
