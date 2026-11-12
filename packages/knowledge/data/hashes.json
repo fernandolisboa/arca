@@ -406,6 +406,10 @@
     {
       "path": "routes/cz-eu-blue-card/4",
       "sha256": "5628de29ffc727bee3bfcc3184957714b3d95d020ec7ed289174b6d97408c971"
+    },
+    {
+      "path": "routes/cl-mercosur-temporary/3",
+      "sha256": "7977d505b3f7c54d7cfb7bb2bbc4affa9d680203a5fe899a392326430b94aa26"
     }
   ]
 }
