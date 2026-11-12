@@ -494,9 +494,19 @@ function FamilySummary({
   const { t } = useTranslation();
   const titleId = useId();
   const figures = [
-    { key: 'people', value: view.people.length },
-    { key: 'members', value: view.people.filter((person) => person.caseMember).length },
-    { key: 'invites', value: invitesWaiting },
+    { key: 'people', icon: 'family', tone: 'bg-warn-bg text-warn-ink', count: view.people.length },
+    {
+      key: 'members',
+      icon: 'plan',
+      tone: 'bg-ok-bg text-ok-ink',
+      count: view.people.filter((person) => person.caseMember).length,
+    },
+    {
+      key: 'invites',
+      icon: 'invite',
+      tone: invitesWaiting > 0 ? 'bg-warn-bg text-warn-ink' : 'bg-soft text-muted',
+      count: invitesWaiting,
+    },
   ] as const;
   return (
     <section
@@ -529,17 +539,17 @@ function FamilySummary({
           </li>
         )}
       </ul>
-      <dl className="mt-auto grid grid-cols-3 gap-2 sm:gap-3">
-        {figures.map(({ key, value }) => (
-          <div
+      <ul className="mt-auto flex flex-wrap gap-2">
+        {figures.map(({ key, icon, tone, count }) => (
+          <li
             key={key}
-            className="flex flex-col-reverse justify-end gap-0.5 rounded-control border border-line p-3"
+            className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-small font-medium ${tone}`}
           >
-            <dt className="text-small text-muted">{t(`family.summary.${key}`)}</dt>
-            <dd className="font-display text-title">{value}</dd>
-          </div>
+            <Icon name={icon} size={16} />
+            {t(`family.summary.${key}`, { count })}
+          </li>
         ))}
-      </dl>
+      </ul>
     </section>
   );
 }
@@ -572,7 +582,7 @@ function NextStep({ view }: { readonly view: CaseView }) {
       </p>
       <Link
         to={questions ? '/family/questions' : '/family/results'}
-        className={`${buttonClass()} mt-auto`}
+        className={`${buttonClass()} mt-auto py-2 text-center`}
       >
         {t(questions ? 'family.questions' : 'results.open')}
       </Link>
@@ -790,7 +800,7 @@ function PersonTile({ person, isMe, current, onSelect }: EntryProps) {
       aria-current={current}
       data-family-entry={person.id}
       onClick={onSelect}
-      className={`${entryClass} flex min-h-touch w-36 items-center gap-2 rounded-control border bg-surface p-2 shadow-card hover:bg-soft sm:w-52 sm:gap-3 sm:p-3 ${current ? 'border-accent' : 'border-line'}`}
+      className={`${entryClass} flex min-h-touch w-52 items-center gap-2 rounded-control border bg-surface p-2 shadow-card hover:bg-soft sm:w-56 sm:gap-3 sm:p-3 ${current ? 'border-accent' : 'border-line'}`}
     >
       <Avatar person={person} isMe={isMe} />
       <span className="flex min-w-0 flex-col">
