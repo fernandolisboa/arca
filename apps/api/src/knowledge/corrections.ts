@@ -129,7 +129,7 @@ interface StoredEvent extends Record<string, unknown> {
 type ListedAnswer = CorrectionRequests['requests'][number]['answer'];
 type ListedRouteAnswer = RouteRequests['requests'][number]['answer'];
 
-/** A request for a new route as `route_requests` serves it, events included. */
+/** A request for a new route as `newest_route_requests` serves it, events included. */
 interface StoredRouteRequest extends Record<string, unknown> {
   id: string;
   country_code: string;
@@ -356,7 +356,7 @@ export function createCorrections({
           async (tx) =>
             (
               await tx.execute<StoredRouteRequest>(sql`
-              SELECT * FROM knowledge.route_requests(${kind}, ${grantId})`)
+              SELECT * FROM knowledge.newest_route_requests(${kind}, ${grantId})`)
             ).rows,
         ),
         states(),

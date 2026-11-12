@@ -385,7 +385,7 @@ export function createCorrector({
     const stored = await db().transaction(async (tx) => {
       const { rows } = await tx.execute<{ outcome: 'stored' | 'refused' | 'missing' }>(
         newRoute
-          ? sql`SELECT knowledge.answer_route_request(${key.id}::uuid, ${key.digest},
+          ? sql`SELECT knowledge.answer_new_route_request(${key.id}::uuid, ${key.digest},
               ${requestId}::uuid, ${proposedRoute}::text, ${proposed}::integer) AS outcome`
           : sql`SELECT knowledge.answer_correction_request(${key.id}::uuid, ${key.digest},
               ${requestId}::uuid, ${answer.kind === 'taken' ? 'taken' : 'answered'},

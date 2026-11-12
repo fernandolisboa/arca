@@ -291,8 +291,8 @@ class Check {
         const ownHosts = new Set(listed.map((entry) => entry.host));
         for (const entry of listed) {
           const proof = hostOf(entry.url);
-          if (!entry.host.includes('.')) {
-            this.#add(path, `lists ${entry.host}, a top-level domain, not a host`);
+          if (isRegistrySuffix(entry.host)) {
+            this.#add(path, `lists ${entry.host}, a registry suffix, not a host`);
           } else if (
             proof === undefined ||
             isOnHost(proof, ownHosts) ||
@@ -472,6 +472,14 @@ function hostEntries(list: unknown): { host: string; url: string }[] | undefined
 }
 
 /** The matching `@arca/domain`'s `hostMatches` applies: the host itself or a subdomain of it. */
+/**
+ * A suffix under which anyone may register, such as `gov.lt` or `com.br`, which would make every
+ * site under it official. Without a public-suffix dataset, the common second-level labels.
+ */
+const registrySuffix =
+  /^(?:[a-z]{2,63}|(?:com|net|org|co|gov|edu|ac|gob|go|or|ne|mil|nic)\.[a-z]{2})$/;
+const isRegistrySuffix = (host: string) => registrySuffix.test(host);
+
 function isOnHost(host: string, hosts: ReadonlySet<string>): boolean {
   return [...hosts].some((listed) => host === listed || host.endsWith(`.${listed}`));
 }

@@ -739,7 +739,7 @@ describe('the corrector routes (ADR-0029)', () => {
       `SELECT knowledge.corrector_file($1, $2, '${id}', 1)`,
       `SELECT knowledge.answer_correction_request($1, $2, '${id}', 'taken', NULL, NULL)`,
       'SELECT * FROM knowledge.corrector_request_queue($1, $2)',
-      `SELECT knowledge.answer_route_request($1, $2, '${id}', 'qm-new', 1)`,
+      `SELECT knowledge.answer_new_route_request($1, $2, '${id}', 'qm-new', 1)`,
     ]) {
       await expect(
         testDatabase.asAdmin(async (client) => {

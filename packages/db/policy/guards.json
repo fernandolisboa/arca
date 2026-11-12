@@ -123,7 +123,9 @@
     "knowledge.route_requests",
     "knowledge.corrector_request_queue",
     "knowledge.answer_route_request",
-    "knowledge.own_correction_request_rows"
+    "knowledge.own_correction_request_rows",
+    "knowledge.newest_route_requests",
+    "knowledge.answer_new_route_request"
   ],
   "migrationExtensions": [],
   "deferrableConstraints": []

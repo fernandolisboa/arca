@@ -578,7 +578,16 @@ describe('knowledge-immutable', () => {
             ['qn', 'https://registry.example/qn'],
           ]);
         },
-        `${data}official-domains/qn-gov/1.json: lists qn, a top-level domain, not a host`,
+        `${data}official-domains/qn-gov/1.json: lists qn, a registry suffix, not a host`,
+      ],
+      [
+        'a first list with a second-level registry suffix',
+        (tree) => {
+          tree[`${data}official-domains/qn-gov/1.json`] = officialList([
+            ['gov.qn', 'https://registry.example/qn'],
+          ]);
+        },
+        `${data}official-domains/qn-gov/1.json: lists gov.qn, a registry suffix, not a host`,
       ],
     ])('refuses %s', async (_, change, message) => {
       expect(await problems(change)).toContain(message);

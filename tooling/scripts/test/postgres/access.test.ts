@@ -352,6 +352,8 @@ const correctionFunctions = [
   'knowledge.corrector_request_queue(uuid, bytea)',
   'knowledge.answer_route_request(uuid, bytea, uuid, text, integer)',
   'knowledge.own_correction_request_rows(text)',
+  'knowledge.newest_route_requests(text, uuid)',
+  'knowledge.answer_new_route_request(uuid, bytea, uuid, text, integer)',
   'knowledge.admin_basis_holds(text, uuid)',
   'knowledge.corrector_key_holds(uuid, bytea)',
 ];
@@ -423,6 +425,8 @@ describe('the correction request access matrix (ADR-0029)', () => {
         'knowledge.corrector_request_queue',
         'knowledge.answer_route_request',
         'knowledge.own_correction_request_rows',
+        'knowledge.newest_route_requests',
+        'knowledge.answer_new_route_request',
       ],
     });
   });
