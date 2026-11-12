@@ -49,7 +49,9 @@ import {
   adminRoutes,
   caseRoutes,
   comparisonRoutes,
+  AnswerCorrectionRequest,
   CloseCorrectionRequest,
+  RevokeCorrectorKey,
   CorrectionFileReference,
   StartCorrectionUpload,
   CloseRuleReportsRequest,
@@ -93,6 +95,8 @@ import {
   deviceLimits,
   intakeLimits,
   correctionRequestLimits,
+  correctorKeyLimits,
+  correctorLimits,
   ruleSummaryLimits,
   ruleCheckLimits,
   inviteLimits,
@@ -126,6 +130,7 @@ import type { AdminChangeOutcome, AdminGrants } from './knowledge/admin-grants.j
 import { createCheckedActivation } from './knowledge/checked-activation.js';
 import type { DecisionOutcome, DecisionTarget, KnowledgeDecisions } from './knowledge/decisions.js';
 import type { Corrections } from './knowledge/corrections.js';
+import type { Corrector, CorrectorKeys } from './knowledge/corrector.js';
 import type { RuleReportReview } from './knowledge/reports.js';
 import { type VersionChecks, versionsWithChecks } from './knowledge/checks.js';
 import type { RuleSummaries } from './knowledge/summaries.js';
@@ -237,6 +242,10 @@ export interface AppDependencies {
   readonly ruleReports?: RuleReportReview;
   /** Admins' correction requests (ADR-0029); absent, their routes answer 401. */
   readonly corrections?: Corrections;
+  /** The corrector key screen (ADR-0029); absent, its routes answer 401. */
+  readonly correctorKeys?: CorrectorKeys;
+  /** The corrector run's routes (ADR-0029); absent, they answer 401. */
+  readonly corrector?: Corrector;
   /** Whether the account's inviter confirmed it, read on the app_auth pool (spec 0003, R2). */
   readonly accountConfirmed?: (accountId: string) => Promise<boolean>;
   /**
@@ -318,6 +327,8 @@ export type ErrorCode =
   | 'owner_list_only'
   | 'already_rejected'
   | 'already_corrected'
+  | 'wrong_state'
+  | 'invalid_version'
   | 'accounts_closed'
   | 'too_large'
   | 'request_failed'
@@ -458,6 +469,8 @@ export function createApp({
   versionChecks,
   ruleReports,
   corrections,
+  correctorKeys,
+  corrector,
   accountConfirmed,
   memoryObjects,
   notifications,
@@ -1763,6 +1776,88 @@ export function createApp({
     if (outcome === 'not_admin') return fail(c, outcome, 403);
     if (outcome === 'not_found') return fail(c, outcome, 404);
     return c.json({}, 200);
+  });
+  const keyScreen = async (c: Context<AppEnv>) => {
+    const current = await signedIn(c);
+    return current === null || correctorKeys === undefined || authLimits === undefined
+      ? { refused: unauthorized(c) }
+      : { keys: correctorKeys, current, limits: authLimits };
+  };
+  v1.openapi(openApiRoutes.getCorrectorKey, async (c) => {
+    const screen = await keyScreen(c);
+    if ('refused' in screen) return screen.refused;
+    const status = await screen.keys.status(screen.current.accountId);
+    return status === 'not_admin' ? fail(c, status, 403) : c.json(status, 200);
+  });
+  v1.openapi(openApiRoutes.createCorrectorKey, async (c) => {
+    const screen = await keyScreen(c);
+    if ('refused' in screen) return screen.refused;
+    const nonce = actionNonce(c);
+    if (nonce === undefined) return fail(c, 'step_up_required', 403);
+    const { accountId } = screen.current;
+    const limited = await overLimit(c, screen.limits, correctorKeyLimits.change, accountId);
+    if (limited !== undefined) return limited;
+    const created = await screen.keys.create(screen.current, nonce);
+    if (typeof created === 'string') return fail(c, created, 403);
+    // Shown once: no cache along the way may keep it.
+    c.header('Cache-Control', 'no-store');
+    return c.json(created, 200);
+  });
+  v1.openapi(openApiRoutes.revokeCorrectorKey, async (c) => {
+    const screen = await keyScreen(c);
+    if ('refused' in screen) return screen.refused;
+    const { id } = RevokeCorrectorKey.parse(await c.req.json());
+    const { accountId } = screen.current;
+    const limited = await overLimit(c, screen.limits, correctorKeyLimits.change, accountId);
+    if (limited !== undefined) return limited;
+    const outcome = await screen.keys.revoke(accountId, id);
+    if (outcome === 'not_found') return fail(c, outcome, 404);
+    return outcome === 'revoked' ? c.json({}, 200) : fail(c, outcome, 403);
+  });
+  /**
+   * The corrector run (ADR-0029): counted per address before the key is read, then the key is
+   * compared by digest; a refused key is audited at most a few times an hour per address, then
+   * counted per key and route.
+   */
+  const correctorOf = async (c: Context<AppEnv>, rule: RateLimitRule) => {
+    if (corrector === undefined || authLimits === undefined) return { refused: unauthorized(c) };
+    const address = authLimits.clientAddress(c.req.raw.headers);
+    const addressLimited = await overLimit(c, authLimits, correctorLimits.address, address);
+    if (addressLimited !== undefined) return { refused: addressLimited };
+    const key = await corrector.authenticate(c.req.header('authorization'));
+    if (key === undefined) {
+      const logged = await authLimits.limiter.hit(correctorLimits.refusedLog, address);
+      if (logged.allowed) await corrector.refused();
+      return { refused: unauthorized(c) };
+    }
+    const keyLimited = await overLimit(c, authLimits, rule, key.id);
+    return keyLimited === undefined ? { corrector, key } : { refused: keyLimited };
+  };
+  v1.openapi(openApiRoutes.listCorrectorRequests, async (c) => {
+    const run = await correctorOf(c, correctorLimits.list);
+    if ('refused' in run) return run.refused;
+    return c.json(await run.corrector.list(run.key), 200);
+  });
+  v1.openapi(openApiRoutes.correctorFileUrl, async (c) => {
+    const run = await correctorOf(c, correctorLimits.file);
+    if ('refused' in run) return run.refused;
+    const { requestId, position } = CorrectionFileReference.parse(await c.req.json());
+    const outcome = await run.corrector.fileUrl(run.key, requestId, position);
+    return outcome === 'not_found' ? fail(c, outcome, 404) : c.json(outcome, 200);
+  });
+  v1.openapi(openApiRoutes.answerCorrectionRequest, async (c) => {
+    const run = await correctorOf(c, correctorLimits.answer);
+    if ('refused' in run) return run.refused;
+    const { requestId, answer } = AnswerCorrectionRequest.parse(await c.req.json());
+    const outcome = await run.corrector.answer(run.key, requestId, answer);
+    switch (outcome) {
+      case 'stored':
+        return c.json({}, 200);
+      case 'not_found':
+        return fail(c, outcome, 404);
+      default:
+        return fail(c, outcome, 409);
+    }
   });
   const checkedActivation =
     knowledge === undefined || knowledgeVersions === undefined

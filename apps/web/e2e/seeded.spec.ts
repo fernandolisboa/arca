@@ -570,11 +570,51 @@ test('the seed admin points out an error on a version and closes the request (AD
   const saved = page.waitForEvent('download');
   await requests.getByRole('button', { name: 'Baixar arquivo' }).click();
   expect((await saved).suggestedFilename()).toBe('pedido-de-correcao-arquivo-2.txt');
+
+  const key = await correctorKeyFromSettings(page);
+  const corrector = { authorization: `Bearer ${key}`, origin: databaseServer.origin };
+  const listed = await page.request.get(`${databaseServer.origin}/v1/corrector/requests`, {
+    headers: corrector,
+  });
+  expect(listed.status()).toBe(200);
+  const [request] = ((await listed.json()) as { requests: { id: string }[] }).requests;
+  const answer = (body: unknown) =>
+    page.request.post(`${databaseServer.origin}/v1/corrector/requests/answer`, {
+      headers: corrector,
+      data: { requestId: request?.id, answer: body },
+    });
+  expect((await answer({ kind: 'taken' })).status()).toBe(200);
+  const explanation = 'Nenhuma fonte oficial confirma: https://www.uscis.gov/eb-5 mantém o valor.';
+  expect((await answer({ kind: 'no_change', explanation })).status()).toBe(200);
+  await page.goto(`${databaseServer.origin}/knowledge`);
+  await proposed.getByRole('button', { name: 'Estados Unidos', exact: true }).click();
+  await proposed
+    .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
+    .click();
+  await expect(requests).toContainText('Respondido');
+  await expect(requests).toContainText('A sessão de correção não mudou a regra:');
+  await expect(requests).toContainText(explanation);
+  await expect(requests.getByRole('link', { name: /uscis/ })).toHaveCount(0);
   await requests.getByRole('button', { name: 'Fechar pedido' }).click();
   await expect(requests).toContainText('Fechado');
   await expect(requests.getByRole('button', { name: 'Fechar pedido' })).toHaveCount(0);
   expect(problems).toEqual([]);
 });
+
+/** Makes a corrector key in settings, approving the step-up, and reads it off the screen once. */
+async function correctorKeyFromSettings(page: Page): Promise<string> {
+  await page.goto(`${databaseServer.origin}/settings?section=knowledge`);
+  const section = page.getByRole('region', { name: 'Chave da sessão de correção' });
+  await expect(section).toContainText('Nenhuma chave ativa.');
+  await section.getByRole('button', { name: 'Criar chave' }).click();
+  const shown = section.locator('code');
+  await expect(shown).toHaveText(/^arca_ck_/);
+  const key = (await shown.textContent()) ?? '';
+  await section.getByRole('button', { name: 'Já copiei' }).click();
+  await expect(shown).toHaveCount(0);
+  await expect(section).toContainText('Chave criada em');
+  return key;
+}
 
 /**
  * Reloads the home page and answers whether the session says admin and the navigation shows

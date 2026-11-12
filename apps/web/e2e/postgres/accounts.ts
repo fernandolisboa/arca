@@ -195,11 +195,11 @@ export async function clearKnowledgeDecisions(): Promise<void> {
   });
 }
 
-/** Empties the correction requests, which no runtime role deletes outside erasure. */
+/** Empties the correction requests and corrector keys, which no runtime role deletes. */
 export async function clearCorrectionRequests(): Promise<void> {
   await asAdmin(async (client) => {
     await client.query(
-      'TRUNCATE knowledge.correction_request, knowledge.correction_upload CASCADE',
+      'TRUNCATE knowledge.correction_request, knowledge.correction_upload, knowledge.corrector_key CASCADE',
     );
   });
 }

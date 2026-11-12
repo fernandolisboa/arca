@@ -564,6 +564,13 @@ export const CorrectionRequests = z.object({
       createdAt: z.iso.datetime({ offset: true }),
       sources: z.array(ListedCorrectionSource),
       state: z.enum(correctionStates),
+      /** The corrector run's answer, once it gave one. */
+      answer: z
+        .discriminatedUnion('kind', [
+          z.object({ kind: z.literal('version_proposed'), number: z.int().min(1) }),
+          z.object({ kind: z.literal('no_change'), explanation: z.string() }),
+        ])
+        .nullable(),
     }),
   ),
 });
@@ -646,6 +653,143 @@ export const closeCorrectionRequest = {
     'Closes a correction request, for an admin; closing a closed one changes nothing. 403 not_admin; 404 not_found',
   body: CloseCorrectionRequest,
   response: { description: 'Closed', schema: z.object({}) },
+} as const satisfies RouteDefinition;
+
+/*
+ * The corrector key and the corrector run's routes (ADR-0029). An owner-list admin makes the key
+ * with a `corrector_key` step-up and sees it once; a new key replaces the old one, and a key ends
+ * after a year, on revocation, or when its creator leaves the owner list or is erased. The run
+ * sends it as `Authorization: Bearer <key>` to the three corrector routes, with the production
+ * origin as `Origin`, as every state-changing request does.
+ */
+
+/** A corrector key: a fixed prefix the secret scan knows, then 32 random bytes in base64url. */
+export const correctorKeyPrefix = 'arca_ck_';
+export const correctorKeyPattern = /^arca_ck_[A-Za-z0-9_-]{43}$/;
+
+/** The longest explanation an answer that changes nothing may carry. */
+export const maxCorrectionExplanation = 2_000;
+
+export const CorrectorKeyStatus = z.object({
+  /** Whether the viewer may make or revoke the key: an owner-list admin. */
+  canManage: z.boolean(),
+  /** The live key's dates, or null when none is live. */
+  key: z
+    .object({
+      id: z.uuid(),
+      createdAt: z.iso.datetime({ offset: true }),
+      expiresAt: z.iso.datetime({ offset: true }),
+    })
+    .nullable(),
+});
+export type CorrectorKeyStatus = z.infer<typeof CorrectorKeyStatus>;
+
+export const getCorrectorKey = {
+  method: 'get',
+  path: '/knowledge/corrector-key',
+  operationId: 'getCorrectorKey',
+  summary:
+    "The live corrector key's dates, never the key, for an admin, and whether the viewer may make or revoke it. 403 not_admin",
+  response: { description: 'The key', schema: CorrectorKeyStatus },
+} as const satisfies RouteDefinition<typeof CorrectorKeyStatus>;
+
+export const CreatedCorrectorKey = z.object({
+  /** Shown once: the server keeps only its SHA-256. */
+  key: z.string().regex(correctorKeyPattern),
+  expiresAt: z.iso.datetime({ offset: true }),
+});
+export type CreatedCorrectorKey = z.infer<typeof CreatedCorrectorKey>;
+
+export const createCorrectorKey = {
+  method: 'post',
+  path: '/knowledge/corrector-key',
+  operationId: 'createCorrectorKey',
+  summary:
+    'Makes a new corrector key, which replaces the live one, for an owner-list admin; needs a consumed corrector_key step-up of createCorrectorKey; answered once with Cache-Control no-store. 403 not_admin, owner_list_only or step_up_required',
+  response: { description: 'The new key', schema: CreatedCorrectorKey },
+} as const satisfies RouteDefinition<typeof CreatedCorrectorKey>;
+
+/** The step-up action of making a key: bound to nothing but the route (ADR-0029). */
+export const createCorrectorKeyAction = () => ({
+  action: createCorrectorKey.operationId,
+  targets: [],
+});
+
+export const RevokeCorrectorKey = z.strictObject({ id: z.uuid() });
+export type RevokeCorrectorKey = z.infer<typeof RevokeCorrectorKey>;
+
+export const revokeCorrectorKey = {
+  method: 'post',
+  path: '/knowledge/corrector-key/revoke',
+  operationId: 'revokeCorrectorKey',
+  summary:
+    'Revokes the live corrector key it names, with no step-up, for an owner-list admin. 403 not_admin or owner_list_only; 404 not_found unless the key is the live one',
+  body: RevokeCorrectorKey,
+  response: { description: 'Revoked', schema: z.object({}) },
+} as const satisfies RouteDefinition;
+
+export const CorrectorRequests = z.object({
+  /** At most ten open or taken requests, oldest first. */
+  requests: z.array(
+    z.object({
+      id: z.uuid(),
+      routeId: routeIdSchema,
+      versionNumber: z.int().min(1),
+      item: CorrectionItem,
+      /** Null once the request's contents were erased; its sources go too. */
+      note: z.string().nullable(),
+      createdAt: z.iso.datetime({ offset: true }),
+      /** In the request's order; a file opens through `correctorFileUrl` by its place here. */
+      sources: z.array(ListedCorrectionSource),
+      state: z.enum(['open', 'taken']),
+    }),
+  ),
+});
+export type CorrectorRequests = z.infer<typeof CorrectorRequests>;
+
+const correctorAuth =
+  'Bearer corrector key only; 401 unauthorized for a missing, wrong, revoked, expired or replaced key, after a per-address limit (429 rate_limited)';
+
+export const listCorrectorRequests = {
+  method: 'get',
+  path: '/corrector/requests',
+  operationId: 'listCorrectorRequests',
+  summary: `The open and taken correction requests with their sources, at most ten, oldest first. ${correctorAuth}; 100 per 24 hours per key`,
+  response: { description: 'The requests', schema: CorrectorRequests },
+} as const satisfies RouteDefinition<typeof CorrectorRequests>;
+
+export const correctorFileUrl = {
+  method: 'post',
+  path: '/corrector/files/url',
+  operationId: 'correctorFileUrl',
+  summary: `A URL that downloads one file of an open or taken request, as an attachment, for 5 minutes. ${correctorAuth}; 200 per 24 hours per key; 404 not_found for a source that is not a stored file of such a request`,
+  body: CorrectionFileReference,
+  response: { description: 'Download URL', schema: CorrectionFileUrlResponse },
+} as const satisfies RouteDefinition<typeof CorrectionFileUrlResponse>;
+
+export const CorrectionAnswer = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('taken') }),
+  z.strictObject({ kind: z.literal('version_proposed'), number: z.int().min(1).max(1_000_000) }),
+  z.strictObject({
+    kind: z.literal('no_change'),
+    explanation: z.string().trim().min(1).max(maxCorrectionExplanation),
+  }),
+]);
+export type CorrectionAnswer = z.infer<typeof CorrectionAnswer>;
+
+export const AnswerCorrectionRequest = z.strictObject({
+  requestId: z.uuid(),
+  answer: CorrectionAnswer,
+});
+export type AnswerCorrectionRequest = z.infer<typeof AnswerCorrectionRequest>;
+
+export const answerCorrectionRequest = {
+  method: 'post',
+  path: '/corrector/requests/answer',
+  operationId: 'answerCorrectionRequest',
+  summary: `Marks an open request taken, or answers a taken one with the version proposed or why nothing changed; a key never closes a request. ${correctorAuth}; 100 per 24 hours per key; 404 not_found; 409 wrong_state; 409 invalid_version for a version this deployment does not serve on the request's route, or one that neither corrects nor follows the request's version`,
+  body: AnswerCorrectionRequest,
+  response: { description: 'Answered', schema: z.object({}) },
 } as const satisfies RouteDefinition;
 
 /*
@@ -916,6 +1060,12 @@ export const knowledgeRoutes = {
   startCorrectionUpload,
   correctionUploadUrl,
   correctionFileUrl,
+  getCorrectorKey,
+  createCorrectorKey,
+  revokeCorrectorKey,
+  listCorrectorRequests,
+  correctorFileUrl,
+  answerCorrectionRequest,
   startVersionChecks,
   getVersionCheck,
   startVersionCheck,

@@ -8,174 +8,174 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router';
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as CompareRouteImport } from './routes/compare'
-import { Route as DevicesRouteImport } from './routes/devices'
-import { Route as EnrollRouteImport } from './routes/enroll'
-import { Route as FamilyRouteImport } from './routes/family'
-import { Route as InviteRouteImport } from './routes/invite'
-import { Route as InvitesRouteImport } from './routes/invites'
-import { Route as KnowledgeRouteImport } from './routes/knowledge'
-import { Route as RecoverRouteImport } from './routes/recover'
-import { Route as RecoveryKitRouteImport } from './routes/recovery-kit'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as SignInRouteImport } from './routes/sign-in'
-import { Route as FamilyIntakeRouteImport } from './routes/family_.intake'
-import { Route as FamilyQuestionsRouteImport } from './routes/family_.questions'
-import { Route as FamilyResultsRouteImport } from './routes/family_.results'
-import { Route as KnowledgeCheckRouteImport } from './routes/knowledge_.check'
+import { Route as rootRouteImport } from './routes/__root';
+import { Route as IndexRouteImport } from './routes/index';
+import { Route as CompareRouteImport } from './routes/compare';
+import { Route as DevicesRouteImport } from './routes/devices';
+import { Route as EnrollRouteImport } from './routes/enroll';
+import { Route as FamilyRouteImport } from './routes/family';
+import { Route as InviteRouteImport } from './routes/invite';
+import { Route as InvitesRouteImport } from './routes/invites';
+import { Route as KnowledgeRouteImport } from './routes/knowledge';
+import { Route as RecoverRouteImport } from './routes/recover';
+import { Route as RecoveryKitRouteImport } from './routes/recovery-kit';
+import { Route as SettingsRouteImport } from './routes/settings';
+import { Route as SignInRouteImport } from './routes/sign-in';
+import { Route as FamilyIntakeRouteImport } from './routes/family_.intake';
+import { Route as FamilyQuestionsRouteImport } from './routes/family_.questions';
+import { Route as FamilyResultsRouteImport } from './routes/family_.results';
+import { Route as KnowledgeCheckRouteImport } from './routes/knowledge_.check';
 
-const VaultLazyRouteImport = createFileRoute('/vault')()
+const VaultLazyRouteImport = createFileRoute('/vault')();
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const CompareRoute = CompareRouteImport.update({
   id: '/compare',
   path: '/compare',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const DevicesRoute = DevicesRouteImport.update({
   id: '/devices',
   path: '/devices',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const EnrollRoute = EnrollRouteImport.update({
   id: '/enroll',
   path: '/enroll',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const FamilyRoute = FamilyRouteImport.update({
   id: '/family',
   path: '/family',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const InviteRoute = InviteRouteImport.update({
   id: '/invite',
   path: '/invite',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const InvitesRoute = InvitesRouteImport.update({
   id: '/invites',
   path: '/invites',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const KnowledgeRoute = KnowledgeRouteImport.update({
   id: '/knowledge',
   path: '/knowledge',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const RecoverRoute = RecoverRouteImport.update({
   id: '/recover',
   path: '/recover',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const RecoveryKitRoute = RecoveryKitRouteImport.update({
   id: '/recovery-kit',
   path: '/recovery-kit',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const SignInRoute = SignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const VaultLazyRoute = VaultLazyRouteImport.update({
   id: '/vault',
   path: '/vault',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/vault.lazy').then((d) => d.Route))
+} as any).lazy(() => import('./routes/vault.lazy').then((d) => d.Route));
 const FamilyIntakeRoute = FamilyIntakeRouteImport.update({
   id: '/family_/intake',
   path: '/family/intake',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const FamilyQuestionsRoute = FamilyQuestionsRouteImport.update({
   id: '/family_/questions',
   path: '/family/questions',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const FamilyResultsRoute = FamilyResultsRouteImport.update({
   id: '/family_/results',
   path: '/family/results',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const KnowledgeCheckRoute = KnowledgeCheckRouteImport.update({
   id: '/knowledge_/check',
   path: '/knowledge/check',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/compare': typeof CompareRoute
-  '/devices': typeof DevicesRoute
-  '/enroll': typeof EnrollRoute
-  '/family': typeof FamilyRoute
-  '/invite': typeof InviteRoute
-  '/invites': typeof InvitesRoute
-  '/knowledge': typeof KnowledgeRoute
-  '/recover': typeof RecoverRoute
-  '/recovery-kit': typeof RecoveryKitRoute
-  '/settings': typeof SettingsRoute
-  '/sign-in': typeof SignInRoute
-  '/vault': typeof VaultLazyRoute
-  '/family/intake': typeof FamilyIntakeRoute
-  '/family/questions': typeof FamilyQuestionsRoute
-  '/family/results': typeof FamilyResultsRoute
-  '/knowledge/check': typeof KnowledgeCheckRoute
+  '/': typeof IndexRoute;
+  '/compare': typeof CompareRoute;
+  '/devices': typeof DevicesRoute;
+  '/enroll': typeof EnrollRoute;
+  '/family': typeof FamilyRoute;
+  '/invite': typeof InviteRoute;
+  '/invites': typeof InvitesRoute;
+  '/knowledge': typeof KnowledgeRoute;
+  '/recover': typeof RecoverRoute;
+  '/recovery-kit': typeof RecoveryKitRoute;
+  '/settings': typeof SettingsRoute;
+  '/sign-in': typeof SignInRoute;
+  '/vault': typeof VaultLazyRoute;
+  '/family/intake': typeof FamilyIntakeRoute;
+  '/family/questions': typeof FamilyQuestionsRoute;
+  '/family/results': typeof FamilyResultsRoute;
+  '/knowledge/check': typeof KnowledgeCheckRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/compare': typeof CompareRoute
-  '/devices': typeof DevicesRoute
-  '/enroll': typeof EnrollRoute
-  '/family': typeof FamilyRoute
-  '/invite': typeof InviteRoute
-  '/invites': typeof InvitesRoute
-  '/knowledge': typeof KnowledgeRoute
-  '/recover': typeof RecoverRoute
-  '/recovery-kit': typeof RecoveryKitRoute
-  '/settings': typeof SettingsRoute
-  '/sign-in': typeof SignInRoute
-  '/vault': typeof VaultLazyRoute
-  '/family/intake': typeof FamilyIntakeRoute
-  '/family/questions': typeof FamilyQuestionsRoute
-  '/family/results': typeof FamilyResultsRoute
-  '/knowledge/check': typeof KnowledgeCheckRoute
+  '/': typeof IndexRoute;
+  '/compare': typeof CompareRoute;
+  '/devices': typeof DevicesRoute;
+  '/enroll': typeof EnrollRoute;
+  '/family': typeof FamilyRoute;
+  '/invite': typeof InviteRoute;
+  '/invites': typeof InvitesRoute;
+  '/knowledge': typeof KnowledgeRoute;
+  '/recover': typeof RecoverRoute;
+  '/recovery-kit': typeof RecoveryKitRoute;
+  '/settings': typeof SettingsRoute;
+  '/sign-in': typeof SignInRoute;
+  '/vault': typeof VaultLazyRoute;
+  '/family/intake': typeof FamilyIntakeRoute;
+  '/family/questions': typeof FamilyQuestionsRoute;
+  '/family/results': typeof FamilyResultsRoute;
+  '/knowledge/check': typeof KnowledgeCheckRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/compare': typeof CompareRoute
-  '/devices': typeof DevicesRoute
-  '/enroll': typeof EnrollRoute
-  '/family': typeof FamilyRoute
-  '/invite': typeof InviteRoute
-  '/invites': typeof InvitesRoute
-  '/knowledge': typeof KnowledgeRoute
-  '/recover': typeof RecoverRoute
-  '/recovery-kit': typeof RecoveryKitRoute
-  '/settings': typeof SettingsRoute
-  '/sign-in': typeof SignInRoute
-  '/vault': typeof VaultLazyRoute
-  '/family_/intake': typeof FamilyIntakeRoute
-  '/family_/questions': typeof FamilyQuestionsRoute
-  '/family_/results': typeof FamilyResultsRoute
-  '/knowledge_/check': typeof KnowledgeCheckRoute
+  __root__: typeof rootRouteImport;
+  '/': typeof IndexRoute;
+  '/compare': typeof CompareRoute;
+  '/devices': typeof DevicesRoute;
+  '/enroll': typeof EnrollRoute;
+  '/family': typeof FamilyRoute;
+  '/invite': typeof InviteRoute;
+  '/invites': typeof InvitesRoute;
+  '/knowledge': typeof KnowledgeRoute;
+  '/recover': typeof RecoverRoute;
+  '/recovery-kit': typeof RecoveryKitRoute;
+  '/settings': typeof SettingsRoute;
+  '/sign-in': typeof SignInRoute;
+  '/vault': typeof VaultLazyRoute;
+  '/family_/intake': typeof FamilyIntakeRoute;
+  '/family_/questions': typeof FamilyQuestionsRoute;
+  '/family_/results': typeof FamilyResultsRoute;
+  '/knowledge_/check': typeof KnowledgeCheckRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
+  fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
     | '/'
     | '/compare'
@@ -193,8 +193,8 @@ export interface FileRouteTypes {
     | '/family/intake'
     | '/family/questions'
     | '/family/results'
-    | '/knowledge/check'
-  fileRoutesByTo: FileRoutesByTo
+    | '/knowledge/check';
+  fileRoutesByTo: FileRoutesByTo;
   to:
     | '/'
     | '/compare'
@@ -212,7 +212,7 @@ export interface FileRouteTypes {
     | '/family/intake'
     | '/family/questions'
     | '/family/results'
-    | '/knowledge/check'
+    | '/knowledge/check';
   id:
     | '__root__'
     | '/'
@@ -231,150 +231,150 @@ export interface FileRouteTypes {
     | '/family_/intake'
     | '/family_/questions'
     | '/family_/results'
-    | '/knowledge_/check'
-  fileRoutesById: FileRoutesById
+    | '/knowledge_/check';
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  CompareRoute: typeof CompareRoute
-  DevicesRoute: typeof DevicesRoute
-  EnrollRoute: typeof EnrollRoute
-  FamilyRoute: typeof FamilyRoute
-  InviteRoute: typeof InviteRoute
-  InvitesRoute: typeof InvitesRoute
-  KnowledgeRoute: typeof KnowledgeRoute
-  RecoverRoute: typeof RecoverRoute
-  RecoveryKitRoute: typeof RecoveryKitRoute
-  SettingsRoute: typeof SettingsRoute
-  SignInRoute: typeof SignInRoute
-  VaultLazyRoute: typeof VaultLazyRoute
-  FamilyIntakeRoute: typeof FamilyIntakeRoute
-  FamilyQuestionsRoute: typeof FamilyQuestionsRoute
-  FamilyResultsRoute: typeof FamilyResultsRoute
-  KnowledgeCheckRoute: typeof KnowledgeCheckRoute
+  IndexRoute: typeof IndexRoute;
+  CompareRoute: typeof CompareRoute;
+  DevicesRoute: typeof DevicesRoute;
+  EnrollRoute: typeof EnrollRoute;
+  FamilyRoute: typeof FamilyRoute;
+  InviteRoute: typeof InviteRoute;
+  InvitesRoute: typeof InvitesRoute;
+  KnowledgeRoute: typeof KnowledgeRoute;
+  RecoverRoute: typeof RecoverRoute;
+  RecoveryKitRoute: typeof RecoveryKitRoute;
+  SettingsRoute: typeof SettingsRoute;
+  SignInRoute: typeof SignInRoute;
+  VaultLazyRoute: typeof VaultLazyRoute;
+  FamilyIntakeRoute: typeof FamilyIntakeRoute;
+  FamilyQuestionsRoute: typeof FamilyQuestionsRoute;
+  FamilyResultsRoute: typeof FamilyResultsRoute;
+  KnowledgeCheckRoute: typeof KnowledgeCheckRoute;
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/';
+      path: '/';
+      fullPath: '/';
+      preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/compare': {
-      id: '/compare'
-      path: '/compare'
-      fullPath: '/compare'
-      preLoaderRoute: typeof CompareRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/compare';
+      path: '/compare';
+      fullPath: '/compare';
+      preLoaderRoute: typeof CompareRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/devices': {
-      id: '/devices'
-      path: '/devices'
-      fullPath: '/devices'
-      preLoaderRoute: typeof DevicesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/devices';
+      path: '/devices';
+      fullPath: '/devices';
+      preLoaderRoute: typeof DevicesRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/enroll': {
-      id: '/enroll'
-      path: '/enroll'
-      fullPath: '/enroll'
-      preLoaderRoute: typeof EnrollRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/enroll';
+      path: '/enroll';
+      fullPath: '/enroll';
+      preLoaderRoute: typeof EnrollRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/family': {
-      id: '/family'
-      path: '/family'
-      fullPath: '/family'
-      preLoaderRoute: typeof FamilyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/family';
+      path: '/family';
+      fullPath: '/family';
+      preLoaderRoute: typeof FamilyRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/invite': {
-      id: '/invite'
-      path: '/invite'
-      fullPath: '/invite'
-      preLoaderRoute: typeof InviteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/invite';
+      path: '/invite';
+      fullPath: '/invite';
+      preLoaderRoute: typeof InviteRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/invites': {
-      id: '/invites'
-      path: '/invites'
-      fullPath: '/invites'
-      preLoaderRoute: typeof InvitesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/invites';
+      path: '/invites';
+      fullPath: '/invites';
+      preLoaderRoute: typeof InvitesRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/knowledge': {
-      id: '/knowledge'
-      path: '/knowledge'
-      fullPath: '/knowledge'
-      preLoaderRoute: typeof KnowledgeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/knowledge';
+      path: '/knowledge';
+      fullPath: '/knowledge';
+      preLoaderRoute: typeof KnowledgeRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/recover': {
-      id: '/recover'
-      path: '/recover'
-      fullPath: '/recover'
-      preLoaderRoute: typeof RecoverRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/recover';
+      path: '/recover';
+      fullPath: '/recover';
+      preLoaderRoute: typeof RecoverRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/recovery-kit': {
-      id: '/recovery-kit'
-      path: '/recovery-kit'
-      fullPath: '/recovery-kit'
-      preLoaderRoute: typeof RecoveryKitRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/recovery-kit';
+      path: '/recovery-kit';
+      fullPath: '/recovery-kit';
+      preLoaderRoute: typeof RecoveryKitRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/settings';
+      path: '/settings';
+      fullPath: '/settings';
+      preLoaderRoute: typeof SettingsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/sign-in': {
-      id: '/sign-in'
-      path: '/sign-in'
-      fullPath: '/sign-in'
-      preLoaderRoute: typeof SignInRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/sign-in';
+      path: '/sign-in';
+      fullPath: '/sign-in';
+      preLoaderRoute: typeof SignInRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/vault': {
-      id: '/vault'
-      path: '/vault'
-      fullPath: '/vault'
-      preLoaderRoute: typeof VaultLazyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/vault';
+      path: '/vault';
+      fullPath: '/vault';
+      preLoaderRoute: typeof VaultLazyRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/family_/intake': {
-      id: '/family_/intake'
-      path: '/family/intake'
-      fullPath: '/family/intake'
-      preLoaderRoute: typeof FamilyIntakeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/family_/intake';
+      path: '/family/intake';
+      fullPath: '/family/intake';
+      preLoaderRoute: typeof FamilyIntakeRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/family_/questions': {
-      id: '/family_/questions'
-      path: '/family/questions'
-      fullPath: '/family/questions'
-      preLoaderRoute: typeof FamilyQuestionsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/family_/questions';
+      path: '/family/questions';
+      fullPath: '/family/questions';
+      preLoaderRoute: typeof FamilyQuestionsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/family_/results': {
-      id: '/family_/results'
-      path: '/family/results'
-      fullPath: '/family/results'
-      preLoaderRoute: typeof FamilyResultsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/family_/results';
+      path: '/family/results';
+      fullPath: '/family/results';
+      preLoaderRoute: typeof FamilyResultsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/knowledge_/check': {
-      id: '/knowledge_/check'
-      path: '/knowledge/check'
-      fullPath: '/knowledge/check'
-      preLoaderRoute: typeof KnowledgeCheckRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/knowledge_/check';
+      path: '/knowledge/check';
+      fullPath: '/knowledge/check';
+      preLoaderRoute: typeof KnowledgeCheckRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
   }
 }
 
@@ -396,7 +396,7 @@ const rootRouteChildren: RootRouteChildren = {
   FamilyQuestionsRoute: FamilyQuestionsRoute,
   FamilyResultsRoute: FamilyResultsRoute,
   KnowledgeCheckRoute: KnowledgeCheckRoute,
-}
+};
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();

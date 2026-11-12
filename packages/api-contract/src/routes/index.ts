@@ -207,6 +207,7 @@ export const stepUpPurposes = [
   'vault_write',
   'knowledge_decision',
   'admin_grant',
+  'corrector_key',
 ] as const;
 
 export const StepUpPurpose = z.enum(stepUpPurposes);
@@ -874,6 +875,26 @@ export const auditEventDetails = {
   }),
   /** A filed file was not what its upload declared, and was deleted (ADR-0029). */
   correction_upload_mismatch: z.strictObject({ uploadId: z.uuid() }),
+  /** An owner-list admin made a corrector key, which replaced any live one (ADR-0029). */
+  corrector_key_created: z.strictObject({ keyId: z.uuid() }),
+  /** An owner-list admin revoked the corrector key (ADR-0029). */
+  corrector_key_revoked: z.strictObject({ keyId: z.uuid() }),
+  /** A key the corrector routes refused; nothing of the presented value is kept (ADR-0029). */
+  corrector_key_refused: z.strictObject({}),
+  /** The corrector run listed the requests it may work on (ADR-0029). */
+  corrector_requests_listed: z.strictObject({ keyId: z.uuid(), count: z.int().min(0) }),
+  /** The corrector run minted a download URL for one file of a request (ADR-0029). */
+  corrector_file_downloaded: z.strictObject({
+    keyId: z.uuid(),
+    requestId: z.uuid(),
+    position: z.int().min(0),
+  }),
+  /** The corrector run took a request or answered it (ADR-0029); the explanation stays out. */
+  correction_answered: z.strictObject({
+    keyId: z.uuid(),
+    requestId: z.uuid(),
+    answer: z.enum(['taken', 'version_proposed', 'no_change']),
+  }),
 } as const;
 
 export type AuditEventCode = keyof typeof auditEventDetails;

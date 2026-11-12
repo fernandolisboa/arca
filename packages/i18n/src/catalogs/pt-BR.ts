@@ -1069,6 +1069,31 @@ export const ptBR = {
         'O prazo de guarda acabou: o texto, os links e os arquivos deste pedido foram apagados.',
       close: 'Fechar pedido',
       closeFailure: 'Não deu para fechar o pedido agora. Tente de novo.',
+      answerVersion: 'A sessão de correção propôs a versão {number}.',
+      openVersion: 'Abrir a versão {number}',
+      answerNoChange: 'A sessão de correção não mudou a regra:',
+    },
+    /** The corrector key in settings (ADR-0029), for owner-list admins. */
+    correctorKey: {
+      title: 'Chave da sessão de correção',
+      lead: 'Uma vez por dia, uma sessão do Claude lê os pedidos de correção abertos e propõe a versão que corrige a regra. Ela usa esta chave para ler e responder os pedidos. Com a chave, ninguém fecha um pedido, muda uma regra ou vê dados da família.',
+      none: 'Nenhuma chave ativa. Sem ela, os pedidos ficam parados.',
+      active: 'Chave criada em {created}. Vale até {expires}.',
+      create: 'Criar chave',
+      replace: 'Criar chave nova',
+      replaceHint: 'A chave nova substitui a atual na hora.',
+      working: 'Confirmando…',
+      shown:
+        'Copie a chave agora e cole no ambiente da sessão de correção como ARCA_CORRECTOR_KEY. Ela não aparece de novo.',
+      copy: 'Copiar chave',
+      copied: 'Copiada.',
+      done: 'Já copiei',
+      revoke: 'Revogar chave',
+      revoked: 'Chave revogada.',
+      failure: 'Não deu para mudar a chave agora. Tente de novo.',
+      tooMany: 'Muitas mudanças de chave nas últimas 24 horas. Tente mais tarde.',
+      loadFailure: 'Não deu para carregar a chave agora.',
+      ownerOnly: 'Só alguém da lista de donos cria ou revoga a chave.',
     },
     reports: {
       title: 'Avisos de regra errada',
@@ -1807,6 +1832,10 @@ export const ptBR = {
         subject: 'Recuperação bloqueada por 24 horas',
         body: 'O código de recuperação da sua conta Arca foi digitado errado várias vezes em {when} (horário de Brasília). Por segurança, a recuperação fica bloqueada pelas próximas 24 horas.',
       },
+      corrector_key_changed: {
+        subject: 'A chave da sessão de correção mudou',
+        body: 'Em {when} (horário de Brasília), alguém da lista de donos criou ou revogou a chave da sessão de correção do Arca. Se não foi você nem alguém que você conhece, entre no Arca, revogue a chave em Configurações e confira os dispositivos.',
+      },
       correction_requested: {
         subject: 'Novo pedido de correção de regra',
         body: 'Em {when} (horário de Brasília), alguém da lista de donos mandou um pedido de correção de regra no Arca. Se ninguém da lista mandou, entre no Arca, feche o pedido e confira os dispositivos.',
@@ -1858,6 +1887,10 @@ export const ptBR = {
     inactivity_warning: {
       title: 'Sua conta Arca vai ser apagada por falta de uso',
       body: 'Para manter a conta, entre no Arca com sua chave de acesso. A data está no email que mandamos.',
+    },
+    corrector_key_changed: {
+      title: 'A chave da sessão de correção mudou',
+      body: 'Se não foi você, revogue a chave em Configurações e confira os dispositivos.',
     },
     correction_requested: {
       title: 'Novo pedido de correção de regra',
@@ -1934,6 +1967,7 @@ export const ptBR = {
       correctionSources: 'Links, textos e arquivos dos seus pedidos de correção',
       correctionUploads: 'Arquivos que você anexou a pedidos de correção: tipo, tamanho e data',
       correctionEvents: 'O que aconteceu com seus pedidos de correção',
+      correctorKeys: 'Quando você criou ou revogou a chave da sessão de correção',
       comparisonPreferences:
         'Suas escolhas em Comparar destinos: pesos, suas notas, critérios próprios e países ocultos',
     },

@@ -28,7 +28,7 @@ const partLabels = {
 type CopyState = 'idle' | 'copied' | 'failed';
 
 /** Copies the text to the clipboard; `copied` falls back to `idle` after two seconds. */
-function useCopy(text: string) {
+export function useCopy(text: string) {
   const [state, setState] = useState<CopyState>('idle');
 
   useEffect(() => {

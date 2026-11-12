@@ -287,7 +287,15 @@ const correctionTables = {
     'content_erased_at',
   ],
   'knowledge.correction_source': ['request_id', 'position', 'kind', 'url', 'text', 'upload_id'],
-  'knowledge.correction_event': ['id', 'request_id', 'kind', 'at'],
+  'knowledge.correction_event': [
+    'id',
+    'request_id',
+    'kind',
+    'corrector_key_id',
+    'proposed_version',
+    'explanation',
+    'at',
+  ],
   'knowledge.correction_upload': [
     'id',
     'author_account_id',
@@ -296,6 +304,15 @@ const correctionTables = {
     'size',
     'sha256',
     'created_at',
+  ],
+  'knowledge.corrector_key': [
+    'id',
+    'kind',
+    'key_sha256',
+    'revokes_key_id',
+    'actor_account_id',
+    'step_up_id',
+    'at',
   ],
 } as const;
 const correctionFunctions = [
@@ -309,7 +326,15 @@ const correctionFunctions = [
   'knowledge.correction_files(text, integer, text, uuid)',
   'knowledge.correction_file(uuid, integer, text, uuid)',
   'knowledge.own_correction_upload_rows(text)',
+  'knowledge.live_corrector_key()',
+  'knowledge.revoke_corrector_key(uuid, text)',
+  'knowledge.corrector_requests(uuid, bytea)',
+  'knowledge.corrector_file(uuid, bytea, uuid, integer)',
+  'knowledge.answer_correction_request(uuid, bytea, uuid, text, integer, text)',
+  'knowledge.correction_events(text, integer, text, uuid)',
+  'knowledge.own_corrector_key_rows(text)',
   'knowledge.admin_basis_holds(text, uuid)',
+  'knowledge.corrector_key_holds(uuid, bytea)',
 ];
 
 /** Every privilege a role holds on the correction request tables, and the functions it may run. */
@@ -364,7 +389,21 @@ describe('the correction request access matrix (ADR-0029)', () => {
         'knowledge.correction_files',
         'knowledge.correction_file',
         'knowledge.own_correction_upload_rows',
+        'knowledge.live_corrector_key',
+        'knowledge.revoke_corrector_key',
+        'knowledge.corrector_requests',
+        'knowledge.corrector_file',
+        'knowledge.answer_correction_request',
+        'knowledge.correction_events',
+        'knowledge.own_corrector_key_rows',
       ],
+    });
+  });
+
+  it('lets app_auth only insert corrector keys, and run nothing', async () => {
+    expect(await correctionAccess('app_auth')).toEqual({
+      tables: correctionMatrix({ 'knowledge.corrector_key': ['INSERT'] }),
+      functions: [],
     });
   });
 
@@ -409,12 +448,13 @@ describe('the correction request access matrix (ADR-0029)', () => {
         'knowledge.correction_source': ['SELECT', 'INSERT'],
         'knowledge.correction_event': ['SELECT', 'INSERT'],
         'knowledge.correction_upload': ['SELECT', 'INSERT'],
+        'knowledge.corrector_key': ['SELECT', 'INSERT'],
       }),
     );
   });
 
   it.each([
-    ...runtimeRoles.filter((role) => !['app_api', 'app_jobs'].includes(role)),
+    ...runtimeRoles.filter((role) => !['app_api', 'app_jobs', 'app_auth'].includes(role)),
     ...retiredRoles,
   ])('gives %s no access', async (role) => {
     expect(await correctionAccess(role)).toEqual({ tables: correctionMatrix({}), functions: [] });
@@ -488,7 +528,7 @@ describe('the audit schema access matrix (spec 0003, R7)', () => {
 });
 
 describe('the knowledge schema access matrix (spec 0007, R7)', () => {
-  it('has only the admin grant, decision, rule summary, check, and correction request tables, with forced row-level security', async () => {
+  it('has only the admin grant, decision, rule summary, check, correction request and corrector key tables, with forced row-level security', async () => {
     expect(await schemaShape('knowledge')).toEqual({
       tables: [
         { name: 'admin_grant', forced: true },
@@ -498,13 +538,14 @@ describe('the knowledge schema access matrix (spec 0007, R7)', () => {
         { name: 'correction_request', forced: true },
         { name: 'correction_source', forced: true },
         { name: 'correction_upload', forced: true },
+        { name: 'corrector_key', forced: true },
         { name: 'decision', forced: true },
         { name: 'independent_check', forced: true },
         { name: 'rule_summary', forced: true },
       ],
-      // A correction request's sources and events, which go with it, and a file source's upload
-      // (ADR-0029).
-      foreignKeys: 3,
+      // A correction request's sources and events, which go with it, a file source's upload, the
+      // corrector key an event names and the key a revocation ends (ADR-0029).
+      foreignKeys: 5,
     });
   });
 

@@ -115,3 +115,44 @@ export function correctionState({
   if (answers.length > 0) return 'answered';
   return events.some(({ kind }) => kind === 'taken') ? 'taken' : 'open';
 }
+
+/** What the corrector run answers on a request (ADR-0029). */
+export type CorrectionAnswer =
+  | { readonly kind: 'taken' }
+  | { readonly kind: 'version_proposed'; readonly number: number }
+  | { readonly kind: 'no_change'; readonly explanation: string };
+
+/**
+ * Why an answer is refused: the request is not in the state the answer moves it from, or the
+ * proposed version is not served on the request's route, or neither corrects nor follows the
+ * request's version.
+ */
+export type CorrectionAnswerRefusal = 'wrong_state' | 'unknown_version' | 'unrelated_version';
+
+/**
+ * Checks an answer against the request's computed state and the route's served versions
+ * (ADR-0029): `taken` moves an open request, the other answers a taken one; a proposed version
+ * must be on the request's route and correct its version, directly or through a chain, or come
+ * after it. Undefined when the answer stands.
+ */
+export function correctionAnswerRefusal({
+  versionNumber,
+  state,
+  answer,
+  identities,
+}: {
+  readonly versionNumber: number;
+  readonly state: CorrectionState;
+  readonly answer: CorrectionAnswer;
+  /** Every version identity of the request's route that this deployment serves. */
+  readonly identities: readonly VersionIdentity[];
+}): CorrectionAnswerRefusal | undefined {
+  if (state !== (answer.kind === 'taken' ? 'open' : 'taken')) return 'wrong_state';
+  if (answer.kind !== 'version_proposed') return undefined;
+  const byNumber = new Map(identities.map((identity) => [identity.number, identity]));
+  const proposed = byNumber.get(answer.number);
+  if (proposed === undefined) return 'unknown_version';
+  return proposed.number > versionNumber || correctsThrough(proposed, versionNumber, byNumber)
+    ? undefined
+    : 'unrelated_version';
+}

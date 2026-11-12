@@ -273,6 +273,11 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
        VALUES ('grant', $1, $2, 'owner_list', gen_random_uuid())`,
       [accountId, sharerId],
     );
+    await insert(
+      `INSERT INTO knowledge.corrector_key (kind, key_sha256, actor_account_id, step_up_id)
+       VALUES ('created', $1, $2, gen_random_uuid())`,
+      [bytes(32), accountId],
+    );
   });
   return { accountId, email, credentialId, codeHash, sharerId };
 }

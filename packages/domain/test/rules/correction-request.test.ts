@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { parseCalendarDate } from '../../src/calendar/calendar-date.js';
 import { type DecisionState, type VersionIdentity, identityKey } from '../../src/rules/catalog.js';
 import {
+  type CorrectionAnswer,
+  type CorrectionAnswerRefusal,
   type CorrectionEvent,
   type CorrectionState,
+  correctionAnswerRefusal,
   correctionState,
 } from '../../src/rules/correction-request.js';
 
@@ -63,5 +66,49 @@ describe('correctionState', () => {
     expect(
       correctionState({ versionNumber: 3, events: [], identities: cyclic, states: new Map() }),
     ).toBe('open');
+  });
+});
+
+describe('correctionAnswerRefusal', () => {
+  const proposing = (number: number): CorrectionAnswer => ({ kind: 'version_proposed', number });
+  const noChange: CorrectionAnswer = { kind: 'no_change', explanation: 'Nada mudou.' };
+  const take: CorrectionAnswer = { kind: 'taken' };
+
+  it.each<[string, number, CorrectionState, CorrectionAnswer, CorrectionAnswerRefusal | undefined]>(
+    [
+      ['taking an open request', 1, 'open', take, undefined],
+      ['taking a taken request', 1, 'taken', take, 'wrong_state'],
+      ['taking an answered request', 1, 'answered', take, 'wrong_state'],
+      ['taking a closed request', 1, 'closed', take, 'wrong_state'],
+      ['no change on a taken request', 1, 'taken', noChange, undefined],
+      ['no change on an open request', 1, 'open', noChange, 'wrong_state'],
+      ['no change on an answered request', 1, 'answered', noChange, 'wrong_state'],
+      ['a direct correction', 1, 'taken', proposing(2), undefined],
+      ['a correction of a correction', 1, 'taken', proposing(3), undefined],
+      ['a later version', 1, 'taken', proposing(4), undefined],
+      ['a later version that corrects another', 2, 'taken', proposing(3), undefined],
+      ['a version on an open request', 1, 'open', proposing(2), 'wrong_state'],
+      ['a version on a closed request', 1, 'closed', proposing(2), 'wrong_state'],
+      ['a version the route does not serve', 1, 'taken', proposing(9), 'unknown_version'],
+      ['the request version itself', 2, 'taken', proposing(2), 'unrelated_version'],
+      ['an older version', 3, 'taken', proposing(1), 'unrelated_version'],
+      ['an older version that corrects another', 4, 'taken', proposing(2), 'unrelated_version'],
+    ],
+  )('is right for %s', (_label, versionNumber, state, answer, expected) => {
+    expect(correctionAnswerRefusal({ versionNumber, state, answer, identities: route })).toBe(
+      expected,
+    );
+  });
+
+  it('refuses an older version that corrects the request version through a cycle', () => {
+    const cyclic = [identity(1, 2), identity(2, 1)];
+    expect(
+      correctionAnswerRefusal({
+        versionNumber: 2,
+        state: 'taken',
+        answer: proposing(1),
+        identities: cyclic,
+      }),
+    ).toBeUndefined();
   });
 });

@@ -213,6 +213,7 @@ describe('filing a correction request (ADR-0029)', () => {
         createdAt: expect.any(String) as unknown,
         sources: filed.sources,
         state: 'open',
+        answer: null,
       },
     ]);
     expect(notices).toEqual([`${owner}:correction_requested`]);
