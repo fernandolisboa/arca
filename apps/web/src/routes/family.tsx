@@ -282,7 +282,9 @@ function FamilyCase({
   const returnFocusRef = useRef<string>(undefined);
   useEffect(() => {
     if (returnFocusRef.current === undefined) return;
-    document.querySelector<HTMLElement>(`[data-family-entry="${returnFocusRef.current}"]`)?.focus();
+    document
+      .querySelector<HTMLElement>(`[data-family-entry="${CSS.escape(returnFocusRef.current)}"]`)
+      ?.focus();
     returnFocusRef.current = undefined;
   });
   const close = () => {
@@ -294,6 +296,7 @@ function FamilyCase({
   const [laidOut, setLaidOut] = useState(layout);
   if (laidOut !== layout) {
     setLaidOut(layout);
+    setJustAdded(undefined);
     setAdding(false);
     setSelected(undefined);
   }
