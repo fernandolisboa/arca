@@ -77,3 +77,14 @@ export async function open(
 /** How far the page scrolls sideways; 0 means no horizontal scroll. */
 export const horizontalOverflow = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+
+/** The shortest side of the smallest visible link or button in the bars, docks and menus. */
+export const smallestNavTarget = (page: Page) =>
+  page.evaluate(() =>
+    Math.min(
+      ...[...document.querySelectorAll('header a, header button, nav a, nav button')]
+        .map((element) => element.getBoundingClientRect())
+        .filter((rect) => rect.width > 0)
+        .map((rect) => Math.min(rect.width, rect.height)),
+    ),
+  );

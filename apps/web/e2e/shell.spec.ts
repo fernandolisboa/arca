@@ -5,6 +5,7 @@ import {
   layoutName,
   open,
   sizes,
+  smallestNavTarget,
   usesMenu,
   type Layout,
 } from './layouts.js';
@@ -85,6 +86,7 @@ for (const [width, baseLayouts] of sizes) {
           await expect(page.getByRole('button', { name: 'Abrir menu' })).toHaveCount(0);
         }
         expect(await horizontalOverflow(page)).toBe(0);
+        expect(await smallestNavTarget(page)).toBeGreaterThanOrEqual(44);
         expect(problems).toEqual([]);
       });
 
