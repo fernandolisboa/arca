@@ -37,7 +37,9 @@ const htmlType = 'text/html';
  */
 export function snapshotText({ body, type = htmlType }: Snapshot): string | undefined {
   const format = answerFormat(type);
-  return format === undefined || typeof body !== 'string' ? undefined : answerText(format, body);
+  return format === undefined || format === 'pdf' || typeof body !== 'string'
+    ? undefined
+    : answerText(format, body);
 }
 
 /**

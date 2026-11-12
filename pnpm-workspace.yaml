@@ -34,7 +34,8 @@ trustPolicyExclude:
   - '@vercel/oidc@4.0.3'
 blockExoticSubdeps: true
 # pdfjs-dist renders pages through an optional native canvas; the check only reads the text layer
-# (ADR-0028), so no native code is installed for it.
+# (ADR-0028), so no native code is installed for it. pdf.js loads it whenever it resolves, so it must
+# never be installed; a test in apps/api checks.
 ignoredOptionalDependencies:
   - '@napi-rs/canvas'
 # Peers are declared, never installed implicitly. The Workflow SDK's umbrella package depends on

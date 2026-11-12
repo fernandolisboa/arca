@@ -224,9 +224,9 @@ function textOf(format: AnswerFormat, body: string): string {
 }
 
 /**
- * An answer's text as a reader sees it (ADR-0027). A page's markup through `htmlToText`; plain text,
- * and a PDF's text layer once `pdfText` has read it, as it is; a JSON answer as its string values in document order, one to a line; an XML answer as
- * its text in document order. A string of either with markup in it is read as a page's markup is.
+ * An answer's text as a reader sees it (ADR-0027). A page's markup through `htmlToText`; plain
+ * text, and a PDF's text layer once `pdfText` has read it, as it is; a JSON answer as its string
+ * values in document order, one to a line; an XML answer as its text in document order. A string of either with markup in it is read as a page's markup is.
  * Nothing in a data answer is ever more than text. In every format, a NUL or an unpaired
  * surrogate, which a stored report cannot hold, reads as the replacement character, and the digits
  * of two lines stay apart.

@@ -73,7 +73,7 @@ function capText(
  * page that draws its text with scripts answers markup with nothing a reader would see, and a data
  * answer that does not parse has no strings. A PDF's `raw` is the text `pdfText` read from it.
  */
-export function textWithinLimits(
+function textWithinLimits(
   format: AnswerFormat,
   raw: string,
   limits: Pick<FetchLimits, 'maxMarkupLength' | 'maxTextLength'> = fetchLimits,
@@ -108,7 +108,7 @@ export async function answerWithinLimits(
     const read = textWithinLimits(format, answer.text(), limits);
     return read === undefined ? { ok: false, failure: 'no_text' } : { ok: true, ...read };
   }
-  const pdf = await pdfText(answer.bytes, signal);
+  const pdf = await pdfText(answer.bytes, signal, limits.maxTextLength);
   if (!pdf.ok) return pdf;
   const read = textWithinLimits(format, pdf.text, limits);
   return read === undefined ? { ok: false, failure: 'pdf_no_text' } : { ok: true, ...read };
@@ -276,11 +276,16 @@ export function httpsSourceFetcher({
       sent.end();
     });
 
-  const body = async (response: IncomingMessage, charset: string): Promise<AnswerBody> => {
+  const body = async (
+    response: IncomingMessage,
+    format: AnswerFormat,
+    charset: string,
+  ): Promise<AnswerBody> => {
     let text: TextDecoder;
     let decompress: Transform | undefined;
     try {
-      text = new TextDecoder(charset, { fatal: false });
+      // A PDF is bytes, whatever charset its server names (some say `binary`).
+      text = new TextDecoder(format === 'pdf' ? 'utf-8' : charset, { fatal: false });
       decompress = decoder(response.headers['content-encoding']);
     } catch (error) {
       // Nothing will read the body, so the socket closes now rather than at the time limit.
@@ -342,7 +347,7 @@ export function httpsSourceFetcher({
         response.destroy();
         throw new FetchError('unsupported_type', status);
       }
-      const answer = await body(response, charset);
+      const answer = await body(response, format, charset);
       const read = await answerWithinLimits(format, answer, signal, limits);
       if (!read.ok) throw new FetchError(read.failure, status);
       return { status, text: read.text, cut: read.cut };

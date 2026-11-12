@@ -42,6 +42,9 @@ export default defineConfig({
   publicAssets: [{ dir: webDist, baseURL: '/', ignore: [...unpublishedFiles] }],
   renderer: { template: join(webDist, 'index.html'), static: true },
   routeRules: { '/**': { headers: { ...securityHeaders } } },
+  // The independent check reads PDFs with pdf.js in a thread of its own, which imports the library
+  // by path at run time (ADR-0028), so the package ships beside the bundle instead of in it.
+  traceDeps: ['pdfjs-dist'],
   runtimeConfig: { database },
   vercel: { functions: { regions: ['gru1'], runtime: 'nodejs26.x' } },
 });

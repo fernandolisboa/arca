@@ -1,3 +1,5 @@
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 import { request as httpRequest, createServer, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo, LookupFunction } from 'node:net';
 import type { RequestOptions, request as httpsRequest } from 'node:https';
@@ -110,6 +112,37 @@ const routes = new Map<string, Handler>([
     (response) => {
       response.writeHead(200, { 'content-type': 'application/pdf' });
       response.end(syntheticPdf(Array.from({ length: maxPdfPages + 1 }, () => ['Page'])));
+    },
+  ],
+  [
+    '/hidden.pdf',
+    (response) => {
+      response.writeHead(200, { 'content-type': 'application/pdf' });
+      response.end(
+        syntheticPdf([
+          [
+            'Shown line',
+            { text: 'Drawn invisibly', hidden: 'invisible' },
+            { text: 'In a layer switched off', hidden: 'layer-off' },
+          ],
+        ]),
+      );
+    },
+  ],
+  [
+    '/binary.pdf',
+    (response) => {
+      response.writeHead(200, { 'content-type': 'application/pdf; charset=binary' });
+      response.end(syntheticPdf([['Residence Act']]));
+    },
+  ],
+  [
+    '/many.pdf',
+    (response) => {
+      response.writeHead(200, { 'content-type': 'application/pdf' });
+      response.end(
+        syntheticPdf(Array.from({ length: 50 }, (_, index) => [`Page ${String(index + 1)}`])),
+      );
     },
   ],
   [
@@ -273,6 +306,30 @@ describe('the cited-source fetcher (ADR-0027)', () => {
       cut: false,
       chain: [page('/law.pdf')],
     });
+  });
+
+  it("stops reading a PDF's pages once its text passes the cap", async () => {
+    const read = await fetcher({ maxTextLength: 10 }).fetch(page('/many.pdf'), hosts);
+    expect(read).toMatchObject({ ok: true, cut: true, text: 'Page 1\n\nPa' });
+  });
+
+  it("drops text in a layer switched off, and keeps text drawn invisibly, as a scan's OCR is", async () => {
+    expect(await fetcher().fetch(page('/hidden.pdf'), hosts)).toMatchObject({
+      ok: true,
+      text: 'Shown line\nDrawn invisibly',
+    });
+  });
+
+  it('reads a PDF whose server names a charset that is not one', async () => {
+    expect(await fetcher().fetch(page('/binary.pdf'), hosts)).toMatchObject({
+      ok: true,
+      text: 'Residence Act',
+    });
+  });
+
+  it('leaves no native canvas for pdf.js to load', () => {
+    const pdfjs = fileURLToPath(import.meta.resolve('pdfjs-dist/legacy/build/pdf.mjs'));
+    expect(() => createRequire(pdfjs).resolve('@napi-rs/canvas')).toThrow();
   });
 
   it("cuts a PDF's text past the cap and says so", async () => {
