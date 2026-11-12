@@ -485,7 +485,7 @@ test('the seed admin analyses a version with AI on demand and watches it to the 
   // official page to open, what it must state, and a mark kept on this device.
   await proposed.getByRole('button', { name: 'Estados Unidos', exact: true }).click();
   await proposed
-    .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\b`) })
+    .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
     .click();
   await reviewStep(page, 'Requisitos');
   const requirements = page.getByRole('region', { name: 'Requisitos' });

@@ -262,7 +262,7 @@ function ReportItemCard({
       )}
       <Quotes item={item} addressRead={addressRead} words={words} />
       {item.note !== null && <p>{t('knowledge.check.note', { note: item.note })}</p>}
-      {item.status === 'could_not_check' && item.citations.length > 0 && (
+      {(item.status === 'could_not_check' || scripted) && item.citations.length > 0 && (
         <LookHere item={item} words={words} />
       )}
     </div>

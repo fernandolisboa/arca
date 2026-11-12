@@ -13,17 +13,34 @@ export interface HandCheck {
   readonly toggle: () => void;
 }
 
-const storageKey = ({ routeId, number, hash }: HandCheckedVersion): string =>
+/** Where a version's marks are kept: a mark never carries over to another version or content. */
+export const handCheckKey = ({ routeId, number, hash }: HandCheckedVersion): string =>
   `arca.handChecks.${routeId}.${String(number)}.${hash}`;
 
-function readMarks(key: string): ReadonlySet<string> {
+/** The marked item keys in what storage held; anything unreadable counts as no mark. */
+export function parseMarks(stored: string | null): ReadonlySet<string> {
   try {
-    const parsed: unknown = JSON.parse(localStorage.getItem(key) ?? '[]');
+    const parsed: unknown = JSON.parse(stored ?? '[]');
     return new Set(
       Array.isArray(parsed)
         ? parsed.filter((item): item is string => typeof item === 'string')
         : [],
     );
+  } catch {
+    return new Set();
+  }
+}
+
+/** The marks with one item's mark flipped. */
+export function toggledMarks(marks: ReadonlySet<string>, itemKey: string): ReadonlySet<string> {
+  const after = new Set(marks);
+  if (!after.delete(itemKey)) after.add(itemKey);
+  return after;
+}
+
+function readMarks(key: string): ReadonlySet<string> {
+  try {
+    return parseMarks(localStorage.getItem(key));
   } catch {
     return new Set();
   }
@@ -43,20 +60,18 @@ function writeMarks(key: string, marks: ReadonlySet<string>): void {
  * activates anything (ADR-0027, "Items to check yourself").
  */
 export function useHandChecks(version: HandCheckedVersion): (itemKey: string) => HandCheck {
-  const key = storageKey(version);
+  const key = handCheckKey(version);
   const [state, setState] = useState(() => ({ key, marks: readMarks(key) }));
-  // Another version on the same screen reads its own marks, never the last one's.
-  const marks = state.key === key ? state.marks : readMarks(key);
+  // Another version on the same screen reads its own marks once; React redoes this render with them.
+  if (state.key !== key) setState({ key, marks: readMarks(key) });
+  const { marks } = state;
   const toggle = useCallback(
     (itemKey: string) => {
-      setState((before) => {
-        const after = new Set(before.key === key ? before.marks : readMarks(key));
-        if (!after.delete(itemKey)) after.add(itemKey);
-        writeMarks(key, after);
-        return { key, marks: after };
-      });
+      const after = toggledMarks(marks, itemKey);
+      writeMarks(key, after);
+      setState({ key, marks: after });
     },
-    [key],
+    [key, marks],
   );
   return useCallback(
     (itemKey: string) => ({
