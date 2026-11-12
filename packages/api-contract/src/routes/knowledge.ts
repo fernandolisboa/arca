@@ -659,8 +659,8 @@ export const closeCorrectionRequest = {
  * The corrector key and the corrector run's routes (ADR-0029). An owner-list admin makes the key
  * with a `corrector_key` step-up and sees it once; a new key replaces the old one, and a key ends
  * after a year, on revocation, or when its creator leaves the owner list or is erased. The run
- * sends it as `Authorization: Bearer <key>` to the three corrector routes, with the production
- * origin as `Origin`, as every state-changing request does.
+ * sends it as `Authorization: Bearer <key>` to the three corrector routes, and on the two `POST`
+ * routes the production origin as `Origin`, as every state-changing request does.
  */
 
 /** A corrector key: a fixed prefix the secret scan knows, then 32 random bytes in base64url. */
@@ -748,7 +748,7 @@ export const CorrectorRequests = z.object({
 export type CorrectorRequests = z.infer<typeof CorrectorRequests>;
 
 const correctorAuth =
-  'Bearer corrector key only; 401 unauthorized for a missing, wrong, revoked, expired or replaced key, after a per-address limit (429 rate_limited)';
+  'Bearer corrector key only; 403 cross_origin for a browser request from another site; 401 unauthorized for a missing, wrong, revoked, expired or replaced key, after a per-address limit (429 rate_limited)';
 
 export const listCorrectorRequests = {
   method: 'get',
@@ -787,7 +787,7 @@ export const answerCorrectionRequest = {
   method: 'post',
   path: '/corrector/requests/answer',
   operationId: 'answerCorrectionRequest',
-  summary: `Marks an open request taken, or answers a taken one with the version proposed or why nothing changed; a key never closes a request. ${correctorAuth}; 100 per 24 hours per key; 404 not_found; 409 wrong_state; 409 invalid_version for a version this deployment does not serve on the request's route, or one that neither corrects nor follows the request's version`,
+  summary: `Marks an open request taken, or answers a taken one with the version proposed or why nothing changed; a key never closes a request. ${correctorAuth}; 100 per 24 hours per key; 404 not_found; 409 wrong_state; 409 invalid_version for a version this deployment does not serve on the request's route, one already active or rejected, or one that neither corrects nor follows the request's version`,
   body: AnswerCorrectionRequest,
   response: { description: 'Answered', schema: z.object({}) },
 } as const satisfies RouteDefinition;

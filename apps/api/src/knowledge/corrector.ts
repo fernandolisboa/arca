@@ -48,7 +48,10 @@ export interface CorrectorKeys {
     signedIn: SignedIn,
     nonce: Uint8Array,
   ) => Promise<CreatedCorrectorKey | ManageRefusal | 'step_up_required'>;
-  readonly revoke: (accountId: string, keyId: string) => Promise<'revoked' | ManageRefusal | 'not_found'>;
+  readonly revoke: (
+    accountId: string,
+    keyId: string,
+  ) => Promise<'revoked' | ManageRefusal | 'not_found'>;
 }
 
 export type AnswerOutcome = 'stored' | 'not_found' | 'wrong_state' | 'invalid_version';
@@ -183,6 +186,19 @@ export function createCorrector({
     });
   };
 
+  /** A use of the key the routes refused, audited with identifiers only (ADR-0029). */
+  const refusedUse = (
+    key: PresentedKey,
+    requestId: string,
+    outcome: Exclude<AnswerOutcome, 'stored'>,
+  ) =>
+    audit.record({
+      code: 'corrector_use_refused',
+      subjectAccountId: key.creatorId,
+      actorAccountId: null,
+      details: { keyId: key.id, requestId, outcome },
+    });
+
   const keys: CorrectorKeys = {
     status: async (accountId) => {
       const basis = role.basisOf(await readAdminHistory(db()), accountId);
@@ -288,12 +304,19 @@ export function createCorrector({
     },
 
     fileUrl: async (key, requestId, position) => {
-      if (!(await workable(key)).some((request) => request.id === requestId)) return 'not_found';
+      const listed = (await workable(key)).slice(0, correctorListLimit);
+      if (!listed.some((request) => request.id === requestId)) {
+        await refusedUse(key, requestId, 'not_found');
+        return 'not_found';
+      }
       const { rows } = await db().execute<{ pathname: string | null }>(sql`
         SELECT knowledge.corrector_file(${key.id}::uuid, ${key.digest}, ${requestId}::uuid,
           ${position}) AS pathname`);
       const pathname = rows[0]?.pathname ?? null;
-      if (pathname === null) return 'not_found';
+      if (pathname === null) {
+        await refusedUse(key, requestId, 'not_found');
+        return 'not_found';
+      }
       await audit.record({
         code: 'corrector_file_downloaded',
         subjectAccountId: key.creatorId,
@@ -304,38 +327,51 @@ export function createCorrector({
     },
 
     answer: async (key, requestId, answer) => {
-      const request = (await workable(key)).find(({ id }) => id === requestId);
-      if (request === undefined) return 'not_found';
-      const refusal = correctionAnswerRefusal({
-        versionNumber: request.versionNumber,
-        state: request.state,
-        answer,
-        identities: versions.identities(request.routeId),
-      });
-      if (refusal !== undefined) return refusal === 'wrong_state' ? refusal : 'invalid_version';
-      const proposed = answer.kind === 'version_proposed' ? answer.number : null;
-      const explanation = answer.kind === 'no_change' ? answer.explanation : null;
-      const stored = await db().transaction(async (tx) => {
-        const { rows } = await tx.execute<{ outcome: 'stored' | 'refused' | 'missing' }>(sql`
-          SELECT knowledge.answer_correction_request(${key.id}::uuid, ${key.digest},
-            ${requestId}::uuid, ${answer.kind === 'taken' ? 'taken' : 'answered'}, ${proposed}::integer,
-            ${explanation}::text) AS outcome`);
-        const outcome = rows[0]?.outcome ?? 'missing';
-        if (outcome === 'stored') {
-          // Recorded before the answer commits, so an answer no event records is never kept.
-          await audit.record({
-            code: 'correction_answered',
-            subjectAccountId: key.creatorId,
-            actorAccountId: null,
-            details: { keyId: key.id, requestId, answer: answer.kind },
-          });
-        }
-        return outcome;
-      });
-      if (stored === 'missing') return 'not_found';
-      return stored === 'refused' ? 'wrong_state' : 'stored';
+      const outcome = await answerOnce(key, requestId, answer);
+      if (outcome !== 'stored') await refusedUse(key, requestId, outcome);
+      return outcome;
     },
   };
+
+  /** Stores an answer the request's state and the catalog allow; audited inside its transaction. */
+  async function answerOnce(
+    key: PresentedKey,
+    requestId: string,
+    answer: CorrectionAnswer,
+  ): Promise<AnswerOutcome> {
+    const [listed, decided] = await Promise.all([workable(key), states()]);
+    const request = listed.find(({ id }) => id === requestId);
+    if (request === undefined) return 'not_found';
+    const refusal = correctionAnswerRefusal({
+      versionNumber: request.versionNumber,
+      state: request.state,
+      answer,
+      identities: versions.identities(request.routeId),
+      states: decided,
+    });
+    if (refusal !== undefined) return refusal === 'wrong_state' ? refusal : 'invalid_version';
+    const proposed = answer.kind === 'version_proposed' ? answer.number : null;
+    const explanation = answer.kind === 'no_change' ? answer.explanation : null;
+    const stored = await db().transaction(async (tx) => {
+      const { rows } = await tx.execute<{ outcome: 'stored' | 'refused' | 'missing' }>(sql`
+        SELECT knowledge.answer_correction_request(${key.id}::uuid, ${key.digest},
+          ${requestId}::uuid, ${answer.kind === 'taken' ? 'taken' : 'answered'}, ${proposed}::integer,
+          ${explanation}::text) AS outcome`);
+      const outcome = rows[0]?.outcome ?? 'missing';
+      if (outcome === 'stored') {
+        // Recorded before the answer commits, so an answer no event records is never kept.
+        await audit.record({
+          code: 'correction_answered',
+          subjectAccountId: key.creatorId,
+          actorAccountId: null,
+          details: { keyId: key.id, requestId, answer: answer.kind },
+        });
+      }
+      return outcome;
+    });
+    if (stored === 'missing') return 'not_found';
+    return stored === 'refused' ? 'wrong_state' : 'stored';
+  }
 
   return { keys, corrector };
 }

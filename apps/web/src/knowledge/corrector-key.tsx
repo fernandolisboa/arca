@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api, correctorKeyQuery } from '../api.js';
 import { passkeys } from '../platform.js';
-import { useCopy } from '../recovery-code.js';
+import { useCopy } from '../use-copy.js';
 import { commonFailure, reach } from '../requests.js';
 import { stepUpFor } from '../step-up.js';
 

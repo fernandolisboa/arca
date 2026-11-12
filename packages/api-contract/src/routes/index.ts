@@ -889,6 +889,12 @@ export const auditEventDetails = {
     requestId: z.uuid(),
     position: z.int().min(0),
   }),
+  /** The corrector routes refused a use of a live key on one request (ADR-0029). */
+  corrector_use_refused: z.strictObject({
+    keyId: z.uuid(),
+    requestId: z.uuid(),
+    outcome: z.enum(['not_found', 'wrong_state', 'invalid_version']),
+  }),
   /** The corrector run took a request or answered it (ADR-0029); the explanation stays out. */
   correction_answered: z.strictObject({
     keyId: z.uuid(),

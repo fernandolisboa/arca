@@ -3201,6 +3201,7 @@
                               "corrector_key_refused",
                               "corrector_requests_listed",
                               "corrector_file_downloaded",
+                              "corrector_use_refused",
                               "correction_answered"
                             ]
                           },

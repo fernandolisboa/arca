@@ -6,6 +6,8 @@ import {
   type DecisionStates,
   type VersionIdentity,
 } from '@arca/domain';
+import { withIdentity } from '@arca/db';
+import { sql } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
 import { auditLog } from '../../src/audit/log.js';
@@ -112,8 +114,10 @@ function setup({ signedIn = owner, limiter = noLimits.limiter, ownerList }: Opti
         headers: json,
         body: JSON.stringify({ id }),
       }),
-    listRequests: (key?: string) =>
-      app.request('/v1/corrector/requests', { headers: asCorrector(key) }),
+    listRequests: (key?: string, site?: string) =>
+      app.request('/v1/corrector/requests', {
+        headers: { ...asCorrector(key), ...(site === undefined ? {} : { 'sec-fetch-site': site }) },
+      }),
     fileUrl: (key: string, requestId: string, position: number) =>
       app.request('/v1/corrector/files/url', {
         method: 'POST',
@@ -305,7 +309,7 @@ describe('the corrector key (ADR-0029)', () => {
     const byMember = await setup({ signedIn: member }).createKey(await approveKey(member));
     expect(await byMember.json()).toEqual({ error: { code: 'not_admin' } });
     expect((await setup({ signedIn: member }).keyStatus()).status).toBe(403);
-    const status = (await (await setup({ signedIn: granted }).keyStatus()).json());
+    const status = await (await setup({ signedIn: granted }).keyStatus()).json();
     expect(status).toEqual({ canManage: false, key: null });
   });
 
@@ -421,6 +425,21 @@ describe('the corrector routes (ADR-0029)', () => {
     expect((await setup({ limiter: closed }).listRequests('arca_ck_wrong')).status).toBe(429);
   });
 
+  it('refuse a browser request from another site before counting anything', async () => {
+    const hits: string[] = [];
+    const limiter: RateLimiter = {
+      hit: (rule) => {
+        hits.push(rule.name);
+        return Promise.resolve({ allowed: true });
+      },
+      sweep: () => Promise.resolve(0),
+    };
+    const key = await newKey();
+    expect((await setup({ limiter }).listRequests(key, 'cross-site')).status).toBe(403);
+    expect(hits).toEqual([]);
+    expect((await setup({ limiter }).listRequests(key, 'same-origin')).status).toBe(200);
+  });
+
   it('count a key per route', async () => {
     const key = await newKey();
     const limiter: RateLimiter = {
@@ -476,9 +495,10 @@ describe('the corrector routes (ADR-0029)', () => {
     await routes.answer(key, answered, { kind: 'taken' });
     await routes.answer(key, answered, { kind: 'no_change', explanation: 'Nada mudou.' });
     await testDatabase.asAdmin((client) =>
-      client.query(`INSERT INTO knowledge.correction_event (request_id, kind) VALUES ($1, 'closed')`, [
-        closed,
-      ]),
+      client.query(
+        `INSERT INTO knowledge.correction_event (request_id, kind) VALUES ($1, 'closed')`,
+        [closed],
+      ),
     );
     states = decided({ 4: 'active' });
     expect((await listedIds(key)).map(({ id }) => id)).toEqual([open]);
@@ -577,6 +597,24 @@ describe('the corrector routes (ADR-0029)', () => {
     expect(await response.json()).toEqual({ error: { code: 'invalid_version' } });
   });
 
+  it.each([
+    ['active', 'active'],
+    ['rejected', 'rejected'],
+  ] as const)(
+    'refuse a later version already %s, since a key never closes a request',
+    async (_label, state) => {
+      const key = await newKey();
+      const id = await filed();
+      const routes = setup();
+      await routes.answer(key, id, { kind: 'taken' });
+      states = decided({ 3: state });
+      const response = await routes.answer(key, id, { kind: 'version_proposed', number: 3 });
+      expect(response.status).toBe(409);
+      expect(await response.json()).toEqual({ error: { code: 'invalid_version' } });
+      expect((await listedIds(key))[0]?.state).toBe('taken');
+    },
+  );
+
   it('refuse a malformed answer, an explanation over 2,000 characters included', async () => {
     const key = await newKey();
     const id = await filed();
@@ -620,5 +658,49 @@ describe('the corrector routes (ADR-0029)', () => {
         }),
       ).rejects.toThrow(/live corrector key/);
     }
+  });
+
+  it('refuse callers the definer functions do not serve', async () => {
+    await newKey();
+    const keyId = await testDatabase.asAdmin(
+      async (client) =>
+        (await client.query<{ id: string }>('SELECT id FROM knowledge.corrector_key')).rows[0]?.id,
+    );
+    const grantId = await testDatabase.asAdmin(
+      async (client) =>
+        (await client.query<{ id: string }>('SELECT id FROM knowledge.admin_grant')).rows[0]?.id,
+    );
+    const refused = { cause: { code: '42501' } };
+    await expect(
+      withIdentity(testDatabase.apiDb, { accountId: granted.signedIn.accountId }, (tx) =>
+        tx.execute(sql`SELECT knowledge.revoke_corrector_key(${keyId}::uuid, 'grant')`),
+      ),
+    ).rejects.toMatchObject(refused);
+    await expect(
+      testDatabase.apiDb.transaction((tx) =>
+        tx.execute(sql`SELECT knowledge.revoke_corrector_key(${keyId}::uuid, 'owner_list')`),
+      ),
+    ).rejects.toMatchObject(refused);
+    await expect(
+      withIdentity(testDatabase.apiDb, { accountId: member.signedIn.accountId }, (tx) =>
+        tx.execute(
+          sql`SELECT * FROM knowledge.correction_events('qm-sample', 1, 'grant', ${grantId}::uuid)`,
+        ),
+      ),
+    ).rejects.toMatchObject(refused);
+    const exported = (accountId: string, entry: string) =>
+      withIdentity(
+        testDatabase.apiDb,
+        { accountId },
+        async (tx) =>
+          (
+            await tx.execute<Record<string, unknown>>(
+              sql`SELECT * FROM knowledge.own_corrector_key_rows(${entry})`,
+            )
+          ).rows,
+      );
+    expect(await exported(owner.signedIn.accountId, 'knowledge.corrector_key')).toHaveLength(1);
+    expect(await exported(member.signedIn.accountId, 'knowledge.corrector_key')).toEqual([]);
+    expect(await exported(owner.signedIn.accountId, 'knowledge.correction_request')).toEqual([]);
   });
 });

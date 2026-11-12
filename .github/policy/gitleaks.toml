@@ -18,6 +18,6 @@ keywords = ["sk-ant-"]
 [[rules]]
 id = "arca-corrector-key"
 description = "Arca's corrector key, which the scheduled corrector run sends to the app (ADR-0029)."
-regex = '''(?:^|[^A-Za-z0-9_])(arca_ck_[A-Za-z0-9_\-]{43})(?:[^A-Za-z0-9_\-]|$)'''
+regex = '''(?:^|[^A-Za-z0-9])(arca_ck_[A-Za-z0-9_\-]{43})'''
 entropy = 3.5
 keywords = ["arca_ck_"]

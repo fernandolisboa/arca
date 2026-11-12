@@ -400,9 +400,14 @@ describe('the correction request access matrix (ADR-0029)', () => {
     });
   });
 
-  it('lets app_auth only insert corrector keys, and run nothing', async () => {
+  it('lets app_auth only insert a created corrector key, never its time, and run nothing', async () => {
+    const matrix = correctionMatrix({ 'knowledge.corrector_key': ['INSERT'] });
+    const keys = matrix['knowledge.corrector_key'] as { columns: Record<string, string[]> };
     expect(await correctionAccess('app_auth')).toEqual({
-      tables: correctionMatrix({ 'knowledge.corrector_key': ['INSERT'] }),
+      tables: {
+        ...matrix,
+        'knowledge.corrector_key': { ...keys, columns: { ...keys.columns, revokes_key_id: [], at: [] } },
+      },
       functions: [],
     });
   });

@@ -95,12 +95,35 @@ describe('correctionAnswerRefusal', () => {
       ['an older version that corrects another', 4, 'taken', proposing(2), 'unrelated_version'],
     ],
   )('is right for %s', (_label, versionNumber, state, answer, expected) => {
-    expect(correctionAnswerRefusal({ versionNumber, state, answer, identities: route })).toBe(
-      expected,
-    );
+    expect(
+      correctionAnswerRefusal({
+        versionNumber,
+        state,
+        answer,
+        identities: route,
+        states: new Map(),
+      }),
+    ).toBe(expected);
   });
 
-  it('refuses an older version that corrects the request version through a cycle', () => {
+  it.each<[string, DecisionState]>([
+    ['already active', 'active'],
+    ['already rejected', 'rejected'],
+  ])('refuses a later version %s, since it would close the request', (_label, decided) => {
+    const later = route.find((version) => version.number === 4);
+    if (later === undefined) throw new Error('missing version');
+    expect(
+      correctionAnswerRefusal({
+        versionNumber: 1,
+        state: 'taken',
+        answer: proposing(4),
+        identities: route,
+        states: new Map([[identityKey(later), decided]]),
+      }),
+    ).toBe('decided_version');
+  });
+
+  it('accepts an older version that corrects the request version through a cycle', () => {
     const cyclic = [identity(1, 2), identity(2, 1)];
     expect(
       correctionAnswerRefusal({
@@ -108,6 +131,7 @@ describe('correctionAnswerRefusal', () => {
         state: 'taken',
         answer: proposing(1),
         identities: cyclic,
+        states: new Map(),
       }),
     ).toBeUndefined();
   });

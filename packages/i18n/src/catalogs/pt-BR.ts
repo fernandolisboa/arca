@@ -1076,7 +1076,7 @@ export const ptBR = {
     /** The corrector key in settings (ADR-0029), for owner-list admins. */
     correctorKey: {
       title: 'Chave da sessão de correção',
-      lead: 'Uma vez por dia, uma sessão do Claude lê os pedidos de correção abertos e propõe a versão que corrige a regra. Ela usa esta chave para ler e responder os pedidos. Com a chave, ninguém fecha um pedido, muda uma regra ou vê dados da família.',
+      lead: 'Uma vez por dia, uma sessão do Claude lê os pedidos de correção abertos e propõe a versão que corrige a regra. Ela usa esta chave para ler e responder os pedidos. Quem tiver a chave não consegue fechar um pedido, mudar uma regra nem ver dados da família.',
       none: 'Nenhuma chave ativa. Sem ela, os pedidos ficam parados.',
       active: 'Chave criada em {created}. Vale até {expires}.',
       create: 'Criar chave',

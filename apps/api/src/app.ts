@@ -1821,6 +1821,11 @@ export function createApp({
    */
   const correctorOf = async (c: Context<AppEnv>, rule: RateLimitRule) => {
     if (corrector === undefined || authLimits === undefined) return { refused: unauthorized(c) };
+    // The run sends no Sec-Fetch-Site; a browser on another site loading the GET listing would
+    // otherwise spend the address budget and the refusal audits.
+    const site = c.req.header('sec-fetch-site');
+    if (site !== undefined && site !== 'same-origin')
+      return { refused: fail(c, 'cross_origin', 403) };
     const address = authLimits.clientAddress(c.req.raw.headers);
     const addressLimited = await overLimit(c, authLimits, correctorLimits.address, address);
     if (addressLimited !== undefined) return { refused: addressLimited };
