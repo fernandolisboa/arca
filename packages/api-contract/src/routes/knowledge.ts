@@ -496,6 +496,22 @@ export const VersionCheckReport = z.strictObject({
           .max(maxQuotes),
         note: z.string().max(maxNoteLength).nullable(),
         reason: z.enum(checkReasons).nullable(),
+        /**
+         * The official sources the item cites, from the bundled version, never from the model: where
+         * an admin looks when the check could not confirm it.
+         */
+        citations: z
+          .array(z.strictObject({ url: sourceSchema.shape.url, title: sourceSchema.shape.title }))
+          .max(100),
+        /** What those pages must state for the item to hold; empty when it states no value. */
+        values: z
+          .array(
+            z.discriminatedUnion('kind', [
+              z.strictObject({ kind: z.literal('number'), value: z.string().max(40) }),
+              z.strictObject({ kind: z.literal('date'), value: calendarDateSchema }),
+            ]),
+          )
+          .max(100),
       }),
     )
     .max(200),

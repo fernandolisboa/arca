@@ -1051,11 +1051,11 @@ export const ptBR = {
       order:
         'Ordem de revisão: primeiro o que difere das fontes, depois o que a IA conferiu inteiro, por último o que ela não conseguiu conferir.',
       start: 'Comece por aqui',
-      need: '{need, select, differs {Tem diferença} ready {Conferida pela IA} unread {Falta conferir} unchecked {Sem verificação} other {Sem verificação}}',
+      need: '{need, select, differs {Tem diferença} ready {Conferida pela IA} unread {Confira você} unchecked {Sem verificação} other {Sem verificação}}',
       needCount: {
         differs: '{n, plural, one {# com diferença} other {# com diferença}}',
         ready: '{n, plural, one {# conferida} other {# conferidas}}',
-        unread: '{n, plural, one {# falta conferir} other {# faltam conferir}}',
+        unread: '{n, plural, one {# para você conferir} other {# para você conferir}}',
         unchecked: '{n, plural, one {# sem verificação} other {# sem verificação}}',
       },
       versions: '{n, plural, one {# versão} other {# versões}}',
@@ -1068,7 +1068,7 @@ export const ptBR = {
         ready:
           'Todos os pontos batem com as fontes oficiais. Dá para ativar todas de uma vez em “Conferidas pela IA”, no topo.',
         unread:
-          'Nada diverge, mas a IA não conseguiu ler parte das fontes, quase sempre um PDF ou uma página que só abre com JavaScript. Isso não quer dizer que a regra está errada. Abra as fontes e confira os pontos sem marca antes de decidir.',
+          'Nada diverge, mas a IA não conseguiu confirmar alguns pontos nas fontes. Isso não quer dizer que a regra está errada. Cada ponto “Confira você” traz o link oficial e o que procurar lá: confira antes de decidir.',
         unchecked:
           'A IA ainda não leu esta versão. Ela confere as versões sozinha quando você abre esta tela, algumas por dia. Volte mais tarde.',
       },
@@ -1199,18 +1199,23 @@ export const ptBR = {
     /** The independent check's points, shown beside the rule items they are about (ADR-0027). */
     points: {
       status:
-        '{status, select, matches {Bate com a fonte, segundo a IA.} differs {Difere da fonte, segundo a IA.} other {Não conferido.}}',
+        '{status, select, matches {Bate com a fonte, segundo a IA.} differs {Difere da fonte, segundo a IA.} other {Confira você.}}',
       matches: '{n, plural, one {# bate} other {# batem}}',
       differs: '{n, plural, one {# difere} other {# diferem}}',
-      unread: '{n, plural, one {# não conferido} other {# não conferidos}}',
+      unread: '{n, plural, one {# para você conferir} other {# para você conferir}}',
       checked:
         'A IA comparou {n, plural, one {# ponto} other {# pontos}} desta versão com as fontes oficiais',
       needYou:
         '{n, plural, one {1 ponto difere e precisa de você} other {# pontos diferem e precisam de você}}',
       unconfirmed:
-        '{n, plural, one {Nenhum ponto difere, mas 1 não foi conferido} other {Nenhum ponto difere, mas # não foram conferidos}}',
+        '{n, plural, one {Nenhum ponto difere. 1 fica para você conferir} other {Nenhum ponto difere. # ficam para você conferir}}',
       allMatch: 'Todos os pontos batem com as fontes',
-      note: 'Feita por IA, que pode errar. “Não conferido” quer dizer que a IA não conseguiu confirmar o ponto, não que a regra está errada. O relatório completo fica no passo Decisão.',
+      note: 'Feita por IA, que pode errar. “Confira você” quer dizer que a IA não conseguiu confirmar o ponto na fonte, não que a regra está errada: o ponto traz o link oficial, quando cita um, e o que procurar lá. O relatório completo fica no passo Decisão.',
+      lookAt: 'Onde olhar',
+      opensSite: '(abre o site oficial)',
+      lookFor: 'O que deve estar escrito lá: {values}',
+      handCheck: 'Conferi',
+      handCheckNote: 'Fica salvo só neste aparelho e não ativa a versão.',
       quotes: '{n, plural, one {Ver o trecho da fonte} other {Ver os # trechos da fonte}}',
     },
     /** The independent check of a route version against its official pages (ADR-0027). */

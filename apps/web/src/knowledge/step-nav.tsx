@@ -13,27 +13,27 @@ import type { KnowledgeWords } from './words.js';
 const rowTone: Record<TallyTone, string> = {
   ok: 'bg-ok-bg/60',
   differs: 'bg-danger-bg/60',
-  unread: 'bg-warn-bg',
+  unread: 'bg-soft',
 };
 
 const dotTone: Record<TallyTone, string> = {
   ok: 'bg-ok-ink',
   differs: 'bg-danger-ink',
-  unread: 'border-[1.5px] border-warn-ink bg-surface',
+  unread: 'border-[1.5px] border-muted bg-surface',
 };
 
 const markTone: Record<TallyTone, string> = {
   ok: 'bg-ok-bg text-ok-ink',
   differs: 'bg-danger-bg text-danger-ink',
-  unread: 'bg-warn-bg text-warn-ink',
+  unread: 'bg-soft text-muted',
 };
 
-const markIcon = { ok: 'check', differs: 'close', unread: 'help' } as const satisfies Record<
+const markIcon = { ok: 'check', differs: 'close', unread: 'look' } as const satisfies Record<
   TallyTone,
   string
 >;
 
-const chipTone = { ok: 'ok', differs: 'danger', unread: 'warn' } as const satisfies Record<
+const chipTone = { ok: 'ok', differs: 'danger', unread: 'unknown' } as const satisfies Record<
   TallyTone,
   StatusTone
 >;
@@ -41,7 +41,7 @@ const chipTone = { ok: 'ok', differs: 'danger', unread: 'warn' } as const satisf
 const segmentTone: Record<TallyTone, string> = {
   ok: 'bg-ok-ink',
   differs: 'bg-danger-ink',
-  unread: 'bg-warn-ink/50',
+  unread: 'bg-second',
 };
 
 /** How a point or a step came out, as a shape as well as a colour. */

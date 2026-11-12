@@ -420,6 +420,8 @@ describe('GET /v1/knowledge/versions/check (ADR-0027)', () => {
             quotes: [{ quote: 'means of at least EUR 920', url: law }],
             note: null,
             reason: null,
+            citations: [{ url: law, title: 'Residence act' }],
+            values: [],
           },
         ],
         fetchLog: [

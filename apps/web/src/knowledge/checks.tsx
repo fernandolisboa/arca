@@ -6,11 +6,12 @@ import {
   type VersionCheckReport,
   type VersionView,
 } from '@arca/api-contract/client';
-import { Button, Disclosure, StatusChip, type StatusTone } from '@arca/ui';
+import { Button, Disclosure, Icon, StatusChip, type StatusTone } from '@arca/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 import { api, versionCheckQuery } from '../api.js';
 import { checkFold } from './check-fold.js';
+import type { HandCheck } from './hand-checks.js';
 import { card, surface } from './review-parts.js';
 import { pointTone } from './step-checks.js';
 import { PointMark } from './step-nav.js';
@@ -261,6 +262,9 @@ function ReportItemCard({
       )}
       <Quotes item={item} addressRead={addressRead} words={words} />
       {item.note !== null && <p>{t('knowledge.check.note', { note: item.note })}</p>}
+      {(item.status === 'could_not_check' || scripted) && item.citations.length > 0 && (
+        <LookHere item={item} words={words} />
+      )}
     </div>
   );
 }
@@ -297,20 +301,74 @@ export const addressesRead = (
 ): ReadonlyMap<string, string | null> =>
   new Map(report.fetchLog.map(({ url, machineReadableUrl }) => [url, machineReadableUrl]));
 
+/** Where to look and what to look for, from the bundled version: links only to its official pages. */
+function LookHere({ item, words }: { readonly item: ReportItem; readonly words: KnowledgeWords }) {
+  const { t } = words;
+  const values = item.values.map(({ kind, value }) =>
+    kind === 'date' ? words.date(value) : words.decimal(value),
+  );
+  return (
+    <div className="flex flex-col gap-1">
+      <p className="font-medium">{t('knowledge.points.lookAt')}</p>
+      <ul className="flex flex-col gap-1">
+        {item.citations.map(({ url, title }, index) => (
+          <li key={`${String(index)}-${url}`}>
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent underline"
+            >
+              {title}
+            </a>{' '}
+            <span className="text-small text-muted">{t('knowledge.points.opensSite')}</span>
+          </li>
+        ))}
+      </ul>
+      {values.length > 0 && <p>{t('knowledge.points.lookFor', { values: words.list(values) })}</p>}
+    </div>
+  );
+}
+
+/** The admin's own mark on an item to check by hand, kept on this device. */
+function HandCheckToggle({
+  handCheck,
+  words,
+}: {
+  readonly handCheck: HandCheck;
+  readonly words: KnowledgeWords;
+}) {
+  const { t } = words;
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+      <Button variant="secondary" aria-pressed={handCheck.checked} onClick={handCheck.toggle}>
+        {handCheck.checked && <Icon name="check" size={16} />}
+        {t('knowledge.points.handCheck')}
+      </Button>
+      <span className="text-small text-muted">{t('knowledge.points.handCheckNote')}</span>
+    </div>
+  );
+}
+
 /**
  * One checked point under the rule item it is about: how it came out, why, the model's note and
- * the passages, folded unless the point differs. Model output, shown as plain text.
+ * the passages, folded unless the point differs. Model output, shown as plain text. A point the
+ * check could not confirm reads as one to check yourself, with the official pages to open and the
+ * values to find there, never as an error.
  */
 export function ItemResult({
   item,
   addressRead,
   words,
+  handCheck,
 }: {
   readonly item: ReportItem;
   readonly addressRead: ReadonlyMap<string, string | null>;
   readonly words: KnowledgeWords;
+  readonly handCheck?: HandCheck;
 }) {
   const { t } = words;
+  const yours = item.status === 'could_not_check';
   return (
     <div className="flex items-start gap-3 border-t border-line pt-3">
       <PointMark tone={pointTone(item.status)} />
@@ -320,10 +378,17 @@ export function ItemResult({
             {t('knowledge.points.status', { status: item.status })}
           </span>
           {item.reason !== null && (
-            <> {t('knowledge.check.reason', { reason: item.reason, max: maxQuotes })}</>
+            <span className={yours ? 'text-small text-muted' : undefined}>
+              {' '}
+              {t('knowledge.check.reason', { reason: item.reason, max: maxQuotes })}
+            </span>
           )}
         </p>
         {item.note !== null && <p>{t('knowledge.check.note', { note: item.note })}</p>}
+        {yours && item.citations.length > 0 && <LookHere item={item} words={words} />}
+        {yours && handCheck !== undefined && (
+          <HandCheckToggle handCheck={handCheck} words={words} />
+        )}
         {item.quotes.length > 0 && (
           <details open={item.status === 'differs'}>
             <summary className="cursor-pointer text-small text-accent">

@@ -1,5 +1,5 @@
 import {
-  type CheckItemKind,
+  type CheckItem,
   type CheckProgress,
   type CheckPoints,
   type CheckedItem,
@@ -36,10 +36,8 @@ export interface ShownReport {
   readonly scripted: boolean;
   readonly failure: CheckReport['failure'];
   readonly guide: { readonly country: string; readonly number: number } | null;
-  readonly items: readonly (CheckedItem & {
-    readonly kind: CheckItemKind;
-    readonly title: string;
-  })[];
+  readonly items: readonly (CheckedItem &
+    Pick<CheckItem, 'kind' | 'title' | 'citations' | 'values'>)[];
   readonly fetchLog: readonly FetchLogEntry[];
 }
 
@@ -270,7 +268,15 @@ export function createVersionChecks({
             const listed = items.get(item.key);
             return listed === undefined
               ? []
-              : [{ ...item, kind: listed.kind, title: listed.title }];
+              : [
+                  {
+                    ...item,
+                    kind: listed.kind,
+                    title: listed.title,
+                    citations: listed.citations,
+                    values: listed.values,
+                  },
+                ];
           }),
           fetchLog: stored.fetchLog,
         },
