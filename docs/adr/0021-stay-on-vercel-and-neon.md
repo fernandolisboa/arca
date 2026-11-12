@@ -1,6 +1,6 @@
 # ADR-0021: Stay on Vercel and Neon: no AWS
 
-- Status: Accepted; amended 2026-11-12 by [ADR-0029](0029-correction-requests-and-the-corrector-session.md): the Blob store also holds admins' plaintext copies of official texts attached to correction requests
+- Status: Accepted; amended 2026-11-12 by [ADR-0029](0029-correction-requests-and-the-corrector-session.md): the Blob store also holds owner-list admins' plaintext copies of official texts attached to correction requests
 - Date: 2026-11-04
 - Supersedes: the off-vendor backups of [ADR-0017](0017-data-lifecycle-and-backups.md#off-vendor-backups)
 - Amends: [ADR-0008](0008-database-security-and-environments.md) (field encryption, backups), [ADR-0010](0010-stack-revised.md) (object storage and keys), [ADR-0018](0018-vault-encryption.md) (document storage, field encryption), [ADR-0015](0015-identity-enrollment-step-up-and-recovery.md) (the `app_backup` grant)
