@@ -32,11 +32,29 @@ export function tabPanelProps(idBase: string, value: string) {
   } as const;
 }
 
+/** The tab a key moves to, wrapping at both ends; undefined for a key the tabs do not use. */
+export function nextTabIndex(key: string, index: number, count: number): number | undefined {
+  switch (key) {
+    case 'ArrowRight':
+      return (index + 1) % count;
+    case 'ArrowLeft':
+      return (index - 1 + count) % count;
+    case 'Home':
+      return 0;
+    case 'End':
+      return count - 1;
+    default:
+      return undefined;
+  }
+}
+
+/** A bar a page keeps at the bottom of a phone screen, right above the shell's dock. */
+export const phoneBottomBarClass =
+  'max-md:sticky max-md:bottom-[var(--shell-bottom,0px)] max-md:z-10';
+
 /**
- * Sections of one screen as the ARIA tabs pattern, for a screen that renders only the selected
- * panel (so only the selected tab names the panel it controls): arrow keys, Home and End move between tabs and
- * select them, and only the selected tab is in the Tab order. Chips that scroll sideways below
- * 768 px, an underlined row from 768 px.
+ * The ARIA tabs pattern for a screen that renders only the selected panel: arrow keys, Home and
+ * End select, and only the selected tab is a Tab stop. Chips below 768 px, an underlined row above.
  */
 export function Tabs<V extends string>({
   label,
@@ -46,35 +64,21 @@ export function Tabs<V extends string>({
   idBase,
   className = '',
 }: TabsProps<V>) {
-  const listRef = useRef<HTMLDivElement>(null);
+  const buttonsRef = useRef(new Map<string, HTMLButtonElement>());
   const move = (event: KeyboardEvent<HTMLDivElement>) => {
-    const index = tabs.findIndex((tab) => tab.value === value);
-    const last = tabs.length - 1;
-    const next =
-      event.key === 'ArrowRight'
-        ? index === last
-          ? 0
-          : index + 1
-        : event.key === 'ArrowLeft'
-          ? index === 0
-            ? last
-            : index - 1
-          : event.key === 'Home'
-            ? 0
-            : event.key === 'End'
-              ? last
-              : undefined;
+    const next = nextTabIndex(
+      event.key,
+      tabs.findIndex((tab) => tab.value === value),
+      tabs.length,
+    );
     const target = next === undefined ? undefined : tabs[next];
     if (target === undefined) return;
     event.preventDefault();
     onChange(target.value);
-    listRef.current
-      ?.querySelector<HTMLElement>(`#${CSS.escape(tabId(idBase, target.value))}`)
-      ?.focus();
+    buttonsRef.current.get(target.value)?.focus();
   };
   return (
     <div
-      ref={listRef}
       role="tablist"
       aria-label={label}
       onKeyDown={move}
@@ -85,6 +89,10 @@ export function Tabs<V extends string>({
         return (
           <button
             key={tab.value}
+            ref={(button) => {
+              if (button === null) buttonsRef.current.delete(tab.value);
+              else buttonsRef.current.set(tab.value, button);
+            }}
             id={tabId(idBase, tab.value)}
             type="button"
             role="tab"

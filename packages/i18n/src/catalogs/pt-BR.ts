@@ -478,7 +478,7 @@ export const ptBR = {
       relationshipsHint: 'Para anotar um vínculo, abra a pessoa em Pessoas.',
       sharingLead:
         'Cada pessoa com conta decide quem vê os dados dela. Aqui você escolhe por quem você cuida.',
-      change: 'Mudar quem vê {name}',
+      change: 'Compartilhamento de {name}',
     },
     kept: 'Você cuida',
     back: 'Voltar para a família',
@@ -581,7 +581,7 @@ export const ptBR = {
         label: 'Mostrar convites',
         all: 'Todos',
         waiting: 'Esperando',
-        member: 'Participam',
+        member: 'Participantes',
       },
       more: 'Mostrar mais',
       shown: '{shown} de {total}',

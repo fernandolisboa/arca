@@ -13,6 +13,7 @@ import {
   ChoiceGroup,
   Icon,
   iconButtonClass,
+  phoneBottomBarClass,
   StatusChip,
   tabPanelProps,
   Tabs,
@@ -319,12 +320,11 @@ function FamilyCase({
   const split = layout === 'list' || panelOpen;
   const viewSpan = layout === 'list' ? 'lg:col-span-4' : panelOpen ? 'lg:col-span-8' : '';
   const panelSpan = layout === 'list' ? 'lg:col-span-8' : 'lg:col-span-4';
-  const sectionPanel = {
-    ...tabPanelProps(sectionsId, section),
-    className: 'flex flex-col gap-4 outline-none',
-  };
+  const panelClass = 'flex flex-col gap-4 outline-none';
+  const sectionPanel = { ...tabPanelProps(sectionsId, section), className: panelClass };
   return (
-    <>
+    // One column holds the whole case, so on a phone the tabs stay at its foot from the first screen.
+    <div className="flex flex-col gap-5">
       <FamilyNews view={view} accountId={accountId} />
       <div className="grid gap-5 lg:grid-cols-12">
         <FamilySummary
@@ -339,138 +339,139 @@ function FamilyCase({
         />
         <NextStep view={view} />
       </div>
-      <div className="flex flex-col gap-5">
-        <Tabs
-          label={t('family.sections.label')}
-          idBase={sectionsId}
-          value={section}
-          onChange={setSection}
-          tabs={[
-            { value: 'people', label: t('family.sections.people'), count: view.people.length },
-            {
-              value: 'relationships',
-              label: t('family.sections.relationships'),
-              count: view.relationships.length,
-            },
-            { value: 'sharing', label: t('family.sections.sharing') },
-            {
-              value: 'invites',
-              label: t('family.sections.invites'),
-              ...(invites.waiting > 0 ? { count: invites.waiting } : {}),
-            },
-            { value: 'case', label: t('family.sections.case') },
-          ]}
-          className="max-md:sticky max-md:bottom-[var(--shell-bottom,0px)] max-md:z-10 max-md:order-last max-md:-mx-4 max-md:border-t max-md:border-line max-md:bg-surface max-md:px-4 max-md:py-2 max-md:shadow-card sm:max-md:-mx-6 sm:max-md:px-6"
-        />
-        {section === 'people' && (
-          <div {...sectionPanel}>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h3 className="font-display text-lead">
-                {t('family.peopleCount', { count: view.people.length })}
-              </h3>
-              <LayoutToggle layout={layout} onChange={onLayoutChange} />
-            </div>
-            <div className={`grid items-start gap-5 ${split ? 'lg:grid-cols-12' : ''}`}>
-              <div className={`min-w-0 ${viewSpan} ${picked ? 'max-lg:hidden' : ''}`}>
-                {layout === 'tree' && <TreeView view={view} entry={entry} />}
-                {layout === 'cards' && (
-                  <ul
-                    className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
-                    aria-label={t('family.peopleTitle')}
-                  >
-                    {view.people.map((person) => (
-                      <li key={person.id} className="flex">
-                        <PersonCard
-                          {...entry(person)}
-                          relations={relationLine(person)}
-                          admin={
-                            caseAdmins?.some(({ accountId: id }) => id === person.accountId) ===
-                            true
-                          }
-                          sharing={sharingLine(person)}
-                        />
-                      </li>
-                    ))}
-                  </ul>
+      <Tabs
+        label={t('family.sections.label')}
+        idBase={sectionsId}
+        value={section}
+        onChange={setSection}
+        tabs={[
+          { value: 'people', label: t('family.sections.people'), count: view.people.length },
+          {
+            value: 'relationships',
+            label: t('family.sections.relationships'),
+            count: view.relationships.length,
+          },
+          { value: 'sharing', label: t('family.sections.sharing') },
+          {
+            value: 'invites',
+            label: t('family.sections.invites'),
+            ...(invites.waiting > 0 ? { count: invites.waiting } : {}),
+          },
+          { value: 'case', label: t('family.sections.case') },
+        ]}
+        className={`${phoneBottomBarClass} max-md:order-last max-md:-mx-4 max-md:border-t max-md:border-line max-md:bg-surface max-md:px-4 max-md:py-2 max-md:shadow-card sm:max-md:-mx-6 sm:max-md:px-6`}
+      />
+      {/* Pessoas stays mounted, so coming back to it does not pull focus into its panel. */}
+      <div
+        {...tabPanelProps(sectionsId, peopleSection)}
+        hidden={section !== 'people'}
+        className={panelClass}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="font-display text-lead">
+            {t('family.peopleCount', { count: view.people.length })}
+          </h3>
+          <LayoutToggle layout={layout} onChange={onLayoutChange} />
+        </div>
+        <div className={`grid items-start gap-5 ${split ? 'lg:grid-cols-12' : ''}`}>
+          <div className={`min-w-0 ${viewSpan} ${picked ? 'max-lg:hidden' : ''}`}>
+            {layout === 'tree' && <TreeView view={view} entry={entry} />}
+            {layout === 'cards' && (
+              <ul
+                className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
+                aria-label={t('family.peopleTitle')}
+              >
+                {view.people.map((person) => (
+                  <li key={person.id} className="flex">
+                    <PersonCard
+                      {...entry(person)}
+                      relations={relationLine(person)}
+                      admin={
+                        caseAdmins?.some(({ accountId: id }) => id === person.accountId) === true
+                      }
+                      sharing={sharingLine(person)}
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
+            {layout === 'list' && (
+              <ul
+                className="flex flex-col gap-1 rounded-card border border-line bg-surface p-2 shadow-card"
+                aria-label={t('family.peopleTitle')}
+              >
+                {view.people.map((person) => (
+                  <li key={person.id}>
+                    <PersonRow {...entry(person)} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {panelOpen && (
+            <div className={`min-w-0 ${panelSpan} ${picked ? '' : 'max-lg:hidden'}`}>
+              <Panel
+                title={
+                  adding || shown === undefined
+                    ? t('family.add.title')
+                    : shown.id === view.me
+                      ? t('family.me', { name: shown.displayName })
+                      : shown.displayName
+                }
+                focusKey={adding ? addingKey : (shown?.id ?? '')}
+                focus={picked}
+                onBack={picked ? close : undefined}
+                onClose={layout === 'list' && !adding ? undefined : close}
+              >
+                {adding || shown === undefined ? (
+                  <AddPerson
+                    view={view}
+                    onAdded={(personId) => {
+                      setJustAdded(personId);
+                      select(personId);
+                    }}
+                  />
+                ) : (
+                  <PersonDetails
+                    key={shown.id}
+                    person={shown}
+                    view={view}
+                    names={names}
+                    askSharing={shown.id === justAdded}
+                    admins={caseAdmins}
+                  />
                 )}
-                {layout === 'list' && (
-                  <ul
-                    className="flex flex-col gap-1 rounded-card border border-line bg-surface p-2 shadow-card"
-                    aria-label={t('family.peopleTitle')}
-                  >
-                    {view.people.map((person) => (
-                      <li key={person.id}>
-                        <PersonRow {...entry(person)} />
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-              {panelOpen && (
-                <div className={`min-w-0 ${panelSpan} ${picked ? '' : 'max-lg:hidden'}`}>
-                  <Panel
-                    title={
-                      adding || shown === undefined
-                        ? t('family.add.title')
-                        : shown.id === view.me
-                          ? t('family.me', { name: shown.displayName })
-                          : shown.displayName
-                    }
-                    focusKey={adding ? addingKey : (shown?.id ?? '')}
-                    focus={picked}
-                    onBack={picked ? close : undefined}
-                    onClose={layout === 'list' && !adding ? undefined : close}
-                  >
-                    {adding || shown === undefined ? (
-                      <AddPerson
-                        view={view}
-                        onAdded={(personId) => {
-                          setJustAdded(personId);
-                          select(personId);
-                        }}
-                      />
-                    ) : (
-                      <PersonDetails
-                        key={shown.id}
-                        person={shown}
-                        view={view}
-                        names={names}
-                        askSharing={shown.id === justAdded}
-                        admins={caseAdmins}
-                      />
-                    )}
-                  </Panel>
-                </div>
-              )}
+              </Panel>
             </div>
-          </div>
-        )}
-        {section === 'relationships' && (
-          <div {...sectionPanel}>
-            <RelationshipsSection view={view} names={names} />
-          </div>
-        )}
-        {section === 'sharing' && (
-          <div {...sectionPanel}>
-            <SharingSection view={view} />
-          </div>
-        )}
-        {section === 'invites' && (
-          <div {...sectionPanel}>
-            <Invites standings={invites.standings} />
-          </div>
-        )}
-        {section === 'case' && (
-          <div {...sectionPanel}>
-            <Leave />
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </>
+      {section === 'relationships' && (
+        <div {...sectionPanel}>
+          <RelationshipsSection view={view} names={names} />
+        </div>
+      )}
+      {section === 'sharing' && (
+        <div {...sectionPanel}>
+          <SharingSection view={view} />
+        </div>
+      )}
+      {section === 'invites' && (
+        <div {...sectionPanel}>
+          <Invites loaded={invites.loaded} standings={invites.standings} />
+        </div>
+      )}
+      {section === 'case' && (
+        <div {...sectionPanel}>
+          <Leave />
+        </div>
+      )}
+    </div>
   );
 }
 
 type FamilySection = 'people' | 'relationships' | 'sharing' | 'invites' | 'case';
+const peopleSection: FamilySection = 'people';
 
 /** The panel's focus key while it shows the form to add a person. */
 const addingKey = 'adding';
@@ -518,7 +519,7 @@ function FamilySummary({
             key={person.id}
             className="flex items-center gap-2 rounded-full border border-line py-1 pr-3 pl-1"
           >
-            <Avatar person={person} isMe={person.id === view.me} small />
+            <Avatar person={person} isMe={person.id === view.me} size="small" />
             <span className="text-small">{person.displayName}</span>
           </li>
         ))}
@@ -634,17 +635,21 @@ interface EntryProps {
 const entryClass =
   'text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 
+const avatarSizes = {
+  small: 'size-7 text-caption',
+  medium: 'size-10 text-small',
+  large: 'size-14 text-lead',
+} as const;
+
 /** A person's initials on a disc tinted by where they stand in the case. */
 function Avatar({
   person,
   isMe,
-  large = false,
-  small = false,
+  size = 'medium',
 }: {
   readonly person: CasePerson;
   readonly isMe: boolean;
-  readonly large?: boolean;
-  readonly small?: boolean;
+  readonly size?: keyof typeof avatarSizes;
 }) {
   const tone = !person.caseMember
     ? 'bg-soft text-muted'
@@ -656,7 +661,7 @@ function Avatar({
   return (
     <span
       aria-hidden="true"
-      className={`flex shrink-0 items-center justify-center rounded-full font-semibold ${tone} ${large ? 'size-14 text-lead' : small ? 'size-7 text-caption' : 'size-10 text-small'}`}
+      className={`flex shrink-0 items-center justify-center rounded-full font-semibold ${tone} ${avatarSizes[size]}`}
     >
       {initials(person.displayName)}
     </span>
@@ -1020,7 +1025,7 @@ function PersonDetails({
   return (
     <div className="flex flex-col gap-5">
       <div className="flex items-center gap-3">
-        <Avatar person={person} isMe={isMe} large />
+        <Avatar person={person} isMe={isMe} size="large" />
         <div className="flex flex-wrap gap-1.5">
           <StatusChip
             tone={person.caseMember ? 'ok' : 'unknown'}
@@ -1686,7 +1691,7 @@ function SharingSection({ view }: { readonly view: CaseView }) {
                       setOpen(open === person.id ? undefined : person.id);
                     }}
                   >
-                    {t('family.actions.edit')}
+                    {t('family.actions.sharing')}
                   </Button>
                 )}
               </div>
@@ -1732,6 +1737,7 @@ function useInviteStandings() {
         : invite.status,
   }));
   return {
+    loaded: invites.isSuccess,
     standings,
     waiting: standings.filter(({ standing }) => standing !== 'member').length,
   };
@@ -1743,18 +1749,25 @@ type InviteFilter = (typeof inviteFilters)[number];
 const invitesPage = 10;
 
 /** The invites, filtered by where they stand and shown a page at a time. */
-function Invites({ standings }: { readonly standings: readonly InviteRow[] }) {
+function Invites({
+  loaded,
+  standings,
+}: {
+  /** False until the invites arrive, so a missing list does not read as "none sent". */
+  readonly loaded: boolean;
+  readonly standings: readonly InviteRow[];
+}) {
   const { t } = useTranslation();
   const [filter, setFilter] = useState<InviteFilter>('all');
   const [limit, setLimit] = useState(invitesPage);
   const matches = (standing: InviteRow['standing'], by: InviteFilter) =>
-    by === 'all' || (by === 'member') === (standing === 'member');
+    by === 'all' || (by === 'member' ? standing === 'member' : standing !== 'member');
   const filtered = standings.filter(({ standing }) => matches(standing, filter));
   const shown = filtered.slice(0, limit);
   return (
     <Section title={t('family.invites.title')}>
       <p className="text-small text-muted">{t('family.invites.lead')}</p>
-      {standings.length === 0 ? (
+      {!loaded ? null : standings.length === 0 ? (
         <p className="text-small text-muted">{t('family.invites.empty')}</p>
       ) : (
         <>

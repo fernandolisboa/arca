@@ -92,6 +92,18 @@ describe('AppShell', () => {
     expect(html).toContain('md:pl-[216px]');
   });
 
+  it('says how tall a bottom dock is, for a bar that sits above it', () => {
+    expect(render({ narrow: 'fixed-dock' })).toContain(
+      'max-md:[--shell-bottom:calc(var(--spacing-dock)+env(safe-area-inset-bottom))]',
+    );
+    expect(render({ narrow: 'floating-dock', dockEdge: 'bottom' })).toContain(
+      'max-md:[--shell-bottom:calc(var(--spacing-dock)+14px+env(safe-area-inset-bottom))]',
+    );
+    expect(render({ narrow: 'floating-dock', dockEdge: 'left' })).toContain(
+      'max-md:[--shell-bottom:env(safe-area-inset-bottom)]',
+    );
+  });
+
   it('keeps content clear of a floating dock on its edge', () => {
     expect(render({ narrow: 'floating-dock', dockEdge: 'left' })).toContain(
       'max-md:pl-[calc(5rem+14px+env(safe-area-inset-left))]',

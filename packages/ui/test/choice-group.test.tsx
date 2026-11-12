@@ -8,6 +8,11 @@ const choices = [
   { value: 'round', label: 'Arredondados' },
 ] as const;
 
+const detailed = [
+  { value: 'yes', label: 'Sim', detail: 'Entra nas rotas.' },
+  { value: 'no', label: 'Não', detail: 'Fica só como parente.' },
+] as const;
+
 const render = (description?: string) =>
   renderToStaticMarkup(
     <ChoiceGroup
@@ -41,5 +46,20 @@ describe('ChoiceGroup', () => {
     const id = /aria-describedby="([^"]+)"/.exec(html)?.[1];
     expect(id).toBeDefined();
     expect(html).toContain(`id="${String(id)}"`);
+  });
+
+  it('stacks answers with a detail line under each label', () => {
+    const html = renderToStaticMarkup(
+      <ChoiceGroup
+        legend={text.legend}
+        choices={detailed}
+        value="yes"
+        onChange={() => undefined}
+        stacked
+      />,
+    );
+    expect(html).not.toContain('sm:grid-cols-2');
+    expect(html).toContain('<span class="font-medium">Sim</span>');
+    expect(html).toContain('<span class="text-small text-muted">Fica só como parente.</span>');
   });
 });
