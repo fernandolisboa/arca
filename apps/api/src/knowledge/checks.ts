@@ -52,8 +52,11 @@ export type RequestedCheckOutcome =
   | { readonly ok: true; readonly started: boolean }
   | { readonly ok: false; readonly reason: 'not_found' | 'rate_limited' | 'check_not_started' };
 
+/** A check's progress, and whether the scripted checker writes this environment's answers. */
+export type ShownProgress = CheckProgress & { readonly scripted: boolean };
+
 export type ProgressOutcome =
-  | { readonly ok: true; readonly progress: CheckProgress | null }
+  | { readonly ok: true; readonly progress: ShownProgress | null }
   | { readonly ok: false; readonly reason: 'not_found' };
 
 /** A version's check on the list: its status, and its current report's points if it has one. */
@@ -152,12 +155,19 @@ export function createVersionChecks({
     },
 
     async progress(routeId, number) {
-      if (subject(routeId, number) === undefined) return { ok: false, reason: 'not_found' };
+      const found = subject(routeId, number);
+      if (found === undefined) return { ok: false, reason: 'not_found' };
       const newest = newestStart(ofVersion(routeId, number)(await starts.recent()));
       if (newest === undefined) return { ok: true, progress: null };
       const [events, stored] = await Promise.all([progress.list(newest.id), reports.list()]);
       const reported = stored.some(({ startId }) => startId === newest.id);
-      return { ok: true, progress: checkProgress(newest, events, reported, now()) };
+      return {
+        ok: true,
+        progress: {
+          ...checkProgress(newest, events, reported, now(), checkItems(found.entry)),
+          scripted: checker.model === scriptedCheckerModel,
+        },
+      };
     },
 
     async statuses() {

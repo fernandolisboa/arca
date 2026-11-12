@@ -1,3 +1,5 @@
+import type { CheckStatus } from './answers.js';
+import type { CheckItem } from './items.js';
 import { type CheckStart, fetchOutcomes, startLifetime } from './reports.js';
 
 /** What a page event says of a cited page: about to be read, read, or why it was not. */
@@ -10,7 +12,8 @@ export type ProgressFailure = (typeof progressFailures)[number];
 
 /**
  * One step of a running check as it records it (ADR-0027, "On demand, with progress"): counts,
- * a cited URL and fixed codes only, never page text or anything a model wrote.
+ * a cited URL, an item's key with its status as code verified it, and fixed codes only, never page
+ * text or anything a model wrote.
  */
 export type CheckProgressEvent =
   | { readonly kind: 'started'; readonly items: number; readonly pages: number }
@@ -23,6 +26,7 @@ export type CheckProgressEvent =
     }
   | { readonly kind: 'locating'; readonly pages: number }
   | { readonly kind: 'comparing' }
+  | { readonly kind: 'item'; readonly key: string; readonly status: CheckStatus }
   | { readonly kind: 'finished' }
   | { readonly kind: 'failed'; readonly code: ProgressFailure };
 
@@ -39,6 +43,14 @@ export interface PageProgress {
   readonly status: number | null;
 }
 
+/** An item of the check, with its status once the checker answered it and code verified it. */
+export interface ItemProgress {
+  readonly key: string;
+  readonly kind: CheckItem['kind'];
+  readonly title: string;
+  readonly status: CheckStatus | null;
+}
+
 /** A start and what its check recorded, as the progress screen shows it. */
 export interface CheckProgress {
   readonly startedAt: number;
@@ -51,6 +63,8 @@ export interface CheckProgress {
   readonly pages: readonly PageProgress[];
   /** How many long pages had passages picked, once that stage began. */
   readonly locatedPages: number | null;
+  /** Every item of the version in its order; a key no item has is left out. */
+  readonly items: readonly ItemProgress[];
   readonly failure: ProgressFailure | null;
 }
 
@@ -64,13 +78,16 @@ const stageOf: Partial<Record<CheckProgressEvent['kind'], CheckProgressStage>> =
  * Reduces a start and its events, in the order recorded, into the progress view. The stored
  * report is the authority on a check having finished, since a progress write may fail without
  * failing the check; a start with neither a report nor a failure is dead after its 30 minutes.
+ * An item takes its latest status, so an answer asked for again replaces the first one.
  */
 export function checkProgress(
   start: CheckStart,
   events: readonly CheckProgressEvent[],
   reported: boolean,
   now: number,
+  items: readonly Pick<CheckItem, 'key' | 'kind' | 'title'>[],
 ): CheckProgress {
+  const statuses = new Map<string, CheckStatus>();
   const pages = new Map<string, PageProgress>();
   let stage: CheckProgressStage = 'starting';
   let itemCount: number | null = null;
@@ -97,6 +114,9 @@ export function checkProgress(
       case 'failed':
         failure = event.code;
         break;
+      case 'item':
+        statuses.set(event.key, event.status);
+        break;
       case 'comparing':
         break;
     }
@@ -116,6 +136,12 @@ export function checkProgress(
     pageCount,
     pages: [...pages.values()],
     locatedPages,
+    items: items.map(({ key, kind, title }) => ({
+      key,
+      kind,
+      title,
+      status: statuses.get(key) ?? null,
+    })),
     failure: state === 'failed' ? failure : null,
   };
 }

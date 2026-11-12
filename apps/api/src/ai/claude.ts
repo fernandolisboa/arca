@@ -2,10 +2,13 @@ import { type AnthropicLanguageModelOptions, createAnthropic } from '@ai-sdk/ant
 import {
   APICallError,
   type JSONSchema7,
+  type LanguageModelUsage,
   Output,
+  StreamProviderError,
   type SystemModelMessage,
   generateText,
   jsonSchema,
+  streamText,
 } from 'ai';
 
 /** Pinned in code: the provider would otherwise take `ANTHROPIC_BASE_URL` from the environment. */
@@ -63,7 +66,7 @@ function failureOf(error: unknown): ClaudeFailure {
   if (error instanceof Error && (error.name === 'AbortError' || error.name === 'TimeoutError')) {
     return 'timeout';
   }
-  if (APICallError.isInstance(error)) return 'unavailable';
+  if (APICallError.isInstance(error) || StreamProviderError.isInstance(error)) return 'unavailable';
   if (
     error instanceof Error &&
     (parsedByTheApi.has(error.name) || /NoObject|NoContent/.test(error.name))
@@ -89,9 +92,23 @@ function cachedInstructions(instructions: string): SystemModelMessage {
   };
 }
 
+/** The reply with its usage; a count the provider left out stays out. */
+function replyOf(output: unknown, usage: LanguageModelUsage): StructuredReply {
+  const { inputTokens, outputTokens, inputTokenDetails } = usage;
+  const { cacheReadTokens, cacheWriteTokens } = inputTokenDetails;
+  return {
+    output,
+    ...(inputTokens === undefined ? {} : { inputTokens }),
+    ...(outputTokens === undefined ? {} : { outputTokens }),
+    ...(cacheReadTokens === undefined ? {} : { cacheReadTokens }),
+    ...(cacheWriteTokens === undefined ? {} : { cacheWriteTokens }),
+  };
+}
+
 /**
  * Claude behind one call shape (ADR-0004): the host pinned, telemetry off, no retry inside the
- * SDK, the instructions as the cached prefix, and every failure a `ClaudeCallError` with a fixed kind.
+ * SDK, the instructions as the cached prefix, and every failure a `ClaudeCallError` with a fixed
+ * kind. A streamed call sends the same request as a plain one, so both share one cached prefix.
  */
 export function claudeClient({ apiKey, fetch }: ClaudeSettings) {
   const anthropic = createAnthropic({
@@ -99,33 +116,50 @@ export function claudeClient({ apiKey, fetch }: ClaudeSettings) {
     baseURL: anthropicBaseUrl,
     ...(fetch === undefined ? {} : { fetch }),
   });
+  const request = (call: StructuredCall) => ({
+    model: anthropic(call.model),
+    instructions: cachedInstructions(call.instructions),
+    prompt: call.prompt,
+    output: Output.object({ schema: jsonSchema(call.schema), name: call.schemaName }),
+    maxOutputTokens: call.maxOutputTokens,
+    ...(call.anthropic === undefined ? {} : { providerOptions: { anthropic: call.anthropic } }),
+    maxRetries: 0,
+    abortSignal: AbortSignal.timeout(call.timeoutMs),
+    telemetry: { isEnabled: false, recordInputs: false, recordOutputs: false },
+  });
   return {
     async object(call: StructuredCall): Promise<StructuredReply> {
       try {
-        const result = await generateText({
-          model: anthropic(call.model),
-          instructions: cachedInstructions(call.instructions),
-          prompt: call.prompt,
-          output: Output.object({ schema: jsonSchema(call.schema), name: call.schemaName }),
-          maxOutputTokens: call.maxOutputTokens,
-          ...(call.anthropic === undefined
-            ? {}
-            : { providerOptions: { anthropic: call.anthropic } }),
-          maxRetries: 0,
-          abortSignal: AbortSignal.timeout(call.timeoutMs),
-          telemetry: { isEnabled: false, recordInputs: false, recordOutputs: false },
-        });
-        const { inputTokens, outputTokens, inputTokenDetails } = result.usage;
-        const { cacheReadTokens, cacheWriteTokens } = inputTokenDetails;
-        return {
-          output: result.output,
-          ...(inputTokens === undefined ? {} : { inputTokens }),
-          ...(outputTokens === undefined ? {} : { outputTokens }),
-          ...(cacheReadTokens === undefined ? {} : { cacheReadTokens }),
-          ...(cacheWriteTokens === undefined ? {} : { cacheWriteTokens }),
-        };
+        const result = await generateText(request(call));
+        return replyOf(result.output, result.usage);
       } catch (error) {
         throw new ClaudeCallError(failureOf(error));
+      }
+    },
+
+    /**
+     * The same call, streamed: `onPartial` sees the output as it grows, each value untrusted and
+     * possibly cut mid-entry, and the reply is the complete output, parsed as `object` parses it.
+     * The SDK reports a failure mid-stream to `onError`, never to the console, and that failure
+     * is the one classified.
+     */
+    async objectStream(
+      call: StructuredCall,
+      onPartial: (partial: unknown) => void,
+    ): Promise<StructuredReply> {
+      let streamFailure: unknown;
+      try {
+        const result = streamText({
+          ...request(call),
+          onError: ({ error }) => {
+            streamFailure ??= error;
+          },
+        });
+        for await (const partial of result.partialOutputStream) onPartial(partial);
+        const [output, usage] = await Promise.all([result.output, result.usage]);
+        return replyOf(output, usage);
+      } catch (error) {
+        throw new ClaudeCallError(failureOf(streamFailure ?? error));
       }
     },
   };

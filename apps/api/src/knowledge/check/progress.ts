@@ -1,4 +1,10 @@
-import { type CheckProgressEvent, pageProgressOutcomes, progressFailures } from '@arca/domain';
+import {
+  type CheckProgressEvent,
+  checkStatuses,
+  maxCheckItemKeyLength,
+  pageProgressOutcomes,
+  progressFailures,
+} from '@arca/domain';
 import type { Database } from '@arca/db';
 import { checkProgress } from '@arca/db/knowledge-schema';
 import { asc, eq, sql } from 'drizzle-orm';
@@ -15,7 +21,10 @@ export interface CheckProgressStore {
   readonly list: (startId: string) => Promise<readonly CheckProgressEvent[]>;
 }
 
-/** The most events one start records: two per cited page and a handful of stages. */
+/**
+ * The most events one start records: two per cited page, a handful of stages, and an item event
+ * per answer of each of the two model calls a check may take.
+ */
 export const maxProgressEvents = 1_000;
 
 const count = z.int().min(0).max(1_000);
@@ -30,6 +39,11 @@ const storedEvent = z.discriminatedUnion('kind', [
   }),
   z.strictObject({ kind: z.literal('locating'), pages: count }),
   z.strictObject({ kind: z.literal('comparing') }),
+  z.strictObject({
+    kind: z.literal('item'),
+    key: z.string().max(maxCheckItemKeyLength),
+    status: z.enum(checkStatuses),
+  }),
   z.strictObject({ kind: z.literal('finished') }),
   z.strictObject({ kind: z.literal('failed'), code: z.enum(progressFailures) }),
 ]) satisfies z.ZodType<CheckProgressEvent>;

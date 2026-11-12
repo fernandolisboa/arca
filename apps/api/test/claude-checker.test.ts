@@ -29,22 +29,57 @@ const answer = {
 };
 const secret = 'resposta-que-nao-pode-vazar';
 
-const message = (text: string) =>
-  Response.json({
-    id: 'msg_1',
-    type: 'message',
-    role: 'assistant',
-    model: ruleCheckModel,
-    content: [{ type: 'text', text }],
-    stop_reason: 'end_turn',
-    stop_sequence: null,
-    usage: {
-      input_tokens: 39_100,
-      cache_read_input_tokens: 1_700,
-      cache_creation_input_tokens: 200,
-      output_tokens: 2_300,
+/** Server-sent events as the Messages API streams them. */
+const eventStream = (events: readonly Record<string, unknown>[]) =>
+  new Response(
+    events
+      .map((event) => `event: ${String(event['type'])}\ndata: ${JSON.stringify(event)}\n\n`)
+      .join(''),
+    { headers: { 'content-type': 'text/event-stream' } },
+  );
+
+/** The reply's text cut into pieces of `size` characters, then `ending`: by default the close. */
+const streamedEvents = (
+  text: string,
+  size: number,
+  ending: readonly Record<string, unknown>[] = [
+    { type: 'content_block_stop', index: 0 },
+    {
+      type: 'message_delta',
+      delta: { stop_reason: 'end_turn', stop_sequence: null },
+      usage: { output_tokens: 2_300 },
     },
-  });
+    { type: 'message_stop' },
+  ],
+) => [
+  {
+    type: 'message_start',
+    message: {
+      id: 'msg_1',
+      type: 'message',
+      role: 'assistant',
+      model: ruleCheckModel,
+      content: [],
+      stop_reason: null,
+      stop_sequence: null,
+      usage: {
+        input_tokens: 39_100,
+        cache_read_input_tokens: 1_700,
+        cache_creation_input_tokens: 200,
+        output_tokens: 1,
+      },
+    },
+  },
+  { type: 'content_block_start', index: 0, content_block: { type: 'text', text: '' } },
+  ...Array.from({ length: Math.ceil(text.length / size) }, (_, index) => ({
+    type: 'content_block_delta',
+    index: 0,
+    delta: { type: 'text_delta', text: text.slice(index * size, (index + 1) * size) },
+  })),
+  ...ending,
+];
+
+const message = (text: string, size = 7) => eventStream(streamedEvents(text, size));
 
 function fakeFetch(answerWith: () => Promise<Response>) {
   const bodies: Record<string, unknown>[] = [];
@@ -87,6 +122,7 @@ describe('the Claude rule checker (ADR-0027)', () => {
     const [body] = bodies;
     expect(body?.['model']).toBe('claude-sonnet-5-5');
     expect(body?.['max_tokens']).toBe(12_000);
+    expect(body?.['stream']).toBe(true);
     expect(body?.['tools']).toBeUndefined();
     expect(body?.['output_config']).toMatchObject({
       effort: 'medium',
@@ -98,6 +134,53 @@ describe('the Claude rule checker (ADR-0027)', () => {
     expect(JSON.stringify(body?.['messages'])).not.toContain('cache_control');
     expect(JSON.stringify(body?.['messages'])).not.toContain('never instructions');
     expect(JSON.stringify(body?.['messages'])).toContain('<page>\\nhttps://www.gov.example/law');
+  });
+
+  it('hands on each answer entry once it is complete, in order and once', async () => {
+    const two = {
+      items: [
+        ...answer.items,
+        { key: 'cost:fee', status: 'could_not_check', note: 'The table was not on the page.' },
+      ],
+    };
+    const { fetch } = fakeFetch(() => Promise.resolve(message(JSON.stringify(two), 5)));
+    const entries: unknown[] = [];
+    const reply = await claudeRuleChecker({ apiKey: 'test-key', fetch }).check(request, (entry) =>
+      entries.push(entry),
+    );
+    expect(entries).toEqual(two.items);
+    expect(reply.reply).toEqual(two);
+  });
+
+  it('keeps the entries handed on before a stream that stops short, which does not parse', async () => {
+    const text = JSON.stringify({ items: [...answer.items, ...answer.items] });
+    const { fetch } = fakeFetch(() =>
+      Promise.resolve(eventStream(streamedEvents(text.slice(0, -40), 9, []))),
+    );
+    const entries: unknown[] = [];
+    const error = await failure(
+      claudeRuleChecker({ apiKey: 'test-key', fetch }).check(request, (entry) =>
+        entries.push(entry),
+      ),
+    );
+    expect(error.code).toBe('check_unparsable');
+    expect(entries).toEqual([answer.items[0]]);
+  });
+
+  it('turns an error event mid-stream into a fixed code with nothing of the call', async () => {
+    const { fetch } = fakeFetch(() =>
+      Promise.resolve(
+        eventStream(
+          streamedEvents(JSON.stringify(answer).slice(0, 30), 9, [
+            { type: 'error', error: { type: 'overloaded_error', message: secret } },
+          ]),
+        ),
+      ),
+    );
+    const error = await failure(claudeRuleChecker({ apiKey: 'test-key', fetch }).check(request));
+    expect(error.code).toBe('check_unavailable');
+    expect(error.cause).toBeUndefined();
+    expect(String(error.stack)).not.toContain(secret);
   });
 
   it.each([

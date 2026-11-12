@@ -529,7 +529,7 @@ export const getVersionCheck = {
 /*
  * The check on demand (ADR-0027, "On demand, with progress"): an admin starts one route version's
  * check, whatever its state and reports, and watches how far it got. Progress holds counts, cited
- * official URLs and fixed codes only; what the model wrote comes with the report, as above.
+ * official URLs, item statuses and fixed codes only; what the model wrote comes with the report.
  */
 
 export const StartVersionCheckResponse = z.strictObject({
@@ -569,6 +569,22 @@ export const CheckProgress = z.strictObject({
     .max(200),
   /** How many long pages had passages picked, once that stage began. */
   locatedPages: z.int().min(0).max(1_000).nullable(),
+  /**
+   * Every item of the version in its order, with its status once the checker answered it and code
+   * verified it, or null while awaited; quotes, notes and reasons come only with the report.
+   */
+  items: z
+    .array(
+      z.strictObject({
+        key: z.string().max(maxCheckItemKeyLength),
+        kind: z.enum(checkItemKinds),
+        title: z.string().max(200),
+        status: z.enum(checkStatuses).nullable(),
+      }),
+    )
+    .max(200),
+  /** The scripted checker answers here, so a match is a test's and never a confirmation. */
+  scripted: z.boolean(),
   failure: z.enum(progressFailures).nullable(),
 });
 export type CheckProgress = z.infer<typeof CheckProgress>;

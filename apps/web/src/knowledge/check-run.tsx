@@ -17,7 +17,9 @@ import {
   checkRunSteps,
   pagesSettled,
 } from './check-run-steps.js';
+import { ItemResult } from './checks.js';
 import { card } from './review-parts.js';
+import { type ReportItem, shownPoints } from './step-checks.js';
 import type { KnowledgeWords } from './words.js';
 
 /** A route version by its public identity, as the progress screen's address names it. */
@@ -197,6 +199,56 @@ function StepMarker({ status }: { readonly status: CheckRunStepStatus }) {
   );
 }
 
+const noAddresses: ReadonlyMap<string, string | null> = new Map();
+
+/**
+ * Each item of a check as its answer lands: the result for the answered ones, then the item the
+ * check is waiting on while it runs, then how many are left. The progress carries statuses only,
+ * so the reason, note and quotes come with the report.
+ */
+function CheckRunItems({
+  progress,
+  words,
+}: {
+  readonly progress: CheckProgress;
+  readonly words: KnowledgeWords;
+}) {
+  const { t } = words;
+  const answered: ReportItem[] = progress.items.flatMap(({ status, ...item }) =>
+    status === null ? [] : [{ ...item, status, quotes: [], note: null, reason: null }],
+  );
+  const shown = shownPoints({ items: answered, scripted: progress.scripted });
+  const waiting = progress.items.filter(({ status }) => status === null);
+  const [next] = progress.state === 'running' ? waiting : [];
+  const left = waiting.length - (next === undefined ? 0 : 1);
+  return (
+    <>
+      {shown.length > 0 && (
+        <ul aria-label={t('knowledge.checkRun.items')} className="flex flex-col gap-3">
+          {shown.map((item) => (
+            <li key={item.key} className="flex animate-row-land flex-col gap-1 pt-2">
+              <span className="text-small font-medium">{item.title}</span>
+              <ItemResult item={item} addressRead={noAddresses} words={words} />
+            </li>
+          ))}
+        </ul>
+      )}
+      {next !== undefined && (
+        <p className="flex items-center gap-3 border-t border-line pt-3 text-small">
+          <span
+            aria-hidden="true"
+            className="size-2.5 shrink-0 animate-stage-pulse rounded-full bg-primary"
+          />
+          <span className="min-w-0">{t('knowledge.checkRun.awaiting', { title: next.title })}</span>
+        </p>
+      )}
+      {left > 0 && (
+        <p className="text-small text-muted">{t('knowledge.checkRun.left', { n: left })}</p>
+      )}
+    </>
+  );
+}
+
 const pageTone = (outcome: CheckProgress['pages'][number]['outcome']): StatusTone =>
   outcome === 'read' ? 'ok' : outcome === 'reading' ? 'unknown' : 'warn';
 
@@ -252,6 +304,11 @@ export function CheckRunSteps({
             {details[step] !== null && status !== 'pending' && (
               <p className="text-small text-muted">{details[step]}</p>
             )}
+            {step === 'compare' &&
+              progress.state !== 'finished' &&
+              (status === 'current' || status === 'stopped') && (
+                <CheckRunItems progress={progress} words={words} />
+              )}
             {step === 'read' && progress.pages.length > 0 && (
               <ul className="flex flex-col gap-2">
                 {progress.pages.map(({ url, outcome, status: httpStatus }) => (

@@ -34813,6 +34813,58 @@
                           "minimum": 0,
                           "maximum": 1000
                         },
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string",
+                                "maxLength": 120
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "requirement",
+                                  "assessment",
+                                  "dependent",
+                                  "cost",
+                                  "duration",
+                                  "leapDayBirthday",
+                                  "closure",
+                                  "countrySet"
+                                ]
+                              },
+                              "title": {
+                                "type": "string",
+                                "maxLength": 200
+                              },
+                              "status": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "enum": [
+                                  "matches",
+                                  "differs",
+                                  "could_not_check",
+                                  null
+                                ]
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "kind",
+                              "title",
+                              "status"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "maxItems": 200
+                        },
+                        "scripted": {
+                          "type": "boolean"
+                        },
                         "failure": {
                           "type": [
                             "string",
@@ -34833,6 +34885,8 @@
                         "pageCount",
                         "pages",
                         "locatedPages",
+                        "items",
+                        "scripted",
                         "failure"
                       ],
                       "additionalProperties": false

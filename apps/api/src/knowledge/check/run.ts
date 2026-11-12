@@ -27,7 +27,7 @@ import type { Logger } from '@arca/telemetry';
 import { loggedModelCall, parsedWithOneRetry } from '../../ai/model-call.js';
 import { guideContent } from '../version-content.js';
 import { addressesAsRead } from './answer-text.js';
-import { parseCheckAnswer } from './answer.js';
+import { parseCheckAnswer, parseCheckAnswerEntry } from './answer.js';
 import {
   type RuleCheckRequest,
   type RuleCheckerChoice,
@@ -274,19 +274,49 @@ export function createVersionCheck({
     return { page: { ...page, text, excerpt: true }, picked: true };
   };
 
-  const ask = async (request: RuleCheckRequest): Promise<readonly CheckAnswer[]> =>
+  /**
+   * Records each answer entry the checker hands on, verified as the report will verify it: key and
+   * status only. A key no item has is skipped, and a key answered twice in one call could not be
+   * checked, as in the report. Each call starts afresh, so a retry's answers replace the first's.
+   */
+  const itemRecorder = (
+    items: readonly CheckItem[],
+    pages: ReadonlyMap<string, ReadPage>,
+    record: Recorder,
+    written: Promise<void>[],
+  ) => {
+    const byKey = new Map(items.map((item) => [item.key, item]));
+    const answered = new Set<string>();
+    return (entry: unknown) => {
+      const answer = parseCheckAnswerEntry(entry);
+      const item = answer === undefined ? undefined : byKey.get(answer.key);
+      if (answer === undefined || item === undefined) return;
+      const [verified] = answered.has(item.key) ? [] : verifyAnswers([item], [answer], pages);
+      answered.add(item.key);
+      written.push(
+        record({ kind: 'item', key: item.key, status: verified?.status ?? 'could_not_check' }),
+      );
+    };
+  };
+
+  const ask = async (
+    request: RuleCheckRequest,
+    onCall: () => (entry: unknown) => void,
+  ): Promise<readonly CheckAnswer[]> =>
     parsedWithOneRetry(
-      async () =>
-        (
+      async () => {
+        const onEntry = onCall();
+        return (
           await loggedModelCall(
-            () => checker.check(request),
+            () => checker.check(request, onEntry),
             { route, logger, now },
             (error) =>
               error instanceof RuleCheckerError
                 ? new RuleCheckerError(error.code)
                 : new RuleCheckerError('check_failed'),
           )
-        ).reply,
+        ).reply;
+      },
       parseCheckAnswer,
       {
         isUnparsable: (error) =>
@@ -352,16 +382,21 @@ export function createVersionCheck({
     // With no page text nothing could match, so no model call is paid for.
     if (pagesToSend.length > 0) {
       await record({ kind: 'comparing' });
+      const written: Promise<void>[] = [];
       try {
-        answers = await ask({
-          version: subject.content,
-          items: items.map(({ key, kind, title, urls }) => ({ key, kind, title, urls })),
-          pages: pagesToSend,
-          guide: guide === undefined ? null : guideContent(guide.guide),
-        });
+        answers = await ask(
+          {
+            version: subject.content,
+            items: items.map(({ key, kind, title, urls }) => ({ key, kind, title, urls })),
+            pages: pagesToSend,
+            guide: guide === undefined ? null : guideContent(guide.guide),
+          },
+          () => itemRecorder(items, pages, record, written),
+        );
       } catch (error) {
         failure = error instanceof RuleCheckerError ? error.code : 'check_failed';
       }
+      await Promise.all(written);
     }
 
     const checked = verifyAnswers(items, answers, pages);

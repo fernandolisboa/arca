@@ -30,7 +30,10 @@ import {
   memoryCheckProgressStore,
 } from '../src/knowledge/check/progress.js';
 import { type CheckSubject, createVersionCheck } from '../src/knowledge/check/run.js';
-import { scriptedCheckerChoice } from '../src/knowledge/check/scripted-checker.js';
+import {
+  scriptedCheckerChoice,
+  scriptedCheckerSpaced,
+} from '../src/knowledge/check/scripted-checker.js';
 import { memoryCheckReportStore } from '../src/knowledge/check/store.js';
 import { snapshotFetcher } from './eval/independent-check/harness.js';
 
@@ -132,6 +135,27 @@ const matchesBoth = {
     },
   ],
 };
+
+/** One streamed call: the entries it hands on, then its reply or the failure it ends in. */
+interface StreamedCall {
+  readonly entries: readonly unknown[];
+  readonly end: unknown;
+}
+
+/** A checker that streams: each call hands on its entries, then answers or fails. */
+function streaming(...calls: StreamedCall[]): RuleChecker & { requests: RuleCheckRequest[] } {
+  const requests: RuleCheckRequest[] = [];
+  return {
+    requests,
+    check(request, onEntry) {
+      requests.push(request);
+      const call = calls.length > 1 ? calls.shift() : calls[0];
+      for (const entry of call?.entries ?? []) onEntry?.(entry);
+      if (call?.end instanceof Error) return Promise.reject(call.end);
+      return Promise.resolve({ reply: call?.end, model: 'claude-test', promptVersion: 'check-1' });
+    },
+  };
+}
 
 /** Picks, for every item, the passage whose outline line holds each of `headings`, in order. */
 function locating(...headings: string[]): PassageLocator & { requests: PassageLocateRequest[] } {
@@ -426,6 +450,15 @@ describe('the independent check of one version (ADR-0027)', () => {
     });
     await check(startId, 'qm-sample', 1);
     expect(store.rows[0]).toMatchObject({ model: 'fake', clean: false });
+  });
+
+  it('hands on each scripted answer, spaced apart, so a screen shows them landing', async () => {
+    const { check, events } = setup({ checker: scriptedCheckerSpaced(1), model: 'fake' });
+    await check(startId, 'qm-sample', 1);
+    expect(events().filter(({ kind }) => kind === 'item')).toEqual([
+      { kind: 'item', key: 'requirement:means', status: 'matches' },
+      { kind: 'item', key: 'cost:fee', status: 'matches' },
+    ]);
   });
 
   it('logs no page text and no model output', async () => {
@@ -987,6 +1020,103 @@ describe('the independent check of one version (ADR-0027)', () => {
       expect(recorded).not.toContain('MODEL-NOTE-MARKER');
       expect(recorded).not.toContain('EUR 920');
       expect(recorded).not.toContain('Application fee');
+    });
+
+    describe('each item as its answer lands', () => {
+      const [means, fee] = matchesBoth.items;
+      const itemEvents = (events: readonly { kind: string }[]) =>
+        events.filter(({ kind }) => kind === 'item');
+
+      it('records each answer verified, between the comparison and the end', async () => {
+        const { check, events } = setup({
+          checker: streaming({ entries: matchesBoth.items, end: matchesBoth }),
+        });
+        await check(startId, 'qm-sample', 1);
+        expect(events().slice(-4)).toEqual([
+          { kind: 'comparing' },
+          { kind: 'item', key: 'requirement:means', status: 'matches' },
+          { kind: 'item', key: 'cost:fee', status: 'matches' },
+          { kind: 'finished' },
+        ]);
+      });
+
+      it('verifies an answer as the report does, so an unfound quote could not be checked', async () => {
+        const invented = {
+          ...means,
+          quotes: [{ quote: 'means of at least EUR 1 a year', url: law }],
+        };
+        const reply = { items: [invented, fee] };
+        const { check, events, store } = setup({
+          checker: streaming({ entries: reply.items, end: reply }),
+        });
+        await check(startId, 'qm-sample', 1);
+        expect(itemEvents(events())).toEqual([
+          { kind: 'item', key: 'requirement:means', status: 'could_not_check' },
+          { kind: 'item', key: 'cost:fee', status: 'matches' },
+        ]);
+        expect(store.rows[0]?.items.map(({ status }) => status)).toEqual([
+          'could_not_check',
+          'matches',
+        ]);
+      });
+
+      it('skips an entry that does not parse or names no item, and a repeated key could not be checked', async () => {
+        const entries = [{ verdict: 'fine' }, { ...means, key: 'requirement:ghost' }, means, means];
+        const { check, events } = setup({
+          checker: streaming({ entries, end: { items: entries.slice(1) } }),
+        });
+        await check(startId, 'qm-sample', 1);
+        expect(itemEvents(events())).toEqual([
+          { kind: 'item', key: 'requirement:means', status: 'matches' },
+          { kind: 'item', key: 'requirement:means', status: 'could_not_check' },
+        ]);
+      });
+
+      it('keeps what landed when the call fails midway, and the report says the call failed', async () => {
+        const { check, events, store } = setup({
+          checker: streaming({ entries: [means], end: new RuleCheckerError('check_timeout') }),
+        });
+        await check(startId, 'qm-sample', 1);
+        expect(events().slice(-3)).toEqual([
+          { kind: 'comparing' },
+          { kind: 'item', key: 'requirement:means', status: 'matches' },
+          { kind: 'finished' },
+        ]);
+        expect(store.rows[0]).toMatchObject({ failure: 'check_timeout', failed: true });
+        expect(store.rows[0]?.items.every(({ status }) => status === 'could_not_check')).toBe(true);
+      });
+
+      it('records the retry afresh after a stream cut short, and stores the retry', async () => {
+        const checker = streaming(
+          { entries: [means], end: new RuleCheckerError('check_unparsable') },
+          {
+            entries: [{ ...means, status: 'differs', note: 'Other amount.' }, fee],
+            end: {
+              items: [{ ...means, status: 'differs', note: 'Other amount.' }, fee],
+            },
+          },
+        );
+        const { check, events, store } = setup({ checker });
+        await check(startId, 'qm-sample', 1);
+        expect(checker.requests).toHaveLength(2);
+        expect(itemEvents(events())).toEqual([
+          { kind: 'item', key: 'requirement:means', status: 'matches' },
+          { kind: 'item', key: 'requirement:means', status: 'differs' },
+          { kind: 'item', key: 'cost:fee', status: 'matches' },
+        ]);
+        expect(store.rows[0]?.items.map(({ status }) => status)).toEqual(['differs', 'matches']);
+      });
+
+      it('records no quote or note of an answer', async () => {
+        const noted = { ...means, status: 'differs', note: 'MODEL-NOTE-MARKER' };
+        const { check, events } = setup({
+          checker: streaming({ entries: [noted], end: { items: [noted] } }),
+        });
+        await check(startId, 'qm-sample', 1);
+        const recorded = JSON.stringify(events());
+        expect(recorded).not.toContain('MODEL-NOTE-MARKER');
+        expect(recorded).not.toContain('EUR 920');
+      });
     });
 
     it('records a failure and no report for a version the catalog does not hold', async () => {
