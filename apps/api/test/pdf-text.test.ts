@@ -1,6 +1,6 @@
 import { createDeflate } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
-import { pdfText } from '../src/knowledge/check/pdf-text.js';
+import { joinVerticalLines, pdfText } from '../src/knowledge/check/pdf-text.js';
 import { pdfStream, rawPdf, syntheticPdf } from './synthetic-pdf.js';
 
 const font = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>';
@@ -76,5 +76,18 @@ describe('pdfText, a hostile file (ADR-0028)', () => {
       ok: false,
       failure: 'timeout',
     });
+  });
+});
+
+describe('vertical text in a PDF', () => {
+  it('rejoins a column that pdf.js gives one glyph per line', () => {
+    expect(joinVerticalLines('- 1 -\n●\n出\n入\n国\n（\n平\n成\n）\nArticle 2\n五\n年')).toBe(
+      '- 1 -\n●\n出入国（平成）\nArticle 2\n五年',
+    );
+  });
+
+  it('leaves horizontal text and other scripts as they are', () => {
+    const text = 'Article 1.\nA\nB\n在留期間は五年とする。';
+    expect(joinVerticalLines(text)).toBe(text);
   });
 });

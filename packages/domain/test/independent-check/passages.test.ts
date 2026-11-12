@@ -4,7 +4,9 @@ import {
   excerptPassages,
   excerptRuns,
   excerptText,
+  namedProvisions,
   pageOutline,
+  provisionPassages,
   splitPassages,
 } from '../../src/independent-check/passages.js';
 
@@ -227,5 +229,77 @@ describe('the excerpt sent of a long page (ADR-0027)', () => {
 
   it('answers nothing when nothing is chosen', () => {
     expect(excerptText(law, passages, [])).toBe('');
+  });
+});
+
+describe('the provisions a source title names (ADR-0027)', () => {
+  it.each<[string, string[]]>([
+    ['Aliens Act, § 9 a(2)(3) and (29): a job offer', ['9 a']],
+    ['Aliens Act, § 42a(1)(a) to (d): family', ['42a']],
+    ['Foreigners law, articles 58.º, n.º 5, and 99.º, n.os 1 and 4: family', ['58.º', '99.º']],
+    ['Regulation, article 24.º-B, n.º 1: proof', ['24.º-B']],
+    [
+      'Migration Regulations 1994, Schedule 2 clauses 189.221 to 189.224: invitation',
+      ['189.221', '189.224'],
+    ],
+    ['Migration Regulations 1994, regulation 1.05A(1): dependent', ['1.05A']],
+    ['Residence act, section 4: pensioners', ['4']],
+    ['Decree n.º 139/2025: minimum wage', []],
+    ['Order of 12.03.2024, article 5: amounts', ['5']],
+    ['Ministry page on the pay limit: DKK 552,000 in 2026', []],
+  ])('reads %s', (title, provisions) => {
+    expect(namedProvisions(title)).toEqual(provisions);
+  });
+});
+
+describe('the passages that head a named provision (ADR-0027)', () => {
+  const law = [
+    'Table of contents',
+    '1.12 | Member of the family unit',
+    'Amending act. Articles 52.º and 99.º are amended:',
+    'Artigo 52.º',
+    '[...]',
+    ...Array.from(
+      { length: 40 },
+      (_, index) => `Line ${String(index)} ${'of filler text '.repeat(8)}`,
+    ),
+    'Artigo 52.º',
+    'Recusa de visto',
+    '1 — Text of article 52, in force.',
+    'nos termos do',
+    'artigo 52.º, pode ser dispensado.',
+    ...Array.from(
+      { length: 40 },
+      (_, index) => `More ${String(index)} ${'of filler text '.repeat(8)}`,
+    ),
+    '1.12 | Member of the family unit',
+    'A member of the family unit is the spouse.',
+  ].join('\n');
+  const passages = splitPassages(law);
+  const heads = (titles: string[]) =>
+    provisionPassages(law, passages, titles).map((index) => {
+      const { start, end } = passages[index] ?? { start: 0, end: 0 };
+      return law.slice(start, end);
+    });
+
+  it('finds the passage a heading line of the provision opens', () => {
+    const found = heads(['Foreigners law, article 52.º, n.º 3: refusal']);
+    expect(found.some((text) => text.includes('Text of article 52, in force'))).toBe(true);
+  });
+
+  it('finds a provision a table row heads, the text after its contents', () => {
+    const found = heads(['Regulations, regulation 1.12(2): family']);
+    expect(found.some((text) => text.includes('A member of the family unit is the spouse'))).toBe(
+      true,
+    );
+  });
+
+  it('ranks the last heading of a provision first, ahead of its table of contents', () => {
+    const [best] = heads(['Foreigners law, article 52.º, n.º 3: refusal']);
+    expect(best).toContain('Text of article 52, in force');
+  });
+
+  it('finds nothing for a title that names no provision', () => {
+    expect(heads(['Decree n.º 139/2025: minimum wage'])).toEqual([]);
   });
 });

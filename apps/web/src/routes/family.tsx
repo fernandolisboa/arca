@@ -47,6 +47,7 @@ import { MembershipChoice, type Membership } from '../forms/membership-choice.js
 import { TextField } from '../forms/text-field.js';
 import { dangerLinkClass, textLinkClass } from '../forms/text-link.js';
 import { Page } from '../page.js';
+import { initials, shortName } from '../person-names.js';
 import { passkeys } from '../platform.js';
 
 export const Route = createFileRoute('/family')({ component: Family });
@@ -519,7 +520,7 @@ function FamilySummary({
         </h3>
         <Button aria-expanded={adding} data-family-entry={addingKey} onClick={onAdd}>
           <Icon name="addPerson" />
-          {t('family.add.title')}
+          <span className="max-sm:sr-only">{t('family.add.title')}</span>
         </Button>
       </div>
       {/* The names are listed in Pessoas; here they are a glance, so screen readers skip them. */}
@@ -530,7 +531,9 @@ function FamilySummary({
             className="flex items-center gap-2 rounded-full border border-line py-1 pr-3 pl-1"
           >
             <Avatar person={person} isMe={person.id === view.me} size="small" />
-            <span className="text-small">{person.displayName}</span>
+            <span className="text-small">
+              {shortName(person.displayName, othersNames(view.people, person))}
+            </span>
           </li>
         ))}
         {view.people.length > summaryFaces && (
@@ -560,7 +563,9 @@ function NextStep({ view }: { readonly view: CaseView }) {
   const listFormat = new Intl.ListFormat(i18n.language, { type: 'conjunction' });
   const titleId = useId();
   const kept = view.people.filter((person) => person.keptByMe);
-  const others = kept.flatMap((person) => (person.id === view.me ? [] : [person.displayName]));
+  const others = kept.flatMap((person) =>
+    person.id === view.me ? [] : [shortName(person.displayName, othersNames(view.people, person))],
+  );
   const questions = kept.length > 0;
   return (
     <section
@@ -691,14 +696,17 @@ function PersonName({
   id,
   person,
   isMe,
+  clamped = false,
 }: {
   readonly id: string;
   readonly person: CasePerson;
   readonly isMe: boolean;
+  /** Two lines at most, for tiles too small for a long name; the panel shows it whole. */
+  readonly clamped?: boolean;
 }) {
   const { t } = useTranslation();
   return (
-    <span id={id} className="font-medium break-words">
+    <span id={id} className={`font-medium break-words ${clamped ? 'line-clamp-2' : ''}`}>
       {isMe ? t('family.me', { name: person.displayName }) : person.displayName}
     </span>
   );
@@ -804,7 +812,7 @@ function PersonTile({ person, isMe, current, onSelect }: EntryProps) {
     >
       <Avatar person={person} isMe={isMe} />
       <span className="flex min-w-0 flex-col">
-        <PersonName id={nameId} person={person} isMe={isMe} />
+        <PersonName id={nameId} person={person} isMe={isMe} clamped />
         <span id={detailsId} className="text-caption text-muted">
           {standing(person, isMe)}
         </span>
@@ -999,18 +1007,6 @@ function useSharingLine(view: CaseView) {
           profile: memberNames(person.shares.profile) || t('family.nobody'),
           finances: memberNames(person.shares.finances) || t('family.nobody'),
         });
-}
-
-/** The first letters of the first and last words of a name. */
-function initials(name: string) {
-  const words = name.trim().split(/\s+/u);
-  const graphemes = new Intl.Segmenter('pt-BR', { granularity: 'grapheme' });
-  const first = (word: string | undefined) => {
-    for (const { segment } of graphemes.segment(word ?? '')) return segment;
-    return '';
-  };
-  const letters = first(words[0]) + (words.length > 1 ? first(words.at(-1)) : '');
-  return letters.toLocaleUpperCase('pt-BR');
 }
 
 function PersonDetails({
@@ -1663,6 +1659,11 @@ function RelationshipsSection({
 }
 
 /** The members with an account who could be shown a person: not the viewer, not the person. */
+/** Everyone else's name, so a short name can tell people apart. */
+function othersNames(people: readonly CasePerson[], person: CasePerson) {
+  return people.flatMap((other) => (other.id === person.id ? [] : [other.displayName]));
+}
+
 function othersOf(view: CaseView, person: CasePerson) {
   return view.people.filter(
     (other) => other.accountId !== null && other.id !== view.me && other.id !== person.id,

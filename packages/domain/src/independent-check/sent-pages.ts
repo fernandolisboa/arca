@@ -88,3 +88,35 @@ export function openingExcerpt(text: string, budget: number): string {
   if (room <= 0) return '';
   return text.length <= room ? text : `${cutAt(text, room)}\n${excerptGap}`;
 }
+
+/** The most items one checker call compares when a version's pages do not fit one call. */
+export const maxItemsPerCall = 8;
+
+/** The most checker calls one check makes, which bounds its cost (ADR-0027). */
+export const maxCallsPerCheck = 6;
+
+/**
+ * The items each checker call compares, in item order. When every page the items cite fits the
+ * budget whole, one call compares them all. Otherwise they are split into runs of consecutive
+ * items, at most `maxItemsPerCall` each unless that would take more than `maxCallsPerCheck` calls,
+ * so each call sends only the pages its own items cite and a long law gets the room its items'
+ * provisions take instead of what the version's other pages leave.
+ */
+export function checkCalls<Item extends { readonly urls: readonly string[] }>(
+  items: readonly Item[],
+  pages: readonly { readonly url: string; readonly text: string }[],
+  budget = maxCheckPagesText,
+): Item[][] {
+  if (items.length === 0) return [];
+  const sent = pages.filter(({ url }) => items.some(({ urls }) => urls.includes(url)));
+  const fitsWhole =
+    sent.every(({ text }) => sentWhole(text)) &&
+    sent.reduce((sum, { text }) => sum + text.length, 0) <= budget;
+  if (fitsWhole) return [[...items]];
+  const size = Math.max(maxItemsPerCall, Math.ceil(items.length / maxCallsPerCheck));
+  const calls: Item[][] = [];
+  for (let start = 0; start < items.length; start += size) {
+    calls.push(items.slice(start, start + size));
+  }
+  return calls;
+}

@@ -114,6 +114,34 @@ export async function extractPdfText({
   }
 }
 
+/** A character of a script written top to bottom: Han, kana, Hangul and their full-width marks. */
+const verticalScript =
+  /^[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\u3000-\u303f\uff00-\uffef]$/u;
+
+/**
+ * Vertical text, as Japanese laws are printed, rejoined into lines: pdf.js ends a line after each
+ * glyph of a vertical column, so a run of lines that each hold one such character is one line.
+ * Horizontal text and other scripts pass unchanged.
+ */
+export function joinVerticalLines(text: string): string {
+  const out: string[] = [];
+  let column = '';
+  const flush = () => {
+    if (column !== '') out.push(column);
+    column = '';
+  };
+  for (const line of text.split('\n')) {
+    if (verticalScript.test(line)) {
+      column += line;
+      continue;
+    }
+    flush();
+    out.push(line);
+  }
+  flush();
+  return out.join('\n');
+}
+
 /**
  * The reading thread's module: `extractPdfText` as compiled, run on the input the thread is given.
  * A bundler that keeps function names wraps them in `__name`, and the test runner rewrites dynamic
@@ -195,7 +223,10 @@ export function pdfText(
     };
     signal.addEventListener('abort', onAbort, { once: true });
     thread.on('message', (message: unknown) => {
-      settle(isReply(message) ? message : { ok: false, failure: 'pdf_unreadable' });
+      if (!isReply(message)) settle({ ok: false, failure: 'pdf_unreadable' });
+      // Text past the cap stays as read, so the caller still sees it was cut.
+      else if (!message.ok || message.text.length > maxTextLength) settle(message);
+      else settle({ ok: true, text: joinVerticalLines(message.text) });
     });
     thread.on('error', (error: { code?: unknown }) => {
       const outOfMemory = error.code === 'ERR_WORKER_OUT_OF_MEMORY';

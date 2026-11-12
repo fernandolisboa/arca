@@ -21,6 +21,7 @@ const item: CheckItem = {
   urls: [law],
   officialDomains: [{ id: 'qm-gov', number: 1 }],
   values: [{ kind: 'number', value: '920' }],
+  citations: [{ url: law, title: 'Residence act, article 3' }],
 };
 
 const page = (patch: Partial<ReadPage> = {}): ReadPage => ({
@@ -393,6 +394,57 @@ describe('verifyAnswers', () => {
     expect(verify(on('monthly income of at least\n\n  €920,00   for'))).toMatchObject({
       status: 'matches',
       quotes: [{ quote: 'monthly income of at least €920,00 for', url: law }],
+    });
+  });
+
+  it.each([
+    ['a figure', 'stay of 22 months in the country.', '2 months in the country.', '2'],
+    [
+      'words',
+      'permanecer vinte e dois meses em território nacional.',
+      'dois meses em território nacional',
+      '2',
+    ],
+    ['kanji', '在留期間は十二年を超えない範囲で定める。', '二年を超えない範囲で定める。', '2'],
+    [
+      'a grouped figure',
+      'a monthly income of 1.500 EUR is required.',
+      '500 EUR is required.',
+      '500',
+    ],
+    [
+      'a decimal',
+      'permanecer por 2,5 anos em território nacional.',
+      '5 anos em território nacional',
+      '5',
+    ],
+    [
+      'a kanji ordinal',
+      '在留期間は第十二年を超えない範囲で定める。',
+      '十二年を超えない範囲で定める。',
+      '12',
+    ],
+    [
+      'an en dash',
+      'a stay of twenty–two months in the country.',
+      'two months in the country.',
+      '2',
+    ],
+  ])('reads a quote cut out of a number in %s as the whole number', (_, text, cut, value) => {
+    const two = { ...item, values: [{ kind: 'number' as const, value }] };
+    const [checked] = verifyAnswers(
+      [two],
+      [{ key: two.key, status: 'matches', ...on(cut) }],
+      new Map([[law, page({ text })]]),
+      ['pt', 'ja', 'en'],
+    );
+    expect(checked).toMatchObject({ status: 'could_not_check', reason: 'value_not_in_quote' });
+  });
+
+  it('keeps a quote widened to the whole words it was cut from', () => {
+    expect(verify(on('onthly income of at least €920,00 for th'))).toMatchObject({
+      status: 'matches',
+      quotes: [{ quote: 'monthly income of at least €920,00 for the', url: law }],
     });
   });
 

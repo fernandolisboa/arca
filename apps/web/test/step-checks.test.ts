@@ -91,6 +91,8 @@ describe('shownPoints', () => {
     quotes: [],
     note: null,
     reason: null,
+    citations: [],
+    values: [],
   });
 
   it('shows nothing without a report', () => {

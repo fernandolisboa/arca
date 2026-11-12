@@ -8,7 +8,7 @@ import type { KnowledgeWords } from './words.js';
 export const needTone: Readonly<Record<ReviewNeed, StatusTone>> = {
   differs: 'danger',
   ready: 'ok',
-  unread: 'warn',
+  unread: 'unknown',
   unchecked: 'unknown',
 };
 

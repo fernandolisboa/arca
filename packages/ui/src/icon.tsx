@@ -9,6 +9,7 @@ import {
   CircleHelp,
   Copy,
   Earth,
+  Eye,
   FileText,
   Flag,
   House,
@@ -65,6 +66,7 @@ const icons = {
   tree: Network,
   addPerson: UserPlus,
   invite: Mail,
+  look: Eye,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof icons;

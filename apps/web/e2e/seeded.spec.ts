@@ -451,7 +451,7 @@ test('the seed admin analyses a version with AI on demand and watches it to the 
   await expect(analyse).toBeVisible({ timeout: 30_000 });
   await analyse.click();
   const confirmation = page.getByRole('region', { name: 'Analisar esta versão com IA?' });
-  await expect(confirmation).toContainText('US$ 0,30 a US$ 0,50');
+  await expect(confirmation).toContainText('US$ 0,40 a US$ 0,80');
   const started = page.waitForRequest((request) =>
     request.url().endsWith('/v1/knowledge/versions/check/start'),
   );
@@ -481,6 +481,24 @@ test('the seed admin analyses a version with AI on demand and watches it to the 
 
   await page.getByRole('link', { name: 'Voltar para as versões' }).click();
   await expect(page).toHaveURL(/\/knowledge$/);
+
+  // A scripted match is never a confirmation, so each point reads as one to check yourself: the
+  // official page to open, what it must state, and a mark kept on this device.
+  await proposed.getByRole('button', { name: 'Estados Unidos', exact: true }).click();
+  await proposed
+    .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
+    .click();
+  await reviewStep(page, 'Requisitos');
+  const requirements = page.getByRole('region', { name: 'Requisitos' });
+  await expect(requirements.getByText('Confira você.').first()).toBeVisible();
+  const official = requirements.getByRole('link').first();
+  await expect(official).toHaveAttribute('href', /^https:\/\//);
+  await expect(official).toHaveAttribute('target', '_blank');
+  await expect(official).toHaveAttribute('rel', 'noopener noreferrer');
+  await expect(requirements).toContainText('O que deve estar escrito lá:');
+  const mark = requirements.getByRole('button', { name: 'Conferi' }).first();
+  await mark.click();
+  await expect(mark).toHaveAttribute('aria-pressed', 'true');
   expect(problems).toEqual([]);
 });
 

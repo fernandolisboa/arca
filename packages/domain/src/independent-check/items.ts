@@ -30,6 +30,8 @@ export interface CheckItem {
   readonly officialDomains: readonly Pin[];
   /** What a quote must state for a match to count; empty when the item states no value. */
   readonly values: readonly CheckValue[];
+  /** The titles of the official sources the item cites, with their URLs, as the sources name them. */
+  readonly citations: readonly { readonly url: string; readonly title: string }[];
 }
 
 /** The longest item key: a kind, a colon and a slug, or a country set's `<id>/<number>`. */
@@ -90,17 +92,20 @@ function uniqueValues(values: readonly CheckValue[]): CheckValue[] {
   return [...seen.values()];
 }
 
-function officialUrls(ids: readonly string[], sources: readonly Source[]): string[] {
+function officialCited(ids: readonly string[], sources: readonly Source[]): Source[] {
   const byId = new Map(sources.map((source) => [source.id, source]));
-  return [
-    ...new Set(
-      ids
-        .map((id) => byId.get(id))
-        .filter((source) => source?.kind === 'official')
-        .map((source) => source?.url ?? ''),
-    ),
-  ];
+  return ids.flatMap((id) => {
+    const source = byId.get(id);
+    return source?.kind === 'official' ? [source] : [];
+  });
 }
+
+const officialUrls = (ids: readonly string[], sources: readonly Source[]) => [
+  ...new Set(officialCited(ids, sources).map(({ url }) => url)),
+];
+
+const citationsOf = (ids: readonly string[], sources: readonly Source[]) =>
+  officialCited(ids, sources).map(({ url, title }) => ({ url, title }));
 
 /** The official sources a check reads: the version's own and those of its pinned country sets. */
 export function officialSources({ version, countrySets }: CatalogEntry): Source[] {
@@ -152,6 +157,7 @@ export function checkItems({ version, countrySets }: CatalogEntry): readonly Che
     urls: urls(sources),
     ...own,
     values,
+    citations: citationsOf(sources, version.sources),
   });
   return [
     ...version.requirements.map(({ id, title, expression, sources }) =>
@@ -202,6 +208,10 @@ export function checkItems({ version, countrySets }: CatalogEntry): readonly Che
       ),
       officialDomains: set.officialDomains,
       values: [],
+      citations: citationsOf(
+        set.sources.map((source) => source.id),
+        set.sources,
+      ),
     })),
   ];
 }

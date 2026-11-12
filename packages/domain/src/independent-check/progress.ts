@@ -26,7 +26,11 @@ export type CheckProgressEvent =
       readonly status: number | null;
     }
   | { readonly kind: 'locating'; readonly pages: number }
-  | { readonly kind: 'comparing' }
+  | {
+      readonly kind: 'comparing';
+      /** The items this comparison answers; every item when absent. */
+      readonly keys?: readonly string[] | undefined;
+    }
   | { readonly kind: 'item'; readonly key: string; readonly status: CheckStatus }
   | ({ readonly kind: 'usage' } & ModelUsage)
   | { readonly kind: 'finished' }
@@ -99,7 +103,7 @@ export function usagesOf(events: readonly CheckProgressEvent[]): ModelUsage[] {
  * Reduces a start and its events, in the order recorded, into the progress view. The stored
  * report is the authority on a check having finished, since a progress write may fail without
  * failing the check; a start with neither a report nor a failure is dead after its 30 minutes.
- * An item takes its latest status since the last comparison began, so a retry starts afresh.
+ * An item takes its latest status since the last comparison of it began, so a retry starts afresh.
  */
 export function checkProgress(
   start: CheckStart,
@@ -140,7 +144,8 @@ export function checkProgress(
         statuses.set(event.key, event.status);
         break;
       case 'comparing':
-        statuses.clear();
+        if (event.keys === undefined) statuses.clear();
+        else for (const key of event.keys) statuses.delete(key);
         break;
       case 'usage':
         break;
