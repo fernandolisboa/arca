@@ -41,9 +41,10 @@ type ExtractReply =
  * Runs inside the reading thread, so it imports nothing at module level and its source is sent as
  * is: pdf.js, given the bytes alone, reads each page's text items, an item that ends a line breaks
  * it, pages a blank line apart. No URL, fonts, maps or WebAssembly are fetched, and no forms,
- * scripts, attachments or links are read. Text inside optional content is left out when the file
- * switches any layer off: pdf.js does not say which layer a mark belongs to, so every layer's text
- * goes, which fails safe. Reading stops once the text passes `maxTextLength`.
+ * scripts, attachments or links are read. Text inside optional content a page's content marks is
+ * left out when the file switches any layer off: pdf.js does not say which layer a mark belongs
+ * to, so every layer's text goes, which fails safe. Reading stops once the text passes
+ * `maxTextLength`.
  */
 export async function extractPdfText({
   library,
@@ -100,6 +101,7 @@ export async function extractPdfText({
         } else if (!dropOptional || !marks.includes(true)) {
           if (str !== undefined) text += str;
           if (hasEOL === true) text += '\n';
+          if (text.length > maxTextLength) break;
         }
       }
       page.cleanup();
@@ -146,20 +148,23 @@ export function pdfText(
 ): Promise<PdfRead> {
   if (signal.aborted) return Promise.resolve({ ok: false, failure: 'timeout' });
   return new Promise((resolve) => {
-    const copy = bytes.slice();
-    const input: ExtractInput = {
-      library: import.meta.resolve('pdfjs-dist/legacy/build/pdf.mjs'),
-      worker: import.meta.resolve('pdfjs-dist/legacy/build/pdf.worker.mjs'),
-      bytes: copy,
-      maxPages: maxPdfPages,
-      maxTextLength,
-    };
+    // A copy, even of a Buffer, whose own `slice` is a view of the same memory.
+    const copy = new Uint8Array(bytes);
     let thread: Worker;
     try {
+      const input: ExtractInput = {
+        library: import.meta.resolve('pdfjs-dist/legacy/build/pdf.mjs'),
+        worker: import.meta.resolve('pdfjs-dist/legacy/build/pdf.worker.mjs'),
+        bytes: copy,
+        maxPages: maxPdfPages,
+        maxTextLength,
+      };
       thread = new Worker(new URL(`data:text/javascript,${encodeURIComponent(threadModule)}`), {
         workerData: input,
         transferList: [copy.buffer],
         resourceLimits: threadLimits,
+        // pdf.js needs no environment, so a flaw in it reaches none of the process's secrets.
+        env: {},
         // pdf.js writes its warnings to the console; they stay in the thread.
         stdout: true,
         stderr: true,
