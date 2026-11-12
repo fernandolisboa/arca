@@ -227,6 +227,20 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
        VALUES ($1, $2, 'qm-sample', 1, 'adult', 'outdated', 'Synthetic note')`,
       [caseId, accountId],
     );
+    const correctionId = randomUUID();
+    await insert(
+      `INSERT INTO knowledge.correction_request (id, route_id, version_number, item_kind, item_key, note, author_account_id)
+       VALUES ($1, 'qm-sample', 1, 'requirement', 'adult', 'Synthetic note', $2)`,
+      [correctionId, accountId],
+    );
+    await insert(
+      `INSERT INTO knowledge.correction_source (request_id, position, kind, url) VALUES ($1, 0, 'link', 'https://example.gov/law')`,
+      [correctionId],
+    );
+    await insert(
+      `INSERT INTO knowledge.correction_event (request_id, kind) VALUES ($1, 'closed')`,
+      [correctionId],
+    );
     await insert(
       `INSERT INTO cases.comparison_preferences (account_id, case_id, preferences)
        VALUES ($1, $2, '{"weights": {"climate": 4}, "ratings": {}, "ownCriteria": [], "hidden": []}')`,

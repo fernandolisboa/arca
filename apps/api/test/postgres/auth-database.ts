@@ -69,8 +69,9 @@ export async function authTestDatabase({
       );
     }
     // Roles without login: app_backup is retired (ADR-0021) and kept only so the migrations that
-    // once granted to it replay; cases_definer owns the case schema's definer functions (spec 0007).
-    for (const role of ['app_backup', 'cases_definer']) {
+    // once granted to it replay; cases_definer and knowledge_definer own their schemas' definer
+    // functions (spec 0007, ADR-0029).
+    for (const role of ['app_backup', 'cases_definer', 'knowledge_definer']) {
       await client.query(
         `DO $$ BEGIN
            IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '${role}') THEN

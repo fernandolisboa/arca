@@ -133,10 +133,12 @@ export function createDataExports({
   registry = fullRegistry,
 }: DataExportDependencies): DataExports {
   const placeholder = i18n.t('dataExport.masked');
+  const rowsOf = (entry: RegistryEntry, accountId: string) =>
+    entry.exportedThrough === undefined
+      ? sql`SELECT ${projection(entry, placeholder)} AS row ${ownedRows(entry, registry, accountId)} ORDER BY 1`
+      : sql`SELECT row FROM ${qualified(entry.exportedThrough)}(${entry.table}) row ORDER BY 1`;
   const read = async (tx: Transaction, entry: RegistryEntry, accountId: string) => {
-    const result = await tx.execute<{ row: Table['rows'][number] }>(
-      sql`SELECT ${projection(entry, placeholder)} AS row ${ownedRows(entry, registry, accountId)} ORDER BY 1`,
-    );
+    const result = await tx.execute<{ row: Table['rows'][number] }>(rowsOf(entry, accountId));
     return [entry.table, result.rows.map(({ row }) => row)] as const;
   };
   const readAll = async (tx: Transaction, entries: readonly RegistryEntry[], accountId: string) => {

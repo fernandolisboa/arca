@@ -61,6 +61,7 @@ function setup({
   const knowledgeVersions: KnowledgeVersions = {
     list: () => Promise.resolve([listedVersion]),
     view: () => Promise.resolve(undefined),
+    identities: () => [],
     comparisons: () => Promise.resolve([listedComparison]),
     comparisonView: () => Promise.resolve(undefined),
   };

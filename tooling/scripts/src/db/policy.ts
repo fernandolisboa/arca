@@ -47,7 +47,10 @@ export const retiredRoles = ['app_backup'] as const;
  * its schema. The migrator may SET ROLE to one, without inheriting it, only to hand it a function
  * a migration created.
  */
-export const definerRoleSchemas = { cases_definer: 'cases' } as const;
+export const definerRoleSchemas = {
+  cases_definer: 'cases',
+  knowledge_definer: 'knowledge',
+} as const;
 export const definerRoles = Object.keys(definerRoleSchemas) as (keyof typeof definerRoleSchemas)[];
 export const migratorRole = 'app_migrator';
 export const runtimeRoles = appRoles.filter((role) => role !== migratorRole);

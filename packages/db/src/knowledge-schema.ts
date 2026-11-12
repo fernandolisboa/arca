@@ -3,6 +3,7 @@ import {
   boolean,
   bytea,
   check,
+  foreignKey,
   index,
   integer,
   jsonb,
@@ -117,6 +118,12 @@ export const adminGrant = knowledge.table(
     }),
     pgPolicy('admin_grant_read_auth', { for: 'select', to: 'app_auth', using: sql`true` }),
     pgPolicy('admin_grant_read_api', { for: 'select', to: 'app_api', using: sql`true` }),
+    // The correction request functions check a grant basis against the history (ADR-0029).
+    pgPolicy('admin_grant_read_definer', {
+      for: 'select',
+      to: 'knowledge_definer',
+      using: sql`true`,
+    }),
   ],
 );
 
@@ -361,5 +368,168 @@ export const checkProgress = knowledge.table(
     ),
     pgPolicy('check_progress_read', { for: 'select', to: 'app_api', using: sql`true` }),
     pgPolicy('check_progress_insert', { for: 'insert', to: 'app_jobs', withCheck: sql`true` }),
+  ],
+);
+
+/** An admin's correction request may name the whole version, its settings or one item. */
+export const correctionItemKinds = [
+  'version',
+  'settings',
+  'requirement',
+  'assessment',
+  'dependent',
+  'cost',
+  'duration',
+  'countrySet',
+] as const;
+
+const inList = (column: unknown, values: readonly string[]) =>
+  sql`${column} IN (${sql.raw(values.map((value) => `'${value}'`).join(', '))})`;
+
+/** The request's author is the transaction's own account, for erasure (app_jobs). */
+const ownRequest = (requestId: unknown) =>
+  sql`EXISTS (SELECT FROM "knowledge"."correction_request" "request"
+        WHERE "request"."id" = ${requestId}
+          AND "request"."author_account_id" = nullif(current_setting('app.account_id', true), '')::uuid)`;
+
+/**
+ * Correction requests (ADR-0029): an owner-list admin points at a wrong item of a route version
+ * and says what is wrong, with sources as leads. Knowledge data that names a route, a version and
+ * an item, never a case or a person. Insert-only: `app_api` serves admins through the reviewed
+ * definer functions of `knowledge_definer`, which check the admin basis the API computed and
+ * insert or read on its behalf; the author's data export reads their own rows through one too.
+ * `app_jobs` reads and deletes an author's own requests under their identity, for erasure; their
+ * sources and events go with them.
+ */
+export const correctionRequest = knowledge.table(
+  'correction_request',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    routeId: text('route_id').notNull(),
+    versionNumber: integer('version_number').notNull(),
+    itemKind: text('item_kind').notNull(),
+    itemKey: text('item_key'),
+    note: text('note').notNull(),
+    authorAccountId: uuid('author_account_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .default(sql`clock_timestamp()`),
+  },
+  (table) => [
+    check('correction_request_route_id_format', routeIdFormat(table.routeId)),
+    check('correction_request_version_number_positive', sql`${table.versionNumber} > 0`),
+    check('correction_request_item_kind', inList(table.itemKind, correctionItemKinds)),
+    check(
+      'correction_request_item_key',
+      sql`CASE WHEN ${table.itemKind} IN ('version', 'settings') THEN ${table.itemKey} IS NULL
+        ELSE ${table.itemKey} ~ '^[a-z0-9][a-z0-9./-]{0,79}$' END`,
+    ),
+    check('correction_request_note_length', sql`char_length(${table.note}) BETWEEN 1 AND 4000`),
+    index('correction_request_version_idx').on(table.routeId, table.versionNumber),
+    index('correction_request_author_account_id_idx').on(table.authorAccountId),
+    pgPolicy('correction_request_insert_by_definer', {
+      for: 'insert',
+      to: 'knowledge_definer',
+      withCheck: sql`true`,
+    }),
+    pgPolicy('correction_request_select_by_definer', {
+      for: 'select',
+      to: 'knowledge_definer',
+      using: sql`true`,
+    }),
+    pgPolicy('correction_request_select_own_by_jobs', {
+      for: 'select',
+      to: 'app_jobs',
+      using: isIdentity(table.authorAccountId),
+    }),
+    pgPolicy('correction_request_delete_own_by_jobs', {
+      for: 'delete',
+      to: 'app_jobs',
+      using: isIdentity(table.authorAccountId),
+    }),
+  ],
+);
+
+/** A request's sources, up to five: an `https` link or pasted text, both leads only (ADR-0029). */
+export const correctionSource = knowledge.table(
+  'correction_source',
+  {
+    requestId: uuid('request_id').notNull(),
+    position: integer('position').notNull(),
+    kind: text('kind').notNull(),
+    url: text('url'),
+    text: text('text'),
+  },
+  (table) => [
+    primaryKey({ name: 'correction_source_pkey', columns: [table.requestId, table.position] }),
+    foreignKey({
+      name: 'correction_source_request_fkey',
+      columns: [table.requestId],
+      foreignColumns: [correctionRequest.id],
+    }).onDelete('cascade'),
+    check('correction_source_position_range', sql`${table.position} BETWEEN 0 AND 4`),
+    check(
+      'correction_source_shape',
+      sql`CASE ${table.kind}
+        WHEN 'link' THEN ${table.text} IS NULL AND ${table.url} ~ '^https://[^[:space:]]+$'
+          AND char_length(${table.url}) <= 2048
+        WHEN 'text' THEN ${table.url} IS NULL AND char_length(${table.text}) BETWEEN 1 AND 20000
+        ELSE false END`,
+    ),
+    pgPolicy('correction_source_insert_by_definer', {
+      for: 'insert',
+      to: 'knowledge_definer',
+      withCheck: sql`true`,
+    }),
+    pgPolicy('correction_source_select_by_definer', {
+      for: 'select',
+      to: 'knowledge_definer',
+      using: sql`true`,
+    }),
+    pgPolicy('correction_source_select_own_by_jobs', {
+      for: 'select',
+      to: 'app_jobs',
+      using: ownRequest(table.requestId),
+    }),
+  ],
+);
+
+/**
+ * What happened to a request after it was filed (ADR-0029). This slice stores an admin's close;
+ * whether a decision closed it is computed from the catalog and the decisions, never stored.
+ */
+export const correctionEvent = knowledge.table(
+  'correction_event',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    requestId: uuid('request_id').notNull(),
+    kind: text('kind').notNull(),
+    at: timestamp('at', { withTimezone: true })
+      .notNull()
+      .default(sql`clock_timestamp()`),
+  },
+  (table) => [
+    foreignKey({
+      name: 'correction_event_request_fkey',
+      columns: [table.requestId],
+      foreignColumns: [correctionRequest.id],
+    }).onDelete('cascade'),
+    check('correction_event_kind', sql`${table.kind} = 'closed'`),
+    unique('correction_event_closed_once').on(table.requestId, table.kind),
+    pgPolicy('correction_event_insert_by_definer', {
+      for: 'insert',
+      to: 'knowledge_definer',
+      withCheck: sql`true`,
+    }),
+    pgPolicy('correction_event_select_by_definer', {
+      for: 'select',
+      to: 'knowledge_definer',
+      using: sql`true`,
+    }),
+    pgPolicy('correction_event_select_own_by_jobs', {
+      for: 'select',
+      to: 'app_jobs',
+      using: ownRequest(table.requestId),
+    }),
   ],
 );

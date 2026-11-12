@@ -70,16 +70,16 @@ describe('bootstrap', () => {
         rolvaliduntil: null,
       })),
     );
-    // Only the migrator's SET-only membership in the definer role, for handing it functions.
-    expect(snapshot.memberships).toEqual([
-      {
-        granted: 'cases_definer',
+    // Only the migrator's SET-only memberships in the definer roles, for handing them functions.
+    expect(snapshot.memberships).toEqual(
+      [...definerRoles].sort().map((granted) => ({
+        granted,
         member: 'app_migrator',
         admin_option: false,
         inherit_option: false,
         set_option: true,
-      },
-    ]);
+      })),
+    );
     expect(snapshot.databaseCreate).toEqual([{ rolname: 'app_migrator' }]);
   });
 

@@ -18,6 +18,9 @@ import {
   maxQuoteLength,
   maxQuotes,
   comparisonCriterionSchema,
+  correctionItemKinds,
+  correctionStates,
+  keyedCorrectionItemKinds,
   countryCodeSchema,
   durationStageSchema,
   leapDayBirthdaySchema,
@@ -447,6 +450,105 @@ export const closeRuleReports = {
 } as const satisfies RouteDefinition<typeof CloseRuleReportsResponse>;
 
 /*
+ * Correction requests (ADR-0029). An owner-list admin points at a wrong item of a route version,
+ * says what is wrong and adds up to five sources as leads; any admin reads a version's requests
+ * and closes one. 403 not_admin for anyone else; 403 owner_list_only when an admin by grant files.
+ */
+
+/** The limits of a request (ADR-0029), checked here and again by the database. */
+export const correctionLimits = { note: 4_000, sources: 5, text: 20_000, url: 2_048 } as const;
+
+/** The item a request points at: the whole version, its settings, or one item by its key. */
+export const CorrectionItem = z
+  .strictObject({
+    kind: z.enum(correctionItemKinds),
+    key: z
+      .string()
+      .regex(/^[a-z0-9][a-z0-9./-]{0,79}$/)
+      .nullable(),
+  })
+  .refine(({ kind, key }) => keyedCorrectionItemKinds.includes(kind) === (key !== null), {
+    message: 'An item kind that names one item carries its key; the others carry none',
+  });
+export type CorrectionItem = z.infer<typeof CorrectionItem>;
+
+export const CorrectionSource = z.discriminatedUnion('kind', [
+  z.strictObject({
+    kind: z.literal('link'),
+    url: z
+      .url({ protocol: /^https$/, hostname: z.regexes.domain })
+      .max(correctionLimits.url)
+      .regex(/^https:\/\/\S+$/),
+  }),
+  z.strictObject({
+    kind: z.literal('text'),
+    text: z.string().trim().min(1).max(correctionLimits.text),
+  }),
+]);
+export type CorrectionSource = z.infer<typeof CorrectionSource>;
+
+export const FileCorrectionRequest = z.strictObject({
+  routeId: routeIdSchema,
+  versionNumber: z.int().min(1).max(1_000_000),
+  item: CorrectionItem,
+  note: z.string().trim().min(1).max(correctionLimits.note),
+  sources: z.array(CorrectionSource).max(correctionLimits.sources),
+});
+export type FileCorrectionRequest = z.infer<typeof FileCorrectionRequest>;
+
+export const FileCorrectionResponse = z.object({ id: z.uuid() });
+
+export const fileCorrectionRequest = {
+  method: 'post',
+  path: '/knowledge/corrections',
+  operationId: 'fileCorrectionRequest',
+  summary:
+    'Files a correction request on one item of a route version, for an owner-list admin; 30 per 24 hours per account (429 rate_limited). 403 not_admin; 403 owner_list_only for an admin by grant; 404 not_found for a version or item the catalog does not hold; 409 already_corrected when a correction of the version is active',
+  body: FileCorrectionRequest,
+  response: { description: 'Filed', schema: FileCorrectionResponse },
+} as const satisfies RouteDefinition<typeof FileCorrectionResponse>;
+
+export const CorrectionRequests = z.object({
+  /** Whether the viewer may file a request: an owner-list admin. */
+  canFile: z.boolean(),
+  /** The version's requests, newest first. */
+  requests: z.array(
+    z.object({
+      id: z.uuid(),
+      item: CorrectionItem,
+      note: z.string(),
+      createdAt: z.iso.datetime({ offset: true }),
+      sources: z.array(CorrectionSource),
+      state: z.enum(correctionStates),
+    }),
+  ),
+});
+export type CorrectionRequests = z.infer<typeof CorrectionRequests>;
+
+export const listCorrectionRequests = {
+  method: 'get',
+  path: '/knowledge/corrections',
+  operationId: 'listCorrectionRequests',
+  summary:
+    "One route version's correction requests with their sources and states, newest first, for an admin. 403 not_admin; 404 not_found",
+  query: VersionViewQuery,
+  response: { description: 'The requests', schema: CorrectionRequests },
+} as const satisfies RouteDefinition<typeof CorrectionRequests>;
+
+export const CloseCorrectionRequest = z.strictObject({ id: z.uuid() });
+export type CloseCorrectionRequest = z.infer<typeof CloseCorrectionRequest>;
+
+export const closeCorrectionRequest = {
+  method: 'post',
+  path: '/knowledge/corrections/close',
+  operationId: 'closeCorrectionRequest',
+  summary:
+    'Closes a correction request, for an admin; closing a closed one changes nothing. 403 not_admin; 404 not_found',
+  body: CloseCorrectionRequest,
+  response: { description: 'Closed', schema: z.object({}) },
+} as const satisfies RouteDefinition;
+
+/*
  * The independent check (ADR-0027). The activation screen asks, when it opens, for checks of every
  * proposed route version that has no current report and no live start, within its share of the 20
  * starts in any 24 hours per environment; listing versions starts nothing. A report is model output that code
@@ -708,6 +810,9 @@ export const knowledgeRoutes = {
   summarizeVersion,
   listRuleReports,
   closeRuleReports,
+  fileCorrectionRequest,
+  listCorrectionRequests,
+  closeCorrectionRequest,
   startVersionChecks,
   getVersionCheck,
   startVersionCheck,
@@ -716,6 +821,9 @@ export const knowledgeRoutes = {
 
 export {
   type FactKey,
+  correctionStates,
+  correctionTargets,
+  countrySetKey,
   checkReasons,
   collectionNames,
   comparisonOperators,

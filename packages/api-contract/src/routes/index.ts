@@ -853,6 +853,14 @@ export const auditEventDetails = {
    */
   admin_granted: z.strictObject({ grantId: z.uuid(), accountId: z.uuid() }),
   admin_removed: z.strictObject({ grantId: z.uuid(), accountId: z.uuid() }),
+  /** An owner-list admin filed a correction request (ADR-0029); its note and sources stay out. */
+  correction_requested: z.strictObject({
+    requestId: z.uuid(),
+    routeId: routeIdSchema,
+    number: z.int().min(1),
+  }),
+  /** An admin closed a correction request (ADR-0029). */
+  correction_closed: z.strictObject({ requestId: z.uuid() }),
 } as const;
 
 export type AuditEventCode = keyof typeof auditEventDetails;

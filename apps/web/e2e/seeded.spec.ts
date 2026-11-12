@@ -5,6 +5,7 @@ import { family, person, signedIn } from './case-accounts.js';
 import { seededCredential, virtualAuthenticator, withoutAutofill } from './passkeys.js';
 import {
   clearCheckStarts,
+  clearCorrectionRequests,
   clearKnowledgeDecisions,
   linkAccounts,
   resetRateLimits,
@@ -498,6 +499,63 @@ test('the seed admin analyses a version with AI on demand and watches it to the 
   const mark = requirements.getByRole('button', { name: 'Conferi' }).first();
   await mark.click();
   await expect(mark).toHaveAttribute('aria-pressed', 'true');
+  expect(problems).toEqual([]);
+});
+
+test('the seed admin points out an error on a version and closes the request (ADR-0029)', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'runs once, on the desktop project');
+  const [account] = await runSeed();
+  if (account === undefined) throw new Error('the seed lists no account');
+  await Promise.all([
+    restartSeededCounter(account.id),
+    clearKnowledgeDecisions(),
+    clearCorrectionRequests(),
+    resetRateLimits(),
+  ]);
+  const problems = watchProblems(page);
+  await virtualAuthenticator(page, seededCredential(account.passkey.label), {
+    userId: account.id,
+  });
+  await withoutAutofill(page);
+  await page.goto(`${databaseServer.origin}/sign-in`);
+  await page.getByRole('button', { name: 'Entrar com chave de acesso' }).click();
+  await expect(page.getByText(`Você entrou como ${account.email}.`)).toBeVisible();
+  const { version } = await eb5InEffect(page);
+
+  await page.goto(`${databaseServer.origin}/knowledge`);
+  const proposed = page.getByRole('region', { name: 'Versões propostas' });
+  await proposed.getByRole('button', { name: 'Estados Unidos', exact: true }).click();
+  await proposed
+    .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
+    .click();
+  await page.getByRole('button', { name: 'Apontar erro' }).first().click();
+  const form = page.getByRole('form', { name: 'Apontar erro na regra' });
+  await expect(form).toContainText('Não coloque dados pessoais');
+  await form.getByLabel('O que está errado?').fill('O valor mínimo mudou.');
+  await form.getByRole('button', { name: 'Adicionar link' }).click();
+  await form.getByLabel('Link').fill('https://www.uscis.gov/eb-5');
+  const filed = page.waitForRequest(
+    (request) => request.url().endsWith('/v1/knowledge/corrections') && request.method() === 'POST',
+  );
+  await form.getByRole('button', { name: 'Enviar pedido' }).click();
+  expect((await filed).postDataJSON()).toEqual({
+    routeId: 'us-eb5',
+    versionNumber: Number(version),
+    item: { kind: 'version', key: null },
+    note: 'O valor mínimo mudou.',
+    sources: [{ kind: 'link', url: 'https://www.uscis.gov/eb-5' }],
+  });
+  await expect(page.getByText('Pedido enviado.')).toBeVisible();
+
+  const requests = page.getByRole('region', { name: 'Pedidos de correção' });
+  await expect(requests).toContainText('Aberto');
+  await expect(requests).toContainText('Versão inteira');
+  await expect(requests).toContainText('https://www.uscis.gov/eb-5');
+  await requests.getByRole('button', { name: 'Fechar pedido' }).click();
+  await expect(requests).toContainText('Fechado');
+  await expect(requests.getByRole('button', { name: 'Fechar pedido' })).toHaveCount(0);
   expect(problems).toEqual([]);
 });
 
