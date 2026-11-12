@@ -29,7 +29,7 @@ The owner picked these on 2026-11-03 and revised them on 2026-11-06, when the fi
 | Navigation from 768 px | `top` | `menu`, `side`, `floating-dock` |
 | Navigation below 768 px | `menu` | `fixed-dock`, `floating-dock` |
 | Dock edge (floating dock only) | `bottom` | `left`, `right` |
-| Text size | `100` | `112`, `125`, `150` (percent of the root size) |
+| Text size | `100` | `75`, `90`, `112`, `125`, `150` (percent of the root size) |
 | Contrast | `standard` | `high` |
 | Motion | `on` | `off` (also forced off by `prefers-reduced-motion: reduce`) |
 
@@ -96,7 +96,7 @@ Non-text cues (bars on `track`, the dashed `line` border of unknown items) are b
 | `clean` | Inter 700 | Inter 400–600 | Inter, tabular figures |
 | `technical` | IBM Plex Sans 600 | IBM Plex Sans 400–600 | IBM Plex Mono 500 |
 
-Scale (rem at 16 px): 0.75 caption, 0.875 small, 1 body, 1.125 lead, 1.375 title, 1.75 page title, 2.25 hero. Body line height 1.5; titles 1.15–1.25. Body text never below 1 rem on phones; captions are for metadata only (sources, dates). Every size is in rem, so the text-size axis scales the whole scale; layouts reflow without horizontal scroll at 150% and at 200% browser zoom.
+Scale (rem at 16 px): 0.75 caption, 0.875 small, 1 body, 1.125 lead, 1.375 title, 1.75 page title, 2.25 hero. Body line height 1.5; titles 1.15–1.25. Body text never below 1 rem on phones (at the default text size; a person may pick 75% or 90% for themselves); captions are for metadata only (sources, dates). Every size is in rem, so the text-size axis scales the whole scale; layouts reflow without horizontal scroll at 150% and at 200% browser zoom.
 
 ### High contrast
 
@@ -191,7 +191,7 @@ When the authoring session has the `/super-copy` skill, it runs its pass that re
 - **R8 AppShell.** `AppShell` takes the navigation items and the layout preferences (wide, narrow, dock edge), including dragging the floating dock with snap and the menu panel, and renders the layouts in [Shell and navigation](#shell-and-navigation), switching at 768 px with CSS only. Its bars show the `Mark` described in [Mark](#mark); a test checks that the component's paths match `docs/brand/arca-mark.svg`. It shows only the items whose page exists, so until the features land it shows home alone and grows as pages are added; no placeholder pages.
 - **R9 Settings screen.** Creates the Settings page, reached from the Settings entry in every layout, with appearance controls in categories (see the revision below): one control group per axis with a live preview and a "use default" option that clears the person's choice for that axis, plus one action per category that clears that category's axes; the narrow-screen group offers the docks and the menu, and the dock-edge group appears with the floating dock. Strings in the pt-BR catalog. Revised 2026-11-06: the page is split into categories, Aparência (colors, mode, fonts, corners), Navegação (narrow, wide, dock edge), Acessibilidade (text size, contrast, motion), Conta (security notices, data export, account deletion) and, for an approver, Base de conhecimento; a side menu from 1024 px and a wrapping row of buttons below it picks one, and `?section=` keeps the choice in the address. `apps/web/src/settings/sections.ts` places each axis in exactly one category, and a test checks none is left out.
 - **R10 Patterns.** `NextActionCard`, `RankingRow`, `ProgressBar`, `SourceLine`, `StatusChip`, `CoachMark`, `ScaleChoice`, `StarRating` and `Disclosure` in `packages/ui`, each with one Vitest render test that checks its content, keyboard reachability and screen-reader labels. Themes are covered by R3 and R11, not per component.
-- **R11 End-to-end.** Playwright opens the home screen at 390, 820 and 1280 px in each navigation layout and dock edge, and at text size 150%, and checks: every navigation item, the Settings entry and the menu reachable by keyboard, the menu closing from its button by keyboard and on Escape, with focus returned, no horizontal scroll, nothing behind the dock, and `@axe-core/playwright` reports no violations in the default theme and in one dark theme.
+- **R11 End-to-end.** Playwright opens the home screen at 390, 820 and 1280 px in each navigation layout and dock edge, and at text sizes 75% and 150%, and checks: every navigation item at least 44 px on each side, every navigation item, the Settings entry and the menu reachable by keyboard, the menu closing from its button by keyboard and on Escape, with focus returned, no horizontal scroll, nothing behind the dock, and `@axe-core/playwright` reports no violations in the default theme and in one dark theme.
 
 ## Threat model for this slice
 

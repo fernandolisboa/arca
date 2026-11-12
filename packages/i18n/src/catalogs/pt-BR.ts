@@ -166,6 +166,8 @@ export const ptBR = {
       },
       textSize: {
         legend: 'Tamanho do texto',
+        '75': '75%',
+        '90': '90%',
         '100': '100%',
         '112': '112%',
         '125': '125%',

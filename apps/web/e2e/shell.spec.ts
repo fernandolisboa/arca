@@ -5,6 +5,7 @@ import {
   layoutName,
   open,
   sizes,
+  smallestNavTarget,
   usesMenu,
   type Layout,
 } from './layouts.js';
@@ -39,7 +40,7 @@ for (const [width, baseLayouts] of sizes) {
   test.describe(`at ${String(width)} px`, () => {
     test.use({ viewport: { width, height: 800 } });
 
-    const layouts = ['100', '150'].flatMap((textSize) =>
+    const layouts = ['75', '100', '150'].flatMap((textSize) =>
       baseLayouts.map((layout) => ({ ...layout, textSize })),
     );
     for (const layout of layouts) {
@@ -85,6 +86,7 @@ for (const [width, baseLayouts] of sizes) {
           await expect(page.getByRole('button', { name: 'Abrir menu' })).toHaveCount(0);
         }
         expect(await horizontalOverflow(page)).toBe(0);
+        expect(await smallestNavTarget(page)).toBeGreaterThanOrEqual(44);
         expect(problems).toEqual([]);
       });
 

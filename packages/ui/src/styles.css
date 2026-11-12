@@ -44,8 +44,11 @@
 }
 
 @theme {
-  /* The minimum touch target: 44 px. */
-  --spacing-touch: 2.75rem;
+  /* The minimum touch target: 44 px, kept when the text size goes below 100%. */
+  --spacing-touch: max(2.75rem, 44px);
+  /* A dock cell, and the whole bottom dock with its padding: what content clears. */
+  --spacing-dock-cell: max(3.5rem, var(--spacing-touch));
+  --spacing-dock: calc(var(--spacing-dock-cell) + 0.5rem);
   /* The shell's top bar, below the safe-area inset; the menu panel opens right under it. */
   --spacing-bar: 3.75rem;
 

@@ -60,9 +60,9 @@ const defaultLayout: ShellLayout = {
  */
 const narrowClearance = {
   menu: '',
-  'fixed-dock': 'max-md:pb-[calc(4rem+env(safe-area-inset-bottom))]',
+  'fixed-dock': 'max-md:pb-[calc(var(--spacing-dock)+env(safe-area-inset-bottom))]',
   'floating-dock': {
-    bottom: 'max-md:pb-[calc(4rem+14px+env(safe-area-inset-bottom))]',
+    bottom: 'max-md:pb-[calc(var(--spacing-dock)+14px+env(safe-area-inset-bottom))]',
     left: 'max-md:pl-[calc(5rem+14px+env(safe-area-inset-left))]',
     right: 'max-md:pr-[calc(5rem+14px+env(safe-area-inset-right))]',
   },
@@ -73,7 +73,7 @@ const wideClearance = {
   top: '',
   side: 'md:pl-[216px]',
   'floating-dock': {
-    bottom: 'md:pb-[calc(4rem+14px+env(safe-area-inset-bottom))]',
+    bottom: 'md:pb-[calc(var(--spacing-dock)+14px+env(safe-area-inset-bottom))]',
     left: 'md:pl-[calc(5rem+14px+env(safe-area-inset-left))]',
     right: 'md:pr-[calc(5rem+14px+env(safe-area-inset-right))]',
   },

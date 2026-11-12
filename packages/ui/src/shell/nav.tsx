@@ -38,9 +38,9 @@ const focusRing =
 
 const shapes = {
   /** A row in a bar, the side column or the menu: icon beside the label. */
-  row: 'flex min-h-touch items-center gap-3 rounded-control px-3',
+  row: 'flex min-h-touch min-w-touch items-center gap-3 rounded-control px-3',
   /** A dock cell: icon over the label. */
-  cell: 'flex min-h-14 min-w-touch flex-1 flex-col items-center justify-center gap-0.5 rounded-control px-1 text-caption',
+  cell: 'flex min-h-dock-cell min-w-touch flex-1 flex-col items-center justify-center gap-0.5 rounded-control px-1 text-caption',
 } as const;
 
 export type NavShape = keyof typeof shapes;
