@@ -10,7 +10,7 @@ import {
   routes,
 } from '@arca/api-contract/client';
 import { Button, StatusChip, type StatusTone } from '@arca/ui';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { type QueryKey, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createContext,
   Fragment,
@@ -83,7 +83,7 @@ export function CorrectionFiling({
 const textareaClass =
   'rounded-control border border-line bg-surface p-3 text-body text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 
-function TextArea({
+export function TextArea({
   label,
   value,
   maxLength,
@@ -247,12 +247,7 @@ function CorrectionForm({
       await queryClient.invalidateQueries(correctionRequestsQuery(filing.routeId, filing.number));
       close(true);
     } catch (error) {
-      if (error instanceof ApiError && error.status === 429) setState('limited');
-      else if (error instanceof ApiError && error.code === 'already_corrected')
-        setState('corrected');
-      else if (error instanceof ApiError && error.code === 'not_uploaded') setState('missing');
-      else if (error instanceof ApiError && error.status === 409) setState('mismatch');
-      else setState('failed');
+      setState(filingFailure(error));
     }
   };
   return (
@@ -440,7 +435,7 @@ export function PointOutError({ item }: { readonly item: CorrectionItem }) {
   );
 }
 
-const stateTones: Record<ListedRequest['state'], StatusTone> = {
+export const requestStateTones: Record<ListedRequest['state'], StatusTone> = {
   open: 'warn',
   taken: 'warn',
   answered: 'ok',
@@ -454,7 +449,7 @@ function itemTitle(view: VersionView, { kind, key }: CorrectionItem): string {
 }
 
 /** A request's sources with keys: they are stored in order and never change. */
-const keyedSources = (request: ListedRequest) =>
+const keyedSources = (request: Pick<ListedRequest, 'id' | 'sources'>) =>
   request.sources.map((source, position) => ({
     key: `${request.id}:${String(position)}`,
     source,
@@ -464,7 +459,7 @@ const keyedSources = (request: ListedRequest) =>
 const addressPattern = /(https?:\/\/\S+)/;
 
 /** Model output as plain text: an address stays text, set apart, never a link (ADR-0029). */
-function MarkedText({ text }: { readonly text: string }) {
+export function MarkedText({ text }: { readonly text: string }) {
   const parts = text
     .split(addressPattern)
     .reduce<{ part: string; start: number; address: boolean }[]>((placed, part, index) => {
@@ -487,7 +482,23 @@ function MarkedText({ text }: { readonly text: string }) {
   );
 }
 
-/** The corrector run's answer: the version it proposed, with a way to open it, or its reasons. */
+/** The corrector run's answer: what it did, then its reasons or a way to open its version. */
+export function AnswerBox({
+  title,
+  children,
+}: {
+  readonly title: string;
+  readonly children: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col items-start gap-1 rounded-control bg-soft p-3 text-small">
+      <p className="font-medium">{title}</p>
+      {children}
+    </div>
+  );
+}
+
+/** The answer on a version: the version it proposed, with a way to open it, or its reasons. */
 function AnswerEntry({
   answer,
   words,
@@ -499,17 +510,13 @@ function AnswerEntry({
   const open = use(OpenRouteVersionContext);
   if (answer.kind === 'no_change') {
     return (
-      <div className="flex flex-col gap-1 rounded-control bg-soft p-3 text-small">
-        <p className="font-medium">{t('knowledge.corrections.answerNoChange')}</p>
+      <AnswerBox title={t('knowledge.corrections.answerNoChange')}>
         <MarkedText text={answer.explanation} />
-      </div>
+      </AnswerBox>
     );
   }
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-control bg-soft p-3 text-small">
-      <p className="font-medium">
-        {t('knowledge.corrections.answerVersion', { number: answer.number })}
-      </p>
+    <AnswerBox title={t('knowledge.corrections.answerVersion', { number: answer.number })}>
       {open !== undefined && (
         <button
           type="button"
@@ -521,7 +528,7 @@ function AnswerEntry({
           {t('knowledge.corrections.openVersion', { number: answer.number })}
         </button>
       )}
-    </div>
+    </AnswerBox>
   );
 }
 
@@ -583,13 +590,62 @@ function FileEntry({
   );
 }
 
-function RequestEntry({
+/** A request's sources in order: addresses as plain text, never links, and files to save. */
+export function SourceList({
   request,
-  view,
   words,
 }: {
-  readonly request: ListedRequest;
-  readonly view: VersionView;
+  readonly request: Pick<ListedRequest, 'id' | 'sources'>;
+  readonly words: KnowledgeWords;
+}) {
+  const { t } = words;
+  if (request.sources.length === 0) return null;
+  return (
+    <ul className="flex flex-col gap-2 text-small">
+      {keyedSources(request).map(({ key, source, position }) => (
+        <li key={key} className="flex flex-col gap-1">
+          <span className="text-muted">
+            {t('knowledge.corrections.sourceKind', { kind: source.kind })}
+          </span>
+          {source.kind === 'link' && (
+            // Plain text, never a link: the admin reads the full address before opening it.
+            <span className="font-mono break-all">{source.url}</span>
+          )}
+          {source.kind === 'text' && (
+            <>
+              <span className="line-clamp-6 whitespace-pre-wrap">{source.text}</span>
+              {source.url !== undefined && (
+                <span className="flex flex-col">
+                  <span className="text-muted">{t('knowledge.corrections.copiedFrom')}</span>
+                  <span className="font-mono break-all">{source.url}</span>
+                </span>
+              )}
+            </>
+          )}
+          {source.kind === 'file' && (
+            <FileEntry requestId={request.id} position={position} source={source} words={words} />
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * One request as admins follow it: its state, heading, date, note, sources and answer, and a
+ * button that closes it and then reloads `reload`.
+ */
+export function RequestCard({
+  request,
+  heading,
+  answer,
+  reload,
+  words,
+}: {
+  readonly request: Pick<ListedRequest, 'id' | 'state' | 'createdAt' | 'note' | 'sources'>;
+  readonly heading: string;
+  readonly answer: ReactNode;
+  readonly reload: QueryKey;
   readonly words: KnowledgeWords;
 }) {
   const { t } = words;
@@ -600,14 +656,11 @@ function RequestEntry({
     <li className="flex flex-col gap-2 rounded-control border border-line p-3">
       <div className="flex flex-wrap items-center gap-2">
         <StatusChip
-          tone={stateTones[request.state]}
+          tone={requestStateTones[request.state]}
           label={t('knowledge.corrections.state', { state: request.state })}
         />
         <p id={headingId} className="font-medium">
-          {t('knowledge.corrections.item', {
-            kind: request.item.kind,
-            title: itemTitle(view, request.item),
-          })}
+          {heading}
         </p>
       </div>
       <p className="text-small text-muted">
@@ -622,33 +675,8 @@ function RequestEntry({
       ) : (
         <p className="whitespace-pre-wrap">{request.note}</p>
       )}
-      {request.sources.length > 0 && (
-        <ul className="flex flex-col gap-2 text-small">
-          {keyedSources(request).map(({ key, source, position }) => (
-            <li key={key} className="flex flex-col gap-1">
-              <span className="text-muted">
-                {t('knowledge.corrections.sourceKind', { kind: source.kind })}
-              </span>
-              {source.kind === 'link' && (
-                // Plain text, never a link: the admin reads the full address before opening it.
-                <span className="font-mono break-all">{source.url}</span>
-              )}
-              {source.kind === 'text' && (
-                <span className="line-clamp-6 whitespace-pre-wrap">{source.text}</span>
-              )}
-              {source.kind === 'file' && (
-                <FileEntry
-                  requestId={request.id}
-                  position={position}
-                  source={source}
-                  words={words}
-                />
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-      {request.answer !== null && <AnswerEntry answer={request.answer} words={words} />}
+      <SourceList request={request} words={words} />
+      {answer}
       {failed && (
         <p role="alert" className="text-small text-danger-ink">
           {t('knowledge.corrections.closeFailure')}
@@ -663,9 +691,7 @@ function RequestEntry({
             setFailed(false);
             api
               .call(routes.closeCorrectionRequest, { id: request.id })
-              .then(() =>
-                queryClient.invalidateQueries(correctionRequestsQuery(view.routeId, view.number)),
-              )
+              .then(() => queryClient.invalidateQueries({ queryKey: reload }))
               .catch(() => {
                 setFailed(true);
               });
@@ -676,6 +702,43 @@ function RequestEntry({
       )}
     </li>
   );
+}
+
+function RequestEntry({
+  request,
+  view,
+  words,
+}: {
+  readonly request: ListedRequest;
+  readonly view: VersionView;
+  readonly words: KnowledgeWords;
+}) {
+  return (
+    <RequestCard
+      request={request}
+      heading={words.t('knowledge.corrections.item', {
+        kind: request.item.kind,
+        title: itemTitle(view, request.item),
+      })}
+      answer={request.answer !== null && <AnswerEntry answer={request.answer} words={words} />}
+      reload={correctionRequestsQuery(view.routeId, view.number).queryKey}
+      words={words}
+    />
+  );
+}
+
+/**
+ * Maps a refused filing to what the form says: too many, a file not yet arrived, a file that
+ * differs, a correction already active, or any other failure.
+ */
+export function filingFailure(
+  error: unknown,
+): 'limited' | 'missing' | 'mismatch' | 'corrected' | 'failed' {
+  if (error instanceof ApiError && error.status === 429) return 'limited';
+  if (error instanceof ApiError && error.code === 'already_corrected') return 'corrected';
+  if (error instanceof ApiError && error.code === 'not_uploaded') return 'missing';
+  if (error instanceof ApiError && error.status === 409) return 'mismatch';
+  return 'failed';
 }
 
 /** The version's correction requests and their states (ADR-0029); nothing when it has none. */

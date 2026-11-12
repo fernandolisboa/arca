@@ -85,6 +85,7 @@ function correctsThrough(
  * A request's state (ADR-0029), from its events and the route's version identities and decision
  * states: closed by an admin, once the version an answer proposed is decided, or once any
  * correction of the request's version is active; else answered, taken or open, by its events.
+ * A request for a new route names no version, so only its answer or an admin closes it.
  */
 export function correctionState({
   versionNumber,
@@ -92,18 +93,25 @@ export function correctionState({
   identities,
   states,
 }: {
-  readonly versionNumber: number;
+  /** The request's version, or null for a request for a new route. */
+  readonly versionNumber: number | null;
   readonly events: readonly CorrectionEvent[];
-  /** Every version identity of the request's route. */
+  /**
+   * Every version identity of the request's route; for a new route, of the route its answer
+   * proposed a version on, if any.
+   */
   readonly identities: readonly VersionIdentity[];
   readonly states: DecisionStates;
 }): CorrectionState {
   if (events.some(({ kind }) => kind === 'closed')) return 'closed';
   const byNumber = new Map(identities.map((identity) => [identity.number, identity]));
-  const corrected = identities.some(
-    (identity) =>
-      correctsThrough(identity, versionNumber, byNumber) && stateOf(identity, states) === 'active',
-  );
+  const corrected =
+    versionNumber !== null &&
+    identities.some(
+      (identity) =>
+        correctsThrough(identity, versionNumber, byNumber) &&
+        stateOf(identity, states) === 'active',
+    );
   if (corrected) return 'closed';
   const answers = events.filter((event) => event.kind === 'answered');
   const decided = answers.some((answer) => {
@@ -134,7 +142,9 @@ export type CorrectionAnswerRefusal =
  * Checks an answer against the request's computed state and the route's served versions
  * (ADR-0029): `taken` moves an open request, the other answers a taken one; a proposed version
  * must be on the request's route, still proposed, and correct its version, directly or through a
- * chain, or come after it. A key never closes a request. Undefined when the answer stands.
+ * chain, or come after it. For a new route, the caller passes the proposed route's versions, and
+ * any of them still proposed stands. A key never closes a request. Undefined when the answer
+ * stands.
  */
 export function correctionAnswerRefusal({
   versionNumber,
@@ -143,7 +153,8 @@ export function correctionAnswerRefusal({
   identities,
   states,
 }: {
-  readonly versionNumber: number;
+  /** The request's version, or null for a request for a new route. */
+  readonly versionNumber: number | null;
   readonly state: CorrectionState;
   readonly answer: CorrectionAnswer;
   /** Every version identity of the request's route that this deployment serves. */
@@ -156,6 +167,7 @@ export function correctionAnswerRefusal({
   const proposed = byNumber.get(answer.number);
   if (proposed === undefined) return 'unknown_version';
   if (stateOf(proposed, states) !== 'proposed') return 'decided_version';
+  if (versionNumber === null) return undefined;
   return proposed.number > versionNumber || correctsThrough(proposed, versionNumber, byNumber)
     ? undefined
     : 'unrelated_version';

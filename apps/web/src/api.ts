@@ -125,6 +125,14 @@ export const correctionRequestsQuery = (routeId: string, number: number) =>
     retry: false,
   });
 
+/** Every request for a new route, and the countries one may name (ADR-0029, new routes). */
+export const routeRequestsQuery = queryOptions({
+  queryKey: ['knowledge', 'route-requests'],
+  queryFn: () => api.call(routes.listRouteRequests),
+  networkMode: 'always',
+  retry: false,
+});
+
 /** The live corrector key's dates, for an admin (ADR-0029). */
 export const correctorKeyQuery = queryOptions({
   queryKey: ['knowledge', 'corrector-key'],

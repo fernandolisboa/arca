@@ -260,7 +260,9 @@ class Check {
 
   /**
    * A host added to an existing issuer's list cites proof on a host of a list already on main. The
-   * first list for an issuer has no such host, so it goes in a pull request of its own.
+   * first list for an issuer has no such host, so it goes in a pull request of its own, and no
+   * host of it may vouch for itself or any host of the same list: its proof is a registry
+   * elsewhere (spec 0002, R6). A host with no dot, a bare top-level domain, is never a list's.
    */
   async #checkHostProofs(): Promise<void> {
     const { base, head } = this.#change;
@@ -285,6 +287,22 @@ class Check {
       if (!baseLists.some((other) => other.startsWith(issuerPrefix))) {
         if (official.length > 1) {
           this.#add(path, 'is the first list for its issuer, so it goes in a pull request alone');
+        }
+        const ownHosts = new Set(listed.map((entry) => entry.host));
+        for (const entry of listed) {
+          const proof = hostOf(entry.url);
+          if (isRegistrySuffix(entry.host)) {
+            this.#add(path, `lists ${entry.host}, a registry suffix, not a host`);
+          } else if (
+            proof === undefined ||
+            isOnHost(proof, ownHosts) ||
+            [...ownHosts].some((own) => isOnHost(own, new Set([proof])))
+          ) {
+            this.#add(
+              path,
+              `is a first list whose host ${entry.host} cites proof on ${proof ?? 'an unreadable URL'}, a host of the same list or its parent, not a registry`,
+            );
+          }
         }
         continue;
       }
@@ -452,6 +470,14 @@ function hostEntries(list: unknown): { host: string; url: string }[] | undefined
   });
   return entries.length === list['hosts'].length ? entries : undefined;
 }
+
+/**
+ * A suffix under which anyone may register, such as `gov.lt` or `com.br`, which would make every
+ * site under it official. Without a public-suffix dataset, the common second-level labels.
+ */
+const registrySuffix =
+  /^(?:[a-z]{2,63}|(?:com|net|org|co|gov|edu|ac|gob|go|or|ne|mil|nic)\.[a-z]{2})$/;
+const isRegistrySuffix = (host: string) => registrySuffix.test(host);
 
 /** The matching `@arca/domain`'s `hostMatches` applies: the host itself or a subdomain of it. */
 function isOnHost(host: string, hosts: ReadonlySet<string>): boolean {

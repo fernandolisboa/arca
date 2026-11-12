@@ -60,8 +60,10 @@ function setup(signedIn: string | null, limiter = noLimits.limiter) {
       view: (routeId, number) =>
         Promise.resolve(routeId === 'qm-sample' && number <= 2 ? view : undefined),
       identities: (routeId) => (routeId === 'qm-sample' ? identities : []),
+      officialHosts: (country) => (country === 'lt' ? ['example.gov'] : []),
     },
     states: () => Promise.resolve(states),
+    countries: ['QM', 'LT'],
     audit: auditLog(testDatabase.auditDb),
     notify: (accountId, kind) => {
       notices.push(`${accountId}:${kind}`);
@@ -115,8 +117,28 @@ function setup(signedIn: string | null, limiter = noLimits.limiter) {
       app.request(url, { method: 'PUT', body: new Uint8Array(bytes) }),
     get: (url: string) => app.request(url),
     fileUrl: (requestId: string, position: number) => post('/files/url', { requestId, position }),
+    fileRoute: (body: Record<string, unknown> = {}) =>
+      app.request('/v1/knowledge/route-requests', {
+        method: 'POST',
+        headers: { origin, 'content-type': 'application/json' },
+        body: JSON.stringify({ ...routeFiled, ...body }),
+      }),
+    listRoutes: () => app.request('/v1/knowledge/route-requests'),
   };
 }
+
+const routeFiled = {
+  countryCode: 'lt',
+  note: 'Autorização de residência temporária para trabalho.',
+  sources: [
+    { kind: 'link', url: 'https://example.gov/residence' },
+    {
+      kind: 'text',
+      text: 'A taxa é de 120 euros.',
+      url: 'https://example.gov/residence/fees',
+    },
+  ],
+};
 
 const pdf = new TextEncoder().encode('%PDF-1.7\nSynthetic official gazette page\n%%EOF\n');
 const sha256 = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('base64url');
@@ -571,6 +593,108 @@ async function objectsHeld(): Promise<number> {
   }
   return held;
 }
+
+describe('requests for a new route (ADR-0029)', () => {
+  const routeListed = async (signedIn: string) => {
+    const response = await setup(signedIn).listRoutes();
+    expect(response.status).toBe(200);
+    return (await response.json()) as {
+      canFile: boolean;
+      requests: { id: string; countryCode: string; sources: unknown[]; state: string }[];
+    };
+  };
+
+  it('files one with a copy of a page and passages with their pages, audits it and tells the owners', async () => {
+    const uploadId = await uploaded(pdf);
+    const pageUrl = 'https://example.gov/residence';
+    const response = await setup(owner).fileRoute({
+      sources: [...routeFiled.sources, { kind: 'file', uploadId, pageUrl }],
+    });
+    expect(response.status).toBe(200);
+    const { id } = (await response.json()) as { id: string };
+    expect(await routeListed(granted)).toEqual({
+      canFile: false,
+      countries: [
+        { code: 'lt', officialHosts: ['example.gov'] },
+        { code: 'qm', officialHosts: [] },
+      ],
+      requests: [
+        {
+          id,
+          countryCode: 'lt',
+          note: routeFiled.note,
+          createdAt: expect.any(String) as unknown,
+          sources: [
+            ...routeFiled.sources,
+            { kind: 'file', mediaType: 'application/pdf', size: pdf.length, pageUrl },
+          ],
+          state: 'open',
+          answer: null,
+        },
+      ],
+    });
+    expect((await routeListed(owner)).canFile).toBe(true);
+    expect((await setup(granted).fileUrl(id, 2)).status).toBe(200);
+    expect(notices).toEqual([`${owner}:correction_requested`]);
+    expect((await audited('correction_requested')).at(-1)).toEqual({
+      details: { requestId: id, countryCode: 'lt' },
+    });
+    expect((await listed(owner)).requests).toEqual([]);
+  });
+
+  it('takes up to twenty sources, more than a request on a version', async () => {
+    const text = (n: number) => ({ kind: 'text', text: `Trecho ${String(n)}.` });
+    const twenty = Array.from({ length: 20 }, (_, n) => text(n));
+    expect((await setup(owner).fileRoute({ sources: twenty })).status).toBe(200);
+    expect((await setup(owner).fileRoute({ sources: [...twenty, text(20)] })).status).toBe(400);
+    expect((await setup(owner).file({ sources: twenty.slice(0, 6) })).status).toBe(400);
+  });
+
+  it('answers 404 for a country the dataset lacks and 400 for no source', async () => {
+    expect((await setup(owner).fileRoute({ countryCode: 'zz' })).status).toBe(404);
+    expect((await setup(owner).fileRoute({ sources: [] })).status).toBe(400);
+    expect((await routeListed(owner)).requests).toEqual([]);
+  });
+
+  it('lets only an owner-list admin file, and only an admin read', async () => {
+    expect((await setup(granted).fileRoute()).status).toBe(403);
+    expect((await setup(member).fileRoute()).status).toBe(403);
+    expect((await setup(member).listRoutes()).status).toBe(403);
+    expect((await setup(null).listRoutes()).status).toBe(401);
+  });
+
+  it('closes like any request', async () => {
+    const response = await setup(owner).fileRoute();
+    const { id } = (await response.json()) as { id: string };
+    expect((await setup(granted).close(id)).status).toBe(200);
+    expect((await routeListed(owner)).requests.map(({ state }) => state)).toEqual(['closed']);
+  });
+
+  it('exports the country with the author’s own request', async () => {
+    await setup(owner).fileRoute();
+    const rows = await withIdentity(
+      testDatabase.apiDb,
+      { accountId: owner },
+      async (tx) =>
+        (
+          await tx.execute<{ row: Record<string, unknown> }>(
+            sql`SELECT row FROM knowledge.own_correction_request_rows('knowledge.correction_request') row`,
+          )
+        ).rows,
+    );
+    expect(rows.map(({ row }) => [row['country_code'], row['route_id'], row['item_kind']])).toEqual(
+      [['lt', null, 'newRoute']],
+    );
+  });
+
+  it('refuse filing on a grant basis in the database', async () => {
+    await expect(
+      withIdentity(testDatabase.apiDb, { accountId: granted }, (tx) =>
+        tx.execute(sql`SELECT knowledge.file_route_request('lt', 'x', '[]'::jsonb, 'grant')`),
+      ),
+    ).rejects.toMatchObject({ cause: { code: '42501' } });
+  });
+});
 
 describe('the retention of request contents (ADR-0029)', () => {
   const days = (count: number) => new Date(Date.now() + count * 86_400_000);

@@ -1077,6 +1077,57 @@ export const ptBR = {
       answerVersion: 'A sessão de correção propôs a versão {number}.',
       openVersion: 'Abrir a versão {number}',
       answerNoChange: 'A sessão de correção não mudou a regra:',
+      copiedFrom: 'Copiado de',
+    },
+    /** "Pedido de regra nova" (ADR-0029, new routes), for owner-list admins. */
+    routeRequests: {
+      title: 'Regras novas',
+      lead: 'Falta uma regra porque o site oficial não deixa a IA ler? Monte o pedido aqui com as páginas salvas em PDF. A sessão de correção escreve a regra a partir delas, e ela chega para você ativar.',
+      open: 'Pedir regra nova',
+      formTitle: 'Pedido de regra nova',
+      stepCount: 'Passo {n} de {total}',
+      stepTitle:
+        '{step, select, route {Qual regra falta} pages {Páginas oficiais} passages {Trechos que importam} other {Revisar e enviar}}',
+      routeLead:
+        'Diga o país e qual visto ou autorização você quer, com o nome que o site oficial usa.',
+      country: 'País',
+      pickCountry: 'Escolha o país',
+      note: 'Qual regra falta, e para quem?',
+      pagesLead:
+        'Abra cada página oficial que fala dessa regra sem entrar em nenhuma conta. Salve como PDF (Imprimir › Salvar como PDF) e anexe aqui com o endereço da página.',
+      knownHosts: 'Sites oficiais que o Arca já conhece para {country}: {hosts}.',
+      noKnownHosts:
+        'O Arca ainda não tem a lista de sites oficiais de {country}. Use só páginas de órgãos do governo.',
+      pageAddress: 'Endereço da página',
+      attachCopy: 'Anexar o PDF da página',
+      removePage: 'Remover página',
+      addPage: '{first, select, true {Adicionar uma página} other {Adicionar outra página}}',
+      copyHint:
+        'PDF, HTML ou texto de até 16 MB, salvo do site oficial. Nunca um documento pessoal.',
+      passagesLead:
+        'Cole os trechos que tratam de cada regra. Assim a sessão acha o ponto certo no PDF. Pule o que não se aplica.',
+      topic:
+        '{topic, select, requirements {Requisitos} amounts {Valores} deadlines {Prazos} other {Dependentes}}',
+      topicHint:
+        '{topic, select, requirements {Quem pode pedir e o que precisa comprovar.} amounts {Taxas, renda mínima, investimento, seguro.} deadlines {Validade, tempo de análise, renovação.} other {Quem pode ir junto: cônjuge, filhos, pais.}}',
+      passage: 'Trecho colado',
+      passagePage: 'De qual página?',
+      noPage: 'Não sei ou é de outra página',
+      addPassage: 'Colar um trecho',
+      removePassage: 'Remover trecho',
+      reviewCountry: 'Regra nova para {country}:',
+      reviewCounts:
+        '{pages, plural, one {# página} other {# páginas}} ({copies, plural, =0 {nenhuma em PDF} other {# em PDF}}) e {passages, plural, =0 {nenhum trecho} one {# trecho} other {# trechos}}.',
+      reviewNext:
+        'A sessão de correção pega o pedido na próxima manhã. Nada muda para a família até você ativar a regra.',
+      next: 'Continuar',
+      back: 'Voltar',
+      sent: 'Pedido enviado. A sessão de correção pega o pedido amanhã de manhã.',
+      sendFailure: 'Não deu para enviar o pedido agora. Confira os endereços e tente de novo.',
+      loadFailure: 'Não deu para carregar os pedidos de regra nova agora.',
+      answerRoute: 'A sessão de correção escreveu a regra. Ela espera a sua ativação.',
+      openRoute: 'Abrir a versão proposta',
+      answerNoRoute: 'A sessão de correção não escreveu a regra:',
     },
     /** The corrector key in settings (ADR-0029), for owner-list admins. */
     correctorKey: {

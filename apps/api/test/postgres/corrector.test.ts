@@ -43,6 +43,8 @@ const identity = (number: number, corrects?: number): VersionIdentity => ({
 });
 /** v1; v2 corrects v1; v3 follows; v4 corrects v3. */
 const identities = [identity(1), identity(2, 1), identity(3), identity(4, 3)];
+/** A route a corrector run wrote from a request for a new route in the same country. */
+const newRoute = { ...identity(1), routeId: 'qm-new' };
 
 interface Options {
   readonly signedIn?: Person | null;
@@ -54,7 +56,9 @@ function setup({ signedIn = owner, limiter = noLimits.limiter, ownerList }: Opti
   const role = adminRole(() => testDatabase.apiDb, ownerList ?? [owner.signedIn.accountId]);
   const versions = {
     view: () => Promise.resolve(undefined),
-    identities: (routeId: string) => (routeId === 'qm-sample' ? identities : []),
+    identities: (routeId: string) =>
+      routeId === 'qm-sample' ? identities : routeId === 'qm-new' ? [newRoute] : [],
+    officialHosts: () => [],
   };
   const { keys, corrector } = createCorrector({
     db: () => testDatabase.apiDb,
@@ -75,6 +79,7 @@ function setup({ signedIn = owner, limiter = noLimits.limiter, ownerList }: Opti
     role,
     versions,
     states: () => Promise.resolve(states),
+    countries: ['QM', 'LT'],
     audit: auditLog(testDatabase.auditDb),
     notify: () => Promise.resolve(),
     storage: objects,
@@ -132,6 +137,7 @@ function setup({ signedIn = owner, limiter = noLimits.limiter, ownerList }: Opti
       }),
     listAdmin: (number = 1) =>
       app.request(`/v1/knowledge/corrections?routeId=qm-sample&number=${String(number)}`),
+    listRouteRequests: () => app.request('/v1/knowledge/route-requests'),
   };
 }
 
@@ -189,6 +195,24 @@ async function filed(minutesAgo = 0, version = 1): Promise<string> {
     await client.query(
       `INSERT INTO knowledge.correction_source (request_id, position, kind, upload_id) VALUES ($1, 1, 'file', $2)`,
       [id, uploadId],
+    );
+  });
+  return id;
+}
+
+/** A request for a new route in country `qm`, filed by the owner, with a passage and its page. */
+async function filedNewRoute(): Promise<string> {
+  const id = randomUUID();
+  await testDatabase.asAdmin(async (client) => {
+    await client.query(
+      `INSERT INTO knowledge.correction_request (id, country_code, item_kind, note, author_account_id)
+       VALUES ($1, 'qm', 'newRoute', 'Visto de trabalho temporário.', $2)`,
+      [id, owner.signedIn.accountId],
+    );
+    await client.query(
+      `INSERT INTO knowledge.correction_source (request_id, position, kind, text, url)
+       VALUES ($1, 0, 'text', 'A taxa é de 120 euros.', 'https://example.gov/fees')`,
+      [id],
     );
   });
   return id;
@@ -568,6 +592,75 @@ describe('the corrector routes (ADR-0029)', () => {
     expect(admin.requests[0]?.state).toBe('closed');
   });
 
+  it('list a request for a new route with its country, and take a version on a route of that country', async () => {
+    const key = await newKey();
+    const id = await filedNewRoute();
+    const routes = setup();
+    const { requests } = (await (await routes.listRequests(key)).json()) as {
+      requests: unknown[];
+    };
+    expect(requests).toEqual([
+      {
+        id,
+        routeId: null,
+        versionNumber: null,
+        item: null,
+        countryCode: 'qm',
+        note: 'Visto de trabalho temporário.',
+        createdAt: expect.any(String) as unknown,
+        sources: [
+          { kind: 'text', text: 'A taxa é de 120 euros.', url: 'https://example.gov/fees' },
+        ],
+        state: 'open',
+      },
+    ]);
+    expect((await routes.answer(key, id, { kind: 'taken' })).status).toBe(200);
+    for (const refused of [
+      { kind: 'version_proposed', number: 1 },
+      { kind: 'version_proposed', number: 1, routeId: 'xx-new' },
+      { kind: 'version_proposed', number: 2, routeId: 'qm-new' },
+      { kind: 'version_proposed', number: 1, routeId: 'qm-missing' },
+    ]) {
+      const response = await routes.answer(key, id, refused);
+      expect(response.status).toBe(409);
+      expect(await response.json()).toMatchObject({ error: { code: 'invalid_version' } });
+    }
+    expect(
+      (await routes.answer(key, id, { kind: 'version_proposed', number: 1, routeId: 'qm-new' }))
+        .status,
+    ).toBe(200);
+    const listedRoutes = async () =>
+      ((await (await routes.listRouteRequests()).json()) as { requests: unknown[] }).requests;
+    expect(await listedRoutes()).toMatchObject([
+      { id, state: 'answered', answer: { kind: 'version_proposed', routeId: 'qm-new', number: 1 } },
+    ]);
+    states = new Map([[identityKey(newRoute), 'active']]);
+    expect(await listedRoutes()).toMatchObject([{ id, state: 'closed' }]);
+  });
+
+  it('refuse a route on an answer to a request on a version, unless it is the request’s own', async () => {
+    const key = await newKey();
+    const id = await filed();
+    const routes = setup();
+    await routes.answer(key, id, { kind: 'taken' });
+    const other = { kind: 'version_proposed', number: 1, routeId: 'qm-new' };
+    expect((await routes.answer(key, id, other)).status).toBe(409);
+    const own = { kind: 'version_proposed', number: 2, routeId: 'qm-sample' };
+    expect((await routes.answer(key, id, own)).status).toBe(200);
+  });
+
+  it('answer a request for a new route that nothing changed', async () => {
+    const key = await newKey();
+    const id = await filedNewRoute();
+    const routes = setup();
+    await routes.answer(key, id, { kind: 'taken' });
+    const answer = { kind: 'no_change', explanation: 'O site oficial não traz a taxa.' };
+    expect((await routes.answer(key, id, answer)).status).toBe(200);
+    expect(
+      ((await (await routes.listRouteRequests()).json()) as { requests: unknown[] }).requests,
+    ).toMatchObject([{ id, state: 'answered', answer }]);
+  });
+
   it('show an answer that nothing changed as its explanation', async () => {
     const key = await newKey();
     await filed();
@@ -645,6 +738,8 @@ describe('the corrector routes (ADR-0029)', () => {
       'SELECT * FROM knowledge.corrector_request_list($1, $2)',
       `SELECT knowledge.corrector_file($1, $2, '${id}', 1)`,
       `SELECT knowledge.answer_correction_request($1, $2, '${id}', 'taken', NULL, NULL)`,
+      'SELECT * FROM knowledge.corrector_request_queue($1, $2)',
+      `SELECT knowledge.answer_new_route_request($1, $2, '${id}', 'qm-new', 1)`,
     ]) {
       await expect(
         testDatabase.asAdmin(async (client) => {
@@ -657,6 +752,38 @@ describe('the corrector routes (ADR-0029)', () => {
           }
         }),
       ).rejects.toThrow(/live corrector key/);
+    }
+  });
+
+  it('let the database refuse a new route in another country or past version 1', async () => {
+    const key = await newKey();
+    const id = await filedNewRoute();
+    await setup().answer(key, id, { kind: 'taken' });
+    const keyId = await testDatabase.asAdmin(
+      async (client) =>
+        (await client.query<{ id: string }>('SELECT id FROM knowledge.corrector_key')).rows[0]?.id,
+    );
+    const digest = createHash('sha256').update(key, 'utf8').digest();
+    for (const [route, version, expected] of [
+      ['xx-new', 1, 'refused'],
+      ['qm-new', 2, 'refused'],
+      ['qm-new', 1, 'stored'],
+    ] as const) {
+      const outcome = await testDatabase.asAdmin(async (client) => {
+        await client.query('BEGIN');
+        try {
+          await client.query('SET LOCAL ROLE app_api');
+          return (
+            await client.query<{ outcome: string }>(
+              'SELECT knowledge.answer_new_route_request($1, $2, $3, $4, $5) AS outcome',
+              [keyId, digest, id, route, version],
+            )
+          ).rows[0]?.outcome;
+        } finally {
+          await client.query('ROLLBACK');
+        }
+      });
+      expect(outcome).toBe(expected);
     }
   });
 

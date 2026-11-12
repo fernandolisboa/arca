@@ -465,6 +465,8 @@ export const closeRuleReports = {
 export const correctionLimits = {
   note: 4_000,
   sources: 5,
+  /** A request for a new route carries its pages and their passages, so it takes more. */
+  routeSources: 20,
   text: 20_000,
   url: 2_048,
   fileBytes: 16 * 1024 * 1024,
@@ -501,6 +503,8 @@ const pageUrl = httpsUrl.nullable();
 const TextSource = z.strictObject({
   kind: z.literal('text'),
   text: z.string().trim().min(1).max(correctionLimits.text),
+  /** The page the text was copied from, if the admin named one. */
+  url: httpsUrl.optional(),
 });
 
 /**
@@ -527,6 +531,11 @@ export const ListedCorrectionSource = z.discriminatedUnion('kind', [
 ]);
 export type ListedCorrectionSource = z.infer<typeof ListedCorrectionSource>;
 
+const namesEachUploadOnce = ({ sources }: { sources: readonly CorrectionSource[] }) => {
+  const uploads = sources.flatMap((source) => (source.kind === 'file' ? [source.uploadId] : []));
+  return new Set(uploads).size === uploads.length;
+};
+
 export const FileCorrectionRequest = z
   .strictObject({
     routeId: routeIdSchema,
@@ -535,15 +544,7 @@ export const FileCorrectionRequest = z
     note: z.string().trim().min(1).max(correctionLimits.note),
     sources: z.array(CorrectionSource).max(correctionLimits.sources),
   })
-  .refine(
-    ({ sources }) => {
-      const uploads = sources.flatMap((source) =>
-        source.kind === 'file' ? [source.uploadId] : [],
-      );
-      return new Set(uploads).size === uploads.length;
-    },
-    { message: 'A request names each upload once' },
-  );
+  .refine(namesEachUploadOnce, { message: 'A request names each upload once' });
 export type FileCorrectionRequest = z.infer<typeof FileCorrectionRequest>;
 
 export const FileCorrectionResponse = z.object({ id: z.uuid() });
@@ -593,6 +594,78 @@ export const listCorrectionRequests = {
   response: { description: 'The requests', schema: CorrectionRequests },
 } as const satisfies RouteDefinition<typeof CorrectionRequests>;
 
+/** A country as a request for a new route names it: its lower-case ISO 3166-1 alpha-2 code. */
+const requestCountryCode = z.string().regex(/^[a-z]{2}$/);
+
+/**
+ * A request for a new route (ADR-0029, new routes): the country, what route the admin asks for
+ * and why, and the official pages as files with their addresses, plus the passages that carry
+ * each rule, pasted with the page they came from.
+ */
+export const FileRouteRequest = z
+  .strictObject({
+    countryCode: requestCountryCode,
+    note: z.string().trim().min(1).max(correctionLimits.note),
+    sources: z.array(CorrectionSource).min(1).max(correctionLimits.routeSources),
+  })
+  .refine(namesEachUploadOnce, { message: 'A request names each upload once' });
+export type FileRouteRequest = z.infer<typeof FileRouteRequest>;
+
+export const fileRouteRequest = {
+  method: 'post',
+  path: '/knowledge/route-requests',
+  operationId: 'fileRouteRequest',
+  summary:
+    'Files a request for a route the catalog lacks in one country, for an owner-list admin, with up to 20 sources; the same rate limit, uploads and checks as fileCorrectionRequest, except that a file may name any https page it copies. 403 not_admin; 403 owner_list_only; 404 not_found for a country the dataset lacks or an upload it does not hold; 409 not_uploaded; 409 upload_mismatch',
+  body: FileRouteRequest,
+  response: { description: 'Filed', schema: FileCorrectionResponse },
+} as const satisfies RouteDefinition<typeof FileCorrectionResponse>;
+
+export const RouteRequests = z.object({
+  /** Whether the viewer may file a request: an owner-list admin. */
+  canFile: z.boolean(),
+  /**
+   * The countries a request may name, each with the hosts of its newest official-domain list,
+   * none when the catalog has no list for it yet.
+   */
+  countries: z.array(
+    z.object({ code: requestCountryCode, officialHosts: z.array(z.string().max(253)) }),
+  ),
+  /** Every request for a new route, newest first. */
+  requests: z.array(
+    z.object({
+      id: z.uuid(),
+      countryCode: requestCountryCode,
+      /** Null once the request's contents were erased (ADR-0029, retention); its sources go too. */
+      note: z.string().nullable(),
+      createdAt: z.iso.datetime({ offset: true }),
+      sources: z.array(ListedCorrectionSource),
+      state: z.enum(correctionStates),
+      /** The corrector run's answer, once it gave one. */
+      answer: z
+        .discriminatedUnion('kind', [
+          z.object({
+            kind: z.literal('version_proposed'),
+            routeId: routeIdSchema,
+            number: z.int().min(1),
+          }),
+          z.object({ kind: z.literal('no_change'), explanation: z.string() }),
+        ])
+        .nullable(),
+    }),
+  ),
+});
+export type RouteRequests = z.infer<typeof RouteRequests>;
+
+export const listRouteRequests = {
+  method: 'get',
+  path: '/knowledge/route-requests',
+  operationId: 'listRouteRequests',
+  summary:
+    'Every request for a new route with its sources and state, newest first, for an admin. 403 not_admin',
+  response: { description: 'The requests', schema: RouteRequests },
+} as const satisfies RouteDefinition<typeof RouteRequests>;
+
 export const StartCorrectionUpload = z.strictObject({
   mediaType: z.enum(correctionFileTypes),
   size: z.int().min(1).max(correctionLimits.fileBytes),
@@ -633,7 +706,7 @@ export const CorrectionFileReference = z.strictObject({
   position: z
     .int()
     .min(0)
-    .max(correctionLimits.sources - 1),
+    .max(correctionLimits.routeSources - 1),
 });
 export type CorrectionFileReference = z.infer<typeof CorrectionFileReference>;
 
@@ -740,9 +813,13 @@ export const CorrectorRequests = z.object({
   requests: z.array(
     z.object({
       id: z.uuid(),
-      routeId: routeIdSchema,
-      versionNumber: z.int().min(1),
-      item: CorrectionItem,
+      /** The version's route and number, or null for a request for a new route. */
+      routeId: routeIdSchema.nullable(),
+      versionNumber: z.int().min(1).nullable(),
+      /** The item of the version, or null for a request for a new route. */
+      item: CorrectionItem.nullable(),
+      /** The country a request for a new route names, or null for one on a version. */
+      countryCode: requestCountryCode.nullable(),
       /** Null once the request's contents were erased; its sources go too. */
       note: z.string().nullable(),
       createdAt: z.iso.datetime({ offset: true }),
@@ -776,7 +853,12 @@ export const correctorFileUrl = {
 
 export const CorrectionAnswer = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('taken') }),
-  z.strictObject({ kind: z.literal('version_proposed'), number: z.int().min(1).max(1_000_000) }),
+  z.strictObject({
+    kind: z.literal('version_proposed'),
+    number: z.int().min(1).max(1_000_000),
+    /** The new route the version is on; required for a request for a new route, else omitted. */
+    routeId: routeIdSchema.optional(),
+  }),
   z.strictObject({
     kind: z.literal('no_change'),
     explanation: z.string().trim().min(1).max(maxCorrectionExplanation),
@@ -794,7 +876,7 @@ export const answerCorrectionRequest = {
   method: 'post',
   path: '/corrector/requests/answer',
   operationId: 'answerCorrectionRequest',
-  summary: `Marks an open request taken, or answers a taken one with the version proposed or why nothing changed; a key never closes a request. ${correctorAuth}; 100 per 24 hours per key; 404 not_found; 409 wrong_state; 409 invalid_version for a version this deployment does not serve on the request's route, one already active or rejected, or one that neither corrects nor follows the request's version`,
+  summary: `Marks an open request taken, or answers a taken one with the version proposed or why nothing changed; a key never closes a request. ${correctorAuth}; 100 per 24 hours per key; 404 not_found; 409 wrong_state; 409 invalid_version for a version this deployment does not serve on the request's route, one already active or rejected, or one that neither corrects nor follows the request's version; for a request for a new route, a version_proposed names its route, which must be in the request's country`,
   body: AnswerCorrectionRequest,
   response: { description: 'Answered', schema: z.object({}) },
 } as const satisfies RouteDefinition;
@@ -1068,6 +1150,8 @@ export const knowledgeRoutes = {
   closeRuleReports,
   fileCorrectionRequest,
   listCorrectionRequests,
+  fileRouteRequest,
+  listRouteRequests,
   closeCorrectionRequest,
   startCorrectionUpload,
   correctionUploadUrl,

@@ -34,6 +34,8 @@ export interface DisplayCatalog {
    * (ADR-0027), or undefined when the catalog lacks one of them.
    */
   readonly officialHosts: (pins: readonly Pin[]) => readonly string[] | undefined;
+  /** The hosts of the newest official-domain list with this ID, none when there is no such list. */
+  readonly newestOfficialHosts: (id: string) => readonly string[];
 }
 
 const caseDataSchema = z.array(
@@ -61,11 +63,14 @@ export function createDisplayCatalog(
   const allComparisons = [...comparisons.values()];
   const byHash = new Map(caseDataSchema.parse(cases).map((entry) => [entry.hash, entry.cases]));
   const byUrl = new Map(Object.entries(hostDataSchema.parse(hosts)));
+  const parsedLists = officialDomainDataSchema.parse(officialDomains);
   const lists = new Map(
-    officialDomainDataSchema
-      .parse(officialDomains)
-      .map((list) => [`${list.id}/${String(list.number)}`, list.hosts]),
+    parsedLists.map((list) => [`${list.id}/${String(list.number)}`, list.hosts]),
   );
+  const newest = new Map<string, { number: number; hosts: readonly string[] }>();
+  for (const { id, number, hosts } of parsedLists) {
+    if ((newest.get(id)?.number ?? 0) < number) newest.set(id, { number, hosts });
+  }
   return {
     entries: () => all,
     comparisons: () => allComparisons,
@@ -81,6 +86,7 @@ export function createDisplayCatalog(
       }
       return hosts;
     },
+    newestOfficialHosts: (id) => newest.get(id)?.hosts ?? [],
   };
 }
 

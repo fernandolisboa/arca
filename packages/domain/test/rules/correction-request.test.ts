@@ -33,7 +33,13 @@ const answered = (proposedVersion: number | null): CorrectionEvent => ({
 
 describe('correctionState', () => {
   it.each<
-    [string, number, readonly CorrectionEvent[], Record<number, DecisionState>, CorrectionState]
+    [
+      string,
+      number | null,
+      readonly CorrectionEvent[],
+      Record<number, DecisionState>,
+      CorrectionState,
+    ]
   >([
     ['a new request', 1, [], {}, 'open'],
     ['a taken request', 1, [taken], {}, 'taken'],
@@ -50,6 +56,12 @@ describe('correctionState', () => {
     ['a later version that corrects nothing activated', 1, [], { 4: 'active' }, 'open'],
     ['the request version itself activated', 2, [], { 2: 'active' }, 'open'],
     ['a correction of an older version activated', 2, [], { 2: 'active', 1: 'active' }, 'open'],
+    ['a new-route request', null, [], {}, 'open'],
+    ['a new-route request taken', null, [taken], {}, 'taken'],
+    ['a new-route request with a version proposed', null, [taken, answered(1)], {}, 'answered'],
+    ['a new-route request whose version is active', null, [answered(1)], { 1: 'active' }, 'closed'],
+    ['a new-route request with any version active', null, [taken], { 2: 'active' }, 'taken'],
+    ['a new-route request closed by an admin', null, [closed], {}, 'closed'],
   ])('is right for %s', (_label, versionNumber, events, decided, expected) => {
     const states = new Map(
       Object.entries(decided).map(([number, state]) => {
@@ -74,27 +86,30 @@ describe('correctionAnswerRefusal', () => {
   const noChange: CorrectionAnswer = { kind: 'no_change', explanation: 'Nada mudou.' };
   const take: CorrectionAnswer = { kind: 'taken' };
 
-  it.each<[string, number, CorrectionState, CorrectionAnswer, CorrectionAnswerRefusal | undefined]>(
-    [
-      ['taking an open request', 1, 'open', take, undefined],
-      ['taking a taken request', 1, 'taken', take, 'wrong_state'],
-      ['taking an answered request', 1, 'answered', take, 'wrong_state'],
-      ['taking a closed request', 1, 'closed', take, 'wrong_state'],
-      ['no change on a taken request', 1, 'taken', noChange, undefined],
-      ['no change on an open request', 1, 'open', noChange, 'wrong_state'],
-      ['no change on an answered request', 1, 'answered', noChange, 'wrong_state'],
-      ['a direct correction', 1, 'taken', proposing(2), undefined],
-      ['a correction of a correction', 1, 'taken', proposing(3), undefined],
-      ['a later version', 1, 'taken', proposing(4), undefined],
-      ['a later version that corrects another', 2, 'taken', proposing(3), undefined],
-      ['a version on an open request', 1, 'open', proposing(2), 'wrong_state'],
-      ['a version on a closed request', 1, 'closed', proposing(2), 'wrong_state'],
-      ['a version the route does not serve', 1, 'taken', proposing(9), 'unknown_version'],
-      ['the request version itself', 2, 'taken', proposing(2), 'unrelated_version'],
-      ['an older version', 3, 'taken', proposing(1), 'unrelated_version'],
-      ['an older version that corrects another', 4, 'taken', proposing(2), 'unrelated_version'],
-    ],
-  )('is right for %s', (_label, versionNumber, state, answer, expected) => {
+  it.each<
+    [string, number | null, CorrectionState, CorrectionAnswer, CorrectionAnswerRefusal | undefined]
+  >([
+    ['taking an open request', 1, 'open', take, undefined],
+    ['taking a taken request', 1, 'taken', take, 'wrong_state'],
+    ['taking an answered request', 1, 'answered', take, 'wrong_state'],
+    ['taking a closed request', 1, 'closed', take, 'wrong_state'],
+    ['no change on a taken request', 1, 'taken', noChange, undefined],
+    ['no change on an open request', 1, 'open', noChange, 'wrong_state'],
+    ['no change on an answered request', 1, 'answered', noChange, 'wrong_state'],
+    ['a direct correction', 1, 'taken', proposing(2), undefined],
+    ['a correction of a correction', 1, 'taken', proposing(3), undefined],
+    ['a later version', 1, 'taken', proposing(4), undefined],
+    ['a later version that corrects another', 2, 'taken', proposing(3), undefined],
+    ['a version on an open request', 1, 'open', proposing(2), 'wrong_state'],
+    ['a version on a closed request', 1, 'closed', proposing(2), 'wrong_state'],
+    ['a version the route does not serve', 1, 'taken', proposing(9), 'unknown_version'],
+    ['the request version itself', 2, 'taken', proposing(2), 'unrelated_version'],
+    ['an older version', 3, 'taken', proposing(1), 'unrelated_version'],
+    ['an older version that corrects another', 4, 'taken', proposing(2), 'unrelated_version'],
+    ['a new route: any proposed version', null, 'taken', proposing(1), undefined],
+    ['a new route: a version it does not serve', null, 'taken', proposing(9), 'unknown_version'],
+    ['a new route: on an open request', null, 'open', proposing(1), 'wrong_state'],
+  ])('is right for %s', (_label, versionNumber, state, answer, expected) => {
     expect(
       correctionAnswerRefusal({
         versionNumber,

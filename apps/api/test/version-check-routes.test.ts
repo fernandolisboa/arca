@@ -114,6 +114,7 @@ function setup({
     // Only the disabled check's read route asks; it needs to know the version exists.
     view: (_, number) => Promise.resolve(number <= count ? ({} as VersionView) : undefined),
     identities: () => [],
+    officialHosts: () => [],
     comparisons: () => Promise.resolve([]),
     comparisonView: () => Promise.resolve(undefined),
   };

@@ -31,6 +31,7 @@ export function caseCatalog({ entry }: CheckCase): CaseCatalog {
     cases: () => [],
     hostOf: (url) => new URL(url).hostname,
     officialHosts: (pins) => (pins.every(({ id }) => id === 'qm') ? officialHosts : undefined),
+    newestOfficialHosts: () => [],
   };
 }
 

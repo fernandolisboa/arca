@@ -30,7 +30,7 @@ export const paths = {
 
 export type Answer =
   | { readonly kind: 'taken' }
-  | { readonly kind: 'version_proposed'; readonly number: number }
+  | { readonly kind: 'version_proposed'; readonly number: number; readonly routeId?: string }
   | { readonly kind: 'no_change'; readonly explanation: string };
 
 export type AnswerOutcome = 'stored' | 'not_found' | 'wrong_state' | 'invalid_version';
@@ -152,22 +152,30 @@ export interface ProposeOptions {
   readonly attempts?: number;
   readonly waitMs?: number;
   readonly wait?: (ms: number) => Promise<unknown>;
+  /** The new route the version is on, for a request for a new route. */
+  readonly routeId?: string | undefined;
 }
 
 /**
  * Proposes a version, asking again while production still refuses it as `invalid_version`: the
- * merge has not deployed yet. After ten minutes of waiting, that answer stands.
+ * merge has not deployed yet. After ten minutes of waiting, that answer stands. A request for a
+ * new route also names the route the version is on.
  */
 export async function propose(
   client: CorrectorClient,
   requestId: string,
   number: number,
-  { attempts = 11, waitMs = 60_000, wait = sleep }: ProposeOptions = {},
+  { attempts = 11, waitMs = 60_000, wait = sleep, routeId }: ProposeOptions = {},
 ): Promise<AnswerOutcome> {
-  let outcome = await client.answer(requestId, { kind: 'version_proposed', number });
+  const answer: Answer = {
+    kind: 'version_proposed',
+    number,
+    ...(routeId === undefined ? {} : { routeId }),
+  };
+  let outcome = await client.answer(requestId, answer);
   for (let attempt = 1; attempt < attempts && outcome === 'invalid_version'; attempt += 1) {
     await wait(waitMs);
-    outcome = await client.answer(requestId, { kind: 'version_proposed', number });
+    outcome = await client.answer(requestId, answer);
   }
   return outcome;
 }
@@ -177,7 +185,7 @@ const usage = [
   '  pnpm corrector list',
   '  pnpm corrector file <request-id> <position> <new-file>',
   '  pnpm corrector take <request-id>',
-  '  pnpm corrector propose <request-id> <version-number>',
+  '  pnpm corrector propose <request-id> <version-number> [<new-route-id>]',
   '  pnpm corrector no-change <request-id> <explanation-file>',
 ].join('\n');
 
@@ -185,6 +193,13 @@ const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{1
 
 function requestIdOf(text: string | undefined): string {
   if (text === undefined || !uuidPattern.test(text)) throw new CorrectorError(usage);
+  return text;
+}
+
+function routeIdOf(text: string | undefined): string | undefined {
+  if (text !== undefined && !/^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$/.test(text)) {
+    throw new CorrectorError(usage);
+  }
   return text;
 }
 
@@ -221,7 +236,11 @@ export async function run(
     case 'take':
       return answered(await client().answer(requestIdOf(first), { kind: 'taken' }));
     case 'propose':
-      return answered(await propose(client(), requestIdOf(first), wholeNumber(second, 1)));
+      return answered(
+        await propose(client(), requestIdOf(first), wholeNumber(second, 1), {
+          routeId: routeIdOf(third),
+        }),
+      );
     case 'no-change': {
       const requestId = requestIdOf(first);
       if (second === undefined) throw new CorrectorError(usage);

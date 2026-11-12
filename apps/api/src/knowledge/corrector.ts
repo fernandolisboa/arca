@@ -15,6 +15,7 @@ import {
   type DecisionStates,
   correctionAnswerRefusal,
   correctionState,
+  routeCountry,
 } from '@arca/domain';
 import { sql } from 'drizzle-orm';
 import type { AccountNotice } from '../auth/account-notices.js';
@@ -96,11 +97,13 @@ interface LiveKey extends Record<string, unknown> {
   created_at: string | Date;
 }
 
+/** A request as `corrector_request_queue` serves it: on a version, or for a new route. */
 interface StoredRequest extends Record<string, unknown> {
   id: string;
-  route_id: string;
-  version_number: number;
-  item_kind: CorrectionItemKind;
+  route_id: string | null;
+  version_number: number | null;
+  country_code: string | null;
+  item_kind: CorrectionItemKind | 'newRoute';
   item_key: string | null;
   note: string | null;
   created_at: string | Date;
@@ -160,14 +163,14 @@ export function createCorrector({
   const workable = async (key: PresentedKey): Promise<WorkableRequest[]> => {
     const [{ rows }, decided] = await Promise.all([
       db().execute<StoredRequest>(sql`
-        SELECT * FROM knowledge.corrector_request_list(${key.id}::uuid, ${key.digest})`),
+        SELECT * FROM knowledge.corrector_request_queue(${key.id}::uuid, ${key.digest})`),
       states(),
     ]);
     return rows.flatMap((row) => {
       const state = correctionState({
         versionNumber: row.version_number,
         events: row.events,
-        identities: versions.identities(row.route_id),
+        identities: row.route_id === null ? [] : versions.identities(row.route_id),
         states: decided,
       });
       if (state !== 'open' && state !== 'taken') return [];
@@ -176,7 +179,8 @@ export function createCorrector({
           id: row.id,
           routeId: row.route_id,
           versionNumber: row.version_number,
-          item: { kind: row.item_kind, key: row.item_key },
+          item: row.item_kind === 'newRoute' ? null : { kind: row.item_kind, key: row.item_key },
+          countryCode: row.country_code,
           note: row.note,
           createdAt: new Date(row.created_at).toISOString(),
           sources: row.sources,
@@ -333,6 +337,28 @@ export function createCorrector({
     },
   };
 
+  /**
+   * The route whose versions an answer is checked against: the request's own; for a request for a
+   * new route, the route a proposed version names, which must be in the request's country, or
+   * null when nothing is proposed. Undefined for a route the answer may not name.
+   */
+  function proposedRouteOf(
+    request: WorkableRequest,
+    answer: CorrectionAnswer,
+  ): string | null | undefined {
+    const named = answer.kind === 'version_proposed' ? answer.routeId : undefined;
+    if (request.routeId !== null) {
+      return named === undefined || named === request.routeId ? request.routeId : undefined;
+    }
+    if (answer.kind !== 'version_proposed') return null;
+    const isFirstVersion = answer.number === 1;
+    return isFirstVersion &&
+      named !== undefined &&
+      routeCountry(named) === request.countryCode?.toUpperCase()
+      ? named
+      : undefined;
+  }
+
   /** Stores an answer the request's state and the catalog allow; audited inside its transaction. */
   async function answerOnce(
     key: PresentedKey,
@@ -342,21 +368,29 @@ export function createCorrector({
     const [listed, decided] = await Promise.all([workable(key), states()]);
     const request = listed.find(({ id }) => id === requestId);
     if (request === undefined) return 'not_found';
+    const proposedRoute = proposedRouteOf(request, answer);
+    if (proposedRoute === undefined) return 'invalid_version';
     const refusal = correctionAnswerRefusal({
       versionNumber: request.versionNumber,
       state: request.state,
       answer,
-      identities: versions.identities(request.routeId),
+      identities: proposedRoute === null ? [] : versions.identities(proposedRoute),
       states: decided,
     });
     if (refusal !== undefined) return refusal === 'wrong_state' ? refusal : 'invalid_version';
     const proposed = answer.kind === 'version_proposed' ? answer.number : null;
     const explanation = answer.kind === 'no_change' ? answer.explanation : null;
+    // Only a version proposed for a new route names its route, through a function of its own.
+    const newRoute = request.countryCode !== null && answer.kind === 'version_proposed';
     const stored = await db().transaction(async (tx) => {
-      const { rows } = await tx.execute<{ outcome: 'stored' | 'refused' | 'missing' }>(sql`
-        SELECT knowledge.answer_correction_request(${key.id}::uuid, ${key.digest},
-          ${requestId}::uuid, ${answer.kind === 'taken' ? 'taken' : 'answered'}, ${proposed}::integer,
-          ${explanation}::text) AS outcome`);
+      const { rows } = await tx.execute<{ outcome: 'stored' | 'refused' | 'missing' }>(
+        newRoute
+          ? sql`SELECT knowledge.answer_new_route_request(${key.id}::uuid, ${key.digest},
+              ${requestId}::uuid, ${proposedRoute}::text, ${proposed}::integer) AS outcome`
+          : sql`SELECT knowledge.answer_correction_request(${key.id}::uuid, ${key.digest},
+              ${requestId}::uuid, ${answer.kind === 'taken' ? 'taken' : 'answered'},
+              ${proposed}::integer, ${explanation}::text) AS outcome`,
+      );
       const outcome = rows[0]?.outcome ?? 'missing';
       if (outcome === 'stored') {
         // Recorded before the answer commits, so an answer no event records is never kept.

@@ -543,6 +543,52 @@ describe('knowledge-immutable', () => {
         },
         `${data}official-domains/qn-gov/1.json: is the first list for its issuer, so it goes in a pull request alone`,
       ],
+      [
+        'a first list whose host vouches for itself',
+        (tree) => {
+          tree[`${data}official-domains/qn-gov/1.json`] = officialList([
+            ['migration.qn.example', 'https://migration.qn.example/about'],
+          ]);
+        },
+        `${data}official-domains/qn-gov/1.json: is a first list whose host migration.qn.example cites proof on migration.qn.example, a host of the same list or its parent, not a registry`,
+      ],
+      [
+        'a first list whose host vouches for another of the same list',
+        (tree) => {
+          tree[`${data}official-domains/qn-gov/1.json`] = officialList([
+            ['qn.example', 'https://registry.example/qn'],
+            ['visa.example', 'https://www.qn.example/agencies'],
+          ]);
+        },
+        `${data}official-domains/qn-gov/1.json: is a first list whose host visa.example cites proof on www.qn.example, a host of the same list or its parent, not a registry`,
+      ],
+      [
+        'a first list whose host vouches for itself from its parent domain',
+        (tree) => {
+          tree[`${data}official-domains/qn-gov/1.json`] = officialList([
+            ['www.qn.example', 'https://qn.example/about'],
+          ]);
+        },
+        `${data}official-domains/qn-gov/1.json: is a first list whose host www.qn.example cites proof on qn.example, a host of the same list or its parent, not a registry`,
+      ],
+      [
+        'a first list with a bare top-level domain',
+        (tree) => {
+          tree[`${data}official-domains/qn-gov/1.json`] = officialList([
+            ['qn', 'https://registry.example/qn'],
+          ]);
+        },
+        `${data}official-domains/qn-gov/1.json: lists qn, a registry suffix, not a host`,
+      ],
+      [
+        'a first list with a second-level registry suffix',
+        (tree) => {
+          tree[`${data}official-domains/qn-gov/1.json`] = officialList([
+            ['gov.qn', 'https://registry.example/qn'],
+          ]);
+        },
+        `${data}official-domains/qn-gov/1.json: lists gov.qn, a registry suffix, not a host`,
+      ],
     ])('refuses %s', async (_, change, message) => {
       expect(await problems(change)).toContain(message);
     });
