@@ -463,7 +463,7 @@ export const startVersionChecks = {
   path: '/knowledge/checks/start',
   operationId: 'startVersionChecks',
   summary:
-    'Starts the independent check of every proposed route version with no current report and no check running, within 15 of the 20 starts in any 24 hours per environment, so 5 are left for the checks an admin asks for; answers how many started. 403 not_admin',
+    'Starts the independent check of every proposed route version with no current report and no check running, within 15 automatic starts in any 24 hours per environment, counting every start in the window; answers how many started. 403 not_admin',
   response: { description: 'Started', schema: StartVersionChecksResponse },
 } as const satisfies RouteDefinition<typeof StartVersionChecksResponse>;
 
