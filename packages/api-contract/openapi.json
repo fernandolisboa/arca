@@ -3191,7 +3191,8 @@
                               "comparison_rejected",
                               "admin_granted",
                               "admin_removed",
-                              "correction_requested"
+                              "correction_requested",
+                              "correction_closed"
                             ]
                           },
                           "actorAccountId": {
@@ -34252,7 +34253,7 @@
     "/knowledge/corrections": {
       "post": {
         "operationId": "fileCorrectionRequest",
-        "summary": "Files a correction request on one item of a route version, for an owner-list admin; 30 per 24 hours per account (429 rate_limited). 403 not_admin; 403 owner_list_only for an admin by grant; 404 not_found for a version or item the catalog does not hold",
+        "summary": "Files a correction request on one item of a route version, for an owner-list admin; 30 per 24 hours per account (429 rate_limited). 403 not_admin; 403 owner_list_only for an admin by grant; 404 not_found for a version or item the catalog does not hold; 409 already_corrected when a correction of the version is active",
         "requestBody": {
           "required": true,
           "content": {
@@ -34320,7 +34321,7 @@
                             "url": {
                               "type": "string",
                               "maxLength": 2048,
-                              "pattern": "^\\S+$"
+                              "pattern": "^https:\\/\\/\\S+$"
                             }
                           },
                           "required": [
@@ -34513,7 +34514,7 @@
                                     "url": {
                                       "type": "string",
                                       "maxLength": 2048,
-                                      "pattern": "^\\S+$"
+                                      "pattern": "^https:\\/\\/\\S+$"
                                     }
                                   },
                                   "required": [

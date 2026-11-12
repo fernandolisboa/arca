@@ -1041,8 +1041,10 @@ export const ptBR = {
       sending: 'Enviando…',
       cancel: 'Cancelar',
       sent: 'Pedido enviado.',
-      tooMany: 'Você já mandou muitos pedidos hoje. Tente de novo amanhã.',
+      tooMany: 'Você já mandou muitos pedidos nas últimas 24 horas. Tente de novo mais tarde.',
       sendFailure: 'Não deu para enviar o pedido agora. Confira os links e tente de novo.',
+      alreadyCorrected:
+        'Esta versão já tem uma correção ativa. Aponte o erro na versão que corrige esta.',
       title: 'Pedidos de correção',
       loadFailure: 'Não deu para carregar os pedidos de correção agora.',
       state:
@@ -1787,7 +1789,7 @@ export const ptBR = {
       },
       correction_requested: {
         subject: 'Novo pedido de correção de regra',
-        body: 'Em {when} (horário de Brasília), chegou um pedido de correção de regra no Arca. Se não foi você que mandou, entre no Arca, feche o pedido e confira seus dispositivos.',
+        body: 'Em {when} (horário de Brasília), alguém da lista de donos mandou um pedido de correção de regra no Arca. Se ninguém da lista mandou, entre no Arca, feche o pedido e confira os dispositivos.',
       },
       admin_role_changed: {
         subject: 'Mudança nos administradores do Arca',
@@ -1839,7 +1841,7 @@ export const ptBR = {
     },
     correction_requested: {
       title: 'Novo pedido de correção de regra',
-      body: 'Se não foi você que mandou, feche o pedido no Arca e confira seus dispositivos.',
+      body: 'Se ninguém da lista de donos mandou, feche o pedido no Arca e confira os dispositivos.',
     },
     admin_role_changed: {
       title: 'Mudança nos administradores do Arca',

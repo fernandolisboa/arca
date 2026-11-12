@@ -1,9 +1,10 @@
--- Correction requests (ADR-0029). app_api holds no privilege on the request tables: after its own
--- admin check it calls the definer functions below, owned by knowledge_definer, which take the
--- admin basis the API computed and check it again: filing needs the owner list; reading and
--- closing need the owner list or a grant of the transaction's account that no removal ended.
--- app_jobs reads and deletes an author's own requests under their identity, for export and
--- erasure; sources and events go through the cascades. Nobody updates a row.
+-- Correction requests (ADR-0029). app_api serves admins only through the definer functions below,
+-- owned by knowledge_definer, which take the admin basis the API computed and check it again:
+-- filing needs the owner list, which lives in code, so the database checks only that an account
+-- is named; reading and closing need the owner list or a grant of the transaction's account that
+-- no removal ended. app_api also reads the author's own rows for their data export, and app_jobs
+-- reads and deletes them under the author's identity for erasure; sources and events go through
+-- the cascades. Nobody updates a row.
 ALTER TABLE "knowledge"."correction_request" FORCE ROW LEVEL SECURITY;
 --> statement-breakpoint
 ALTER TABLE "knowledge"."correction_source" FORCE ROW LEVEL SECURITY;
@@ -19,6 +20,8 @@ GRANT SELECT, INSERT ON "knowledge"."correction_request", "knowledge"."correctio
 GRANT SELECT, DELETE ON "knowledge"."correction_request" TO app_jobs;
 --> statement-breakpoint
 GRANT SELECT ON "knowledge"."correction_source", "knowledge"."correction_event" TO app_jobs;
+--> statement-breakpoint
+GRANT SELECT ON "knowledge"."correction_request", "knowledge"."correction_source", "knowledge"."correction_event" TO app_api;
 --> statement-breakpoint
 -- Whether the transaction's account holds the admin basis it claims: the owner list, which only
 -- the API can check, or a grant to it that no removal ended (ADR-0027). Called by the functions
@@ -43,7 +46,7 @@ CREATE FUNCTION "knowledge"."admin_basis_holds"(basis text, grant_id uuid)
 --> statement-breakpoint
 -- Files a request by the transaction's account, an owner-list admin, with its sources in order;
 -- answers its ID. The table checks bound every field.
-CREATE FUNCTION "knowledge"."file_correction_request"(route text, version integer, item text, item_id text, body text, sources jsonb, basis text)
+CREATE FUNCTION "knowledge"."file_correction_request"(route text, version integer, item_kind_arg text, item_key_arg text, note_arg text, sources jsonb, basis text)
   RETURNS uuid
   LANGUAGE plpgsql SECURITY DEFINER
   SET search_path = pg_catalog, pg_temp
@@ -60,7 +63,7 @@ CREATE FUNCTION "knowledge"."file_correction_request"(route text, version intege
     END IF;
     INSERT INTO "knowledge"."correction_request"
         (route_id, version_number, item_kind, item_key, note, author_account_id)
-      VALUES (route, version, item, item_id, body,
+      VALUES (route, version, item_kind_arg, item_key_arg, note_arg,
               nullif(pg_catalog.current_setting('app.account_id', true), '')::uuid)
       RETURNING id INTO filed;
     INSERT INTO "knowledge"."correction_source" (request_id, position, kind, url, text)
@@ -94,9 +97,9 @@ CREATE FUNCTION "knowledge"."correction_requests"(route text, version integer, b
   END
   $$;
 --> statement-breakpoint
--- An admin closes a request; closing a closed one changes nothing. Answers whether it exists.
+-- An admin closes a request: answers `closed`, `unchanged` for one already closed, or `missing`.
 CREATE FUNCTION "knowledge"."close_correction_request"(request uuid, basis text, grant_id uuid)
-  RETURNS boolean
+  RETURNS text
   LANGUAGE plpgsql SECURITY DEFINER
   SET search_path = pg_catalog, pg_temp
   AS $$
@@ -105,11 +108,11 @@ CREATE FUNCTION "knowledge"."close_correction_request"(request uuid, basis text,
       RAISE EXCEPTION 'only an admin closes correction requests' USING ERRCODE = '42501';
     END IF;
     IF NOT EXISTS (SELECT FROM "knowledge"."correction_request" r WHERE r.id = request) THEN
-      RETURN false;
+      RETURN 'missing';
     END IF;
     INSERT INTO "knowledge"."correction_event" (request_id, kind)
       VALUES (request, 'closed') ON CONFLICT (request_id, kind) DO NOTHING;
-    RETURN true;
+    RETURN CASE WHEN FOUND THEN 'closed' ELSE 'unchanged' END;
   END
   $$;
 --> statement-breakpoint

@@ -51,6 +51,8 @@ export {
   ruleReportReasons,
   correctionLimits,
   correctionStates,
+  correctionTargets,
+  countrySetKey,
   startsInPlan,
   stepUpNonceHeader,
   VersionViewQuery,

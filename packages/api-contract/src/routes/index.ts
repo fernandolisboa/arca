@@ -859,6 +859,8 @@ export const auditEventDetails = {
     routeId: routeIdSchema,
     number: z.int().min(1),
   }),
+  /** An admin closed a correction request (ADR-0029). */
+  correction_closed: z.strictObject({ requestId: z.uuid() }),
 } as const;
 
 export type AuditEventCode = keyof typeof auditEventDetails;

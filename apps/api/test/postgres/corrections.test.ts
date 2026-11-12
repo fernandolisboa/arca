@@ -208,6 +208,19 @@ describe('filing a correction request (ADR-0029)', () => {
     expect(notices).toEqual([]);
   });
 
+  it('answers 409 already_corrected on a version whose correction is active', async () => {
+    const [, correction] = identities;
+    if (correction === undefined) throw new Error('no correction');
+    states = new Map([[identityKey(correction), 'active']]);
+    expect((await setup(owner).file()).status).toBe(409);
+  });
+
+  it('refuses a link the database would refuse, such as an upper-case scheme', async () => {
+    for (const url of ['HTTPS://example.gov/a', 'https:example.gov']) {
+      expect((await setup(owner).file({ sources: [{ kind: 'link', url }] })).status).toBe(400);
+    }
+  });
+
   it('answers 429 once the daily limit is spent', async () => {
     const spent: RateLimiter = {
       hit: () => Promise.resolve({ allowed: false, retryAfterSeconds: 60 }),
@@ -241,6 +254,15 @@ describe('reading and closing requests (ADR-0029)', () => {
     expect((await setup(granted).close(id)).status).toBe(200);
     expect((await setup(owner).close(id)).status).toBe(200);
     expect((await listed(owner)).requests.map((request) => request.state)).toEqual(['closed']);
+    const closes = await testDatabase.asAdmin(
+      async (client) =>
+        (
+          await client.query<{ actor: string }>(
+            `SELECT actor_account_id AS actor FROM audit.event WHERE code = 'correction_closed'`,
+          )
+        ).rows,
+    );
+    expect(closes).toEqual([{ actor: granted }]);
     expect((await setup(member).close(id)).status).toBe(403);
     expect((await setup(owner).close(randomUUID())).status).toBe(404);
   });
@@ -267,13 +289,37 @@ describe('reading and closing requests (ADR-0029)', () => {
 });
 
 describe('the request tables (ADR-0029)', () => {
-  it('give app_api no table privilege, only the functions', async () => {
+  it('let app_api read only the author’s own rows, for the export', async () => {
     await fileOne();
     for (const table of ['correction_request', 'correction_source', 'correction_event']) {
-      await expect(
-        testDatabase.apiDb.execute(sql`SELECT * FROM ${sql.raw(`knowledge.${table}`)}`),
-      ).rejects.toMatchObject({ cause: { code: '42501' } });
+      const read = (accountId: string) =>
+        withIdentity(
+          testDatabase.apiDb,
+          { accountId },
+          async (tx) =>
+            (
+              await tx.execute<Record<string, unknown>>(
+                sql`SELECT * FROM ${sql.raw(`knowledge.${table}`)}`,
+              )
+            ).rows.length,
+        );
+      expect(await read(granted)).toBe(0);
+      if (table !== 'correction_event') expect(await read(owner)).toBeGreaterThan(0);
     }
+  });
+
+  it('refuse a close on a grant that is not the account’s own', async () => {
+    const id = await fileOne();
+    const [grantId] = await testDatabase.asAdmin(async (client) =>
+      (await client.query<{ id: string }>('SELECT id FROM knowledge.admin_grant')).rows.map(
+        (row) => row.id,
+      ),
+    );
+    await expect(
+      withIdentity(testDatabase.apiDb, { accountId: member }, (tx) =>
+        tx.execute(sql`SELECT knowledge.close_correction_request(${id}, 'grant', ${grantId})`),
+      ),
+    ).rejects.toMatchObject({ cause: { code: '42501' } });
   });
 
   it('refuse filing on a grant basis and reading on a grant that is not the account’s own', async () => {

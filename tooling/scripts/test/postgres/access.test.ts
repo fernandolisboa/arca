@@ -333,9 +333,13 @@ function correctionMatrix(
 }
 
 describe('the correction request access matrix (ADR-0029)', () => {
-  it('gives app_api no table privilege, only the three request functions', async () => {
+  it('lets app_api read the tables, for the author’s export, and run only the three request functions', async () => {
     expect(await correctionAccess('app_api')).toEqual({
-      tables: correctionMatrix({}),
+      tables: correctionMatrix({
+        'knowledge.correction_request': ['SELECT'],
+        'knowledge.correction_source': ['SELECT'],
+        'knowledge.correction_event': ['SELECT'],
+      }),
       functions: [
         'knowledge.file_correction_request',
         'knowledge.correction_requests',
@@ -344,7 +348,7 @@ describe('the correction request access matrix (ADR-0029)', () => {
     });
   });
 
-  it('lets app_jobs read every table and delete requests, for export and erasure, and run nothing', async () => {
+  it('lets app_jobs read every table and delete requests, for erasure, and run nothing', async () => {
     expect(await correctionAccess('app_jobs')).toEqual({
       tables: correctionMatrix(
         {
@@ -360,6 +364,7 @@ describe('the correction request access matrix (ADR-0029)', () => {
 
   it('lets knowledge_definer read and insert, never change or delete, and run its own functions', async () => {
     const access = await correctionAccess('knowledge_definer');
+    expect(access.functions).toEqual(correctionFunctions.map((f) => f.slice(0, f.indexOf('('))));
     expect(access.tables).toEqual(
       correctionMatrix({
         'knowledge.correction_request': ['SELECT', 'INSERT'],

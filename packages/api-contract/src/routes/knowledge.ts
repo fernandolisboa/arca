@@ -19,6 +19,7 @@ import {
   maxQuotes,
   comparisonCriterionSchema,
   correctionItemKinds,
+  correctionStates,
   keyedCorrectionItemKinds,
   countryCodeSchema,
   durationStageSchema,
@@ -477,7 +478,7 @@ export const CorrectionSource = z.discriminatedUnion('kind', [
     url: z
       .url({ protocol: /^https$/, hostname: z.regexes.domain })
       .max(correctionLimits.url)
-      .regex(/^\S+$/),
+      .regex(/^https:\/\/\S+$/),
   }),
   z.strictObject({
     kind: z.literal('text'),
@@ -502,12 +503,10 @@ export const fileCorrectionRequest = {
   path: '/knowledge/corrections',
   operationId: 'fileCorrectionRequest',
   summary:
-    'Files a correction request on one item of a route version, for an owner-list admin; 30 per 24 hours per account (429 rate_limited). 403 not_admin; 403 owner_list_only for an admin by grant; 404 not_found for a version or item the catalog does not hold',
+    'Files a correction request on one item of a route version, for an owner-list admin; 30 per 24 hours per account (429 rate_limited). 403 not_admin; 403 owner_list_only for an admin by grant; 404 not_found for a version or item the catalog does not hold; 409 already_corrected when a correction of the version is active',
   body: FileCorrectionRequest,
   response: { description: 'Filed', schema: FileCorrectionResponse },
 } as const satisfies RouteDefinition<typeof FileCorrectionResponse>;
-
-export const correctionStates = ['open', 'taken', 'answered', 'closed'] as const;
 
 export const CorrectionRequests = z.object({
   /** Whether the viewer may file a request: an owner-list admin. */
@@ -806,6 +805,9 @@ export const knowledgeRoutes = {
 
 export {
   type FactKey,
+  correctionStates,
+  correctionTargets,
+  countrySetKey,
   checkReasons,
   collectionNames,
   comparisonOperators,

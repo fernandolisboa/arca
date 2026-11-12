@@ -49,15 +49,22 @@ ALTER TABLE "knowledge"."correction_source" ADD CONSTRAINT "correction_source_re
 CREATE POLICY "admin_grant_read_definer" ON "knowledge"."admin_grant" AS PERMISSIVE FOR SELECT TO "knowledge_definer" USING (true);--> statement-breakpoint
 CREATE POLICY "correction_event_insert_by_definer" ON "knowledge"."correction_event" AS PERMISSIVE FOR INSERT TO "knowledge_definer" WITH CHECK (true);--> statement-breakpoint
 CREATE POLICY "correction_event_select_by_definer" ON "knowledge"."correction_event" AS PERMISSIVE FOR SELECT TO "knowledge_definer" USING (true);--> statement-breakpoint
+CREATE POLICY "correction_event_select_own" ON "knowledge"."correction_event" AS PERMISSIVE FOR SELECT TO "app_api" USING (EXISTS (SELECT FROM "knowledge"."correction_request" "request"
+        WHERE "request"."id" = "knowledge"."correction_event"."request_id"
+          AND "request"."author_account_id" = nullif(current_setting('app.account_id', true), '')::uuid));--> statement-breakpoint
 CREATE POLICY "correction_event_select_own_by_jobs" ON "knowledge"."correction_event" AS PERMISSIVE FOR SELECT TO "app_jobs" USING (EXISTS (SELECT FROM "knowledge"."correction_request" "request"
         WHERE "request"."id" = "knowledge"."correction_event"."request_id"
           AND "request"."author_account_id" = nullif(current_setting('app.account_id', true), '')::uuid));--> statement-breakpoint
 CREATE POLICY "correction_request_insert_by_definer" ON "knowledge"."correction_request" AS PERMISSIVE FOR INSERT TO "knowledge_definer" WITH CHECK (true);--> statement-breakpoint
 CREATE POLICY "correction_request_select_by_definer" ON "knowledge"."correction_request" AS PERMISSIVE FOR SELECT TO "knowledge_definer" USING (true);--> statement-breakpoint
+CREATE POLICY "correction_request_select_own" ON "knowledge"."correction_request" AS PERMISSIVE FOR SELECT TO "app_api" USING ("knowledge"."correction_request"."author_account_id" = nullif(current_setting('app.account_id', true), '')::uuid);--> statement-breakpoint
 CREATE POLICY "correction_request_select_own_by_jobs" ON "knowledge"."correction_request" AS PERMISSIVE FOR SELECT TO "app_jobs" USING ("knowledge"."correction_request"."author_account_id" = nullif(current_setting('app.account_id', true), '')::uuid);--> statement-breakpoint
 CREATE POLICY "correction_request_delete_own_by_jobs" ON "knowledge"."correction_request" AS PERMISSIVE FOR DELETE TO "app_jobs" USING ("knowledge"."correction_request"."author_account_id" = nullif(current_setting('app.account_id', true), '')::uuid);--> statement-breakpoint
 CREATE POLICY "correction_source_insert_by_definer" ON "knowledge"."correction_source" AS PERMISSIVE FOR INSERT TO "knowledge_definer" WITH CHECK (true);--> statement-breakpoint
 CREATE POLICY "correction_source_select_by_definer" ON "knowledge"."correction_source" AS PERMISSIVE FOR SELECT TO "knowledge_definer" USING (true);--> statement-breakpoint
+CREATE POLICY "correction_source_select_own" ON "knowledge"."correction_source" AS PERMISSIVE FOR SELECT TO "app_api" USING (EXISTS (SELECT FROM "knowledge"."correction_request" "request"
+        WHERE "request"."id" = "knowledge"."correction_source"."request_id"
+          AND "request"."author_account_id" = nullif(current_setting('app.account_id', true), '')::uuid));--> statement-breakpoint
 CREATE POLICY "correction_source_select_own_by_jobs" ON "knowledge"."correction_source" AS PERMISSIVE FOR SELECT TO "app_jobs" USING (EXISTS (SELECT FROM "knowledge"."correction_request" "request"
         WHERE "request"."id" = "knowledge"."correction_source"."request_id"
           AND "request"."author_account_id" = nullif(current_setting('app.account_id', true), '')::uuid));

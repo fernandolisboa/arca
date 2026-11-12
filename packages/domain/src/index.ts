@@ -218,8 +218,13 @@ export {
   type CorrectionEvent,
   type CorrectionItemKind,
   type CorrectionState,
+  type CorrectionTarget,
+  type KeyedCorrectionItemKind,
   correctionItemKinds,
   correctionState,
+  correctionStates,
+  correctionTargets,
+  countrySetKey,
   keyedCorrectionItemKinds,
 } from './rules/correction-request.js';
 export {

@@ -10,6 +10,7 @@ import {
   type DecisionStates,
   type VersionView,
   correctionState,
+  correctionTargets,
 } from '@arca/domain';
 import { sql } from 'drizzle-orm';
 import type { AccountNotice } from '../auth/account-notices.js';
@@ -17,7 +18,8 @@ import type { AuditLog } from '../audit/log.js';
 import { type AdminBasis, type AdminRole, readAdminHistory } from './admins.js';
 import type { KnowledgeVersions } from './versions.js';
 
-export type FileOutcome = { readonly id: string } | 'not_admin' | 'owner_list_only' | 'not_found';
+export type FileOutcome =
+  { readonly id: string } | 'not_admin' | 'owner_list_only' | 'not_found' | 'already_corrected';
 
 /** Correction requests as the API serves them (ADR-0029), through the definer functions only. */
 export interface Corrections {
@@ -40,21 +42,9 @@ export interface CorrectionSettings {
   readonly notify: AccountNotice<'correction_requested'>;
 }
 
-/** The keys of the items a version holds, by the kind a request names them with. */
-function itemKeys(view: VersionView): Readonly<Record<string, readonly string[]>> {
-  return {
-    requirement: view.requirements.map(({ id }) => id),
-    assessment: view.assessments.map(({ id }) => id),
-    dependent: view.dependents.map(({ id }) => id),
-    cost: view.costs.map(({ id }) => id),
-    duration: view.durations.map(({ id }) => id),
-    countrySet: view.countrySets.map(({ id, number }) => `${id}/${String(number)}`),
-  };
-}
-
 function holdsItem(view: VersionView, { kind, key }: CorrectionItem): boolean {
-  if (key === null) return kind === 'version' || kind === 'settings';
-  return itemKeys(view)[kind]?.includes(key) === true;
+  if (kind === 'version' || kind === 'settings') return key === null;
+  return correctionTargets(view)[kind].some((target) => target.key === key);
 }
 
 /** The basis as the definer functions take it: the owner list, or the grant it names. */
@@ -92,14 +82,22 @@ export function createCorrections({
       if (basis.basis !== 'owner_list') return 'owner_list_only';
       const view = await versions.view(request.routeId, request.versionNumber);
       if (view === undefined || !holdsItem(view, request.item)) return 'not_found';
+      // A request filed after a correction is active would close at once and never be worked on.
+      const corrected = correctionState({
+        versionNumber: request.versionNumber,
+        events: [],
+        identities: versions.identities(request.routeId),
+        states: await states(),
+      });
+      if (corrected === 'closed') return 'already_corrected';
       const id = await withIdentity(db(), { accountId }, async (tx) => {
         const { rows } = await tx.execute<{ id: string }>(sql`
           SELECT knowledge.file_correction_request(${request.routeId}, ${request.versionNumber},
             ${request.item.kind}, ${request.item.key}, ${request.note},
-            ${JSON.stringify(request.sources)}::jsonb, 'owner_list') AS id`);
+            ${JSON.stringify(request.sources)}::jsonb, ${basis.basis}) AS id`);
         const filed = rows[0]?.id;
         if (filed === undefined) throw new Error('The request was not filed');
-        // Recorded in the same transaction, so a request no event records is never kept.
+        // Recorded before the filing commits, so a request no event records is never kept.
         await audit.record({
           code: 'correction_requested',
           subjectAccountId: accountId,
@@ -148,13 +146,22 @@ export function createCorrections({
       const basis = await basisOf(accountId);
       if (basis === undefined) return 'not_admin';
       const { basis: kind, grantId } = basisArguments(basis);
-      const found = await withIdentity(db(), { accountId }, async (tx) => {
-        const { rows } = await tx.execute<{ found: boolean }>(
-          sql`SELECT knowledge.close_correction_request(${id}, ${kind}, ${grantId}) AS found`,
+      const outcome = await withIdentity(db(), { accountId }, async (tx) => {
+        const { rows } = await tx.execute<{ outcome: 'closed' | 'unchanged' | 'missing' }>(
+          sql`SELECT knowledge.close_correction_request(${id}, ${kind}, ${grantId}) AS outcome`,
         );
-        return rows[0]?.found === true;
+        const closed = rows[0]?.outcome ?? 'missing';
+        if (closed === 'closed') {
+          await audit.record({
+            code: 'correction_closed',
+            subjectAccountId: accountId,
+            actorAccountId: accountId,
+            details: { requestId: id },
+          });
+        }
+        return closed;
       });
-      return found ? 'closed' : 'not_found';
+      return outcome === 'missing' ? 'not_found' : 'closed';
     },
   };
 }

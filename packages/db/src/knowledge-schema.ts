@@ -395,10 +395,11 @@ const ownRequest = (requestId: unknown) =>
 /**
  * Correction requests (ADR-0029): an owner-list admin points at a wrong item of a route version
  * and says what is wrong, with sources as leads. Knowledge data that names a route, a version and
- * an item, never a case or a person. Insert-only: `app_api` holds no privilege here and goes
- * through the reviewed definer functions of `knowledge_definer`, which check the admin basis the
- * API computed and insert or read on its behalf. `app_jobs` reads and deletes an author's own
- * requests under their identity, for export and erasure; their sources and events go with them.
+ * an item, never a case or a person. Insert-only: `app_api` serves admins through the reviewed
+ * definer functions of `knowledge_definer`, which check the admin basis the API computed and
+ * insert or read on its behalf, and reads only the author's own rows, for their data export.
+ * `app_jobs` reads and deletes an author's own requests under their identity, for erasure; their
+ * sources and events go with them.
  */
 export const correctionRequest = knowledge.table(
   'correction_request',
@@ -435,6 +436,11 @@ export const correctionRequest = knowledge.table(
       for: 'select',
       to: 'knowledge_definer',
       using: sql`true`,
+    }),
+    pgPolicy('correction_request_select_own', {
+      for: 'select',
+      to: 'app_api',
+      using: isIdentity(table.authorAccountId),
     }),
     pgPolicy('correction_request_select_own_by_jobs', {
       for: 'select',
@@ -485,6 +491,11 @@ export const correctionSource = knowledge.table(
       to: 'knowledge_definer',
       using: sql`true`,
     }),
+    pgPolicy('correction_source_select_own', {
+      for: 'select',
+      to: 'app_api',
+      using: ownRequest(table.requestId),
+    }),
     pgPolicy('correction_source_select_own_by_jobs', {
       for: 'select',
       to: 'app_jobs',
@@ -524,6 +535,11 @@ export const correctionEvent = knowledge.table(
       for: 'select',
       to: 'knowledge_definer',
       using: sql`true`,
+    }),
+    pgPolicy('correction_event_select_own', {
+      for: 'select',
+      to: 'app_api',
+      using: ownRequest(table.requestId),
     }),
     pgPolicy('correction_event_select_own_by_jobs', {
       for: 'select',

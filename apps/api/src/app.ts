@@ -314,6 +314,7 @@ export type ErrorCode =
   | 'owner_list_admin'
   | 'owner_list_only'
   | 'already_rejected'
+  | 'already_corrected'
   | 'accounts_closed'
   | 'too_large'
   | 'request_failed'
@@ -1687,6 +1688,8 @@ export function createApp({
         return fail(c, outcome, 403);
       case 'not_found':
         return fail(c, outcome, 404);
+      case 'already_corrected':
+        return fail(c, outcome, 409);
       default:
         return c.json(outcome, 200);
     }

@@ -5,6 +5,7 @@ import {
   type CorrectionSource,
   type VersionView,
   correctionLimits,
+  correctionTargets,
   routes,
 } from '@arca/api-contract/client';
 import { Button, StatusChip, type StatusTone } from '@arca/ui';
@@ -25,8 +26,7 @@ import { TextField } from '../forms/text-field.js';
 import { textLinkClass } from '../forms/text-link.js';
 import type { KnowledgeWords } from './words.js';
 
-type Request = CorrectionRequests['requests'][number];
-type Kind = CorrectionItem['kind'];
+type ListedRequest = CorrectionRequests['requests'][number];
 
 /** The version whose items the panel shows, and whether the viewer may file a request on them. */
 interface Filing {
@@ -96,7 +96,13 @@ function TextArea({
 type Draft = { readonly id: number } & (
   { readonly kind: 'link'; url: string } | { readonly kind: 'text'; text: string }
 );
-type State = 'open' | 'sending' | 'limited' | 'failed';
+type FormState = 'open' | 'sending' | 'limited' | 'corrected' | 'failed';
+
+const failures = {
+  limited: 'knowledge.corrections.tooMany',
+  corrected: 'knowledge.corrections.alreadyCorrected',
+  failed: 'knowledge.corrections.sendFailure',
+} as const;
 
 /** The sources as the API takes them: blank ones left out. */
 function filledSources(drafts: readonly Draft[]): CorrectionSource[] {
@@ -131,7 +137,7 @@ function CorrectionForm({
       kind === 'link' ? { id, kind, url: '' } : { id, kind, text: '' },
     ]);
   };
-  const [state, setState] = useState<State>('open');
+  const [state, setState] = useState<FormState>('open');
   const formRef = useRef<HTMLFormElement>(null);
   useEffect(() => {
     formRef.current?.focus();
@@ -154,7 +160,9 @@ function CorrectionForm({
       await queryClient.invalidateQueries(correctionRequestsQuery(filing.routeId, filing.number));
       close(true);
     } catch (error) {
-      setState(error instanceof ApiError && error.status === 429 ? 'limited' : 'failed');
+      if (error instanceof ApiError && error.status === 429) setState('limited');
+      else if (error instanceof ApiError && error.status === 409) setState('corrected');
+      else setState('failed');
     }
   };
   return (
@@ -222,13 +230,9 @@ function CorrectionForm({
           </button>
         </div>
       )}
-      {(state === 'limited' || state === 'failed') && (
+      {(state === 'limited' || state === 'corrected' || state === 'failed') && (
         <p role="alert" className="text-small text-danger-ink">
-          {t(
-            state === 'limited'
-              ? 'knowledge.corrections.tooMany'
-              : 'knowledge.corrections.sendFailure',
-          )}
+          {t(failures[state])}
         </p>
       )}
       <div className="flex flex-wrap items-center gap-3">
@@ -291,7 +295,7 @@ export function PointOutError({ item }: { readonly item: CorrectionItem }) {
   );
 }
 
-const stateTones: Record<Request['state'], StatusTone> = {
+const stateTones: Record<ListedRequest['state'], StatusTone> = {
   open: 'warn',
   taken: 'warn',
   answered: 'ok',
@@ -299,22 +303,13 @@ const stateTones: Record<Request['state'], StatusTone> = {
 };
 
 /** The item's title in the version, or its key when the version no longer names it. */
-function itemTitle(view: VersionView, { kind, key }: CorrectionItem): string | null {
-  const titled: Partial<Record<Kind, readonly { id: string; title: string }[]>> = {
-    requirement: view.requirements,
-    assessment: view.assessments,
-    dependent: view.dependents,
-    cost: view.costs,
-    duration: view.durations,
-  };
-  if (kind === 'countrySet') {
-    return view.countrySets.find((set) => `${set.id}/${String(set.number)}` === key)?.title ?? key;
-  }
-  return titled[kind]?.find(({ id }) => id === key)?.title ?? key;
+function itemTitle(view: VersionView, { kind, key }: CorrectionItem): string {
+  if (kind === 'version' || kind === 'settings') return '';
+  return correctionTargets(view)[kind].find((target) => target.key === key)?.title ?? key ?? '';
 }
 
 /** A request's sources with keys: they are stored in order and never change. */
-const keyedSources = (request: Request) =>
+const keyedSources = (request: ListedRequest) =>
   request.sources.map((source, position) => ({ key: `${request.id}:${String(position)}`, source }));
 
 function RequestEntry({
@@ -322,7 +317,7 @@ function RequestEntry({
   view,
   words,
 }: {
-  readonly request: Request;
+  readonly request: ListedRequest;
   readonly view: VersionView;
   readonly words: KnowledgeWords;
 }) {
@@ -340,12 +335,16 @@ function RequestEntry({
         <p id={headingId} className="font-medium">
           {t('knowledge.corrections.item', {
             kind: request.item.kind,
-            title: itemTitle(view, request.item) ?? '',
+            title: itemTitle(view, request.item),
           })}
         </p>
       </div>
       <p className="text-small text-muted">
-        {t('knowledge.corrections.filedAt', { date: words.date(request.createdAt.slice(0, 10)) })}
+        {t('knowledge.corrections.filedAt', {
+          date: new Intl.DateTimeFormat(words.language, { dateStyle: 'long' }).format(
+            new Date(request.createdAt),
+          ),
+        })}
       </p>
       <p className="whitespace-pre-wrap">{request.note}</p>
       {request.sources.length > 0 && (

@@ -1,4 +1,5 @@
 import { type DecisionStates, type VersionIdentity, stateOf } from './catalog.js';
+import type { VersionView } from './version-view.js';
 
 /**
  * What a correction request points at (ADR-0029): the whole version, its settings, or one item
@@ -17,11 +18,44 @@ export const correctionItemKinds = [
 export type CorrectionItemKind = (typeof correctionItemKinds)[number];
 
 /** The kinds that name one item, so a request on them carries the item's key. */
+export type KeyedCorrectionItemKind = Exclude<CorrectionItemKind, 'version' | 'settings'>;
 export const keyedCorrectionItemKinds: readonly CorrectionItemKind[] = correctionItemKinds.filter(
-  (kind) => kind !== 'version' && kind !== 'settings',
+  (kind): kind is KeyedCorrectionItemKind => kind !== 'version' && kind !== 'settings',
 );
 
-export type CorrectionState = 'open' | 'taken' | 'answered' | 'closed';
+/** One item a request can name: its key, as the check items write it, and its title. */
+export interface CorrectionTarget {
+  readonly key: string;
+  readonly title: string;
+}
+
+/** The items of a version a request can name, by kind. */
+export function correctionTargets(
+  view: Pick<
+    VersionView,
+    'requirements' | 'assessments' | 'dependents' | 'costs' | 'durations' | 'countrySets'
+  >,
+): Readonly<Record<KeyedCorrectionItemKind, readonly CorrectionTarget[]>> {
+  const titled = (items: readonly { id: string; title: string }[]) =>
+    items.map(({ id, title }) => ({ key: id, title }));
+  return {
+    requirement: titled(view.requirements),
+    assessment: titled(view.assessments),
+    dependent: titled(view.dependents),
+    cost: titled(view.costs),
+    duration: titled(view.durations),
+    countrySet: view.countrySets.map(({ id, number, title }) => ({
+      key: countrySetKey(id, number),
+      title,
+    })),
+  };
+}
+
+/** A country set's key in a request, as the check items write it. */
+export const countrySetKey = (id: string, number: number) => `${id}/${String(number)}`;
+
+export const correctionStates = ['open', 'taken', 'answered', 'closed'] as const;
+export type CorrectionState = (typeof correctionStates)[number];
 
 /** One stored event of a request, oldest first or in any order. */
 export type CorrectionEvent =

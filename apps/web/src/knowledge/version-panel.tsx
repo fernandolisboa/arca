@@ -1,4 +1,4 @@
-import type { CorrectionItem, VersionView } from '@arca/api-contract/client';
+import { type CorrectionItem, type VersionView, countrySetKey } from '@arca/api-contract/client';
 import type { Messages } from '@arca/i18n';
 import { Button, Icon, StatusChip } from '@arca/ui';
 import { useQuery } from '@tanstack/react-query';
@@ -297,7 +297,7 @@ function StepContent({
           items={view.countrySets}
           keyOf={(set) => set.id}
           check={{ points: point, keyOf: (set) => `countrySet:${set.id}/${String(set.number)}` }}
-          correction={(set) => ({ kind: 'countrySet', key: `${set.id}/${String(set.number)}` })}
+          correction={(set) => ({ kind: 'countrySet', key: countrySetKey(set.id, set.number) })}
           render={(set) => (
             <>
               {t('knowledge.countrySet', {
