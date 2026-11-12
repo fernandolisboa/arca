@@ -1,4 +1,5 @@
 import type { CalendarDate } from '../calendar/calendar-date.js';
+import { writesNumberInWords } from './number-words.js';
 
 /**
  * A value an item states, which a quote must contain for a match to count (ADR-0027): a number
@@ -25,6 +26,38 @@ export function canonicalNumber(decimal: string): string {
 /** Group separators a number may be written with besides the dot and the comma. */
 const spaceLike = /[\s\u00a0\u2009\u202f']/u;
 const numberToken = /\d+(?:[.,\s\u00a0\u2009\u202f']\d+)*/gu;
+
+const digit = (char: string | undefined) => char !== undefined && /\d/u.test(char);
+const separator = (char: string | undefined) =>
+  char !== undefined && /[.,\s\u00a0\u2009\u202f']/u.test(char);
+
+/**
+ * The bounds of `text.slice(start, end)` widened to the whole figures its ends cut into, group
+ * separators and decimal marks included, so "500" cut from "1.500" or "5" from "2,5" reads whole.
+ */
+export function figureBounds(
+  text: string,
+  start: number,
+  end: number,
+): { start: number; end: number } {
+  let from = start;
+  let to = end;
+  for (;;) {
+    const before = text[from - 1];
+    const at = text[from];
+    if (digit(before) && (digit(at) || (separator(at) && digit(text[from + 1])))) from -= 1;
+    else if (separator(before) && digit(text[from - 2]) && digit(at)) from -= 1;
+    else break;
+  }
+  for (;;) {
+    const at = text[to];
+    const before = text[to - 1];
+    if (digit(at) && (digit(before) || (separator(before) && digit(text[to - 2])))) to += 1;
+    else if (separator(at) && digit(before) && digit(text[to + 1])) to += 1;
+    else break;
+  }
+  return { start: from, end: to };
+}
 
 /**
  * The number a token stands for when `decimal` is its decimal mark, or undefined when the token
@@ -238,12 +271,19 @@ function writesNumericDate(text: string, year: string, month: string, day: strin
 }
 
 /**
- * Whether a text states the value: a number among the numbers it writes; a date in ISO form, in
- * numbers that read one way only, or by its year, its day and its month's name beside them.
+ * Whether a text states the value: a number among the numbers it writes, or a whole number written
+ * in words of one of `languages`; a date in ISO form, in numbers that read one way only, or by its
+ * year, its day and its month's name beside them.
  */
-export function statesValue(value: CheckValue, text: string): boolean {
+export function statesValue(
+  value: CheckValue,
+  text: string,
+  languages: readonly string[] = [],
+): boolean {
   const numbers = numbersIn(text);
-  if (value.kind === 'number') return numbers.has(value.value);
+  if (value.kind === 'number') {
+    return numbers.has(value.value) || writesNumberInWords(text, value.value, languages);
+  }
   if (text.includes(value.value)) return true;
   const [year = '', month = '', day = ''] = value.value.split('-').map(canonicalNumber);
   if (writesNumericDate(text, year, month, day)) return true;

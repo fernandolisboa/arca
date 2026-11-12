@@ -235,3 +235,88 @@ export function excerptRuns(excerpt: string): string[] {
   }
   return runs.map((lines) => lines.join('\n')).filter((run) => run !== '');
 }
+
+/** The words a catalog source title names a provision with, before its number. */
+const provisionWord =
+  /(?:\b(?:[Aa]rticles?|[Aa]rt\.|[Ss]ections?|[Cc]lauses?|[Rr]egulations?|[Rr]ules?|[Pp]aragraphs?|[Ii]tems?|[Ss]chedules?|[Aa]nnex(?:es)?)|§§?)\s*(\d+(?:\.\d+)*(?:\.?[ºª])?(?:-?[A-Z](?![\p{L}]))?(?: [a-z](?![\p{L}]))?)/gu;
+
+/** A date written with dots (12.03.2024), which is not a provision. */
+const dottedDate = /^\d{1,2}\.\d{1,2}\.\d{2,4}$/u;
+
+/** A number only a provision is written with: an ordinal mark (52.º) or a dotted one (189.211). */
+const markedNumber = /(?<![\p{L}\p{N}.])(\d+(?:\.?[ºª](?:-[A-Z]+)?|(?:\.\d+)+[A-Z]?))(?![\p{N}])/gu;
+
+/**
+ * The provisions a source title names, before its first colon: the number after a word such as
+ * "article", "section", "clause" or "§" ("§ 9 a(4)" names `9 a`), and any number written the way
+ * only provisions are (`52.º`, `24.º-B`, `189.211`). Catalog titles are written in English.
+ */
+export function namedProvisions(title: string): string[] {
+  const head = title.split(':')[0] ?? '';
+  const found = [
+    ...[...head.matchAll(provisionWord)].map((match) => match[1] ?? ''),
+    ...[...head.matchAll(markedNumber)].map((match) => match[1] ?? ''),
+  ];
+  const named = [
+    ...new Set(found.filter((designator) => designator !== '' && !dottedDate.test(designator))),
+  ];
+  // A plain number is too common to look for beside a marked one ("Schedule 2 clause 189.211"),
+  // and a plain four-digit one is the year of an act's name.
+  const marked = named.filter((designator) => !/^\d+$/u.test(designator));
+  return marked.length > 0 ? marked : named.filter((designator) => !/^\d{4}$/u.test(designator));
+}
+
+/**
+ * The most passages one named provision adds to an item's picks: the last ones that head it, since
+ * a table of contents or an amending act's list comes before the text itself.
+ */
+const maxPassagesPerProvision = 3;
+
+/**
+ * Whether `line` opens with `designator` as a token of its own, after at most one word or a
+ * section sign ("Artigo 52.º", "§ 9 a.", "189.211"), as a provision's heading does; a line that
+ * mentions it further on cites it, and does not head it.
+ */
+const plainDesignator = /^\d+(?: ?[a-zA-Z])?$/u;
+
+function headsProvision(line: string, designator: string): boolean {
+  const at = line.indexOf(designator);
+  if (at === -1) return false;
+  const rest = line.slice(at + designator.length);
+  // A heading ends with the number or goes on to its title; "artigo 52.º, pode" is a sentence.
+  const heads = /^(?:[.:]?\s*$|[.:]?\s+\p{Lu}|\s*\|\s*\p{Lu}|\s*[-–—]\s)/u.test(rest);
+  // A plain number ("4", "9 a") also opens numbered paragraphs, so it needs its word or a §.
+  const prefix = plainDesignator.test(designator)
+    ? /^\s*(?:[\p{L}]+\.?\s+|§+\s*)$/u
+    : /^\s*(?:[\p{L}]+\.?\s+|§+\s*)?$/u;
+  return heads && prefix.test(line.slice(0, at));
+}
+
+/**
+ * The passages of a page whose heading lines open with a provision the titles name, best first:
+ * the last `maxPassagesPerProvision` for each, last first, the provisions taking turns; the article a source cites is found by its number,
+ * whatever a passage locator picks, in any language, since only the number is compared.
+ */
+export function provisionPassages(
+  text: string,
+  passages: readonly Passage[],
+  titles: readonly string[],
+): number[] {
+  const designators = [...new Set(titles.flatMap(namedProvisions))];
+  if (designators.length === 0) return [];
+  const found = new Map<string, number[]>(designators.map((designator) => [designator, []]));
+  passages.forEach(({ start, end }, index) => {
+    for (const line of text.slice(start, end).split('\n')) {
+      if (!headingLike(line)) continue;
+      for (const designator of designators) {
+        const hits = found.get(designator) ?? [];
+        if (hits.at(-1) !== index && headsProvision(line, designator)) hits.push(index);
+      }
+    }
+  });
+  const ranked = [...found.values()].map((hits) => hits.slice(-maxPassagesPerProvision).reverse());
+  const turns = Array.from({ length: maxPassagesPerProvision }, (_, turn) =>
+    ranked.flatMap((hits) => hits.slice(turn, turn + 1)),
+  );
+  return [...new Set(turns.flat())];
+}

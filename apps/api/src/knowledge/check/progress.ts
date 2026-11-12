@@ -25,8 +25,9 @@ export interface CheckProgressStore {
 }
 
 /**
- * The most events one start records: two per cited page, one per model call, a handful of stages,
- * and at most one item event per item for each of the two model calls a check may take.
+ * The most events one start records: two per cited page, one per model call, a handful of stages
+ * with one `comparing` per checker call and retry, and at most one item event per item for each
+ * attempt of the one call that compares it, since each item is in one call only.
  */
 export const maxProgressEvents = 1_000;
 
@@ -42,7 +43,10 @@ const storedEvent = z.discriminatedUnion('kind', [
     status: z.int().min(0).max(999).nullable().default(null),
   }),
   z.strictObject({ kind: z.literal('locating'), pages: count }),
-  z.strictObject({ kind: z.literal('comparing') }),
+  z.strictObject({
+    kind: z.literal('comparing'),
+    keys: z.array(z.string().max(maxCheckItemKeyLength)).max(1_000).optional(),
+  }),
   z.strictObject({
     kind: z.literal('item'),
     key: z.string().max(maxCheckItemKeyLength),

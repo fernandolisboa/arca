@@ -34,8 +34,8 @@ import { checkCase, recordingPages } from './harness.js';
 
 const concurrency = 3;
 
-/** Of the ten correct cases, at least this many come out checked (ADR-0027 leaves the bar here). */
-const minCorrectChecked = 9;
+/** Of the eleven correct cases, at least this many come out checked (ADR-0027 leaves the bar here). */
+const minCorrectChecked = 10;
 
 /**
  * At most this many correct cases may get no answer from the vendor. A wrong or adversarial case

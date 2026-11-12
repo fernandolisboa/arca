@@ -1,6 +1,7 @@
 import type { CheckItem } from './items.js';
 import { excerptRuns } from './passages.js';
-import { type CheckValue, statesValue } from './values.js';
+import { numberRunBounds } from './number-words.js';
+import { type CheckValue, figureBounds, statesValue } from './values.js';
 
 export const checkStatuses = ['matches', 'differs', 'could_not_check'] as const;
 export type CheckStatus = (typeof checkStatuses)[number];
@@ -313,6 +314,7 @@ function checkQuote(
   item: CheckItem,
   answered: CheckQuote,
   pages: ReadonlyMap<string, ReadPage>,
+  languages: readonly string[],
 ): QuoteCheck {
   const { url } = answered;
   if (!item.urls.includes(url)) return { ok: false, reason: 'url_not_cited' };
@@ -324,17 +326,45 @@ function checkQuote(
   }
   // An excerpt's gap line stands for text left out, so a quote counts only within one run.
   const runs = page.excerpt === true ? excerptRuns(page.text) : [page.text];
-  if (!runs.some((run) => normalizeWhitespace(run).includes(quote))) {
-    return { ok: false, reason: 'quote_not_on_page' };
-  }
-  if (echoesAddress(quote, page, item.values)) return { ok: false, reason: 'echoes_address' };
-  return { ok: true, quote: { quote, url }, page };
+  const whole = runs
+    .map(normalizeWhitespace)
+    .reduce<string | undefined>(
+      (found, run) => found ?? wholeWords(run, quote, languages),
+      undefined,
+    );
+  if (whole === undefined) return { ok: false, reason: 'quote_not_on_page' };
+  if (whole.length > maxQuoteLength) return { ok: false, reason: 'quote_length' };
+  if (echoesAddress(whole, page, item.values)) return { ok: false, reason: 'echoes_address' };
+  return { ok: true, quote: { quote: whole, url }, page };
+}
+
+/** A letter, mark or digit of a script written with spaces between words. */
+const wordCharacter =
+  /(?![\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}])[\p{L}\p{M}\p{N}]/u;
+
+/**
+ * The quote as it stands in `run`, widened to whole words and to the whole number-word or kanji
+ * runs its ends belong to, so a quote cut out of a number ("2 meses" from "22 meses", "500" from
+ * "1.500", "dois meses" from "vinte e dois meses") states the whole number; undefined when the quote is not in
+ * the run.
+ */
+function wholeWords(run: string, quote: string, languages: readonly string[]): string | undefined {
+  const at = run.indexOf(quote);
+  if (at === -1) return undefined;
+  let start = at;
+  let end = at + quote.length;
+  while (start > 0 && wordCharacter.test(run[start - 1] ?? '')) start -= 1;
+  while (end < run.length && wordCharacter.test(run[end] ?? '')) end += 1;
+  ({ start, end } = figureBounds(run, start, end));
+  const bounds = numberRunBounds(run, start, end, languages);
+  return run.slice(bounds.start, bounds.end);
 }
 
 function verifyOne(
   item: CheckItem,
   answer: CheckAnswer | undefined,
   pages: ReadonlyMap<string, ReadPage>,
+  languages: readonly string[],
 ): CheckedItem {
   if (item.urls.length === 0) return unchecked(item.key, 'no_source_cited');
   if (!item.urls.some((cited) => pages.has(cited))) return unchecked(item.key, 'no_page_read');
@@ -348,14 +378,18 @@ function verifyOne(
   }
   const checked: { quote: CheckQuote; page: ReadPage }[] = [];
   for (const quote of answered) {
-    const result = checkQuote(item, quote, pages);
+    const result = checkQuote(item, quote, pages, languages);
     if (!result.ok) return unchecked(item.key, result.reason);
     checked.push(result);
   }
   const quotes = checked.map(({ quote }) => quote);
   if (answer.status === 'matches') {
     if (checked.some(({ page }) => page.cut)) return unchecked(item.key, 'page_cut');
-    if (!item.values.every((value) => quotes.some(({ quote }) => statesValue(value, quote)))) {
+    if (
+      !item.values.every((value) =>
+        quotes.some(({ quote }) => statesValue(value, quote, languages)),
+      )
+    ) {
       return unchecked(item.key, 'value_not_in_quote');
     }
     return { key: item.key, status: 'matches', quotes, note: null, reason: null };
@@ -368,7 +402,7 @@ function verifyOne(
  * one to `maxQuotes` quotes, and every one must count: after whitespace is normalized, a substring
  * of the exact text sent for a URL the item itself cites, within one run of an excerpt, within the
  * length limits and echoing no address of its page's redirect chain. A match also needs every
- * value the item states in at least one of its quotes, and no quote from a page that was cut. An
+ * value the item states in at least one of its quotes, in figures or in words of `languages`, and no quote from a page that was cut. An
  * item that cites no official page, whose pages were all unread, or that the model left out,
  * answered twice or failed on is could not be checked, with the model's own reason when it gave
  * one; keys of no item are dropped.
@@ -377,13 +411,14 @@ export function verifyAnswers(
   items: readonly CheckItem[],
   answers: readonly CheckAnswer[],
   pages: ReadonlyMap<string, ReadPage>,
+  languages: readonly string[] = [],
 ): CheckedItem[] {
   const counts = new Map<string, number>();
   for (const { key } of answers) counts.set(key, (counts.get(key) ?? 0) + 1);
   const byKey = new Map(
     answers.filter(({ key }) => counts.get(key) === 1).map((answer) => [answer.key, answer]),
   );
-  return items.map((item) => verifyOne(item, byKey.get(item.key), pages));
+  return items.map((item) => verifyOne(item, byKey.get(item.key), pages, languages));
 }
 
 /** The model a report is stored under when the scripted checker wrote it, outside production. */

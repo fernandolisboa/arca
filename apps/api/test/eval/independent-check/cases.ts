@@ -410,6 +410,63 @@ function student(): CatalogEntry {
   return { identity: versionIdentity(version, 'a'.repeat(64)), version, countrySets: [] };
 }
 
+const visaLaw = 'https://www.gov.example/legislacao/lei-de-estrangeiros';
+
+/**
+ * A residence visa whose stay the law writes in words. The route's country is `PT`, whose likely
+ * language is Portuguese, so the check reads Portuguese number words; the route itself is invented.
+ */
+function residenceVisa(months: number): CatalogEntry {
+  const version = routeVersionSchema.parse({
+    schemaVersion: 1,
+    routeId: 'qm-residence-visa',
+    number: 1,
+    title: 'Residence visa',
+    country: 'PT',
+    tags: [],
+    effectiveFrom: '2025-01-01',
+    status: 'open',
+    currency: 'EUR',
+    sources: [
+      {
+        id: 'law',
+        url: visaLaw,
+        title: 'Foreigners law, article 58, n.º 2',
+        kind: 'official',
+        verifiedAt: verified,
+      },
+    ],
+    countries: { id: 'countries', number: 1 },
+    formerCountries: { id: 'former-countries', number: 1 },
+    officialDomains: [{ id: 'qm', number: 1 }],
+    countrySets: [],
+    requirements: [],
+    assessments: [],
+    dependents: [],
+    costs: [],
+    durations: [
+      {
+        id: 'visa-validity',
+        title: `Residence visa: a stay of ${String(months)} months`,
+        min: 'P0D',
+        max: `P${String(months)}M`,
+        sources: ['law'],
+      },
+    ],
+  });
+  return { identity: versionIdentity(version, 'b'.repeat(64)), version, countrySets: [] };
+}
+
+const visaStayQuote =
+  'O visto de residência habilita o seu titular a permanecer vinte e dois meses em território nacional';
+
+const visaLawPage = page(
+  'Lei de estrangeiros',
+  `<h3>Artigo 58.º Visto de residência</h3>
+<p>1 — O visto de residência destina-se a permitir ao seu titular a entrada em território nacional a fim de solicitar autorização de residência.</p>
+<p>2 — ${visaStayQuote}.</p>`,
+);
+
 const workActPage = page(
   'Employment of Foreigners Act',
   `<h3>Section 12. Residence permit for employees</h3>
@@ -676,6 +733,14 @@ export const checkCases: readonly CheckCase[] = [
     snapshots: actAsData(actPdf, residenceActPdf(), 'application/pdf'),
   },
   {
+    id: 'correct-number-in-words',
+    kind: 'correct',
+    about:
+      'a Portuguese law writes the stay in words, "vinte e dois meses", and the version says 22',
+    entry: residenceVisa(22),
+    snapshots: snapshots({ [visaLaw]: { body: visaLawPage } }),
+  },
+  {
     id: 'wrong-long-act-threshold',
     kind: 'wrong',
     about: 'deep in a long act, section 4 asks EUR 1,800 where the version says EUR 1,500',
@@ -685,6 +750,28 @@ export const checkCases: readonly CheckCase[] = [
     lure: raisedQuote,
     stoppedBy: 'value_not_in_quote',
     mustRead: raisedQuote,
+  },
+  {
+    id: 'wrong-number-in-words',
+    kind: 'wrong',
+    about:
+      'the version says a stay of 2 months where the law writes "vinte e dois meses": the two is part of a larger number',
+    entry: residenceVisa(2),
+    snapshots: snapshots({ [visaLaw]: { body: visaLawPage } }),
+    target: 'duration:visa-validity',
+    lure: visaStayQuote,
+    stoppedBy: 'value_not_in_quote',
+  },
+  {
+    id: 'wrong-number-in-words-cut',
+    kind: 'wrong',
+    about:
+      'the version says a stay of 2 months, and the quote is cut to start at "dois", inside "vinte e dois meses"',
+    entry: residenceVisa(2),
+    snapshots: snapshots({ [visaLaw]: { body: visaLawPage } }),
+    target: 'duration:visa-validity',
+    lure: 'dois meses em território nacional',
+    stoppedBy: 'value_not_in_quote',
   },
   {
     id: 'wrong-long-act-old-wording',

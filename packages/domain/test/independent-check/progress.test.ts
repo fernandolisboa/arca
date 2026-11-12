@@ -223,6 +223,20 @@ describe('checkProgress', () => {
         ],
       ],
       [
+        'the answers of another call when one call is asked for again',
+        [
+          { kind: 'comparing', keys: ['requirement:means'] },
+          item('requirement:means', 'matches'),
+          { kind: 'comparing', keys: ['cost:fee'] },
+          item('cost:fee', 'differs'),
+          { kind: 'comparing', keys: ['cost:fee'] },
+        ],
+        [
+          ['requirement:means', 'matches'],
+          ['cost:fee', null],
+        ],
+      ],
+      [
         'nothing of a key no item has',
         [item('requirement:other', 'matches')],
         [

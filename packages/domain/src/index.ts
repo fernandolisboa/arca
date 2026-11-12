@@ -278,7 +278,9 @@ export {
   verifyAnswers,
 } from './independent-check/answers.js';
 export { asDataText } from './data-text.js';
+export { pageLanguages } from './independent-check/number-words.js';
 export {
+  checkCalls,
   excerptBudgets,
   type CitedText,
   maxCheckPagesText,
@@ -293,6 +295,7 @@ export {
   maxPassagesPerItem,
   maxWholePageText,
   pageOutline,
+  provisionPassages,
   sentWhole,
   splitPassages,
 } from './independent-check/passages.js';

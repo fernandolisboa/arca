@@ -1260,7 +1260,7 @@ export const ptBR = {
       confirmTitle: 'Analisar esta versão com IA?',
       confirmLead:
         'A IA lê de novo as fontes oficiais desta versão e compara item por item, mesmo que já exista uma verificação recente. Leva alguns minutos.',
-      cost: 'Cada análise gasta de US$ 0,30 a US$ 0,50 do seu crédito da API.',
+      cost: 'Cada análise gasta de US$ 0,40 a US$ 0,80 do seu crédito da API.',
       lastCost: 'A última análise desta versão custou {cost} do seu crédito da API.',
       spent:
         '{state, select, running {Gasto até agora: {cost}.} other {Esta análise custou {cost}.}}',

@@ -3,9 +3,12 @@ import {
   type CheckAnswer,
   type CheckItem,
   type CheckProgressEvent,
+  type CheckedItem,
+  type Passage,
   type Pin,
   type ReadPage,
   asDataText,
+  checkCalls,
   checkItems,
   excerptBudgets,
   excerptPassages,
@@ -15,7 +18,9 @@ import {
   noGuide,
   officialSources,
   openingExcerpt,
+  pageLanguages,
   pageOutline,
+  provisionPassages,
   reportClean,
   sentWhole,
   splitPassages,
@@ -82,6 +87,9 @@ const maxFetchedPages = 200;
  */
 const maxLocatedPages = 10;
 
+/** The most characters of item keys a `comparing` event names, within a progress row's size. */
+const maxNamedKeysLength = 2_000;
+
 /** The items that cite a page. */
 const itemsCiting = (items: readonly CheckItem[], url: string) =>
   items.filter(({ urls }) => urls.includes(url));
@@ -107,10 +115,50 @@ const usageEvent = (reply: ModelReply): CheckProgressEvent => ({
   cacheWriteTokens: reply.cacheWriteTokens ?? null,
 });
 
+/** The most passages found by a provision's number that go ahead of the locator's picks. */
+const maxProvisionPicks = 3;
+
 /** A long page as it is sent, and whether passages were picked for it. */
 interface Excerpt {
   readonly page: ReadPage;
   readonly picked: boolean;
+}
+
+/** A long page split into passages, and the passages picked for each item key. */
+interface Picks {
+  readonly passages: readonly Passage[];
+  readonly picks: ReadonlyMap<string, readonly number[]> | undefined;
+}
+
+/** What one checker call found, and the page text it sent. */
+interface Comparison {
+  readonly checked: readonly CheckedItem[];
+  readonly sent: readonly ReadPage[];
+  readonly failure: RuleCheckerFailure | null;
+  /** Whether a long page went as its opening because no passage was picked for its items. */
+  readonly unpicked: boolean;
+}
+
+/**
+ * The text sent for each page across every call, for the fetch log: one call's text as sent, or
+ * the texts of several calls joined in call order; cut when any call cut it.
+ */
+function sentTexts(sent: readonly ReadPage[]): Map<string, ReadPage> {
+  const byUrl = new Map<string, ReadPage>();
+  for (const page of sent) {
+    const before = byUrl.get(page.url);
+    byUrl.set(
+      page.url,
+      before === undefined
+        ? page
+        : {
+            ...before,
+            text: [before.text, page.text].filter((text) => text !== '').join('\n'),
+            cut: before.cut || page.cut,
+          },
+    );
+  }
+  return byUrl;
 }
 
 /**
@@ -256,22 +304,21 @@ export function createVersionCheck({
   };
 
   /**
-   * A long page as the passages picked for the items that cite it, within `budget`. When none
-   * was picked, because the locator was not asked, failed, named no passage of the page, or the
-   * budget holds none of its picks, the page goes as its opening marked cut, so no match counts
-   * on it.
+   * The passages of a long page picked for each item that cites it, by item key: first those that
+   * head a provision its source titles name (ADR-0027), then those the locator picked. Undefined
+   * when neither found any. The locator is asked once per page with every citing item, whatever
+   * calls the items are later compared in.
    */
-  const excerptOf = async (
+  const pick = async (
     page: ReadPage,
     items: readonly CheckItem[],
     entry: CatalogEntry,
-    budget: number,
     askLocator: boolean,
     record: Recorder,
-  ): Promise<Excerpt> => {
-    const citing = itemsCiting(items, page.url);
+  ): Promise<Picks> => {
     const passages = splitPassages(page.text);
-    const picks = askLocator
+    const citing = itemsCiting(items, page.url);
+    const located = askLocator
       ? await locate(
           {
             items: citing.map(({ key, kind, title }) => ({ key, kind, title })),
@@ -281,8 +328,36 @@ export function createVersionCheck({
           record,
         )
       : undefined;
-    const ranked = citing.map(({ key }) =>
-      (picks?.get(key) ?? []).filter((pick) => pick < passages.length).slice(0, maxPassagesPerItem),
+    const picks = new Map<string, readonly number[]>();
+    for (const { key, citations } of citing) {
+      const titles = citations.filter(({ url }) => url === page.url).map(({ title }) => title);
+      const provisions = provisionPassages(page.text, passages, titles);
+      const merged = [
+        ...new Set([
+          ...provisions.slice(0, maxProvisionPicks),
+          ...(located?.get(key) ?? []),
+          ...provisions.slice(maxProvisionPicks),
+        ]),
+      ];
+      if (merged.length > 0) picks.set(key, merged);
+    }
+    return { passages, picks: picks.size > 0 ? picks : undefined };
+  };
+
+  /**
+   * A long page as the passages picked for the items of one call that cite it, within `budget`.
+   * When none was picked, because the locator was not asked, failed, named no passage of the page
+   * for these items, or the budget holds none of their picks, the page goes as its opening marked
+   * cut, so no match counts on it.
+   */
+  const excerptOf = (
+    page: ReadPage,
+    { passages, picks }: Picks,
+    items: readonly CheckItem[],
+    budget: number,
+  ): Excerpt => {
+    const ranked = itemsCiting(items, page.url).map(({ key }) =>
+      (picks?.get(key) ?? []).filter((at) => at < passages.length).slice(0, maxPassagesPerItem),
     );
     const picked = new Set(ranked.flat());
     const chosen = picked.size > 0 ? excerptPassages(passages, ranked, budget) : [];
@@ -304,6 +379,7 @@ export function createVersionCheck({
   const itemRecorder = (
     items: readonly CheckItem[],
     pages: ReadonlyMap<string, ReadPage>,
+    languages: readonly string[],
     record: Recorder,
     written: Promise<void>[],
   ) => {
@@ -317,7 +393,9 @@ export function createVersionCheck({
       if (answer === undefined || item === undefined) return;
       if (repeated.has(item.key) || recorded >= items.length) return;
       recorded += 1;
-      const [verified] = answered.has(item.key) ? [] : verifyAnswers([item], [answer], pages);
+      const [verified] = answered.has(item.key)
+        ? []
+        : verifyAnswers([item], [answer], pages, languages);
       (answered.has(item.key) ? repeated : answered).add(item.key);
       written.push(
         record({ kind: 'item', key: item.key, status: verified?.status ?? 'could_not_check' }),
@@ -355,6 +433,79 @@ export function createVersionCheck({
       },
     );
 
+  /**
+   * One checker call: the items given, with only the pages they cite. Short pages go whole; the
+   * long ones share what is left of the budget, as excerpts of their items' picks, by how many of
+   * the call's items cite each. The answers are checked in code against the text this call sent.
+   * With several calls, each names its items as it begins, so a retry clears only its own.
+   */
+  const compare = async (
+    items: readonly CheckItem[],
+    readPages: readonly ReadPage[],
+    picks: ReadonlyMap<string, Picks>,
+    namesItems: boolean,
+    languages: readonly string[],
+    subject: CheckSubject,
+    guide: CountryGuideEntry | undefined,
+    record: Recorder,
+  ): Promise<Comparison> => {
+    const cited = readPages.filter(({ url }) => itemsCiting(items, url).length > 0);
+    const budgets = excerptBudgets(
+      cited.map(({ url, text }) => ({ text, citing: itemsCiting(items, url).length })),
+    );
+    let unpicked = false;
+    const shaped = cited.map((page, index) => {
+      const picked = picks.get(page.url);
+      if (picked === undefined) return page;
+      const excerpt = excerptOf(page, picked, items, budgets[index] ?? 0);
+      if (!excerpt.picked) unpicked = true;
+      return excerpt.page;
+    });
+    // The text sent, framed as data and within the budget, is what quotes are checked against.
+    const budgeted = withinTextBudget(shaped);
+    const pages = new Map<string, ReadPage>(budgeted.map((page) => [page.url, page]));
+    const sent = budgeted.filter(({ text }) => text !== '');
+    let answers: readonly CheckAnswer[] = [];
+    let failure: RuleCheckerFailure | null = null;
+    // With no page text nothing could match, so no model call is paid for.
+    if (sent.length > 0) {
+      const keys = items.map(({ key }) => key);
+      // Keys too long for a progress row go unnamed, so a retry clears every item on screen.
+      const comparing: CheckProgressEvent =
+        namesItems && JSON.stringify(keys).length <= maxNamedKeysLength
+          ? { kind: 'comparing', keys }
+          : { kind: 'comparing' };
+      await record(comparing);
+      const written: Promise<void>[] = [];
+      let calls = 0;
+      try {
+        answers = await ask(
+          {
+            version: subject.content,
+            items: items.map(({ key, kind, title, urls }) => ({ key, kind, title, urls })),
+            pages: sent.map(({ url, text, excerpt }) => ({ url, text, excerpt: excerpt === true })),
+            guide: guide === undefined ? null : guideContent(guide.guide),
+          },
+          record,
+          // A retry records the comparison again, so the screen drops the first call's answers.
+          () => {
+            if (calls++ > 0) written.push(record(comparing));
+            return itemRecorder(items, pages, languages, record, written);
+          },
+        );
+      } catch (error) {
+        failure = error instanceof RuleCheckerError ? error.code : 'check_failed';
+      }
+      await Promise.all(written);
+    }
+    return {
+      checked: verifyAnswers(items, answers, pages, languages),
+      sent: budgeted,
+      failure,
+      unpicked,
+    };
+  };
+
   const check = async (
     startId: string,
     routeId: string,
@@ -380,73 +531,31 @@ export function createVersionCheck({
           ]
         : [],
     );
-    // Short pages go whole; the long ones share what is left of the budget, as excerpts, by how
-    // many items cite each.
-    const budgets = excerptBudgets(
-      readPages.map(({ url, text }) => ({
-        text,
-        citing: itemsCiting(items, url).length,
-      })),
-    );
-    const budgetOf = new Map(readPages.map(({ url }, index) => [url, budgets[index] ?? 0]));
     const longPages = readPages.filter(({ text }) => !sentWhole(text));
     const located = Math.min(longPages.length, maxLocatedPages);
     if (located > 0) await record({ kind: 'locating', pages: located });
-    const excerpts = new Map(
+    const picks = new Map(
       await Promise.all(
         longPages.map(
           async (page, index) =>
             [
               page.url,
-              await excerptOf(
-                page,
-                items,
-                subject.entry,
-                budgetOf.get(page.url) ?? 0,
-                index < maxLocatedPages,
-                record,
-              ),
+              await pick(page, items, subject.entry, index < maxLocatedPages, record),
             ] as const,
         ),
       ),
     );
-    // The text sent, framed as data and within the total budget, is what quotes are checked against.
-    const sent = withinTextBudget(readPages.map((page) => excerpts.get(page.url)?.page ?? page));
-    const pages = new Map<string, ReadPage>(sent.map((page) => [page.url, page]));
-    const fetchLog = fetchLogOf(fetched, pages);
-
-    let answers: readonly CheckAnswer[] = [];
-    let failure: RuleCheckerFailure | null = null;
-    const pagesToSend = sent
-      .filter(({ text }) => text !== '')
-      .map(({ url, text, excerpt }) => ({ url, text, excerpt: excerpt === true }));
-    // With no page text nothing could match, so no model call is paid for.
-    if (pagesToSend.length > 0) {
-      await record({ kind: 'comparing' });
-      const written: Promise<void>[] = [];
-      let calls = 0;
-      try {
-        answers = await ask(
-          {
-            version: subject.content,
-            items: items.map(({ key, kind, title, urls }) => ({ key, kind, title, urls })),
-            pages: pagesToSend,
-            guide: guide === undefined ? null : guideContent(guide.guide),
-          },
-          record,
-          // A retry records the comparison again, so the screen drops the first call's answers.
-          () => {
-            if (calls++ > 0) written.push(record({ kind: 'comparing' }));
-            return itemRecorder(items, pages, record, written);
-          },
-        );
-      } catch (error) {
-        failure = error instanceof RuleCheckerError ? error.code : 'check_failed';
-      }
-      await Promise.all(written);
-    }
-
-    const checked = verifyAnswers(items, answers, pages);
+    const calls = checkCalls(items, readPages);
+    const languages = pageLanguages(subject.entry.version.country);
+    const compared = await Promise.all(
+      calls.map((callItems) =>
+        compare(callItems, readPages, picks, calls.length > 1, languages, subject, guide, record),
+      ),
+    );
+    const byKey = new Map(compared.flatMap(({ checked }) => checked.map((c) => [c.key, c])));
+    const checked = items.flatMap(({ key }) => byKey.get(key) ?? []);
+    const failure = compared.find((call) => call.failure !== null)?.failure ?? null;
+    const fetchLog = fetchLogOf(fetched, sentTexts(compared.flatMap(({ sent }) => sent)));
     await store.save({
       startId,
       routeId,
@@ -462,8 +571,8 @@ export function createVersionCheck({
       // short-lived, like one whose fetch failed.
       failed:
         failure !== null ||
-        pagesToSend.length === 0 ||
-        [...excerpts.values()].some(({ picked }) => !picked) ||
+        compared.every(({ sent }) => sent.every(({ text }) => text === '')) ||
+        compared.some(({ unpicked }) => unpicked) ||
         fetchLog.some((entry) => entry.outcome !== 'read'),
       clean: reportClean(checked, model),
     });

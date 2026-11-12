@@ -641,6 +641,98 @@ describe('the independent check of one version (ADR-0027)', () => {
       expect(read).toEqual(picked.slice(0, maxPassagesPerItem));
     });
 
+    it('compares the items in several calls, each with only its own pages, when a page is long', async () => {
+      const extra = Array.from({ length: 9 }, (_, index) => ({
+        ...version.requirements[0],
+        id: `means-${String(index)}`,
+        title: `Further means ${String(index)}`,
+      }));
+      const many = routeVersionSchema.parse({
+        ...version,
+        requirements: [...version.requirements, ...extra],
+      });
+      const checked: CheckSubject = {
+        ...subject,
+        entry: { ...entry, version: many, identity: versionIdentity(many, 'c'.repeat(64)) },
+      };
+      const requests: RuleCheckRequest[] = [];
+      const checker: RuleChecker = {
+        check(request) {
+          requests.push(request);
+          const known = new Map(matchesBoth.items.map((answer) => [answer.key, answer]));
+          const reply = {
+            items: request.items.map(
+              ({ key }) => known.get(key) ?? { key, status: 'could_not_check', note: 'Não está.' },
+            ),
+          };
+          return Promise.resolve({ reply, model: 'claude-test', promptVersion: 'check-1' });
+        },
+      };
+      const locator = locating('Article 201. Means');
+      const progress = memoryCheckProgressStore();
+      const { check, store, events } = setup({ checker, fetcher, locator, checked, progress });
+      await check(startId, 'qm-sample', 1);
+      expect(locator.requests).toHaveLength(1);
+      expect(requests.map(({ items }) => items.length)).toEqual([8, 3]);
+      expect(requests.map(({ pages }) => pages.map(({ url }) => url))).toEqual([
+        [law],
+        [law, fees],
+      ]);
+      expect(requests[0]?.pages[0]?.text).toContain(`Article 201. Means\n${lawText}`);
+      const keys = requests.map(({ items }) => items.map(({ key }) => key));
+      expect(events().filter(({ kind }) => kind === 'comparing')).toEqual(
+        keys.map((call) => ({ kind: 'comparing', keys: call })),
+      );
+      const report = store.rows[0];
+      expect(report?.items.map(({ key }) => key)).toEqual(keys.flat());
+      expect(
+        report?.items.filter(({ status }) => status === 'matches').map(({ key }) => key),
+      ).toEqual(['requirement:means', 'cost:fee']);
+      expect(report).toMatchObject({ failure: null, failed: false });
+    });
+
+    it('keeps the answers of the other calls when one call fails', async () => {
+      const extra = Array.from({ length: 9 }, (_, index) => ({
+        ...version.requirements[0],
+        id: `means-${String(index)}`,
+        title: `Further means ${String(index)}`,
+      }));
+      const many = routeVersionSchema.parse({
+        ...version,
+        requirements: [...version.requirements, ...extra],
+      });
+      const checked: CheckSubject = {
+        ...subject,
+        entry: { ...entry, version: many, identity: versionIdentity(many, 'c'.repeat(64)) },
+      };
+      const checker: RuleChecker = {
+        check(request) {
+          if (request.items.some(({ key }) => key === 'cost:fee')) {
+            return Promise.reject(new RuleCheckerError('check_failed'));
+          }
+          const reply = {
+            items: request.items.map(({ key }) =>
+              key === 'requirement:means'
+                ? matchesBoth.items[0]
+                : { key, status: 'could_not_check', note: 'Não está.' },
+            ),
+          };
+          return Promise.resolve({ reply, model: 'claude-test', promptVersion: 'check-1' });
+        },
+      };
+      const locator = locating('Article 201. Means');
+      const { check, store } = setup({ checker, fetcher, locator, checked });
+      await check(startId, 'qm-sample', 1);
+      const report = store.rows[0];
+      expect(report?.items.find(({ key }) => key === 'requirement:means')).toMatchObject({
+        status: 'matches',
+      });
+      expect(report?.items.find(({ key }) => key === 'cost:fee')).toMatchObject({
+        reason: 'not_answered',
+      });
+      expect(report).toMatchObject({ failure: 'check_failed', failed: true });
+    });
+
     it('has passages picked for a bounded number of long pages, each within its share', async () => {
       const urls = Array.from({ length: 12 }, (_, index) => `${law}/${String(index)}`);
       const many = routeVersionSchema.parse({

@@ -450,7 +450,7 @@ test('the seed admin analyses a version with AI on demand and watches it to the 
   await expect(analyse).toBeVisible({ timeout: 30_000 });
   await analyse.click();
   const confirmation = page.getByRole('region', { name: 'Analisar esta versão com IA?' });
-  await expect(confirmation).toContainText('US$ 0,30 a US$ 0,50');
+  await expect(confirmation).toContainText('US$ 0,40 a US$ 0,80');
   const started = page.waitForRequest((request) =>
     request.url().endsWith('/v1/knowledge/versions/check/start'),
   );
