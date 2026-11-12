@@ -1,4 +1,4 @@
-import { apiBasePath, type DocumentUpload } from '@arca/api-contract/client';
+import { apiBasePath, type ObjectUpload } from '@arca/api-contract/client';
 import { reach } from './requests.js';
 
 /**
@@ -6,7 +6,7 @@ import { reach } from './requests.js';
  * or to Vercel Blob through `uploadPresigned`, which asks `handleUploadPath` for the signed URL.
  */
 export async function sendUpload(
-  upload: DocumentUpload,
+  upload: ObjectUpload,
   bytes: Uint8Array<ArrayBuffer>,
   {
     handleUploadPath,

@@ -1,4 +1,4 @@
-import type { MemoryObjectStorage } from '../src/vault/object-storage.js';
+import type { MemoryObjectStorage } from '../src/storage/object-storage.js';
 
 /** Stores `body` at `pathname` the way a device does: through a direct upload grant. */
 export function putObject(store: MemoryObjectStorage, pathname: string, body: Uint8Array): void {

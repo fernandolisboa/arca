@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { Database } from '@arca/db';
 import { sql } from 'drizzle-orm';
-import type { ObjectStorage } from '../../vault/object-storage.js';
+import type { ObjectStorage } from '../../storage/object-storage.js';
 import { answerFormat } from './answer-text.js';
 import { answerWithinLimits, fetchLimits } from './fetcher.js';
 

@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { blobObjectStorage } from '../src/vault/blob-storage.js';
-import { objectUrlMinutes } from '../src/vault/object-storage.js';
+import { blobObjectStorage } from '../src/storage/blob-storage.js';
+import { objectUrlMinutes } from '../src/storage/object-storage.js';
 
 const sdk = vi.hoisted(() => ({
   issued: [] as unknown[],

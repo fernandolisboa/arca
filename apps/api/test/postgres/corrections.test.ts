@@ -16,7 +16,7 @@ import { adminRole } from '../../src/knowledge/admins.js';
 import { createCorrectionContents } from '../../src/knowledge/correction-contents.js';
 import { createCorrections } from '../../src/knowledge/corrections.js';
 import { storedPageCopies } from '../../src/knowledge/check/page-copies.js';
-import { memoryObjectStorage, type MemoryObjectStorage } from '../../src/vault/object-storage.js';
+import { memoryObjectStorage, type MemoryObjectStorage } from '../../src/storage/object-storage.js';
 import { noLimits } from '../limits.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
 
@@ -216,6 +216,7 @@ describe('filing a correction request (ADR-0029)', () => {
         createdAt: expect.any(String) as unknown,
         sources: filed.sources,
         state: 'open',
+        answer: null,
       },
     ]);
     expect(notices).toEqual([`${owner}:correction_requested`]);

@@ -14,3 +14,10 @@ regex = '''(?:^|[^A-Za-z0-9])(sk-ant-[a-z0-9]+-[A-Za-z0-9_\-]{20,})'''
 # Placeholders such as `sk-ant-oat01-xxxx…` in a reviewer's finding are not secrets.
 entropy = 3.5
 keywords = ["sk-ant-"]
+
+[[rules]]
+id = "arca-corrector-key"
+description = "Arca's corrector key, which the scheduled corrector run sends to the app (ADR-0029)."
+regex = '''(?:^|[^A-Za-z0-9])(arca_ck_[A-Za-z0-9_\-]{43})'''
+entropy = 3.5
+keywords = ["arca_ck_"]

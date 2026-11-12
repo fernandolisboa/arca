@@ -84,6 +84,24 @@ export const correctionRequestLimits = {
   download: { name: 'correction_download_account', limit: 120, windowSeconds: 24 * hour },
 } as const satisfies Record<string, RateLimitRule>;
 
+/**
+ * The corrector routes (ADR-0029): every request is counted per address before its key is read,
+ * so a guessing client is slowed and a refused key writes at most a few audit events an hour;
+ * a key that holds is counted again per key, per route.
+ */
+export const correctorLimits = {
+  address: { name: 'corrector_ip', limit: 120, windowSeconds: hour },
+  refusedLog: { name: 'corrector_refused_log_ip', limit: 5, windowSeconds: hour },
+  list: { name: 'corrector_list_key', limit: 100, windowSeconds: 24 * hour },
+  file: { name: 'corrector_file_key', limit: 200, windowSeconds: 24 * hour },
+  answer: { name: 'corrector_answer_key', limit: 100, windowSeconds: 24 * hour },
+} as const satisfies Record<string, RateLimitRule>;
+
+/** The corrector key screen: making and revoking keys per owner-list admin. */
+export const correctorKeyLimits = {
+  change: { name: 'corrector_key_change_account', limit: 20, windowSeconds: 24 * hour },
+} as const satisfies Record<string, RateLimitRule>;
+
 /** Free-text drafts per account (spec 0008, R3): each one is a paid model call. */
 export const intakeLimits = {
   day: { name: 'case_intake_day', limit: 10, windowSeconds: 24 * hour },

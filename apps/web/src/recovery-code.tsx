@@ -1,5 +1,6 @@
 import { Button, Icon, iconButtonClass } from '@arca/ui';
-import { useEffect, useId, useState } from 'react';
+import { useId, useState } from 'react';
+import { useCopy } from './use-copy.js';
 import { useTranslation } from 'react-i18next';
 import { download } from './download.js';
 import { groupCode } from './enrollment.js';
@@ -24,39 +25,6 @@ const partLabels = {
     saved: 'vault.kit.saved',
   },
 } as const;
-
-type CopyState = 'idle' | 'copied' | 'failed';
-
-/** Copies the text to the clipboard; `copied` falls back to `idle` after two seconds. */
-function useCopy(text: string) {
-  const [state, setState] = useState<CopyState>('idle');
-
-  useEffect(() => {
-    if (state !== 'copied') return;
-    const timer = setTimeout(() => {
-      setState('idle');
-    }, 2000);
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [state]);
-
-  const copy = () => {
-    // Inside the promise, so a browser without the clipboard API lands in `failed` too.
-    Promise.resolve()
-      .then(() => navigator.clipboard.writeText(text))
-      .then(
-        () => {
-          setState('copied');
-        },
-        () => {
-          setState('failed');
-        },
-      );
-  };
-
-  return { state, copy };
-}
 
 /**
  * One part of the recovery kit, shown once (spec 0003, R6): the account recovery code or the vault

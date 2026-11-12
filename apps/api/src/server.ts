@@ -19,8 +19,8 @@ import { createCaseFiles } from './case/case-files.js';
 import { createCaseIntake } from './case/intake.js';
 import { extractorFor } from './intake/environment.js';
 import { createDocuments } from './vault/documents.js';
-import { objectStorageFor } from './vault/storage-environment.js';
-import { unconnectedObjectStorage } from './vault/object-storage.js';
+import { objectStorageFor } from './storage/storage-environment.js';
+import { unconnectedObjectStorage } from './storage/object-storage.js';
 import { createVault } from './vault/vault.js';
 import { rateLimiter, type RateLimiter } from './auth/rate-limit.js';
 import { clientAddressFor } from './client-address.js';
@@ -35,6 +35,7 @@ import { accountNotice, type AccountNotice } from './auth/account-notices.js';
 import { createStepUp, type StepUpService, type StepUpSpender } from './auth/step-up.js';
 import { createAdminGrants } from './knowledge/admin-grants.js';
 import { createCorrections } from './knowledge/corrections.js';
+import { createCorrector } from './knowledge/corrector.js';
 import { adminRole } from './knowledge/admins.js';
 import { ownerList } from './knowledge/owner-list.js';
 import { createKnowledgeDecisions, type KnowledgeDecisions } from './knowledge/decisions.js';
@@ -178,6 +179,7 @@ interface AuthParts {
   readonly accountDeletion: AccountDeletion;
   readonly adminNotice: AccountNotice<'admin_role_changed'>;
   readonly correctionNotice: AccountNotice<'correction_requested'>;
+  readonly correctorKeyNotice: AccountNotice<'corrector_key_changed'>;
 }
 
 let parts: Promise<AuthParts> | undefined;
@@ -248,6 +250,11 @@ function authParts(): Promise<AuthParts> {
         notifier,
         logger,
         label: 'CorrectionRequestNotice',
+      }),
+      correctorKeyNotice: accountNotice<'corrector_key_changed'>({
+        notifier,
+        logger,
+        label: 'CorrectorKeyNotice',
       }),
     };
   })();
@@ -343,6 +350,21 @@ const ruleSummaries =
         logger,
         now: () => performance.now(),
       });
+
+const { keys: correctorKeys, corrector } = createCorrector({
+  db: () => connected().db,
+  role,
+  accountConfirmed: (accountId) => accounts.isConfirmed(authConnection(), accountId),
+  stepUp: {
+    spend: async (signedIn, purpose, action, record) =>
+      (await authParts()).stepUp.spend(signedIn, purpose, action, record),
+  },
+  versions: knowledgeVersions,
+  states: () => knowledgeDecisions().states(),
+  audit: lazyAudit,
+  notify: async (accountId, kind) => (await authParts()).correctorKeyNotice(accountId, kind),
+  storage: documentStorage?.storage ?? unconnectedObjectStorage,
+});
 
 const monitored = startMonitoring({ environment, origin: ownOrigin });
 const tunnel = tunnelFor({ environment, origin: ownOrigin, send: sendToSentry });
@@ -528,6 +550,8 @@ const app = createApp({
     notify: async (accountId, kind) => (await authParts()).correctionNotice(accountId, kind),
     storage: documentStorage?.storage ?? unconnectedObjectStorage,
   }),
+  correctorKeys,
+  corrector,
   knowledgeVersions,
   ...(versionChecks === undefined ? {} : { versionChecks }),
   ...(ruleSummaries === undefined ? {} : { ruleSummaries }),

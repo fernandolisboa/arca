@@ -19,8 +19,8 @@ import {
   objectUrlMinutes,
   readablePathname,
   unconnectedObjectStorage,
-} from '../src/vault/object-storage.js';
-import { objectStorageFor } from '../src/vault/storage-environment.js';
+} from '../src/storage/object-storage.js';
+import { objectStorageFor } from '../src/storage/storage-environment.js';
 
 const pathname = 'documents/7d1e2f3a-4b5c-4d6e-8f70-8192a3b4c5d6';
 

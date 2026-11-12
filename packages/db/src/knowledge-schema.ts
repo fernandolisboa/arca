@@ -588,8 +588,78 @@ export const correctionSource = knowledge.table(
 );
 
 /**
- * What happened to a request after it was filed (ADR-0029). This slice stores an admin's close;
- * whether a decision closed it is computed from the catalog and the decisions, never stored.
+ * The corrector key (ADR-0029): the secret the scheduled corrector run presents, stored as its
+ * SHA-256 only. A `created` row is inserted by `app_auth`, by an owner-list admin of the
+ * transaction's own account, spending a `corrector_key` step-up in the same transaction; a
+ * `revoked` row ends one key, written through a definer function. The live key is the newest
+ * `created` row, unless a `revoked` row ends it or it is a year old; the API also checks that its
+ * creator is still on the owner list and still has an account. Insert-only, kept with account IDs
+ * and digests only, as the record of who could answer requests and when.
+ */
+export const correctorKey = knowledge.table(
+  'corrector_key',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    kind: text('kind', { enum: ['created', 'revoked'] }).notNull(),
+    keySha256: bytea('key_sha256'),
+    /** The key a `revoked` row ends. */
+    revokesKeyId: uuid('revokes_key_id'),
+    actorAccountId: uuid('actor_account_id').notNull(),
+    /** The `corrector_key` step-up a `created` row spent. */
+    stepUpId: uuid('step_up_id'),
+    at: timestamp('at', { withTimezone: true })
+      .notNull()
+      .default(sql`clock_timestamp()`),
+  },
+  (table) => [
+    foreignKey({
+      name: 'corrector_key_revokes_fkey',
+      columns: [table.revokesKeyId],
+      foreignColumns: [table.id],
+    }),
+    unique('corrector_key_sha256_key').on(table.keySha256),
+    unique('corrector_key_step_up_id_key').on(table.stepUpId),
+    unique('corrector_key_revokes_once').on(table.revokesKeyId),
+    check(
+      'corrector_key_shape',
+      sql`CASE ${table.kind}
+        WHEN 'created' THEN octet_length(${table.keySha256}) = 32 AND ${table.stepUpId} IS NOT NULL
+          AND ${table.revokesKeyId} IS NULL
+        WHEN 'revoked' THEN ${table.keySha256} IS NULL AND ${table.stepUpId} IS NULL
+          AND ${table.revokesKeyId} IS NOT NULL
+        ELSE false END`,
+    ),
+    pgPolicy('corrector_key_insert_by_owner', {
+      for: 'insert',
+      to: 'app_auth',
+      withCheck: sql`${table.kind} = 'created' AND ${isIdentity(table.actorAccountId)}
+        AND EXISTS (SELECT FROM "auth"."step_up"
+          WHERE "auth"."step_up"."id" = ${table.stepUpId}
+            AND "auth"."step_up"."account_id" = ${table.actorAccountId}
+            AND "auth"."step_up"."purpose" = 'corrector_key'
+            AND "auth"."step_up"."consumed_at" IS NOT NULL)`,
+    }),
+    pgPolicy('corrector_key_revoke_by_definer', {
+      for: 'insert',
+      to: 'knowledge_definer',
+      withCheck: sql`${table.kind} = 'revoked'`,
+    }),
+    pgPolicy('corrector_key_select_by_definer', {
+      for: 'select',
+      to: 'knowledge_definer',
+      using: sql`true`,
+    }),
+  ],
+);
+
+/** What happened to a request after it was filed (ADR-0029). */
+export const correctionEventKinds = ['taken', 'answered', 'closed'] as const;
+
+/**
+ * What happened to a request after it was filed (ADR-0029): the corrector run took it or answered
+ * it, with the key that did, or an admin closed it. An answer proposes a version or explains, in
+ * up to 2,000 characters, why nothing changed. Each kind happens once per request. Whether a
+ * decision closed a request is computed from the catalog and the decisions, never stored.
  */
 export const correctionEvent = knowledge.table(
   'correction_event',
@@ -597,6 +667,10 @@ export const correctionEvent = knowledge.table(
     id: uuid('id').primaryKey().defaultRandom(),
     requestId: uuid('request_id').notNull(),
     kind: text('kind').notNull(),
+    /** The corrector key that took or answered the request; null for an admin's close. */
+    correctorKeyId: uuid('corrector_key_id'),
+    proposedVersion: integer('proposed_version'),
+    explanation: text('explanation'),
     at: timestamp('at', { withTimezone: true })
       .notNull()
       .default(sql`clock_timestamp()`),
@@ -607,8 +681,26 @@ export const correctionEvent = knowledge.table(
       columns: [table.requestId],
       foreignColumns: [correctionRequest.id],
     }).onDelete('cascade'),
-    check('correction_event_kind', sql`${table.kind} = 'closed'`),
-    unique('correction_event_closed_once').on(table.requestId, table.kind),
+    foreignKey({
+      name: 'correction_event_corrector_key_fkey',
+      columns: [table.correctorKeyId],
+      foreignColumns: [correctorKey.id],
+    }),
+    check('correction_event_kind', inList(table.kind, correctionEventKinds)),
+    check(
+      'correction_event_shape',
+      sql`CASE ${table.kind}
+        WHEN 'closed' THEN ${table.correctorKeyId} IS NULL AND ${table.proposedVersion} IS NULL
+          AND ${table.explanation} IS NULL
+        WHEN 'taken' THEN ${table.correctorKeyId} IS NOT NULL AND ${table.proposedVersion} IS NULL
+          AND ${table.explanation} IS NULL
+        WHEN 'answered' THEN ${table.correctorKeyId} IS NOT NULL
+          AND (${table.proposedVersion} IS NULL) <> (${table.explanation} IS NULL)
+          AND coalesce(${table.proposedVersion} > 0, true)
+          AND coalesce(char_length(${table.explanation}) BETWEEN 1 AND 2000, true)
+        ELSE false END`,
+    ),
+    unique('correction_event_once').on(table.requestId, table.kind),
     pgPolicy('correction_event_insert_by_definer', {
       for: 'insert',
       to: 'knowledge_definer',

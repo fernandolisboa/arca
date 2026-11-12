@@ -125,6 +125,14 @@ export const correctionRequestsQuery = (routeId: string, number: number) =>
     retry: false,
   });
 
+/** The live corrector key's dates, for an admin (ADR-0029). */
+export const correctorKeyQuery = queryOptions({
+  queryKey: ['knowledge', 'corrector-key'],
+  queryFn: () => api.call(routes.getCorrectorKey),
+  networkMode: 'always',
+  retry: false,
+});
+
 /** How often a screen reads again while a version's independent check runs (ADR-0027). */
 const checkPollMs = 15_000;
 

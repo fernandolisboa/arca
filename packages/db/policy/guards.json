@@ -110,7 +110,15 @@
     "knowledge.start_correction_upload",
     "knowledge.attach_correction_file_with_page",
     "knowledge.correction_file_sources",
-    "knowledge.correction_page_copies"
+    "knowledge.correction_page_copies",
+    "knowledge.answer_correction_request",
+    "knowledge.correction_events",
+    "knowledge.corrector_file",
+    "knowledge.corrector_request_list",
+    "knowledge.corrector_requests",
+    "knowledge.live_corrector_key",
+    "knowledge.own_corrector_key_rows",
+    "knowledge.revoke_corrector_key"
   ],
   "migrationExtensions": [],
   "deferrableConstraints": []

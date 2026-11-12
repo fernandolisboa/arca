@@ -3,7 +3,7 @@ import {
   documentPageSize,
   documentQuota,
   maxDocumentBytes,
-  type DocumentUploadUrlResponse,
+  type ObjectUploadUrlResponse,
 } from '@arca/api-contract/routes';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { auditLog } from '../../src/audit/log.js';
@@ -12,7 +12,7 @@ import {
   memoryObjectStorage,
   type MemoryObjectStorage,
   type ObjectStorage,
-} from '../../src/vault/object-storage.js';
+} from '../../src/storage/object-storage.js';
 import { putObject } from '../objects.js';
 import { accountFixtures } from './accounts.js';
 import { authTestDatabase, type AuthTestDatabase } from './auth-database.js';
@@ -26,7 +26,7 @@ let presigned: { pathname: string; maxBytes: number }[];
 let documents: Documents;
 let jobs: Documents;
 
-const fakePresigned: DocumentUploadUrlResponse = {
+const fakePresigned: ObjectUploadUrlResponse = {
   type: 'blob.generate-presigned-url',
   presignedUrlPayload: { delegationToken: 'token', signature: 'signature', params: {} },
 };

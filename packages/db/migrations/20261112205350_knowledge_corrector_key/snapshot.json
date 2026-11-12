@@ -1,0 +1,652 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "2fcd2384-1f55-4ec6-860f-dc9f312c1f45",
+  "prevIds": [
+    "3346f232-8b9f-4a8c-b8de-cc38aa1e5bc4"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "corrector_key"
+      ],
+      "writes": [
+        "s|tbl|knowledge.corrector_key",
+        "n|tbl|knowledge.corrector_key",
+        "e|tbl|knowledge.corrector_key",
+        "n|rel|knowledge.corrector_key",
+        "n|type|knowledge.corrector_key",
+        "n|rel|knowledge.corrector_key_pkey",
+        "n|rel|knowledge.corrector_key_sha256_key",
+        "n|rel|knowledge.corrector_key_step_up_id_key",
+        "n|rel|knowledge.corrector_key_revokes_once"
+      ],
+      "reads": [
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "correction_event",
+        "corrector_key_id"
+      ],
+      "writes": [
+        "s|col|knowledge.correction_event.corrector_key_id",
+        "n|col|knowledge.correction_event.corrector_key_id",
+        "e|col|knowledge.correction_event.corrector_key_id"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_event",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "correction_event",
+        "proposed_version"
+      ],
+      "writes": [
+        "s|col|knowledge.correction_event.proposed_version",
+        "n|col|knowledge.correction_event.proposed_version",
+        "e|col|knowledge.correction_event.proposed_version"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_event",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "correction_event",
+        "explanation"
+      ],
+      "writes": [
+        "s|col|knowledge.correction_event.explanation",
+        "n|col|knowledge.correction_event.explanation",
+        "e|col|knowledge.correction_event.explanation"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_event",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "rename_constraint",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_event"
+      ],
+      "writes": [
+        "s|uq|knowledge.correction_event.correction_event_closed_once",
+        "n|uq|knowledge.correction_event.correction_event_closed_once",
+        "n|con|knowledge.correction_event.correction_event_closed_once",
+        "n|rel|knowledge.correction_event_closed_once",
+        "s|uq|knowledge.correction_event.correction_event_once",
+        "n|uq|knowledge.correction_event.correction_event_once",
+        "n|con|knowledge.correction_event.correction_event_once",
+        "n|rel|knowledge.correction_event_once"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_event",
+        "n|sch|knowledge",
+        "e|col|knowledge.correction_event.request_id",
+        "e|col|knowledge.correction_event.kind"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_event"
+      ],
+      "writes": [
+        "s|fk|knowledge.correction_event.correction_event_corrector_key_fkey",
+        "n|fk|knowledge.correction_event.correction_event_corrector_key_fkey",
+        "e|fk|knowledge.correction_event.correction_event_corrector_key_fkey",
+        "n|con|knowledge.correction_event.correction_event_corrector_key_fkey"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_event",
+        "n|sch|knowledge",
+        "n|tbl|knowledge.corrector_key",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_event.corrector_key_id",
+        "n|col|knowledge.corrector_key.id",
+        "e|uniqueness|knowledge.corrector_key.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "corrector_key"
+      ],
+      "writes": [
+        "s|fk|knowledge.corrector_key.corrector_key_revokes_fkey",
+        "n|fk|knowledge.corrector_key.corrector_key_revokes_fkey",
+        "e|fk|knowledge.corrector_key.corrector_key_revokes_fkey",
+        "n|con|knowledge.corrector_key.corrector_key_revokes_fkey"
+      ],
+      "reads": [
+        "n|tbl|knowledge.corrector_key",
+        "n|sch|knowledge",
+        "n|tbl|knowledge.corrector_key",
+        "n|sch|knowledge",
+        "n|col|knowledge.corrector_key.revokes_key_id",
+        "n|col|knowledge.corrector_key.id",
+        "e|uniqueness|knowledge.corrector_key.id"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_event"
+      ],
+      "writes": [
+        "s|ck|knowledge.correction_event.correction_event_shape",
+        "n|ck|knowledge.correction_event.correction_event_shape",
+        "e|ck|knowledge.correction_event.correction_event_shape",
+        "n|con|knowledge.correction_event.correction_event_shape"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_event",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_event.kind",
+        "n|col|knowledge.correction_event.corrector_key_id",
+        "n|col|knowledge.correction_event.proposed_version",
+        "n|col|knowledge.correction_event.explanation"
+      ]
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "auth",
+        "step_up"
+      ],
+      "writes": [
+        "s|ck|auth.step_up.step_up_purpose"
+      ],
+      "reads": [
+        "n|tbl|auth.step_up",
+        "n|sch|auth",
+        "n|col|auth.step_up.purpose",
+        "e|col|auth.step_up.purpose"
+      ],
+      "sqlHash": "0f55ac1af2da886e"
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "auth",
+        "step_up_challenge"
+      ],
+      "writes": [
+        "s|ck|auth.step_up_challenge.step_up_challenge_purpose"
+      ],
+      "reads": [
+        "n|tbl|auth.step_up_challenge",
+        "n|sch|auth",
+        "n|col|auth.step_up_challenge.purpose",
+        "e|col|auth.step_up_challenge.purpose"
+      ],
+      "sqlHash": "accc6e821df8f0f8"
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_event"
+      ],
+      "writes": [
+        "s|ck|knowledge.correction_event.correction_event_kind"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_event",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_event.kind",
+        "e|col|knowledge.correction_event.kind"
+      ],
+      "sqlHash": "d2c0cc13f2682c99"
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "corrector_key"
+      ],
+      "writes": [
+        "s|pol|knowledge.corrector_key.corrector_key_insert_by_owner",
+        "n|pol|knowledge.corrector_key.corrector_key_insert_by_owner",
+        "e|pol|knowledge.corrector_key.corrector_key_insert_by_owner"
+      ],
+      "reads": [
+        "n|tbl|knowledge.corrector_key",
+        "n|sch|knowledge",
+        "n|role|app_auth",
+        "e|rls|knowledge.corrector_key"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "corrector_key"
+      ],
+      "writes": [
+        "s|pol|knowledge.corrector_key.corrector_key_revoke_by_definer",
+        "n|pol|knowledge.corrector_key.corrector_key_revoke_by_definer",
+        "e|pol|knowledge.corrector_key.corrector_key_revoke_by_definer"
+      ],
+      "reads": [
+        "n|tbl|knowledge.corrector_key",
+        "n|sch|knowledge",
+        "n|role|knowledge_definer",
+        "e|rls|knowledge.corrector_key"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "corrector_key"
+      ],
+      "writes": [
+        "s|pol|knowledge.corrector_key.corrector_key_select_by_definer",
+        "n|pol|knowledge.corrector_key.corrector_key_select_by_definer",
+        "e|pol|knowledge.corrector_key.corrector_key_select_by_definer"
+      ],
+      "reads": [
+        "n|tbl|knowledge.corrector_key",
+        "n|sch|knowledge",
+        "n|role|knowledge_definer",
+        "e|rls|knowledge.corrector_key"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "rename",
+      "key": "uniques\u0000[\"knowledge\",\"correction_event\",\"correction_event_closed_once\"]",
+      "set": {
+        "name": "correction_event_once"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "name": "corrector_key",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_event",
+        "name": "corrector_key_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_event",
+        "name": "proposed_version",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_event",
+        "name": "explanation",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "corrector_key",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "corrector_key",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "corrector_key",
+        "name": "key_sha256",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "corrector_key",
+        "name": "revokes_key_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "corrector_key",
+        "name": "actor_account_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "corrector_key",
+        "name": "step_up_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "corrector_key",
+        "name": "at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "clock_timestamp()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_event",
+        "name": "correction_event_corrector_key_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "corrector_key_id"
+        ],
+        "schemaTo": "knowledge",
+        "tableTo": "corrector_key",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "corrector_key",
+        "name": "corrector_key_revokes_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "revokes_key_id"
+        ],
+        "schemaTo": "knowledge",
+        "tableTo": "corrector_key",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "corrector_key",
+        "name": "corrector_key_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "corrector_key",
+        "name": "corrector_key_sha256_key",
+        "nameExplicit": true,
+        "columns": [
+          "key_sha256"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "corrector_key",
+        "name": "corrector_key_step_up_id_key",
+        "nameExplicit": true,
+        "columns": [
+          "step_up_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "corrector_key",
+        "name": "corrector_key_revokes_once",
+        "nameExplicit": true,
+        "columns": [
+          "revokes_key_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_event",
+        "name": "correction_event_shape",
+        "value": "CASE \"kind\"\n        WHEN 'closed' THEN \"corrector_key_id\" IS NULL AND \"proposed_version\" IS NULL\n          AND \"explanation\" IS NULL\n        WHEN 'taken' THEN \"corrector_key_id\" IS NOT NULL AND \"proposed_version\" IS NULL\n          AND \"explanation\" IS NULL\n        WHEN 'answered' THEN \"corrector_key_id\" IS NOT NULL\n          AND (\"proposed_version\" IS NULL) <> (\"explanation\" IS NULL)\n          AND coalesce(\"proposed_version\" > 0, true)\n          AND coalesce(char_length(\"explanation\") BETWEEN 1 AND 2000, true)\n        ELSE false END",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "corrector_key",
+        "name": "corrector_key_shape",
+        "value": "CASE \"kind\"\n        WHEN 'created' THEN octet_length(\"key_sha256\") = 32 AND \"step_up_id\" IS NOT NULL\n          AND \"revokes_key_id\" IS NULL\n        WHEN 'revoked' THEN \"key_sha256\" IS NULL AND \"step_up_id\" IS NULL\n          AND \"revokes_key_id\" IS NOT NULL\n        ELSE false END",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "corrector_key",
+        "name": "corrector_key_insert_by_owner",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_auth"
+        ],
+        "using": null,
+        "withCheck": "\"knowledge\".\"corrector_key\".\"kind\" = 'created' AND \"knowledge\".\"corrector_key\".\"actor_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid\n        AND EXISTS (SELECT FROM \"auth\".\"step_up\"\n          WHERE \"auth\".\"step_up\".\"id\" = \"knowledge\".\"corrector_key\".\"step_up_id\"\n            AND \"auth\".\"step_up\".\"account_id\" = \"knowledge\".\"corrector_key\".\"actor_account_id\"\n            AND \"auth\".\"step_up\".\"purpose\" = 'corrector_key'\n            AND \"auth\".\"step_up\".\"consumed_at\" IS NOT NULL)",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "corrector_key",
+        "name": "corrector_key_revoke_by_definer",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "knowledge_definer"
+        ],
+        "using": null,
+        "withCheck": "\"knowledge\".\"corrector_key\".\"kind\" = 'revoked'",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "corrector_key",
+        "name": "corrector_key_select_by_definer",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "knowledge_definer"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"auth\",\"step_up\",\"step_up_purpose\"]",
+      "set": {
+        "value": "\"purpose\" IN ('sensitive_settings', 'account_deletion', 'data_export', 'financial_action', 'vault_unlock', 'vault_write', 'knowledge_decision', 'admin_grant', 'corrector_key')"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"auth\",\"step_up_challenge\",\"step_up_challenge_purpose\"]",
+      "set": {
+        "value": "\"purpose\" IN ('sensitive_settings', 'account_deletion', 'data_export', 'financial_action', 'vault_unlock', 'vault_write', 'knowledge_decision', 'admin_grant', 'corrector_key')"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"knowledge\",\"correction_event\",\"correction_event_kind\"]",
+      "set": {
+        "value": "\"kind\" IN ('taken', 'answered', 'closed')"
+      }
+    }
+  ]
+}

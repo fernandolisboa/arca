@@ -216,11 +216,14 @@ export {
   versionIdentity,
 } from './rules/catalog.js';
 export {
+  type CorrectionAnswer,
+  type CorrectionAnswerRefusal,
   type CorrectionEvent,
   type CorrectionItemKind,
   type CorrectionState,
   type CorrectionTarget,
   type KeyedCorrectionItemKind,
+  correctionAnswerRefusal,
   correctionItemKinds,
   correctionState,
   correctionStates,

@@ -13,6 +13,7 @@ import { Button, StatusChip, type StatusTone } from '@arca/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createContext,
+  Fragment,
   use,
   useEffect,
   useId,
@@ -48,6 +49,11 @@ interface Filing {
 }
 
 const FilingContext = createContext<Filing | undefined>(undefined);
+
+/** Opens another version of the same route on the activation screen; absent, no button shows. */
+export const OpenRouteVersionContext = createContext<((number: number) => void) | undefined>(
+  undefined,
+);
 
 /** Gives the version's "Apontar erro" buttons their version, read once for the whole panel. */
 export function CorrectionFiling({
@@ -455,6 +461,70 @@ const keyedSources = (request: ListedRequest) =>
     position,
   }));
 
+const addressPattern = /(https?:\/\/\S+)/;
+
+/** Model output as plain text: an address stays text, set apart, never a link (ADR-0029). */
+function MarkedText({ text }: { readonly text: string }) {
+  const parts = text
+    .split(addressPattern)
+    .reduce<{ part: string; start: number; address: boolean }[]>((placed, part, index) => {
+      const last = placed.at(-1);
+      const start = last === undefined ? 0 : last.start + last.part.length;
+      return [...placed, { part, start, address: index % 2 === 1 }];
+    }, []);
+  return (
+    <p className="whitespace-pre-wrap">
+      {parts.map(({ part, start, address }) =>
+        address ? (
+          <span key={start} className="font-mono break-all text-muted">
+            {part}
+          </span>
+        ) : (
+          <Fragment key={start}>{part}</Fragment>
+        ),
+      )}
+    </p>
+  );
+}
+
+/** The corrector run's answer: the version it proposed, with a way to open it, or its reasons. */
+function AnswerEntry({
+  answer,
+  words,
+}: {
+  readonly answer: NonNullable<ListedRequest['answer']>;
+  readonly words: KnowledgeWords;
+}) {
+  const { t } = words;
+  const open = use(OpenRouteVersionContext);
+  if (answer.kind === 'no_change') {
+    return (
+      <div className="flex flex-col gap-1 rounded-control bg-soft p-3 text-small">
+        <p className="font-medium">{t('knowledge.corrections.answerNoChange')}</p>
+        <MarkedText text={answer.explanation} />
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-control bg-soft p-3 text-small">
+      <p className="font-medium">
+        {t('knowledge.corrections.answerVersion', { number: answer.number })}
+      </p>
+      {open !== undefined && (
+        <button
+          type="button"
+          className={textLinkClass}
+          onClick={() => {
+            open(answer.number);
+          }}
+        >
+          {t('knowledge.corrections.openVersion', { number: answer.number })}
+        </button>
+      )}
+    </div>
+  );
+}
+
 /** A file source: its type and size, and a button that saves it on this device. */
 function FileEntry({
   requestId,
@@ -578,6 +648,7 @@ function RequestEntry({
           ))}
         </ul>
       )}
+      {request.answer !== null && <AnswerEntry answer={request.answer} words={words} />}
       {failed && (
         <p role="alert" className="text-small text-danger-ink">
           {t('knowledge.corrections.closeFailure')}

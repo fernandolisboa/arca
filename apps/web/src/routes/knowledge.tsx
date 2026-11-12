@@ -6,7 +6,7 @@ import {
 import { Button, Disclosure, Icon, StatusChip, cardClass } from '@arca/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   comparisonViewQuery,
@@ -18,6 +18,7 @@ import { textLinkClass } from '../forms/text-link.js';
 import { CheckedBatch } from '../knowledge/checked-batch.js';
 import { CheckChip, useStartChecks } from '../knowledge/checks.js';
 import { ComparisonPanel } from '../knowledge/comparison-panel.js';
+import { OpenRouteVersionContext } from '../knowledge/corrections.js';
 import { ReportsSection } from '../knowledge/reports-section.js';
 import { ReviewFilters, needTone } from '../knowledge/review-filters.js';
 import {
@@ -68,6 +69,9 @@ function Knowledge() {
   const admin = session.data?.admin === true;
   const versions = useQuery({ ...knowledgeVersionsQuery, enabled: admin });
   const [picked, setPicked] = useState<Picked | null>(null);
+  const openRouteVersion = useCallback((number: number) => {
+    setPicked((current) => (current?.subject === 'route' ? { ...current, number } : current));
+  }, []);
   const [picks, setPicks] = useState<ReviewFilter>(noFilter);
   const [openCountries, setOpenCountries] = useState<ReadonlySet<string>>(() => new Set());
   useStartChecks(versions.isSuccess);
@@ -114,7 +118,13 @@ function Knowledge() {
           {t('knowledge.back')}
         </button>
         {picked.subject === 'route' ? (
-          <PickedVersion key={pickedKey(picked)} routeId={picked.routeId} number={picked.number} />
+          <OpenRouteVersionContext value={openRouteVersion}>
+            <PickedVersion
+              key={pickedKey(picked)}
+              routeId={picked.routeId}
+              number={picked.number}
+            />
+          </OpenRouteVersionContext>
         ) : (
           <PickedComparison
             key={pickedKey(picked)}

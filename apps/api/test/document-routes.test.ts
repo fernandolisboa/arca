@@ -3,7 +3,7 @@ import {
   maxDocumentBatch,
   maxDocumentBytes,
   maxDocumentRecipients,
-  type DocumentUploadUrlResponse,
+  type ObjectUploadUrlResponse,
 } from '@arca/api-contract/routes';
 import type { Logger } from '@arca/telemetry';
 import { describe, expect, it } from 'vitest';
@@ -17,7 +17,7 @@ import type {
   ReplacementStarted,
   UploadConfirmed,
 } from '../src/vault/documents.js';
-import { memoryObjectStorage, type MemoryObjectStorage } from '../src/vault/object-storage.js';
+import { memoryObjectStorage, type MemoryObjectStorage } from '../src/storage/object-storage.js';
 import { noLimits } from './limits.js';
 
 const silentLogger: Logger = { info: () => undefined, error: () => undefined };
@@ -39,7 +39,7 @@ const labelBytes = Buffer.from('sealed label');
 const label = labelBytes.toString('base64url');
 const labelSha256 = createHash('sha256').update(labelBytes).digest('base64url');
 const createBody = { typeKey: 'passport', size: 1024, sha256, label };
-const presigned: DocumentUploadUrlResponse = {
+const presigned: ObjectUploadUrlResponse = {
   type: 'blob.generate-presigned-url',
   presignedUrlPayload: { delegationToken: 'token', signature: 'signature', params: {} },
 };

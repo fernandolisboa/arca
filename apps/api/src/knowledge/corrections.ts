@@ -2,7 +2,7 @@ import type {
   CorrectionFileType,
   CorrectionItem,
   CorrectionRequests,
-  DocumentUploadUrlResponse,
+  ObjectUploadUrlResponse,
   FileCorrectionRequest,
   ListedCorrectionSource,
   StartCorrectionUpload,
@@ -20,7 +20,7 @@ import { sql } from 'drizzle-orm';
 import type { AccountNotice } from '../auth/account-notices.js';
 import type { AuditLog } from '../audit/log.js';
 import { type AdminBasis, type AdminRole, readAdminHistory } from './admins.js';
-import type { ObjectStorage } from '../vault/object-storage.js';
+import type { ObjectStorage } from '../storage/object-storage.js';
 import { fitsFileType } from './correction-files.js';
 import type { KnowledgeVersions } from './versions.js';
 
@@ -58,7 +58,7 @@ export interface Corrections {
   readonly presignUpload: (
     accountId: string,
     pathname: string,
-  ) => Promise<DocumentUploadUrlResponse | FilingRefusal | 'not_found'>;
+  ) => Promise<ObjectUploadUrlResponse | FilingRefusal | 'not_found'>;
   /** A 5-minute download URL for one file source, for an admin. */
   readonly fileUrl: (
     accountId: string,
@@ -106,9 +106,28 @@ interface StoredRequest extends Record<string, unknown> {
   created_at: string | Date;
   /** A file source comes as its kind only; `correction_file_sources` gives its type, size and page. */
   sources: (ListedCorrectionSource | { kind: 'file' })[];
-  /** This slice stores only an admin's close. */
-  events: Extract<CorrectionEvent, { kind: 'closed' }>[];
 }
+
+/** One event as `correction_events` serves it, with an answer's proposed version or explanation. */
+interface StoredEvent extends Record<string, unknown> {
+  request_id: string;
+  kind: CorrectionEvent['kind'];
+  proposed_version: number | null;
+  explanation: string | null;
+}
+
+type ListedAnswer = CorrectionRequests['requests'][number]['answer'];
+
+const domainEvent = ({ kind, proposed_version: proposedVersion }: StoredEvent): CorrectionEvent =>
+  kind === 'answered' ? { kind, proposedVersion } : { kind };
+
+const listedAnswer = (events: readonly StoredEvent[]): ListedAnswer => {
+  const answered = events.find((event) => event.kind === 'answered');
+  if (answered === undefined) return null;
+  return answered.proposed_version === null
+    ? { kind: 'no_change', explanation: answered.explanation ?? '' }
+    : { kind: 'version_proposed', number: answered.proposed_version };
+};
 
 interface StoredFile extends Record<string, unknown> {
   request_id: string;
@@ -254,19 +273,25 @@ export function createCorrections({
       const identities = versions.identities(routeId);
       if (!identities.some((identity) => identity.number === number)) return 'not_found';
       const { basis: kind, grantId } = basisArguments(basis);
-      const [{ rows, files }, decided] = await Promise.all([
+      const [{ rows, files, events }, decided] = await Promise.all([
         withIdentity(db(), { accountId }, async (tx) => ({
           rows: (
             await tx.execute<StoredRequest>(sql`
-              SELECT * FROM knowledge.correction_requests(${routeId}, ${number}, ${kind}, ${grantId})`)
+              SELECT id, item_kind, item_key, note, created_at, sources
+                FROM knowledge.correction_requests(${routeId}, ${number}, ${kind}, ${grantId})`)
           ).rows,
           files: (
             await tx.execute<StoredFile>(sql`
               SELECT * FROM knowledge.correction_file_sources(${routeId}, ${number}, ${kind}, ${grantId})`)
           ).rows,
+          events: (
+            await tx.execute<StoredEvent>(sql`
+              SELECT * FROM knowledge.correction_events(${routeId}, ${number}, ${kind}, ${grantId})`)
+          ).rows,
         })),
         states(),
       ]);
+      const eventsOf = Map.groupBy(events, (event) => event.request_id);
       const fileAt = new Map(
         files.map((file) => [
           `${file.request_id}/${String(file.position)}`,
@@ -294,10 +319,11 @@ export function createCorrections({
           }),
           state: correctionState({
             versionNumber: number,
-            events: row.events,
+            events: (eventsOf.get(row.id) ?? []).map(domainEvent),
             identities,
             states: decided,
           }),
+          answer: listedAnswer(eventsOf.get(row.id) ?? []),
         })),
       };
     },

@@ -514,6 +514,17 @@ export const registry: Registry = {
       export: ['kind', 'at'],
       label: 'dataExport.tables.adminGrants',
     },
+    {
+      table: 'knowledge.corrector_key',
+      strategy: 'retain',
+      owner: ownedByAccount('actor_account_id'),
+      reason:
+        "The record of who made or revoked the corrector key and when, which the corrector run's answers name, with account IDs and key digests only (ADR-0029).",
+      period: 'forever',
+      export: ['kind', 'at'],
+      label: 'dataExport.tables.correctorKeys',
+      exportedThrough: 'knowledge.own_corrector_key_rows',
+    },
   ],
   unowned: [
     {
