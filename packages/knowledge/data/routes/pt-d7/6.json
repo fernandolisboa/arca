@@ -1,0 +1,719 @@
+{
+  "schemaVersion": 1,
+  "routeId": "pt-d7",
+  "number": 6,
+  "corrects": 5,
+  "title": "D7 residence visa for retirees and people living on their own income",
+  "country": "PT",
+  "tags": ["retirement", "temporary-residence"],
+  "effectiveFrom": "2026-01-01",
+  "status": "open",
+  "currency": "EUR",
+  "sources": [
+    {
+      "id": "lei-23-2007",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "title": "Lei n.º 23/2007 (foreigners law), articles 58.º, n.º 5, and 99.º, n.os 1 and 4: the family members who may apply with the principal, and the other parent's consent for a child of only one spouse",
+      "kind": "official",
+      "verifiedAt": "2026-11-12",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2022/08/16400/0000200137.pdf"
+    },
+    {
+      "id": "lei-23-2007-age",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/61-2025-941547426",
+      "title": "Lei n.º 23/2007, article 99.º, n.º 6: the marriage or de facto union must be valid and recognized under Portuguese law, and both spouses or partners 18 or over on the date of the application",
+      "kind": "official",
+      "verifiedAt": "2026-11-12",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2025/10/20400/0000900017.pdf"
+    },
+    {
+      "id": "lei-23-2007-partner",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "title": "Lei n.º 23/2007, article 100.º, n.º 1: reunification may be authorized with the partner in a duly proven de facto union and the partner's unmarried minor or incapable children entrusted to the partner",
+      "kind": "official",
+      "verifiedAt": "2026-11-12",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2022/08/16400/0000200137.pdf"
+    },
+    {
+      "id": "lei-23-2007-entry-ban",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "title": "Lei n.º 23/2007, article 52.º, n.º 1, a) to c): no visa during an entry ban that follows a removal, or under an alert for return or for refusal of entry and stay",
+      "kind": "official",
+      "verifiedAt": "2026-11-12",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2022/08/16400/0000200137.pdf"
+    },
+    {
+      "id": "lei-23-2007-conviction",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "title": "Lei n.º 23/2007, article 52.º, n.º 3: a residence visa is refused after a conviction for a crime Portugal punishes with more than one year of prison, even if not served or suspended",
+      "kind": "official",
+      "verifiedAt": "2026-11-12",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2022/08/16400/0000200137.pdf"
+    },
+    {
+      "id": "lei-23-2007-visa-validity",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "title": "Lei n.º 23/2007, article 58.º, n.º 2: a residence visa is valid for two entries and lets its holder stay for four months",
+      "kind": "official",
+      "verifiedAt": "2026-11-12",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2022/08/16400/0000200137.pdf"
+    },
+    {
+      "id": "lei-23-2007-visa-decision",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "title": "Lei n.º 23/2007, article 58.º, n.º 4: the residence visa application is decided within 60 days",
+      "kind": "official",
+      "verifiedAt": "2026-11-12",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2022/08/16400/0000200137.pdf"
+    },
+    {
+      "id": "lei-23-2007-permit",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "title": "Lei n.º 23/2007, article 75.º, n.º 1: a temporary residence permit is valid for two years from the issue of the card and renewable for successive periods of three years",
+      "kind": "official",
+      "verifiedAt": "2026-11-12",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2022/08/16400/0000200137.pdf"
+    },
+    {
+      "id": "lei-23-2007-fees",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "title": "Lei n.º 23/2007, article 209.º, n.º 1: the fees for visas granted by consular posts are those of the table of consular fees",
+      "kind": "official",
+      "verifiedAt": "2026-11-12",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2022/08/16400/0000200137.pdf"
+    },
+    {
+      "id": "lei-23-2007-scope",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "title": "Lei n.º 23/2007, article 4.º: the law covers foreigners and stateless persons, not nationals of EU or EEA states or of a state with an EU free movement agreement",
+      "kind": "official",
+      "verifiedAt": "2026-11-12",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2022/08/16400/0000200137.pdf"
+    },
+    {
+      "id": "portaria-1563-2007",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/1563-2007-628798",
+      "title": "Portaria n.º 1563/2007, article 2.º, n.º 2: means per household member against the minimum wage net of social security: first adult 100%, other adults 50%, under 18 and dependent adult children 30%",
+      "kind": "official",
+      "verifiedAt": "2026-11-12",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2007/12/23800/0886608868.pdf"
+    },
+    {
+      "id": "portaria-1563-2007-period",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/1563-2007-628798",
+      "title": "Portaria n.º 1563/2007, article 5.º, n.º 6: a residence visa applicant's means are assured for at least 12 months; it names the proofs for retirees and for people living on income from assets",
+      "kind": "official",
+      "verifiedAt": "2026-11-12",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2007/12/23800/0886608868.pdf"
+    },
+    {
+      "id": "dl-139-2025",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/139-2025-992879809",
+      "title": "Decreto-Lei n.º 139/2025: guaranteed minimum monthly wage of EUR 920 from 2026-01-01",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2025/12/24900/0001400016.pdf"
+    },
+    {
+      "id": "codigo-contributivo",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/110-2009-490249",
+      "title": "Código dos Regimes Contributivos (Lei n.º 110/2009), article 53.º: the worker pays 11% of pay in social security contributions, so the net minimum wage is 89% of it",
+      "kind": "official",
+      "verifiedAt": "2026-11-12",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2009/09/18000/0649006528.pdf"
+    },
+    {
+      "id": "dr-84-2007-family",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-regulamentar/4-2022-201699171",
+      "title": "Decreto Regulamentar n.º 84/2007, article 24.º-B, n.º 2: the family members who may accompany a residence visa applicant are those of articles 99.º, n.º 1, and 100.º, n.º 1, of Lei n.º 23/2007",
+      "kind": "official",
+      "verifiedAt": "2026-11-12",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2022/09/19000/0002800097.pdf"
+    },
+    {
+      "id": "dr-84-2007-means",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-regulamentar/4-2022-201699171",
+      "title": "Decreto Regulamentar n.º 84/2007, article 24.º-B, n.º 1, b): proof of stable and regular resources for the applicant and the accompanying family, set by article 2.º, n.º 2, of Portaria n.º 1563/2007",
+      "kind": "official",
+      "verifiedAt": "2026-11-12",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2022/09/19000/0002800097.pdf"
+    },
+    {
+      "id": "lei-7-2001",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/23-2010-343919",
+      "title": "Lei n.º 7/2001, article 1.º, n.º 2: a de facto union is two people living in conditions like those of spouses for more than two years",
+      "kind": "official",
+      "verifiedAt": "2026-11-12",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2010/08/16800/0376403768.pdf"
+    },
+    {
+      "id": "portaria-91-2025",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/91-2025-910130846",
+      "title": "Portaria n.º 91/2025/1, article 2.º: EUR 110 for processing a national visa application (article 15.º, n.º 4, of the table of consular fees), in force from 2025-03-11",
+      "kind": "official",
+      "verifiedAt": "2026-11-12",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2025/03/04800/0000900017.pdf"
+    },
+    {
+      "id": "portaria-229-2021",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/434-2023-230006497",
+      "title": "Portaria n.º 229/2021 (table of consular fees), article 22.º, n.º 1: children up to the age of 6 pay no visa fee, and those from 6 and under 18 may be exempted",
+      "kind": "official",
+      "verifiedAt": "2026-11-12",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2023/12/23900/0001200027.pdf"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "pt",
+      "number": 1
+    }
+  ],
+  "countrySets": [
+    {
+      "id": "eu-free-movement",
+      "number": 2
+    }
+  ],
+  "leapDayBirthday": "unsettled",
+  "requirements": [
+    {
+      "id": "household-income",
+      "title": "Monthly passive income of the 2026 minimum wage net of the 11% social security contribution (EUR 818.80, from EUR 920) for the principal, plus 50% of it per other adult and 30% per child under 18",
+      "expression": {
+        "op": "gte",
+        "left": {
+          "op": "sum",
+          "over": "unit.members",
+          "value": {
+            "op": "fact",
+            "key": "person.monthlyPassiveIncome"
+          }
+        },
+        "right": {
+          "op": "add",
+          "left": {
+            "op": "mul",
+            "operand": {
+              "op": "money",
+              "amount": 92000,
+              "currency": "EUR"
+            },
+            "by": "0.89"
+          },
+          "right": {
+            "op": "add",
+            "left": {
+              "op": "sum",
+              "over": "unit.dependents",
+              "value": {
+                "op": "mul",
+                "operand": {
+                  "op": "mul",
+                  "operand": {
+                    "op": "money",
+                    "amount": 92000,
+                    "currency": "EUR"
+                  },
+                  "by": "0.89"
+                },
+                "by": "0.5"
+              },
+              "where": {
+                "op": "gte",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              }
+            },
+            "right": {
+              "op": "sum",
+              "over": "unit.dependents",
+              "value": {
+                "op": "mul",
+                "operand": {
+                  "op": "mul",
+                  "operand": {
+                    "op": "money",
+                    "amount": 92000,
+                    "currency": "EUR"
+                  },
+                  "by": "0.89"
+                },
+                "by": "0.3"
+              },
+              "where": {
+                "op": "lt",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              }
+            }
+          }
+        }
+      },
+      "sources": ["portaria-1563-2007", "dl-139-2025", "codigo-contributivo", "dr-84-2007-means"]
+    },
+    {
+      "id": "not-eu-eea-or-swiss-citizen",
+      "title": "Not a citizen of an EU or EEA state or of Switzerland, Portugal included: the foreigners law, and so this visa, does not apply to them",
+      "expression": {
+        "op": "not",
+        "operand": {
+          "op": "intersects",
+          "list": {
+            "op": "fact",
+            "key": "principal.citizenships"
+          },
+          "set": {
+            "op": "set",
+            "id": "eu-free-movement"
+          }
+        }
+      },
+      "sources": ["lei-23-2007-scope"]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "means-for-12-months",
+      "title": "Means assured for at least 12 months: a retiree proves the pension and that its payment is guaranteed, or other income available in Portugal; others prove their income and its availability in Portugal",
+      "evidence": ["principal.monthlyPassiveIncome"],
+      "sources": ["portaria-1563-2007-period"]
+    },
+    {
+      "id": "no-entry-ban",
+      "title": "No entry ban in force after a removal from Portugal, and no alert for return or for refusal of entry and stay in the Schengen Information System or in Portugal's border system",
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["lei-23-2007-entry-ban"]
+    },
+    {
+      "id": "criminal-record",
+      "title": "No conviction for a crime that Portugal punishes with more than one year of prison, even if the sentence was not served or was suspended",
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["lei-23-2007-conviction"]
+    }
+  ],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse, both spouses aged 18 or over; the marriage must be valid and recognized under Portuguese law, which is not checked",
+      "path": ["spouse"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "principal.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          }
+        ]
+      },
+      "sources": ["lei-23-2007", "lei-23-2007-age"]
+    },
+    {
+      "id": "minor-children",
+      "title": "Children under 18; an adoption must be recognized by Portugal and a child of only one spouse needs the other parent's consent or a custody decision, which are not checked",
+      "path": ["child"],
+      "condition": {
+        "op": "lt",
+        "left": {
+          "op": "fact",
+          "key": "person.ageYears"
+        },
+        "right": {
+          "op": "int",
+          "value": 18
+        }
+      },
+      "sources": ["lei-23-2007"]
+    },
+    {
+      "id": "spouse-minor-children",
+      "title": "The spouse's children under 18; an adoption must be recognized by Portugal and a child of only one spouse needs the other parent's consent or a custody decision, which are not checked",
+      "path": ["spouse", "child"],
+      "condition": {
+        "op": "lt",
+        "left": {
+          "op": "fact",
+          "key": "person.ageYears"
+        },
+        "right": {
+          "op": "int",
+          "value": 18
+        }
+      },
+      "sources": ["lei-23-2007"]
+    },
+    {
+      "id": "adult-children",
+      "title": "Adult children who depend on the principal, only if incapable, or single and studying at a school in Portugal, which is not recorded: possible",
+      "path": ["child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "fact",
+            "key": "person.dependsOnPrincipal"
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["lei-23-2007"]
+    },
+    {
+      "id": "spouse-adult-children",
+      "title": "The spouse's adult children who depend on the principal or the spouse, only if incapable, or single and studying at a school in Portugal, which is not recorded: possible",
+      "path": ["spouse", "child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "fact",
+                "key": "person.dependsOnPrincipal"
+              },
+              {
+                "op": "fact",
+                "key": "edge.dependsOnLinkedPerson"
+              }
+            ]
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["lei-23-2007"]
+    },
+    {
+      "id": "parents",
+      "title": "Parents who depend on the principal",
+      "path": ["parent"],
+      "condition": {
+        "op": "fact",
+        "key": "person.dependsOnPrincipal"
+      },
+      "sources": ["lei-23-2007"]
+    },
+    {
+      "id": "spouse-parents",
+      "title": "The spouse's parents who depend on the principal or the spouse",
+      "path": ["spouse", "parent"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "fact",
+            "key": "person.dependsOnPrincipal"
+          },
+          {
+            "op": "fact",
+            "key": "edge.dependsOnLinkedPerson"
+          }
+        ]
+      },
+      "sources": ["lei-23-2007"]
+    },
+    {
+      "id": "partner",
+      "title": "Partner in a de facto union of more than two years, both aged 18 or over; counts only if the union is duly proven and recognized under Portuguese law, which is not recorded: possible",
+      "path": ["partner"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "since",
+            "date": {
+              "op": "fact",
+              "key": "edge.start"
+            },
+            "duration": "P2Y1D"
+          },
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "principal.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["lei-23-2007-partner", "dr-84-2007-family", "lei-7-2001", "lei-23-2007-age"]
+    },
+    {
+      "id": "partner-children",
+      "title": "The partner's unmarried children, under 18 or incapable, legally entrusted to the partner, when the union of more than two years counts; none of this is recorded: possible",
+      "path": ["partner", "child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "since",
+            "date": {
+              "op": "fact",
+              "key": "firstEdge.start"
+            },
+            "duration": "P2Y1D"
+          },
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "principal.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["lei-23-2007-partner", "dr-84-2007-family", "lei-7-2001", "lei-23-2007-age"]
+    }
+  ],
+  "costs": [
+    {
+      "id": "visa-fee",
+      "title": "Consular fee for processing the residence visa application of a principal aged 18 or over",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 11000,
+        "currency": "EUR"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "gte",
+        "left": {
+          "op": "fact",
+          "key": "principal.ageYears"
+        },
+        "right": {
+          "op": "int",
+          "value": 18
+        }
+      },
+      "sources": ["portaria-91-2025", "portaria-229-2021", "lei-23-2007-fees"]
+    },
+    {
+      "id": "visa-fee-minor-principal",
+      "title": "Consular fee for processing the residence visa application of a principal aged 6 to 17, which the consulate may waive",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 11000,
+        "currency": "EUR"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "principal.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 6
+            }
+          },
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "principal.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["portaria-91-2025", "portaria-229-2021", "lei-23-2007-fees"]
+    },
+    {
+      "id": "visa-fee-adult-dependents",
+      "title": "Consular fee for the residence visa application of each accompanying family member aged 18 or over",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 11000,
+        "currency": "EUR"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "gte",
+        "left": {
+          "op": "fact",
+          "key": "person.ageYears"
+        },
+        "right": {
+          "op": "int",
+          "value": 18
+        }
+      },
+      "sources": ["portaria-91-2025", "portaria-229-2021", "lei-23-2007-fees"]
+    },
+    {
+      "id": "visa-fee-children",
+      "title": "Consular fee for the residence visa application of each child aged 6 to 17, which the consulate may waive; children under 6 pay nothing",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 11000,
+        "currency": "EUR"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 6
+            }
+          },
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["portaria-91-2025", "portaria-229-2021", "lei-23-2007-fees"]
+    }
+  ],
+  "durations": [
+    {
+      "id": "visa-decision",
+      "title": "Decision on the residence visa application, within the legal time limit of 60 days",
+      "min": "P0D",
+      "max": "P60D",
+      "sources": ["lei-23-2007-visa-decision"]
+    },
+    {
+      "id": "visa-validity",
+      "title": "Residence visa: two entries and a stay of four months in Portugal, to apply there for the residence permit",
+      "min": "P4M",
+      "max": "P4M",
+      "sources": ["lei-23-2007-visa-validity"]
+    },
+    {
+      "id": "first-residence-permit",
+      "title": "First temporary residence permit, counted from the issue of the card; then renewable for successive periods of three years",
+      "min": "P2Y",
+      "max": "P2Y",
+      "sources": ["lei-23-2007-permit"]
+    }
+  ]
+}

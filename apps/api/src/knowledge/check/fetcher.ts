@@ -42,6 +42,11 @@ export interface FetchLimits {
   readonly maxBytes: number;
   /** Bytes after decompression. */
   readonly maxDecompressedBytes: number;
+  /**
+   * Bytes of a PDF, received and after decompression, in place of the two caps above: a gazette
+   * embeds its fonts, so a law of a hundred pages runs to megabytes (ADR-0028).
+   */
+  readonly maxPdfBytes: number;
   /** Characters of markup or data handed to a parser; more is cut, as the text would be. */
   readonly maxMarkupLength: number;
   /** Characters of text kept; a whole code fits, and the check sends a long page as an excerpt. */
@@ -54,6 +59,7 @@ export interface FetchLimits {
 export const fetchLimits: FetchLimits = {
   maxBytes: 3_000_000,
   maxDecompressedBytes: 6_000_000,
+  maxPdfBytes: 16_000_000,
   maxMarkupLength: 6_000_000,
   maxTextLength: 3_000_000,
   timeoutMs: 20_000,
@@ -300,11 +306,12 @@ export function httpsSourceFetcher({
         callback();
       },
     });
+    const pdf = format === 'pdf';
     await pipeline([
       response,
-      byteLimit(limits.maxBytes),
+      byteLimit(pdf ? limits.maxPdfBytes : limits.maxBytes),
       ...(decompress === undefined ? [] : [decompress]),
-      byteLimit(limits.maxDecompressedBytes),
+      byteLimit(pdf ? limits.maxPdfBytes : limits.maxDecompressedBytes),
       collect,
     ]);
     const bytes = new Uint8Array(Buffer.concat(chunks));
