@@ -13,6 +13,8 @@ import { checkCase, recordingPages, snapshotText } from './eval/independent-chec
 
 /** The passage a careful model quotes for each item of the correct cases. */
 const careful: Record<string, string> = {
+  'duration:visa-validity':
+    'O visto de residência habilita o seu titular a permanecer vinte e dois meses em território nacional',
   'requirement:passive-income': 'shows a stable passive income of at least EUR 1,500 a month',
   'dependent:spouse':
     'The spouse of the holder of a residence permit under section 4 who depends on the holder',
@@ -101,6 +103,16 @@ const byId = (id: string) => {
   return found;
 };
 
+/** A case whose source titles name the act alone, so no provision is found by its number. */
+const withoutProvisions = (evalCase: CheckCase): CheckCase => {
+  const { version } = evalCase.entry;
+  const sources = version.sources.map((source) => ({
+    ...source,
+    title: source.title.split(',')[0] ?? source.title,
+  }));
+  return { ...evalCase, entry: { ...evalCase.entry, version: { ...version, sources } } };
+};
+
 const longCases = checkCases.filter(({ snapshots }) =>
   [...snapshots.values()].some((snapshot) => !sentWhole(snapshotText(snapshot) ?? '')),
 );
@@ -112,10 +124,10 @@ const codeStops = lured.flatMap(({ id, stoppedBy }) =>
 );
 
 describe('the independent check evaluation cases (ADR-0027)', () => {
-  it('holds ten correct, six wrong and twenty adversarial cases with unique IDs', () => {
+  it('holds eleven correct, seven wrong and twenty adversarial cases with unique IDs', () => {
     const kinds = checkCases.map(({ kind }) => kind);
-    expect(kinds.filter((kind) => kind === 'correct')).toHaveLength(10);
-    expect(kinds.filter((kind) => kind === 'wrong')).toHaveLength(6);
+    expect(kinds.filter((kind) => kind === 'correct')).toHaveLength(11);
+    expect(kinds.filter((kind) => kind === 'wrong')).toHaveLength(7);
     expect(kinds.filter((kind) => kind === 'adversarial')).toHaveLength(20);
     expect(new Set(checkCases.map(({ id }) => id)).size).toBe(checkCases.length);
   });
@@ -149,24 +161,26 @@ describe('the independent check evaluation cases (ADR-0027)', () => {
   });
 
   it.each(longCases.map(({ id }) => id))(
-    "%s's words in force are sent when their passage is picked, and not otherwise",
+    "%s's words in force are sent when the source title names their section, or the locator picks them",
     async (id) => {
       const evalCase = byId(id);
-      const sentWith = async (locator?: PassageLocator) => {
+      const sentWith = async (checked: CheckCase, locator?: PassageLocator) => {
         const { checker, sent } = recordingPages(answering(carefulQuote));
         const choice = { checker, model: 'claude-test', promptVersion: 'check-test' };
-        await checkCase(evalCase, choice, undefined, locator);
+        await checkCase(checked, choice, undefined, locator);
         return normalizeWhitespace(sent());
       };
-      expect(await sentWith(findingSections)).toContain(evalCase.mustRead);
-      expect(await sentWith()).not.toContain(evalCase.mustRead);
+      const unnamed = withoutProvisions(evalCase);
+      expect(await sentWith(evalCase)).toContain(evalCase.mustRead);
+      expect(await sentWith(unnamed, findingSections)).toContain(evalCase.mustRead);
+      expect(await sentWith(unnamed)).not.toContain(evalCase.mustRead);
     },
   );
 
   it.each(longCases.map(({ id }) => id))(
-    '%s reads nothing of section 4 unless its passage is picked',
+    '%s reads nothing of section 4 when no title names it and no passage is picked',
     async (id) => {
-      const report = await checkCase(byId(id), {
+      const report = await checkCase(withoutProvisions(byId(id)), {
         checker: answering(carefulQuote),
         model: 'claude-test',
         promptVersion: 'check-test',

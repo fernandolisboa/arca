@@ -278,14 +278,12 @@ export {
   verifyAnswers,
 } from './independent-check/answers.js';
 export { asDataText } from './data-text.js';
-export { likelyLanguage, writesNumberInWords } from './independent-check/number-words.js';
+export { pageLanguages } from './independent-check/number-words.js';
 export {
   checkCalls,
   excerptBudgets,
   type CitedText,
-  maxCallsPerCheck,
   maxCheckPagesText,
-  maxItemsPerCall,
   openingExcerpt,
   withinTextBudget,
 } from './independent-check/sent-pages.js';
@@ -297,6 +295,7 @@ export {
   maxPassagesPerItem,
   maxWholePageText,
   pageOutline,
+  provisionPassages,
   sentWhole,
   splitPassages,
 } from './independent-check/passages.js';

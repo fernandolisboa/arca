@@ -10,7 +10,6 @@ import {
   asDataText,
   checkCalls,
   checkItems,
-  likelyLanguage,
   excerptBudgets,
   excerptPassages,
   excerptText,
@@ -19,7 +18,9 @@ import {
   noGuide,
   officialSources,
   openingExcerpt,
+  pageLanguages,
   pageOutline,
+  provisionPassages,
   reportClean,
   sentWhole,
   splitPassages,
@@ -86,6 +87,9 @@ const maxFetchedPages = 200;
  */
 const maxLocatedPages = 10;
 
+/** The most characters of item keys a `comparing` event names, within a progress row's size. */
+const maxNamedKeysLength = 2_000;
+
 /** The items that cite a page. */
 const itemsCiting = (items: readonly CheckItem[], url: string) =>
   items.filter(({ urls }) => urls.includes(url));
@@ -117,15 +121,7 @@ interface Excerpt {
   readonly picked: boolean;
 }
 
-/**
- * The languages a version's pages are read in for numbers written in words: its country's likely
- * language, and English, which many official pages are also published in.
- */
-const pageLanguages = (country: string) => [
-  ...new Set([likelyLanguage(country), 'en'].filter((language) => language !== undefined)),
-];
-
-/** A long page split into passages, and the passages the locator picked for each item key. */
+/** A long page split into passages, and the passages picked for each item key. */
 interface Picks {
   readonly passages: readonly Passage[];
   readonly picks: ReadonlyMap<string, readonly number[]> | undefined;
@@ -301,9 +297,10 @@ export function createVersionCheck({
   };
 
   /**
-   * The passages of a long page the locator picked for the items that cite it, by item key, or
-   * undefined when the locator was not asked, failed or answered nothing usable. Asked once per
-   * page with every citing item, whatever calls the items are later compared in.
+   * The passages of a long page picked for each item that cites it, by item key: first those that
+   * head a provision its source titles name (ADR-0027), then those the locator picked. Undefined
+   * when neither found any. The locator is asked once per page with every citing item, whatever
+   * calls the items are later compared in.
    */
   const pick = async (
     page: ReadPage,
@@ -313,16 +310,29 @@ export function createVersionCheck({
     record: Recorder,
   ): Promise<Picks> => {
     const passages = splitPassages(page.text);
-    if (!askLocator) return { passages, picks: undefined };
-    const picks = await locate(
-      {
-        items: itemsCiting(items, page.url).map(({ key, kind, title }) => ({ key, kind, title })),
-        sourceTitles: sourceTitlesAt(page.url, entry),
-        outline: pageOutline(page.text, passages),
-      },
-      record,
-    );
-    return { passages, picks };
+    const citing = itemsCiting(items, page.url);
+    const located = askLocator
+      ? await locate(
+          {
+            items: citing.map(({ key, kind, title }) => ({ key, kind, title })),
+            sourceTitles: sourceTitlesAt(page.url, entry),
+            outline: pageOutline(page.text, passages),
+          },
+          record,
+        )
+      : undefined;
+    const picks = new Map<string, readonly number[]>();
+    for (const { key, citations } of citing) {
+      const titles = citations.filter(({ url }) => url === page.url).map(({ title }) => title);
+      const merged = [
+        ...new Set([
+          ...provisionPassages(page.text, passages, titles),
+          ...(located?.get(key) ?? []),
+        ]),
+      ];
+      if (merged.length > 0) picks.set(key, merged);
+    }
+    return { passages, picks: picks.size > 0 ? picks : undefined };
   };
 
   /**
@@ -443,15 +453,19 @@ export function createVersionCheck({
       return excerpt.page;
     });
     // The text sent, framed as data and within the budget, is what quotes are checked against.
-    const sent = withinTextBudget(shaped).filter(({ text }) => text !== '');
-    const pages = new Map<string, ReadPage>(sent.map((page) => [page.url, page]));
+    const budgeted = withinTextBudget(shaped);
+    const pages = new Map<string, ReadPage>(budgeted.map((page) => [page.url, page]));
+    const sent = budgeted.filter(({ text }) => text !== '');
     let answers: readonly CheckAnswer[] = [];
     let failure: RuleCheckerFailure | null = null;
     // With no page text nothing could match, so no model call is paid for.
     if (sent.length > 0) {
-      const comparing: CheckProgressEvent = namesItems
-        ? { kind: 'comparing', keys: items.map(({ key }) => key) }
-        : { kind: 'comparing' };
+      const keys = items.map(({ key }) => key);
+      // Keys too long for a progress row go unnamed, so a retry clears every item on screen.
+      const comparing: CheckProgressEvent =
+        namesItems && JSON.stringify(keys).length <= maxNamedKeysLength
+          ? { kind: 'comparing', keys }
+          : { kind: 'comparing' };
       await record(comparing);
       const written: Promise<void>[] = [];
       let calls = 0;
@@ -475,7 +489,12 @@ export function createVersionCheck({
       }
       await Promise.all(written);
     }
-    return { checked: verifyAnswers(items, answers, pages, languages), sent, failure, unpicked };
+    return {
+      checked: verifyAnswers(items, answers, pages, languages),
+      sent: budgeted,
+      failure,
+      unpicked,
+    };
   };
 
   const check = async (
@@ -543,7 +562,7 @@ export function createVersionCheck({
       // short-lived, like one whose fetch failed.
       failed:
         failure !== null ||
-        compared.every(({ sent }) => sent.length === 0) ||
+        compared.every(({ sent }) => sent.every(({ text }) => text === '')) ||
         compared.some(({ unpicked }) => unpicked) ||
         fetchLog.some((entry) => entry.outcome !== 'read'),
       clean: reportClean(checked, model),

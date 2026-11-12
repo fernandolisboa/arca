@@ -33,11 +33,12 @@ import { newestOfEachRoute } from '../newest-versions.js';
 const concurrency = 3;
 
 /**
- * The most model calls one run may make: a check and its one retry for each route, and a pick of
- * passages for each long page, with room for a catalog that grows. With the check's own caps on
- * what a call reads and writes, this bounds a run to a few dollars.
+ * The most model calls one run may make: up to `maxCallsPerCheck` checker calls and their retries
+ * for each route, and a pick of passages for each long page, with room for a catalog that grows.
+ * With the check's own caps on what a call reads and writes, this bounds a run to about ten
+ * dollars.
  */
-const maxCallsPerRun = 200;
+const maxCallsPerRun = 400;
 
 /**
  * No check starts after this long, so even one that then takes its longest, about 13 minutes,

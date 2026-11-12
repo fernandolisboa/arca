@@ -224,7 +224,9 @@ export function pdfText(
     signal.addEventListener('abort', onAbort, { once: true });
     thread.on('message', (message: unknown) => {
       if (!isReply(message)) settle({ ok: false, failure: 'pdf_unreadable' });
-      else settle(message.ok ? { ok: true, text: joinVerticalLines(message.text) } : message);
+      // Text past the cap stays as read, so the caller still sees it was cut.
+      else if (!message.ok || message.text.length > maxTextLength) settle(message);
+      else settle({ ok: true, text: joinVerticalLines(message.text) });
     });
     thread.on('error', (error: { code?: unknown }) => {
       const outOfMemory = error.code === 'ERR_WORKER_OUT_OF_MEMORY';

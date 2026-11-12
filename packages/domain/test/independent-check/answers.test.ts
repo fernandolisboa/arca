@@ -21,6 +21,7 @@ const item: CheckItem = {
   urls: [law],
   officialDomains: [{ id: 'qm-gov', number: 1 }],
   values: [{ kind: 'number', value: '920' }],
+  citations: [{ url: law, title: 'Residence act, article 3' }],
 };
 
 const page = (patch: Partial<ReadPage> = {}): ReadPage => ({
