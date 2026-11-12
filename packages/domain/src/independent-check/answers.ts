@@ -1,7 +1,7 @@
 import type { CheckItem } from './items.js';
 import { excerptRuns } from './passages.js';
 import { numberRunBounds } from './number-words.js';
-import { type CheckValue, statesValue } from './values.js';
+import { type CheckValue, figureBounds, statesValue } from './values.js';
 
 export const checkStatuses = ['matches', 'differs', 'could_not_check'] as const;
 export type CheckStatus = (typeof checkStatuses)[number];
@@ -344,8 +344,8 @@ const wordCharacter =
 
 /**
  * The quote as it stands in `run`, widened to whole words and to the whole number-word or kanji
- * runs its ends belong to, so a quote cut out of a number ("2 meses" from "22 meses", "dois
- * meses" from "vinte e dois meses") states the whole number; undefined when the quote is not in
+ * runs its ends belong to, so a quote cut out of a number ("2 meses" from "22 meses", "500" from
+ * "1.500", "dois meses" from "vinte e dois meses") states the whole number; undefined when the quote is not in
  * the run.
  */
 function wholeWords(run: string, quote: string, languages: readonly string[]): string | undefined {
@@ -355,6 +355,7 @@ function wholeWords(run: string, quote: string, languages: readonly string[]): s
   let end = at + quote.length;
   while (start > 0 && wordCharacter.test(run[start - 1] ?? '')) start -= 1;
   while (end < run.length && wordCharacter.test(run[end] ?? '')) end += 1;
+  ({ start, end } = figureBounds(run, start, end));
   const bounds = numberRunBounds(run, start, end, languages);
   return run.slice(bounds.start, bounds.end);
 }

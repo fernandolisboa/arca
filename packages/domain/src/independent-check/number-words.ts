@@ -220,7 +220,7 @@ function wordsFor(spelling: Spelling, value: number): string[] {
   return words.map(spaced);
 }
 
-const spaced = (words: string) => words.split(/[\s\-\u2010\u2011]+/u).join(' ');
+const spaced = (words: string) => words.split(/[\s\-\u2010\u2011\u2013]+/u).join(' ');
 
 /** Words that join the parts of a number: "vinte e um", "treinta y seis", "one hundred and two". */
 const joiners = new Set(['and', 'e', 'y']);
@@ -262,7 +262,7 @@ function numberRuns(text: string, words: ReadonlySet<string>): string[] {
     run = [];
   };
   for (const [piece] of text.matchAll(/[\p{L}\p{M}]+|[^\p{L}\p{M}]+/gu)) {
-    if (/^[\s\-\u2010\u2011]+$/u.test(piece)) continue;
+    if (/^[\s\-\u2010\u2011\u2013]+$/u.test(piece)) continue;
     const isWord = /^[\p{L}\p{M}]/u.test(piece);
     if (isWord && (words.has(piece) || joiners.has(piece) || multiplier.test(piece))) {
       run.push(piece);
@@ -360,8 +360,8 @@ export function writesNumberInWords(
 }
 
 const kanjiNumeral = /[〇一二三四五六七八九十百千]/u;
-const wordBefore = /([\p{L}\p{M}]+)[\s\-‐‑]+$/u;
-const wordAfter = /^[\s\-‐‑]+([\p{L}\p{M}]+)/u;
+const wordBefore = /([\p{L}\p{M}]+)[\s\-‐‑–]+$/u;
+const wordAfter = /^[\s\-‐‑–]+([\p{L}\p{M}]+)/u;
 const edgeWord = /^[\p{L}\p{M}]+|[\p{L}\p{M}]+$/gu;
 /** Enough of the text beside a quote to hold the next word. */
 const lookaround = 40;
@@ -393,6 +393,7 @@ export function numberRunBounds(
   let from = start;
   let to = end;
   while (kanji && from > 0 && inKanjiRun(from)) from -= 1;
+  if (kanji && text[from - 1] === '第' && kanjiNumeral.test(text[from] ?? '')) from -= 1;
   while (kanji && to < text.length && inKanjiRun(to)) to += 1;
   const before = () => wordBefore.exec(text.slice(Math.max(0, from - lookaround), from));
   const after = () => wordAfter.exec(text.slice(to, to + lookaround));

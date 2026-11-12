@@ -27,6 +27,38 @@ export function canonicalNumber(decimal: string): string {
 const spaceLike = /[\s\u00a0\u2009\u202f']/u;
 const numberToken = /\d+(?:[.,\s\u00a0\u2009\u202f']\d+)*/gu;
 
+const digit = (char: string | undefined) => char !== undefined && /\d/u.test(char);
+const separator = (char: string | undefined) =>
+  char !== undefined && /[.,\s\u00a0\u2009\u202f']/u.test(char);
+
+/**
+ * The bounds of `text.slice(start, end)` widened to the whole figures its ends cut into, group
+ * separators and decimal marks included, so "500" cut from "1.500" or "5" from "2,5" reads whole.
+ */
+export function figureBounds(
+  text: string,
+  start: number,
+  end: number,
+): { start: number; end: number } {
+  let from = start;
+  let to = end;
+  for (;;) {
+    const before = text[from - 1];
+    const at = text[from];
+    if (digit(before) && (digit(at) || (separator(at) && digit(text[from + 1])))) from -= 1;
+    else if (separator(before) && digit(text[from - 2]) && digit(at)) from -= 1;
+    else break;
+  }
+  for (;;) {
+    const at = text[to];
+    const before = text[to - 1];
+    if (digit(at) && (digit(before) || (separator(before) && digit(text[to - 2])))) to += 1;
+    else if (separator(at) && digit(before) && digit(text[to + 1])) to += 1;
+    else break;
+  }
+  return { start: from, end: to };
+}
+
 /**
  * The number a token stands for when `decimal` is its decimal mark, or undefined when the token
  * cannot be read that way: the decimal mark comes once and last, and every group before it after

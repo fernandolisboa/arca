@@ -406,6 +406,30 @@ describe('verifyAnswers', () => {
       '2',
     ],
     ['kanji', '在留期間は十二年を超えない範囲で定める。', '二年を超えない範囲で定める。', '2'],
+    [
+      'a grouped figure',
+      'a monthly income of 1.500 EUR is required.',
+      '500 EUR is required.',
+      '500',
+    ],
+    [
+      'a decimal',
+      'permanecer por 2,5 anos em território nacional.',
+      '5 anos em território nacional',
+      '5',
+    ],
+    [
+      'a kanji ordinal',
+      '在留期間は第十二年を超えない範囲で定める。',
+      '十二年を超えない範囲で定める。',
+      '12',
+    ],
+    [
+      'an en dash',
+      'a stay of twenty–two months in the country.',
+      'two months in the country.',
+      '2',
+    ],
   ])('reads a quote cut out of a number in %s as the whole number', (_, text, cut, value) => {
     const two = { ...item, values: [{ kind: 'number' as const, value }] };
     const [checked] = verifyAnswers(
