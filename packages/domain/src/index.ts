@@ -161,6 +161,7 @@ export {
   routeVersionSchema,
   sourceSchema,
   sourceUrls,
+  addressPages,
 } from './rules/route-version.js';
 export {
   collectionNames,

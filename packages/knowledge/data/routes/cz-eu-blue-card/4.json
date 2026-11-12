@@ -1,0 +1,629 @@
+{
+  "schemaVersion": 1,
+  "routeId": "cz-eu-blue-card",
+  "number": 4,
+  "title": "EU Blue Card for the Czech Republic: a highly qualified job with gross pay of at least 1.5 times the average gross annual wage, CZK 885,870 a year from May 2026",
+  "country": "CZ",
+  "tags": ["work", "temporary-residence"],
+  "effectiveFrom": "2026-05-01",
+  "status": "open",
+  "currency": "CZK",
+  "leapDayBirthday": "unsettled",
+  "sources": [
+    {
+      "id": "aliens-act-blue-card",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42i",
+      "title": "Aliens Act (No. 326/1999 Sb.), § 42i Modrá karta, (1), (2), (5) and (11)(b): a highly qualified job in the central register of vacancies open to Blue Card holders; a degree or higher skill",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://e-sbirka.gov.cz/sbr-cache/dokumenty-sbirky/%2Fsb%2F1999%2F326%2F2026-06-12/fragmenty?cisloStranky={0..3}"
+    },
+    {
+      "id": "aliens-act-blue-card-contract",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42j",
+      "title": "Aliens Act, § 42j(1)(b) to (d): a contract of at least 6 months for the statutory weekly hours, with gross pay of at least 1.5 times the average gross annual wage the Ministry of Labour announces",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://e-sbirka.gov.cz/sbr-cache/dokumenty-sbirky/%2Fsb%2F1999%2F326%2F2026-06-12/fragmenty?cisloStranky={0..3}"
+    },
+    {
+      "id": "mpsv-average-wage-2025",
+      "url": "https://e-sbirka.gov.cz/sb/2026/44",
+      "title": "Ministry of Labour communication No. 44/2026 Sb.: from the 2025 average, the average gross annual wage for Blue Cards is CZK 590,580 from 1 May 2026 to 30 April 2027",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://e-sbirka.gov.cz/sbr-cache/dokumenty-sbirky/%2Fsb%2F2026%2F44/fragmenty?cisloStranky=0"
+    },
+    {
+      "id": "professional-skill-decree",
+      "url": "https://e-sbirka.gov.cz/sb/2023/205",
+      "title": "Decree No. 205/2023 Sb., §§ 1 and 2: for ICT managers and specialists (CZ-ISCO 133 and 25), 3 years of practice in the 7 years before applying counts as high qualification",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://e-sbirka.gov.cz/sbr-cache/dokumenty-sbirky/%2Fsb%2F2023%2F205/fragmenty?cisloStranky=0"
+    },
+    {
+      "id": "aliens-act-family",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42a",
+      "title": "Aliens Act, § 42a(1)(a) to (d) and (7)(d): a Blue Card holder's spouse, minor children and the spouse's, and a lone parent over 65 or a parent or child unable to care for themselves",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://e-sbirka.gov.cz/sbr-cache/dokumenty-sbirky/%2Fsb%2F1999%2F326%2F2026-06-12/fragmenty?cisloStranky={0..3}"
+    },
+    {
+      "id": "aliens-act-family-income",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42b",
+      "title": "Aliens Act, § 42b(1)(d): the family's total monthly income after reuniting must reach the members' living minimums (životní minimum) plus the housing amounts",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://e-sbirka.gov.cz/sbr-cache/dokumenty-sbirky/%2Fsb%2F1999%2F326%2F2026-06-12/fragmenty?cisloStranky={0..3}"
+    },
+    {
+      "id": "aliens-act-validity",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_44",
+      "title": "Aliens Act, § 44(7): a Blue Card is issued for 3 months longer than the term of the employment contract, at most 3 years",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://e-sbirka.gov.cz/sbr-cache/dokumenty-sbirky/%2Fsb%2F1999%2F326%2F2026-06-12/fragmenty?cisloStranky={0..3}"
+    },
+    {
+      "id": "aliens-act-eu-citizens",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_1",
+      "title": "Aliens Act, § 1(2) and (3) and note 32: EU citizens, and EEA and Swiss citizens with them, fall under the rules for EU citizens; the Blue Card is for third-country nationals",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://e-sbirka.gov.cz/sbr-cache/dokumenty-sbirky/%2Fsb%2F1999%2F326%2F2026-06-12/fragmenty?cisloStranky={0..3}"
+    },
+    {
+      "id": "aliens-act-lone",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_178a",
+      "title": "Aliens Act, § 178a(1): a lone (osamělý) foreigner is one who is single, widowed or divorced",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://e-sbirka.gov.cz/sbr-cache/dokumenty-sbirky/%2Fsb%2F1999%2F326%2F2026-06-12/fragmenty?cisloStranky={0..3}"
+    },
+    {
+      "id": "aliens-act-partnership",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_180f",
+      "title": "Aliens Act, § 180f Partnerství: spouse, marriage and spouse's child also mean a partner in an officially confirmed same-sex union, the partnership and the partner's child",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://e-sbirka.gov.cz/sbr-cache/dokumenty-sbirky/%2Fsb%2F1999%2F326%2F2026-06-12/fragmenty?cisloStranky={0..3}"
+    },
+    {
+      "id": "aliens-act-time-limits",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_169t",
+      "title": "Aliens Act, § 169t(6)(a)(4) and (e): a decision within 90 days on a Blue Card application, and on family reunification with a Blue Card holder",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://e-sbirka.gov.cz/sbr-cache/dokumenty-sbirky/%2Fsb%2F1999%2F326%2F2026-06-12/fragmenty?cisloStranky={0..3}"
+    },
+    {
+      "id": "blue-card-directive",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32021L1883",
+      "title": "Directive (EU) 2021/1883, arts. 2(1) and 3(2)(h): the Blue Card is for third-country nationals, not EU citizens, nor those with equal free movement rights by agreement",
+      "kind": "official",
+      "verifiedAt": "2026-11-07"
+    },
+    {
+      "id": "employment-act-eu-citizens",
+      "url": "https://e-sbirka.gov.cz/sb/2004/435",
+      "title": "Employment Act (No. 435/2004 Sb.), § 3(2): EU citizens and their family members have the same legal position as Czech citizens in employment",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://e-sbirka.gov.cz/sbr-cache/dokumenty-sbirky/%2Fsb%2F2004%2F435/fragmenty?cisloStranky={0..1}"
+    },
+    {
+      "id": "civil-code-age",
+      "url": "https://e-sbirka.gov.cz/sb/2012/89",
+      "title": "Civil Code (No. 89/2012 Sb.), § 30(1): majority is reached on completing the eighteenth year of age",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://e-sbirka.gov.cz/sbr-cache/dokumenty-sbirky/%2Fsb%2F2012%2F89/fragmenty?cisloStranky=0"
+    },
+    {
+      "id": "fees-act-consular",
+      "url": "https://e-sbirka.gov.cz/sb/2004/634",
+      "title": "Act on Administrative Fees (No. 634/2004 Sb.), tariff item 162(a) and (c): at an embassy, CZK 5,000 for a Blue Card application and CZK 2,500 for a residence permit application",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://e-sbirka.gov.cz/sbr-cache/dokumenty-sbirky/%2Fsb%2F2004%2F634/fragmenty?cisloStranky=0"
+    },
+    {
+      "id": "fees-act-in-country",
+      "url": "https://e-sbirka.gov.cz/sb/2004/634",
+      "title": "Act on Administrative Fees, tariff item 116(1)(a) and (b): in Czechia, CZK 2,500 for a residence permit application, CZK 1,000 for a foreigner under 15",
+      "kind": "official",
+      "verifiedAt": "2026-11-11",
+      "machineReadableUrl": "https://e-sbirka.gov.cz/sbr-cache/dokumenty-sbirky/%2Fsb%2F2004%2F634/fragmenty?cisloStranky=0"
+    },
+    {
+      "id": "ipc-blue-card",
+      "url": "https://ipc.gov.cz/en/visa-and-residence-permit-types/third-country-nationals/long-term-residence-permits/blue-card/",
+      "title": "Ministry of the Interior, Blue Card: administrative fee CZK 2,500 in Czechia, consular fee CZK 5,000 from outside; 90 days to process; valid 3 months longer than the contract, at most 3 years",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    },
+    {
+      "id": "ipc-family",
+      "url": "https://ipc.gov.cz/en/visa-and-residence-permit-types/third-country-nationals/long-term-residence-permits/long-term-residence-permit-for-the-purpose-of-family-reunification/",
+      "title": "Ministry of the Interior, family reunification: spouse or same-sex partner, minor children and stepchildren, a lone parent over 65; fee CZK 2,500, CZK 1,000 under 15; consular fee CZK 2,500",
+      "kind": "official",
+      "verifiedAt": "2026-11-11"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "cz",
+      "number": 1
+    },
+    {
+      "id": "eu",
+      "number": 1
+    }
+  ],
+  "countrySets": [
+    {
+      "id": "eu-free-movement",
+      "number": 2
+    }
+  ],
+  "requirements": [
+    {
+      "id": "not-eu-eea-or-swiss-citizen",
+      "title": "Not a citizen of the Czech Republic, another EU or EEA state or Switzerland: they live and work there under the EU rules on free movement",
+      "expression": {
+        "op": "not",
+        "operand": {
+          "op": "intersects",
+          "list": {
+            "op": "fact",
+            "key": "principal.citizenships"
+          },
+          "set": {
+            "op": "set",
+            "id": "eu-free-movement"
+          }
+        }
+      },
+      "sources": ["aliens-act-eu-citizens", "blue-card-directive", "employment-act-eu-citizens"]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "highly-qualified-job",
+      "title": "A job that requires high qualification, in a vacancy of the central register of vacancies open to Blue Card holders",
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["aliens-act-blue-card"]
+    },
+    {
+      "id": "contract",
+      "title": "An employment contract, or a contract to conclude one, of at least 6 months for the statutory weekly working hours",
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["aliens-act-blue-card-contract"]
+    },
+    {
+      "id": "pay",
+      "title": "Gross pay of at least 1.5 times the average gross annual wage, which is CZK 590,580 from 1 May 2026 to 30 April 2027",
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["aliens-act-blue-card-contract", "mpsv-average-wage-2025"]
+    },
+    {
+      "id": "high-qualification",
+      "title": "Completed university education, or higher vocational education from studies of at least 3 years",
+      "evidence": ["principal.educationLevel"],
+      "sources": ["aliens-act-blue-card", "ipc-blue-card"]
+    },
+    {
+      "id": "professional-skill",
+      "title": "Instead of the education, for ICT managers and specialists (CZ-ISCO 133 and 25): at least 3 years of professional practice in the 7 years before the application",
+      "evidence": ["principal.educationLevel"],
+      "sources": ["aliens-act-blue-card", "professional-skill-decree"]
+    },
+    {
+      "id": "regulated-profession",
+      "title": "For a regulated profession: proof of meeting the conditions to practise it, and the recognition authority's opinion before the card is issued",
+      "evidence": ["principal.educationLevel"],
+      "sources": ["aliens-act-blue-card", "aliens-act-blue-card-contract"]
+    },
+    {
+      "id": "family-income",
+      "title": "For family members who come too: the family's total monthly income after reuniting reaches their living minimums plus the housing amounts, or the housing costs shown",
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["aliens-act-family-income"]
+    }
+  ],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse",
+      "path": ["spouse"],
+      "condition": {
+        "op": "bool",
+        "value": true
+      },
+      "sources": ["aliens-act-family", "ipc-family"]
+    },
+    {
+      "id": "children",
+      "title": "Children under 18; a child of 18 or more who depends on the principal: possible, if unable to care for themselves for health reasons",
+      "path": ["child"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "fact",
+                "key": "person.dependsOnPrincipal"
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["aliens-act-family", "civil-code-age", "ipc-family"]
+    },
+    {
+      "id": "spouse-children",
+      "title": "The spouse's children under 18",
+      "path": ["spouse", "child"],
+      "condition": {
+        "op": "lt",
+        "left": {
+          "op": "fact",
+          "key": "person.ageYears"
+        },
+        "right": {
+          "op": "int",
+          "value": 18
+        }
+      },
+      "sources": ["aliens-act-family", "civil-code-age", "ipc-family"]
+    },
+    {
+      "id": "parents",
+      "title": "A lone parent of 65 or more (single, widowed or divorced); one living with a partner: possible; a dependent parent of any age unable to care for themselves for health reasons: possible",
+      "path": ["parent"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "gte",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 65
+                }
+              },
+              {
+                "op": "not",
+                "operand": {
+                  "op": "fact",
+                  "key": "person.hasSpouse"
+                }
+              },
+              {
+                "op": "not",
+                "operand": {
+                  "op": "fact",
+                  "key": "person.hasPartner"
+                }
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "gte",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 65
+                }
+              },
+              {
+                "op": "not",
+                "operand": {
+                  "op": "fact",
+                  "key": "person.hasSpouse"
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "fact",
+                "key": "person.dependsOnPrincipal"
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["aliens-act-family", "aliens-act-lone", "ipc-family"]
+    },
+    {
+      "id": "partner",
+      "title": "Partner: possible, only in an officially confirmed lasting union of two persons of the same sex, which the act treats as a marriage",
+      "path": ["partner"],
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["aliens-act-partnership", "aliens-act-family"]
+    },
+    {
+      "id": "partner-children",
+      "title": "The children under 18 of such a same-sex partner: possible",
+      "path": ["partner", "child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["aliens-act-partnership", "aliens-act-family", "civil-code-age"]
+    }
+  ],
+  "costs": [
+    {
+      "id": "blue-card-fee-embassy",
+      "title": "Fee for a Blue Card application filed at an embassy: CZK 5,000 for a principal living outside Czechia; one living in Czechia who cannot apply there: possible",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 500000,
+        "currency": "CZK"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "eq",
+              "left": {
+                "op": "fact",
+                "key": "principal.residenceCountry"
+              },
+              "right": {
+                "op": "token",
+                "value": "CZ"
+              }
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["fees-act-consular", "ipc-blue-card"]
+    },
+    {
+      "id": "blue-card-fee-in-czechia",
+      "title": "Fee for a Blue Card application filed in Czechia, which only a holder of a long-stay visa or of a permit for another purpose may do: CZK 2,500: possible",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 250000,
+        "currency": "CZK"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "principal.residenceCountry"
+            },
+            "right": {
+              "op": "token",
+              "value": "CZ"
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["fees-act-in-country", "ipc-blue-card"]
+    },
+    {
+      "id": "family-fee-embassy",
+      "title": "Fee for each family member's residence permit application filed at an embassy: CZK 2,500 for one living outside Czechia; one living in Czechia who cannot apply there: possible",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 250000,
+        "currency": "CZK"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "eq",
+              "left": {
+                "op": "fact",
+                "key": "person.residenceCountry"
+              },
+              "right": {
+                "op": "token",
+                "value": "CZ"
+              }
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["fees-act-consular", "ipc-family"]
+    },
+    {
+      "id": "family-fee-in-czechia",
+      "title": "Fee for a family member aged 15 or more who may apply in Czechia: CZK 2,500: possible",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 250000,
+        "currency": "CZK"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "person.residenceCountry"
+            },
+            "right": {
+              "op": "token",
+              "value": "CZ"
+            }
+          },
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 15
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["fees-act-in-country", "ipc-family"]
+    },
+    {
+      "id": "family-fee-in-czechia-under-15",
+      "title": "Fee for a family member under 15 who may apply in Czechia: CZK 1,000: possible",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 100000,
+        "currency": "CZK"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "person.residenceCountry"
+            },
+            "right": {
+              "op": "token",
+              "value": "CZ"
+            }
+          },
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 15
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["fees-act-in-country", "ipc-family"]
+    }
+  ],
+  "durations": [
+    {
+      "id": "decision",
+      "title": "Decision on the Blue Card application, within 90 days of filing",
+      "min": "P0D",
+      "max": "P90D",
+      "sources": ["aliens-act-time-limits", "ipc-blue-card"]
+    },
+    {
+      "id": "family-decision",
+      "title": "Decision on a family member's application to join a Blue Card holder, within 90 days of filing, together with the Blue Card decision when filed at the same time",
+      "min": "P0D",
+      "max": "P90D",
+      "sources": ["aliens-act-time-limits"]
+    },
+    {
+      "id": "validity",
+      "title": "Blue Card valid for 3 months longer than the term of the employment contract, at most 3 years",
+      "min": "P0D",
+      "max": "P3Y",
+      "sources": ["aliens-act-validity", "ipc-blue-card"]
+    }
+  ],
+  "corrects": 3
+}

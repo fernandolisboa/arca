@@ -924,6 +924,70 @@ describe('the independent check of one version (ADR-0027)', () => {
       ]);
     });
 
+    it('reads every page a range in the address names, in order, as one text', async () => {
+      const paged = `${data}?page={0..1}`;
+      const pagedReading: CheckSubject = {
+        ...reading,
+        entry: {
+          ...reading.entry,
+          version: routeVersionSchema.parse({
+            ...version,
+            sources: version.sources.map((source) =>
+              source.url === law ? { ...source, machineReadableUrl: paged } : source,
+            ),
+          }),
+        },
+      };
+      const half = (body: string) => ({ body: JSON.stringify({ body }), type: 'application/json' });
+      const checker = answering(matchesBoth);
+      const { check, store, fetched } = setup({
+        checker,
+        checked: pagedReading,
+        fetcher: snapshotFetcher(
+          new Map([
+            [`${data}?page=0`, half('Article 3.')],
+            [`${data}?page=1`, half(lawText.slice(11))],
+            [fees, feePage],
+          ]),
+        ),
+      });
+      await check(startId, 'qm-sample', 1);
+      expect(fetched.map(([url]) => url)).toEqual([`${data}?page=0`, `${data}?page=1`, fees]);
+      expect(checker.requests[0]?.pages[0]?.text).toBe(`Article 3.\n${lawText.slice(11)}`);
+      expect(store.rows[0]?.fetchLog[0]).toMatchObject({ url: law, machineReadableUrl: paged });
+    });
+
+    it('fails the whole address when one of its pages fails', async () => {
+      const paged = `${data}?page={0..1}`;
+      const checker = answering(matchesBoth);
+      const { check, store } = setup({
+        checker,
+        checked: {
+          ...reading,
+          entry: {
+            ...reading.entry,
+            version: routeVersionSchema.parse({
+              ...version,
+              sources: version.sources.map((source) =>
+                source.url === law ? { ...source, machineReadableUrl: paged } : source,
+              ),
+            }),
+          },
+        },
+        fetcher: snapshotFetcher(
+          new Map([
+            [
+              `${data}?page=0`,
+              { body: JSON.stringify({ body: 'Article 3.' }), type: 'application/json' },
+            ],
+            [fees, { ...feePage, type: 'text/html' }],
+          ]),
+        ),
+      });
+      await check(startId, 'qm-sample', 1);
+      expect(store.rows[0]?.fetchLog[0]?.outcome).not.toBe('read');
+    });
+
     it.each([
       [
         'character references in a JSON answer',
