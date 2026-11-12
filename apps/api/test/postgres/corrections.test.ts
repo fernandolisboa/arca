@@ -293,6 +293,15 @@ describe('filing a correction request (ADR-0029)', () => {
     };
     expect((await setup(owner, spent).file()).status).toBe(429);
   });
+
+  it('answers 429 on presign and download once their daily limits are spent', async () => {
+    const spent: RateLimiter = {
+      hit: () => Promise.resolve({ allowed: false, retryAfterSeconds: 60 }),
+      sweep: () => Promise.resolve(0),
+    };
+    expect((await setup(owner, spent).presign(`corrections/${randomUUID()}`)).status).toBe(429);
+    expect((await setup(owner, spent).fileUrl(randomUUID(), 0)).status).toBe(429);
+  });
 });
 
 describe('reading and closing requests (ADR-0029)', () => {
@@ -375,6 +384,10 @@ describe('files on a correction request (ADR-0029)', () => {
     }
     expect((await setup(member).fileUrl(id, 2)).status).toBe(403);
     expect((await setup(owner).fileUrl(id, 0)).status).toBe(404);
+    expect(await audited('correction_file_downloaded')).toEqual([
+      { details: { requestId: id, position: 2 } },
+      { details: { requestId: id, position: 2 } },
+    ]);
   });
 
   it.each<[string, Record<string, unknown>]>([
@@ -401,6 +414,7 @@ describe('files on a correction request (ADR-0029)', () => {
     const response = await setup(owner).file(withFile(uploadId));
     expect(response.status).toBe(409);
     expect(await response.json()).toEqual({ error: { code: 'upload_mismatch' } });
+    expect(await audited('correction_upload_mismatch')).toEqual([{ details: { uploadId } }]);
     expect(await objectsHeld()).toBe(0);
     expect((await listed(owner)).requests).toEqual([]);
   });
@@ -488,6 +502,17 @@ describe('files on a correction request (ADR-0029)', () => {
     expect((await setup(owner).file(withFile(uploadId))).status).toBe(404);
   });
 });
+
+const audited = (code: string) =>
+  testDatabase.asAdmin(
+    async (client) =>
+      (
+        await client.query<{ details: unknown }>(
+          'SELECT details FROM audit.event WHERE code = $1 ORDER BY time, id',
+          [code],
+        )
+      ).rows,
+  );
 
 /** How many objects the memory store holds under `corrections/`. */
 async function objectsHeld(): Promise<number> {

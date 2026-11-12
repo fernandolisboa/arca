@@ -608,7 +608,7 @@ export const correctionUploadUrl = {
   path: '/knowledge/corrections/uploads/url',
   operationId: 'correctionUploadUrl',
   summary:
-    "A presigned upload for one of the admin's own unused correction uploads, valid for 5 minutes and limited to its declared size and type; 403 not_admin; 403 owner_list_only; 404 not_found unless the pathname is such an upload started within the hour",
+    "A presigned upload for one of the admin's own unused correction uploads, valid for 5 minutes and limited to its declared size and type; 60 per 24 hours per account (429 rate_limited). 403 not_admin; 403 owner_list_only; 404 not_found unless the pathname is such an upload started within the hour",
   body: DocumentUploadUrlRequest,
   response: { description: 'Presigned upload', schema: DocumentUploadUrlResponse },
 } as const satisfies RouteDefinition<typeof DocumentUploadUrlResponse>;
@@ -630,7 +630,7 @@ export const correctionFileUrl = {
   path: '/knowledge/corrections/files/url',
   operationId: 'correctionFileUrl',
   summary:
-    "A URL that downloads one request's file, as an attachment, for 5 minutes, for an admin. 403 not_admin; 404 not_found for a source that is not a stored file",
+    "A URL that downloads one request's file, as an attachment, for 5 minutes, for an admin; 120 per 24 hours per account (429 rate_limited). 403 not_admin; 404 not_found for a source that is not a stored file",
   body: CorrectionFileReference,
   response: { description: 'Download URL', schema: CorrectionFileUrlResponse },
 } as const satisfies RouteDefinition<typeof CorrectionFileUrlResponse>;
