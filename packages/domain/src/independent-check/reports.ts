@@ -54,6 +54,8 @@ export interface ReportMeta extends ReportKey {
 export interface CheckStart {
   readonly id: string;
   readonly startedAt: number;
+  /** Its run recorded a failure, so it ends with no report and may be started again. */
+  readonly failed?: boolean;
 }
 
 const minute = 60_000;
@@ -67,6 +69,11 @@ export const startLifetime = 30 * minute;
 /** Starts allowed in any 24 hours, per environment. */
 export const maxStartsPerDay = 20;
 export const startWindow = day;
+/**
+ * Starts the activation screen may use by itself in the window; the rest of the cap is kept for
+ * checks an admin asks for.
+ */
+export const maxAutomaticStartsPerDay = 15;
 
 const sameKey = (left: ReportKey, right: ReportKey) =>
   left.contentHash === right.contentHash &&
@@ -83,24 +90,54 @@ export function currentReport<R extends ReportMeta>(
   key: ReportKey,
   now: number,
 ): R | undefined {
-  const newest = reports
-    .filter((report) => sameKey(report, key))
-    .reduce<R | undefined>(
-      (best, report) => (best === undefined || report.checkedAt > best.checkedAt ? report : best),
-      undefined,
-    );
+  const newest = newestReport(reports.filter((report) => sameKey(report, key)));
   if (newest === undefined) return undefined;
   const lifetime = newest.failed ? failedReportLifetime : reportLifetime;
   return now - newest.checkedAt < lifetime ? newest : undefined;
 }
 
-/** Whether a start is still running: young enough, and no report came from it. */
+/** Reports of today's key still within their lifetime: what a version's status rests on. */
+function liveReports<R extends ReportMeta>(
+  reports: readonly R[],
+  key: ReportKey,
+  now: number,
+): R[] {
+  return reports.filter(
+    (report) =>
+      sameKey(report, key) &&
+      now - report.checkedAt < (report.failed ? failedReportLifetime : reportLifetime),
+  );
+}
+
+/** The report checked last, whatever its key and age. */
+export function newestReport<R extends ReportMeta>(reports: readonly R[]): R | undefined {
+  return reports.reduce<R | undefined>(
+    (newest, report) =>
+      newest === undefined || report.checkedAt > newest.checkedAt ? report : newest,
+    undefined,
+  );
+}
+
+/** The newest of some starts. */
+export function newestStart<S extends CheckStart>(starts: readonly S[]): S | undefined {
+  return starts.reduce<S | undefined>(
+    (newest, start) =>
+      newest === undefined || start.startedAt > newest.startedAt ? start : newest,
+    undefined,
+  );
+}
+
+/** Whether a start is still running: young enough, not failed, and no report came from it. */
 export function liveStart(
   start: CheckStart,
   reports: readonly Pick<ReportMeta, 'startId'>[],
   now: number,
 ): boolean {
-  return now - start.startedAt < startLifetime && !reports.some((r) => r.startId === start.id);
+  return (
+    start.failed !== true &&
+    now - start.startedAt < startLifetime &&
+    !reports.some((r) => r.startId === start.id)
+  );
 }
 
 export const listedCheckStatuses = ['checked', 'flagged', 'running', 'stale', 'none'] as const;
@@ -108,7 +145,9 @@ export type ListedCheckStatus = (typeof listedCheckStatuses)[number];
 
 /**
  * A version's check status for the list: checked or flagged by its current report, else running
- * while a start is live, else stale when an older report exists, else none.
+ * while a start is live, else stale when an older report exists, else none. A clean report reads
+ * as checked only while no other report of the same key in its lifetime was flagged, so checking
+ * a version again until the model happens to agree never makes it checked.
  */
 export function listedCheckStatus(
   reports: readonly (ReportMeta & { readonly clean: boolean })[],
@@ -117,7 +156,9 @@ export function listedCheckStatus(
   now: number,
 ): ListedCheckStatus {
   const current = currentReport(reports, key, now);
-  if (current !== undefined) return current.clean ? 'checked' : 'flagged';
+  if (current !== undefined) {
+    return liveReports(reports, key, now).every(({ clean }) => clean) ? 'checked' : 'flagged';
+  }
   if (starts.some((start) => liveStart(start, reports, now))) return 'running';
   return reports.length > 0 ? 'stale' : 'none';
 }
@@ -132,15 +173,15 @@ export interface StartCandidate {
 }
 
 /**
- * The versions to start now, in the order given: each with no current report and no live start,
- * within what is left of the starts allowed in the last 24 hours.
+ * The versions the activation screen starts by itself, in the order given: each with no current
+ * report and no live start, within what is left of the automatic share of the last 24 hours.
  */
 export function versionsToStart<C extends StartCandidate>(
   candidates: readonly C[],
   startsInWindow: number,
   now: number,
 ): C[] {
-  const left = Math.max(0, maxStartsPerDay - startsInWindow);
+  const left = Math.max(0, maxAutomaticStartsPerDay - startsInWindow);
   return candidates
     .filter(
       (candidate) =>
@@ -148,4 +189,25 @@ export function versionsToStart<C extends StartCandidate>(
         !candidate.starts.some((start) => liveStart(start, candidate.reports, now)),
     )
     .slice(0, left);
+}
+
+/** What happens when an admin asks for one version's check now. */
+export type RequestedStart<S extends CheckStart> =
+  | { readonly outcome: 'live'; readonly start: S }
+  | { readonly outcome: 'limit' }
+  | { readonly outcome: 'start' };
+
+/**
+ * An admin's own start of one version, whatever its reports say: its live start is answered in
+ * place of a second one, and otherwise it starts unless the starts of the last 24 hours are used.
+ */
+export function requestedStart<S extends CheckStart>(
+  starts: readonly S[],
+  reports: readonly Pick<ReportMeta, 'startId'>[],
+  startsInWindow: number,
+  now: number,
+): RequestedStart<S> {
+  const live = newestStart(starts.filter((start) => liveStart(start, reports, now)));
+  if (live !== undefined) return { outcome: 'live', start: live };
+  return startsInWindow >= maxStartsPerDay ? { outcome: 'limit' } : { outcome: 'start' };
 }

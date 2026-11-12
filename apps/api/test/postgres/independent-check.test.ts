@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { ReportKey } from '@arca/domain';
 import { sql } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { postgresCheckProgressStore, unreadableUsage } from '../../src/knowledge/check/progress.js';
 import { postgresCheckStarts } from '../../src/knowledge/check/starts.js';
 import { type NewCheckReport, postgresCheckReportStore } from '../../src/knowledge/check/store.js';
 import { authTestDatabase, type AuthTestDatabase } from './auth-database.js';
@@ -71,7 +72,7 @@ describe('knowledge.check_start (ADR-0027)', () => {
     );
   });
 
-  it('never passes 20 starts in 24 hours, even from concurrent screens', async () => {
+  it('never passes 15 automatic starts and 20 in all in 24 hours, even from concurrent screens', async () => {
     await clearStarts();
     const starts = postgresCheckStarts(() => testDatabase.apiDb);
     const requests = Array.from({ length: 30 }, (_, index) => ({
@@ -80,8 +81,47 @@ describe('knowledge.check_start (ADR-0027)', () => {
       key,
     }));
     const started = (await Promise.all([1, 2, 3].map(() => starts.begin(requests)))).flat();
-    expect(started).toHaveLength(20);
-    expect(new Set(started.map(({ number }) => number)).size).toBe(20);
+    expect(started).toHaveLength(15);
+    expect(new Set(started.map(({ number }) => number)).size).toBe(15);
+    // An admin's own starts use the 5 the automatic share leaves, and then the cap holds.
+    const asked = await Promise.all(
+      Array.from({ length: 8 }, (_, index) =>
+        starts.request({ routeId: 'qm-cap', number: 40 + index }),
+      ),
+    );
+    expect(asked.filter((each) => each?.began === true)).toHaveLength(5);
+    expect(asked.filter((each) => each === undefined)).toHaveLength(3);
+    expect(await starts.recent()).toHaveLength(20);
+  });
+
+  it('answers a version its live start when asked again, also from concurrent taps', async () => {
+    await clearStarts();
+    const starts = postgresCheckStarts(() => testDatabase.apiDb);
+    const version = { routeId: 'qm-asked', number: 1 };
+    const asked = await Promise.all([1, 2, 3].map(() => starts.request(version)));
+    expect(asked.filter((each) => each?.began === true)).toHaveLength(1);
+    expect(new Set(asked.map((each) => each?.start.id)).size).toBe(1);
+    // Its report ends the start, so the next request begins another whatever the report says.
+    const [first] = asked;
+    await postgresCheckReportStore(() => testDatabase.jobsDb).save(
+      report({ startId: first?.start.id ?? '', routeId: 'qm-asked' }),
+    );
+    expect(await starts.request(version)).toMatchObject({ began: true });
+    expect(await starts.recent()).toHaveLength(2);
+  });
+
+  it('ends a start whose run recorded a failure, so the next request begins another', async () => {
+    await clearStarts();
+    const starts = postgresCheckStarts(() => testDatabase.apiDb);
+    const version = { routeId: 'qm-failed', number: 1 };
+    const first = await starts.request(version);
+    expect(await starts.request(version)).toMatchObject({ began: false });
+    await postgresCheckProgressStore(() => testDatabase.jobsDb).record(first?.start.id ?? '', 0, {
+      kind: 'failed',
+      code: 'check_failed',
+    });
+    expect((await starts.recent())[0]).toMatchObject({ failed: true });
+    expect(await starts.request(version)).toMatchObject({ began: true });
   });
 
   it('lets app_api only read and insert starts, and no other runtime role touch them', async () => {
@@ -95,6 +135,107 @@ describe('knowledge.check_start (ADR-0027)', () => {
     }
     for (const db of [testDatabase.authDb, testDatabase.auditDb, testDatabase.jobsDb]) {
       await expect(db.execute(sql`SELECT 1 FROM knowledge.check_start`)).rejects.toThrow();
+    }
+  });
+});
+
+describe('knowledge.check_progress (ADR-0027, on demand)', () => {
+  const written = () => postgresCheckProgressStore(() => testDatabase.jobsDb);
+  const read = () => postgresCheckProgressStore(() => testDatabase.apiDb);
+  const usage = {
+    kind: 'usage',
+    model: 'claude-test',
+    inputTokens: 52_000,
+    outputTokens: 3_100,
+    cacheReadTokens: 4_000,
+    cacheWriteTokens: null,
+  } as const;
+
+  it('records events from app_jobs and reads them back in order on app_api', async () => {
+    const startId = randomUUID();
+    await written().record(startId, 1, {
+      kind: 'page',
+      url: law,
+      outcome: 'reading',
+      status: null,
+    });
+    await written().record(startId, 0, { kind: 'started', items: 3, pages: 1 });
+    await written().record(startId, 2, {
+      kind: 'page',
+      url: law,
+      outcome: 'http_status',
+      status: 503,
+    });
+    await written().record(startId, 3, { kind: 'locating', pages: 1 });
+    await written().record(startId, 4, { kind: 'comparing' });
+    await written().record(startId, 5, usage);
+    await written().record(startId, 6, { kind: 'failed', code: 'check_failed' });
+    await written().record(randomUUID(), 0, { kind: 'finished' });
+    expect(await read().list(startId)).toEqual([
+      { kind: 'started', items: 3, pages: 1 },
+      { kind: 'page', url: law, outcome: 'reading', status: null },
+      { kind: 'page', url: law, outcome: 'http_status', status: 503 },
+      { kind: 'locating', pages: 1 },
+      { kind: 'comparing' },
+      usage,
+      { kind: 'failed', code: 'check_failed' },
+    ]);
+  });
+
+  it('keeps one event per sequence number of a start', async () => {
+    const startId = randomUUID();
+    await written().record(startId, 0, { kind: 'comparing' });
+    await expect(written().record(startId, 0, { kind: 'finished' })).rejects.toThrow();
+  });
+
+  it('never answers a row the closed event schema refuses, and reads a refused usage as unpriced', async () => {
+    const startId = randomUUID();
+    await written().record(startId, 0, { kind: 'comparing' });
+    for (const [sequence, kind, detail] of [
+      [1, 'thinking', '{}'],
+      [2, 'page', '{"url":"https://www.gov.example/law","outcome":"read","text":"page words"}'],
+      [3, 'failed', '{"code":"whatever the model said"}'],
+      [4, 'usage', '{"model":"claude-test","inputTokens":-1,"outputTokens":0}'],
+    ] as const) {
+      await testDatabase.jobsDb.execute(sql`
+        INSERT INTO knowledge.check_progress (start_id, sequence, kind, detail)
+        VALUES (${startId}, ${sequence}, ${kind}, ${detail}::jsonb)`);
+    }
+    expect(await read().list(startId)).toEqual([{ kind: 'comparing' }, unreadableUsage]);
+  });
+
+  it.each<[string, ReturnType<typeof sql>]>([
+    ['a kind that is no code', sql`(${randomUUID()}, 0, 'Page Read!', '{}'::jsonb)`],
+    ['a sequence number past the bound', sql`(${randomUUID()}, 1000, 'page', '{}'::jsonb)`],
+    ['a detail that is no object', sql`(${randomUUID()}, 0, 'page', '[]'::jsonb)`],
+    [
+      'a detail large enough to hold page text',
+      sql`(${randomUUID()}, 0, 'page', ${JSON.stringify({ url: 'x'.repeat(3_000) })}::jsonb)`,
+    ],
+  ])('refuses %s', async (_, values) => {
+    await expect(
+      testDatabase.jobsDb.execute(
+        sql`INSERT INTO knowledge.check_progress (start_id, sequence, kind, detail) VALUES ${values}`,
+      ),
+    ).rejects.toThrow();
+  });
+
+  it('lets app_jobs only insert, app_api only read, and nobody change or backdate an event', async () => {
+    const startId = randomUUID();
+    await written().record(startId, 0, { kind: 'comparing' });
+    for (const db of [testDatabase.apiDb, testDatabase.jobsDb, testDatabase.authDb]) {
+      for (const change of [
+        sql`UPDATE knowledge.check_progress SET kind = 'finished'`,
+        sql`DELETE FROM knowledge.check_progress`,
+        sql`INSERT INTO knowledge.check_progress (start_id, sequence, kind, detail, recorded_at)
+            VALUES (${randomUUID()}, 0, 'comparing', '{}'::jsonb, now() - interval '1 day')`,
+      ]) {
+        await expect(db.execute(change)).rejects.toThrow();
+      }
+    }
+    await expect(read().record(startId, 1, { kind: 'finished' })).rejects.toThrow();
+    for (const db of [testDatabase.jobsDb, testDatabase.authDb, testDatabase.auditDb]) {
+      await expect(db.execute(sql`SELECT 1 FROM knowledge.check_progress`)).rejects.toThrow();
     }
   });
 });

@@ -10,6 +10,7 @@ import {
 } from '../../../src/knowledge/check/fetcher.js';
 import { type PassageLocator, scriptedLocator } from '../../../src/knowledge/check/locator.js';
 import { createVersionCheck } from '../../../src/knowledge/check/run.js';
+import { memoryCheckProgressStore } from '../../../src/knowledge/check/progress.js';
 import { type CheckReport, memoryCheckReportStore } from '../../../src/knowledge/check/store.js';
 import { createCheckSubjects } from '../../../src/knowledge/versions.js';
 import { type CheckCase, type Snapshot, officialHosts } from './cases.js';
@@ -111,6 +112,7 @@ export async function checkCase(
     checker,
     locator,
     store,
+    progress: memoryCheckProgressStore(),
     logger,
     now: () => performance.now(),
   });

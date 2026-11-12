@@ -67,6 +67,24 @@
   /* Bars grow from zero on first paint (spec 0006, Motion). */
   --animate-bar-grow: arca-bar-grow var(--arca-duration-slow) var(--arca-ease-out) both;
 
+  /* A running stage's dot breathes, and a row that just arrived settles in (spec 0006, Motion). */
+  --animate-stage-pulse: arca-stage-pulse calc(var(--arca-duration-slow) * 3) ease-in-out infinite;
+  --animate-row-land: arca-row-land var(--arca-duration-base) var(--arca-ease-out) both;
+
+  @keyframes arca-stage-pulse {
+    50% {
+      opacity: 0.35;
+      transform: scale(0.8);
+    }
+  }
+
+  @keyframes arca-row-land {
+    from {
+      opacity: 0;
+      transform: translateY(0.25rem);
+    }
+  }
+
   @keyframes arca-bar-grow {
     from {
       transform: scaleX(0);

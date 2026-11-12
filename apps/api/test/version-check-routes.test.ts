@@ -1,9 +1,16 @@
 import { VersionCheck, type VersionView } from '@arca/api-contract/routes';
-import { type CatalogEntry, routeVersionSchema, versionIdentity } from '@arca/domain';
+import {
+  type CatalogEntry,
+  routeVersionSchema,
+  scriptedCheckerModel,
+  versionIdentity,
+} from '@arca/domain';
 import type { Logger } from '@arca/telemetry';
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import type { SignedIn } from '../src/auth/service.js';
+import { ruleCheckModel } from '../src/knowledge/check/model.js';
+import { memoryCheckProgressStore } from '../src/knowledge/check/progress.js';
 import type { CheckSubject } from '../src/knowledge/check/run.js';
 import { memoryCheckStarts, type RecordedStart } from '../src/knowledge/check/starts.js';
 import { type NewCheckReport, memoryCheckReportStore } from '../src/knowledge/check/store.js';
@@ -63,10 +70,16 @@ function setup({
   enabled = true,
   unreadable = false,
   refusals = new Map(),
+  superseded = new Set<number>(),
+  runFails = false,
 }: {
+  /** Starting the workflow throws, as when the platform refuses it. */
+  runFails?: boolean;
   admitted?: boolean;
   count?: number;
   states?: Map<number, 'proposed' | 'active' | 'rejected'>;
+  /** The version numbers no date from today on selects. */
+  superseded?: ReadonlySet<number>;
   model?: string;
   /** Whether the environment runs the check at all. */
   enabled?: boolean;
@@ -92,6 +105,7 @@ function setup({
           effectiveFrom: identity.effectiveFrom,
           hash: identity.hash,
           state: states.get(identity.number) ?? 'proposed',
+          superseded: superseded.has(identity.number),
         })),
       ),
     // Only the disabled check's read route asks; it needs to know the version exists.
@@ -108,7 +122,8 @@ function setup({
       : { entry, content: '{}', officialHosts: () => ['gov.example'] };
   };
   const reports = memoryCheckReportStore(now);
-  const starts = memoryCheckStarts(reports, now);
+  const progress = memoryCheckProgressStore();
+  const starts = memoryCheckStarts(reports, now, progress);
   const readReports = unreadable ? { ...reports, find: () => Promise.resolve(undefined) } : reports;
   const runs: RecordedStart[] = [];
   const checks = createVersionChecks({
@@ -118,9 +133,10 @@ function setup({
     checker: { model, promptVersion: 'check-1' },
     reports: readReports,
     starts,
+    progress,
     run: (start) => {
       runs.push(start);
-      return Promise.resolve();
+      return runFails ? Promise.reject(new Error('workflow down')) : Promise.resolve();
     },
     logger: silentLogger,
     now,
@@ -220,7 +236,37 @@ function setup({
       headers: { ...headers, 'content-type': 'application/json' },
       body: JSON.stringify(body),
     });
-  return { start, list, points, read, report, runs, starts, advance, activateChecked, decided };
+  const startOne = (number: number, headers: Record<string, string> = { origin }) =>
+    app.request('/v1/knowledge/versions/check/start', {
+      method: 'POST',
+      headers: { ...headers, 'content-type': 'application/json' },
+      body: JSON.stringify({ routeId: 'qm-sample', number }),
+    });
+  const watch = (number: number) =>
+    app.request(`/v1/knowledge/versions/check/progress?routeId=qm-sample&number=${String(number)}`);
+  const watchedWhole = async (number: number) =>
+    (await (await watch(number)).json()) as {
+      progress: Record<string, unknown> | null;
+      lastCostMicroUsd: number | null;
+    };
+  const watched = async (number: number) => (await watchedWhole(number)).progress;
+  return {
+    start,
+    list,
+    points,
+    read,
+    report,
+    runs,
+    starts,
+    progress,
+    advance,
+    activateChecked,
+    decided,
+    startOne,
+    watch,
+    watched,
+    watchedWhole,
+  };
 }
 
 const minute = 60_000;
@@ -235,6 +281,12 @@ describe('POST /v1/knowledge/checks/start (ADR-0027)', () => {
       ['qm-sample', 1],
       ['qm-sample', 3],
     ]);
+  });
+
+  it('starts no check of a superseded proposed version', async () => {
+    const { start, runs } = setup({ superseded: new Set([1, 2]) });
+    expect(await (await start()).json()).toEqual({ started: 1 });
+    expect(runs.map(({ number }) => number)).toEqual([3]);
   });
 
   it('starts nothing again while a check runs, and again once its start dies', async () => {
@@ -253,13 +305,13 @@ describe('POST /v1/knowledge/checks/start (ADR-0027)', () => {
     expect(await (await start()).json()).toEqual({ started: 0 });
   });
 
-  it('stays within 20 starts in any 24 hours', async () => {
+  it('stays within 15 starts in any 24 hours, so 5 are left for an admin', async () => {
     const { start, advance } = setup({ count: 25 });
-    expect(await (await start()).json()).toEqual({ started: 20 });
+    expect(await (await start()).json()).toEqual({ started: 15 });
     advance(31 * minute);
     expect(await (await start()).json()).toEqual({ started: 0 });
     advance(24 * 60 * minute);
-    expect(await (await start()).json()).toEqual({ started: 20 });
+    expect(await (await start()).json()).toEqual({ started: 15 });
   });
 
   it('is for admins only, from the same origin', async () => {
@@ -498,5 +550,250 @@ describe('POST /v1/knowledge/versions/activate-checked (ADR-0027)', () => {
     expect((await activateChecked({ versions: [shown(1), shown(1)] })).status).toBe(400);
     expect((await activateChecked({ versions: [] })).status).toBe(400);
     expect(decided).toEqual([]);
+  });
+});
+
+describe('POST /v1/knowledge/versions/check/start (ADR-0027, on demand)', () => {
+  it.each(['proposed', 'active', 'rejected'] as const)(
+    'starts a %s version, with identifiers only',
+    async (state) => {
+      const { startOne, runs } = setup({ states: new Map([[2, state]]) });
+      const response = await startOne(2);
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ started: true });
+      expect(runs.map(({ routeId, number }) => [routeId, number])).toEqual([['qm-sample', 2]]);
+    },
+  );
+
+  it('starts over a current report', async () => {
+    const { start, startOne, runs, report } = setup({ count: 1 });
+    await start();
+    await report(runs[0]);
+    expect(await (await startOne(1)).json()).toEqual({ started: true });
+    expect(runs).toHaveLength(2);
+  });
+
+  it('answers the live start in place of a second one, and starts again once it reports or dies', async () => {
+    const { startOne, runs, report, advance } = setup({ count: 1 });
+    await startOne(1);
+    expect(await (await startOne(1)).json()).toEqual({ started: false });
+    expect(runs).toHaveLength(1);
+    await report(runs[0]);
+    expect(await (await startOne(1)).json()).toEqual({ started: true });
+    advance(31 * minute);
+    expect(await (await startOne(1)).json()).toEqual({ started: true });
+    expect(runs).toHaveLength(3);
+  });
+
+  it('answers the live start an automatic start began', async () => {
+    const { start, startOne, runs } = setup({ count: 1 });
+    await start();
+    expect(await (await startOne(1)).json()).toEqual({ started: false });
+    expect(runs).toHaveLength(1);
+  });
+
+  it('uses the 5 starts the automatic share leaves, then answers the rate limit', async () => {
+    const { start, startOne, runs, advance } = setup({ count: 25 });
+    await start();
+    advance(31 * minute);
+    for (const number of [16, 17, 18, 19, 20]) {
+      expect((await startOne(number)).status).toBe(200);
+    }
+    const limited = await startOne(21);
+    expect(limited.status).toBe(429);
+    expect(await limited.json()).toEqual({ error: { code: 'rate_limited' } });
+    expect(runs).toHaveLength(20);
+    advance(24 * 60 * minute);
+    expect((await startOne(21)).status).toBe(200);
+  });
+
+  it('answers 404 for a version the app does not bundle', async () => {
+    const { startOne, runs } = setup({ count: 1 });
+    const response = await startOne(9);
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ error: { code: 'not_found' } });
+    expect(runs).toEqual([]);
+  });
+
+  it('answers a fixed code where no checker is configured, after the version is known', async () => {
+    const response = await setup({ enabled: false }).startOne(1);
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: { code: 'check_off' } });
+    expect((await setup({ count: 1, enabled: false }).startOne(9)).status).toBe(404);
+  });
+
+  it('answers a fixed code when the run could not begin', async () => {
+    const response = await setup({ runFails: true }).startOne(1);
+    expect(response.status).toBe(502);
+    expect(await response.json()).toEqual({ error: { code: 'check_not_started' } });
+  });
+
+  it('is for admins only, from the same origin', async () => {
+    const refused = await setup({ admitted: false }).startOne(1);
+    expect(refused.status).toBe(403);
+    expect(await refused.json()).toEqual({ error: { code: 'not_admin' } });
+    const { startOne, runs } = setup();
+    expect((await startOne(1, { origin: 'https://evil.example' })).status).toBe(403);
+    expect((await startOne(1, { 'sec-fetch-site': 'cross-site' })).status).toBe(403);
+    expect(runs).toEqual([]);
+  });
+});
+
+describe('GET /v1/knowledge/versions/check/progress (ADR-0027, on demand)', () => {
+  it('answers null before any start, and starts nothing', async () => {
+    const { watch, runs } = setup();
+    const response = await watch(1);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ progress: null, lastCostMicroUsd: null });
+    expect(runs).toEqual([]);
+  });
+
+  it('shows a running check with the pages read so far', async () => {
+    const { startOne, runs, progress, watched } = setup();
+    await startOne(1);
+    const id = runs[0]?.id ?? '';
+    await progress.record(id, 0, { kind: 'started', items: 1, pages: 2 });
+    await progress.record(id, 1, { kind: 'page', url: law, outcome: 'reading', status: null });
+    await progress.record(id, 2, { kind: 'page', url: law, outcome: 'read', status: 200 });
+    await progress.record(id, 3, {
+      kind: 'page',
+      url: `${law}/fees`,
+      outcome: 'reading',
+      status: null,
+    });
+    expect(await watched(1)).toEqual({
+      startedAt: new Date(1_000_000_000).toISOString(),
+      state: 'running',
+      stage: 'reading',
+      itemCount: 1,
+      pageCount: 2,
+      pages: [
+        { url: law, outcome: 'read', status: 200 },
+        { url: `${law}/fees`, outcome: 'reading', status: null },
+      ],
+      locatedPages: null,
+      failure: null,
+      cost: null,
+    });
+  });
+
+  it('shows a check finished once its report is stored, whatever progress says', async () => {
+    const { startOne, runs, report, watched } = setup();
+    await startOne(1);
+    await report(runs[0]);
+    expect(await watched(1)).toMatchObject({ state: 'finished', failure: null });
+  });
+
+  it('shows a failed check with its fixed code, and a new tap starts another', async () => {
+    const { startOne, runs, progress, watched, list, advance } = setup({ count: 1 });
+    await startOne(1);
+    await progress.record(runs[0]?.id ?? '', 0, { kind: 'failed', code: 'check_failed' });
+    expect(await watched(1)).toMatchObject({ state: 'failed', failure: 'check_failed' });
+    expect(await list()).toEqual([[1, 'none']]);
+    advance(minute);
+    expect(await (await startOne(1)).json()).toEqual({ started: true });
+    expect(runs).toHaveLength(2);
+    expect(await watched(1)).toMatchObject({ state: 'running' });
+  });
+
+  it('shows a start dead after 30 minutes with no report, then nothing a day later', async () => {
+    const { startOne, watched, advance } = setup();
+    await startOne(1);
+    advance(31 * minute);
+    expect(await watched(1)).toMatchObject({ state: 'dead' });
+    advance(24 * 60 * minute);
+    expect(await watched(1)).toBeNull();
+  });
+
+  it('shows the newest start of the version only', async () => {
+    const { startOne, runs, report, watched, advance } = setup();
+    await startOne(1);
+    await report(runs[0]);
+    advance(minute);
+    await startOne(1);
+    await startOne(2);
+    expect(await watched(1)).toMatchObject({
+      state: 'running',
+      startedAt: new Date(1_000_000_000 + minute).toISOString(),
+    });
+  });
+
+  describe('its cost', () => {
+    // 100,000 prompt tokens with 20,000 written to and 30,000 read from the cache, and 10,000
+    // output tokens: US$ 0.10 + 0.08 + 0.003 + 0.10 at the table's prices.
+    const used = {
+      kind: 'usage',
+      model: ruleCheckModel,
+      inputTokens: 100_000,
+      outputTokens: 10_000,
+      cacheReadTokens: 30_000,
+      cacheWriteTokens: 20_000,
+    } as const;
+
+    it('shows what the running check spent so far, from the price table', async () => {
+      const { startOne, runs, progress, watched } = setup();
+      await startOne(1);
+      await progress.record(runs[0]?.id ?? '', 0, used);
+      expect(await watched(1)).toMatchObject({ cost: { kind: 'priced', microUsd: 283_000 } });
+    });
+
+    it('says a model missing from the price table has no known cost', async () => {
+      const { startOne, runs, progress, watched } = setup();
+      await startOne(1);
+      await progress.record(runs[0]?.id ?? '', 0, { ...used, model: 'claude-unpriced' });
+      expect(await watched(1)).toMatchObject({ cost: { kind: 'unknown' } });
+    });
+
+    it('answers the newest finished check cost while a new one runs, and a day later', async () => {
+      const { startOne, runs, progress, report, watchedWhole, advance } = setup();
+      await startOne(1);
+      await progress.record(runs[0]?.id ?? '', 0, used);
+      await progress.record(runs[0]?.id ?? '', 1, used);
+      await report(runs[0]);
+      expect(await watchedWhole(1)).toMatchObject({ lastCostMicroUsd: 566_000 });
+      advance(minute);
+      await startOne(1);
+      expect(await watchedWhole(1)).toMatchObject({
+        progress: { state: 'running', cost: null },
+        lastCostMicroUsd: 566_000,
+      });
+      advance(25 * 60 * minute);
+      expect(await watchedWhole(1)).toEqual({ progress: null, lastCostMicroUsd: 566_000 });
+    });
+
+    it('skips a failed report, whose run may have stopped before its model calls', async () => {
+      const { startOne, runs, progress, report, watchedWhole, advance } = setup();
+      await startOne(1);
+      await progress.record(runs[0]?.id ?? '', 0, used);
+      await report(runs[0]);
+      advance(minute);
+      await startOne(1);
+      await report(runs[1], { failed: true, failure: 'check_timeout' });
+      expect(await watchedWhole(1)).toMatchObject({ lastCostMicroUsd: 283_000 });
+    });
+
+    it('answers no last cost when the newest finished check could not be priced', async () => {
+      const { startOne, runs, progress, report, watchedWhole } = setup();
+      await startOne(1);
+      await progress.record(runs[0]?.id ?? '', 0, { ...used, model: scriptedCheckerModel });
+      await report(runs[0]);
+      expect(await watchedWhole(1)).toMatchObject({
+        progress: { cost: { kind: 'scripted' } },
+        lastCostMicroUsd: null,
+      });
+    });
+  });
+
+  it('answers 404 for a version the app does not bundle, also where no check runs', async () => {
+    expect((await setup({ count: 1 }).watch(9)).status).toBe(404);
+    const off = setup({ count: 1, enabled: false });
+    expect((await off.watch(9)).status).toBe(404);
+    expect(await (await off.watch(1)).json()).toEqual({ progress: null, lastCostMicroUsd: null });
+  });
+
+  it('is for admins only', async () => {
+    const response = await setup({ admitted: false }).watch(1);
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: { code: 'not_admin' } });
   });
 });

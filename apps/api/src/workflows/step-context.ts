@@ -24,6 +24,7 @@ import {
   passageLocatorFor,
   ruleCheckerFor,
 } from '../knowledge/check/environment.js';
+import { postgresCheckProgressStore } from '../knowledge/check/progress.js';
 import { type VersionCheck, createVersionCheck } from '../knowledge/check/run.js';
 import { postgresCheckReportStore } from '../knowledge/check/store.js';
 import { createCheckSubjects } from '../knowledge/versions.js';
@@ -175,6 +176,7 @@ export const checkSteps = once((): Promise<VersionCheck> => {
       checker,
       locator: passageLocatorFor(environment, apiKey),
       store: postgresCheckReportStore(jobsDatabase),
+      progress: postgresCheckProgressStore(jobsDatabase),
       logger: stepLogger,
       now: () => performance.now(),
     }),

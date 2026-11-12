@@ -58,6 +58,7 @@ import {
   DecideComparisonRequest,
   DecideVersionRequest,
   VersionCheck,
+  VersionCheckProgress,
   VersionView,
   VersionViewQuery,
   StepUpAction,
@@ -274,6 +275,8 @@ export type ErrorCode =
   | 'cross_origin'
   | 'not_found'
   | 'rate_limited'
+  | 'check_off'
+  | 'check_not_started'
   | 'step_up_refused'
   | 'step_up_required'
   | 'invalid_code'
@@ -540,7 +543,7 @@ export function createApp({
     c.set('errorCode', 'rate_limited');
     return c.json({ error: { code: 'rate_limited' } } satisfies ErrorResponse, 429);
   };
-  const fail = <Status extends 400 | 401 | 403 | 404 | 409 | 502 | 503 | 504>(
+  const fail = <Status extends 400 | 401 | 403 | 404 | 409 | 429 | 502 | 503 | 504>(
     c: Context<AppEnv>,
     code: ErrorCode,
     status: Status,
@@ -1535,6 +1538,49 @@ export function createApp({
                   }),
                 ),
               },
+      }),
+      200,
+    );
+  });
+  v1.openapi(openApiRoutes.startVersionCheck, async (c) => {
+    const reads = await adminReads(c);
+    if ('refused' in reads) return reads.refused;
+    const { routeId, number } = DecideVersionRequest.parse(await c.req.json());
+    if (versionChecks === undefined) {
+      const view = await reads.versions.view(routeId, number);
+      return view === undefined ? fail(c, 'not_found', 404) : fail(c, 'check_off', 503);
+    }
+    const outcome = await versionChecks.startOne(routeId, number);
+    if (outcome.ok) return c.json({ started: outcome.started }, 200);
+    switch (outcome.reason) {
+      case 'rate_limited':
+        return fail(c, 'rate_limited', 429);
+      case 'check_not_started':
+        return fail(c, 'check_not_started', 502);
+      case 'not_found':
+        return fail(c, 'not_found', 404);
+    }
+  });
+  v1.openapi(openApiRoutes.getVersionCheckProgress, async (c) => {
+    const reads = await adminReads(c);
+    if ('refused' in reads) return reads.refused;
+    const { routeId, number } = VersionViewQuery.parse(c.req.query());
+    if (versionChecks === undefined) {
+      const view = await reads.versions.view(routeId, number);
+      return view === undefined
+        ? fail(c, 'not_found', 404)
+        : c.json({ progress: null, lastCostMicroUsd: null }, 200);
+    }
+    const outcome = await versionChecks.progress(routeId, number);
+    if (!outcome.ok) return fail(c, outcome.reason, 404);
+    const { progress, lastCostMicroUsd } = outcome;
+    return c.json(
+      VersionCheckProgress.parse({
+        lastCostMicroUsd,
+        progress:
+          progress === null
+            ? null
+            : { ...progress, startedAt: new Date(progress.startedAt).toISOString() },
       }),
       200,
     );

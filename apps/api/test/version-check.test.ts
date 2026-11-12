@@ -30,6 +30,10 @@ import {
   PassageLocatorError,
   scriptedLocator,
 } from '../src/knowledge/check/locator.js';
+import {
+  type CheckProgressStore,
+  memoryCheckProgressStore,
+} from '../src/knowledge/check/progress.js';
 import { type CheckSubject, createVersionCheck } from '../src/knowledge/check/run.js';
 import { scriptedCheckerChoice } from '../src/knowledge/check/scripted-checker.js';
 import { memoryCheckReportStore } from '../src/knowledge/check/store.js';
@@ -163,7 +167,12 @@ function setup({
   guide,
   model = 'claude-test',
   checked = subject,
+  progress = memoryCheckProgressStore(),
+  store = memoryCheckReportStore(() => 1_000),
 }: {
+  progress?: CheckProgressStore &
+    Partial<Pick<ReturnType<typeof memoryCheckProgressStore>, 'rows'>>;
+  store?: ReturnType<typeof memoryCheckReportStore>;
   checker?: RuleChecker;
   fetcher?: SourceFetcher;
   locator?: PassageLocator;
@@ -171,7 +180,6 @@ function setup({
   model?: string;
   checked?: CheckSubject;
 } = {}) {
-  const store = memoryCheckReportStore(() => 1_000);
   const lines: unknown[] = [];
   const logger: Logger = {
     info: (line) => lines.push(line),
@@ -190,13 +198,25 @@ function setup({
     checker: { checker, model, promptVersion: 'check-1' },
     locator,
     store,
+    progress,
     logger,
     now: () => 0,
   });
-  return { check, store, lines, fetched };
+  const events = () => (progress.rows ?? []).map(({ event }) => event);
+  return { check, store, lines, fetched, events };
 }
 
 const startId = '0b9c3d6e-1f2a-4b5c-8d7e-9f0a1b2c3d4e';
+
+/** A model call whose reply reported no token counts. */
+const unreported = (model: string) => ({
+  kind: 'usage' as const,
+  model,
+  inputTokens: null,
+  outputTokens: null,
+  cacheReadTokens: null,
+  cacheWriteTokens: null,
+});
 
 describe('the independent check of one version (ADR-0027)', () => {
   it('stores a clean report keyed by its start when every quote checks out', async () => {
@@ -382,6 +402,7 @@ describe('the independent check of one version (ADR-0027)', () => {
       checker: { checker: answering(matchesBoth), model: 'claude-test', promptVersion: 'check-1' },
       locator: scriptedLocator,
       store: lacking.store,
+      progress: memoryCheckProgressStore(),
       logger: { info: () => undefined, error: () => undefined },
       now: () => 0,
     });
@@ -891,6 +912,184 @@ describe('the independent check of one version (ADR-0027)', () => {
     await check(startId, 'qm-ghost', 1);
     expect(store.rows).toEqual([]);
     expect(lines).toEqual([expect.objectContaining({ errorCode: 'check_unknown_version' })]);
+  });
+
+  describe('its progress (ADR-0027, "On demand, with progress")', () => {
+    it('records the start, each page before and after its read, the comparison and the end', async () => {
+      const { check, events } = setup();
+      await check(startId, 'qm-sample', 1);
+      expect(events()).toEqual([
+        { kind: 'started', items: 2, pages: 2 },
+        { kind: 'page', url: law, outcome: 'reading', status: null },
+        { kind: 'page', url: law, outcome: 'read', status: 200 },
+        { kind: 'page', url: fees, outcome: 'reading', status: null },
+        { kind: 'page', url: fees, outcome: 'read', status: 200 },
+        { kind: 'comparing' },
+        unreported('claude-test'),
+        { kind: 'finished' },
+      ]);
+    });
+
+    it('records what each model call used, the cache counts included, a retry too', async () => {
+      const replies = [{ items: 'not a list' }, matchesBoth];
+      const checker: RuleChecker = {
+        check: () =>
+          Promise.resolve({
+            reply: replies.shift(),
+            model: 'claude-test',
+            promptVersion: 'check-1',
+            inputTokens: 52_000,
+            outputTokens: 3_100,
+            cacheReadTokens: 4_000,
+            cacheWriteTokens: 0,
+          }),
+      };
+      const { check, events } = setup({ checker });
+      await check(startId, 'qm-sample', 1);
+      const used = {
+        kind: 'usage',
+        model: 'claude-test',
+        inputTokens: 52_000,
+        outputTokens: 3_100,
+        cacheReadTokens: 4_000,
+        cacheWriteTokens: 0,
+      };
+      expect(events().filter(({ kind }) => kind === 'usage')).toEqual([used, used]);
+    });
+
+    it('records the scripted calls as using nothing', async () => {
+      const long = 'Article 3. The applicant shows means of at least EUR 920 a month.\n\n'.repeat(
+        Math.ceil(maxWholePageText / 60),
+      );
+      const fetcher: SourceFetcher = {
+        fetch: (url) =>
+          Promise.resolve({ ok: true, status: 200, text: long, cut: false, chain: [url] }),
+      };
+      const { check, events } = setup({
+        checker: scriptedCheckerChoice.checker,
+        model: scriptedCheckerChoice.model,
+        fetcher,
+      });
+      await check(startId, 'qm-sample', 1);
+      const nothing = {
+        kind: 'usage',
+        model: scriptedCheckerChoice.model,
+        inputTokens: 0,
+        outputTokens: 0,
+        cacheReadTokens: null,
+        cacheWriteTokens: null,
+      };
+      expect(events().filter(({ kind }) => kind === 'usage')).toEqual([nothing, nothing, nothing]);
+    });
+
+    it('records why a page was not read, and no comparison when none was', async () => {
+      const fetcher: SourceFetcher = {
+        fetch: (url) =>
+          Promise.resolve({ ok: false, failure: 'timeout', status: null, chain: [url] }),
+      };
+      const { check, events, store } = setup({ fetcher });
+      await check(startId, 'qm-sample', 1);
+      expect(events()).toEqual([
+        { kind: 'started', items: 2, pages: 2 },
+        { kind: 'page', url: law, outcome: 'reading', status: null },
+        { kind: 'page', url: law, outcome: 'timeout', status: null },
+        { kind: 'page', url: fees, outcome: 'reading', status: null },
+        { kind: 'page', url: fees, outcome: 'timeout', status: null },
+        { kind: 'finished' },
+      ]);
+      expect(store.rows).toHaveLength(1);
+    });
+
+    it('records how many long pages have passages picked', async () => {
+      const long = 'Article 3. The applicant shows means of at least EUR 920 a month.\n\n'.repeat(
+        Math.ceil(maxWholePageText / 60),
+      );
+      const fetcher: SourceFetcher = {
+        fetch: (url) =>
+          Promise.resolve({
+            ok: true,
+            status: 200,
+            text: url === law ? long : feeText,
+            cut: false,
+            chain: [url],
+          }),
+      };
+      const { check, events } = setup({ fetcher });
+      await check(startId, 'qm-sample', 1);
+      expect(events().map(({ kind }) => kind)).toEqual([
+        'started',
+        'page',
+        'page',
+        'page',
+        'page',
+        'locating',
+        'usage',
+        'comparing',
+        'usage',
+        'finished',
+      ]);
+      expect(events()).toContainEqual({ kind: 'locating', pages: 1 });
+    });
+
+    it('finishes when the model call fails, since the report says so', async () => {
+      const { check, events, store } = setup({
+        checker: answering(new RuleCheckerError('check_timeout')),
+      });
+      await check(startId, 'qm-sample', 1);
+      expect(events().at(-1)).toEqual({ kind: 'finished' });
+      expect(store.rows[0]).toMatchObject({ failure: 'check_timeout' });
+    });
+
+    it('never records page text or anything the model wrote', async () => {
+      const { check, events } = setup({
+        checker: answering({
+          items: [
+            {
+              key: 'requirement:means',
+              status: 'differs',
+              quotes: [{ quote: 'means of at least EUR 920', url: law }],
+              note: 'MODEL-NOTE-MARKER',
+            },
+          ],
+        }),
+      });
+      await check(startId, 'qm-sample', 1);
+      const recorded = JSON.stringify(events());
+      expect(recorded).not.toContain('MODEL-NOTE-MARKER');
+      expect(recorded).not.toContain('EUR 920');
+      expect(recorded).not.toContain('Application fee');
+    });
+
+    it('records a failure and no report for a version the catalog does not hold', async () => {
+      const { check, events, store } = setup();
+      await check(startId, 'qm-ghost', 1);
+      expect(events()).toEqual([{ kind: 'failed', code: 'check_unknown_version' }]);
+      expect(store.rows).toEqual([]);
+    });
+
+    it('records a failure when the report cannot be stored, and still fails', async () => {
+      const store = memoryCheckReportStore(() => 1_000);
+      const { check, events } = setup({
+        store: { ...store, save: () => Promise.reject(new Error('database down')) },
+      });
+      await expect(check(startId, 'qm-sample', 1)).rejects.toThrow('database down');
+      expect(events().at(-1)).toEqual({ kind: 'failed', code: 'check_failed' });
+    });
+
+    it('carries on when progress cannot be written, logging a fixed code', async () => {
+      const { check, store, lines } = setup({
+        progress: {
+          record: () => Promise.reject(new Error('progress SECRET-DETAIL')),
+          list: () => Promise.resolve([]),
+        },
+      });
+      await check(startId, 'qm-sample', 1);
+      expect(store.rows[0]).toMatchObject({ clean: true, failed: false });
+      expect(lines).toContainEqual(
+        expect.objectContaining({ errorCode: 'check_progress_unwritten' }),
+      );
+      expect(JSON.stringify(lines)).not.toContain('SECRET-DETAIL');
+    });
   });
 });
 

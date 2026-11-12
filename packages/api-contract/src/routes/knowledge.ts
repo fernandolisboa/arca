@@ -1,14 +1,20 @@
 import {
   calendarDateSchema,
   checkItemKinds,
+  checkProgressStages,
+  checkProgressStates,
   checkReasons,
   checkStatuses,
   checkFailures,
   checkedBatchSkips,
   fetchOutcomes,
   listedCheckStatuses,
+  maxCheckCostMicroUsd,
   maxCheckItemKeyLength,
+  pageProgressOutcomes,
+  progressFailures,
   maxNoteLength,
+  maxAutomaticStartsPerDay,
   maxQuoteLength,
   maxQuotes,
   comparisonCriterionSchema,
@@ -131,6 +137,12 @@ export const KnowledgeVersion = z.object({
   effectiveFrom: calendarDateSchema,
   hash: contentHash,
   state: decisionState,
+  /**
+   * No date from today on selects this version: a correction or a later version replaced it, or it
+   * was rejected. Recomputed on each read, so it clears if the replacing version is rejected. A
+   * proposed one needs no decision and is not checked while it holds.
+   */
+  superseded: z.boolean(),
   /** The independent check's status (ADR-0027); `none` where no check runs. */
   check: z.enum(listedCheckStatuses),
   /**
@@ -436,12 +448,14 @@ export const closeRuleReports = {
 
 /*
  * The independent check (ADR-0027). The activation screen asks, when it opens, for checks of every
- * proposed route version that has no current report and no live start, at most 20 starts in any 24
- * hours per environment; listing versions starts nothing. A report is model output that code
+ * proposed route version that has no current report and no live start, within its share of the 20
+ * starts in any 24 hours per environment; listing versions starts nothing. A report is model output that code
  * checked against the cited official pages: plain text, quotes and URLs included, never links.
  */
 
-export const StartVersionChecksResponse = z.strictObject({ started: z.int().min(0).max(20) });
+export const StartVersionChecksResponse = z.strictObject({
+  started: z.int().min(0).max(maxAutomaticStartsPerDay),
+});
 export type StartVersionChecksResponse = z.infer<typeof StartVersionChecksResponse>;
 
 export const startVersionChecks = {
@@ -449,7 +463,7 @@ export const startVersionChecks = {
   path: '/knowledge/checks/start',
   operationId: 'startVersionChecks',
   summary:
-    'Starts the independent check of every proposed route version with no current report and no check running, within 20 starts in any 24 hours per environment; answers how many started. 403 not_admin',
+    'Starts the independent check of every proposed route version with no current report and no check running, within 15 of the 20 starts in any 24 hours per environment, so 5 are left for the checks an admin asks for; answers how many started. 403 not_admin',
   response: { description: 'Started', schema: StartVersionChecksResponse },
 } as const satisfies RouteDefinition<typeof StartVersionChecksResponse>;
 
@@ -519,6 +533,87 @@ export const getVersionCheck = {
   response: { description: 'The check', schema: VersionCheck },
 } as const satisfies RouteDefinition<typeof VersionCheck>;
 
+/*
+ * The check on demand (ADR-0027, "On demand, with progress"): an admin starts one route version's
+ * check, whatever its state and reports, and watches how far it got. Progress holds counts, cited
+ * official URLs and fixed codes only; what the model wrote comes with the report, as above.
+ */
+
+export const StartVersionCheckResponse = z.strictObject({
+  /** False when a check of the version was already running, which is the one to watch. */
+  started: z.boolean(),
+});
+export type StartVersionCheckResponse = z.infer<typeof StartVersionCheckResponse>;
+
+export const startVersionCheck = {
+  method: 'post',
+  path: '/knowledge/versions/check/start',
+  operationId: 'startVersionCheck',
+  summary:
+    'Starts a new independent check of one route version for an admin, in any state and whatever its current report; while a check of the version is running it answers that one and starts nothing. Counts against the 20 starts in any 24 hours per environment (429 rate_limited). 403 not_admin; 404 not_found; 502 check_not_started when its run could not begin, which then counts as running for up to 30 minutes; 503 check_off where no checker is configured',
+  body: DecideVersionRequest,
+  response: { description: 'Started, or already running', schema: StartVersionCheckResponse },
+} as const satisfies RouteDefinition<typeof StartVersionCheckResponse>;
+
+/** Millionths of a U.S. dollar, computed in code from the reviewed price table. */
+const microUsd = z.int().min(0).max(maxCheckCostMicroUsd);
+
+/**
+ * What a check's model calls cost: `unknown` when a model has no price or the provider left a
+ * count out, `scripted` when the scripted checker ran, which is a test and costs nothing.
+ */
+export const CheckCost = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('priced'), microUsd }),
+  z.strictObject({ kind: z.literal('unknown') }),
+  z.strictObject({ kind: z.literal('scripted') }),
+]);
+export type CheckCost = z.infer<typeof CheckCost>;
+
+export const CheckProgress = z.strictObject({
+  startedAt: z.iso.datetime(),
+  /** `dead` when the start is 30 minutes old with neither a report nor a recorded failure. */
+  state: z.enum(checkProgressStates),
+  /** The last stage the check entered. */
+  stage: z.enum(checkProgressStages),
+  itemCount: z.int().min(0).max(1_000).nullable(),
+  pageCount: z.int().min(0).max(1_000).nullable(),
+  /** Each cited page in the order first read, with its latest outcome; plain text, never a link. */
+  pages: z
+    .array(
+      z.strictObject({
+        url: z.string().max(2_000),
+        outcome: z.enum(pageProgressOutcomes),
+        /** The final HTTP status once read or refused, when there was one. */
+        status: z.int().min(0).max(999).nullable(),
+      }),
+    )
+    .max(200),
+  /** How many long pages had passages picked, once that stage began. */
+  locatedPages: z.int().min(0).max(1_000).nullable(),
+  failure: z.enum(progressFailures).nullable(),
+  /** What its model calls cost so far, or null before the first one (see `CheckCost`). */
+  cost: CheckCost.nullable(),
+});
+export type CheckProgress = z.infer<typeof CheckProgress>;
+
+export const VersionCheckProgress = z.strictObject({
+  /** The version's newest start of the last 24 hours, or null with none or where no check runs. */
+  progress: CheckProgress.nullable(),
+  /** What the version's newest check whose report did not fail cost, when it could be priced. */
+  lastCostMicroUsd: microUsd.nullable(),
+});
+export type VersionCheckProgress = z.infer<typeof VersionCheckProgress>;
+
+export const getVersionCheckProgress = {
+  method: 'get',
+  path: '/knowledge/versions/check/progress',
+  operationId: 'getVersionCheckProgress',
+  summary:
+    "How far one route version's newest independent check of the last 24 hours got, for an admin: its state, stage, the cited pages read so far and what its model calls cost; and what the version's newest check whose report did not fail cost. Never starts a check. 403 not_admin, 404 not_found",
+  query: VersionViewQuery,
+  response: { description: 'The progress', schema: VersionCheckProgress },
+} as const satisfies RouteDefinition<typeof VersionCheckProgress>;
+
 /* Activating every checked version at once (ADR-0027): the identities the screen showed. */
 
 const shownVersion = z.strictObject({
@@ -583,6 +678,8 @@ export const knowledgeRoutes = {
   closeRuleReports,
   startVersionChecks,
   getVersionCheck,
+  startVersionCheck,
+  getVersionCheckProgress,
 } as const;
 
 export {
@@ -593,7 +690,9 @@ export {
   expressionOperators,
   factKeys,
   factTargets,
+  maxAutomaticStartsPerDay,
   maxQuotes,
+  maxStartsPerDay,
   relationshipSteps,
   staleAfterDays,
   versionKey,

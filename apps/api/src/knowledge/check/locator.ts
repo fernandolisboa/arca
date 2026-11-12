@@ -68,7 +68,7 @@ const scriptedLocatorPromptVersion = 'scripted-1';
 
 /**
  * The scripted locator for every environment but production, and for tests: it picks nothing, so
- * a long page is sent as its opening, cut, and nothing leaves the process.
+ * a long page is sent as its opening, cut, nothing leaves the process and no token is spent.
  */
 export const scriptedLocator: PassageLocator = {
   locate: ({ items }) =>
@@ -76,5 +76,7 @@ export const scriptedLocator: PassageLocator = {
       reply: { items: items.map(({ key }) => ({ key, passages: [] })) },
       model: scriptedCheckerModel,
       promptVersion: scriptedLocatorPromptVersion,
+      inputTokens: 0,
+      outputTokens: 0,
     }),
 };
