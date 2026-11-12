@@ -11,7 +11,10 @@ import { z } from 'zod';
 export interface CheckProgressStore {
   /** Appends one event of a start; `sequence` orders the start's events from zero. */
   readonly record: (startId: string, sequence: number, event: CheckProgressEvent) => Promise<void>;
-  /** A start's events in the order recorded; a row the closed schema refuses is left out. */
+  /**
+   * A start's events in the order recorded; a row the closed schema refuses is left out, except a
+   * usage, which reads as `unreadableUsage`.
+   */
   readonly list: (startId: string) => Promise<readonly CheckProgressEvent[]>;
 }
 
@@ -45,6 +48,16 @@ const storedEvent = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('finished') }),
   z.strictObject({ kind: z.literal('failed'), code: z.enum(progressFailures) }),
 ]) satisfies z.ZodType<CheckProgressEvent>;
+
+/** A stored usage the schema refuses: no price matches its model, so the cost is unknown. */
+export const unreadableUsage: CheckProgressEvent = {
+  kind: 'usage',
+  model: 'unreadable',
+  inputTokens: null,
+  outputTokens: null,
+  cacheReadTokens: null,
+  cacheWriteTokens: null,
+};
 
 /** For tests: kept while the process runs. */
 export function memoryCheckProgressStore(): CheckProgressStore & {
@@ -96,7 +109,10 @@ export function postgresCheckProgressStore(db: () => Database): CheckProgressSto
           ...(typeof detail === 'object' && detail !== null ? detail : {}),
           kind,
         });
-        return parsed.success ? [parsed.data] : [];
+        if (parsed.success) return [parsed.data];
+        // A model call's usage the schema refuses still happened, so the check's cost reads as
+        // unknown rather than short by that call.
+        return kind === 'usage' ? [unreadableUsage] : [];
       });
     },
   };

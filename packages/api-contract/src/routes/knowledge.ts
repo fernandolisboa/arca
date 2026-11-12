@@ -2,7 +2,6 @@ import {
   calendarDateSchema,
   checkItemKinds,
   checkProgressStages,
-  maxCheckCostMicroUsd,
   checkProgressStates,
   checkReasons,
   checkStatuses,
@@ -10,6 +9,7 @@ import {
   checkedBatchSkips,
   fetchOutcomes,
   listedCheckStatuses,
+  maxCheckCostMicroUsd,
   maxCheckItemKeyLength,
   pageProgressOutcomes,
   progressFailures,
@@ -593,7 +593,7 @@ export type CheckProgress = z.infer<typeof CheckProgress>;
 export const VersionCheckProgress = z.strictObject({
   /** The version's newest start of the last 24 hours, or null with none or where no check runs. */
   progress: CheckProgress.nullable(),
-  /** What the version's newest check with a report cost, when it could be priced. */
+  /** What the version's newest check whose report did not fail cost, when it could be priced. */
   lastCostMicroUsd: microUsd.nullable(),
 });
 export type VersionCheckProgress = z.infer<typeof VersionCheckProgress>;
@@ -603,7 +603,7 @@ export const getVersionCheckProgress = {
   path: '/knowledge/versions/check/progress',
   operationId: 'getVersionCheckProgress',
   summary:
-    "How far one route version's newest independent check of the last 24 hours got, for an admin: its state, stage, the cited pages read so far and what its model calls cost; and what the version's newest finished check cost. Never starts a check. 403 not_admin, 404 not_found",
+    "How far one route version's newest independent check of the last 24 hours got, for an admin: its state, stage, the cited pages read so far and what its model calls cost; and what the version's newest check whose report did not fail cost. Never starts a check. 403 not_admin, 404 not_found",
   query: VersionViewQuery,
   response: { description: 'The progress', schema: VersionCheckProgress },
 } as const satisfies RouteDefinition<typeof VersionCheckProgress>;

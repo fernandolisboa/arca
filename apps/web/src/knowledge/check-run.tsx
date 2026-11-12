@@ -39,7 +39,7 @@ export interface CheckRunState {
   readonly offered: boolean;
   /** Whether a check of the version is running now. */
   readonly running: boolean;
-  /** What the version's newest finished check cost, in millionths of a dollar, when priced. */
+  /** What the version's newest check whose report did not fail cost, in millionths of a dollar, when priced. */
   readonly lastCostMicroUsd: number | null;
   readonly confirming: boolean;
   readonly starting: boolean;

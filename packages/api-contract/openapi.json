@@ -34686,7 +34686,7 @@
     "/knowledge/versions/check/progress": {
       "get": {
         "operationId": "getVersionCheckProgress",
-        "summary": "How far one route version's newest independent check of the last 24 hours got, for an admin: its state, stage, the cited pages read so far and what its model calls cost; and what the version's newest finished check cost. Never starts a check. 403 not_admin, 404 not_found",
+        "summary": "How far one route version's newest independent check of the last 24 hours got, for an admin: its state, stage, the cited pages read so far and what its model calls cost; and what the version's newest check whose report did not fail cost. Never starts a check. 403 not_admin, 404 not_found",
         "parameters": [
           {
             "schema": {

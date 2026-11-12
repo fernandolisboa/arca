@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { ReportKey } from '@arca/domain';
 import { sql } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { postgresCheckProgressStore } from '../../src/knowledge/check/progress.js';
+import { postgresCheckProgressStore, unreadableUsage } from '../../src/knowledge/check/progress.js';
 import { postgresCheckStarts } from '../../src/knowledge/check/starts.js';
 import { type NewCheckReport, postgresCheckReportStore } from '../../src/knowledge/check/store.js';
 import { authTestDatabase, type AuthTestDatabase } from './auth-database.js';
@@ -188,7 +188,7 @@ describe('knowledge.check_progress (ADR-0027, on demand)', () => {
     await expect(written().record(startId, 0, { kind: 'finished' })).rejects.toThrow();
   });
 
-  it('never answers a row the closed event schema refuses', async () => {
+  it('never answers a row the closed event schema refuses, and reads a refused usage as unpriced', async () => {
     const startId = randomUUID();
     await written().record(startId, 0, { kind: 'comparing' });
     for (const [sequence, kind, detail] of [
@@ -201,7 +201,7 @@ describe('knowledge.check_progress (ADR-0027, on demand)', () => {
         INSERT INTO knowledge.check_progress (start_id, sequence, kind, detail)
         VALUES (${startId}, ${sequence}, ${kind}, ${detail}::jsonb)`);
     }
-    expect(await read().list(startId)).toEqual([{ kind: 'comparing' }]);
+    expect(await read().list(startId)).toEqual([{ kind: 'comparing' }, unreadableUsage]);
   });
 
   it.each<[string, ReturnType<typeof sql>]>([

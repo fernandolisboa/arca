@@ -43,7 +43,8 @@ export function usageLogger(usage: Usage): Logger {
     const { model, inputTokens, outputTokens, cacheReadTokens, cacheWriteTokens } = entry;
     if (model === undefined) return;
     const output = Number(outputTokens ?? 0);
-    // The app's own price table and pricing; a call it cannot price counts as nothing.
+    // The app's own price table and pricing, call by call, so each call rounds to a millionth of a
+    // dollar; a call it cannot price counts as nothing.
     const cost = checkCost(
       [
         {
