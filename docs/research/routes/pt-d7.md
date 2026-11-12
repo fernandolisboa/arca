@@ -4,6 +4,27 @@ Research notes for Portugal's D7 residence visa for retirees and people living o
 
 ## Audits
 
+### 2026-11-12, gazette PDFs
+
+The check loop again, now that the check reads PDFs ([#363](https://github.com/fernandolisboa/arca/issues/363)), on version 5 together with [`pt-d8`](pt-d8.md), which shares this entry.
+
+- **Version audited:** 5
+- **Outcome:** correction, version 6 (pull request number in the PR), from version 5's date, 2026-01-01. Only sources change: every one that cited a consolidated text drawn by scripts now cites the gazette act whose PDF holds its provision's wording in force, and names that PDF on `files.diariodarepublica.pt` as its `machineReadableUrl`; `portaria-1563-2007` and `portaria-91-2025` gain their own PDF. Rules, items, titles and cases are those of version 5. The consolidated page's "Versão PDF" button posts to a screen action and gets the file back inside a JSON answer, with no address a plain `GET` reads, and the ELI address of a consolidated text redirects to the same page, so neither can be a machine-readable address.
+- **Which act for which source:** each cited provision of the consolidated text (read 2026-11-12 through the page's own PDF export, saved by Playwright) was compared with the gazette texts of every act on the consolidated text's list of amending acts, and the source cites the newest act whose text holds its wording:
+  - Lei n.º 23/2007, articles 4.º, 52.º, n.os 1 and 3, 58.º, n.os 2, 4 and 5, 61.º-B, 75.º, n.º 1, 99.º, n.os 1 and 4, 100.º, n.º 1, and 209.º, n.º 1: the republication annexed to Lei n.º 18/2022. The later acts (Decreto-Lei n.º 41/2023, Leis n.os 41/2023, 53/2023 and 56/2023, Decreto-Lei n.º 37-A/2024, Leis n.os 9/2025, 55-C/2025, 61/2025 and 62/2026) left these paragraphs as they were, but for spelling (adoptados, recta) and, in article 52.º, n.º 1, c), the name of the information system (SII UCFE since Decreto-Lei n.º 41/2023), which the item does not use.
+  - Lei n.º 23/2007, article 99.º, n.º 6: Lei n.º 61/2025, which wrote it.
+  - Decreto Regulamentar n.º 84/2007, articles 24.º-B, n.º 1, b), and n.º 2, and 31.º-A, n.º 1: the republication annexed to Decreto Regulamentar n.º 4/2022; Decreto Regulamentar n.º 1/2024 changed only 24.º-B, n.º 1, a), and n.º 3.
+  - Código dos Regimes Contributivos, article 53.º: Lei n.º 110/2009 itself, never amended there.
+  - Lei n.º 7/2001, article 1.º, n.º 2: the republication annexed to Lei n.º 23/2010.
+  - The table of consular fees, article 22.º, n.º 1: the republication annexed to Portaria n.º 434/2023; Portaria n.º 91/2025/1 changed only n.º 1.1, b) and f).
+- **Code in the same pull request:** a PDF gets a byte cap of its own, 16 MB (ADR-0028): the Lei n.º 18/2022 PDF is 12 MB and the Decreto Regulamentar n.º 4/2022 one 6 MB, over the page cap of 3 MB. And the excerpt room of the long pages of a check is shared by how many items cite each (ADR-0027): the first run gave the foreigners law, which thirteen items cite, the same room as the social security code, which two cite.
+- **Check loop:** before, on version 5 ([43126188455](https://github.com/fernandolisboa/arca/actions/runs/43126188455)): `pt-d7` 1 of 22, `pt-d8` 1 of 24, every Lei n.º 23/2007 item `no_page_read`. Run 1 ([43134171821](https://github.com/fernandolisboa/arca/actions/runs/43134171821)), PDFs only: every page read, 2 of 22 and 3 of 24. Run 2 ([43134657823](https://github.com/fernandolisboa/arca/actions/runs/43134657823)), with the excerpt room by items: 8 of 22 and 2 of 24. None differs. Left over:
+  - `checker-gap`, the excerpt: a version cites ten pages in one call, so the long ones (the Lei n.º 18/2022 republication, 445,000 characters; Decreto Regulamentar n.º 4/2022, 218,000; Lei n.º 110/2009, 190,000) reach the model as excerpts, and the passages a run picks miss provisions it needs (article 99.º, n.º 4; article 52.º, n.º 1; article 53.º of the code; article 31.º-A). The two routes cite the same pages, yet each run confirmed different items: run-to-run variance of the locator, as in `us-eb5`.
+  - `checker-gap`, number words: durations and validity the law writes in words (quatro meses, dois anos) come back `value_not_in_quote`.
+  - `checker-gap`, joined provisions: `dependent:partner`, `dependent:partner-children` and the visa fee items each rest on more than three passages of different acts (the fee, the age exemption, the article that makes the table apply), and the table republished in 2023 still prints the fee of EUR 90 that Portaria n.º 91/2025/1 raised to 110. Splitting them is a rule change for a later audit.
+  - `checker-gap`, `countrySet:eu-free-movement/2`: as before, the model will not join the three pages.
+- **Watch next:** the 2027 minimum wage decree ([#220](https://github.com/fernandolisboa/arca/issues/220)) is now version 7 of both routes. The leftover items are the reason version 6 stays flagged in the app.
+
 ### 2026-11-11, check loop
 
 The check loop of the [rule audit runbook](../../runbooks/rule-audit.md#the-check-loop), run on version 4 together with [`pt-d8`](pt-d8.md), which shares this entry.

@@ -4,6 +4,12 @@ Research notes for Portugal's D8 residence visa for remote work for employers or
 
 ## Audits
 
+### 2026-11-12, gazette PDFs
+
+- **Version audited:** 5
+- **Outcome:** correction, version 6, the same source changes as [`pt-d7`](pt-d7.md#2026-11-12-gazette-pdfs) version 6, where the entry is; `lei-23-2007-remote`, `dr-84-2007-income` and `dr-84-2007-work-link` cite the same republications.
+- **Check loop:** 1 of 24 items match before; 3 of 24 in run 1 and 2 of 24 in run 2, the leftovers as in `pt-d7`'s entry.
+
 ### 2026-11-11, check loop
 
 - **Version audited:** 4
