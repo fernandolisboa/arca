@@ -6,7 +6,7 @@ import {
   type VersionCheckReport,
   type VersionView,
 } from '@arca/api-contract/client';
-import { Button, Disclosure, StatusChip, type StatusTone } from '@arca/ui';
+import { Button, Disclosure, Icon, StatusChip, type StatusTone } from '@arca/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 import { api, versionCheckQuery } from '../api.js';
@@ -311,8 +311,8 @@ function LookHere({ item, words }: { readonly item: ReportItem; readonly words: 
     <div className="flex flex-col gap-1">
       <p className="font-medium">{t('knowledge.points.lookAt')}</p>
       <ul className="flex flex-col gap-1">
-        {item.citations.map(({ url, title }) => (
-          <li key={url}>
+        {item.citations.map(({ url, title }, index) => (
+          <li key={`${String(index)}-${url}`}>
             <a
               href={url}
               target="_blank"
@@ -342,7 +342,8 @@ function HandCheckToggle({
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
       <Button variant="secondary" aria-pressed={handCheck.checked} onClick={handCheck.toggle}>
-        {handCheck.checked ? t('knowledge.points.handChecked') : t('knowledge.points.handCheck')}
+        {handCheck.checked && <Icon name="check" size={16} />}
+        {t('knowledge.points.handCheck')}
       </Button>
       <span className="text-small text-muted">{t('knowledge.points.handCheckNote')}</span>
     </div>
@@ -370,7 +371,7 @@ export function ItemResult({
   const yours = item.status === 'could_not_check';
   return (
     <div className="flex items-start gap-3 border-t border-line pt-3">
-      <PointMark tone={handCheck?.checked === true ? 'ok' : pointTone(item.status)} />
+      <PointMark tone={pointTone(item.status)} />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <p>
           <span className="font-medium">

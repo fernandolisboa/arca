@@ -497,9 +497,7 @@ test('the seed admin analyses a version with AI on demand and watches it to the 
   await expect(requirements).toContainText('O que deve estar escrito lá:');
   const mark = requirements.getByRole('button', { name: 'Conferi' }).first();
   await mark.click();
-  await expect(
-    requirements.getByRole('button', { name: 'Conferido por você' }).first(),
-  ).toHaveAttribute('aria-pressed', 'true');
+  await expect(mark).toHaveAttribute('aria-pressed', 'true');
   expect(problems).toEqual([]);
 });
 
