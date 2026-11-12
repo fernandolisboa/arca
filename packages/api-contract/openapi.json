@@ -32123,6 +32123,9 @@
                               "proposed"
                             ]
                           },
+                          "superseded": {
+                            "type": "boolean"
+                          },
                           "check": {
                             "type": "string",
                             "enum": [
@@ -32168,6 +32171,7 @@
                           "effectiveFrom",
                           "hash",
                           "state",
+                          "superseded",
                           "check",
                           "points"
                         ]

@@ -131,18 +131,45 @@ export function newerProposedVersion(
   rulesAsOf: CalendarDate,
   states: DecisionStates,
 ): { readonly identity: VersionIdentity; readonly from: CalendarDate } | undefined {
-  const dates = [
-    rulesAsOf,
-    ...identities
-      .map((identity) => identity.effectiveFrom)
-      .filter((date) => compareDates(date, rulesAsOf) > 0),
-  ].sort(compareDates);
-  for (const date of new Set(dates)) {
+  for (const date of selectionDates(identities, rulesAsOf)) {
     const selection = selectVersion(identities, date, states);
     if (selection === undefined || selection.identity.number === selected.number) continue;
     if (selection.state !== 'active') return { identity: selection.identity, from: date };
   }
   return undefined;
+}
+
+/**
+ * The numbers of a route's versions that selection picks on no date from `today` on: replaced by a
+ * correction or a later version, or rejected. Evaluations select at today, so while the versions
+ * that replace it are not rejected, such a version is not used and needs no decision.
+ */
+export function supersededVersions(
+  identities: readonly VersionIdentity[],
+  today: CalendarDate,
+  states: DecisionStates,
+): ReadonlySet<number> {
+  const used = new Set<number>();
+  for (const date of selectionDates(identities, today)) {
+    const selection = selectVersion(identities, date, states);
+    if (selection !== undefined) used.add(selection.identity.number);
+  }
+  return new Set(identities.map(({ number }) => number).filter((number) => !used.has(number)));
+}
+
+/** The dates from `from` on where selection can change: `from` and every later effective date. */
+function selectionDates(
+  identities: readonly VersionIdentity[],
+  from: CalendarDate,
+): readonly CalendarDate[] {
+  return [
+    ...new Set([
+      from,
+      ...identities
+        .map((identity) => identity.effectiveFrom)
+        .filter((date) => compareDates(date, from) > 0),
+    ]),
+  ].sort(compareDates);
 }
 
 function later(left: VersionIdentity, right: VersionIdentity): boolean {
