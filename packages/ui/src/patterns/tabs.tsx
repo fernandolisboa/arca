@@ -82,7 +82,7 @@ export function Tabs<V extends string>({
       role="tablist"
       aria-label={label}
       onKeyDown={move}
-      className={`flex gap-1.5 overflow-x-auto [scrollbar-width:none] md:gap-6 md:border-b md:border-line ${className}`}
+      className={`flex gap-1.5 overflow-x-auto [scrollbar-width:none] max-md:pr-8 max-md:[mask-image:linear-gradient(to_right,#000_calc(100%-2rem),transparent)] md:gap-6 md:border-b md:border-line ${className}`}
     >
       {tabs.map((tab) => {
         const selected = tab.value === value;

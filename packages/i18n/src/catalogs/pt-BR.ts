@@ -459,9 +459,10 @@ export const ptBR = {
     peopleCount: '{count, plural, one {# pessoa no caso} other {# pessoas no caso}}',
     summary: {
       label: 'Resumo da família',
-      people: 'Pessoas no caso',
-      members: 'Entram no planejamento',
-      invites: 'Convites esperando',
+      people: '{count, plural, one {# pessoa no caso} other {# pessoas no caso}}',
+      members: '{count, plural, one {# entra no planejamento} other {# entram no planejamento}}',
+      invites:
+        '{count, plural, =0 {Nenhum convite esperando} one {# convite esperando} other {# convites esperando}}',
     },
     nextStep: 'Próximo passo',
     nextQuestionsMine:
