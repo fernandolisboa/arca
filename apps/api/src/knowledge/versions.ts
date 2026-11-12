@@ -22,6 +22,8 @@ export interface KnowledgeVersions {
   readonly view: (routeId: string, number: number) => Promise<VersionView | undefined>;
   /** A route's version identities, which never carry a version's content. */
   readonly identities: (routeId: string) => readonly VersionIdentity[];
+  /** The hosts of a country's newest official-domain list, by its lower-case code; none without one. */
+  readonly officialHosts: (country: string) => readonly string[];
   /** Every bundled comparison version with its state, the newest first (ADR-0026). */
   readonly comparisons: () => Promise<readonly KnowledgeComparisonVersion[]>;
   readonly comparisonView: (
@@ -81,6 +83,8 @@ export function createKnowledgeVersions({
     },
 
     identities: (routeId) => catalog.versions(routeId).map(({ identity }) => identity),
+
+    officialHosts: (country) => catalog.newestOfficialHosts(country),
 
     view: async (routeId, number) => {
       const versions = catalog.versions(routeId);

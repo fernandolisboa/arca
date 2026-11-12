@@ -56,6 +56,7 @@ import {
   StartCorrectionUpload,
   CloseRuleReportsRequest,
   FileCorrectionRequest,
+  FileRouteRequest,
   handOverCasePersonAction,
   addCaseMemberAction,
   leaveCaseAction,
@@ -1712,6 +1713,35 @@ export function createApp({
       default:
         return c.json(outcome, 200);
     }
+  });
+  v1.openapi(openApiRoutes.fileRouteRequest, async (c) => {
+    const reads = await correctionsOf(c);
+    if ('refused' in reads) return reads.refused;
+    if (authLimits === undefined) return unauthorized(c);
+    const request = FileRouteRequest.parse(await c.req.json());
+    const { accountId } = reads.current;
+    const limited = await overLimit(c, authLimits, correctionRequestLimits.file, accountId);
+    if (limited !== undefined) return limited;
+    const outcome = await reads.corrections.fileRoute(accountId, request);
+    switch (outcome) {
+      case 'not_admin':
+      case 'owner_list_only':
+        return fail(c, outcome, 403);
+      case 'not_found':
+        return fail(c, outcome, 404);
+      case 'not_uploaded':
+      case 'upload_mismatch':
+        return fail(c, outcome, 409);
+      default:
+        return c.json(outcome, 200);
+    }
+  });
+  v1.openapi(openApiRoutes.listRouteRequests, async (c) => {
+    const reads = await correctionsOf(c);
+    if ('refused' in reads) return reads.refused;
+    const outcome = await reads.corrections.listRoutes(reads.current.accountId);
+    if (outcome === 'not_admin') return fail(c, outcome, 403);
+    return c.json(outcome, 200);
   });
   v1.openapi(openApiRoutes.startCorrectionUpload, async (c) => {
     const reads = await correctionsOf(c);

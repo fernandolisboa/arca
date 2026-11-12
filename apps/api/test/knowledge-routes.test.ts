@@ -62,6 +62,7 @@ function setup({
     list: () => Promise.resolve([listedVersion]),
     view: () => Promise.resolve(undefined),
     identities: () => [],
+    officialHosts: () => [],
     comparisons: () => Promise.resolve([listedComparison]),
     comparisonView: () => Promise.resolve(undefined),
   };

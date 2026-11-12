@@ -1,0 +1,305 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "f6949742-09e6-4e1b-959e-0c2b943d9848",
+  "prevIds": [
+    "57739f64-8bdc-4b25-b796-fd5b4696488a"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "correction_event",
+        "proposed_route_id"
+      ],
+      "writes": [
+        "s|col|knowledge.correction_event.proposed_route_id",
+        "n|col|knowledge.correction_event.proposed_route_id",
+        "e|col|knowledge.correction_event.proposed_route_id"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_event",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "correction_request",
+        "country_code"
+      ],
+      "writes": [
+        "s|col|knowledge.correction_request.country_code",
+        "n|col|knowledge.correction_request.country_code",
+        "e|col|knowledge.correction_request.country_code"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "correction_request",
+        "route_id"
+      ],
+      "writes": [
+        "s|colprop|knowledge.correction_request.route_id.notNull"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_request.route_id"
+      ],
+      "sqlHash": "7b9e58166386b305"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "correction_request",
+        "version_number"
+      ],
+      "writes": [
+        "s|colprop|knowledge.correction_request.version_number.notNull"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_request.version_number"
+      ],
+      "sqlHash": "d8665946a023fd9c"
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_request"
+      ],
+      "writes": [
+        "s|ck|knowledge.correction_request.correction_request_target",
+        "n|ck|knowledge.correction_request.correction_request_target",
+        "e|ck|knowledge.correction_request.correction_request_target",
+        "n|con|knowledge.correction_request.correction_request_target"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_request.item_kind",
+        "n|col|knowledge.correction_request.route_id",
+        "n|col|knowledge.correction_request.version_number",
+        "n|col|knowledge.correction_request.country_code"
+      ]
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_request"
+      ],
+      "writes": [
+        "s|ck|knowledge.correction_request.correction_request_item_kind"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_request.item_kind",
+        "e|col|knowledge.correction_request.item_kind"
+      ],
+      "sqlHash": "d486d28c4121382b"
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_request"
+      ],
+      "writes": [
+        "s|ck|knowledge.correction_request.correction_request_item_key"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_request.item_kind",
+        "n|col|knowledge.correction_request.item_key",
+        "e|col|knowledge.correction_request.item_kind",
+        "e|col|knowledge.correction_request.item_key"
+      ],
+      "sqlHash": "dc405181a31a0824"
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_source"
+      ],
+      "writes": [
+        "s|ck|knowledge.correction_source.correction_source_position_range"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_source",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_source.position",
+        "e|col|knowledge.correction_source.position"
+      ],
+      "sqlHash": "7f843c1687f332c2"
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_source"
+      ],
+      "writes": [
+        "s|ck|knowledge.correction_source.correction_source_shape"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_source",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_source.kind",
+        "n|col|knowledge.correction_source.text",
+        "n|col|knowledge.correction_source.upload_id",
+        "n|col|knowledge.correction_source.page_url",
+        "n|col|knowledge.correction_source.url",
+        "e|col|knowledge.correction_source.kind",
+        "e|col|knowledge.correction_source.text",
+        "e|col|knowledge.correction_source.upload_id",
+        "e|col|knowledge.correction_source.page_url",
+        "e|col|knowledge.correction_source.url"
+      ],
+      "sqlHash": "fef9bc89496172dd"
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_event"
+      ],
+      "writes": [
+        "s|ck|knowledge.correction_event.correction_event_shape"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_event",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_event.kind",
+        "n|col|knowledge.correction_event.corrector_key_id",
+        "n|col|knowledge.correction_event.proposed_version",
+        "n|col|knowledge.correction_event.explanation",
+        "n|col|knowledge.correction_event.proposed_route_id",
+        "e|col|knowledge.correction_event.kind",
+        "e|col|knowledge.correction_event.corrector_key_id",
+        "e|col|knowledge.correction_event.proposed_version",
+        "e|col|knowledge.correction_event.explanation"
+      ],
+      "sqlHash": "ef756a14ec2c61d3"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_event",
+        "name": "proposed_route_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "country_code",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "correction_request_target",
+        "value": "CASE WHEN \"item_kind\" = 'newRoute'\n        THEN \"route_id\" IS NULL AND \"version_number\" IS NULL\n          AND \"country_code\" ~ '^[a-z]{2}$'\n        ELSE \"route_id\" IS NOT NULL AND \"version_number\" IS NOT NULL\n          AND \"country_code\" IS NULL END",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"knowledge\",\"correction_request\",\"route_id\"]",
+      "set": {
+        "notNull": false
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"knowledge\",\"correction_request\",\"version_number\"]",
+      "set": {
+        "notNull": false
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"knowledge\",\"correction_request\",\"correction_request_item_kind\"]",
+      "set": {
+        "value": "\"item_kind\" IN ('newRoute', 'version', 'settings', 'requirement', 'assessment', 'dependent', 'cost', 'duration', 'countrySet')"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"knowledge\",\"correction_request\",\"correction_request_item_key\"]",
+      "set": {
+        "value": "CASE WHEN \"item_kind\" IN ('newRoute', 'version', 'settings') THEN \"item_key\" IS NULL\n        ELSE \"item_key\" ~ '^[a-z0-9][a-z0-9./-]{0,79}$' END"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"knowledge\",\"correction_source\",\"correction_source_position_range\"]",
+      "set": {
+        "value": "\"position\" BETWEEN 0 AND 19"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"knowledge\",\"correction_source\",\"correction_source_shape\"]",
+      "set": {
+        "value": "CASE \"kind\"\n        WHEN 'link' THEN \"text\" IS NULL AND \"upload_id\" IS NULL\n          AND \"page_url\" IS NULL\n          AND \"url\" ~ '^https://[^[:space:]]+$' AND char_length(\"url\") <= 2048\n        WHEN 'text' THEN \"upload_id\" IS NULL\n          AND \"page_url\" IS NULL AND char_length(\"text\") BETWEEN 1 AND 20000\n          AND (\"url\" IS NULL OR (\"url\" ~ '^https://[^[:space:]]+$'\n            AND char_length(\"url\") <= 2048))\n        WHEN 'file' THEN \"url\" IS NULL AND \"text\" IS NULL\n          AND \"upload_id\" IS NOT NULL\n          AND (\"page_url\" IS NULL OR (\"page_url\" ~ '^https://[^[:space:]]+$'\n            AND char_length(\"page_url\") <= 2048))\n        ELSE false END"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"knowledge\",\"correction_event\",\"correction_event_shape\"]",
+      "set": {
+        "value": "CASE \"kind\"\n        WHEN 'closed' THEN \"corrector_key_id\" IS NULL AND \"proposed_version\" IS NULL\n          AND \"explanation\" IS NULL AND \"proposed_route_id\" IS NULL\n        WHEN 'taken' THEN \"corrector_key_id\" IS NOT NULL AND \"proposed_version\" IS NULL\n          AND \"explanation\" IS NULL AND \"proposed_route_id\" IS NULL\n        WHEN 'answered' THEN \"corrector_key_id\" IS NOT NULL\n          AND (\"proposed_version\" IS NULL) <> (\"explanation\" IS NULL)\n          AND (\"proposed_route_id\" IS NULL OR (\"proposed_version\" IS NOT NULL\n            AND \"proposed_route_id\" ~ '^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$'))\n          AND coalesce(\"proposed_version\" > 0, true)\n          AND coalesce(char_length(\"explanation\") BETWEEN 1 AND 2000, true)\n        ELSE false END"
+      }
+    }
+  ]
+}

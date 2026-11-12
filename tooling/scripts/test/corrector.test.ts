@@ -226,6 +226,19 @@ describe('pnpm corrector', () => {
     }
   });
 
+  it('proposes a version on a new route by its route', async () => {
+    const { answers, client, write } = recorder();
+    await expect(
+      run(['propose', requestId, '1', 'lt-temporary-work'], client, write),
+    ).resolves.toBe(true);
+    expect(answers).toEqual([
+      {
+        id: requestId,
+        answer: { kind: 'version_proposed', number: 1, routeId: 'lt-temporary-work' },
+      },
+    ]);
+  });
+
   it('saves a file only where none exists', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'corrector-'));
     const target = join(dir, 'copy.pdf');
@@ -240,6 +253,7 @@ describe('pnpm corrector', () => {
     [['take', 'not-a-uuid']],
     [['propose', requestId, '0']],
     [['propose', requestId, '1.5']],
+    [['propose', requestId, '1', 'Not a route']],
     [['file', requestId, '-1', 'x']],
     [['delete', requestId]],
   ])('prints the usage for %j', async (args) => {

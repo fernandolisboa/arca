@@ -4,6 +4,8 @@ import type {
   CorrectionRequests,
   ObjectUploadUrlResponse,
   FileCorrectionRequest,
+  FileRouteRequest,
+  RouteRequests,
   ListedCorrectionSource,
   StartCorrectionUpload,
   StartCorrectionUploadResponse,
@@ -16,7 +18,7 @@ import {
   correctionState,
   correctionTargets,
 } from '@arca/domain';
-import { sql } from 'drizzle-orm';
+import { type SQL, sql } from 'drizzle-orm';
 import type { AccountNotice } from '../auth/account-notices.js';
 import type { AuditLog } from '../audit/log.js';
 import { type AdminBasis, type AdminRole, readAdminHistory } from './admins.js';
@@ -43,6 +45,12 @@ export const correctionFilingWindowHours = 2;
 /** Correction requests as the API serves them (ADR-0029), through the definer functions only. */
 export interface Corrections {
   readonly file: (accountId: string, request: FileCorrectionRequest) => Promise<FileOutcome>;
+  /** Files a request for a route the catalog lacks in one country (ADR-0029, new routes). */
+  readonly fileRoute: (
+    accountId: string,
+    request: FileRouteRequest,
+  ) => Promise<Exclude<FileOutcome, 'already_corrected'>>;
+  readonly listRoutes: (accountId: string) => Promise<RouteRequests | 'not_admin'>;
   readonly list: (
     accountId: string,
     routeId: string,
@@ -71,8 +79,10 @@ export interface CorrectionSettings {
   /** The app_api pool, which may only execute the definer functions on the request tables. */
   readonly db: () => Database;
   readonly role: AdminRole;
-  readonly versions: Pick<KnowledgeVersions, 'view' | 'identities'>;
+  readonly versions: Pick<KnowledgeVersions, 'view' | 'identities' | 'officialHosts'>;
   readonly states: () => Promise<DecisionStates>;
+  /** The country codes of the countries dataset, which a request for a new route may name. */
+  readonly countries: readonly string[];
   readonly audit: Pick<AuditLog, 'record'>;
   readonly notify: AccountNotice<'correction_requested'>;
   /** The environment's object store, where request files live under `corrections/`. */
@@ -117,6 +127,22 @@ interface StoredEvent extends Record<string, unknown> {
 }
 
 type ListedAnswer = CorrectionRequests['requests'][number]['answer'];
+type ListedRouteAnswer = RouteRequests['requests'][number]['answer'];
+
+/** A request for a new route as `route_requests` serves it, events included. */
+interface StoredRouteRequest extends Record<string, unknown> {
+  id: string;
+  country_code: string;
+  note: string | null;
+  created_at: string | Date;
+  sources: ListedCorrectionSource[];
+  events: {
+    kind: CorrectionEvent['kind'];
+    proposedRouteId?: string;
+    proposedVersion?: number;
+    explanation?: string;
+  }[];
+}
 
 const domainEvent = ({ kind, proposed_version: proposedVersion }: StoredEvent): CorrectionEvent =>
   kind === 'answered' ? { kind, proposedVersion } : { kind };
@@ -127,6 +153,19 @@ const listedAnswer = (events: readonly StoredEvent[]): ListedAnswer => {
   return answered.proposed_version === null
     ? { kind: 'no_change', explanation: answered.explanation ?? '' }
     : { kind: 'version_proposed', number: answered.proposed_version };
+};
+
+const routeAnswer = (
+  answered: StoredRouteRequest['events'][number] | undefined,
+): ListedRouteAnswer => {
+  if (answered === undefined) return null;
+  return answered.proposedRouteId === undefined || answered.proposedVersion === undefined
+    ? { kind: 'no_change', explanation: answered.explanation ?? '' }
+    : {
+        kind: 'version_proposed',
+        routeId: answered.proposedRouteId,
+        number: answered.proposedVersion,
+      };
 };
 
 interface StoredFile extends Record<string, unknown> {
@@ -142,10 +181,12 @@ export function createCorrections({
   role,
   versions,
   states,
+  countries,
   audit,
   notify,
   storage,
 }: CorrectionSettings): Corrections {
+  const knownCountries = new Set(countries.map((code) => code.toLowerCase()));
   const basisOf = async (accountId: string) =>
     role.basisOf(await readAdminHistory(db()), accountId);
 
@@ -217,6 +258,48 @@ export function createCorrections({
     return undefined;
   };
 
+  /**
+   * Files a request and its sources in one transaction: links and texts through `filing`, files
+   * after them; audits it before the filing commits and emails the owner-list admins.
+   */
+  const fileWith = async (
+    accountId: string,
+    sources: readonly FileCorrectionRequest['sources'][number][],
+    {
+      filing,
+      target,
+    }: {
+      readonly filing: (written: string) => SQL;
+      readonly target:
+        { readonly routeId: string; readonly number: number } | { readonly countryCode: string };
+    },
+  ): Promise<string> => {
+    const written = sources.filter((source) => source.kind !== 'file');
+    const files = sources.filter((source) => source.kind === 'file');
+    const id = await withIdentity(db(), { accountId }, async (tx) => {
+      const { rows } = await tx.execute<{ id: string }>(
+        sql`SELECT ${filing(JSON.stringify(written))} AS id`,
+      );
+      const filed = rows[0]?.id;
+      if (filed === undefined) throw new Error('The request was not filed');
+      for (const [index, file] of files.entries()) {
+        await tx.execute(sql`
+          SELECT knowledge.attach_correction_file_with_page(${filed}, ${written.length + index},
+            ${file.uploadId}, ${file.pageUrl}, 'owner_list')`);
+      }
+      // Recorded before the filing commits, so a request no event records is never kept.
+      await audit.record({
+        code: 'correction_requested',
+        subjectAccountId: accountId,
+        actorAccountId: accountId,
+        details: { requestId: filed, ...target },
+      });
+      return filed;
+    });
+    await Promise.all(role.ownerList.map((ownerId) => notify(ownerId, 'correction_requested')));
+    return id;
+  };
+
   return {
     file: async (accountId, request) => {
       const basis = await filingBasis(accountId);
@@ -239,32 +322,74 @@ export function createCorrections({
       if (corrected === 'closed') return 'already_corrected';
       const refused = await checkFiles(accountId, request.sources);
       if (refused !== undefined) return refused;
-      // Links and texts first, through the #414 function; files after them, in the same transaction.
-      const written = request.sources.filter((source) => source.kind !== 'file');
-      const files = request.sources.filter((source) => source.kind === 'file');
-      const id = await withIdentity(db(), { accountId }, async (tx) => {
-        const { rows } = await tx.execute<{ id: string }>(sql`
-          SELECT knowledge.file_correction_request(${request.routeId}, ${request.versionNumber},
-            ${request.item.kind}, ${request.item.key}, ${request.note},
-            ${JSON.stringify(written)}::jsonb, ${basis.basis}) AS id`);
-        const filed = rows[0]?.id;
-        if (filed === undefined) throw new Error('The request was not filed');
-        for (const [index, file] of files.entries()) {
-          await tx.execute(sql`
-            SELECT knowledge.attach_correction_file_with_page(${filed}, ${written.length + index},
-              ${file.uploadId}, ${file.pageUrl}, ${basis.basis})`);
-        }
-        // Recorded before the filing commits, so a request no event records is never kept.
-        await audit.record({
-          code: 'correction_requested',
-          subjectAccountId: accountId,
-          actorAccountId: accountId,
-          details: { requestId: filed, routeId: request.routeId, number: request.versionNumber },
-        });
-        return filed;
+      const id = await fileWith(accountId, request.sources, {
+        filing: (written) => sql`knowledge.file_correction_request(${request.routeId},
+          ${request.versionNumber}, ${request.item.kind}, ${request.item.key}, ${request.note},
+          ${written}::jsonb, 'owner_list')`,
+        target: { routeId: request.routeId, number: request.versionNumber },
       });
-      await Promise.all(role.ownerList.map((ownerId) => notify(ownerId, 'correction_requested')));
       return { id };
+    },
+
+    fileRoute: async (accountId, request) => {
+      const basis = await filingBasis(accountId);
+      if (typeof basis === 'string') return basis;
+      if (!knownCountries.has(request.countryCode)) return 'not_found';
+      const refused = await checkFiles(accountId, request.sources);
+      if (refused !== undefined) return refused;
+      const id = await fileWith(accountId, request.sources, {
+        filing: (written) => sql`knowledge.file_route_request(${request.countryCode},
+          ${request.note}, ${written}::jsonb, 'owner_list')`,
+        target: { countryCode: request.countryCode },
+      });
+      return { id };
+    },
+
+    listRoutes: async (accountId) => {
+      const basis = await basisOf(accountId);
+      if (basis === undefined) return 'not_admin';
+      const { basis: kind, grantId } = basisArguments(basis);
+      const [rows, decided] = await Promise.all([
+        withIdentity(
+          db(),
+          { accountId },
+          async (tx) =>
+            (
+              await tx.execute<StoredRouteRequest>(sql`
+              SELECT * FROM knowledge.route_requests(${kind}, ${grantId})`)
+            ).rows,
+        ),
+        states(),
+      ]);
+      return {
+        canFile: basis.basis === 'owner_list',
+        countries: [...knownCountries].sort().map((code) => ({
+          code,
+          officialHosts: [...versions.officialHosts(code)],
+        })),
+        requests: rows.map((row) => {
+          const answered = row.events.find((event) => event.kind === 'answered');
+          const proposedRoute = answered?.proposedRouteId;
+          return {
+            id: row.id,
+            countryCode: row.country_code,
+            note: row.note,
+            createdAt: new Date(row.created_at).toISOString(),
+            sources: row.sources,
+            state: correctionState({
+              versionNumber: null,
+              events: row.events.map((event) =>
+                event.kind === 'answered'
+                  ? { kind: event.kind, proposedVersion: event.proposedVersion ?? null }
+                  : { kind: event.kind },
+              ),
+              identities: proposedRoute === undefined ? [] : versions.identities(proposedRoute),
+              states: decided,
+            }),
+            answer: routeAnswer(answered),
+          };
+        }),
+      };
     },
 
     list: async (accountId, routeId, number) => {

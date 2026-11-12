@@ -371,8 +371,12 @@ export const checkProgress = knowledge.table(
   ],
 );
 
-/** An admin's correction request may name the whole version, its settings or one item. */
+/**
+ * An admin's correction request may name the whole version, its settings or one item; a request
+ * for a new route names a country and no version.
+ */
 export const correctionItemKinds = [
+  'newRoute',
   'version',
   'settings',
   'requirement',
@@ -394,8 +398,9 @@ const ownRequest = (requestId: unknown) =>
 
 /**
  * Correction requests (ADR-0029): an owner-list admin points at a wrong item of a route version
- * and says what is wrong, with sources as leads. Knowledge data that names a route, a version and
- * an item, never a case or a person. Insert-only: `app_api` serves admins through the reviewed
+ * and says what is wrong, with sources as leads, or asks for a route the catalog lacks in one
+ * country, with copies of its official pages and their passages. Knowledge data that names a
+ * route, a version and an item, or a country, never a case or a person. Insert-only: `app_api` serves admins through the reviewed
  * definer functions of `knowledge_definer`, which check the admin basis the API computed and
  * insert or read on its behalf; the author's data export reads their own rows through one too.
  * `app_jobs` reads and deletes an author's own requests under their identity, for erasure; their
@@ -407,8 +412,10 @@ export const correctionRequest = knowledge.table(
   'correction_request',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    routeId: text('route_id').notNull(),
-    versionNumber: integer('version_number').notNull(),
+    /** Null, with the version, for a request for a new route, which names its country instead. */
+    routeId: text('route_id'),
+    versionNumber: integer('version_number'),
+    countryCode: text('country_code'),
     itemKind: text('item_kind').notNull(),
     itemKey: text('item_key'),
     /** Null once the retention step erased the request's contents. */
@@ -424,8 +431,16 @@ export const correctionRequest = knowledge.table(
     check('correction_request_version_number_positive', sql`${table.versionNumber} > 0`),
     check('correction_request_item_kind', inList(table.itemKind, correctionItemKinds)),
     check(
+      'correction_request_target',
+      sql`CASE WHEN ${table.itemKind} = 'newRoute'
+        THEN ${table.routeId} IS NULL AND ${table.versionNumber} IS NULL
+          AND ${table.countryCode} ~ '^[a-z]{2}$'
+        ELSE ${table.routeId} IS NOT NULL AND ${table.versionNumber} IS NOT NULL
+          AND ${table.countryCode} IS NULL END`,
+    ),
+    check(
       'correction_request_item_key',
-      sql`CASE WHEN ${table.itemKind} IN ('version', 'settings') THEN ${table.itemKey} IS NULL
+      sql`CASE WHEN ${table.itemKind} IN ('newRoute', 'version', 'settings') THEN ${table.itemKey} IS NULL
         ELSE ${table.itemKey} ~ '^[a-z0-9][a-z0-9./-]{0,79}$' END`,
     ),
     check('correction_request_note_length', sql`char_length(${table.note}) BETWEEN 1 AND 4000`),
@@ -521,8 +536,9 @@ export const correctionUpload = knowledge.table(
 );
 
 /**
- * A request's sources, up to five: an `https` link, pasted text or an uploaded file, all leads
- * only (ADR-0029). A file source names its upload, which no other source names, and may name the
+ * A request's sources, up to five on a version and twenty for a new route: an `https` link,
+ * pasted text, with the page it was copied from if any, or an uploaded file, all leads only
+ * (ADR-0029). A file source names its upload, which no other source names, and may name the
  * official page it is a copy of, which the independent check reads when it cannot read the page.
  */
 export const correctionSource = knowledge.table(
@@ -549,15 +565,17 @@ export const correctionSource = knowledge.table(
       foreignColumns: [correctionUpload.id],
     }),
     unique('correction_source_upload_once').on(table.uploadId),
-    check('correction_source_position_range', sql`${table.position} BETWEEN 0 AND 4`),
+    check('correction_source_position_range', sql`${table.position} BETWEEN 0 AND 19`),
     check(
       'correction_source_shape',
       sql`CASE ${table.kind}
         WHEN 'link' THEN ${table.text} IS NULL AND ${table.uploadId} IS NULL
           AND ${table.pageUrl} IS NULL
           AND ${table.url} ~ '^https://[^[:space:]]+$' AND char_length(${table.url}) <= 2048
-        WHEN 'text' THEN ${table.url} IS NULL AND ${table.uploadId} IS NULL
+        WHEN 'text' THEN ${table.uploadId} IS NULL
           AND ${table.pageUrl} IS NULL AND char_length(${table.text}) BETWEEN 1 AND 20000
+          AND (${table.url} IS NULL OR (${table.url} ~ '^https://[^[:space:]]+$'
+            AND char_length(${table.url}) <= 2048))
         WHEN 'file' THEN ${table.url} IS NULL AND ${table.text} IS NULL
           AND ${table.uploadId} IS NOT NULL
           AND (${table.pageUrl} IS NULL OR (${table.pageUrl} ~ '^https://[^[:space:]]+$'
@@ -670,6 +688,8 @@ export const correctionEvent = knowledge.table(
     /** The corrector key that took or answered the request; null for an admin's close. */
     correctorKeyId: uuid('corrector_key_id'),
     proposedVersion: integer('proposed_version'),
+    /** The route of the proposed version, only on an answer to a request for a new route. */
+    proposedRouteId: text('proposed_route_id'),
     explanation: text('explanation'),
     at: timestamp('at', { withTimezone: true })
       .notNull()
@@ -691,11 +711,13 @@ export const correctionEvent = knowledge.table(
       'correction_event_shape',
       sql`CASE ${table.kind}
         WHEN 'closed' THEN ${table.correctorKeyId} IS NULL AND ${table.proposedVersion} IS NULL
-          AND ${table.explanation} IS NULL
+          AND ${table.explanation} IS NULL AND ${table.proposedRouteId} IS NULL
         WHEN 'taken' THEN ${table.correctorKeyId} IS NOT NULL AND ${table.proposedVersion} IS NULL
-          AND ${table.explanation} IS NULL
+          AND ${table.explanation} IS NULL AND ${table.proposedRouteId} IS NULL
         WHEN 'answered' THEN ${table.correctorKeyId} IS NOT NULL
           AND (${table.proposedVersion} IS NULL) <> (${table.explanation} IS NULL)
+          AND (${table.proposedRouteId} IS NULL OR (${table.proposedVersion} IS NOT NULL
+            AND ${routeIdFormat(table.proposedRouteId)}))
           AND coalesce(${table.proposedVersion} > 0, true)
           AND coalesce(char_length(${table.explanation}) BETWEEN 1 AND 2000, true)
         ELSE false END`,

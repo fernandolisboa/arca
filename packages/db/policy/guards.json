@@ -118,7 +118,12 @@
     "knowledge.corrector_requests",
     "knowledge.live_corrector_key",
     "knowledge.own_corrector_key_rows",
-    "knowledge.revoke_corrector_key"
+    "knowledge.revoke_corrector_key",
+    "knowledge.file_route_request",
+    "knowledge.route_requests",
+    "knowledge.corrector_request_queue",
+    "knowledge.answer_route_request",
+    "knowledge.own_correction_request_rows"
   ],
   "migrationExtensions": [],
   "deferrableConstraints": []

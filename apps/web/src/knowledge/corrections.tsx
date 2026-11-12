@@ -83,7 +83,7 @@ export function CorrectionFiling({
 const textareaClass =
   'rounded-control border border-line bg-surface p-3 text-body text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 
-function TextArea({
+export function TextArea({
   label,
   value,
   maxLength,
@@ -440,7 +440,7 @@ export function PointOutError({ item }: { readonly item: CorrectionItem }) {
   );
 }
 
-const stateTones: Record<ListedRequest['state'], StatusTone> = {
+export const requestStateTones: Record<ListedRequest['state'], StatusTone> = {
   open: 'warn',
   taken: 'warn',
   answered: 'ok',
@@ -454,7 +454,7 @@ function itemTitle(view: VersionView, { kind, key }: CorrectionItem): string {
 }
 
 /** A request's sources with keys: they are stored in order and never change. */
-const keyedSources = (request: ListedRequest) =>
+const keyedSources = (request: Pick<ListedRequest, 'id' | 'sources'>) =>
   request.sources.map((source, position) => ({
     key: `${request.id}:${String(position)}`,
     source,
@@ -464,7 +464,7 @@ const keyedSources = (request: ListedRequest) =>
 const addressPattern = /(https?:\/\/\S+)/;
 
 /** Model output as plain text: an address stays text, set apart, never a link (ADR-0029). */
-function MarkedText({ text }: { readonly text: string }) {
+export function MarkedText({ text }: { readonly text: string }) {
   const parts = text
     .split(addressPattern)
     .reduce<{ part: string; start: number; address: boolean }[]>((placed, part, index) => {
@@ -583,6 +583,47 @@ function FileEntry({
   );
 }
 
+/** A request's sources in order: addresses as plain text, never links, and files to save. */
+export function SourceList({
+  request,
+  words,
+}: {
+  readonly request: Pick<ListedRequest, 'id' | 'sources'>;
+  readonly words: KnowledgeWords;
+}) {
+  const { t } = words;
+  if (request.sources.length === 0) return null;
+  return (
+    <ul className="flex flex-col gap-2 text-small">
+      {keyedSources(request).map(({ key, source, position }) => (
+        <li key={key} className="flex flex-col gap-1">
+          <span className="text-muted">
+            {t('knowledge.corrections.sourceKind', { kind: source.kind })}
+          </span>
+          {source.kind === 'link' && (
+            // Plain text, never a link: the admin reads the full address before opening it.
+            <span className="font-mono break-all">{source.url}</span>
+          )}
+          {source.kind === 'text' && (
+            <>
+              <span className="line-clamp-6 whitespace-pre-wrap">{source.text}</span>
+              {source.url !== undefined && (
+                <span className="flex flex-col">
+                  <span className="text-muted">{t('knowledge.corrections.copiedFrom')}</span>
+                  <span className="font-mono break-all">{source.url}</span>
+                </span>
+              )}
+            </>
+          )}
+          {source.kind === 'file' && (
+            <FileEntry requestId={request.id} position={position} source={source} words={words} />
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function RequestEntry({
   request,
   view,
@@ -600,7 +641,7 @@ function RequestEntry({
     <li className="flex flex-col gap-2 rounded-control border border-line p-3">
       <div className="flex flex-wrap items-center gap-2">
         <StatusChip
-          tone={stateTones[request.state]}
+          tone={requestStateTones[request.state]}
           label={t('knowledge.corrections.state', { state: request.state })}
         />
         <p id={headingId} className="font-medium">
@@ -622,32 +663,7 @@ function RequestEntry({
       ) : (
         <p className="whitespace-pre-wrap">{request.note}</p>
       )}
-      {request.sources.length > 0 && (
-        <ul className="flex flex-col gap-2 text-small">
-          {keyedSources(request).map(({ key, source, position }) => (
-            <li key={key} className="flex flex-col gap-1">
-              <span className="text-muted">
-                {t('knowledge.corrections.sourceKind', { kind: source.kind })}
-              </span>
-              {source.kind === 'link' && (
-                // Plain text, never a link: the admin reads the full address before opening it.
-                <span className="font-mono break-all">{source.url}</span>
-              )}
-              {source.kind === 'text' && (
-                <span className="line-clamp-6 whitespace-pre-wrap">{source.text}</span>
-              )}
-              {source.kind === 'file' && (
-                <FileEntry
-                  requestId={request.id}
-                  position={position}
-                  source={source}
-                  words={words}
-                />
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+      <SourceList request={request} words={words} />
       {request.answer !== null && <AnswerEntry answer={request.answer} words={words} />}
       {failed && (
         <p role="alert" className="text-small text-danger-ink">

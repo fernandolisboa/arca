@@ -546,6 +546,7 @@ const app = createApp({
     role,
     versions: knowledgeVersions,
     states: () => knowledgeDecisions().states(),
+    countries: pinnedCountries.countries,
     audit: lazyAudit,
     notify: async (accountId, kind) => (await authParts()).correctionNotice(accountId, kind),
     storage: documentStorage?.storage ?? unconnectedObjectStorage,

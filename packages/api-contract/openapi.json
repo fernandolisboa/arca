@@ -34353,6 +34353,11 @@
                               "type": "string",
                               "minLength": 1,
                               "maxLength": 20000
+                            },
+                            "url": {
+                              "type": "string",
+                              "maxLength": 2048,
+                              "pattern": "^https:\\/\\/\\S+$"
                             }
                           },
                           "required": [
@@ -34578,6 +34583,11 @@
                                       "type": "string",
                                       "minLength": 1,
                                       "maxLength": 20000
+                                    },
+                                    "url": {
+                                      "type": "string",
+                                      "maxLength": 2048,
+                                      "pattern": "^https:\\/\\/\\S+$"
                                     }
                                   },
                                   "required": [
@@ -35075,7 +35085,7 @@
                   "position": {
                     "type": "integer",
                     "minimum": 0,
-                    "maximum": 4
+                    "maximum": 19
                   }
                 },
                 "required": [
@@ -35101,6 +35111,433 @@
                   },
                   "required": [
                     "url"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/route-requests": {
+      "post": {
+        "operationId": "fileRouteRequest",
+        "summary": "Files a request for a route the catalog lacks in one country, for an owner-list admin, with up to 20 sources; the same rate limit, uploads and checks as fileCorrectionRequest, except that a file may name any https page it copies. 403 not_admin; 403 owner_list_only; 404 not_found for a country the dataset lacks or an upload it does not hold; 409 not_uploaded; 409 upload_mismatch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "countryCode": {
+                    "type": "string",
+                    "pattern": "^[a-z]{2}$"
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4000
+                  },
+                  "sources": {
+                    "type": "array",
+                    "items": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "link"
+                              ]
+                            },
+                            "url": {
+                              "type": "string",
+                              "maxLength": 2048,
+                              "pattern": "^https:\\/\\/\\S+$"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "url"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "text"
+                              ]
+                            },
+                            "text": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 20000
+                            },
+                            "url": {
+                              "type": "string",
+                              "maxLength": 2048,
+                              "pattern": "^https:\\/\\/\\S+$"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "text"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "file"
+                              ]
+                            },
+                            "uploadId": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "pageUrl": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "maxLength": 2048,
+                              "pattern": "^https:\\/\\/\\S+$",
+                              "default": null
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "uploadId"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
+                    "minItems": 1,
+                    "maxItems": 20
+                  }
+                },
+                "required": [
+                  "countryCode",
+                  "note",
+                  "sources"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Filed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listRouteRequests",
+        "summary": "Every request for a new route with its sources and state, newest first, for an admin. 403 not_admin",
+        "responses": {
+          "200": {
+            "description": "The requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "canFile": {
+                      "type": "boolean"
+                    },
+                    "countries": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "pattern": "^[a-z]{2}$"
+                          },
+                          "officialHosts": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "maxLength": 253
+                            }
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "officialHosts"
+                        ]
+                      }
+                    },
+                    "requests": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "countryCode": {
+                            "type": "string",
+                            "pattern": "^[a-z]{2}$"
+                          },
+                          "note": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "sources": {
+                            "type": "array",
+                            "items": {
+                              "oneOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "link"
+                                      ]
+                                    },
+                                    "url": {
+                                      "type": "string",
+                                      "maxLength": 2048,
+                                      "pattern": "^https:\\/\\/\\S+$"
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "url"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "text"
+                                      ]
+                                    },
+                                    "text": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 20000
+                                    },
+                                    "url": {
+                                      "type": "string",
+                                      "maxLength": 2048,
+                                      "pattern": "^https:\\/\\/\\S+$"
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "text"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "file"
+                                      ]
+                                    },
+                                    "mediaType": {
+                                      "type": "string",
+                                      "enum": [
+                                        "application/pdf",
+                                        "text/html",
+                                        "text/plain"
+                                      ]
+                                    },
+                                    "size": {
+                                      "type": "integer",
+                                      "minimum": 1,
+                                      "maximum": 16777216
+                                    },
+                                    "pageUrl": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ],
+                                      "maxLength": 2048,
+                                      "pattern": "^https:\\/\\/\\S+$"
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "mediaType",
+                                    "size",
+                                    "pageUrl"
+                                  ]
+                                }
+                              ]
+                            }
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "open",
+                              "taken",
+                              "answered",
+                              "closed"
+                            ]
+                          },
+                          "answer": {
+                            "oneOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "version_proposed"
+                                    ]
+                                  },
+                                  "routeId": {
+                                    "type": "string",
+                                    "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                                  },
+                                  "number": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "routeId",
+                                  "number"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "no_change"
+                                    ]
+                                  },
+                                  "explanation": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "explanation"
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "countryCode",
+                          "note",
+                          "createdAt",
+                          "sources",
+                          "state",
+                          "answer"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "canFile",
+                    "countries",
+                    "requests"
                   ]
                 }
               }
@@ -35360,15 +35797,24 @@
                             "format": "uuid"
                           },
                           "routeId": {
-                            "type": "string",
+                            "type": [
+                              "string",
+                              "null"
+                            ],
                             "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
                           },
                           "versionNumber": {
-                            "type": "integer",
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
                             "minimum": 1
                           },
                           "item": {
-                            "type": "object",
+                            "type": [
+                              "object",
+                              "null"
+                            ],
                             "properties": {
                               "kind": {
                                 "type": "string",
@@ -35396,6 +35842,13 @@
                               "key"
                             ],
                             "additionalProperties": false
+                          },
+                          "countryCode": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "pattern": "^[a-z]{2}$"
                           },
                           "note": {
                             "type": [
@@ -35445,6 +35898,11 @@
                                       "type": "string",
                                       "minLength": 1,
                                       "maxLength": 20000
+                                    },
+                                    "url": {
+                                      "type": "string",
+                                      "maxLength": 2048,
+                                      "pattern": "^https:\\/\\/\\S+$"
                                     }
                                   },
                                   "required": [
@@ -35507,6 +35965,7 @@
                           "routeId",
                           "versionNumber",
                           "item",
+                          "countryCode",
                           "note",
                           "createdAt",
                           "sources",
@@ -35570,7 +36029,7 @@
                   "position": {
                     "type": "integer",
                     "minimum": 0,
-                    "maximum": 4
+                    "maximum": 19
                   }
                 },
                 "required": [
@@ -35634,7 +36093,7 @@
     "/corrector/requests/answer": {
       "post": {
         "operationId": "answerCorrectionRequest",
-        "summary": "Marks an open request taken, or answers a taken one with the version proposed or why nothing changed; a key never closes a request. Bearer corrector key only; 403 cross_origin for a browser request from another site; 401 unauthorized for a missing, wrong, revoked, expired or replaced key, after a per-address limit (429 rate_limited); 100 per 24 hours per key; 404 not_found; 409 wrong_state; 409 invalid_version for a version this deployment does not serve on the request's route, one already active or rejected, or one that neither corrects nor follows the request's version",
+        "summary": "Marks an open request taken, or answers a taken one with the version proposed or why nothing changed; a key never closes a request. Bearer corrector key only; 403 cross_origin for a browser request from another site; 401 unauthorized for a missing, wrong, revoked, expired or replaced key, after a per-address limit (429 rate_limited); 100 per 24 hours per key; 404 not_found; 409 wrong_state; 409 invalid_version for a version this deployment does not serve on the request's route, one already active or rejected, or one that neither corrects nor follows the request's version; for a request for a new route, a version_proposed names its route, which must be in the request's country",
         "requestBody": {
           "required": true,
           "content": {
@@ -35676,6 +36135,10 @@
                             "type": "integer",
                             "minimum": 1,
                             "maximum": 1000000
+                          },
+                          "routeId": {
+                            "type": "string",
+                            "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
                           }
                         },
                         "required": [

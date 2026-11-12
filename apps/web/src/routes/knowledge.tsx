@@ -20,6 +20,7 @@ import { CheckChip, useStartChecks } from '../knowledge/checks.js';
 import { ComparisonPanel } from '../knowledge/comparison-panel.js';
 import { OpenRouteVersionContext } from '../knowledge/corrections.js';
 import { ReportsSection } from '../knowledge/reports-section.js';
+import { RouteRequestsSection } from '../knowledge/route-requests.js';
 import { ReviewFilters, needTone } from '../knowledge/review-filters.js';
 import {
   type CountryGroup,
@@ -213,7 +214,15 @@ function Knowledge() {
             <VersionList title={t('knowledge.others')} versions={others} onPick={setPicked} />
           )}
         </div>
-        <ReportsSection versions={all} words={words} />
+        <div className="flex min-w-0 flex-col gap-8">
+          <ReportsSection versions={all} words={words} />
+          <RouteRequestsSection
+            words={words}
+            onOpenVersion={(routeId, number) => {
+              setPicked({ subject: 'route', routeId, number });
+            }}
+          />
+        </div>
       </div>
     </Page>
   );

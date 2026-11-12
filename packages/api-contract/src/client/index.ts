@@ -107,6 +107,8 @@ export type {
   CorrectionFileType,
   CorrectionSource,
   FileCorrectionRequest,
+  FileRouteRequest,
+  RouteRequests,
   ListedCorrectionSource,
   ReportRuleRequest,
   RuleReports,
